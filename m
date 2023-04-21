@@ -4,61 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E969EC7618E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Apr 2023 04:51:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2F8BC6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Apr 2023 09:01:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q3Jrq0SCkz3fJd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Apr 2023 14:51:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q3QNY6t1Yz3f57
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Apr 2023 19:01:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=E9LIuBD4;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bdXprAp0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::22; helo=out-34.mta0.migadu.com; envelope-from=konstantin.ryabitsev@linux.dev; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=E9LIuBD4;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bdXprAp0;
 	dkim-atps=neutral
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 350 seconds by postgrey-1.36 at boromir; Sat, 22 Apr 2023 05:16:24 AEST
+Received: from out-34.mta0.migadu.com (out-34.mta0.migadu.com [IPv6:2001:41d0:1004:224b::22])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q3Jqp4P6rz3cM7
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2023 14:50:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1682139046; x=1713675046;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=MOa+uFZXHcWLVxxZlFT8A/G9+ogtZLhA2X/tQRktSjI=;
-  b=E9LIuBD4x3Po43qMiObIhaPA9L5o5j995Eg0KMRFLQo55K2qewhvmIBs
-   u7X+9zoDWtS6i94koZCCVC2L7Ds1P9beRqsPwD3hJ96QfSrgbE7/MgyHj
-   sQnxIXNB8x7xj/i/4ued7cC6+qAFRSYEKmSwJ1Tdc5VXyWh0ferpGQWMq
-   Qz9BU6J1H/P4MKpij3SKgTqGMrlbB5sV2qDSJUiFhg9GjgSG+Vdaa8uFD
-   sknXdkqddo7dWkTMbJOUSifCxcVPnbHNlgkBWgrNlJv0KAN+2FOQ1HBlw
-   mg9d0KVPRqGE7Ykidti4tkvo7+onXweWeVFbYtrfKYZMx4P52WiyRup3J
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10687"; a="344877798"
-X-IronPort-AV: E=Sophos;i="5.99,216,1677571200"; 
-   d="scan'208";a="344877798"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Apr 2023 21:50:36 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10687"; a="692467877"
-X-IronPort-AV: E=Sophos;i="5.99,216,1677571200"; 
-   d="scan'208";a="692467877"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by orsmga002.jf.intel.com with ESMTP; 21 Apr 2023 21:50:35 -0700
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1pq5Ck-000h4s-2k;
-	Sat, 22 Apr 2023 04:50:34 +0000
-Date: Sat, 22 Apr 2023 12:49:51 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS
- 5d8eb803edc65ca55337a2724e9f3d3bb3ba2c17
-Message-ID: <6443676f.oT2ZJNr5pNUrEcyq%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q34540cxcz3cj1
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2023 05:16:23 +1000 (AEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1682104214;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=A9nptc7nFsnBkPk8XtEJlycB0Q788aB2D6UaBkyu74Y=;
+	b=bdXprAp0tYcirhanYw8bQqri9ckfvXGij3zsRaW31Rp79TyHytNiP2LAxDLzMsdR5D3k2s
+	/sAQyoNd2ertNgOwtYKlhN53Xmy7kKlJU8m3Bp2V1JtejQ3beDelYG2pLP9Oxelww9x+Id
+	ipSUd4q1YPaHNRcS7BdzJqpbW97DvI0=
+Date: Fri, 21 Apr 2023 19:10:14 +0000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: "Konstantin Ryabitsev" <konstantin.ryabitsev@linux.dev>
+Message-ID: <ba235aa677a561ceb2dc776414403dc0@linux.dev>
+Subject: Re: [PATCH v9 0/6] Introduce 64b relocatable kernel
+To: "Palmer Dabbelt" <palmer@dabbelt.com>, alexghiti@rivosinc.com
+In-Reply-To: <mhng-bb70f74f-2b5b-4880-b7bf-975e67dc554e@palmer-ri-x1c9>
+References: <mhng-bb70f74f-2b5b-4880-b7bf-975e67dc554e@palmer-ri-x1c9>
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Approved-At: Sat, 22 Apr 2023 19:00:11 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,66 +57,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: aou@eecs.berkeley.edu, linux-kbuild@vger.kernel.org, ndesaulniers@google.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, bjorn@kernel.org, Paul Walmsley <paul.walmsley@sifive.com>, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 5d8eb803edc65ca55337a2724e9f3d3bb3ba2c17  Automatic merge of 'next' into merge (2023-04-21 16:25)
-
-elapsed time: 1283m
-
-configs tested: 43
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-csky                                defconfig   gcc  
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-ia64                             allmodconfig   gcc  
-ia64                                defconfig   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-m68k                             allmodconfig   gcc  
-m68k                                defconfig   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-nios2                               defconfig   gcc  
-parisc                              defconfig   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-sh                               allmodconfig   gcc  
-sparc                               defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64                               rhel-8.3   gcc  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+April 21, 2023 2:59 PM, "Palmer Dabbelt" <palmer@dabbelt.com> wrote:=0A>>=
+ riscv: Use PUD/P4D/PGD pages for the linear mapping=0A>> (https://patchw=
+ork.kernel.org/project/linux-riscv/list/?series=3D733603)=0A>> base-commi=
+t-tag: v6.3-rc1=0A> =0A> The QEMU CI has some way to say "this depends on=
+ an un-merged patch set sent as $MESSAGE_ID", not=0A> sure if that's a b4=
+-ism but it's a bit less confusing.=0A=0AI think it's patchwork-ism, actu=
+ally. B4 will eventually learn to be able to include dependent series inf=
+o and automatically retrieve/apply them in the proper order on "shazam", =
+but it can't do that yet.=0A=0A-K
