@@ -4,74 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4AE1C77B76
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Apr 2023 19:01:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DA79C77B76
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Apr 2023 19:25:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q33lR30XZz3fZ5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Apr 2023 05:01:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q34J55wfzz3fWl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Apr 2023 05:25:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20221208.gappssmtp.com header.i=@rivosinc-com.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=bQyblJRy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P1uQO+lQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=palmer@rivosinc.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20221208.gappssmtp.com header.i=@rivosinc-com.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=bQyblJRy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P1uQO+lQ;
 	dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q33jW6xqSz3fR7
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2023 04:59:27 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-63b35789313so1925543b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2023 11:59:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20221208.gappssmtp.com; s=20221208; t=1682103565; x=1684695565;
-        h=to:from:content-transfer-encoding:mime-version:date:message-id
-         :subject:references:in-reply-to:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2+EQ/x793Jnsa/kqgXiOJb3p0eah7oFJhucKW106Kl8=;
-        b=bQyblJRyAvGuTLy7qPVklUSkkntz5faFsanTHGL8+W8tK7sfMyp8tTFo7QvA60d/UW
-         JEVIbrj/vr3OdOv4W9eGM7+H99bBq3vk1HvaueHNN8TyjPI4bOlC4yFpFniBEltfCK9S
-         a6SfS4IlzcbdMqiaWhNrZLZmlaZqp4ZX/MOCweDAHIH82q5DvegmFZF/rOG4iBUrgJsE
-         /l8K3CJ6JeYhfbZwImHI9bK8nzBZfU1X6YjlosZiMF9YRwLusS1aYk1zweTU7guN0tR9
-         KqgXJegycYDF46jiq+R0uNxxQcgUvLwrsKvS97bTmxb6phciqD3Mj/Su/ExzkZSsuk7e
-         5pVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682103565; x=1684695565;
-        h=to:from:content-transfer-encoding:mime-version:date:message-id
-         :subject:references:in-reply-to:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=2+EQ/x793Jnsa/kqgXiOJb3p0eah7oFJhucKW106Kl8=;
-        b=frCgGEfxIoUxqvEMNhFrcRiuDGKWC7Kszq/7BdpaQJmIg5RQDKpQhkMUElRHd/lhZ9
-         Y2EvIrixZA44On/jnENBpSHbtMEp9m4zpKW2n+vtDPIEhbXAtEItuotvEJY/R/ZhEhka
-         CgdpapVMXWdusieCj/vY18YhQwXHyikT0fHDzXNIhIsrOOThsYNdFVfR7lB2Z8YvEhNL
-         HgsRCclXVX1j+MFSa7nw4KA2LiQmWVA2Jnt0v3+YSGf1qRcrfsU0B83Z3oSdAOYajWkn
-         YzU8sRNIUac8ybBihClzgm+i6v5N1NW22MDoiXFlgsaYFwYqAHapMD5T8do/xu879Qum
-         FlHA==
-X-Gm-Message-State: AAQBX9dg1j/cFibdKbk2aQEkQWDIFnoHQtiGYT95ba2PXsrYAdqJK6Dw
-	AHwrUPW6lAiFv9/amp/2hK2xSg==
-X-Google-Smtp-Source: AKy350aPgF7/ICzgPm9D1rqVxYtdqSsows6+k23WW1suuTm43XEGetau1y5211vGXw0C4sHlJCV6lg==
-X-Received: by 2002:a05:6a00:13a6:b0:63f:ec9:bc9a with SMTP id t38-20020a056a0013a600b0063f0ec9bc9amr7724187pfg.20.1682103564695;
-        Fri, 21 Apr 2023 11:59:24 -0700 (PDT)
-Received: from localhost ([135.180.227.0])
-        by smtp.gmail.com with ESMTPSA id h69-20020a628348000000b0063db25e140bsm3299248pfe.32.2023.04.21.11.59.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Apr 2023 11:59:24 -0700 (PDT)
-In-Reply-To: <20230329045329.64565-1-alexghiti@rivosinc.com>
-References: <20230329045329.64565-1-alexghiti@rivosinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q34H72fK7z3fHP
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2023 05:25:07 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id A572F60C88;
+	Fri, 21 Apr 2023 19:25:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98362C433EF;
+	Fri, 21 Apr 2023 19:25:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1682105103;
+	bh=W7uWtRhn74gI5DdykMl9Ygbat47KEyixL2s+R7CXf4Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=P1uQO+lQn46h8sPkUIDTeuuuaqYEuXAC5XrVOBAwjT+6B4j8NizF8+Bhcmg/SbXDx
+	 R35KPmFskBNMwE2hWOlTsNitogRtztEI5E/BMcoea1Ygr0ah4ez9K+IKV/JXLH8xg+
+	 2hSscDX7Y8/QQfQ0dNAJrbGWNpjH3G26G1l8YL3wv2N927leM1laIByU2Nknx0W5Lh
+	 9qUiz7pT6ig8062P2j0qb4E+8nVCmlLsP5ZWFcalVG/T7mul1u92MUMzR6U/UeaO7S
+	 IR77iLd+n3LXOoNWDfycqXuLnHTaBxVfi9wkSaVNIx9yoRUXcGRCx1vUEBj83/9xev
+	 DJZslEGbLEeSw==
+Date: Fri, 21 Apr 2023 20:24:58 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Konstantin Ryabitsev <konstantin.ryabitsev@linux.dev>
 Subject: Re: [PATCH v9 0/6] Introduce 64b relocatable kernel
-Message-Id: <168191616325.7488.14079862095622576679.b4-ty@rivosinc.com>
-Date: Wed, 19 Apr 2023 07:56:03 -0700
+Message-ID: <20230421-uneaten-obvious-250d95c86560@spud>
+References: <mhng-bb70f74f-2b5b-4880-b7bf-975e67dc554e@palmer-ri-x1c9>
+ <ba235aa677a561ceb2dc776414403dc0@linux.dev>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.13-dev-901c5
-From: Palmer Dabbelt <palmer@rivosinc.com>
-To: Nick Desaulniers <ndesaulniers@google.com>,
-  =C3=B6rn_T=C3=B6pel?= <bjorn@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-  Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>,
-  Albert Ou <aou@eecs.berkeley.edu>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-  linux-riscv@lists.infradead.org, linux-kbuild@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="cYLCWmWMPROB1qtr"
+Content-Disposition: inline
+In-Reply-To: <ba235aa677a561ceb2dc776414403dc0@linux.dev>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,37 +61,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: aou@eecs.berkeley.edu, alexghiti@rivosinc.com, linux-kbuild@vger.kernel.org, ndesaulniers@google.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, bjorn@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-On Wed, 29 Mar 2023 06:53:23 +0200, Alexandre Ghiti wrote:
-> After multiple attempts, this patchset is now based on the fact that the
-> 64b kernel mapping was moved outside the linear mapping.
-> 
-> The first patch allows to build relocatable kernels but is not selected
-> by default. That patch is a requirement for KASLR.
-> The second and third patches take advantage of an already existing powerpc
-> script that checks relocations at compile-time, and uses it for riscv.
-> 
-> [...]
+--cYLCWmWMPROB1qtr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Applied, thanks!
+On Fri, Apr 21, 2023 at 07:10:14PM +0000, Konstantin Ryabitsev wrote:
+> April 21, 2023 2:59 PM, "Palmer Dabbelt" <palmer@dabbelt.com> wrote:
+> >> riscv: Use PUD/P4D/PGD pages for the linear mapping
+> >> (https://patchwork.kernel.org/project/linux-riscv/list/?series=3D73360=
+3)
+> >> base-commit-tag: v6.3-rc1
+> >=20
+> > The QEMU CI has some way to say "this depends on an un-merged patch set=
+ sent as $MESSAGE_ID", not
+> > sure if that's a b4-ism but it's a bit less confusing.
+>=20
+> I think it's patchwork-ism, actually. B4 will eventually learn to be
+> able to include dependent series info and automatically retrieve/apply
+> them in the proper order on "shazam", but it can't do that yet.
 
-[1/6] riscv: Prepare EFI header for relocatable kernels
-      https://git.kernel.org/palmer/c/55de1e4ad43b
-[2/6] riscv: Move .rela.dyn outside of init to avoid empty relocations
-      https://git.kernel.org/palmer/c/69a90d2fe107
-[3/6] riscv: Introduce CONFIG_RELOCATABLE
-      https://git.kernel.org/palmer/c/39b33072941f
-[4/6] powerpc: Move script to check relocations at compile time in scripts/
-      https://git.kernel.org/palmer/c/47981b5cc687
-[5/6] riscv: Check relocations at compile time
-      https://git.kernel.org/palmer/c/c2dea0bc5339
-[6/6] riscv: Use --emit-relocs in order to move .rela.dyn in init
-      https://git.kernel.org/palmer/c/559d1e45a16d
+A patchwork-ism or a patchew-ism? Drew Jones was my source for this, but
+he had said the thing to do in QEMU-land was put a:
+Based-on: $message-id
+in your cover letter for each thing that you depend on. I'm not entirely
+sure if that meant each series or each patch. I think patchew picks that
+up and dumps in it on a patchew github account that the CI might pick up
+on. From the QEMU docs:
+<quote>
+It is also okay to base patches on top of other on-going work that is
+not yet part of the git master branch. To aid continuous integration
+tools, such as `patchew <http://patchew.org/QEMU/>`__, you should `add a
+tag <https://lists.gnu.org/archive/html/qemu-devel/2017-08/msg01288.html>`__
+line ``Based-on: $MESSAGE_ID`` to your cover letter to make the series
+dependency obvious.
+<\quote>
 
-Best regards,
--- 
-Palmer Dabbelt <palmer@rivosinc.com>
+FWIW, my vote is for something with a message-id, rather than those
+patchwork series links that you can't dump into b4!
 
+--cYLCWmWMPROB1qtr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZELjCgAKCRB4tDGHoIJi
+0s1yAP9XTAhQrJD/xmNk2JTUsPIU6e0uJxU1rNaDElF8T2ioggD/RuvGZYpDeAT8
+rVM1QBn5DNrHVZWw5EILFxMXOgo1hA4=
+=0mnA
+-----END PGP SIGNATURE-----
+
+--cYLCWmWMPROB1qtr--
