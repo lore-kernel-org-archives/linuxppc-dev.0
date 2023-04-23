@@ -4,100 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95B6BC77B73
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 10:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 310E5C77B76
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 10:56:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q44sl1wH1z3fVS
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 20:55:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q44tq3WcTz3fBH
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 20:56:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RNqsiMYE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GQFWMkv+;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q44py4mpCz3bnM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 20:52:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q44q14wV4z3f47
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 20:52:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RNqsiMYE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GQFWMkv+;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Q44pt3lwSz4xFk
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 20:52:38 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Q44q14Tcgz4xFh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 20:52:45 +1000 (AEST)
 Received: by gandalf.ozlabs.org (Postfix)
-	id 4Q44pt3hJgz4xFv; Sun, 23 Apr 2023 20:52:38 +1000 (AEST)
+	id 4Q44q14Qkjz4xFk; Sun, 23 Apr 2023 20:52:45 +1000 (AEST)
 Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RNqsiMYE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GQFWMkv+;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Q44pt0jDvz4xFk
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Apr 2023 20:52:37 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33NAbxhn031133;
-	Sun, 23 Apr 2023 10:52:25 GMT
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Q44q129N3z4xFh
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Apr 2023 20:52:45 +1000 (AEST)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33N99MJ7032585;
+	Sun, 23 Apr 2023 10:52:38 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=erYOZloGbili+rtx+wBv9FGcgMrrFDiu//ufXaNQbxU=;
- b=RNqsiMYE9HzmBgmipn+NYKegLVcXKwHGD3+52Me6uZziXVJoZf/nFSORoecrAxqSDjTl
- 4MYLSzksFAhHulb9YWSX39XP4vKIC2UoQmo+xiSIEfyGntOrWaKr2dPIvzaJF1pLG39D
- WxJtfk6mmiYMPaf1WSsF7SUTLv+6nkbmGG41dlM6BA+UmkKCuu8y8EcoEbbiZ1WC8Ef2
- etOtJ/2FQxwyCt8ivEb0ss+NdYBfskHEkgfXf+IB9ilU4ctgHrztsB/ZX+jsFmYJ4GGD
- ki250/OnZgbLfWiVMEHKwnIKAU/Bf667zNrdTQEx4E356qR7nb8uYnVjN1sJcmBGpBOj /Q== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=SwaMBBcqKFPgRLG0j6JBwWr51UUy8Q0ZicUindI5AQI=;
+ b=GQFWMkv+QOoadyZKztjgu/DoHf51CWyRmnkpHlycpk5H/qsZw4OdhrCkrI4dZwQ6JvOU
+ jjCY2Tl0tPMcuzlZ1QXt01dMBj5DZSlPCU0q9/v5WkAfvouPgwnKZ1n9cK8Gz/ZnsM3R
+ 4CqL8QmWt7AC1Nog4yqHph5my+s7AnKM0xiPHaZSLQvC3IQHomWAZYNks3Psn6DixXpJ
+ V0kZkVU6WMkLvhirFJR7i0OcAnYnF6eVxK5JZFqJtc6j6ZR/8niGjKFokU+wvm/0h4zC
+ x1XjCp4KpSrWp3qXtqbUuMVOb1sfs8vXkQH6zkoEJYf9ieal1l/nCJMW+z2KYZbfZTWQ 5w== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q461b13kg-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q47r6f3ee-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 23 Apr 2023 10:52:25 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33NAidix014139;
-	Sun, 23 Apr 2023 10:52:24 GMT
+	Sun, 23 Apr 2023 10:52:37 +0000
+Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33NAfQGN029636;
+	Sun, 23 Apr 2023 10:52:37 GMT
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q461b13jw-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q47r6f3d1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 23 Apr 2023 10:52:24 +0000
+	Sun, 23 Apr 2023 10:52:36 +0000
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33N4r9OS015124;
-	Sun, 23 Apr 2023 10:52:22 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3q47770j74-1
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33N4Ckd5016432;
+	Sun, 23 Apr 2023 10:52:34 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3q47770j77-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 23 Apr 2023 10:52:22 +0000
+	Sun, 23 Apr 2023 10:52:34 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33NAqJjv12059156
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33NAqVST5636840
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 23 Apr 2023 10:52:19 GMT
+	Sun, 23 Apr 2023 10:52:31 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 078912004D;
-	Sun, 23 Apr 2023 10:52:19 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id E7A9F20043;
+	Sun, 23 Apr 2023 10:52:30 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EB69920049;
-	Sun, 23 Apr 2023 10:52:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8041620040;
+	Sun, 23 Apr 2023 10:52:27 +0000 (GMT)
 Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.22.217])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 23 Apr 2023 10:52:15 +0000 (GMT)
+	Sun, 23 Apr 2023 10:52:27 +0000 (GMT)
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v10 0/5] PowerPC: In-kernel handling of CPU/Memory hotplug/online/offline events for kdump kernel
-Date: Sun, 23 Apr 2023 16:22:08 +0530
-Message-Id: <20230423105213.70795-1-sourabhjain@linux.ibm.com>
+Subject: [PATCH v10 3/5] powerpc/crash: add crash CPU hotplug support
+Date: Sun, 23 Apr 2023 16:22:11 +0530
+Message-Id: <20230423105213.70795-4-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.39.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: pZmSpiqcDN1AcWYtTM01-urNSCxt6AJ_
-X-Proofpoint-ORIG-GUID: _AFm65y5WQnojapYkHRj0MmStpUgRxLd
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20230423105213.70795-1-sourabhjain@linux.ibm.com>
+References: <20230423105213.70795-1-sourabhjain@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: VkYQQ4vLAeo0Koq3FeHi4r1qZUyaYjzr
+X-Proofpoint-ORIG-GUID: AbxdMN5juGi89WmE-A0ml_4dwHgEVQur
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-04-23_06,2023-04-21_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
- mlxlogscore=999 clxscore=1011 mlxscore=0 priorityscore=1501
- impostorscore=0 spamscore=0 malwarescore=0 bulkscore=0 phishscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2304230097
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 malwarescore=0
+ phishscore=0 clxscore=1015 impostorscore=0 adultscore=0 priorityscore=1501
+ mlxscore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=999 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
+ definitions=main-2304230097
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,147 +111,206 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: eric.devolder@oracle.com, bhe@redhat.com, mahesh@linux.vnet.ibm.com, kexec@lists.infradead.org, ldufour@linux.ibm.com, hbathini@linux.ibm.com
+Cc: eric.devolder@oracle.com, bhe@redhat.com, mahesh@linux.vnet.ibm.com, kexec@lists.infradead.org, Laurent Dufour <laurent.dufour@fr.ibm.com>, ldufour@linux.ibm.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Problem:
-============
-Post CPU/Memory hot plug/unplug and online/offline events the  kernel
-holds stale information about the system. Dump collection with stale
-kdump kernel might end up in dump capture failure or an inaccurate dump
-collection.
+Introduce powerpc crash hotplug handler to update the necessary kexec
+segments in the kernel on CPU/Memory hotplug events. Currently, these
+updates are done by monitoring CPU/Memory hotplug events in userspace.
 
-Existing solution:
-==================
-The existing solution to keep the kdump kernel up-to-date by monitoring
-CPU/Memory hotplug/online/offline events via udev rule and trigger a full
-kdump kernel reload for every hotplug event.
+A common crash hotplug handler is triggered from generic infrastructure
+for both CPU/Memory hotplug events. But in this patch, crash updates are
+handled only for CPU hotplug events. Support for the crash update on
+memory hotplug events is added in upcoming patches.
 
-Shortcomings:
-------------------------------------------------
-- Leaves a window where kernel crash might not lead to a successful dump
-  collection.
-- Reloading all kexec components for each hotplug is inefficient.
-- udev rules are prone to races if hotplug events are frequent.
+The elfcorehdr segment is used to exchange the CPU and other
+dump-related information between the kernels. Ideally, the elfcorehdr
+segment needs to be recreated on CPU hotplug events to reflect the
+changes. But on powerpc, the elfcorehdr is built with possible CPUs
+hence there is no need to update/recreate the elfcorehdr on CPU hotplug
+events.
 
-More about issues with an existing solution is posted here:
- - https://lkml.org/lkml/2020/12/14/532
- - https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-February/240254.html
+In addition to elfcorehdr, there is another kexec segment that holds CPU
+data on powerpc is FDT (Flattened Device Tree). During the kdump kernel
+boot, it is expected that the crashing CPU must be present in FDT, else
+kdump kernel boot fails.
 
-Proposed Solution:
-==================
-Instead of reloading all kexec segments on CPU/Memory hotplug/online/offline
-event, this patch series focuses on updating only the relevant kexec segment.
-Once the kexec segments are loaded in the kernel reserved area then an
-arch-specific hotplug handler will update the relevant kexec segment based on
-hotplug event type.
+Now the only action needed on powerpc to handle the crash CPU hotplug
+event is to add hot added CPUs in the kdump FDT segment to avoid kdump
+kernel boot failure. So for the CPU hot add event, the FDT segment is
+updated with hot added CPU and Since there is no need to remove the hot
+unplugged CPUs from the FDT segment hence no action was taken for CPU
+hot remove event.
 
-Series Dependencies
-====================
-This patch series implements the crash hotplug handler on PowerPC. The generic
-crash hotplug handler is introduced by https://lkml.org/lkml/2023/4/4/1136 patch
-series.
+To accommodate a growing number of CPUs, FDT is built with additional
+buffer space to ensure that it can hold possible CPU nodes.
 
-Git tree for testing:
-=====================
-The below git tree has this patch series applied on top of dependent patch
-series.
-https://github.com/sourabhjains/linux/tree/e21-s10
+The changes done here will also work for the kexec_load system call
+given that the kexec tool builds the FDT segment with additional space
+to accommodate possible CPU nodes.
 
-To realise the feature the kdump udev rule must updated to avoid
-reloading of kdump reload on CPU/Memory hotplug/online/offline events.
+Since memory crash hotplug support is not there yet the crash hotplug
+the handler simply warns the user and returns.
 
-  RHEL: /usr/lib/udev/rules.d/98-kexec.rules
-
-	-SUBSYSTEM=="cpu", ACTION=="online", GOTO="kdump_reload_cpu"
-	-SUBSYSTEM=="memory", ACTION=="online", GOTO="kdump_reload_mem"
-	-SUBSYSTEM=="memory", ACTION=="offline", GOTO="kdump_reload_mem"
-	+SUBSYSTEM=="cpu", ATTRS{crash_hotplug}=="1", GOTO="kdump_reload_end"
-	+SUBSYSTEM=="memory", ATTRS{crash_hotplug}=="1", GOTO="kdump_reload_end"
-
-Note: only kexec_file_load syscall will work. For kexec_load minor changes are
-required in kexec tool.
-
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Reviewed-by: Laurent Dufour <laurent.dufour@fr.ibm.com>
 ---
-Changelog:
+ arch/powerpc/include/asm/kexec.h  |  4 ++
+ arch/powerpc/kexec/core_64.c      | 61 +++++++++++++++++++++++++++++++
+ arch/powerpc/kexec/elf_64.c       | 12 +++++-
+ arch/powerpc/kexec/file_load_64.c | 14 +++++++
+ 4 files changed, 90 insertions(+), 1 deletion(-)
 
-v10:
-  - Drop the patch that adds fdt_index attribute to struct kimage_arch
-    Find the fdt segment index when needed.
-  - Added more details into commits messages.
-  - Rebased onto 6.3.0-rc5
-
-v9:
-  - Removed patch to prepare elfcorehdr crash notes for possible CPUs.
-    The patch is moved to generic patch series that introduces generic
-    infrastructure for in kernel crash update.
-  - Removed patch to pass the hotplug action type to the arch crash
-    hotplug handler function. The generic patch series has introduced
-    the hotplug action type in kimage struct.
-  - Add detail commit message for better understanding.
-
-v8:
-  - Restrict fdt_index initialization to machine_kexec_post_load
-    it work for both kexec_load and kexec_file_load.[3/8] Laurent Dufour
-
-  - Updated the logic to find the number of offline core. [6/8]
-
-  - Changed the logic to find the elfcore program header to accommodate
-    future memory ranges due memory hotplug events. [8/8]
-
-v7
-  - added a new config to configure this feature
-  - pass hotplug action type to arch specific handler
-
-v6
-  - Added crash memory hotplug support
-
-v5:
-  - Replace COFNIG_CRASH_HOTPLUG with CONFIG_HOTPLUG_CPU.
-  - Move fdt segment identification for kexec_load case to load path
-    instead of crash hotplug handler
-  - Keep new attribute defined under kimage_arch to track FDT segment
-    under CONFIG_HOTPLUG_CPU config.
-
-v4:
-  - Update the logic to find the additional space needed for hotadd CPUs post
-    kexec load. Refer "[RFC v4 PATCH 4/5] powerpc/crash hp: add crash hotplug
-    support for kexec_file_load" patch to know more about the change.
-  - Fix a couple of typo.
-  - Replace pr_err to pr_info_once to warn user about memory hotplug
-    support.
-  - In crash hotplug handle exit the for loop if FDT segment is found.
-
-v3
-  - Move fdt_index and fdt_index_vaild variables to kimage_arch struct.
-  - Rebase patche on top of https://lkml.org/lkml/2022/3/3/674 [v5]
-  - Fixed warning reported by checpatch script
-
-v2:
-  - Use generic hotplug handler introduced by https://lkml.org/lkml/2022/2/9/1406, a
-    significant change from v1.
-
-Sourabh Jain (5):
-  powerpc/kexec: turn some static helper functions public
-  powerpc/crash: introduce a new config option CRASH_HOTPLUG
-  powerpc/crash: add crash CPU hotplug support
-  crash: forward memory_notify args to arch crash hotplug handler
-  powerpc/kexec: add crash memory hotplug support
-
- arch/powerpc/Kconfig                    |  12 +
- arch/powerpc/include/asm/kexec.h        |  10 +
- arch/powerpc/include/asm/kexec_ranges.h |   1 +
- arch/powerpc/kexec/core_64.c            | 301 ++++++++++++++++++++++++
- arch/powerpc/kexec/elf_64.c             |  12 +-
- arch/powerpc/kexec/file_load_64.c       | 212 ++++-------------
- arch/powerpc/kexec/ranges.c             |  85 +++++++
- arch/x86/include/asm/kexec.h            |   2 +-
- arch/x86/kernel/crash.c                 |   3 +-
- include/linux/kexec.h                   |   2 +-
- kernel/crash_core.c                     |  14 +-
- 11 files changed, 479 insertions(+), 175 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 8090ad7d97d9d..f01ba767af56e 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -103,6 +103,10 @@ void kexec_copy_flush(struct kimage *image);
+ struct crash_mem;
+ int update_cpus_node(void *fdt);
+ int get_crash_memory_ranges(struct crash_mem **mem_ranges);
++#if defined(CONFIG_CRASH_HOTPLUG)
++void arch_crash_handle_hotplug_event(struct kimage *image);
++#define arch_crash_handle_hotplug_event arch_crash_handle_hotplug_event
++#endif
+ #endif
+ 
+ #if defined(CONFIG_CRASH_DUMP) && defined(CONFIG_PPC_RTAS)
+diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
+index 0b292f93a74cc..611b89bcea2be 100644
+--- a/arch/powerpc/kexec/core_64.c
++++ b/arch/powerpc/kexec/core_64.c
+@@ -543,6 +543,67 @@ int update_cpus_node(void *fdt)
+ 	return ret;
+ }
+ 
++#if defined(CONFIG_CRASH_HOTPLUG)
++#undef pr_fmt
++#define pr_fmt(fmt) "crash hp: " fmt
++
++/**
++ * arch_crash_hotplug_handler() - Handle crash CPU/Memory hotplug events to update the
++ *                                necessary kexec segments based on the hotplug event.
++ * @image: the active struct kimage
++ *
++ * Update FDT segment to include newly added CPU. No action for CPU remove case.
++ */
++void arch_crash_handle_hotplug_event(struct kimage *image)
++{
++	void *fdt, *ptr;
++	unsigned long mem;
++	int i, fdt_index = -1;
++	unsigned int hp_action = image->hp_action;
++
++	/*
++	 * Since the hot-unplugged CPU is already part of crash FDT,
++	 * no action is needed for CPU remove case.
++	 */
++	if (hp_action == KEXEC_CRASH_HP_REMOVE_CPU)
++		return;
++
++	/* crash update on memory hotplug events is not supported yet */
++	if (hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY || hp_action == KEXEC_CRASH_HP_ADD_MEMORY) {
++		pr_info_once("Crash update is not supported for memory hotplug\n");
++		return;
++	}
++
++	/* Find the FDT segment index in kexec segment array. */
++	for (i = 0; i < image->nr_segments; i++) {
++		mem = image->segment[i].mem;
++		ptr = __va(mem);
++
++		if (ptr && fdt_magic(ptr) == FDT_MAGIC) {
++			fdt_index = i;
++			break;
++		}
++	}
++
++	if (fdt_index < 0) {
++		pr_err("Unable to locate FDT segment.\n");
++		return;
++	}
++
++	fdt = __va((void *)image->segment[fdt_index].mem);
++
++	/* Temporarily invalidate the crash image while it is replaced */
++	xchg(&kexec_crash_image, NULL);
++
++	/* update FDT to refelect changes in CPU resrouces */
++	if (update_cpus_node(fdt))
++		pr_err("Failed to update crash FDT");
++
++	/* The crash image is now valid once again */
++	xchg(&kexec_crash_image, image);
++}
++#endif
++
+ #ifdef CONFIG_PPC_64S_HASH_MMU
+ /* Values we need to export to the second kernel via the device tree. */
+ static unsigned long htab_base;
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index eeb258002d1e0..d8f6d967231e8 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -30,6 +30,7 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 			unsigned long cmdline_len)
+ {
+ 	int ret;
++	bool do_pack_fdt = true;
+ 	unsigned long kernel_load_addr;
+ 	unsigned long initrd_load_addr = 0, fdt_load_addr;
+ 	void *fdt;
+@@ -116,7 +117,16 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 	if (ret)
+ 		goto out_free_fdt;
+ 
+-	fdt_pack(fdt);
++#if defined(CONFIG_CRASH_HOTPLUG)
++	/*
++	 * Do not pack FDT, additional space is reserved to accommodate
++	 * possible CPU nodes which are not yet present in the system.
++	 */
++	if (image->type == KEXEC_TYPE_CRASH)
++		do_pack_fdt = false;
++#endif
++	if (do_pack_fdt)
++		fdt_pack(fdt);
+ 
+ 	kbuf.buffer = fdt;
+ 	kbuf.bufsz = kbuf.memsz = fdt_totalsize(fdt);
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index 5b0b3f61e0e72..3554168687869 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -908,6 +908,9 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image)
+ 	unsigned int cpu_nodes, extra_size = 0;
+ 	struct device_node *dn;
+ 	u64 usm_entries;
++#if defined(CONFIG_CRASH_HOTPLUG)
++	unsigned int possible_cpu_nodes;
++#endif
+ 
+ 	// Budget some space for the password blob. There's already extra space
+ 	// for the key name
+@@ -940,6 +943,17 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image)
+ 	if (cpu_nodes > boot_cpu_node_count)
+ 		extra_size += (cpu_nodes - boot_cpu_node_count) * cpu_node_size();
+ 
++#if defined(CONFIG_CRASH_HOTPLUG)
++	/*
++	 * Make sure enough space is reserved to accommodate possible CPU nodes
++	 * in the crash FDT. This allows packing possible CPU nodes which are
++	 * not yet present in the system without regenerating the entire FDT.
++	 */
++	possible_cpu_nodes = num_possible_cpus() / threads_per_core;
++	if (image->type == KEXEC_TYPE_CRASH && possible_cpu_nodes > cpu_nodes)
++		extra_size += (possible_cpu_nodes - cpu_nodes) * cpu_node_size();
++#endif
++
+ 	return extra_size;
+ }
+ 
 -- 
 2.39.2
 
