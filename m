@@ -4,67 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96D78C77B76
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 05:46:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87DB5C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 10:53:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q3y1d3CJQz3fCj
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 15:46:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q44qs5Rn0z3fRT
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Apr 2023 20:53:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=h3K1g2Sl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pLy6dFOL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=h3K1g2Sl;
-	dkim-atps=neutral
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q3y0h2cjsz3cBk
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 15:45:39 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-1a69f686345so28476005ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2023 22:45:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1682228731; x=1684820731;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XfJCkDUStFvQlmTy2TXfR/ynfAHG7u0kjCgYu5zu+S0=;
-        b=h3K1g2SlnA1hNafZsDzL73GqQ1fMN3ZSIkf+EqngNBU7zAM6wqFmSPnKPTKawt2WKW
-         iaIRN0/XnDAJVZFtJoF1QHNP+JWbVd+i5p4Q02wtaCKp9b+hV7eaOGEAyK2NV9SDG7D+
-         ZhqUEZJg5gbLoNJUhcxisMxtOpaB54OBwhNnIV3un4c4nnZ3Ms9zAkJAHuhN28+YmCjg
-         jjxQMc2LXjzWUXmVZNso5aAvjBpQ9wVuiWwGwka1oBs2hS9nyA76a1+Y28gYgaukGDJ9
-         BpdoqsQ4KqQYA/AFzykeg41Z/9YTlgbUYEofSp2w57GWCOxCdypVmL9NLDLXBFyMmz9+
-         +6Uw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682228732; x=1684820732;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XfJCkDUStFvQlmTy2TXfR/ynfAHG7u0kjCgYu5zu+S0=;
-        b=HbHDkg8ngkcLryRIoseMvBOhzsT/ynG2+RoKWGl8O8wxPo9HHj9LgL2T2kuWrbpSOx
-         g/ZLnnI8oqgymK3UYop5Sfy20IkwDDBwXnyCP63oZ0sCUEJeb5rxGWoi2xaDv3KvD1Jl
-         NRJ42zNmjcxarUW9PQqU035nUhCCKQgDXwSaKrXN+KJ+u/nlwIVW2dUO8HVki52L0+wp
-         wRnRZ5TDwPnViEKoZkPJ8T2ceZYJgnTmnswBOofdm8jCDGAJi7Q24WG9rBRsahPSIH0K
-         p5hbJiaAzteDCeezcVjIvg6mIN5tOoXEypndjcKDtlvHvfiDyBYidu5QGo+hQnC5+i8i
-         9z0A==
-X-Gm-Message-State: AAQBX9d8SYN0263aRV+HPW8g6/kmkwl0uqA+VQSYT/w/JNakDTQR/PCD
-	a45ryTKWjPTtWBSNbqsQ8khPmXrNCH2B47fD9OE=
-X-Google-Smtp-Source: AKy350aDyCUNDsIcYQXQcqK0mni7J28pUoI0YrKxDiK2jn8R3+yZ0a/3XNftKZEdRgkkqzNpR2iLz3CPFuu1ytYHUEM=
-X-Received: by 2002:a17:90b:3507:b0:247:eae:1783 with SMTP id
- ls7-20020a17090b350700b002470eae1783mr10044277pjb.45.1682228731562; Sat, 22
- Apr 2023 22:45:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q44pt6GSNz3bnM
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 20:52:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pLy6dFOL;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Q44pt03Syz4xFh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2023 20:52:38 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4Q44ps75NNz4xFk; Sun, 23 Apr 2023 20:52:37 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pLy6dFOL;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Q44ps4qk0z4xFh
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Apr 2023 20:52:37 +1000 (AEST)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33N9Yp0p025934;
+	Sun, 23 Apr 2023 10:52:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=SUf92eHSkH2Vp0ybuuoHdGPE3DAlX4leVv/ONYRSKhM=;
+ b=pLy6dFOLk1QPqeUYEYxE/wMhaf/RZbsq497InXc9TmHlTJwQ0yQ+QbPCIvLpGxHBMng2
+ DpHW66tPg6j/TmFK65LNHye3ChKZb5PeAmwfRuqJz2to1gjeHH1igtAGYLd8SAAdLFny
+ tZm8KAjYrdGAI6Wdi4YzZkvbtPabbugcenXIKazfGoG66xtdRRAgqXY4A6zOxqOFydGC
+ lRxI5ZguY22TBWO3wOggVj7trarYvheqMn/LswjNFbjYy6EBr8YB2WFZkylQNvx3Atiw
+ +XiGtTup7uqLvc78/6JvERH7fArGAGmK3Gg8JSpn9yhHbYLCHwvklgCmIJ8lfQbxDQdy Lw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q46m4tbxj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Apr 2023 10:52:29 +0000
+Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33NAqTbh015871;
+	Sun, 23 Apr 2023 10:52:29 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q46m4tbx6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Apr 2023 10:52:28 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33N9WavS003392;
+	Sun, 23 Apr 2023 10:52:26 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3q47770j75-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Apr 2023 10:52:26 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33NAqNJD51905002
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 23 Apr 2023 10:52:23 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E5B4E20043;
+	Sun, 23 Apr 2023 10:52:22 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 93BFD20040;
+	Sun, 23 Apr 2023 10:52:19 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.22.217])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 23 Apr 2023 10:52:19 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH v10 1/5] powerpc/kexec: turn some static helper functions public
+Date: Sun, 23 Apr 2023 16:22:09 +0530
+Message-Id: <20230423105213.70795-2-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230423105213.70795-1-sourabhjain@linux.ibm.com>
+References: <20230423105213.70795-1-sourabhjain@linux.ibm.com>
 MIME-Version: 1.0
-References: <CAABZP2xJRGhPmfB-PrfesQKzP7fsuZsj+3TewAiLLW8u=YK4dg@mail.gmail.com>
- <CAEXW_YQCugPs1bquaA4ZLdsM4S3hWv9OMNTt80tSvjCO0LwiHg@mail.gmail.com> <CAABZP2wE8Gz9wV_YAjNsFo7V=rpymuLOqVJ0=aAmwixqPiHTiQ@mail.gmail.com>
-In-Reply-To: <CAABZP2wE8Gz9wV_YAjNsFo7V=rpymuLOqVJ0=aAmwixqPiHTiQ@mail.gmail.com>
-From: Zhouyi Zhou <zhouzhouyi@gmail.com>
-Date: Sun, 23 Apr 2023 13:45:20 +0800
-Message-ID: <CAABZP2w3gGEvU1xx_8abE78RzmPX88wvcALF033U8mjC9AvwaQ@mail.gmail.com>
-Subject: Re: BUG : PowerPC RCU: torture test failed with __stack_chk_fail
-To: Joel Fernandes <joel@joelfernandes.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: k0p3E3uTnvrCz_GNDP83BM_nhvyBDefP
+X-Proofpoint-GUID: I3PtWv_EFVukfU_4EqgYfG0ggehdDAOR
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-23_06,2023-04-21_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
+ priorityscore=1501 mlxscore=0 spamscore=0 adultscore=0 clxscore=1015
+ lowpriorityscore=0 suspectscore=0 impostorscore=0 phishscore=0 bulkscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2304230097
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,137 +111,416 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Paul E. McKenney" <paulmck@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, rcu <rcu@vger.kernel.org>, lance@osuosl.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: eric.devolder@oracle.com, bhe@redhat.com, mahesh@linux.vnet.ibm.com, kexec@lists.infradead.org, Laurent Dufour <laurent.dufour@fr.ibm.com>, ldufour@linux.ibm.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Apr 23, 2023 at 9:37=E2=80=AFAM Zhouyi Zhou <zhouzhouyi@gmail.com> =
-wrote:
->
-> On Sun, Apr 23, 2023 at 3:19=E2=80=AFAM Joel Fernandes <joel@joelfernande=
-s.org> wrote:
-> >
-> > Hi Zhouyi,
-> Thank Joel for your quick response ;-)
-> I will gradually provide all the necessary information to facilitate
-> our chasing. Please do not hesitate email me
-> if I have ignored any ;-)
-> >
-> > On Sat, Apr 22, 2023 at 2:47=E2=80=AFPM Zhouyi Zhou <zhouzhouyi@gmail.c=
-om> wrote:
-> > >
-> > > Dear PowerPC and RCU developers:
-> > > During the RCU torture test on mainline (on the VM of Opensource Lab
-> > > of Oregon State University), SRCU-P failed with __stack_chk_fail:
-> > > [  264.381952][   T99] [c000000006c7bab0] [c0000000010c67c0]
-> > > dump_stack_lvl+0x94/0xd8 (unreliable)
-> > > [  264.383786][   T99] [c000000006c7bae0] [c00000000014fc94] panic+0x=
-19c/0x468
-> > > [  264.385128][   T99] [c000000006c7bb80] [c0000000010fca24]
-> > > __stack_chk_fail+0x24/0x30
-> > > [  264.386610][   T99] [c000000006c7bbe0] [c0000000002293b4]
-> > > srcu_gp_start_if_needed+0x5c4/0x5d0
-> > > [  264.388188][   T99] [c000000006c7bc70] [c00000000022f7f4]
-> > > srcu_torture_call+0x34/0x50
-> > > [  264.389611][   T99] [c000000006c7bc90] [c00000000022b5e8]
-> > > rcu_torture_fwd_prog+0x8c8/0xa60
-> > > [  264.391439][   T99] [c000000006c7be00] [c00000000018e37c] kthread+=
-0x15c/0x170
-> > > [  264.392792][   T99] [c000000006c7be50] [c00000000000df94]
-> > > ret_from_kernel_thread+0x5c/0x64
-> > > The kernel config file can be found in [1].
-> > > And I write a bash script to accelerate the bug reproducing [2].
-> > > After a week's debugging, I found the cause of the bug is because the
-> > > register r10 used to judge for stack overflow is not constant between
-> > > context switches.
-> > > The assembly code for srcu_gp_start_if_needed is located at [3]:
-> > > c000000000226eb4:   78 6b aa 7d     mr      r10,r13
-> > > c000000000226eb8:   14 42 29 7d     add     r9,r9,r8
-> > > c000000000226ebc:   ac 04 00 7c     hwsync
-> > > c000000000226ec0:   10 00 7b 3b     addi    r27,r27,16
-> > > c000000000226ec4:   14 da 29 7d     add     r9,r9,r27
-> > > c000000000226ec8:   a8 48 00 7d     ldarx   r8,0,r9
-> > > c000000000226ecc:   01 00 08 31     addic   r8,r8,1
-> > > c000000000226ed0:   ad 49 00 7d     stdcx.  r8,0,r9
-> > > c000000000226ed4:   f4 ff c2 40     bne-    c000000000226ec8
-> > > <srcu_gp_start_if_needed+0x1c8>
-> > > c000000000226ed8:   28 00 21 e9     ld      r9,40(r1)
-> > > c000000000226edc:   78 0c 4a e9     ld      r10,3192(r10)
-> > > c000000000226ee0:   79 52 29 7d     xor.    r9,r9,r10
-> > > c000000000226ee4:   00 00 40 39     li      r10,0
-> > > c000000000226ee8:   b8 03 82 40     bne     c0000000002272a0
-> > > <srcu_gp_start_if_needed+0x5a0>
-> > > by debugging, I see the r10 is assigned with r13 on c000000000226eb4,
-> > > but if there is a context-switch before c000000000226edc, a false
-> > > positive will be reported.
-> > >
-> > > [1] http://154.220.3.115/logs/0422/configformainline.txt
-> > > [2] 154.220.3.115/logs/0422/whilebash.sh
-> > > [3] http://154.220.3.115/logs/0422/srcu_gp_start_if_needed.txt
-> > >
-> > > My analysis and debugging may not be correct, but the bug is easily
-> > > reproducible.
-> >
-> > Could you provide the full kernel log? It is not clear exactly from
-> > your attachments, but I think this is a stack overflow issue as
-> > implied by the mention of __stack_chk_fail. One trick might be to turn
-> > on any available stack debug kernel config options, or check the
-> > kernel logs for any messages related to shortage of remaining stack
-> > space.
-> The full kernel log is [1]
-> [1] http://154.220.3.115/logs/0422/console.log
-> >
-> > Additionally, you could also find out where the kernel crash happened
-> > in C code following the below notes [1] I wrote (see section "Figuring
-> > out where kernel crashes happen in C code"). The notes are
-> > x86-specific but should be generally applicable (In the off chance
-> > you'd like to improve the notes, feel free to share them ;-)).
-> Fantastic article!!!, I benefit a lot from reading it. Because we can
-> reproduce it so easily on powerpc VM,
-> I can even use gdb to debug it, following is my debug process on
-> 2e83b879fb91dafe995967b46a1d38a5b0889242(srcu: Create an
-> srcu_read_lock_nmisafe() and srcu_read_unlock_nmisafe()).
->
-> [2] http://154.220.3.115/logs/0422/gdb.txt
-> >
-> > Lastly, is it a specific kernel release from which you start seeing
-> > this issue? You should try git bisect if it is easily reproducible in
-> > a newer release, but goes away in an older one.
-> I did bisect on powerpc VM, the problem begin to appear on
-> 2e83b879fb91dafe995967b46a1d38a5b0889242(srcu: Create an
-> srcu_read_lock_nmisafe() and srcu_read_unlock_nmisafe()).
->
-> The kernel is good at 5d0f5953b60f5f7a278085b55ddc73e2932f4c33(srcu:
-> Convert ->srcu_lock_count and ->srcu_unlock_count to atomic)
->
-> But if I apply the following patch [3] to
-> 5d0f5953b60f5f7a278085b55ddc73e2932f4c33, the bug appears again.
-> [3] http://154.220.3.115/logs/0422/bug.patch
->
-> Both native gcc on PPC vm (gcc version 9.4.0), and gcc cross compiler
-> on my x86 laptop (gcc version 10.4.0) will reproduce the bug.
-update: stress tested on x86 platform for 6 hours, no bug reported
-(while we can reproduce it on X86 based cross platform powerpc gcc and
-X86 based cross platform powerpc qemu in less than 3 minute).
-> >
-> > I will also join you in your debug efforts soon though I am currently
-> > in between conferences.
-> Exciting!! Thank you very much!
-> I can give you ssh access (based on rsa pub key) to PPC vm on Oregon
-> State University if you like.
->
-> Thanks again
-> Zhouyi
-> >
-> > [1] https://gist.github.com/joelagnel/ae15c404facee0eb3ebb8aff0e996a68
-> >
-> > thanks,
-> >
-> >  - Joel
-> >
-> >
-> >
-> >
-> > >
-> > > Thanks
-> > > Zhouyi
+Move update_cpus_node and get_crash_memory_ranges functions from
+kexec/file_load_64.c to kexec/core_64.c to make these functions usable
+by other kexec components.
+
+Later in the series, these functions are utilized to do in-kernel update
+to kexec segments on CPU/Memory hot plug/unplug or online/offline events
+for both kexec_load and kexec_file_load syscalls.
+
+No functional change intended.
+
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Reviewed-by: Laurent Dufour <laurent.dufour@fr.ibm.com>
+---
+ arch/powerpc/include/asm/kexec.h  |   6 ++
+ arch/powerpc/kexec/core_64.c      | 166 ++++++++++++++++++++++++++++++
+ arch/powerpc/kexec/file_load_64.c | 162 -----------------------------
+ 3 files changed, 172 insertions(+), 162 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index a1ddba01e7d13..8090ad7d97d9d 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -99,6 +99,12 @@ void relocate_new_kernel(unsigned long indirection_page, unsigned long reboot_co
+ 
+ void kexec_copy_flush(struct kimage *image);
+ 
++#ifdef CONFIG_PPC64
++struct crash_mem;
++int update_cpus_node(void *fdt);
++int get_crash_memory_ranges(struct crash_mem **mem_ranges);
++#endif
++
+ #if defined(CONFIG_CRASH_DUMP) && defined(CONFIG_PPC_RTAS)
+ void crash_free_reserved_phys_range(unsigned long begin, unsigned long end);
+ #define crash_free_reserved_phys_range crash_free_reserved_phys_range
+diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
+index a79e28c91e2be..0b292f93a74cc 100644
+--- a/arch/powerpc/kexec/core_64.c
++++ b/arch/powerpc/kexec/core_64.c
+@@ -17,6 +17,8 @@
+ #include <linux/cpu.h>
+ #include <linux/hardirq.h>
+ #include <linux/of.h>
++#include <linux/libfdt.h>
++#include <linux/memblock.h>
+ 
+ #include <asm/page.h>
+ #include <asm/current.h>
+@@ -30,6 +32,8 @@
+ #include <asm/hw_breakpoint.h>
+ #include <asm/svm.h>
+ #include <asm/ultravisor.h>
++#include <asm/kexec_ranges.h>
++#include <asm/crashdump-ppc64.h>
+ 
+ int machine_kexec_prepare(struct kimage *image)
+ {
+@@ -377,6 +381,168 @@ void default_machine_kexec(struct kimage *image)
+ 	/* NOTREACHED */
+ }
+ 
++/**
++ * get_crash_memory_ranges - Get crash memory ranges. This list includes
++ *                           first/crashing kernel's memory regions that
++ *                           would be exported via an elfcore.
++ * @mem_ranges:              Range list to add the memory ranges to.
++ *
++ * Returns 0 on success, negative errno on error.
++ */
++int get_crash_memory_ranges(struct crash_mem **mem_ranges)
++{
++	phys_addr_t base, end;
++	struct crash_mem *tmem;
++	u64 i;
++	int ret;
++
++	for_each_mem_range(i, &base, &end) {
++		u64 size = end - base;
++
++		/* Skip backup memory region, which needs a separate entry */
++		if (base == BACKUP_SRC_START) {
++			if (size > BACKUP_SRC_SIZE) {
++				base = BACKUP_SRC_END + 1;
++				size -= BACKUP_SRC_SIZE;
++			} else
++				continue;
++		}
++
++		ret = add_mem_range(mem_ranges, base, size);
++		if (ret)
++			goto out;
++
++		/* Try merging adjacent ranges before reallocation attempt */
++		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
++			sort_memory_ranges(*mem_ranges, true);
++	}
++
++	/* Reallocate memory ranges if there is no space to split ranges */
++	tmem = *mem_ranges;
++	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
++		tmem = realloc_mem_ranges(mem_ranges);
++		if (!tmem)
++			goto out;
++	}
++
++	/* Exclude crashkernel region */
++	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
++	if (ret)
++		goto out;
++
++	/*
++	 * FIXME: For now, stay in parity with kexec-tools but if RTAS/OPAL
++	 *        regions are exported to save their context at the time of
++	 *        crash, they should actually be backed up just like the
++	 *        first 64K bytes of memory.
++	 */
++	ret = add_rtas_mem_range(mem_ranges);
++	if (ret)
++		goto out;
++
++	ret = add_opal_mem_range(mem_ranges);
++	if (ret)
++		goto out;
++
++	/* create a separate program header for the backup region */
++	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
++	if (ret)
++		goto out;
++
++	sort_memory_ranges(*mem_ranges, false);
++out:
++	if (ret)
++		pr_err("Failed to setup crash memory ranges\n");
++	return ret;
++}
++
++/**
++ * add_node_props - Reads node properties from device node structure and add
++ *                  them to fdt.
++ * @fdt:            Flattened device tree of the kernel
++ * @node_offset:    offset of the node to add a property at
++ * @dn:             device node pointer
++ *
++ * Returns 0 on success, negative errno on error.
++ */
++static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
++{
++	int ret = 0;
++	struct property *pp;
++
++	if (!dn)
++		return -EINVAL;
++
++	for_each_property_of_node(dn, pp) {
++		ret = fdt_setprop(fdt, node_offset, pp->name, pp->value, pp->length);
++		if (ret < 0) {
++			pr_err("Unable to add %s property: %s\n", pp->name, fdt_strerror(ret));
++			return ret;
++		}
++	}
++	return ret;
++}
++
++/**
++ * update_cpus_node - Update cpus node of flattened device tree using of_root
++ *                    device node.
++ * @fdt:              Flattened device tree of the kernel.
++ *
++ * Returns 0 on success, negative errno on error.
++ */
++int update_cpus_node(void *fdt)
++{
++	struct device_node *cpus_node, *dn;
++	int cpus_offset, cpus_subnode_offset, ret = 0;
++
++	cpus_offset = fdt_path_offset(fdt, "/cpus");
++	if (cpus_offset < 0 && cpus_offset != -FDT_ERR_NOTFOUND) {
++		pr_err("Malformed device tree: error reading /cpus node: %s\n",
++		       fdt_strerror(cpus_offset));
++		return cpus_offset;
++	}
++
++	if (cpus_offset > 0) {
++		ret = fdt_del_node(fdt, cpus_offset);
++		if (ret < 0) {
++			pr_err("Error deleting /cpus node: %s\n", fdt_strerror(ret));
++			return -EINVAL;
++		}
++	}
++
++	/* Add cpus node to fdt */
++	cpus_offset = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"), "cpus");
++	if (cpus_offset < 0) {
++		pr_err("Error creating /cpus node: %s\n", fdt_strerror(cpus_offset));
++		return -EINVAL;
++	}
++
++	/* Add cpus node properties */
++	cpus_node = of_find_node_by_path("/cpus");
++	ret = add_node_props(fdt, cpus_offset, cpus_node);
++	of_node_put(cpus_node);
++	if (ret < 0)
++		return ret;
++
++	/* Loop through all subnodes of cpus and add them to fdt */
++	for_each_node_by_type(dn, "cpu") {
++		cpus_subnode_offset = fdt_add_subnode(fdt, cpus_offset, dn->full_name);
++		if (cpus_subnode_offset < 0) {
++			pr_err("Unable to add %s subnode: %s\n", dn->full_name,
++			       fdt_strerror(cpus_subnode_offset));
++			ret = cpus_subnode_offset;
++			goto out;
++		}
++
++		ret = add_node_props(fdt, cpus_subnode_offset, dn);
++		if (ret < 0)
++			goto out;
++	}
++out:
++	of_node_put(dn);
++	return ret;
++}
++
+ #ifdef CONFIG_PPC_64S_HASH_MMU
+ /* Values we need to export to the second kernel via the device tree. */
+ static unsigned long htab_base;
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index 110d28bede2a7..5b0b3f61e0e72 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -133,81 +133,6 @@ static int get_usable_memory_ranges(struct crash_mem **mem_ranges)
+ 	return ret;
+ }
+ 
+-/**
+- * get_crash_memory_ranges - Get crash memory ranges. This list includes
+- *                           first/crashing kernel's memory regions that
+- *                           would be exported via an elfcore.
+- * @mem_ranges:              Range list to add the memory ranges to.
+- *
+- * Returns 0 on success, negative errno on error.
+- */
+-static int get_crash_memory_ranges(struct crash_mem **mem_ranges)
+-{
+-	phys_addr_t base, end;
+-	struct crash_mem *tmem;
+-	u64 i;
+-	int ret;
+-
+-	for_each_mem_range(i, &base, &end) {
+-		u64 size = end - base;
+-
+-		/* Skip backup memory region, which needs a separate entry */
+-		if (base == BACKUP_SRC_START) {
+-			if (size > BACKUP_SRC_SIZE) {
+-				base = BACKUP_SRC_END + 1;
+-				size -= BACKUP_SRC_SIZE;
+-			} else
+-				continue;
+-		}
+-
+-		ret = add_mem_range(mem_ranges, base, size);
+-		if (ret)
+-			goto out;
+-
+-		/* Try merging adjacent ranges before reallocation attempt */
+-		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
+-			sort_memory_ranges(*mem_ranges, true);
+-	}
+-
+-	/* Reallocate memory ranges if there is no space to split ranges */
+-	tmem = *mem_ranges;
+-	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
+-		tmem = realloc_mem_ranges(mem_ranges);
+-		if (!tmem)
+-			goto out;
+-	}
+-
+-	/* Exclude crashkernel region */
+-	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
+-	if (ret)
+-		goto out;
+-
+-	/*
+-	 * FIXME: For now, stay in parity with kexec-tools but if RTAS/OPAL
+-	 *        regions are exported to save their context at the time of
+-	 *        crash, they should actually be backed up just like the
+-	 *        first 64K bytes of memory.
+-	 */
+-	ret = add_rtas_mem_range(mem_ranges);
+-	if (ret)
+-		goto out;
+-
+-	ret = add_opal_mem_range(mem_ranges);
+-	if (ret)
+-		goto out;
+-
+-	/* create a separate program header for the backup region */
+-	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
+-	if (ret)
+-		goto out;
+-
+-	sort_memory_ranges(*mem_ranges, false);
+-out:
+-	if (ret)
+-		pr_err("Failed to setup crash memory ranges\n");
+-	return ret;
+-}
+-
+ /**
+  * get_reserved_memory_ranges - Get reserve memory ranges. This list includes
+  *                              memory regions that should be added to the
+@@ -1018,93 +943,6 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image)
+ 	return extra_size;
+ }
+ 
+-/**
+- * add_node_props - Reads node properties from device node structure and add
+- *                  them to fdt.
+- * @fdt:            Flattened device tree of the kernel
+- * @node_offset:    offset of the node to add a property at
+- * @dn:             device node pointer
+- *
+- * Returns 0 on success, negative errno on error.
+- */
+-static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
+-{
+-	int ret = 0;
+-	struct property *pp;
+-
+-	if (!dn)
+-		return -EINVAL;
+-
+-	for_each_property_of_node(dn, pp) {
+-		ret = fdt_setprop(fdt, node_offset, pp->name, pp->value, pp->length);
+-		if (ret < 0) {
+-			pr_err("Unable to add %s property: %s\n", pp->name, fdt_strerror(ret));
+-			return ret;
+-		}
+-	}
+-	return ret;
+-}
+-
+-/**
+- * update_cpus_node - Update cpus node of flattened device tree using of_root
+- *                    device node.
+- * @fdt:              Flattened device tree of the kernel.
+- *
+- * Returns 0 on success, negative errno on error.
+- */
+-static int update_cpus_node(void *fdt)
+-{
+-	struct device_node *cpus_node, *dn;
+-	int cpus_offset, cpus_subnode_offset, ret = 0;
+-
+-	cpus_offset = fdt_path_offset(fdt, "/cpus");
+-	if (cpus_offset < 0 && cpus_offset != -FDT_ERR_NOTFOUND) {
+-		pr_err("Malformed device tree: error reading /cpus node: %s\n",
+-		       fdt_strerror(cpus_offset));
+-		return cpus_offset;
+-	}
+-
+-	if (cpus_offset > 0) {
+-		ret = fdt_del_node(fdt, cpus_offset);
+-		if (ret < 0) {
+-			pr_err("Error deleting /cpus node: %s\n", fdt_strerror(ret));
+-			return -EINVAL;
+-		}
+-	}
+-
+-	/* Add cpus node to fdt */
+-	cpus_offset = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"), "cpus");
+-	if (cpus_offset < 0) {
+-		pr_err("Error creating /cpus node: %s\n", fdt_strerror(cpus_offset));
+-		return -EINVAL;
+-	}
+-
+-	/* Add cpus node properties */
+-	cpus_node = of_find_node_by_path("/cpus");
+-	ret = add_node_props(fdt, cpus_offset, cpus_node);
+-	of_node_put(cpus_node);
+-	if (ret < 0)
+-		return ret;
+-
+-	/* Loop through all subnodes of cpus and add them to fdt */
+-	for_each_node_by_type(dn, "cpu") {
+-		cpus_subnode_offset = fdt_add_subnode(fdt, cpus_offset, dn->full_name);
+-		if (cpus_subnode_offset < 0) {
+-			pr_err("Unable to add %s subnode: %s\n", dn->full_name,
+-			       fdt_strerror(cpus_subnode_offset));
+-			ret = cpus_subnode_offset;
+-			goto out;
+-		}
+-
+-		ret = add_node_props(fdt, cpus_subnode_offset, dn);
+-		if (ret < 0)
+-			goto out;
+-	}
+-out:
+-	of_node_put(dn);
+-	return ret;
+-}
+-
+ static int copy_property(void *fdt, int node_offset, const struct device_node *dn,
+ 			 const char *propname)
+ {
+-- 
+2.39.2
+
