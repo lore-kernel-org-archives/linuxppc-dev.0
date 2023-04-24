@@ -4,79 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4342CC7618E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Apr 2023 18:49:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2187C7618E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Apr 2023 18:50:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q4vLd5VBtz3fRy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Apr 2023 04:49:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q4vMb1Mwdz3fVc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Apr 2023 04:50:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=So6MeUEo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=shqprUOl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=So6MeUEo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=shqprUOl;
 	dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q4vJg519Jz3bg3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q4vJg5F5Dz3bgX
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2023 04:47:47 +1000 (AEST)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33OIcQMt027133;
-	Mon, 24 Apr 2023 18:47:34 GMT
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33OIc715021211;
+	Mon, 24 Apr 2023 18:47:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=fENkWrcrvNmfprVJ26dBpSSoDPW77dID+uxB51LKQ/M=;
- b=So6MeUEoi7vQMbMxwm41zUd23dec47tAJuHw9LJoQ7QhB5gA6TJN+Gx4bZT3NK5iSTx6
- +g0X4+wbwwTTuzEtToR6aKWKvj8VbQfRVQ6+5yhmE0APRvTJRdwPW7VU8qOaqdCTup9+
- gDPRXuy6oiNm54lgU3NRTFRxWEetvnXQ8wDPTgy7fb/NLdOwB6mm86MbaoLRCrFTtBcD
- /iD7SEbaKXsmRfAE4DQHhCqYxYC6yZBoev9NApkuGjjO6a2Z2OiS4SdsI1cXEe/35t/v
- FPTMr3mQDJDZ+jBobb0uhu3ZKuwU6hS/d+TPbm++lVcesF7FSnE4NEVxf6Yb0vHOzta0 aA== 
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com [169.47.144.26])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q5wn8bkaf-1
+ content-type : content-transfer-encoding; s=pp1;
+ bh=obBo0pUG7hEqnuEOYd9uV6rmO08t5yosP61EkQg/Hjk=;
+ b=shqprUOlLzd8KGSdhlfVtsp0el6f6rv3Wfxhanuma9+xqHi3FUrXSQ8e0YaqsEYGtN+6
+ rMfh3gH+qLhxoKKISO9miFaIZyHRd3IhMvwkn+RkPEazX8OVf50HiRFpKbdDQDi0mZ9f
+ OOOw3dUE9+CgMYypmLuHDaJsk7Z3si90PKBdZGqbNy4mPRDb1kTC0ygoWKKWxA59Vm8f
+ xrmXGXHbEnvf21QzFYOCa10jYzozcuY1LpLX2CHtSYnj6nLu01aNXIpE0TeojS+L1KWI
+ uORfYyr87HJG/ZsXxPj4qHFhVcgY8xZyaP0W5eXx9yMityIgd2+potor6PDZuWBN3ATy vA== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q5wt8341e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Apr 2023 18:47:33 +0000
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
-	by ppma04wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33OHj5eD013888;
-	Mon, 24 Apr 2023 18:47:33 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([9.208.129.113])
-	by ppma04wdc.us.ibm.com (PPS) with ESMTPS id 3q4777mge9-1
+	Mon, 24 Apr 2023 18:47:36 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+	by ppma03dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33OGU62G016607;
+	Mon, 24 Apr 2023 18:47:35 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([9.208.129.117])
+	by ppma03dal.us.ibm.com (PPS) with ESMTPS id 3q4777yn4y-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Apr 2023 18:47:32 +0000
+	Mon, 24 Apr 2023 18:47:35 +0000
 Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33OIlVM130671382
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33OIlX2k32768712
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 24 Apr 2023 18:47:31 GMT
+	Mon, 24 Apr 2023 18:47:33 GMT
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EF4ED5805A;
-	Mon, 24 Apr 2023 18:47:30 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8E4F158051;
+	Mon, 24 Apr 2023 18:47:33 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AD4F658051;
-	Mon, 24 Apr 2023 18:47:30 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 4D09D5805C;
+	Mon, 24 Apr 2023 18:47:33 +0000 (GMT)
 Received: from ltcden12-lp3.aus.stglabs.ibm.com (unknown [9.40.195.53])
 	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 24 Apr 2023 18:47:30 +0000 (GMT)
+	Mon, 24 Apr 2023 18:47:33 +0000 (GMT)
 From: Danny Tsen <dtsen@linux.ibm.com>
 To: linux-crypto@vger.kernel.org
-Subject: [PATCH 1/5] An optimized Chacha20 implementation with 8-way unrolling for ppc64le.
-Date: Mon, 24 Apr 2023 14:47:22 -0400
-Message-Id: <20230424184726.2091-2-dtsen@linux.ibm.com>
+Subject: [PATCH 3/5] An optimized Poly1305 implementation with 4-way unrolling for ppc64le.
+Date: Mon, 24 Apr 2023 14:47:24 -0400
+Message-Id: <20230424184726.2091-4-dtsen@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20230424184726.2091-1-dtsen@linux.ibm.com>
 References: <20230424184726.2091-1-dtsen@linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: V-gA5PdG71_LIwrBgAKkAM9kX9gu6efS
-X-Proofpoint-GUID: V-gA5PdG71_LIwrBgAKkAM9kX9gu6efS
+X-Proofpoint-GUID: wJ703L-qK0FETZ2nWVOc45TSax3VJceF
+X-Proofpoint-ORIG-GUID: wJ703L-qK0FETZ2nWVOc45TSax3VJceF
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-04-24_11,2023-04-21_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- malwarescore=0 phishscore=0 mlxlogscore=925 lowpriorityscore=0
- adultscore=0 spamscore=0 bulkscore=0 clxscore=1015 suspectscore=0
- mlxscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ impostorscore=0 mlxscore=0 mlxlogscore=845 clxscore=1015
+ priorityscore=1501 spamscore=0 bulkscore=0 adultscore=0 suspectscore=0
+ phishscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2303200000 definitions=main-2304240167
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -93,68 +94,81 @@ Cc: herbert@gondor.apana.org.au, dtsen@us.ibm.com, nayna@linux.ibm.com, linux-ke
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Improve overall performance of chacha20 encrypt and decrypt operations
-for Power10 or later CPU.
+Improve overall performance of Poly1305 for Power10 or later CPU.
 
 Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
 ---
- arch/powerpc/crypto/chacha-p10le-8x.S | 842 ++++++++++++++++++++++++++
- 1 file changed, 842 insertions(+)
- create mode 100644 arch/powerpc/crypto/chacha-p10le-8x.S
+ arch/powerpc/crypto/poly1305-p10le_64.S | 1075 +++++++++++++++++++++++
+ 1 file changed, 1075 insertions(+)
+ create mode 100644 arch/powerpc/crypto/poly1305-p10le_64.S
 
-diff --git a/arch/powerpc/crypto/chacha-p10le-8x.S b/arch/powerpc/crypto/chacha-p10le-8x.S
+diff --git a/arch/powerpc/crypto/poly1305-p10le_64.S b/arch/powerpc/crypto/poly1305-p10le_64.S
 new file mode 100644
-index 000000000000..7c15d17101d7
+index 000000000000..22fd255af87e
 --- /dev/null
-+++ b/arch/powerpc/crypto/chacha-p10le-8x.S
-@@ -0,0 +1,842 @@
++++ b/arch/powerpc/crypto/poly1305-p10le_64.S
+@@ -0,0 +1,1075 @@
 +/* SPDX-License-Identifier: GPL-2.0-or-later */
 +#
-+# Accelerated chacha20 implementation for ppc64le.
++# Accelerated poly1305 implementation for ppc64le.
 +#
 +# Copyright 2023- IBM Inc. All rights reserved
 +#
 +#===================================================================================
 +# Written by Danny Tsen <dtsen@us.ibm.com>
 +#
-+# chacha_p10le_8x(u32 *state, byte *dst, const byte *src,
-+#				 size_t len, int nrounds);
++# Poly1305 - this version mainly using vector/VSX/Scalar
++#  - 26 bits limbs
++#  - Handle multiple 64 byte blcok.
 +#
-+# do rounds,  8 quarter rounds
-+# 1.  a += b; d ^= a; d <<<= 16;
-+# 2.  c += d; b ^= c; b <<<= 12;
-+# 3.  a += b; d ^= a; d <<<= 8;
-+# 4.  c += d; b ^= c; b <<<= 7
++# Block size 16 bytes
++# key = (r, s)
++# clamp r &= 0x0FFFFFFC0FFFFFFC 0x0FFFFFFC0FFFFFFF
++# p = 2^130 - 5
++# a += m
++# a = (r + a) % p
++# a += s
 +#
-+# row1 = (row1 + row2),  row4 = row1 xor row4,  row4 rotate each word by 16
-+# row3 = (row3 + row4),  row2 = row3 xor row2,  row2 rotate each word by 12
-+# row1 = (row1 + row2), row4 = row1 xor row4,  row4 rotate each word by 8
-+# row3 = (row3 + row4), row2 = row3 xor row2,  row2 rotate each word by 7
++# Improve performance by breaking down polynominal to the sum of products with
++#     h4 = m1 * r⁴ + m2 * r³ + m3 * r² + m4 * r
 +#
-+# 4 blocks (a b c d)
++#  07/22/21 - this revison based on the above sum of products.  Setup r^4, r^3, r^2, r and s3, s2, s1, s0
++#             to 9 vectors for multiplications.
 +#
-+# a0 b0 c0 d0
-+# a1 b1 c1 d1
-+# ...
-+# a4 b4 c4 d4
-+# ...
-+# a8 b8 c8 d8
-+# ...
-+# a12 b12 c12 d12
-+# a13 ...
-+# a14 ...
-+# a15 b15 c15 d15
++# setup r^4, r^3, r^2, r vectors
++#    vs    [r^1, r^3, r^2, r^4]
++#    vs0 = [r0,.....]
++#    vs1 = [r1,.....]
++#    vs2 = [r2,.....]
++#    vs3 = [r3,.....]
++#    vs4 = [r4,.....]
++#    vs5 = [r1*5,...]
++#    vs6 = [r2*5,...]
++#    vs7 = [r2*5,...]
++#    vs8 = [r4*5,...]
 +#
-+# Column round (v0, v4,  v8, v12, v1, v5,  v9, v13, v2, v6, v10, v14, v3, v7, v11, v15)
-+# Diagnal round (v0, v5, v10, v15, v1, v6, v11, v12, v2, v7,  v8, v13, v3, v4,  v9, v14)
++#  Each word in a vector consists a member of a "r/s" in [a * r/s].
 +#
-+
++# r0, r4*5, r3*5, r2*5, r1*5;
++# r1, r0,   r4*5, r3*5, r2*5;
++# r2, r1,   r0,   r4*5, r3*5;
++# r3, r2,   r1,   r0,   r4*5;
++# r4, r3,   r2,   r1,   r0  ;
++#
++#
++# poly1305_p10le_4blocks( uint8_t *k, uint32_t mlen, uint8_t *m)
++#  k = 32 bytes key
++#  r3 = k (r, s)
++#  r4 = mlen
++#  r5 = m
++#
 +#include <asm/ppc_asm.h>
 +#include <asm/asm-offsets.h>
 +#include <asm/asm-compat.h>
 +#include <linux/linkage.h>
 +
-+.machine	"any"
++.machine "any"
++
 +.text
 +
 +.macro	SAVE_GPR GPR OFFSET FRAME
@@ -301,655 +315,874 @@ index 000000000000..7c15d17101d7
 +	mtlr 0
 +.endm # RESTORE_REGS
 +
-+.macro QT_loop_8x
-+	# QR(v0, v4,  v8, v12, v1, v5,  v9, v13, v2, v6, v10, v14, v3, v7, v11, v15)
-+	xxlor	0, 32+25, 32+25
-+	xxlor	32+25, 20, 20
-+	vadduwm 0, 0, 4
-+	vadduwm 1, 1, 5
-+	vadduwm 2, 2, 6
-+	vadduwm 3, 3, 7
-+	  vadduwm 16, 16, 20
-+	  vadduwm 17, 17, 21
-+	  vadduwm 18, 18, 22
-+	  vadduwm 19, 19, 23
-+
-+	  vpermxor 12, 12, 0, 25
-+	  vpermxor 13, 13, 1, 25
-+	  vpermxor 14, 14, 2, 25
-+	  vpermxor 15, 15, 3, 25
-+	  vpermxor 28, 28, 16, 25
-+	  vpermxor 29, 29, 17, 25
-+	  vpermxor 30, 30, 18, 25
-+	  vpermxor 31, 31, 19, 25
-+	xxlor	32+25, 0, 0
-+	vadduwm 8, 8, 12
-+	vadduwm 9, 9, 13
-+	vadduwm 10, 10, 14
-+	vadduwm 11, 11, 15
-+	  vadduwm 24, 24, 28
-+	  vadduwm 25, 25, 29
-+	  vadduwm 26, 26, 30
-+	  vadduwm 27, 27, 31
-+	vxor 4, 4, 8
-+	vxor 5, 5, 9
-+	vxor 6, 6, 10
-+	vxor 7, 7, 11
-+	  vxor 20, 20, 24
-+	  vxor 21, 21, 25
-+	  vxor 22, 22, 26
-+	  vxor 23, 23, 27
-+
-+	xxlor	0, 32+25, 32+25
-+	xxlor	32+25, 21, 21
-+	vrlw 4, 4, 25  #
-+	vrlw 5, 5, 25
-+	vrlw 6, 6, 25
-+	vrlw 7, 7, 25
-+	  vrlw 20, 20, 25  #
-+	  vrlw 21, 21, 25
-+	  vrlw 22, 22, 25
-+	  vrlw 23, 23, 25
-+	xxlor	32+25, 0, 0
-+	vadduwm 0, 0, 4
-+	vadduwm 1, 1, 5
-+	vadduwm 2, 2, 6
-+	vadduwm 3, 3, 7
-+	  vadduwm 16, 16, 20
-+	  vadduwm 17, 17, 21
-+	  vadduwm 18, 18, 22
-+	  vadduwm 19, 19, 23
-+
-+	xxlor	0, 32+25, 32+25
-+	xxlor	32+25, 22, 22
-+	  vpermxor 12, 12, 0, 25
-+	  vpermxor 13, 13, 1, 25
-+	  vpermxor 14, 14, 2, 25
-+	  vpermxor 15, 15, 3, 25
-+	  vpermxor 28, 28, 16, 25
-+	  vpermxor 29, 29, 17, 25
-+	  vpermxor 30, 30, 18, 25
-+	  vpermxor 31, 31, 19, 25
-+	xxlor	32+25, 0, 0
-+	vadduwm 8, 8, 12
-+	vadduwm 9, 9, 13
-+	vadduwm 10, 10, 14
-+	vadduwm 11, 11, 15
-+	  vadduwm 24, 24, 28
-+	  vadduwm 25, 25, 29
-+	  vadduwm 26, 26, 30
-+	  vadduwm 27, 27, 31
-+	xxlor	0, 32+28, 32+28
-+	xxlor	32+28, 23, 23
-+	vxor 4, 4, 8
-+	vxor 5, 5, 9
-+	vxor 6, 6, 10
-+	vxor 7, 7, 11
-+	  vxor 20, 20, 24
-+	  vxor 21, 21, 25
-+	  vxor 22, 22, 26
-+	  vxor 23, 23, 27
-+	vrlw 4, 4, 28  #
-+	vrlw 5, 5, 28
-+	vrlw 6, 6, 28
-+	vrlw 7, 7, 28
-+	  vrlw 20, 20, 28  #
-+	  vrlw 21, 21, 28
-+	  vrlw 22, 22, 28
-+	  vrlw 23, 23, 28
-+	xxlor	32+28, 0, 0
-+
-+	# QR(v0, v5, v10, v15, v1, v6, v11, v12, v2, v7,  v8, v13, v3, v4,  v9, v14)
-+	xxlor	0, 32+25, 32+25
-+	xxlor	32+25, 20, 20
-+	vadduwm 0, 0, 5
-+	vadduwm 1, 1, 6
-+	vadduwm 2, 2, 7
-+	vadduwm 3, 3, 4
-+	  vadduwm 16, 16, 21
-+	  vadduwm 17, 17, 22
-+	  vadduwm 18, 18, 23
-+	  vadduwm 19, 19, 20
-+
-+	  vpermxor 15, 15, 0, 25
-+	  vpermxor 12, 12, 1, 25
-+	  vpermxor 13, 13, 2, 25
-+	  vpermxor 14, 14, 3, 25
-+	  vpermxor 31, 31, 16, 25
-+	  vpermxor 28, 28, 17, 25
-+	  vpermxor 29, 29, 18, 25
-+	  vpermxor 30, 30, 19, 25
-+
-+	xxlor	32+25, 0, 0
-+	vadduwm 10, 10, 15
-+	vadduwm 11, 11, 12
-+	vadduwm 8, 8, 13
-+	vadduwm 9, 9, 14
-+	  vadduwm 26, 26, 31
-+	  vadduwm 27, 27, 28
-+	  vadduwm 24, 24, 29
-+	  vadduwm 25, 25, 30
-+	vxor 5, 5, 10
-+	vxor 6, 6, 11
-+	vxor 7, 7, 8
-+	vxor 4, 4, 9
-+	  vxor 21, 21, 26
-+	  vxor 22, 22, 27
-+	  vxor 23, 23, 24
-+	  vxor 20, 20, 25
-+
-+	xxlor	0, 32+25, 32+25
-+	xxlor	32+25, 21, 21
-+	vrlw 5, 5, 25
-+	vrlw 6, 6, 25
-+	vrlw 7, 7, 25
-+	vrlw 4, 4, 25
-+	  vrlw 21, 21, 25
-+	  vrlw 22, 22, 25
-+	  vrlw 23, 23, 25
-+	  vrlw 20, 20, 25
-+	xxlor	32+25, 0, 0
-+
-+	vadduwm 0, 0, 5
-+	vadduwm 1, 1, 6
-+	vadduwm 2, 2, 7
-+	vadduwm 3, 3, 4
-+	  vadduwm 16, 16, 21
-+	  vadduwm 17, 17, 22
-+	  vadduwm 18, 18, 23
-+	  vadduwm 19, 19, 20
-+
-+	xxlor	0, 32+25, 32+25
-+	xxlor	32+25, 22, 22
-+	  vpermxor 15, 15, 0, 25
-+	  vpermxor 12, 12, 1, 25
-+	  vpermxor 13, 13, 2, 25
-+	  vpermxor 14, 14, 3, 25
-+	  vpermxor 31, 31, 16, 25
-+	  vpermxor 28, 28, 17, 25
-+	  vpermxor 29, 29, 18, 25
-+	  vpermxor 30, 30, 19, 25
-+	xxlor	32+25, 0, 0
-+
-+	vadduwm 10, 10, 15
-+	vadduwm 11, 11, 12
-+	vadduwm 8, 8, 13
-+	vadduwm 9, 9, 14
-+	  vadduwm 26, 26, 31
-+	  vadduwm 27, 27, 28
-+	  vadduwm 24, 24, 29
-+	  vadduwm 25, 25, 30
-+
-+	xxlor	0, 32+28, 32+28
-+	xxlor	32+28, 23, 23
-+	vxor 5, 5, 10
-+	vxor 6, 6, 11
-+	vxor 7, 7, 8
-+	vxor 4, 4, 9
-+	  vxor 21, 21, 26
-+	  vxor 22, 22, 27
-+	  vxor 23, 23, 24
-+	  vxor 20, 20, 25
-+	vrlw 5, 5, 28
-+	vrlw 6, 6, 28
-+	vrlw 7, 7, 28
-+	vrlw 4, 4, 28
-+	  vrlw 21, 21, 28
-+	  vrlw 22, 22, 28
-+	  vrlw 23, 23, 28
-+	  vrlw 20, 20, 28
-+	xxlor	32+28, 0, 0
++#
++# p[0] = a0*r0 + a1*r4*5 + a2*r3*5 + a3*r2*5 + a4*r1*5;
++# p[1] = a0*r1 + a1*r0   + a2*r4*5 + a3*r3*5 + a4*r2*5;
++# p[2] = a0*r2 + a1*r1   + a2*r0   + a3*r4*5 + a4*r3*5;
++# p[3] = a0*r3 + a1*r2   + a2*r1   + a3*r0   + a4*r4*5;
++# p[4] = a0*r4 + a1*r3   + a2*r2   + a3*r1   + a4*r0  ;
++#
++#    [r^2, r^3, r^1, r^4]
++#    [m3,  m2,  m4,  m1]
++#
++# multiply odd and even words
++.macro mul_odd
++	vmulouw	14, 4, 26
++	vmulouw	10, 5, 3
++	vmulouw	11, 6, 2
++	vmulouw	12, 7, 1
++	vmulouw	13, 8, 0
++	vmulouw	15, 4, 27
++	vaddudm	14, 14, 10
++	vaddudm	14, 14, 11
++	vmulouw	10, 5, 26
++	vmulouw	11, 6, 3
++	vaddudm	14, 14, 12
++	vaddudm	14, 14, 13	# x0
++	vaddudm	15, 15, 10
++	vaddudm	15, 15, 11
++	vmulouw	12, 7, 2
++	vmulouw	13, 8, 1
++	vaddudm	15, 15, 12
++	vaddudm	15, 15, 13	# x1
++	vmulouw	16, 4, 28
++	vmulouw	10, 5, 27
++	vmulouw	11, 6, 26
++	vaddudm	16, 16, 10
++	vaddudm	16, 16, 11
++	vmulouw	12, 7, 3
++	vmulouw	13, 8, 2
++	vaddudm	16, 16, 12
++	vaddudm	16, 16, 13	# x2
++	vmulouw	17, 4, 29
++	vmulouw	10, 5, 28
++	vmulouw	11, 6, 27
++	vaddudm	17, 17, 10
++	vaddudm	17, 17, 11
++	vmulouw	12, 7, 26
++	vmulouw	13, 8, 3
++	vaddudm	17, 17, 12
++	vaddudm	17, 17, 13	# x3
++	vmulouw	18, 4, 30
++	vmulouw	10, 5, 29
++	vmulouw	11, 6, 28
++	vaddudm	18, 18, 10
++	vaddudm	18, 18, 11
++	vmulouw	12, 7, 27
++	vmulouw	13, 8, 26
++	vaddudm	18, 18, 12
++	vaddudm	18, 18, 13	# x4
 +.endm
 +
-+.macro QT_loop_4x
-+	# QR(v0, v4,  v8, v12, v1, v5,  v9, v13, v2, v6, v10, v14, v3, v7, v11, v15)
-+	vadduwm 0, 0, 4
-+	vadduwm 1, 1, 5
-+	vadduwm 2, 2, 6
-+	vadduwm 3, 3, 7
-+	  vpermxor 12, 12, 0, 20
-+	  vpermxor 13, 13, 1, 20
-+	  vpermxor 14, 14, 2, 20
-+	  vpermxor 15, 15, 3, 20
-+	vadduwm 8, 8, 12
-+	vadduwm 9, 9, 13
-+	vadduwm 10, 10, 14
-+	vadduwm 11, 11, 15
-+	vxor 4, 4, 8
-+	vxor 5, 5, 9
-+	vxor 6, 6, 10
-+	vxor 7, 7, 11
-+	vrlw 4, 4, 21
-+	vrlw 5, 5, 21
-+	vrlw 6, 6, 21
-+	vrlw 7, 7, 21
-+	vadduwm 0, 0, 4
-+	vadduwm 1, 1, 5
-+	vadduwm 2, 2, 6
-+	vadduwm 3, 3, 7
-+	  vpermxor 12, 12, 0, 22
-+	  vpermxor 13, 13, 1, 22
-+	  vpermxor 14, 14, 2, 22
-+	  vpermxor 15, 15, 3, 22
-+	vadduwm 8, 8, 12
-+	vadduwm 9, 9, 13
-+	vadduwm 10, 10, 14
-+	vadduwm 11, 11, 15
-+	vxor 4, 4, 8
-+	vxor 5, 5, 9
-+	vxor 6, 6, 10
-+	vxor 7, 7, 11
-+	vrlw 4, 4, 23
-+	vrlw 5, 5, 23
-+	vrlw 6, 6, 23
-+	vrlw 7, 7, 23
++.macro mul_even
++	vmuleuw	9, 4, 26
++	vmuleuw	10, 5, 3
++	vmuleuw	11, 6, 2
++	vmuleuw	12, 7, 1
++	vmuleuw	13, 8, 0
++	vaddudm	14, 14, 9
++	vaddudm	14, 14, 10
++	vaddudm	14, 14, 11
++	vaddudm	14, 14, 12
++	vaddudm	14, 14, 13	# x0
 +
-+	# QR(v0, v5, v10, v15, v1, v6, v11, v12, v2, v7,  v8, v13, v3, v4,  v9, v14)
-+	vadduwm 0, 0, 5
-+	vadduwm 1, 1, 6
-+	vadduwm 2, 2, 7
-+	vadduwm 3, 3, 4
-+	  vpermxor 15, 15, 0, 20
-+	  vpermxor 12, 12, 1, 20
-+	  vpermxor 13, 13, 2, 20
-+	  vpermxor 14, 14, 3, 20
-+	vadduwm 10, 10, 15
-+	vadduwm 11, 11, 12
-+	vadduwm 8, 8, 13
-+	vadduwm 9, 9, 14
-+	vxor 5, 5, 10
-+	vxor 6, 6, 11
-+	vxor 7, 7, 8
-+	vxor 4, 4, 9
-+	vrlw 5, 5, 21
-+	vrlw 6, 6, 21
-+	vrlw 7, 7, 21
-+	vrlw 4, 4, 21
-+	vadduwm 0, 0, 5
-+	vadduwm 1, 1, 6
-+	vadduwm 2, 2, 7
-+	vadduwm 3, 3, 4
-+	  vpermxor 15, 15, 0, 22
-+	  vpermxor 12, 12, 1, 22
-+	  vpermxor 13, 13, 2, 22
-+	  vpermxor 14, 14, 3, 22
-+	vadduwm 10, 10, 15
-+	vadduwm 11, 11, 12
-+	vadduwm 8, 8, 13
-+	vadduwm 9, 9, 14
-+	vxor 5, 5, 10
-+	vxor 6, 6, 11
-+	vxor 7, 7, 8
-+	vxor 4, 4, 9
-+	vrlw 5, 5, 23
-+	vrlw 6, 6, 23
-+	vrlw 7, 7, 23
-+	vrlw 4, 4, 23
-+.endm
++	vmuleuw	9, 4, 27
++	vmuleuw	10, 5, 26
++	vmuleuw	11, 6, 3
++	vmuleuw	12, 7, 2
++	vmuleuw	13, 8, 1
++	vaddudm	15, 15, 9
++	vaddudm	15, 15, 10
++	vaddudm	15, 15, 11
++	vaddudm	15, 15, 12
++	vaddudm	15, 15, 13	# x1
 +
-+# Transpose
-+.macro TP_4x a0 a1 a2 a3
-+	xxmrghw  10, 32+\a0, 32+\a1	# a0, a1, b0, b1
-+	xxmrghw  11, 32+\a2, 32+\a3	# a2, a3, b2, b3
-+	xxmrglw  12, 32+\a0, 32+\a1	# c0, c1, d0, d1
-+	xxmrglw  13, 32+\a2, 32+\a3	# c2, c3, d2, d3
-+	xxpermdi	32+\a0, 10, 11, 0	# a0, a1, a2, a3
-+	xxpermdi	32+\a1, 10, 11, 3	# b0, b1, b2, b3
-+	xxpermdi	32+\a2, 12, 13, 0	# c0, c1, c2, c3
-+	xxpermdi	32+\a3, 12, 13, 3	# d0, d1, d2, d3
-+.endm
++	vmuleuw	9, 4, 28
++	vmuleuw	10, 5, 27
++	vmuleuw	11, 6, 26
++	vmuleuw	12, 7, 3
++	vmuleuw	13, 8, 2
++	vaddudm	16, 16, 9
++	vaddudm	16, 16, 10
++	vaddudm	16, 16, 11
++	vaddudm	16, 16, 12
++	vaddudm	16, 16, 13	# x2
 +
-+# key stream = working state + state
-+.macro Add_state S
-+	vadduwm \S+0, \S+0, 16-\S
-+	vadduwm \S+4, \S+4, 17-\S
-+	vadduwm \S+8, \S+8, 18-\S
-+	vadduwm \S+12, \S+12, 19-\S
++	vmuleuw	9, 4, 29
++	vmuleuw	10, 5, 28
++	vmuleuw	11, 6, 27
++	vmuleuw	12, 7, 26
++	vmuleuw	13, 8, 3
++	vaddudm	17, 17, 9
++	vaddudm	17, 17, 10
++	vaddudm	17, 17, 11
++	vaddudm	17, 17, 12
++	vaddudm	17, 17, 13	# x3
 +
-+	vadduwm \S+1, \S+1, 16-\S
-+	vadduwm \S+5, \S+5, 17-\S
-+	vadduwm \S+9, \S+9, 18-\S
-+	vadduwm \S+13, \S+13, 19-\S
-+
-+	vadduwm \S+2, \S+2, 16-\S
-+	vadduwm \S+6, \S+6, 17-\S
-+	vadduwm \S+10, \S+10, 18-\S
-+	vadduwm \S+14, \S+14, 19-\S
-+
-+	vadduwm	\S+3, \S+3, 16-\S
-+	vadduwm	\S+7, \S+7, 17-\S
-+	vadduwm	\S+11, \S+11, 18-\S
-+	vadduwm	\S+15, \S+15, 19-\S
++	vmuleuw	9, 4, 30
++	vmuleuw	10, 5, 29
++	vmuleuw	11, 6, 28
++	vmuleuw	12, 7, 27
++	vmuleuw	13, 8, 26
++	vaddudm	18, 18, 9
++	vaddudm	18, 18, 10
++	vaddudm	18, 18, 11
++	vaddudm	18, 18, 12
++	vaddudm	18, 18, 13	# x4
 +.endm
 +
 +#
-+# write 256 bytes
++# poly1305_setup_r
 +#
-+.macro Write_256 S
-+	add 9, 14, 5
-+	add 16, 14, 4
-+	lxvw4x 0, 0, 9
-+	lxvw4x 1, 17, 9
-+	lxvw4x 2, 18, 9
-+	lxvw4x 3, 19, 9
-+	lxvw4x 4, 20, 9
-+	lxvw4x 5, 21, 9
-+	lxvw4x 6, 22, 9
-+	lxvw4x 7, 23, 9
-+	lxvw4x 8, 24, 9
-+	lxvw4x 9, 25, 9
-+	lxvw4x 10, 26, 9
-+	lxvw4x 11, 27, 9
-+	lxvw4x 12, 28, 9
-+	lxvw4x 13, 29, 9
-+	lxvw4x 14, 30, 9
-+	lxvw4x 15, 31, 9
++# setup r^4, r^3, r^2, r vectors
++#    [r, r^3, r^2, r^4]
++#    vs0 = [r0,...]
++#    vs1 = [r1,...]
++#    vs2 = [r2,...]
++#    vs3 = [r3,...]
++#    vs4 = [r4,...]
++#    vs5 = [r4*5,...]
++#    vs6 = [r3*5,...]
++#    vs7 = [r2*5,...]
++#    vs8 = [r1*5,...]
++#
++# r0, r4*5, r3*5, r2*5, r1*5;
++# r1, r0,   r4*5, r3*5, r2*5;
++# r2, r1,   r0,   r4*5, r3*5;
++# r3, r2,   r1,   r0,   r4*5;
++# r4, r3,   r2,   r1,   r0  ;
++#
++.macro poly1305_setup_r
 +
-+	xxlxor \S+32, \S+32, 0
-+	xxlxor \S+36, \S+36, 1
-+	xxlxor \S+40, \S+40, 2
-+	xxlxor \S+44, \S+44, 3
-+	xxlxor \S+33, \S+33, 4
-+	xxlxor \S+37, \S+37, 5
-+	xxlxor \S+41, \S+41, 6
-+	xxlxor \S+45, \S+45, 7
-+	xxlxor \S+34, \S+34, 8
-+	xxlxor \S+38, \S+38, 9
-+	xxlxor \S+42, \S+42, 10
-+	xxlxor \S+46, \S+46, 11
-+	xxlxor \S+35, \S+35, 12
-+	xxlxor \S+39, \S+39, 13
-+	xxlxor \S+43, \S+43, 14
-+	xxlxor \S+47, \S+47, 15
++	# save r
++	xxlor	26, 58, 58
++	xxlor	27, 59, 59
++	xxlor	28, 60, 60
++	xxlor	29, 61, 61
++	xxlor	30, 62, 62
 +
-+	stxvw4x \S+32, 0, 16
-+	stxvw4x \S+36, 17, 16
-+	stxvw4x \S+40, 18, 16
-+	stxvw4x \S+44, 19, 16
++	xxlxor	31, 31, 31
 +
-+	stxvw4x \S+33, 20, 16
-+	stxvw4x \S+37, 21, 16
-+	stxvw4x \S+41, 22, 16
-+	stxvw4x \S+45, 23, 16
++#    [r, r^3, r^2, r^4]
++	# compute r^2
++	vmr	4, 26
++	vmr	5, 27
++	vmr	6, 28
++	vmr	7, 29
++	vmr	8, 30
++	bl	do_mul		# r^2 r^1
++	xxpermdi 58, 58, 36, 0x3		# r0
++	xxpermdi 59, 59, 37, 0x3		# r1
++	xxpermdi 60, 60, 38, 0x3		# r2
++	xxpermdi 61, 61, 39, 0x3		# r3
++	xxpermdi 62, 62, 40, 0x3		# r4
++	xxpermdi 36, 36, 36, 0x3
++	xxpermdi 37, 37, 37, 0x3
++	xxpermdi 38, 38, 38, 0x3
++	xxpermdi 39, 39, 39, 0x3
++	xxpermdi 40, 40, 40, 0x3
++	vspltisb 13, 2
++	vsld	9, 27, 13
++	vsld	10, 28, 13
++	vsld	11, 29, 13
++	vsld	12, 30, 13
++	vaddudm	0, 9, 27
++	vaddudm	1, 10, 28
++	vaddudm	2, 11, 29
++	vaddudm	3, 12, 30
 +
-+	stxvw4x \S+34, 24, 16
-+	stxvw4x \S+38, 25, 16
-+	stxvw4x \S+42, 26, 16
-+	stxvw4x \S+46, 27, 16
++	bl	do_mul		# r^4 r^3
++	vmrgow	26, 26, 4
++	vmrgow	27, 27, 5
++	vmrgow	28, 28, 6
++	vmrgow	29, 29, 7
++	vmrgow	30, 30, 8
++	vspltisb 13, 2
++	vsld	9, 27, 13
++	vsld	10, 28, 13
++	vsld	11, 29, 13
++	vsld	12, 30, 13
++	vaddudm	0, 9, 27
++	vaddudm	1, 10, 28
++	vaddudm	2, 11, 29
++	vaddudm	3, 12, 30
 +
-+	stxvw4x \S+35, 28, 16
-+	stxvw4x \S+39, 29, 16
-+	stxvw4x \S+43, 30, 16
-+	stxvw4x \S+47, 31, 16
++	# r^2 r^4
++	xxlor	0, 58, 58
++	xxlor	1, 59, 59
++	xxlor	2, 60, 60
++	xxlor	3, 61, 61
++	xxlor	4, 62, 62
++	xxlor	5, 32, 32
++	xxlor	6, 33, 33
++	xxlor	7, 34, 34
++	xxlor	8, 35, 35
 +
++	vspltw	9, 26, 3
++	vspltw	10, 26, 2
++	vmrgow	26, 10, 9
++	vspltw	9, 27, 3
++	vspltw	10, 27, 2
++	vmrgow	27, 10, 9
++	vspltw	9, 28, 3
++	vspltw	10, 28, 2
++	vmrgow	28, 10, 9
++	vspltw	9, 29, 3
++	vspltw	10, 29, 2
++	vmrgow	29, 10, 9
++	vspltw	9, 30, 3
++	vspltw	10, 30, 2
++	vmrgow	30, 10, 9
++
++	vsld	9, 27, 13
++	vsld	10, 28, 13
++	vsld	11, 29, 13
++	vsld	12, 30, 13
++	vaddudm	0, 9, 27
++	vaddudm	1, 10, 28
++	vaddudm	2, 11, 29
++	vaddudm	3, 12, 30
++.endm
++
++SYM_FUNC_START_LOCAL(do_mul)
++	mul_odd
++
++	# do reduction ( h %= p )
++	# carry reduction
++	vspltisb 9, 2
++	vsrd	10, 14, 31
++	vsrd	11, 17, 31
++	vand	7, 17, 25
++	vand	4, 14, 25
++	vaddudm	18, 18, 11
++	vsrd	12, 18, 31
++	vaddudm	15, 15, 10
++
++	vsrd	11, 15, 31
++	vand	8, 18, 25
++	vand	5, 15, 25
++	vaddudm	4, 4, 12
++	vsld	10, 12, 9
++	vaddudm	6, 16, 11
++
++	vsrd	13, 6, 31
++	vand	6, 6, 25
++	vaddudm	4, 4, 10
++	vsrd	10, 4, 31
++	vaddudm	7, 7, 13
++
++	vsrd	11, 7, 31
++	vand	7, 7, 25
++	vand	4, 4, 25
++	vaddudm	5, 5, 10
++	vaddudm	8, 8, 11
++	blr
++SYM_FUNC_END(do_mul)
++
++#
++# init key
++#
++.macro do_poly1305_init
++	addis	10, 2, rmask@toc@ha
++	addi	10, 10, rmask@toc@l
++
++	ld	11, 0(10)
++	ld	12, 8(10)
++
++	li	14, 16
++	li	15, 32
++	addis	10, 2, cnum@toc@ha
++	addi	10, 10, cnum@toc@l
++	lvx	25, 0, 10	# v25 - mask
++	lvx	31, 14, 10	# v31 = 1a
++	lvx	19, 15, 10	# v19 = 1 << 24
++	lxv	24, 48(10)	# vs24
++	lxv	25, 64(10)	# vs25
++
++	# initialize
++	# load key from r3 to vectors
++	ld	9, 24(3)
++	ld	10, 32(3)
++	and.	9, 9, 11
++	and.	10, 10, 12
++
++	# break 26 bits
++	extrdi	14, 9, 26, 38
++	extrdi	15, 9, 26, 12
++	extrdi	16, 9, 12, 0
++	mtvsrdd	58, 0, 14
++	insrdi	16, 10, 14, 38
++	mtvsrdd	59, 0, 15
++	extrdi	17, 10, 26, 24
++	mtvsrdd	60, 0, 16
++	extrdi	18, 10, 24, 0
++	mtvsrdd	61, 0, 17
++	mtvsrdd	62, 0, 18
++
++	# r1 = r1 * 5, r2 = r2 * 5, r3 = r3 * 5, r4 = r4 * 5
++	li	9, 5
++	mtvsrdd	36, 0, 9
++	vmulouw	0, 27, 4		# v0 = rr0
++	vmulouw	1, 28, 4		# v1 = rr1
++	vmulouw	2, 29, 4		# v2 = rr2
++	vmulouw	3, 30, 4		# v3 = rr3
 +.endm
 +
 +#
-+# chacha20_p10le_8x(u32 *state, byte *dst, const byte *src, size_t len, int nrounds);
++# poly1305_p10le_4blocks( uint8_t *k, uint32_t mlen, uint8_t *m)
++#  k = 32 bytes key
++#  r3 = k (r, s)
++#  r4 = mlen
++#  r5 = m
 +#
-+SYM_FUNC_START(chacha_p10le_8x)
++SYM_FUNC_START(poly1305_p10le_4blocks)
 +.align 5
-+	cmpdi	6, 0
-+	ble	Out_no_chacha
++	cmpdi	5, 64
++	blt	Out_no_poly1305
 +
 +	SAVE_REGS
 +
-+	# r17 - r31 mainly for Write_256 macro.
-+	li	17, 16
-+	li	18, 32
-+	li	19, 48
-+	li	20, 64
-+	li	21, 80
-+	li	22, 96
-+	li	23, 112
-+	li	24, 128
-+	li	25, 144
-+	li	26, 160
-+	li	27, 176
-+	li	28, 192
-+	li	29, 208
-+	li	30, 224
-+	li	31, 240
++	do_poly1305_init
 +
-+	mr 15, 6			# len
-+	li 14, 0			# offset to inp and outp
++	li	21, 0	# counter to message
 +
-+        lxvw4x	48, 0, 3		#  vr16, constants
-+	lxvw4x	49, 17, 3		#  vr17, key 1
-+	lxvw4x	50, 18, 3		#  vr18, key 2
-+	lxvw4x	51, 19, 3		#  vr19, counter, nonce
++	poly1305_setup_r
 +
-+	# create (0, 1, 2, 3) counters
-+	vspltisw 0, 0
-+	vspltisw 1, 1
-+	vspltisw 2, 2
-+	vspltisw 3, 3
-+	vmrghw	4, 0, 1
-+	vmrglw	5, 2, 3
-+	vsldoi	30, 4, 5, 8		# vr30 counter, 4 (0, 1, 2, 3)
++	# load previous H state
++	# break/convert r6 to 26 bits
++	ld	9, 0(3)
++	ld	10, 8(3)
++	ld	19, 16(3)
++	sldi	19, 19, 24
++	mtvsrdd	41, 0, 19
++	extrdi	14, 9, 26, 38
++	extrdi	15, 9, 26, 12
++	extrdi	16, 9, 12, 0
++	mtvsrdd	36, 0, 14
++	insrdi	16, 10, 14, 38
++	mtvsrdd	37, 0, 15
++	extrdi	17, 10, 26, 24
++	mtvsrdd	38, 0, 16
++	extrdi	18, 10, 24, 0
++	mtvsrdd	39, 0, 17
++	mtvsrdd	40, 0, 18
++	vor	8, 8, 9
 +
-+	vspltisw 21, 12
-+	vspltisw 23, 7
++	# input m1 m2
++	add	20, 4, 21
++	xxlor	49, 24, 24
++	xxlor	50, 25, 25
++	lxvw4x	43, 0, 20
++	addi	17, 20, 16
++	lxvw4x	44, 0, 17
++	vperm	14, 11, 12, 17
++	vperm	15, 11, 12, 18
++	vand	9, 14, 25	# a0
++	vsrd	10, 14, 31	# >> 26
++	vsrd	11, 10, 31	# 12 bits left
++	vand	10, 10, 25	# a1
++	vspltisb 13, 12
++	vand	16, 15, 25
++	vsld	12, 16, 13
++	vor	11, 11, 12
++	vand	11, 11, 25	# a2
++	vspltisb 13, 14
++	vsrd	12, 15, 13	# >> 14
++	vsrd	13, 12, 31	# >> 26, a4
++	vand	12, 12, 25	# a3
 +
-+	addis	11, 2, permx@toc@ha
-+	addi	11, 11, permx@toc@l
-+	lxvw4x	32+20, 0, 11
-+	lxvw4x	32+22, 17, 11
++	vaddudm	20, 4, 9
++	vaddudm	21, 5, 10
++	vaddudm	22, 6, 11
++	vaddudm	23, 7, 12
++	vaddudm	24, 8, 13
 +
-+	sradi	8, 7, 1
++	# m3 m4
++	addi	17, 17, 16
++	lxvw4x	43, 0, 17
++	addi	17, 17, 16
++	lxvw4x	44, 0, 17
++	vperm	14, 11, 12, 17
++	vperm	15, 11, 12, 18
++	vand	9, 14, 25	# a0
++	vsrd	10, 14, 31	# >> 26
++	vsrd	11, 10, 31	# 12 bits left
++	vand	10, 10, 25	# a1
++	vspltisb 13, 12
++	vand	16, 15, 25
++	vsld	12, 16, 13
++	vspltisb 13, 14
++	vor	11, 11, 12
++	vand	11, 11, 25	# a2
++	vsrd	12, 15, 13	# >> 14
++	vsrd	13, 12, 31	# >> 26, a4
++	vand	12, 12, 25	# a3
 +
-+	mtctr 8
++	# Smash 4 message blocks into 5 vectors of [m4,  m2,  m3,  m1]
++	vmrgow	4, 9, 20
++	vmrgow	5, 10, 21
++	vmrgow	6, 11, 22
++	vmrgow	7, 12, 23
++	vmrgow	8, 13, 24
++	vaddudm	8, 8, 19
 +
-+	# save constants to vsx
-+	xxlor	16, 48, 48
-+	xxlor	17, 49, 49
-+	xxlor	18, 50, 50
-+	xxlor	19, 51, 51
++	addi	5, 5, -64	# len -= 64
++	addi	21, 21, 64	# offset += 64
 +
-+	vspltisw 25, 4
-+	vspltisw 26, 8
++	li      9, 64
++	divdu   31, 5, 9
 +
-+	xxlor	25, 32+26, 32+26
-+	xxlor	24, 32+25, 32+25
++	cmpdi	31, 0
++	ble	Skip_block_loop
 +
-+	vadduwm	31, 30, 25		# counter = (0, 1, 2, 3) + (4, 4, 4, 4)
-+	xxlor	30, 32+30, 32+30
-+	xxlor	31, 32+31, 32+31
++	mtctr	31
 +
-+	xxlor	20, 32+20, 32+20
-+	xxlor	21, 32+21, 32+21
-+	xxlor	22, 32+22, 32+22
-+	xxlor	23, 32+23, 32+23
++# h4 =   m1 * r⁴ + m2 * r³ + m3 * r² + m4 * r
++# Rewrite the polynominal sum of product as follows,
++# h1 = (h0 + m1) * r^2,	h2 = (h0 + m2) * r^2
++# h3 = (h1 + m3) * r^2,	h4 = (h2 + m4) * r^2  --> (h0 + m1) r*4 + (h3 + m3) r^2, (h0 + m2) r^4 + (h0 + m4) r^2
++#  .... Repeat
++# h5 = (h3 + m5) * r^2,	h6 = (h4 + m6) * r^2  -->
++# h7 = (h5 + m7) * r^2,	h8 = (h6 + m8) * r^1  --> m5 * r^4 + m6 * r^3 + m7 * r^2 + m8 * r
++#
++loop_4blocks:
 +
-+	cmpdi	6, 512
-+	blt	Loop_last
++	# Multiply odd words and even words
++	mul_odd
++	mul_even
++	# carry reduction
++	vspltisb 9, 2
++	vsrd	10, 14, 31
++	vsrd	11, 17, 31
++	vand	7, 17, 25
++	vand	4, 14, 25
++	vaddudm	18, 18, 11
++	vsrd	12, 18, 31
++	vaddudm	15, 15, 10
 +
-+Loop_8x:
-+	xxspltw  32+0, 16, 0
-+	xxspltw  32+1, 16, 1
-+	xxspltw  32+2, 16, 2
-+	xxspltw  32+3, 16, 3
++	vsrd	11, 15, 31
++	vand	8, 18, 25
++	vand	5, 15, 25
++	vaddudm	4, 4, 12
++	vsld	10, 12, 9
++	vaddudm	6, 16, 11
 +
-+	xxspltw  32+4, 17, 0
-+	xxspltw  32+5, 17, 1
-+	xxspltw  32+6, 17, 2
-+	xxspltw  32+7, 17, 3
-+	xxspltw  32+8, 18, 0
-+	xxspltw  32+9, 18, 1
-+	xxspltw  32+10, 18, 2
-+	xxspltw  32+11, 18, 3
-+	xxspltw  32+12, 19, 0
-+	xxspltw  32+13, 19, 1
-+	xxspltw  32+14, 19, 2
-+	xxspltw  32+15, 19, 3
-+	vadduwm	12, 12, 30	# increase counter
++	vsrd	13, 6, 31
++	vand	6, 6, 25
++	vaddudm	4, 4, 10
++	vsrd	10, 4, 31
++	vaddudm	7, 7, 13
 +
-+	xxspltw  32+16, 16, 0
-+	xxspltw  32+17, 16, 1
-+	xxspltw  32+18, 16, 2
-+	xxspltw  32+19, 16, 3
++	vsrd	11, 7, 31
++	vand	7, 7, 25
++	vand	4, 4, 25
++	vaddudm	5, 5, 10
++	vaddudm	8, 8, 11
 +
-+	xxspltw  32+20, 17, 0
-+	xxspltw  32+21, 17, 1
-+	xxspltw  32+22, 17, 2
-+	xxspltw  32+23, 17, 3
-+	xxspltw  32+24, 18, 0
-+	xxspltw  32+25, 18, 1
-+	xxspltw  32+26, 18, 2
-+	xxspltw  32+27, 18, 3
-+	xxspltw  32+28, 19, 0
-+	xxspltw  32+29, 19, 1
-+	vadduwm	28, 28, 31	# increase counter
-+	xxspltw  32+30, 19, 2
-+	xxspltw  32+31, 19, 3
++	# input m1  m2  m3  m4
++	add	20, 4, 21
++	xxlor	49, 24, 24
++	xxlor	50, 25, 25
++	lxvw4x	43, 0, 20
++	addi	17, 20, 16
++	lxvw4x	44, 0, 17
++	vperm	14, 11, 12, 17
++	vperm	15, 11, 12, 18
++	addi	17, 17, 16
++	lxvw4x	43, 0, 17
++	addi	17, 17, 16
++	lxvw4x	44, 0, 17
++	vperm	17, 11, 12, 17
++	vperm	18, 11, 12, 18
 +
-+.align 5
-+quarter_loop_8x:
-+	QT_loop_8x
++	vand	20, 14, 25	# a0
++	vand	9, 17, 25	# a0
++	vsrd	21, 14, 31	# >> 26
++	vsrd	22, 21, 31	# 12 bits left
++	vsrd	10, 17, 31	# >> 26
++	vsrd	11, 10, 31	# 12 bits left
 +
-+	bdnz	quarter_loop_8x
++	vand	21, 21, 25	# a1
++	vand	10, 10, 25	# a1
 +
-+	xxlor	0, 32+30, 32+30
-+	xxlor	32+30, 30, 30
-+	vadduwm	12, 12, 30
-+	xxlor	32+30, 0, 0
-+	TP_4x 0, 1, 2, 3
-+	TP_4x 4, 5, 6, 7
-+	TP_4x 8, 9, 10, 11
-+	TP_4x 12, 13, 14, 15
++	vspltisb 13, 12
++	vand	16, 15, 25
++	vsld	23, 16, 13
++	vor	22, 22, 23
++	vand	22, 22, 25	# a2
++	vand	16, 18, 25
++	vsld	12, 16, 13
++	vor	11, 11, 12
++	vand	11, 11, 25	# a2
++	vspltisb 13, 14
++	vsrd	23, 15, 13	# >> 14
++	vsrd	24, 23, 31	# >> 26, a4
++	vand	23, 23, 25	# a3
++	vsrd	12, 18, 13	# >> 14
++	vsrd	13, 12, 31	# >> 26, a4
++	vand	12, 12, 25	# a3
 +
-+	xxlor	0, 48, 48
-+	xxlor	1, 49, 49
-+	xxlor	2, 50, 50
-+	xxlor	3, 51, 51
-+	xxlor	48, 16, 16
-+	xxlor	49, 17, 17
-+	xxlor	50, 18, 18
-+	xxlor	51, 19, 19
-+	Add_state 0
-+	xxlor	48, 0, 0
-+	xxlor	49, 1, 1
-+	xxlor	50, 2, 2
-+	xxlor	51, 3, 3
-+	Write_256 0
-+	addi	14, 14, 256	# offset +=256
-+	addi	15, 15, -256	# len -=256
++	vaddudm	4, 4, 20
++	vaddudm	5, 5, 21
++	vaddudm	6, 6, 22
++	vaddudm	7, 7, 23
++	vaddudm	8, 8, 24
 +
-+	xxlor	5, 32+31, 32+31
-+	xxlor	32+31, 31, 31
-+	vadduwm	28, 28, 31
-+	xxlor	32+31, 5, 5
-+	TP_4x 16+0, 16+1, 16+2, 16+3
-+	TP_4x 16+4, 16+5, 16+6, 16+7
-+	TP_4x 16+8, 16+9, 16+10, 16+11
-+	TP_4x 16+12, 16+13, 16+14, 16+15
++	# Smash 4 message blocks into 5 vectors of [m4,  m2,  m3,  m1]
++	vmrgow	4, 9, 4
++	vmrgow	5, 10, 5
++	vmrgow	6, 11, 6
++	vmrgow	7, 12, 7
++	vmrgow	8, 13, 8
++	vaddudm	8, 8, 19
 +
-+	xxlor	32, 16, 16
-+	xxlor	33, 17, 17
-+	xxlor	34, 18, 18
-+	xxlor	35, 19, 19
-+	Add_state 16
-+	Write_256 16
-+	addi	14, 14, 256	# offset +=256
-+	addi	15, 15, -256	# len +=256
++	addi	5, 5, -64	# len -= 64
++	addi	21, 21, 64	# offset += 64
 +
-+	xxlor	32+24, 24, 24
-+	xxlor	32+25, 25, 25
-+	xxlor	32+30, 30, 30
-+	vadduwm	30, 30, 25
-+	vadduwm	31, 30, 24
-+	xxlor	30, 32+30, 32+30
-+	xxlor	31, 32+31, 32+31
++	bdnz	loop_4blocks
 +
-+	cmpdi	15, 0
-+	beq	Out_loop
++Skip_block_loop:
++	xxlor	58, 0, 0
++	xxlor	59, 1, 1
++	xxlor	60, 2, 2
++	xxlor	61, 3, 3
++	xxlor	62, 4, 4
++	xxlor	32, 5, 5
++	xxlor	33, 6, 6
++	xxlor	34, 7, 7
++	xxlor	35, 8, 8
 +
-+	cmpdi	15, 512
-+	blt	Loop_last
++	# Multiply odd words and even words
++	mul_odd
++	mul_even
 +
-+	mtctr 8
-+	b Loop_8x
++	# Sum the products.
++	xxpermdi 41, 31, 46, 0
++	xxpermdi 42, 31, 47, 0
++	vaddudm	4, 14, 9
++	xxpermdi 36, 31, 36, 3
++	vaddudm	5, 15, 10
++	xxpermdi 37, 31, 37, 3
++	xxpermdi 43, 31, 48, 0
++	vaddudm	6, 16, 11
++	xxpermdi 38, 31, 38, 3
++	xxpermdi 44, 31, 49, 0
++	vaddudm	7, 17, 12
++	xxpermdi 39, 31, 39, 3
++	xxpermdi 45, 31, 50, 0
++	vaddudm	8, 18, 13
++	xxpermdi 40, 31, 40, 3
 +
-+Loop_last:
-+        lxvw4x	48, 0, 3		#  vr16, constants
-+	lxvw4x	49, 17, 3		#  vr17, key 1
-+	lxvw4x	50, 18, 3		#  vr18, key 2
-+	lxvw4x	51, 19, 3		#  vr19, counter, nonce
++	# carry reduction
++	vspltisb 9, 2
++	vsrd	10, 4, 31
++	vsrd	11, 7, 31
++	vand	7, 7, 25
++	vand	4, 4, 25
++	vaddudm	8, 8, 11
++	vsrd	12, 8, 31
++	vaddudm	5, 5, 10
 +
-+	vspltisw 21, 12
-+	vspltisw 23, 7
-+	addis	11, 2, permx@toc@ha
-+	addi	11, 11, permx@toc@l
-+	lxvw4x	32+20, 0, 11
-+	lxvw4x	32+22, 17, 11
++	vsrd	11, 5, 31
++	vand	8, 8, 25
++	vand	5, 5, 25
++	vaddudm	4, 4, 12
++	vsld	10, 12, 9
++	vaddudm	6, 6, 11
 +
-+	sradi	8, 7, 1
-+	mtctr 8
++	vsrd	13, 6, 31
++	vand	6, 6, 25
++	vaddudm	4, 4, 10
++	vsrd	10, 4, 31
++	vaddudm	7, 7, 13
 +
-+Loop_4x:
-+	vspltw  0, 16, 0
-+	vspltw  1, 16, 1
-+	vspltw  2, 16, 2
-+	vspltw  3, 16, 3
++	vsrd	11, 7, 31
++	vand	7, 7, 25
++	vand	4, 4, 25
++	vaddudm	5, 5, 10
++	vsrd	10, 5, 31
++	vand	5, 5, 25
++	vaddudm	6, 6, 10
++	vaddudm	8, 8, 11
 +
-+	vspltw  4, 17, 0
-+	vspltw  5, 17, 1
-+	vspltw  6, 17, 2
-+	vspltw  7, 17, 3
-+	vspltw  8, 18, 0
-+	vspltw  9, 18, 1
-+	vspltw  10, 18, 2
-+	vspltw  11, 18, 3
-+	vspltw  12, 19, 0
-+	vadduwm	12, 12, 30	# increase counter
-+	vspltw  13, 19, 1
-+	vspltw  14, 19, 2
-+	vspltw  15, 19, 3
++	b	do_final_update
 +
-+.align 5
-+quarter_loop:
-+	QT_loop_4x
++do_final_update:
++	# combine 26 bit limbs
++	# v4, v5, v6, v7 and v8 are 26 bit vectors
++	vsld	5, 5, 31
++	vor	20, 4, 5
++	vspltisb 11, 12
++	vsrd	12, 6, 11
++	vsld	6, 6, 31
++	vsld	6, 6, 31
++	vor	20, 20, 6
++	vspltisb 11, 14
++	vsld	7, 7, 11
++	vor	21, 7, 12
++	mfvsrld	16, 40		# save last 2 bytes
++	vsld	8, 8, 11
++	vsld	8, 8, 31
++	vor	21, 21, 8
++	mfvsrld	17, 52
++	mfvsrld	19, 53
++	srdi	16, 16, 24
 +
-+	bdnz	quarter_loop
-+
-+	vadduwm	12, 12, 30
-+	TP_4x 0, 1, 2, 3
-+	TP_4x 4, 5, 6, 7
-+	TP_4x 8, 9, 10, 11
-+	TP_4x 12, 13, 14, 15
-+
-+	Add_state 0
-+	Write_256 0
-+	addi	14, 14, 256	# offset += 256
-+	addi	15, 15, -256	# len += 256
-+
-+	# Update state counter
-+	vspltisw 25, 4
-+	vadduwm	30, 30, 25
-+
-+	cmpdi	15, 0
-+	beq	Out_loop
-+	cmpdi	15, 256
-+	blt	Out_loop
-+
-+	mtctr 8
-+	b Loop_4x
++	std	17, 0(3)
++	std	19, 8(3)
++	stw	16, 16(3)
 +
 +Out_loop:
++	li	3, 0
++
 +	RESTORE_REGS
++
 +	blr
 +
-+Out_no_chacha:
++Out_no_poly1305:
 +	li	3, 0
 +	blr
-+SYM_FUNC_END(chacha_p10le_8x)
++SYM_FUNC_END(poly1305_p10le_4blocks)
 +
-+SYM_DATA_START_LOCAL(PERMX)
++#
++# =======================================================================
++# The following functions implement 64 x 64 bits multiplication poly1305.
++#
++SYM_FUNC_START_LOCAL(Poly1305_init_64)
++	#  mask 0x0FFFFFFC0FFFFFFC
++	#  mask 0x0FFFFFFC0FFFFFFF
++	addis	10, 2, rmask@toc@ha
++	addi	10, 10, rmask@toc@l
++	ld	11, 0(10)
++	ld	12, 8(10)
++
++	# initialize
++	# load key from r3
++	ld	9, 24(3)
++	ld	10, 32(3)
++	and.	9, 9, 11	# cramp mask r0
++	and.	10, 10, 12	# cramp mask r1
++
++        srdi    21, 10, 2
++        add     19, 21, 10      # s1: r19 - (r1 >> 2) *5
++
++        # setup r and s
++        li      25, 0
++	mtvsrdd 32+0, 9, 19	# r0, s1
++	mtvsrdd 32+1, 10, 9	# r1, r0
++	mtvsrdd 32+2, 19, 25	# s1
++	mtvsrdd 32+3, 9, 25	# r0
++
++	blr
++SYM_FUNC_END(Poly1305_init_64)
++
++# Poly1305_mult
++# v6 = (h0, h1), v8 = h2
++# v0 = (r0, s1), v1 = (r1, r0), v2 = s1, v3 = r0
++#
++# Output: v7, v10, v11
++#
++SYM_FUNC_START_LOCAL(Poly1305_mult)
++	#
++	#	d0 = h0 * r0 + h1 * s1
++	vmsumudm	7, 6, 0, 9		# h0 * r0, h1 * s1
++
++	#	d1 = h0 * r1 + h1 * r0 + h2 * s1
++	vmsumudm	11, 6, 1, 9		# h0 * r1, h1 * r0
++	vmsumudm	10, 8, 2, 11		# d1 += h2 * s1
++
++	#       d2 = r0
++	vmsumudm	11, 8, 3, 9		# d2 = h2 * r0
++	blr
++SYM_FUNC_END(Poly1305_mult)
++
++#
++# carry reduction
++# h %=p
++#
++# Input: v7, v10, v11
++# Output: r27, r28, r29
++#
++SYM_FUNC_START_LOCAL(Carry_reduction)
++	mfvsrld	27, 32+7
++	mfvsrld	28, 32+10
++	mfvsrld	29, 32+11
++	mfvsrd	20, 32+7	# h0.h
++	mfvsrd	21, 32+10	# h1.h
++
++	addc	28, 28, 20
++	adde	29, 29, 21
++	srdi	22, 29, 0x2
++	sldi	23, 22, 0x2
++	add	23, 23, 22	# (h2 & 3) * 5
++	addc	27, 27, 23	# h0
++	addze	28, 28		# h1
++	andi.	29, 29, 0x3	# h2
++	blr
++SYM_FUNC_END(Carry_reduction)
++
++#
++# poly1305 multiplication
++# h *= r, h %= p
++#	d0 = h0 * r0 + h1 * s1
++#	d1 = h0 * r1 + h1 * r0 + h2 * s1
++#       d2 = h0 * r0
++#
++#
++# unsigned int poly1305_test_64s(unisgned char *state, const byte *src, size_t len, highbit)
++#   - no highbit if final leftover block (highbit = 0)
++#
++SYM_FUNC_START(poly1305_64s)
++	cmpdi	5, 0
++	ble	Out_no_poly1305_64
++
++	mflr 0
++	std 0, 16(1)
++	stdu 1,-400(1)
++
++	SAVE_GPR 14, 112, 1
++	SAVE_GPR 15, 120, 1
++	SAVE_GPR 16, 128, 1
++	SAVE_GPR 17, 136, 1
++	SAVE_GPR 18, 144, 1
++	SAVE_GPR 19, 152, 1
++	SAVE_GPR 20, 160, 1
++	SAVE_GPR 21, 168, 1
++	SAVE_GPR 22, 176, 1
++	SAVE_GPR 23, 184, 1
++	SAVE_GPR 24, 192, 1
++	SAVE_GPR 25, 200, 1
++	SAVE_GPR 26, 208, 1
++	SAVE_GPR 27, 216, 1
++	SAVE_GPR 28, 224, 1
++	SAVE_GPR 29, 232, 1
++	SAVE_GPR 30, 240, 1
++	SAVE_GPR 31, 248, 1
++
++	# Init poly1305
++	bl Poly1305_init_64
++
++	li 25, 0			# offset to inp and outp
++
++	add 11, 25, 4
++
++	# load h
++	# h0, h1, h2?
++        ld	27, 0(3)
++        ld	28, 8(3)
++        lwz	29, 16(3)
++
++        li      30, 16
++        divdu   31, 5, 30
++
++        mtctr   31
++
++        mr      24, 6		# highbit
++
++Loop_block_64:
++	vxor	9, 9, 9
++
++	ld	20, 0(11)
++	ld	21, 8(11)
++	addi	11, 11, 16
++
++	addc	27, 27, 20
++	adde	28, 28, 21
++	adde	29, 29, 24
++
++	li	22, 0
++	mtvsrdd	32+6, 27, 28	# h0, h1
++	mtvsrdd	32+8, 29, 22	# h2
++
++	bl	Poly1305_mult
++
++	bl	Carry_reduction
++
++	bdnz	Loop_block_64
++
++	std	27, 0(3)
++	std	28, 8(3)
++	stw	29, 16(3)
++
++	li	3, 0
++
++	RESTORE_GPR 14, 112, 1
++	RESTORE_GPR 15, 120, 1
++	RESTORE_GPR 16, 128, 1
++	RESTORE_GPR 17, 136, 1
++	RESTORE_GPR 18, 144, 1
++	RESTORE_GPR 19, 152, 1
++	RESTORE_GPR 20, 160, 1
++	RESTORE_GPR 21, 168, 1
++	RESTORE_GPR 22, 176, 1
++	RESTORE_GPR 23, 184, 1
++	RESTORE_GPR 24, 192, 1
++	RESTORE_GPR 25, 200, 1
++	RESTORE_GPR 26, 208, 1
++	RESTORE_GPR 27, 216, 1
++	RESTORE_GPR 28, 224, 1
++	RESTORE_GPR 29, 232, 1
++	RESTORE_GPR 30, 240, 1
++	RESTORE_GPR 31, 248, 1
++
++	addi    1, 1, 400
++	ld 0, 16(1)
++	mtlr 0
++
++	blr
++
++Out_no_poly1305_64:
++	li	3, 0
++	blr
++SYM_FUNC_END(poly1305_64s)
++
++#
++# Input: r3 = h, r4 = s, r5 = mac
++# mac = h + s
++#
++SYM_FUNC_START(poly1305_emit_64)
++	ld	10, 0(3)
++	ld	11, 8(3)
++	ld	12, 16(3)
++
++	# compare modulus
++	# h + 5 + (-p)
++	mr	6, 10
++	mr	7, 11
++	mr	8, 12
++	addic.	6, 6, 5
++	addze	7, 7
++	addze	8, 8
++	srdi	9, 8, 2		# overflow?
++	cmpdi	9, 0
++	beq	Skip_h64
++	mr	10, 6
++	mr	11, 7
++	mr	12, 8
++
++Skip_h64:
++	ld	6, 0(4)
++	ld	7, 8(4)
++	addc	10, 10, 6
++	adde	11, 11, 7
++	addze	12, 12
++
++	std	10, 0(5)
++	std	11, 8(5)
++	blr
++SYM_FUNC_END(poly1305_emit_64)
++
++SYM_DATA_START_LOCAL(RMASK)
 +.align 5
-+permx:
-+.long 0x22330011, 0x66774455, 0xaabb8899, 0xeeffccdd
-+.long 0x11223300, 0x55667744, 0x99aabb88, 0xddeeffcc
-+SYM_DATA_END(PERMX)
++rmask:
++.byte	0xff, 0xff, 0xff, 0x0f, 0xfc, 0xff, 0xff, 0x0f, 0xfc, 0xff, 0xff, 0x0f, 0xfc, 0xff, 0xff, 0x0f
++cnum:
++.long	0x03ffffff, 0x00000000, 0x03ffffff, 0x00000000
++.long	0x1a, 0x00, 0x1a, 0x00
++.long	0x01000000, 0x01000000, 0x01000000, 0x01000000
++.long	0x00010203, 0x04050607, 0x10111213, 0x14151617
++.long	0x08090a0b, 0x0c0d0e0f, 0x18191a1b, 0x1c1d1e1f
++SYM_DATA_END(RMASK)
 -- 
 2.31.1
 
