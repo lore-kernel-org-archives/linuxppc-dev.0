@@ -4,55 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69201C77B61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Apr 2023 08:59:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD04DC7618E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Apr 2023 09:00:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q4fFh3Yl1z3fBK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Apr 2023 18:59:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q4fGd0CVqz3cdg
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Apr 2023 19:00:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=sTHEbv0Q;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=v8+j+2ry;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=hWANSOtg;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bxkYG1tZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=sTHEbv0Q;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=v8+j+2ry;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=hWANSOtg;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bxkYG1tZ;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q4fDl3BH7z3bWw
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q4fDl4648z3cCL
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2023 18:58:31 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 7513121A14;
-	Mon, 24 Apr 2023 08:58:27 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 065C41FD7D;
+	Mon, 24 Apr 2023 08:58:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1682326707; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=+XJKKs849sQThStkQBOzc9zUGVmnw3q29MM/bZVqjno=;
-	b=sTHEbv0Qsj31NwYUZzEROdQpCSS5LV/X6EuZYOl8EJ/bnEQLJc2J8oV6QktbiKtYcaJuuu
-	bBnHLvNYCglfbu5XkDrmY/YYnMwCjos6qAXMMu6vvsD24subW2YeAo3U/UBSrLftjgjYjW
-	711In0IAbrsSC3ikIF9+94JqNbFPsPo=
+	t=1682326708; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q5qi3O2aD7rdQoBAZWbZmBTd/WmQHLMl1hHZDUbTNtE=;
+	b=hWANSOtgxyn3ZNoTcRSEc/O5/Oo2oB4fBC3JSH0R1tvF7+vQfT/OjqR9YLMt0QTWOz27VX
+	YAxu93Hjj+e4bASRIDMUcQy7aSlY3+/EbLEFzrC44CI1ei0OrMZfmnUj3kT6Ix5FBH3mFm
+	tcJtTW/FwT18rj8pDhIQev+mjj0NEpo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1682326707;
+	s=susede2_ed25519; t=1682326708;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=+XJKKs849sQThStkQBOzc9zUGVmnw3q29MM/bZVqjno=;
-	b=v8+j+2rycJN/3aArKwUvpMuDbTcryq8BQGXsbwDQWcVhH5EDTbrMI2eMMxAJgCq6OQwUBV
-	jxp5mg9z0y66loDQ==
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q5qi3O2aD7rdQoBAZWbZmBTd/WmQHLMl1hHZDUbTNtE=;
+	b=bxkYG1tZc12Cp9Xm2FMtZGWzZt2B4oY9WD2lpM0S/4OQwd4CgyjxKbouDi0Hqi4zjCzTdo
+	GCyoQlXE4n8ERZCA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 39AB513780;
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BC09A13780;
 	Mon, 24 Apr 2023 08:58:27 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id t0TQDLNERmQneQAAMHmgww
+	id aPXjLLNERmQneQAAMHmgww
 	(envelope-from <tzimmermann@suse.de>); Mon, 24 Apr 2023 08:58:27 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -60,10 +64,12 @@ To: deller@gmx.de,
 	npiggin@gmail.com,
 	christophe.leroy@csgroup.eu,
 	geert@linux-m68k.org
-Subject: [PATCH 0/3] fbdev: Set missing owner fields in fb_ops
-Date: Mon, 24 Apr 2023 10:58:22 +0200
-Message-Id: <20230424085825.18287-1-tzimmermann@suse.de>
+Subject: [PATCH 2/3] fbdev/ps3fb: Init owner field of struct fb_ops
+Date: Mon, 24 Apr 2023 10:58:24 +0200
+Message-Id: <20230424085825.18287-3-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230424085825.18287-1-tzimmermann@suse.de>
+References: <20230424085825.18287-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -81,21 +87,26 @@ Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas Zimmerman
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Set the owner field of various drivers' fb_ops instance. The
-setting is required by fbcon, which acquires a reference on the
-fbdev driver's module. Otherwise, users could attempt to unload
-the module while it's still in use.
+Initialize the owner field of struct fb_ops. Required to prevent
+module unloading while the driver is in use.
 
-Thomas Zimmermann (3):
-  fbdev/68328fb: Init owner field of struct fb_ops
-  fbdev/ps3fb: Init owner field of struct fb_ops
-  fbdev/vfb: Init owner field of struct fb_ops
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/ps3fb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/video/fbdev/68328fb.c | 1 +
- drivers/video/fbdev/ps3fb.c   | 1 +
- drivers/video/fbdev/vfb.c     | 1 +
- 3 files changed, 3 insertions(+)
-
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index 2fe08b67eda7..98aaa330a193 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -936,6 +936,7 @@ static irqreturn_t ps3fb_vsync_interrupt(int irq, void *ptr)
+ 
+ 
+ static const struct fb_ops ps3fb_ops = {
++	.owner		= THIS_MODULE,
+ 	.fb_open	= ps3fb_open,
+ 	.fb_release	= ps3fb_release,
+ 	.fb_read        = fb_sys_read,
 -- 
 2.40.0
 
