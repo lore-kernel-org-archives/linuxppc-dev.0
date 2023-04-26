@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED671C77B60
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:18:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 499A6C77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:18:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yZG3Jpgz3glw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:18:14 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yZv6z3xz3g73
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:18:47 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMb62bCz2xGq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yQ81sjsz3frH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:11:12 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMb4s07z4xNH;
-	Wed, 26 Apr 2023 22:08:59 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yQ80Btdz4xD5;
+	Wed, 26 Apr 2023 22:11:12 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <20230224204959.17425-1-paul.gortmaker@windriver.com>
-References: <20230224204959.17425-1-paul.gortmaker@windriver.com>
-Subject: Re: [RFC PATCH 0/3] Remove some PQ2/MPC82xx evaluation platforms
-Message-Id: <168251050529.3973805.12435281184168188654.b4-ty@ellerman.id.au>
-Date: Wed, 26 Apr 2023 22:01:45 +1000
+In-Reply-To: <20230220115913.25811-1-paul.gortmaker@windriver.com>
+References: <20230220115913.25811-1-paul.gortmaker@windriver.com>
+Subject: Re: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
+Message-Id: <168251104239.3981127.10979678618526304723.b4-ty@ellerman.id.au>
+Date: Wed, 26 Apr 2023 22:10:42 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -42,31 +42,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Claudiu Manoil <claudiu.manoil@nxp.com>, Li Yang <leoyang.li@nxp.com>
+Cc: Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>, Li Yang <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 Feb 2023 15:49:56 -0500, Paul Gortmaker wrote:
+On Mon, 20 Feb 2023 06:59:09 -0500, Paul Gortmaker wrote:
 > [This RFC is proposed for v6.4 and hence is based off linux-next.]
 > 
-> This series removes support for two PowerQUICC II (MPC82xx) Freescale
-> processor family evaluation boards that were added to the kernel in
-> approximately the 2003 era.
+> This series removes support for four e300 (MPC83xx) Freescale processor
+> family evaluation boards that were added to the kernel in the 2006 era.
 > 
-> I couldn't easily find a reference picture, but there are line art
-> sketches in the various manuals still available[1,2].  In any case,
-> we've got one system with 32MB RAM and the other with 64MB.  CPU speeds
-> are also what one would expect for twenty year old platforms.
+> These boards were all of a very similar form factor, a largish PCI or PCI-X
+> card that could also be used standalone with an external power brick, and
+> all shared the Modular Development System (MDS) designation.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc: drop MPC8272_ADS platform support
-      https://git.kernel.org/powerpc/c/33777a4e9bb93f66ac2511d99ec66ab50f1a04bc
-[2/3] powerpc: drop PowerQUICC II Family ADS platform support
-      https://git.kernel.org/powerpc/c/859b21a008ebcc7fd876f50738f63750d46b5296
-[3/3] powerpc: drop MPC8272-ADS and PowerQUICC II FADS shared code.
-      https://git.kernel.org/powerpc/c/ad46ad2d853daf082f742c9654da84e3d2a46765
+[1/4] powerpc: drop MPC834x_MDS platform support
+      https://git.kernel.org/powerpc/c/da03101799579f6477feb47a3aefcdb2e2379da1
+[2/4] powerpc: drop MPC836x_MDS platform support
+      https://git.kernel.org/powerpc/c/7840b08aeccbd4d46261a6d5c27699d6939f712e
+[3/4] powerpc: drop MPC837x_MDS platform support
+      https://git.kernel.org/powerpc/c/aa572079633c293882d8fa3973bf6d8c27eb430f
+[4/4] powerpc: drop MPC832x_MDS platform support
+      https://git.kernel.org/powerpc/c/b8fa3af2dbcb0c84270d4d2ecf54a088f7c90701
 
 cheers
