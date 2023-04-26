@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 918F7C7618E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:15:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A10FC77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:15:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yW322LYz3flT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:15:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yWY5B1Cz3gTv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:15:53 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMW67RXz3f5M
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMX3MsRz3ccl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:56 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMW4wYgz4xN1;
-	Wed, 26 Apr 2023 22:08:55 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMX20R6z4xN2;
+	Wed, 26 Apr 2023 22:08:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20230407040909.230998-1-npiggin@gmail.com>
-References: <20230407040909.230998-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/boot: Fix boot wrapper code generation with CONFIG_POWER10_CPU
-Message-Id: <168251050522.3973805.14236252920900448987.b4-ty@ellerman.id.au>
+In-Reply-To: <20230407040924.231023-1-npiggin@gmail.com>
+References: <20230407040924.231023-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/boot: Fix crt0.S current address branch form
+Message-Id: <168251050521.3973805.17767293078183706190.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,20 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Danny Tsen <dtsen@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 07 Apr 2023 14:09:09 +1000, Nicholas Piggin wrote:
-> -mcpu=power10 will generate prefixed and pcrel code by default, which
-> we do not support. The general kernel disables these with cflags, but
-> those were missed for the boot wrapper.
+On Fri, 07 Apr 2023 14:09:24 +1000, Nicholas Piggin wrote:
+> Use the preferred form of branch-and-link for finding the current
+> address so objtool doesn't think it is an unannotated intra-function
+> call.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: Fix boot wrapper code generation with CONFIG_POWER10_CPU
-      https://git.kernel.org/powerpc/c/648a1783fe2551f5a091c9a5f8f463cb2cbf8745
+[1/1] powerpc/boot: Fix crt0.S current address branch form
+      https://git.kernel.org/powerpc/c/cd99dac6ec5fff763852d8ccb8a79f5de50ed830
 
 cheers
