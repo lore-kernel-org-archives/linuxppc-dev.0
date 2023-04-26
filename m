@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68C2FC77B60
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:10:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33772C7618E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:11:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yPT6pX6z3fWm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:10:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yPz6NkTz3fr4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:11:03 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMP32Kfz3cJq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMP3xP1z3cHX
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:49 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMJ2S2fz4xD5;
-	Wed, 26 Apr 2023 22:08:44 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yML1244z4xKZ;
+	Wed, 26 Apr 2023 22:08:46 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
-In-Reply-To: <20230406043320.125138-1-bgray@linux.ibm.com>
-References: <20230406043320.125138-1-bgray@linux.ibm.com>
-Subject: Re: [PATCH v2 0/7] Update DSCR tests
-Message-Id: <168251050525.3973805.7399008940491158034.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20230420051609.1324201-1-mpe@ellerman.id.au>
+References: <20230420051609.1324201-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/configs/64s: Use EXT4 to mount EXT2 filesystems
+Message-Id: <168251050531.3973805.1200764298671153458.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -45,31 +45,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 06 Apr 2023 14:33:13 +1000, Benjamin Gray wrote:
-> The randomness based DSCR tests currently have a low probability of doing
-> any writes to the DSCR, making them inefficient in uncovering bugs.
+On Thu, 20 Apr 2023 15:16:08 +1000, Michael Ellerman wrote:
+> The ext4 code will mount ext2 filesystems, no need to build in both.
 > 
-> This series adds lockstep variants to these RNG tests, to ensure the happy
-> path is always tested, and improves the randomness and size of the RNG
-> tests.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/7] selftests/powerpc/dscr: Correct typos
-      https://git.kernel.org/powerpc/c/15f0c2601e141e3c01c8dc3368b81181bc1c9228
-[2/7] selftests/powerpc: Move bind_to_cpu() to utils.h
-      https://git.kernel.org/powerpc/c/c97b2fc6627e1c26a3a84633e135322918a1e592
-[3/7] selftests/powerpc: Allow bind_to_cpu() to automatically pick CPU
-      https://git.kernel.org/powerpc/c/6ff4dc25483f3f49d1db48af28d4c485fc77bd21
-[4/7] selftests/powerpc/dscr: Add lockstep test cases to DSCR explicit tests
-      https://git.kernel.org/powerpc/c/fda8158870063b99b88a0904bbb95188973b4297
-[5/7] selftests/powerpc/dscr: Improve DSCR explicit random test case
-      https://git.kernel.org/powerpc/c/3067b89ab62305c54ec15b00a2c4dbaf64809c59
-[6/7] selftests/powerpc/dscr: Speed up DSCR sysfs tests
-      https://git.kernel.org/powerpc/c/c14a9d0a79d4fb83c4e9e8cadc5cb094f41d01d0
-[7/7] selftests/powerpc/dscr: Restore timeout to DSCR selftests
-      https://git.kernel.org/powerpc/c/ae7312c09014fceb782a92cfb934e973f08b338f
+[1/2] powerpc/configs/64s: Use EXT4 to mount EXT2 filesystems
+      https://git.kernel.org/powerpc/c/e4c02c3e6c39c3866d517388f6bb431c47743bde
+[2/2] powerpc/configs/64s: Drop JFS Filesystem
+      https://git.kernel.org/powerpc/c/da66ed3198162882755d5c9a147e36f02dc9be93
 
 cheers
