@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ABB9C77B60
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99EC4C77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:17:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yYD5xWhz3fVj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:17:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yYm1Frbz3g4K
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:17:48 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMZ1nV0z3fBf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMb2RCtz3fDD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:59 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMZ0LH3z4xND;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMZ4G5zz4xNF;
 	Wed, 26 Apr 2023 22:08:58 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Pali Rohár <pali@kernel.org>
-In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
-References: <20230408140122.25293-1-pali@kernel.org>
-Subject: Re: [PATCH v5 00/13] powerpc/85xx: p2020: Create one unified machine description
-Message-Id: <168251050523.3973805.4035474722236512162.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Paul Gortmaker <paul.gortmaker@windriver.com>
+In-Reply-To: <20230225201318.3682-1-paul.gortmaker@windriver.com>
+References: <20230225201318.3682-1-paul.gortmaker@windriver.com>
+Subject: Re: [RFC PATCH 0/3] Remove some e600/MPC7448/MPC86xx evaluation platforms
+Message-Id: <168251050528.3973805.17729292959247213914.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,49 +42,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>, Li Yang <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 08 Apr 2023 16:01:09 +0200, Pali Rohár wrote:
-> This patch series unifies all P2020 boards and machine descriptions into
-> one generic unified P2020 machine description. With this generic machine
-> description, kernel can boot on any P2020-based board with correct DTS
-> file.
+On Sat, 25 Feb 2023 15:13:15 -0500, Paul Gortmaker wrote:
+> [This RFC is proposed for v6.4 and hence is based off linux-next.]
 > 
-> Tested on CZ.NIC Turris 1.1 board which has Freescale P2020 processor.
-> Kernel during booting correctly detects P2020 and prints:
-> [    0.000000] Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
+> This is the final series in reducing our day to day cost of carrying rare
+> evaluation platforms.  It targets the e600 Freescale processor family.
+> 
+> It starts with the HPC II (Taiga) platform[1] using the 7448 core.
+> Unlike previous e300/e500 procfams, there was no splitting roles between
+> an MDS evaluation board and a more deploy-ready RDS variant.  The High
+> Performance Computing (HPC) platform combined the two into one, with an
+> attempt to lean slightly more towards the RDS goals.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[01/13] powerpc/85xx: Remove DBG() macro
-        https://git.kernel.org/powerpc/c/6faab5d7ac49d40bedf348a879042681755c14b0
-[02/13] powerpc/85xx: mpc85xx_{ds/rdb} compact the call to mpic_alloc()
-        https://git.kernel.org/powerpc/c/0abc1eadd605d461b9a953e6a27d810ed169ed7b
-[03/13] powerpc/85xx: mpc85xx_{ds/rdb} replace BUG_ON() by WARN_ON()
-        https://git.kernel.org/powerpc/c/1bca2f8219da51a1119d1f4054b44880cbf0494e
-[04/13] powerpc/85xx: mpc85xx_{ds/rdb} replace prink by pr_xxx macro
-        https://git.kernel.org/powerpc/c/15c6ba7992993fecdac52a424ce35b6e4a272c75
-[05/13] powerpc/85xx: Remove #ifdefs CONFIG_PPC_I8259 in mpc85xx_ds
-        https://git.kernel.org/powerpc/c/f435f67024cbee223083aa843f9b69888c8de8a8
-[06/13] powerpc/85xx: Remove #ifdef CONFIG_QUICC_ENGINE in mpc85xx_rdb
-        https://git.kernel.org/powerpc/c/b1a54cb693724b6212efa64d877126769ece4d4c
-[07/13] powerpc/85xx: p2020: Move all P2020 DS machine descriptions to p2020.c
-        https://git.kernel.org/powerpc/c/ba5a7ca277afc0e9083a7a2021725425a493cfb2
-[08/13] powerpc/85xx: p2020: Move all P2020 RDB machine descriptions to p2020.c
-        https://git.kernel.org/powerpc/c/c30aa8fd6cabd12917277facbd2bd81dc3a226d6
-[09/13] powerpc/85xx: mpc85xx_ds: Move i8259 code into own file
-        https://git.kernel.org/powerpc/c/92189c902c2e2f8c0d4238310686e93da99156b5
-[10/13] powerpc/85xx: p2020: Unify .setup_arch and .init_IRQ callbacks
-        https://git.kernel.org/powerpc/c/7d8ae6e081428699999c9d128c4e9d3927c1da03
-[11/13] powerpc/85xx: p2020: Define just one machine description
-        https://git.kernel.org/powerpc/c/1a170efec56ba4707cd33e711dbafb60b7f94626
-[12/13] powerpc/85xx: p2020: Enable boards by new config option CONFIG_PPC_P2020
-        https://git.kernel.org/powerpc/c/b5340a094b5c753ee3490716bcd86546dfd3e078
-[13/13] powerpc: dts: turris1x.dts: Remove "fsl,P2020RDB-PC" compatible string
-        https://git.kernel.org/powerpc/c/40f7b523e31fd68163d9dfe639f2f34b6a726ecd
+[1/3] powerpc: drop HPC II (MPC7448) evaluation platform support.
+      https://git.kernel.org/powerpc/c/f03425a5fd838a841138e3be586c1245fa9c78d6
+[2/3] powerpc: drop HPC-NET/MPC8641D evaluation platform support
+      https://git.kernel.org/powerpc/c/c1d85f3f75e3c8391134b67aefc8d029b26fa38e
+[3/3] powerpc: drop HPCD/MPC8610 evaluation platform support
+      https://git.kernel.org/powerpc/c/248667f8bbded6c00a300dbcabe0d15b3d0de9ab
 
 cheers
