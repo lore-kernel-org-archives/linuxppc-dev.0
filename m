@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08419C77B60
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:12:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0730FC77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:12:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yRV3zx8z3fg1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:12:22 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yS059SDz3ffX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:12:48 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMQ6XQNz3cGr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMR3dWhz3cGr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:51 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMN19DQz4xMv;
-	Wed, 26 Apr 2023 22:08:48 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMR28rSz4xD5;
+	Wed, 26 Apr 2023 22:08:51 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230404102847.3303623-1-mpe@ellerman.id.au>
-References: <20230404102847.3303623-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64: Always build with 128-bit long double
-Message-Id: <168251050518.3973805.12660158568220286420.b4-ty@ellerman.id.au>
+In-Reply-To: <20230420052149.1328094-1-mpe@ellerman.id.au>
+References: <20230420052149.1328094-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/configs/powernv: Add IGB=y
+Message-Id: <168251050531.3973805.1407296666728146358.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dan@danny.cz, daniel@octaforge.org, tpearson@raptorengineering.com, alexdeucher@gmail.com, amd-gfx@lists.freedesktop.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 04 Apr 2023 20:28:47 +1000, Michael Ellerman wrote:
-> The amdgpu driver builds some of its code with hard-float enabled,
-> whereas the rest of the kernel is built with soft-float.
+On Thu, 20 Apr 2023 15:21:49 +1000, Michael Ellerman wrote:
+> Some powernv machines use IGB for networking, so build the driver in to
+> enable net booting such machines.
 > 
-> When building with 64-bit long double, if soft-float and hard-float
-> objects are linked together, the build fails due to incompatible ABI
-> tags.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64: Always build with 128-bit long double
-      https://git.kernel.org/powerpc/c/78f0929884d4811c225fd2c57ecc602c84c07392
+[1/1] powerpc/configs/powernv: Add IGB=y
+      https://git.kernel.org/powerpc/c/836a3de6b2bfe0b7c96a7104d3d567883d8a57b3
 
 cheers
