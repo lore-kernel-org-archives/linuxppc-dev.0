@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33772C7618E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:11:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2028CC7618E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:11:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yPz6NkTz3fr4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:11:03 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yQT5tZFz3cJq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:11:29 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMP3xP1z3cHX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMP3JSsz3cKG
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:49 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yML1244z4xKZ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yML5GYHz4xKb;
 	Wed, 26 Apr 2023 22:08:46 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230420051609.1324201-1-mpe@ellerman.id.au>
-References: <20230420051609.1324201-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/configs/64s: Use EXT4 to mount EXT2 filesystems
-Message-Id: <168251050531.3973805.1200764298671153458.b4-ty@ellerman.id.au>
+In-Reply-To: <20230329072334.2023357-1-mpe@ellerman.id.au>
+References: <20230329072334.2023357-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/Makefile: Don't prefix archhelp commands with "@"
+Message-Id: <168251050531.3973805.2330458771288152374.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -45,16 +45,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 20 Apr 2023 15:16:08 +1000, Michael Ellerman wrote:
-> The ext4 code will mount ext2 filesystems, no need to build in both.
+On Wed, 29 Mar 2023 18:23:33 +1100, Michael Ellerman wrote:
+> It's not necessary to prefix every command in archhelp with "@" (to
+> supress echoing the command), because that is done by the top level
+> Makefile when it evaluates archhelp.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/2] powerpc/configs/64s: Use EXT4 to mount EXT2 filesystems
-      https://git.kernel.org/powerpc/c/e4c02c3e6c39c3866d517388f6bb431c47743bde
-[2/2] powerpc/configs/64s: Drop JFS Filesystem
-      https://git.kernel.org/powerpc/c/da66ed3198162882755d5c9a147e36f02dc9be93
+[1/2] powerpc/Makefile: Don't prefix archhelp commands with "@"
+      https://git.kernel.org/powerpc/c/228c7a95534b438859d6cc068691164bd705a9c8
+[2/2] powerpc/Makefile: Add generated defconfigs to help output
+      https://git.kernel.org/powerpc/c/22db99d673641d37c4e184ca8cff95d8441986af
 
 cheers
