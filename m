@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D46A4C7618E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ABB9C77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:17:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yXj3BLkz3g1D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:16:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yYD5xWhz3fVj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:17:20 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMY4c3Gz3f8T
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMZ1nV0z3fBf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:58 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMY37ktz4xNC;
-	Wed, 26 Apr 2023 22:08:57 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMZ0LH3z4xND;
+	Wed, 26 Apr 2023 22:08:58 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Pali Rohár <pali@kernel.org>
-In-Reply-To: <20230409000812.18904-1-pali@kernel.org>
-References: <20230409000812.18904-1-pali@kernel.org>
-Subject: Re: [PATCH v3 0/8] powerpc/fsl_uli1575: Cleanups
-Message-Id: <168251050523.3973805.17818294144253061969.b4-ty@ellerman.id.au>
+In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
+References: <20230408140122.25293-1-pali@kernel.org>
+Subject: Re: [PATCH v5 00/13] powerpc/85xx: p2020: Create one unified machine description
+Message-Id: <168251050523.3973805.4035474722236512162.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,36 +46,45 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 09 Apr 2023 02:08:04 +0200, Pali Rohár wrote:
-> This patch series contains cleanups for fsl_uli1575 driver.
+On Sat, 08 Apr 2023 16:01:09 +0200, Pali Rohár wrote:
+> This patch series unifies all P2020 boards and machine descriptions into
+> one generic unified P2020 machine description. With this generic machine
+> description, kernel can boot on any P2020-based board with correct DTS
+> file.
 > 
-> This patch series is prerequisite for another patch series:
-> "powerpc/85xx: p2020: Create one unified machine description"
-> https://lore.kernel.org/linuxppc-dev/20230408140122.25293-1-pali@kernel.org/t/#u
-> 
-> Changes in v3:
-> * Fixed compile error in the sixth patch when driver was explicitly
->   enabled on unsupported platform
+> Tested on CZ.NIC Turris 1.1 board which has Freescale P2020 processor.
+> Kernel during booting correctly detects P2020 and prints:
+> [    0.000000] Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/8] powerpc/fsl_uli1575: Misc cleanup
-      https://git.kernel.org/powerpc/c/821b3a471f686910b97228010861c4a99d07fd86
-[2/8] powerpc/85xx: mpc85xx_ds: Simplify mpc85xx_exclude_device() function
-      https://git.kernel.org/powerpc/c/485536b9f289c8c3c86ecaad0f05a1a7b633cb8a
-[3/8] powerpc/fsl_uli1575: Simplify uli_exclude_device() usage
-      https://git.kernel.org/powerpc/c/aa9f3d2d619b878a66dc918d8b3bf984300f975f
-[4/8] powerpc/85xx: mpc85xx_ds: Move uli_init() code into its own driver file
-      https://git.kernel.org/powerpc/c/c4f6d8665cff0abacd164b3cd10afe0385290db2
-[5/8] powerpc/85xx: mpc85xx_rdb: Do not automatically select FSL_ULI1575
-      https://git.kernel.org/powerpc/c/304e364d1f89f590b72af6bec42b5199971b531b
-[6/8] powerpc/fsl_uli1575: Allow to disable FSL_ULI1575 support
-      https://git.kernel.org/powerpc/c/22fdf79171e8509db54599fd2c05ef0022ee83f5
-[7/8] powerpc/86xx: mpc86xx_hpcn: Call uli_init() instead of explicit ppc_md assignment
-      https://git.kernel.org/powerpc/c/40b221daf17bf8e0f27c7f1ffc8d5179d58e8597
-[8/8] powerpc/fsl_uli1575: Mark uli_exclude_device() as static
-      https://git.kernel.org/powerpc/c/3ce271435b717e1dbc4fc8191a69e88deb4f8990
+[01/13] powerpc/85xx: Remove DBG() macro
+        https://git.kernel.org/powerpc/c/6faab5d7ac49d40bedf348a879042681755c14b0
+[02/13] powerpc/85xx: mpc85xx_{ds/rdb} compact the call to mpic_alloc()
+        https://git.kernel.org/powerpc/c/0abc1eadd605d461b9a953e6a27d810ed169ed7b
+[03/13] powerpc/85xx: mpc85xx_{ds/rdb} replace BUG_ON() by WARN_ON()
+        https://git.kernel.org/powerpc/c/1bca2f8219da51a1119d1f4054b44880cbf0494e
+[04/13] powerpc/85xx: mpc85xx_{ds/rdb} replace prink by pr_xxx macro
+        https://git.kernel.org/powerpc/c/15c6ba7992993fecdac52a424ce35b6e4a272c75
+[05/13] powerpc/85xx: Remove #ifdefs CONFIG_PPC_I8259 in mpc85xx_ds
+        https://git.kernel.org/powerpc/c/f435f67024cbee223083aa843f9b69888c8de8a8
+[06/13] powerpc/85xx: Remove #ifdef CONFIG_QUICC_ENGINE in mpc85xx_rdb
+        https://git.kernel.org/powerpc/c/b1a54cb693724b6212efa64d877126769ece4d4c
+[07/13] powerpc/85xx: p2020: Move all P2020 DS machine descriptions to p2020.c
+        https://git.kernel.org/powerpc/c/ba5a7ca277afc0e9083a7a2021725425a493cfb2
+[08/13] powerpc/85xx: p2020: Move all P2020 RDB machine descriptions to p2020.c
+        https://git.kernel.org/powerpc/c/c30aa8fd6cabd12917277facbd2bd81dc3a226d6
+[09/13] powerpc/85xx: mpc85xx_ds: Move i8259 code into own file
+        https://git.kernel.org/powerpc/c/92189c902c2e2f8c0d4238310686e93da99156b5
+[10/13] powerpc/85xx: p2020: Unify .setup_arch and .init_IRQ callbacks
+        https://git.kernel.org/powerpc/c/7d8ae6e081428699999c9d128c4e9d3927c1da03
+[11/13] powerpc/85xx: p2020: Define just one machine description
+        https://git.kernel.org/powerpc/c/1a170efec56ba4707cd33e711dbafb60b7f94626
+[12/13] powerpc/85xx: p2020: Enable boards by new config option CONFIG_PPC_P2020
+        https://git.kernel.org/powerpc/c/b5340a094b5c753ee3490716bcd86546dfd3e078
+[13/13] powerpc: dts: turris1x.dts: Remove "fsl,P2020RDB-PC" compatible string
+        https://git.kernel.org/powerpc/c/40f7b523e31fd68163d9dfe639f2f34b6a726ecd
 
 cheers
