@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B91FC77B60
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:11:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08419C77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 12:12:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yQz6jP8z3fRR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:11:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q5yRV3zx8z3fg1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Apr 2023 22:12:22 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMP3x4Hz3cGr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q5yMQ6XQNz3cGr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2023 22:08:50 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMH1myYz4x84;
-	Wed, 26 Apr 2023 22:08:43 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Q5yMN19DQz4xMv;
+	Wed, 26 Apr 2023 22:08:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>
-In-Reply-To: <20230224041012.772648-1-ajd@linux.ibm.com>
-References: <20230224041012.772648-1-ajd@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Add FW_FEATURE_PLPKS feature flag
-Message-Id: <168251050526.3973805.17589313287191424833.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20230404102847.3303623-1-mpe@ellerman.id.au>
+References: <20230404102847.3303623-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64: Always build with 128-bit long double
+Message-Id: <168251050518.3973805.12660158568220286420.b4-ty@ellerman.id.au>
 Date: Wed, 26 Apr 2023 22:01:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nayna@linux.ibm.com, ruscur@russell.cc
+Cc: dan@danny.cz, daniel@octaforge.org, tpearson@raptorengineering.com, alexdeucher@gmail.com, amd-gfx@lists.freedesktop.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 Feb 2023 15:10:12 +1100, Andrew Donnellan wrote:
-> Add a firmware feature flag, FW_FEATURE_PLPKS, to indicate availability of
-> Platform KeyStore related hcalls.
+On Tue, 04 Apr 2023 20:28:47 +1000, Michael Ellerman wrote:
+> The amdgpu driver builds some of its code with hard-float enabled,
+> whereas the rest of the kernel is built with soft-float.
 > 
-> Check this flag in plpks_is_available() and pseries_plpks_init() before
-> trying to make an hcall.
-> 
+> When building with 64-bit long double, if soft-float and hard-float
+> objects are linked together, the build fails due to incompatible ABI
+> tags.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: Add FW_FEATURE_PLPKS feature flag
-      https://git.kernel.org/powerpc/c/df9cad09493808dca7d16a2fbcac1a78e8d412af
+[1/1] powerpc/64: Always build with 128-bit long double
+      https://git.kernel.org/powerpc/c/78f0929884d4811c225fd2c57ecc602c84c07392
 
 cheers
