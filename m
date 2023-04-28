@@ -4,42 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88BCBC77B61
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Apr 2023 12:03:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AD3EC77B60
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Apr 2023 12:03:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q7B7s6N9Yz3f7K
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Apr 2023 22:03:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q7B8n6jXJz3fZy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Apr 2023 22:03:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=OzkmcOKu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=nI15zjo2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=skinsburskii@linux.microsoft.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=collabora.com (client-ip=2a00:1098:0:82:1000:25:2eeb:e5ab; helo=madras.collabora.co.uk; envelope-from=usama.anjum@collabora.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=OzkmcOKu;
+	dkim=pass (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=nI15zjo2;
 	dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q6jkT6blrz3cRW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2023 03:42:57 +1000 (AEST)
-Received: from skinsburskii.localdomain (c-67-170-100-148.hsd1.wa.comcast.net [67.170.100.148])
-	by linux.microsoft.com (Postfix) with ESMTPSA id BE5D621C33DF;
-	Thu, 27 Apr 2023 10:42:26 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com BE5D621C33DF
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1682617346;
-	bh=lbHi5s+Eft8kCcVZxoCtTZ7X0binDj0JHmqe0h+9dEs=;
-	h=Subject:From:Cc:Date:In-Reply-To:References:From;
-	b=OzkmcOKuax2YnA3bhoej74/6EDZuvfZ0Inv7NG/hTtmTtzHerkqwO1WE2jzjkssq6
-	 RFiLLepRAcL1SMfIEGdWinCDvpJfwr2hWfpxojZMTXR6mzZ7ogYovV8C8OeeB1lfQu
-	 HyWtbtNrXC+BzfVMUO9Yj8zBeTY/z9GWcsc0nnJI=
-Subject: [PATCH 6/7] powerpc: asm/io.h: Expect immutable pointer in
- virt_to_phys prototype
-From: Stanislav Kinsburskii <skinsburskii@linux.microsoft.com>
-Date: Sat, 15 Apr 2023 04:17:53 -0700
-Message-ID:  <168155747391.13678.10634415747614468991.stgit@skinsburskii.localdomain>
-In-Reply-To:  <168155718437.13678.714141668943813263.stgit@skinsburskii.localdomain>
-References:  <168155718437.13678.714141668943813263.stgit@skinsburskii.localdomain>
-User-Agent: StGit/0.19
+X-Greylist: delayed 317 seconds by postgrey-1.36 at boromir; Fri, 28 Apr 2023 18:14:39 AEST
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q754H5gmYz3c6v
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2023 18:14:39 +1000 (AEST)
+Received: from [192.168.10.39] (unknown [39.37.187.173])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: usama.anjum)
+	by madras.collabora.co.uk (Postfix) with ESMTPSA id 2791266032C3;
+	Fri, 28 Apr 2023 09:09:04 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1682669347;
+	bh=j90SNX8gDxgMch3e8i0rNxBg5i2HnX4rEsOIw0VxQug=;
+	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
+	b=nI15zjo251FRTC5y40Ph5kANUL6OpwjTQHhBiCc1uYNex6zMsiHvISoE8uCrrfUDO
+	 CZnVGzeLa5xN2QyYXcoIMztjkby06Zm8lyrvdYl03Wv78nYdfG7+cLw3Bc7PEbKdyJ
+	 Wwekx7SqPnqQXON2mPROfZV+pjJvaPBOrV7zrvrWwJMuBoHDg9gVNYDqMMX8n7UAK+
+	 UEpK8FZlXwJOytRYk80h1vkjDKl6Odzin94OAbo8/pkXzvQaAFQSqVmO9XfPBiNy+Y
+	 hTUKl2JvxqKfdSiijdFoFtMUHNftbg8e0JO6bMfryIgGK9/jvAslyRWk/1XTeQsfbA
+	 5zW4Nyd2rTyQw==
+Message-ID: <b0af0f17-907c-3905-faf8-1c1e43acbca2@collabora.com>
+Date: Fri, 28 Apr 2023 13:09:00 +0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH] selftests/powerpc: Replace obsolete memalign() with
+ posix_memalign()
+Content-Language: en-US
+To: Deming Wang <wangdeming@inspur.com>, mpe@ellerman.id.au, shuah@kernel.org
+References: <20230413010250.4254-1-wangdeming@inspur.com>
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+In-Reply-To: <20230413010250.4254-1-wangdeming@inspur.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 28 Apr 2023 22:01:27 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -53,46 +66,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Stanislav Kinsburskii <stanislav.kinsburskii@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Muhammad Usama Anjum <usama.anjum@collabora.com>, npiggin@gmail.com, linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Stanislav Kinsburskii <stanislav.kinsburskii@gmail.com>
+On 4/13/23 6:02 AM, Deming Wang wrote:
+> memalign() is obsolete according to its manpage.
+> 
+> Replace memalign() with posix_memalign() and remove malloc.h include
+> that was there for memalign().
+Thanks for the patch.
 
-These helper function - virt_to_phys - doesn't need the address pointer to
-be mutable.
+> 
+> As a pointer is passed into posix_memalign(), initialize *s to NULL
+I'm unable to find this initialization below. Did you really mean to add
+the initialization?
 
-In the same time expecting it to be mutable leads to the following build
-warning for constant pointers:
+> to silence a warning about the function's return value being used as
+> uninitialized (which is not valid anyway because the error is properly
+> checked before s is returned).
+> 
+> Signed-off-by: Deming Wang <wangdeming@inspur.com>
+> ---
+>  tools/testing/selftests/powerpc/stringloops/strlen.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/powerpc/stringloops/strlen.c b/tools/testing/selftests/powerpc/stringloops/strlen.c
+> index 9055ebc484d0..f9c1f9cc2d32 100644
+> --- a/tools/testing/selftests/powerpc/stringloops/strlen.c
+> +++ b/tools/testing/selftests/powerpc/stringloops/strlen.c
+> @@ -1,5 +1,4 @@
+>  // SPDX-License-Identifier: GPL-2.0
+> -#include <malloc.h>
+>  #include <stdlib.h>
+>  #include <string.h>
+>  #include <time.h>
+> @@ -51,10 +50,11 @@ static void bench_test(char *s)
+>  static int testcase(void)
+>  {
+>  	char *s;
+> +	int ret;
+>  	unsigned long i;
+>  
+> -	s = memalign(128, SIZE);
+> -	if (!s) {
+> +	ret = posix_memalign((void **)&s, 128, SIZE);
+> +	if (ret < 0) {
+Can we do if (!ret) instead? The page says:
+posix_memalign()  returns zero on success.
+>  		perror("memalign");
+>  		exit(1);
+>  	}
 
-  warning: passing argument 1 of ‘virt_to_phys’ discards ‘const’ qualifier from pointer target type
-
-Signed-off-by: Stanislav Kinsburskii <stanislav.kinsburskii@gmail.com>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Nicholas Piggin <npiggin@gmail.com>
-CC: Christophe Leroy <christophe.leroy@csgroup.eu>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Bjorn Helgaas <bhelgaas@google.com>
-CC: Stanislav Kinsburskii <stanislav.kinsburskii@gmail.com>
-CC: Arnd Bergmann <arnd@arndb.de>
-CC: linuxppc-dev@lists.ozlabs.org
-CC: linux-kernel@vger.kernel.org
----
- arch/powerpc/include/asm/io.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index f1e657c9bbe8..c287eeb9536f 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -959,7 +959,7 @@ extern void __iomem *__ioremap_caller(phys_addr_t, unsigned long size,
-  *	almost all conceivable cases a device driver should not be using
-  *	this function
-  */
--static inline unsigned long virt_to_phys(volatile void * address)
-+static inline unsigned long virt_to_phys(const volatile void * address)
- {
- 	WARN_ON(IS_ENABLED(CONFIG_DEBUG_VIRTUAL) && !virt_addr_valid(address));
- 
-
-
+-- 
+BR,
+Muhammad Usama Anjum
