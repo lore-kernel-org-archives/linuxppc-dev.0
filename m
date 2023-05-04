@@ -4,69 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7CCBC77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Apr 2023 18:26:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99F8CC77B78
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 May 2023 18:00:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q7ybv1Cyyz3fRb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Apr 2023 04:26:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QC1nH3vkzz3fKt
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 04:00:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20221208.gappssmtp.com header.i=@dabbelt-com.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=osIreuhF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lNv067e6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=palmer@dabbelt.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dabbelt-com.20221208.gappssmtp.com header.i=@dabbelt-com.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=osIreuhF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lNv067e6;
 	dkim-atps=neutral
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q7yYz1gFZz3bhx
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Apr 2023 04:24:53 +1000 (AEST)
-Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-64115e652eeso19274884b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Apr 2023 11:24:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dabbelt-com.20221208.gappssmtp.com; s=20221208; t=1682792690; x=1685384690;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HCZIXMPhuJUf80scSK3agzn9QDDKa0LblR7ePMqe91Q=;
-        b=osIreuhFqrOaZAAl/27+IK5Hi1AB1StDT3MQB4UJdmyvLv00XqfYnZDOR5DEup+Zbc
-         EMMhztAPOHm+IIUb2Jko/Ql1Qxequoi14q5q6ioXxwV6ONNbTHbCpppQsquBotBv7NZA
-         0xsoGYgWKOy6+E6yOM0QJd1lS7m7Gz/d+GxIdfE4O363XFxvr58OuzUA8yahfjRkgl76
-         daFFl6DyngHfFxsVeUlgdYpwovv5SK9w21aq217ZLhFo3Y8jm5Njv+T6oNvGK4lJj/ES
-         nDCkxSdKHcKkITKghp2NRdG/dKj2tCryrSlZDF5O3eK56lzP0kExP10+gizADZGE0dho
-         uu6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682792690; x=1685384690;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HCZIXMPhuJUf80scSK3agzn9QDDKa0LblR7ePMqe91Q=;
-        b=CarA9LBLzroLdD+Dm6LTey5wW+7FjHiEypdGQFfxF1gbxyuTMjWaAH83qCNCy5NehH
-         K/L446Mjy/BBn2O8M/qiwEuzp6XgaRExB3leXJw3eAnI2VpCUFajfmWc1EOS/T0BDu64
-         61WmhFPiixyC6gMGGt5p5P5Truz0nHptnEpGBJ/4djnq36cn/qAYJ1mQFkIZeglZf/T3
-         Ayzl9ijG9DeKHKwjJCDAyrVQaL6XI6Y2ArDIfGMUMENIrk+1OCuMOoZl56MaXVgO2dJ/
-         eD3nfjuXz5ol0Qe/pV6O5Nam9a57DIUVVw8Oam7JwmYbC0s1WTIhlpLEFo7xvGR+pSfs
-         DZ0Q==
-X-Gm-Message-State: AC+VfDxTbBERNN0SM4skxEd76dJa0kcmw0+5SCHETPwKYf/k66EjxJ2g
-	6Jl1XtEiaqr1IYRTbEilF3LhyA==
-X-Google-Smtp-Source: ACHHUZ56+SNdXMph8Hdac6/dfoFg0Vhv/AYaUOOmwxyPYiHuY8kgDpOram8U+gPi6EA5PyHcO2u8+w==
-X-Received: by 2002:a17:903:41cf:b0:1a6:d0a8:c70f with SMTP id u15-20020a17090341cf00b001a6d0a8c70fmr11307108ple.5.1682792690325;
-        Sat, 29 Apr 2023 11:24:50 -0700 (PDT)
-Received: from localhost ([50.221.140.188])
-        by smtp.gmail.com with ESMTPSA id l4-20020a170902eb0400b001960706141fsm15126026plb.149.2023.04.29.11.24.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 29 Apr 2023 11:24:49 -0700 (PDT)
-Date: Sat, 29 Apr 2023 11:24:49 -0700 (PDT)
-X-Google-Original-Date: Sat, 29 Apr 2023 11:24:22 PDT (-0700)
-Subject: Re: [PATCH 08/19] riscv: Add explicit include for cpu.h
-In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-8-581e2605fe47@kernel.org>
-From: Palmer Dabbelt <palmer@dabbelt.com>
-To: robh@kernel.org
-Message-ID: <mhng-3fdcd7ba-9d00-4521-a55f-367cf53f5f12@palmer-ri-x1c9a>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QC1mB4krDz3bcN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2023 03:59:22 +1000 (AEST)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 344HwZsL025666;
+	Thu, 4 May 2023 17:59:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=LTKwazOfuKVTvHWBhnrLchlWjhtry1NO0YUsApMH0v8=;
+ b=lNv067e6wWO9l1fqaCfHhP98r24XO9FCg721L/SaXwZYoXWf1ZudkTKVyymRejg9KWs5
+ zti5uqN123nJGY5uEHlxmqvmNd2m44G+ip+RL8ww5f9DorNuXod8uvuGtNhyPftyqw+8
+ 9egpw7dWzDoPrwfGemdH1/953qSLddGLZh2fCbCXGlvA19PiEnZea1vCturEW21i2vRM
+ ihXuFK1q+sLITaCEOppBhggGX2pypR0Cznv/zQX0jR22zC0MhS5E46T52Nj7rm7/SirG
+ U7+YHLajZma6UmRCSacJjyrt0MfaBU04djzRomm2gvRXxucC2S4nqRGFIxers+anSlN6 VA== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qch4j8qq0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 May 2023 17:59:16 +0000
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+	by ppma01dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 344Ev7WF026719;
+	Thu, 4 May 2023 17:59:15 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
+	by ppma01dal.us.ibm.com (PPS) with ESMTPS id 3q8tv9hcxk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 May 2023 17:59:15 +0000
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 344HxEqo28377682
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 4 May 2023 17:59:14 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2EA895803F;
+	Thu,  4 May 2023 17:59:14 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D96F55804E;
+	Thu,  4 May 2023 17:59:13 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.24.27.252])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  4 May 2023 17:59:13 +0000 (GMT)
+From: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH v3] powerpc/iommu: DMA address offset is incorrectly calculated with 2MB TCEs
+Date: Thu,  4 May 2023 12:59:13 -0500
+Message-Id: <20230504175913.83844-1-gbatra@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.39.2 (Apple Git-143)
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 3R-1F5nIa_KbeMGsM01wbq4pZfkxcqAc
+X-Proofpoint-GUID: 3R-1F5nIa_KbeMGsM01wbq4pZfkxcqAc
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-05-04_10,2023-05-04_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 impostorscore=0
+ malwarescore=0 lowpriorityscore=0 mlxlogscore=999 priorityscore=1501
+ bulkscore=0 adultscore=0 phishscore=0 suspectscore=0 clxscore=1015
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2305040142
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,46 +86,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nm@ti.com, chenhuacai@kernel.org, rafael@kernel.org, tiny.windzz@gmail.com, viresh.kumar@linaro.org, lpieralisi@kernel.org, amitk@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, linux-tegra@vger.kernel.org, thierry.reding@gmail.com, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, frowand.list@gmail.com, vireshk@kernel.org, andersson@kernel.org, Marc Zyngier <maz@kernel.org>, samuel@sholland.org, daniel.lezcano@linaro.org, linux@armlinux.org.uk, jernej.skrabec@gmail.com, jonathanh@nvidia.com, wens@csie.org, agross@kernel.org, anup@brainfault.org, rui.zhang@intel.com, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, aou@eecs.berkeley.edu, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, npiggin@gmail.com, robh+dt@kernel.org, linux-mediatek@lists.infradead.org, Paul Walmsley <paul.walmsley@sifive.com>, matthias.bgg@gmail.com, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sboyd@kernel.o
- rg, Greg KH <gregkh@linuxfoundation.org>, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, konrad.dybcio@linaro.org, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, lukasz.luba@arm.com
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Gaurav Batra <gbatra@linux.vnet.ibm.com>, gjoyce@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Mar 2023 08:52:05 PDT (-0700), robh@kernel.org wrote:
-> Removing the include of cpu.h from of_device.h (included by
-> of_platform.h) causes an error in setup.c:
->
-> arch/riscv/kernel/setup.c:313:22: error: arithmetic on a pointer to an incomplete type 'typeof(struct cpu)' (aka 'struct cpu')
->
-> The of_platform.h header is not necessary either, so it can be dropped.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> Please ack and I will take the series via the DT tree.
-> ---
->  arch/riscv/kernel/setup.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-> index 376d2827e736..dcfa4b6fa4b1 100644
-> --- a/arch/riscv/kernel/setup.c
-> +++ b/arch/riscv/kernel/setup.c
-> @@ -8,6 +8,7 @@
->   *  Nick Kossifidis <mick@ics.forth.gr>
->   */
->
-> +#include <linux/cpu.h>
->  #include <linux/init.h>
->  #include <linux/mm.h>
->  #include <linux/memblock.h>
-> @@ -15,7 +16,6 @@
->  #include <linux/console.h>
->  #include <linux/screen_info.h>
->  #include <linux/of_fdt.h>
-> -#include <linux/of_platform.h>
->  #include <linux/sched/task.h>
->  #include <linux/smp.h>
->  #include <linux/efi.h>
+When DMA window is backed by 2MB TCEs, the DMA address for the mapped
+page should be the offset of the page relative to the 2MB TCE. The code
+was incorrectly setting the DMA address to the beginning of the TCE
+range.
 
-Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+Mellanox driver is reporting timeout trying to ENABLE_HCA for an SR-IOV
+ethernet port, when DMA window is backed by 2MB TCEs.
+
+Fixes: 387273118714 ("powerps/pseries/dma: Add support for 2M IOMMU page size")
+
+Signed-off-by: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+
+Reviewed-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/iommu.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index ee95937bdaf1..b8b7a189cd3c 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -517,7 +517,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 		/* Convert entry to a dma_addr_t */
+ 		entry += tbl->it_offset;
+ 		dma_addr = entry << tbl->it_page_shift;
+-		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK(tbl));
++		dma_addr |= (vaddr & ~IOMMU_PAGE_MASK(tbl));
+ 
+ 		DBG("  - %lu pages, entry: %lx, dma_addr: %lx\n",
+ 			    npages, entry, dma_addr);
+@@ -904,6 +904,7 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 	unsigned int order;
+ 	unsigned int nio_pages, io_order;
+ 	struct page *page;
++	int tcesize = (1 << tbl->it_page_shift);
+ 
+ 	size = PAGE_ALIGN(size);
+ 	order = get_order(size);
+@@ -930,7 +931,8 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 	memset(ret, 0, size);
+ 
+ 	/* Set up tces to cover the allocated range */
+-	nio_pages = size >> tbl->it_page_shift;
++	nio_pages = IOMMU_PAGE_ALIGN(size, tbl) >> tbl->it_page_shift;
++
+ 	io_order = get_iommu_order(size, tbl);
+ 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
+ 			      mask >> tbl->it_page_shift, io_order, 0);
+@@ -938,7 +940,8 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 		free_pages((unsigned long)ret, order);
+ 		return NULL;
+ 	}
+-	*dma_handle = mapping;
++
++	*dma_handle = mapping | ((u64)ret & (tcesize - 1));
+ 	return ret;
+ }
+ 
+@@ -949,7 +952,7 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+ 		unsigned int nio_pages;
+ 
+ 		size = PAGE_ALIGN(size);
+-		nio_pages = size >> tbl->it_page_shift;
++		nio_pages = IOMMU_PAGE_ALIGN(size, tbl) >> tbl->it_page_shift;
+ 		iommu_free(tbl, dma_handle, nio_pages);
+ 		size = PAGE_ALIGN(size);
+ 		free_pages((unsigned long)vaddr, get_order(size));
+-- 
+
