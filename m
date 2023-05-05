@@ -4,78 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 319E7C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 19:50:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD289C77B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 21:40:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QCh9Z5z2Gz3fJf
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 May 2023 05:50:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QCkd26hT7z3fLQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 May 2023 07:40:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KI0D3czR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HZAeO2BW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KI0D3czR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HZAeO2BW;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QCh8d5HW1z3fDn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2023 05:49:21 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 345JguoK003476;
-	Fri, 5 May 2023 19:44:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=gzm1CwDyIKYU3piQM3kkGq3B9mytpWsfDxW9dYi+7no=;
- b=KI0D3czRM2SyMifk3CHdthqqPo4AynnfVa+MHziZGkd2O87vpG5Xf++lgGazZwqiGDHs
- bR7bkwj/x+pdbZtYfoLj6WFJyF95dz9GdNMhvBNdL56uJzey0BnznlzQkdd1Vjyvrklz
- 1+XII5LgxwA9c3ymRyiivX29JRJy080ChGLM2pP/Gxy2VqppIXQetuwQwXNr3cotO5Qs
- SFlN/vqbM7TCna/OOqtnRTuKxZRNDoZOQzfHjhUedRW6XbxYIwByQ996qtYfCOUd8pRR
- Ygyv5eCMEDAkA2EYR3EBz2hgKEPFpR3idkYaMKkyR15AkQXxfyy7/pRD2zAgMTUtmec+ tg== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qd86qr0va-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 May 2023 19:44:07 +0000
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
-	by ppma01wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 345Hef7K011923;
-	Fri, 5 May 2023 19:44:06 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([9.208.129.119])
-	by ppma01wdc.us.ibm.com (PPS) with ESMTPS id 3q8tv8878a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 May 2023 19:44:06 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 345Ji50635258698
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 5 May 2023 19:44:05 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 509915805D;
-	Fri,  5 May 2023 19:44:05 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CA0C658043;
-	Fri,  5 May 2023 19:44:03 +0000 (GMT)
-Received: from rhel-laptop.ibm.com.com (unknown [9.160.1.159])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  5 May 2023 19:44:03 +0000 (GMT)
-From: gjoyce@linux.vnet.ibm.com
-To: linux-block@vger.kernel.org
-Subject: [PATCH v5 0/4] generic and PowerPC SED Opal keystore
-Date: Fri,  5 May 2023 14:43:58 -0500
-Message-Id: <20230505194402.2079010-1-gjoyce@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: FrMG7DCN-O5YZdGaCf56YF8C-VnelcnQ
-X-Proofpoint-ORIG-GUID: FrMG7DCN-O5YZdGaCf56YF8C-VnelcnQ
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QCkc162BYz3chx
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2023 07:39:45 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 5E3AD60C08;
+	Fri,  5 May 2023 21:39:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8ED6EC433EF;
+	Fri,  5 May 2023 21:39:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1683322782;
+	bh=cILfvmoswcEBzyPHAhPkq6mCHjMjBKjUv/slG43XOg0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=HZAeO2BWf/kwg4cSHxmU5VAMjLOAXTmzlF5xf5+Y8jSjD1XaWYbclTUhX1syrAgmO
+	 GIUtt4g7zj1VJIErGvktnNEbIAU8zgXkHPjDodhIoCwzOr22+VoeUI+HnbRanM20XQ
+	 Wc+xdGWWsyzqNgz9RMukYoP6Tl2+3rBP5TMfbWM5USVjcBEI2nOQvXwFfTk5WYv7yL
+	 kHTrjq5WxAM7lCmdwPAuSo4PVO+E+idULMg3JhojzKht62IlxjDke0HcaV7InaTDOe
+	 tjHqScMDue2ESP8NmeqMSqbKmwBX5/+1RHOEGEClRb5l0YVQzhkc/ZE/E17LLuIM5W
+	 rJ6FcB6AhSUPA==
+Date: Fri, 5 May 2023 14:39:40 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 1/4] powerpc/64: Force ELFv2 when building with LLVM
+ linker
+Message-ID: <20230505213940.GA1337526@dev-arch.thelio-3990X>
+References: <20230505071850.228734-1-npiggin@gmail.com>
+ <20230505071850.228734-2-npiggin@gmail.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-05-05_26,2023-05-05_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 phishscore=0 spamscore=0 adultscore=0
- clxscore=1015 mlxlogscore=917 mlxscore=0 suspectscore=0 malwarescore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2305050160
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230505071850.228734-2-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,72 +61,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, linux-efi@vger.kernel.org, gjoyce@linux.vnet.ibm.com, me@benboeckel.net, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, andonnel@au1.ibm.com, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org, elliott@hpe.com
+Cc: llvm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+Hi Nick,
 
-Generic functions have been defined for accessing SED Opal keys.
-The generic functions are defined as weak so that they may be superseded
-by keystore specific versions.
++ our mailing list, helps with review and making sure that we are not
+missing anything :)
 
-PowerPC/pseries versions of these functions provide read/write access
-to SED Opal keys in the PLPKS keystore.
+On Fri, May 05, 2023 at 05:18:47PM +1000, Nicholas Piggin wrote:
+> The LLVM linker does not support ELFv1 at all, so BE kernels must be
+> built with ELFv2. The LLD version check was added to be conservative,
+> but previous LLD versions would simply fail to link ELFv1 entirely. The
+> only would be to require LLD >= 15 for BE builds, but let's instead
+> remove that restriction until proven otherwise (LLD 14.0 links a booting
+> ELFv2 BE vmlinux for me).
+> 
+> The minimum binutils has increased such that ELFv2 is always supported,
+> so remove that check while we're here.
+> 
+> Cc: Nathan Chancellor <nathan@kernel.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-The SED block driver has been modified to read the SED Opal
-keystore to populate a key in the SED Opal keyring. Changes to the
-SED Opal key will be written to the SED Opal keystore.
+Thanks for this change! I ran it through my (admittedly limited set of)
+build tests with LD=ld.lld for big endian configurations and I saw no
+build errors with LLVM 11.1.0 through 16.0.3 (and currently, a 17.0.0
+built from main); my simple QEMU boot testing passed as well.
 
-Patch 3 "keystore access for SED Opal keys" is dependent on:
-        https://lore.kernel.org/keyrings/20220818143045.680972-4-gjoyce@linux.vnet.ibm.com/T/#u
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Tested-by: Nathan Chancellor <nathan@kernel.org>
 
-Changelog
-v5:	- updated to reflect changes in PLPKS API
+One small comment below.
 
-v4:
-        - scope reduced to cover just SED Opal keys
-        - base SED Opal keystore is now in SED block driver
-        - removed use of enum to indicate type
-        - refactored common code into common function that read and
-          write use
-        - removed cast to void
-        - added use of SED Opal keystore functions to SED block driver
+> ---
+>  arch/powerpc/Kconfig | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index acffffbd5d77..e5d81645c902 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -624,10 +624,11 @@ config ARCH_HAS_KEXEC_PURGATORY
+>  	def_bool KEXEC_FILE
+>  
+>  config PPC64_BIG_ENDIAN_ELF_ABI_V2
+> -	bool "Build big-endian kernel using ELF ABI V2 (EXPERIMENTAL)"
+> +	prompt "Build big-endian kernel using ELF ABI V2 (EXPERIMENTAL)" if LD_IS_BFD
+> +	bool
 
-v3:
-        - No code changes, but per reviewer requests, adding additional
-          mailing lists(keyring, EFI) for wider review.
+This could be
 
-v2:
-        - Include feedback from Gregory Joyce, Eric Richter and
-          Murilo Opsfelder Araujo.
-        - Include suggestions from Michael Ellerman.
-        - Moved a dependency from generic SED code to this patchset.
-          This patchset now builds of its own.
+    bool "Build big-endian kernel using ELF ABI V2 (EXPERIMENTAL)" if LD_IS_BFD
 
+which is the syntactic sugar equivalent of what you already have.
 
+The rest looks good to me.
 
-Greg Joyce (4):
-  block:sed-opal: SED Opal keystore
-  powerpc/pseries: PLPKS SED Opal keystore support
-  block: sed-opal: keystore access for SED Opal keys
-  powerpc/pseries: update SED for PLPKS api changes
-
- arch/powerpc/platforms/pseries/Kconfig        |   6 +
- arch/powerpc/platforms/pseries/Makefile       |   1 +
- .../powerpc/platforms/pseries/plpks_sed_ops.c | 114 ++++++++++++++++++
- block/Kconfig                                 |   1 +
- block/Makefile                                |   2 +-
- block/sed-opal-key.c                          |  24 ++++
- block/sed-opal.c                              |  18 ++-
- include/linux/sed-opal-key.h                  |  15 +++
- 8 files changed, 178 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/plpks_sed_ops.c
- create mode 100644 block/sed-opal-key.c
- create mode 100644 include/linux/sed-opal-key.h
-
-
-base-commit: 6a8f57ae2eb07ab39a6f0ccad60c760743051026
--- 
-gjoyce@linux.vnet.ibm.com
-
+> +	default y if LD_IS_LLD
+>  	depends on PPC64 && CPU_BIG_ENDIAN
+>  	depends on CC_HAS_ELFV2
+> -	depends on LD_VERSION >= 22400 || LLD_VERSION >= 150000
+>  	help
+>  	  This builds the kernel image using the "Power Architecture 64-Bit ELF
+>  	  V2 ABI Specification", which has a reduced stack overhead and faster
+> @@ -638,8 +639,6 @@ config PPC64_BIG_ENDIAN_ELF_ABI_V2
+>  	  it is less well tested by kernel and toolchain. However some distros
+>  	  build userspace this way, and it can produce a functioning kernel.
+>  
+> -	  This requires GCC and binutils 2.24 or newer.
+> -
+>  config RELOCATABLE
+>  	bool "Build a relocatable kernel"
+>  	depends on PPC64 || (FLATMEM && (44x || PPC_85xx))
+> -- 
+> 2.40.1
+> 
