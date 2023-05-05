@@ -4,88 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96ED1C77B75
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 04:50:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DF66C77B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 07:19:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QCJC56Ny5z3bjY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 14:50:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QCMWs5H0kz3fJj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 17:19:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=jEx4gN3G;
-	dkim=fail reason="signature verification failed" header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=VjbE2S8h;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=SeFpwzWz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.164; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=jEx4gN3G;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=VjbE2S8h;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=SeFpwzWz;
 	dkim-atps=neutral
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.164])
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QCJB445H3z3bjY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2023 14:49:14 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1683262139; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=YiQraUEi+DSbCYDgnxdkd1NGH2KkUgx/maRKMPR6LLkyTEuVdOJrl/xaYTvPodfiLR
-    zvs/ew8x45cK/nkmfW7TglZS+J1bujiVHHqy56Z1VPRWQB60Qo+q3WVYxsfDu26bdCKK
-    Y2GTls2mt8HDpMpfQycb3bsmuhxTnNN00229clmQg/En5n9WjYvUQlT9Pcp4Ib65WCXT
-    56Tw+FCfXtlm5eZ2ojh413hjylqBSWGqL3Phfv9qnnhw0d3CVmPfWnP4yj1UTNMBL5Px
-    ATdT9Lp95x8DG6G73kARCHdsaOT1iK7/H81B3kOUYt00sGfpwi/GrNNRmwPpSwFfmM9H
-    w83w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1683262139;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=hhTdBGYNSPhD8+JJVweFb7fRCgzzpRjGQZFEXgkdE1U=;
-    b=BTOmVo8CMD4w2MU+KhWxA0ikL9QNQmDOdhfsJCEOQZ8FAvkCvU9ru4L5GShcJszzLy
-    KgdL5hDbLoc8C31NhcPaifXJvnyc+AliYRqQJMc+2kq7/SXy52/nqacITRIpNGUOVj78
-    v5N9elzNxVIUh7r5A0Xj3Qd8brNseKtKZDwF2PrljCyPzZdVo+dIP8WMKj5ztOIw/lP3
-    XaC8fupJ9fcg35cHpCi/KThtoB7jbFkwvLkmQhRYW0Y0U551X+/3KOxJd+FMyR/NonhF
-    KQBMBQMfWGtH9F0a+qPQXE9f2vTDwcdcDoHs0ZlGILB1fURaxE5i9YKoNPAKSqZp+mBB
-    jXqQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1683262139;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=hhTdBGYNSPhD8+JJVweFb7fRCgzzpRjGQZFEXgkdE1U=;
-    b=jEx4gN3Gnc78A1y3aVUJh1eMhl7wFA73fXqDI3JvVz7ELgEt48kTbwjSGh5biJAK+p
-    RC4jaZJJ4c1zMI052BGLOdcdTXwppApYl0VB0dQ7KUG4RfFpEr9Lve4Wp206j/VCyL5v
-    6BFps5STQCwkc5dYKmoK9FcaQFEcTH7xhcKJa7sZ9zymx3n6YPoP75oYPG+ND9JzM6fg
-    +pm4+7sNhREbE1pOYqQmv12U0lRzATK8v16Di9yMRH0dHPGpjMG9JCOq2zqo2Cri8m8D
-    FcJzbOK/hNvFvpF2F23CvADsXIp9SnB7pJ3LBUVzj5Gx3hVF5aTX+JSy0NaNi9LzMth9
-    6eug==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1683262139;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=hhTdBGYNSPhD8+JJVweFb7fRCgzzpRjGQZFEXgkdE1U=;
-    b=VjbE2S8hxwaEPw6KRP/VOIWm+jkfLdsv8vfKIEbDsVOMWSSlyifuuJYSk/N5XFQu/z
-    B+QEWcPkaqGgyeeqVEBQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBfio0GngadwiE4ZAdALisHfRENTOMogMbqr1scA=="
-Received: from [IPV6:2a02:8109:8980:4474:a839:1eae:dbf4:9f32]
-    by smtp.strato.de (RZmta 49.4.0 AUTH)
-    with ESMTPSA id w2b3aez454mwT4g
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Fri, 5 May 2023 06:48:58 +0200 (CEST)
-Message-ID: <cc227ae6-262c-dea5-f181-db5d6828cc90@xenosoft.de>
-Date: Fri, 5 May 2023 06:48:57 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QCMVt4dLzz3c6H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2023 17:19:02 +1000 (AEST)
+Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-6436e075166so1123717b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 May 2023 00:19:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1683271140; x=1685863140;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=36Xmxg1WYSQ/MSuUvJxDzsHOMeHtkjW8yCnvfo0ekI8=;
+        b=SeFpwzWzcu749OjWs+4bpINgZzXt/059vGxsGMQEnOYeTVxqZZHGZgByCRFqsHPlMy
+         dnFGiTsqfKdEajx6a1ErmBAIe71JeLnJj6gCI/LKzdd2JNUlyxOLL4fZYeWyUmpSXll2
+         IGl3EVhGf2muHK0t+5//LmBZ9Eiws1NjwMhwk8GW3/DTf3oc4PUsME43n41i8k55vWVt
+         fnjQAGbOPm+yZEzTzAyMEfGzlDDyLlbOVd3z5Z4EHdux32TvuJMcAXN07zsbb4WQhA48
+         7Gb9iSoOKq0gsaL9HQeduHRYNURxUZlz7deS6c8poZr4w+RyGaPL7jbi4fF4qnIFboQh
+         YJFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683271140; x=1685863140;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=36Xmxg1WYSQ/MSuUvJxDzsHOMeHtkjW8yCnvfo0ekI8=;
+        b=eub/Bnsywe070o7gB5hUPcmx4O28tyWDrSPpoi5S+TABp4RIiOGRAI/O7bvTjEAtpZ
+         I3YE1bTHZ6Nm3nzD5H6P16lJFjtM7NdfOW97/Voy5DE0iP5GVZ2AZ4KQlcL6Z1bV31cd
+         WP6YjVbsy6BEENZvk9sBtQ3UQxrA4sjjGngUjkCt91LkUs8aByRDgFLWaDNeC4olVQ5S
+         vB5LbCs2WiArgssYxRxOIRF0KITxbQWZQv/LBFgHNNePuyU33lE0ywHECOLQLvURHVSw
+         /u8EYdG3BNCHrAKCizA1JsUmVn8rzKRHiDhb/yFgUOlKSF36Lpc0qTHa/x289qmKfjdB
+         kzzA==
+X-Gm-Message-State: AC+VfDxLVMZxQ512ecqc0EldHfxe+iwkmTNKJr9m0XvTB19diloB/Prx
+	PDOzb7TgKpvUKMXFnjGcQnn1brVwwxE=
+X-Google-Smtp-Source: ACHHUZ6Bac6VbPK/v8279U9cNe7ZddkqLShFStKRhxY92T953WeSEIIUnW5+f08GReIrm+CYy5Ayzw==
+X-Received: by 2002:a05:6a00:15ca:b0:63b:19e5:a9ec with SMTP id o10-20020a056a0015ca00b0063b19e5a9ecmr1165829pfu.33.1683271139891;
+        Fri, 05 May 2023 00:18:59 -0700 (PDT)
+Received: from wheely.local0.net ([203.59.190.92])
+        by smtp.gmail.com with ESMTPSA id i10-20020aa78d8a000000b00625d84a0194sm915384pfr.107.2023.05.05.00.18.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 May 2023 00:18:59 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/4] powerpc/64: ELFv2 conversion
+Date: Fri,  5 May 2023 17:18:46 +1000
+Message-Id: <20230505071850.228734-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.10.1
-Subject: Re: [PASEMI NEMO] Boot issue with the PowerPC updates 6.4-1
-To: Rob Herring <robh@kernel.org>
-References: <CAL_JsqLZhWZqS7mcyvAEu=m_TmkoZ5V4h54Jh25+Ms0J1_z9Fw@mail.gmail.com>
- <77078121-46E6-48D6-9D73-0C6D586FE410@xenosoft.de>
- <CAL_JsqL0553MTttABaPkL3WFjp-XG_4RtVab1QMsxUiMQC3Ysw@mail.gmail.com>
-Content-Language: de-DE
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <CAL_JsqL0553MTttABaPkL3WFjp-XG_4RtVab1QMsxUiMQC3Ysw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,92 +75,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>, Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christian Zigotzky <info@xenosoft.de>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03 May 2023 at 08:15 pm, Rob Herring wrote:
-> On Wed, May 3, 2023 at 12:40 PM Christian Zigotzky
-> <chzigotzky@xenosoft.de> wrote:
->>
->>
->>> On 3. May 2023, at 18:51, Rob Herring <robh@kernel.org> wrote:
->>>
->>> ﻿On Wed, May 3, 2023 at 11:27 AM Christophe Leroy
->>> <christophe.leroy@csgroup.eu> wrote:
->>>> +Rob as he's the commit's Author.
->>>>
->>>>> Le 03/05/2023 à 17:46, Christian Zigotzky a écrit :
->>>>> On 02 May 2023 at 11:28 am, Michael Ellerman wrote:
->>>>>> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
->>>>>>> Hello,
->>>>>>>
->>>>>>> Our PASEMI Nemo board [1] doesn't boot with the PowerPC updates 6.4-1
->>>>>>> [2].
->>>>>>>
->>>>>>> The kernel hangs right after the booting Linux via __start() @
->>>>>>> 0x0000000000000000 ...
->>>>>>>
->>>>>>> I was able to revert the PowerPC updates 6.4-1 [2] with the following
->>>>>>> command: git revert 70cc1b5307e8ee3076fdf2ecbeb89eb973aa0ff7 -m 1
->>>>>>>
->>>>>>> After a re-compiling, the kernel boots without any problems without the
->>>>>>> PowerPC updates 6.4-1 [2].
->>>>>>>
->>>>>>> Could you please explain me, what you have done in the boot area?
->>>>>> There's a few possibilities, but nothing obvious.
->>>>>>
->>>>>> To begin with can you please test the following commits?
->>>>>>
->>>>>> 77e69ee7ce07
->>>>>> e4ab08be5b49
->>>>>> eeac8ede1755
->>>>>>
->>>>>> cheers
->>>>> git revert e4ab08be5b4902e5b350b0e1e1a3c25eb21d76d4
->>>>>
->>>>> [master 0086e2cbbec0] Revert "powerpc/isa-bridge: Remove open coded
->>>>> "ranges" parsing"
->>>>>   1 file changed, 129 insertions(+), 37 deletions(-)
->>>>>
->>>>> After a recompiling it boots without any problems.
->>>>>
->>>>> e4ab08be5b49 -- powerpc/isa-bridge: Remove open coded "ranges" parsing
->>>>> is the bad commit.
->>> Could I get a DT file for this board?
->>>
->>> In the meantime, just revert this commit. I don't think I'll be able
->>> to fix it before I'm out on sabbatical.
->>>
->>> Rob
->> FYI:
->>
->> Darren Stevens wrote:
->>
->> The dtb passed by the CFE firmware has a number of issues, which up till
->> now have been fixed by use of patches applied to the mainline kernel.
->> This occasionally causes problems with changes made to mainline.
-> Changing the firmware is not the only way to modify the DT. Perhaps a
-> DT overlay would work better than carrying patches if the patches
-> aren't upstreamable. It kind of depends on how early you'd need to
-> apply the overlay and whether you'd need external phandles (aka
-> __symbols__ node, which the base DTB wouldn't support).
->
-> Looking at the DT, I think this change might fix it. Can you test this change:
->
-> diff --git a/drivers/of/address.c b/drivers/of/address.c
-> index e692809ff822..475b74413fdd 100644
-> --- a/drivers/of/address.c
-> +++ b/drivers/of/address.c
-> @@ -284,7 +284,7 @@ EXPORT_SYMBOL(of_range_to_resource);
->
->   static int of_bus_isa_match(struct device_node *np)
->   {
-> -       return of_node_name_eq(np, "isa");
-> +       return of_node_is_type(np, "isa") || of_node_name_eq(np, "isa");
->   }
->
->   static void of_bus_isa_count_cells(struct device_node *child,
-I tested this patch today but unfortunately the Nemo board doesn't boot.
+This series has the steps to remove ELFv1 from the kernel build.
+Patch 1 is a build fix, 2 defaults everything to ELFv2, 3 is
+really a separate issue that concerns userspace. 4 removes v1
+support.
 
-- Christian
+Would like to try getting patch 1 in as a fix, then 2,3 merged in
+the next merge window.
+
+Thanks,
+Nick
+
+Nicholas Piggin (4):
+  powerpc/64: Force ELFv2 when building with LLVM linker
+  powerpc/64: Make ELFv2 the default for big-endian builds
+  powerpc/64s: Remove support for ELFv1 little endian userspace
+  powerpc/64: Remove support for kernel's built with ELFv1 ABI
+
+ arch/powerpc/Kconfig                     | 21 ------
+ arch/powerpc/Makefile                    | 15 +----
+ arch/powerpc/boot/Makefile               |  4 +-
+ arch/powerpc/include/asm/code-patching.h | 36 ++--------
+ arch/powerpc/include/asm/elf.h           |  6 ++
+ arch/powerpc/include/asm/kfence.h        |  4 --
+ arch/powerpc/include/asm/linkage.h       |  9 ---
+ arch/powerpc/include/asm/module.h        |  3 -
+ arch/powerpc/include/asm/ppc_asm.h       | 38 +----------
+ arch/powerpc/include/asm/ptrace.h        | 17 +----
+ arch/powerpc/include/asm/sections.h      |  4 --
+ arch/powerpc/include/asm/thread_info.h   |  6 +-
+ arch/powerpc/kernel/exceptions-64s.S     |  2 +-
+ arch/powerpc/kernel/fadump.c             |  6 +-
+ arch/powerpc/kernel/head_64.S            |  5 +-
+ arch/powerpc/kernel/interrupt_64.S       |  4 --
+ arch/powerpc/kernel/kprobes.c            | 39 +----------
+ arch/powerpc/kernel/misc_64.S            |  4 --
+ arch/powerpc/kernel/module.c             |  8 ---
+ arch/powerpc/kernel/module_64.c          | 84 ++++--------------------
+ arch/powerpc/kernel/trace/ftrace.c       | 10 ---
+ arch/powerpc/kernel/vdso/Makefile        |  2 +-
+ arch/powerpc/kernel/vdso/gettimeofday.S  |  2 +-
+ arch/powerpc/kernel/vmlinux.lds.S        |  8 ---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 36 +++++-----
+ arch/powerpc/kvm/book3s_interrupts.S     | 14 ++--
+ arch/powerpc/kvm/book3s_rmhandlers.S     | 12 +---
+ arch/powerpc/net/bpf_jit.h               |  6 --
+ arch/powerpc/net/bpf_jit_comp.c          | 14 ++--
+ arch/powerpc/net/bpf_jit_comp64.c        | 13 ++--
+ arch/powerpc/platforms/Kconfig.cputype   |  6 --
+ drivers/crypto/vmx/Makefile              |  4 --
+ kernel/extable.c                         |  2 +-
+ kernel/trace/ftrace.c                    | 12 ----
+ 34 files changed, 79 insertions(+), 377 deletions(-)
+
+-- 
+2.40.1
+
