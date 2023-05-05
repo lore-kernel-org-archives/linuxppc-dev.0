@@ -4,49 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79508C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 11:57:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BE98C77B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 12:22:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QCThH4T3yz3fK0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 21:57:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QCVDf2VBtz3fJj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 May 2023 22:22:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pAnBmTvp;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CmV1kkBU;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QCTgJ3863z3bqx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2023 21:56:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QCVCh6CT9z3c9s
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2023 22:21:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pAnBmTvp;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CmV1kkBU;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QCTgG04Kbz4x3k;
-	Fri,  5 May 2023 21:56:41 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QCVCc12ytz4x3k;
+	Fri,  5 May 2023 22:21:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1683287802;
-	bh=wL0ut7KPgA2OC3Dll+ns1sPtjzsQDnTnwgItU5roP2g=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=pAnBmTvp2iT6sEDsOS3XkU3XM/V1lGsw9QC2wCL8EmIE9d0cEUAwxoibwuvYo/6Cs
-	 BbXtw4WRlWj1hdo4z6MV1fxNWNIpN0w8YVqJBpoGofE05Bs4wpvsM108zY+XJsHu1n
-	 rObjiNrn/fjQRwK2NQ9KwrdPQ/NE6EcZwUgh1j0uX7JqgUiYAiZ/K348c4FM4qoZ/j
-	 H0i3KKVzdi+3D6u1M+3FDapoVJCy2C1r11M23k7XKnDVjh17qBledtTGpPxTrIaSH3
-	 IUrCmu+2us/uZTtygzUq5yv6gPMf8Iplw9akcH6uM+qiFLpwClsixZUEipR7XYJGVU
-	 dqpTxyBv+iOGA==
+	s=201909; t=1683289276;
+	bh=42mSeZ5RJes33EWFCs3qopc/X9jfm5CfBgAsBcAfbCQ=;
+	h=From:To:Subject:In-Reply-To:References:Date:From;
+	b=CmV1kkBUWLzbUkFmIX1zaXUQVNPqmXCCnLEqr98fZ4KIl8bMzTh+UcdD5dUXF90ro
+	 6p8CsUE15YpVeb2FeBQGplNbvhykatokDaQYgQAUAbkesL43busv2ON3qqJx1/izov
+	 UP6FL4Rcy6m29TLmKzcq/bueAsczJFehRqJknnZYdbf6cBTVI1tXJ4OJegR3rOmFvn
+	 AA7KSha6opDnKPMqka6GlXl5sCE+W0X2URyGWWtL46OucD2D1EWmpno2P27WeZ2CO7
+	 q+pC3FbgBYrmvUqXMXaHQoZduZsx6xdtueQkQ9+sPYwiT4JvLIKNB0vYAhVRYMEa38
+	 +xEQJbANJOprw==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Marco Elver <elver@google.com>
-Subject: Re: [PATCH] mm: kfence: Fix false positives on big endian
-In-Reply-To: <CANpmjNOmtTU=__W7=pKVibVZ3OnfgSsXeSsqHA7y=e3D-G026Q@mail.gmail.com>
-References: <20230505035127.195387-1-mpe@ellerman.id.au>
- <CANpmjNOmtTU=__W7=pKVibVZ3OnfgSsXeSsqHA7y=e3D-G026Q@mail.gmail.com>
-Date: Fri, 05 May 2023 21:56:40 +1000
-Message-ID: <87zg6j56vb.fsf@mail.lhotse>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin
+ <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 0/4] powerpc/64: ELFv2 conversion
+In-Reply-To: <6d0609ae-e31b-8530-7509-7861b07d66c7@csgroup.eu>
+References: <20230505071850.228734-1-npiggin@gmail.com>
+ <6d0609ae-e31b-8530-7509-7861b07d66c7@csgroup.eu>
+Date: Fri, 05 May 2023 22:21:15 +1000
+Message-ID: <87wn1n55qc.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,35 +61,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: zhangpeng.00@bytedance.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org, glider@google.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Marco Elver <elver@google.com> writes:
-> On Fri, 5 May 2023 at 05:51, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>
->> Since commit 1ba3cbf3ec3b ("mm: kfence: improve the performance of
->> __kfence_alloc() and __kfence_free()"), kfence reports failures in
->> random places at boot on big endian machines.
->>
->> The problem is that the new KFENCE_CANARY_PATTERN_U64 encodes the
->> address of each byte in its value, so it needs to be byte swapped on big
->> endian machines.
->>
->> The compiler is smart enough to do the le64_to_cpu() at compile time, so
->> there is no runtime overhead.
->>
->> Fixes: 1ba3cbf3ec3b ("mm: kfence: improve the performance of __kfence_alloc() and __kfence_free()")
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 05/05/2023 =C3=A0 09:18, Nicholas Piggin a =C3=A9crit=C2=A0:
+>> This series has the steps to remove ELFv1 from the kernel build.
+>> Patch 1 is a build fix, 2 defaults everything to ELFv2, 3 is
+>> really a separate issue that concerns userspace. 4 removes v1
+>> support.
 >
-> Reviewed-by: Marco Elver <elver@google.com>
+> I see CONFIG_MPROFILE_KERNEL is restricted to LITTLE_ENDIAN. Is that=20
+> correct ? Don't we have mprofile_kernel as well on BIG ENDIAN once=20
+> switched to ABI v2 ? If so, can we drop the -pg based profiling=20
+> completely, or is CLANG still not supporting mprofile_kernel ?
 
-Thanks.
+Clang does not support -mprofile-kernel.
 
-> Andrew, is the Fixes enough to make it to stable as well or do we also
-> need Cc: stable?
+AIUI they would like us to switch to -fpatchable-function-entry which
+could then be supported on GCC & clang.
 
-That commit is not in any releases yet (or even an rc), so as long as it
-gets picked up before v6.4 then it won't need to go to stable.
+That would be a nice cleanup but also a bunch of work that no one has
+found time to do.
+
+https://github.com/linuxppc/issues/issues/447
+https://github.com/llvm/llvm-project/issues/57031
+
+
+So for now we need to keep the -pg based version.
 
 cheers
