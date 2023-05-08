@@ -4,91 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5BE2C77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:02:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FE94C77B7D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:03:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4Lc1WPrz3cM1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:02:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4MY3mPMz3f99
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:03:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DXr0yixV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UiwNLsOy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DXr0yixV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UiwNLsOy;
 	dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Kb2rjMz3c9V
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Kb33z0z3c9s
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 12:01:54 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34820KlX025496;
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 348102uw017665;
 	Mon, 8 May 2023 02:01:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=+YiXo72W1fsQGrtZS7y3JLveH0LGnNFikH1BjPwsIs0=;
- b=DXr0yixVc82VrrclZRWiGpT7IdACWvisF6AB+a5U3yYcY9eaop/AxTvAFT07KNXQfjOw
- AFGyEpAt7tCA7kqp5+nmjjQOq7dKE/m1bnDC98ZpseL9ewp7z00hmSeQ7w09Ky1cH2YJ
- N9JcIHkwJzv0jkweZQoYERe80rvvWl+Md/zOeSopsQKexlt9LiW0TOD4x9E8TLX2B4DN
- jh+lHahb8M1Mt81ZpyLISi/AjN0C/dTo5NzUt05ykSE4IbFFaSZv+UoNDF4Dq46AkHhD
- dGWItQN/zhgTKP3yRz3jJ+JC4pMnbjDE7GzOXYGWuBM5Vo0XYMWNm1cT3tb8vljKB/h9 qQ== 
+ bh=sXajOJpKq8jxtnQttpjKbYnXvrF3M3ZkzttFFL9TAXI=;
+ b=UiwNLsOyxfcaed98CkcE3lE55t4PRxgwzqDU9T/M/05iWP6NyEb+7Ko3TXd8As7FXHDK
+ yEy3lj5F4CMjqcO+CPhP0FyYR+402aHzu93qqaGUDS9j6HWm3CFYjgD90T7SrWFrWp+o
+ +jJq5D28K8Txt5O/+Kk7H+9VC5dNfJbI87FLUX9BnZjB3/tvVEjtDCtoXL7c8A5Pq59l
+ LIno6x7uSVSgeKEYhWvnaUGP4a/FChbgKiLAL9BmloJwjU0KcX51BfBAMzz/MGo71b15
+ aZyJyiDhXNI1z0Ch0QYRDkmcWfCKE/HsFPqbydZt7GHzlcQ8zOGY/1b/P0bSbUiNsvUy vw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qdka0vtsa-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qdm3139na-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 08 May 2023 02:01:43 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481ZNZM007808;
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481eNPF009193;
 	Mon, 8 May 2023 02:01:42 GMT
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qdka0vtrs-1
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qdm3139mr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 08 May 2023 02:01:42 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
-	by ppma06fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3481X98w016336;
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3480dhL8030375;
 	Mon, 8 May 2023 02:01:40 GMT
 Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma06fra.de.ibm.com (PPS) with ESMTPS id 3qde5fgpj5-1
+	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3qdeh6gpgp-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 08 May 2023 02:01:40 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821cIf5505538
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821c6j5505540
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Mon, 8 May 2023 02:01:38 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 325F920040;
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4918F20043;
 	Mon,  8 May 2023 02:01:38 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AA4712004B;
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BB07E2004E;
 	Mon,  8 May 2023 02:01:37 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Mon,  8 May 2023 02:01:37 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 43C2B60593;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4E568605A5;
 	Mon,  8 May 2023 12:01:35 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/12] powerpc: qspinlock: Fix qnode->locked value interpretation
-Date: Mon,  8 May 2023 12:01:09 +1000
-Message-Id: <20230508020120.218494-2-rmclure@linux.ibm.com>
+Subject: [PATCH 04/12] asm-generic/mmiowb: Mark accesses to fix KCSAN warnings
+Date: Mon,  8 May 2023 12:01:12 +1000
+Message-Id: <20230508020120.218494-5-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230508020120.218494-1-rmclure@linux.ibm.com>
 References: <20230508020120.218494-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: V5L0DOQoKqy8ydLqq0FOxiWsvHGcn1lK
-X-Proofpoint-ORIG-GUID: O1QdXCtfF48cbGGCCGoI-AwnCfKjROWZ
+X-Proofpoint-GUID: RTKNhKV7DwAwOpasNHOWs101493OvhsI
+X-Proofpoint-ORIG-GUID: N_vd80AdTKzx81U399P0Mz1blHbH64pa
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-05-07_10,2023-05-05_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- lowpriorityscore=0 impostorscore=0 phishscore=0 mlxlogscore=908
- bulkscore=0 suspectscore=0 clxscore=1015 malwarescore=0 spamscore=0
- mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=948 spamscore=0
+ suspectscore=0 clxscore=1015 impostorscore=0 mlxscore=0 malwarescore=0
+ phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2303200000 definitions=main-2305080009
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -101,67 +101,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, npiggin@gmail.com, arnd@arndb.de
+Cc: arnd@arndb.de, npiggin@gmail.com, Rohan McLure <rmclure@linux.ibm.com>, Gautam Menghani <gautammenghani201@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A comment accompanying the locked attribute of a qnode assigns a value
-of 1 to mean that the lock has been acquired. The usages of this
-variable however assume opposite semantics. Update usages so that the
-assertions of this comment are reflected in this file.
+Prior to this patch, data races are detectable by KCSAN of the following
+forms:
+
+[1] Asynchronous calls to mmiowb_set_pending() from an interrupt context
+    or otherwise outside of a critical section
+[2] Interrupted critical sections, where the interrupt will itself
+    acquire a lock
+
+In case [1], calling context does not need an mmiowb() call to be
+issued, otherwise it would do so itself. Such calls to
+mmiowb_set_pending() are either idempotent or no-ops.
+
+In case [2], irrespective of when the interrupt occurs, the interrupt
+will acquire and release its locks prior to its return, nesting_count
+will continue balanced. In the worst case, the interrupted critical
+section during a mmiowb_spin_unlock() call observes an mmiowb to be
+pending and afterward is interrupted, leading to an extraneous call to
+mmiowb(). This data race is clearly innocuous.
+
+Mark all potentially asynchronous memory accesses with READ_ONCE or
+WRITE_ONCE, including increments and decrements to nesting_count. This
+has the effect of removing KCSAN warnings at consumer's callsites.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Reported-by: Gautam Menghani <gautammenghani201@gmail.com>
 ---
- arch/powerpc/lib/qspinlock.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ include/asm-generic/mmiowb.h | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/lib/qspinlock.c b/arch/powerpc/lib/qspinlock.c
-index e4bd145255d0..9cf93963772b 100644
---- a/arch/powerpc/lib/qspinlock.c
-+++ b/arch/powerpc/lib/qspinlock.c
-@@ -435,7 +435,7 @@ static __always_inline bool yield_to_prev(struct qspinlock *lock, struct qnode *
+diff --git a/include/asm-generic/mmiowb.h b/include/asm-generic/mmiowb.h
+index 5698fca3bf56..0b8b794150db 100644
+--- a/include/asm-generic/mmiowb.h
++++ b/include/asm-generic/mmiowb.h
+@@ -35,27 +35,32 @@ DECLARE_PER_CPU(struct mmiowb_state, __mmiowb_state);
+ static inline void mmiowb_set_pending(void)
+ {
+ 	struct mmiowb_state *ms = __mmiowb_state();
++	u16 nesting_count = READ_ONCE(ms->nesting_count);
  
- 	smp_rmb(); /* See __yield_to_locked_owner comment */
+-	if (likely(ms->nesting_count))
+-		ms->mmiowb_pending = ms->nesting_count;
++	if (likely(nesting_count))
++		WRITE_ONCE(ms->mmiowb_pending, nesting_count);
+ }
  
--	if (!node->locked) {
-+	if (node->locked) {
- 		yield_to_preempted(prev_cpu, yield_count);
- 		spin_begin();
- 		return preempted;
-@@ -566,7 +566,7 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
- 	node->lock = lock;
- 	node->cpu = smp_processor_id();
- 	node->yield_cpu = -1;
--	node->locked = 0;
-+	node->locked = 1;
+ static inline void mmiowb_spin_lock(void)
+ {
+ 	struct mmiowb_state *ms = __mmiowb_state();
+-	ms->nesting_count++;
++
++	/* Increment need not be atomic. Nestedness is balanced over interrupts. */
++	WRITE_ONCE(ms->nesting_count, READ_ONCE(ms->nesting_count) + 1);
+ }
  
- 	tail = encode_tail_cpu(node->cpu);
+ static inline void mmiowb_spin_unlock(void)
+ {
+ 	struct mmiowb_state *ms = __mmiowb_state();
++	u16 pending = READ_ONCE(ms->mmiowb_pending);
  
-@@ -584,7 +584,7 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
- 
- 		/* Wait for mcs node lock to be released */
- 		spin_begin();
--		while (!node->locked) {
-+		while (node->locked) {
- 			spec_barrier();
- 
- 			if (yield_to_prev(lock, node, old, paravirt))
-@@ -693,13 +693,13 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
- 	 */
- 	if (paravirt && pv_prod_head) {
- 		int next_cpu = next->cpu;
--		WRITE_ONCE(next->locked, 1);
-+		WRITE_ONCE(next->locked, 0);
- 		if (_Q_SPIN_MISO)
- 			asm volatile("miso" ::: "memory");
- 		if (vcpu_is_preempted(next_cpu))
- 			prod_cpu(next_cpu);
- 	} else {
--		WRITE_ONCE(next->locked, 1);
-+		WRITE_ONCE(next->locked, 0);
- 		if (_Q_SPIN_MISO)
- 			asm volatile("miso" ::: "memory");
+-	if (unlikely(ms->mmiowb_pending)) {
+-		ms->mmiowb_pending = 0;
++	WRITE_ONCE(ms->mmiowb_pending, 0);
++	if (unlikely(pending)) {
+ 		mmiowb();
  	}
+ 
+-	ms->nesting_count--;
++	/* Decrement need not be atomic. Nestedness is balanced over interrupts. */
++	WRITE_ONCE(ms->nesting_count, READ_ONCE(ms->nesting_count) - 1);
+ }
+ #else
+ #define mmiowb_set_pending()		do { } while (0)
 -- 
 2.37.2
 
