@@ -4,74 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E954C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 01:35:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5BE2C77B7D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:02:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QF3lc3Fc8z3fDQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 11:35:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4Lc1WPrz3cM1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:02:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=L14pxpyy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DXr0yixV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=L14pxpyy;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DXr0yixV;
 	dkim-atps=neutral
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF3kh64jWz30QQ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 11:35:06 +1000 (AEST)
-Received: by mail-pj1-x102f.google.com with SMTP id 98e67ed59e1d1-24e2bbec3d5so2783209a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 May 2023 18:35:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1683509705; x=1686101705;
-        h=in-reply-to:references:from:subject:cc:to:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HU/mjP7Ap3TZEbMspJ2h6V5QMnaNP2Fmf0Z6DZ7aqHE=;
-        b=L14pxpyy1Yc8+HiewNaTQb+1joh8hYSOP3/eSCWmsTMJDnd6785STORT8kwjkGo2Se
-         0i8+WagpXa8hJmR6t/LT7/sRKpmf+/KhkH0cbQcr2O6uaSzqM3ZscCvvnujixJA1Ohtz
-         +TDocKRxq9Z7oFDz3JTmqk+qGJoW7sLBtQtnhjtT1o4Jbh/kSUAEi1DayHu/qBKsz9g0
-         OpLBg/55IJVmGITHmhJsf02wK5FPOZWzon9TAgZuxFxmSXGX2tWCWkv+4B/RWRpA1i4X
-         sWQkpWNXRRqS1ceEPdkUmdpxnwjVOPZRPR/xEDB1D4aX3s85+ine5OJy93J2i3tU985P
-         Pejg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683509705; x=1686101705;
-        h=in-reply-to:references:from:subject:cc:to:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=HU/mjP7Ap3TZEbMspJ2h6V5QMnaNP2Fmf0Z6DZ7aqHE=;
-        b=Y7cCuXOtptIz0ghpzi3OxB2uPctmzeoOL/vNxZflFeXjkFdM7RYB5nFtTY/pDckP3a
-         /ZYtFV+OW0/72vfM+M5japbVdwOmmOfTs0WDQwJ+WCRzasjKLPy13jm0RLUJlGlxUVU1
-         gLj/mJRYPqSsKl7/sDPinZevl6tYyZapZ0LCdzDpMpU4hJIYeVPgZ+lzp80AqLkyhqHS
-         LpYVI/ZKaXItGIJZ/5RcAAEWKjIdu0GJf6cymHx9ASob4nwzp/J11F+iSJF13dUfu7pD
-         V9L5iP01ZdFgNjSs2F1trYnGrWbLNJ9b2cgtPeKD8MsJ8ozDesw88OtY8wVwRDNxb0kb
-         grLg==
-X-Gm-Message-State: AC+VfDz41+N/BRtffT1sny7lUgkVHJYDOFaynxPG9DhFkrHJLfZmRskU
-	0+xIVQantbJEWwZVAPzmR+4=
-X-Google-Smtp-Source: ACHHUZ7wpMgBNBiHQoh+RV3/6p2Xa+RAutLvbhq2Sce/KNFSy1fHPppI+Mwi880EABIulXrieqwNrA==
-X-Received: by 2002:a17:90b:19ce:b0:24e:1177:f467 with SMTP id nm14-20020a17090b19ce00b0024e1177f467mr9325645pjb.12.1683509704923;
-        Sun, 07 May 2023 18:35:04 -0700 (PDT)
-Received: from localhost (58-6-235-78.tpgi.com.au. [58.6.235.78])
-        by smtp.gmail.com with ESMTPSA id n14-20020a170902968e00b001a4edbabad3sm5814967plp.230.2023.05.07.18.34.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 07 May 2023 18:35:04 -0700 (PDT)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 08 May 2023 11:34:49 +1000
-Message-Id: <CSGIDMMFXIVH.3SFPYD19Y5WQX@wheely>
-To: "Doug Anderson" <dianders@chromium.org>
-Subject: Re: [PATCH v4 05/17] watchdog/hardlockup: Rename
- touch_nmi_watchdog() to touch_hardlockup_watchdog()
-From: "Nicholas Piggin" <npiggin@gmail.com>
-X-Mailer: aerc 0.14.0
-References: <20230504221349.1535669-1-dianders@chromium.org>
- <20230504151100.v4.5.I4e47cbfa1bb2ebbcdb5ca16817aa2887f15dc82c@changeid>
- <CSE04EI159N2.2TSXHBN2QLFCM@wheely>
- <CAD=FV=XXzo3m2dqwtNST+uXGQz6NW_e-B6-tWkJMrHoCTZBT9Q@mail.gmail.com>
-In-Reply-To: <CAD=FV=XXzo3m2dqwtNST+uXGQz6NW_e-B6-tWkJMrHoCTZBT9Q@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Kb2rjMz3c9V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 12:01:54 +1000 (AEST)
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34820KlX025496;
+	Mon, 8 May 2023 02:01:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=+YiXo72W1fsQGrtZS7y3JLveH0LGnNFikH1BjPwsIs0=;
+ b=DXr0yixVc82VrrclZRWiGpT7IdACWvisF6AB+a5U3yYcY9eaop/AxTvAFT07KNXQfjOw
+ AFGyEpAt7tCA7kqp5+nmjjQOq7dKE/m1bnDC98ZpseL9ewp7z00hmSeQ7w09Ky1cH2YJ
+ N9JcIHkwJzv0jkweZQoYERe80rvvWl+Md/zOeSopsQKexlt9LiW0TOD4x9E8TLX2B4DN
+ jh+lHahb8M1Mt81ZpyLISi/AjN0C/dTo5NzUt05ykSE4IbFFaSZv+UoNDF4Dq46AkHhD
+ dGWItQN/zhgTKP3yRz3jJ+JC4pMnbjDE7GzOXYGWuBM5Vo0XYMWNm1cT3tb8vljKB/h9 qQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qdka0vtsa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 May 2023 02:01:43 +0000
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481ZNZM007808;
+	Mon, 8 May 2023 02:01:42 GMT
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qdka0vtrs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 May 2023 02:01:42 +0000
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+	by ppma06fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3481X98w016336;
+	Mon, 8 May 2023 02:01:40 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma06fra.de.ibm.com (PPS) with ESMTPS id 3qde5fgpj5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 May 2023 02:01:40 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821cIf5505538
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 8 May 2023 02:01:38 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 325F920040;
+	Mon,  8 May 2023 02:01:38 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AA4712004B;
+	Mon,  8 May 2023 02:01:37 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  8 May 2023 02:01:37 +0000 (GMT)
+Received: from civic.. (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 43C2B60593;
+	Mon,  8 May 2023 12:01:35 +1000 (AEST)
+From: Rohan McLure <rmclure@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 01/12] powerpc: qspinlock: Fix qnode->locked value interpretation
+Date: Mon,  8 May 2023 12:01:09 +1000
+Message-Id: <20230508020120.218494-2-rmclure@linux.ibm.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230508020120.218494-1-rmclure@linux.ibm.com>
+References: <20230508020120.218494-1-rmclure@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: V5L0DOQoKqy8ydLqq0FOxiWsvHGcn1lK
+X-Proofpoint-ORIG-GUID: O1QdXCtfF48cbGGCCGoI-AwnCfKjROWZ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-05-07_10,2023-05-05_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ lowpriorityscore=0 impostorscore=0 phishscore=0 mlxlogscore=908
+ bulkscore=0 suspectscore=0 clxscore=1015 malwarescore=0 spamscore=0
+ mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2305080009
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,76 +101,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark
- Rutland <mark.rutland@arm.com>, Ian
- Rogers <irogers@google.com>, Randy
- Dunlap <rdunlap@infradead.org>, Lecopzer Chen <lecopzer.chen@mediatek.com>, ravi.v.shankar@intel.com, kgdb-bugreport@lists.sourceforge.net, ricardo.neri@intel.com, Stephane Eranian <eranian@google.com>, sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Will Deacon <will@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Andi Kleen <ak@linux.intel.com>, Chen-Yu Tsai <wens@csie.org>, Matthias Kaehlcke <mka@chromium.org>, Catalin
- Marinas <catalin.marinas@arm.com>, Masayoshi Mizuma <msys.mizuma@gmail.com>, Petr Mladek <pmladek@suse.com>, Tzung-Bi Shih <tzungbi@chromium.org>, Stephen Boyd <swboyd@chromium.org>, Pingfan
- Liu <kernelfans@gmail.com>, linux-arm-kernel@lists.infradead.org, Sumit Garg <sumit.garg@linaro.org>, ito-yuichi@fujitsu.com, linux-perf-users@vger.kernel.org, Marc Zyngier <maz@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Rohan McLure <rmclure@linux.ibm.com>, npiggin@gmail.com, arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat May 6, 2023 at 2:37 AM AEST, Doug Anderson wrote:
-> Hi,
->
-> On Thu, May 4, 2023 at 7:51=E2=80=AFPM Nicholas Piggin <npiggin@gmail.com=
-> wrote:
-> >
-> > On Fri May 5, 2023 at 8:13 AM AEST, Douglas Anderson wrote:
-> > > In preparation for the buddy hardlockup detector, rename
-> > > touch_nmi_watchdog() to touch_hardlockup_watchdog() to make it clear
-> > > that it will touch whatever hardlockup detector is configured. We'll
-> > > add a #define for the old name (touch_nmi_watchdog) so that we don't
-> > > have to touch every piece of code referring to the old name.
-> >
-> > Is this really helpful? Now it's got two names Could just leave it.
-> > If you insist then it'd be better just to rename everything in one
-> > go at the end of a merge window IMO. Conflicts would be trivial.
->
-> I'm not picky here. I changed the name since Petr requested names to
-> be changed for any code I was touching [1] and so I threw this out as
-> a proposal. I agree that having two names can be confusing, but in
-> this case it didn't feel too terrible to me.
->
-> I'd love to hear Petr's opinion on this name change. I'm happy with:
->
-> a) This patch as it is.
->
-> b) Dropping this patch (or perhaps just changing it to add comments).
->
-> c) Changing this patch to rename all 70 uses of the old name. Assuming
-> this will go through Andrew Morton's tree, I'd be interested in
-> whether he's OK w/ this.
->
-> d) Dropping this patch from this series but putting it on the
-> backburner to try to do later (so that the rename can happen at a time
-> when it's least disruptive).
->
->
-> > > Ideally this change would also rename the arch_touch_nmi_watchdog(),
-> > > but that is harder since arch_touch_nmi_watchdog() is exported with
-> > > EXPORT_SYMBOL() and thus is ABI. Add a comment next to the call to
-> > > hopefully alleviate some of the confusion here.
-> >
-> > We don't keep ABI fixed upstream.
->
-> I'm happy to be corrected, but my understanding was that kernel devs
-> made an effort not to mess with things exported via "EXPORT_SYMBOL",
-> but things exported via "EXPORT_SYMBOL_GPL" were fair game.
+A comment accompanying the locked attribute of a qnode assigns a value
+of 1 to mean that the lock has been acquired. The usages of this
+variable however assume opposite semantics. Update usages so that the
+assertions of this comment are reflected in this file.
 
-I don't think that's the case. If anything people might be a bit more
-inclined to accommodate GPL exports for out of tree modules that use
-them.
+Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+---
+ arch/powerpc/lib/qspinlock.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-> I guess maybe my patch calling it "ABI" is a stronger statement than
-> that, though. Doing a little more research, nobody wants to say that
-> things exported with "EXPORT_SYMBOL" are ABI, they just want to say
-> that we make an effort to have them be more stable.
+diff --git a/arch/powerpc/lib/qspinlock.c b/arch/powerpc/lib/qspinlock.c
+index e4bd145255d0..9cf93963772b 100644
+--- a/arch/powerpc/lib/qspinlock.c
++++ b/arch/powerpc/lib/qspinlock.c
+@@ -435,7 +435,7 @@ static __always_inline bool yield_to_prev(struct qspinlock *lock, struct qnode *
+ 
+ 	smp_rmb(); /* See __yield_to_locked_owner comment */
+ 
+-	if (!node->locked) {
++	if (node->locked) {
+ 		yield_to_preempted(prev_cpu, yield_count);
+ 		spin_begin();
+ 		return preempted;
+@@ -566,7 +566,7 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+ 	node->lock = lock;
+ 	node->cpu = smp_processor_id();
+ 	node->yield_cpu = -1;
+-	node->locked = 0;
++	node->locked = 1;
+ 
+ 	tail = encode_tail_cpu(node->cpu);
+ 
+@@ -584,7 +584,7 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+ 
+ 		/* Wait for mcs node lock to be released */
+ 		spin_begin();
+-		while (!node->locked) {
++		while (node->locked) {
+ 			spec_barrier();
+ 
+ 			if (yield_to_prev(lock, node, old, paravirt))
+@@ -693,13 +693,13 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+ 	 */
+ 	if (paravirt && pv_prod_head) {
+ 		int next_cpu = next->cpu;
+-		WRITE_ONCE(next->locked, 1);
++		WRITE_ONCE(next->locked, 0);
+ 		if (_Q_SPIN_MISO)
+ 			asm volatile("miso" ::: "memory");
+ 		if (vcpu_is_preempted(next_cpu))
+ 			prod_cpu(next_cpu);
+ 	} else {
+-		WRITE_ONCE(next->locked, 1);
++		WRITE_ONCE(next->locked, 0);
+ 		if (_Q_SPIN_MISO)
+ 			asm volatile("miso" ::: "memory");
+ 	}
+-- 
+2.37.2
 
-We wouldn't break any symbol for no reason, but in this case there is a
-good reason. If the name change is important for clarity then we change
-it. And this is about the easiest change for an out of tree module to
-deal with, so it should be no big deal for them.
-
-Thanks,
-Nick
