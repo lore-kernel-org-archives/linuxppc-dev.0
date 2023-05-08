@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0D32C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:09:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE175C77B7D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:10:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4VK08lmz3fdr
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:09:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4WX2PG6z3fZk
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:10:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YYHmNFAf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b5d5vTue;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YYHmNFAf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b5d5vTue;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Kj6Ygmz3c96
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 12:02:01 +1000 (AEST)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3481ikBl003456;
-	Mon, 8 May 2023 02:01:46 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Lf51L9z3cTk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 12:02:50 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3481tmLd007073;
+	Mon, 8 May 2023 02:02:40 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=YRiUUrC4V/WfA6JMSAR+2kIH+01rtqNqFnMogbY60+8=;
- b=YYHmNFAf8WmABHu9PKObGhl8+1Hzvb11+HqpAeGKLNyHd/N1AxCFSB/onVNXd0N5vfah
- oA4aEG44iXmzBlVabgN8MGZ8uuPRbMb/weGnigl0mhJLoIy6pghPLSk++W+T3arFqD2d
- 9qvMjB8scljdApy4XXkXjyGKZ666k/P330o2XRVtqChdQ1fvUKMKXlIRz4I54z2uo1w9
- O0dGdCt2l+REd+27EUCcnLuQQzIgNY6ehz8gCPSigm4wNF2tn3UQjjgtW6vrK79IdB6y
- rz64fJHzlDyZ1k4HzqpbRsARCpq3P+oQxMGcujubIwoxMR+3iyUx9wFnrl3KlZjeLkKL hg== 
+ bh=PN4E3BXvcN9JljeJiuqCcs+HAwtMeyRYZVNNGAmLwy8=;
+ b=b5d5vTueqoqJTLCPlqt89babdxKJpZJMSwfLg0atIENY5KAhWs6f8z9AIZpL5jCuLVRX
+ B7AcKnmZymQLzy1efejol63YbuANczqhrxGslPXYBEgEdKLx7yloNX+5g+oNiVpIlkGa
+ RZRdI14MDuwfTdxUqiPC62m9MgABTjaHRNRA/cGUFjWRROZLCsIvR4p/9xwCE4EIxMPd
+ NDh4vGgHqxg9YEuGPxDyq/PIZXxM29qj2KaVopSTZTD198hITjmQstZyKzIjqxAtRtn4
+ O7sAGFyCc+zjqQcc9n4M9+5E3BJv0Zfc0jZ96/9LjR7I3sri5eyh26o5YqyebFz72teC IQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qeqpcr9yh-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qequag4gy-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 May 2023 02:01:45 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481uNtK003683;
-	Mon, 8 May 2023 02:01:45 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qeqpcr9y4-1
+	Mon, 08 May 2023 02:02:40 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481wMqt012558;
+	Mon, 8 May 2023 02:02:35 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qequag3n9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 May 2023 02:01:44 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3481YxLL021745;
+	Mon, 08 May 2023 02:02:34 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3480vVmg013366;
 	Mon, 8 May 2023 02:01:43 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3qde5fgu2r-1
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3qdeh68txk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 May 2023 02:01:43 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821eVC66257274
+	Mon, 08 May 2023 02:01:42 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821eMT5702152
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Mon, 8 May 2023 02:01:40 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A104B20049;
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9F4482005A;
 	Mon,  8 May 2023 02:01:40 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 203B720043;
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 234522004B;
 	Mon,  8 May 2023 02:01:40 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Mon,  8 May 2023 02:01:40 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 520E4605A6;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 65B746060A;
 	Mon,  8 May 2023 12:01:35 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 05/12] powerpc: Mark [h]ssr_valid accesses in check_return_regs_valid
-Date: Mon,  8 May 2023 12:01:13 +1000
-Message-Id: <20230508020120.218494-6-rmclure@linux.ibm.com>
+Subject: [PATCH 11/12] powerpc: powernv: Annotate asynchronous access to opal tokens
+Date: Mon,  8 May 2023 12:01:19 +1000
+Message-Id: <20230508020120.218494-12-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230508020120.218494-1-rmclure@linux.ibm.com>
 References: <20230508020120.218494-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: MEhZNDYR4mIDkZVkucmJShfqEAAlOKBo
-X-Proofpoint-ORIG-GUID: Wj5voPRuBAwvQdzy4uVSf8IoLEsbjwTk
+X-Proofpoint-ORIG-GUID: pw5Ad5v3A6QSth539JY25IwEZjebUFw2
+X-Proofpoint-GUID: zpF284ZQPe7Mteqi6iromdO6RRoRxucv
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-05-07_10,2023-05-05_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
- suspectscore=0 mlxlogscore=492 mlxscore=0 spamscore=0 clxscore=1015
- phishscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2305080009
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 impostorscore=0
+ priorityscore=1501 spamscore=0 phishscore=0 bulkscore=0 mlxlogscore=999
+ mlxscore=0 suspectscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
+ definitions=main-2305080012
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,82 +105,47 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>, npiggin@gmail.com, arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Checks to see if the [H]SRR registers have been clobbered by (soft)
-NMI interrupts imply the possibility for a data race on the
-[h]srr_valid entries in the PACA. Annotate accesses to these fields with
-READ_ONCE, removing the need for the barrier.
-
-The diagnostic can use plain-access reads and writes, but annotate with
-data_race.
+The opal-async.c unit contains code for polling event sources, which
+implies intentional data races. Ensure that the compiler will atomically
+access such variables by means of {READ,WRITE}_ONCE calls, which in turn
+inform KCSAN that polling behaviour is intended.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/ptrace.h |  4 ++--
- arch/powerpc/kernel/interrupt.c   | 14 ++++++--------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/opal-async.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 0eb90a013346..9db8b16567e2 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -180,8 +180,8 @@ void do_syscall_trace_leave(struct pt_regs *regs);
- static inline void set_return_regs_changed(void)
- {
- #ifdef CONFIG_PPC_BOOK3S_64
--	local_paca->hsrr_valid = 0;
--	local_paca->srr_valid = 0;
-+	WRITE_ONCE(local_paca->hsrr_valid, 0);
-+	WRITE_ONCE(local_paca->srr_valid, 0);
- #endif
- }
- 
-diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-index e34c72285b4e..1f033f11b871 100644
---- a/arch/powerpc/kernel/interrupt.c
-+++ b/arch/powerpc/kernel/interrupt.c
-@@ -125,7 +125,7 @@ static notrace void check_return_regs_valid(struct pt_regs *regs)
- 	case 0x1600:
- 	case 0x1800:
- 		validp = &local_paca->hsrr_valid;
--		if (!*validp)
-+		if (!READ_ONCE(*validp))
- 			return;
- 
- 		srr0 = mfspr(SPRN_HSRR0);
-@@ -135,7 +135,7 @@ static notrace void check_return_regs_valid(struct pt_regs *regs)
- 		break;
- 	default:
- 		validp = &local_paca->srr_valid;
--		if (!*validp)
-+		if (!READ_ONCE(*validp))
- 			return;
- 
- 		srr0 = mfspr(SPRN_SRR0);
-@@ -161,19 +161,17 @@ static notrace void check_return_regs_valid(struct pt_regs *regs)
- 	 * such things will get caught most of the time, statistically
- 	 * enough to be able to get a warning out.
+diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
+index c094fdf5825c..282d2ac6fbb0 100644
+--- a/arch/powerpc/platforms/powernv/opal-async.c
++++ b/arch/powerpc/platforms/powernv/opal-async.c
+@@ -146,7 +146,7 @@ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
+ 	 * functional.
  	 */
--	barrier();
--
--	if (!*validp)
-+	if (!READ_ONCE(*validp))
- 		return;
+ 	opal_wake_poller();
+-	wait_event(opal_async_wait, opal_async_tokens[token].state
++	wait_event(opal_async_wait, READ_ONCE(opal_async_tokens[token].state)
+ 			== ASYNC_TOKEN_COMPLETED);
+ 	memcpy(msg, &opal_async_tokens[token].response, sizeof(*msg));
  
--	if (!warned) {
--		warned = true;
-+	if (!data_race(warned)) {
-+		data_race(warned = true);
- 		printk("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
- 		printk("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
- 		show_regs(regs);
- 	}
- 
--	*validp = 0; /* fixup */
-+	WRITE_ONCE(*validp, 0); /* fixup */
- #endif
- }
- 
+@@ -185,7 +185,7 @@ int opal_async_wait_response_interruptible(uint64_t token, struct opal_msg *msg)
+ 	 * interruptible version before doing anything else with the
+ 	 * token.
+ 	 */
+-	if (opal_async_tokens[token].state == ASYNC_TOKEN_ALLOCATED) {
++	if (READ_ONCE(opal_async_tokens[token].state) == ASYNC_TOKEN_ALLOCATED) {
+ 		spin_lock_irqsave(&opal_async_comp_lock, flags);
+ 		if (opal_async_tokens[token].state == ASYNC_TOKEN_ALLOCATED)
+ 			opal_async_tokens[token].state = ASYNC_TOKEN_DISPATCHED;
+@@ -199,7 +199,7 @@ int opal_async_wait_response_interruptible(uint64_t token, struct opal_msg *msg)
+ 	 */
+ 	opal_wake_poller();
+ 	ret = wait_event_interruptible(opal_async_wait,
+-			opal_async_tokens[token].state ==
++			READ_ONCE(opal_async_tokens[token].state) ==
+ 			ASYNC_TOKEN_COMPLETED);
+ 	if (!ret)
+ 		memcpy(msg, &opal_async_tokens[token].response, sizeof(*msg));
 -- 
 2.37.2
 
