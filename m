@@ -4,89 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54607C77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:08:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0D32C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 02:09:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4TM729Fz3fMW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:08:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QF4VK08lmz3fdr
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 May 2023 12:09:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r2WK9TEx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YYHmNFAf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r2WK9TEx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YYHmNFAf;
 	dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Kd4MYyz3c9K
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 12:01:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QF4Kj6Ygmz3c96
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2023 12:02:01 +1000 (AEST)
 Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3481imcJ003475;
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3481ikBl003456;
 	Mon, 8 May 2023 02:01:46 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=NmoEctYeO4hNoppfRVp6jiifp/p1Vufu1rW2DGdAkAQ=;
- b=r2WK9TExX2okpVmNPDLLEANynFNcnyS0nQEiz6PxC1tt+yTNdKqMtH2LU6vr6Pyro/46
- Uz+RHZiGfZr7rzCj9qlTAvoIB0nJm9MbbwYIIvPY4+dhlfXRaTbE14FQvYcQPINfyWOq
- A8+5bU2cPhRfCBFyXpvMgRnn+TLfIQPsG7SY2OS0eYGluOsKbVnNOXQEdSRKt+UdEc+r
- ugQj5ak3rJJam4BPeo899UmojAoqvmEVf3sVZBj8iicZhLOcp2mG/NEgm4IQu3DZn6C9
- Sqc+gfyjlit3/2pCR9A+wsvoGYs7B9HcIQ1ogx5+197Y8I6AqeGkn5hYACbJKQje54tL iA== 
+ bh=YRiUUrC4V/WfA6JMSAR+2kIH+01rtqNqFnMogbY60+8=;
+ b=YYHmNFAf8WmABHu9PKObGhl8+1Hzvb11+HqpAeGKLNyHd/N1AxCFSB/onVNXd0N5vfah
+ oA4aEG44iXmzBlVabgN8MGZ8uuPRbMb/weGnigl0mhJLoIy6pghPLSk++W+T3arFqD2d
+ 9qvMjB8scljdApy4XXkXjyGKZ666k/P330o2XRVtqChdQ1fvUKMKXlIRz4I54z2uo1w9
+ O0dGdCt2l+REd+27EUCcnLuQQzIgNY6ehz8gCPSigm4wNF2tn3UQjjgtW6vrK79IdB6y
+ rz64fJHzlDyZ1k4HzqpbRsARCpq3P+oQxMGcujubIwoxMR+3iyUx9wFnrl3KlZjeLkKL hg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qeqpcr9yu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 May 2023 02:01:46 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481smBc030972;
-	Mon, 8 May 2023 02:01:45 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qeqpcr9yb-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qeqpcr9yh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 08 May 2023 02:01:45 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3480vT1I014068;
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3481uNtK003683;
+	Mon, 8 May 2023 02:01:45 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qeqpcr9y4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 May 2023 02:01:44 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3481YxLL021745;
 	Mon, 8 May 2023 02:01:43 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3qdeh6gpe8-1
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3qde5fgu2r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 08 May 2023 02:01:43 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821foH27853206
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34821eVC66257274
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 8 May 2023 02:01:41 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 32D3C2004B;
-	Mon,  8 May 2023 02:01:41 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 32B3920043;
+	Mon, 8 May 2023 02:01:40 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A104B20049;
+	Mon,  8 May 2023 02:01:40 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 203B720043;
 	Mon,  8 May 2023 02:01:40 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Mon,  8 May 2023 02:01:40 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 68A73605F2;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 520E4605A6;
 	Mon,  8 May 2023 12:01:35 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 12/12] powerpc: Mark asynchronous accesses to irq_data
-Date: Mon,  8 May 2023 12:01:20 +1000
-Message-Id: <20230508020120.218494-13-rmclure@linux.ibm.com>
+Subject: [PATCH 05/12] powerpc: Mark [h]ssr_valid accesses in check_return_regs_valid
+Date: Mon,  8 May 2023 12:01:13 +1000
+Message-Id: <20230508020120.218494-6-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230508020120.218494-1-rmclure@linux.ibm.com>
 References: <20230508020120.218494-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: F0PGzsKeR-Nt9j1EJXVc8hOp21M-NiKw
-X-Proofpoint-ORIG-GUID: 9kWjnsl5ccv3dOAYQB8yaBSJAqLYJoiD
+X-Proofpoint-GUID: MEhZNDYR4mIDkZVkucmJShfqEAAlOKBo
+X-Proofpoint-ORIG-GUID: Wj5voPRuBAwvQdzy4uVSf8IoLEsbjwTk
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-05-07_10,2023-05-05_01,2023-02-09_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
- suspectscore=0 mlxlogscore=999 mlxscore=0 spamscore=0 clxscore=1015
+ suspectscore=0 mlxlogscore=492 mlxscore=0 spamscore=0 clxscore=1015
  phishscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0
  malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2303200000 definitions=main-2305080009
@@ -105,116 +105,82 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>, npiggin@gmail.com, arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-KCSAN revealed that while irq_data entries are written to either from
-behind a mutex, or otherwise atomically, accesses to irq_data->hwirq can
-occur asynchronously, without volatile annotation. Mark these accesses
-with READ_ONCE to avoid unfortunate compiler reorderings and remove
-KCSAN warnings.
+Checks to see if the [H]SRR registers have been clobbered by (soft)
+NMI interrupts imply the possibility for a data race on the
+[h]srr_valid entries in the PACA. Annotate accesses to these fields with
+READ_ONCE, removing the need for the barrier.
+
+The diagnostic can use plain-access reads and writes, but annotate with
+data_race.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/irq.c                 |  2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c | 12 ++++++------
- include/linux/irq.h                       |  2 +-
- kernel/irq/irqdomain.c                    |  4 ++--
- 4 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/ptrace.h |  4 ++--
+ arch/powerpc/kernel/interrupt.c   | 14 ++++++--------
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 6f7d4edaa0bc..4ac192755510 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -353,7 +353,7 @@ void do_softirq_own_stack(void)
- irq_hw_number_t virq_to_hw(unsigned int virq)
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 0eb90a013346..9db8b16567e2 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -180,8 +180,8 @@ void do_syscall_trace_leave(struct pt_regs *regs);
+ static inline void set_return_regs_changed(void)
  {
- 	struct irq_data *irq_data = irq_get_irq_data(virq);
--	return WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
-+	return WARN_ON(!irq_data) ? 0 : READ_ONCE(irq_data->hwirq);
- }
- EXPORT_SYMBOL_GPL(virq_to_hw);
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f851f4983423..141491e86bba 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1986,7 +1986,7 @@ int64_t pnv_opal_pci_msi_eoi(struct irq_data *d)
- 	struct pci_controller *hose = irq_data_get_irq_chip_data(d->parent_data);
- 	struct pnv_phb *phb = hose->private_data;
- 
--	return opal_pci_msi_eoi(phb->opal_id, d->parent_data->hwirq);
-+	return opal_pci_msi_eoi(phb->opal_id, READ_ONCE(d->parent_data->hwirq));
+ #ifdef CONFIG_PPC_BOOK3S_64
+-	local_paca->hsrr_valid = 0;
+-	local_paca->srr_valid = 0;
++	WRITE_ONCE(local_paca->hsrr_valid, 0);
++	WRITE_ONCE(local_paca->srr_valid, 0);
+ #endif
  }
  
- /*
-@@ -2162,11 +2162,11 @@ static void pnv_msi_compose_msg(struct irq_data *d, struct msi_msg *msg)
- 	struct pnv_phb *phb = hose->private_data;
- 	int rc;
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index e34c72285b4e..1f033f11b871 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -125,7 +125,7 @@ static notrace void check_return_regs_valid(struct pt_regs *regs)
+ 	case 0x1600:
+ 	case 0x1800:
+ 		validp = &local_paca->hsrr_valid;
+-		if (!*validp)
++		if (!READ_ONCE(*validp))
+ 			return;
  
--	rc = __pnv_pci_ioda_msi_setup(phb, pdev, d->hwirq,
-+	rc = __pnv_pci_ioda_msi_setup(phb, pdev, READ_ONCE(d->hwirq),
- 				      entry->pci.msi_attrib.is_64, msg);
- 	if (rc)
- 		dev_err(&pdev->dev, "Failed to setup %s-bit MSI #%ld : %d\n",
--			entry->pci.msi_attrib.is_64 ? "64" : "32", d->hwirq, rc);
-+			entry->pci.msi_attrib.is_64 ? "64" : "32", data_race(d->hwirq), rc);
- }
+ 		srr0 = mfspr(SPRN_HSRR0);
+@@ -135,7 +135,7 @@ static notrace void check_return_regs_valid(struct pt_regs *regs)
+ 		break;
+ 	default:
+ 		validp = &local_paca->srr_valid;
+-		if (!*validp)
++		if (!READ_ONCE(*validp))
+ 			return;
  
- /*
-@@ -2184,7 +2184,7 @@ static void pnv_msi_eoi(struct irq_data *d)
- 		 * since it is translated into a vector number in
- 		 * OPAL, use that directly.
- 		 */
--		WARN_ON_ONCE(opal_pci_msi_eoi(phb->opal_id, d->hwirq));
-+		WARN_ON_ONCE(opal_pci_msi_eoi(phb->opal_id, READ_ONCE(d->hwirq)));
- 	}
- 
- 	irq_chip_eoi_parent(d);
-@@ -2263,9 +2263,9 @@ static void pnv_irq_domain_free(struct irq_domain *domain, unsigned int virq,
- 	struct pnv_phb *phb = hose->private_data;
- 
- 	pr_debug("%s bridge %pOF %d/%lx #%d\n", __func__, hose->dn,
--		 virq, d->hwirq, nr_irqs);
-+		 virq, data_race(d->hwirq), nr_irqs);
- 
--	msi_bitmap_free_hwirqs(&phb->msi_bmp, d->hwirq, nr_irqs);
-+	msi_bitmap_free_hwirqs(&phb->msi_bmp, READ_ONCE(d->hwirq), nr_irqs);
- 	/* XIVE domain is cleared through ->msi_free() */
- }
- 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index b1b28affb32a..a6888bcb3c5b 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -452,7 +452,7 @@ static inline bool irqd_affinity_on_activate(struct irq_data *d)
- 
- static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
- {
--	return d->hwirq;
-+	return READ_ONCE(d->hwirq);
- }
- 
- /**
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index f34760a1e222..dd9054494f84 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -549,7 +549,7 @@ static void irq_domain_disassociate(struct irq_domain *domain, unsigned int irq)
- 		 "virq%i doesn't exist; cannot disassociate\n", irq))
+ 		srr0 = mfspr(SPRN_SRR0);
+@@ -161,19 +161,17 @@ static notrace void check_return_regs_valid(struct pt_regs *regs)
+ 	 * such things will get caught most of the time, statistically
+ 	 * enough to be able to get a warning out.
+ 	 */
+-	barrier();
+-
+-	if (!*validp)
++	if (!READ_ONCE(*validp))
  		return;
  
--	hwirq = irq_data->hwirq;
-+	hwirq = READ_ONCE(irq_data->hwirq);
+-	if (!warned) {
+-		warned = true;
++	if (!data_race(warned)) {
++		data_race(warned = true);
+ 		printk("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
+ 		printk("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
+ 		show_regs(regs);
+ 	}
  
- 	mutex_lock(&domain->root->mutex);
+-	*validp = 0; /* fixup */
++	WRITE_ONCE(*validp, 0); /* fixup */
+ #endif
+ }
  
-@@ -948,7 +948,7 @@ struct irq_desc *__irq_resolve_mapping(struct irq_domain *domain,
- 	if (irq_domain_is_nomap(domain)) {
- 		if (hwirq < domain->hwirq_max) {
- 			data = irq_domain_get_irq_data(domain, hwirq);
--			if (data && data->hwirq == hwirq)
-+			if (data && READ_ONCE(data->hwirq) == hwirq)
- 				desc = irq_data_to_desc(data);
- 			if (irq && desc)
- 				*irq = hwirq;
 -- 
 2.37.2
 
