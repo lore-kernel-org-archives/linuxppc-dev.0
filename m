@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1B9CC7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 May 2023 03:56:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 555E0C7EE22
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 May 2023 03:57:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QFkqX1F9Xz3fL6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 May 2023 13:56:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QFkrR5974z3fQ7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 May 2023 13:57:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cq0xFJMS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EvrdkyJR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cq0xFJMS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EvrdkyJR;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QFknq2WwHz3fJ1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2023 13:55:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QFkp61dbSz3fJZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2023 13:55:26 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 636176313B;
-	Tue,  9 May 2023 03:55:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3EE2C433D2;
-	Tue,  9 May 2023 03:55:08 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 576F5643B4;
+	Tue,  9 May 2023 03:55:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E48CC433EF;
+	Tue,  9 May 2023 03:55:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1683604508;
+	s=k20201202; t=1683604522;
 	bh=BWaUpw5uHM6kKYPpC35BJ+4DJ7Geniu2LmeOM5AGg/I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=cq0xFJMSlMd7Rq4BzUQGrGfCTa2cG7aw7tBQl3XlWWCM7JTdZTLVte1uDAGA4IunP
-	 +xikKd/9JYhzf/xpH/f0+zWzA50tKLFM3Vxl91Lx/UPr73XJgU+3a/2HhTGn+OjCm+
-	 avOGYAs0yQU3A+197MRwaneWlcxWzqY6hZp5OBQFh1Q1VqmBygyZwFkyn4cNjy3d/T
-	 GYqa97Nta/f5CxOe97VTlQH3PaXFRS8IOXbYGGIk0YXlh+QBw6plBRBxy4mnxN4k3x
-	 1ZJsyl4x4g48dL7LxKq2z7gGR3+IzLyhsmaENAR9RYvgNFhskFstImKUOdWtb0jA5x
-	 K3f7k5V99vC6Q==
+	b=EvrdkyJReVbsV3YvOgzEvMlBNH44MMRQ/u6GDw3N0keF+dzZCBJPPuCnpkZoDJsou
+	 XfdO6eqVG3ud8r3tLlFJ7/Rom1H6CbTRwmZ7f3O9gn6vmCNuQq2K4l7m+Cf1KwHBLn
+	 7va4i+EZNYZ6Ep00WQJ0lIsCTvL2EJyu5g9q/YHxRrV/6h8XSTbIzZTv5iZAK/LUJ5
+	 e+KfuIMIzRioQt0AionjSwMQXDWyI7j7R20SDWeRDlMiizxQaQNp374FCF8aLZkML2
+	 u3AsbnuR0bzabZL1a9rkbPhGajWBWZHg1T3n35qDp7bdegXWeNktEGb6lV9Tg0Xz+9
+	 gpnmEH8cJJdNw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.3 6/7] powerpc/fsl_uli1575: Allow to disable FSL_ULI1575 support
-Date: Mon,  8 May 2023 23:54:29 -0400
-Message-Id: <20230509035455.59524-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.2 5/6] powerpc/fsl_uli1575: Allow to disable FSL_ULI1575 support
+Date: Mon,  8 May 2023 23:55:11 -0400
+Message-Id: <20230509035515.59855-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230509035455.59524-1-sashal@kernel.org>
-References: <20230509035455.59524-1-sashal@kernel.org>
+In-Reply-To: <20230509035515.59855-1-sashal@kernel.org>
+References: <20230509035515.59855-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review
