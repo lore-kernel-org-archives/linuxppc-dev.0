@@ -4,69 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72DDEC77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 17:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45167C7EE22
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 22:51:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QGjN352tZz3fPf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 03:54:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QGqy72r1Gz3fKR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 08:51:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ulH/82Bl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pxMp9v6S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ulH/82Bl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pxMp9v6S;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGjM31M2gz3cf6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 03:53:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGqx74xR2z3bnM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 08:50:19 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 477E96093C
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 17:53:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ABA06C433EF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 17:53:47 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 2392C60F72;
+	Wed, 10 May 2023 22:50:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEDE8C433EF;
+	Wed, 10 May 2023 22:50:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1683741227;
-	bh=RPlqqJdFGsjatsEiQ+qkII/XdBzg7co1a5g0SXBFTSc=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=ulH/82Bl0hCRktzyzB6F7rqoYd0/qceIyP/fRJRyz4R/gJTz04HHiCGiGjzmCRx6O
-	 Webfmf/9+rvjrfUBz2n1RMqVO9aihY4Z9EVm+gUf8v9b0AfjsLRIK3KdvTKoohdB5u
-	 35bUTxWgVm314uOpxZjTBnFgdmREPDWOgpOjpJ6DxPMc+93zi3tpAYKV7GJeb+Srk2
-	 0buO6/TNhl9NtUf/KNou7o2SvxHmLqYjXnUruCxn+QsrjkMMGPGLDBdZ01lc3cxYf1
-	 mHef0AguitD9xOoK/XMI6ccZtMsgGO/iQjP5VTpZECg5ZH+R8BS8IkdZFQSBl3eEBw
-	 EzvzSXwQ9VxCw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 8A637C43141; Wed, 10 May 2023 17:53:47 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 217350] kdump kernel hangs in powerkvm guest
-Date: Wed, 10 May 2023 17:53:47 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: clg@kaod.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-217350-206035-Y9aIlUGC5u@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-217350-206035@https.bugzilla.kernel.org/>
-References: <bug-217350-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
+	s=k20201202; t=1683759015;
+	bh=YD/Or+PbwlMw5nLqLwUs8WIz+6qSKOgfzTEXUu+LUaU=;
+	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
+	b=pxMp9v6SeSm35itTUPF90uIEd3/BmkfcgaF7ldUflRCq89EerSR6GUhBiP9OF6r2b
+	 Nj/YTlv2HZ9KdE/ssh2GDQ7cn//wWyN+6niR+iggR3x3wBBEKZH56B2SZAoNvGUPXU
+	 HVQ4k6OdU+ADi8Lr/a3p/D4vAUN5VT7UANyi16+uBSNE70OEMiExBFFk5MyZWgxvF8
+	 fNsBAhkaqjnKzoxAEZpQLqsI0n5fk00X7yrX5FYP5x0S4YDqYSIT2pBVK5JGPWZJE8
+	 cAhH7cmhL8xrWtHp2kvheEW5NN1GUtUqlRyEke+aqUHDqhqULfN4wCfLt9JUCJ4J0I
+	 5m5jYq0OlF4aA==
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 11 May 2023 01:50:10 +0300
+Message-Id: <CSIYR76Z8U02.30IIQJ49LMY05@suppilovahvero>
+Subject: Re: [PATCH 1/4] block:sed-opal: SED Opal keystore
+From: "Jarkko Sakkinen" <jarkko@kernel.org>
+To: <gjoyce@linux.vnet.ibm.com>, <linux-block@vger.kernel.org>
+X-Mailer: aerc 0.14.0
+References: <20230505194402.2079010-1-gjoyce@linux.vnet.ibm.com>
+ <20230505194402.2079010-2-gjoyce@linux.vnet.ibm.com>
+In-Reply-To: <20230505194402.2079010-2-gjoyce@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,19 +61,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: axboe@kernel.dk, linux-efi@vger.kernel.org, me@benboeckel.net, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, andonnel@au1.ibm.com, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org, elliott@hpe.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D217350
+On Fri May 5, 2023 at 10:43 PM EEST,  wrote:
+> From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+>
+> Add read and write functions that allow SED Opal keys to stored
+> in a permanent keystore.
 
---- Comment #2 from C=C3=A9dric Le Goater (clg@kaod.org) ---
-Hello  Pingfan,
+Please be more verbose starting from "Self-Encrypting Drive (SED)",
+instead of just "SED", and take time to explain what these keys are.
 
-This was a large series. Did you identify the exact patch ?  It should be=20
-related to the powerpc/pseries/pci or powerpc/xive subsystem.
+>
+> Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> Reviewed-by: Jonathan Derrick <jonathan.derrick@linux.dev>
+> ---
+>  block/Makefile               |  2 +-
+>  block/sed-opal-key.c         | 24 ++++++++++++++++++++++++
+>  include/linux/sed-opal-key.h | 15 +++++++++++++++
+>  3 files changed, 40 insertions(+), 1 deletion(-)
+>  create mode 100644 block/sed-opal-key.c
+>  create mode 100644 include/linux/sed-opal-key.h
+>
+> diff --git a/block/Makefile b/block/Makefile
+> index 4e01bb71ad6e..464a9f209552 100644
+> --- a/block/Makefile
+> +++ b/block/Makefile
+> @@ -35,7 +35,7 @@ obj-$(CONFIG_BLK_DEV_ZONED)	+=3D blk-zoned.o
+>  obj-$(CONFIG_BLK_WBT)		+=3D blk-wbt.o
+>  obj-$(CONFIG_BLK_DEBUG_FS)	+=3D blk-mq-debugfs.o
+>  obj-$(CONFIG_BLK_DEBUG_FS_ZONED)+=3D blk-mq-debugfs-zoned.o
+> -obj-$(CONFIG_BLK_SED_OPAL)	+=3D sed-opal.o
+> +obj-$(CONFIG_BLK_SED_OPAL)	+=3D sed-opal.o sed-opal-key.o
+>  obj-$(CONFIG_BLK_PM)		+=3D blk-pm.o
+>  obj-$(CONFIG_BLK_INLINE_ENCRYPTION)	+=3D blk-crypto.o blk-crypto-profile=
+.o \
+>  					   blk-crypto-sysfs.o
+> diff --git a/block/sed-opal-key.c b/block/sed-opal-key.c
+> new file mode 100644
+> index 000000000000..16f380164c44
+> --- /dev/null
+> +++ b/block/sed-opal-key.c
+> @@ -0,0 +1,24 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * SED key operations.
+> + *
+> + * Copyright (C) 2022 IBM Corporation
+> + *
+> + * These are the accessor functions (read/write) for SED Opal
+> + * keys. Specific keystores can provide overrides.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/errno.h>
+> +#include <linux/sed-opal-key.h>
+> +
+> +int __weak sed_read_key(char *keyname, char *key, u_int *keylen)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +
+> +int __weak sed_write_key(char *keyname, char *key, u_int keylen)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> diff --git a/include/linux/sed-opal-key.h b/include/linux/sed-opal-key.h
+> new file mode 100644
+> index 000000000000..c9b1447986d8
+> --- /dev/null
+> +++ b/include/linux/sed-opal-key.h
+> @@ -0,0 +1,15 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * SED key operations.
+> + *
+> + * Copyright (C) 2022 IBM Corporation
+> + *
+> + * These are the accessor functions (read/write) for SED Opal
+> + * keys. Specific keystores can provide overrides.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +
+> +int sed_read_key(char *keyname, char *key, u_int *keylen);
+> +int sed_write_key(char *keyname, char *key, u_int keylen);
+> --=20
+> gjoyce@linux.vnet.ibm.com
 
---=20
-You may reply to this email to add a comment.
 
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+BR, Jarkko
