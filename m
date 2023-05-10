@@ -4,91 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19EEFC7EE22
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 03:41:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59805C7EE22
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 03:41:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QGLR03wRCz3fY5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 13:41:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QGLS36LXZz3fZ3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 13:41:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h2YdbDd8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qkrlY3S6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h2YdbDd8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qkrlY3S6;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGLLB4dmKz3fb2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 13:36:50 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34A3DIQK014822;
-	Wed, 10 May 2023 03:36:41 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGLLV3fxdz3fDv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 13:37:06 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34A3QkMr005716;
+	Wed, 10 May 2023 03:36:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=NmoEctYeO4hNoppfRVp6jiifp/p1Vufu1rW2DGdAkAQ=;
- b=h2YdbDd8MeT9mBPPGEyn9jwv4cPTogOgwa33zHuD6ad3djMyi7vld6bjdIx3uAqVuDd1
- gNrziwLj9TjX6gQgyJXH4PwkWAEERZhbUXD6pheHLUHhfZ/slwyjYrs/LgtjgcTR7msn
- OdmwFtFCIq+m+61ykv+98PKozO+SlPZBrURgkq1JKrOZK2S81TMPUFYWwc3ttj4boJxV
- GXialZjZbSGHi8d7m81W2g4+39m4k1hyl1u9SiHTUl2fNV/QZyeXs+LlhIIg/p0o5cIU
- eaKXIPBeDwLM/hgs1DM+AtefHiJoDTKdAzjerITonpKiuGrxovnv3eA5Yygpux3jKjeZ Gw== 
+ bh=Zu7YVnuQglASwhJ1EThDDJ7FQrAEyoF8c40akKemx70=;
+ b=qkrlY3S6JxB0nCbKJjX64m3tP3yYOFS9CbeBCQZMoUrnBH+kPs8pzZtR6vP6SQYg/H/1
+ KIPWw0fdynM5ZedLSr/gzVmRjpurCWkzX29n9Y/mw9wSKaEpdtxZSWolmIPcyw4MGyc9
+ QQOXqaNoQiZj7/fDSbTa0DqF8EAHkT7ZdZV1cYPXfBQQy0eVsfN9uZgRshdpXGVAA6iE
+ K78+XnQWkriLqTGV+eV25HGWoBvZxIE+wGtoBIPbPX/OkcUs4pS50dqv+Aeg6+8pZ7Bn
+ n2tFch7tLyScm3Zzc6zO9I585aegmJ8CPoctk/NXgChuMgRvhXVevXwJNvojvlBZxL1s gw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qg35urdkb-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qg3ccr325-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 May 2023 03:36:41 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34A3aIcW009341;
-	Wed, 10 May 2023 03:36:40 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qg35urdhy-1
+	Wed, 10 May 2023 03:36:57 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34A3auSW028897;
+	Wed, 10 May 2023 03:36:56 GMT
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qg3ccr1r3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 May 2023 03:36:40 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34A0aEPm015736;
+	Wed, 10 May 2023 03:36:56 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34A3KOPw018561;
 	Wed, 10 May 2023 03:31:38 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3qf896rs0s-1
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3qf7nh0s7e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 10 May 2023 03:31:38 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34A3Va0G25428698
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34A3Vab943712780
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Wed, 10 May 2023 03:31:36 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 520122004B;
-	Wed, 10 May 2023 03:31:36 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5B8B120043;
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EBD592004E;
+	Wed, 10 May 2023 03:31:35 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6BFB120043;
 	Wed, 10 May 2023 03:31:35 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Wed, 10 May 2023 03:31:35 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 26A946060A;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 1D36F605F2;
 	Wed, 10 May 2023 13:31:30 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 11/11] powerpc: Mark asynchronous accesses to irq_data
-Date: Wed, 10 May 2023 13:31:17 +1000
-Message-Id: <20230510033117.1395895-12-rmclure@linux.ibm.com>
+Subject: [PATCH v2 09/11] powerpc: powernv: Annotate data races in opal events
+Date: Wed, 10 May 2023 13:31:15 +1000
+Message-Id: <20230510033117.1395895-10-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230510033117.1395895-1-rmclure@linux.ibm.com>
 References: <20230510033117.1395895-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: f6O1dQTRu5ZrJpjBWBcuaHbtqBrfJPFv
-X-Proofpoint-GUID: Un7r928Lh3L8uKuePAj1y770H9_gzRgF
+X-Proofpoint-GUID: R7qAj13k7g58rhcc85ct0f1q9SIFcR4-
+X-Proofpoint-ORIG-GUID: EqSt7Nsie4hHM1rhn2pr8mKQEcjz4Be0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-05-09_16,2023-05-05_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 clxscore=1015 priorityscore=1501 bulkscore=0 adultscore=0
- mlxlogscore=999 spamscore=0 phishscore=0 mlxscore=0 lowpriorityscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
+ priorityscore=1501 lowpriorityscore=0 mlxlogscore=999 spamscore=0
+ mlxscore=0 malwarescore=0 adultscore=0 clxscore=1015 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2304280000 definitions=main-2305100026
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,116 +105,50 @@ Cc: arnd@arndb.de, gautam@linux.ibm.com, npiggin@gmail.com, Rohan McLure <rmclur
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-KCSAN revealed that while irq_data entries are written to either from
-behind a mutex, or otherwise atomically, accesses to irq_data->hwirq can
-occur asynchronously, without volatile annotation. Mark these accesses
-with READ_ONCE to avoid unfortunate compiler reorderings and remove
+The kopald thread handles opal events as they appear, but by polling a
+static bit-vector in last_outstanding_events. Annotate these data races
+accordingly. We are not at risk of missing events, but use of READ_ONCE,
+WRITE_ONCE will assist readers in seeing that kopald only consumes the
+events it is aware of when it is scheduled. Also removes extraneous
 KCSAN warnings.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/irq.c                 |  2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c | 12 ++++++------
- include/linux/irq.h                       |  2 +-
- kernel/irq/irqdomain.c                    |  4 ++--
- 4 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/opal-irqchip.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 6f7d4edaa0bc..4ac192755510 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -353,7 +353,7 @@ void do_softirq_own_stack(void)
- irq_hw_number_t virq_to_hw(unsigned int virq)
- {
- 	struct irq_data *irq_data = irq_get_irq_data(virq);
--	return WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
-+	return WARN_ON(!irq_data) ? 0 : READ_ONCE(irq_data->hwirq);
- }
- EXPORT_SYMBOL_GPL(virq_to_hw);
+diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+index d55652b5f6fa..f9a7001dacb7 100644
+--- a/arch/powerpc/platforms/powernv/opal-irqchip.c
++++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+@@ -59,7 +59,7 @@ void opal_handle_events(void)
  
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f851f4983423..141491e86bba 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1986,7 +1986,7 @@ int64_t pnv_opal_pci_msi_eoi(struct irq_data *d)
- 	struct pci_controller *hose = irq_data_get_irq_chip_data(d->parent_data);
- 	struct pnv_phb *phb = hose->private_data;
- 
--	return opal_pci_msi_eoi(phb->opal_id, d->parent_data->hwirq);
-+	return opal_pci_msi_eoi(phb->opal_id, READ_ONCE(d->parent_data->hwirq));
- }
- 
- /*
-@@ -2162,11 +2162,11 @@ static void pnv_msi_compose_msg(struct irq_data *d, struct msi_msg *msg)
- 	struct pnv_phb *phb = hose->private_data;
- 	int rc;
- 
--	rc = __pnv_pci_ioda_msi_setup(phb, pdev, d->hwirq,
-+	rc = __pnv_pci_ioda_msi_setup(phb, pdev, READ_ONCE(d->hwirq),
- 				      entry->pci.msi_attrib.is_64, msg);
- 	if (rc)
- 		dev_err(&pdev->dev, "Failed to setup %s-bit MSI #%ld : %d\n",
--			entry->pci.msi_attrib.is_64 ? "64" : "32", d->hwirq, rc);
-+			entry->pci.msi_attrib.is_64 ? "64" : "32", data_race(d->hwirq), rc);
- }
- 
- /*
-@@ -2184,7 +2184,7 @@ static void pnv_msi_eoi(struct irq_data *d)
- 		 * since it is translated into a vector number in
- 		 * OPAL, use that directly.
- 		 */
--		WARN_ON_ONCE(opal_pci_msi_eoi(phb->opal_id, d->hwirq));
-+		WARN_ON_ONCE(opal_pci_msi_eoi(phb->opal_id, READ_ONCE(d->hwirq)));
+ 		cond_resched();
  	}
- 
- 	irq_chip_eoi_parent(d);
-@@ -2263,9 +2263,9 @@ static void pnv_irq_domain_free(struct irq_domain *domain, unsigned int virq,
- 	struct pnv_phb *phb = hose->private_data;
- 
- 	pr_debug("%s bridge %pOF %d/%lx #%d\n", __func__, hose->dn,
--		 virq, d->hwirq, nr_irqs);
-+		 virq, data_race(d->hwirq), nr_irqs);
- 
--	msi_bitmap_free_hwirqs(&phb->msi_bmp, d->hwirq, nr_irqs);
-+	msi_bitmap_free_hwirqs(&phb->msi_bmp, READ_ONCE(d->hwirq), nr_irqs);
- 	/* XIVE domain is cleared through ->msi_free() */
- }
- 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index b1b28affb32a..a6888bcb3c5b 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -452,7 +452,7 @@ static inline bool irqd_affinity_on_activate(struct irq_data *d)
- 
- static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
- {
--	return d->hwirq;
-+	return READ_ONCE(d->hwirq);
- }
- 
- /**
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index f34760a1e222..dd9054494f84 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -549,7 +549,7 @@ static void irq_domain_disassociate(struct irq_domain *domain, unsigned int irq)
- 		 "virq%i doesn't exist; cannot disassociate\n", irq))
+-	last_outstanding_events = 0;
++	WRITE_ONCE(last_outstanding_events, 0);
+ 	if (opal_poll_events(&events) != OPAL_SUCCESS)
  		return;
+ 	e = be64_to_cpu(events) & opal_event_irqchip.mask;
+@@ -69,7 +69,7 @@ void opal_handle_events(void)
  
--	hwirq = irq_data->hwirq;
-+	hwirq = READ_ONCE(irq_data->hwirq);
+ bool opal_have_pending_events(void)
+ {
+-	if (last_outstanding_events & opal_event_irqchip.mask)
++	if (READ_ONCE(last_outstanding_events) & opal_event_irqchip.mask)
+ 		return true;
+ 	return false;
+ }
+@@ -124,7 +124,7 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+ 	__be64 events;
  
- 	mutex_lock(&domain->root->mutex);
+ 	opal_handle_interrupt(virq_to_hw(irq), &events);
+-	last_outstanding_events = be64_to_cpu(events);
++	WRITE_ONCE(last_outstanding_events, be64_to_cpu(events));
+ 	if (opal_have_pending_events())
+ 		opal_wake_poller();
  
-@@ -948,7 +948,7 @@ struct irq_desc *__irq_resolve_mapping(struct irq_domain *domain,
- 	if (irq_domain_is_nomap(domain)) {
- 		if (hwirq < domain->hwirq_max) {
- 			data = irq_domain_get_irq_data(domain, hwirq);
--			if (data && data->hwirq == hwirq)
-+			if (data && READ_ONCE(data->hwirq) == hwirq)
- 				desc = irq_data_to_desc(data);
- 			if (irq && desc)
- 				*irq = hwirq;
 -- 
 2.37.2
 
