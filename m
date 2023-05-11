@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9717DC77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 03:17:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16F7EC77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 03:41:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QGxsS4Vn9z3fPq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 13:17:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QGyPL6vLTz3fPJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 13:41:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=JDYjlZO6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=rviiAWub;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=JDYjlZO6;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=rviiAWub;
 	dkim-atps=neutral
-Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
+Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGxrV49F2z3bhx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 13:16:41 +1000 (AEST)
-Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-559f1819c5dso121473057b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 20:16:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGyNL2H4mz3bnV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 13:40:49 +1000 (AEST)
+Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-55b7630a736so121577207b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 20:40:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1683774999; x=1686366999;
+        d=google.com; s=20221208; t=1683776446; x=1686368446;
         h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=hRBzifhysJxaavDAsJ+Sa+/VyNhQzLXJPjsoUGcNRd4=;
-        b=JDYjlZO6u5Rd6QYeBUTXCp/kgqPCJk7kIYj5131tW+Oftjr3CeY+3TrtF265PwQLsY
-         CzyhzuHdTlVexa4Irr81wJWJONYV4WJYb+Qmn3xCOOTrZII3mN3FIl3WlUa9ZzRwMyft
-         TbG+lOOAm/FlIwiaNhNLr42JUk/Xp0bH2c5++eORJ8zXY8TzfBVIgW201ldf27i4oXvO
-         WYco0w5tL3fNC1aMrOMXgic+X453i3JN5jojWOgIXdVajjoFoae+wDli+04h87K4PSDU
-         PrZHQkqAQy9rNdfpBcTkPkLhTcEgcEAEnkRKNVLkHXWaXGdspdGha99g/0X8mBFfM1nS
-         C7lQ==
+        bh=ENej4jeIUZxBD8VRbCOiI8elHKtxPPI57IP2BPex2w8=;
+        b=rviiAWub81WZaaPcAMwIMpPx+RM5d7a1hQGcoQ8Eqv2OqKv43ouIJ6GM0Wqm5MKw19
+         LlfJ3mauLEKM4EJ7ZB4sOpgDUGoN5Ak/+OXf8SHKvg8BrrIQ8mj26P/t+9KKCmZeNAR3
+         c3aByxh2kGch+WNujk2ErjRPhOnwQeT92JRc5DBl9JJAmmzq7/qiNEJWuS0m7V9Devz8
+         0Vopapo7pIiPZPd8xIHbRWy7CL2RdDqu7m1Q6FJFKKBLqxrFd0oOXOuWSyJ5b+ZPMXeF
+         OsW+3BbBiu8BwYCTIqJ9f3bU46zyRenionGejcnHG/apa36HhsSJADojKmBj7efm6f3a
+         MOXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683774999; x=1686366999;
+        d=1e100.net; s=20221208; t=1683776446; x=1686368446;
         h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hRBzifhysJxaavDAsJ+Sa+/VyNhQzLXJPjsoUGcNRd4=;
-        b=HtFVZ22WaJD51iJM6iFJuQZlMOcNYuVVcEb08PLs2EK5a3Uy7lB5PBiFIahLmfidAs
-         C+oxk4A6RsrQJA2PqAeIiBu4Yo/DlSLCMTCrxhYMEaXoi5BNoDRmzm+nWqKOVuRGmplI
-         tQyci3/iyp1H/6zoeGEq4zynSrou5AiXf/iK5E9ZxCJphwv3paXmiggpXZeLW/35813E
-         6TRmY3uJopsw+/g+4D9lyIpVHjDbjHiX6dhkt/R8Kpw6llOEq7JnJWIy22Vm2cH1iOfp
-         /YXbzqqyW4IFradGk7IeETJUKibzic93rWNytA/gj91F5e3gdpt/W3Rd2n4wMfahtLzd
-         VWlg==
-X-Gm-Message-State: AC+VfDwrKuJn50lDmgZJ3T8geZS/ULXiMi9v699BqtWMMHIxqJRvcQ92
-	upI6szneAjwg41lvmkIqFLhVRw==
-X-Google-Smtp-Source: ACHHUZ7/wlg4bppDf9uBVNG9J9Qk7aL+NA0hCKaxoiuDXlSicnUNf7o6tqD4YBoUi/tdOZkorZkwaA==
-X-Received: by 2002:a25:4087:0:b0:b9e:5006:42af with SMTP id n129-20020a254087000000b00b9e500642afmr19049386yba.58.1683774998976;
-        Wed, 10 May 2023 20:16:38 -0700 (PDT)
+        bh=ENej4jeIUZxBD8VRbCOiI8elHKtxPPI57IP2BPex2w8=;
+        b=eBLWrARxpxxaVkHdbwE39V7E3Hgf6xLiBXyyH7Kzs1b//dMQHyOlRHw3/lY3ic0TJ+
+         BLKMoeD7KCo6fKOKxMMeLhjv+DGrGVfgpXPTQvc5Vvnny6F1YO6lplLMwvpr8lqIZW1m
+         BxKcZONEGxxSWN8KVX3yLDZWQj6Ky/c8ROtZJ6evU0eH5A534CUwfuloy4R7tkmhazRN
+         B27Z/chenp2k+3g6ISvT0Rqml704b+ophfPsKm0VZsFmGv0QPeffoITlQhWZ3ArJgGJa
+         yzU1/L1hiFPf6BJhVhsiX/sv/lxXQrFUd/DcjM/0od2XMU/V2I60IxQHiwghgM0YMEbH
+         SkkA==
+X-Gm-Message-State: AC+VfDw5j0R0Ln32pkJRIQZgv44oXfpr8g/8Fi3sI5O8f6uCulTTJMPE
+	ZwlJWz+bfOg/o7kMhJ3fGE27VA==
+X-Google-Smtp-Source: ACHHUZ7h//pElwTWDcmRkblmnEL8tpIvH3DpaXFnfKmYUIesZtUkvvAepMEKFrx4IKpikCPoidpc1g==
+X-Received: by 2002:a81:8702:0:b0:560:bb81:6468 with SMTP id x2-20020a818702000000b00560bb816468mr6471997ywf.23.1683776445583;
+        Wed, 10 May 2023 20:40:45 -0700 (PDT)
 Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id j128-20020a255586000000b00b923b2935d9sm4144529ybb.20.2023.05.10.20.16.35
+        by smtp.gmail.com with ESMTPSA id g138-20020a815290000000b0054629ed8300sm4571040ywb.80.2023.05.10.20.40.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 May 2023 20:16:38 -0700 (PDT)
-Date: Wed, 10 May 2023 20:16:34 -0700 (PDT)
+        Wed, 10 May 2023 20:40:45 -0700 (PDT)
+Date: Wed, 10 May 2023 20:40:41 -0700 (PDT)
 From: Hugh Dickins <hughd@google.com>
 X-X-Sender: hugh@ripple.attlocal.net
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 21/23] x86: Allow get_locked_pte() to fail
-In-Reply-To: <20230510081848.GD83892@hirez.programming.kicks-ass.net>
-Message-ID: <e5554cd1-417a-aa6a-5e5e-f4f5f773dda@google.com>
-References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com> <eba2b72f-2180-498b-c8bd-ce8f717fc78a@google.com> <20230510081848.GD83892@hirez.programming.kicks-ass.net>
+To: Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH 01/23] arm: allow pte_offset_map[_lock]() to fail
+In-Reply-To: <ZFup/fG50MPFF979@casper.infradead.org>
+Message-ID: <b9dc75bf-b13c-37ba-6c16-9fc163703dd@google.com>
+References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com> <5011977-d876-6a24-a3fc-c7e6a02877b8@google.com> <ZFup/fG50MPFF979@casper.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -76,72 +76,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chri
- s@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@mo
+ nstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 10 May 2023, Peter Zijlstra wrote:
-
-> On Tue, May 09, 2023 at 10:08:37PM -0700, Hugh Dickins wrote:
-> > In rare transient cases, not yet made possible, pte_offset_map() and
-> > pte_offset_map_lock() may not find a page table: handle appropriately.
-> > 
-> > Signed-off-by: Hugh Dickins <hughd@google.com>
-> > ---
-> >  arch/x86/kernel/ldt.c | 6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
-> > index 525876e7b9f4..eb844549cd83 100644
-> > --- a/arch/x86/kernel/ldt.c
-> > +++ b/arch/x86/kernel/ldt.c
-> > @@ -367,8 +367,10 @@ static void unmap_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt)
+On Wed, 10 May 2023, Matthew Wilcox wrote:
+> On Tue, May 09, 2023 at 09:42:44PM -0700, Hugh Dickins wrote:
+> > diff --git a/arch/arm/lib/uaccess_with_memcpy.c b/arch/arm/lib/uaccess_with_memcpy.c
+> > index e4c2677cc1e9..2f6163f05e93 100644
+> > --- a/arch/arm/lib/uaccess_with_memcpy.c
+> > +++ b/arch/arm/lib/uaccess_with_memcpy.c
+> > @@ -74,6 +74,9 @@ pin_page_for_write(const void __user *_addr, pte_t **ptep, spinlock_t **ptlp)
+> >  		return 0;
 > >  
-> >  		va = (unsigned long)ldt_slot_va(ldt->slot) + offset;
-> >  		ptep = get_locked_pte(mm, va, &ptl);
-> > -		pte_clear(mm, va, ptep);
-> > -		pte_unmap_unlock(ptep, ptl);
-> > +		if (ptep) {
-> > +			pte_clear(mm, va, ptep);
-> > +			pte_unmap_unlock(ptep, ptl);
-> > +		}
-> >  	}
+> >  	pte = pte_offset_map_lock(current->mm, pmd, addr, &ptl);
+> > +	if (unlikely(!pte))
+> > +		return 0;
 > 
-> Ow geez, now I have to go remember how the whole PTI/LDT crud worked :/
+> Failing seems like the wrong thig to do if we transitioned from a PTE
+> to PMD here?  Looks to me like we should goto a new label right after
+> the 'pmd = pmd_offset(pud, addr);', no?
 
-I apologize for sending you back there!
+I'm pretty sure it's right as is; but probably more by luck than care -
+I do not think I studied this code as closely as you have now made me do;
+and it's clear that this is a piece of code where rare transient issues
+could come up, and must be handled correctly.  Thank you for making me
+look again.
 
-> 
-> At first glance this seems wrong; we can't just not unmap the LDT if we
-> can't find it in a hurry. Also, IIRC this isn't in fact a regular user
-> mapping, so it should not be subject to THP induced seizures.
-> 
-> ... memory bubbles back ... for PTI kernels we need to map this in the
-> user and kernel page-tables because obviously userspace needs to be able
-> to have access to the LDT. But it is not directly acessible by
-> userspace. It lives in the cpu_entry_area as a virtual map of the real
-> kernel allocation, and this virtual address is used for LLDT.
-> Modification is done through sys_modify_ldt().
+The key is in the callers of pin_page_for_write(): __copy_to_user_memcpy()
+and __clear_user_memset().  They're doing "while (!pin_page_for_write())"
+loops - they hope for the fast path of getting pte_lock or pmd_lock on
+the page, and doing a __memcpy() or __memset() to the user address; but
+if anything goes "wrong", a __put_user() to fault in the page (or fail)
+then pin_page_for_write() again.
 
-And there must be a user-style page table backing that cpu_entry_area,
-because the use of get_locked_pte() and pte_unmap_unlock() implies
-that there's a user page table (struct page containing spinlock if
-config says so) rather than just a kernel page table mapping it.
+"if (unlikely(!pte)) return 0" says that the expected fast path did not
+succeed, so please __put_user() and have another go.
 
-> 
-> I think I would feel much better if this were something like:
-> 
-> 	if (!WARN_ON_ONCE(!ptep))
-> 
-> This really shouldn't fail and if it does, simply skipping it isn't the
-> right thing either.
-
-Sure, I'll gladly make that change when I respin - not immediately, let's
-get more feedback on this arch series first, but maybe in a week's time.
-
-Thanks for looking so quickly, Peter: I didn't Cc you on this particular
-series, but shall certainly be doing so on the ones that follow, because
-a few of those patches go into interesting pmdp_get_lockless() territory.
+It is somewhere I could have done a "goto again", but that would be
+superfluous when it's already designed that way at the outer level.
 
 Hugh
