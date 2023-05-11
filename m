@@ -4,75 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7DA5C77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 May 2023 17:56:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9717DC77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 03:17:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QGjQT2Hfqz3fdL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 03:56:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QGxsS4Vn9z3fPq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 13:17:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ErO3OOcw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=JDYjlZO6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ErO3OOcw;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=JDYjlZO6;
 	dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGgnD2mjrz3cj7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 02:42:53 +1000 (AEST)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-64384274895so5358037b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 09:42:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGxrV49F2z3bhx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 13:16:41 +1000 (AEST)
+Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-559f1819c5dso121473057b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 20:16:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1683736969; x=1686328969;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=p4AcAs1XOdI4uJxnLDu55ay7WUOLwtVEGo1buGajIlI=;
-        b=ErO3OOcwcAtWULaIxjcLAZtGhReLPXWiFGAKauQm2hkQj/5xLZq9Cm/FXwQiY3DuJ9
-         G+OjlVL2xKRlC7mLVvcpFe4c2afhATTGPPJ1AlAeFVQfiLDuI3XdWAHxZymp/IE6gqum
-         6hbwEkBDTqyrdeq0SdKt5dGbSbIMEG67E6kOc=
+        d=google.com; s=20221208; t=1683774999; x=1686366999;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=hRBzifhysJxaavDAsJ+Sa+/VyNhQzLXJPjsoUGcNRd4=;
+        b=JDYjlZO6u5Rd6QYeBUTXCp/kgqPCJk7kIYj5131tW+Oftjr3CeY+3TrtF265PwQLsY
+         CzyhzuHdTlVexa4Irr81wJWJONYV4WJYb+Qmn3xCOOTrZII3mN3FIl3WlUa9ZzRwMyft
+         TbG+lOOAm/FlIwiaNhNLr42JUk/Xp0bH2c5++eORJ8zXY8TzfBVIgW201ldf27i4oXvO
+         WYco0w5tL3fNC1aMrOMXgic+X453i3JN5jojWOgIXdVajjoFoae+wDli+04h87K4PSDU
+         PrZHQkqAQy9rNdfpBcTkPkLhTcEgcEAEnkRKNVLkHXWaXGdspdGha99g/0X8mBFfM1nS
+         C7lQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683736969; x=1686328969;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=p4AcAs1XOdI4uJxnLDu55ay7WUOLwtVEGo1buGajIlI=;
-        b=T8T3ImF3EThINWRYWlF4ZxE34rKLmLsKduImCW1bv2E2jbpHQP4CAhkzoNGMBC1svj
-         XOxcRnFY4bcEtwFQkAKA71PrntaTkW09LeSdCDFYyS2TKBGoHymBL8t1FBTpIMAWV4IZ
-         pZ8hp6tlf36VcQIRQVmBdWjQUjPSMIMy/lwZCCvmWYhBNBN72c7I4UVLXALSf5Koiwnj
-         pxg2ubL9kqoc3CMaru1e24p4ufxIlWK0ZmApzUx2lnEdFJ8ZSTJnWvhs/pO6mRS1UAaH
-         Da+8/940lZChMkad58qQJfXm9cdOD9iZ8jpTvLF3FmUZDHFutbarL8RJ32rWmzzlNaoc
-         KGwg==
-X-Gm-Message-State: AC+VfDwB+h9gtV4nHHQxc8eHqvKtGz+bQVTU3QTxIDeo5PIqfRSri7/I
-	uJi5iub3qzDZvxSqk+Ob1nGcAC1ehsS9wYN1ALQaqw==
-X-Google-Smtp-Source: ACHHUZ7vWfpYDjiLJ0MhSf/Qp5KQ0kDTF+Y9FzmYYRKCauHyche64Y5DifCm3I/1hqxsaG6KParEog==
-X-Received: by 2002:a17:902:ecc8:b0:1ac:7245:ba5a with SMTP id a8-20020a170902ecc800b001ac7245ba5amr15235304plh.61.1683736968510;
-        Wed, 10 May 2023 09:42:48 -0700 (PDT)
-Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com. [209.85.214.178])
-        by smtp.gmail.com with ESMTPSA id l8-20020a170903244800b001ac2c3e54adsm4014895pls.118.2023.05.10.09.42.45
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 10 May 2023 09:42:45 -0700 (PDT)
-Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-1aae90f5ebcso233485ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2023 09:42:45 -0700 (PDT)
-X-Received: by 2002:ac8:5792:0:b0:3ee:d8fe:6f5c with SMTP id
- v18-20020ac85792000000b003eed8fe6f5cmr329937qta.1.1683736943923; Wed, 10 May
- 2023 09:42:23 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1683774999; x=1686366999;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=hRBzifhysJxaavDAsJ+Sa+/VyNhQzLXJPjsoUGcNRd4=;
+        b=HtFVZ22WaJD51iJM6iFJuQZlMOcNYuVVcEb08PLs2EK5a3Uy7lB5PBiFIahLmfidAs
+         C+oxk4A6RsrQJA2PqAeIiBu4Yo/DlSLCMTCrxhYMEaXoi5BNoDRmzm+nWqKOVuRGmplI
+         tQyci3/iyp1H/6zoeGEq4zynSrou5AiXf/iK5E9ZxCJphwv3paXmiggpXZeLW/35813E
+         6TRmY3uJopsw+/g+4D9lyIpVHjDbjHiX6dhkt/R8Kpw6llOEq7JnJWIy22Vm2cH1iOfp
+         /YXbzqqyW4IFradGk7IeETJUKibzic93rWNytA/gj91F5e3gdpt/W3Rd2n4wMfahtLzd
+         VWlg==
+X-Gm-Message-State: AC+VfDwrKuJn50lDmgZJ3T8geZS/ULXiMi9v699BqtWMMHIxqJRvcQ92
+	upI6szneAjwg41lvmkIqFLhVRw==
+X-Google-Smtp-Source: ACHHUZ7/wlg4bppDf9uBVNG9J9Qk7aL+NA0hCKaxoiuDXlSicnUNf7o6tqD4YBoUi/tdOZkorZkwaA==
+X-Received: by 2002:a25:4087:0:b0:b9e:5006:42af with SMTP id n129-20020a254087000000b00b9e500642afmr19049386yba.58.1683774998976;
+        Wed, 10 May 2023 20:16:38 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id j128-20020a255586000000b00b923b2935d9sm4144529ybb.20.2023.05.10.20.16.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 May 2023 20:16:38 -0700 (PDT)
+Date: Wed, 10 May 2023 20:16:34 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 21/23] x86: Allow get_locked_pte() to fail
+In-Reply-To: <20230510081848.GD83892@hirez.programming.kicks-ass.net>
+Message-ID: <e5554cd1-417a-aa6a-5e5e-f4f5f773dda@google.com>
+References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com> <eba2b72f-2180-498b-c8bd-ce8f717fc78a@google.com> <20230510081848.GD83892@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-References: <20230419225604.21204-1-dianders@chromium.org> <CAD=FV=Wny=iFQf2GGuC2qP9hy4FHzpiRpV=ZvxEW77DX02XGzQ@mail.gmail.com>
- <ZFvGqD//pm/lZb+p@FVFF77S0Q05N.cambridge.arm.com>
-In-Reply-To: <ZFvGqD//pm/lZb+p@FVFF77S0Q05N.cambridge.arm.com>
-From: Doug Anderson <dianders@chromium.org>
-Date: Wed, 10 May 2023 09:42:09 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=WjX-XD6tX3hZq0GOh9e+Pc1jMMYP8DCc=u1YWQ2E5hYw@mail.gmail.com>
-Message-ID: <CAD=FV=WjX-XD6tX3hZq0GOh9e+Pc1jMMYP8DCc=u1YWQ2E5hYw@mail.gmail.com>
-Subject: Re: [PATCH v8 00/10] arm64: Add framework to turn an IPI as NMI
-To: Mark Rutland <mark.rutland@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Thu, 11 May 2023 03:54:00 +1000
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,99 +76,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Masayoshi Mizuma <m.mizuma@jp.fujitsu.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Huacai Chen <chenhuacai@kernel.org>, Jinyang He <hejinyang@loongson.cn>, Lecopzer Chen <lecopzer.chen@mediatek.com>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Qing Zhang <zhangqing@loongson.cn>, Jiaxun Yang <jiaxun.yang@flygoat.com>, linux-kernel@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Marc Zyngier <maz@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, Gaosheng Cui <cuigaosheng1@huawei.com>, Chen-Yu Tsai <wens@csie.org>, Ingo Molnar <mingo@redhat.com>, "Darrick J. Wong" <djwong@kernel.org>, kgdb-bugreport@lists.source
- forge.net, Ulf Hansson <ulf.hansson@linaro.org>, Masayoshi Mizuma <msys.mizuma@gmail.com>, Ingo Molnar <mingo@kernel.org>, Pierre Gondois <Pierre.Gondois@arm.com>, Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Stephen Boyd <swboyd@chromium.org>, loongarch@lists.linux.dev, "Russell King \(Oracle\)" <rmk+kernel@armlinux.org.uk>, Jianmin Lv <lvjianmin@loongson.cn>, Borislav Petkov <bp@alien8.de>, Joey Gouly <joey.gouly@arm.com>, Ben Dooks <ben-linux@fluff.org>, Thomas Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Andrey Konovalov <andreyknvl@gmail.com>, Sumit Garg <sumit.garg@linaro.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, ito-yuichi@fujitsu.com, =?UTF-8?Q?Philippe_Mathieu=2DDaud=C3
- =A9?= <f4bug@amsat.org>, linux-perf-users@vger.kernel.org, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, "Eric W. Biederman" <ebiederm@xmission.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Jason Wessel <jason.wessel@windriver.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, x86@kernel.org
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chri
+ s@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Wed, 10 May 2023, Peter Zijlstra wrote:
 
-On Wed, May 10, 2023 at 9:30=E2=80=AFAM Mark Rutland <mark.rutland@arm.com>=
- wrote:
->
-> On Wed, May 10, 2023 at 08:28:17AM -0700, Doug Anderson wrote:
-> > Hi,
->
-> Hi Doug,
->
-> > On Wed, Apr 19, 2023 at 3:57=E2=80=AFPM Douglas Anderson <dianders@chro=
-mium.org> wrote:
-> > > This is an attempt to resurrect Sumit's old patch series [1] that
-> > > allowed us to use the arm64 pseudo-NMI to get backtraces of CPUs and
-> > > also to round up CPUs in kdb/kgdb. The last post from Sumit that I
-> > > could find was v7, so I called this series v8. I haven't copied all o=
-f
-> > > his old changelongs here, but you can find them from the link.
-> > >
-> > > Since v7, I have:
-> > > * Addressed the small amount of feedback that was there for v7.
-> > > * Rebased.
-> > > * Added a new patch that prevents us from spamming the logs with idle
-> > >   tasks.
-> > > * Added an extra patch to gracefully fall back to regular IPIs if
-> > >   pseudo-NMIs aren't there.
-> > >
-> > > Since there appear to be a few different patches series related to
-> > > being able to use NMIs to get stack traces of crashed systems, let me
-> > > try to organize them to the best of my understanding:
-> > >
-> > > a) This series. On its own, a) will (among other things) enable stack
-> > >    traces of all running processes with the soft lockup detector if
-> > >    you've enabled the sysctl "kernel.softlockup_all_cpu_backtrace". O=
-n
-> > >    its own, a) doesn't give a hard lockup detector.
-> > >
-> > > b) A different recently-posted series [2] that adds a hard lockup
-> > >    detector based on perf. On its own, b) gives a stack crawl of the
-> > >    locked up CPU but no stack crawls of other CPUs (even if they're
-> > >    locked too). Together with a) + b) we get everything (full lockup
-> > >    detect, full ability to get stack crawls).
-> > >
-> > > c) The old Android "buddy" hard lockup detector [3] that I'm
-> > >    considering trying to upstream. If b) lands then I believe c) woul=
-d
-> > >    be redundant (at least for arm64). c) on its own is really only
-> > >    useful on arm64 for platforms that can print CPU_DBGPCSR somehow
-> > >    (see [4]). a) + c) is roughly as good as a) + b).
->
-> > It's been 3 weeks and I haven't heard a peep on this series. That
-> > means nobody has any objections and it's all good to land, right?
-> > Right? :-P
->
-> FWIW, there are still longstanding soundness issues in the arm64 pseudo-N=
-MI
-> support (and fixing that requires an overhaul of our DAIF / IRQ flag
-> management, which I've been chipping away at for a number of releases), s=
-o I
-> hadn't looked at this in detail yet because the foundations are still som=
-ewhat
-> dodgy.
->
-> I appreciate that this has been around for a while, and it's on my queue =
-to
-> look at.
+> On Tue, May 09, 2023 at 10:08:37PM -0700, Hugh Dickins wrote:
+> > In rare transient cases, not yet made possible, pte_offset_map() and
+> > pte_offset_map_lock() may not find a page table: handle appropriately.
+> > 
+> > Signed-off-by: Hugh Dickins <hughd@google.com>
+> > ---
+> >  arch/x86/kernel/ldt.c | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
+> > index 525876e7b9f4..eb844549cd83 100644
+> > --- a/arch/x86/kernel/ldt.c
+> > +++ b/arch/x86/kernel/ldt.c
+> > @@ -367,8 +367,10 @@ static void unmap_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt)
+> >  
+> >  		va = (unsigned long)ldt_slot_va(ldt->slot) + offset;
+> >  		ptep = get_locked_pte(mm, va, &ptl);
+> > -		pte_clear(mm, va, ptep);
+> > -		pte_unmap_unlock(ptep, ptl);
+> > +		if (ptep) {
+> > +			pte_clear(mm, va, ptep);
+> > +			pte_unmap_unlock(ptep, ptl);
+> > +		}
+> >  	}
+> 
+> Ow geez, now I have to go remember how the whole PTI/LDT crud worked :/
 
-Ah, thanks for the heads up! We've been thinking about turning this on
-in production in ChromeOS because it will help us track down a whole
-class of field-generated crash reports that are otherwise opaque to
-us. It sounds as if maybe that's not a good idea quite yet? Do you
-have any idea of how much farther along this needs to go? ...of
-course, we've also run into issues with Mediatek devices because they
-don't save/restore GICR registers properly [1]. In theory, we might be
-able to work around that in the kernel.
+I apologize for sending you back there!
 
-In any case, even if there are bugs that would prevent turning this on
-for production, it still seems like we could still land this series.
-It simply wouldn't do anything until someone turned on pseudo NMIs,
-which wouldn't happen till the kinks are worked out.
+> 
+> At first glance this seems wrong; we can't just not unmap the LDT if we
+> can't find it in a hurry. Also, IIRC this isn't in fact a regular user
+> mapping, so it should not be subject to THP induced seizures.
+> 
+> ... memory bubbles back ... for PTI kernels we need to map this in the
+> user and kernel page-tables because obviously userspace needs to be able
+> to have access to the LDT. But it is not directly acessible by
+> userspace. It lives in the cpu_entry_area as a virtual map of the real
+> kernel allocation, and this virtual address is used for LLDT.
+> Modification is done through sys_modify_ldt().
 
-...actually, I guess I should say that if all the patches of the
-current series do land then it actually _would_ still do something,
-even without pseudo-NMI. Assuming the last patch looks OK, it would at
-least start falling back to using regular IPIs to do backtraces. That
-wouldn't get backtraces on hard locked up CPUs but it would be better
-than what we have today where we don't get any backtraces. This would
-get arm64 on par with arm32...
+And there must be a user-style page table backing that cpu_entry_area,
+because the use of get_locked_pte() and pte_unmap_unlock() implies
+that there's a user page table (struct page containing spinlock if
+config says so) rather than just a kernel page table mapping it.
 
-[1] https://issuetracker.google.com/281831288
+> 
+> I think I would feel much better if this were something like:
+> 
+> 	if (!WARN_ON_ONCE(!ptep))
+> 
+> This really shouldn't fail and if it does, simply skipping it isn't the
+> right thing either.
+
+Sure, I'll gladly make that change when I respin - not immediately, let's
+get more feedback on this arch series first, but maybe in a week's time.
+
+Thanks for looking so quickly, Peter: I didn't Cc you on this particular
+series, but shall certainly be doing so on the ones that follow, because
+a few of those patches go into interesting pmdp_get_lockless() territory.
+
+Hugh
