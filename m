@@ -4,46 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A4ECC7EE22
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 03:24:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4982C77B7F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 04:46:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QGy154QF6z3f4w
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 13:24:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QGzrD6sGnz3fQ2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 May 2023 14:46:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mpN6WZbs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SYn1FHGe;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGy090rQSz3bcT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 13:23:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QGzqJ0Q1Qz3bhL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2023 14:45:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mpN6WZbs;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SYn1FHGe;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QGy012TVHz4x4X;
-	Thu, 11 May 2023 13:23:13 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QGzqD6d7fz4x4h;
+	Thu, 11 May 2023 14:45:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1683775400;
-	bh=segvorBuGekPc5jSCLXtWJe7pAKDaM/2mPQxUa2lvTw=;
+	s=201909; t=1683780345;
+	bh=gGQo2Hod1s0dUe8TaV/VGhddTEqXZ34G+98W5auwrHA=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=mpN6WZbs8ze5YaIng5ERyTBY3chApO1uFrN1U1lTsRVA9HI18/rgyaG/eZmexoGi4
-	 xyNRjwovMhVVlZljbfexsALAQ/VC7SXFkLQXhGs4Bb0CKdQ9ZE7uWK8mAGQpR/wXnj
-	 Wj/Kq9bEbYeNfiJORTh/qbHavius2OrvxO8nKOQelnsk3QR4A3TJ4hsLhIW2fK+19D
-	 90D5YoD3X1p3CFTX+0ixP4wpazzRWLy7HTHBpgR9OBJW3WUEJ01CMuFyOW/rNQ/1o1
-	 jq40YmakA31zDnqwNmvC6KPPEIJRM2z/UjkLs2qgYubScN3CGu05cVDjwVg/DFcNT6
-	 LL1PDlPViTPUQ==
+	b=SYn1FHGeyN2/KAqF8+2vnJXhmFrxun3VUz0Gm9tCde4qEbF3rEovKXDUS6pQCfiyw
+	 glrKlKcrrf9chWC+x/mErRxsdtXBHUqxEKAC6crYiVTLfcP/SprOVnkVTHA6ouhNQ/
+	 ETxHTeSacOeGfaPHeCdf5c+LKnmdBlSDnLZEOySHAZkk5TuanfORoUgQWu6TTmeK1x
+	 fFP2VQAp6atPbM6/tlL4TDo2TzY9xwKsD2SVLI3Va4Qaa/5FBcR5jDFYoIkEKSiUjb
+	 LKs1sKrmmNjOr77HT5e+V2hgGKTADo9yergTHjCiPGLJrbDHrlFDbxHHGwgXVy8vzx
+	 smd4t/8KrwPIA==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nhat Pham <nphamcs@gmail.com>, akpm@linux-foundation.org
-Subject: Re: [PATCH] cachestat: wire up cachestat for other architectures
-In-Reply-To: <20230510195806.2902878-1-nphamcs@gmail.com>
-References: <20230510195806.2902878-1-nphamcs@gmail.com>
-Date: Thu, 11 May 2023 13:23:12 +1000
-Message-ID: <874joja6vz.fsf@mail.lhotse>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build warnings in powercp build
+In-Reply-To: <20230511121635.0a6764a0@canb.auug.org.au>
+References: <20230511121635.0a6764a0@canb.auug.org.au>
+Date: Thu, 11 May 2023 14:45:44 +1000
+Message-ID: <871qjna32f.fsf@mail.lhotse>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,35 +58,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mips@vger.kernel.org, James.Bottomley@HansenPartnership.com, linux-mm@kvack.org, sparclinux@vger.kernel.org, agordeev@linux.ibm.com, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, linux@armlinux.org.uk, geert@linux-m68k.org, mattst88@gmail.com, borntraeger@linux.ibm.com, linux-alpha@vger.kernel.org, gor@linux.ibm.com, hca@linux.ibm.com, kernel-team@meta.com, richard.henderson@linaro.org, npiggin@gmail.com, linux-m68k@lists.linux-m68k.org, ink@jurassic.park.msu.ru, glaubitz@physik.fu-berlin.de, linux-arm-kernel@lists.infradead.org, chris@zankel.net, monstr@monstr.eu, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, jcmvbkbc@gmail.com, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, svens@linux.ibm.com, hannes@cmpxchg.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nhat Pham <nphamcs@gmail.com> writes:
-> cachestat is previously only wired in for x86 (and architectures using
-> the generic unistd.h table):
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> Hi all,
 >
-> https://lore.kernel.org/lkml/20230503013608.2431726-1-nphamcs@gmail.com/
->
-> This patch wires cachestat in for all the other architectures.
->
-> Signed-off-by: Nhat Pham <nphamcs@gmail.com>
-> ---
->  arch/alpha/kernel/syscalls/syscall.tbl      | 1 +
->  arch/arm/tools/syscall.tbl                  | 1 +
->  arch/ia64/kernel/syscalls/syscall.tbl       | 1 +
->  arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
->  arch/microblaze/kernel/syscalls/syscall.tbl | 1 +
->  arch/mips/kernel/syscalls/syscall_n32.tbl   | 1 +
->  arch/mips/kernel/syscalls/syscall_n64.tbl   | 1 +
->  arch/mips/kernel/syscalls/syscall_o32.tbl   | 1 +
->  arch/parisc/kernel/syscalls/syscall.tbl     | 1 +
->  arch/powerpc/kernel/syscalls/syscall.tbl    | 1 +
+> Today's (and a few before) linux-next build (powerpc pseries_le_defconfig)
+> produced these warnings:
 
-With the change to the selftest (see my other mail), I tested this on
-powerpc and all tests pass.
+Those aren't really warnings, it's just merge_config.sh telling you what
+it's doing. The whole point of the generated configs is to override
+those symbols.
 
-Tested-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
+Looks like there is a way to silence them, by using merge_into_defconfig_override.
 
 cheers
+
+> Building: powerpc pseries_le_defconfig
+> Using /home/sfr/next/next/arch/powerpc/configs/ppc64_defconfig as base
+> Merging /home/sfr/next/next/arch/powerpc/configs/le.config
+> Merging /home/sfr/next/next/arch/powerpc/configs/guest.config
+> Value of CONFIG_VIRTIO_BLK is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_VIRTIO_BLK=m
+> New value: CONFIG_VIRTIO_BLK=y
+>
+> Value of CONFIG_SCSI_VIRTIO is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_SCSI_VIRTIO=m
+> New value: CONFIG_SCSI_VIRTIO=y
+>
+> Value of CONFIG_VIRTIO_NET is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_VIRTIO_NET=m
+> New value: CONFIG_VIRTIO_NET=y
+>
+> Value of CONFIG_VIRTIO_CONSOLE is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_VIRTIO_CONSOLE=m
+> New value: CONFIG_VIRTIO_CONSOLE=y
+>
+> Value of CONFIG_VIRTIO_PCI is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_VIRTIO_PCI=m
+> New value: CONFIG_VIRTIO_PCI=y
+>
+> Value of CONFIG_VIRTIO_BALLOON is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_VIRTIO_BALLOON=m
+> New value: CONFIG_VIRTIO_BALLOON=y
+>
+> Value of CONFIG_VHOST_NET is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_VHOST_NET=m
+> New value: CONFIG_VHOST_NET=y
+>
+> Value of CONFIG_IBMVETH is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_IBMVETH=m
+> New value: CONFIG_IBMVETH=y
+>
+> Value of CONFIG_IBMVNIC is redefined by fragment /home/sfr/next/next/arch/powerpc/configs/guest.config:
+> Previous value: CONFIG_IBMVNIC=m
+> New value: CONFIG_IBMVNIC=y
+>
+> I am not sure exactly which change(s) introduced these warnings.
+>
+> -- 
+> Cheers,
+> Stephen Rothwell
