@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA6D6C77B7F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 May 2023 15:51:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13310C77B7F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 May 2023 15:52:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QHtY56zlsz3fjZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 May 2023 01:51:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QHtYb5HdYz3fmp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 May 2023 01:52:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QHtWg4PnVz3fWj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2023 01:50:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QHtWk6fHpz3fXk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2023 01:50:26 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4QHt5r4h20z9shD;
-	Fri, 12 May 2023 17:31:28 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4QHt603JMnz9shK;
+	Fri, 12 May 2023 17:31:36 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id rIDy-JiO_jv1; Fri, 12 May 2023 17:31:28 +0200 (CEST)
+	with ESMTP id j9QjvUkD4Q3Y; Fri, 12 May 2023 17:31:36 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4QHt5r3s9wz9sh9;
-	Fri, 12 May 2023 17:31:28 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4QHt602W6Gz9shF;
+	Fri, 12 May 2023 17:31:36 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 732B18B78C;
-	Fri, 12 May 2023 17:31:28 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 45CC78B78F;
+	Fri, 12 May 2023 17:31:36 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id H1LpH-jMWSRN; Fri, 12 May 2023 17:31:28 +0200 (CEST)
+	with ESMTP id Z2fdMt-ivM6f; Fri, 12 May 2023 17:31:36 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5678D8B763;
-	Fri, 12 May 2023 17:31:28 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1E0918B78D;
+	Fri, 12 May 2023 17:31:36 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34CFVRlp027559
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34CFVXpr027572
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 12 May 2023 17:31:27 +0200
+	Fri, 12 May 2023 17:31:33 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34CFVQ9N027555;
-	Fri, 12 May 2023 17:31:26 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34CFVX5x027571;
+	Fri, 12 May 2023 17:31:33 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
@@ -50,12 +50,14 @@ To: Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>, Chris Zankel <chris@zankel.net>,
         Max Filippov <jcmvbkbc@gmail.com>
-Subject: [PATCH 0/3] Extend KCSAN to all powerpc
-Date: Fri, 12 May 2023 17:31:16 +0200
-Message-Id: <cover.1683892665.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 2/3] powerpc/{32,book3e}: kcsan: Extend KCSAN Support
+Date: Fri, 12 May 2023 17:31:18 +0200
+Message-Id: <1a1138966780c3709f55bde8a0eb80209fa4395d.1683892665.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <cover.1683892665.git.christophe.leroy@csgroup.eu>
+References: <cover.1683892665.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1683905477; l=837; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=hPBnA5KflZMsLfBVOf1qnFl729hUS0enPhkbxf5HtTs=; b=+rCPMq09lu0PQQBWq0K3cX4hp8o3P5mr2OmgxPEWSSY2TZtz6UHhi0/tZZqKNtNMu8nfSrXT9 2/46XXMIUz7C1yYchavqsPeWJAztLAyhgUonNSsXnrmrAL0V9j9ZI1a
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1683905477; l=1060; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=iOCU0/N1NN4MtsKG9zsIEYw/8lfD2axoPdIAx+GkS9s=; b=EvwnTux8lT+dm20oToq/tU/Rfl9rPrCQsCd+7Xfyh3L4PK/7Fnj7WP99M0uv4LLpVBQsXTB3J vQdb6V2ffTQAranodLUKWDjk6Etl/Ke/s1FjpE5TBcsF0e/gUU0DzU4
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,29 +75,33 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>, kasan-dev@googlegroups.com, linuxppc-d
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series enables KCSAN on all powerpc.
+From: Rohan McLure <rmclure@linux.ibm.com>
 
-To do this, a fix is required to KCSAN core.
+Enable HAVE_ARCH_KCSAN on all powerpc platforms, permitting use of the
+kernel concurrency sanitiser through the CONFIG_KCSAN_* kconfig options.
 
-Once that fix is done, the stubs can also be removed from xtensa.
+Boots and passes selftests on 32-bit and 64-bit platforms. See
+documentation in Documentation/dev-tools/kcsan.rst for more information.
 
-It would be nice if patch 1 could go in v6.4 as a fix, then patches 2 and 3
-could be handled separately in each architecture in next cycle.
+Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Christophe Leroy (2):
-  kcsan: Don't expect 64 bits atomic builtins from 32 bits architectures
-  xtensa: Remove 64 bits atomic builtins stubs
-
-Rohan McLure (1):
-  powerpc/{32,book3e}: kcsan: Extend KCSAN Support
-
- arch/powerpc/Kconfig          |  2 +-
- arch/xtensa/lib/Makefile      |  2 --
- arch/xtensa/lib/kcsan-stubs.c | 54 -----------------------------------
- kernel/kcsan/core.c           |  2 ++
- 4 files changed, 3 insertions(+), 57 deletions(-)
- delete mode 100644 arch/xtensa/lib/kcsan-stubs.c
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 539d1f03ff42..2f6af3cb75d6 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -211,7 +211,7 @@ config PPC
+ 	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
+ 	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
+ 	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
+-	select HAVE_ARCH_KCSAN            	if PPC_BOOK3S_64
++	select HAVE_ARCH_KCSAN
+ 	select HAVE_ARCH_KFENCE			if ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	select HAVE_ARCH_RANDOMIZE_KSTACK_OFFSET
+ 	select HAVE_ARCH_WITHIN_STACK_FRAMES
 -- 
 2.40.1
 
