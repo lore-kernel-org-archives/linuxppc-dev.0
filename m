@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C792FC77B75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 May 2023 15:51:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA6D6C77B7F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 May 2023 15:51:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QHtXc2Ln6z3fcn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 May 2023 01:51:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QHtY56zlsz3fjZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 May 2023 01:51:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QHtWb1M5Sz3bjy
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2023 01:50:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QHtWg4PnVz3fWj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2023 01:50:23 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4QHt62161jz9shH;
-	Fri, 12 May 2023 17:31:38 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4QHt5r4h20z9shD;
+	Fri, 12 May 2023 17:31:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BlC2JZywGvGI; Fri, 12 May 2023 17:31:38 +0200 (CEST)
+	with ESMTP id rIDy-JiO_jv1; Fri, 12 May 2023 17:31:28 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4QHt602kq3z9shJ;
-	Fri, 12 May 2023 17:31:36 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4QHt5r3s9wz9sh9;
+	Fri, 12 May 2023 17:31:28 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D6978B790;
-	Fri, 12 May 2023 17:31:36 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 732B18B78C;
+	Fri, 12 May 2023 17:31:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id AxLlpteNQTxU; Fri, 12 May 2023 17:31:36 +0200 (CEST)
+	with ESMTP id H1LpH-jMWSRN; Fri, 12 May 2023 17:31:28 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 19CB88B78C;
-	Fri, 12 May 2023 17:31:36 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5678D8B763;
+	Fri, 12 May 2023 17:31:28 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34CFVXsu027577
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34CFVRlp027559
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 12 May 2023 17:31:33 +0200
+	Fri, 12 May 2023 17:31:27 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34CFVXIc027576;
-	Fri, 12 May 2023 17:31:33 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34CFVQ9N027555;
+	Fri, 12 May 2023 17:31:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
@@ -50,14 +50,12 @@ To: Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>, Chris Zankel <chris@zankel.net>,
         Max Filippov <jcmvbkbc@gmail.com>
-Subject: [PATCH 3/3] xtensa: Remove 64 bits atomic builtins stubs
-Date: Fri, 12 May 2023 17:31:19 +0200
-Message-Id: <a6834980e58c5e2cdf25b3db061f34975de46437.1683892665.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 0/3] Extend KCSAN to all powerpc
+Date: Fri, 12 May 2023 17:31:16 +0200
+Message-Id: <cover.1683892665.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <cover.1683892665.git.christophe.leroy@csgroup.eu>
-References: <cover.1683892665.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1683905477; l=2118; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=+zyncwZLQ3bafvCzHRcocRICLz4v7K33Eyqpmw+0Z2E=; b=JGBCBZPW/4L73BEPJbW1KwIUbjfFExLBpY/nshWqN/Q3w4BLyRscY1dA9vrUm3r816IXE7y6r XtQ6o6yaePVDp1dFY392FH1J8IjuLr2gpqzL4lLyIYMnnB99KMOjdi1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1683905477; l=837; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=hPBnA5KflZMsLfBVOf1qnFl729hUS0enPhkbxf5HtTs=; b=+rCPMq09lu0PQQBWq0K3cX4hp8o3P5mr2OmgxPEWSSY2TZtz6UHhi0/tZZqKNtNMu8nfSrXT9 2/46XXMIUz7C1yYchavqsPeWJAztLAyhgUonNSsXnrmrAL0V9j9ZI1a
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,91 +73,29 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>, kasan-dev@googlegroups.com, linuxppc-d
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The stubs were provided by commit 725aea873261 ("xtensa: enable KCSAN")
-to make linker happy allthought they are not meant to be used at all.
+This series enables KCSAN on all powerpc.
 
-KCSAN core has been fixed to not require them anymore on
-32 bits architectures.
+To do this, a fix is required to KCSAN core.
 
-Then they can be removed.
+Once that fix is done, the stubs can also be removed from xtensa.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
+It would be nice if patch 1 could go in v6.4 as a fix, then patches 2 and 3
+could be handled separately in each architecture in next cycle.
+
+Christophe Leroy (2):
+  kcsan: Don't expect 64 bits atomic builtins from 32 bits architectures
+  xtensa: Remove 64 bits atomic builtins stubs
+
+Rohan McLure (1):
+  powerpc/{32,book3e}: kcsan: Extend KCSAN Support
+
+ arch/powerpc/Kconfig          |  2 +-
  arch/xtensa/lib/Makefile      |  2 --
  arch/xtensa/lib/kcsan-stubs.c | 54 -----------------------------------
- 2 files changed, 56 deletions(-)
+ kernel/kcsan/core.c           |  2 ++
+ 4 files changed, 3 insertions(+), 57 deletions(-)
  delete mode 100644 arch/xtensa/lib/kcsan-stubs.c
 
-diff --git a/arch/xtensa/lib/Makefile b/arch/xtensa/lib/Makefile
-index 7ecef0519a27..23c22411d1d9 100644
---- a/arch/xtensa/lib/Makefile
-+++ b/arch/xtensa/lib/Makefile
-@@ -8,5 +8,3 @@ lib-y	+= memcopy.o memset.o checksum.o \
- 	   divsi3.o udivsi3.o modsi3.o umodsi3.o mulsi3.o umulsidi3.o \
- 	   usercopy.o strncpy_user.o strnlen_user.o
- lib-$(CONFIG_PCI) += pci-auto.o
--lib-$(CONFIG_KCSAN) += kcsan-stubs.o
--KCSAN_SANITIZE_kcsan-stubs.o := n
-diff --git a/arch/xtensa/lib/kcsan-stubs.c b/arch/xtensa/lib/kcsan-stubs.c
-deleted file mode 100644
-index 2b08faa62b86..000000000000
---- a/arch/xtensa/lib/kcsan-stubs.c
-+++ /dev/null
-@@ -1,54 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--
--#include <linux/bug.h>
--#include <linux/types.h>
--
--void __atomic_store_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--u64 __atomic_load_8(const volatile void *p, int i)
--{
--	BUG();
--}
--
--u64 __atomic_exchange_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--bool __atomic_compare_exchange_8(volatile void *p1, void *p2, u64 v, bool b, int i1, int i2)
--{
--	BUG();
--}
--
--u64 __atomic_fetch_add_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--u64 __atomic_fetch_sub_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--u64 __atomic_fetch_and_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--u64 __atomic_fetch_or_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--u64 __atomic_fetch_xor_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
--
--u64 __atomic_fetch_nand_8(volatile void *p, u64 v, int i)
--{
--	BUG();
--}
 -- 
 2.40.1
 
