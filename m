@@ -4,100 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49C6CC77B7F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 May 2023 22:56:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2C99C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 May 2023 23:06:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QJgww32bJz3fJH
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 May 2023 08:56:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QJh8T0Yjdz3fKr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 May 2023 09:06:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=EFe212Mr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tCnekFwZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f400:7eae::800; helo=nam11-bn8-obe.outbound.protection.outlook.com; envelope-from=mirimmad@outlook.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=EFe212Mr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tCnekFwZ;
 	dkim-atps=neutral
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11olkn20800.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eae::800])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QJTfC6j5Pz3c96
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2023 01:13:05 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bELjW96sXeKv6uMhQrNrOeb6SkxV9qxX2xtz1XmbS1rbvqth4bsffldyZTocKt2H8cZ0aEQKwT8Ywn0zhbbS1khb5ACH9Z/gkIUPclZsZogntidONUwSlucdhHbUWJltLqAr8jkuKSmsvyaG8V98cGibG5o87DY6kIQtvIxDBmMM0Gk5TVa0M0iDjn9wtfVL9tY1aEDGsjY+cfa16Pyap8Ahd6jEvKvi5yBL0viY0qc0B+QBerWKhpQUHjCG17yHtSYYvE8u7kCeqQX7+63Ig+Bdy3niql/O2AX2hlZyJ5LZ8d+j/tYiZ1+1xzfgLcl2WI2q8vJjG6m1tnvNFjQ0NA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AjS1N65ZDmqs57j1FSHtVm24YWtFdEP1MdFyJtzlQ10=;
- b=ElA/MkriRhbEnimUCBhM3pVxUcfKvfDs79jOgMr6buS3rqFerX0HUYc1zzpQfydN7+AT2/y8stVk01xsyfY6w1UcjHgL4y1/RdXstJrfkYFvUlMf9F7qoHRay0JzwfJiZdhcmK0u4bfQ0bpiLELP9sVQfIagy6kyRlzR3XCohXBaTPrwRhSnkpt2FRHvQSA+8kPthmcReRkp3E95sGt6WSnoUDw7kzArmpaHdrHHUEPrGcw6jJ0OYMWjzoWsgDJ8x35O08NA/ihbfsjnBW/vJqYc1t3+rJ3t75dwMbEUKnILDwarTC1WZ3x91lGowk84qgWXcA+EfSmgR1GQDSyWfg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AjS1N65ZDmqs57j1FSHtVm24YWtFdEP1MdFyJtzlQ10=;
- b=EFe212MrmHQSMnKf8hzFGhu8CXqhaahx6mmq1rEK2tFj83JqJo0r6vlpsATsLL7B7UvTeN4mrLeiaVzwS6moOg2Ea6i9OUXHzJaFZBWUrNDpNPEZ1GccQWFNeom5Li2kBgF3s5RiNPnTXSvULB6jG8wXkJUfsAiFuB1uU6gYk+o/33A/8nHBZs+blqZYpKf3naBFZvplhVUfkyAPd+J4jaRQA+7YiQ0zmvvscGSJWcw0+/Zbyl9+nyKiq+btUKsm5Pf0y+dlt3Z4No3P08gbyOnJ7SvoDN09aX3LAAxWzeK0d6Ty1b2KstM0eaRUESu0P2J6xYMN6Q/vN80TIyWUtg==
-Received: from CY5PR12MB6455.namprd12.prod.outlook.com (2603:10b6:930:35::10)
- by CH3PR12MB7593.namprd12.prod.outlook.com (2603:10b6:610:141::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6387.23; Sat, 13 May
- 2023 15:12:46 +0000
-Received: from CY5PR12MB6455.namprd12.prod.outlook.com
- ([fe80::eece:c2b8:c7ea:a6]) by CY5PR12MB6455.namprd12.prod.outlook.com
- ([fe80::eece:c2b8:c7ea:a6%6]) with mapi id 15.20.6340.031; Sat, 13 May 2023
- 15:12:46 +0000
-From: mirimmad@outlook.com
-To: 
-Subject: [PATCH] powerpc: fix debugfs_create_dir error checking
-Date: Sat, 13 May 2023 20:41:53 +0530
-Message-ID:  <CY5PR12MB6455FCF0BD8CF075FA6C8386C67A9@CY5PR12MB6455.namprd12.prod.outlook.com>
-X-Mailer: git-send-email 2.40.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TMN: [f4gXV2RqkrTCkGmMEzT+BSG7noXHnHM67NZHcHYLtYsbwPQfsqtB1GCn6VNfZWHa]
-X-ClientProxiedBy: PN2PR01CA0236.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:c01:eb::20) To CY5PR12MB6455.namprd12.prod.outlook.com
- (2603:10b6:930:35::10)
-X-Microsoft-Original-Message-ID:  <20230513151153.266877-1-mirimmad@outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QJh7R6SvNz3c7S
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2023 09:05:39 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 35B1E60EF3;
+	Sat, 13 May 2023 23:05:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77D38C433D2;
+	Sat, 13 May 2023 23:05:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1684019135;
+	bh=NC/4k6idYM8q5OXvy5ko2aM3jnNAcvzlrnr9hZdq2vY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=tCnekFwZHAPy4yc+M7eRwfX/4LFgCA2N6JPAH/eFQ+E9jo37+d6elhM580FWxeSpK
+	 WqDEkq1jJNh5pPzB0pcJbF0EQiBYh4m3uKx29ezHJR4kAPjJioLETHe7bJAYHnA3u5
+	 MvCwTnlVkO2pllUe90JWjQF263Bgev4ypwNUNx2TnBlH3sHCOvlJCV+ns8tLzTYjb4
+	 J6fyAmjcx0WADvr57oulthmatNgV5uhKbribjbYcKjh1F8lG2yski1vm2azMQKrIVD
+	 iSiv92UJkIyP5kiMzUoUUsXyK/1pYPRwNrM/+2hadRJVE7I//Lqf49t9VHDO1dlu7d
+	 BrKikUsbpvNPQ==
+Received: by pali.im (Postfix)
+	id 864537F9; Sun, 14 May 2023 01:05:32 +0200 (CEST)
+Date: Sun, 14 May 2023 01:05:32 +0200
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [RFC PATCH] powerpc: udbg: export udbg_putc
+Message-ID: <20230513230532.ojjf2xkmkx4v4zdo@pali>
+References: <20230513055804.23775-1-rdunlap@infradead.org>
+ <20230513091358.pzlexqnff5ydhlzf@pali>
+ <af2ca59b-b5ba-a154-991f-536d9170cc05@infradead.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY5PR12MB6455:EE_|CH3PR12MB7593:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6a995d73-8bac-493b-3842-08db53c48191
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	28AacB9tP8OfoZFRRvkJEFVSFGZdvwpBdWsrAGyzb/k3cVuRDmlzxFbysr1kHGO4cajjbCOtp+hEXuB+PPaGUEpgo/pgpoQXAQwoDBO6AzWOam5nqpPlUzSNPC5XFtk1AUVbWKTXzdktYCxDm/tGOlealuAcKZ3wKQaY/nX2/N49ljRlIoK6UUC18cLHE8v7zuPl0bsqSXJxjo2YHFUsxD7casdw1PzZt8CLlQxsAlst+xYoUQKTBSX7ka35mTpRWY4aZqZP8zBbkEkVe0KHuFr1kjTbBtrTPbjYARm/VN7Kpax6RUlAf5o2CUQHcPlBt2K7Lml94Bzo/TRE0AKuGI6sKVwjJspWftoNsORCAN+sCnySyP7rwayiinmea0kneK5hlMz2t65RnGgnubwqsJTAEoanTcGhIzWDtoTVUZwBWclnLKayoYsQbXlm9Nm3cb0AAR+k7AV3pO+ESbtd9b66ME/soTOCdZrc3FscbUo5tc+3UjMHyoeGZSZpJn1Pp2CN6lTeUVDwnim/is2FAa0Ib/YrJZYInUyicllLIsxD9ULskTptG3lii2/SDF2p
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?ZXIoLlEtwJJdoG1FxJoILjFFqQwALnBKQ15QlcPjbWOrfBq0ELhiXFpNAWB0?=
- =?us-ascii?Q?ZFR/G+rFOozAxJYkZFp8Ld+/pNvDdTUYO4f1OLIV+0AMZFYV8nqYvXGfaDSa?=
- =?us-ascii?Q?FZ7pdEvdUyI0egbAblwXDXWKxvy7EZXpEJ4HX1Qo0Km2nSPh1x27CdIG/8ub?=
- =?us-ascii?Q?QgZAqzr0mU+Rwfdf27/WkmfmwRTi6pYQbun1RA2KVeSUBYi3sEgYI5eIMXO8?=
- =?us-ascii?Q?sc38aX8mS3PxCWZDTItpbFKH7LIGb+Udc0S+jtAPuQZJ6i844Xwj1Hg5bx3N?=
- =?us-ascii?Q?uUPW+OBpIE2zLUAmTvxDlW+0mInOjPMjy1WGasDKVVqVjT2Qx6El8s6U4Dl/?=
- =?us-ascii?Q?+l3X9mFNzQXJLK8bnWCpIGVpJpeaxXVPqYX8XTCATnbZnIEKIz7sHYADxj52?=
- =?us-ascii?Q?ov0b9pBlorbD0dNoNeMspP4co6lLCya89nqrgtNyOseuahomNNWEB1fcRksg?=
- =?us-ascii?Q?8z0U1gv4qyKQk7xHRW6p11uoRExSwTcVr6RNLEvjQC5CGcinapa/Iutt7dyu?=
- =?us-ascii?Q?oca532siSPPj9/e8DiBNxW+qRmH2Q9k2kjQP+sLpWjuP14CkwkdRrDXSj3Hr?=
- =?us-ascii?Q?WGpEbXEsZhwMkZcYpTqj38Dy1JPAMe3Bz9oM1Ezz1bOjWHVyqA+3NTGp4wmx?=
- =?us-ascii?Q?UInAANn+BQ9JGgcu/67dU3DvE3+WN13Xq3uRg8NQI0VMLWftVRPyZ54gTZY3?=
- =?us-ascii?Q?a1hGCkKRJ8m8MX0yhdGV28yYVUCqH70HIE7WBRNGi5qKHuXh667L6H/bkoRx?=
- =?us-ascii?Q?XCnKKE3R7VDYIcF6OHoLnwVVjGlQvyeCUrTD6JZ1WVZvtLRGIDf6nhYPdian?=
- =?us-ascii?Q?tl6tdIz6znRSoIzX9Gas4si3SOD/1dOzsBS47fsAOp8ReIaDu9NyvdU+z7gs?=
- =?us-ascii?Q?FUkTA/5iAjvo+GlAkPjA2A82/FB4IlKqXO52bZG0lR2N6h8GV/Iah8GUo10g?=
- =?us-ascii?Q?aIAroTIfbKJE3pU2TIItQNpmWu1+juc4D4/owtkUv1IsUSEdPy1KhPXbCR9W?=
- =?us-ascii?Q?pBX3p7fGSIO3SSp/SXEHOmyobog27mPNAZ7FY11mYmWHzTmrJQBB0j7SdsHu?=
- =?us-ascii?Q?HRo3bKH6RgzOF9YAnrbl2esWV4RIIQDEJDIWkCRe3W/ldvrAKMjv4t6+ZV6t?=
- =?us-ascii?Q?MGB2ja95IdpiBR1OCmi/sunsPIrQKAxhpmre5Px238j8A3hTV93DsXL6BqZe?=
- =?us-ascii?Q?0pg4kI44pfT8Dv7H10+96cRhcd7cDLFSqS8IhZ204B1f23aKljBLJXoVmOz+?=
- =?us-ascii?Q?raQUgBDBehHCBlhFiPpNTaZNgJaY2UAkmrsTPZ6gOA=3D=3D?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6a995d73-8bac-493b-3842-08db53c48191
-X-MS-Exchange-CrossTenant-AuthSource: CY5PR12MB6455.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 May 2023 15:12:46.0372
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB7593
-X-Mailman-Approved-At: Sun, 14 May 2023 08:55:43 +1000
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <af2ca59b-b5ba-a154-991f-536d9170cc05@infradead.org>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,44 +65,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ivan Orlov <ivan.orlov0322@gmail.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, skhan@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org, Immad Mir <mirimmad17@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Immad Mir <mirimmad17@gmail.com>
+On Saturday 13 May 2023 15:53:19 Randy Dunlap wrote:
+> Hi Pali,
+> 
+> On 5/13/23 02:13, Pali Rohár wrote:
+> > On Friday 12 May 2023 22:58:04 Randy Dunlap wrote:
+> >> In a randconfig with CONFIG_SERIAL_CPM=m and
+> >> CONFIG_PPC_EARLY_DEBUG_CPM=y, there is a build error:
+> >> ERROR: modpost: "udbg_putc" [drivers/tty/serial/cpm_uart/cpm_uart.ko] undefined!
+> >>
+> >> The build can be fixed by exporting "udbg_putc" in udbg.c.
+> >>
+> >> OTOH, maybe something like this is more appropriate in
+> >> arch/powerpc/Kconfig.debug?
+> >>
+> >> config PPC_EARLY_DEBUG_CPM
+> >> 	bool "Early serial debugging for Freescale CPM-based serial ports"
+> >> -	depends on SERIAL_CPM
+> >> +	depends on SERIAL_CPM=y
+> >>
+> >> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> >> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >> Cc: Nicholas Piggin <npiggin@gmail.com>
+> >> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> >> Cc: linuxppc-dev@lists.ozlabs.org
+> >> Cc: Arnd Bergmann <arnd@arndb.de>
+> >> Cc: "Pali Rohár" <pali@kernel.org>
+> >> ---
+> >>  arch/powerpc/kernel/udbg.c |    1 +
+> >>  1 file changed, 1 insertion(+)
+> >>
+> >> diff -- a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+> >> --- a/arch/powerpc/kernel/udbg.c
+> >> +++ b/arch/powerpc/kernel/udbg.c
+> >> @@ -14,6 +14,7 @@
+> >>  #include <asm/udbg.h>
+> >>  
+> >>  void (*udbg_putc)(char c);
+> >> +EXPORT_SYMBOL(udbg_putc);
+> >>  void (*udbg_flush)(void);
+> >>  int (*udbg_getc)(void);
+> >>  int (*udbg_getc_poll)(void);
+> > 
+> > Hello! I do not think that it is a good idea to export udbg functions
+> > for kernel modules. I have quickly looked at the cpm_uart driver file
+> 
+> Sure, that was just a conversation starter.
+> 
+> > drivers/tty/serial/cpm_uart/cpm_uart_core.c and it looks like that once
+> > udbg from it is registered then there is no code for unregistering it.
+> > So I have feeling that compiling cpm_uart driver as module should not be
+> > allowed when CONFIG_SERIAL_CPM_CONSOLE is enabled, and early debug
+> > should depend on CONFIG_CONSOLE_POLL || CONFIG_SERIAL_CPM_CONSOLE.
+> 
+> The other change above also fixes the build error: (Option 2)
+> 
+> >> config PPC_EARLY_DEBUG_CPM
+> >> 	bool "Early serial debugging for Freescale CPM-based serial ports"
+> >> -	depends on SERIAL_CPM
+> >> +	depends on SERIAL_CPM=y
+> 
+> 
+> Also, making SERIAL_CPM (cpm_uart driver) be restricted to not allow it
+> as a module when SERIAL_CPM_CONSOLE is enabled [how does one express that
+> in Kconfig language?] will cause a circular dependency since SERIAL_CPM_CONSOLE
+> depends on SERIAL_CPM=y. It looks like you are suggesting reversing the
+> dependencies.
 
-The debugfs_create_dir returns ERR_PTR incase of an error and the
-correct way of checking it by using the IS_ERR inline function, and
-not the simple null comparision. This patch fixes this.
+I see that SERIAL_CPM_CONSOLE has already "depends on SERIAL_CPM=y".
+Am I right that this already disallow compiling cpm_uart driver as
+module when SERIAL_CPM_CONSOLE is enabled?
 
-Suggested-By: Ivan Orlov <ivan.orlov0322@gmail.com>
-Signed-off-by: Immad Mir <mirimmad17@gmail.com>
----
- arch/powerpc/platforms/powernv/opal-xscom.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> > Any other opinion?
+> 
+> Yes, please. Otherwise I prefer my option 2.
+> 
+> -- 
+> ~Randy
 
-diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c b/arch/powerpc/platforms/powernv/opal-xscom.c
-index 6b4eed2ef..262cd6fac 100644
---- a/arch/powerpc/platforms/powernv/opal-xscom.c
-+++ b/arch/powerpc/platforms/powernv/opal-xscom.c
-@@ -168,7 +168,7 @@ static int scom_debug_init_one(struct dentry *root, struct device_node *dn,
- 	ent->path.size = strlen((char *)ent->path.data);
-
- 	dir = debugfs_create_dir(ent->name, root);
--	if (!dir) {
-+	if (IS_ERR(dir)) {
- 		kfree(ent->path.data);
- 		kfree(ent);
- 		return -1;
-@@ -190,7 +190,7 @@ static int scom_debug_init(void)
- 		return 0;
-
- 	root = debugfs_create_dir("scom", arch_debugfs_dir);
--	if (!root)
-+	if (IS_ERR(root))
- 		return -1;
-
- 	rc = 0;
---
-2.40.0
-
+Option 2 looks like a better solution.
