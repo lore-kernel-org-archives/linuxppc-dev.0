@@ -4,53 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBE2BC77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 13:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85823C77B7D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 14:08:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKgnL0VVqz3f59
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 23:53:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OD90Fnua;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=brauner@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OD90Fnua;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKh6q5vlRz3f5H
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 00:08:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKgmK6TD9z2yxX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 23:52:33 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E6F7C6151B;
-	Mon, 15 May 2023 13:52:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5863C433EF;
-	Mon, 15 May 2023 13:52:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1684158749;
-	bh=yLHcOQuMOwKl/TYFo2kdsc0eAYysG+im84RLRDZNBd0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=OD90Fnua0tBl6Y7Xa5VYKmP56D3PTecnBZKxd6t/NzIbjyvtkj0FCYMKwSiEtCItm
-	 FOJxfFG6M+SqBZePsKLSIR0ZPW4mgn7rQihMwZEGM1Y0LT8x8v3xuCpPtttmUVHYd9
-	 Rw0sOkNWawXMm1K7SVGmjFitrrb6QBegfPwUWfECuki7kMZqeg4mKRp/qc7KqWwwCz
-	 tjZUf8ReIHUIAhWBk8AC1N5GSMad/pfCSv9nZBGYnK5ilmGWyJV349wbDLPVZPNCE5
-	 n1/RcwvhrCrwDX9yTR70NM50k1yHTBCmbwBHvPjfwOPT9Bw5JJoWXNoTDwaV2AHJpO
-	 WnSHT0ak+v8pA==
-Date: Mon, 15 May 2023 15:52:20 +0200
-From: Christian Brauner <brauner@kernel.org>
-To: Amir Goldstein <amir73il@gmail.com>
-Subject: Re: [RFC PATCH v2] fs/xattr: add *at family syscalls
-Message-ID: <20230515-banal-vergab-a7abb53169b5@brauner>
-References: <20230511150802.737477-1-cgzones@googlemail.com>
- <20230515-kopfgeld-umkurven-f27be4b68a26@brauner>
- <CAOQ4uxgtxLLfBuVUAT7+N7cox+03wJA3ACGEu76dZd5RqGWXTQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKh6D3MvQz2xBF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 00:08:02 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4QKh652927z9sfK;
+	Mon, 15 May 2023 16:07:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id TIq3ECWBFt4Z; Mon, 15 May 2023 16:07:57 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4QKh650yV1z9sfH;
+	Mon, 15 May 2023 16:07:57 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EF2A8B770;
+	Mon, 15 May 2023 16:07:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id DVnxLdnlrnuA; Mon, 15 May 2023 16:07:56 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.36])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C5EED8B763;
+	Mon, 15 May 2023 16:07:55 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34FE7PGS583505
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 15 May 2023 16:07:25 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34FE7P4L583504;
+	Mon, 15 May 2023 16:07:25 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: gregkh@linuxfoundation.org, stable@vger.kernel.org
+Subject: [PATCH 3/3][For 4.19/4.14] spi: fsl-cpm: Use 16 bit mode for large transfers with even size
+Date: Mon, 15 May 2023 16:07:15 +0200
+Message-Id: <9363da33f54e9862b4b59c0ed97924ca7265f7a4.1684158520.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <674d9af640acf4aa04abd642cc81de926d3271ed.1684158520.git.christophe.leroy@csgroup.eu>
+References: <674d9af640acf4aa04abd642cc81de926d3271ed.1684158520.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1684159635; l=3126; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=l7gMBo+J9VneTb7HZST7+pC/HbETdxgOtrQIZaFHdik=; b=Q+cyRKRh9x9rIqyUk77SliaUcnE7JGKafPsMuKOhte+TWtTI/IvZ6MpVBCvlnBAip35wo7Y/5 8g0bvpE1SCsB8AbCr0TZN5mJfLL1MXw54ZPV2ETMxbVJPptxeCXlk4V
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAOQ4uxgtxLLfBuVUAT7+N7cox+03wJA3ACGEu76dZd5RqGWXTQ@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,163 +67,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, Jan Kara <jack@suse.cz>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, selinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Christian =?utf-8?B?R8O2dHRzY2hl?= <cgzones@googlemail.com>, linux-parisc@vger.kernel.org, cyphar@cyphar.com, linux-api@vger.kernel.org, jlayton@kernel.org, linux-kernel@vger.kernel.org, audit@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 15, 2023 at 04:04:21PM +0300, Amir Goldstein wrote:
-> On Mon, May 15, 2023 at 1:33 PM Christian Brauner <brauner@kernel.org> wrote:
-> >
-> > On Thu, May 11, 2023 at 05:08:02PM +0200, Christian Göttsche wrote:
-> > > Add the four syscalls setxattrat(), getxattrat(), listxattrat() and
-> > > removexattrat().  Those can be used to operate on extended attributes,
-> > > especially security related ones, either relative to a pinned directory
-> > > or on a file descriptor without read access, avoiding a
-> > > /proc/<pid>/fd/<fd> detour, requiring a mounted procfs.
-> > >
-> > > One use case will be setfiles(8) setting SELinux file contexts
-> > > ("security.selinux") without race conditions.
-> > >
-> > > Add XATTR flags to the private namespace of AT_* flags.
-> > >
-> > > Use the do_{name}at() pattern from fs/open.c.
-> > >
-> > > Use a single flag parameter for extended attribute flags (currently
-> > > XATTR_CREATE and XATTR_REPLACE) and *at() flags to not exceed six
-> > > syscall arguments in setxattrat().
-> > >
-> > > Previous approach ("f*xattr: allow O_PATH descriptors"): https://lore.kernel.org/all/20220607153139.35588-1-cgzones@googlemail.com/
-> > > v1 discussion: https://lore.kernel.org/all/20220830152858.14866-2-cgzones@googlemail.com/
-> > >
-> > > Signed-off-by: Christian Göttsche <cgzones@googlemail.com>
-> > > CC: x86@kernel.org
-> > > CC: linux-alpha@vger.kernel.org
-> > > CC: linux-kernel@vger.kernel.org
-> > > CC: linux-arm-kernel@lists.infradead.org
-> > > CC: linux-ia64@vger.kernel.org
-> > > CC: linux-m68k@lists.linux-m68k.org
-> > > CC: linux-mips@vger.kernel.org
-> > > CC: linux-parisc@vger.kernel.org
-> > > CC: linuxppc-dev@lists.ozlabs.org
-> > > CC: linux-s390@vger.kernel.org
-> > > CC: linux-sh@vger.kernel.org
-> > > CC: sparclinux@vger.kernel.org
-> > > CC: linux-fsdevel@vger.kernel.org
-> > > CC: audit@vger.kernel.org
-> > > CC: linux-arch@vger.kernel.org
-> > > CC: linux-api@vger.kernel.org
-> > > CC: linux-security-module@vger.kernel.org
-> > > CC: selinux@vger.kernel.org
-> > > ---
-> >
-> > Fwiw, your header doesn't let me see who the mail was directly sent to
-> > so I'm only able to reply to lists which is a bit pointless...
-> >
-> > > v2:
-> > >   - squash syscall introduction and wire up commits
-> > >   - add AT_XATTR_CREATE and AT_XATTR_REPLACE constants
-> >
-> > > +#define AT_XATTR_CREATE              0x1     /* setxattrat(2): set value, fail if attr already exists */
-> > > +#define AT_XATTR_REPLACE     0x2     /* setxattrat(2): set value, fail if attr does not exist */
-> >
-> > We really shouldn't waste any AT_* flags for this. Otherwise we'll run
-> > out of them rather quickly. Two weeks ago we added another AT_* flag
-> > which is up for merging for v6.5 iirc and I've glimpsed another AT_*
-> > flag proposal in one of the talks at last weeks Vancouver conference
-> > extravaganza.
-> >
-> > Even if we reuse 0x200 for AT_XATTR_CREATE (like we did for AT_EACCESS
-> > and AT_REMOVEDIR) we still need another bit for AT_XATTR_REPLACE.
-> >
-> > Plus, this is really ugly since AT_XATTR_{CREATE,REPLACE} really isn't
-> > in any way related to lookup and we're mixing it in with lookup
-> > modifying flags.
-> >
-> > So my proposal for {g,s}etxattrat() would be:
-> >
-> > struct xattr_args {
-> >         __aligned_u64 value;
-> >         __u32 size;
-> >         __u32 cmd;
-> > };
-> >
-> > So everything's nicely 64bit aligned in the struct. Use the @cmd member
-> > to set either XATTR_REPLACE or XATTR_CREATE and treat it as a proper
-> > enum and not as a flag argument like the old calls did.
-> >
-> > So then we'd have:
-> >
-> > setxattrat(int dfd, const char *path, const char __user *name,
-> >            struct xattr_args __user *args, size_t size, unsigned int flags)
-> > getxattrat(int dfd, const char *path, const char __user *name,
-> >            struct xattr_args __user *args, size_t size, unsigned int flags)
-> >
-> > The current in-kernel struct xattr_ctx would be renamed to struct
-> > kernel_xattr_args and then we do the usual copy_struct_from_user()
-> > dance:
-> >
-> > struct xattr_args args;
-> > err = copy_struct_from_user(&args, sizeof(args), uargs, usize);
-> >
-> > and then go on to handle value/size for setxattrat()/getxattrat()
-> > accordingly.
-> >
-> > getxattr()/setxattr() aren't meaningfully filterable by seccomp already
-> > so there's not point in not using a struct.
-> >
-> > If that isn't very appealing then another option is to add a new flag
-> > namespace just for setxattrat() similar to fspick() and move_mount()
-> > duplicating the needed lookup modifying flags.
-> > Thoughts?
-> 
-> Here is a thought: I am not sure if I am sorry we did not discuss this API
-> issue in LSFMM or happy that we did not waste our time on this... :-/
-> 
-> I must say that I dislike redefined flag namespace like FSPICK_*
-> just as much as I dislike overloading the AT_* namespace and TBH,
-> I am not crazy about avoiding this problem with xattr_args either.
-> 
-> A more sane solution IMO could have been:
-> - Use lower word of flags for generic AT_ flags
-> - Use the upper word of flags for syscall specific flags
+(cherry picked from upstream fc96ec826bced75cc6b9c07a4ac44bbf651337ab)
 
-We'd have 16 lower bits for AT_* flags and upper 16 bits for non-AT_*
-flags. That might be ok but it isn't great because if we ever extend
-AT_* flags into the upper 16 bits that are generally useful for all
-AT_* flag taking system calls we'd not be able to use them. And at the
-rate people keep suggesting new AT_* flags that issue might arise
-quicker than we might think.
+On CPM, the RISC core is a lot more efficiant when doing transfers
+in 16-bits chunks than in 8-bits chunks, but unfortunately the
+words need to be byte swapped as seen in a previous commit.
 
-And we really don't want 64 bit flag arguments because of 32 bit
-architectures as that gets really ugly to handle cleanly (Arnd has
-talked a lot about issues in this area before).
+So, for large tranfers with an even size, allocate a temporary tx
+buffer and byte-swap data before and after transfer.
 
-> 
-> So if it were up to me, I would vote starting this practice:
-> 
-> + /* Start of syscall specific range */
-> + #define AT_XATTR_CREATE       0x10000     /* setxattrat(2): set
-> value, fail if attr already exists */
-> + #define AT_XATTR_REPLACE     0x20000     /* setxattrat(2): set
-> value, fail if attr does not exist */
-> 
-> Which coincidentally happens to be inline with my AT_HANDLE_FID patch...
+This change allows setting higher speed for transfer. For instance
+on an MPC 8xx (CPM1 comms RISC processor), the documentation tells
+that transfer in byte mode at 1 kbit/s uses 0.200% of CPM load
+at 25 MHz while a word transfer at the same speed uses 0.032%
+of CPM load. This means the speed can be 6 times higher in
+word mode for the same CPM load.
 
-This is different though. The reason AT_HANDLE_FID is acceptable is
-because we need the ability to extend an existing system call and we're
-reusing a bit that is already used in two other system calls. So we
-avoid adding a new system call just to add another flag argument and
-we're also not using up an additional AT_* bit. This makes it bearable
-imho. But here we're talking about new system calls where we can avoid
-this problem arising in the first place.
+For the time being, only do it on CPM1 as there must be a
+trade-off between the CPM load reduction and the CPU load required
+to byte swap the data.
 
-> 
-> Sure, we will have some special cases like MOVE_MOUNT_* and
-> legacy pollution to the lower AT_ flags word, but as a generic solution
-> for syscalls that need the common AT_ lookup flags and just a few
-> private flags, that seems like the lesser evil to me.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Link: https://lore.kernel.org/r/f2e981f20f92dd28983c3949702a09248c23845c.1680371809.git.christophe.leroy@csgroup.eu
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ drivers/spi/spi-fsl-cpm.c | 23 +++++++++++++++++++++++
+ drivers/spi/spi-fsl-spi.c |  3 +++
+ 2 files changed, 26 insertions(+)
 
-It is fine to do this in some cases but we shouldn't encourage mixing
-distinct flag namespaces let alone advertising this as a generic
-solution imho. The AT_XATTR_* flags aren't even flags they behave like
-an enum.
+diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
+index 8f7b26ec181e..0485593dc2f5 100644
+--- a/drivers/spi/spi-fsl-cpm.c
++++ b/drivers/spi/spi-fsl-cpm.c
+@@ -25,6 +25,7 @@
+ #include <linux/spi/spi.h>
+ #include <linux/types.h>
+ #include <linux/platform_device.h>
++#include <linux/byteorder/generic.h>
+ 
+ #include "spi-fsl-cpm.h"
+ #include "spi-fsl-lib.h"
+@@ -124,6 +125,21 @@ int fsl_spi_cpm_bufs(struct mpc8xxx_spi *mspi,
+ 		mspi->rx_dma = mspi->dma_dummy_rx;
+ 		mspi->map_rx_dma = 0;
+ 	}
++	if (t->bits_per_word == 16 && t->tx_buf) {
++		const u16 *src = t->tx_buf;
++		u16 *dst;
++		int i;
++
++		dst = kmalloc(t->len, GFP_KERNEL);
++		if (!dst)
++			return -ENOMEM;
++
++		for (i = 0; i < t->len >> 1; i++)
++			dst[i] = cpu_to_le16p(src + i);
++
++		mspi->tx = dst;
++		mspi->map_tx_dma = 1;
++	}
+ 
+ 	if (mspi->map_tx_dma) {
+ 		void *nonconst_tx = (void *)mspi->tx; /* shut up gcc */
+@@ -177,6 +193,13 @@ void fsl_spi_cpm_bufs_complete(struct mpc8xxx_spi *mspi)
+ 	if (mspi->map_rx_dma)
+ 		dma_unmap_single(dev, mspi->rx_dma, t->len, DMA_FROM_DEVICE);
+ 	mspi->xfer_in_progress = NULL;
++
++	if (t->bits_per_word == 16 && t->rx_buf) {
++		int i;
++
++		for (i = 0; i < t->len; i += 2)
++			le16_to_cpus(t->rx_buf + i);
++	}
+ }
+ EXPORT_SYMBOL_GPL(fsl_spi_cpm_bufs_complete);
+ 
+diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
+index e08a11070c5c..5e49fed487f8 100644
+--- a/drivers/spi/spi-fsl-spi.c
++++ b/drivers/spi/spi-fsl-spi.c
+@@ -366,6 +366,9 @@ static int fsl_spi_do_one_msg(struct spi_master *master,
+ 				return -EINVAL;
+ 			if (t->bits_per_word == 16 || t->bits_per_word == 32)
+ 				t->bits_per_word = 8; /* pretend its 8 bits */
++			if (t->bits_per_word == 8 && t->len >= 256 &&
++			    (mpc8xxx_spi->flags & SPI_CPM1))
++				t->bits_per_word = 16;
+ 		}
+ 	}
+ 
+-- 
+2.40.1
+
