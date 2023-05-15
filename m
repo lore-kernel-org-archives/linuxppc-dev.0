@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC990C77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 16:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E07AC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 16:54:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKldZ0YBwz3fBC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 02:46:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKlp03c7hz3f8q
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 02:54:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=JqTHmNed;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=CHx831KG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=JqTHmNed;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=CHx831KG;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKlcf02TFz2ygG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 02:46:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKln11krBz3bgn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 02:53:24 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 1A57E62903;
-	Mon, 15 May 2023 16:46:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5DE9C433EF;
-	Mon, 15 May 2023 16:46:05 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 72E6F62842;
+	Mon, 15 May 2023 16:53:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A7A2C433EF;
+	Mon, 15 May 2023 16:53:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1684169166;
-	bh=HbJ1+XyUzUEKfatXuPxWCn+ESfHt5skSLLvHFihRKMg=;
+	s=korg; t=1684169601;
+	bh=CQLT/bsvAJd2jCdkCfQb3EdAHZfQbieJuhsfPHb1y0o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JqTHmNedr4+cP+qzama27CgUQdRlcXI0xON0H/CYtCqigavkyW2/rISGuJJB0j67U
-	 SDGG/83Lb+4F39d9S240+acWQX7n79p/W7jgLNMgSelMXhrxHMAE+UxSxn1dvPcMer
-	 tRf3trKdMtHLC2cwJH6ciatOi4U0QZjMZWTX+7KA=
+	b=CHx831KGzsz0KA2td/8Z7bIpPsXsjqPOM0zEGOxbAwt05vFiHQ3xSjmZw25yLKqSX
+	 O+6czkNOUMFZ5/Q+Zht+VKaPApjO4W44fqE7uV1RdnnRXDsS0XK9Noc9Mvw0zah9Dt
+	 z8UYWQ4tQVxWlKuQpnMeQaDr1Kwue0InOaTpZH1k=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
-Subject: [PATCH 4.19 164/191] perf vendor events power9: Remove UTF-8 characters from JSON files
-Date: Mon, 15 May 2023 18:26:41 +0200
-Message-Id: <20230515161713.393498528@linuxfoundation.org>
+Subject: [PATCH 6.3 110/246] perf vendor events power9: Remove UTF-8 characters from JSON files
+Date: Mon, 15 May 2023 18:25:22 +0200
+Message-Id: <20230515161725.876570435@linuxfoundation.org>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230515161707.203549282@linuxfoundation.org>
-References: <20230515161707.203549282@linuxfoundation.org>
+In-Reply-To: <20230515161722.610123835@linuxfoundation.org>
+References: <20230515161722.610123835@linuxfoundation.org>
 User-Agent: quilt/0.67
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -128,39 +128,39 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/tools/perf/pmu-events/arch/powerpc/power9/other.json b/tools/perf/pmu-events/arch/powerpc/power9/other.json
-index 48cf4f920b3ff..064341c0df575 100644
+index 3f69422c21f99..f10bd554521a0 100644
 --- a/tools/perf/pmu-events/arch/powerpc/power9/other.json
 +++ b/tools/perf/pmu-events/arch/powerpc/power9/other.json
 @@ -1417,7 +1417,7 @@
-   {,
+   {
      "EventCode": "0x45054",
      "EventName": "PM_FMA_CMPL",
 -    "BriefDescription": "two flops operation completed (fmadd, fnmadd, fmsub, fnmsub) Scalar instructions only. "
 +    "BriefDescription": "two flops operation completed (fmadd, fnmadd, fmsub, fnmsub) Scalar instructions only."
    },
-   {,
+   {
      "EventCode": "0x201E8",
 @@ -2017,7 +2017,7 @@
-   {,
+   {
      "EventCode": "0xC0BC",
      "EventName": "PM_LSU_FLUSH_OTHER",
 -    "BriefDescription": "Other LSU flushes including: Sync (sync ack from L2 caused search of LRQ for oldest snooped load, This will either signal a Precise Flush of the oldest snooped loa or a Flush Next PPC); Data Valid Flush Next (several cases of this, one example is store and reload are lined up such that a store-hit-reload scenario exists and the CDF has already launched and has gotten bad/stale data); Bad Data Valid Flush Next (might be a few cases of this, one example is a larxa (D$ hit) return data and dval but can't allocate to LMQ (LMQ full or other reason). Already gave dval but can't watch it for snoop_hit_larx. Need to take the “bad dval” back and flush all younger ops)"
 +    "BriefDescription": "Other LSU flushes including: Sync (sync ack from L2 caused search of LRQ for oldest snooped load, This will either signal a Precise Flush of the oldest snooped loa or a Flush Next PPC); Data Valid Flush Next (several cases of this, one example is store and reload are lined up such that a store-hit-reload scenario exists and the CDF has already launched and has gotten bad/stale data); Bad Data Valid Flush Next (might be a few cases of this, one example is a larxa (D$ hit) return data and dval but can't allocate to LMQ (LMQ full or other reason). Already gave dval but can't watch it for snoop_hit_larx. Need to take the 'bad dval' back and flush all younger ops)"
    },
-   {,
+   {
      "EventCode": "0x5094",
 diff --git a/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json b/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
-index b4772f54a2718..e2f2ed0a35496 100644
+index d0265f255de2b..723bffa41c448 100644
 --- a/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
 +++ b/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
 @@ -442,7 +442,7 @@
-   {,
+   {
      "EventCode": "0x4D052",
      "EventName": "PM_2FLOP_CMPL",
 -    "BriefDescription": "DP vector version of fmul, fsub, fcmp, fsel, fabs, fnabs, fres ,fsqrte, fneg "
 +    "BriefDescription": "DP vector version of fmul, fsub, fcmp, fsel, fabs, fnabs, fres ,fsqrte, fneg"
    },
-   {,
+   {
      "EventCode": "0x1F142",
 -- 
 2.39.2
