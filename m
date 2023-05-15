@@ -4,63 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12D8FC7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 01:52:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FB0DC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 11:52:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QLbhS3jsgz3f6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 11:52:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKd5J519Fz3f5v
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 21:52:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=Z+zFVCzB;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IkBBAEfM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::634; helo=mail-ej1-x634.google.com; envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+d8048cf69d99de8d0741+7204+infradead.org+hch@bombadil.srs.infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=Z+zFVCzB;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IkBBAEfM;
 	dkim-atps=neutral
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLbgT3Q2wz3bk0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 11:51:32 +1000 (AEST)
-Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-965e4be7541so24871966b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 18:51:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=jms.id.au; s=google; t=1684288286; x=1686880286;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XI/aj2Nd5zc3Gxf4qDX/zcld/FAkwaBlhaT36NANJPQ=;
-        b=Z+zFVCzB79rUPA1Fu++yhEFTau39AM1Bi/gJfG/gbAHF+kvY1fItnFBIYVkQnYPSA/
-         bSC4Hu506L9j/5XEUqowCCEgfDpJjt5eYtbUh3uQR4PkwRrpce9kB3bZLPPZu39M0Rnc
-         Jj9XZSmofCP4AwK1XwJrdbOrC0QuakFNk7bt4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684288286; x=1686880286;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XI/aj2Nd5zc3Gxf4qDX/zcld/FAkwaBlhaT36NANJPQ=;
-        b=je+NmK3Yy29XWItcuAqoF6BChmm+PrlJlQcP+VX9EqFSHu5pOtB1F1T6O/72MvkdVC
-         w644unmhN106Wib99yindpLf/Y8ZsHM/bRIru1JJkNqea1n+b1JGGkmQ3LzaYx+kTRwe
-         xqzqnOUpCeCjsUkrNikx8uZ/ZE09ZBwb2/1l9UmZtlVzuInnaT7aQRSBhHrE5F2kEVEH
-         mPYPUtO/WxK/L6tbbofHQtoXexmE0KtxLSq4tCmr1uEAkZUsi1Kr6tRj32bWjopV5Ip6
-         d0CDVdal095EIdXbqeMdJyWaHMYXxOye+AeHtfFXnM4BwI96OtrKhbfHCH2VjZLKcRGO
-         M8/A==
-X-Gm-Message-State: AC+VfDzbMTTXp8W60HFRxXVpWsoxgVHdlmaKmi0bKcFgpNpzs4IY3N7x
-	b6yZQ6a2FB/a5ycYFKzyS6j5ALWJ6Ejb1CH9Vhw=
-X-Google-Smtp-Source: ACHHUZ4POaqmgh/cyiT4ojnHvzchjIHyivgxRk0s7fhiBnIXjUfsv5qZtyn31MaIplkyd//L6sMMzs0/tKyGRbgsLmw=
-X-Received: by 2002:a17:907:6e10:b0:968:1e8:a754 with SMTP id
- sd16-20020a1709076e1000b0096801e8a754mr26054180ejc.72.1684288285456; Tue, 16
- May 2023 18:51:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKd4J3B56z3bg3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 21:51:09 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=PuPfI1ULNn6nKdgBOgNMBtEbGf2urZOQinv9le4S0tg=; b=IkBBAEfMBi3BnwkUH9a+d6WFrp
+	IAP6BVB6s9Sl8NqTDNcoPch40oFg+Og/x7m6XkOUE72+xSzl5ZlI98459I4E/du347IDxCTnReoyr
+	2oONv2hE1I3etOOnCSY2vH9ouRwvUXHVKKVE+lKyCxDJ7gkQCHtKzqlDKNWUmE1Pr4uvdovJE5O8U
+	aFKw5WRtbNE+EPp9q4TeTUEoP0voDGcBEZNG9WfWZqArILRyyFm3+03au5ftDUPZXH3r+YWAxP/6I
+	F2qrkp8eHjEgXrfMbulzU3v+q/5Tn/XUKFTFaEw9mWhCAMnwjbBu1x/P/5q4Wok0/BQJDjF1eLR8M
+	Iv7zwhgA==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.96 #2 (Red Hat Linux))
+	id 1pyWis-0022I3-1r;
+	Mon, 15 May 2023 11:50:38 +0000
+Date: Mon, 15 May 2023 04:50:38 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Lorenzo Stoakes <lstoakes@gmail.com>
+Subject: Re: [PATCH v5 5/6] mm/gup: remove vmas parameter from
+ pin_user_pages()
+Message-ID: <ZGIcjr2I5FDDKdCZ@infradead.org>
+References: <cover.1684097001.git.lstoakes@gmail.com>
+ <acd4a8c735c9bc1c736e1a52a9a036db5cc7d462.1684097002.git.lstoakes@gmail.com>
 MIME-Version: 1.0
-References: <20230515124731.122962-1-mpe@ellerman.id.au>
-In-Reply-To: <20230515124731.122962-1-mpe@ellerman.id.au>
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 17 May 2023 01:51:13 +0000
-Message-ID: <CACPK8XdNMBm6D-EQU0BGfxrtzbXLJaLeqzUXDMDb3eAe-T4Bxg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/crypto: Fix aes-gcm-p10 build when VSX=n
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <acd4a8c735c9bc1c736e1a52a9a036db5cc7d462.1684097002.git.lstoakes@gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,53 +59,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, dtsen@linux.ibm.com
+Cc: Nelson Escobar <neescoba@cisco.com>, kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Jason Wang <jasowang@redhat.com>, Alexei Starovoitov <ast@kernel.org>, virtualization@lists.linux-foundation.org, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, Leon Romanovsky <leon@kernel.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>, John Fastabend <john.fastabend@gmail.com>, Matthew Wilcox <willy@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Bernard Metzler <bmt@zurich.ibm.com>, Paolo Abeni <pabeni@redhat.com>, bpf@vger.kernel.org, linux-media@vger.kernel.org, Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Jesper Dangaard Brouer <hawk@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Nicholas Piggin <npiggin@gmail.com>, Jakub Kicinski <kuba@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, io-uring@vger.kernel.org, Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <ax
+ boe@kernel.dk>, Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, Bjorn Topel <bjorn@kernel.org>, Jonathan Lemon <jonathan.lemon@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Pavel Begunkov <asml.silence@gmail.com>, Christian Benvenuti <benve@cisco.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 15 May 2023 at 12:48, Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> When VSX is disabled, eg. microwatt_defconfig, the build fails with:
->
->   In function =E2=80=98enable_kernel_vsx=E2=80=99,
->       inlined from =E2=80=98vsx_begin=E2=80=99 at arch/powerpc/crypto/aes=
--gcm-p10-glue.c:68:2,
->       inlined from =E2=80=98p10_aes_gcm_crypt.constprop=E2=80=99 at arch/=
-powerpc/crypto/aes-gcm-p10-glue.c:244:2:
->   ...
->   arch/powerpc/include/asm/switch_to.h:86:9: note: in expansion of macro =
-=E2=80=98BUILD_BUG=E2=80=99
->      86 |         BUILD_BUG();
->         |         ^~~~~~~~~
->
-> Fix it by making the p10-aes-gcm code depend on VSX.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Sun, May 14, 2023 at 10:26:58PM +0100, Lorenzo Stoakes wrote:
+> We are now in a position where no caller of pin_user_pages() requires the
+> vmas parameter at all, so eliminate this parameter from the function and
+> all callers.
+> 
+> This clears the way to removing the vmas parameter from GUP altogether.
+> 
+> Acked-by: David Hildenbrand <david@redhat.com>
+> Acked-by: Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com> (for qib)
+> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Looks good:
 
-> ---
->  arch/powerpc/crypto/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-> index 7113f9355165..ad1872518992 100644
-> --- a/arch/powerpc/crypto/Kconfig
-> +++ b/arch/powerpc/crypto/Kconfig
-> @@ -96,7 +96,7 @@ config CRYPTO_AES_PPC_SPE
->
->  config CRYPTO_AES_GCM_P10
->         tristate "Stitched AES/GCM acceleration support on P10 or later C=
-PU (PPC)"
-> -       depends on PPC64 && CPU_LITTLE_ENDIAN
-> +       depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
-
-VSX depends on PPC_BOOK3S_64 but I guess there's no harm in keeping
-the PPC64 here?
-
->         select CRYPTO_LIB_AES
->         select CRYPTO_ALGAPI
->         select CRYPTO_AEAD
-> --
-> 2.40.1
->
+Reviewed-by: Christoph Hellwig <hch@lst.de>
