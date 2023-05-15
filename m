@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 416DBC77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 17:06:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F396C7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 17:19:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKm3s41Grz3fC5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 03:06:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKmLv4zNkz3f5P
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 03:19:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Qd7TtTRr;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=1w3AbR2Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Qd7TtTRr;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=1w3AbR2Z;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKm2t6Bwsz3bg1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 03:05:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKmKy0lXWz30Lt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 03:18:29 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id A81D562AE5;
-	Mon, 15 May 2023 17:05:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86834C4339B;
-	Mon, 15 May 2023 17:05:22 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 9146C62C41;
+	Mon, 15 May 2023 17:18:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA531C4339B;
+	Mon, 15 May 2023 17:18:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1684170323;
+	s=korg; t=1684171106;
 	bh=CQLT/bsvAJd2jCdkCfQb3EdAHZfQbieJuhsfPHb1y0o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Qd7TtTRrxaU5ZM1Za82HUiv7BwVvZ/iV7Pv5A63Ut4CFpBXA6XanPIITM+hbTIBvq
-	 f8J4MaSlF+kmDeBGn5TZQhZ05MdHcMc5k4xf+j8LSv+OWqBQPe6X8HzZEA27nv167j
-	 b3Bp47Epumbqr9IPTZY0LN6KGkxJ/seF3pZGWGcc=
+	b=1w3AbR2ZctyE/41zpFERtG9PFOHK/0OIWWyTFAyld1KTGJzr1qsNg9DSvhp9FfD3B
+	 hE6DiyijDL56OPhR8DqHAeVEqP+I84b5Q0Oqo7nHnohraqcVgWNhWlLkSAzqUuG3oi
+	 jvfm2amlVN2Ct65Bxkm1lQ9V2QFyS3THtjB93b4k=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
-Subject: [PATCH 6.1 095/239] perf vendor events power9: Remove UTF-8 characters from JSON files
-Date: Mon, 15 May 2023 18:25:58 +0200
-Message-Id: <20230515161724.526487240@linuxfoundation.org>
+Subject: [PATCH 6.2 101/242] perf vendor events power9: Remove UTF-8 characters from JSON files
+Date: Mon, 15 May 2023 18:27:07 +0200
+Message-Id: <20230515161724.935020376@linuxfoundation.org>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230515161721.545370111@linuxfoundation.org>
-References: <20230515161721.545370111@linuxfoundation.org>
+In-Reply-To: <20230515161721.802179972@linuxfoundation.org>
+References: <20230515161721.802179972@linuxfoundation.org>
 User-Agent: quilt/0.67
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
