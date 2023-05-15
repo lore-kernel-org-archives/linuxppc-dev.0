@@ -4,67 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BAA4C7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 19:12:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12B39C7EE22
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 22:21:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKpsx4fw5z3fC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 05:12:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKv3g2z3Zz3fCd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 08:21:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=W/Z9qzmB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=elPtVPZN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b2f; helo=mail-yb1-xb2f.google.com; envelope-from=vishal.moola@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=W/Z9qzmB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=elPtVPZN;
 	dkim-atps=neutral
-Received: from mail-yb1-xb2f.google.com (mail-yb1-xb2f.google.com [IPv6:2607:f8b0:4864:20::b2f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKprx2nbmz3cjW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 05:12:00 +1000 (AEST)
-Received: by mail-yb1-xb2f.google.com with SMTP id 3f1490d57ef6-ba6d024a196so4251699276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 12:12:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1684177917; x=1686769917;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lEdsDznoeQ0wGPMJWBs10mMvCj7VphDqPqR+uizklHY=;
-        b=W/Z9qzmBUq3bCVhP8uewmPEIaZEVYfzpzeh9YTeAKrK3sWIwtOfql71JlvN0P+P5pK
-         YKy9cml02fk4SnFQ2DdWQ6w4JijHunpNA4zsiud1GYDMnfuy8RTxF/bEehOFA+aPeByE
-         DTSRG2bdMMqymbgvM1f+cbSlSYq+sQANl8uMoYLlmajJ3SyWJdGVyTNcYD0Ioakieviy
-         BESs3L0iPHTKfiNNq75aO8FTJdn/BYay+E8sIKUXSqB49RgAR5VB2xxzW+nwEEKofO5F
-         26ssX78nNr5JZdvfN8wyMBJyb6MRO06YlrKHWh/GpY8CaWKtewkcbGK5ZJkz6FL2Wiq9
-         dAhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684177917; x=1686769917;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=lEdsDznoeQ0wGPMJWBs10mMvCj7VphDqPqR+uizklHY=;
-        b=dCclEfrw1StTdxdaE/j+PzTJzIp2nn1Jw1hQ4xUNI2m8YEj+E8Z1L71o5F1hx0hbpD
-         Z5TA6UauWgKI6/lDRj0yGh7iNJ87YN4ZNyfmjMGhqTtGngn/Y4MViwTRouMkFS1GDtqt
-         pEQJFaUAV9kDfw30RskgWlxq8+MReFpHGqyJWogBBi2FmIxV39CToHGTgtHo0B4Ttoj5
-         o9VHStbNTx3KzziuzLXQK4Z2FCEO5HT0N4zYWDdNsHfg+ZYDswsfizXkO/Y7my4AGosH
-         775jH8hFg3bp0/9tGd7rUPuYLzEb2C6ANRdYvfQCy5WG930THS6bn5QMhO9bQqgXWZSD
-         ge5g==
-X-Gm-Message-State: AC+VfDxVIvvBHOVOZEkpLwVpwWZqhlEFKF1owPbobjwHXYzsEM0AH27+
-	tIyLLLiZx5n2BeHXd9mEYV+3olx8cPaRs6ji8Po=
-X-Google-Smtp-Source: ACHHUZ5oDsw20tcH12/01C4i2nT6w5iAb2H6/okJg55EYYpqTgJ8h9iiRdXz2tD9egoOuSwMxk4Rmyquuvv7u/aep3U=
-X-Received: by 2002:a25:2586:0:b0:ba7:809c:50de with SMTP id
- l128-20020a252586000000b00ba7809c50demr6158133ybl.38.1684177917068; Mon, 15
- May 2023 12:11:57 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230501192829.17086-1-vishal.moola@gmail.com>
- <20230501192829.17086-31-vishal.moola@gmail.com> <c0677d21a4b6caa2e5018af000294a974121d9e8.camel@physik.fu-berlin.de>
-In-Reply-To: <c0677d21a4b6caa2e5018af000294a974121d9e8.camel@physik.fu-berlin.de>
-From: Vishal Moola <vishal.moola@gmail.com>
-Date: Mon, 15 May 2023 12:11:46 -0700
-Message-ID: <CAOzc2pz6y=gRcdfkQVgwRuzWeWf2Nx-UBtKnZBTs2qKJ+r7R0Q@mail.gmail.com>
-Subject: Re: [PATCH v2 30/34] sh: Convert pte_free_tlb() to use ptdescs
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKv2h6cpPz3bbZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 08:20:44 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34FM7qoP007760;
+	Mon, 15 May 2023 22:20:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=Szxr7opArwsJyrAZ5V+th5ThGtnnIABCLOGA5Dy3vZI=;
+ b=elPtVPZN+seDkFMCg2FrONHyEzU26bderJWVCM8e1Lvvpz8P6r+oD84fEcF0ur/KLenv
+ gvEnvaEiCUJT9/M6B0/tJ+8g8Iynr0s2KfqpK79eo9NrrQLMbUCL9eJUr/btso9xCdqr
+ TryLOH5s0/L4hkDfR02kkVSuP8hLTP/TBE7ZA/oMe6aaDVawzkIMwcc0PAMBhhEgTkw5
+ dgflHx5eIk/8Z2wOvZOuEjseWnyJ6TIKH+lu5gSB7pwy3KzcU2ir7DCK/sdvbKbKV8jM
+ d7YYLOI9hplJEEtRTJsfXsBqEaydoBUstnaAMMi1QQFEzY5eJUOmHgkp/C7wm0pFXIQI FQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qkvy00n51-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 May 2023 22:20:30 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34FMHjEv011226;
+	Mon, 15 May 2023 22:20:30 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qkvy00n45-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 May 2023 22:20:30 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34F40v4R024749;
+	Mon, 15 May 2023 22:20:27 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3qj1tds9h6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 May 2023 22:20:27 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34FMKP9241812268
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 15 May 2023 22:20:25 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 40DB420067;
+	Mon, 15 May 2023 22:20:25 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B65DD2005A;
+	Mon, 15 May 2023 22:20:24 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 15 May 2023 22:20:24 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.177.22.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6C95860124;
+	Tue, 16 May 2023 08:20:16 +1000 (AEST)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.500.231\))
+Subject: Re: [PATCH v2 08/11] powerpc: Mark writes registering ipi to host cpu
+ through kvm and polling
+From: Rohan McLure <rmclure@linux.ibm.com>
+In-Reply-To: <CSMM9QLH8BRM.37WYXBTRCYB23@wheely>
+Date: Tue, 16 May 2023 08:19:58 +1000
 Content-Transfer-Encoding: quoted-printable
+Message-Id: <F4FE5E62-078B-47CB-B9E6-A6DF3AABDA1E@linux.ibm.com>
+References: <20230510033117.1395895-1-rmclure@linux.ibm.com>
+ <20230510033117.1395895-9-rmclure@linux.ibm.com>
+ <CSMM9QLH8BRM.37WYXBTRCYB23@wheely>
+To: Nicholas Piggin <npiggin@gmail.com>
+X-Mailer: Apple Mail (2.3731.500.231)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 90AFQVh8OESO4GcjySV16Wc9BjYVY_dx
+X-Proofpoint-ORIG-GUID: nisjDSDFMQ6DSchJAjooUEXgYwZTpEfk
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-05-15_19,2023-05-05_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 suspectscore=0
+ mlxscore=0 impostorscore=0 bulkscore=0 phishscore=0 priorityscore=1501
+ adultscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1015
+ mlxlogscore=731 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2304280000 definitions=main-2305150182
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,65 +106,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, kvm@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-csky@vger.kernel.org, linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org, Matthew Wilcox <willy@infradead.org>, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: gautam@linux.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, May 6, 2023 at 4:35=E2=80=AFAM John Paul Adrian Glaubitz
-<glaubitz@physik.fu-berlin.de> wrote:
->
-> Hi Vishal!
->
-> On Mon, 2023-05-01 at 12:28 -0700, Vishal Moola (Oracle) wrote:
-> > Part of the conversions to replace pgtable constructor/destructors with
-> > ptdesc equivalents. Also cleans up some spacing issues.
-> >
-> > Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
-> > ---
-> >  arch/sh/include/asm/pgalloc.h | 9 +++++----
-> >  1 file changed, 5 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/arch/sh/include/asm/pgalloc.h b/arch/sh/include/asm/pgallo=
-c.h
-> > index a9e98233c4d4..ce2ba99dbd84 100644
-> > --- a/arch/sh/include/asm/pgalloc.h
-> > +++ b/arch/sh/include/asm/pgalloc.h
-> > @@ -2,6 +2,7 @@
-> >  #ifndef __ASM_SH_PGALLOC_H
-> >  #define __ASM_SH_PGALLOC_H
-> >
-> > +#include <linux/mm.h>
-> >  #include <asm/page.h>
-> >
-> >  #define __HAVE_ARCH_PMD_ALLOC_ONE
-> > @@ -31,10 +32,10 @@ static inline void pmd_populate(struct mm_struct *m=
-m, pmd_t *pmd,
-> >       set_pmd(pmd, __pmd((unsigned long)page_address(pte)));
-> >  }
-> >
-> > -#define __pte_free_tlb(tlb,pte,addr)                 \
-> > -do {                                                 \
-> > -     pgtable_pte_page_dtor(pte);                     \
-> > -     tlb_remove_page((tlb), (pte));                  \
-> > +#define __pte_free_tlb(tlb, pte, addr)                               \
-> > +do {                                                         \
-> > +     ptdesc_pte_dtor(page_ptdesc(pte));                      \
-> > +     tlb_remove_page_ptdesc((tlb), (page_ptdesc(pte)));      \
-> >  } while (0)
-> >
-> >  #endif /* __ASM_SH_PGALLOC_H */
->
-> Looking at the patch which introduces tlb_remove_page_ptdesc() [1], it se=
-ems that
-> tlb_remove_page_ptdesc() already calls tlb_remove_page() with ptdesc_page=
-(pt), so
-> I'm not sure whether the above tlb_remove_page_ptdesc((tlb), (page_ptdesc=
-(pte)))
-> is correct.
->
-> Shouldn't it just be tlb_remove_page_ptdesc((tlb), (pte))?
+> On 15 May 2023, at 3:53 pm, Nicholas Piggin <npiggin@gmail.com> wrote:
+>=20
+> On Wed May 10, 2023 at 1:31 PM AEST, Rohan McLure wrote:
+>> Mark writes to hypervisor ipi state so that KCSAN recognises these
+>> asynchronous issue of kvmppc_{set,clear}_host_ipi to be intended, =
+with
+>> atomic writes. Mark asynchronous polls to this variable in
+>> kvm_ppc_read_one_intr().
+>>=20
+>> Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+>=20
+> What's the go with accesses in asm? Does it just assume you know
+> what you're doing?
 
-As of this patchset all implementations of __pte_free_tlb() take in a
-struct page. Eventually we'll want it to be tlb_remove_page_ptdesc(tlb, pte=
-),
-but for now the cast is necessary here.
+Exactly, KCSAN only emits instrumentation calls to around load/store=20
+instructions that the compiler itself generated. So by default, asm
+accesses are not instrumented.
+
+Thanks
+
+>=20
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>=20
+>> ---
+>> v2: Add read-side annotations to both polling locations in
+>> kvm_ppc_read_one_intr().
+>> ---
+>> arch/powerpc/include/asm/kvm_ppc.h   | 4 ++--
+>> arch/powerpc/kvm/book3s_hv_builtin.c | 4 ++--
+>> 2 files changed, 4 insertions(+), 4 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h =
+b/arch/powerpc/include/asm/kvm_ppc.h
+>> index bc57d058ad5b..d701df006c08 100644
+>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>> @@ -548,12 +548,12 @@ static inline void kvmppc_set_host_ipi(int cpu)
+>> * pairs with the barrier in kvmppc_clear_host_ipi()
+>> */
+>> smp_mb();
+>> - paca_ptrs[cpu]->kvm_hstate.host_ipi =3D 1;
+>> + WRITE_ONCE(paca_ptrs[cpu]->kvm_hstate.host_ipi, 1);
+>> }
+>>=20
+>> static inline void kvmppc_clear_host_ipi(int cpu)
+>> {
+>> - paca_ptrs[cpu]->kvm_hstate.host_ipi =3D 0;
+>> + WRITE_ONCE(paca_ptrs[cpu]->kvm_hstate.host_ipi, 0);
+>> /*
+>> * order clearing of host_ipi flag vs. processing of IPI messages
+>> *
+>> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c =
+b/arch/powerpc/kvm/book3s_hv_builtin.c
+>> index da85f046377a..0f5b021fa559 100644
+>> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
+>> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+>> @@ -406,7 +406,7 @@ static long kvmppc_read_one_intr(bool *again)
+>> return 1;
+>>=20
+>> /* see if a host IPI is pending */
+>> - host_ipi =3D local_paca->kvm_hstate.host_ipi;
+>> + host_ipi =3D READ_ONCE(local_paca->kvm_hstate.host_ipi);
+>> if (host_ipi)
+>> return 1;
+>>=20
+>> @@ -466,7 +466,7 @@ static long kvmppc_read_one_intr(bool *again)
+>> * meantime. If it's clear, we bounce the interrupt to the
+>> * guest
+>> */
+>> - host_ipi =3D local_paca->kvm_hstate.host_ipi;
+>> + host_ipi =3D READ_ONCE(local_paca->kvm_hstate.host_ipi);
+>> if (unlikely(host_ipi !=3D 0)) {
+>> /* We raced with the host,
+>> * we need to resend that IPI, bummer
+>> --=20
+>> 2.37.2
+>=20
+
