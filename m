@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30716C77B75
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 14:09:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C0FCC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 14:09:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKh7q425lz3fkr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 00:09:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKh8K2Ftlz3fqR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 00:09:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKh6b1NPGz3fBb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 00:08:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKh6m0zQ2z3fDg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 00:08:31 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4QKh671bhbz9sfT;
-	Mon, 15 May 2023 16:07:59 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4QKh686nRNz9sff;
+	Mon, 15 May 2023 16:08:00 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nsFmj3CNAqph; Mon, 15 May 2023 16:07:59 +0200 (CEST)
+	with ESMTP id sP8Prco6FGrk; Mon, 15 May 2023 16:08:00 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4QKh655PpNz9sfL;
-	Mon, 15 May 2023 16:07:57 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4QKh660K6pz9sfM;
+	Mon, 15 May 2023 16:07:58 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A8E298B770;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EE52A8B770;
 	Mon, 15 May 2023 16:07:57 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8Xl6TUU0YdU8; Mon, 15 May 2023 16:07:57 +0200 (CEST)
+	with ESMTP id YeSbbQzs-Bkw; Mon, 15 May 2023 16:07:57 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.36])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 697CD8B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B28C18B763;
 	Mon, 15 May 2023 16:07:57 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34FE7PJm583501
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 34FE7Poh583509
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Mon, 15 May 2023 16:07:25 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34FE7Po1583500;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 34FE7P9G583508;
 	Mon, 15 May 2023 16:07:25 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: gregkh@linuxfoundation.org, stable@vger.kernel.org
-Subject: [PATCH 2/3][For 4.19/4.14] spi: fsl-spi: Re-organise transfer bits_per_word adaptation
-Date: Mon, 15 May 2023 16:07:14 +0200
-Message-Id: <e105f49ce5da21b48dc0450f5fb3644571ee9c1a.1684158520.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 1/2][For 5.15/5.10/5.4] spi: fsl-spi: Re-organise transfer bits_per_word adaptation
+Date: Mon, 15 May 2023 16:07:16 +0200
+Message-Id: <1e4bfb4850ba849c316f48a0ab0d7123da0e2f54.1684156552.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <674d9af640acf4aa04abd642cc81de926d3271ed.1684158520.git.christophe.leroy@csgroup.eu>
 References: <674d9af640acf4aa04abd642cc81de926d3271ed.1684158520.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1684159634; l=4014; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=hx7h1I+YEnCP3HczYbWaCBjvenpopKKrD57hpgFewfY=; b=DWdjwylIRwQxmu/KOehp0AezNhX2zHk0wasyuiVpThPz7AuGtCKF9YiMBWgMF6H5oD2yWuCSE ziueG7jLpx8AYHCE2n3YoL0qOKb9pc3+5ewbGJUmmXvMxOgboXf0Vxn
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1684159635; l=4013; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=5Lf/4Fp+QxG7Girtdqkg/6yPgFLDCR7G2jYrA/4gH7M=; b=n/nc1XrPunIxYVs+C91SiaBWUQz7EQotCpbnWzkQnrWyZJAuP9PYD8FAok5YUKMZbB6tDx27t 8oi3cU8toekARz39ad/vDwPWmDli59fCmFYun/sUCYfs451s5lHs74v
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,10 +93,10 @@ Signed-off-by: Mark Brown <broonie@kernel.org>
  1 file changed, 23 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
-index 946b417f2d1c..e08a11070c5c 100644
+index 1bad0ceac81b..f1d4aa310233 100644
 --- a/drivers/spi/spi-fsl-spi.c
 +++ b/drivers/spi/spi-fsl-spi.c
-@@ -201,26 +201,6 @@ static int mspi_apply_cpu_mode_quirks(struct spi_mpc8xxx_cs *cs,
+@@ -203,26 +203,6 @@ static int mspi_apply_cpu_mode_quirks(struct spi_mpc8xxx_cs *cs,
  	return bits_per_word;
  }
  
@@ -123,7 +123,7 @@ index 946b417f2d1c..e08a11070c5c 100644
  static int fsl_spi_setup_transfer(struct spi_device *spi,
  					struct spi_transfer *t)
  {
-@@ -248,9 +228,6 @@ static int fsl_spi_setup_transfer(struct spi_device *spi,
+@@ -250,9 +230,6 @@ static int fsl_spi_setup_transfer(struct spi_device *spi,
  		bits_per_word = mspi_apply_cpu_mode_quirks(cs, spi,
  							   mpc8xxx_spi,
  							   bits_per_word);
@@ -133,7 +133,7 @@ index 946b417f2d1c..e08a11070c5c 100644
  
  	if (bits_per_word < 0)
  		return bits_per_word;
-@@ -368,14 +345,27 @@ static int fsl_spi_do_one_msg(struct spi_master *master,
+@@ -370,14 +347,27 @@ static int fsl_spi_do_one_msg(struct spi_master *master,
  	 * In CPU mode, optimize large byte transfers to use larger
  	 * bits_per_word values to reduce number of interrupts taken.
  	 */
@@ -163,7 +163,7 @@ index 946b417f2d1c..e08a11070c5c 100644
  		}
  	}
  
-@@ -658,8 +648,14 @@ static struct spi_master * fsl_spi_probe(struct device *dev,
+@@ -635,8 +625,14 @@ static struct spi_master *fsl_spi_probe(struct device *dev,
  	if (mpc8xxx_spi->type == TYPE_GRLIB)
  		fsl_spi_grlib_probe(dev);
  
