@@ -4,67 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8B30C77B7D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 May 2023 18:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56D9DC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 04:46:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QK9n36J8bz3fKk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 04:21:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKRfg2p66z3dsT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 14:46:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=3hM1VI6N;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=JYzez4PE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b36; helo=mail-yb1-xb36.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=3hM1VI6N;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=JYzez4PE;
 	dkim-atps=neutral
-Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QK9m42lwgz3bjd
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 04:20:35 +1000 (AEST)
-Received: by mail-yb1-xb36.google.com with SMTP id 3f1490d57ef6-ba6d024a196so3093729276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2023 11:20:35 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKRdf00fhz3cDG
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 14:45:55 +1000 (AEST)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-530638a60e1so4845290a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2023 21:45:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1684088430; x=1686680430;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/w8Ik+B9LqquAVc24RATG4RXaBZs1t11jn/s3N/obhU=;
-        b=3hM1VI6NWGWu8nKjmz4E776n6/tfMkoFz07qqIrs1oaapPZVpFGqRfLcsrD2Q9+aIl
-         lVkR5CaBLhkLbvj6PetC97KquetslVNm4ewYDv3VlmeuHTS81B9LSL8mS5hv5NNIrJ5k
-         qfkEuu9pgy+dtpTd6GHTh0Gi0u67Y0T46ElzOPo7riZGmKUfHA7vSk0Zmd7HgvGJHxab
-         DqbZyXByDthzzyzxr91aGkpWgNkslpXmOPPlerkZVQyLnPVqgNtVTmJy+exwCn44tZ+/
-         VxkE3CJ7HkShwyo4XrVtp449lbAR3UPOjv88P7k+8G1RfjN7YRQ6k8XKtpgdfILs4FOB
-         5kcg==
+        d=gmail.com; s=20221208; t=1684125951; x=1686717951;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=fUDt8eDsobnNvT+2/FdKCb5HDP4KUJCPslvPnEVNPmY=;
+        b=JYzez4PEvWhiLXnefG6VbciCTwKfAJm/AZN3E41Y1OmpdRuGepkU+jwmPRw9g16UXl
+         mdEO9G87e/6hJkc1dGM0jFEwQJ9vLNwd0dq3p5R2MLmUkis4jSlIZwZl1lp2EkI93TF3
+         x/2hs2M0+HxDvwAEhqvz1Sn31F5LMsJuOJMb2BGjfidn5wO3EfrIUxAZBCslr2zcAkWP
+         1B98BE0j1CCzmmwbBz01hgXfKvWhRVg3TTRYEdxCHuOp86Vsuo2o2jm8DCizDSwj7fdT
+         BBKUQ0b95VQuySlGkfaSvh49q6OyCZoe0gAx/oCMgqijgk7vP0RgR2OvyEYi1zUYYQVu
+         ZHZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684088430; x=1686680430;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=/w8Ik+B9LqquAVc24RATG4RXaBZs1t11jn/s3N/obhU=;
-        b=OXx0OyPy1gEI84iFyNZJbKG5jiEx7FTAW9GVB1UisYJLDs7m+3WRRAB1zpk03xLqNU
-         iaOg3iKXJUe+q4JqaJPCEAfq/jhgq1z0GnTO95Brrse/hvjqN0bm0t5peU58TWs6p57q
-         H03clXFedVuX+GxyIxHdqoCBSlI+A76bbc3rU9lZkGJewxTxUw7ZCvGW4jEuMVraoCLS
-         1tNzbDdK3rS0g+0h1vyfblnK/0E5OWOqgP7GRPUPJ44yquyTAa0Qk1hJD90RUGy6MdTD
-         BbBbXuO3gfPFAvN+DpO83pfdh82XgBTnmz8eZGftuDp+jEcAO0sziDDb/knFFYlOVMdC
-         mSXg==
-X-Gm-Message-State: AC+VfDxvZguTcNN5tKsd8/uGcOU/kICstgpKVn79zwXcSI/lp9BFPnEN
-	ImABtbF/E6JSLFC1tVRJKFNDiA==
-X-Google-Smtp-Source: ACHHUZ4uC/iK9slyVYAwsZbskAJfVUMUdzJpIRbgKgSPhKsknTzzPntrNJG85XVm7SRutl/ig2uJ2g==
-X-Received: by 2002:a25:abe5:0:b0:ba1:b539:a39a with SMTP id v92-20020a25abe5000000b00ba1b539a39amr27412446ybi.6.1684088430350;
-        Sun, 14 May 2023 11:20:30 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id 192-20020a2503c9000000b00ba73c26f0d6sm1520144ybd.15.2023.05.14.11.20.25
+        d=1e100.net; s=20221208; t=1684125951; x=1686717951;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=fUDt8eDsobnNvT+2/FdKCb5HDP4KUJCPslvPnEVNPmY=;
+        b=HjZ3wJA0SgYNKv1o6x2TFLGlgAnXgW6g4NuwwQWUu3dAHnWa9d0NuUbi4zfyXUEOvV
+         A9DERSiOV0yM10AM6S74mCIvhPQoktn9cixKxNL73z6XbuFub5nfXZga6IYguuqCJ2Tt
+         oz7r3F1F7RAQInXpuHpcDpk/82WjVcUPjkDcGNd9FRbBrvInkotGhU2+8oo0x5AviLj8
+         apULVBtwC/DNwirqDk6bncBl4WFhWboWFSoKoQFjIyifxM/oiiQUpjN1j4te2R4ndYrG
+         wL0PZjFklN3LrJ5eiMWFdzQJ9kVPO4FaPNOpvQYZ9uwOQsomBq3g8dKTKC2a6d6nnlp0
+         6kwA==
+X-Gm-Message-State: AC+VfDwlzrEoJi4mqd8V5t4+ZdDfgDqk5EBMpDqtX+9bmWquOo+Bz77Q
+	WbdPv6txR13BgtT/dREyZ47eYHOOxROIWw==
+X-Google-Smtp-Source: ACHHUZ7idY3BfYirSIelZOsJA0IvWuBDLZDwdHM93x+voXFQeenkSJcSRae7Z2gvQERT21piMshBSg==
+X-Received: by 2002:a17:902:e5ce:b0:1ae:e2b:3ad8 with SMTP id u14-20020a170902e5ce00b001ae0e2b3ad8mr4247808plf.66.1684125951558;
+        Sun, 14 May 2023 21:45:51 -0700 (PDT)
+Received: from wheely.local0.net ([1.146.102.8])
+        by smtp.gmail.com with ESMTPSA id u17-20020a170903125100b001a64851087bsm2514018plh.272.2023.05.14.21.45.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 14 May 2023 11:20:28 -0700 (PDT)
-Date: Sun, 14 May 2023 11:20:16 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 08/23] parisc: add pte_unmap() to balance get_ptep()
-In-Reply-To: <ca4ac780-42b0-4818-bd84-e1a4acbb28dd@gmx.de>
-Message-ID: <6de39db5-d9aa-b35a-1652-8bdf90e7df72@google.com>
-References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com> <44ebbf90-5fbb-2815-17c7-fcfe3c87d78e@google.com> <ca4ac780-42b0-4818-bd84-e1a4acbb28dd@gmx.de>
+        Sun, 14 May 2023 21:45:50 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/6] powerpc: merge _switch in 32/64
+Date: Mon, 15 May 2023 14:45:37 +1000
+Message-Id: <20230515044543.78903-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,71 +75,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <m
- onstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 13 May 2023, Helge Deller wrote:
+This got a positive response so I'll post again. If anything ppc32 gets
+complicated by all the ppc64 crud so if Christophe is okay with it then
+it can't be too bad.
 
-> Hi Hugh,
-> 
-> On 5/10/23 06:52, Hugh Dickins wrote:
-> > To keep balance in future, remember to pte_unmap() after a successful
-> > get_ptep().  And (we might as well) pretend that flush_cache_pages()
-> > really needed a map there, to read the pfn before "unmapping".
-> >
-> > Signed-off-by: Hugh Dickins <hughd@google.com>
-> > ---
-> >   arch/parisc/kernel/cache.c | 26 +++++++++++++++++++++-----
-> >   1 file changed, 21 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/arch/parisc/kernel/cache.c b/arch/parisc/kernel/cache.c
-> > index 1d3b8bc8a623..b0c969b3a300 100644
-> > --- a/arch/parisc/kernel/cache.c
-> > +++ b/arch/parisc/kernel/cache.c
-> > @@ -425,10 +425,15 @@ void flush_dcache_page(struct page *page)
-> >     offset = (pgoff - mpnt->vm_pgoff) << PAGE_SHIFT;
-> >     addr = mpnt->vm_start + offset;
-> >     if (parisc_requires_coherency()) {
-> > +			bool needs_flush = false;
-> >      pte_t *ptep;
-> >
-> >   			ptep = get_ptep(mpnt->vm_mm, addr);
-> > -			if (ptep && pte_needs_flush(*ptep))
-> > +			if (ptep) {
-> > +				needs_flush = pte_needs_flush(*ptep);
-> > +				pte_unmap(ptep);
-> > +			}
-> > +			if (needs_flush)
-> >     		flush_user_cache_page(mpnt, addr);
-> >     } else {
-> >   			/*
-> > @@ -560,14 +565,20 @@ EXPORT_SYMBOL(flush_kernel_dcache_page_addr);
-> >   static void flush_cache_page_if_present(struct vm_area_struct *vma,
-> >   	unsigned long vmaddr, unsigned long pfn)
-> >   {
-> > -	pte_t *ptep = get_ptep(vma->vm_mm, vmaddr);
-> > +	bool needs_flush = false;
-> > +	pte_t *ptep;
-> >
-> >    /*
-> >     * The pte check is racy and sometimes the flush will trigger
-> >     * a non-access TLB miss. Hopefully, the page has already been
-> >     * flushed.
-> >     */
-> > -	if (ptep && pte_needs_flush(*ptep))
-> > +	ptep = get_ptep(vma->vm_mm, vmaddr);
-> > +	if (ptep) {
-> > +		needs_flush = pte_needs_flush(*ptep))
-> 
-> ^^^^^
-> One ")" too much and lacks a trailing ";"
-> Should be:
-> 		needs_flush = pte_needs_flush(*ptep);
-> 
-> With that fixed the kernel compiles and boots sucessfully on parisc.
+Thanks,
+Nick
 
-Urgh! Indeed, thanks a lot Helge: I'll fold that in.
+Since v1:
+- Don't re-order 32-bit prologue.
+- Improve Kconfig conditional includes.
+- Break out code changes into their own patches before merging,
+  so merge patch leaves generated code unchanged.
+- Change prom_entry.S to prom_entry_64.S.
 
-Hugh
+Nicholas Piggin (6):
+  powerpc/64s: move stack SLB pinning out of line from _switch
+  powerpc/64: Rearrange 64-bit _switch to prepare for 32/64 merge
+  powerpc/32: Remove sync from _switch
+  powerpc/32: Rearrange _switch to prepare for 32/64 merge
+  powerpc: merge 32-bit and 64-bit _switch implementation
+  powerpc/64: Rename entry_64.S to prom_entry_64.S
+
+ arch/powerpc/kernel/Makefile                 |  10 +-
+ arch/powerpc/kernel/entry_32.S               |  58 ----
+ arch/powerpc/kernel/prom_entry_64.S          |  87 +++++
+ arch/powerpc/kernel/{entry_64.S => switch.S} | 347 ++++++++-----------
+ scripts/head-object-list.txt                 |   2 +-
+ 5 files changed, 239 insertions(+), 265 deletions(-)
+ create mode 100644 arch/powerpc/kernel/prom_entry_64.S
+ rename arch/powerpc/kernel/{entry_64.S => switch.S} (59%)
+
+-- 
+2.40.1
+
