@@ -4,69 +4,148 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 597AAC7EE22
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 23:34:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC206C77B7D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 00:02:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKwgq48T6z3f8r
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 09:34:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKxJ52Nq2z3fCC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 10:02:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Vqpf0hY1;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GilGkfv2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::a31; helo=mail-vk1-xa31.google.com; envelope-from=amir73il@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe59::60d; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Vqpf0hY1;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GilGkfv2;
 	dkim-atps=neutral
-Received: from mail-vk1-xa31.google.com (mail-vk1-xa31.google.com [IPv6:2607:f8b0:4864:20::a31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2060d.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe59::60d])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKhPB2B53z3bgy
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 00:21:01 +1000 (AEST)
-Received: by mail-vk1-xa31.google.com with SMTP id 71dfb90a1353d-44fd6c24d5aso4564967e0c.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 07:21:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1684160458; x=1686752458;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ppVyFGTleG0uV5qrwyuyzbwOGiTPSdwv0HSD6ZTUdHA=;
-        b=Vqpf0hY1OSXAfbyCkLaVdobIWRo+Ylc5gQ58cvxZijNGVqy8NZM26ONjavWlaIj8hl
-         sxcsZRJDABMIpaHJtnlARir32khiKKlG4bvjIOHJe/Hk4C1CDX2jn84SrtqCxoWMNarW
-         q/2i5Z5oBi4g1qbcXj+EK8G5Xzmh0sC/0gV89Jbq8olaU7IMMr+WDbD7r7gR1VtmK7DU
-         uGvxAodrVsfFlTwT21Qxe6t5xmtzIrWAFCYy8Zknj8Rek+hZGWboK5eXK2+WiI9rirFq
-         6m/16Or+wveWdYVe/dB93HEJAWHq6dgKyfGyLvKPRjhzudSVn5kFdi/E9rW75B2A1HJV
-         hI6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684160458; x=1686752458;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ppVyFGTleG0uV5qrwyuyzbwOGiTPSdwv0HSD6ZTUdHA=;
-        b=XNoHh7+vVxWlpkZ7wkGkiHpgug0edMFgdi2ZRMhXKoYIatvUY+ENDfnShcgZf0PWjg
-         Py7DFaOQ3j6Ldw2oqR84wuy7XhbFM1yMfZhd6OQlEMzcWeY8ZqmJcP0WEkIxspEkt1tG
-         ZeYujWQWfqAU82v1F+0yEDclPYVdflU9C9c7L0FgE5n7R+mcSlAlxrMKW8BmVL5ct9S7
-         2SA6EQbifHNMnHMXk2ZycW0XsNX9B4vZz+edz0e1HsW4LeKh6AkumvgozQX37BJFS+OO
-         iNoWaRkK1avBzapI40H955TVPo/GipAIGFZ50xPSbZOhgEUSYk5qlnoLQ2t/Zj20COhd
-         EFIw==
-X-Gm-Message-State: AC+VfDzMJjWppXbbrvv76Bhv32tLBbgekHE1pTv4rb8DsbYM8Ygg+f2g
-	j34OIoeoDBld4h5EF6+OsYfbV8nimaqpw1zCZdU=
-X-Google-Smtp-Source: ACHHUZ6gafXJQ8R8vy9moJv7MoFwvSmxkXVjguC8wfPwjCRFz0YCIACDk7Z7a3hTxsiInEzIZYlnjfi57rUcM02kT7g=
-X-Received: by 2002:a05:6102:3cd:b0:430:ce0:ae90 with SMTP id
- n13-20020a05610203cd00b004300ce0ae90mr12150065vsq.14.1684160457669; Mon, 15
- May 2023 07:20:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKxGw3M6vz3bxL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 10:01:25 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=V8ENuULuwAFqnSXK8tqqpOWhr2PVJg3drSSusTewstpmLUuTsCAqywftMxqveT32ctD8WLWflNycOtILF8L6MgU0+V65O/bIKsAZdpbRyp1QdWahiFWv2X36jfc47N3DLbHpV4aeb1RZr6K+awD/xZeiQAs6t5iMn6UCHlKyu3IkaQdBsdM2nITuj3XHad2nn8hlTX/YGnFQMS+yn4J5xEraTgp4trxicF95DIMYRBzlzsa27J1srcheFojrlBHWDbNY4ZDOSuRzvvcG8E5+byrLmTB09wfJOuGIRh3kj9U34Mc5PA3RXo09hohjUYIfYzZdi8e/SPkQMsAJrtZfZw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=fv07ZTI6TWqMM56BZclxgR+qWcyKeH1gSmVtTipkoJE=;
+ b=NoRk2W3OJbpZwM+sxlpFvO/kvbe3hEN2t6DTfEHEzQMaxujLR1wNpHAeRGvSvwVb6bMG9iFQGb213LwC87qfUqDgezu/N0r90uatWSrch9VinyjZwLMGkfq3DVhsYcggiNFqWx+eX07eD1O09YNhGeWv7u0NLn2Hznaf24Ms2a+cPGVlkOBn4DHXnzCqQGe093jk3bTEczwJwLbLIoUcLjAoFeS4NIcYJZrRPiHEJ86Fz5klYPR1ORH20BHkz2ujT6lBUoje8sQl2O/2tNoXKNQ2x30Sk3dqvlWT/7Y99XHsBacxsPHfsps6HJv+AuisSy0SRZba16leX/JlO/pb5w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fv07ZTI6TWqMM56BZclxgR+qWcyKeH1gSmVtTipkoJE=;
+ b=GilGkfv2e98bP/r30P27lvROOXaXK5ZC3ZjOpksjCBCu1n7c/rlDLRnX1ZWQVsyDT252PaFu2kbNgoSbi/vs8u4OpgIRbcuAkNQK0GuT+kqfFJhf3akYsBxOtlnlNC1byzhQPAbhhdGu3Mem3iN8M6x5tCEQZ4GiqTwtC5+0K8qwRAnSvQlKdnPZgPXSiPXO96KrxXSQV1IU30SirWf2mb3pD1wsxLjFix9TWZwK1S0atvIWetyMsAubhqFK/MgTRs7bIpd8FxeeQcrXhfnoDvpxXUEk19Oz0Usc6WdEmNskSY0gnLRZhEe28S8R38oYD2Ny719IiFn/in25Q8negQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
+ by PH7PR12MB6786.namprd12.prod.outlook.com (2603:10b6:510:1ac::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6387.30; Tue, 16 May
+ 2023 00:01:00 +0000
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::f7a7:a561:87e9:5fab]) by LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::f7a7:a561:87e9:5fab%6]) with mapi id 15.20.6387.030; Tue, 16 May 2023
+ 00:01:00 +0000
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Andy Gross <agross@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	iommu@lists.linux.dev,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Joerg Roedel <joro@8bytes.org>,
+	Kevin Tian <kevin.tian@intel.com>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-sunxi@lists.linux.dev,
+	linux-tegra@vger.kernel.org,
+	Russell King <linux@armlinux.org.uk>,
+	linuxppc-dev@lists.ozlabs.org,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Matthew Rosato <mjrosato@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Orson Zhai <orsonzhai@gmail.com>,
+	Rob Clark <robdclark@gmail.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Krishna Reddy <vdumpa@nvidia.com>,
+	Chen-Yu Tsai <wens@csie.org>,
+	Will Deacon <will@kernel.org>,
+	Yong Wu <yong.wu@mediatek.com>,
+	Chunyan Zhang <zhang.lyra@gmail.com>
+Subject: [PATCH v2 11/25] iommu/tegra-smmu: Implement an IDENTITY domain
+Date: Mon, 15 May 2023 21:00:44 -0300
+Message-Id: <11-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
+In-Reply-To: <0-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
+References: 
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: BL0PR1501CA0033.namprd15.prod.outlook.com
+ (2603:10b6:207:17::46) To LV2PR12MB5869.namprd12.prod.outlook.com
+ (2603:10b6:408:176::16)
 MIME-Version: 1.0
-References: <20230511150802.737477-1-cgzones@googlemail.com>
- <20230515-kopfgeld-umkurven-f27be4b68a26@brauner> <CAOQ4uxgtxLLfBuVUAT7+N7cox+03wJA3ACGEu76dZd5RqGWXTQ@mail.gmail.com>
- <20230515-banal-vergab-a7abb53169b5@brauner>
-In-Reply-To: <20230515-banal-vergab-a7abb53169b5@brauner>
-From: Amir Goldstein <amir73il@gmail.com>
-Date: Mon, 15 May 2023 17:20:46 +0300
-Message-ID: <CAOQ4uxgLT8aae7zo3vNRTO+XKr4Xm5j=yUYPS0L1Fm751RS00A@mail.gmail.com>
-Subject: Re: [RFC PATCH v2] fs/xattr: add *at family syscalls
-To: Christian Brauner <brauner@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 16 May 2023 09:32:55 +1000
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|PH7PR12MB6786:EE_
+X-MS-Office365-Filtering-Correlation-Id: 280b1fb8-21c7-4dfe-10f1-08db55a0a1f4
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	Aks1VUuYTYc7AbsvVvn5E491j3YaOt2IsTKlA7P9BkUSdCDj6ZNcyqSixFswVjd2vyA8YE6lvgLgNqvBjSgv65RPQ+XK3pdiMwk/2ajPxGR7JMqRAUCYMwXhcKkBhAg0IqZ+USnxh+ALchlMCntn6Rwpe9rOOmGV4sm7WZlJ2/j38hJvmFzNPKklQ1ngFlY0g5lrIMSv6rXzNICTvUYBGoS9O4lKSla7fIxrXRjN31EZ9bX6LS4kC/DlemuWSJ+97Utcz8C8/E9bR1qQQylOAqNazjCtO2GAnn8MZYtfjxs0Q0aR17kO5+CD5Rfxy6gIxlqDMaApeDeJbs5ZRe9utwU2hTUTG4RT9Mu5C1XgSod4SrsCZSAWntLlikW0KGF8N5NWtw7kxLWJhNmlkbh83VpuqXFX1y1D/SDr1CVwLc9oGTGlkvPv1WYAZYihc5zf82G52MSUIqMS+fXyhVQdm8VV7W2I3Yf1g9HH9xKscblNHwOAjS+E0IiNhanoPdVAw/xEshnZlazSImkf+qi4nZAIW4ph/UTHQPfx2f6/bfbp548fqWYAE6CJ9PF5dAzUMXUAUamAb9+UElhgNZ/xlXQfo39fxbVwRj82lbFLlFk=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(39860400002)(136003)(396003)(376002)(366004)(451199021)(83380400001)(4326008)(41300700001)(316002)(2906002)(921005)(36756003)(38100700002)(6512007)(6506007)(26005)(6486002)(478600001)(107886003)(66556008)(66946007)(66476007)(2616005)(86362001)(5660300002)(8936002)(8676002)(110136005)(54906003)(7416002)(7406005)(186003)(6666004);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?feFb3zIKR3NUbX5KkNESRYkh7TBFeZ9skPbUFpwYK0Ak4UQO/YD3eJV9Q+Ah?=
+ =?us-ascii?Q?/vI+7+vTYrvIQcfdiYXkF8Gf05vmRPrwsS6mU+qtn+ohATeHtJTO0k1xCbAp?=
+ =?us-ascii?Q?0hi5brwKmRuCUZdp+Xd8SWHIYh424bsQF5uTjK9oTHNxBUTdZLgNceqQku7v?=
+ =?us-ascii?Q?49mwBrcHS3PdwefVU1pbrT8NZt0PMDra6N6WVHUw88zscEEe1XcO7508XzD5?=
+ =?us-ascii?Q?BDI06VQxE+sMCu+jbtk0mJu3sy+s5I02reEq8M4G2SfpYJUcGSsAyK0MiBRZ?=
+ =?us-ascii?Q?BGNR7APpUDovZRXur34UOCJsWi59eqXWnQyz4d6SvRRubygN4GmypsNKLA/h?=
+ =?us-ascii?Q?ECqjpQi6AF2iC2fxHEfwgwzDojRq2ksSItH3G6f0E/bC5QZBY+EPrISBBU7K?=
+ =?us-ascii?Q?b4ca87Z3w0vNV+P1bzSqyCy7B06HSHWOD6qPddLcGwNsB+a/vtQ0XVa4tM1j?=
+ =?us-ascii?Q?t47cLiimyi/rLtLnCoEtzvfR0UqIvqLYHBbi5+qDyt+7RyIj9/qpSOlFDG9K?=
+ =?us-ascii?Q?4v4WWITDebObEtQmS06xHOCD0YlI8+VHrDU0WJ3VwIx+A/uK1eLPsiMGZoAu?=
+ =?us-ascii?Q?Ew+vECbtg2WGPE5cAIwn6OKJ1pnGQBuz3iVis9F7l9bpWqwiWiiBK/bRCe9f?=
+ =?us-ascii?Q?JMImQNDTy9ek6gZmv3378C/s/aQDHq9ULVfTOWuCVTMO4SAXFWYBG2RUZg/j?=
+ =?us-ascii?Q?iigpr8ZJuIQrcwuPNc2kRHsXtLbC9Q2PDNCHEc6LOzJetI2FtiLxGsvhdPW4?=
+ =?us-ascii?Q?9nfCL+YWI0c7VrGGmAyPMIbPsttU1VSjTOXrFuzpvpc++q/o4KgT+fvE/dVy?=
+ =?us-ascii?Q?/6E4SdnoKaid4YoWuuzGLadfc3TGHZWXq6nHDcjpFVmeQNzCD1Jd+fn+ivGW?=
+ =?us-ascii?Q?+L0S6OW5W5qhA55yq1e0nZrHYbF1UAVDiNpftVYSo+es82T7bkKvk8pCF7pK?=
+ =?us-ascii?Q?27kl33gKIiwEfzPHFJt/HOYRoFx2bKXeziZ9iPoTVbJjaRJT8KgxnIHOHGK5?=
+ =?us-ascii?Q?1am1gsnpxHCLqPLTCDOJhhDvKWB06f+YdII/MyHdr0pEM2i2PBLuz5nPMElX?=
+ =?us-ascii?Q?3ygz6UmmDuXce7SkWrhVvcBZt1hTVkPe7gChLZ6HFGumCfNu2Iu7JM3gG+qc?=
+ =?us-ascii?Q?YRyC+Bzwb8IgLIIBYclGX6lW+MLhmaoA61CLpRW/2aoUT1I84vmC6tVkV31T?=
+ =?us-ascii?Q?BvlEBmnpl5MEqWLkk+MlbHQyTH+N/xy+zb9IM1I/+/YPIMpYYd2EcCtntTcy?=
+ =?us-ascii?Q?w4PbCn9Lr30ZQxr8JDC1+1Ys9AmhinNREszUUjR1yTW5YVyvHlUHQJlBNR8G?=
+ =?us-ascii?Q?GroWIt6/7mOssL+AZbK77VcX1FWLk8ldkU9kxyNfitgj5ueAWT8S5BktBkX3?=
+ =?us-ascii?Q?aKh5w1QUne3qROkxuR5/O7uGH1GNHY3BD97Uq8inso970ApwOMUucGcm9QVc?=
+ =?us-ascii?Q?RI84AprSAPzWBV9oeCp1HjbFt4ouKkhkn2qn7LdvhALjhoU6l7eWlHTw9R5w?=
+ =?us-ascii?Q?Ye3sRCzvsWOorYixvQejyJSYU6ZoJWyz16mW7j3uSZloKdBmme+COg1CawzZ?=
+ =?us-ascii?Q?2vRrBnjkb7GocZfHylpguKZWivzEaVXsfx9jJEI/?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 280b1fb8-21c7-4dfe-10f1-08db55a0a1f4
+X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 May 2023 00:01:00.6151
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: vgnoWp6T63K+3QoRbcEl7R8RKO1QkTi/2VNUdZWRSvKhKEOPm+Wx+W35h9NWzqa4
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6786
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,195 +157,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, Jan Kara <jack@suse.cz>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, selinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, =?UTF-8?Q?Christian_G=C3=B6ttsche?= <cgzones@googlemail.com>, linux-parisc@vger.kernel.org, cyphar@cyphar.com, linux-api@vger.kernel.org, jlayton@kernel.org, linux-kernel@vger.kernel.org, audit@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Niklas Schnelle <schnelle@linux.ibm.com>, Steven Price <steven.price@arm.com>, Nicolin Chen <nicolinc@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <treding@nvidia.com>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 15, 2023 at 4:52=E2=80=AFPM Christian Brauner <brauner@kernel.o=
-rg> wrote:
->
-> On Mon, May 15, 2023 at 04:04:21PM +0300, Amir Goldstein wrote:
-> > On Mon, May 15, 2023 at 1:33=E2=80=AFPM Christian Brauner <brauner@kern=
-el.org> wrote:
-> > >
-> > > On Thu, May 11, 2023 at 05:08:02PM +0200, Christian G=C3=B6ttsche wro=
-te:
-> > > > Add the four syscalls setxattrat(), getxattrat(), listxattrat() and
-> > > > removexattrat().  Those can be used to operate on extended attribut=
-es,
-> > > > especially security related ones, either relative to a pinned direc=
-tory
-> > > > or on a file descriptor without read access, avoiding a
-> > > > /proc/<pid>/fd/<fd> detour, requiring a mounted procfs.
-> > > >
-> > > > One use case will be setfiles(8) setting SELinux file contexts
-> > > > ("security.selinux") without race conditions.
-> > > >
-> > > > Add XATTR flags to the private namespace of AT_* flags.
-> > > >
-> > > > Use the do_{name}at() pattern from fs/open.c.
-> > > >
-> > > > Use a single flag parameter for extended attribute flags (currently
-> > > > XATTR_CREATE and XATTR_REPLACE) and *at() flags to not exceed six
-> > > > syscall arguments in setxattrat().
-> > > >
-> > > > Previous approach ("f*xattr: allow O_PATH descriptors"): https://lo=
-re.kernel.org/all/20220607153139.35588-1-cgzones@googlemail.com/
-> > > > v1 discussion: https://lore.kernel.org/all/20220830152858.14866-2-c=
-gzones@googlemail.com/
-> > > >
-> > > > Signed-off-by: Christian G=C3=B6ttsche <cgzones@googlemail.com>
-> > > > CC: x86@kernel.org
-> > > > CC: linux-alpha@vger.kernel.org
-> > > > CC: linux-kernel@vger.kernel.org
-> > > > CC: linux-arm-kernel@lists.infradead.org
-> > > > CC: linux-ia64@vger.kernel.org
-> > > > CC: linux-m68k@lists.linux-m68k.org
-> > > > CC: linux-mips@vger.kernel.org
-> > > > CC: linux-parisc@vger.kernel.org
-> > > > CC: linuxppc-dev@lists.ozlabs.org
-> > > > CC: linux-s390@vger.kernel.org
-> > > > CC: linux-sh@vger.kernel.org
-> > > > CC: sparclinux@vger.kernel.org
-> > > > CC: linux-fsdevel@vger.kernel.org
-> > > > CC: audit@vger.kernel.org
-> > > > CC: linux-arch@vger.kernel.org
-> > > > CC: linux-api@vger.kernel.org
-> > > > CC: linux-security-module@vger.kernel.org
-> > > > CC: selinux@vger.kernel.org
-> > > > ---
-> > >
-> > > Fwiw, your header doesn't let me see who the mail was directly sent t=
-o
-> > > so I'm only able to reply to lists which is a bit pointless...
-> > >
-> > > > v2:
-> > > >   - squash syscall introduction and wire up commits
-> > > >   - add AT_XATTR_CREATE and AT_XATTR_REPLACE constants
-> > >
-> > > > +#define AT_XATTR_CREATE              0x1     /* setxattrat(2): set=
- value, fail if attr already exists */
-> > > > +#define AT_XATTR_REPLACE     0x2     /* setxattrat(2): set value, =
-fail if attr does not exist */
-> > >
-> > > We really shouldn't waste any AT_* flags for this. Otherwise we'll ru=
-n
-> > > out of them rather quickly. Two weeks ago we added another AT_* flag
-> > > which is up for merging for v6.5 iirc and I've glimpsed another AT_*
-> > > flag proposal in one of the talks at last weeks Vancouver conference
-> > > extravaganza.
-> > >
-> > > Even if we reuse 0x200 for AT_XATTR_CREATE (like we did for AT_EACCES=
-S
-> > > and AT_REMOVEDIR) we still need another bit for AT_XATTR_REPLACE.
-> > >
-> > > Plus, this is really ugly since AT_XATTR_{CREATE,REPLACE} really isn'=
-t
-> > > in any way related to lookup and we're mixing it in with lookup
-> > > modifying flags.
-> > >
-> > > So my proposal for {g,s}etxattrat() would be:
-> > >
-> > > struct xattr_args {
-> > >         __aligned_u64 value;
-> > >         __u32 size;
-> > >         __u32 cmd;
-> > > };
-> > >
-> > > So everything's nicely 64bit aligned in the struct. Use the @cmd memb=
-er
-> > > to set either XATTR_REPLACE or XATTR_CREATE and treat it as a proper
-> > > enum and not as a flag argument like the old calls did.
-> > >
-> > > So then we'd have:
-> > >
-> > > setxattrat(int dfd, const char *path, const char __user *name,
-> > >            struct xattr_args __user *args, size_t size, unsigned int =
-flags)
-> > > getxattrat(int dfd, const char *path, const char __user *name,
-> > >            struct xattr_args __user *args, size_t size, unsigned int =
-flags)
-> > >
-> > > The current in-kernel struct xattr_ctx would be renamed to struct
-> > > kernel_xattr_args and then we do the usual copy_struct_from_user()
-> > > dance:
-> > >
-> > > struct xattr_args args;
-> > > err =3D copy_struct_from_user(&args, sizeof(args), uargs, usize);
-> > >
-> > > and then go on to handle value/size for setxattrat()/getxattrat()
-> > > accordingly.
-> > >
-> > > getxattr()/setxattr() aren't meaningfully filterable by seccomp alrea=
-dy
-> > > so there's not point in not using a struct.
-> > >
-> > > If that isn't very appealing then another option is to add a new flag
-> > > namespace just for setxattrat() similar to fspick() and move_mount()
-> > > duplicating the needed lookup modifying flags.
-> > > Thoughts?
-> >
-> > Here is a thought: I am not sure if I am sorry we did not discuss this =
-API
-> > issue in LSFMM or happy that we did not waste our time on this... :-/
-> >
-> > I must say that I dislike redefined flag namespace like FSPICK_*
-> > just as much as I dislike overloading the AT_* namespace and TBH,
-> > I am not crazy about avoiding this problem with xattr_args either.
-> >
-> > A more sane solution IMO could have been:
-> > - Use lower word of flags for generic AT_ flags
-> > - Use the upper word of flags for syscall specific flags
->
-> We'd have 16 lower bits for AT_* flags and upper 16 bits for non-AT_*
-> flags. That might be ok but it isn't great because if we ever extend
-> AT_* flags into the upper 16 bits that are generally useful for all
-> AT_* flag taking system calls we'd not be able to use them. And at the
-> rate people keep suggesting new AT_* flags that issue might arise
-> quicker than we might think.
->
-> And we really don't want 64 bit flag arguments because of 32 bit
-> architectures as that gets really ugly to handle cleanly (Arnd has
-> talked a lot about issues in this area before).
->
-> >
-> > So if it were up to me, I would vote starting this practice:
-> >
-> > + /* Start of syscall specific range */
-> > + #define AT_XATTR_CREATE       0x10000     /* setxattrat(2): set
-> > value, fail if attr already exists */
-> > + #define AT_XATTR_REPLACE     0x20000     /* setxattrat(2): set
-> > value, fail if attr does not exist */
-> >
-> > Which coincidentally happens to be inline with my AT_HANDLE_FID patch..=
-.
->
-> This is different though. The reason AT_HANDLE_FID is acceptable is
-> because we need the ability to extend an existing system call and we're
-> reusing a bit that is already used in two other system calls. So we
-> avoid adding a new system call just to add another flag argument and
-> we're also not using up an additional AT_* bit. This makes it bearable
-> imho. But here we're talking about new system calls where we can avoid
-> this problem arising in the first place.
->
-> >
-> > Sure, we will have some special cases like MOVE_MOUNT_* and
-> > legacy pollution to the lower AT_ flags word, but as a generic solution
-> > for syscalls that need the common AT_ lookup flags and just a few
-> > private flags, that seems like the lesser evil to me.
->
-> It is fine to do this in some cases but we shouldn't encourage mixing
-> distinct flag namespaces let alone advertising this as a generic
-> solution imho. The AT_XATTR_* flags aren't even flags they behave like
-> an enum.
+What tegra-smmu does during tegra_smmu_set_platform_dma() is actually
+putting the iommu into identity mode.
 
-OK. I see your point.
-Also, wrt struct xattr_args, there is sort of a precedent with
-XFS_IOC_ATTRMULTI_BY_HANDLE ioctl, struct xfs_attr_multiop
-and flags XFS_IOC_ATTR_{CREATE,REPLACE}.
+Move to the new core support for ARM_DMA_USE_IOMMU by defining
+ops->identity_domain.
 
-Just a nit, I would use xattr_args field names that are the
-same as setxattr() arg names, so s/cmd/flags.
+Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+---
+ drivers/iommu/tegra-smmu.c | 37 ++++++++++++++++++++++++++++++++-----
+ 1 file changed, 32 insertions(+), 5 deletions(-)
 
-Thanks,
-Amir.
+diff --git a/drivers/iommu/tegra-smmu.c b/drivers/iommu/tegra-smmu.c
+index 1cbf063ccf147a..f63f1d4f0bd10f 100644
+--- a/drivers/iommu/tegra-smmu.c
++++ b/drivers/iommu/tegra-smmu.c
+@@ -511,23 +511,39 @@ static int tegra_smmu_attach_dev(struct iommu_domain *domain,
+ 	return err;
+ }
+ 
+-static void tegra_smmu_set_platform_dma(struct device *dev)
++static int tegra_smmu_identity_attach(struct iommu_domain *identity_domain,
++				      struct device *dev)
+ {
+ 	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
+ 	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
+-	struct tegra_smmu_as *as = to_smmu_as(domain);
+-	struct tegra_smmu *smmu = as->smmu;
++	struct tegra_smmu_as *as;
++	struct tegra_smmu *smmu;
+ 	unsigned int index;
+ 
+ 	if (!fwspec)
+-		return;
++		return -ENODEV;
+ 
++	if (domain == identity_domain || !domain)
++		return 0;
++
++	as = to_smmu_as(domain);
++	smmu = as->smmu;
+ 	for (index = 0; index < fwspec->num_ids; index++) {
+ 		tegra_smmu_disable(smmu, fwspec->ids[index], as->id);
+ 		tegra_smmu_as_unprepare(smmu, as);
+ 	}
++	return 0;
+ }
+ 
++static struct iommu_domain_ops tegra_smmu_identity_ops = {
++	.attach_dev = tegra_smmu_identity_attach,
++};
++
++static struct iommu_domain tegra_smmu_identity_domain = {
++	.type = IOMMU_DOMAIN_IDENTITY,
++	.ops = &tegra_smmu_identity_ops,
++};
++
+ static void tegra_smmu_set_pde(struct tegra_smmu_as *as, unsigned long iova,
+ 			       u32 value)
+ {
+@@ -962,11 +978,22 @@ static int tegra_smmu_of_xlate(struct device *dev,
+ 	return iommu_fwspec_add_ids(dev, &id, 1);
+ }
+ 
++static int tegra_smmu_def_domain_type(struct device *dev)
++{
++	/*
++	 * FIXME: For now we want to run all translation in IDENTITY mode, due
++	 * to some device quirks. Better would be to just quirk the troubled
++	 * devices.
++	 */
++	return IOMMU_DOMAIN_IDENTITY;
++}
++
+ static const struct iommu_ops tegra_smmu_ops = {
++	.identity_domain = &tegra_smmu_identity_domain,
++	.def_domain_type = &tegra_smmu_def_domain_type,
+ 	.domain_alloc = tegra_smmu_domain_alloc,
+ 	.probe_device = tegra_smmu_probe_device,
+ 	.device_group = tegra_smmu_device_group,
+-	.set_platform_dma_ops = tegra_smmu_set_platform_dma,
+ 	.of_xlate = tegra_smmu_of_xlate,
+ 	.pgsize_bitmap = SZ_4K,
+ 	.default_domain_ops = &(const struct iommu_domain_ops) {
+-- 
+2.40.1
+
