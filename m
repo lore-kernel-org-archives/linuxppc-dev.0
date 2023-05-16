@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4A1FC77B75
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 01:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26CB6C7EE22
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 02:12:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKzqh2YXzz3fGG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 11:56:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QL0BR3RpKz3fBp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 12:12:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Jkgfu70n;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=j/Q/zois;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Jkgfu70n;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=j/Q/zois;
 	dkim-atps=neutral
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKznp0Ltgz3c7K
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 11:54:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QL09R4GPBz3cDk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 12:11:54 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1684202094; x=1715738094;
+  t=1684203115; x=1715739115;
   h=date:from:to:cc:subject:message-id;
-  bh=hd/35+p+bNF1/o8hrmhhRyqBdlwv/8tzlczyDJNS4+0=;
-  b=Jkgfu70npOfQCaL5RCxpzNzTqCvfzN7LomNEnW/NUDMZ+MhSIQVBuFH0
-   WyF1snlUFiHVQTy5eBmwMIt2VF7tnOQTuvKCz6edyuwtplouxi4zZNILr
-   YtknWodLfXm6AvYRRyFrwVDwRsGb2o1F3pGYrxOWi/WuvTEThJJTNkX+R
-   ygKu8c+SCjDt9qzoliJz+sq/VNvno+D6oemvXLzI6829wbA1hfL2uJVc9
-   WGc0nTMy2q3XJ+qysr4AqLhXj6rFF2ROkO58BrSWAigI2aTNzZb6xVrAC
-   ts+GWee6L0wMv5XZNOzLzHZTcfBtKGAV4Z7OAeCrpxD8DVyJlDPGPZs1A
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10711"; a="417011380"
+  bh=q2LyKXcZZUMvRI759gX7W67ESzlyGwTUIK5X2nJqkcI=;
+  b=j/Q/zoiszGTiOVIsEhxCqc3XvrtYDYoBkQGdX2B5usFRGGSdJr9CxBrf
+   X73l30HwWCX/P6A6TljsJYH4cC6uAUheoQ3R/iH50XOqIHzhOnOwyITuH
+   1n6enqXjJqVRMK3fADudL+63uKxivuvJjQl9EYyzFjnic0BtYpeWkrljC
+   061vs7pDHC/bdttOjokgUPL8ApjUd8i8JxRWvY8Hg5aCb7L4Ov4nGe1iy
+   jMqSvBoHzo+FjUCIwwnatQAdFDDOmEIedixoYtC/hxJsjQlSsXKCL9hC2
+   oqpprcPtgpzW5cDhPjRaAN04tH1334YqWderZm9DY9xsKZ6UlokOOdyQ/
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10711"; a="348858824"
 X-IronPort-AV: E=Sophos;i="5.99,277,1677571200"; 
-   d="scan'208";a="417011380"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2023 18:54:50 -0700
+   d="scan'208";a="348858824"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2023 19:11:51 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10711"; a="766178458"
+X-IronPort-AV: E=McAfee;i="6600,9927,10711"; a="734108748"
 X-IronPort-AV: E=Sophos;i="5.99,277,1677571200"; 
-   d="scan'208";a="766178458"
+   d="scan'208";a="734108748"
 Received: from lkp-server01.sh.intel.com (HELO dea6d5a4f140) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 15 May 2023 18:54:49 -0700
+  by orsmga001.jf.intel.com with ESMTP; 15 May 2023 19:11:49 -0700
 Received: from kbuild by dea6d5a4f140 with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1pyjto-0006r7-1X;
-	Tue, 16 May 2023 01:54:48 +0000
-Date: Tue, 16 May 2023 09:53:54 +0800
+	id 1pykAG-0006s6-2t;
+	Tue, 16 May 2023 02:11:48 +0000
+Date: Tue, 16 May 2023 10:11:11 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 8133a3f0aa66ed3d7d974c89ac6aca6fe6cec837
-Message-ID: <20230516015354.sFBF2%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS
+ 6d40746dbb75f85a18a0df005f1a8d6147abec22
+Message-ID: <20230516021111.ovu7s%lkp@intel.com>
 User-Agent: s-nail v14.9.24
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,38 +70,41 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 8133a3f0aa66ed3d7d974c89ac6aca6fe6cec837  powerpc/crypto: Fix aes-gcm-p10 build when VSX=n
+tree/branch: INFO setup_repo_specs: /db/releases/20230516094411/lkp-src/repo/powerpc
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 6d40746dbb75f85a18a0df005f1a8d6147abec22  Automatic merge of 'next' into merge (2023-05-15 09:26)
 
-elapsed time: 735m
+elapsed time: 750m
 
-configs tested: 136
-configs skipped: 193
+configs tested: 163
+configs skipped: 6
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
 tested configs:
 alpha                            allyesconfig   gcc  
-alpha        buildonly-randconfig-r003-20230515   gcc  
 alpha                               defconfig   gcc  
+alpha                randconfig-r011-20230515   gcc  
+alpha                randconfig-r013-20230515   gcc  
+alpha                randconfig-r025-20230515   gcc  
+alpha                randconfig-r034-20230515   gcc  
 arc                              allyesconfig   gcc  
 arc                                 defconfig   gcc  
-arc                     nsimosci_hs_defconfig   gcc  
+arc                  randconfig-r043-20230515   gcc  
 arm                              allmodconfig   gcc  
 arm                              allyesconfig   gcc  
-arm                         axm55xx_defconfig   gcc  
 arm                                 defconfig   gcc  
-arm                           imxrt_defconfig   gcc  
-arm                       versatile_defconfig   clang
+arm                  randconfig-r003-20230515   gcc  
+arm                  randconfig-r046-20230515   clang
 arm64                            allyesconfig   gcc  
 arm64                               defconfig   gcc  
-arm64                randconfig-r011-20230515   gcc  
-arm64                randconfig-r015-20230515   gcc  
-arm64                randconfig-r022-20230515   gcc  
 csky                                defconfig   gcc  
-hexagon              randconfig-r006-20230515   clang
+csky                 randconfig-r036-20230515   gcc  
+hexagon              randconfig-r041-20230515   clang
+hexagon              randconfig-r045-20230515   clang
 i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r005-20230515   clang
 i386                              debian-10.3   gcc  
 i386                                defconfig   gcc  
 i386                 randconfig-a001-20230515   clang
@@ -128,46 +131,71 @@ i386                 randconfig-i063-20230515   clang
 i386                 randconfig-i064-20230515   clang
 i386                 randconfig-i065-20230515   clang
 i386                 randconfig-i066-20230515   clang
-i386                          randconfig-i071   clang
-i386                          randconfig-i073   clang
-i386                          randconfig-i075   clang
+i386                 randconfig-i071-20230515   gcc  
+i386                 randconfig-i072-20230515   gcc  
+i386                 randconfig-i073-20230515   gcc  
+i386                 randconfig-i074-20230515   gcc  
+i386                 randconfig-i075-20230515   gcc  
+i386                 randconfig-i076-20230515   gcc  
+i386                 randconfig-i081-20230515   gcc  
+i386                 randconfig-i082-20230515   gcc  
+i386                 randconfig-i083-20230515   gcc  
+i386                 randconfig-i084-20230515   gcc  
+i386                 randconfig-i085-20230515   gcc  
+i386                 randconfig-i086-20230515   gcc  
 i386                 randconfig-i091-20230515   clang
 i386                 randconfig-i092-20230515   clang
 i386                 randconfig-i093-20230515   clang
 i386                 randconfig-i094-20230515   clang
 i386                 randconfig-i095-20230515   clang
 i386                 randconfig-i096-20230515   clang
+i386                 randconfig-r031-20230515   clang
 ia64                             allmodconfig   gcc  
+ia64         buildonly-randconfig-r006-20230515   gcc  
 ia64                                defconfig   gcc  
-loongarch                        alldefconfig   gcc  
+ia64                 randconfig-r006-20230515   gcc  
 loongarch                        allmodconfig   gcc  
 loongarch                         allnoconfig   gcc  
 loongarch                           defconfig   gcc  
-loongarch            randconfig-r016-20230515   gcc  
+loongarch            randconfig-r035-20230515   gcc  
 m68k                             allmodconfig   gcc  
-m68k         buildonly-randconfig-r001-20230515   gcc  
 m68k                                defconfig   gcc  
-m68k                 randconfig-r014-20230515   gcc  
-m68k                 randconfig-r034-20230515   gcc  
+m68k                 randconfig-r022-20230515   gcc  
+m68k                        stmark2_defconfig   gcc  
+microblaze           randconfig-r021-20230515   gcc  
 mips                             allmodconfig   gcc  
 mips                             allyesconfig   gcc  
-mips                       bmips_be_defconfig   gcc  
-mips                           rs90_defconfig   clang
-nios2                randconfig-r026-20230515   gcc  
-nios2                randconfig-r033-20230515   gcc  
-openrisc     buildonly-randconfig-r006-20230515   gcc  
-parisc               randconfig-r023-20230515   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r002-20230515   gcc  
+nios2                randconfig-r005-20230515   gcc  
+nios2                randconfig-r023-20230515   gcc  
+openrisc     buildonly-randconfig-r003-20230515   gcc  
+openrisc                    or1ksim_defconfig   gcc  
+openrisc             randconfig-r001-20230515   gcc  
+parisc       buildonly-randconfig-r001-20230515   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r026-20230515   gcc  
+parisc64                            defconfig   gcc  
 powerpc                          allmodconfig   gcc  
 powerpc                           allnoconfig   gcc  
-powerpc                        fsp2_defconfig   clang
-powerpc                   microwatt_defconfig   clang
-powerpc                     tqm8560_defconfig   clang
-powerpc                      tqm8xx_defconfig   gcc  
-riscv                randconfig-r004-20230515   clang
-riscv                randconfig-r013-20230515   gcc  
+powerpc              randconfig-r004-20230515   clang
+powerpc              randconfig-r032-20230515   clang
+powerpc                     skiroot_defconfig   clang
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r042-20230515   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r044-20230515   gcc  
+sh                               allmodconfig   gcc  
+sh                   randconfig-r015-20230515   gcc  
+sh                   randconfig-r024-20230515   gcc  
+sh                   randconfig-r033-20230515   gcc  
 sparc                               defconfig   gcc  
-sparc                randconfig-r025-20230515   gcc  
-sparc64              randconfig-r024-20230515   gcc  
+sparc64              randconfig-r012-20230515   gcc  
 um                             i386_defconfig   gcc  
 um                           x86_64_defconfig   gcc  
 x86_64                            allnoconfig   gcc  
@@ -186,7 +214,6 @@ x86_64               randconfig-a013-20230515   gcc
 x86_64               randconfig-a014-20230515   gcc  
 x86_64               randconfig-a015-20230515   gcc  
 x86_64               randconfig-a016-20230515   gcc  
-x86_64               randconfig-k001-20230515   gcc  
 x86_64               randconfig-x051-20230515   gcc  
 x86_64               randconfig-x052-20230515   gcc  
 x86_64               randconfig-x053-20230515   gcc  
@@ -218,6 +245,7 @@ x86_64               randconfig-x094-20230515   gcc
 x86_64               randconfig-x095-20230515   gcc  
 x86_64               randconfig-x096-20230515   gcc  
 x86_64                               rhel-8.3   gcc  
+xtensa                    smp_lx200_defconfig   gcc  
 
 -- 
 0-DAY CI Kernel Test Service
