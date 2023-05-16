@@ -4,50 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FB0DC77B75
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 11:52:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06E3FC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 00:54:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QKd5J519Fz3f5v
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 May 2023 21:52:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IkBBAEfM;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+d8048cf69d99de8d0741+7204+infradead.org+hch@bombadil.srs.infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IkBBAEfM;
-	dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QKd4J3B56z3bg3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2023 21:51:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=PuPfI1ULNn6nKdgBOgNMBtEbGf2urZOQinv9le4S0tg=; b=IkBBAEfMBi3BnwkUH9a+d6WFrp
-	IAP6BVB6s9Sl8NqTDNcoPch40oFg+Og/x7m6XkOUE72+xSzl5ZlI98459I4E/du347IDxCTnReoyr
-	2oONv2hE1I3etOOnCSY2vH9ouRwvUXHVKKVE+lKyCxDJ7gkQCHtKzqlDKNWUmE1Pr4uvdovJE5O8U
-	aFKw5WRtbNE+EPp9q4TeTUEoP0voDGcBEZNG9WfWZqArILRyyFm3+03au5ftDUPZXH3r+YWAxP/6I
-	F2qrkp8eHjEgXrfMbulzU3v+q/5Tn/XUKFTFaEw9mWhCAMnwjbBu1x/P/5q4Wok0/BQJDjF1eLR8M
-	Iv7zwhgA==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.96 #2 (Red Hat Linux))
-	id 1pyWis-0022I3-1r;
-	Mon, 15 May 2023 11:50:38 +0000
-Date: Mon, 15 May 2023 04:50:38 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Subject: Re: [PATCH v5 5/6] mm/gup: remove vmas parameter from
- pin_user_pages()
-Message-ID: <ZGIcjr2I5FDDKdCZ@infradead.org>
-References: <cover.1684097001.git.lstoakes@gmail.com>
- <acd4a8c735c9bc1c736e1a52a9a036db5cc7d462.1684097002.git.lstoakes@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKyRz1TVVz3fFw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 May 2023 10:54:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=<UNKNOWN>)
+X-Greylist: delayed 100773 seconds by postgrey-1.36 at boromir; Tue, 16 May 2023 10:53:52 AEST
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QKyRN6xd9z3c71
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2023 10:53:50 +1000 (AEST)
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+	id 9D7EE92009C; Tue, 16 May 2023 02:53:45 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by angie.orcam.me.uk (Postfix) with ESMTP id 9709492009B;
+	Tue, 16 May 2023 01:53:45 +0100 (BST)
+Date: Tue, 16 May 2023 01:53:45 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@orcam.me.uk>
+To: Alexandre Ghiti <alexghiti@rivosinc.com>
+Subject: Re: [PATCH v5 14/26] alpha: Remove empty <uapi/asm/setup.h>
+In-Reply-To: <20230306100508.1171812-15-alexghiti@rivosinc.com>
+Message-ID: <alpine.DEB.2.21.2305160147100.11892@angie.orcam.me.uk>
+References: <20230306100508.1171812-1-alexghiti@rivosinc.com> <20230306100508.1171812-15-alexghiti@rivosinc.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <acd4a8c735c9bc1c736e1a52a9a036db5cc7d462.1684097002.git.lstoakes@gmail.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,22 +40,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nelson Escobar <neescoba@cisco.com>, kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Jason Wang <jasowang@redhat.com>, Alexei Starovoitov <ast@kernel.org>, virtualization@lists.linux-foundation.org, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, Leon Romanovsky <leon@kernel.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>, John Fastabend <john.fastabend@gmail.com>, Matthew Wilcox <willy@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Bernard Metzler <bmt@zurich.ibm.com>, Paolo Abeni <pabeni@redhat.com>, bpf@vger.kernel.org, linux-media@vger.kernel.org, Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Jesper Dangaard Brouer <hawk@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Nicholas Piggin <npiggin@gmail.com>, Jakub Kicinski <kuba@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, io-uring@vger.kernel.org, Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <ax
- boe@kernel.dk>, Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, Bjorn Topel <bjorn@kernel.org>, Jonathan Lemon <jonathan.lemon@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Pavel Begunkov <asml.silence@gmail.com>, Christian Benvenuti <benve@cisco.com>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Palmer Dabbelt <palmer@rivosinc.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gma
+ il.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, May 14, 2023 at 10:26:58PM +0100, Lorenzo Stoakes wrote:
-> We are now in a position where no caller of pin_user_pages() requires the
-> vmas parameter at all, so eliminate this parameter from the function and
-> all callers.
-> 
-> This clears the way to removing the vmas parameter from GUP altogether.
-> 
-> Acked-by: David Hildenbrand <david@redhat.com>
-> Acked-by: Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com> (for qib)
-> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+On Mon, 6 Mar 2023, Alexandre Ghiti wrote:
 
-Looks good:
+> diff --git a/arch/alpha/include/uapi/asm/setup.h b/arch/alpha/include/uapi/asm/setup.h
+> deleted file mode 100644
+> index 9b3b5ba39b1d..000000000000
+> --- a/arch/alpha/include/uapi/asm/setup.h
+> +++ /dev/null
+> @@ -1,5 +0,0 @@
+> -/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+> -#ifndef _UAPI__ALPHA_SETUP_H
+> -#define _UAPI__ALPHA_SETUP_H
+> -
+> -#endif /* _UAPI__ALPHA_SETUP_H */
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+ You can't just remove a UAPI header like this, something will break; cf. 
+arch/arc/include/uapi/asm/setup.h, or arch/x86/include/uapi/asm/setup.h if 
+you want it brief.
+
+ I suggest that you fold it into 01/26 (it makes no sense to have empty 
+multiple inclusion protection), and likewise for the relevant remaining 
+headers.
+
+  Maciej
