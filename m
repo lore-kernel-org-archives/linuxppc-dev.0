@@ -4,49 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B313C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 22:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3950DC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 22:39:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QM6yX5VT6z3fDk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 May 2023 08:21:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QM7MQ60Z7z3fXd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 May 2023 08:39:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Aq61Wmrq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=f7UYkofN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d34; helo=mail-io1-xd34.google.com; envelope-from=azeemshaikh38@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Aq61Wmrq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=f7UYkofN;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-xd34.google.com (mail-io1-xd34.google.com [IPv6:2607:f8b0:4864:20::d34])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QM6xb0DnSz3c9K
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2023 08:20:33 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 5F8DE64B8C;
-	Wed, 17 May 2023 22:20:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 842E5C433EF;
-	Wed, 17 May 2023 22:20:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1684362029;
-	bh=NytFsz7TaWpQ0xHSi4FEPFoDMRh4D1j2c+g6k9t3n5Y=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Aq61Wmrq0K6xc/wL30oB3UkxyHJ6Uh9hXcZBrdPGcHI4q5pNWgufSkg5RwAAWDNoD
-	 MAn83CSWtOuNJbqAT0yyjyU4mzXMtKbDQ3OTB5r9iKHpO6HXDytYgtMlea7n8vQKkP
-	 LRBlUK9k2mYMbLsmmZ6RPvWFyz1LyUsMWhbDNPzk=
-Date: Wed, 17 May 2023 15:20:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH] mm: kfence: Fix false positives on big endian
-Message-Id: <20230517152028.86b6d2d5afa4541b4269131b@linux-foundation.org>
-In-Reply-To: <826f836f41db41eeb0fc32061994ac39@AcuMS.aculab.com>
-References: <20230505035127.195387-1-mpe@ellerman.id.au>
-	<826f836f41db41eeb0fc32061994ac39@AcuMS.aculab.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLwbc5Kbgz3fBx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2023 00:34:20 +1000 (AEST)
+Received: by mail-io1-xd34.google.com with SMTP id ca18e2360f4ac-76c791e2d8dso63943739f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 07:34:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1684334057; x=1686926057;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xg5+64VwYu4jgIPdssL1KkUeDoxI9Z+GcnNgZYWkm3Q=;
+        b=f7UYkofNs9JL4XDKdmmVxJ/FcOm5c66Vjo4sEzVNJyE+QNiDrsJAcOsggp0ry46ks5
+         pC0ZEl/aJVWXPMDYYIqTgRkVW0CTWqrQ+m47hPfjJD1sUHnOkYcjJwInI9r2Cas5bwyk
+         Aua+3xLxe0y93uSylEtAyy/SQCrXy3pu8EjWDQLqjDH9ZJfndfVuKp+AQ+2x+hmDX3CZ
+         UqukqOATp6ip9bYcd7D94O/5mcfgeoZikKSahbzqvqYo9ZVI9AXlQw01Vs9ecDPagjDm
+         ObObYN+/r8lDfrV7UZMd/9qWJEzIjlXTqJxInZK04mizR0Mt3KHXnwbWEZtG/Z7iSvnn
+         hyNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684334057; x=1686926057;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xg5+64VwYu4jgIPdssL1KkUeDoxI9Z+GcnNgZYWkm3Q=;
+        b=V/+lf3YmtuzwZo1nWQeoLuYHQ1BTWchZqLq+Cs31rRk65PkFEikUN65VINe/zazXTh
+         Zarxej41Mlunsu5LAMZCPSGeSap27Cdy+YxjGP5+mA2nOS3qr+FS/bRvXP/bamSR49Fn
+         bk/AekCZJWY+IT+dtT2wK3+vRoxqhF8NSOzsx+R+tYrqkd1NbVivlLOB6DOaGymC9vDB
+         aSBQt34SBVy2sZKIPJT70WMifz0Rgf7R2Zfav9wtd7RIvJV4pfgaucgW72kPvFG1g0ts
+         SJRtPKtqXygDktjAQZUOJJnaUkj/bw8LcSrFJCafqnVwopfeg1E1E6CLY46HCqGB+Ynd
+         ueng==
+X-Gm-Message-State: AC+VfDzMaSHy3znZkLOPzNdYZARID116h4aNieUpEy5U+MwL4NhEABfn
+	ttwlC5ehEBTOXWntbufhLu4=
+X-Google-Smtp-Source: ACHHUZ6/nzU7Vyvyb5FH1f/FdNchYPWuX2uGRdwnvozU3JU2C4g5sXFhidMNl8Ac9liRJBzkXOCIgg==
+X-Received: by 2002:a6b:e910:0:b0:763:5cf8:65eb with SMTP id u16-20020a6be910000000b007635cf865ebmr4854888iof.9.1684334057611;
+        Wed, 17 May 2023 07:34:17 -0700 (PDT)
+Received: from azeems-kspp.c.googlers.com.com (54.70.188.35.bc.googleusercontent.com. [35.188.70.54])
+        by smtp.gmail.com with ESMTPSA id n16-20020a027150000000b0040fa0f43777sm8491190jaf.161.2023.05.17.07.34.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 17 May 2023 07:34:17 -0700 (PDT)
+From: Azeem Shaikh <azeemshaikh38@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: [PATCH] scsi: ibmvscsi: Replace all non-returning strlcpy with strscpy
+Date: Wed, 17 May 2023 14:34:09 +0000
+Message-ID: <20230517143409.1520298-1-azeemshaikh38@gmail.com>
+X-Mailer: git-send-email 2.40.1.606.ga4b1b128d6-goog
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 18 May 2023 08:37:55 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,50 +76,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "zhangpeng.00@bytedance.com" <zhangpeng.00@bytedance.com>, "elver@google.com" <elver@google.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "glider@google.com" <glider@google.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.ibm.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Azeem Shaikh <azeemshaikh38@gmail.com>, linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 5 May 2023 16:02:17 +0000 David Laight <David.Laight@ACULAB.COM> wrote:
+strlcpy() reads the entire source buffer first.
+This read may exceed the destination size limit.
+This is both inefficient and can lead to linear read
+overflows if a source string is not NUL-terminated [1].
+In an effort to remove strlcpy() completely [2], replace
+strlcpy() here with strscpy().
+No return values were used, so direct replacement is safe.
 
-> From: Michael Ellerman
-> > Sent: 05 May 2023 04:51
-> > 
-> > Since commit 1ba3cbf3ec3b ("mm: kfence: improve the performance of
-> > __kfence_alloc() and __kfence_free()"), kfence reports failures in
-> > random places at boot on big endian machines.
-> > 
-> > The problem is that the new KFENCE_CANARY_PATTERN_U64 encodes the
-> > address of each byte in its value, so it needs to be byte swapped on big
-> > endian machines.
-> > 
-> > The compiler is smart enough to do the le64_to_cpu() at compile time, so
-> > there is no runtime overhead.
-> > 
-> > Fixes: 1ba3cbf3ec3b ("mm: kfence: improve the performance of __kfence_alloc() and __kfence_free()")
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > ---
-> >  mm/kfence/kfence.h | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/mm/kfence/kfence.h b/mm/kfence/kfence.h
-> > index 2aafc46a4aaf..392fb273e7bd 100644
-> > --- a/mm/kfence/kfence.h
-> > +++ b/mm/kfence/kfence.h
-> > @@ -29,7 +29,7 @@
-> >   * canary of every 8 bytes is the same. 64-bit memory can be filled and checked
-> >   * at a time instead of byte by byte to improve performance.
-> >   */
-> > -#define KFENCE_CANARY_PATTERN_U64 ((u64)0xaaaaaaaaaaaaaaaa ^ (u64)(0x0706050403020100))
-> > +#define KFENCE_CANARY_PATTERN_U64 ((u64)0xaaaaaaaaaaaaaaaa ^ (u64)(le64_to_cpu(0x0706050403020100)))
-> 
-> What at the (u64) casts for?
-> The constants should probably have a ul (or ull) suffix.
-> 
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
+[2] https://github.com/KSPP/linux/issues/89
 
-I tried that, didn't fix the sparse warnings described at
-https://lkml.kernel.org/r/202305132244.DwzBUcUd-lkp@intel.com.
+Signed-off-by: Azeem Shaikh <azeemshaikh38@gmail.com>
+---
+ drivers/scsi/ibmvscsi/ibmvscsi.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Michael, have you looked into this?
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 63f32f843e75..59599299615d 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -250,7 +250,7 @@ static void gather_partition_info(void)
+ 
+ 	ppartition_name = of_get_property(of_root, "ibm,partition-name", NULL);
+ 	if (ppartition_name)
+-		strlcpy(partition_name, ppartition_name,
++		strscpy(partition_name, ppartition_name,
+ 				sizeof(partition_name));
+ 	p_number_ptr = of_get_property(of_root, "ibm,partition-no", NULL);
+ 	if (p_number_ptr)
+@@ -1282,12 +1282,12 @@ static void send_mad_capabilities(struct ibmvscsi_host_data *hostdata)
+ 	if (hostdata->client_migrated)
+ 		hostdata->caps.flags |= cpu_to_be32(CLIENT_MIGRATED);
+ 
+-	strlcpy(hostdata->caps.name, dev_name(&hostdata->host->shost_gendev),
++	strscpy(hostdata->caps.name, dev_name(&hostdata->host->shost_gendev),
+ 		sizeof(hostdata->caps.name));
+ 
+ 	location = of_get_property(of_node, "ibm,loc-code", NULL);
+ 	location = location ? location : dev_name(hostdata->dev);
+-	strlcpy(hostdata->caps.loc, location, sizeof(hostdata->caps.loc));
++	strscpy(hostdata->caps.loc, location, sizeof(hostdata->caps.loc));
+ 
+ 	req->common.type = cpu_to_be32(VIOSRP_CAPABILITIES_TYPE);
+ 	req->buffer = cpu_to_be64(hostdata->caps_addr);
 
-I'll merge it upstream - I guess we can live with the warnings for a while.
