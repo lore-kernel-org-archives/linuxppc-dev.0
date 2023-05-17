@@ -4,38 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C7E5C77B75
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 May 2023 13:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EBC8C77B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 10:41:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QQZgz4Glrz3f4l
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 May 2023 23:20:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=q/om=bm=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QLqR63qs0z3fCd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 20:41:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Qlb1r1C7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=imbrenda@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Qlb1r1C7;
+	dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QQZgR6T2Kz3cdD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2023 23:20:19 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 3F54560B60;
-	Tue, 23 May 2023 13:20:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46538C433EF;
-	Tue, 23 May 2023 13:20:15 +0000 (UTC)
-Date: Tue, 23 May 2023 09:20:13 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Naveen N Rao <naveen@kernel.org>
-Subject: Re: [RFC PATCH] powerpc/ftrace: Refactoring and support for
- -fpatchable-function-entry
-Message-ID: <20230523092013.5a0b03d8@rorschach.local.home>
-In-Reply-To: <1684606745.vlpj5zhydx.naveen@kernel.org>
-References: <20230519192600.2593506-1-naveen@kernel.org>
-	<3527b8d2-275e-29d8-fd3b-4002a4a901fd@csgroup.eu>
-	<1684606745.vlpj5zhydx.naveen@kernel.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLqQ71DGBz3bjy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 20:40:46 +1000 (AEST)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34HAWh8p030125;
+	Wed, 17 May 2023 10:39:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=6o4UB5d8iRIZZq7T331T96/YmtIoyPZJVO895cK7BU4=;
+ b=Qlb1r1C79y4iKHdQAqanT8rbJmqF8hpDVpHADvfmHgcOzINGCqecTLs6lklqCmaeUKZi
+ LNo2SCVe642Qo5fhaxr/ou+1QQFdZf6fudSYdsYn1zj0/qda6lUKaL4wNzWc8ZwCpOGB
+ u1jr8Jeldv7dhRYFAZce4H8UEXUhr2sOKWsFIUzuyQCAdsrgpetZ/OvfYv7ko7U4WoTl
+ WIlXuWOUiMllj0buN4FxHg1xFrqq9szJZkHJpe+PgAPCqpQU+mAWYxRNQNulh9twB9sp
+ 7Sk1CAWsYA8brwf7ADoH4AMfmPk6bkEJB+etoy2gytNtvsvI4B1v7NCryfl9JlR+J5XJ Lg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qmvpm9ncq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 May 2023 10:39:33 +0000
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34HAWq5Q030869;
+	Wed, 17 May 2023 10:37:18 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qmvpm9fk6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 May 2023 10:37:18 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34H5hGdl019589;
+	Wed, 17 May 2023 10:35:52 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3qj1tdt3s3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 May 2023 10:35:52 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34HAZmug51773938
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 17 May 2023 10:35:48 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B38752004B;
+	Wed, 17 May 2023 10:35:48 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C636820043;
+	Wed, 17 May 2023 10:35:47 +0000 (GMT)
+Received: from p-imbrenda (unknown [9.152.224.66])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 17 May 2023 10:35:47 +0000 (GMT)
+Date: Wed, 17 May 2023 12:35:46 +0200
+From: Claudio Imbrenda <imbrenda@linux.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Subject: Re: [PATCH 15/23] s390: allow pte_offset_map_lock() to fail
+Message-ID: <20230517123546.672fb9b0@p-imbrenda>
+In-Reply-To: <94aec8fe-383f-892-dcbf-d4c14e460a7@google.com>
+References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com>
+	<94aec8fe-383f-892-dcbf-d4c14e460a7@google.com>
+Organization: IBM
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.37; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 8y_E68kURQ0ih8Y_-pXj5N6bPDOiuEZv
+X-Proofpoint-ORIG-GUID: ot2a0roI6HKgv_SkGdPLAhcx7gRQDDOX
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-05-17_02,2023-05-16_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 bulkscore=0
+ clxscore=1011 mlxscore=0 phishscore=0 spamscore=0 mlxlogscore=972
+ malwarescore=0 lowpriorityscore=0 impostorscore=0 priorityscore=1501
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2304280000 definitions=main-2305170081
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,29 +99,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogen
+ d@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A.
+ Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 20 May 2023 23:58:01 +0530
-Naveen N Rao <naveen@kernel.org> wrote:
+On Tue, 9 May 2023 22:01:16 -0700 (PDT)
+Hugh Dickins <hughd@google.com> wrote:
 
-> > 
-> > At the begining of ftrace_replace_code(), don't you miss:
-> > 
-> > 	if (unlikely(ftrace_disabled))
-> > 		return;  
+> In rare transient cases, not yet made possible, pte_offset_map() and
+> pte_offset_map_lock() may not find a page table: handle appropriately.
 > 
-> ftrace_disabled is a static, so it can't be tested here. FWIW, x86 also 
-> implements ftrace_replace_code(), and doesn't test ftrace_disabled.
+> Signed-off-by: Hugh Dickins <hughd@google.com>
+> ---
+>  arch/s390/kernel/uv.c  |  2 ++
+>  arch/s390/mm/gmap.c    |  2 ++
+>  arch/s390/mm/pgtable.c | 12 +++++++++---
+>  3 files changed, 13 insertions(+), 3 deletions(-)
 > 
-> Looking at the call path, it looks like it gets tested much before, so 
-> may not be necessary. It sure would be good to get Steven's view on 
-> this.
+> diff --git a/arch/s390/kernel/uv.c b/arch/s390/kernel/uv.c
+> index cb2ee06df286..3c62d1b218b1 100644
+> --- a/arch/s390/kernel/uv.c
+> +++ b/arch/s390/kernel/uv.c
+> @@ -294,6 +294,8 @@ int gmap_make_secure(struct gmap *gmap, unsigned long gaddr, void *uvcb)
+>  
+>  	rc = -ENXIO;
+>  	ptep = get_locked_pte(gmap->mm, uaddr, &ptelock);
+> +	if (!ptep)
+> +		goto out;
+>  	if (pte_present(*ptep) && !(pte_val(*ptep) & _PAGE_INVALID) && pte_write(*ptep)) {
+>  		page = pte_page(*ptep);
+>  		rc = -EAGAIN;
+> diff --git a/arch/s390/mm/gmap.c b/arch/s390/mm/gmap.c
+> index dc90d1eb0d55..d198fc9475a2 100644
+> --- a/arch/s390/mm/gmap.c
+> +++ b/arch/s390/mm/gmap.c
+> @@ -2549,6 +2549,8 @@ static int __zap_zero_pages(pmd_t *pmd, unsigned long start,
+>  		spinlock_t *ptl;
+>  
+>  		ptep = pte_offset_map_lock(walk->mm, pmd, addr, &ptl);
+> +		if (!ptep)
+> +			break;
 
-Yes, ftrace_disabled should not be used in arch code. It should be
-caught before then.
+so if pte_offset_map_lock fails, we abort and skip both the failed
+entry and the rest of the entries?
 
-Thanks,
+can pte_offset_map_lock be retried immediately if it fails? (consider
+that we currently don't allow THP with KVM guests)
 
--- Steve
+Would something like this:
+
+do {
+	ptep = pte_offset_map_lock(...);
+	mb();	/* maybe? */
+} while (!ptep);
+
+make sense?
+
+
+otherwise maybe it's better to return an error and retry the whole
+walk_page_range() in s390_enable_sie() ? it's a slow path anyway.
+
+>  		if (is_zero_pfn(pte_pfn(*ptep)))
+>  			ptep_xchg_direct(walk->mm, addr, ptep, __pte(_PAGE_INVALID));
+>  		pte_unmap_unlock(ptep, ptl);
+
+[...]
