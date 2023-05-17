@@ -4,69 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BBDEC77B75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 09:54:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28EFEC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 12:11:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QLpNH6DkTz3fMb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 19:54:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QLsQG2zmgz3f8Z
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 22:11:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=YxjES4bQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ZyvRzNxZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=microchip.com (client-ip=68.232.154.123; helo=esa.microchip.iphmx.com; envelope-from=claudiu.beznea@microchip.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=YxjES4bQ;
-	dkim-atps=neutral
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLpKm684Sz3f7K
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 19:51:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1684317117; x=1715853117;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=dp4AjByrGPPW2+s+Gu4zde9gjuLVVm2MN56x4f0uc3E=;
-  b=YxjES4bQO95BHE+YlETeEJX9pVe7ZDNPRRco7YzSnk+ncIxONYqGn8Uu
-   GiSnqR2dngEWNhHpL7K5OZYnNM1FG1fZZW6UD4G6V0IOZoJo8RTvOJ4/o
-   ZjzWfU7urhjiweV94tqWWbfoVbI465gYRGWoX0xOebK+dIz3Az4sav8T1
-   zRSpDMzIAGba0M/aZdUK9huD/xhrUykEI0v9BD4mMmIMK8igaP9fIQcZ7
-   5+T4sNVUKQSZMqaJkMurkZz6KMawzfhOlrNQACRXSsDS/YF9p1XmpwI3T
-   EeWcwxJt4z7oxgOxpW8KTlWUg1OZnklTiv/48ohZ/h6JKN3HqaZfOkP2C
-   w==;
-X-IronPort-AV: E=Sophos;i="5.99,281,1677567600"; 
-   d="scan'208";a="211699133"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 17 May 2023 02:50:50 -0700
-Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Wed, 17 May 2023 02:50:49 -0700
-Received: from m18063-ThinkPad-T460p.mchp-main.com (10.10.115.15) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server id
- 15.1.2507.21 via Frontend Transport; Wed, 17 May 2023 02:50:37 -0700
-From: Claudiu Beznea <claudiu.beznea@microchip.com>
-To: <perex@perex.cz>, <tiwai@suse.com>, <lgirdwood@gmail.com>,
-	<broonie@kernel.org>, <oder_chiou@realtek.com>, <shengjiu.wang@gmail.com>,
-	<Xiubo.Lee@gmail.com>, <festevam@gmail.com>, <nicoleotsuka@gmail.com>,
-	<shawnguo@kernel.org>, <s.hauer@pengutronix.de>, <kernel@pengutronix.de>,
-	<linux-imx@nxp.com>, <cezary.rojewski@intel.com>,
-	<pierre-louis.bossart@linux.intel.com>, <peter.ujfalusi@linux.intel.com>,
-	<yung-chuan.liao@linux.intel.com>, <ranjani.sridharan@linux.intel.com>,
-	<kai.vehmanen@linux.intel.com>, <matthias.bgg@gmail.com>,
-	<angelogioacchino.delregno@collabora.com>, <srinivas.kandagatla@linaro.org>,
-	<bgoswami@quicinc.com>, <vkoul@kernel.org>, <daniel.baluta@nxp.com>,
-	<thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
-	<jarkko.nikula@bitmer.com>
-Subject: [PATCH v2 2/2] ASoC: use pm.h instead of runtime_pm.h
-Date: Wed, 17 May 2023 12:49:03 +0300
-Message-ID: <20230517094903.2895238-3-claudiu.beznea@microchip.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230517094903.2895238-1-claudiu.beznea@microchip.com>
-References: <20230517094903.2895238-1-claudiu.beznea@microchip.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLsPJ2XBLz3bqB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 22:10:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ZyvRzNxZ;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QLsPB3yCGz4x1f;
+	Wed, 17 May 2023 22:10:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1684325410;
+	bh=Ugo6kiXu55PcZr+hR/ZzjsX8h/mgEpTIvZm7PzEg/B0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=ZyvRzNxZDgTENMcc7SO6HSQZLRnklkuNI5jYSrlwk6eDS9QWzDhA4Mlg+TUDrpiUK
+	 wLpbE3kCiyIHkalylcZ0heknZPBtx/6ufj6LVXv6Zj89y1P0n8uorniOzcD0tebJKW
+	 UG/Nfr88ShLGuN4YKxkgvLtg/vif8ZiijQOiI6nxnzXmbxkTfHjzskwg0MK4oyjAZQ
+	 rAvNZoXbvkvoQR4Q8o0Ljv6XOUkz5ihAvg/QZkSHSJ3kXNH0qx6tUA9GJDATpQ1lbS
+	 0OlPwkxkLKqlJ9DRBdQSPVdSl92FxvY62sOUMHoaMius03AxgJtWhcVPjKg4ULpYil
+	 2tzwTdFSumZTA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jason Gunthorpe <jgg@nvidia.com>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, Nicholas
+ Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH rc] iommu/power: Remove iommu_del_device()
+In-Reply-To: <0-v1-1421774b874b+167-ppc_device_group_jgg@nvidia.com>
+References: <0-v1-1421774b874b+167-ppc_device_group_jgg@nvidia.com>
+Date: Wed, 17 May 2023 22:10:05 +1000
+Message-ID: <87ttwbyx9e.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,60 +59,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, patches@opensource.cirrus.com, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-arm-kernel@lists.infradead.org, sound-open-firmware@alsa-project.org
+Cc: Kevin Tian <kevin.tian@intel.com>, Joerg Roedel <jroedel@suse.de>, Alexey Kardashevskiy <aik@ozlabs.ru>, iommu@lists.linux.dev, Timothy Pearson <tpearson@raptorengineering.com>, Alex Williamson <alex.williamson@redhat.com>, Robin Murphy <robin.murphy@arm.com>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Do not include pm_runtime.h header in files where runtime PM support is
-not implemented. Use pm.h instead as suspend to RAM specific
-implementation is available.
+Jason Gunthorpe <jgg@nvidia.com> writes:
+> Now that power calls iommu_device_register() and populates its groups
+> using iommu_ops->device_group it should not be calling
+> iommu_group_remove_device().
+>
+> The core code owns the groups and all the other related iommu data, it
+> will clean it up automatically.
+>
+> Remove the bus notifiers and explicit calls to
+> iommu_group_remove_device().
+>
+> Cc: iommu@lists.linux.dev
+> Fixes: a940904443e4 ("powerpc/iommu: Add iommu_ops to report capabilities and allow blocking domains")
+> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+> ---
+>  arch/powerpc/include/asm/iommu.h       |  5 -----
+>  arch/powerpc/kernel/iommu.c            | 17 -----------------
+>  arch/powerpc/platforms/powernv/pci.c   | 25 -------------------------
+>  arch/powerpc/platforms/pseries/iommu.c | 25 -------------------------
+>  4 files changed, 72 deletions(-)
+>
+> Michael, please take this on the PPC tree to -rc thanks
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- sound/soc/codecs/max98373-i2c.c | 2 +-
- sound/soc/qcom/lpass-sc7180.c   | 2 +-
- sound/soc/qcom/lpass-sc7280.c   | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Will do, thanks.
 
-diff --git a/sound/soc/codecs/max98373-i2c.c b/sound/soc/codecs/max98373-i2c.c
-index 3d6da4f133de..0fa5ceca62a2 100644
---- a/sound/soc/codecs/max98373-i2c.c
-+++ b/sound/soc/codecs/max98373-i2c.c
-@@ -9,7 +9,7 @@
- #include <linux/mod_devicetable.h>
- #include <linux/of.h>
- #include <linux/of_gpio.h>
--#include <linux/pm_runtime.h>
-+#include <linux/pm.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/cdev.h>
-diff --git a/sound/soc/qcom/lpass-sc7180.c b/sound/soc/qcom/lpass-sc7180.c
-index 41db6617e2ed..56db852f4eab 100644
---- a/sound/soc/qcom/lpass-sc7180.c
-+++ b/sound/soc/qcom/lpass-sc7180.c
-@@ -12,7 +12,7 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
--#include <linux/pm_runtime.h>
-+#include <linux/pm.h>
- #include <dt-bindings/sound/sc7180-lpass.h>
- #include <sound/pcm.h>
- #include <sound/soc.h>
-diff --git a/sound/soc/qcom/lpass-sc7280.c b/sound/soc/qcom/lpass-sc7280.c
-index d43f480cbae3..bcf18fe8e14d 100644
---- a/sound/soc/qcom/lpass-sc7280.c
-+++ b/sound/soc/qcom/lpass-sc7280.c
-@@ -8,7 +8,7 @@
- #include <linux/module.h>
- #include <sound/pcm.h>
- #include <sound/soc.h>
--#include <linux/pm_runtime.h>
-+#include <linux/pm.h>
- 
- #include <dt-bindings/sound/sc7180-lpass.h>
- 
--- 
-2.34.1
-
+cheers
