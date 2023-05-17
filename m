@@ -4,87 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14E6EC77B75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 11:30:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41B9BC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 14:34:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QLrW51RjZz3f8d
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 21:30:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QLwcC1ymYz3f7v
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 May 2023 00:34:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VRtGkAfl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=fu1tzDMU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::82d; helo=mail-qt1-x82d.google.com; envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VRtGkAfl;
+	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=fu1tzDMU;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com [IPv6:2607:f8b0:4864:20::82d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLrV85947z3cj8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 21:29:20 +1000 (AEST)
-Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34HB7BJC023902;
-	Wed, 17 May 2023 11:28:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=NDNDo483NWCxuBgC62EmEkRd88RyM/bkMdaCrqWiEjU=;
- b=VRtGkAflt6Ne1p93gyowlWX7j5boLIQ7h0nC9VIo7uX3bwTrUs3t4FOkk1lJTYXqc25V
- 9FamFmiSWFwwyWa1DKrOu9DcxLjGAv2i0jSAymPQgGQf5P0M1OluYrFgT26OhkCmT/su
- BOKQtACZlOM4qdl7albr+SCOM7HzolGHsX5OPk132gsH5r9G7psINiKU8nGXVgkrlm0G
- JFTSinpEe96JQbyAanKB2Lfpy9cfYcMtNW6I0KolKOl1iMwgb7HevQZDAfJyxXafubsX
- 7gBNmSwaGFu7ct5RonhF3KWLIHQEwZVWECGZeI9L5VSTs6GPXqMDDHdOU4895qB3OFQc 4w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qmw5v1gq1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 17 May 2023 11:28:14 +0000
-Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34HB7Pi6025529;
-	Wed, 17 May 2023 11:28:13 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qmw5v1gn6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 17 May 2023 11:28:12 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34H2RRIs022653;
-	Wed, 17 May 2023 11:28:09 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3qj264t4u2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 17 May 2023 11:28:09 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34HBS6QC63177030
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 17 May 2023 11:28:06 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 203902004B;
-	Wed, 17 May 2023 11:28:06 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0CE9620040;
-	Wed, 17 May 2023 11:28:05 +0000 (GMT)
-Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.155.204.135])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 17 May 2023 11:28:04 +0000 (GMT)
-Date: Wed, 17 May 2023 13:28:03 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Hugh Dickins <hughd@google.com>
-Subject: Re: [PATCH 16/23] s390: gmap use pte_unmap_unlock() not spin_unlock()
-Message-ID: <ZGS6Q9jb/Rjwi4Rm@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
-References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com>
- <5579873-d7b-65e-5de0-a2ba8a144e7@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5579873-d7b-65e-5de0-a2ba8a144e7@google.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: tSWvl9C0MlO4O_EzCFOjF_JcbOB8NztS
-X-Proofpoint-ORIG-GUID: NWm_n_tm0YYcdEmwRmZvkdtWX-DujuzO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-05-17_02,2023-05-17_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 clxscore=1011
- spamscore=0 adultscore=0 lowpriorityscore=0 mlxlogscore=780
- priorityscore=1501 mlxscore=0 impostorscore=0 suspectscore=0
- malwarescore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2304280000 definitions=main-2305170090
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLwbC6PFtz3f4m
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2023 00:33:57 +1000 (AEST)
+Received: by mail-qt1-x82d.google.com with SMTP id d75a77b69052e-3f42b4da6e5so4784561cf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 07:33:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=paul-moore.com; s=google; t=1684334033; x=1686926033;
+        h=in-reply-to:references:subject:cc:to:from:message-id:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=e3oHRvM4+O+XVaUuEdehDkOXM012vn7RckSkGvna424=;
+        b=fu1tzDMU/Og/xO2VDVrDn7AMjoYSOOqIHHpkafFQsXAXa7bAquEW8FLCbTstV+4LMK
+         WozWorjMKA6Ye6vd/CWIiTxdEYThpduYehQ0CQ0WfYzDYjo3Vb2D2M2rgHnkpqG2DoOG
+         hFYTNMutL1PBlKS5Sm6U/taMV6kJ+5c+nFWzW2BnEmFKQvrQZqgN1lt1MaOoYlFovyr9
+         7rwdJcPszNNgJz0aUNWpj3BWju7B7DitjFIRX5EHLLPdarguqNTfEhlBsUlRfiyyggcm
+         rmyPk1XWlhvVmYgOtYCrVpLjW2EGN4HHxXkb5Vh4zDOUpaw4fdaI2HH4gyNooTHomACq
+         60Iw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684334033; x=1686926033;
+        h=in-reply-to:references:subject:cc:to:from:message-id:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=e3oHRvM4+O+XVaUuEdehDkOXM012vn7RckSkGvna424=;
+        b=C3w5slmwiEIOaFVUlLJHysiIxZzG2bcJtYQEcj5/nE+bACogCL6uYlEjSmjQNxT8Ab
+         HSgTXxoTEdENjiOfBXR4PZAA1DDWQXnBFbIeCDxUgSw/tOHEK3pFgrpTnvqw7+D/O30k
+         lxTxqB7qEx9aQwawkYatfZoh8Edf4xm8jqdfq5dAmj98sK/0QfFcJuqUIoc5FfAS5Lgv
+         XnLWUakoklR7umdl+/GlWY8R+VDK5x7oMJAcDMGF8bQ+qcrHFKU0MS9VjgKKO0WgesIZ
+         puWwZKFVjh1yOeSVnQOsIt8ntsGMmuxsH8CFvcCPIHQtqagEH5UM4WpZ1G7RVd288YlY
+         JLeA==
+X-Gm-Message-State: AC+VfDwPkd4DeOBwLv9NXZvT7dacTOvRGjDxXZBrbT4XxrnmKggZ96tT
+	6pzpBafQehtICPfgqowH0SzO
+X-Google-Smtp-Source: ACHHUZ62YidM3zKdwt9WsXpqyD57MEzZUZPKzKjSHJhQM0a+oKDUHR+Gn6BJRSHZwAJwHcpYfUyurw==
+X-Received: by 2002:ac8:5c91:0:b0:3ef:5ba0:7038 with SMTP id r17-20020ac85c91000000b003ef5ba07038mr73060971qta.21.1684334033429;
+        Wed, 17 May 2023 07:33:53 -0700 (PDT)
+Received: from localhost (pool-108-26-161-203.bstnma.fios.verizon.net. [108.26.161.203])
+        by smtp.gmail.com with ESMTPSA id d19-20020a05620a159300b0075914b01c29sm645867qkk.70.2023.05.17.07.33.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 17 May 2023 07:33:52 -0700 (PDT)
+Date: Wed, 17 May 2023 10:33:52 -0400
+Message-ID: <e1a07eed22cb33af2733bdffe42b09f0.paul@paul-moore.com>
+From: Paul Moore <paul@paul-moore.com>
+To: Arnd Bergmann <arnd@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/14] audit: avoid missing-prototype warnings
+References: <20230517131102.934196-5-arnd@kernel.org>
+In-Reply-To: <20230517131102.934196-5-arnd@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,20 +73,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <mons
- tr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-kselftest@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, Pavel Machek <pavel@ucw.cz>, Christoph Lameter <cl@linux.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Waiman Long <longman@redhat.com>, Boqun Feng <boqun.feng@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Dennis Zhou <dennis@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>, audit@vger.kernel.or
+ g, Palmer Dabbelt <palmer@dabbelt.com>, Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 09, 2023 at 10:02:32PM -0700, Hugh Dickins wrote:
-> pte_alloc_map_lock() expects to be followed by pte_unmap_unlock(): to
-> keep balance in future, pass ptep as well as ptl to gmap_pte_op_end(),
-> and use pte_unmap_unlock() instead of direct spin_unlock() (even though
-> ptep ends up unused inside the macro).
+On May 17, 2023 Arnd Bergmann <arnd@kernel.org> wrote:
 > 
-> Signed-off-by: Hugh Dickins <hughd@google.com>
+> Building with 'make W=1' reveals two function definitions without
+> a previous prototype in the audit code:
+> 
+> lib/compat_audit.c:32:5: error: no previous prototype for 'audit_classify_compat_syscall' [-Werror=missing-prototypes]
+> kernel/audit.c:1813:14: error: no previous prototype for 'audit_serial' [-Werror=missing-prototypes]
+> 
+> The first one needs a declaration from linux/audit.h but cannot
+> include that header without causing conflicting (compat) syscall number
+> definitions, so move the it into linux/audit_arch.h.
+> 
+> The second one is declared conditionally based on CONFIG_AUDITSYSCALL
+> but needed as a local function even when that option is disabled, so
+> move the declaration out of the #ifdef block.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
->  arch/s390/mm/gmap.c | 22 +++++++++++-----------
->  1 file changed, 11 insertions(+), 11 deletions(-)
+>  include/linux/audit.h      | 2 --
+>  include/linux/audit_arch.h | 2 ++
+>  kernel/audit.h             | 2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/audit.h b/include/linux/audit.h
+> index 31086a72e32a..6a3a9e122bb5 100644
+> --- a/include/linux/audit.h
+> +++ b/include/linux/audit.h
+> @@ -130,8 +130,6 @@ extern unsigned compat_dir_class[];
+>  extern unsigned compat_chattr_class[];
+>  extern unsigned compat_signal_class[];
+>  
+> -extern int audit_classify_compat_syscall(int abi, unsigned syscall);
+> -
+>  /* audit_names->type values */
+>  #define	AUDIT_TYPE_UNKNOWN	0	/* we don't know yet */
+>  #define	AUDIT_TYPE_NORMAL	1	/* a "normal" audit record */
+> diff --git a/include/linux/audit_arch.h b/include/linux/audit_arch.h
+> index 8fdb1afe251a..0e34d673ef17 100644
+> --- a/include/linux/audit_arch.h
+> +++ b/include/linux/audit_arch.h
+> @@ -21,4 +21,6 @@ enum auditsc_class_t {
+>  	AUDITSC_NVALS /* count */
+>  };
+>  
+> +extern int audit_classify_compat_syscall(int abi, unsigned syscall);
+> +
+>  #endif
+> diff --git a/kernel/audit.h b/kernel/audit.h
+> index c57b008b9914..94738bce40b2 100644
+> --- a/kernel/audit.h
+> +++ b/kernel/audit.h
+> @@ -259,8 +259,8 @@ extern struct tty_struct *audit_get_tty(void);
+>  extern void audit_put_tty(struct tty_struct *tty);
+>  
+>  /* audit watch/mark/tree functions */
+> -#ifdef CONFIG_AUDITSYSCALL
+>  extern unsigned int audit_serial(void);
+> +#ifdef CONFIG_AUDITSYSCALL
+>  extern int auditsc_get_stamp(struct audit_context *ctx,
+>  			      struct timespec64 *t, unsigned int *serial);
 
-Acked-by: Alexander Gordeev <agordeev@linux.ibm.com>
+We probably should move the audit_serial() and auditsc_get_stamp()
+away from the watch/mark/tree functions, but that isn't your problem.
+
+Anyway, this looks okay to me; do you have a problem if I merge this
+via the audit/next branch or were you hoping to have this go in
+through a different tree?
+
+--
+paul-moore.com
