@@ -4,65 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEBB1C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 12:15:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40108C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 12:20:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QLsWw0tSDz3fCY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 22:15:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QLsd93PP4z3fD5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 May 2023 22:20:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=gNAni+ae;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HhOSXK3l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=charlemagnelasse@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=gNAni+ae;
-	dkim-atps=neutral
-Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLlRm50LCz3bkm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 17:41:55 +1000 (AEST)
-Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-3f38711680dso3431651cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 00:41:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1684309312; x=1686901312;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Gt8vcqfcBcSzFv5CqI8kXtZUiisqmIiLAVfG/Z4B1wo=;
-        b=gNAni+aefYGCbzXJZ1KCoFg8ZVjbrHwK7u+sKWIsmjjGqQJ2bWNPSg+WakHJQVS3ab
-         Bp5bqMntw1uQkVw+IN1lOsU4BFRNTNuMiq9ef5c1RW9TLIi66HUQpNRoz99rtQztmRGD
-         KYnmVtSd+sNgymFummMsYYEpskLLZBxJnmkacqEQxSIDH8jjQDIifWpfH9ktAgm+tMoA
-         l5xZHrVJnxwv1lhnl/gXppJABX//LI0ugS4VIj2bunZX7U1ejXCSJwy/Tf02yZh0TYX/
-         2qa/8Rhqzrv1gtxn/rhiuEfjmYRrH3Jk4TsxNllrNjP6UscF1wHGQheDYKzJXyF9J7W6
-         2Wiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684309312; x=1686901312;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Gt8vcqfcBcSzFv5CqI8kXtZUiisqmIiLAVfG/Z4B1wo=;
-        b=EM2nFWSs0C/Z0tQW7I/Qr5agic1bBImA6aURomSgmf12faHTuXeRA57AnTQ6ZQoCyd
-         6rNwvStrweOsS+LpMElTOQ1KDIAoxYD4G9KeT6R0F3Um3iXVNchNYAvdCQRpgRID4KSY
-         Hrf6mCFo+v9DwwRJjzHuTypeD79VrSBxA2CDTZcSsQEkFfPGGfe77FYaSL0CCWQQS/CO
-         vOQdaix1a+hJCakwFaYEz3AzLta3F5WoSVtbOC7VwJq0KxrYh39YhnJhCwhaIQOsVE1y
-         T9kXYTZdjt0ObA6mNXofH5y+dujF4syYUPFYf3tMJ7gB0r6LYFDoZXTLuCvwdpUOjAI8
-         mA6A==
-X-Gm-Message-State: AC+VfDyi6bbo4Uc31O4I9FHumjp25vNkPqmMwjo59nkrIaCF/qOkn6fA
-	JOIhPG16VH6NXxqEJlyv1SMF6SyM0emgkc7VIa0=
-X-Google-Smtp-Source: ACHHUZ74fvUaQLS0H9Z1NeDqPl+csekVSshwiPDecXWRaUqETx8dIFlUfbpRHpQ/LDhjlhXM7ONSaWWLwZCTLV0Bubs=
-X-Received: by 2002:ac8:580e:0:b0:3ef:52ac:10d2 with SMTP id
- g14-20020ac8580e000000b003ef52ac10d2mr66678755qtg.43.1684309312426; Wed, 17
- May 2023 00:41:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QLscF3PSdz3bh0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2023 22:19:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HhOSXK3l;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QLscF25mBz4x41;
+	Wed, 17 May 2023 22:19:41 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1684325981;
+	bh=reA2yTRbCZa5cBx4zwA3xw7gGraSBbw1ULKxkJZz4cE=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=HhOSXK3lUJm6kcEU4hfcYysOCsQmW52JHS1NvsKKd560JNTF/HD0UeCnPqkLXPDWr
+	 EK423RagxR39BkHioUCbEEKXYL9mW7M7uT9+VLKtX+e7ADBFW1xDm9+Fty4dJwJgdR
+	 AlKMWAMS32A8ZFSllnGAlTA2mv0lp7WoCMazVBw/6j25z58eBdBSEoc9Rb7rbmr9jq
+	 E/WLgTD9fdmovVL3GoOZS7jhm+/w0CagzTYJGlWSvTtfeCptVKajRVbJPk9l7iTMtB
+	 DK+Ituc8bKiLjGluc4V2pj0JasLAbyTPKMWcLavFtSkXdVLsOw/tnYdGOG7HMS0Cie
+	 FHi6TlD1Sjoig==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/iommu: limit number of TCEs to 512 for
+ H_STUFF_TCE hcall
+In-Reply-To: <ad7517b3-02f2-436a-4c31-878031630c25@linux.vnet.ibm.com>
+References: <20230509220549.23946-1-gbatra@linux.vnet.ibm.com>
+ <875y8yl1k5.fsf@mail.lhotse>
+ <ad7517b3-02f2-436a-4c31-878031630c25@linux.vnet.ibm.com>
+Date: Wed, 17 May 2023 22:19:40 +1000
+Message-ID: <87r0rfywtf.fsf@mail.lhotse>
 MIME-Version: 1.0
-References: <20230405141710.3551-1-ubizjak@gmail.com> <20230405141710.3551-4-ubizjak@gmail.com>
-In-Reply-To: <20230405141710.3551-4-ubizjak@gmail.com>
-From: Charlemagne Lasse <charlemagnelasse@gmail.com>
-Date: Wed, 17 May 2023 09:41:41 +0200
-Message-ID: <CAFGhKbyxtuk=LoW-E3yLXgcmR93m+Dfo5-u9oQA_YC5Fcy_t9g@mail.gmail.com>
-Subject: Re: [PATCH v2 3/5] locking/arch: Wire up local_try_cmpxchg
-To: Uros Bizjak <ubizjak@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Wed, 17 May 2023 22:15:09 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,22 +60,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Jiaxun Yang <jiaxun.yang@flygoat.com>, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, WANG Xuerui <kernel@xen0n.name>, linux-arch@vger.kernel.org, Jun Yi <yijun@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, gjoyce@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> +static __inline__ bool local_try_cmpxchg(local_t *l, long *old, long new)
-> +{
-> +       typeof(l->a.counter) *__old = (typeof(l->a.counter) *) old;
-> +       return try_cmpxchg_local(&l->a.counter, __old, new);
-> +}
-> +
+Gaurav Batra <gbatra@linux.vnet.ibm.com> writes:
+> Hello Michael,
+>
+> System test hit the crash. I believe, it was PHYP that resulted in it 
+> due to number of TCEs passed in to be >512.
 
-This patch then causes following sparse errors:
+OK. It's always good to spell out in the change log whether it's a
+theoretical/unlikely bug, or one that's actually been hit in testing or
+the field.
 
-    ./arch/x86/include/asm/local.h:131:16: warning: symbol '__old'
-shadows an earlier one
-    ./arch/x86/include/asm/local.h:130:30: originally declared here
+> I was wondering about the Fixes tag as well. But, this interface, in 
+> it's current form, is there from the day the file was created. So, in 
+> this case, should I mention the first commit which created this source file?
 
-This is then visible in all kinds of builds - which makes it hard to
-find out actual problems with sparse.
+If it really goes back to the origin commit, then it's probably better
+to just say so and tag it for stable, rather than pointing to 1da177e4.
+
+I wonder though is there something else that changed that means this bug
+is now being hit but wasn't before? Or maybe it's just that we are
+testing on systems with large enough amounts of memory to hit this but
+which aren't using a direct mapping?
+
+cheers
