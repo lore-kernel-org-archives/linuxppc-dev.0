@@ -4,92 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BAB8C77B7F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 May 2023 05:12:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAB87C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 May 2023 05:15:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QMw2s5Sy0z3fgG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 May 2023 15:12:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QMw5Q2S4hz3fj7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 May 2023 15:15:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=reSJsx4n;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=RQrmE5/7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QMw4R0RC6z30hh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2023 15:14:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=reSJsx4n;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=RQrmE5/7;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QMvxr15Gjz3fmq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2023 15:08:31 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34J4dxgI010274;
-	Fri, 19 May 2023 05:08:30 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=J5bfFUJkCbfqXa43pm05PBP6cnXWgBiVC2CrdFyiyds=;
- b=reSJsx4nwjyetPp/89rHjdV/aJOClp7aK9tnxbCyU4u785VdEHxv65A2nF0KFwceWEm/
- BaF42EEE46A5NsnCOjD8Mk/0GCekP3f7a+yaxTGa5wkcCN4ns012ZJ/WvRrXs+p7QBzh
- 6VhrSC/4i5h5L0rxy9xIJWbyrCKcLQkGrfGZFxCD+J/pCx3b4u9ghcEHZrMMA8vHW8W2
- UZu3FF8V6C111YxgrHoYVeChix4aA9dpHXBFl3+y0OyIduUucB28Nxd0jEVn/GP3WmgU
- N2NN4ftfUFNva+g7xv6yoEirXcdk1wyIKBgGYsejpUc37gSBGyJc5bWsdFiDMjbisUqP fw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qp1jq1ntk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 May 2023 05:08:28 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34J583hF001171;
-	Fri, 19 May 2023 05:08:03 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qp1jq1jkx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 May 2023 05:08:03 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34J4bh9R020278;
-	Fri, 19 May 2023 05:02:54 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3qj264tfq3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 May 2023 05:02:53 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34J52p9Z36635050
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 19 May 2023 05:02:51 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 61B5D20040;
-	Fri, 19 May 2023 05:02:51 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5DC5720043;
-	Fri, 19 May 2023 05:02:50 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 19 May 2023 05:02:50 +0000 (GMT)
-Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 95AD36064A;
-	Fri, 19 May 2023 15:02:45 +1000 (AEST)
-From: Benjamin Gray <bgray@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 11/12] selftests/powerpc/dexcr: Add hashst/hashchk test
-Date: Fri, 19 May 2023 15:02:35 +1000
-Message-Id: <20230519050236.144847-12-bgray@linux.ibm.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230519050236.144847-1-bgray@linux.ibm.com>
-References: <20230519050236.144847-1-bgray@linux.ibm.com>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QMw4M0Km2z4x2j;
+	Fri, 19 May 2023 15:14:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1684473251;
+	bh=XtmiIOF/NA3HEuw+9jphgAkHCsadnEGKvOejGiS/vBI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=RQrmE5/7IQ9bHGm6Pg5nzKRS/MrnD7O62plkaE4ISC71znarStIv1c+rqH2eD21Ay
+	 BoSVycIDYj6++q91gMxaMW8tzGjKmn+SvAyr1OTzL/FcJ36O6uFSlSjO6ZPcwy46CK
+	 V9IseUAeKcQzyanwocprzA2s51mzkrUD5ABcIT8OciKKvQNnsEU880OUUzVK34Htru
+	 u6aYBYybBkBP3b7teFgYlIwGLVHKsTDk0UBcHC5zheI0DFrGgbp8BVZ6lqSWQUnKpR
+	 MaQvJ7GxK0lGxJqjJszIHK7PI7DUNxOXr5WfircZfyz086GeBt2U1zKAGDhFX3U5YY
+	 JKj3OO3SKnwhA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>, David Laight
+ <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH] mm: kfence: Fix false positives on big endian
+In-Reply-To: <20230517152028.86b6d2d5afa4541b4269131b@linux-foundation.org>
+References: <20230505035127.195387-1-mpe@ellerman.id.au>
+ <826f836f41db41eeb0fc32061994ac39@AcuMS.aculab.com>
+ <20230517152028.86b6d2d5afa4541b4269131b@linux-foundation.org>
+Date: Fri, 19 May 2023 15:14:06 +1000
+Message-ID: <87o7mgzyw1.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: qhwQN2AjK9B7Oxs77N_yjqrtieaDl3gb
-X-Proofpoint-ORIG-GUID: cMn0Pw3SxQ-NYF-lL7xhtkcWUqgyzgiz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-05-19_02,2023-05-17_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
- impostorscore=0 clxscore=1015 suspectscore=0 spamscore=0 mlxlogscore=999
- malwarescore=0 adultscore=0 priorityscore=1501 bulkscore=0 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2304280000
- definitions=main-2305190043
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,576 +60,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Benjamin Gray <bgray@linux.ibm.com>, ajd@linux.ibm.com, npiggin@gmail.com, ruscur@russell.cc
+Cc: "zhangpeng.00@bytedance.com" <zhangpeng.00@bytedance.com>, "elver@google.com" <elver@google.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "glider@google.com" <glider@google.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Test the kernel DEXCR[NPHIE] interface and hashchk exception handling.
+Andrew Morton <akpm@linux-foundation.org> writes:
+> On Fri, 5 May 2023 16:02:17 +0000 David Laight <David.Laight@ACULAB.COM> wrote:
+>
+>> From: Michael Ellerman
+>> > Sent: 05 May 2023 04:51
+>> > 
+>> > Since commit 1ba3cbf3ec3b ("mm: kfence: improve the performance of
+>> > __kfence_alloc() and __kfence_free()"), kfence reports failures in
+>> > random places at boot on big endian machines.
+>> > 
+>> > The problem is that the new KFENCE_CANARY_PATTERN_U64 encodes the
+>> > address of each byte in its value, so it needs to be byte swapped on big
+>> > endian machines.
+>> > 
+>> > The compiler is smart enough to do the le64_to_cpu() at compile time, so
+>> > there is no runtime overhead.
+>> > 
+>> > Fixes: 1ba3cbf3ec3b ("mm: kfence: improve the performance of __kfence_alloc() and __kfence_free()")
+>> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> > ---
+>> >  mm/kfence/kfence.h | 2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> > 
+>> > diff --git a/mm/kfence/kfence.h b/mm/kfence/kfence.h
+>> > index 2aafc46a4aaf..392fb273e7bd 100644
+>> > --- a/mm/kfence/kfence.h
+>> > +++ b/mm/kfence/kfence.h
+>> > @@ -29,7 +29,7 @@
+>> >   * canary of every 8 bytes is the same. 64-bit memory can be filled and checked
+>> >   * at a time instead of byte by byte to improve performance.
+>> >   */
+>> > -#define KFENCE_CANARY_PATTERN_U64 ((u64)0xaaaaaaaaaaaaaaaa ^ (u64)(0x0706050403020100))
+>> > +#define KFENCE_CANARY_PATTERN_U64 ((u64)0xaaaaaaaaaaaaaaaa ^ (u64)(le64_to_cpu(0x0706050403020100)))
+>> 
+>> What at the (u64) casts for?
+>> The constants should probably have a ul (or ull) suffix.
+>> 
+>
+> I tried that, didn't fix the sparse warnings described at
+> https://lkml.kernel.org/r/202305132244.DwzBUcUd-lkp@intel.com.
+>
+> Michael, have you looked into this?
 
-Introduces with it a DEXCR utils library for common DEXCR operations.
+I haven't sorry, been chasing other bugs.
 
-Volatile is used to prevent the compiler optimising away the signal
-tests.
+> I'll merge it upstream - I guess we can live with the warnings for a while.
 
-Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+Thanks, yeah spurious WARNs are more of a pain than some sparse warnings.
 
----
-v1:	* Clean up dexcr makefile
-	* Include kernel headers in CFLAGS
-	* Use numeric literals for hashst/hashchk to support older
-	  toolchains
-	* A lot of other refactoring
----
- tools/testing/selftests/powerpc/Makefile      |   1 +
- .../selftests/powerpc/dexcr/.gitignore        |   1 +
- .../testing/selftests/powerpc/dexcr/Makefile  |   7 +
- tools/testing/selftests/powerpc/dexcr/dexcr.c | 132 ++++++++++
- tools/testing/selftests/powerpc/dexcr/dexcr.h |  49 ++++
- .../selftests/powerpc/dexcr/hashchk_test.c    | 227 ++++++++++++++++++
- tools/testing/selftests/powerpc/include/reg.h |   4 +
- .../testing/selftests/powerpc/include/utils.h |   4 +
- tools/testing/selftests/powerpc/utils.c       |  24 ++
- 9 files changed, 449 insertions(+)
- create mode 100644 tools/testing/selftests/powerpc/dexcr/.gitignore
- create mode 100644 tools/testing/selftests/powerpc/dexcr/Makefile
- create mode 100644 tools/testing/selftests/powerpc/dexcr/dexcr.c
- create mode 100644 tools/testing/selftests/powerpc/dexcr/dexcr.h
- create mode 100644 tools/testing/selftests/powerpc/dexcr/hashchk_test.c
+Maybe using le64_to_cpu() is too fancy, could just do it with an ifdef? eg.
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index ae2bfc0d822f..49f2ad1793fd 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -17,6 +17,7 @@ SUB_DIRS = alignment		\
- 	   benchmarks		\
- 	   cache_shape		\
- 	   copyloops		\
-+	   dexcr		\
- 	   dscr			\
- 	   mm			\
- 	   nx-gzip		\
-diff --git a/tools/testing/selftests/powerpc/dexcr/.gitignore b/tools/testing/selftests/powerpc/dexcr/.gitignore
-new file mode 100644
-index 000000000000..d12e4560aca9
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dexcr/.gitignore
-@@ -0,0 +1 @@
-+hashchk_test
-diff --git a/tools/testing/selftests/powerpc/dexcr/Makefile b/tools/testing/selftests/powerpc/dexcr/Makefile
-new file mode 100644
-index 000000000000..16c8b489948a
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dexcr/Makefile
-@@ -0,0 +1,7 @@
-+TEST_GEN_PROGS := hashchk_test
-+
-+include ../../lib.mk
-+
-+$(OUTPUT)/hashchk_test: CFLAGS += -fno-pie $(call cc-option,-mno-rop-protect)
-+
-+$(TEST_GEN_PROGS): ../harness.c ../utils.c ./dexcr.c
-diff --git a/tools/testing/selftests/powerpc/dexcr/dexcr.c b/tools/testing/selftests/powerpc/dexcr/dexcr.c
-new file mode 100644
-index 000000000000..65ec5347de98
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dexcr/dexcr.c
-@@ -0,0 +1,132 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+
-+#include <errno.h>
-+#include <setjmp.h>
-+#include <signal.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+
-+#include "dexcr.h"
-+#include "reg.h"
-+#include "utils.h"
-+
-+static jmp_buf generic_signal_jump_buf;
-+
-+static void generic_signal_handler(int signum, siginfo_t *info, void *context)
-+{
-+	longjmp(generic_signal_jump_buf, 0);
-+}
-+
-+bool dexcr_exists(void)
-+{
-+	struct sigaction old;
-+	volatile bool exists;
-+
-+	old = push_signal_handler(SIGILL, generic_signal_handler);
-+	if (setjmp(generic_signal_jump_buf))
-+		goto out;
-+
-+	/*
-+	 * If the SPR is not recognised by the hardware it triggers
-+	 * a hypervisor emulation interrupt. If the kernel does not
-+	 * recognise/try to emulate it, we receive a SIGILL signal.
-+	 *
-+	 * If we do not receive a signal, assume we have the SPR or the
-+	 * kernel is trying to emulate it correctly.
-+	 */
-+	exists = false;
-+	mfspr(SPRN_DEXCR_RO);
-+	exists = true;
-+
-+out:
-+	pop_signal_handler(SIGILL, old);
-+	return exists;
-+}
-+
-+/*
-+ * Just test if a bad hashchk triggers a signal, without checking
-+ * for support or if the NPHIE aspect is enabled.
-+ */
-+bool hashchk_triggers(void)
-+{
-+	struct sigaction old;
-+	volatile bool triggers;
-+
-+	old = push_signal_handler(SIGILL, generic_signal_handler);
-+	if (setjmp(generic_signal_jump_buf))
-+		goto out;
-+
-+	triggers = true;
-+	do_bad_hashchk();
-+	triggers = false;
-+
-+out:
-+	pop_signal_handler(SIGILL, old);
-+	return triggers;
-+}
-+
-+unsigned int get_dexcr(enum dexcr_source source)
-+{
-+	switch (source) {
-+	case DEXCR:
-+		return mfspr(SPRN_DEXCR_RO);
-+	case HDEXCR:
-+		return mfspr(SPRN_HDEXCR_RO);
-+	case EFFECTIVE:
-+		return mfspr(SPRN_DEXCR_RO) | mfspr(SPRN_HDEXCR_RO);
-+	default:
-+		FAIL_IF_EXIT_MSG(true, "bad enum dexcr_source");
-+	}
-+}
-+
-+void await_child_success(pid_t pid)
-+{
-+	int wstatus;
-+
-+	FAIL_IF_EXIT_MSG(pid == -1, "fork failed");
-+	FAIL_IF_EXIT_MSG(waitpid(pid, &wstatus, 0) == -1, "wait failed");
-+	FAIL_IF_EXIT_MSG(!WIFEXITED(wstatus), "child did not exit cleanly");
-+	FAIL_IF_EXIT_MSG(WEXITSTATUS(wstatus) != 0, "child exit error");
-+}
-+
-+/*
-+ * Perform a hashst instruction. The following components determine the result
-+ *
-+ * 1. The LR value (any register technically)
-+ * 2. The SP value (also any register, but it must be a valid address)
-+ * 3. A secret key managed by the kernel
-+ *
-+ * The result is stored to the address held in SP.
-+ */
-+void hashst(unsigned long lr, void *sp)
-+{
-+	asm volatile ("addi 31, %0, 0;"		/* set r31 (pretend LR) to lr */
-+		      "addi 30, %1, 8;"		/* set r30 (pretend SP) to sp + 8 */
-+		      PPC_RAW_HASHST(31, -8, 30)	/* compute hash into stack location */
-+		      : : "r" (lr), "r" (sp) : "r31", "r30", "memory");
-+}
-+
-+/*
-+ * Perform a hashchk instruction. A hash is computed as per hashst(),
-+ * however the result is not stored to memory. Instead the existing
-+ * value is read and compared against the computed hash.
-+ *
-+ * If they match, execution continues.
-+ * If they differ, an interrupt triggers.
-+ */
-+void hashchk(unsigned long lr, void *sp)
-+{
-+	asm volatile ("addi 31, %0, 0;"		/* set r31 (pretend LR) to lr */
-+		      "addi 30, %1, 8;"		/* set r30 (pretend SP) to sp + 8 */
-+		      PPC_RAW_HASHCHK(31, -8, 30)	/* check hash at stack location */
-+		      : : "r" (lr), "r" (sp) : "r31", "r30", "memory");
-+}
-+
-+void do_bad_hashchk(void)
-+{
-+	unsigned long hash = 0;
-+
-+	hashst(0, &hash);
-+	hash += 1;
-+	hashchk(0, &hash);
-+}
-diff --git a/tools/testing/selftests/powerpc/dexcr/dexcr.h b/tools/testing/selftests/powerpc/dexcr/dexcr.h
-new file mode 100644
-index 000000000000..f55cbbc8643b
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dexcr/dexcr.h
-@@ -0,0 +1,49 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/*
-+ * POWER Dynamic Execution Control Facility (DEXCR)
-+ *
-+ * This header file contains helper functions and macros
-+ * required for all the DEXCR related test cases.
-+ */
-+#ifndef _SELFTESTS_POWERPC_DEXCR_DEXCR_H
-+#define _SELFTESTS_POWERPC_DEXCR_DEXCR_H
-+
-+#include <stdbool.h>
-+#include <sys/types.h>
-+
-+#include "reg.h"
-+
-+#define DEXCR_PR_BIT(aspect)	__MASK(63 - (32 + (aspect)))
-+#define DEXCR_PR_SBHE		DEXCR_PR_BIT(0)
-+#define DEXCR_PR_IBRTPD		DEXCR_PR_BIT(3)
-+#define DEXCR_PR_SRAPD		DEXCR_PR_BIT(4)
-+#define DEXCR_PR_NPHIE		DEXCR_PR_BIT(5)
-+
-+#define PPC_RAW_HASH_ARGS(b, i, a) \
-+	((((i) >> 3) & 0x1F) << 21 | (a) << 16 | (b) << 11 | (((i) >> 8) & 0x1))
-+#define PPC_RAW_HASHST(b, i, a) \
-+	str(.long (0x7C0005A4 | PPC_RAW_HASH_ARGS(b, i, a));)
-+#define PPC_RAW_HASHCHK(b, i, a) \
-+	str(.long (0x7C0005E4 | PPC_RAW_HASH_ARGS(b, i, a));)
-+
-+bool dexcr_exists(void);
-+
-+bool hashchk_triggers(void);
-+
-+enum dexcr_source {
-+	DEXCR,		/* Userspace DEXCR value */
-+	HDEXCR,		/* Hypervisor enforced DEXCR value */
-+	EFFECTIVE,	/* Bitwise OR of UDEXCR and ENFORCED DEXCR bits */
-+};
-+
-+unsigned int get_dexcr(enum dexcr_source source);
-+
-+void await_child_success(pid_t pid);
-+
-+void hashst(unsigned long lr, void *sp);
-+
-+void hashchk(unsigned long lr, void *sp);
-+
-+void do_bad_hashchk(void);
-+
-+#endif  /* _SELFTESTS_POWERPC_DEXCR_DEXCR_H */
-diff --git a/tools/testing/selftests/powerpc/dexcr/hashchk_test.c b/tools/testing/selftests/powerpc/dexcr/hashchk_test.c
-new file mode 100644
-index 000000000000..7d5658c9ebe4
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dexcr/hashchk_test.c
-@@ -0,0 +1,227 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+
-+#define _GNU_SOURCE
-+
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <limits.h>
-+#include <sched.h>
-+#include <setjmp.h>
-+#include <signal.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/mman.h>
-+#include <sys/prctl.h>
-+#include <unistd.h>
-+
-+#include "dexcr.h"
-+#include "utils.h"
-+
-+static int require_nphie(void)
-+{
-+	SKIP_IF_MSG(!dexcr_exists(), "DEXCR not supported");
-+	SKIP_IF_MSG(!(get_dexcr(EFFECTIVE) & DEXCR_PR_NPHIE),
-+		    "DEXCR[NPHIE] not enabled");
-+
-+	return 0;
-+}
-+
-+static jmp_buf hashchk_detected_buf;
-+static const char *hashchk_failure_msg;
-+
-+static void hashchk_handler(int signum, siginfo_t *info, void *context)
-+{
-+	if (signum != SIGILL)
-+		hashchk_failure_msg = "wrong signal received";
-+	else if (info->si_code != ILL_ILLOPN)
-+		hashchk_failure_msg = "wrong signal code received";
-+
-+	longjmp(hashchk_detected_buf, 0);
-+}
-+
-+/*
-+ * Check that hashchk triggers when DEXCR[NPHIE] is enabled
-+ * and is detected as such by the kernel exception handler
-+ */
-+static int hashchk_detected_test(void)
-+{
-+	struct sigaction old;
-+	int err;
-+
-+	err = require_nphie();
-+	if (err)
-+		return err;
-+
-+	old = push_signal_handler(SIGILL, hashchk_handler);
-+	if (setjmp(hashchk_detected_buf))
-+		goto out;
-+
-+	hashchk_failure_msg = NULL;
-+	do_bad_hashchk();
-+	hashchk_failure_msg = "hashchk failed to trigger";
-+
-+out:
-+	pop_signal_handler(SIGILL, old);
-+	FAIL_IF_MSG(hashchk_failure_msg, hashchk_failure_msg);
-+	return 0;
-+}
-+
-+#define HASH_COUNT 8
-+
-+static unsigned long hash_values[HASH_COUNT + 1];
-+
-+static void fill_hash_values(void)
-+{
-+	for (unsigned long i = 0; i < HASH_COUNT; i++)
-+		hashst(i, &hash_values[i]);
-+
-+	/* Used to ensure the checks uses the same addresses as the hashes */
-+	hash_values[HASH_COUNT] = (unsigned long)&hash_values;
-+}
-+
-+static unsigned int count_hash_values_matches(void)
-+{
-+	unsigned long matches = 0;
-+
-+	for (unsigned long i = 0; i < HASH_COUNT; i++) {
-+		unsigned long orig_hash = hash_values[i];
-+		hash_values[i] = 0;
-+
-+		hashst(i, &hash_values[i]);
-+
-+		if (hash_values[i] == orig_hash)
-+			matches++;
-+	}
-+
-+	return matches;
-+}
-+
-+static int hashchk_exec_child(void)
-+{
-+	ssize_t count;
-+
-+	fill_hash_values();
-+
-+	count = write(STDOUT_FILENO, hash_values, sizeof(hash_values));
-+	return count == sizeof(hash_values) ? 0 : EOVERFLOW;
-+}
-+
-+static char *hashchk_exec_child_args[] = { "hashchk_exec_child", NULL };
-+
-+/*
-+ * Check that new programs get different keys so a malicious process
-+ * can't recreate a victim's hash values.
-+ */
-+static int hashchk_exec_random_key_test(void)
-+{
-+	pid_t pid;
-+	int err;
-+	int pipefd[2];
-+
-+	err = require_nphie();
-+	if (err)
-+		return err;
-+
-+	FAIL_IF_MSG(pipe(pipefd), "failed to create pipe");
-+
-+	pid = fork();
-+	if (pid == 0) {
-+		if (dup2(pipefd[1], STDOUT_FILENO) == -1)
-+			_exit(errno);
-+
-+		execve("/proc/self/exe", hashchk_exec_child_args, NULL);
-+		_exit(errno);
-+	}
-+
-+	await_child_success(pid);
-+	FAIL_IF_MSG(read(pipefd[0], hash_values, sizeof(hash_values)) != sizeof(hash_values),
-+		    "missing expected child output");
-+
-+	/* Verify the child used the same hash_values address */
-+	FAIL_IF_EXIT_MSG(hash_values[HASH_COUNT] != (unsigned long)&hash_values,
-+			 "bad address check");
-+
-+	/* If all hashes are the same it means (most likely) same key */
-+	FAIL_IF_MSG(count_hash_values_matches() == HASH_COUNT, "shared key detected");
-+
-+	return 0;
-+}
-+
-+/*
-+ * Check that forks share the same key so that existing hash values
-+ * remain valid.
-+ */
-+static int hashchk_fork_share_key_test(void)
-+{
-+	pid_t pid;
-+	int err;
-+
-+	err = require_nphie();
-+	if (err)
-+		return err;
-+
-+	fill_hash_values();
-+
-+	pid = fork();
-+	if (pid == 0) {
-+		if (count_hash_values_matches() != HASH_COUNT)
-+			_exit(1);
-+		_exit(0);
-+	}
-+
-+	await_child_success(pid);
-+	return 0;
-+}
-+
-+#define STACK_SIZE (1024 * 1024)
-+
-+static int hashchk_clone_child_fn(void *args)
-+{
-+	fill_hash_values();
-+	return 0;
-+}
-+
-+/*
-+ * Check that threads share the same key so that existing hash values
-+ * remain valid.
-+ */
-+static int hashchk_clone_share_key_test(void)
-+{
-+	void *child_stack;
-+	pid_t pid;
-+	int err;
-+
-+	err = require_nphie();
-+	if (err)
-+		return err;
-+
-+	child_stack = mmap(NULL, STACK_SIZE, PROT_READ | PROT_WRITE,
-+			   MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
-+
-+	FAIL_IF_MSG(child_stack == MAP_FAILED, "failed to map child stack");
-+
-+	pid = clone(hashchk_clone_child_fn, child_stack + STACK_SIZE,
-+		    CLONE_VM | SIGCHLD, NULL);
-+
-+	await_child_success(pid);
-+	FAIL_IF_MSG(count_hash_values_matches() != HASH_COUNT,
-+		    "different key detected");
-+
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	int err = 0;
-+
-+	if (argc >= 1 && !strcmp(argv[0], hashchk_exec_child_args[0]))
-+		return hashchk_exec_child();
-+
-+	err |= test_harness(hashchk_detected_test, "hashchk_detected");
-+	err |= test_harness(hashchk_exec_random_key_test, "hashchk_exec_random_key");
-+	err |= test_harness(hashchk_fork_share_key_test, "hashchk_fork_share_key");
-+	err |= test_harness(hashchk_clone_share_key_test, "hashchk_clone_share_key");
-+
-+	return err;
-+}
-diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
-index d5a547f72669..fad09c9d3387 100644
---- a/tools/testing/selftests/powerpc/include/reg.h
-+++ b/tools/testing/selftests/powerpc/include/reg.h
-@@ -19,6 +19,8 @@
- #define mb()		asm volatile("sync" : : : "memory");
- #define barrier()	asm volatile("" : : : "memory");
+diff --git a/mm/kfence/kfence.h b/mm/kfence/kfence.h
+index 392fb273e7bd..510355a5382b 100644
+--- a/mm/kfence/kfence.h
++++ b/mm/kfence/kfence.h
+@@ -29,7 +29,11 @@
+  * canary of every 8 bytes is the same. 64-bit memory can be filled and checked
+  * at a time instead of byte by byte to improve performance.
+  */
+-#define KFENCE_CANARY_PATTERN_U64 ((u64)0xaaaaaaaaaaaaaaaa ^ (u64)(le64_to_cpu(0x0706050403020100)))
++#ifdef __LITTLE_ENDIAN__
++#define KFENCE_CANARY_PATTERN_U64 (0xaaaaaaaaaaaaaaaaULL ^ 0x0706050403020100ULL)
++#else
++#define KFENCE_CANARY_PATTERN_U64 (0xaaaaaaaaaaaaaaaaULL ^ 0x0001020304050607ULL)
++#endif
  
-+#define SPRN_HDEXCR_RO 455	/* Userspace readonly view of SPRN_HDEXCR (471) */
-+
- #define SPRN_MMCR2     769
- #define SPRN_MMCRA     770
- #define SPRN_MMCR0     779
-@@ -47,6 +49,8 @@
- #define SPRN_SDAR      781
- #define SPRN_SIER      768
- 
-+#define SPRN_DEXCR_RO  812	/* Userspace readonly view of SPRN_DEXCR (828) */
-+
- #define SPRN_TEXASR     0x82    /* Transaction Exception and Status Register */
- #define SPRN_TFIAR      0x81    /* Transaction Failure Inst Addr    */
- #define SPRN_TFHAR      0x80    /* Transaction Failure Handler Addr */
-diff --git a/tools/testing/selftests/powerpc/include/utils.h b/tools/testing/selftests/powerpc/include/utils.h
-index 9dc53c4fbfe3..36c30c611457 100644
---- a/tools/testing/selftests/powerpc/include/utils.h
-+++ b/tools/testing/selftests/powerpc/include/utils.h
-@@ -11,6 +11,7 @@
- #include <stdint.h>
- #include <stdio.h>
- #include <stdbool.h>
-+#include <sys/signal.h>
- #include <linux/auxvec.h>
- #include <linux/perf_event.h>
- #include <asm/cputable.h>
-@@ -111,6 +112,9 @@ static inline char *auxv_platform(void)
- bool is_ppc64le(void);
- int using_hash_mmu(bool *using_hash);
- 
-+struct sigaction push_signal_handler(int sig, void (*fn)(int, siginfo_t *, void *));
-+struct sigaction pop_signal_handler(int sig, struct sigaction old_handler);
-+
- /* Yes, this is evil */
- #define FAIL_IF(x)						\
- do {								\
-diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
-index 252fb4a95e90..e5f2d8735c64 100644
---- a/tools/testing/selftests/powerpc/utils.c
-+++ b/tools/testing/selftests/powerpc/utils.c
-@@ -618,3 +618,27 @@ int using_hash_mmu(bool *using_hash)
- 	fclose(f);
- 	return rc;
- }
-+
-+struct sigaction push_signal_handler(int sig, void (*fn)(int, siginfo_t *, void *))
-+{
-+	struct sigaction sa;
-+	struct sigaction old_handler;
-+
-+	sa.sa_sigaction = fn;
-+	sigemptyset(&sa.sa_mask);
-+	sa.sa_flags = SA_SIGINFO;
-+	FAIL_IF_EXIT_MSG(sigaction(sig, &sa, &old_handler),
-+			 "failed to push signal handler");
-+
-+	return old_handler;
-+}
-+
-+struct sigaction pop_signal_handler(int sig, struct sigaction old_handler)
-+{
-+	struct sigaction popped;
-+
-+	FAIL_IF_EXIT_MSG(sigaction(sig, &old_handler, &popped),
-+			 "failed to pop signal handler");
-+
-+	return popped;
-+}
--- 
-2.40.1
+ /* Maximum stack depth for reports. */
+ #define KFENCE_STACK_DEPTH 64
 
+
+cheers
