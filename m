@@ -4,52 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B85FCC77B75
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 May 2023 08:30:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F1B9C7EE26
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 May 2023 08:31:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QPrHD2TGdz3fD2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 May 2023 18:30:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QPrJ86JCxz3fLN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 May 2023 18:31:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ZU2Luicl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BzIRnSSt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ZU2Luicl;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BzIRnSSt;
 	dkim-atps=neutral
 Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QPrFH1Nxrz3cBK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QPrFH1Mb7z3bxL
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2023 18:28:34 +1000 (AEST)
 Received: from relay7-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::227])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id DF6A0C0B31
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2023 08:21:17 +0000 (UTC)
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id 2C18CCDA01
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2023 08:21:18 +0000 (UTC)
 Received: (Authenticated sender: herve.codina@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPA id 992D120011;
-	Mon, 22 May 2023 08:20:58 +0000 (UTC)
+	by mail.gandi.net (Postfix) with ESMTPA id 043D820002;
+	Mon, 22 May 2023 08:21:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1684743663;
+	t=1684743671;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ka1Fl6OswEMhixEbbi0TzCh7AW+Ii5FCal5DmvLTqf0=;
-	b=ZU2Luicl+fq4CWB6b6hl6ciqLNk6pTs/nZ8rxMxAmEw2HL6m9VAR54gwKKTMoqd5TrfpIh
-	Hvs8HzalYqJVpl10Y0QTmTMnuXmntSm58H7x3m4QWJJ6XF7XqrMAdQqdJOqp3Wa4TVnMyI
-	OSB/8fXPwhDRb6H6SwVdVt2u4sfhpN3TsRKhGFGJM8fOp0iRvtpm+2KRMAOwoZc4ea32Uo
-	rIWh1NvuOANtys1leoaXB4lUAVmnoXJH1iaVCeW41+5JGIrmwW4ZUiGUFFSf0J8L3SRF9n
-	q4a5vzRljWR+bMlaliCwjhlKyaSdByfx6yIj3mAkaxGch59Zb/RlEjdiw0GauA==
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=m9RlMCr/Uw6a3Vz3BJWKzlbktC7/2wHn7/gyCNVuySw=;
+	b=BzIRnSStfLDQoptXGtE7Qw5Zj57oxN1fRKa+gIZwZUf13Tu2qF8f1W0HXNahkwMUGME220
+	h4QwX3jtFhmkg+VXeDbcm/CWjevrhjye19OMId6EpANMoUIkyBDxAoTeYTZMhbgVNjba4L
+	x7dtQU3mIl+qwVP9ggugn1CXBdTBG1Z+OVAVRbMbU8z6hYm1B3XvTAmxQl5b2rg2mouNcW
+	yRjFwolaYg7LYM2ZHucENiWLmIFvBmwE4EsKHDYT+gXwdlnI9/rterPBm72qgDdaztCdO8
+	cNqL12/73/+UMlSbZFkX/Se6th07se6tHlPCB+itw3xB+W4nUEBySjFRDFPAQw==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Jiri Slaby <jirislaby@kernel.org>
-Subject: [PATCH 0/2] Fix COMPILE_TEST dependencies for CPM uart, TSA and QMC
-Date: Mon, 22 May 2023 10:20:46 +0200
-Message-Id: <20230522082048.21216-1-herve.codina@bootlin.com>
+Subject: [PATCH 2/2] serial: cpm_uart: Fix a COMPILE_TEST dependency
+Date: Mon, 22 May 2023 10:20:48 +0200
+Message-Id: <20230522082048.21216-3-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230522082048.21216-1-herve.codina@bootlin.com>
+References: <20230522082048.21216-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,27 +64,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series fixes issues raised by the kernel test robot
-  https://lore.kernel.org/oe-kbuild-all/202305160221.9XgweObz-lkp@intel.com/
+In a COMPILE_TEST configuration, the cpm_uart driver uses symbols from
+the cpm_uart_cpm2.c file. This file is compiled only when CONFIG_CPM2 is
+set.
 
-In COMPILE_TEST configurations, TSA and QMC need CONFIG_CPM to be set in
-order to compile and CPM uart needs CONFIG_CPM2.
+Without this dependency, the linker fails with some missing symbols for
+COMPILE_TEST configuration that needs SERIAL_CPM without enabling CPM2.
 
-Best regards,
-Hervé
-
-Herve Codina (2):
-  soc: fsl: cpm1: Fix TSA and QMC dependencies in case of COMPILE_TEST
-  serial: cpm_uart: Fix a COMPILE_TEST dependency
-
- drivers/soc/fsl/qe/Kconfig | 4 ++--
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Link: https://lore.kernel.org/oe-kbuild-all/202305160221.9XgweObz-lkp@intel.com/
+Fixes: e3e7b13bffae ("serial: allow COMPILE_TEST for some drivers")
+---
  drivers/tty/serial/Kconfig | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index 625358f44419..68a9d9db9144 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -769,7 +769,7 @@ config SERIAL_PMACZILOG_CONSOLE
+ 
+ config SERIAL_CPM
+ 	tristate "CPM SCC/SMC serial port support"
+-	depends on CPM2 || CPM1 || (PPC32 && COMPILE_TEST)
++	depends on CPM2 || CPM1 || (PPC32 && CPM2 && COMPILE_TEST)
+ 	select SERIAL_CORE
+ 	help
+ 	  This driver supports the SCC and SMC serial ports on Motorola 
 -- 
 2.40.1
 
