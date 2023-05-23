@@ -4,92 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0D6AC7EE26
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 May 2023 12:09:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 404AAC7EE2D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 May 2023 17:21:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QQY5T4x22z3f8x
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 May 2023 22:09:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QQh1z579Cz3f80
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 03:21:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oXVaQauy;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=hTrpGv/L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=imbrenda@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oXVaQauy;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=hTrpGv/L;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QQY4T5ZwGz3cfp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2023 22:08:25 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34NBvhWn005111;
-	Tue, 23 May 2023 12:01:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=hvBkau843ws4S1xlMiA8GiItRMnbuFuaqBLPZfwfBjM=;
- b=oXVaQauy/8g2xTnFTAcyRpsK6R0Z7PJKOkIjtetvDoFQ4C7Vaoz3bjS1jfMMcRnjGqV7
- TuXgAQJmG4wOpqKlAOC0mckK2z7bJPyGuNkmOInvXMBhkTAQCGGmYX8yjNUjUo/JotTY
- y88M7nr1R+3aKmsQxuw71PorXdAgogm3w8p+dxg1r3SXTNvYytY90PmqEKvkYUF0HdKS
- 8vBGN4743QXYxRUd+1shtMbCEiv/f4q8PkkDhpBaoNjpbEOxCyZ2A2qB7Jw6mjy8Gg/a
- 1VT3FbpG8YJZ455TWleqU6+xiSNDe9tLeM9AueFtcIQmIFB8f7TtJysKO1Yi+xa8PwRI Qw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qrw2n828u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 May 2023 12:01:08 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34NC09Ft011638;
-	Tue, 23 May 2023 12:01:07 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qrw2n826b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 May 2023 12:01:07 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34N3PmcR020391;
-	Tue, 23 May 2023 12:01:03 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3qppcu9epm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 May 2023 12:01:03 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34NC0x7s59572662
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 23 May 2023 12:00:59 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 148C520067;
-	Tue, 23 May 2023 12:00:59 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5984120043;
-	Tue, 23 May 2023 12:00:58 +0000 (GMT)
-Received: from p-imbrenda (unknown [9.152.224.66])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 23 May 2023 12:00:58 +0000 (GMT)
-Date: Tue, 23 May 2023 14:00:56 +0200
-From: Claudio Imbrenda <imbrenda@linux.ibm.com>
-To: Hugh Dickins <hughd@google.com>
-Subject: Re: [PATCH 15/23] s390: allow pte_offset_map_lock() to fail
-Message-ID: <20230523140056.55b664b1@p-imbrenda>
-In-Reply-To: <4a15dbaa-1614-ce-ce1f-f73959cef895@google.com>
-References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com>
-	<94aec8fe-383f-892-dcbf-d4c14e460a7@google.com>
-	<20230517123546.672fb9b0@p-imbrenda>
-	<4a15dbaa-1614-ce-ce1f-f73959cef895@google.com>
-Organization: IBM
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.37; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QQh11262Lz3c6v
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 03:20:51 +1000 (AEST)
+Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-53eee18a192so1129168a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2023 10:20:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1684862448; x=1687454448;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=T+vO/cCzHwQuFnPVrGLDZXukRrxNDu5SHC6BXOa81Zs=;
+        b=hTrpGv/LdaPA65qPf/L+BSDkbT6zxNZTQPjO/67q6q9Xdc3oYNnP6YT9VTuIFvwA2n
+         zzddg+xmleQpDg8/38lvv8BZYegLr+KluMOfzUuair0+1TpySYCCpJhlWYGOgB9PEhXt
+         X+fTUDs9r+oaJYcBZwZTy6oX1F0dGqIStzIwY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684862448; x=1687454448;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=T+vO/cCzHwQuFnPVrGLDZXukRrxNDu5SHC6BXOa81Zs=;
+        b=J80Qb3Y8QlGv852+xbvVCAUF/D5njPOd8di0q0SO4G4lrwYwfm6s+9dZ2LAXEFt6Q5
+         NevCpwr3SLqrNnJx7vNHZjslcEh38gn83E9m1D80sa3UGmhQcrJVCn5mkoeMQf07sKSV
+         +INtskROc+8HuL5tenMz99pjwzBbPsF04meP6CK6xSILLNq9bEMYruUtXxD+DkK+O92U
+         X1abK+TXotPYJJowhxzfi/dtCuQvpmC8Od7F/ZXw6R8LM7TzPzg8Yi06JAdwacTtdtz7
+         Lull2fslmgqYn4DJp75gdgP85ykeBeM9tSfWe8v+YvfKUleHp/6+QblHMp+8MHQ72IZ+
+         z3Qw==
+X-Gm-Message-State: AC+VfDxoHL2FutFxme1sOMvMYLMzJ8DbkKdMyjp8LkcTLMT8rB5C/G+V
+	K3sTvLjOKwLf0pN9NqwCsT6cDw==
+X-Google-Smtp-Source: ACHHUZ4P8xDP0TNAyj32JLK4hmrdVTDjOgl2B0qIzRYWdP+XmmGQKtfRjG2ZNIm+vY9oedRsM1SR9Q==
+X-Received: by 2002:a17:903:428a:b0:1ac:4a41:d38d with SMTP id ju10-20020a170903428a00b001ac4a41d38dmr13144028plb.51.1684862448641;
+        Tue, 23 May 2023 10:20:48 -0700 (PDT)
+Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id o18-20020a170902d4d200b001ae44e2f425sm7007182plg.223.2023.05.23.10.20.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 May 2023 10:20:48 -0700 (PDT)
+Date: Tue, 23 May 2023 10:20:47 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Azeem Shaikh <azeemshaikh38@gmail.com>
+Subject: Re: [PATCH] soc: fsl: qe: Replace all non-returning strlcpy with
+ strscpy
+Message-ID: <202305231020.37C95FD@keescook>
+References: <20230523021425.2406309-1-azeemshaikh38@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: KdATZGw-PFRBi7nGruRJQHyOg66o4rOG
-X-Proofpoint-ORIG-GUID: GKYQ85EtVUpqelakERxcPgEdd_8F7rRj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-05-23_07,2023-05-23_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
- bulkscore=0 mlxscore=0 priorityscore=1501 adultscore=0 spamscore=0
- mlxlogscore=999 impostorscore=0 clxscore=1015 lowpriorityscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2304280000 definitions=main-2305230092
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230523021425.2406309-1-azeemshaikh38@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,151 +75,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogen
- d@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A.
- Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 17 May 2023 14:50:28 -0700 (PDT)
-Hugh Dickins <hughd@google.com> wrote:
+On Tue, May 23, 2023 at 02:14:25AM +0000, Azeem Shaikh wrote:
+> strlcpy() reads the entire source buffer first.
+> This read may exceed the destination size limit.
+> This is both inefficient and can lead to linear read
+> overflows if a source string is not NUL-terminated [1].
+> In an effort to remove strlcpy() completely [2], replace
+> strlcpy() here with strscpy().
+> No return values were used, so direct replacement is safe.
+> 
+> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
+> [2] https://github.com/KSPP/linux/issues/89
+> 
+> Signed-off-by: Azeem Shaikh <azeemshaikh38@gmail.com>
 
-> On Wed, 17 May 2023, Claudio Imbrenda wrote:
-> > On Tue, 9 May 2023 22:01:16 -0700 (PDT)
-> > Hugh Dickins <hughd@google.com> wrote:
-> >   
-> > > In rare transient cases, not yet made possible, pte_offset_map() and
-> > > pte_offset_map_lock() may not find a page table: handle appropriately.
-> > > 
-> > > Signed-off-by: Hugh Dickins <hughd@google.com>
-> > > ---
-> > >  arch/s390/kernel/uv.c  |  2 ++
-> > >  arch/s390/mm/gmap.c    |  2 ++
-> > >  arch/s390/mm/pgtable.c | 12 +++++++++---
-> > >  3 files changed, 13 insertions(+), 3 deletions(-)
-> > > 
-> > > diff --git a/arch/s390/kernel/uv.c b/arch/s390/kernel/uv.c
-> > > index cb2ee06df286..3c62d1b218b1 100644
-> > > --- a/arch/s390/kernel/uv.c
-> > > +++ b/arch/s390/kernel/uv.c
-> > > @@ -294,6 +294,8 @@ int gmap_make_secure(struct gmap *gmap, unsigned long gaddr, void *uvcb)
-> > >  
-> > >  	rc = -ENXIO;
-> > >  	ptep = get_locked_pte(gmap->mm, uaddr, &ptelock);
-> > > +	if (!ptep)
-> > > +		goto out;  
-> 
-> You may or may not be asking about this instance too.  When I looked at
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-actually no, because of the reasons you give here :)
-
-> how the code lower down handles -ENXIO (promoting it to -EFAULT if an
-> access fails, or to -EAGAIN to ask for a retry), this looked just right
-> (whereas using -EAGAIN here would be wrong: that expects a "page" which
-> has not been initialized at this point).
-> 
-> > >  	if (pte_present(*ptep) && !(pte_val(*ptep) & _PAGE_INVALID) && pte_write(*ptep)) {
-> > >  		page = pte_page(*ptep);
-> > >  		rc = -EAGAIN;
-> > > diff --git a/arch/s390/mm/gmap.c b/arch/s390/mm/gmap.c
-> > > index dc90d1eb0d55..d198fc9475a2 100644
-> > > --- a/arch/s390/mm/gmap.c
-> > > +++ b/arch/s390/mm/gmap.c
-> > > @@ -2549,6 +2549,8 @@ static int __zap_zero_pages(pmd_t *pmd, unsigned long start,
-> > >  		spinlock_t *ptl;
-> > >  
-> > >  		ptep = pte_offset_map_lock(walk->mm, pmd, addr, &ptl);
-> > > +		if (!ptep)
-> > > +			break;  
-> > 
-> > so if pte_offset_map_lock fails, we abort and skip both the failed
-> > entry and the rest of the entries?  
-> 
-> Yes.
-> 
-> > 
-> > can pte_offset_map_lock be retried immediately if it fails? (consider
-> > that we currently don't allow THP with KVM guests)
-> > 
-> > Would something like this:
-> > 
-> > do {
-> > 	ptep = pte_offset_map_lock(...);
-> > 	mb();	/* maybe? */
-> > } while (!ptep);
-> > 
-> > make sense?  
-> 
-> No.  But you're absolutely right to be asking: thank you for looking
-> into it so carefully - and I realize that it's hard at this stage to
-> judge what's appropriate, when I've not yet even posted the endpoint
-> of these changes, the patches which make it possible not to find a
-> page table here.  And I'm intentionally keeping that vague, because
-> although I shall only introduce a THP case, I do expect it to be built
-> upon later in reclaiming empty page tables: it would be nice not to
-> have to change the arch code again when extending further.
-> 
-> My "rare transient cases" phrase may be somewhat misleading: one thing
-> that's wrong with your tight pte_offset_map_lock() loop above is that
-> the pmd entry pointing to page table may have been suddenly replaced
-> by a pmd_none() entry; and there's nothing in your loop above to
-> break out if that is so.
-> 
-> But if a page table is suddenly removed, that would be because it was
-> either empty, or replaced by a THP entry, or easily reconstructable on
-> demand (by that, I probably mean it was only mapping shared file
-> pages, which can just be refaulted if needed again).
-> 
-> The case you're wary of, is if the page table were removed briefly,
-> then put back shortly after: and still contains zero pages further
-> down. That's not something mm does now, nor at the end of my several
-> series, nor that I imagine us wanting to do in future: but I am
-> struggling to find a killer argument to persuade you that it could
-> never be done - most pages in a page table do need rmap tracking,
-> which will BUG if it's broken, but that argument happens not to apply
-> to the zero page.
-> 
-> (Hmm, there could be somewhere, where we would find it convenient to
-> remove a page table with intent to do ...something, then validation
-> of that isolated page table fails, so we just put it back again.)
-> 
-> Is it good enough for me to promise you that we won't do that?
-> 
-> There are several ways in which we could change __zap_zero_pages(),
-> but I don't see them as actually dealing with the concern at hand.
-> 
-> One change, I've tended to make at the mm end but did not dare
-> to interfere here: it would seem more sensible to do a single
-> pte_offset_map_lock() outside the loop, return if that fails,
-> increment ptep inside the loop, pte_unmap_unlock() after the loop.
-> 
-> But perhaps you have preemption reasons for not wanting that; and
-> although it would eliminate the oddity of half-processing a page
-> table, it would not really resolve the problem at hand: because,
-> what if this page table got removed just before __zap_zero_pages()
-> tries to take the lock, then got put back just after?
-> 
-> Another change: I see __zap_zero_pages() is driven by
-> walk_page_range(), and over at the mm end I'm usually setting
-> walk->action to ACTION_AGAIN in these failure cases; but thought that
-> an unnecessary piece of magic here, and cannot see how it could
-> actually help.  Your "retry the whole walk_page_range()" suggestion
-> below would be a heavier equivalent of that: but neither way gives
-> confidence, if a page table could actually be removed then reinserted
-> without mmap_write_lock().
-> 
-> I think I want to keep this s390 __zap_zero_pages() issue in mind, it
-> is important and thank you for raising it; but don't see any change
-> to the patch as actually needed.
-> 
-> Hugh
-
-so if I understand the above correctly, pte_offset_map_lock will only
-fail if the whole page table has disappeared, and in that case, it will
-never reappear with zero pages, therefore we can safely skip (in that
-case just break). if we were to do a continue instead of a break, we
-would most likely fail again anyway.
-
-in that case I would still like a small change in your patch: please
-write a short (2~3 lines max) comment about why it's ok to do things
-that way
+-- 
+Kees Cook
