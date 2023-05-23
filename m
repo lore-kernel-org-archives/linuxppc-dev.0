@@ -4,67 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 498A8C77B7E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 01:50:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DEEDC7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 May 2023 16:03:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QQvJy2LDtz3fC6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 11:50:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QQfHm2Fxwz3f7q
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 02:03:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=fL1Ko/Yz;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=CFqzXOj3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b34; helo=mail-yb1-xb34.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=fL1Ko/Yz;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=CFqzXOj3;
 	dkim-atps=neutral
-Received: from mail-yb1-xb34.google.com (mail-yb1-xb34.google.com [IPv6:2607:f8b0:4864:20::b34])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QQvHx4CWhz3c8x
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 11:49:32 +1000 (AEST)
-Received: by mail-yb1-xb34.google.com with SMTP id 3f1490d57ef6-ba8253f635cso661604276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2023 18:49:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1684892967; x=1687484967;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=qRR20WPPG9GQ+bWld5KX4B7EuAV7QhoHIJ5BRRfzj5g=;
-        b=fL1Ko/YzJ7ADR+5IhbndnTRBOzBniMKv2InrhlDBTKJ8NlYVC/WzojNZzRdjG8LqqI
-         8LB9Z4sfpXm4DMnyfRFicnIehOON6Mw+FClbq6xhPa9tlrIuXm3Q/2idrYMx02+afzOp
-         1VCSHU1xv+O9cTuzhmlxGQq1v0D4TgBrAS9dYOJLgo+SzeMAZ7rQLDPNPL9H5vsD1p44
-         JTB4zFm6Ty/2t/Mm5CpAGXHuXSex52HKZD5bYmtrIhNvgrtjqZinsu17ACzjltY7KKk5
-         TNaE7Q4HSc79RkqKOj+NGXTgrLKTP+KzqHxsfw06sf9yCgMnslxI0DnH5G6oL7bKwZgq
-         fWlg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684892967; x=1687484967;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=qRR20WPPG9GQ+bWld5KX4B7EuAV7QhoHIJ5BRRfzj5g=;
-        b=Ux04I/0A5KgiHw5Yo+3T+DiRMnWJXhsZ8n55xlaW7IbGzRNtxmiaqsHaqotNsaACrq
-         9Ert4x20TK8aWXBti2uTqYchGf94Qil3OAAx82jAYuk62R0O8ugX8bZfkypd2MM4bezW
-         JBzZJCl0AFuzSobZg/BFZ2So+gedQcibhKKQDQ7TR61IRok5cwiyZNuwKoQ8Hzy1exPp
-         vIth1gpI3dcfCP5iuI/JRvyYJTMkzMOUtnQpdFeAcrx8UacPyQjM3E2wtDacUOzZx9B6
-         sNMZ0F1JzlxZcr+UNsXG0p3dJWPiFviqa1QfLUFlQJ5wU4miU0V+jQOUl65CzpP90Mf3
-         nnpw==
-X-Gm-Message-State: AC+VfDyEUv502NQVj2ooplS5aLoNrZSCNlVyKW5nBnJ9C6WGQjYNjOK9
-	vLk3ecCN9fcPeostvAhAqDpv+g==
-X-Google-Smtp-Source: ACHHUZ7f0TOZQo7Cw+o/qEVNq4B1zvZdBbLM5VJM6QqwwtZu4t36Vxp5CkGSHrwBFYCBff4rw2Ddpw==
-X-Received: by 2002:a25:385:0:b0:ba8:54c4:3136 with SMTP id 127-20020a250385000000b00ba854c43136mr19398918ybd.52.1684892966804;
-        Tue, 23 May 2023 18:49:26 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id x7-20020a259a07000000b00b8f6ec5a955sm2395274ybn.49.2023.05.23.18.49.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 May 2023 18:49:26 -0700 (PDT)
-Date: Tue, 23 May 2023 18:49:14 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Subject: Re: [PATCH 15/23] s390: allow pte_offset_map_lock() to fail
-In-Reply-To: <20230523140056.55b664b1@p-imbrenda>
-Message-ID: <b64cd153-18e8-81a6-b852-c04d8b1381d@google.com>
-References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com> <94aec8fe-383f-892-dcbf-d4c14e460a7@google.com> <20230517123546.672fb9b0@p-imbrenda> <4a15dbaa-1614-ce-ce1f-f73959cef895@google.com> <20230523140056.55b664b1@p-imbrenda>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QQfGs6GQHz3c6v
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 02:02:44 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out2.suse.de (Postfix) with ESMTP id E976D1FDE4;
+	Tue, 23 May 2023 16:02:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1684857761; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cqLxfbe6m1nrIclFjUzmkz44DpKUbRwlhs98Py3OTY8=;
+	b=CFqzXOj3bL7rPcBsBdnQq+i5O/CDOiB4nyZNA73SNAgWKZudQnAShHS3hyPjZMeVbo3Zg8
+	JKxZ6KhMqP5e4g1LT0ZE4QYnnNKcDTQP5B5H4Eu5ag6gT1SFuEVSJvWaaLv8xs0RsmZ5Yd
+	hNDc6rCkMBwtEvwv3PlapHOL2Tv73vk=
+Received: from suse.cz (pmladek.udp.ovpn2.prg.suse.de [10.100.201.202])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by relay2.suse.de (Postfix) with ESMTPS id 921102C141;
+	Tue, 23 May 2023 16:02:38 +0000 (UTC)
+Date: Tue, 23 May 2023 18:02:35 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Douglas Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v5 10/18] watchdog/hardlockup: Add a "cpu" param to
+ watchdog_hardlockup_check()
+Message-ID: <ZGzjm9h85fpYZJMc@alley>
+References: <20230519101840.v5.18.Ia44852044cdcb074f387e80df6b45e892965d4a1@changeid>
+ <20230519101840.v5.10.I3a7d4dd8c23ac30ee0b607d77feb6646b64825c0@changeid>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230519101840.v5.10.I3a7d4dd8c23ac30ee0b607d77feb6646b64825c0@changeid>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,60 +61,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.
- eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, ito-yuichi@fujitsu.com, Lecopzer Chen <lecopzer.chen@mediatek.com>, kgdb-bugreport@lists.sourceforge.net, ricardo.neri@intel.com, Stephane Eranian <eranian@google.com>, sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Will Deacon <will@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Andi Kleen <ak@linux.intel.com>, Marc Zyngier <maz@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Matthias Kaehlcke <mka@chromium.org>, Catalin Marinas <catalin.marinas@arm.com>, Masayoshi Mizuma <msys.mizuma@gmail.com>, ravi.v.shankar@intel.com, Tzung-Bi Shih <tzungbi@chromium.org>, npiggin@gmail.com, Stephen Boyd <swboyd@chromium.org>, Pingfan Liu <kernelfans@gmail.com>, linux-arm-kernel@lists.infradead.org, Sumit Garg <sumit.garg@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozl
+ abs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 23 May 2023, Claudio Imbrenda wrote:
+On Fri 2023-05-19 10:18:34, Douglas Anderson wrote:
+> In preparation for the buddy hardlockup detector where the CPU
+> checking for lockup might not be the currently running CPU, add a
+> "cpu" parameter to watchdog_hardlockup_check().
 > 
-> so if I understand the above correctly, pte_offset_map_lock will only
-> fail if the whole page table has disappeared, and in that case, it will
-> never reappear with zero pages, therefore we can safely skip (in that
-> case just break). if we were to do a continue instead of a break, we
-> would most likely fail again anyway.
-
-Yes, that's the most likely; and you hold mmap_write_lock() there,
-and VM_NOHUGEPAGE on all vmas, so I think it's the only foreseeable
-possibility.
-
+> As part of this change, make hrtimer_interrupts an atomic_t since now
+> the CPU incrementing the value and the CPU reading the value might be
+> different. Technially this could also be done with just READ_ONCE and
+> WRITE_ONCE, but atomic_t feels a little cleaner in this case.
 > 
-> in that case I would still like a small change in your patch: please
-> write a short (2~3 lines max) comment about why it's ok to do things
-> that way
+> While hrtimer_interrupts is made atomic_t, we change
+> hrtimer_interrupts_saved from "unsigned long" to "int". The "int" is
+> needed to match the data type backing atomic_t for hrtimer_interrupts.
+> Even if this changes us from 64-bits to 32-bits (which I don't think
+> is true for most compilers), it doesn't really matter. All we ever do
+> is increment it every few seconds and compare it to an old value so
+> 32-bits is fine (even 16-bits would be). The "signed" vs "unsigned"
+> also doesn't matter for simple equality comparisons.
+> 
+> hrtimer_interrupts_saved is _not_ switched to atomic_t nor even
+> accessed with READ_ONCE / WRITE_ONCE. The hrtimer_interrupts_saved is
+> always consistently accessed with the same CPU. NOTE: with the
+> upcoming "buddy" detector there is one special case. When a CPU goes
+> offline/online then we can change which CPU is the one to consistently
+> access a given instance of hrtimer_interrupts_saved. We still can't
+> end up with a partially updated hrtimer_interrupts_saved, however,
+> because we end up petting all affected CPUs to make sure the new and
+> old CPU can't end up somehow read/write hrtimer_interrupts_saved at
+> the same time.
+> 
+> --- a/kernel/watchdog.c
+> +++ b/kernel/watchdog.c
+> @@ -87,29 +87,34 @@ __setup("nmi_watchdog=", hardlockup_panic_setup);
+>  
+>  #if defined(CONFIG_HARDLOCKUP_DETECTOR_PERF)
+>  
+> -static DEFINE_PER_CPU(unsigned long, hrtimer_interrupts);
+> -static DEFINE_PER_CPU(unsigned long, hrtimer_interrupts_saved);
+> +static DEFINE_PER_CPU(atomic_t, hrtimer_interrupts);
+> +static DEFINE_PER_CPU(int, hrtimer_interrupts_saved);
+>  static DEFINE_PER_CPU(bool, watchdog_hardlockup_warned);
+>  static unsigned long watchdog_hardlockup_all_cpu_dumped;
+>  
+> -static bool is_hardlockup(void)
+> +static bool is_hardlockup(unsigned int cpu)
+>  {
+> -	unsigned long hrint = __this_cpu_read(hrtimer_interrupts);
+> +	int hrint = atomic_read(&per_cpu(hrtimer_interrupts, cpu));
+>  
+> -	if (__this_cpu_read(hrtimer_interrupts_saved) == hrint)
+> +	if (per_cpu(hrtimer_interrupts_saved, cpu) == hrint)
+>  		return true;
+>  
+> -	__this_cpu_write(hrtimer_interrupts_saved, hrint);
+> +	/*
+> +	 * NOTE: we don't need any fancy atomic_t or READ_ONCE/WRITE_ONCE
+> +	 * for hrtimer_interrupts_saved. hrtimer_interrupts_saved is
+> +	 * written/read by a single CPU.
+> +	 */
+> +	per_cpu(hrtimer_interrupts_saved, cpu) = hrint;
+>  
+>  	return false;
+>  }
+>  
+>  static void watchdog_hardlockup_kick(void)
+>  {
+> -	__this_cpu_inc(hrtimer_interrupts);
+> +	atomic_inc(raw_cpu_ptr(&hrtimer_interrupts));
 
-Sure.
+Is there any particular reason why raw_*() is needed, please?
 
-But I now see that I've disobeyed you, and gone to 4 lines (but in the
-comment above the function, so as not to distract from the code itself):
-is this good wording to you?  I needed to research how they were stopped
-from coming in afterwards, so wanted to put something greppable in there.
+My expectation is that the raw_ API should be used only when
+there is a good reason for it. Where a good reason might be
+when the checks might fail but the consistency is guaranteed
+another way.
 
-And, unless I'm misunderstanding, that "after THP was enabled" was
-always supposed to say "after THP was disabled" (because splitting a
-huge zero page pmd inserts a a page table full of little zero ptes).
+IMHO, we should use:
 
-Or would you prefer the comment in the commit message instead,
-or down just above the pte_offset_map_lock() line?
+	atomic_inc(this_cpu_ptr(&hrtimer_interrupts));
 
-It would much better if I could find one place at the mm end, to
-enforce its end of the contract; but cannot think how to do that.
+To be honest, I am a bit lost in the per_cpu API definitions.
 
-Hugh
+But this_cpu_ptr() seems to be implemented the same way as
+per_cpu_ptr() when CONFIG_DEBUG_PREEMPT is enabled.
+And we use per_cpu_ptr() in is_hardlockup().
 
---- a/arch/s390/mm/gmap.c
-+++ b/arch/s390/mm/gmap.c
-@@ -2537,7 +2537,12 @@ static inline void thp_split_mm(struct mm_struct *mm)
-  * Remove all empty zero pages from the mapping for lazy refaulting
-  * - This must be called after mm->context.has_pgste is set, to avoid
-  *   future creation of zero pages
-- * - This must be called after THP was enabled
-+ * - This must be called after THP was disabled.
-+ *
-+ * mm contracts with s390, that even if mm were to remove a page table,
-+ * racing with the loop below and so causing pte_offset_map_lock() to fail,
-+ * it will never insert a page table containing empty zero pages once
-+ * mm_forbids_zeropage(mm) i.e. mm->context.has_pgste is set.
-  */
- static int __zap_zero_pages(pmd_t *pmd, unsigned long start,
- 			   unsigned long end, struct mm_walk *walk)
+Also this_cpu_ptr() is used more commonly:
+
+$> git grep this_cpu_ptr | wc -l
+1385
+$> git grep raw_cpu_ptr | wc -l
+114
+
+>  }
+>  
+> -void watchdog_hardlockup_check(struct pt_regs *regs)
+> +void watchdog_hardlockup_check(unsigned int cpu, struct pt_regs *regs)
+>  {
+>  	/*
+>  	 * Check for a hardlockup by making sure the CPU's timer
+> @@ -117,35 +122,42 @@ void watchdog_hardlockup_check(struct pt_regs *regs)
+>  	 * fired multiple times before we overflow'd. If it hasn't
+>  	 * then this is a good indication the cpu is stuck
+>  	 */
+> -	if (is_hardlockup()) {
+> +	if (is_hardlockup(cpu)) {
+>  		unsigned int this_cpu = smp_processor_id();
+> +		struct cpumask backtrace_mask = *cpu_online_mask;
+
+Does this work, please?
+
+IMHO, we should use cpumask_copy().
+
+>  
+>  		/* Only print hardlockups once. */
+> -		if (__this_cpu_read(watchdog_hardlockup_warned))
+> +		if (per_cpu(watchdog_hardlockup_warned, cpu))
+>  			return;
+>  
+
+Otherwise, it looks good to me.
+
+Best Regards,
+Petr
