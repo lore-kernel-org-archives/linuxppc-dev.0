@@ -4,53 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 732FEC77B73
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 15:12:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6BD0C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 15:57:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRF6Q59YWz3fCK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 01:12:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRG6g6CDmz3fFJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 01:57:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ElRel7+i;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=T9p1VcAB;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRF5X6MDvz3bcT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:11:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRG5l3mtyz3bkM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:56:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ElRel7+i;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=T9p1VcAB;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRF5X4n79z4x3g;
-	Thu, 25 May 2023 01:11:44 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRG5k12s0z4wgq;
+	Thu, 25 May 2023 01:56:58 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1684941104;
-	bh=gCH+qrmvnYdFXIGPJq+jFnmibZig7S/8yT7yhZq0Yzg=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=ElRel7+iQi7Od05dNk0DvoixSdAzgi4CXfb6ihfSCU7jYHDwz4Nq0TIrH36t9J5Ni
-	 0RFicYhcrElX8IGAXyRXDBVsomvTvAHTM6YlkYmogRaJLYNy/trk+vRLDKD+oguJb5
-	 Q7np/JYQ27Xi0HdoB2v3KEjH6RbYXSbu7FuWN9kyCc+MZOj1iwuTw7AHZSQ7tF0EzG
-	 p9z4RtUudIN0XZg+zaHpL1on6FZiE1bINRSXQWUst0CLG3FXgGVBdarZLgUUPPJE2f
-	 WUUP4YL0LFlK0eqBGRVq6wiQMAYxoXigQ0oKDI3vLhdMUSatOx/El7cS+Yeu99BDB3
-	 o6Aq8w6LAsI3w==
+	s=201909; t=1684943819;
+	bh=pJxluW7i0bZ3DMPSPZr/X0SsGSnZoomyK/1WDBYirpE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=T9p1VcABYWBTQ5sEc6m+ml3BQKxZRLhFHtKOvTMD2sZ7pKn6WUaJApRMIy9EwE1yT
+	 h5zsAxLsDoUdUvFNwhffKiLqX9Fhke4u8jJF63LdgQbv1ZL9yTejQn2+RZXylwMsGE
+	 mfl4e1Jl9+k9AhM4MEAkU52z1O6CI1z+6slcx8hvc0btqT+YZYej7QK5+/AjPtVeNE
+	 0FaKPhHZ7DTWG8ZGGOCpjUxnZxe8KceRraf/HWa9dsgWEfDSxea0dqf/yPFB+6gF/s
+	 aMENcXu50+TasQ7jCJoYfoRkWq4zRP+VVARKRGUOKy3xwxo0KqhRC/R3ONuzfDAPBs
+	 sfe9tz7TOpg3g==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gaurav Batra <gbatra@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/iommu: limit number of TCEs to 512 for
- H_STUFF_TCE hcall
-In-Reply-To: <b1260c4d-78ac-9c61-02e3-538846796982@linux.vnet.ibm.com>
-References: <20230509220549.23946-1-gbatra@linux.vnet.ibm.com>
- <875y8yl1k5.fsf@mail.lhotse>
- <ad7517b3-02f2-436a-4c31-878031630c25@linux.vnet.ibm.com>
- <87r0rfywtf.fsf@mail.lhotse>
- <b1260c4d-78ac-9c61-02e3-538846796982@linux.vnet.ibm.com>
-Date: Thu, 25 May 2023 01:11:44 +1000
-Message-ID: <878rddahn3.fsf@mail.lhotse>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/9] cpu/SMT: Move SMT prototypes into cpu_smt.h
+Date: Thu, 25 May 2023 01:56:22 +1000
+Message-Id: <20230524155630.794584-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,64 +56,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, gjoyce@linux.vnet.ibm.com
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, dave.hansen@linux.intel.com, mingo@redhat.com, bp@alien8.de, tglx@linutronix.de, ldufour@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Gaurav Batra <gbatra@linux.vnet.ibm.com> writes:
-> On 5/17/23 7:19 AM, Michael Ellerman wrote:
->> Gaurav Batra<gbatra@linux.vnet.ibm.com>  writes:
->>> Hello Michael,
->>>
->>> System test hit the crash. I believe, it was PHYP that resulted in it
->>> due to number of TCEs passed in to be >512.
->> OK. It's always good to spell out in the change log whether it's a
->> theoretical/unlikely bug, or one that's actually been hit in testing or
->> the field.
+A subsequent patch would like to use the cpuhp_smt_control enum as part
+of the interface between generic and arch code.
 
-> I will submit another version of the patch with some changes in the log 
-> once I figure out how to Tag it for stable (as mentioned below).
-> 
->>> I was wondering about the Fixes tag as well. But, this interface, in
->>> it's current form, is there from the day the file was created. So, in
->>> this case, should I mention the first commit which created this source file?
->> If it really goes back to the origin commit, then it's probably better
->> to just say so and tag it for stable, rather than pointing to 1da177e4.
+Currently that leads to circular header dependencies. So split the enum
+and related declarations into a separate header.
 
-> How to do I tag it for stable? Will it be part of the "Fixes:" tag or 
-> some other tag?
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/x86/include/asm/topology.h |  2 ++
+ include/linux/cpu.h             | 25 +------------------------
+ include/linux/cpu_smt.h         | 29 +++++++++++++++++++++++++++++
+ 3 files changed, 32 insertions(+), 24 deletions(-)
+ create mode 100644 include/linux/cpu_smt.h
 
-A stable tag is just adding in the change log:
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 458c891a8273..66927a59e822 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -136,6 +136,8 @@ static inline int topology_max_smt_threads(void)
+ 	return __max_smt_threads;
+ }
+ 
++#include <linux/cpu_smt.h>
++
+ int topology_update_package_map(unsigned int apicid, unsigned int cpu);
+ int topology_update_die_map(unsigned int dieid, unsigned int cpu);
+ int topology_phys_to_logical_pkg(unsigned int pkg);
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 8582a7142623..40548f3c201c 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -18,6 +18,7 @@
+ #include <linux/compiler.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/cpu_smt.h>
+ 
+ struct device;
+ struct device_node;
+@@ -202,30 +203,6 @@ void cpuhp_report_idle_dead(void);
+ static inline void cpuhp_report_idle_dead(void) { }
+ #endif /* #ifdef CONFIG_HOTPLUG_CPU */
+ 
+-enum cpuhp_smt_control {
+-	CPU_SMT_ENABLED,
+-	CPU_SMT_DISABLED,
+-	CPU_SMT_FORCE_DISABLED,
+-	CPU_SMT_NOT_SUPPORTED,
+-	CPU_SMT_NOT_IMPLEMENTED,
+-};
+-
+-#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
+-extern enum cpuhp_smt_control cpu_smt_control;
+-extern void cpu_smt_disable(bool force);
+-extern void cpu_smt_check_topology(void);
+-extern bool cpu_smt_possible(void);
+-extern int cpuhp_smt_enable(void);
+-extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
+-#else
+-# define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
+-static inline void cpu_smt_disable(bool force) { }
+-static inline void cpu_smt_check_topology(void) { }
+-static inline bool cpu_smt_possible(void) { return false; }
+-static inline int cpuhp_smt_enable(void) { return 0; }
+-static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
+-#endif
+-
+ extern bool cpu_mitigations_off(void);
+ extern bool cpu_mitigations_auto_nosmt(void);
+ 
+diff --git a/include/linux/cpu_smt.h b/include/linux/cpu_smt.h
+new file mode 100644
+index 000000000000..17e105b52d85
+--- /dev/null
++++ b/include/linux/cpu_smt.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _LINUX_CPU_SMT_H_
++#define _LINUX_CPU_SMT_H_
++
++enum cpuhp_smt_control {
++	CPU_SMT_ENABLED,
++	CPU_SMT_DISABLED,
++	CPU_SMT_FORCE_DISABLED,
++	CPU_SMT_NOT_SUPPORTED,
++	CPU_SMT_NOT_IMPLEMENTED,
++};
++
++#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
++extern enum cpuhp_smt_control cpu_smt_control;
++extern void cpu_smt_disable(bool force);
++extern void cpu_smt_check_topology(void);
++extern bool cpu_smt_possible(void);
++extern int cpuhp_smt_enable(void);
++extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
++#else
++# define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
++static inline void cpu_smt_disable(bool force) { }
++static inline void cpu_smt_check_topology(void) { }
++static inline bool cpu_smt_possible(void) { return false; }
++static inline int cpuhp_smt_enable(void) { return 0; }
++static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
++#endif
++
++#endif /* _LINUX_CPU_SMT_H_ */
+-- 
+2.40.1
 
-Cc: stable@vger.kernel.org
-
-Note *not* in the email headers, in the change log.
-
-That asks the stable kernel folks to backport the commit to all
-currently active stable trees. Whereas when you use a Fixes: tag it will
-be only backported to stable trees that contain the offending commit.
-
->> I wonder though is there something else that changed that means this bug
->> is now being hit but wasn't before? Or maybe it's just that we are
->> testing on systems with large enough amounts of memory to hit this but
->> which aren't using a direct mapping?
->
->  From the details in Bugzilla, it does seems like the HCALL was 
-> previously taking long as well but PHYP was more relaxed about it. Now, 
-> PHYP is limiting on how long can an HCALL take.
->
-> Below are some excerpts from the Bug: 202349
->
-> Linux is passing too many counts in H_STUFF_TCE. The higher the counts, 
-> the longer the HCALL takes. From a Hypervisor perspective, we cannot 
-> stop Linux from doing this or it will violate the rules in the PAPR 
-> (which then would cause Linux to crash). The dispatcher team has 
-> "tightened the screws" on long running HCALLs by causing this trap to 
-> fire. From our discussions, they will not put the limits back where they 
-> were before.
-
-OK, that explains why it's only been noticed recently, so that's good
-info. In the change log you can say something like "newer firmware has
-started enforcing the limits".
-
-cheers
