@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 909FDC77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 16:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08765C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 16:00:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRG9P0fJxz3fWF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 02:00:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRGBJ3j5Gz3fJm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 02:00:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KzIdXKHw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DLMr4i3/;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRG5m5kH8z3f7j
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:57:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRG5n1Mxlz3f7j
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:57:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KzIdXKHw;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DLMr4i3/;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRG5l41STz4x46;
-	Thu, 25 May 2023 01:56:59 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRG5n04gkz4x4X;
+	Thu, 25 May 2023 01:57:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1684943819;
-	bh=SibCu5hbkCNZrPVw6RETBvRPo+OI/DYG2D1OFC/b1dE=;
+	s=201909; t=1684943821;
+	bh=7FwibG1XWdH1B4bC6IxPJl99Q4FEgoC9M1l3K1JPV6E=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=KzIdXKHwxxd3j0FduASPcesMjZeYkfSk/g00GGwANuRi+5VTyrdO766gIAOTULPzN
-	 /98f2t9c+kfBcgveEWZZodfvf2KGTl++qMB1HYBn2XoiF5Yz9CsM1T65V4zhn45qIZ
-	 IaUB9NswoROgPrF1J1CEI2MTgF+wR3xMTq6A2OgWZiozYhTBFsqes4zEcCIn+DCCt5
-	 UpWHTXj4ezY5TPaHp1yOnKA0Iq05FnDc9uvz84pMJpLAFQOG/Z1ppaeSnyzOifTRQB
-	 MDDy+PLYnzxP/mmqtf2dsWpOtRxpAI1BUzRFctT7VQBQoCye8l58BZCuaMLMVEj0W3
-	 j3cIoZ6bsOzwQ==
+	b=DLMr4i3/uj6DYrnmLfrM1FkIWGkpP88pu+Q7bbXEH4HcB43Ouz1AgKZliu0D4vfuG
+	 lTiVLvxHD4M2Jfrn6ad3DOxBVz6EIoNV4P+cFfc5TpToy/5tXOERx8IhJb4AjYGMUh
+	 gFn/eDwknWZXEoyE0du4EgXyYmrpgQl+Im4+UBeeMSL1wJxUtj9mQMITk6V0YrRvfZ
+	 qe7QNvjLRXj97h90E70ocknG9xr8DOkwjyLuif4g1WZkbZ9OhdDv97Qa/6cuMZxn45
+	 l6BRdrKVuxbxW3mXw2cZgn/2ZsoyT+T9to7dTb6aBBD1TNOMS89W6G4ym6o9j6VUUN
+	 REoLKpPFYiLTQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/9] cpu/SMT: Move smt/control simple exit cases earlier
-Date: Thu, 25 May 2023 01:56:23 +1000
-Message-Id: <20230524155630.794584-2-mpe@ellerman.id.au>
+Subject: [PATCH 5/9] cpu/SMT: Create topology_smt_thread_allowed()
+Date: Thu, 25 May 2023 01:56:26 +1000
+Message-Id: <20230524155630.794584-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230524155630.794584-1-mpe@ellerman.id.au>
 References: <20230524155630.794584-1-mpe@ellerman.id.au>
@@ -62,50 +62,107 @@ Cc: linux-arch@vger.kernel.org, x86@kernel.org, dave.hansen@linux.intel.com, min
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move the simple exit cases, ie. which don't depend on the value written,
-earlier in the function. That makes it clearer that regardless of the
-input those states can not be transitioned out of.
+A subsequent patch will enable partial SMT states, ie. when not all SMT
+threads are brought online.
 
-That does have a user-visible effect, in that the error returned will
-now always be EPERM/ENODEV for those states, regardless of the value
-written. Previously writing an invalid value would return EINVAL even
-when in those states.
+To support that, add an arch helper which checks whether a given CPU is
+allowed to be brought online depending on how many SMT threads are
+currently enabled.
+
+Call the helper from cpu_smt_enable(), and cpu_smt_allowed() when SMT is
+enabled, to check if the particular thread should be onlined. Notably,
+also call it from cpu_smt_disable() if CPU_SMT_ENABLED, to allow
+offlining some threads to move from a higher to lower number of threads
+online.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- kernel/cpu.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/topology.h |  2 ++
+ arch/x86/kernel/smpboot.c       | 15 +++++++++++++++
+ kernel/cpu.c                    | 10 +++++++++-
+ 3 files changed, 26 insertions(+), 1 deletion(-)
 
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 197ec2589f5d..c6245ea6e589 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -145,6 +145,7 @@ int topology_phys_to_logical_die(unsigned int die, unsigned int cpu);
+ bool topology_is_primary_thread(unsigned int cpu);
+ bool topology_smt_supported(void);
+ bool topology_smt_threads_supported(unsigned int threads);
++bool topology_smt_thread_allowed(unsigned int cpu);
+ #else
+ #define topology_max_packages()			(1)
+ static inline int
+@@ -159,6 +160,7 @@ static inline int topology_max_smt_threads(void) { return 1; }
+ static inline bool topology_is_primary_thread(unsigned int cpu) { return true; }
+ static inline bool topology_smt_supported(void) { return false; }
+ static inline bool topology_smt_threads_supported(unsigned int threads) { return false; }
++static inline bool topology_smt_thread_allowed(unsigned int cpu) { return false; }
+ #endif
+ 
+ static inline void arch_fix_phys_package_id(int num, u32 slot)
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index c7ba62beae3e..244b4df40600 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -298,6 +298,21 @@ bool topology_smt_threads_supported(unsigned int threads)
+ 	return threads == 1 || threads == smp_num_siblings;
+ }
+ 
++/**
++ * topology_smt_thread_allowed - When enabling SMT check whether this particular
++ *				 CPU thread is allowed to be brought online.
++ * @cpu:	CPU to check
++ */
++bool topology_smt_thread_allowed(unsigned int cpu)
++{
++	/*
++	 * No extra logic s required here to support different thread values
++	 * because threads will always == 1 or smp_num_siblings because of
++	 * topology_smt_threads_supported().
++	 */
++	return true;
++}
++
+ /**
+  * topology_phys_to_logical_pkg - Map a physical package id to a logical
+  *
 diff --git a/kernel/cpu.c b/kernel/cpu.c
-index f4a2c5845bcb..01398ce3e131 100644
+index a08dd8f93675..72b9a03a4fef 100644
 --- a/kernel/cpu.c
 +++ b/kernel/cpu.c
-@@ -2481,6 +2481,12 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
+@@ -458,7 +458,7 @@ early_param("nosmt", smt_cmdline_disable);
+ 
+ static inline bool cpu_smt_allowed(unsigned int cpu)
  {
- 	int ctrlval, ret;
+-	if (cpu_smt_control == CPU_SMT_ENABLED)
++	if (cpu_smt_control == CPU_SMT_ENABLED && topology_smt_thread_allowed(cpu))
+ 		return true;
  
-+	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
-+		return -EPERM;
-+
-+	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
-+		return -ENODEV;
-+
- 	if (sysfs_streq(buf, "on"))
- 		ctrlval = CPU_SMT_ENABLED;
- 	else if (sysfs_streq(buf, "off"))
-@@ -2490,12 +2496,6 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
- 	else
- 		return -EINVAL;
- 
--	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
--		return -EPERM;
--
--	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
--		return -ENODEV;
--
- 	ret = lock_device_hotplug_sysfs();
- 	if (ret)
- 		return ret;
+ 	if (topology_is_primary_thread(cpu))
+@@ -2273,6 +2273,12 @@ int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval)
+ 	for_each_online_cpu(cpu) {
+ 		if (topology_is_primary_thread(cpu))
+ 			continue;
++		/*
++		 * Disable can be called with CPU_SMT_ENABLED when changing
++		 * from a higher to lower number of SMT threads per core.
++		 */
++		if (ctrlval == CPU_SMT_ENABLED && topology_smt_thread_allowed(cpu))
++			continue;
+ 		ret = cpu_down_maps_locked(cpu, CPUHP_OFFLINE);
+ 		if (ret)
+ 			break;
+@@ -2307,6 +2313,8 @@ int cpuhp_smt_enable(void)
+ 		/* Skip online CPUs and CPUs on offline nodes */
+ 		if (cpu_online(cpu) || !node_online(cpu_to_node(cpu)))
+ 			continue;
++		if (!topology_smt_thread_allowed(cpu))
++			continue;
+ 		ret = _cpu_up(cpu, 0, CPUHP_ONLINE);
+ 		if (ret)
+ 			break;
 -- 
 2.40.1
 
