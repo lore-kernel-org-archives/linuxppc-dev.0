@@ -4,49 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 998A2C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 16:04:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0E66C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 18:49:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRGG50nvmz3ftH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 02:04:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hN9lRcU8;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRKwx6SkFz3fJP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 04:49:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRG5q1hFYz3f8b
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:57:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hN9lRcU8;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRKwM4K4Lz3cf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 04:49:07 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRG5q0XJJz4x4r;
-	Thu, 25 May 2023 01:57:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1684943823;
-	bh=lhmpLwDQH5cebjnmbxXQDXCrrkxM6lArc4COr8B16+g=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hN9lRcU83wfB6glwdAcQY3uPnaACkF/PWSdI5fYu18ajT4j4SfDdi3UgTHTj/C+Ek
-	 PSdYNMyK2oxhQytwrwRzG2iPk0QfN+PqfYjR5QaqySj0vkb5SnKOEP6mLh3GyTUxpb
-	 ndQ6DT0x2iFNbZeCgTrobrTiwDAQhGsiqUNPXwjaszKiLGzQVd0cuVtYySi6d371oO
-	 yG1jiVNC1et0H63ijBzW+nOOoYscG+RQYRkgqIRyCIzhqLMOepRKlNNr1HcU6Tb83/
-	 hU6/xrQu2TBUuL6VC8wI66+M/n8AUmvxAktM6+soPnEtEVtU1berwOZrMP2Il4sLnc
-	 l1BEpf2K3Sttw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 9/9] powerpc/pseries: Honour current SMT state when DLPAR onlining CPUs
-Date: Thu, 25 May 2023 01:56:30 +1000
-Message-Id: <20230524155630.794584-9-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230524155630.794584-1-mpe@ellerman.id.au>
-References: <20230524155630.794584-1-mpe@ellerman.id.au>
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 2D5D76402E;
+	Wed, 24 May 2023 18:49:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DB2DC433D2;
+	Wed, 24 May 2023 18:48:57 +0000 (UTC)
+Date: Wed, 24 May 2023 19:48:55 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Arnd Bergmann <arnd@kernel.org>
+Subject: Re: [PATCH 13/14] thread_info: move function declarations to
+ linux/thread_info.h
+Message-ID: <ZG5cF6pYCoaLEvFH@arm.com>
+References: <20230517131102.934196-1-arnd@kernel.org>
+ <20230517131102.934196-14-arnd@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230517131102.934196-14-arnd@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,37 +45,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, dave.hansen@linux.intel.com, mingo@redhat.com, bp@alien8.de, tglx@linutronix.de, ldufour@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kselftest@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-mips@vger.kernel.org, linux-mm@kvack.org, Pavel Machek <pavel@ucw.cz>, Christoph Lameter <cl@linux.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Paul Moore <paul@paul-moore.com>, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Dennis Zhou <dennis@kernel.org>, Boqun Feng <boqun.feng@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Waiman Long <longman@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>, audit@vger.kernel.org, Palmer
+  Dabbelt <palmer@dabbelt.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Integrate with the generic SMT support, so that when a CPU is DLPAR
-onlined it is brought up with the correct SMT mode.
+On Wed, May 17, 2023 at 03:11:01PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> There are a few __weak functions in kernel/fork.c, which architectures
+> can override. If there is no prototype, the compiler warns about them:
+> 
+> kernel/fork.c:164:13: error: no previous prototype for 'arch_release_task_struct' [-Werror=missing-prototypes]
+> kernel/fork.c:991:20: error: no previous prototype for 'arch_task_cache_init' [-Werror=missing-prototypes]
+> kernel/fork.c:1086:12: error: no previous prototype for 'arch_dup_task_struct' [-Werror=missing-prototypes]
+> 
+> There are already prototypes in a number of architecture specific headers
+> that have addressed those warnings before, but it's much better to have
+> these in a single place so the warning no longer shows up anywhere.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+For arm64:
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 61fb7cb00880..e62835a12d73 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -398,6 +398,14 @@ static int dlpar_online_cpu(struct device_node *dn)
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != thread)
- 				continue;
-+
-+			if (!topology_is_primary_thread(cpu)) {
-+				if (cpu_smt_control != CPU_SMT_ENABLED)
-+					break;
-+				if (!topology_smt_thread_allowed(cpu))
-+					break;
-+			}
-+
- 			cpu_maps_update_done();
- 			find_and_update_cpu_nid(cpu);
- 			rc = device_online(get_cpu_device(cpu));
--- 
-2.40.1
-
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
