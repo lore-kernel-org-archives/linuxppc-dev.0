@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0998C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 15:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 909FDC77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 16:00:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRG8V2lPjz3fNN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 01:59:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRG9P0fJxz3fWF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 02:00:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FJuoWLcd;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KzIdXKHw;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRG5m58jfz3bkM
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRG5m5kH8z3f7j
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:57:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FJuoWLcd;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KzIdXKHw;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRG5m3Sfqz4wj7;
-	Thu, 25 May 2023 01:57:00 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRG5l41STz4x46;
+	Thu, 25 May 2023 01:56:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1684943820;
-	bh=qwsZV+PJ3cb3Udy+/4CR3STWLoi8PlYV5C8cGtG8aK4=;
+	s=201909; t=1684943819;
+	bh=SibCu5hbkCNZrPVw6RETBvRPo+OI/DYG2D1OFC/b1dE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=FJuoWLcdzkR8HnaGpngf5T4KtnCDJHSDZUYmwKw3pPxMTPIJ0xX7+0v5GR54wH+kT
-	 cuGSHMg0dx13uCyFD3IBLTK3e6SDAvv0mqCg1Hmf9CSz9Z4hnw9l0sW3l1hkXjoXMq
-	 r7jtYBZvjoCjlR35GmMLhH0iMd1Xorj0G46RkgASgGqRKgTAN80OsyhNaaXO8loUB0
-	 FZ/4RhTQAJFdkAGi3T7fyarIQk20iuDMfCXAsjJSh/vzvslkN40aRZXaH08pfS8xD/
-	 tY+3SiUJMnpRPAvVboalycZAvtCcz7rbuLSJEyc33AJaAHdGbwWm+JxUrX3A7ZU13F
-	 Q4VfivmwPfBHw==
+	b=KzIdXKHwxxd3j0FduASPcesMjZeYkfSk/g00GGwANuRi+5VTyrdO766gIAOTULPzN
+	 /98f2t9c+kfBcgveEWZZodfvf2KGTl++qMB1HYBn2XoiF5Yz9CsM1T65V4zhn45qIZ
+	 IaUB9NswoROgPrF1J1CEI2MTgF+wR3xMTq6A2OgWZiozYhTBFsqes4zEcCIn+DCCt5
+	 UpWHTXj4ezY5TPaHp1yOnKA0Iq05FnDc9uvz84pMJpLAFQOG/Z1ppaeSnyzOifTRQB
+	 MDDy+PLYnzxP/mmqtf2dsWpOtRxpAI1BUzRFctT7VQBQoCye8l58BZCuaMLMVEj0W3
+	 j3cIoZ6bsOzwQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/9] cpu/SMT: Create topology_smt_threads_supported()
-Date: Thu, 25 May 2023 01:56:25 +1000
-Message-Id: <20230524155630.794584-4-mpe@ellerman.id.au>
+Subject: [PATCH 2/9] cpu/SMT: Move smt/control simple exit cases earlier
+Date: Thu, 25 May 2023 01:56:23 +1000
+Message-Id: <20230524155630.794584-2-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230524155630.794584-1-mpe@ellerman.id.au>
 References: <20230524155630.794584-1-mpe@ellerman.id.au>
@@ -62,64 +62,50 @@ Cc: linux-arch@vger.kernel.org, x86@kernel.org, dave.hansen@linux.intel.com, min
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A subsequent patch will enable partial SMT states, ie. when not all SMT
-threads are brought online.
+Move the simple exit cases, ie. which don't depend on the value written,
+earlier in the function. That makes it clearer that regardless of the
+input those states can not be transitioned out of.
 
-To support that, add an arch helper to check how many SMT threads are
-supported.
-
-To retain existing behaviour, the x86 implementation only allows a
-single thread or all threads to be online.
+That does have a user-visible effect, in that the error returned will
+now always be EPERM/ENODEV for those states, regardless of the value
+written. Previously writing an invalid value would return EINVAL even
+when in those states.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/x86/include/asm/topology.h |  2 ++
- arch/x86/kernel/smpboot.c       | 12 ++++++++++++
- 2 files changed, 14 insertions(+)
+ kernel/cpu.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 66927a59e822..197ec2589f5d 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -144,6 +144,7 @@ int topology_phys_to_logical_pkg(unsigned int pkg);
- int topology_phys_to_logical_die(unsigned int die, unsigned int cpu);
- bool topology_is_primary_thread(unsigned int cpu);
- bool topology_smt_supported(void);
-+bool topology_smt_threads_supported(unsigned int threads);
- #else
- #define topology_max_packages()			(1)
- static inline int
-@@ -157,6 +158,7 @@ static inline int topology_max_die_per_package(void) { return 1; }
- static inline int topology_max_smt_threads(void) { return 1; }
- static inline bool topology_is_primary_thread(unsigned int cpu) { return true; }
- static inline bool topology_smt_supported(void) { return false; }
-+static inline bool topology_smt_threads_supported(unsigned int threads) { return false; }
- #endif
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index f4a2c5845bcb..01398ce3e131 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -2481,6 +2481,12 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
+ {
+ 	int ctrlval, ret;
  
- static inline void arch_fix_phys_package_id(int num, u32 slot)
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 352f0ce1ece4..c7ba62beae3e 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -286,6 +286,18 @@ bool topology_smt_supported(void)
- 	return smp_num_siblings > 1;
- }
- 
-+/**
-+ * topology_smt_threads_supported - Check if the given number of SMT threads
-+ *				    is supported.
-+ *
-+ * @threads:	The number of SMT threads.
-+ */
-+bool topology_smt_threads_supported(unsigned int threads)
-+{
-+	// Only support a single thread or all threads.
-+	return threads == 1 || threads == smp_num_siblings;
-+}
++	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
++		return -EPERM;
 +
- /**
-  * topology_phys_to_logical_pkg - Map a physical package id to a logical
-  *
++	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
++		return -ENODEV;
++
+ 	if (sysfs_streq(buf, "on"))
+ 		ctrlval = CPU_SMT_ENABLED;
+ 	else if (sysfs_streq(buf, "off"))
+@@ -2490,12 +2496,6 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
+ 	else
+ 		return -EINVAL;
+ 
+-	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
+-		return -EPERM;
+-
+-	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
+-		return -ENODEV;
+-
+ 	ret = lock_device_hotplug_sysfs();
+ 	if (ret)
+ 		return ret;
 -- 
 2.40.1
 
