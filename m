@@ -4,75 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A917FC7EE2D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 13:40:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96BF4C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 15:04:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRC403plZz3fG6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 23:40:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRDx204pXz3f8s
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 01:04:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=UerkxAe1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bf7RKUqi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=bagasdotme@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=UerkxAe1;
-	dkim-atps=neutral
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRC302nhMz3fF4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 23:39:23 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-64d3e5e5980so1023919b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 06:39:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1684935561; x=1687527561;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=hPsAoeioL5fBV6oESCE3p4zCum2vadqzjSJd4gAo1As=;
-        b=UerkxAe1cuAxMa0tMwzHRnm4yoFoo00xmDBj9EJfjTIpxnl1u9y/hQqnjm8YEhVTT8
-         MMUWAqbxySMSY+RpXGj5k7H2lEU5qkq3UiFziaJqOIZHRGjSQL5ihhcNaJf5my3W5Twk
-         fiIwWjmlRLOgCf5ICcpGIxE3vlIEqiIzZsIbie8lsr9T41dAEasU1oKiTlkgpEcKE1aS
-         nAKi6S1P4xSLNyKwAUctQiHvx3FZ3W0uVxsNKW3fe1hTf6pDPTRSXwVuYAJOKhUxnoop
-         Rpl+MgcRgmRRD3DkGdSnUJCMBT9cr9nqhVXPAbQPOt+uU7HrcDIizGzIC+jz1kzQlk/H
-         58oQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684935561; x=1687527561;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hPsAoeioL5fBV6oESCE3p4zCum2vadqzjSJd4gAo1As=;
-        b=NO/STakzmf0na5DqudeaB8W2fczntpMXMFCBSBGq/Az423c9iFgVpqyxbVTnba0rWs
-         otGjStuUSLclf+4uv58J4oRwTbGiYh2SU25rpKgjavLT6VPWiA5s6mRu9ziCmc19qKyX
-         ELjyBBS/RdtULg93fVcp+uJrD/UMHUoQ2Bijg1oQvGNuxedyoE5galGE7ojyiQxvcmhG
-         7dHFet0q6slD5HFhNUcd+qeX4U50rcE9efELdIhocw/+lsItXCMfVJuTzro0DVCm6vlm
-         cs14zMwbBV+Q/oQ1qYcLs7yFRf5zNZWNMtyX7tdGn7VQOk4sklYTKYP3oqPVzFyCg5+Y
-         VcQA==
-X-Gm-Message-State: AC+VfDzg75NzzoEErwnKQzvVlmeEB9942emjqu5FplW7KwV7RiOWU5wI
-	xaHsK/PUMNzUfekWcfLwyupUHSOJx7Y=
-X-Google-Smtp-Source: ACHHUZ6+4ecfLPKCvweUFLek2AuikwAHHFdmp7lDN93yiPKuONCVLxG+xoNnfueMOPPVRsYfibfDxA==
-X-Received: by 2002:a05:6a00:b52:b0:64d:5f1d:3d77 with SMTP id p18-20020a056a000b5200b0064d5f1d3d77mr3858529pfo.34.1684935561609;
-        Wed, 24 May 2023 06:39:21 -0700 (PDT)
-Received: from [192.168.43.80] (subs02-180-214-232-11.three.co.id. [180.214.232.11])
-        by smtp.gmail.com with ESMTPSA id y4-20020aa78044000000b0064928cb5f03sm7461051pfm.69.2023.05.24.06.39.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 24 May 2023 06:39:21 -0700 (PDT)
-Message-ID: <5df92692-296e-3956-24fa-2bd439337953@gmail.com>
-Date: Wed, 24 May 2023 20:39:16 +0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRDw60ddSz3cf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 01:03:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bf7RKUqi;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QRDvz74DMz4x4X;
+	Thu, 25 May 2023 01:03:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1684940609;
+	bh=QzuYQR0gPXTiNpvk+XF3DiuPlqmiDTFoEMf5CPsp/LQ=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=bf7RKUqiJYwZB6rIiKqXmpYDb9sFeIdXFk2IUeNjP7E8NNAeCOTLqymXJNOAorFjd
+	 xWkU8ulUSYjTSdmKA+wMq4Ghu998sGrt51EoNi7pwkLUocpeZ1heayLdqssJP92wsZ
+	 BJcX2JldrMHdKhkKSs6pkxXfxhQ1JJ1HmaZq0DTdEdtn090JmdjMzzn/zhdefc1vli
+	 78BiKrDhT8CDAN3pP20RhCnQiid6BbStWe01B3C+/0BFq3vcJFi5zHEDRCIgpyp2RC
+	 OZI9TQ8Q/sxnNbw8hjEbulhPfocWEjeb36x8Y2XVjEtzouoVHZylnT5v056FlXhcIj
+	 nokuXbkIsUQ3w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bagas Sanjaya <bagasdotme@gmail.com>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Linux PowerPC
+ <linuxppc-dev@lists.ozlabs.org>, Linux Memory Management List
+ <linux-mm@kvack.org>, Linux Regressions <regressions@lists.linux.dev>
 Subject: Re: Fwd: ./include/linux/mmzone.h:1735:2: error: #error Allocator
  MAX_ORDER exceeds SECTION_SIZE (v6.4-rc3 build regression)
-Content-Language: en-US
-To: Doru Iorgulescu <doru.iorgulescu1@gmail.com>
+In-Reply-To: <5d22e1e9-0307-3664-8b4a-99caaaaa4315@gmail.com>
 References: <2a1cd5e6-01f7-66f9-1f9d-c655cc3f919b@gmail.com>
  <5d22e1e9-0307-3664-8b4a-99caaaaa4315@gmail.com>
- <CA+39qUjOA53UO4oYOzrUJqdYq8A3hbnnxpSV8nfqh0T5KiNL9A@mail.gmail.com>
-From: Bagas Sanjaya <bagasdotme@gmail.com>
-In-Reply-To: <CA+39qUjOA53UO4oYOzrUJqdYq8A3hbnnxpSV8nfqh0T5KiNL9A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Date: Thu, 25 May 2023 01:03:22 +1000
+Message-ID: <87bki9ai11.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,36 +62,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, Linux Regressions <regressions@lists.linux.dev>, Fabiano Rosas <farosas@linux.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Linux Memory Management List <linux-mm@kvack.org>, Zi Yan <ziy@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Disha Goel <disgoel@linux.vnet.ibm.com>, Linux PowerPC <linuxppc-dev@lists.ozlabs.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: doru iorgulescu <doru.iorgulescu1@gmail.com>, Athira Rajeev <atrajeev@linux.vnet.ibm.com>, Fabiano Rosas <farosas@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Zi Yan <ziy@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Disha Goel <disgoel@linux.vnet.ibm.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/24/23 20:11, Doru Iorgulescu wrote:
-> Glad to hear it! 
-> Thank you
+Bagas Sanjaya <bagasdotme@gmail.com> writes:
+> On 5/24/23 17:58, Bagas Sanjaya wrote:
+>> Anyway, I'm adding it to regzbot:
+>> 
+>> #regzbot introduced: 23baf831a32c04f https://bugzilla.kernel.org/show_bug.cgi?id=217477
+>> #regzbot title: Allocator MAX_ORDER exceeds SECTION_SIZE caused by MAX_ORDER redefinition
+>> 
+>
+> From bugzilla [1], the reporter had successfully tried the proposed
+> kernel config fix, so:
+>
+> #regzbot resolve: reducing CONFIG_ARCH_FORCE_MAX_ORDER to 8 resolves the regression
 
-tl;dr:
+Should be fixed properly by:
 
-> A: http://en.wikipedia.org/wiki/Top_post
-> Q: Were do I find info about this thing called top-posting?
-> A: Because it messes up the order in which people normally read text.
-> Q: Why is top-posting such a bad thing?
-> A: Top-posting.
-> Q: What is the most annoying thing in e-mail?
-> 
-> A: No.
-> Q: Should I include quotations after my reply?
-> 
-> http://daringfireball.net/2007/07/on_top
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20230519113806.370635-1-mpe@ellerman.id.au/
 
-(IOW, I have no idea what you're referring to. Please stop top-posting;
-reply inline with appropriate context instead.)
+Which is in powerpc-fixes as 358e526a1648.
 
-Also, don't send HTML emails as many mailing lists (including LKML)
-don't like it.
-
-Thanks.
-
--- 
-An old man doll... just what I always wanted! - Clara
-
+cheers
