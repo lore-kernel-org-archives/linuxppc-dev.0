@@ -4,35 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E704C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 16:38:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBBA7C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 18:19:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRtz76hXkz3fcP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 02:38:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRxCL1XdFz3fF6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 04:19:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=opM6Zycx;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.15; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=opM6Zycx;
+	dkim-atps=neutral
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRtyb2RJWz3fJl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 02:37:59 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 2A226613E9;
-	Thu, 25 May 2023 16:37:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A40FC433EF;
-	Thu, 25 May 2023 16:37:50 +0000 (UTC)
-Date: Thu, 25 May 2023 17:37:47 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Hugh Dickins <hughd@google.com>
-Subject: Re: [PATCH 03/23] arm64/hugetlb: pte_alloc_huge() pte_offset_huge()
-Message-ID: <ZG+O2yE8fWxSy4Va@arm.com>
-References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com>
- <dda2885-929b-c278-14e-5f447e9eec52@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRxB52lJDz3fG2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 04:18:04 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1685038584; i=deller@gmx.de;
+	bh=K2LpqUproNVaEYfciKE2xUVes3IFu6inT1ojIZWxRK0=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=opM6ZycxGEnfKtweb5YWEWAN530UjohDS09mCOh47Kc3Snfr/ROPCfIOylBQndoe0
+	 ZLTz1BjU2i+TZdc+BU0Vd8M8Wn96D0zdWLphkPmTjGKyUODaFFapwbEBfZpLnQWf0d
+	 dDNTogpfAaB7eMI+zlKffM1IsnD9yA9fQ0FHEdBH+OCQx/CffzuPXvfzk6u5LnAuUt
+	 M067+FohpOaj7qFR3mAh+CzlDbYZH+jOmfokYU4AbodaT2hf0dXJVQ7hiMqViMf2tP
+	 X5HK8oTI4EYl71gYwno969NU7xlpu9Y0wSDTgqCs8agQDFU6yDz7gbf40EgYGT/v/B
+	 FHSBhye0W50Pw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.157.173]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Ml6mE-1qPBBj3Htk-00lXgN; Thu, 25
+ May 2023 20:16:23 +0200
+Message-ID: <dda2616a-f4d0-fca0-5c5c-7a0f49f947e3@gmx.de>
+Date: Thu, 25 May 2023 20:16:13 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dda2885-929b-c278-14e-5f447e9eec52@google.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH] mm/slab: rename CONFIG_SLAB to CONFIG_SLAB_DEPRECATED
+Content-Language: en-US
+To: Vlastimil Babka <vbabka@suse.cz>
+References: <20230523091139.21449-1-vbabka@suse.cz>
+ <be109b49-8510-5887-72ae-738db9945619@google.com>
+From: Helge Deller <deller@gmx.de>
+In-Reply-To: <be109b49-8510-5887-72ae-738db9945619@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:K1zdwa4g6OWygvqnRQK3gXolaxN9hnmaCD/sfFOygFxv5gAj6ei
+ THk+aQNQMiH0oWH34qhfh7vFSX4rOi68z08hA0sfnE3E8jQpgoB8aCeQFBdovw6CWb27TGJ
+ akSe+X2hZ+TCagNXuXGocolM7BrEtSmVXxnNOhc988TLQvzcbu0JUSnRiyxetx0lbRk6hr6
+ RCFXL34mSj82AxaBd7hHw==
+UI-OutboundReport: notjunk:1;M01:P0:yGqLH3vcUq4=;IeBJUDWQ4H8EmLJY7QSDptEyjrX
+ /7ngAukTu5+WessWpw6c7f8qrRpW4JGSC7nPNRjj+Y5miQDY0dsuPzsAcCL6qd/PR5VCMHBPS
+ E8JgPITjt58RQW+LXkgbHua0lJgufsN2sZTZLtGxRxzIcjbZzYGkvgfhxHpgnt1Qc4bI1F2jH
+ IlNjipVfrrLZ9EknTVNXHpIbNmuaggtQUROs1GNscWNeOXuTbRtIElWCD3lG/2SaGCh2bJZ0H
+ 4daYHz9js01cfK0Y+vipU98eZ+G9vFObXuVLs5A3ULpfabkfcqLBZBw47hiC7xjVhjH7LOQkC
+ dgWx2wGHzp3Uf6q3Kt/Ea3Ycn9D/fCFtoYWAXLQh48dMj9o8wz7g8bC7D5QYUlEygTpq8uBVG
+ UFrzmA5nd/gCh75Ei+6B1JKixUNOmUNdJZ++9RhNrF4FX0zlIuzQH/PcKIrCoZRsURDQt8ZuO
+ wQkku4i+G0xieBvC3yyOQImF2uBxMLYG8UTDEWH+4+T+JUp9BWFsxXeAwg56xS7I7McvJrLLz
+ tUA5Hn6e2vx6UPn4nvHeA6JSXM/5pOX7X7Kw5IGoWspGzdY+X1OI9nDxRatfMk0dBppo9VdoD
+ LsvM4IGmGM9hJZJKrBm1b+lfQwisdHfAjHTHjE9g8ZrflyBl4SP2kv+7cQBSyjCzWpKHDt+OE
+ PvlYbD52GIneTph324pRyi2niQIt6l7SOhAz7514Iox403svHi9vqbyrQWNteeRl8zG3kL3FN
+ U6AGRE18ei2676TvUjU+wckhBVDKBIKQhctOycQFMN3fBiyv3XJQGOJlofBh6wSrv2FEmF678
+ 2NOdbX/20joBRFq4wL6mUlvDxvkNv/7q5ukMbQ9BdHyNMmcbfWCFUx4p+LIcsJ/taNp/x4e3S
+ 3D9bXJ7icV9nFtl0BFX9I8mT1bHrL1rslN/dCd4iHansWfGb+Pursh6OC6oYejd2RljJ8UM/1
+ WDrEhvOseS9Yb+a/0lFfWeAlRuI=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,16 +80,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogen
- d@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Roman Gushchin <roman.gushchin@linux.dev>, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Hyeonggon Yoo <42.hyeyoo@gmail.com>, Christoph Lameter <cl@linux.com>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, linux-renesas-soc@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger <richard@nod.at>, Gregory Clement <gregory.clement@bootlin.com>, David Rientjes <rientjes@google.com>, linux-snps-arc@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, linux-um@lists.infradead.org, Vladimir Zapolskiy <vz@mleia.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, linux-
+ arm-kernel@lists.infradead.org, Qin Jian <qinjian@cqplus1.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Andrew Morton <akpm@linux-foundation.org>, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, Pekka Enberg <penberg@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Shawn Guo <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 09, 2023 at 09:45:57PM -0700, Hugh Dickins wrote:
-> pte_alloc_map() expects to be followed by pte_unmap(), but hugetlb omits
-> that: to keep balance in future, use the recently added pte_alloc_huge()
-> instead; with pte_offset_huge() a better name for pte_offset_kernel().
-> 
-> Signed-off-by: Hugh Dickins <hughd@google.com>
+On 5/24/23 02:29, David Rientjes wrote:
+> On Tue, 23 May 2023, Vlastimil Babka wrote:
+>
+>> As discussed at LSF/MM [1] [2] and with no objections raised there,
+>> deprecate the SLAB allocator. Rename the user-visible option so that
+>> users with CONFIG_SLAB=3Dy get a new prompt with explanation during mak=
+e
+>> oldconfig, while make olddefconfig will just switch to SLUB.
+>>
+>> In all defconfigs with CONFIG_SLAB=3Dy remove the line so those also
+>> switch to SLUB. Regressions due to the switch should be reported to
+>> linux-mm and slab maintainers.
+>>
+>> [1] https://lore.kernel.org/all/4b9fc9c6-b48c-198f-5f80-811a44737e5f@su=
+se.cz/
+>> [2] https://lwn.net/Articles/932201/
+>>
+>> Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+>
+> Acked-by: David Rientjes <rientjes@google.com>
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+I did tested SLUB on parisc with 32- and 64-bit kernel, so you may add:
+
+Acked-by: Helge Deller <deller@gmx.de> # parisc
+
+Helge
