@@ -4,75 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06AE4C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 May 2023 19:46:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AE1EC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 07:26:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRMBQ063Hz3fG0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 05:46:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRfjh6Mr5z3fD2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 17:26:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=U1KdoKVB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RCtuVZMV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::f34; helo=mail-qv1-xf34.google.com; envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=imbrenda@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=U1KdoKVB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RCtuVZMV;
 	dkim-atps=neutral
-Received: from mail-qv1-xf34.google.com (mail-qv1-xf34.google.com [IPv6:2607:f8b0:4864:20::f34])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRM9T5ZFqz3c9S
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 05:45:31 +1000 (AEST)
-Received: by mail-qv1-xf34.google.com with SMTP id 6a1803df08f44-5ed99ebe076so1308346d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 12:45:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1684957526; x=1687549526;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XIB0HReKptcGBTosdBXg1PO+NrPRx+I4udNpoc6AMN0=;
-        b=U1KdoKVBW2Xvw1DfdpK3A6YJkUefWZXGU0g8vvNdWIL2Ehdz8ViQWlZo4iL5+tE5LN
-         hbXUSmG31UMAUZxbfTXxT6y8c5f6W6ShSlpxlIzXUD67C1+95CMIWZ+X2u/B5PGJaO4F
-         Kh/5JgQfVUbZZlTUh+8ht2Tq81NDj9u9U8JAY=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684957526; x=1687549526;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XIB0HReKptcGBTosdBXg1PO+NrPRx+I4udNpoc6AMN0=;
-        b=QiVPWVdzYvsegt9PvfqBJhyjbb5JcpmX43HVxxDbmFSZIBd/ahEzlnQKvqNOgxd765
-         QI6OMk+AVZnXfMYE65lMg/DdaIPMVLA6SjasdcxDMK1/HpkWwQAHjt99y4hGNBE9YALg
-         IMlvoJff+46b7pKf1gx8J+i1EmeL1yjANuhFT5MUaRsMNWDogSm/HOdfV6OteNz3l2PZ
-         TN8GUYOtrFGPiCvZT5jMEDk/+uto4//ieE7gRRRg4qvd80mKD0yNulk5GAfjw99b+F7K
-         EXiJ8nh/pMTl7on4AjkPcFsGPWnCP4VZTT/PcLOdcsWBiwQ4tmQUROzEUfOerUQ8XD7Z
-         flgw==
-X-Gm-Message-State: AC+VfDy+KhNsQdjY0sH9JdMAcdowZk5ub9aixkqO1CxiA8XIwjzIU9vO
-	qJmdu/4jA7/Xd7RNXQoJrAiOZumV/uWz1Zhywxk=
-X-Google-Smtp-Source: ACHHUZ5In7IxdOUbbCRpJxI/hWPAALgRBjV/lA9tcwkWEmxxBhL/tajpDFaQQr1dxt8TQ4Q3yT0LFQ==
-X-Received: by 2002:a05:6214:1d2a:b0:625:801c:5ea1 with SMTP id f10-20020a0562141d2a00b00625801c5ea1mr18797670qvd.14.1684957525681;
-        Wed, 24 May 2023 12:45:25 -0700 (PDT)
-Received: from mail-qt1-f178.google.com (mail-qt1-f178.google.com. [209.85.160.178])
-        by smtp.gmail.com with ESMTPSA id mz9-20020a0562142d0900b006238b37fb05sm3772509qvb.119.2023.05.24.12.45.25
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 24 May 2023 12:45:25 -0700 (PDT)
-Received: by mail-qt1-f178.google.com with SMTP id d75a77b69052e-3f51ea3a062so3051cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2023 12:45:25 -0700 (PDT)
-X-Received: by 2002:a05:6e02:194e:b0:331:d42:d06e with SMTP id
- x14-20020a056e02194e00b003310d42d06emr33974ilu.17.1684957143210; Wed, 24 May
- 2023 12:39:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRfhh3d3jz3cM1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 17:25:08 +1000 (AEST)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34P7MZUR027615;
+	Thu, 25 May 2023 07:24:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=55klH+MHDRtIEEtWGbvAfPxNnN6EmMw4scwT5+fq3XI=;
+ b=RCtuVZMVyLY0xGNcOr1uNeKOK8ntfwHROTFHQ4+AHlf2PWmk9UMR5C1PwZzqTymLhX3F
+ YS8x9sdj4rnAtSDt7d3OIlvETB4UqOoJw503GtHvkqIIk34L6d4qe/5QAfXKoRiw8KQ3
+ q2vN+VSVcbXRkWC9E/KmFqhp4J9Uk1or/sNjytHkFA/FLMsoMkRIv3iKpmsDaSpOHta9
+ CUHKBISpNyljOYab0uO1Fpi++beo28ogb584RD8aDiv+J9GeRUJVo/dWdX2F0D18x38T
+ iFptJIA55GKyv/jWO+T8QXxUyFt7k1uiwhkDKMXzQji2/r8sTbD6T9TT2CpRLV4sxd42 RQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qt32yg93r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 May 2023 07:24:01 +0000
+Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34P7CWdL024922;
+	Thu, 25 May 2023 07:24:00 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qt32yg92j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 May 2023 07:24:00 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34P4rUxB029511;
+	Thu, 25 May 2023 07:23:57 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3qppcuaahq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 May 2023 07:23:57 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34P7NrqW22610506
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 25 May 2023 07:23:53 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B0BFA20043;
+	Thu, 25 May 2023 07:23:53 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0955820040;
+	Thu, 25 May 2023 07:23:53 +0000 (GMT)
+Received: from p-imbrenda (unknown [9.152.224.66])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 25 May 2023 07:23:52 +0000 (GMT)
+Date: Thu, 25 May 2023 09:23:51 +0200
+From: Claudio Imbrenda <imbrenda@linux.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Subject: Re: [PATCH 15/23] s390: allow pte_offset_map_lock() to fail
+Message-ID: <20230525092351.7671f2a4@p-imbrenda>
+In-Reply-To: <b64cd153-18e8-81a6-b852-c04d8b1381d@google.com>
+References: <77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com>
+	<94aec8fe-383f-892-dcbf-d4c14e460a7@google.com>
+	<20230517123546.672fb9b0@p-imbrenda>
+	<4a15dbaa-1614-ce-ce1f-f73959cef895@google.com>
+	<20230523140056.55b664b1@p-imbrenda>
+	<b64cd153-18e8-81a6-b852-c04d8b1381d@google.com>
+Organization: IBM
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-References: <20230519101840.v5.18.Ia44852044cdcb074f387e80df6b45e892965d4a1@changeid>
- <20230519101840.v5.13.I847d9ec852449350997ba00401d2462a9cb4302b@changeid> <ZG4YMyifGLOBJxLo@alley>
-In-Reply-To: <ZG4YMyifGLOBJxLo@alley>
-From: Doug Anderson <dianders@chromium.org>
-Date: Wed, 24 May 2023 12:38:49 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=X+LEcSrArV+w35MX4oP1sC9KoRM0puJLT1RFmyS84Hxw@mail.gmail.com>
-Message-ID: <CAD=FV=X+LEcSrArV+w35MX4oP1sC9KoRM0puJLT1RFmyS84Hxw@mail.gmail.com>
-Subject: Re: [PATCH v5 13/18] watchdog/hardlockup: Have the perf hardlockup
- use __weak functions more cleanly
-To: Petr Mladek <pmladek@suse.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: qRLyp44GLiE9zXh3PageqjkrZmyh07xV
+X-Proofpoint-GUID: uXGxTdAMLt8o-nI3lVA1NmtMWFctokRx
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
+ definitions=2023-05-25_03,2023-05-24_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
+ spamscore=0 clxscore=1015 lowpriorityscore=0 mlxlogscore=999
+ impostorscore=0 bulkscore=0 suspectscore=0 malwarescore=0 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2304280000 definitions=main-2305250057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,157 +103,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, ito-yuichi@fujitsu.com, Lecopzer Chen <lecopzer.chen@mediatek.com>, kgdb-bugreport@lists.sourceforge.net, ricardo.neri@intel.com, Stephane Eranian <eranian@google.com>, sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Will Deacon <will@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Andi Kleen <ak@linux.intel.com>, Marc Zyngier <maz@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Matthias Kaehlcke <mka@chromium.org>, Catalin Marinas <catalin.marinas@arm.com>, Masayoshi Mizuma <msys.mizuma@gmail.com>, ravi.v.shankar@intel.com, Tzung-Bi Shih <tzungbi@chromium.org>, npiggin@gmail.com, Stephen Boyd <swboyd@chromium.org>, Pingfan Liu <kernelfans@gmail.com>, linux-arm-kernel@lists.infradead.org, Sumit Garg <sumit.garg@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozl
- abs.org, davem@davemloft.net
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogen
+ d@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A.
+ Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Tue, 23 May 2023 18:49:14 -0700 (PDT)
+Hugh Dickins <hughd@google.com> wrote:
 
-On Wed, May 24, 2023 at 6:59=E2=80=AFAM Petr Mladek <pmladek@suse.com> wrot=
-e:
->
-> On Fri 2023-05-19 10:18:37, Douglas Anderson wrote:
-> > The fact that there watchdog_hardlockup_enable(),
-> > watchdog_hardlockup_disable(), and watchdog_hardlockup_probe() are
-> > declared __weak means that the configured hardlockup detector can
-> > define non-weak versions of those functions if it needs to. Instead of
-> > doing this, the perf hardlockup detector hooked itself into the
-> > default __weak implementation, which was a bit awkward. Clean this up.
-> >
-> > >From comments, it looks as if the original design was done because the
-> > __weak function were expected to implemented by the architecture and
-> > not by the configured hardlockup detector. This got awkward when we
-> > tried to add the buddy lockup detector which was not arch-specific but
-> > wanted to hook into those same functions.
-> >
-> > This is not expected to have any functional impact.
-> >
-> > @@ -187,27 +187,33 @@ static inline void watchdog_hardlockup_kick(void)=
- { }
-> >  #endif /* !CONFIG_HARDLOCKUP_DETECTOR_PERF */
-> >
-> >  /*
-> > - * These functions can be overridden if an architecture implements its
-> > - * own hardlockup detector.
-> > + * These functions can be overridden based on the configured hardlockd=
-up detector.
-> >   *
-> >   * watchdog_hardlockup_enable/disable can be implemented to start and =
-stop when
-> > - * softlockup watchdog start and stop. The arch must select the
-> > + * softlockup watchdog start and stop. The detector must select the
-> >   * SOFTLOCKUP_DETECTOR Kconfig.
-> >   */
-> > -void __weak watchdog_hardlockup_enable(unsigned int cpu)
-> > -{
-> > -     hardlockup_detector_perf_enable();
-> > -}
-> > +void __weak watchdog_hardlockup_enable(unsigned int cpu) { }
-> >
-> > -void __weak watchdog_hardlockup_disable(unsigned int cpu)
-> > -{
-> > -     hardlockup_detector_perf_disable();
-> > -}
-> > +void __weak watchdog_hardlockup_disable(unsigned int cpu) { }
-> >
-> >  /* Return 0, if a hardlockup watchdog is available. Error code otherwi=
-se */
-> >  int __weak __init watchdog_hardlockup_probe(void)
-> >  {
-> > -     return hardlockup_detector_perf_init();
-> > +     /*
-> > +      * If CONFIG_HAVE_NMI_WATCHDOG is defined then an architecture
-> > +      * is assumed to have the hard watchdog available and we return 0=
-.
-> > +      */
-> > +     if (IS_ENABLED(CONFIG_HAVE_NMI_WATCHDOG))
-> > +             return 0;
-> > +
-> > +     /*
-> > +      * Hardlockup detectors other than those using CONFIG_HAVE_NMI_WA=
-TCHDOG
-> > +      * are required to implement a non-weak version of this probe fun=
-ction
-> > +      * to tell whether they are available. If they don't override the=
-n
-> > +      * we'll return -ENODEV.
-> > +      */
-> > +     return -ENODEV;
-> >  }
->
-> When thinking more about it. It is weird that we need to handle
-> CONFIG_HAVE_NMI_WATCHDOG in this default week function.
->
-> It should be handled in watchdog_hardlockup_probe() implemented
-> in kernel/watchdog_perf.c.
->
-> IMHO, the default __weak function could always return -ENODEV;
->
-> Would it make sense, please?
+> On Tue, 23 May 2023, Claudio Imbrenda wrote:
+> > 
+> > so if I understand the above correctly, pte_offset_map_lock will only
+> > fail if the whole page table has disappeared, and in that case, it will
+> > never reappear with zero pages, therefore we can safely skip (in that
+> > case just break). if we were to do a continue instead of a break, we
+> > would most likely fail again anyway.  
+> 
+> Yes, that's the most likely; and you hold mmap_write_lock() there,
+> and VM_NOHUGEPAGE on all vmas, so I think it's the only foreseeable
+> possibility.
+> 
+> > 
+> > in that case I would still like a small change in your patch: please
+> > write a short (2~3 lines max) comment about why it's ok to do things
+> > that way  
+> 
+> Sure.
+> 
+> But I now see that I've disobeyed you, and gone to 4 lines (but in the
+> comment above the function, so as not to distract from the code itself):
+> is this good wording to you?  I needed to research how they were stopped
+> from coming in afterwards, so wanted to put something greppable in there.
+> 
+> And, unless I'm misunderstanding, that "after THP was enabled" was
+> always supposed to say "after THP was disabled" (because splitting a
+> huge zero page pmd inserts a a page table full of little zero ptes).
 
-I don't quite understand. I'd agree that the special case for
-CONFIG_HAVE_NMI_WATCHDOG is ugly, but it was also ugly before. IMO
-it's actually a little less ugly / easier to understand after my
-patch. ...but let me walk through how I think this special case works
-and maybe you can tell me where I'm confused.
+indeed, thanks for noticing and fixing it
 
-The first thing to understand is that CONFIG_HARDLOCKUP_DETECTOR_PERF
-and CONFIG_HAVE_NMI_WATCHDOG are mutually exclusive from each other.
-This was true before any of my patches and is still true after them.
-Specifically, if CONFIG_HAVE_NMI_WATCHDOG is defined then an
-architecture implements arch_touch_nmi_watchdog() (as documented in
-the Kconfig docs for HAVE_NMI_WATCHDOG). Looking at the tree before my
-series you can see that the perf hardlockup detector also implemented
-arch_touch_nmi_watchdog(). This would have caused a conflict. The
-mutual exclusion was presumably enforced by an architecture not
-defining both HAVE_NMI_WATCHDOG and HAVE_HARDLOCKUP_DETECTOR_PERF.
+> 
+> Or would you prefer the comment in the commit message instead,
+> or down just above the pte_offset_map_lock() line?
+> 
+> It would much better if I could find one place at the mm end, to
+> enforce its end of the contract; but cannot think how to do that.
+> 
+> Hugh
+> 
+> --- a/arch/s390/mm/gmap.c
+> +++ b/arch/s390/mm/gmap.c
+> @@ -2537,7 +2537,12 @@ static inline void thp_split_mm(struct mm_struct *mm)
+>   * Remove all empty zero pages from the mapping for lazy refaulting
+>   * - This must be called after mm->context.has_pgste is set, to avoid
+>   *   future creation of zero pages
+> - * - This must be called after THP was enabled
+> + * - This must be called after THP was disabled.
+> + *
+> + * mm contracts with s390, that even if mm were to remove a page table,
+> + * racing with the loop below and so causing pte_offset_map_lock() to fail,
+> + * it will never insert a page table containing empty zero pages once
+> + * mm_forbids_zeropage(mm) i.e. mm->context.has_pgste is set.
+>   */
+>  static int __zap_zero_pages(pmd_t *pmd, unsigned long start,
+>  			   unsigned long end, struct mm_walk *walk)
 
-The second thing to understand is that an architecture that defines
-CONFIG_HAVE_NMI_WATCHDOG is _not_ required to implement
-watchdog_hardlockup_probe() (used to be called watchdog_nmi_probe()).
-Maybe this should change, but at the very least it appears that
-SPARC64 defines HAVE_NMI_WATCHDOG but doesn't define
-watchdog_hardlockup_probe() AKA watchdog_nmi_probe(). Anyone who
-defines CONFIG_HAVE_NMI_WATCHDOG and doesn't implement
-watchdog_hardlockup_probe() is claiming that their watchdog needs no
-probing and is always available.
-
-So with that context:
-
-1. We can't handle any special cases for CONFIG_HAVE_NMI_WATCHDOG in
-"kernel/watchdog_perf.c". The special cases that we need to handle are
-all for the cases where CONFIG_HARDLOCKUP_DETECTOR_PERF isn't defined
-and that means "kernel/watchdog_perf.c" isn't included.
-
-2. We can't have the default __weak function return -ENODEV because
-CONFIG_HAVE_NMI_WATCHDOG doesn't require an arch to implement
-watchdog_hardlockup_probe(), but we want watchdog_hardlockup_probe()
-to return "no error" in that case so that
-"watchdog_hardlockup_available" gets set to true.
-
-Does that sound right?
-
-I'd agree that a future improvement saying that
-CONFIG_HAVE_NMI_WATCHDOG means you _must_ implement
-watchdog_hardlockup_probe() would make sense and that would allow us
-to get rid of the special case. IMO, though, that's a separate patch.
-I'd be happy to review that patch if you wanted to post it up. :-)
-
-If we want to add that requirement, I _think_ the only thing you'd
-need to do is to add watchdog_hardlockup_probe() to sparc64 and have
-it return 0 and put that definition in the same file containing
-arch_touch_nmi_watchdog(). powerpc also gets CONFIG_HAVE_NMI_WATCHDOG
-as a side effect of selecting CONFIG_HAVE_HARDLOCKUP_DETECTOR_ARCH but
-it looks like they implement watchdog_hardlockup_probe() already. Oh,
-but maybe this will fix a preexisting (existed before my patches)
-minor bug... Unless I'm missing something (entirely possible!) on
-powerpc today I guess if you turn off CONFIG_PPC_WATCHDOG then
-CONFIG_HAVE_HARDLOCKUP_DETECTOR_ARCH and CONFIG_HAVE_NMI_WATCHDOG
-would still be defined and we'd end up returning 0 (no error) from
-watchdog_hardlockup_probe(). That means that on powerpc today if you
-turn off CONFIG_PPC_WATCHDOG that '/proc/sys/kernel/nmi_watchdog' will
-still think the watchdog is enabled?
-
-
--Doug
+looks good, thanks
