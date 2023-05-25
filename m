@@ -4,66 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6477C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 07:48:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43886C7EE2D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 16:28:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QRgC873cTz3fD8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 17:48:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QRtl429Mrz3fFj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 02:28:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=cztDxKeN;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=C4s+hdIy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d33; helo=mail-io1-xd33.google.com; envelope-from=prabhakar.csengg@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=cztDxKeN;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=C4s+hdIy;
 	dkim-atps=neutral
-Received: from mail-io1-xd33.google.com (mail-io1-xd33.google.com [IPv6:2607:f8b0:4864:20::d33])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRgBB5r5Pz3cMl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 17:47:12 +1000 (AEST)
-Received: by mail-io1-xd33.google.com with SMTP id ca18e2360f4ac-77483a5a350so48249939f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 00:47:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685000829; x=1687592829;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PnS3KUBRyjQPPwobBxG2JUIPPiM6c8WlbyFpnNuaGkw=;
-        b=cztDxKeNSz3B9j9Ph8v/g/b7C1l6YDh3xkeiMpqx9kiaNBOPaDuUisI9iQl/BRQ8Bd
-         HWWu0O6PnCMHpm5TaGICNVO8Hu3qE6LuWPNtr9f5pjPi/GWfx9TPCSCwBRq2Ajd8lP8d
-         gCLL/Lxyc9D9hg3EI8O8BiTpc04eTYTaT14X0Nvg/9D+Okc3D2hNVnyWwP8InjFmvDFy
-         u0vHFdiaHj1VW6mnP4hHlKbtmiLAlmmAv8e9i8KOVCD5yJxctRqLQmDgCw8o1qebnQlJ
-         JQMcoIvM7UsfNLGazC2El6ZTSTqdfeh+0HPbKzGdxkRX6akagLCKXlCjWzCKZsROJt4U
-         xidQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685000829; x=1687592829;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PnS3KUBRyjQPPwobBxG2JUIPPiM6c8WlbyFpnNuaGkw=;
-        b=Qjy09tJCeMiAgG8KnUcjtp9sDurDnKNs6FnfKLIuwN0+0p1MpV+Qtbw8DG+eLYYjjD
-         dC19hxHJF10UD6WisvInMc947u6OPZiazgeackWIPMAEg20Yo3a9wUU89sDv1JPnC48A
-         GGKJ7aYCg4OFM6KzhmRhsqARNdRRn7YtpGYDifWUreb0wS5eaODHQNSnHwpTwGuhVv2/
-         O9/FoWcP92swg050Dj2mTv6IlyDy6uvbl1AM+LOrTAIy6nOEefJWgShG4493ngnPWkUR
-         FNlw2gGeEU6pFQ5Q29QNTrDdFKIT9VhkvI04AwWfdk6ZSnfNLbSSY6hUDNEn8zhjOW+y
-         Pebw==
-X-Gm-Message-State: AC+VfDwQ4q9pKlaPJ1EeEmyKaj78Bl5B2dG4NBKyFVvohOAN3V56gxll
-	io9Z9i7obN7ZRuLqcku2Th1Hdfm2KNZMteWqUuY=
-X-Google-Smtp-Source: ACHHUZ4oIlEiVAMypWmcT1VzaZ77w0VSE82EWwJ9rvCS5CllEFhR776msnXsd3wVl5j+HJ9KuoDxd0sjRuGsDwnOI1c=
-X-Received: by 2002:a5d:818d:0:b0:776:f672:8961 with SMTP id
- u13-20020a5d818d000000b00776f6728961mr86710ion.20.1685000829291; Thu, 25 May
- 2023 00:47:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QRtk60Vtkz3f8l
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 02:27:08 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out1.suse.de (Postfix) with ESMTP id 34E5221C65;
+	Thu, 25 May 2023 16:26:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1685032018; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qBSf8dQvqenvM4XuaXqBfFlxjVrL5fPe+CB4lmnXjuk=;
+	b=C4s+hdIyCnXmGRzN2XmAwfRTIB+9xRT+DvPlRO3vRcui7FbrbO1JQDWFx0rfTnZPSjX5i1
+	rRTvdTF0fGM/eRmPRJQYStRfQXRzvjlNo/ZL8IUHR6kuT7x8QzWCoJZmsiqU3ukACJ1fan
+	DauIAYjaJf8QRWaSlI7nNnrfcF7cPGY=
+Received: from suse.cz (unknown [10.100.201.202])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by relay2.suse.de (Postfix) with ESMTPS id A2C412C141;
+	Thu, 25 May 2023 16:26:55 +0000 (UTC)
+Date: Thu, 25 May 2023 18:26:52 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Douglas Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v5 14/18] watchdog/hardlockup: detect hard lockups using
+ secondary (buddy) CPUs
+Message-ID: <ZG-MTPSZakRDl2CP@alley>
+References: <20230519101840.v5.18.Ia44852044cdcb074f387e80df6b45e892965d4a1@changeid>
+ <20230519101840.v5.14.I6bf789d21d0c3d75d382e7e51a804a7a51315f2c@changeid>
 MIME-Version: 1.0
-References: <20230327121317.4081816-1-arnd@kernel.org>
-In-Reply-To: <20230327121317.4081816-1-arnd@kernel.org>
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Thu, 25 May 2023 08:46:43 +0100
-Message-ID: <CA+V-a8sTjDWwmH5HYk6zK8oaPGGM4Qhf-ftGrQzeKmbRFj4g-w@mail.gmail.com>
-Subject: Re: [PATCH 00/21] dma-mapping: unify support for cache flushes
-To: Arnd Bergmann <arnd@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230519101840.v5.14.I6bf789d21d0c3d75d382e7e51a804a7a51315f2c@changeid>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,214 +61,295 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Conor Dooley <conor.dooley@microchip.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstr
- ong@linaro.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, linux-oxnas@groups.io, Robin Murphy <robin.murphy@arm.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, ito-yuichi@fujitsu.com, Lecopzer Chen <lecopzer.chen@mediatek.com>, kgdb-bugreport@lists.sourceforge.net, ricardo.neri@intel.com, Stephane Eranian <eranian@google.com>, sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Will Deacon <will@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Andi Kleen <ak@linux.intel.com>, Marc Zyngier <maz@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Matthias Kaehlcke <mka@chromium.org>, Catalin Marinas <catalin.marinas@arm.com>, Masayoshi Mizuma <msys.mizuma@gmail.com>, ravi.v.shankar@intel.com, Tzung-Bi Shih <tzungbi@chromium.org>, Colin Cross <ccross@android.com>, npiggin@gmail.com, Stephen Boyd <swboyd@chromium.org>, Pingfan Liu <kernelfans@gmail.com>, linux-arm-kernel@lists.infradead.org, Sumit Garg <sumit.garg@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Andrew Morton <akpm@linux-found
+ ation.org>, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Arnd,
+On Fri 2023-05-19 10:18:38, Douglas Anderson wrote:
+> Implement a hardlockup detector that doesn't doesn't need any extra
+> arch-specific support code to detect lockups. Instead of using
+> something arch-specific we will use the buddy system, where each CPU
+> watches out for another one. Specifically, each CPU will use its
+> softlockup hrtimer to check that the next CPU is processing hrtimer
+> interrupts by verifying that a counter is increasing.
+> 
+> --- a/kernel/watchdog.c
+> +++ b/kernel/watchdog.c
+> @@ -85,7 +85,7 @@ __setup("nmi_watchdog=", hardlockup_panic_setup);
+>  
+>  #endif /* CONFIG_HARDLOCKUP_DETECTOR */
+>  
+> -#if defined(CONFIG_HARDLOCKUP_DETECTOR_PERF)
+> +#if defined(CONFIG_HARDLOCKUP_DETECTOR_COUNTS_HRTIMER)
+>  
+>  static DEFINE_PER_CPU(atomic_t, hrtimer_interrupts);
+>  static DEFINE_PER_CPU(int, hrtimer_interrupts_saved);
+> @@ -106,6 +106,14 @@ notrace void arch_touch_nmi_watchdog(void)
+>  }
+>  EXPORT_SYMBOL(arch_touch_nmi_watchdog);
+>  
+> +void watchdog_hardlockup_touch_cpu(unsigned int cpu)
+> +{
+> +	per_cpu(watchdog_hardlockup_touched, cpu) = true;
+> +
+> +	/* Match with smp_rmb() in watchdog_hardlockup_check() */
+> +	smp_wmb();
 
-On Mon, Mar 27, 2023 at 1:14=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wro=
-te:
->
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> After a long discussion about adding SoC specific semantics for when
-> to flush caches in drivers/soc/ drivers that we determined to be
-> fundamentally flawed[1], I volunteered to try to move that logic into
-> architecture-independent code and make all existing architectures do
-> the same thing.
->
-> As we had determined earlier, the behavior is wildly different across
-> architectures, but most of the differences come down to either bugs
-> (when required flushes are missing) or extra flushes that are harmless
-> but might hurt performance.
->
-> I finally found the time to come up with an implementation of this, which
-> starts by replacing every outlier with one of the three common options:
->
->  1. architectures without speculative prefetching (hegagon, m68k,
->     openrisc, sh, sparc, and certain armv4 and xtensa implementations)
->     only flush their caches before a DMA, by cleaning write-back caches
->     (if any) before a DMA to the device, and by invalidating the caches
->     before a DMA from a device
->
->  2. arc, microblaze, mips, nios2, sh and later xtensa now follow the
->     normal 32-bit arm model and invalidate their writeback caches
->     again after a DMA from the device, to remove stale cache lines
->     that got prefetched during the DMA. arc, csky and mips used to
->     invalidate buffers also before the bidirectional DMA, but this
->     is now skipped whenever we know it gets invalidated again
->     after the DMA.
->
->  3. parisc, powerpc and riscv already flushed buffers before
->     a DMA_FROM_DEVICE, and these get moved to the arm64 behavior
->     that does the writeback before and invalidate after both
->     DMA_FROM_DEVICE and DMA_BIDIRECTIONAL in order to avoid the
->     problem of accidentally leaking stale data if the DMA does
->     not actually happen[2].
->
-> The last patch in the series replaces the architecture specific code
-> with a shared version that implements all three based on architecture
-> specific parameters that are almost always determined at compile time.
->
-> The difference between cases 1. and 2. is hardware specific, while betwee=
-n
-> 2. and 3. we need to decide which semantics we want, but I explicitly
-> avoid this question in my series and leave it to be decided later.
->
-> Another difference that I do not address here is what cache invalidation
-> does for partical cache lines. On arm32, arm64 and powerpc, a partial
-> cache line always gets written back before invalidation in order to
-> ensure that data before or after the buffer is not discarded. On all
-> other architectures, the assumption is cache lines are never shared
-> between DMA buffer and data that is accessed by the CPU. If we end up
-> always writing back dirty cache lines before a DMA (option 3 above),
-> then this point becomes moot, otherwise we should probably address this
-> in a follow-up series to document one behavior or the other and implement
-> it consistently.
->
-> Please review!
->
->       Arnd
->
-> [1] https://lore.kernel.org/all/20221212115505.36770-1-prabhakar.mahadev-=
-lad.rj@bp.renesas.com/
-> [2] https://lore.kernel.org/all/20220606152150.GA31568@willie-the-truck/
->
-> Arnd Bergmann (21):
->   openrisc: dma-mapping: flush bidirectional mappings
->   xtensa: dma-mapping: use normal cache invalidation rules
->   sparc32: flush caches in dma_sync_*for_device
->   microblaze: dma-mapping: skip extra DMA flushes
->   powerpc: dma-mapping: split out cache operation logic
->   powerpc: dma-mapping: minimize for_cpu flushing
->   powerpc: dma-mapping: always clean cache in _for_device() op
->   riscv: dma-mapping: only invalidate after DMA, not flush
->   riscv: dma-mapping: skip invalidation before bidirectional DMA
->   csky: dma-mapping: skip invalidating before DMA from device
->   mips: dma-mapping: skip invalidating before bidirectional DMA
->   mips: dma-mapping: split out cache operation logic
->   arc: dma-mapping: skip invalidating before bidirectional DMA
->   parisc: dma-mapping: use regular flush/invalidate ops
->   ARM: dma-mapping: always invalidate WT caches before DMA
->   ARM: dma-mapping: bring back dmac_{clean,inv}_range
->   ARM: dma-mapping: use arch_sync_dma_for_{device,cpu}() internally
->   ARM: drop SMP support for ARM11MPCore
->   ARM: dma-mapping: use generic form of arch_sync_dma_* helpers
->   ARM: dma-mapping: split out arch_dma_mark_clean() helper
->   dma-mapping: replace custom code with generic implementation
->
-Do you plan to send v2 for this series?
+It is great that you described where the related barrier is.
 
-Cheers,
-Prabhakar
+Another important information is what exactly is synchronized.
+And I am actually not sure what we are synchronizing here.
 
->  arch/arc/mm/dma.c                          |  66 ++------
->  arch/arm/Kconfig                           |   4 +
->  arch/arm/include/asm/cacheflush.h          |  21 +++
->  arch/arm/include/asm/glue-cache.h          |   4 +
->  arch/arm/mach-oxnas/Kconfig                |   4 -
->  arch/arm/mach-oxnas/Makefile               |   1 -
->  arch/arm/mach-oxnas/headsmp.S              |  23 ---
->  arch/arm/mach-oxnas/platsmp.c              |  96 -----------
->  arch/arm/mach-versatile/platsmp-realview.c |   4 -
->  arch/arm/mm/Kconfig                        |  19 ---
->  arch/arm/mm/cache-fa.S                     |   4 +-
->  arch/arm/mm/cache-nop.S                    |   6 +
->  arch/arm/mm/cache-v4.S                     |  13 +-
->  arch/arm/mm/cache-v4wb.S                   |   4 +-
->  arch/arm/mm/cache-v4wt.S                   |  22 ++-
->  arch/arm/mm/cache-v6.S                     |  35 +---
->  arch/arm/mm/cache-v7.S                     |   6 +-
->  arch/arm/mm/cache-v7m.S                    |   4 +-
->  arch/arm/mm/dma-mapping-nommu.c            |  36 ++--
->  arch/arm/mm/dma-mapping.c                  | 181 ++++++++++-----------
->  arch/arm/mm/proc-arm1020.S                 |   4 +-
->  arch/arm/mm/proc-arm1020e.S                |   4 +-
->  arch/arm/mm/proc-arm1022.S                 |   4 +-
->  arch/arm/mm/proc-arm1026.S                 |   4 +-
->  arch/arm/mm/proc-arm920.S                  |   4 +-
->  arch/arm/mm/proc-arm922.S                  |   4 +-
->  arch/arm/mm/proc-arm925.S                  |   4 +-
->  arch/arm/mm/proc-arm926.S                  |   4 +-
->  arch/arm/mm/proc-arm940.S                  |   4 +-
->  arch/arm/mm/proc-arm946.S                  |   4 +-
->  arch/arm/mm/proc-feroceon.S                |   8 +-
->  arch/arm/mm/proc-macros.S                  |   2 +
->  arch/arm/mm/proc-mohawk.S                  |   4 +-
->  arch/arm/mm/proc-xsc3.S                    |   4 +-
->  arch/arm/mm/proc-xscale.S                  |   6 +-
->  arch/arm64/mm/dma-mapping.c                |  28 ++--
->  arch/csky/mm/dma-mapping.c                 |  46 +++---
->  arch/hexagon/kernel/dma.c                  |  44 ++---
->  arch/m68k/kernel/dma.c                     |  43 +++--
->  arch/microblaze/kernel/dma.c               |  38 ++---
->  arch/mips/mm/dma-noncoherent.c             |  75 +++------
->  arch/nios2/mm/dma-mapping.c                |  57 +++----
->  arch/openrisc/kernel/dma.c                 |  62 ++++---
->  arch/parisc/include/asm/cacheflush.h       |   6 +-
->  arch/parisc/kernel/pci-dma.c               |  33 +++-
->  arch/powerpc/mm/dma-noncoherent.c          |  76 +++++----
->  arch/riscv/mm/dma-noncoherent.c            |  51 +++---
->  arch/sh/kernel/dma-coherent.c              |  43 +++--
->  arch/sparc/Kconfig                         |   2 +-
->  arch/sparc/kernel/ioport.c                 |  38 +++--
->  arch/xtensa/Kconfig                        |   1 -
->  arch/xtensa/include/asm/cacheflush.h       |   6 +-
->  arch/xtensa/kernel/pci-dma.c               |  47 +++---
->  include/linux/dma-sync.h                   | 107 ++++++++++++
->  54 files changed, 721 insertions(+), 699 deletions(-)
->  delete mode 100644 arch/arm/mach-oxnas/headsmp.S
->  delete mode 100644 arch/arm/mach-oxnas/platsmp.c
->  create mode 100644 include/linux/dma-sync.h
->
-> --
-> 2.39.2
->
-> Cc: Vineet Gupta <vgupta@kernel.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Neil Armstrong <neil.armstrong@linaro.org>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: Brian Cain <bcain@quicinc.com>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Cc: Dinh Nguyen <dinguyen@kernel.org>
-> Cc: Stafford Horne <shorne@gmail.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Paul Walmsley <paul.walmsley@sifive.com>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Max Filippov <jcmvbkbc@gmail.com>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Robin Murphy <robin.murphy@arm.com>
-> Cc: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> Cc: Conor Dooley <conor.dooley@microchip.com>
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-oxnas@groups.io
-> Cc: linux-csky@vger.kernel.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linux-openrisc@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linux-xtensa@linux-xtensa.org
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+My understanding is that a write barrier should synchronize
+related writes, for example:
+
+	X = ...;
+	/* Make sure that X is modified before Y */
+	smp_wmb();
+	Y = ...;
+
+And the related read barrier should synchronize the related reads,
+for example:
+
+	if (test(Y)) {
+		/*
+		 * Make sure that we use the updated X when
+		 * we saw the updated Y.
+		 */
+		 smp_rmb();
+		 do_something(X);
+	 }
+
+IMHO, we do not need any barrier here because we have only
+one variable "watchdog_hardlockup_touched" here.
+watchdog_hardlockup_check() will either see the updated value
+or not. But it does not synchronize it against any other
+variables or values.
+
+> +}
+> +
+>  static bool is_hardlockup(unsigned int cpu)
+>  {
+>  	int hrint = atomic_read(&per_cpu(hrtimer_interrupts, cpu));
+> @@ -443,11 +454,15 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+>  	struct pt_regs *regs = get_irq_regs();
+>  	int duration;
+>  	int softlockup_all_cpu_backtrace = sysctl_softlockup_all_cpu_backtrace;
+> +	unsigned long hrtimer_interrupts;
+>  
+>  	if (!watchdog_enabled)
+>  		return HRTIMER_NORESTART;
+>  
+> -	watchdog_hardlockup_kick();
+> +	hrtimer_interrupts = watchdog_hardlockup_kick();
+> +
+> +	/* test for hardlockups */
+
+I would omit the comment. It is not valid when perf detector is used.
+And checking the buddy is clear from the function name.
+
+> +	watchdog_buddy_check_hardlockup(hrtimer_interrupts);
+
+I would personally move this into watchdog_hardlockup_kick().
+watchdog_timer_fn() is already complex enough. And checking
+the buddy when kicking a CPU makes sense.
+
+Also I would not pass "hrtimer_interrupts". I guess that it is
+just an optimization. It is an extra churn in the code. IMHO,
+is is not wort it. This code does not need to be super optimized.
+
+> +
+
+>  
+>  	/* kick the softlockup detector */
+>  	if (completion_done(this_cpu_ptr(&softlockup_completion))) {
+> diff --git a/kernel/watchdog_buddy.c b/kernel/watchdog_buddy.c
+> new file mode 100644
+> index 000000000000..fee45af2e5bd
+> --- /dev/null
+> +++ b/kernel/watchdog_buddy.c
+> @@ -0,0 +1,93 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +#include <linux/cpu.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/kernel.h>
+> +#include <linux/nmi.h>
+> +#include <linux/percpu-defs.h>
+> +
+> +static cpumask_t __read_mostly watchdog_cpus;
+> +
+> +static unsigned int watchdog_next_cpu(unsigned int cpu)
+> +{
+> +	cpumask_t cpus = watchdog_cpus;
+
+A copy should be done by cpumask_copy().
+
+But the question is why a copy would be needed. When called from
+watchdog_buddy_check_hardlockup(), this function is not sychronized
+against the CPU hotplug. And even the copying would be racy.
+
+IMHO, the copy does not help much and we do not need it.
+
+The only important this is that this function would return
+a valid CPU. And I think that it is guarantted because
+CPU0 could not be disabled.
+
+> +	unsigned int next_cpu;
+> +
+> +	next_cpu = cpumask_next(cpu, &cpus);
+> +	if (next_cpu >= nr_cpu_ids)
+> +		next_cpu = cpumask_first(&cpus);
+> +
+> +	if (next_cpu == cpu)
+> +		return nr_cpu_ids;
+>> +	return next_cpu;
+> +}
+> +
+> +int __init watchdog_hardlockup_probe(void)
+> +{
+> +	return 0;
+> +}
+> +
+> +void watchdog_hardlockup_enable(unsigned int cpu)
+> +{
+> +	unsigned int next_cpu;
+> +
+> +	/*
+> +	 * The new CPU will be marked online before the hrtimer interrupt
+> +	 * gets a chance to run on it. If another CPU tests for a
+> +	 * hardlockup on the new CPU before it has run its the hrtimer
+> +	 * interrupt, it will get a false positive. Touch the watchdog on
+> +	 * the new CPU to delay the check for at least 3 sampling periods
+> +	 * to guarantee one hrtimer has run on the new CPU.
+> +	 */
+> +	watchdog_hardlockup_touch_cpu(cpu);
+> +
+> +	/*
+> +	 * We are going to check the next CPU. Our watchdog_hrtimer
+> +	 * need not be zero if the CPU has already been online earlier.
+> +	 * Touch the watchdog on the next CPU to avoid false positive
+> +	 * if we try to check it in less then 3 interrupts.
+> +	 */
+> +	next_cpu = watchdog_next_cpu(cpu);
+> +	if (next_cpu < nr_cpu_ids)
+> +		watchdog_hardlockup_touch_cpu(next_cpu);
+
+Thinking loudly:
+
+This feels racy when many CPUs are enabled/disabled in parallel.
+I am not 100% sure it it can happen though.
+
+My understanding is that it can't happen because the CPU hotplug
+is serialized by cpu_add_remove_lock.
+
+So, this seems to work after all.
+
+> +
+> +	cpumask_set_cpu(cpu, &watchdog_cpus);
+> +}
+> +
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -1035,10 +1035,55 @@ config BOOTPARAM_SOFTLOCKUP_PANIC
+>  
+>  	  Say N if unsure.
+>  
+> -config HARDLOCKUP_DETECTOR_PERF
+> +# Both the "perf" and "buddy" hardlockup detectors count hrtimer
+> +# interrupts. This config enables functions managing this common code.
+> +config HARDLOCKUP_DETECTOR_COUNTS_HRTIMER
+>  	bool
+>  	select SOFTLOCKUP_DETECTOR
+>  
+> +config HARDLOCKUP_DETECTOR_PERF
+> +	bool
+> +	depends on HAVE_HARDLOCKUP_DETECTOR_PERF
+> +	select HARDLOCKUP_DETECTOR_COUNTS_HRTIMER
+> +
+> +config HARDLOCKUP_DETECTOR_BUDDY
+> +	bool
+> +	depends on SMP
+> +	select HARDLOCKUP_DETECTOR_COUNTS_HRTIMER
+> +
+> +# For hardlockup detectors you can have one directly provided by the arch
+> +# or use a "non-arch" one. If you're using a "non-arch" one that is
+> +# further divided the perf hardlockup detector (which, confusingly, needs
+> +# arch-provided perf support) and the buddy hardlockup detector (which just
+> +# needs SMP). In either case, using the "non-arch" code conflicts with
+> +# the NMI watchdog code (which is sometimes used directly and sometimes used
+> +# by the arch-provided hardlockup detector).
+> +config HAVE_HARDLOCKUP_DETECTOR_NON_ARCH
+> +	bool
+> +	depends on (HAVE_HARDLOCKUP_DETECTOR_PERF || SMP) && !HAVE_NMI_WATCHDOG
+> +	default y
+> +
+> +config HARDLOCKUP_DETECTOR_PREFER_BUDDY
+> +	bool "Prefer the buddy CPU hardlockup detector"
+> +	depends on HAVE_HARDLOCKUP_DETECTOR_NON_ARCH && HAVE_HARDLOCKUP_DETECTOR_PERF && SMP
+
+Huh, I have big troubles to scratch my head around this check:
+
+       HAVE_HARDLOCKUP_DETECTOR_NON_ARCH depends on HAVE_HARDLOCKUP_DETECTOR_PERF and SMP
+
+       and this depends on HAVE_HARDLOCKUP_DETECTOR_NON_ARCH and again
+	       on HAVE_HARDLOCKUP_DETECTOR_PERF and SMP.
+
+> +	help
+> +	  Say Y here to prefer the buddy hardlockup detector over the perf one.
+> +
+> +	  With the buddy detector, each CPU uses its softlockup hrtimer
+> +	  to check that the next CPU is processing hrtimer interrupts by
+> +	  verifying that a counter is increasing.
+> +
+> +	  This hardlockup detector is useful on systems that don't have
+> +	  an arch-specific hardlockup detector or if resources needed
+> +	  for the hardlockup detector are better used for other things.
+> +
+> +# This will select the appropriate non-arch hardlockdup detector
+> +config HARDLOCKUP_DETECTOR_NON_ARCH
+> +	bool
+> +	depends on HAVE_HARDLOCKUP_DETECTOR_NON_ARCH
+> +	select HARDLOCKUP_DETECTOR_BUDDY if !HAVE_HARDLOCKUP_DETECTOR_PERF || HARDLOCKUP_DETECTOR_PREFER_BUDDY
+> +	select HARDLOCKUP_DETECTOR_PERF if HAVE_HARDLOCKUP_DETECTOR_PERF && !HARDLOCKUP_DETECTOR_PREFER_BUDDY
+> +
+>  #
+>  # Enables a timestamp based low pass filter to compensate for perf based
+>  # hard lockup detection which runs too fast due to turbo modes.
+> @@ -1053,9 +1098,10 @@ config HARDLOCKUP_CHECK_TIMESTAMP
+>  config HARDLOCKUP_DETECTOR
+>  	bool "Detect Hard Lockups"
+>  	depends on DEBUG_KERNEL && !S390
+
+Is there any reason why S390 could not or do not want to use the buddy
+hardlockup detector.
+
+> -	depends on HAVE_HARDLOCKUP_DETECTOR_PERF || HAVE_HARDLOCKUP_DETECTOR_ARCH
+> +	depends on HAVE_HARDLOCKUP_DETECTOR_NON_ARCH || HAVE_HARDLOCKUP_DETECTOR_ARCH
+>  	select LOCKUP_DETECTOR
+> -	select HARDLOCKUP_DETECTOR_PERF if HAVE_HARDLOCKUP_DETECTOR_PERF
+> +	select HARDLOCKUP_DETECTOR_NON_ARCH if HAVE_HARDLOCKUP_DETECTOR_NON_ARCH
+
+Anyway, the configuration of the hard lockup detectors is insane and
+this patchset makes it even worse, especially the new
+HARDLOCKUP_DETECTOR_NON_ARCH stuff.
+
+It seems that sparc, powerpc and s390 are somehow special. Do you
+still have in mind how they are distinguished using the Kconfig
+variables?
+
+For example, I am pretty confused by the meaning of HAVE_NMI_WATCHDOG.
+
+And sparc has its own variant of
+watchdog_hardlockup_enable()/disable(). It means that it is
+arch-specific. Does it work with the 13th patch which made
+watchdog_hardlockup_enable()/disable() to be watchdog-hardlockup-type
+specific? Is is somehow related to HAVE_NMI_WATCHDOG?
+Does this replace the entire watchdog only only the enable part?
+
+I think that we need to make this more straightforward. But I first
+need to understand the existing maze of config variables.
+
+Best Regards,
+Petr
