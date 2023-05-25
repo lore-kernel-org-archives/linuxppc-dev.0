@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 186C3C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 20:39:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11322C77B7E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 May 2023 20:54:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QS0Km56Lvz3fF4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 06:39:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QS0fZ3NJ7z3fHb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 06:54:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=hsCL+sMj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=PRDb4uH8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b30; helo=mail-yb1-xb30.google.com; envelope-from=vishal.moola@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=vishal.moola@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=hsCL+sMj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=PRDb4uH8;
 	dkim-atps=neutral
-Received: from mail-yb1-xb30.google.com (mail-yb1-xb30.google.com [IPv6:2607:f8b0:4864:20::b30])
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QS0Js2jdTz3fBm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 06:39:08 +1000 (AEST)
-Received: by mail-yb1-xb30.google.com with SMTP id 3f1490d57ef6-bacf685150cso182101276.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 13:39:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QS0dc1gPkz3fBm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 06:53:38 +1000 (AEST)
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-565a022ef06so2574387b3.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2023 13:53:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685047145; x=1687639145;
+        d=gmail.com; s=20221208; t=1685048015; x=1687640015;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=VbD1OYIGibvwFMRrdJMTdc4wGgHOsGEW6NjvtgF3JXU=;
-        b=hsCL+sMjCSPEeQwY9ipI1+Ugi88AzJEwmAmsO1IR16vD0JLbTTRj1EWY5Xyhze+GRV
-         OIRanM33HOk1xRjR7/GHHUD5lVS6HFpcFxeDfzeE8/I0OcBZz8czUxvwLPGCPl3ZI/jZ
-         DVqHoFaNkDaMUMuSYvpfhlO6EV7GylFCaeIZ84F6j+93L973raF6hD3O66C/pZ4eWLz+
-         QLbFT/lbaOp/9U1+H051UFvXelrd7lzOtz3vj1HsEWe84ksN1HTRbSJYJedE8uZu9k6u
-         F1jI+oM85Ujez7vT22bFzFiXTlvVTKRouPJkd38Xldm/McWaSi1VxP376ACeyocGF45q
-         tGcA==
+        bh=e72vGCwhPoa8gN25X6qmdDXVUsdWWJFQx8MjqDcoGDA=;
+        b=PRDb4uH8g3Vv6gZWsZ1gkHY+ANMWnqtSqEQNi+t68NKJyRAPGtGIjXS+o6ABKHZ7yv
+         q51K7Vr8Q1brsvSZQkdt4WeLJo6vXr04Grr6RxGrB/PY5E3pp1cBQWvGni0wb9TWYIbM
+         5FWOkPlw4M42rE2TxcMBGldDhB3WLqb55j0CqgwQEW0TmVHxxCeHx2Zs7VLCqGumlN8c
+         PmQWTAjBOIMu7fHadjtAjQF7IDQQLa3x/OUyFY2aJiBpGADt0K07OCNxrHer3KqiVV69
+         GxawL7cJdKwcX3ZUAGYa8EVBTKoLWza/yXtntrwGkP8KyxHL6U40gF5XovIoxt2V2Fr9
+         5Wvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685047145; x=1687639145;
+        d=1e100.net; s=20221208; t=1685048015; x=1687640015;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=VbD1OYIGibvwFMRrdJMTdc4wGgHOsGEW6NjvtgF3JXU=;
-        b=V8VbZx1Vz8M+vmaH2dMh0X93kX14KlphuBIII0AAT6y6U7SDiaZsMBbbzufbVWTPtg
-         wJczjn583Cd2LFQhOy7JGE1033M8cMwirF25/sVV3xXek52PRNk9uxgwum4qTbsx3pyr
-         2idMtbE/h3+9CAwReQw2LhBeUgD9DXCYlc+D9IOL9SngMiETUI3P3e4Cj1BYDT8D18cp
-         z0sPmVYVIlzaIVLZPJ80ImdfUqecejb6RdrDHlL6sZ/fYKmfnG0Qz4xMqjE/VGdKUVUl
-         2YddLmLVdnhIqmGs8WswZ+PuvYfGov35lW104q0o7slsl+pzpfALtctljMS8w84rIzjI
-         j+aw==
-X-Gm-Message-State: AC+VfDw6oNHAXl3EZt2Bupi++c4hfxWiVkI5uHwcyCtGpwM7OENRRi/h
-	38IizcymMKxA8tEVwGyE4v0UUuYC3g83EPZmXgo=
-X-Google-Smtp-Source: ACHHUZ4OcPsUwJDpZZlKfNKbpYbRuRkX6Q4UETTfFRyNyytwfdAtGP02e8IuqJSt1+a/7sd0aU+yePVkYawV73NLE1o=
-X-Received: by 2002:a25:d111:0:b0:ba8:4b48:1de0 with SMTP id
- i17-20020a25d111000000b00ba84b481de0mr4810389ybg.47.1685047145065; Thu, 25
- May 2023 13:39:05 -0700 (PDT)
+        bh=e72vGCwhPoa8gN25X6qmdDXVUsdWWJFQx8MjqDcoGDA=;
+        b=kJADxOuNy2GSPrpJ2oI2Myq+a77E7QQdX44htIlT2Mg8sHmy4d3RUnpgBm7uG6oEW0
+         d+2RV8gFtHIJvT52hjgQpAyf7Xr7ZpFEaENWlqegs492SP02Y46X62jHWPsT8/RM3brQ
+         e5kqoiwxnynSnoMQ8f1HUYfhYGBTUGBBJVH7cEBCRvNuNWau2WCTFuuX9rHgl6lqsYyY
+         KPF0g6S5xr1744ZatUe7J4h+16heCRlfbB1ofsd2fZE9c1IxvsNPpy+z5/+PJsid07al
+         7+2qQA+6f9bbwHsekzc6rxgXsooKSBNKCg6hYoXG90PGl5BHZes2/5s+C8UgE0avGTR4
+         hBzw==
+X-Gm-Message-State: AC+VfDyPLo4lLzCU29i+DVNOR/FSaabDvVS+2B2LUIMFkTzfeVpYUW7h
+	WBgk1ICOo4sNIwMMyw8gtv0DU/nIfG2IgxICSg4=
+X-Google-Smtp-Source: ACHHUZ6an6zID91jt8f3LQ4QGAvFJ9u++x53xf0fSCLXe0WivFCmGXJlgIcqvJgo7KICituWVYFJf3qgdSw5/O75Zdg=
+X-Received: by 2002:a81:4810:0:b0:55a:84c9:e952 with SMTP id
+ v16-20020a814810000000b0055a84c9e952mr1013445ywa.17.1685048014974; Thu, 25
+ May 2023 13:53:34 -0700 (PDT)
 MIME-Version: 1.0
 References: <20230501192829.17086-1-vishal.moola@gmail.com>
- <20230501192829.17086-2-vishal.moola@gmail.com> <20230525085555.GV4967@kernel.org>
- <CAOzc2pxx489C26NnS9NHkUQY9PYiagzt-nYK6LnkJ1N3NYQWzg@mail.gmail.com> <20230525202011.GZ4967@kernel.org>
-In-Reply-To: <20230525202011.GZ4967@kernel.org>
+ <20230501192829.17086-6-vishal.moola@gmail.com> <20230525090956.GX4967@kernel.org>
+ <CAOzc2pxSH6GhBnAoSOjvYJk2VdMDFZi3H_1qGC5Cdyp3j4AzPQ@mail.gmail.com> <20230525202537.GA4967@kernel.org>
+In-Reply-To: <20230525202537.GA4967@kernel.org>
 From: Vishal Moola <vishal.moola@gmail.com>
-Date: Thu, 25 May 2023 13:38:54 -0700
-Message-ID: <CAOzc2pzGPBYL3S=noc1AAEtep04GexRmn2f_T3BPgVFZKaqXTg@mail.gmail.com>
-Subject: Re: [PATCH v2 01/34] mm: Add PAGE_TYPE_OP folio functions
+Date: Thu, 25 May 2023 13:53:24 -0700
+Message-ID: <CAOzc2pxD21mxisy-M5b_SDUv0MYwNHqaVDJnJpARuDG_HjCbOg@mail.gmail.com>
+Subject: Re: [PATCH v2 05/34] mm: add utility functions for ptdesc
 To: Mike Rapoport <rppt@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -81,43 +81,47 @@ Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 25, 2023 at 1:20=E2=80=AFPM Mike Rapoport <rppt@kernel.org> wro=
+On Thu, May 25, 2023 at 1:26=E2=80=AFPM Mike Rapoport <rppt@kernel.org> wro=
 te:
 >
-> On Thu, May 25, 2023 at 10:00:23AM -0700, Vishal Moola wrote:
-> > On Thu, May 25, 2023 at 1:56=E2=80=AFAM Mike Rapoport <rppt@kernel.org>=
+> On Thu, May 25, 2023 at 11:04:28AM -0700, Vishal Moola wrote:
+> > On Thu, May 25, 2023 at 2:10=E2=80=AFAM Mike Rapoport <rppt@kernel.org>=
  wrote:
+> > > > +
+> > > > +static inline struct ptdesc *ptdesc_alloc(gfp_t gfp, unsigned int =
+order)
+> > > > +{
+> > > > +     struct page *page =3D alloc_pages(gfp | __GFP_COMP, order);
+> > > > +
+> > > > +     return page_ptdesc(page);
+> > > > +}
+> > > > +
+> > > > +static inline void ptdesc_free(struct ptdesc *pt)
+> > > > +{
+> > > > +     struct page *page =3D ptdesc_page(pt);
+> > > > +
+> > > > +     __free_pages(page, compound_order(page));
+> > > > +}
 > > >
-> > > Hi,
-> > >
-> > > On Mon, May 01, 2023 at 12:27:56PM -0700, Vishal Moola (Oracle) wrote=
-:
-> > > > No folio equivalents for page type operations have been defined, so
-> > > > define them for later folio conversions.
-> > >
-> > > Can you please elaborate why would we need folios for page table desc=
-riptors?
+> > > The ptdesc_{alloc,free} API does not sound right to me. The name
+> > > ptdesc_alloc() implies the allocation of the ptdesc itself, rather th=
+an
+> > > allocation of page table page. The same goes for free.
 > >
-> > Thanks for the review!
-> >
-> > These macros are for callers that care about the page type, i.e. Table =
-and
-> > Buddy. Aside from accounting for those cases, the page tables don't use=
- folios.
-> > These are more for the cleanliness of those callers.
+> > I'm not sure I see the difference. Could you elaborate?
 >
-> But why using folio APIs for PageType will be cleaner than using page API=
-s?
-> Do you have an example?
+> I read ptdesc_alloc() as "allocate a ptdesc" rather than as "allocate a
+> page for page table and return ptdesc pointing to that page". Seems very
+> confusing to me already and it will be even more confusion when we'll sta=
+rt
+> allocating actual ptdescs.
 
-Ah, for example in mm/memory-failure.c there are a couple uses of PageTable=
-.
-Like the line :
-if (folio_test_slab(folio) || PageTable(&folio->page) ||
-folio_test_reserved(folio))
-where that PageTable(&folio->page) can now be written as folio_test_table(f=
-olio)
-instead.
+Hmm, I see what you're saying. I'm envisioning this function evolving into
+one that allocates a ptdesc later. I don't see why we would need to have bo=
+th a
+page table page AND ptdesc at any point, but that may be a lack of knowledg=
+e
+from my part.
 
-Also there are numerous uses of PageBuddy in mm/compaction.c that will
-likely need to be converted to folios as well.
+I was thinking later, if necessary, we could make another function
+(only to be used internally) to allocate page table pages.
