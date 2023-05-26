@@ -4,62 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0864CC77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 23:48:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C906EC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 23:49:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QShSd49rGz3fHN
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 May 2023 09:48:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QShTX379Nz3fWM
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 May 2023 09:49:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=cWUN3P8r;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=gaII7xm1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--yuzhao.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3bkrxzaykdoufbgohvnvvnsl.jvtspubewwj-klcspzaz.vgshiz.vyn@flex--yuzhao.bounces.google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--yuzhao.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3z0rxzaykdn4yuzhaogoogle.comlinuxppc-devlists.ozlabs.org@flex--yuzhao.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=cWUN3P8r;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=gaII7xm1;
 	dkim-atps=neutral
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QShNd0W4Cz3f6n
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2023 09:44:48 +1000 (AEST)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-5655d99da53so32319547b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 16:44:48 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QShNd0N6Cz3c8V
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2023 09:44:47 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-ba82ed6e450so2754764276.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 16:44:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1685144686; x=1687736686;
-        h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=9t4P2GvyPz5aecPxpWswvlll2je3r362Snycxj82bkU=;
-        b=cWUN3P8rM/d3APcGkGsw1zxYbzC0SLP23YWYAHvNkl8en24zIhenJIzsgauwSrM86L
-         GtpWgjW+9PaIY51P7YD5ERtfy398MWWnA2qbOrXT+m6cJHuvmS8It0VeeYLeOMql5pG+
-         oF4R8PaA47tg1/M/GaUTjyQPHdY2Yt35bMOgs0yeO0A95+MuHExqrRIRhATT/aSAcAvS
-         DuZIw+jQWwcC1PbwFYK5fVCc5aYJ2bcpXcCLA842C0fEFJDU8WE3MLQI6mTQVW9b35Gn
-         iKpM9XslaKQGwLt7gqMS0LD/fBOZjhpB3/6lsoxW54UOFTglxZ15DmEhLn/Wm52Z8EKo
-         74zA==
+        d=google.com; s=20221208; t=1685144680; x=1687736680;
+        h=cc:to:from:subject:mime-version:message-id:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=p2/B2gpADUVSH4+1+wdvhwwOJ3ZLS46dsub4yrmfIrY=;
+        b=gaII7xm1rKF0WflE0kwbmo9D1wFCFrrD6VH1zQ9TXwAabssHzzxcZKDpxFjf1Ep6KT
+         Z+Qr7BXS8s0v9zHiHqeN2dE3WQB88ARaW8AH1iSDJCS3cr45iCn1L9lVI9ZPcsS480+k
+         wbmFDYCaUAqowUGhuKg1M8XmNsmQHtwbdRXfkKNKftJJVvjlpX0Njj/C3Keo2/5Fq3Ip
+         rJb1BWaFB48m4r9hq6xevdAWxHKsOWbdYQ3JRHwN28GN7dhocxPWoxBC2UOWVDxNAvVb
+         KELlyeUjKRt7k8dTr6Xo/3BcetEN0kRAapuiQFxtxhRi3ZR8WdPaedyJyCpfkgSiKRr3
+         Vpww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685144686; x=1687736686;
-        h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9t4P2GvyPz5aecPxpWswvlll2je3r362Snycxj82bkU=;
-        b=BZ+IcwmJKsIx8r4fVZ7uzjid0hV7c2i3W3nfZ/M21MiQ2gq+Jcrsqd7+/1hVl/v6ig
-         hkUv6bbMr9xpgHhlskSQKRQtByNAkPRqZR05S28vCnFqoD2UyDC9SKtKnXUtCKXLmrrm
-         EDlWsH758YOjwAS/0hEqJL+GQ6/pbYRwDtqezXIDqEiObR4hyGs396itaLx0lhHButz3
-         e07AkPbopD+MZKjVJoxiero8lgwZOjcd6QA+s2P6Sc1rid1VJ6cANh6IMXgI+ECE1Apy
-         FL23esRdcrTiZ/XFf2yejaX7NDY2lJ77xe4dKWtzqMGlGue7F4zKdz8tMbdeE/Z5W0uf
-         89gg==
-X-Gm-Message-State: AC+VfDyVaQxZKHXjP8FkPh62oJtBTFStL6uRopR5pA865MC5COe+vI33
-	RANjWUQfxSgCCnDV8E0i2JAoLxE3qDA=
-X-Google-Smtp-Source: ACHHUZ671mv9b1WNngTqma0ZpDsFyu7jCdBVYj6cC/Q6bUpKz7y4SPqrDazly1Z4TuFOLliyXqQloqgktcM=
+        d=1e100.net; s=20221208; t=1685144680; x=1687736680;
+        h=cc:to:from:subject:mime-version:message-id:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=p2/B2gpADUVSH4+1+wdvhwwOJ3ZLS46dsub4yrmfIrY=;
+        b=TuFSqNE1ZRNj+1MsS+nntx7ON+hwuoDvNrvMKsHZAkbxdecH4PBiAatbPcEDt156w0
+         28q6JG3p1qzgOkIaYj4Lmav53uQtoVQnf0xAi4NnAWF5Aa0e2z3EIKO0fIZItozmruH+
+         J5oKzKQKuRqxF2mx19nOSXlOp28dgiXbUpXHxrsUsMiaeRPNODjqybe72qXbUE26QFNl
+         Dgt48RkSERYmDjAPnQEGSMNV+NDyLxI6ZL+kvxaUhXkHYVKiRoQQXis5svrM6//TElea
+         Ux5Hn1x8Tr4pfIMo1ogbO0XxnXgvcXdCFgo3DQk92lmqBdKHsJte8ygW/HipHmeYi0Fd
+         8g+A==
+X-Gm-Message-State: AC+VfDymBckKOGF9quJTKLFRKmZoSz24sYY1C1900dua75FJ1Y0pmghK
+	iV5WfuqZb4PsEjvm4ECCWvlzra+O1XU=
+X-Google-Smtp-Source: ACHHUZ7YDXs22loXI9Hn4p7O2u7mz3EIOuiyK6CgImdELnj21szlSQpHCqRMIQPES8e6xN/3760vCEBuevA=
 X-Received: from yuzhao.bld.corp.google.com ([2620:15c:183:200:910f:8a15:592b:2087])
- (user=yuzhao job=sendgmr) by 2002:a81:b627:0:b0:559:d859:d749 with SMTP id
- u39-20020a81b627000000b00559d859d749mr437593ywh.5.1685144686225; Fri, 26 May
- 2023 16:44:46 -0700 (PDT)
-Date: Fri, 26 May 2023 17:44:29 -0600
-In-Reply-To: <20230526234435.662652-1-yuzhao@google.com>
-Message-Id: <20230526234435.662652-5-yuzhao@google.com>
+ (user=yuzhao job=sendgmr) by 2002:a25:7343:0:b0:bad:99d:f086 with SMTP id
+ o64-20020a257343000000b00bad099df086mr1339084ybc.10.1685144679852; Fri, 26
+ May 2023 16:44:39 -0700 (PDT)
+Date: Fri, 26 May 2023 17:44:25 -0600
+Message-Id: <20230526234435.662652-1-yuzhao@google.com>
 Mime-Version: 1.0
-References: <20230526234435.662652-1-yuzhao@google.com>
 X-Mailer: git-send-email 2.41.0.rc0.172.g3f132b7071-goog
-Subject: [PATCH mm-unstable v2 04/10] kvm/arm64: make stage2 page tables RCU safe
+Subject: [PATCH mm-unstable v2 00/10] mm/kvm: locklessly clear the accessed bit
 From: Yu Zhao <yuzhao@google.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Paolo Bonzini <pbonzini@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -79,120 +77,124 @@ Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, x86@kernel.org, Gavin Shan <gshan@re
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Stage2 page tables are currently not RCU safe against unmapping or VM
-destruction. The previous mmu_notifier_ops members rely on
-kvm->mmu_lock to synchronize with those operations.
+TLDR
+====
+This patchset adds a fast path to clear the accessed bit without
+taking kvm->mmu_lock. It can significantly improve the performance of
+guests when the host is under heavy memory pressure.
 
-However, the new mmu_notifier_ops member test_clear_young() provides
-a fast path that does not take kvm->mmu_lock. To implement
-kvm_arch_test_clear_young() for that path, unmapped page tables need
-to be freed by RCU and kvm_free_stage2_pgd() needs to be after
-mmu_notifier_unregister().
+ChromeOS has been using a similar approach [1] since mid 2021 and it
+was proven successful on tens of millions devices.
 
-Remapping, specifically stage2_free_removed_table(), is already RCU
-safe.
+This v2 addressed previous requests [2] on refactoring code, removing
+inaccurate/redundant texts, etc.
 
-Signed-off-by: Yu Zhao <yuzhao@google.com>
----
- arch/arm64/include/asm/kvm_pgtable.h |  2 ++
- arch/arm64/kvm/arm.c                 |  1 +
- arch/arm64/kvm/hyp/pgtable.c         |  8 ++++++--
- arch/arm64/kvm/mmu.c                 | 17 ++++++++++++++++-
- 4 files changed, 25 insertions(+), 3 deletions(-)
+[1] https://crrev.com/c/2987928
+[2] https://lore.kernel.org/r/20230217041230.2417228-1-yuzhao@google.com/
 
-diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-index ff520598b62c..5cab52e3a35f 100644
---- a/arch/arm64/include/asm/kvm_pgtable.h
-+++ b/arch/arm64/include/asm/kvm_pgtable.h
-@@ -153,6 +153,7 @@ static inline bool kvm_level_supports_block_mapping(u32 level)
-  * @put_page:			Decrement the refcount on a page. When the
-  *				refcount reaches 0 the page is automatically
-  *				freed.
-+ * @put_page_rcu:		RCU variant of the above.
-  * @page_count:			Return the refcount of a page.
-  * @phys_to_virt:		Convert a physical address into a virtual
-  *				address	mapped in the current context.
-@@ -170,6 +171,7 @@ struct kvm_pgtable_mm_ops {
- 	void		(*free_removed_table)(void *addr, u32 level);
- 	void		(*get_page)(void *addr);
- 	void		(*put_page)(void *addr);
-+	void		(*put_page_rcu)(void *addr);
- 	int		(*page_count)(void *addr);
- 	void*		(*phys_to_virt)(phys_addr_t phys);
- 	phys_addr_t	(*virt_to_phys)(void *addr);
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 14391826241c..ee93271035d9 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -191,6 +191,7 @@ vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
-  */
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
-+	kvm_free_stage2_pgd(&kvm->arch.mmu);
- 	bitmap_free(kvm->arch.pmu_filter);
- 	free_cpumask_var(kvm->arch.supported_cpus);
- 
-diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index 24678ccba76a..dbace4c6a841 100644
---- a/arch/arm64/kvm/hyp/pgtable.c
-+++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -988,8 +988,12 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
- 					       kvm_granule_size(ctx->level));
- 
--	if (childp)
--		mm_ops->put_page(childp);
-+	if (childp) {
-+		if (mm_ops->put_page_rcu)
-+			mm_ops->put_page_rcu(childp);
-+		else
-+			mm_ops->put_page(childp);
-+	}
- 
- 	return 0;
- }
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index 3b9d4d24c361..c3b3e2afe26f 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -172,6 +172,21 @@ static int kvm_host_page_count(void *addr)
- 	return page_count(virt_to_page(addr));
- }
- 
-+static void kvm_s2_rcu_put_page(struct rcu_head *head)
-+{
-+	put_page(container_of(head, struct page, rcu_head));
-+}
-+
-+static void kvm_s2_put_page_rcu(void *addr)
-+{
-+	struct page *page = virt_to_page(addr);
-+
-+	if (kvm_host_page_count(addr) == 1)
-+		kvm_account_pgtable_pages(addr, -1);
-+
-+	call_rcu(&page->rcu_head, kvm_s2_rcu_put_page);
-+}
-+
- static phys_addr_t kvm_host_pa(void *addr)
- {
- 	return __pa(addr);
-@@ -704,6 +719,7 @@ static struct kvm_pgtable_mm_ops kvm_s2_mm_ops = {
- 	.free_removed_table	= stage2_free_removed_table,
- 	.get_page		= kvm_host_get_page,
- 	.put_page		= kvm_s2_put_page,
-+	.put_page_rcu		= kvm_s2_put_page_rcu,
- 	.page_count		= kvm_host_page_count,
- 	.phys_to_virt		= kvm_host_va,
- 	.virt_to_phys		= kvm_host_pa,
-@@ -1877,7 +1893,6 @@ void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen)
- 
- void kvm_arch_flush_shadow_all(struct kvm *kvm)
- {
--	kvm_free_stage2_pgd(&kvm->arch.mmu);
- }
- 
- void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+Overview
+========
+The goal of this patchset is to optimize the performance of guests
+when the host memory is overcommitted. It focuses on a simple yet
+common case where hardware sets the accessed bit in KVM PTEs and VMs
+are not nested. Complex cases fall back to the existing slow path
+where kvm->mmu_lock is then taken.
+
+The fast path relies on two techniques to safely clear the accessed
+bit: RCU and CAS. The former protects KVM page tables from being
+freed while the latter clears the accessed bit atomically against
+both the hardware and other software page table walkers.
+
+A new mmu_notifier_ops member, test_clear_young(), supersedes the
+existing clear_young() and test_young(). This extended callback can
+operate on a range of KVM PTEs individually according to a bitmap, if
+the caller provides it.
+
+Evaluation
+==========
+An existing selftest can quickly demonstrate the effectiveness of
+this patchset. On a generic workstation equipped with 128 CPUs and
+256GB DRAM:
+
+  $ sudo max_guest_memory_test -c 64 -m 250 -s 250
+  
+  MGLRU         run2
+  ------------------
+  Before [1]    ~64s
+  After         ~51s
+  
+  kswapd (MGLRU before)
+    100.00%  balance_pgdat
+      100.00%  shrink_node
+        100.00%  shrink_one
+          99.99%  try_to_shrink_lruvec
+            99.71%  evict_folios
+              97.29%  shrink_folio_list
+  ==>>          13.05%  folio_referenced
+                  12.83%  rmap_walk_file
+                    12.31%  folio_referenced_one
+                      7.90%  __mmu_notifier_clear_young
+                        7.72%  kvm_mmu_notifier_clear_young
+                          7.34%  _raw_write_lock
+  
+  kswapd (MGLRU after)
+    100.00%  balance_pgdat
+      100.00%  shrink_node
+        100.00%  shrink_one
+          99.99%  try_to_shrink_lruvec
+            99.59%  evict_folios
+              80.37%  shrink_folio_list
+  ==>>          3.74%  folio_referenced
+                  3.59%  rmap_walk_file
+                    3.19%  folio_referenced_one
+                      2.53%  lru_gen_look_around
+                        1.06%  __mmu_notifier_test_clear_young
+
+Comprehensive benchmarks are coming soon.
+
+[1] "mm: rmap: Don't flush TLB after checking PTE young for page
+     reference" was included so that the comparison is apples to
+     apples.
+    https://lore.kernel.org/r/20220706112041.3831-1-21cnbao@gmail.com/
+
+Yu Zhao (10):
+  mm/kvm: add mmu_notifier_ops->test_clear_young()
+  mm/kvm: use mmu_notifier_ops->test_clear_young()
+  kvm/arm64: export stage2_try_set_pte() and macros
+  kvm/arm64: make stage2 page tables RCU safe
+  kvm/arm64: add kvm_arch_test_clear_young()
+  kvm/powerpc: make radix page tables RCU safe
+  kvm/powerpc: add kvm_arch_test_clear_young()
+  kvm/x86: move tdp_mmu_enabled and shadow_accessed_mask
+  kvm/x86: add kvm_arch_test_clear_young()
+  mm: multi-gen LRU: use mmu_notifier_test_clear_young()
+
+ Documentation/admin-guide/mm/multigen_lru.rst |   6 +-
+ arch/arm64/include/asm/kvm_host.h             |   6 +
+ arch/arm64/include/asm/kvm_pgtable.h          |  55 +++++++
+ arch/arm64/kvm/arm.c                          |   1 +
+ arch/arm64/kvm/hyp/pgtable.c                  |  61 +-------
+ arch/arm64/kvm/mmu.c                          |  53 ++++++-
+ arch/powerpc/include/asm/kvm_host.h           |   8 +
+ arch/powerpc/include/asm/kvm_ppc.h            |   1 +
+ arch/powerpc/kvm/book3s.c                     |   6 +
+ arch/powerpc/kvm/book3s.h                     |   1 +
+ arch/powerpc/kvm/book3s_64_mmu_radix.c        |  65 +++++++-
+ arch/powerpc/kvm/book3s_hv.c                  |   5 +
+ arch/x86/include/asm/kvm_host.h               |  13 ++
+ arch/x86/kvm/mmu.h                            |   6 -
+ arch/x86/kvm/mmu/spte.h                       |   1 -
+ arch/x86/kvm/mmu/tdp_mmu.c                    |  34 +++++
+ include/linux/kvm_host.h                      |  22 +++
+ include/linux/mmu_notifier.h                  |  79 ++++++----
+ include/linux/mmzone.h                        |   6 +-
+ include/trace/events/kvm.h                    |  15 --
+ mm/mmu_notifier.c                             |  48 ++----
+ mm/rmap.c                                     |   8 +-
+ mm/vmscan.c                                   | 139 ++++++++++++++++--
+ virt/kvm/kvm_main.c                           | 114 ++++++++------
+ 24 files changed, 546 insertions(+), 207 deletions(-)
+
 -- 
 2.41.0.rc0.172.g3f132b7071-goog
 
