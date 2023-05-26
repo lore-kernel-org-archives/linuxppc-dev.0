@@ -4,56 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CD44C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 14:45:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04F7DC77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 May 2023 23:45:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QSSPw1ch2z3fH6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 May 2023 00:45:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QShPn0KRjz3fGl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 May 2023 09:45:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=J4h09ub7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=lFfC+K1p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--yuzhao.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3berxzaykdomdzemftlttlqj.htrqnszcuuh-ijaqnxyx.teqfgx.twl@flex--yuzhao.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=J4h09ub7;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=lFfC+K1p;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QSSNx069Pz3bmP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2023 00:44:15 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-	by smtp-out1.suse.de (Postfix) with ESMTP id 1960C21AC4;
-	Fri, 26 May 2023 14:44:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1685112247; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fcZ4ZRR0yos18sY7hIGTBFkGlmXiSRFOxBcjHXBe5hU=;
-	b=J4h09ub7B+8cW6XM+zzyKpToCRFhpDx/CNcNoZrZzAVQoYGEBCP2s6MJYbAJEkhjqQwr6+
-	Ii2jyonq6j1wgE1F5cWTup3ltYGq2aZa7w8gMRcHYrnG3oXEpMwdEygPcGHtjblnr0n9bd
-	xIplkFCoy2RpRD5gkrV4W7dOAktOra8=
-Received: from suse.cz (unknown [10.100.208.146])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by relay2.suse.de (Postfix) with ESMTPS id 151282C141;
-	Fri, 26 May 2023 14:44:04 +0000 (UTC)
-Date: Fri, 26 May 2023 16:44:03 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v5 13/18] watchdog/hardlockup: Have the perf hardlockup
- use __weak functions more cleanly
-Message-ID: <ZHDFs-7al6bbOi63@alley>
-References: <20230519101840.v5.18.Ia44852044cdcb074f387e80df6b45e892965d4a1@changeid>
- <20230519101840.v5.13.I847d9ec852449350997ba00401d2462a9cb4302b@changeid>
- <ZG4YMyifGLOBJxLo@alley>
- <CAD=FV=X+LEcSrArV+w35MX4oP1sC9KoRM0puJLT1RFmyS84Hxw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAD=FV=X+LEcSrArV+w35MX4oP1sC9KoRM0puJLT1RFmyS84Hxw@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QShNd0KyQz3bnr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2023 09:44:47 +1000 (AEST)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-5651d8acfe2so30773967b3.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2023 16:44:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1685144684; x=1687736684;
+        h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=W5mqYLgSgL41U5MVABcpsNGg2VTYVhdnWBmYAGgA32M=;
+        b=lFfC+K1prBwz+QWauf5t3Z5nGOG+XH3WsUV6BbAJbu8yEh9dwSmQ7iKcNTjxofo1xQ
+         drv4Lmvn48X7bRRKv2GPWasyFIShdI23SCQ+h/TYUmoXc/hOnlnscK719N8Jpf3m7n6U
+         mEaD6Epy7t6qJzvv/9f9Jp/JqQmnMe81faOyaQAqHTEXDufnGK7wY+Ey5ZFKaBi7dzJd
+         6O8PEoHW6NsTzElKeYmJHsoCaRTvtaP/AkDf6+cRfXVKyOf9lMpoYxPIHrUwcDj+nl2+
+         7q+JpYkRKelWoBaQmJuf7/axxLP6kaz1KnqZQAEmA4XWZSzVgynpinko26WGtZXkTjpp
+         oXNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685144684; x=1687736684;
+        h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=W5mqYLgSgL41U5MVABcpsNGg2VTYVhdnWBmYAGgA32M=;
+        b=fkmfNh9ZdfZBHOBHAfDEfAciVo01PmvztjsoeBF5iJ2O0A306y0JKfZrjUwY2wpCTx
+         7YkcMDDziPnUIuV5P+Fs5PEVwjsKr4mZ5cu/dzWuT5qBQl+oJsqCqFeNa/w7YGgZ+wNP
+         Hgm9f5JhBv8ZH+1gzGjt27YRZmRPFPSYRcp57z6Wt5Ijkib/Hki+H5btnmeHBXRl/CPV
+         2jX6z1/UDCdJzVNZbulPCO8w6oCQh938SzbOqy+/tOCoF7VjlWscWVIiejuoXT2U8oCy
+         Dd+eitLDdv9QhiOKMBfUsudVjiZfcUHvyDmNtwcj0iMiWSJhpY6Jr4uRgPNRoNsQOzvq
+         9lPQ==
+X-Gm-Message-State: AC+VfDw3tGZ/mYKC0kMaHTuAsbvGjd96XPG6CBmV9UZWHxX/FDrQzevU
+	xUMHqLxKTmvYSX0TNZ9bcZc3HJSXEik=
+X-Google-Smtp-Source: ACHHUZ5aYhy2MBmaWD1q0FxpVfKGE+Nrskt2Z7iv2nNf760O+qZ11RhzmW2rToUdRrv6PXs76j2V3Kvga7o=
+X-Received: from yuzhao.bld.corp.google.com ([2620:15c:183:200:910f:8a15:592b:2087])
+ (user=yuzhao job=sendgmr) by 2002:a81:4421:0:b0:565:9f59:664f with SMTP id
+ r33-20020a814421000000b005659f59664fmr2006806ywa.6.1685144684605; Fri, 26 May
+ 2023 16:44:44 -0700 (PDT)
+Date: Fri, 26 May 2023 17:44:28 -0600
+In-Reply-To: <20230526234435.662652-1-yuzhao@google.com>
+Message-Id: <20230526234435.662652-4-yuzhao@google.com>
+Mime-Version: 1.0
+References: <20230526234435.662652-1-yuzhao@google.com>
+X-Mailer: git-send-email 2.41.0.rc0.172.g3f132b7071-goog
+Subject: [PATCH mm-unstable v2 03/10] kvm/arm64: export stage2_try_set_pte()
+ and macros
+From: Yu Zhao <yuzhao@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Paolo Bonzini <pbonzini@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,189 +75,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, ito-yuichi@fujitsu.com, Lecopzer Chen <lecopzer.chen@mediatek.com>, kgdb-bugreport@lists.sourceforge.net, ricardo.neri@intel.com, Stephane Eranian <eranian@google.com>, sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Will Deacon <will@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Andi Kleen <ak@linux.intel.com>, Marc Zyngier <maz@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Matthias Kaehlcke <mka@chromium.org>, Catalin Marinas <catalin.marinas@arm.com>, Masayoshi Mizuma <msys.mizuma@gmail.com>, ravi.v.shankar@intel.com, Tzung-Bi Shih <tzungbi@chromium.org>, npiggin@gmail.com, Stephen Boyd <swboyd@chromium.org>, Pingfan Liu <kernelfans@gmail.com>, linux-arm-kernel@lists.infradead.org, Sumit Garg <sumit.garg@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozl
- abs.org, davem@davemloft.net
+Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, x86@kernel.org, Gavin Shan <gshan@redhat.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, Ben Gardon <bgardon@google.com>, Chao Peng <chao.p.peng@linux.intel.com>, Will Deacon <will@kernel.org>, Gaosheng Cui <cuigaosheng1@huawei.com>, Marc Zyngier <maz@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Alistair Popple <apopple@nvidia.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Zenghui Yu <yuzenghui@huawei.com>, linux-trace-kernel@vger.kernel.org, linux-mm@google.com, Thomas Huth <thuth@redhat.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Steven Rostedt <rostedt@goodmis.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-ke
+ rnel@lists.infradead.org, Fabiano Rosas <farosas@linux.ibm.com>, Michael Larabel <michael@michaellarabel.com>, Sean Christopherson <seanjc@google.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anup Patel <anup@brainfault.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 2023-05-24 12:38:49, Doug Anderson wrote:
-> Hi,
-> 
-> On Wed, May 24, 2023 at 6:59 AM Petr Mladek <pmladek@suse.com> wrote:
-> >
-> > On Fri 2023-05-19 10:18:37, Douglas Anderson wrote:
-> > > The fact that there watchdog_hardlockup_enable(),
-> > > watchdog_hardlockup_disable(), and watchdog_hardlockup_probe() are
-> > > declared __weak means that the configured hardlockup detector can
-> > > define non-weak versions of those functions if it needs to. Instead of
-> > > doing this, the perf hardlockup detector hooked itself into the
-> > > default __weak implementation, which was a bit awkward. Clean this up.
-> > >
-> > > >From comments, it looks as if the original design was done because the
-> > > __weak function were expected to implemented by the architecture and
-> > > not by the configured hardlockup detector. This got awkward when we
-> > > tried to add the buddy lockup detector which was not arch-specific but
-> > > wanted to hook into those same functions.
-> > >
-> > > This is not expected to have any functional impact.
-> > >
-> > > @@ -187,27 +187,33 @@ static inline void watchdog_hardlockup_kick(void) { }
-> > >  #endif /* !CONFIG_HARDLOCKUP_DETECTOR_PERF */
-> > >
-> > >  /*
-> > > - * These functions can be overridden if an architecture implements its
-> > > - * own hardlockup detector.
-> > > + * These functions can be overridden based on the configured hardlockdup detector.
-> > >   *
-> > >   * watchdog_hardlockup_enable/disable can be implemented to start and stop when
-> > > - * softlockup watchdog start and stop. The arch must select the
-> > > + * softlockup watchdog start and stop. The detector must select the
-> > >   * SOFTLOCKUP_DETECTOR Kconfig.
-> > >   */
-> > > -void __weak watchdog_hardlockup_enable(unsigned int cpu)
-> > > -{
-> > > -     hardlockup_detector_perf_enable();
-> > > -}
-> > > +void __weak watchdog_hardlockup_enable(unsigned int cpu) { }
-> > >
-> > > -void __weak watchdog_hardlockup_disable(unsigned int cpu)
-> > > -{
-> > > -     hardlockup_detector_perf_disable();
-> > > -}
-> > > +void __weak watchdog_hardlockup_disable(unsigned int cpu) { }
-> > >
-> > >  /* Return 0, if a hardlockup watchdog is available. Error code otherwise */
-> > >  int __weak __init watchdog_hardlockup_probe(void)
-> > >  {
-> > > -     return hardlockup_detector_perf_init();
-> > > +     /*
-> > > +      * If CONFIG_HAVE_NMI_WATCHDOG is defined then an architecture
-> > > +      * is assumed to have the hard watchdog available and we return 0.
-> > > +      */
-> > > +     if (IS_ENABLED(CONFIG_HAVE_NMI_WATCHDOG))
-> > > +             return 0;
-> > > +
-> > > +     /*
-> > > +      * Hardlockup detectors other than those using CONFIG_HAVE_NMI_WATCHDOG
-> > > +      * are required to implement a non-weak version of this probe function
-> > > +      * to tell whether they are available. If they don't override then
-> > > +      * we'll return -ENODEV.
-> > > +      */
-> > > +     return -ENODEV;
-> > >  }
-> >
-> > When thinking more about it. It is weird that we need to handle
-> > CONFIG_HAVE_NMI_WATCHDOG in this default week function.
-> >
-> > It should be handled in watchdog_hardlockup_probe() implemented
-> > in kernel/watchdog_perf.c.
-> >
-> > IMHO, the default __weak function could always return -ENODEV;
-> >
-> > Would it make sense, please?
-> 
-> I don't quite understand. I'd agree that the special case for
-> CONFIG_HAVE_NMI_WATCHDOG is ugly, but it was also ugly before. IMO
-> it's actually a little less ugly / easier to understand after my
-> patch. ...but let me walk through how I think this special case works
-> and maybe you can tell me where I'm confused.
-> 
-> The first thing to understand is that CONFIG_HARDLOCKUP_DETECTOR_PERF
-> and CONFIG_HAVE_NMI_WATCHDOG are mutually exclusive from each other.
-> This was true before any of my patches and is still true after them.
-> Specifically, if CONFIG_HAVE_NMI_WATCHDOG is defined then an
-> architecture implements arch_touch_nmi_watchdog() (as documented in
-> the Kconfig docs for HAVE_NMI_WATCHDOG). Looking at the tree before my
-> series you can see that the perf hardlockup detector also implemented
-> arch_touch_nmi_watchdog(). This would have caused a conflict. The
-> mutual exclusion was presumably enforced by an architecture not
-> defining both HAVE_NMI_WATCHDOG and HAVE_HARDLOCKUP_DETECTOR_PERF.
-> 
-> The second thing to understand is that an architecture that defines
-> CONFIG_HAVE_NMI_WATCHDOG is _not_ required to implement
-> watchdog_hardlockup_probe() (used to be called watchdog_nmi_probe()).
-> Maybe this should change, but at the very least it appears that
-> SPARC64 defines HAVE_NMI_WATCHDOG but doesn't define
-> watchdog_hardlockup_probe() AKA watchdog_nmi_probe(). Anyone who
-> defines CONFIG_HAVE_NMI_WATCHDOG and doesn't implement
-> watchdog_hardlockup_probe() is claiming that their watchdog needs no
-> probing and is always available.
-> 
-> So with that context:
-> 
-> 1. We can't handle any special cases for CONFIG_HAVE_NMI_WATCHDOG in
-> "kernel/watchdog_perf.c". The special cases that we need to handle are
-> all for the cases where CONFIG_HARDLOCKUP_DETECTOR_PERF isn't defined
-> and that means "kernel/watchdog_perf.c" isn't included.
-> 
-> 2. We can't have the default __weak function return -ENODEV because
-> CONFIG_HAVE_NMI_WATCHDOG doesn't require an arch to implement
-> watchdog_hardlockup_probe(), but we want watchdog_hardlockup_probe()
-> to return "no error" in that case so that
-> "watchdog_hardlockup_available" gets set to true.
-> 
-> Does that sound right?
-> 
-> I'd agree that a future improvement saying that
-> CONFIG_HAVE_NMI_WATCHDOG means you _must_ implement
-> watchdog_hardlockup_probe() would make sense and that would allow us
-> to get rid of the special case. IMO, though, that's a separate patch.
-> I'd be happy to review that patch if you wanted to post it up. :-)
-> 
-> If we want to add that requirement, I _think_ the only thing you'd
-> need to do is to add watchdog_hardlockup_probe() to sparc64 and have
-> it return 0 and put that definition in the same file containing
-> arch_touch_nmi_watchdog().
+stage2_try_set_pte() and KVM_PTE_LEAF_ATTR_LO_S2_AF are needed to
+implement kvm_arch_test_clear_young().
 
-This is my understanding. IMHO, if we define
-watchdog_hardlockup_probe() in /arch/sparc/kernel/nmi.c
-then we could remove the CONFIG_HAVE_NMI_WATCHDOG check from
-the default watchdog_hardlockup_probe().
+Signed-off-by: Yu Zhao <yuzhao@google.com>
+---
+ arch/arm64/include/asm/kvm_pgtable.h | 53 ++++++++++++++++++++++++++++
+ arch/arm64/kvm/hyp/pgtable.c         | 53 ----------------------------
+ 2 files changed, 53 insertions(+), 53 deletions(-)
 
-Honestly, I am afraid that nobody really thought about any rules.
-People were just adding their stuff any way that worked for them.
-And this is why we ended with this maze.
+diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
+index dc3c072e862f..ff520598b62c 100644
+--- a/arch/arm64/include/asm/kvm_pgtable.h
++++ b/arch/arm64/include/asm/kvm_pgtable.h
+@@ -44,6 +44,49 @@ typedef u64 kvm_pte_t;
+ 
+ #define KVM_PHYS_INVALID		(-1ULL)
+ 
++#define KVM_PTE_TYPE			BIT(1)
++#define KVM_PTE_TYPE_BLOCK		0
++#define KVM_PTE_TYPE_PAGE		1
++#define KVM_PTE_TYPE_TABLE		1
++
++#define KVM_PTE_LEAF_ATTR_LO		GENMASK(11, 2)
++
++#define KVM_PTE_LEAF_ATTR_LO_S1_ATTRIDX	GENMASK(4, 2)
++#define KVM_PTE_LEAF_ATTR_LO_S1_AP	GENMASK(7, 6)
++#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RO	3
++#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RW	1
++#define KVM_PTE_LEAF_ATTR_LO_S1_SH	GENMASK(9, 8)
++#define KVM_PTE_LEAF_ATTR_LO_S1_SH_IS	3
++#define KVM_PTE_LEAF_ATTR_LO_S1_AF	BIT(10)
++
++#define KVM_PTE_LEAF_ATTR_LO_S2_MEMATTR	GENMASK(5, 2)
++#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R	BIT(6)
++#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W	BIT(7)
++#define KVM_PTE_LEAF_ATTR_LO_S2_SH	GENMASK(9, 8)
++#define KVM_PTE_LEAF_ATTR_LO_S2_SH_IS	3
++#define KVM_PTE_LEAF_ATTR_LO_S2_AF	BIT(10)
++
++#define KVM_PTE_LEAF_ATTR_HI		GENMASK(63, 51)
++
++#define KVM_PTE_LEAF_ATTR_HI_SW		GENMASK(58, 55)
++
++#define KVM_PTE_LEAF_ATTR_HI_S1_XN	BIT(54)
++
++#define KVM_PTE_LEAF_ATTR_HI_S2_XN	BIT(54)
++
++#define KVM_PTE_LEAF_ATTR_S2_PERMS	(KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R | \
++					 KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W | \
++					 KVM_PTE_LEAF_ATTR_HI_S2_XN)
++
++#define KVM_INVALID_PTE_OWNER_MASK	GENMASK(9, 2)
++#define KVM_MAX_OWNER_ID		1
++
++/*
++ * Used to indicate a pte for which a 'break-before-make' sequence is in
++ * progress.
++ */
++#define KVM_INVALID_PTE_LOCKED		BIT(10)
++
+ static inline bool kvm_pte_valid(kvm_pte_t pte)
+ {
+ 	return pte & KVM_PTE_VALID;
+@@ -224,6 +267,16 @@ static inline bool kvm_pgtable_walk_shared(const struct kvm_pgtable_visit_ctx *c
+ 	return ctx->flags & KVM_PGTABLE_WALK_SHARED;
+ }
+ 
++static inline bool stage2_try_set_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t new)
++{
++	if (!kvm_pgtable_walk_shared(ctx)) {
++		WRITE_ONCE(*ctx->ptep, new);
++		return true;
++	}
++
++	return cmpxchg(ctx->ptep, ctx->old, new) == ctx->old;
++}
++
+ /**
+  * struct kvm_pgtable_walker - Hook into a page-table walk.
+  * @cb:		Callback function to invoke during the walk.
+diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+index 5282cb9ca4cf..24678ccba76a 100644
+--- a/arch/arm64/kvm/hyp/pgtable.c
++++ b/arch/arm64/kvm/hyp/pgtable.c
+@@ -12,49 +12,6 @@
+ #include <asm/stage2_pgtable.h>
+ 
+ 
+-#define KVM_PTE_TYPE			BIT(1)
+-#define KVM_PTE_TYPE_BLOCK		0
+-#define KVM_PTE_TYPE_PAGE		1
+-#define KVM_PTE_TYPE_TABLE		1
+-
+-#define KVM_PTE_LEAF_ATTR_LO		GENMASK(11, 2)
+-
+-#define KVM_PTE_LEAF_ATTR_LO_S1_ATTRIDX	GENMASK(4, 2)
+-#define KVM_PTE_LEAF_ATTR_LO_S1_AP	GENMASK(7, 6)
+-#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RO	3
+-#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RW	1
+-#define KVM_PTE_LEAF_ATTR_LO_S1_SH	GENMASK(9, 8)
+-#define KVM_PTE_LEAF_ATTR_LO_S1_SH_IS	3
+-#define KVM_PTE_LEAF_ATTR_LO_S1_AF	BIT(10)
+-
+-#define KVM_PTE_LEAF_ATTR_LO_S2_MEMATTR	GENMASK(5, 2)
+-#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R	BIT(6)
+-#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W	BIT(7)
+-#define KVM_PTE_LEAF_ATTR_LO_S2_SH	GENMASK(9, 8)
+-#define KVM_PTE_LEAF_ATTR_LO_S2_SH_IS	3
+-#define KVM_PTE_LEAF_ATTR_LO_S2_AF	BIT(10)
+-
+-#define KVM_PTE_LEAF_ATTR_HI		GENMASK(63, 51)
+-
+-#define KVM_PTE_LEAF_ATTR_HI_SW		GENMASK(58, 55)
+-
+-#define KVM_PTE_LEAF_ATTR_HI_S1_XN	BIT(54)
+-
+-#define KVM_PTE_LEAF_ATTR_HI_S2_XN	BIT(54)
+-
+-#define KVM_PTE_LEAF_ATTR_S2_PERMS	(KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R | \
+-					 KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W | \
+-					 KVM_PTE_LEAF_ATTR_HI_S2_XN)
+-
+-#define KVM_INVALID_PTE_OWNER_MASK	GENMASK(9, 2)
+-#define KVM_MAX_OWNER_ID		1
+-
+-/*
+- * Used to indicate a pte for which a 'break-before-make' sequence is in
+- * progress.
+- */
+-#define KVM_INVALID_PTE_LOCKED		BIT(10)
+-
+ struct kvm_pgtable_walk_data {
+ 	struct kvm_pgtable_walker	*walker;
+ 
+@@ -702,16 +659,6 @@ static bool stage2_pte_is_locked(kvm_pte_t pte)
+ 	return !kvm_pte_valid(pte) && (pte & KVM_INVALID_PTE_LOCKED);
+ }
+ 
+-static bool stage2_try_set_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t new)
+-{
+-	if (!kvm_pgtable_walk_shared(ctx)) {
+-		WRITE_ONCE(*ctx->ptep, new);
+-		return true;
+-	}
+-
+-	return cmpxchg(ctx->ptep, ctx->old, new) == ctx->old;
+-}
+-
+ /**
+  * stage2_try_break_pte() - Invalidates a pte according to the
+  *			    'break-before-make' requirements of the
+-- 
+2.41.0.rc0.172.g3f132b7071-goog
 
-It is not your fault. You just moved the ifdef from the header file
-into the function definition. But it showed very well how ugly it was.
-
-By ugly, I mean that powerpc, perf, and buddy hardlockup detectors
-make watchdog_hardlockup_probe() successful by implementing
-an alternative to the default weak implementation. Only, sparc64
-reports success via a crazy check in the default weak configuration.
-
-The check is crazy because it makes the decision based on
-CONFIG_HAVE_NMI_WATCHDOG. But the related code is in
-arch/sparc/kernel/nmi.c which is compiled when CONFIG_SPARC64
-is enabled.
-
-The connection between CONFIG_HAVE_NMI_WATCHDOG and
-CONFIG_SPARC64 is hidden in arch/sparc/Kconfig.
-
-It would be much more straightforward when the weak function
-is implemented in arch/sparc/kernel/nmi.c. It will be clear
-that probe() will succeed when the watchdog gets initialized.
-
-
-> powerpc also gets CONFIG_HAVE_NMI_WATCHDOG
-> as a side effect of selecting CONFIG_HAVE_HARDLOCKUP_DETECTOR_ARCH but
-> it looks like they implement watchdog_hardlockup_probe() already. Oh,
-> but maybe this will fix a preexisting (existed before my patches)
-> minor bug... Unless I'm missing something (entirely possible!) on
-> powerpc today I guess if you turn off CONFIG_PPC_WATCHDOG then
-> CONFIG_HAVE_HARDLOCKUP_DETECTOR_ARCH and CONFIG_HAVE_NMI_WATCHDOG
-> would still be defined and we'd end up returning 0 (no error) from
-> watchdog_hardlockup_probe(). That means that on powerpc today if you
-> turn off CONFIG_PPC_WATCHDOG that '/proc/sys/kernel/nmi_watchdog' will
-> still think the watchdog is enabled?
-
-Yeah, it seems that this bug was there. And it will get fixed when
-the default weak implementation of watchdog_hardlockup_probe()
-always returns false.
-
-Again, I'll let Andrew to decide whether this should get cleaned
-in this patchset or later. But it would be fine to fix this
-after we spent so much time understanding the mess.
-
-Best Regards,
-Petr
