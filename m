@@ -4,49 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6094FC7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 May 2023 12:15:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 972C9C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 May 2023 12:16:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QTd0J4Twfz3fGc
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 May 2023 22:15:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QTd1D1ZRTz3fHN
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 May 2023 22:16:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=EKY74s2B;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Bxk2glO+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=EKY74s2B;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Bxk2glO+;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QTc8q24X0z30QD;
-	Sun, 28 May 2023 21:37:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QTcC43jPsz3c9K;
+	Sun, 28 May 2023 21:39:43 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8756E61445;
-	Sun, 28 May 2023 11:37:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CFAFC433D2;
-	Sun, 28 May 2023 11:37:40 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id B5A2760CF6;
+	Sun, 28 May 2023 11:39:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9394FC433EF;
+	Sun, 28 May 2023 11:39:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1685273862;
-	bh=BIru6hlSNmRQGDEmy/Ww2n/Ov46kOSzrO8WVSVMyVwk=;
+	s=korg; t=1685273981;
+	bh=WtlDtiO7o3IdZ94cLuiib04GpSzPp1zVh24DIBWiihI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=EKY74s2BqKVHsqdLZEJDtyzRLP27oRRAE5LsCzf35joLA4Bv8NFE6KwFSXzjEcDAc
-	 /QHhhuwz8E4i4TDH5lCtMbNH7ouvxh60fkkTD/Otlm/A+C79fe6sGqqSkaxM+fI2/7
-	 xnKqQUPfkVoUXTG/Y91VsilUBchm/3mfEM5jOOP0=
-Date: Sun, 28 May 2023 12:37:17 +0100
+	b=Bxk2glO+BbOKrHzNMwfkUFuzSaTG4YMyWFqTCZLGydhnv4g0zhk5JUuOq6DFw6fcb
+	 0B/S7xbbC0DAoklyfFwD4QkVmX5YabCfrYz8Xj8mBc1AHpLk4ka5bgWFsrvlPNxC69
+	 ZxbRYnpD6PJP9/20rpUWKoRJ9FTTVTeA2SwbjnnQ=
+Date: Sun, 28 May 2023 12:39:33 +0100
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
 Subject: Re: [PATCH 00/97] usb: Convert to platform remove callback returning
  void
-Message-ID: <2023052848-patronage-zen-de4b@gregkh>
+Message-ID: <2023052838-sincerity-dwindle-3658@gregkh>
 References: <20230517230239.187727-1-u.kleine-koenig@pengutronix.de>
+ <2023052848-patronage-zen-de4b@gregkh>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230517230239.187727-1-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <2023052848-patronage-zen-de4b@gregkh>
 X-Mailman-Approved-At: Sun, 28 May 2023 22:14:39 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,20 +68,25 @@ Cc: Richard Leitner <richard.leitner@linux.dev>, Tomer Maimon <tmaimon77@gmail.c
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 18, 2023 at 01:01:02AM +0200, Uwe Kleine-König wrote:
-> Hello,
+On Sun, May 28, 2023 at 12:37:17PM +0100, Greg Kroah-Hartman wrote:
+> On Thu, May 18, 2023 at 01:01:02AM +0200, Uwe Kleine-König wrote:
+> > Hello,
+> > 
+> > this series convers the drivers below drivers/usb to the .remove_new()
+> > callback of struct platform_driver(). The motivation is to make the
+> > remove callback less prone for errors and wrong assumptions. See commit
+> > 5c5a7680e67b ("platform: Provide a remove callback that returns no
+> > value") for a more detailed rationale.
+> > 
+> > All drivers converted here already returned zero unconditionally in their
+> > .remove() callback, so converting them to .remove_new() is trivial.
 > 
-> this series convers the drivers below drivers/usb to the .remove_new()
-> callback of struct platform_driver(). The motivation is to make the
-> remove callback less prone for errors and wrong assumptions. See commit
-> 5c5a7680e67b ("platform: Provide a remove callback that returns no
-> value") for a more detailed rationale.
-> 
-> All drivers converted here already returned zero unconditionally in their
-> .remove() callback, so converting them to .remove_new() is trivial.
+> All but 2 patches applied, as one was for a driver that wasn't in the
+> tree anymore, and the dwc2 patch didn't apply at all.
 
-All but 2 patches applied, as one was for a driver that wasn't in the
-tree anymore, and the dwc2 patch didn't apply at all.
+Oops, the xhci patches broke the build so I dropped them too.  Please
+regenerate the series against the next linux-next that has these in
+them and resend the remaining bits.
 
 thanks,
 
