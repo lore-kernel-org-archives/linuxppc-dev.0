@@ -4,86 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 554E2C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 10:48:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7756C77B7E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 11:18:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QX2sW5qZ6z3dx4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 20:47:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QX3Xh1yt8z3dxS
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 21:18:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kVPz6DMy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=MeUm9Ydy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102d; helo=mail-pj1-x102d.google.com; envelope-from=jonas.gorski@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kVPz6DMy;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=MeUm9Ydy;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QX2rX3Hvlz3bbZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2023 20:47:07 +1000 (AEST)
-Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 351AbpdG027899;
-	Thu, 1 Jun 2023 10:47:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : content-type :
- content-transfer-encoding : mime-version : subject : message-id : date :
- cc : to; s=pp1; bh=Ss5Ip5q87i2K9GPBLs4GJuNMJrws5AXbQIEe+iZEswY=;
- b=kVPz6DMyl+UHDR4ShUh69LoS1pCFuPF24FOKFGsnhZ58CfsebdYLKGA4W2ZrW0ua7mQC
- QFZiVE60TdEUDQlDpOYVYSw1LxpSzmkpAQZzeBglITD5RYX3ptjs+F3hCpDekF2gTG8r
- jcNHf7kY290FzNlY/eJhxAf0xiSIOLpO+3HVbe8FSb9NN62ySiTxvV10gWDxj3H/QlKj
- 6x7kqi8IpC15wpjnFqmtLmfx/DTryVxdYeVfZY1a+SmNBMEJGGdrf08WxcJy3MiLDbjs
- vkh6FVJaLCp7qXjfSAKrDwyorDBmWFwKnOrVJHrAq+g2Vo0dPJjcol2JdHw5d61sViyK 7g== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qxsregbyc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Jun 2023 10:47:00 +0000
-Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 351AcA8W029045;
-	Thu, 1 Jun 2023 10:47:00 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qxsregbxc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Jun 2023 10:46:59 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3511S6a2016865;
-	Thu, 1 Jun 2023 10:46:58 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3qu9g5afmc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Jun 2023 10:46:57 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 351AktFO5046896
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 Jun 2023 10:46:55 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 991AD20043;
-	Thu,  1 Jun 2023 10:46:55 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B58E920049;
-	Thu,  1 Jun 2023 10:46:54 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.106.208])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 Jun 2023 10:46:54 +0000 (GMT)
-From: Sachin Sant <sachinp@linux.ibm.com>
-Content-Type: text/plain;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.500.231\))
-Subject: WARN at kernel/sched/core.c:5358 (kthread_end_lazy_tlb_mm)
-Message-Id: <A9A5D83D-BA70-47A4-BCB4-30C1AE19BC22@linux.ibm.com>
-Date: Thu, 1 Jun 2023 16:16:43 +0530
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-X-Mailer: Apple Mail (2.3731.500.231)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: mYNYI3lrSvQ52vgJP9gM-vzaciXvA4Bk
-X-Proofpoint-GUID: xaJAlDQbVfMYXcbI5JtPKAU_Le48AQhS
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-01_07,2023-05-31_03,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=918 impostorscore=0 spamscore=0 clxscore=1011 phishscore=0
- suspectscore=0 bulkscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2304280000 definitions=main-2306010095
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QX3Wk0Zccz3cC5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2023 21:17:36 +1000 (AEST)
+Received: by mail-pj1-x102d.google.com with SMTP id 98e67ed59e1d1-25673e8c464so217160a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2023 04:17:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685618253; x=1688210253;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=3KLMivggFERHTUQ4oKDCdCn/4yto409QZ31zuIfVcxw=;
+        b=MeUm9YdyFvQ+EmzMauQm3DwWlQ0uGm51kMyqs4PhBgH/mijyrQiG2NopdYymwRbJxY
+         WBb3Tf1Ln6XZqKWhH5S7yQhGi9LLiabQOTeQ8Pbm6c1NX2Xy4WY3/v4jgXe5Wm7qcbDH
+         yEY3HNSHJGimYiFdpPz7nmg67nUmGWb4PamYB7ge/Vdfq0ytqPkY0wlqmD8GxJ3QU2ha
+         YMgYHSJ7Qpd2tGHgPxbotFgYnGiJWb6n/hwdCwf80mscrhqXd4SxH5LEbISu95zojTnv
+         WNtxh7RS0s5xKaXlqlboISfHSVYLF8kc+uAACZeNu+Oizk+CGC+kRe6EXEKAHfyfkH5e
+         ZLFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685618253; x=1688210253;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=3KLMivggFERHTUQ4oKDCdCn/4yto409QZ31zuIfVcxw=;
+        b=WIRGlJJ5EB55UWAR0dJhpE4TLDqx7qyOq5Aijwu+ZKNaO++Pb5NG7218P6OfAfDjak
+         YzkgTvt6IkdV/o1aG0zRf5q2ajb64fiwMHRojdGWotXENnHkN4bPa0GpcONdgbi3CDw1
+         7gEpGQv5xDcAqudVJaHeIoTcDOkoyILcRg+W0oJRBouL7WnHUi2OXq7qZOtgPdHUoGy0
+         4sd2+mI2MW0Fq/yGzVAXk0gqVDsmPL4lJewl0lU83uVqjwjqbUA/IEte3nQYCgUrXdq2
+         vmr5MdFTKIHWvwSubZU7bqU9tQsGfgz2yOkYcCopkgzAXRPI0afmo4Vw71RU4z1yvpfJ
+         rl+A==
+X-Gm-Message-State: AC+VfDygM9OD3Y+xqXyQxUBnC5Ni47YiLIjHUh2NnEPfqM9HNcR9t0rR
+	Ukr9D3f21f1D6CcRbO77mYVngYYJ0xdvsX6zUdE=
+X-Google-Smtp-Source: ACHHUZ7nalKosql0wqoA6eLZQyCHzFFB2nLyOpniZjsGzpomunYZZ7UC7Kcp/mX27yNINR6qH69ddmRyUjrovwtppOk=
+X-Received: by 2002:a17:90a:9f01:b0:253:50d0:a39d with SMTP id
+ n1-20020a17090a9f0100b0025350d0a39dmr5508485pjp.48.1685618252985; Thu, 01 Jun
+ 2023 04:17:32 -0700 (PDT)
+MIME-Version: 1.0
+References: <CAOiHx==5YWhDiZP2PyHZiJrmtqRzvqCqoSO59RwuYuR85BezBg@mail.gmail.com>
+ <ZHe8dKb3f392MfBO@bhelgaas>
+In-Reply-To: <ZHe8dKb3f392MfBO@bhelgaas>
+From: Jonas Gorski <jonas.gorski@gmail.com>
+Date: Thu, 1 Jun 2023 13:17:21 +0200
+Message-ID: <CAOiHx=nTgtnfUqRDJR0yFP0du3Yvs73PkEUR_1eb+1gtbDBM-g@mail.gmail.com>
+Subject: Re: [PATCH v8 0/7] Add pci_dev_for_each_resource() helper and update users
+To: Bjorn Helgaas <helgaas@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,100 +74,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, Nick Piggin <npiggin@gmail.com>
+Cc: =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, linux-pci@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Andrew Lunn <andrew@lunn.ch>, sparclinux@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Gregory Clement <gregory.clement@bootlin.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, linux-acpi@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>, xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>, Anatolij Gustschin <agust@denx.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Niklas Schnelle <schnelle@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, John Paul Adrian Glaubitz <glaubitz@
+ physik.fu-berlin.de>, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, =?UTF-8?Q?Philippe_Mathieu=2DDaud=C3=A9?= <philmd@linaro.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, "Maciej W. Rozycki" <macro@orcam.me.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While compiling a kernel on a IBM Power system booted with
-6.4.0-rc4-next-20230601 following warning is observed
+On Wed, 31 May 2023 at 23:30, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> On Wed, May 31, 2023 at 08:48:35PM +0200, Jonas Gorski wrote:
+> > ...
+>
+> > Looking at the code I understand where coverity is coming from:
+> >
+> > #define __pci_dev_for_each_res0(dev, res, ...)                         \
+> >        for (unsigned int __b = 0;                                      \
+> >             res = pci_resource_n(dev, __b), __b < PCI_NUM_RESOURCES;   \
+> >             __b++)
+> >
+> >  res will be assigned before __b is checked for being less than
+> > PCI_NUM_RESOURCES, making it point to behind the array at the end of
+> > the last loop iteration.
+> >
+> > Rewriting the test expression as
+> >
+> > __b < PCI_NUM_RESOURCES && (res = pci_resource_n(dev, __b));
+> >
+> > should avoid the (coverity) warning by making use of lazy evaluation.
+> >
+> > It probably makes the code slightly less performant as res will now be
+> > checked for being not NULL (which will always be true), but I doubt it
+> > will be significant (or in any hot paths).
+>
+> Thanks a lot for looking into this!  I think you're right, and I think
+> the rewritten expression is more logical as well.  Do you want to post
+> a patch for it?
 
-[  276.351697] ------------[ cut here ]------------
-[  276.351709] WARNING: CPU: 27 PID: 9237 at kernel/sched/core.c:5358 =
-kthread_end_lazy_tlb_mm+0x90/0xa0
-[  276.351719] Modules linked in: dm_mod nft_fib_inet nft_fib_ipv4 =
-nft_fib_ipv6 nft_fib nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 =
-nft_reject nft_ct nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 =
-nf_defrag_ipv4 bonding tls rfkill ip_set nf_tables nfnetlink sunrpc =
-pseries_rng aes_gcm_p10_crypto xfs libcrc32c sd_mod sr_mod t10_pi =
-crc64_rocksoft_generic cdrom crc64_rocksoft crc64 sg ibmvscsi =
-scsi_transport_srp ibmveth vmx_crypto fuse
-[  276.351752] CPU: 27 PID: 9237 Comm: cc1 Kdump: loaded Not tainted =
-6.4.0-rc4-next-20230601 #1
-[  276.351756] Hardware name: IBM,9080-HEX POWER10 (raw) 0x800200 =
-0xf000006 of:IBM,FW1030.20 (NH1030_058) hv:phyp pSeries
-[  276.351759] NIP:  c0000000001b8c10 LR: c0000000000a8d54 CTR: =
-c00000000046ec00
-[  276.351763] REGS: c0000000dce337d0 TRAP: 0700   Not tainted  =
-(6.4.0-rc4-next-20230601)
-[  276.351766] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: =
-24002228  XER: 00000000
-[  276.351774] CFAR: c0000000001b8ba0 IRQMASK: 0  [  276.351774] GPR00: =
-c0000000000a8d54 c0000000dce33a70 c0000000014a1800 c000000007852a00  [  =
-276.351774] GPR04: 0000000000000001 ffffffffffffffff 0000000000000000 =
-c000000007852f78  [  276.351774] GPR08: 0000000000000000 =
-0000000000000000 0000000000000000 0000000024002428  [  276.351774] =
-GPR12: c0000000a032b608 c00000135faa5b00 0000000000000000 =
-0000000000000000  [  276.351774] GPR16: 0000000000000000 =
-0000000000000000 0000000000000000 0000000000000000  [  276.351774] =
-GPR20: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000000  [  276.351774] GPR24: 0000000000000000 =
-0000000000000000 0000000000000000 c000000007852a70  [  276.351774] =
-GPR28: 0000000000000000 0000000000000000 000000000000001b =
-c000000007852a00  [  276.351810] NIP [c0000000001b8c10] =
-kthread_end_lazy_tlb_mm+0x90/0xa0
-[  276.351814] LR [c0000000000a8d54] exit_lazy_flush_tlb+0xf4/0x110
-[  276.351818] Call Trace:
-[  276.351820] [c0000000dce33a70] [0000000000000001] 0x1 (unreliable)
-[  276.351825] [c0000000dce33ab0] [c0000000000a8fbc] =
-flush_type_needed+0x24c/0x260
-[  276.351829] [c0000000dce33af0] [c0000000000a91a8] =
-__flush_all_mm+0x48/0x2c0
-[  276.351833] [c0000000dce33b40] [c0000000004d6dcc] =
-tlb_finish_mmu+0x16c/0x230
-[  276.351839] [c0000000dce33b70] [c0000000004d2a2c] =
-exit_mmap+0x17c/0x4c0
-[  276.351844] [c0000000dce33c90] [c000000000159120] __mmput+0x60/0x1e0
-[  276.351849] [c0000000dce33cc0] [c0000000001689cc] exit_mm+0xdc/0x170
-[  276.351853] [c0000000dce33d00] [c000000000168cec] do_exit+0x28c/0x580
-[  276.351857] [c0000000dce33db0] [c00000000016922c] =
-do_group_exit+0x4c/0xc0
-[  276.351861] [c0000000dce33df0] [c0000000001692c8] =
-sys_exit_group+0x28/0x30
-[  276.351866] [c0000000dce33e10] [c000000000034adc] =
-system_call_exception+0x13c/0x340
-[  276.351871] [c0000000dce33e50] [c00000000000d05c] =
-system_call_vectored_common+0x15c/0x2ec
-[  276.351876] --- interrupt: 3000 at 0x7fffa330c2c4
-[  276.351879] NIP:  00007fffa330c2c4 LR: 0000000000000000 CTR: =
-0000000000000000
-[  276.351882] REGS: c0000000dce33e80 TRAP: 3000   Not tainted  =
-(6.4.0-rc4-next-20230601)
-[  276.351885] MSR:  800000000280f033 =
-<SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 44002422  XER: 00000000
-[  276.351894] IRQMASK: 0  [  276.351894] GPR00: 00000000000000ea =
-00007fffed1a4ca0 00007fffa3a77e00 0000000000000000  [  276.351894] =
-GPR04: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000000  [  276.351894] GPR08: 0000000000000000 =
-0000000000000000 0000000000000000 0000000000000000  [  276.351894] =
-GPR12: 0000000000000000 00007fffa3a7cac0 0000000000000000 =
-0000000000000000  [  276.351894] GPR16: 0000000000000000 =
-0000000000000000 0000000000000000 0000000000000000  [  276.351894] =
-GPR20: 0000000000000000 0000000000000000 000000000000003a =
-0000000000000001  [  276.351894] GPR24: 00007fffa34423c0 =
-0000000000000000 00007fffa3440a38 0000000000000000  [  276.351894] =
-GPR28: 0000000000000001 00007fffa3a75e48 fffffffffffff000 =
-0000000000000000  [  276.351928] NIP [00007fffa330c2c4] 0x7fffa330c2c4
-[  276.351930] LR [0000000000000000] 0x0
-[  276.351932] --- interrupt: 3000
-[  276.351935] Code: 38210020 e8010010 7c0803a6 4e800020 0fe00000 =
-60000000 60000000 60000000 4e800020 60000000 60000000 60000000 =
-<0fe00000> 60000000 60000000 60000000  [  276.351946] ---[ end trace =
-0000000000000000 ]=E2=80=94
+Not sure when I'll come around to, so I have no strong feeling here.
+So feel free to just borrow my suggestion, especially since I won't be
+able to test it (don't have a kernel tree ready I can build and boot).
 
-Git bisect points to following code change:
+Also looking more closely at the Coverity output, I think it might not
+handle the comma operator well in the loop condition:
 
-commit 253808d464bf472c66d299faa3d8ffb65149f4da
-     lazy tlb: consolidate lazy tlb mm switching
+>          11. incr: Incrementing __b. The value of __b may now be up to 17.
+>          12. alias: Assigning: r = &pdev->resource[__b]. r may now point to as high as element 17 of pdev->resource (which consists of 17 64-byte elements).
+>          13. Condition __b < PCI_NUM_RESOURCES, taking true branch.
+>          14. Condition (r = &pdev->resource[__b]) , (__b < PCI_NUM_RESOURCES), taking true branch.
 
-- Sachin
+13 If __b is 17 ( = PCI_NUM_RESOURCES) we wouldn't taking the true
+branch, but somehow Coverity thinks that we do. No idea if it is worth
+reporting to Coverity.
 
+The changed condition statement should hopefully silence the warning though.
+
+Regards
+Jonas
