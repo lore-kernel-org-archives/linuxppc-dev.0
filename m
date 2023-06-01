@@ -4,31 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00364C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 16:13:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12209C7EE2A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 16:52:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QXB4t3DKcz3f1S
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 02:13:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QXB4K3JZmz3cdK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 02:12:46 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 525171063;
-	Thu,  1 Jun 2023 09:12:58 -0700 (PDT)
-Received: from FVFF77S0Q05N.cambridge.arm.com (FVFF77S0Q05N.cambridge.arm.com [10.1.36.140])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C47623F663;
-	Thu,  1 Jun 2023 09:12:06 -0700 (PDT)
-Date: Thu, 1 Jun 2023 17:12:03 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH 00/13] mm: jit/text allocator
-Message-ID: <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
-References: <20230601101257.530867-1-rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QXBxl1yf5z3dyb
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 02:52:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=P5K1gIvm;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=thierry.reding@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=P5K1gIvm;
+	dkim-atps=neutral
+Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QXBwl6WyJz3dsl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 02:51:19 +1000 (AEST)
+Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-96fab30d1e1so252295166b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2023 09:51:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685638275; x=1688230275;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=E6aw7YI0APlK+a4Ho7hkA2bZ/IE4Hfe3r+p1hUTo22w=;
+        b=P5K1gIvm5lMpyivClcYlSPpZk74Scq23UC7J49ZKXtd2Ty5NCk14Pzlmiw6G4TAT4e
+         R1SGrpIa7IOeMrrklx7UG2tAsiq9TFD4L8+GH42Zwqhfq/57kAkCKDh9e1B9u0uiq27N
+         Z2+cMvWVhGdpGqS04+8eMH1XROW5TNrSoWp21DvbX4Cljkzg06zAxgkEeZxXqtAHLxHn
+         Ukmg1ow9zsxYl1omDwPfgFBfHdDY/RlrCywsx1cRypvE8ktrFFqeuPghyapZVqcnmPfd
+         pHVao4wq68V+9Udu892pd4CZQNueuUSskC33wv4222J7q5LLmeCFeujIxSJZqtaz7HbM
+         QbBQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685638275; x=1688230275;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=E6aw7YI0APlK+a4Ho7hkA2bZ/IE4Hfe3r+p1hUTo22w=;
+        b=cNI/ptrAzt4wNJLfYfJKoTMdbRK6fy7sWSjXMeR+43oT2qcInF6uH1rb7OMp2eLBrU
+         h1+TGrT+47naWp2jbk3X+yNoBkxSXO9jiap/MFiYuJZLc2mWvkk3shoUTPvqpPs2KQO9
+         Fs7JYHo1unRry4DXIq3xLjd8jwYGLD5z8kSqG8SP4+4KAGlwfrHjnXZS6RvZfgGAAUC2
+         97WKpztEcyV1lsAA39vevtByH5oAjJLMzxVfU8aupS9SN8j0EdEuXylzrdm2cXf+zm0i
+         6d+IZLUxT1BpyXqZNLpDONiZuxu2XsSirFDJm+ugEPck1iD+3K/AYWbCYgEAGSjTNrxH
+         vxlw==
+X-Gm-Message-State: AC+VfDyjJ38tjwi8b354PynJqUgIux1hl4mkq3YlL1fFMhFZOzrSJfjR
+	p8rX7SwaSTOkYPr/yWs/Ooc=
+X-Google-Smtp-Source: ACHHUZ6tapSBvaY3YL2Ex5VOuVrYb3aIm5DVnhvBJZ6q0GGzp5g+K/kybtTX/EWGyJOG95QWxE5s1Q==
+X-Received: by 2002:a17:907:7f15:b0:94a:4e86:31bc with SMTP id qf21-20020a1709077f1500b0094a4e8631bcmr2589785ejc.13.1685638274568;
+        Thu, 01 Jun 2023 09:51:14 -0700 (PDT)
+Received: from orome (p200300e41f305300f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f30:5300:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id s7-20020a170906c30700b0094f410225c7sm10744283ejz.169.2023.06.01.09.51.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Jun 2023 09:51:14 -0700 (PDT)
+Date: Thu, 1 Jun 2023 18:51:11 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Jason Gunthorpe <jgg@nvidia.com>
+Subject: Re: [PATCH v2 05/25] iommu/tegra-gart: Remove tegra-gart
+Message-ID: <ZHjMf9_uunlvVWtB@orome>
+References: <0-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
+ <5-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="0JJNQg2cyOE2ETg4"
 Content-Disposition: inline
-In-Reply-To: <20230601101257.530867-1-rppt@kernel.org>
+In-Reply-To: <5-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
+User-Agent: Mutt/2.2.10 (2023-03-25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -40,158 +81,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozla
- bs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: Heiko Stuebner <heiko@sntech.de>, Matthew Rosato <mjrosato@linux.ibm.com>, Matthias Brugger <matthias.bgg@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Dmitry Osipenko <digetx@gmail.com>, Steven Price <steven.price@arm.com>, Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Samuel Holland <samuel@sholland.org>, Joerg Roedel <joro@8bytes.org>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, Andy Gross <agross@kernel.org>, Nicolin Chen <nicolinc@nvidia.com>, Yong Wu <yong.wu@mediatek.com>, Orson Zhai <orsonzhai@gmail.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Thierry Reding <treding@nvidia.com>, linux-sunxi@lists.linux.dev, Rob Clark <robdclark@gmail.com>, Kevin Tian <kevin.tian@intel.com>, Niklas Schnelle <schnelle@linux.ibm.com>, linux-arm-msm@vg
+ er.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Krishna Reddy <vdumpa@nvidia.com>, linux-mediatek@lists.infradead.org, Baolin Wang <baolin.wang@linux.alibaba.com>, linux-tegra@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Robin Murphy <robin.murphy@arm.com>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Chunyan Zhang <zhang.lyra@gmail.com>, linuxppc-dev@lists.ozlabs.org, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mike,
 
-On Thu, Jun 01, 2023 at 01:12:44PM +0300, Mike Rapoport wrote:
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> 
-> Hi,
-> 
-> module_alloc() is used everywhere as a mean to allocate memory for code.
-> 
-> Beside being semantically wrong, this unnecessarily ties all subsystmes
-> that need to allocate code, such as ftrace, kprobes and BPF to modules
-> and puts the burden of code allocation to the modules code.
+--0JJNQg2cyOE2ETg4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I agree this is a problem, and one key issue here is that these can have
-different requirements. For example, on arm64 we need modules to be placed
-within a 128M or 2G window containing the kernel, whereas it would be safe for
-the kprobes XOL area to be placed arbitrarily far from the kernel image (since
-we don't allow PC-relative insns to be stepped out-of-line). Likewise arm64
-doesn't have ftrace trampolines, and DIRECT_CALL trampolines can safely be
-placed arbitarily far from the kernel image.
+On Mon, May 15, 2023 at 09:00:38PM -0300, Jason Gunthorpe wrote:
+> Thierry says this is not used anymore, and doesn't think it ever will
+> be. The HW it supports is about 10 years old now and newer HW uses
+> different IOMMU drivers.
+>=20
+> As this is the only driver with a GART approach, and it doesn't really
+> meet the driver expectations from the IOMMU core, let's just remove it
+> so we don't have to think about how to make it fit in.
+>=20
+> It has a number of identified problems:
+>  - The assignment of iommu_groups doesn't match the HW behavior
+>=20
+>  - It claims to have an UNMANAGED domain but it is really an IDENTITY
+>    domain with a translation aperture. This is inconsistent with the core
+>    expectation for security sensitive operations
+>=20
+>  - It doesn't implement a SW page table under struct iommu_domain so
+>    * It can't accept a map until the domain is attached
+>    * It forgets about all maps after the domain is detached
+>    * It doesn't clear the HW of maps once the domain is detached
+>      (made worse by having the wrong groups)
+>=20
+> Cc: Thierry Reding <treding@nvidia.com>
+> Cc: Dmitry Osipenko <digetx@gmail.com>
+> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+> ---
+>  arch/arm/configs/multi_v7_defconfig |   1 -
+>  arch/arm/configs/tegra_defconfig    |   1 -
+>  drivers/iommu/Kconfig               |  11 -
+>  drivers/iommu/Makefile              |   1 -
+>  drivers/iommu/tegra-gart.c          | 371 ----------------------------
+>  drivers/memory/tegra/mc.c           |  34 ---
+>  drivers/memory/tegra/tegra20.c      |  28 ---
+>  include/soc/tegra/mc.h              |  26 --
+>  8 files changed, 473 deletions(-)
+>  delete mode 100644 drivers/iommu/tegra-gart.c
 
-For a while I have wanted to give kprobes its own allocator so that it can work
-even with CONFIG_MODULES=n, and so that it doesn't have to waste VA space in
-the modules area.
+To clarify, I think this hardware could very well be used again, but I
+don't think it makes sense to use it in the context of the IOMMU
+subsystem. If anybody wants to make use of this on Tegra20, it probably
+makes more sense to move the GART programming into whatever driver ends
+up using it instead of jumping through all these hoops just to make it
+work like something it isn't.
 
-Given that, I think these should have their own allocator functions that can be
-provided independently, even if those happen to use common infrastructure.
+Acked-by: Thierry Reding <treding@nvidia.com>
 
-> Several architectures override module_alloc() because of various
-> constraints where the executable memory can be located and this causes
-> additional obstacles for improvements of code allocation.
-> 
-> This set splits code allocation from modules by introducing
-> jit_text_alloc(), jit_data_alloc() and jit_free() APIs, replaces call
-> sites of module_alloc() and module_memfree() with the new APIs and
-> implements core text and related allocation in a central place.
-> 
-> Instead of architecture specific overrides for module_alloc(), the
-> architectures that require non-default behaviour for text allocation must
-> fill jit_alloc_params structure and implement jit_alloc_arch_params() that
-> returns a pointer to that structure. If an architecture does not implement
-> jit_alloc_arch_params(), the defaults compatible with the current
-> modules::module_alloc() are used.
+--0JJNQg2cyOE2ETg4
+Content-Type: application/pgp-signature; name="signature.asc"
 
-As above, I suspect that each of the callsites should probably be using common
-infrastructure, but I don't think that a single jit_alloc_arch_params() makes
-sense, since the parameters for each case may need to be distinct.
+-----BEGIN PGP SIGNATURE-----
 
-> The new jitalloc infrastructure allows decoupling of kprobes and ftrace
-> from modules, and most importantly it enables ROX allocations for
-> executable memory.
-> 
-> A centralized infrastructure for code allocation allows future
-> optimizations for allocations of executable memory, caching large pages for
-> better iTLB performance and providing sub-page allocations for users that
-> only need small jit code snippets.
+iQIyBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmR4zHwACgkQ3SOs138+
+s6EzXg/4sDDYzIY93jnjqgBAzF26DdM9+f9tNLS+tEhgUpn3WoMfZ+2mVBZJ6Qvl
++zK/7cpay72mra2XCdI2nBDl4fc/MivQMZ2uBvnu1mNY4uQypRWZsVlnpKO5nkpf
+55oa0ZvczaCmITixiNpt58qIRcL/+Rwn+kuXCMcfZYr8WXq09eTZJ/E0SndTbgRv
+RNPyDbkY2T939Z3KYEhZH3filqm0ul9asQvbO31FsU+htgOT6XEYwanpd1jZuV+E
+uemlmy/fYzUkBbJoZ1wk9/pbYhZqlvZnOF3XvyJXOfsbrBiP/gkDstxYeMS86AVq
+ITwKKqX80dphMpO6Af5OEpuKjrh6wtzPgdgcKIMIgd6aQADSX5xLsQ/P0kIqI0em
+H679cza6Mm7Nl7NwmAMCiOVL568ME8criReWPK5nEnRg4TLj1AvsKLAubgHxXIP/
+Hzxox5RDNL5ubE2gcko6btoFu+yXxvxGT9nF1YcJxBcWUhHPVqpwg1q403RqF0bE
+Kfcfzs07wR/OM8vsXJxYxZdgE7HdZkh/vZnE0MWmiaGCHDaPZdx8vsMW8g0G1Wn9
+a3GXa18+zdEntyjXiH2QaNuytRlcnTWX6Egc9uLjzjyWgjW8dA2PHN70fli1p+Zf
+wv1qFNssXNER2qzepDmLQj621WybUok9GAhhWu0jfezY8b75zw==
+=Ciid
+-----END PGP SIGNATURE-----
 
-This sounds interesting, but I think this can be achieved without requiring a
-single jit_alloc_arch_params() shared by all users?
-
-Thanks,
-Mark.
-
-> 
-> patches 1-5: split out the code allocation from modules and arch
-> patch 6: add dedicated API for data allocations with constraints similar to
-> code allocations
-> patches 7-9: decouple dynamic ftrace and kprobes form CONFIG_MODULES
-> patches 10-13: enable ROX allocations for executable memory on x86
-> 
-> Mike Rapoport (IBM) (11):
->   nios2: define virtual address space for modules
->   mm: introduce jit_text_alloc() and use it instead of module_alloc()
->   mm/jitalloc, arch: convert simple overrides of module_alloc to jitalloc
->   mm/jitalloc, arch: convert remaining overrides of module_alloc to jitalloc
->   module, jitalloc: drop module_alloc
->   mm/jitalloc: introduce jit_data_alloc()
->   x86/ftrace: enable dynamic ftrace without CONFIG_MODULES
->   arch: make jitalloc setup available regardless of CONFIG_MODULES
->   kprobes: remove dependcy on CONFIG_MODULES
->   modules, jitalloc: prepare to allocate executable memory as ROX
->   x86/jitalloc: make memory allocated for code ROX
-> 
-> Song Liu (2):
->   ftrace: Add swap_func to ftrace_process_locs()
->   x86/jitalloc: prepare to allocate exectuatble memory as ROX
-> 
->  arch/Kconfig                     |   5 +-
->  arch/arm/kernel/module.c         |  32 ------
->  arch/arm/mm/init.c               |  35 ++++++
->  arch/arm64/kernel/module.c       |  47 --------
->  arch/arm64/mm/init.c             |  42 +++++++
->  arch/loongarch/kernel/module.c   |   6 -
->  arch/loongarch/mm/init.c         |  16 +++
->  arch/mips/kernel/module.c        |   9 --
->  arch/mips/mm/init.c              |  19 ++++
->  arch/nios2/include/asm/pgtable.h |   5 +-
->  arch/nios2/kernel/module.c       |  24 ++--
->  arch/parisc/kernel/module.c      |  11 --
->  arch/parisc/mm/init.c            |  21 +++-
->  arch/powerpc/kernel/kprobes.c    |   4 +-
->  arch/powerpc/kernel/module.c     |  37 -------
->  arch/powerpc/mm/mem.c            |  41 +++++++
->  arch/riscv/kernel/module.c       |  10 --
->  arch/riscv/mm/init.c             |  18 +++
->  arch/s390/kernel/ftrace.c        |   4 +-
->  arch/s390/kernel/kprobes.c       |   4 +-
->  arch/s390/kernel/module.c        |  46 +-------
->  arch/s390/mm/init.c              |  35 ++++++
->  arch/sparc/kernel/module.c       |  34 +-----
->  arch/sparc/mm/Makefile           |   2 +
->  arch/sparc/mm/jitalloc.c         |  21 ++++
->  arch/sparc/net/bpf_jit_comp_32.c |   8 +-
->  arch/x86/Kconfig                 |   2 +
->  arch/x86/kernel/alternative.c    |  43 ++++---
->  arch/x86/kernel/ftrace.c         |  59 +++++-----
->  arch/x86/kernel/kprobes/core.c   |   4 +-
->  arch/x86/kernel/module.c         |  75 +------------
->  arch/x86/kernel/static_call.c    |  10 +-
->  arch/x86/kernel/unwind_orc.c     |  13 ++-
->  arch/x86/mm/init.c               |  52 +++++++++
->  arch/x86/net/bpf_jit_comp.c      |  22 +++-
->  include/linux/ftrace.h           |   2 +
->  include/linux/jitalloc.h         |  69 ++++++++++++
->  include/linux/moduleloader.h     |  15 ---
->  kernel/bpf/core.c                |  14 +--
->  kernel/kprobes.c                 |  51 +++++----
->  kernel/module/Kconfig            |   1 +
->  kernel/module/main.c             |  56 ++++------
->  kernel/trace/ftrace.c            |  13 ++-
->  kernel/trace/trace_kprobe.c      |  11 ++
->  mm/Kconfig                       |   3 +
->  mm/Makefile                      |   1 +
->  mm/jitalloc.c                    | 185 +++++++++++++++++++++++++++++++
->  mm/mm_init.c                     |   2 +
->  48 files changed, 777 insertions(+), 462 deletions(-)
->  create mode 100644 arch/sparc/mm/jitalloc.c
->  create mode 100644 include/linux/jitalloc.h
->  create mode 100644 mm/jitalloc.c
-> 
-> 
-> base-commit: 44c026a73be8038f03dbdeef028b642880cf1511
-> -- 
-> 2.35.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--0JJNQg2cyOE2ETg4--
