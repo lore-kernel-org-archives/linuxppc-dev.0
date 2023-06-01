@@ -4,77 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47977C77B7E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 14:07:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00364C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 16:13:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QX7JF47rRz3f0Y
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 00:07:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Ja7iIoia;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::c2b; helo=mail-oo1-xc2b.google.com; envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Ja7iIoia;
-	dkim-atps=neutral
-Received: from mail-oo1-xc2b.google.com (mail-oo1-xc2b.google.com [IPv6:2607:f8b0:4864:20::c2b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QX7HD5QbVz3bcF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 00:07:02 +1000 (AEST)
-Received: by mail-oo1-xc2b.google.com with SMTP id 006d021491bc7-55825988b7bso307269eaf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2023 07:07:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1685628419; x=1688220419;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Il8ad/JyLlNtEN0Gv4lgifY2JQdLnMbUxgSHsXnJD/E=;
-        b=Ja7iIoiaBZS06nl+158TUHHbNfEj3dQZ/L62R0DW/ijsVPGlsZ2O32Ba4eQCHX0zAg
-         LfHMRKbOsxI5fTkJegrENtOKGl9zwk0OJLur02SGJ6GIveUDBcVkr+UhIEaFUVcRjrKv
-         I+lxCwssvsZK8CqLx1MBuX6uAdKjNETkdRqy7zXaIaDyhuZ4NBPXIc4oT4Kq9QPYL/wp
-         rQLV8GNPnEEDqd/Ylc/L8oZa2HjL+J1vDLj4QFw7X1INT12js5HjHN0Joz+wUbJ02lUx
-         KBCcn64/pwCReWJpNIW2B8GeaXRlQuUpK9rJC0snd+LGP1JbYm8YgxK8d5hCtKnpZFl1
-         SjSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685628419; x=1688220419;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Il8ad/JyLlNtEN0Gv4lgifY2JQdLnMbUxgSHsXnJD/E=;
-        b=BzAUfb2CqRzvuHeYnmBoxaBEFVVWHiCbuXyAfA8mvao1aQtLnjN4Z3/48ID4RYtnoe
-         oTL/w7udg/ZMbV5c2uy8BbcEY9BcjsFdFwVqcA2pYc2zaPY6QPC07n7p09Mjzm61pRKU
-         36Wj93ZRweRvaeigzgr0nbSvrRJ3ZTh2r6NV3G3WWwF9Pfo/2RqJIUXc4V2SonjedgwG
-         sNHYITAeA+aIUwhn88SJBK8rQ1i1pyfylXh6tN9x/v1RUnss+tE4Y0QfTNW7ZmX/rx3I
-         fGDzW3jfQNFRhzXSL4nekxJKeCri+4NsmE+rYQ77VAL/dPfP2M7L9fTDGtPd+G7DRHJl
-         Sc0Q==
-X-Gm-Message-State: AC+VfDyfnOGKEH71E11bMRbjjAOl3mjo4PLTUaycVnXlKiTChBIlDhVb
-	fzpSe+1eOmfloNjIN7WpbxZ/bA==
-X-Google-Smtp-Source: ACHHUZ4AEXih+LbcgXQJ3oJivdeKU2TDKI4u9IDJeO3/vV8DGscgFzmcnAdAr6rfYy2wFC0uefsS6g==
-X-Received: by 2002:a05:6808:1494:b0:398:1186:88b9 with SMTP id e20-20020a056808149400b00398118688b9mr5790684oiw.30.1685628419236;
-        Thu, 01 Jun 2023 07:06:59 -0700 (PDT)
-Received: from ziepe.ca ([206.223.160.26])
-        by smtp.gmail.com with ESMTPSA id es1-20020a056214192100b00626195bdbbdsm5454337qvb.132.2023.06.01.07.06.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jun 2023 07:06:58 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.95)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1q4ix7-001SP8-JZ;
-	Thu, 01 Jun 2023 11:06:57 -0300
-Date: Thu, 1 Jun 2023 11:06:57 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Jann Horn <jannh@google.com>
-Subject: Re: [PATCH 09/12] mm/khugepaged: retract_page_tables() without mmap
- or vma lock
-Message-ID: <ZHimAWRNDTg1JPOp@ziepe.ca>
-References: <35e983f5-7ed3-b310-d949-9ae8b130cdab@google.com>
- <2e9996fa-d238-e7c-1194-834a2bd1f60@google.com>
- <CAG48ez0aF1Rf1apSjn9YcnfyFQ4YqSd4GqB6f2wfhF7jMdi5Hg@mail.gmail.com>
- <ZHe0A079X9B8jWlH@x1n>
- <CAG48ez1UNFfpTUph6ZMuN61CoTGne05NLAweL_=ijRfqj5evMg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QXB4t3DKcz3f1S
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 02:13:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QXB4K3JZmz3cdK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 02:12:46 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 525171063;
+	Thu,  1 Jun 2023 09:12:58 -0700 (PDT)
+Received: from FVFF77S0Q05N.cambridge.arm.com (FVFF77S0Q05N.cambridge.arm.com [10.1.36.140])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C47623F663;
+	Thu,  1 Jun 2023 09:12:06 -0700 (PDT)
+Date: Thu, 1 Jun 2023 17:12:03 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+Message-ID: <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+References: <20230601101257.530867-1-rppt@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAG48ez1UNFfpTUph6ZMuN61CoTGne05NLAweL_=ijRfqj5evMg@mail.gmail.com>
+In-Reply-To: <20230601101257.530867-1-rppt@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,28 +40,158 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Axel Rasmussen <axelrasmussen@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Anshuman Khandual <anshu
- man.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozla
+ bs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 01, 2023 at 12:18:43AM +0200, Jann Horn wrote:
+Hi Mike,
 
-> 3. We have to *serialize* with page table walks performed by the
-> IOMMU. We're doing an RCU barrier to synchronize against page table
-> walks from the MMU, but without an appropriate mmu_notifier call, we
-> have nothing to ensure that we aren't yanking a page table out from
-> under an IOMMU page table walker while it's in the middle of its walk.
-> Sure, this isn't very likely in practice, the IOMMU page table walker
-> is probably pretty fast, but still we need some kind of explicit
-> synchronization to make this robust, I think.
+On Thu, Jun 01, 2023 at 01:12:44PM +0300, Mike Rapoport wrote:
+> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> 
+> Hi,
+> 
+> module_alloc() is used everywhere as a mean to allocate memory for code.
+> 
+> Beside being semantically wrong, this unnecessarily ties all subsystmes
+> that need to allocate code, such as ftrace, kprobes and BPF to modules
+> and puts the burden of code allocation to the modules code.
 
-There is another thread talking about this..
+I agree this is a problem, and one key issue here is that these can have
+different requirements. For example, on arm64 we need modules to be placed
+within a 128M or 2G window containing the kernel, whereas it would be safe for
+the kprobes XOL area to be placed arbitrarily far from the kernel image (since
+we don't allow PC-relative insns to be stepped out-of-line). Likewise arm64
+doesn't have ftrace trampolines, and DIRECT_CALL trampolines can safely be
+placed arbitarily far from the kernel image.
 
-Broadly we are saying that we need to call mmu ops invalidate_range at
-any time the normal CPU TLB would be invalidated.
+For a while I have wanted to give kprobes its own allocator so that it can work
+even with CONFIG_MODULES=n, and so that it doesn't have to waste VA space in
+the modules area.
 
-invalidate_range will not return until the iommu HW is coherent with
-the current state of the page table.
+Given that, I think these should have their own allocator functions that can be
+provided independently, even if those happen to use common infrastructure.
 
-Jason
+> Several architectures override module_alloc() because of various
+> constraints where the executable memory can be located and this causes
+> additional obstacles for improvements of code allocation.
+> 
+> This set splits code allocation from modules by introducing
+> jit_text_alloc(), jit_data_alloc() and jit_free() APIs, replaces call
+> sites of module_alloc() and module_memfree() with the new APIs and
+> implements core text and related allocation in a central place.
+> 
+> Instead of architecture specific overrides for module_alloc(), the
+> architectures that require non-default behaviour for text allocation must
+> fill jit_alloc_params structure and implement jit_alloc_arch_params() that
+> returns a pointer to that structure. If an architecture does not implement
+> jit_alloc_arch_params(), the defaults compatible with the current
+> modules::module_alloc() are used.
+
+As above, I suspect that each of the callsites should probably be using common
+infrastructure, but I don't think that a single jit_alloc_arch_params() makes
+sense, since the parameters for each case may need to be distinct.
+
+> The new jitalloc infrastructure allows decoupling of kprobes and ftrace
+> from modules, and most importantly it enables ROX allocations for
+> executable memory.
+> 
+> A centralized infrastructure for code allocation allows future
+> optimizations for allocations of executable memory, caching large pages for
+> better iTLB performance and providing sub-page allocations for users that
+> only need small jit code snippets.
+
+This sounds interesting, but I think this can be achieved without requiring a
+single jit_alloc_arch_params() shared by all users?
+
+Thanks,
+Mark.
+
+> 
+> patches 1-5: split out the code allocation from modules and arch
+> patch 6: add dedicated API for data allocations with constraints similar to
+> code allocations
+> patches 7-9: decouple dynamic ftrace and kprobes form CONFIG_MODULES
+> patches 10-13: enable ROX allocations for executable memory on x86
+> 
+> Mike Rapoport (IBM) (11):
+>   nios2: define virtual address space for modules
+>   mm: introduce jit_text_alloc() and use it instead of module_alloc()
+>   mm/jitalloc, arch: convert simple overrides of module_alloc to jitalloc
+>   mm/jitalloc, arch: convert remaining overrides of module_alloc to jitalloc
+>   module, jitalloc: drop module_alloc
+>   mm/jitalloc: introduce jit_data_alloc()
+>   x86/ftrace: enable dynamic ftrace without CONFIG_MODULES
+>   arch: make jitalloc setup available regardless of CONFIG_MODULES
+>   kprobes: remove dependcy on CONFIG_MODULES
+>   modules, jitalloc: prepare to allocate executable memory as ROX
+>   x86/jitalloc: make memory allocated for code ROX
+> 
+> Song Liu (2):
+>   ftrace: Add swap_func to ftrace_process_locs()
+>   x86/jitalloc: prepare to allocate exectuatble memory as ROX
+> 
+>  arch/Kconfig                     |   5 +-
+>  arch/arm/kernel/module.c         |  32 ------
+>  arch/arm/mm/init.c               |  35 ++++++
+>  arch/arm64/kernel/module.c       |  47 --------
+>  arch/arm64/mm/init.c             |  42 +++++++
+>  arch/loongarch/kernel/module.c   |   6 -
+>  arch/loongarch/mm/init.c         |  16 +++
+>  arch/mips/kernel/module.c        |   9 --
+>  arch/mips/mm/init.c              |  19 ++++
+>  arch/nios2/include/asm/pgtable.h |   5 +-
+>  arch/nios2/kernel/module.c       |  24 ++--
+>  arch/parisc/kernel/module.c      |  11 --
+>  arch/parisc/mm/init.c            |  21 +++-
+>  arch/powerpc/kernel/kprobes.c    |   4 +-
+>  arch/powerpc/kernel/module.c     |  37 -------
+>  arch/powerpc/mm/mem.c            |  41 +++++++
+>  arch/riscv/kernel/module.c       |  10 --
+>  arch/riscv/mm/init.c             |  18 +++
+>  arch/s390/kernel/ftrace.c        |   4 +-
+>  arch/s390/kernel/kprobes.c       |   4 +-
+>  arch/s390/kernel/module.c        |  46 +-------
+>  arch/s390/mm/init.c              |  35 ++++++
+>  arch/sparc/kernel/module.c       |  34 +-----
+>  arch/sparc/mm/Makefile           |   2 +
+>  arch/sparc/mm/jitalloc.c         |  21 ++++
+>  arch/sparc/net/bpf_jit_comp_32.c |   8 +-
+>  arch/x86/Kconfig                 |   2 +
+>  arch/x86/kernel/alternative.c    |  43 ++++---
+>  arch/x86/kernel/ftrace.c         |  59 +++++-----
+>  arch/x86/kernel/kprobes/core.c   |   4 +-
+>  arch/x86/kernel/module.c         |  75 +------------
+>  arch/x86/kernel/static_call.c    |  10 +-
+>  arch/x86/kernel/unwind_orc.c     |  13 ++-
+>  arch/x86/mm/init.c               |  52 +++++++++
+>  arch/x86/net/bpf_jit_comp.c      |  22 +++-
+>  include/linux/ftrace.h           |   2 +
+>  include/linux/jitalloc.h         |  69 ++++++++++++
+>  include/linux/moduleloader.h     |  15 ---
+>  kernel/bpf/core.c                |  14 +--
+>  kernel/kprobes.c                 |  51 +++++----
+>  kernel/module/Kconfig            |   1 +
+>  kernel/module/main.c             |  56 ++++------
+>  kernel/trace/ftrace.c            |  13 ++-
+>  kernel/trace/trace_kprobe.c      |  11 ++
+>  mm/Kconfig                       |   3 +
+>  mm/Makefile                      |   1 +
+>  mm/jitalloc.c                    | 185 +++++++++++++++++++++++++++++++
+>  mm/mm_init.c                     |   2 +
+>  48 files changed, 777 insertions(+), 462 deletions(-)
+>  create mode 100644 arch/sparc/mm/jitalloc.c
+>  create mode 100644 include/linux/jitalloc.h
+>  create mode 100644 mm/jitalloc.c
+> 
+> 
+> base-commit: 44c026a73be8038f03dbdeef028b642880cf1511
+> -- 
+> 2.35.1
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
