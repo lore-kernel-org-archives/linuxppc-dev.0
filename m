@@ -4,27 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BB11C7EE2A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 18:26:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BDF7C77B7E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 18:58:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QXF2y6ts9z3dxm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 04:26:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QXFlg4q12z3f1P
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 04:58:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QXF2P6jhgz3c7g
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 04:26:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QXFl74dZdz3cBV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 04:58:10 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4B9511063;
-	Thu,  1 Jun 2023 11:26:31 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 69B4A1063;
+	Thu,  1 Jun 2023 11:58:24 -0700 (PDT)
 Received: from [10.57.84.85] (unknown [10.57.84.85])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B053E3F663;
-	Thu,  1 Jun 2023 11:25:38 -0700 (PDT)
-Message-ID: <914124dd-c319-15c5-cc03-c5db0e4002f4@arm.com>
-Date: Thu, 1 Jun 2023 19:25:32 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F213C3F7BD;
+	Thu,  1 Jun 2023 11:57:30 -0700 (PDT)
+Message-ID: <d3edc0d4-7fc6-fb7e-a3aa-2dba2ad86303@arm.com>
+Date: Thu, 1 Jun 2023 19:57:25 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101
  Thunderbird/102.11.2
-Subject: Re: [PATCH v2 04/25] iommu: Add IOMMU_DOMAIN_PLATFORM for S390
+Subject: Re: [PATCH v2 08/25] iommu: Allow an IDENTITY domain as the
+ default_domain in ARM32
 Content-Language: en-GB
 To: Jason Gunthorpe <jgg@nvidia.com>, Andy Gross <agross@kernel.org>,
  Alim Akhtar <alim.akhtar@samsung.com>, Bjorn Andersson
@@ -53,9 +54,9 @@ To: Jason Gunthorpe <jgg@nvidia.com>, Andy Gross <agross@kernel.org>,
  <vdumpa@nvidia.com>, Chen-Yu Tsai <wens@csie.org>,
  Will Deacon <will@kernel.org>, Yong Wu <yong.wu@mediatek.com>,
  Chunyan Zhang <zhang.lyra@gmail.com>
-References: <4-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
+References: <8-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
 From: Robin Murphy <robin.murphy@arm.com>
-In-Reply-To: <4-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
+In-Reply-To: <8-v2-8d1dc464eac9+10f-iommu_all_defdom_jgg@nvidia.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,98 +75,205 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 2023-05-16 01:00, Jason Gunthorpe wrote:
-> The PLATFORM domain will be set as the default domain and attached as
-> normal during probe. The driver will ignore the initial attach from a NULL
-> domain to the PLATFORM domain.
+> Even though dma-iommu.c and CONFIG_ARM_DMA_USE_IOMMU do approximately the
+> same stuff, the way they relate to the IOMMU core is quiet different.
 > 
-> After this, the PLATFORM domain's attach_dev will be called whenever we
-> detach from an UNMANAGED domain (eg for VFIO). This is the same time the
-> original design would have called op->detach_dev().
+> dma-iommu.c expects the core code to setup an UNMANAGED domain (of type
+> IOMMU_DOMAIN_DMA) and then configures itself to use that domain. This
+> becomes the default_domain for the group.
 > 
-> This is temporary until the S390 dma-iommu.c conversion is merged.
+> ARM_DMA_USE_IOMMU does not use the default_domain, instead it directly
+> allocates an UNMANAGED domain and operates it just like an external
+> driver. In this case group->default_domain is NULL.
+> 
+> If the driver provides a global static identity_domain then automatically
+> use it as the default_domain when in ARM_DMA_USE_IOMMU mode.
+> 
+> This allows drivers that implemented default_domain == NULL as an IDENTITY
+> translation to trivially get a properly labeled non-NULL default_domain on
+> ARM32 configs.
+> 
+> With this arrangment when ARM_DMA_USE_IOMMU wants to disconnect from the
+> device the normal detach_domain flow will restore the IDENTITY domain as
+> the default domain. Overall this makes attach_dev() of the IDENTITY domain
+> called in the same places as detach_dev().
+> 
+> This effectively migrates these drivers to default_domain mode. For
+> drivers that support ARM64 they will gain support for the IDENTITY
+> translation mode for the dma_api and behave in a uniform way.
+> 
+> Drivers use this by setting ops->identity_domain to a static singleton
+> iommu_domain that implements the identity attach. If the core detects
+> ARM_DMA_USE_IOMMU mode then it automatically attaches the IDENTITY domain
+> during probe.
+> 
+> Drivers can continue to prevent the use of DMA translation by returning
+> IOMMU_DOMAIN_IDENTITY from def_domain_type, this will completely prevent
+> IOMMU_DMA from running but will not impact ARM_DMA_USE_IOMMU.
+> 
+> This allows removing the set_platform_dma_ops() from every remaining
+> driver.
+> 
+> Remove the set_platform_dma_ops from rockchip and mkt_v1 as all it does
+> is set an existing global static identity domain. mkt_v1 does not support
+> IOMMU_DOMAIN_DMA and it does not compile on ARM64 so this transformation
+> is safe.
+> 
+> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+> ---
+>   drivers/iommu/iommu.c          | 40 +++++++++++++++++++++++++++++-----
+>   drivers/iommu/mtk_iommu_v1.c   | 12 ----------
+>   drivers/iommu/rockchip-iommu.c | 10 ---------
+>   3 files changed, 35 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+> index 8ba90571449cec..bed7cb6e5ee65b 100644
+> --- a/drivers/iommu/iommu.c
+> +++ b/drivers/iommu/iommu.c
+> @@ -1757,18 +1757,48 @@ static int iommu_get_default_domain_type(struct iommu_group *group,
+>   	int type;
+>   
+>   	lockdep_assert_held(&group->mutex);
+> +
+> +	/*
+> +	 * ARM32 drivers supporting CONFIG_ARM_DMA_USE_IOMMU can declare an
+> +	 * identity_domain and it will automatically become their default
+> +	 * domain. Later on ARM_DMA_USE_IOMMU will install its UNMANAGED domain.
+> +	 * Override the selection to IDENTITY if we are sure the driver supports
+> +	 * it.
+> +	 */
+> +	if (IS_ENABLED(CONFIG_ARM_DMA_USE_IOMMU) && ops->identity_domain) {
 
-If we do need a stopgap here, can we please just call the current 
-situation an identity domain? It's true enough in the sense that the 
-IOMMU API is not offering any translation or guarantee of isolation, so 
-the semantics of an identity domain - from the point of view of anything 
-inside the IOMMU API that would be looking - are no weaker or less 
-useful than a "platform" domain whose semantics are intentionally unknown.
+If I cared about arm-smmu on 32-bit, I'd bring that up again, but 
+honestly I'm not sure that I do... I think it might end up working after 
+patch #21, and it's currently still broken for lack of .set_platform_dma 
+anyway, so meh.
 
-Then similarly for patch #3 - since we already know s390 is temporary, 
-it seems an anathema to introduce a whole domain type with its own weird 
-ops->default_domain mechanism solely for POWER to not actually use 
-domains with.
+> +		type = IOMMU_DOMAIN_IDENTITY;
+> +		if (best_type && type && best_type != type)
+> +			goto err;
+> +		best_type = target_type = IOMMU_DOMAIN_IDENTITY;
+> +	}
+> +
+>   	for_each_group_device(group, gdev) {
+>   		type = best_type;
+>   		if (ops->def_domain_type) {
+>   			type = ops->def_domain_type(gdev->dev);
+> -			if (best_type && type && best_type != type)
+> +			if (best_type && type && best_type != type) {
+> +				/* Stick with the last driver override we saw */
+> +				best_type = type;
+>   				goto err;
+> +			}
+>   		}
+>   
+>   		if (dev_is_pci(gdev->dev) && to_pci_dev(gdev->dev)->untrusted) {
+> -			type = IOMMU_DOMAIN_DMA;
+> -			if (best_type && type && best_type != type)
+> -				goto err;
+> +			/*
+> +			 * We don't have any way for the iommu core code to
+> +			 * force arm_iommu to activate so we can't enforce
+> +			 * trusted. Log it and keep going with the IDENTITY
+> +			 * default domain.
+> +			 */
+> +			if (IS_ENABLED(CONFIG_ARM_DMA_USE_IOMMU)) {
+> +				dev_warn(
+> +					gdev->dev,
+> +					"PCI device is untrusted but ARM32 does not support secure IOMMU operation, continuing anyway.\n");
 
-In terms of reasoning, I don't see that IOMMU_DOMAIN_PLATFORM is any 
-more useful than a NULL default domain, it just renames the problem, and 
-gives us more code to maintain for the privilege. As I say, though, we 
-don't actually need to juggle the semantic of a "we don't know what's 
-happening here" domain around any further, since it works out that a 
-"we're not influencing anything here" domain actually suffices for what 
-we want to reason about, and those are already well-defined. Sure, the 
-platform DMA ops *might* be doing more, but that's beyond the scope of 
-the IOMMU API either way. At that point, lo and behold, s390 and POWER 
-now look just like ARM and the core code only needs a single special 
-case for arch-specific default identity domains, lovely!
+To within experimental error, this is dead code. The ARM DMA ops don't 
+even understand groups, so already have the much bigger problem of being 
+broken for any non-trivial PCI setup anyway. That's if you could even 
+find a 32-bit SoC with both PCI(e) and a relevant IOMMU. None of those 
+will have Thunderbolt, and I expect even fewer would be using the 
+"external-facing" DT property (which is likely newer than they are) for 
+any other reason.
 
 Thanks,
 Robin.
 
-> Tested-by: Heiko Stuebner <heiko@sntech.de>
-> Tested-by: Niklas Schnelle <schnelle@linux.ibm.com>
-> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
-> ---
->   drivers/iommu/s390-iommu.c | 21 +++++++++++++++++++--
->   1 file changed, 19 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/iommu/s390-iommu.c b/drivers/iommu/s390-iommu.c
-> index fbf59a8db29b11..f0c867c57a5b9b 100644
-> --- a/drivers/iommu/s390-iommu.c
-> +++ b/drivers/iommu/s390-iommu.c
-> @@ -142,14 +142,31 @@ static int s390_iommu_attach_device(struct iommu_domain *domain,
+> +			} else {
+> +				type = IOMMU_DOMAIN_DMA;
+> +				if (best_type && type && best_type != type)
+> +					goto err;
+> +			}
+>   		}
+>   		best_type = type;
+>   		last_dev = gdev->dev;
+> @@ -1790,7 +1820,7 @@ static int iommu_get_default_domain_type(struct iommu_group *group,
+>   		"Device needs domain type %s, but device %s in the same iommu group requires type %s - using default\n",
+>   		iommu_domain_type_str(type), dev_name(last_dev),
+>   		iommu_domain_type_str(best_type));
+> -	return 0;
+> +	return best_type;
+>   }
+>   
+>   static void iommu_group_do_probe_finalize(struct device *dev)
+> diff --git a/drivers/iommu/mtk_iommu_v1.c b/drivers/iommu/mtk_iommu_v1.c
+> index cc3e7d53d33ad9..7c0c1d50df5f75 100644
+> --- a/drivers/iommu/mtk_iommu_v1.c
+> +++ b/drivers/iommu/mtk_iommu_v1.c
+> @@ -337,11 +337,6 @@ static struct iommu_domain mtk_iommu_v1_identity_domain = {
+>   	.ops = &mtk_iommu_v1_identity_ops,
+>   };
+>   
+> -static void mtk_iommu_v1_set_platform_dma(struct device *dev)
+> -{
+> -	mtk_iommu_v1_identity_attach(&mtk_iommu_v1_identity_domain, dev);
+> -}
+> -
+>   static int mtk_iommu_v1_map(struct iommu_domain *domain, unsigned long iova,
+>   			    phys_addr_t paddr, size_t pgsize, size_t pgcount,
+>   			    int prot, gfp_t gfp, size_t *mapped)
+> @@ -457,11 +452,6 @@ static int mtk_iommu_v1_create_mapping(struct device *dev, struct of_phandle_arg
 >   	return 0;
 >   }
 >   
-> -static void s390_iommu_set_platform_dma(struct device *dev)
-> +/*
-> + * Switch control over the IOMMU to S390's internal dma_api ops
-> + */
-> +static int s390_iommu_platform_attach(struct iommu_domain *platform_domain,
-> +				      struct device *dev)
+> -static int mtk_iommu_v1_def_domain_type(struct device *dev)
+> -{
+> -	return IOMMU_DOMAIN_IDENTITY;
+> -}
+> -
+>   static struct iommu_device *mtk_iommu_v1_probe_device(struct device *dev)
 >   {
->   	struct zpci_dev *zdev = to_zpci_dev(dev);
+>   	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
+> @@ -599,10 +589,8 @@ static const struct iommu_ops mtk_iommu_v1_ops = {
+>   	.probe_device	= mtk_iommu_v1_probe_device,
+>   	.probe_finalize = mtk_iommu_v1_probe_finalize,
+>   	.release_device	= mtk_iommu_v1_release_device,
+> -	.def_domain_type = mtk_iommu_v1_def_domain_type,
+>   	.device_group	= generic_device_group,
+>   	.pgsize_bitmap	= MT2701_IOMMU_PAGE_SIZE,
+> -	.set_platform_dma_ops = mtk_iommu_v1_set_platform_dma,
+>   	.owner          = THIS_MODULE,
+>   	.default_domain_ops = &(const struct iommu_domain_ops) {
+>   		.attach_dev	= mtk_iommu_v1_attach_device,
+> diff --git a/drivers/iommu/rockchip-iommu.c b/drivers/iommu/rockchip-iommu.c
+> index ebce56d6e9c634..9e1296a856ac4c 100644
+> --- a/drivers/iommu/rockchip-iommu.c
+> +++ b/drivers/iommu/rockchip-iommu.c
+> @@ -1026,13 +1026,6 @@ static struct iommu_domain rk_identity_domain = {
+>   	.ops = &rk_identity_ops,
+>   };
 >   
-> +	if (!zdev->s390_domain)
-> +		return 0;
-> +
->   	__s390_iommu_detach_device(zdev);
->   	zpci_dma_init_device(zdev);
-> +	return 0;
->   }
->   
-> +static struct iommu_domain_ops s390_iommu_platform_ops = {
-> +	.attach_dev = s390_iommu_platform_attach,
-> +};
-> +
-> +static struct iommu_domain s390_iommu_platform_domain = {
-> +	.type = IOMMU_DOMAIN_PLATFORM,
-> +	.ops = &s390_iommu_platform_ops,
-> +};
-> +
->   static void s390_iommu_get_resv_regions(struct device *dev,
->   					struct list_head *list)
+> -#ifdef CONFIG_ARM
+> -static void rk_iommu_set_platform_dma(struct device *dev)
+> -{
+> -	WARN_ON(rk_iommu_identity_attach(&rk_identity_domain, dev));
+> -}
+> -#endif
+> -
+>   static int rk_iommu_attach_device(struct iommu_domain *domain,
+>   		struct device *dev)
 >   {
-> @@ -428,12 +445,12 @@ void zpci_destroy_iommu(struct zpci_dev *zdev)
->   }
->   
->   static const struct iommu_ops s390_iommu_ops = {
-> +	.default_domain = &s390_iommu_platform_domain,
->   	.capable = s390_iommu_capable,
->   	.domain_alloc = s390_domain_alloc,
->   	.probe_device = s390_iommu_probe_device,
->   	.release_device = s390_iommu_release_device,
->   	.device_group = generic_device_group,
-> -	.set_platform_dma_ops = s390_iommu_set_platform_dma,
->   	.pgsize_bitmap = SZ_4K,
->   	.get_resv_regions = s390_iommu_get_resv_regions,
+> @@ -1211,9 +1204,6 @@ static const struct iommu_ops rk_iommu_ops = {
+>   	.probe_device = rk_iommu_probe_device,
+>   	.release_device = rk_iommu_release_device,
+>   	.device_group = rk_iommu_device_group,
+> -#ifdef CONFIG_ARM
+> -	.set_platform_dma_ops = rk_iommu_set_platform_dma,
+> -#endif
+>   	.pgsize_bitmap = RK_IOMMU_PGSIZE_BITMAP,
+>   	.of_xlate = rk_iommu_of_xlate,
 >   	.default_domain_ops = &(const struct iommu_domain_ops) {
