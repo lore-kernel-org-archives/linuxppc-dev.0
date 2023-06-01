@@ -4,30 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92913C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 17:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9982CC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 10:14:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QfMFL1qxrz3cJB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 03:27:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM764nN9z3c5d
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 03:21:38 +1000 (AEST)
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 2EE2992009C; Sun, 11 Jun 2023 19:14:16 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 202D892009B;
-	Sun, 11 Jun 2023 18:14:16 +0100 (BST)
-Date: Sun, 11 Jun 2023 18:14:16 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@orcam.me.uk>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v8 7/7] PCI: Work around PCIe link training failures
-In-Reply-To: <20230504222048.GA887151@bhelgaas>
-Message-ID: <alpine.DEB.2.21.2306080224280.36323@angie.orcam.me.uk>
-References: <20230504222048.GA887151@bhelgaas>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QX26V03M5z3dss
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jun 2023 20:14:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mW6qnl+I;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mW6qnl+I;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QX25W2m4lz3bdm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2023 20:13:19 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id E9F9C64306;
+	Thu,  1 Jun 2023 10:13:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BB9EC433EF;
+	Thu,  1 Jun 2023 10:13:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1685614396;
+	bh=AFUoVH57IicSC1SUB3rNbSa55KIIf5fvCH3QgG43svk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=mW6qnl+Iscw1AVEmuh/+zsjQC3Skvf6tgVrd8H0mW7nk/Q4kR8aZiIus1dGIFP0tu
+	 g3rQeS6P4z2sg2eRb4NVK2fSVZyk7O67J0bqoAY5zsHBwd4m5pGbhDwVNj62iw489S
+	 WwJRyB2rENdRnYC5sKzXzzMfTG9/RUH5Fq0wJ8oT8tMyy9YYy4BnDsnxhAjT9MeepB
+	 H1tV4aCIaB0/6raud9FT8L5dMFEDagbhbs3liHazB+zv7gap/xaJMb6C7mJsHMki13
+	 b3RfbDTWSX2rQpcBObYqwwehSGuzsUPwmJr6dpDHZ0JMs7xXA+oJ8tyL/OL1vetfWT
+	 OQoViqeiM1NHQ==
+From: Mike Rapoport <rppt@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/13] mm: jit/text allocator
+Date: Thu,  1 Jun 2023 13:12:44 +0300
+Message-Id: <20230601101257.530867-1-rppt@kernel.org>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -39,355 +57,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Oliver O'Halloran <oohall@gmail.com>, Stefan Roese <sr@denx.de>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Jim Wilson <wilson@tuliptree.org>, Nicholas Piggin <npiggin@gmail.com>, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, David Abdurachmanov <david.abdurachmanov@gmail.com>, linuxppc-dev@lists.ozlabs.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Lukas Wunner <lukas@wunner.de>, netdev@vger.kernel.org, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>
+Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozl
+ abs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 4 May 2023, Bjorn Helgaas wrote:
+From: "Mike Rapoport (IBM)" <rppt@kernel.org>
 
-> We talked about reusing pcie_retrain_link() earlier.  IIRC that didn't
-> work: ASPM needs to use PCI_EXP_LNKSTA_LT because not all devices
-> support PCI_EXP_LNKSTA_DLLLA, and you need PCI_EXP_LNKSTA_DLLLA
-> because the erratum makes PCI_EXP_LNKSTA_LT flap.
-> 
-> What if we made pcie_retrain_link() reusable by making it:
-> 
->   bool pcie_retrain_link(struct pci_dev *pdev, u16 link_status_bit)
-> 
-> so ASPM could use pcie_retrain_link(link->pdev, PCI_EXP_LNKSTA_LT) and
-> you could use pcie_retrain_link(dev, PCI_EXP_LNKSTA_DLLLA)?
+Hi,
 
- This is somewhat more complicated, because of the inverted logic between 
-the two status bits.  Therefore I think a boolean flag is more adequate 
-with preparatory logic within the function itself.  This will tighten the 
-call interface as well.
+module_alloc() is used everywhere as a mean to allocate memory for code.
 
-> Maybe do it two steps?
-> 
->   1) Move pcie_retrain_link() just after pcie_wait_for_link() and make
->   it take link->pdev instead of link.
-> 
->   2) Add the bit parameter.
+Beside being semantically wrong, this unnecessarily ties all subsystmes
+that need to allocate code, such as ftrace, kprobes and BPF to modules
+and puts the burden of code allocation to the modules code.
 
- Having compared the two pieces side by side now I think it makes sense.  
-While there are minor differences, most prominently the original code is 
-more aggressive than mine in polling the status bit, I think these details 
-are not significant enough to argue over them here.  And we can consider 
-switching to more modern `usleep_range' interface separately.
+Several architectures override module_alloc() because of various
+constraints where the executable memory can be located and this causes
+additional obstacles for improvements of code allocation.
 
- A minor pessimisation resulting is that LNKSTA has to be reread in the 
-caller after return from `pcie_retrain_link'; previously the last value 
-read in the poll loop could have been reused.
+This set splits code allocation from modules by introducing
+jit_text_alloc(), jit_data_alloc() and jit_free() APIs, replaces call
+sites of module_alloc() and module_memfree() with the new APIs and
+implements core text and related allocation in a central place.
 
-> I'm OK with having pcie_retrain_link() in pci.c, but the surrounding
-> logic about restricting to 2.5GT/s, retraining, removing the
-> restriction, retraining again is stuff I'd rather have in quirks.c so
-> it doesn't clutter pci.c.
+Instead of architecture specific overrides for module_alloc(), the
+architectures that require non-default behaviour for text allocation must
+fill jit_alloc_params structure and implement jit_alloc_arch_params() that
+returns a pointer to that structure. If an architecture does not implement
+jit_alloc_arch_params(), the defaults compatible with the current
+modules::module_alloc() are used.
 
- Well, it was there in quirks.c originally and I only moved this piece 
-following your earlier suggestion:
+The new jitalloc infrastructure allows decoupling of kprobes and ftrace
+from modules, and most importantly it enables ROX allocations for
+executable memory.
 
-> If we think the first part (attempting the retrain) is safe to do
-> whenever the link is down, maybe we should do that more directly as
-> part of the PCI core instead of as a quirk?
+A centralized infrastructure for code allocation allows future
+optimizations for allocations of executable memory, caching large pages for
+better iTLB performance and providing sub-page allocations for users that
+only need small jit code snippets.
 
-as in here: <https://lore.kernel.org/r/20221109050418.GA529724@bhelgaas/>, 
-though if you did change your mind after all, I can move it back, sure.  
-It's not always that the first thought is the best, or sometimes good at 
-all.
+patches 1-5: split out the code allocation from modules and arch
+patch 6: add dedicated API for data allocations with constraints similar to
+code allocations
+patches 7-9: decouple dynamic ftrace and kprobes form CONFIG_MODULES
+patches 10-13: enable ROX allocations for executable memory on x86
 
-> I think it'd be good if the pci_device_add() path made clear that this
-> is a workaround for a problem, e.g.,
-> 
->   void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
->   {
->     ...
->     if (pcie_link_failed(dev))
->       pcie_fix_link_train(dev);
-> 
-> where pcie_fix_link_train() could live in quirks.c (with a stub when
-> CONFIG_PCI_QUIRKS isn't enabled).  It *might* even be worth adding it
-> and the stub first because that's a trivial patch and wouldn't clutter
-> the probe.c git history with all the grotty details about ASM2824 and
-> this topology.
+Mike Rapoport (IBM) (11):
+  nios2: define virtual address space for modules
+  mm: introduce jit_text_alloc() and use it instead of module_alloc()
+  mm/jitalloc, arch: convert simple overrides of module_alloc to jitalloc
+  mm/jitalloc, arch: convert remaining overrides of module_alloc to jitalloc
+  module, jitalloc: drop module_alloc
+  mm/jitalloc: introduce jit_data_alloc()
+  x86/ftrace: enable dynamic ftrace without CONFIG_MODULES
+  arch: make jitalloc setup available regardless of CONFIG_MODULES
+  kprobes: remove dependcy on CONFIG_MODULES
+  modules, jitalloc: prepare to allocate executable memory as ROX
+  x86/jitalloc: make memory allocated for code ROX
 
- I have added a stub now, both as an intermediate step and ultimately for 
-!PCI_QUIRKS, but I disagree about having the check in pci.c and the fix in 
-quirks.c, because from the code structure's point of view it makes no 
-sense IMHO to have the check enabled and the fix disabled both at a time 
-for !PCI_QUIRKS, even if the compiler would actually optimise the check 
-away in that case.
+Song Liu (2):
+  ftrace: Add swap_func to ftrace_process_locs()
+  x86/jitalloc: prepare to allocate exectuatble memory as ROX
 
- Please let me know if you maintain your suggestion and if so, then why 
-you find it so important.  I think with the use of `pcie_retrain_link' 
-this code has become straightforward enough not to need to be split or 
-factored out any further (and while factoring out the conditionals only 
-would make some sense to me, it would require duplicating configuration 
-register accesses even further).
+ arch/Kconfig                     |   5 +-
+ arch/arm/kernel/module.c         |  32 ------
+ arch/arm/mm/init.c               |  35 ++++++
+ arch/arm64/kernel/module.c       |  47 --------
+ arch/arm64/mm/init.c             |  42 +++++++
+ arch/loongarch/kernel/module.c   |   6 -
+ arch/loongarch/mm/init.c         |  16 +++
+ arch/mips/kernel/module.c        |   9 --
+ arch/mips/mm/init.c              |  19 ++++
+ arch/nios2/include/asm/pgtable.h |   5 +-
+ arch/nios2/kernel/module.c       |  24 ++--
+ arch/parisc/kernel/module.c      |  11 --
+ arch/parisc/mm/init.c            |  21 +++-
+ arch/powerpc/kernel/kprobes.c    |   4 +-
+ arch/powerpc/kernel/module.c     |  37 -------
+ arch/powerpc/mm/mem.c            |  41 +++++++
+ arch/riscv/kernel/module.c       |  10 --
+ arch/riscv/mm/init.c             |  18 +++
+ arch/s390/kernel/ftrace.c        |   4 +-
+ arch/s390/kernel/kprobes.c       |   4 +-
+ arch/s390/kernel/module.c        |  46 +-------
+ arch/s390/mm/init.c              |  35 ++++++
+ arch/sparc/kernel/module.c       |  34 +-----
+ arch/sparc/mm/Makefile           |   2 +
+ arch/sparc/mm/jitalloc.c         |  21 ++++
+ arch/sparc/net/bpf_jit_comp_32.c |   8 +-
+ arch/x86/Kconfig                 |   2 +
+ arch/x86/kernel/alternative.c    |  43 ++++---
+ arch/x86/kernel/ftrace.c         |  59 +++++-----
+ arch/x86/kernel/kprobes/core.c   |   4 +-
+ arch/x86/kernel/module.c         |  75 +------------
+ arch/x86/kernel/static_call.c    |  10 +-
+ arch/x86/kernel/unwind_orc.c     |  13 ++-
+ arch/x86/mm/init.c               |  52 +++++++++
+ arch/x86/net/bpf_jit_comp.c      |  22 +++-
+ include/linux/ftrace.h           |   2 +
+ include/linux/jitalloc.h         |  69 ++++++++++++
+ include/linux/moduleloader.h     |  15 ---
+ kernel/bpf/core.c                |  14 +--
+ kernel/kprobes.c                 |  51 +++++----
+ kernel/module/Kconfig            |   1 +
+ kernel/module/main.c             |  56 ++++------
+ kernel/trace/ftrace.c            |  13 ++-
+ kernel/trace/trace_kprobe.c      |  11 ++
+ mm/Kconfig                       |   3 +
+ mm/Makefile                      |   1 +
+ mm/jitalloc.c                    | 185 +++++++++++++++++++++++++++++++
+ mm/mm_init.c                     |   2 +
+ 48 files changed, 777 insertions(+), 462 deletions(-)
+ create mode 100644 arch/sparc/mm/jitalloc.c
+ create mode 100644 include/linux/jitalloc.h
+ create mode 100644 mm/jitalloc.c
 
-> > +int pcie_downstream_link_retrain(struct pci_dev *dev)
-> > +{
-> > +	static const struct pci_device_id ids[] = {
-> > +		{ PCI_VDEVICE(ASMEDIA, 0x2824) }, /* ASMedia ASM2824 */
-> > +		{}
-> > +	};
-> > +	u16 lnksta, lnkctl2;
-> > +
-> > +	if (!pci_is_pcie(dev) || !pcie_downstream_port(dev) ||
-> > +	    !pcie_cap_has_lnkctl2(dev) || !dev->link_active_reporting)
-> > +		return -1;
-> > +
-> > +	pcie_capability_read_word(dev, PCI_EXP_LNKCTL2, &lnkctl2);
-> > +	pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
-> > +	if ((lnksta & (PCI_EXP_LNKSTA_LBMS | PCI_EXP_LNKSTA_DLLLA)) ==
-> > +	    PCI_EXP_LNKSTA_LBMS) {
-> 
-> You go to some trouble to make sure PCI_EXP_LNKSTA_LBMS is set, and I
-> can't remember what the reason is.  If you make a preparatory patch
-> like this, it would give a place for that background, e.g.,
 
- It has been already documented along with the code in question:
+base-commit: 44c026a73be8038f03dbdeef028b642880cf1511
+-- 
+2.35.1
 
- * With the ASM2824 we can rely on the otherwise optional Data Link Layer
- * Link Active status bit and in the failed link training scenario it will
- * be off along with the Link Bandwidth Management Status indicating that
- * hardware has changed the link speed or width in an attempt to correct
- * unreliable link operation.  For a port that has been left unconnected
- * both bits will be clear.  [...]
-
->   +bool pcie_link_failed(struct pci_dev *dev)
->   +{
->   +       u16 lnksta;
->   +
->   +       if (!pci_is_pcie(dev) || !pcie_downstream_port(dev) ||
->   +           !pcie_cap_has_lnkctl2(dev) || !dev->link_active_reporting)
->   +               return false;
->   +
->   +       pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
->   +       if ((lnksta & (PCI_EXP_LNKSTA_LBMS | PCI_EXP_LNKSTA_DLLLA)) ==
->   +                       PCI_EXP_LNKSTA_LBMS)
->   +               return true;
->   +
->   +       return false;
->   +}
-> 
-> If this is a generic thing and checking PCI_EXP_LNKSTA_LBMS makes
-> sense for everybody, it could go in pci.c; otherwise it could go in
-> quirks.c as well.  I guess it's not *truly* generic anyway because it
-> only detects link training failures for devices that have LNKCTL2 and
-> link_active_reporting.
-
- I do not have enough information to tell whether this is generic or not.  
-
- Checking for PCI_EXP_LNKSTA_LBMS is important, because otherwise this 
-code would attempt to retrain every empty slot or otherwise unconnected 
-PCIe link, which we do not want to do and which would surely take a lot of 
-time with some of the larger systems, to say nothing of the log clutter 
-showing that there is something wrong with the system while indeed there 
-is nothing.
-
- Out of all the ports whose data link layer is not in the DL_Active state 
-the LBMS bit is only set for the failed link in my system and I suspect it 
-is related to the link speed negotiation erratum causing unsuccessful link 
-training to repeat indefinitely.
-
- By definition LBMS cannot be set for an unconnected link, because the bit 
-is only allowed to be set for an event observed that has happened with a 
-port reporting no DL_Down status at any time throughout the event, which 
-can only happen with the physical layer up, which of course cannot happen 
-for an unconnected link (of course I can imagine another erratum affecting 
-the LBMS bit, but that has not been reported yet).
-
- While making sure I got all the details in the previous paragraph right I 
-have gone through a reference to the DL_Feature data link layer state (and 
-a potential need to disable it for interacting with a non-compliant legacy 
-downstream device), but neither device involved supports it, so it can't 
-possibly be the cause for the phenomenon observed.
-
- IOW the LBMS bit serves the purpose of indicating that there is actually 
-a device down an inactive link (the state of the physical layer's LinkUp 
-bit is not directly accessible via software).  And one might argue that 
-the state where LBMS is set but DLLLA is clear (where actually supported) 
-after a device reset is indeed a generic sign of an odd link training 
-issue.
-
- If you think it would make sense to include any piece of the text above 
-with the existing documentation, then I'll be happy to improve it.
-
-> > +	if (IS_ENABLED(CONFIG_PCI_QUIRKS) && (lnksta & PCI_EXP_LNKSTA_DLLLA) &&
-> > +	    (lnkctl2 & PCI_EXP_LNKCTL2_TLS) == PCI_EXP_LNKCTL2_TLS_2_5GT &&
-> > +	    pci_match_id(ids, dev)) {
-> > +		u32 lnkcap;
-> > +		u16 lnkctl;
-> > +
-> > +		pci_info(dev, "removing 2.5GT/s downstream link speed restriction\n");
-> > +		pcie_capability_read_dword(dev, PCI_EXP_LNKCAP, &lnkcap);
-> > +		pcie_capability_read_word(dev, PCI_EXP_LNKCTL, &lnkctl);
-> > +		lnkctl |= PCI_EXP_LNKCTL_RL;
-> > +		lnkctl2 &= ~PCI_EXP_LNKCTL2_TLS;
-> > +		lnkctl2 |= lnkcap & PCI_EXP_LNKCAP_SLS;
-> > +		pcie_capability_write_word(dev, PCI_EXP_LNKCTL2, lnkctl2);
-> > +		pcie_capability_write_word(dev, PCI_EXP_LNKCTL, lnkctl);
-> 
-> This starts a retrain; should we wait for training to complete?
-
- Yep, why not, with `pcie_retrain_link' now updated it's trivial, and we 
-can then also verify the result (and do nothing about it except for 
-reporting, as it's supposed to never happen, so let's just wait and see).
-
-> If we put most of this into a pcie_fix_link_train() (separated from
-> detecting the *need* to fix something), could it be made to look
-> sort of like this?  (I suppose you'd want to return bool and rename
-> it that reads naturally, e.g., "pcie_link_forcibly_retrained()",
-> "pcie_link_retrained()", etc)
-
- Ah, I concluded to make it return `bool' independently, having not seen 
-this suggestion of yours yet, so it seems like we're getting in sync, and 
-likewise I renamed the function to `pcie_failed_link_retrain' already.
-
->   +void pcie_fix_link_train(struct pci_dev *dev)
->   +{
->   +       u16 lnkctl2;
->   +       u32 lnkcap;
->   +       bool linkup;
->   +
->   +       pci_info(dev, "attempting link retrain at 2.5GT/s\n");
->   +       pcie_capability_read_word(dev, PCI_EXP_LNKCTL2, &lnkctl2);
->   +       lnkctl2 &= ~PCI_EXP_LNKCTL2_TLS;
->   +       lnkctl2 |= PCI_EXP_LNKCTL2_TLS_2_5GT;
->   +       pcie_capability_write_word(dev, PCI_EXP_LNKCTL2, lnkctl2);
->   +
->   +       linkup = pcie_retrain_link(dev, PCI_EXP_LNKSTA_DLLLA);
->   +       if (!linkup) {
->   +               pci_info(dev, "retraining failed\n");
->   +               return;
->   +       }
->   +
->   +       if (LNKCAP supports only 2.5GT/s)
->   +               return;
->   +
->   +       if (!pci_match_id(ids, dev))
->   +               return;
-> 
-> Your comment said "if we know this is *safe*"; I can't remember if
-> pci_match_id() is there to avoid a known problem?
-
- It's the other way round, the intent is to lift the speed restriction and 
-retrain for devices known to succeed and survive only.
-
- It cannot be universally guaranteed that such a retrain will succeed even 
-if 2.5GT/s works, and moreover this piece is independent from the attempt 
-to recover made immediately above and will also run where the firmware has 
-clamped the speed of the link somehow, whether for this erratum or for 
-another reason (remember that the speed clamp is sticky, so it will have 
-survived our bus/interconnect hierarchy reset).
-
- In particular Pali has reported (in an earlier discussion concerning this 
-erratum on the U-Boot mailing list) the existence of downstream devices 
-that lock up when a link retrain is attempted, so we don't want to request 
-one for an otherwise known-working link (retraining a dead link won't hurt 
-of course regardless, because at worst it'll just stay in its non-working 
-state, and we don't have a way to figure out what might be there anyway).  
-Cf. <https://lists.denx.de/pipermail/u-boot/2021-November/467201.html>.
-
-> > +/* Same as above, but called for a downstream device.  */
-> > +static int pcie_upstream_link_retrain(struct pci_dev *dev)
-> > +{
-> > +	struct pci_dev *bridge;
-> > +
-> > +	bridge = pci_upstream_bridge(dev);
-> > +	if (bridge)
-> > +		return pcie_downstream_link_retrain(bridge);
-> > +	else
-> > +		return -1;
-> > +}
-> > +
-> >  static int pci_acs_enable;
-> >  
-> >  /**
-> > @@ -1148,8 +1274,8 @@ void pci_resume_bus(struct pci_bus *bus)
-> >  
-> >  static int pci_dev_wait(struct pci_dev *dev, char *reset_type, int timeout)
-> >  {
-> > +	int retrain = 0;
-> >  	int delay = 1;
-> > -	u32 id;
-> >  
-> >  	/*
-> >  	 * After reset, the device should not silently discard config
-> > @@ -1163,21 +1289,37 @@ static int pci_dev_wait(struct pci_dev *
-> >  	 * Command register instead of Vendor ID so we don't have to
-> >  	 * contend with the CRS SV value.
-> >  	 */
-> > -	pci_read_config_dword(dev, PCI_COMMAND, &id);
-> > -	while (PCI_POSSIBLE_ERROR(id)) {
-> > +	for (;;) {
-> > +		u32 id;
-> > +
-> > +		pci_read_config_dword(dev, PCI_COMMAND, &id);
-> > +		if (!PCI_POSSIBLE_ERROR(id)) {
-> > +			if (delay > PCI_RESET_WAIT)
-> > +				pci_info(dev, "ready %dms after %s\n",
-> > +					 delay - 1, reset_type);
-> > +			break;
-> > +		}
-> > +
-> >  		if (delay > timeout) {
-> >  			pci_warn(dev, "not ready %dms after %s; giving up\n",
-> >  				 delay - 1, reset_type);
-> >  			return -ENOTTY;
-> >  		}
-> >  
-> > -		if (delay > PCI_RESET_WAIT)
-> > +		if (delay > PCI_RESET_WAIT) {
-> > +			if (!retrain) {
-> > +				retrain = 1;
-> > +				if (pcie_upstream_link_retrain(dev) == 0) {
-> > +					delay = 1;
-> > +					continue;
-> > +				}
-> > +			}
-> >  			pci_info(dev, "not ready %dms after %s; waiting\n",
-> >  				 delay - 1, reset_type);
-> > +		}
-> 
-> Thanks for fixing this in the reset path, too.  Can we move this part
-> to a separate patch?  It's related to the rest of the patch, but it
-> looks so much different that I think it would be easier to understand
-> by itself.
-
- I think making a system halfway-fixed would make little sense, but with 
-the actual fix actually made last as you suggested I think this can be 
-split off, because it'll make no functional change by itself.
-
- While at it I have verified that the initial value of `retrain' does not 
-have to be changed for the compiler to optimise away any code related to 
-it in the !PCI_QUIRKS case where `pcie_parent_link_retrain' gets optimised 
-away too, so we're good here.
-
- I changed `retrain' to `bool' though and inverted the logic as I find it 
-more natural this way.
-
-> I think I might try to fold the pcie_upstream_link_retrain() directly
-> in here because the "upstream link retrain" in the function name
-> doesn't really make sense in PCIe terms.
-
- Well, it does, as you can indeed request a retrain for an upstream port 
-device.  This is not however what this function does, so I agree it's 
-confusing.  I have replaced "upstream" with "parent" in the function name 
-then to avoid this ambiguity.
-
- Otherwise I think factoring this piece out makes code more readable, as 
-it's already quite deeply nested in blocks, and the compiler will inline 
-it anyway, so I'd rather keep it as a separate function.
-
- With the observations made I'll be posting a rewritten patch series now.  
-I realise there might still be issues outstanding, but this rewrite was 
-already humongous enough and I think it deserves a second pair of eyeballs 
-before massaging it any further.
-
- And last but not least, thank you for waiting, it was quite a stretch for 
-me to fit this effort in among all the stuff currently on my table and all 
-the unforeseen events.
-
-  Maciej
