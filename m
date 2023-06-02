@@ -4,68 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61054C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 06:40:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA6A9C7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 18:22:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QXYK462M9z3ffx
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jun 2023 16:40:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QXrv50Tx7z3fKR
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jun 2023 04:22:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=MQbltgtZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8QqKBlw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2e; helo=mail-yb1-xb2e.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=MQbltgtZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8QqKBlw;
 	dkim-atps=neutral
-Received: from mail-yb1-xb2e.google.com (mail-yb1-xb2e.google.com [IPv6:2607:f8b0:4864:20::b2e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QXYHM27lhz3f09
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 16:38:38 +1000 (AEST)
-Received: by mail-yb1-xb2e.google.com with SMTP id 3f1490d57ef6-bacf9edc87bso1758997276.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2023 23:38:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1685687915; x=1688279915;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=tpZOczBsR4xfXgaOr7JAksIfJeH0zAVR4HOmdqn2WnM=;
-        b=MQbltgtZnpxjctQr+uFVsewY5VE5NXUP+fgzpdshkW8VMDLi/jmX8Tm6cJEVN75KO5
-         eMzQQeVHyaOg5im7MqrpVvZmNtbY70bJPquEYjFZnpqOQiwh3ggGEuUZOqPQRJyrYh/W
-         i+iggUJfR2oZ0kl76ZzZLWFVADgUlsLiALbp15wr01z/YGZ4gs3TU2SO+DR0aQhnSTOT
-         dtI6TRsVuo4JEZoVSXAGY14e1RV+60jnzQrNU20RmPK7rqniXU/2wk1vKjSgTxR1Jys6
-         GAfhWX9n0uNxF5CP8nHZ8MEGqQL56HNKZn101HF3ximV36n96JF/CdcYDCKEOlrhAPpq
-         +j9Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685687915; x=1688279915;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=tpZOczBsR4xfXgaOr7JAksIfJeH0zAVR4HOmdqn2WnM=;
-        b=HyI+nlCNovSbXerJi8kfCbSb7reelG/N9r3aTSzqGf9FNNZNyK9N4kCCA/4/Fhzl7w
-         SxvP04yplNVgsI8CXLtmGV3TDP/O33sRyf8cubbSNgF75umI0qGvIoYs9AuD1hF2nGhz
-         eC2wbUTWgira8YhZitF+gpg6W/heEuJmM7HF+aQ0l6WJdRnBtnlS3YdFCxrvTW/9iYan
-         BO2RXIXpasUmbw7fH5odUeXK+PECzjL6wQWealhTRPs9MMnJ1yf2i/6dpJNCO5CNv4SW
-         eBu34DEew0vN40USGIRLuxYnjWme3qw3ZjPOMSKJgwXgduF7JFlr9feeFqiAMmYdTIQD
-         gj1w==
-X-Gm-Message-State: AC+VfDzprRFskAoHJ2NgXPDy9avLsJ4NmVv7zQxfKU3IMvwbE35lL4Vj
-	xsuEdhBtpKdRDioSQjWG/cPIiQ==
-X-Google-Smtp-Source: ACHHUZ6P8SSTMurOYYj/ALnVvhi3BuZn/ynwQtygsqQ/alJ03V+5vTPE5OsmNbOnOcV3aojCWBT3dw==
-X-Received: by 2002:a81:a50c:0:b0:55d:afe6:ebcf with SMTP id u12-20020a81a50c000000b0055dafe6ebcfmr10875964ywg.46.1685687915164;
-        Thu, 01 Jun 2023 23:38:35 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id v16-20020a814810000000b005688deeefc2sm199574ywa.20.2023.06.01.23.38.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jun 2023 23:38:34 -0700 (PDT)
-Date: Thu, 1 Jun 2023 23:38:30 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-Subject: Re: [PATCH 05/12] powerpc: add pte_free_defer() for pgtables sharing
- page
-In-Reply-To: <20230601155751.7c949ca4@thinkpad-T15>
-Message-ID: <d6af2345-40b0-e6fc-56d2-bce778632da9@google.com>
-References: <35e983f5-7ed3-b310-d949-9ae8b130cdab@google.com> <28eb289f-ea2c-8eb9-63bb-9f7d7b9ccc11@google.com> <ZHSwWgLWaEd+zi/g@casper.infradead.org> <a8df11d-55ae-64bc-edcb-d383a7a941ea@google.com> <20230601155751.7c949ca4@thinkpad-T15>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QXrt70dZYz3dxY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2023 04:21:18 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 30B6C6525E
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 18:21:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13F26C4339B
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2023 18:21:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1685730074;
+	bh=X+6D25ac/ynfkYhL6CVIatM+QSgTz3ZdfLV95/xOw/s=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=m8QqKBlwUZ1OdVsi3iL4i/wpx/dFY6BbtHjhKMAoPALO9d9S1Of5z7SZF4QL6sTbP
+	 1AkumCJkUSaKm4k7dCVk+lOGEFZdfq22cqjqj27S/pPlmB3p+6xXv2CNvliSMKoASM
+	 /hdXoCMRwv6EJy8J6GYtUkCvLB9u0rcyusLTXlpDOf8Lr4f24TWYjjjFg1gay1e8Ak
+	 p/JJ9xBOtMt5dIZYwKQ9oFJD8MWj9f1lt6ZhCj0XTqBGpkRKgNx/tS3niGcx/Matut
+	 0hwyzJfj74d+iBjmUiHb0LPXzSLbkWfgBPmkBtc2NCOoUpEnhn1N5112VQidBofQtB
+	 l46PC2/nl/Dww==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-4f4e71a09a7so3086976e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2023 11:21:13 -0700 (PDT)
+X-Gm-Message-State: AC+VfDwuJOtFIzYX5zFMgQnGs1pOXX2aXbN8WPsMNEH+sFwLMfflCZY7
+	8fQRhCNsbiE5LPQCR9imW7dKTlw0VbEWDtMJtUQ=
+X-Google-Smtp-Source: ACHHUZ7u+3QRkPB700ZRWSkZS34WuzRLSBXiPs+mDMX8Rtj0TALCowhBg47HVf6nzRS8a/FS2UP95/Ck0Au4nvQTBcE=
+X-Received: by 2002:a2e:b55a:0:b0:2b0:59c3:29c9 with SMTP id
+ a26-20020a2eb55a000000b002b059c329c9mr217540ljn.6.1685730071990; Fri, 02 Jun
+ 2023 11:21:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20230601101257.530867-1-rppt@kernel.org> <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+ <ZHjgIH3aX9dCvVZc@moria.home.lan> <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+In-Reply-To: <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+From: Song Liu <song@kernel.org>
+Date: Fri, 2 Jun 2023 11:20:58 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW7Euczff_KB70nuH=Hhf2EYHAf=xiQR7mFqVfByhD34XA@mail.gmail.com>
+Message-ID: <CAPhsuW7Euczff_KB70nuH=Hhf2EYHAf=xiQR7mFqVfByhD34XA@mail.gmail.com>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+To: Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,76 +69,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Axel Rasmussen <axelrasmussen@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@solee
- n.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Puranjay Mohan <puranjay12@gmail.com>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, bp
+ f@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 1 Jun 2023, Gerald Schaefer wrote:
-> On Mon, 29 May 2023 07:36:40 -0700 (PDT)
-> Hugh Dickins <hughd@google.com> wrote:
-> > On Mon, 29 May 2023, Matthew Wilcox wrote:
-> > > On Sun, May 28, 2023 at 11:20:21PM -0700, Hugh Dickins wrote:  
-> > > > +void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
-> > > > +{
-> > > > +	struct page *page;
-> > > > +
-> > > > +	page = virt_to_page(pgtable);
-> > > > +	call_rcu(&page->rcu_head, pte_free_now);
-> > > > +}  
-> > > 
-> > > This can't be safe (on ppc).  IIRC you might have up to 16x4k page
-> > > tables sharing one 64kB page.  So if you have two page tables from the
-> > > same page being defer-freed simultaneously, you'll reuse the rcu_head
-> > > and I cannot imagine things go well from that point.  
-> > 
-> > Oh yes, of course, thanks for catching that so quickly.
-> > So my s390 and sparc implementations will be equally broken.
-> > 
-> > > 
-> > > I have no idea how to solve this problem.  
-> > 
-> > I do: I'll have to go back to the more complicated implementation we
-> > actually ran with on powerpc - I was thinking those complications just
-> > related to deposit/withdraw matters, forgetting the one-rcu_head issue.
-> > 
-> > It uses large (0x10000) increments of the page refcount, avoiding
-> > call_rcu() when already active.
-> > 
-> > It's not a complication I had wanted to explain or test for now,
-> > but we shall have to.  Should apply equally well to sparc, but s390
-> > more of a problem, since s390 already has its own refcount cleverness.
-> 
-> Yes, we have 2 pagetables in one 4K page, which could result in same
-> rcu_head reuse. It might be possible to use the cleverness from our
-> page_table_free() function, e.g. to only do the call_rcu() once, for
-> the case where both 2K pagetable fragments become unused, similar to
-> how we decide when to actually call __free_page().
+On Fri, Jun 2, 2023 at 2:35=E2=80=AFAM Mark Rutland <mark.rutland@arm.com> =
+wrote:
+>
+> On Thu, Jun 01, 2023 at 02:14:56PM -0400, Kent Overstreet wrote:
+> > On Thu, Jun 01, 2023 at 05:12:03PM +0100, Mark Rutland wrote:
+> > > For a while I have wanted to give kprobes its own allocator so that i=
+t can work
+> > > even with CONFIG_MODULES=3Dn, and so that it doesn't have to waste VA=
+ space in
+> > > the modules area.
+> > >
+> > > Given that, I think these should have their own allocator functions t=
+hat can be
+> > > provided independently, even if those happen to use common infrastruc=
+ture.
+> >
+> > How much memory can kprobes conceivably use? I think we also want to tr=
+y
+> > to push back on combinatorial new allocators, if we can.
+>
+> That depends on who's using it, and how (e.g. via BPF).
+>
+> To be clear, I'm not necessarily asking for entirely different allocators=
+, but
+> I do thinkg that we want wrappers that can at least pass distinct start+e=
+nd
+> parameters to a common allocator, and for arm64's modules code I'd expect=
+ that
+> we'd keep the range falblack logic out of the common allcoator, and just =
+call
+> it twice.
+>
+> > > > Several architectures override module_alloc() because of various
+> > > > constraints where the executable memory can be located and this cau=
+ses
+> > > > additional obstacles for improvements of code allocation.
+> > > >
+> > > > This set splits code allocation from modules by introducing
+> > > > jit_text_alloc(), jit_data_alloc() and jit_free() APIs, replaces ca=
+ll
+> > > > sites of module_alloc() and module_memfree() with the new APIs and
+> > > > implements core text and related allocation in a central place.
+> > > >
+> > > > Instead of architecture specific overrides for module_alloc(), the
+> > > > architectures that require non-default behaviour for text allocatio=
+n must
+> > > > fill jit_alloc_params structure and implement jit_alloc_arch_params=
+() that
+> > > > returns a pointer to that structure. If an architecture does not im=
+plement
+> > > > jit_alloc_arch_params(), the defaults compatible with the current
+> > > > modules::module_alloc() are used.
+> > >
+> > > As above, I suspect that each of the callsites should probably be usi=
+ng common
+> > > infrastructure, but I don't think that a single jit_alloc_arch_params=
+() makes
+> > > sense, since the parameters for each case may need to be distinct.
+> >
+> > I don't see how that follows. The whole point of function parameters is
+> > that they may be different :)
+>
+> What I mean is that jit_alloc_arch_params() tries to aggregate common
+> parameters, but they aren't actually common (e.g. the actual start+end ra=
+nge
+> for allocation).
+>
+> > Can you give more detail on what parameters you need? If the only extra
+> > parameter is just "does this allocation need to live close to kernel
+> > text", that's not that big of a deal.
+>
+> My thinking was that we at least need the start + end for each caller. Th=
+at
+> might be it, tbh.
 
-Yes, I expect that it will be possible to mesh in with s390's cleverness
-there; but I may not be clever enough to do so myself - it was easier to
-get right by going my own way - except that the multiply-used rcu_head
-soon showed that I'd not got it right at all :-(
+IIUC, arm64 uses VMALLOC address space for BPF programs. The reason
+is each BPF program uses at least 64kB (one page) out of the 128MB
+address space. Puranjay Mohan (CC'ed) is working on enabling
+bpf_prog_pack for arm64. Once this work is done, multiple BPF programs
+will be able to share a page. Will this improvement remove the need to
+specify a different address range for BPF programs?
 
-> 
-> However, it might be much worse, and page->rcu_head from a pagetable
-> page cannot be used at all for s390, because we also use page->lru
-> to keep our list of free 2K pagetable fragments. I always get confused
-> by struct page unions, so not completely sure, but it seems to me that
-> page->rcu_head would overlay with page->lru, right?
-
-However, I believe you are right that it's worse.  I'm glad to hear
-that you get confused by the struct page unions, me too, I preferred the
-old pre-union days when we could see at a glance which fields overlaid.
-(Perhaps I'm nostalgically exaggerating that "see at a glance" ease.)
-
-But I think I remember the discussions when rcu_head, and compound_head
-at lru.next, came in: with the agreement that rcu_head.next would at
-least be 2-aligned to avoid PageTail - ah, it's even commented in the
-fundamental include/linux/types.h.
-
-Sigh.  I don't at this moment know what to do for s390:
-it is frustrating to be held up by just the one architecture.
-But big thanks to you, Gerald, for bringing this to light.
-
-Hugh
+Thanks,
+Song
