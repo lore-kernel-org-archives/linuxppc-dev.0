@@ -4,92 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EED5C7EE2A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 06:53:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0F74C7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 06:54:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QZPT60Wgdz3f40
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 16:53:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QZPV21GmMz3fkF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 16:54:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qJa+RBB1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ek0xfu0m;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jpn@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qJa+RBB1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ek0xfu0m;
 	dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZPNK74xKz3cdt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 16:49:21 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3556AjtK020575;
-	Mon, 5 Jun 2023 06:49:18 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZPNL6vL7z3c3w
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 16:49:22 +1000 (AEST)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3555LOix011208;
+	Mon, 5 Jun 2023 06:49:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=HJqJaZSt0uSQY/GNzieQewyE0k1EYWnbC7Xe3l0cyh0=;
- b=qJa+RBB1/ViNmn72hsMbmMKaaiBaTJdZNn2L/TXYa3fjeZvQetA4jCA/kc5B/yaqnmw2
- hyfW7uMmKaVEnfkUVJn0rU6mwuZ7aaWAINq15vvRPi26WwmLJNnE37aVSvOotGKLO3jr
- noVURfydGDXsBQgxhjNLPz+F7kss8C+njmTiylA/zBJWI9XMqtGJ6Y2S8z3K60Wra5d7
- xgQDmzbF4XzXUhiAg/JEVEpwy5OLyrF3bAr497LBaLyuQDW7rO7OBt0UrJoxYwjGXDW8
- oKnPCA8d2EBnYdS/M3zt+mjsuLuvld4w5Zbp+05QLdGfMxKFLMPqhHL77rhlonfFQGY5 Rw== 
+ content-type : content-transfer-encoding; s=pp1;
+ bh=vJLOSGfUWZ3BsVpEpv2FAexHNz6syiU7MRlwC5abgYk=;
+ b=Ek0xfu0moD43Rf1qZ7rjPOnQsmCBhHFAygdVmWdqjUu2rUyLf4XIFQGN38YywfAuqwWC
+ m+xoJWxbTO1FYUbtkwiAgO4W8aiTrVqnNL5dKqWL8YczC7xiqDQu9Zwbs6DhdCDqyz5j
+ O+k+o5OmlzLscQvmE6sXxJ4EexkROye2xFPbYnyqzVctgmJUwXDdE2yXMec430vHYC8p
+ 7FtHEN0x3Lw33Ne3CtocMvWuGpVqYSufXW46mQQSmQZsLb8A0BkLvvO7hgclw1yD4yD6
+ Bu5BvXFBIRnKJZ0hT0x+nngNG0mIAsz4wUzo7/IuQBNugNOk3C6xD7eyubuu/6Wuwa5C hw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r18ndtr6h-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r19g49nks-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Jun 2023 06:49:17 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3556gmTN004430;
+	Mon, 05 Jun 2023 06:49:19 +0000
+Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3556kqLu006509;
+	Mon, 5 Jun 2023 06:49:19 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r19g49nk4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 05 Jun 2023 06:49:19 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3553v26N031609;
 	Mon, 5 Jun 2023 06:49:17 GMT
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r18ndtr5r-1
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3qyxg2h6bx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 05 Jun 2023 06:49:16 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
-	by ppma06fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3555BO2K022677;
-	Mon, 5 Jun 2023 06:49:15 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma06fra.de.ibm.com (PPS) with ESMTPS id 3qyx5q8xh6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Jun 2023 06:49:14 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3556nCqX19726898
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3556nEcE590574
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 Jun 2023 06:49:12 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1E0A020043;
-	Mon,  5 Jun 2023 06:49:12 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B8E4920040;
-	Mon,  5 Jun 2023 06:49:10 +0000 (GMT)
+	Mon, 5 Jun 2023 06:49:14 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5026420040;
+	Mon,  5 Jun 2023 06:49:14 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5CCE92004B;
+	Mon,  5 Jun 2023 06:49:13 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  5 Jun 2023 06:49:10 +0000 (GMT)
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  5 Jun 2023 06:49:13 +0000 (GMT)
 Received: from pwon.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 393AD6040B;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6DEF76063C;
 	Mon,  5 Jun 2023 16:49:08 +1000 (AEST)
 From: Jordan Niethe <jpn@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 1/6] KVM: PPC: Use getters and setters for vcpu register state
-Date: Mon,  5 Jun 2023 16:48:43 +1000
-Message-Id: <20230605064848.12319-2-jpn@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 6/6] docs: powerpc: Document nested KVM on POWER
+Date: Mon,  5 Jun 2023 16:48:48 +1000
+Message-Id: <20230605064848.12319-7-jpn@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20230605064848.12319-1-jpn@linux.vnet.ibm.com>
 References: <20230605064848.12319-1-jpn@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: bZrOHYgONJWkPeqCPn5AuZ2wTPZ5-7Er
-X-Proofpoint-GUID: p0UriL7VGTCgvSe1H9cbptfLOHSr-ITK
+X-Proofpoint-GUID: LWZ_vJByTwvij6VqHairpAd0aRpaw2BP
+X-Proofpoint-ORIG-GUID: PI4bea99iR-lGrRadoxqVXm7eJPYwgrG
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-03_08,2023-06-02_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 clxscore=1015
- mlxscore=0 malwarescore=0 adultscore=0 suspectscore=0 phishscore=0
- priorityscore=1501 mlxlogscore=928 lowpriorityscore=0 spamscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2304280000 definitions=main-2306050058
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ impostorscore=0 clxscore=1015 priorityscore=1501 malwarescore=0
+ bulkscore=0 phishscore=0 spamscore=0 adultscore=0 mlxscore=0
+ suspectscore=0 mlxlogscore=581 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2304280000 definitions=main-2306050058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,1335 +106,677 @@ Cc: Jordan Niethe <jpn@linux.vnet.ibm.com>, mikey@neuling.org, kautuk.consul.198
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are already some getter and setter functions used for accessing
-vcpu register state, e.g. kvmppc_get_pc(). There are also more
-complicated examples that are generated by macros like
-kvmppc_get_sprg0() which are generated by the SHARED_SPRNG_WRAPPER()
-macro.
+From: Michael Neuling <mikey@neuling.org>
 
-In the new PAPR API for nested guest partitions the L1 is required to
-communicate with the L0 to modify and read nested guest state.
+Document support for nested KVM on POWER using the existing API as well
+as the new PAPR API. This includes the new HCALL interface and how it
+used by KVM.
 
-Prepare to support this by replacing direct accesses to vcpu register
-state with wrapper functions. Follow the existing pattern of using
-macros to generate individual wrappers. These wrappers will
-be augmented for supporting PAPR nested guests later.
-
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 Signed-off-by: Jordan Niethe <jpn@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kvm_book3s.h  |  68 +++++++-
- arch/powerpc/include/asm/kvm_ppc.h     |  48 ++++--
- arch/powerpc/kvm/book3s.c              |  22 +--
- arch/powerpc/kvm/book3s_64_mmu_hv.c    |   4 +-
- arch/powerpc/kvm/book3s_64_mmu_radix.c |   9 +-
- arch/powerpc/kvm/book3s_64_vio.c       |   4 +-
- arch/powerpc/kvm/book3s_hv.c           | 222 +++++++++++++------------
- arch/powerpc/kvm/book3s_hv.h           |  59 +++++++
- arch/powerpc/kvm/book3s_hv_builtin.c   |  10 +-
- arch/powerpc/kvm/book3s_hv_p9_entry.c  |   4 +-
- arch/powerpc/kvm/book3s_hv_ras.c       |   5 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c    |   8 +-
- arch/powerpc/kvm/book3s_hv_rm_xics.c   |   4 +-
- arch/powerpc/kvm/book3s_xive.c         |   9 +-
- arch/powerpc/kvm/powerpc.c             |   4 +-
- 15 files changed, 322 insertions(+), 158 deletions(-)
+v2:
+  - Separated into individual patch
+---
+ Documentation/powerpc/index.rst      |   1 +
+ Documentation/powerpc/kvm-nested.rst | 636 +++++++++++++++++++++++++++
+ 2 files changed, 637 insertions(+)
+ create mode 100644 Documentation/powerpc/kvm-nested.rst
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index bbf5e2c5fe09..4e91f54a3f9f 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -392,6 +392,16 @@ static inline ulong kvmppc_get_pc(struct kvm_vcpu *vcpu)
- 	return vcpu->arch.regs.nip;
- }
- 
-+static inline void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 val)
-+{
-+	vcpu->arch.pid = val;
-+}
+diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
+index 85e80e30160b..5a15dc6389ab 100644
+--- a/Documentation/powerpc/index.rst
++++ b/Documentation/powerpc/index.rst
+@@ -25,6 +25,7 @@ powerpc
+     isa-versions
+     kaslr-booke32
+     mpc52xx
++    kvm-nested
+     papr_hcalls
+     pci_iov_resource_on_powernv
+     pmu-ebb
+diff --git a/Documentation/powerpc/kvm-nested.rst b/Documentation/powerpc/kvm-nested.rst
+new file mode 100644
+index 000000000000..c0c2e29a59d3
+--- /dev/null
++++ b/Documentation/powerpc/kvm-nested.rst
+@@ -0,0 +1,636 @@
++.. SPDX-License-Identifier: GPL-2.0
 +
-+static inline u32 kvmppc_get_pid(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.pid;
-+}
++====================================
++Nested KVM on POWER
++====================================
 +
- static inline u64 kvmppc_get_msr(struct kvm_vcpu *vcpu);
- static inline bool kvmppc_need_byteswap(struct kvm_vcpu *vcpu)
- {
-@@ -403,10 +413,66 @@ static inline ulong kvmppc_get_fault_dar(struct kvm_vcpu *vcpu)
- 	return vcpu->arch.fault_dar;
- }
- 
-+#define BOOK3S_WRAPPER_SET(reg, size)					\
-+static inline void kvmppc_set_##reg(struct kvm_vcpu *vcpu, u##size val)	\
-+{									\
-+									\
-+	vcpu->arch.reg = val;						\
-+}
++Introduction
++============
 +
-+#define BOOK3S_WRAPPER_GET(reg, size)					\
-+static inline u##size kvmppc_get_##reg(struct kvm_vcpu *vcpu)		\
-+{									\
-+	return vcpu->arch.reg;						\
-+}
++This document explains how a guest operating system can act as a
++hypervisor and run nested guests through the use of hypercalls, if the
++hypervisor has implemented them. The terms L0, L1, and L2 are used to
++refer to different software entities. L0 is the hypervisor mode entity
++that would normally be called the "host" or "hypervisor". L1 is a
++guest virtual machine that is directly run under L0 and is initiated
++and controlled by L0. L2 is a guest virtual machine that is initiated
++and controlled by L1 acting as a hypervisor.
 +
-+#define BOOK3S_WRAPPER(reg, size)					\
-+	BOOK3S_WRAPPER_SET(reg, size)					\
-+	BOOK3S_WRAPPER_GET(reg, size)					\
++Existing API
++============
 +
-+BOOK3S_WRAPPER(tar, 64)
-+BOOK3S_WRAPPER(ebbhr, 64)
-+BOOK3S_WRAPPER(ebbrr, 64)
-+BOOK3S_WRAPPER(bescr, 64)
-+BOOK3S_WRAPPER(ic, 64)
-+BOOK3S_WRAPPER(vrsave, 64)
++Linux/KVM has had support for Nesting as an L0 or L1 since 2018
++
++The L0 code was added::
++
++   commit 8e3f5fc1045dc49fd175b978c5457f5f51e7a2ce
++   Author: Paul Mackerras <paulus@ozlabs.org>
++   Date:   Mon Oct 8 16:31:03 2018 +1100
++   KVM: PPC: Book3S HV: Framework and hcall stubs for nested virtualization
++
++The L1 code was added::
++
++   commit 360cae313702cdd0b90f82c261a8302fecef030a
++   Author: Paul Mackerras <paulus@ozlabs.org>
++   Date:   Mon Oct 8 16:31:04 2018 +1100
++   KVM: PPC: Book3S HV: Nested guest entry via hypercall
++
++This API works primarily using a single hcall h_enter_nested(). This
++call made by the L1 to tell the L0 to start an L2 vCPU with the given
++state. The L0 then starts this L2 and runs until an L2 exit condition
++is reached. Once the L2 exits, the state of the L2 is given back to
++the L1 by the L0. The full L2 vCPU state is always transferred from
++and to L1 when the L2 is run. The L0 doesn't keep any state on the L2
++vCPU (except in the short sequence in the L0 on L1 -> L2 entry and L2
++-> L1 exit).
++
++The only state kept by the L0 is the partition table. The L1 registers
++it's partition table using the h_set_partition_table() hcall. All
++other state held by the L0 about the L2s is cached state (such as
++shadow page tables).
++
++The L1 may run any L2 or vCPU without first informing the L0. It
++simply starts the vCPU using h_enter_nested(). The creation of L2s and
++vCPUs is done implicitly whenever h_enter_nested() is called.
++
++In this document, we call this existing API the v1 API.
++
++New PAPR API
++===============
++
++The new PAPR API changes from the v1 API such that the creating L2 and
++associated vCPUs is explicit. In this document, we call this the v2
++API.
++
++h_enter_nested() is replaced with H_GUEST_VCPU_RUN().  Before this can
++be called the L1 must explicitly create the L2 using h_guest_create()
++and any associated vCPUs() created with h_guest_create_vCPU(). Getting
++and setting vCPU state can also be performed using h_guest_{g|s}et
++hcall.
++
++The basic execution flow is for an L1 to create an L2, run it, and
++delete it is:
++
++- L1 and L0 negotiate capabilities with H_GUEST_{G,S}ET_CAPABILITIES()
++  (normally at L1 boot time).
++
++- L1 requests the L0 create an L2 with H_GUEST_CREATE() and receives a token
++
++- L1 requests the L0 create an L2 vCPU with H_GUEST_CREATE_VCPU()
++
++- L1 and L0 communicate the vCPU state using the H_GUEST_{G,S}ET() hcall
++
++- L1 requests the L0 runs the vCPU running H_GUEST_VCPU_RUN() hcall
++
++- L1 deletes L2 with H_GUEST_DELETE()
++
++More details of the individual hcalls follows:
++
++HCALL Details
++=============
++
++This documentation is provided to give an overall understating of the
++API. It doesn't aim to provide all the details required to implement
++an L1 or L0. Latest version of PAPR can be referred to for more details.
++
++All these HCALLs are made by the L1 to the L0.
++
++H_GUEST_GET_CAPABILITIES()
++--------------------------
++
++This is called to get the capabilities of the L0 nested
++hypervisor. This includes capabilities such the CPU versions (eg
++POWER9, POWER10) that are supported as L2s::
++
++  H_GUEST_GET_CAPABILITIES(uint64 flags)
++
++  Parameters:
++    Input:
++      flags: Reserved
++    Output:
++      R3: Return code
++      R4: Hypervisor Supported Capabilities bitmap 1
++
++H_GUEST_SET_CAPABILITIES()
++--------------------------
++
++This is called to inform the L0 of the capabilities of the L1
++hypervisor. The set of flags passed here are the same as
++H_GUEST_GET_CAPABILITIES()
++
++Typically, GET will be called first and then SET will be called with a
++subset of the flags returned from GET. This process allows the L0 and
++L1 to negotiate an agreed set of capabilities::
++
++  H_GUEST_SET_CAPABILITIES(uint64 flags,
++                           uint64 capabilitiesBitmap1)
++  Parameters:
++    Input:
++      flags: Reserved
++      capabilitiesBitmap1: Only capabilities advertised through
++                           H_GUEST_GET_CAPABILITIES
++    Output:
++      R3: Return code
++      R4: If R3 = H_P2: The number of invalid bitmaps
++      R5: If R3 = H_P2: The index of first invalid bitmap
++
++H_GUEST_CREATE()
++----------------
++
++This is called to create an L2. A unique ID of the L2 created
++(similar to an LPID) is returned, which can be used on subsequent HCALLs to
++identify the L2::
++
++  H_GUEST_CREATE(uint64 flags,
++                 uint64 continueToken);
++  Parameters:
++    Input:
++      flags: Reserved
++      continueToken: Initial call set to -1. Subsequent calls,
++                     after H_Busy or H_LongBusyOrder has been
++                     returned, value that was returned in R4.
++    Output:
++      R3: Return code. Notable:
++        H_Not_Enough_Resources: Unable to create Guest VCPU due to not
++        enough Hypervisor memory. See H_GUEST_CREATE_GET_STATE(flags =
++        takeOwnershipOfVcpuState)
++      R4: If R3 = H_Busy or_H_LongBusyOrder -> continueToken
++
++H_GUEST_CREATE_VCPU()
++---------------------
++
++This is called to create a vCPU associated with an L2. The L2 id
++(returned from H_GUEST_CREATE()) should be passed it. Also passed in
++is a unique (for this L2) vCPUid. This vCPUid is allocated by the
++L1::
++
++  H_GUEST_CREATE_VCPU(uint64 flags,
++                      uint64 guestId,
++                      uint64 vcpuId);
++  Parameters:
++    Input:
++      flags: Reserved
++      guestId: ID obtained from H_GUEST_CREATE
++      vcpuId: ID of the vCPU to be created. This must be within the
++              range of 0 to 2047
++    Output:
++      R3: Return code. Notable:
++        H_Not_Enough_Resources: Unable to create Guest VCPU due to not
++        enough Hypervisor memory. See H_GUEST_CREATE_GET_STATE(flags =
++        takeOwnershipOfVcpuState)
++
++H_GUEST_GET_STATE()
++-------------------
++
++This is called to get state associated with an L2 (Guest-wide or vCPU specific).
++This info is passed via the Guest State Buffer (GSB), a standard format as
++explained later in this doc, necessary details below:
++
++This can set either L2 wide or vcpu specific information. Examples of
++L2 wide is the timebase offset or process scoped page table
++info. Examples of vCPU specific are GPRs or VSRs. A bit in the flags
++parameter specifies if this call is L2 wide or vCPU specific and the
++IDs in the GSB must match this.
++
++The L1 provides a pointer to the GSB as a parameter to this call. Also
++provided is the L2 and vCPU IDs associated with the state to set.
++
++The L1 writes only the IDs and sizes in the GSB.  L0 writes the
++associated values for each ID in the GSB::
++
++  H_GUEST_GET_STATE(uint64 flags,
++                           uint64 guestId,
++                           uint64 vcpuId,
++                           uint64 dataBuffer,
++                           uint64 dataBufferSizeInBytes);
++  Parameters:
++    Input:
++      flags:
++         Bit 0: getGuestWideState: Request state of the Guest instead
++           of an individual VCPU.
++         Bit 1: takeOwnershipOfVcpuState Indicate the L1 is taking
++           over ownership of the VCPU state and that the L0 can free
++           the storage holding the state. The VCPU state will need to
++           be returned to the Hypervisor via H_GUEST_SET_STATE prior
++           to H_GUEST_RUN_VCPU being called for this VCPU. The data
++           returned in the dataBuffer is in a Hypervisor internal
++           format.
++         Bits 2-63: Reserved
++      guestId: ID obtained from H_GUEST_CREATE
++      vcpuId: ID of the vCPU pass to H_GUEST_CREATE_VCPU
++      dataBuffer: A L1 real address of the GSB.
++        If takeOwnershipOfVcpuState, size must be at least the size
++        returned by ID=0x0001
++      dataBufferSizeInBytes: Size of dataBuffer
++    Output:
++      R3: Return code
++      R4: If R3 = H_Invalid_Element_Id: The array index of the bad
++            element ID.
++          If R3 = H_Invalid_Element_Size: The array index of the bad
++             element size.
++          If R3 = H_Invalid_Element_Value: The array index of the bad
++             element value.
++
++H_GUEST_SET_STATE()
++-------------------
++
++This is called to set L2 wide or vCPU specific L2 state. This info is
++passed via the Guest State Buffer (GSB), necessary details below:
++
++This can set either L2 wide or vcpu specific information. Examples of
++L2 wide is the timebase offset or process scoped page table
++info. Examples of vCPU specific are GPRs or VSRs. A bit in the flags
++parameter specifies if this call is L2 wide or vCPU specific and the
++IDs in the GSB must match this.
++
++The L1 provides a pointer to the GSB as a parameter to this call. Also
++provided is the L2 and vCPU IDs associated with the state to set.
++
++The L1 writes all values in the GSB and the L0 only reads the GSB for
++this call::
++
++  H_GUEST_SET_STATE(uint64 flags,
++                    uint64 guestId,
++                    uint64 vcpuId,
++                    uint64 dataBuffer,
++                    uint64 dataBufferSizeInBytes);
++  Parameters:
++    Input:
++      flags:
++         Bit 0: getGuestWideState: Request state of the Guest instead
++           of an individual VCPU.
++         Bit 1: returnOwnershipOfVcpuState Return Guest VCPU state. See
++           GET_STATE takeOwnershipOfVcpuState
++         Bits 2-63: Reserved
++      guestId: ID obtained from H_GUEST_CREATE
++      vcpuId: ID of the vCPU pass to H_GUEST_CREATE_VCPU
++      dataBuffer: A L1 real address of the GSB.
++        If takeOwnershipOfVcpuState, size must be at least the size
++        returned by ID=0x0001
++      dataBufferSizeInBytes: Size of dataBuffer
++    Output:
++      R3: Return code
++      R4: If R3 = H_Invalid_Element_Id: The array index of the bad
++            element ID.
++          If R3 = H_Invalid_Element_Size: The array index of the bad
++             element size.
++          If R3 = H_Invalid_Element_Value: The array index of the bad
++             element value.
++
++H_GUEST_RUN_VCPU()
++------------------
++
++This is called to run an L2 vCPU. The L2 and vCPU IDs are passed in as
++parameters. The vCPU run with the state set previously using
++H_GUEST_SET_STATE(). When the L2 exits, the L1 will resume from this
++hcall.
++
++This hcall also has associated input and output GSBs. Unlike
++H_GUEST_{S,G}ET_STATE(), these GSB pointers are not passed in as
++parameters to the hcall (This was done in the interest of
++performance). The locations of these GSBs must be preregistered using
++the H_GUEST_SET_STATE() call with ID 0x0c00 and 0x0c01 (see table
++below).
++
++The input GSB may contain only VCPU specific elements to be set. This
++GSB may also contain zero elements (ie 0 in the first 4 bytes of the
++GSB) if nothing needs to be set.
++
++On exit from the hcall, the output buffer is filled with elements
++determined by the L0. The reason for the exit is contained in GPR4 (ie
++NIP is put in GPR4).  The elements returned depend on the exit
++type. For example, if the exit reason is the L2 doing a hcall (GPR4 =
++0xc00), then GPR3-12 are provided in the output GSB as this is the
++state likely needed to service the hcall. If additional state is
++needed, H_GUEST_GET_STATE() may be called by the L1.
++
++To synthesize interrupts in the L2, when calling H_GUEST_RUN_VCPU()
++the L1 may set a flag (as a hcall parameter) and the L0 will
++synthesize the interrupt in the L2. Alternatively, the L1 may
++synthesize the interrupt itself using H_GUEST_SET_STATE() or the
++H_GUEST_RUN_VCPU() input GSB to set the state appropriately::
++
++  H_GUEST_RUN_VCPU(uint64 flags,
++                   uint64 guestId,
++                   uint64 vcpuId,
++                   uint64 dataBuffer,
++                   uint64 dataBufferSizeInBytes);
++  Parameters:
++    Input:
++      flags:
++         Bit 0: generateExternalInterrupt: Generate an external interrupt
++         Bit 1: generatePrivilegedDoorbell: Generate a Privileged Doorbell
++         Bit 2: sendToSystemReset”: Generate a System Reset Interrupt
++         Bits 3-63: Reserved
++      guestId: ID obtained from H_GUEST_CREATE
++      vcpuId: ID of the vCPU pass to H_GUEST_CREATE_VCPU
++    Output:
++      R3: Return code
++      R4: If R3 = H_Success: The reason L1 VCPU exited (ie. NIA)
++            0x000: The VCPU stopped running for an unspecified reason. An
++              example of this is the Hypervisor stopping a VCPU running
++              due to an outstanding interrupt for the Host Partition.
++            0x980: HDEC
++            0xC00: HCALL
++            0xE00: HDSI
++            0xE20: HISI
++            0xE40: HEA
++            0xF80: HV Fac Unavail
++          If R3 = H_Invalid_Element_Id, H_Invalid_Element_Size, or
++            H_Invalid_Element_Value: R4 is offset of the invalid element
++            in the input buffer.
++
++H_GUEST_DELETE()
++----------------
++
++This is called to delete an L2. All associated vCPUs are also
++deleted. No specific vCPU delete call is provided.
++
++A flag may be provided to delete all guests. This is used to reset the
++L0 in the case of kdump/kexec::
++
++  H_GUEST_DELETE(uint64 flags,
++                 uint64 guestId)
++  Parameters:
++    Input:
++      flags:
++         Bit 0: deleteAllGuests: deletes all guests
++         Bits 1-63: Reserved
++      guestId: ID obtained from H_GUEST_CREATE
++    Output:
++      R3: Return code
++
++Guest State Buffer
++==================
++
++The Guest State Buffer (GSB) is the main method of communicating state
++about the L2 between the L1 and L0 via H_GUEST_{G,S}ET() and
++H_GUEST_VCPU_RUN() calls.
++
++State may be associated with a whole L2 (eg timebase offset) or a
++specific L2 vCPU (eg. GPR state). Only L2 VCPU state maybe be set by
++H_GUEST_VCPU_RUN(). 
++
++All data in the GSB is big endian (as is standard in PAPR)
++
++The Guest state buffer has a header which gives the number of
++elements, followed by the GSB elements themselves.
++
++GSB header:
++
+++----------+----------+-------------------------------------------+
++|  Offset  |  Size    |  Purpose                                  |
++|  Bytes   |  Bytes   |                                           |
+++==========+==========+===========================================+
++|    0     |    4     |  Number of elements                       |
+++----------+----------+-------------------------------------------+
++|    4     |          |  Guest state buffer elements              |
+++----------+----------+-------------------------------------------+
++
++GSB element:
++
+++----------+----------+-------------------------------------------+
++|  Offset  |  Size    |  Purpose                                  |
++|  Bytes   |  Bytes   |                                           |
+++==========+==========+===========================================+
++|    0     |    2     |  ID                                       |
+++----------+----------+-------------------------------------------+
++|    2     |    2     |  Size of Value                            |
+++----------+----------+-------------------------------------------+
++|    4     | As above |  Value                                    |
+++----------+----------+-------------------------------------------+
++
++The ID in the GSB element specifies what is to be set. This includes
++archtected state like GPRs, VSRs, SPRs, plus also some meta data about
++the partition like the timebase offset and partition scoped page
++table information.
++
+++--------+-------+----+--------+----------------------------------+
++|   ID   | Size  | RW | Thread | Details                          |
++|        | Bytes |    | Guest  |                                  |
++|        |       |    | Scope  |                                  |
+++========+=======+====+========+==================================+
++| 0x0000 |       | RW |   TG   | NOP element                      |
+++--------+-------+----+--------+----------------------------------+
++| 0x0001 | 0x08  | R  |   G    | Size of L0 vCPU state. See:      |
++|        |       |    |        | H_GUEST_GET_STATE:               |
++|        |       |    |        | flags = takeOwnershipOfVcpuState |
+++--------+-------+----+--------+----------------------------------+
++| 0x0002 | 0x08  | R  |   G    | Size Run vCPU out buffer         |
+++--------+-------+----+--------+----------------------------------+
++| 0x0003 | 0x04  | RW |   G    | Logical PVR                      |
+++--------+-------+----+--------+----------------------------------+
++| 0x0004 | 0x08  | RW |   G    | TB Offset (L1 relative)          |
+++--------+-------+----+--------+----------------------------------+
++| 0x0005 | 0x18  | RW |   G    |Partition scoped page tbl info:   |
++|        |       |    |        |                                  |
++|        |       |    |        |- 0x00 Addr part scope table      |
++|        |       |    |        |- 0x08 Num addr bits              |
++|        |       |    |        |- 0x10 Size root dir              |
+++--------+-------+----+--------+----------------------------------+
++| 0x0006 | 0x10  | RW |   G    |Process Table Information:        |
++|        |       |    |        |                                  |
++|        |       |    |        |- 0x0 Addr proc scope table       |
++|        |       |    |        |- 0x8 Table size.                 |
+++--------+-------+----+--------+----------------------------------+
++| 0x0007-|       |    |        | Reserved                         |
++| 0x0BFF |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x0C00 | 0x10  | RW |   T    |Run vCPU Input Buffer:            |
++|        |       |    |        |                                  |
++|        |       |    |        |- 0x0 Addr of buffer              |
++|        |       |    |        |- 0x8 Buffer Size.                |
+++--------+-------+----+--------+----------------------------------+
++| 0x0C01 | 0x10  | RW |   T    |Run vCPU Output Buffer:           |
++|        |       |    |        |                                  |
++|        |       |    |        |- 0x0 Addr of buffer              |
++|        |       |    |        |- 0x8 Buffer Size.                |
+++--------+-------+----+--------+----------------------------------+
++| 0x0C02 | 0x08  | RW |   T    | vCPU VPA Address                 |
+++--------+-------+----+--------+----------------------------------+
++| 0x0C03-|       |    |        | Reserved                         |
++| 0x0FFF |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x1000-| 0x08  | RW |   T    | GPR 0-31                         |
++| 0x101F |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x1020 |  0x08 | T  |   T    | HDEC expiry TB                   |
+++--------+-------+----+--------+----------------------------------+
++| 0x1021 | 0x08  | RW |   T    | NIA                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x1022 | 0x08  | RW |   T    | MSR                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x1023 | 0x08  | RW |   T    | LR                               |
+++--------+-------+----+--------+----------------------------------+
++| 0x1024 | 0x08  | RW |   T    | XER                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x1025 | 0x08  | RW |   T    | CTR                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x1026 | 0x08  | RW |   T    | CFAR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1027 | 0x08  | RW |   T    | SRR0                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1028 | 0x08  | RW |   T    | SRR1                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1029 | 0x08  | RW |   T    | DAR                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x102A | 0x08  | RW |   T    | DEC expiry TB                    |
+++--------+-------+----+--------+----------------------------------+
++| 0x102B | 0x08  | RW |   T    | VTB                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x102C | 0x08  | RW |   T    | LPCR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x102D | 0x08  | RW |   T    | HFSCR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x102E | 0x08  | RW |   T    | FSCR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x102F | 0x08  | RW |   T    | FPSCR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1030 | 0x08  | RW |   T    | DAWR0                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1031 | 0x08  | RW |   T    | DAWR1                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1032 | 0x08  | RW |   T    | CIABR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1033 | 0x08  | RW |   T    | PURR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1034 | 0x08  | RW |   T    | SPURR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1035 | 0x08  | RW |   T    | IC                               |
+++--------+-------+----+--------+----------------------------------+
++| 0x1036-| 0x08  | RW |   T    | SPRG 0-3                         |
++| 0x1039 |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x103A | 0x08  | W  |   T    | PPR                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x103B | 0x08  | RW |   T    | MMCR 0-3                         |
++| 0x103E |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x103F | 0x08  | RW |   T    | MMCRA                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1040 | 0x08  | RW |   T    | SIER                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1041 | 0x08  | RW |   T    | SIER 2                           |
+++--------+-------+----+--------+----------------------------------+
++| 0x1042 | 0x08  | RW |   T    | SIER 3                           |
+++--------+-------+----+--------+----------------------------------+
++| 0x1043 | 0x08  | RW |   T    | BESCR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1044 | 0x08  | RW |   T    | EBBHR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1045 | 0x08  | RW |   T    | EBBRR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x1046 | 0x08  | RW |   T    | AMR                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x1047 | 0x08  | RW |   T    | IAMR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1048 | 0x08  | RW |   T    | AMOR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1049 | 0x08  | RW |   T    | UAMOR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x104A | 0x08  | RW |   T    | SDAR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x104B | 0x08  | RW |   T    | SIAR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x104C | 0x08  | RW |   T    | DSCR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x104D | 0x08  | RW |   T    | TAR                              |
+++--------+-------+----+--------+----------------------------------+
++| 0x104E | 0x08  | RW |   T    | DEXCR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x104F | 0x08  | RW |   T    | HDEXCR                           |
+++--------+-------+----+--------+----------------------------------+
++| 0x1050 | 0x08  | RW |   T    | HASHKEYR                         |
+++--------+-------+----+--------+----------------------------------+
++| 0x1051 | 0x08  | RW |   T    | HASHPKEYR                        |
+++--------+-------+----+--------+----------------------------------+
++| 0x1052 | 0x08  | RW |   T    | CTRL                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x1053-|       |    |        | Reserved                         |
++| 0x1FFF |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x2000 | 0x04  | RW |   T    | CR                               |
+++--------+-------+----+--------+----------------------------------+
++| 0x2001 | 0x04  | RW |   T    | PIDR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x2002 | 0x04  | RW |   T    | DSISR                            |
+++--------+-------+----+--------+----------------------------------+
++| 0x2003 | 0x04  | RW |   T    | VSCR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x2004 | 0x04  | RW |   T    | VRSAVE                           |
+++--------+-------+----+--------+----------------------------------+
++| 0x2005 | 0x04  | RW |   T    | DAWRX0                           |
+++--------+-------+----+--------+----------------------------------+
++| 0x2006 | 0x04  | RW |   T    | DAWRX1                           |
+++--------+-------+----+--------+----------------------------------+
++| 0x2007-| 0x04  | RW |   T    | PMC 1-6                          |
++| 0x200c |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x200D | 0x04  | RW |   T    | WORT                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x200E | 0x04  | RW |   T    | PSPB                             |
+++--------+-------+----+--------+----------------------------------+
++| 0x200F-|       |    |        | Reserved                         |
++| 0x2FFF |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x3000-| 0x10  | RW |   T    | VSR 0-63                         |
++| 0x303F |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0x3040-|       |    |        | Reserved                         |
++| 0xEFFF |       |    |        |                                  |
+++--------+-------+----+--------+----------------------------------+
++| 0xF000 | 0x08  | R  |   T    | HDAR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0xF001 | 0x04  | R  |   T    | HDSISR                           |
+++--------+-------+----+--------+----------------------------------+
++| 0xF002 | 0x04  | R  |   T    | HEIR                             |
+++--------+-------+----+--------+----------------------------------+
++| 0xF003 | 0x08  | R  |   T    | ASDR                             |
+++--------+-------+----+--------+----------------------------------+
 +
 +
-+#define VCORE_WRAPPER_SET(reg, size)					\
-+static inline void kvmppc_set_##reg ##_hv(struct kvm_vcpu *vcpu, u##size val)	\
-+{									\
-+	vcpu->arch.vcore->reg = val;					\
-+}
++Miscellaneous info
++==================
 +
-+#define VCORE_WRAPPER_GET(reg, size)					\
-+static inline u##size kvmppc_get_##reg ##_hv(struct kvm_vcpu *vcpu)	\
-+{									\
-+	return vcpu->arch.vcore->reg;					\
-+}
++State not in ptregs/hvregs
++--------------------------
 +
-+#define VCORE_WRAPPER(reg, size)					\
-+	VCORE_WRAPPER_SET(reg, size)					\
-+	VCORE_WRAPPER_GET(reg, size)					\
++In the v1 API, some state is not in the ptregs/hvstate. This includes
++the vector register and some SPRs. For the L1 to set this state for
++the L2, the L1 loads up these hardware registers before the
++h_enter_nested() call and the L0 ensures they end up as the L2 state
++(by not touching them).
++
++The v2 API removes this and explicitly sets this state via the GSB.
++
++L1 Implementation details: Caching state
++----------------------------------------
++
++In the v1 API, all state is sent from the L1 to the L0 and vice versa
++on every h_enter_nested() hcall. If the L0 is not currently running
++any L2s, the L0 has no state information about them. The only
++exception to this is the location of the partition table, registered
++via h_set_partition_table().
++
++The v2 API changes this so that the L0 retains the L2 state even when
++it's vCPUs are no longer running. This means that the L1 only needs to
++communicate with the L0 about L2 state when it needs to modify the L2
++state, or when it's value is out of date. This provides an opportunity
++for performance optimisation.
++
++When a vCPU exits from a H_GUEST_RUN_VCPU() call, the L1 internally
++marks all L2 state as invalid. This means that if the L1 wants to know
++the L2 state (say via a kvm_get_one_reg() call), it needs call
++H_GUEST_GET_STATE() to get that state. Once it's read, it's marked as
++valid in L1 until the L2 is run again.
++
++Also, when an L1 modifies L2 vcpu state, it doesn't need to write it
++to the L0 until that L2 vcpu runs again. Hence when the L1 updates
++state (say via a kvm_set_one_reg() call), it writes to an internal L1
++copy and only flushes this copy to the L0 when the L2 runs again via
++the H_GUEST_VCPU_RUN() input buffer.
++
++This lazy updating of state by the L1 avoids unnecessary
++H_GUEST_{G|S}ET_STATE() calls.
 +
 +
-+VCORE_WRAPPER(vtb, 64)
-+VCORE_WRAPPER(tb_offset, 64)
-+VCORE_WRAPPER(lpcr, 64)
-+
-+static inline u64 kvmppc_get_dec_expires(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.dec_expires;
-+}
-+
-+static inline void kvmppc_set_dec_expires(struct kvm_vcpu *vcpu, u64 val)
-+{
-+	vcpu->arch.dec_expires = val;
-+}
-+
- /* Expiry time of vcpu DEC relative to host TB */
- static inline u64 kvmppc_dec_expires_host_tb(struct kvm_vcpu *vcpu)
- {
--	return vcpu->arch.dec_expires - vcpu->arch.vcore->tb_offset;
-+	return kvmppc_get_dec_expires(vcpu) - kvmppc_get_tb_offset_hv(vcpu);
- }
- 
- static inline bool is_kvmppc_resume_guest(int r)
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 79a9c0bb8bba..fbac353ac46b 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -936,7 +936,7 @@ static inline ulong kvmppc_get_##reg(struct kvm_vcpu *vcpu)		\
- #define SPRNG_WRAPPER_SET(reg, bookehv_spr)				\
- static inline void kvmppc_set_##reg(struct kvm_vcpu *vcpu, ulong val)	\
- {									\
--	mtspr(bookehv_spr, val);						\
-+	mtspr(bookehv_spr, val);					\
- }									\
- 
- #define SHARED_WRAPPER_GET(reg, size)					\
-@@ -957,10 +957,32 @@ static inline void kvmppc_set_##reg(struct kvm_vcpu *vcpu, u##size val)	\
- 	       vcpu->arch.shared->reg = cpu_to_le##size(val);		\
- }									\
- 
-+#define SHARED_CACHE_WRAPPER_GET(reg, size)				\
-+static inline u##size kvmppc_get_##reg(struct kvm_vcpu *vcpu)		\
-+{									\
-+	if (kvmppc_shared_big_endian(vcpu))				\
-+	       return be##size##_to_cpu(vcpu->arch.shared->reg);	\
-+	else								\
-+	       return le##size##_to_cpu(vcpu->arch.shared->reg);	\
-+}									\
-+
-+#define SHARED_CACHE_WRAPPER_SET(reg, size)				\
-+static inline void kvmppc_set_##reg(struct kvm_vcpu *vcpu, u##size val)	\
-+{									\
-+	if (kvmppc_shared_big_endian(vcpu))				\
-+	       vcpu->arch.shared->reg = cpu_to_be##size(val);		\
-+	else								\
-+	       vcpu->arch.shared->reg = cpu_to_le##size(val);		\
-+}									\
-+
- #define SHARED_WRAPPER(reg, size)					\
- 	SHARED_WRAPPER_GET(reg, size)					\
- 	SHARED_WRAPPER_SET(reg, size)					\
- 
-+#define SHARED_CACHE_WRAPPER(reg, size)					\
-+	SHARED_CACHE_WRAPPER_GET(reg, size)				\
-+	SHARED_CACHE_WRAPPER_SET(reg, size)				\
-+
- #define SPRNG_WRAPPER(reg, bookehv_spr)					\
- 	SPRNG_WRAPPER_GET(reg, bookehv_spr)				\
- 	SPRNG_WRAPPER_SET(reg, bookehv_spr)				\
-@@ -970,23 +992,29 @@ static inline void kvmppc_set_##reg(struct kvm_vcpu *vcpu, u##size val)	\
- #define SHARED_SPRNG_WRAPPER(reg, size, bookehv_spr)			\
- 	SPRNG_WRAPPER(reg, bookehv_spr)					\
- 
-+#define SHARED_SPRNG_CACHE_WRAPPER(reg, size, bookehv_spr)		\
-+	SPRNG_WRAPPER(reg, bookehv_spr)					\
-+
- #else
- 
- #define SHARED_SPRNG_WRAPPER(reg, size, bookehv_spr)			\
- 	SHARED_WRAPPER(reg, size)					\
- 
-+#define SHARED_SPRNG_CACHE_WRAPPER(reg, size, bookehv_spr)		\
-+	SHARED_CACHE_WRAPPER(reg, size)					\
-+
- #endif
- 
- SHARED_WRAPPER(critical, 64)
--SHARED_SPRNG_WRAPPER(sprg0, 64, SPRN_GSPRG0)
--SHARED_SPRNG_WRAPPER(sprg1, 64, SPRN_GSPRG1)
--SHARED_SPRNG_WRAPPER(sprg2, 64, SPRN_GSPRG2)
--SHARED_SPRNG_WRAPPER(sprg3, 64, SPRN_GSPRG3)
--SHARED_SPRNG_WRAPPER(srr0, 64, SPRN_GSRR0)
--SHARED_SPRNG_WRAPPER(srr1, 64, SPRN_GSRR1)
--SHARED_SPRNG_WRAPPER(dar, 64, SPRN_GDEAR)
-+SHARED_SPRNG_CACHE_WRAPPER(sprg0, 64, SPRN_GSPRG0)
-+SHARED_SPRNG_CACHE_WRAPPER(sprg1, 64, SPRN_GSPRG1)
-+SHARED_SPRNG_CACHE_WRAPPER(sprg2, 64, SPRN_GSPRG2)
-+SHARED_SPRNG_CACHE_WRAPPER(sprg3, 64, SPRN_GSPRG3)
-+SHARED_SPRNG_CACHE_WRAPPER(srr0, 64, SPRN_GSRR0)
-+SHARED_SPRNG_CACHE_WRAPPER(srr1, 64, SPRN_GSRR1)
-+SHARED_SPRNG_CACHE_WRAPPER(dar, 64, SPRN_GDEAR)
- SHARED_SPRNG_WRAPPER(esr, 64, SPRN_GESR)
--SHARED_WRAPPER_GET(msr, 64)
-+SHARED_CACHE_WRAPPER_GET(msr, 64)
- static inline void kvmppc_set_msr_fast(struct kvm_vcpu *vcpu, u64 val)
- {
- 	if (kvmppc_shared_big_endian(vcpu))
-@@ -994,7 +1022,7 @@ static inline void kvmppc_set_msr_fast(struct kvm_vcpu *vcpu, u64 val)
- 	else
- 	       vcpu->arch.shared->msr = cpu_to_le64(val);
- }
--SHARED_WRAPPER(dsisr, 32)
-+SHARED_CACHE_WRAPPER(dsisr, 32)
- SHARED_WRAPPER(int_pending, 32)
- SHARED_WRAPPER(sprg4, 64)
- SHARED_WRAPPER(sprg5, 64)
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 686d8d9eda3e..2fe31b518886 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -565,7 +565,7 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->msr = kvmppc_get_msr(vcpu);
- 	regs->srr0 = kvmppc_get_srr0(vcpu);
- 	regs->srr1 = kvmppc_get_srr1(vcpu);
--	regs->pid = vcpu->arch.pid;
-+	regs->pid = kvmppc_get_pid(vcpu);
- 	regs->sprg0 = kvmppc_get_sprg0(vcpu);
- 	regs->sprg1 = kvmppc_get_sprg1(vcpu);
- 	regs->sprg2 = kvmppc_get_sprg2(vcpu);
-@@ -683,19 +683,19 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
- 			*val = get_reg_val(id, vcpu->arch.fscr);
- 			break;
- 		case KVM_REG_PPC_TAR:
--			*val = get_reg_val(id, vcpu->arch.tar);
-+			*val = get_reg_val(id, kvmppc_get_tar(vcpu));
- 			break;
- 		case KVM_REG_PPC_EBBHR:
--			*val = get_reg_val(id, vcpu->arch.ebbhr);
-+			*val = get_reg_val(id, kvmppc_get_ebbhr(vcpu));
- 			break;
- 		case KVM_REG_PPC_EBBRR:
--			*val = get_reg_val(id, vcpu->arch.ebbrr);
-+			*val = get_reg_val(id, kvmppc_get_ebbrr(vcpu));
- 			break;
- 		case KVM_REG_PPC_BESCR:
--			*val = get_reg_val(id, vcpu->arch.bescr);
-+			*val = get_reg_val(id, kvmppc_get_bescr(vcpu));
- 			break;
- 		case KVM_REG_PPC_IC:
--			*val = get_reg_val(id, vcpu->arch.ic);
-+			*val = get_reg_val(id, kvmppc_get_ic(vcpu));
- 			break;
- 		default:
- 			r = -EINVAL;
-@@ -768,19 +768,19 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
- 			vcpu->arch.fscr = set_reg_val(id, *val);
- 			break;
- 		case KVM_REG_PPC_TAR:
--			vcpu->arch.tar = set_reg_val(id, *val);
-+			kvmppc_set_tar(vcpu, set_reg_val(id, *val));
- 			break;
- 		case KVM_REG_PPC_EBBHR:
--			vcpu->arch.ebbhr = set_reg_val(id, *val);
-+			kvmppc_set_ebbhr(vcpu, set_reg_val(id, *val));
- 			break;
- 		case KVM_REG_PPC_EBBRR:
--			vcpu->arch.ebbrr = set_reg_val(id, *val);
-+			kvmppc_set_ebbrr(vcpu, set_reg_val(id, *val));
- 			break;
- 		case KVM_REG_PPC_BESCR:
--			vcpu->arch.bescr = set_reg_val(id, *val);
-+			kvmppc_set_bescr(vcpu, set_reg_val(id, *val));
- 			break;
- 		case KVM_REG_PPC_IC:
--			vcpu->arch.ic = set_reg_val(id, *val);
-+			kvmppc_set_ic(vcpu, set_reg_val(id, *val));
- 			break;
- 		default:
- 			r = -EINVAL;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 7f765d5ad436..738f2ecbe9b9 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -347,7 +347,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 	unsigned long v, orig_v, gr;
- 	__be64 *hptep;
- 	long int index;
--	int virtmode = vcpu->arch.shregs.msr & (data ? MSR_DR : MSR_IR);
-+	int virtmode = kvmppc_get_msr(vcpu) & (data ? MSR_DR : MSR_IR);
- 
- 	if (kvm_is_radix(vcpu->kvm))
- 		return kvmppc_mmu_radix_xlate(vcpu, eaddr, gpte, data, iswrite);
-@@ -385,7 +385,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 
- 	/* Get PP bits and key for permission check */
- 	pp = gr & (HPTE_R_PP0 | HPTE_R_PP);
--	key = (vcpu->arch.shregs.msr & MSR_PR) ? SLB_VSID_KP : SLB_VSID_KS;
-+	key = (kvmppc_get_msr(vcpu) & MSR_PR) ? SLB_VSID_KP : SLB_VSID_KS;
- 	key &= slb_v;
- 
- 	/* Calculate permissions */
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 461307b89c3a..e1aa078580a1 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -15,6 +15,7 @@
- 
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
-+#include "book3s_hv.h"
- #include <asm/page.h>
- #include <asm/mmu.h>
- #include <asm/pgalloc.h>
-@@ -96,7 +97,7 @@ static long kvmhv_copy_tofrom_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
- 					  void *to, void *from, unsigned long n)
- {
- 	int lpid = vcpu->kvm->arch.lpid;
--	int pid = vcpu->arch.pid;
-+	int pid = kvmppc_get_pid(vcpu);
- 
- 	/* This would cause a data segment intr so don't allow the access */
- 	if (eaddr & (0x3FFUL << 52))
-@@ -270,7 +271,7 @@ int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 	/* Work out effective PID */
- 	switch (eaddr >> 62) {
- 	case 0:
--		pid = vcpu->arch.pid;
-+		pid = kvmppc_get_pid(vcpu);
- 		break;
- 	case 3:
- 		pid = 0;
-@@ -294,9 +295,9 @@ int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 	} else {
- 		if (!(pte & _PAGE_PRIVILEGED)) {
- 			/* Check AMR/IAMR to see if strict mode is in force */
--			if (vcpu->arch.amr & (1ul << 62))
-+			if (kvmppc_get_amr_hv(vcpu) & (1ul << 62))
- 				gpte->may_read = 0;
--			if (vcpu->arch.amr & (1ul << 63))
-+			if (kvmppc_get_amr_hv(vcpu) & (1ul << 63))
- 				gpte->may_write = 0;
- 			if (vcpu->arch.iamr & (1ul << 62))
- 				gpte->may_execute = 0;
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 93b695b289e9..4ba048f272f2 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -786,12 +786,12 @@ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 	idx = (ioba >> stt->page_shift) - stt->offset;
- 	page = stt->pages[idx / TCES_PER_PAGE];
- 	if (!page) {
--		vcpu->arch.regs.gpr[4] = 0;
-+		kvmppc_set_gpr(vcpu, 4, 0);
- 		return H_SUCCESS;
- 	}
- 	tbl = (u64 *)page_address(page);
- 
--	vcpu->arch.regs.gpr[4] = tbl[idx % TCES_PER_PAGE];
-+	kvmppc_set_gpr(vcpu, 4, tbl[idx % TCES_PER_PAGE]);
- 
- 	return H_SUCCESS;
- }
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 130bafdb1430..521d84621422 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -383,11 +383,6 @@ static void kvmppc_core_vcpu_put_hv(struct kvm_vcpu *vcpu)
- 	spin_unlock_irqrestore(&vcpu->arch.tbacct_lock, flags);
- }
- 
--static void kvmppc_set_pvr_hv(struct kvm_vcpu *vcpu, u32 pvr)
--{
--	vcpu->arch.pvr = pvr;
--}
--
- /* Dummy value used in computing PCR value below */
- #define PCR_ARCH_31    (PCR_ARCH_300 << 1)
- 
-@@ -794,7 +789,7 @@ static void kvmppc_update_vpa_dispatch(struct kvm_vcpu *vcpu,
- 
- 	vpa->enqueue_dispatch_tb = cpu_to_be64(be64_to_cpu(vpa->enqueue_dispatch_tb) + stolen);
- 
--	__kvmppc_create_dtl_entry(vcpu, vpa, vc->pcpu, now + vc->tb_offset, stolen);
-+	__kvmppc_create_dtl_entry(vcpu, vpa, vc->pcpu, now + kvmppc_get_tb_offset_hv(vcpu), stolen);
- 
- 	vcpu->arch.vpa.dirty = true;
- }
-@@ -868,7 +863,7 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
- 		/* Guests can't breakpoint the hypervisor */
- 		if ((value1 & CIABR_PRIV) == CIABR_PRIV_HYPER)
- 			return H_P3;
--		vcpu->arch.ciabr  = value1;
-+		kvmppc_set_ciabr_hv(vcpu, value1);
- 		return H_SUCCESS;
- 	case H_SET_MODE_RESOURCE_SET_DAWR0:
- 		if (!kvmppc_power8_compatible(vcpu))
-@@ -879,8 +874,8 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
- 			return H_UNSUPPORTED_FLAG_START;
- 		if (value2 & DABRX_HYP)
- 			return H_P4;
--		vcpu->arch.dawr0  = value1;
--		vcpu->arch.dawrx0 = value2;
-+		kvmppc_set_dawr0_hv(vcpu, value1);
-+		kvmppc_set_dawrx0_hv(vcpu, value2);
- 		return H_SUCCESS;
- 	case H_SET_MODE_RESOURCE_SET_DAWR1:
- 		if (!kvmppc_power8_compatible(vcpu))
-@@ -895,8 +890,8 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
- 			return H_UNSUPPORTED_FLAG_START;
- 		if (value2 & DABRX_HYP)
- 			return H_P4;
--		vcpu->arch.dawr1  = value1;
--		vcpu->arch.dawrx1 = value2;
-+		kvmppc_set_dawr1_hv(vcpu, value1);
-+		kvmppc_set_dawrx1_hv(vcpu, value2);
- 		return H_SUCCESS;
- 	case H_SET_MODE_RESOURCE_ADDR_TRANS_MODE:
- 		/*
-@@ -1268,8 +1263,11 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 		break;
- #endif
- 	case H_RANDOM:
--		if (!arch_get_random_seed_longs(&vcpu->arch.regs.gpr[4], 1))
-+		unsigned long rand;
-+
-+		if (!arch_get_random_seed_longs(&rand, 1))
- 			ret = H_HARDWARE;
-+		kvmppc_set_gpr(vcpu, 4, rand);
- 		break;
- 	case H_RPT_INVALIDATE:
- 		ret = kvmppc_h_rpt_invalidate(vcpu, kvmppc_get_gpr(vcpu, 4),
-@@ -1370,7 +1368,7 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
-  */
- static void kvmppc_cede(struct kvm_vcpu *vcpu)
- {
--	vcpu->arch.shregs.msr |= MSR_EE;
-+	kvmppc_set_msr_fast(vcpu, kvmppc_get_msr(vcpu) | MSR_EE);
- 	vcpu->arch.ceded = 1;
- 	smp_mb();
- 	if (vcpu->arch.prodded) {
-@@ -1544,7 +1542,7 @@ static int kvmppc_pmu_unavailable(struct kvm_vcpu *vcpu)
- 	if (!(vcpu->arch.hfscr_permitted & HFSCR_PM))
- 		return EMULATE_FAIL;
- 
--	vcpu->arch.hfscr |= HFSCR_PM;
-+	kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) | HFSCR_PM);
- 
- 	return RESUME_GUEST;
- }
-@@ -1554,7 +1552,7 @@ static int kvmppc_ebb_unavailable(struct kvm_vcpu *vcpu)
- 	if (!(vcpu->arch.hfscr_permitted & HFSCR_EBB))
- 		return EMULATE_FAIL;
- 
--	vcpu->arch.hfscr |= HFSCR_EBB;
-+	kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) | HFSCR_EBB);
- 
- 	return RESUME_GUEST;
- }
-@@ -1564,7 +1562,7 @@ static int kvmppc_tm_unavailable(struct kvm_vcpu *vcpu)
- 	if (!(vcpu->arch.hfscr_permitted & HFSCR_TM))
- 		return EMULATE_FAIL;
- 
--	vcpu->arch.hfscr |= HFSCR_TM;
-+	kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) | HFSCR_TM);
- 
- 	return RESUME_GUEST;
- }
-@@ -1585,7 +1583,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 	 * That can happen due to a bug, or due to a machine check
- 	 * occurring at just the wrong time.
- 	 */
--	if (vcpu->arch.shregs.msr & MSR_HV) {
-+	if (kvmppc_get_msr(vcpu) & MSR_HV) {
- 		printk(KERN_EMERG "KVM trap in HV mode!\n");
- 		printk(KERN_EMERG "trap=0x%x | pc=0x%lx | msr=0x%llx\n",
- 			vcpu->arch.trap, kvmppc_get_pc(vcpu),
-@@ -1636,7 +1634,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 		 * so that it knows that the machine check occurred.
- 		 */
- 		if (!vcpu->kvm->arch.fwnmi_enabled) {
--			ulong flags = (vcpu->arch.shregs.msr & 0x083c0000) |
-+			ulong flags = (kvmppc_get_msr(vcpu) & 0x083c0000) |
- 					(kvmppc_get_msr(vcpu) & SRR1_PREFIXED);
- 			kvmppc_core_queue_machine_check(vcpu, flags);
- 			r = RESUME_GUEST;
-@@ -1666,7 +1664,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 		 * as a result of a hypervisor emulation interrupt
- 		 * (e40) getting turned into a 700 by BML RTAS.
- 		 */
--		flags = (vcpu->arch.shregs.msr & 0x1f0000ull) |
-+		flags = (kvmppc_get_msr(vcpu) & 0x1f0000ull) |
- 			(kvmppc_get_msr(vcpu) & SRR1_PREFIXED);
- 		kvmppc_core_queue_program(vcpu, flags);
- 		r = RESUME_GUEST;
-@@ -1676,7 +1674,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 	{
- 		int i;
- 
--		if (unlikely(vcpu->arch.shregs.msr & MSR_PR)) {
-+		if (unlikely(kvmppc_get_msr(vcpu) & MSR_PR)) {
- 			/*
- 			 * Guest userspace executed sc 1. This can only be
- 			 * reached by the P9 path because the old path
-@@ -1754,7 +1752,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 			break;
- 		}
- 
--		if (!(vcpu->arch.shregs.msr & MSR_DR))
-+		if (!(kvmppc_get_msr(vcpu) & MSR_DR))
- 			vsid = vcpu->kvm->arch.vrma_slb_v;
- 		else
- 			vsid = vcpu->arch.fault_gpa;
-@@ -1778,7 +1776,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 		long err;
- 
- 		vcpu->arch.fault_dar = kvmppc_get_pc(vcpu);
--		vcpu->arch.fault_dsisr = vcpu->arch.shregs.msr &
-+		vcpu->arch.fault_dsisr = kvmppc_get_msr(vcpu) &
- 			DSISR_SRR1_MATCH_64S;
- 		if (kvm_is_radix(vcpu->kvm) || !cpu_has_feature(CPU_FTR_ARCH_300)) {
- 			/*
-@@ -1787,7 +1785,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 			 * hash fault handling below is v3 only (it uses ASDR
- 			 * via fault_gpa).
- 			 */
--			if (vcpu->arch.shregs.msr & HSRR1_HISI_WRITE)
-+			if (kvmppc_get_msr(vcpu) & HSRR1_HISI_WRITE)
- 				vcpu->arch.fault_dsisr |= DSISR_ISSTORE;
- 			r = RESUME_PAGE_FAULT;
- 			break;
-@@ -1801,7 +1799,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 			break;
- 		}
- 
--		if (!(vcpu->arch.shregs.msr & MSR_IR))
-+		if (!(kvmppc_get_msr(vcpu) & MSR_IR))
- 			vsid = vcpu->kvm->arch.vrma_slb_v;
- 		else
- 			vsid = vcpu->arch.fault_gpa;
-@@ -1863,7 +1861,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 	 * Otherwise, we just generate a program interrupt to the guest.
- 	 */
- 	case BOOK3S_INTERRUPT_H_FAC_UNAVAIL: {
--		u64 cause = vcpu->arch.hfscr >> 56;
-+		u64 cause = kvmppc_get_hfscr_hv(vcpu) >> 56;
- 
- 		r = EMULATE_FAIL;
- 		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-@@ -1891,7 +1889,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 		kvmppc_dump_regs(vcpu);
- 		printk(KERN_EMERG "trap=0x%x | pc=0x%lx | msr=0x%llx\n",
- 			vcpu->arch.trap, kvmppc_get_pc(vcpu),
--			vcpu->arch.shregs.msr);
-+			kvmppc_get_msr(vcpu));
- 		run->hw.hardware_exit_reason = vcpu->arch.trap;
- 		r = RESUME_HOST;
- 		break;
-@@ -1915,11 +1913,11 @@ static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
- 	 * That can happen due to a bug, or due to a machine check
- 	 * occurring at just the wrong time.
- 	 */
--	if (vcpu->arch.shregs.msr & MSR_HV) {
-+	if (kvmppc_get_msr(vcpu) & MSR_HV) {
- 		pr_emerg("KVM trap in HV mode while nested!\n");
- 		pr_emerg("trap=0x%x | pc=0x%lx | msr=0x%llx\n",
- 			 vcpu->arch.trap, kvmppc_get_pc(vcpu),
--			 vcpu->arch.shregs.msr);
-+			 kvmppc_get_msr(vcpu));
- 		kvmppc_dump_regs(vcpu);
- 		return RESUME_HOST;
- 	}
-@@ -1976,7 +1974,7 @@ static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
- 		vcpu->arch.fault_dar = kvmppc_get_pc(vcpu);
- 		vcpu->arch.fault_dsisr = kvmppc_get_msr(vcpu) &
- 					 DSISR_SRR1_MATCH_64S;
--		if (vcpu->arch.shregs.msr & HSRR1_HISI_WRITE)
-+		if (kvmppc_get_msr(vcpu) & HSRR1_HISI_WRITE)
- 			vcpu->arch.fault_dsisr |= DSISR_ISSTORE;
- 		srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
- 		r = kvmhv_nested_page_fault(vcpu);
-@@ -2182,7 +2180,7 @@ static void kvmppc_set_lpcr(struct kvm_vcpu *vcpu, u64 new_lpcr,
- 		}
- 	}
- 
--	vc->lpcr = new_lpcr;
-+	kvmppc_set_lpcr_hv(vcpu, new_lpcr);
- 
- 	spin_unlock(&vc->lock);
- }
-@@ -2207,64 +2205,64 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		*val = get_reg_val(id, vcpu->arch.dabrx);
- 		break;
- 	case KVM_REG_PPC_DSCR:
--		*val = get_reg_val(id, vcpu->arch.dscr);
-+		*val = get_reg_val(id, kvmppc_get_dscr_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_PURR:
--		*val = get_reg_val(id, vcpu->arch.purr);
-+		*val = get_reg_val(id, kvmppc_get_purr_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_SPURR:
--		*val = get_reg_val(id, vcpu->arch.spurr);
-+		*val = get_reg_val(id, kvmppc_get_spurr_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_AMR:
--		*val = get_reg_val(id, vcpu->arch.amr);
-+		*val = get_reg_val(id, kvmppc_get_amr_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_UAMOR:
--		*val = get_reg_val(id, vcpu->arch.uamor);
-+		*val = get_reg_val(id, kvmppc_get_uamor_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR1:
- 		i = id - KVM_REG_PPC_MMCR0;
--		*val = get_reg_val(id, vcpu->arch.mmcr[i]);
-+		*val = get_reg_val(id, kvmppc_get_mmcr_hv(vcpu, i));
- 		break;
- 	case KVM_REG_PPC_MMCR2:
--		*val = get_reg_val(id, vcpu->arch.mmcr[2]);
-+		*val = get_reg_val(id, kvmppc_get_mmcr_hv(vcpu, 2));
- 		break;
- 	case KVM_REG_PPC_MMCRA:
--		*val = get_reg_val(id, vcpu->arch.mmcra);
-+		*val = get_reg_val(id, kvmppc_get_mmcra_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_MMCRS:
- 		*val = get_reg_val(id, vcpu->arch.mmcrs);
- 		break;
- 	case KVM_REG_PPC_MMCR3:
--		*val = get_reg_val(id, vcpu->arch.mmcr[3]);
-+		*val = get_reg_val(id, kvmppc_get_mmcr_hv(vcpu, 3));
- 		break;
- 	case KVM_REG_PPC_PMC1 ... KVM_REG_PPC_PMC8:
- 		i = id - KVM_REG_PPC_PMC1;
--		*val = get_reg_val(id, vcpu->arch.pmc[i]);
-+		*val = get_reg_val(id, kvmppc_get_pmc_hv(vcpu, i));
- 		break;
- 	case KVM_REG_PPC_SPMC1 ... KVM_REG_PPC_SPMC2:
- 		i = id - KVM_REG_PPC_SPMC1;
- 		*val = get_reg_val(id, vcpu->arch.spmc[i]);
- 		break;
- 	case KVM_REG_PPC_SIAR:
--		*val = get_reg_val(id, vcpu->arch.siar);
-+		*val = get_reg_val(id, kvmppc_get_siar_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_SDAR:
--		*val = get_reg_val(id, vcpu->arch.sdar);
-+		*val = get_reg_val(id, kvmppc_get_siar_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_SIER:
--		*val = get_reg_val(id, vcpu->arch.sier[0]);
-+		*val = get_reg_val(id, kvmppc_get_sier_hv(vcpu, 0));
- 		break;
- 	case KVM_REG_PPC_SIER2:
--		*val = get_reg_val(id, vcpu->arch.sier[1]);
-+		*val = get_reg_val(id, kvmppc_get_sier_hv(vcpu, 1));
- 		break;
- 	case KVM_REG_PPC_SIER3:
--		*val = get_reg_val(id, vcpu->arch.sier[2]);
-+		*val = get_reg_val(id, kvmppc_get_sier_hv(vcpu, 2));
- 		break;
- 	case KVM_REG_PPC_IAMR:
--		*val = get_reg_val(id, vcpu->arch.iamr);
-+		*val = get_reg_val(id, kvmppc_get_iamr_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_PSPB:
--		*val = get_reg_val(id, vcpu->arch.pspb);
-+		*val = get_reg_val(id, kvmppc_get_pspb_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_DPDES:
- 		/*
-@@ -2279,22 +2277,22 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 			*val = get_reg_val(id, vcpu->arch.vcore->dpdes);
- 		break;
- 	case KVM_REG_PPC_VTB:
--		*val = get_reg_val(id, vcpu->arch.vcore->vtb);
-+		*val = get_reg_val(id, kvmppc_get_vtb_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_DAWR:
--		*val = get_reg_val(id, vcpu->arch.dawr0);
-+		*val = get_reg_val(id, kvmppc_get_dawr0_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_DAWRX:
--		*val = get_reg_val(id, vcpu->arch.dawrx0);
-+		*val = get_reg_val(id, kvmppc_get_dawrx0_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_DAWR1:
--		*val = get_reg_val(id, vcpu->arch.dawr1);
-+		*val = get_reg_val(id, kvmppc_get_dawr1_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_DAWRX1:
--		*val = get_reg_val(id, vcpu->arch.dawrx1);
-+		*val = get_reg_val(id, kvmppc_get_dawrx1_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_CIABR:
--		*val = get_reg_val(id, vcpu->arch.ciabr);
-+		*val = get_reg_val(id, kvmppc_get_ciabr_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_CSIGR:
- 		*val = get_reg_val(id, vcpu->arch.csigr);
-@@ -2306,13 +2304,13 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		*val = get_reg_val(id, vcpu->arch.tcscr);
- 		break;
- 	case KVM_REG_PPC_PID:
--		*val = get_reg_val(id, vcpu->arch.pid);
-+		*val = get_reg_val(id, kvmppc_get_pid(vcpu));
- 		break;
- 	case KVM_REG_PPC_ACOP:
- 		*val = get_reg_val(id, vcpu->arch.acop);
- 		break;
- 	case KVM_REG_PPC_WORT:
--		*val = get_reg_val(id, vcpu->arch.wort);
-+		*val = get_reg_val(id, kvmppc_get_wort_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_TIDR:
- 		*val = get_reg_val(id, vcpu->arch.tid);
-@@ -2338,14 +2336,14 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		spin_unlock(&vcpu->arch.vpa_update_lock);
- 		break;
- 	case KVM_REG_PPC_TB_OFFSET:
--		*val = get_reg_val(id, vcpu->arch.vcore->tb_offset);
-+		*val = get_reg_val(id, kvmppc_get_tb_offset_hv(vcpu));
- 		break;
- 	case KVM_REG_PPC_LPCR:
- 	case KVM_REG_PPC_LPCR_64:
- 		*val = get_reg_val(id, vcpu->arch.vcore->lpcr);
- 		break;
- 	case KVM_REG_PPC_PPR:
--		*val = get_reg_val(id, vcpu->arch.ppr);
-+		*val = get_reg_val(id, kvmppc_get_ppr_hv(vcpu));
- 		break;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	case KVM_REG_PPC_TFHAR:
-@@ -2417,7 +2415,7 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		*val = get_reg_val(id, vcpu->arch.vcore->arch_compat);
- 		break;
- 	case KVM_REG_PPC_DEC_EXPIRY:
--		*val = get_reg_val(id, vcpu->arch.dec_expires);
-+		*val = get_reg_val(id, kvmppc_get_dec_expires(vcpu));
- 		break;
- 	case KVM_REG_PPC_ONLINE:
- 		*val = get_reg_val(id, vcpu->arch.online);
-@@ -2425,6 +2423,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_PTCR:
- 		*val = get_reg_val(id, vcpu->kvm->arch.l1_ptcr);
- 		break;
-+	case KVM_REG_PPC_FSCR:
-+		*val = get_reg_val(id, kvmppc_get_fscr_hv(vcpu));
-+		break;
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -2453,29 +2454,29 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		vcpu->arch.dabrx = set_reg_val(id, *val) & ~DABRX_HYP;
- 		break;
- 	case KVM_REG_PPC_DSCR:
--		vcpu->arch.dscr = set_reg_val(id, *val);
-+		kvmppc_set_dscr_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_PURR:
--		vcpu->arch.purr = set_reg_val(id, *val);
-+		kvmppc_set_purr_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_SPURR:
--		vcpu->arch.spurr = set_reg_val(id, *val);
-+		kvmppc_set_spurr_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_AMR:
--		vcpu->arch.amr = set_reg_val(id, *val);
-+		kvmppc_set_amr_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_UAMOR:
--		vcpu->arch.uamor = set_reg_val(id, *val);
-+		kvmppc_set_uamor_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR1:
- 		i = id - KVM_REG_PPC_MMCR0;
--		vcpu->arch.mmcr[i] = set_reg_val(id, *val);
-+		kvmppc_set_mmcr_hv(vcpu, i, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_MMCR2:
--		vcpu->arch.mmcr[2] = set_reg_val(id, *val);
-+		kvmppc_set_mmcr_hv(vcpu, 2, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_MMCRA:
--		vcpu->arch.mmcra = set_reg_val(id, *val);
-+		kvmppc_set_mmcra_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_MMCRS:
- 		vcpu->arch.mmcrs = set_reg_val(id, *val);
-@@ -2485,32 +2486,32 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		break;
- 	case KVM_REG_PPC_PMC1 ... KVM_REG_PPC_PMC8:
- 		i = id - KVM_REG_PPC_PMC1;
--		vcpu->arch.pmc[i] = set_reg_val(id, *val);
-+		kvmppc_set_pmc_hv(vcpu, i, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_SPMC1 ... KVM_REG_PPC_SPMC2:
- 		i = id - KVM_REG_PPC_SPMC1;
- 		vcpu->arch.spmc[i] = set_reg_val(id, *val);
- 		break;
- 	case KVM_REG_PPC_SIAR:
--		vcpu->arch.siar = set_reg_val(id, *val);
-+		kvmppc_set_siar_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_SDAR:
--		vcpu->arch.sdar = set_reg_val(id, *val);
-+		kvmppc_set_sdar_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_SIER:
--		vcpu->arch.sier[0] = set_reg_val(id, *val);
-+		kvmppc_set_sier_hv(vcpu, 0, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_SIER2:
--		vcpu->arch.sier[1] = set_reg_val(id, *val);
-+		kvmppc_set_sier_hv(vcpu, 1, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_SIER3:
--		vcpu->arch.sier[2] = set_reg_val(id, *val);
-+		kvmppc_set_sier_hv(vcpu, 2, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_IAMR:
--		vcpu->arch.iamr = set_reg_val(id, *val);
-+		kvmppc_set_iamr_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_PSPB:
--		vcpu->arch.pspb = set_reg_val(id, *val);
-+		kvmppc_set_pspb_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_DPDES:
- 		if (cpu_has_feature(CPU_FTR_ARCH_300))
-@@ -2519,25 +2520,25 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 			vcpu->arch.vcore->dpdes = set_reg_val(id, *val);
- 		break;
- 	case KVM_REG_PPC_VTB:
--		vcpu->arch.vcore->vtb = set_reg_val(id, *val);
-+		kvmppc_set_vtb_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_DAWR:
--		vcpu->arch.dawr0 = set_reg_val(id, *val);
-+		kvmppc_set_dawr0_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_DAWRX:
--		vcpu->arch.dawrx0 = set_reg_val(id, *val) & ~DAWRX_HYP;
-+		kvmppc_set_dawrx0_hv(vcpu, set_reg_val(id, *val) & ~DAWRX_HYP);
- 		break;
- 	case KVM_REG_PPC_DAWR1:
--		vcpu->arch.dawr1 = set_reg_val(id, *val);
-+		kvmppc_set_dawr1_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_DAWRX1:
--		vcpu->arch.dawrx1 = set_reg_val(id, *val) & ~DAWRX_HYP;
-+		kvmppc_set_dawrx1_hv(vcpu, set_reg_val(id, *val) & ~DAWRX_HYP);
- 		break;
- 	case KVM_REG_PPC_CIABR:
--		vcpu->arch.ciabr = set_reg_val(id, *val);
-+		kvmppc_set_ciabr_hv(vcpu, set_reg_val(id, *val));
- 		/* Don't allow setting breakpoints in hypervisor code */
--		if ((vcpu->arch.ciabr & CIABR_PRIV) == CIABR_PRIV_HYPER)
--			vcpu->arch.ciabr &= ~CIABR_PRIV;	/* disable */
-+		if ((kvmppc_get_ciabr_hv(vcpu) & CIABR_PRIV) == CIABR_PRIV_HYPER)
-+			kvmppc_set_ciabr_hv(vcpu, kvmppc_get_ciabr_hv(vcpu) & ~CIABR_PRIV);	/* disable */
- 		break;
- 	case KVM_REG_PPC_CSIGR:
- 		vcpu->arch.csigr = set_reg_val(id, *val);
-@@ -2549,13 +2550,13 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		vcpu->arch.tcscr = set_reg_val(id, *val);
- 		break;
- 	case KVM_REG_PPC_PID:
--		vcpu->arch.pid = set_reg_val(id, *val);
-+		kvmppc_set_pid(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_ACOP:
- 		vcpu->arch.acop = set_reg_val(id, *val);
- 		break;
- 	case KVM_REG_PPC_WORT:
--		vcpu->arch.wort = set_reg_val(id, *val);
-+		kvmppc_set_wort_hv(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_TIDR:
- 		vcpu->arch.tid = set_reg_val(id, *val);
-@@ -2602,10 +2603,11 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		 * decrementer, which is better than a large one that
- 		 * causes a hang.
- 		 */
--		if (!vcpu->arch.dec_expires && tb_offset)
--			vcpu->arch.dec_expires = get_tb() + tb_offset;
-+		kvmppc_set_tb_offset_hv(vcpu, tb_offset);
-+		if (!kvmppc_get_dec_expires(vcpu) && tb_offset)
-+			kvmppc_set_dec_expires(vcpu, get_tb() + tb_offset);
- 
--		vcpu->arch.vcore->tb_offset = tb_offset;
-+		kvmppc_set_tb_offset_hv(vcpu, tb_offset);
- 		break;
- 	}
- 	case KVM_REG_PPC_LPCR:
-@@ -2615,7 +2617,7 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		kvmppc_set_lpcr(vcpu, set_reg_val(id, *val), false);
- 		break;
- 	case KVM_REG_PPC_PPR:
--		vcpu->arch.ppr = set_reg_val(id, *val);
-+		kvmppc_set_ppr_hv(vcpu, set_reg_val(id, *val));
- 		break;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	case KVM_REG_PPC_TFHAR:
-@@ -2686,7 +2688,7 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 		r = kvmppc_set_arch_compat(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_DEC_EXPIRY:
--		vcpu->arch.dec_expires = set_reg_val(id, *val);
-+		kvmppc_set_dec_expires(vcpu, set_reg_val(id, *val));
- 		break;
- 	case KVM_REG_PPC_ONLINE:
- 		i = set_reg_val(id, *val);
-@@ -2699,6 +2701,9 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_PTCR:
- 		vcpu->kvm->arch.l1_ptcr = set_reg_val(id, *val);
- 		break;
-+	case KVM_REG_PPC_FSCR:
-+		kvmppc_set_fscr_hv(vcpu, set_reg_val(id, *val));
-+		break;
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -2916,19 +2921,20 @@ static int kvmppc_core_vcpu_create_hv(struct kvm_vcpu *vcpu)
- 	vcpu->arch.shared_big_endian = false;
- #endif
- #endif
--	vcpu->arch.mmcr[0] = MMCR0_FC;
-+	kvmppc_set_mmcr_hv(vcpu, 0, MMCR0_FC);
-+
- 	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
--		vcpu->arch.mmcr[0] |= MMCR0_PMCCEXT;
--		vcpu->arch.mmcra = MMCRA_BHRB_DISABLE;
-+		kvmppc_set_mmcr_hv(vcpu, 0, kvmppc_get_mmcr_hv(vcpu, 0) | MMCR0_PMCCEXT);
-+		kvmppc_set_mmcra_hv(vcpu, MMCRA_BHRB_DISABLE);
- 	}
- 
--	vcpu->arch.ctrl = CTRL_RUNLATCH;
-+	kvmppc_set_ctrl_hv(vcpu, CTRL_RUNLATCH);
- 	/* default to host PVR, since we can't spoof it */
- 	kvmppc_set_pvr_hv(vcpu, mfspr(SPRN_PVR));
- 	spin_lock_init(&vcpu->arch.vpa_update_lock);
- 	spin_lock_init(&vcpu->arch.tbacct_lock);
- 	vcpu->arch.busy_preempt = TB_NIL;
--	vcpu->arch.shregs.msr = MSR_ME;
-+	kvmppc_set_msr_fast(vcpu, MSR_ME);
- 	vcpu->arch.intr_msr = MSR_SF | MSR_ME;
- 
- 	/*
-@@ -2938,29 +2944,30 @@ static int kvmppc_core_vcpu_create_hv(struct kvm_vcpu *vcpu)
- 	 * don't set the HFSCR_MSGP bit, and that causes those instructions
- 	 * to trap and then we emulate them.
- 	 */
--	vcpu->arch.hfscr = HFSCR_TAR | HFSCR_EBB | HFSCR_PM | HFSCR_BHRB |
--		HFSCR_DSCR | HFSCR_VECVSX | HFSCR_FP;
-+	kvmppc_set_hfscr_hv(vcpu, HFSCR_TAR | HFSCR_EBB | HFSCR_PM | HFSCR_BHRB |
-+			    HFSCR_DSCR | HFSCR_VECVSX | HFSCR_FP);
- 
- 	/* On POWER10 and later, allow prefixed instructions */
- 	if (cpu_has_feature(CPU_FTR_ARCH_31))
--		vcpu->arch.hfscr |= HFSCR_PREFIX;
-+		kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) | HFSCR_PREFIX);
- 
- 	if (cpu_has_feature(CPU_FTR_HVMODE)) {
--		vcpu->arch.hfscr &= mfspr(SPRN_HFSCR);
-+		kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) & mfspr(SPRN_HFSCR));
-+
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 		if (cpu_has_feature(CPU_FTR_P9_TM_HV_ASSIST))
--			vcpu->arch.hfscr |= HFSCR_TM;
-+			kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) | HFSCR_TM);
- #endif
- 	}
- 	if (cpu_has_feature(CPU_FTR_TM_COMP))
- 		vcpu->arch.hfscr |= HFSCR_TM;
- 
--	vcpu->arch.hfscr_permitted = vcpu->arch.hfscr;
-+	vcpu->arch.hfscr_permitted = kvmppc_get_hfscr_hv(vcpu);
- 
- 	/*
- 	 * PM, EBB, TM are demand-faulted so start with it clear.
- 	 */
--	vcpu->arch.hfscr &= ~(HFSCR_PM | HFSCR_EBB | HFSCR_TM);
-+	kvmppc_set_hfscr_hv(vcpu, kvmppc_get_hfscr_hv(vcpu) & ~(HFSCR_PM | HFSCR_EBB | HFSCR_TM));
- 
- 	kvmppc_mmu_book3s_hv_init(vcpu);
- 
-@@ -4038,7 +4045,6 @@ static void vcpu_vpa_increment_dispatch(struct kvm_vcpu *vcpu)
- /* call our hypervisor to load up HV regs and go */
- static int kvmhv_vcpu_entry_p9_nested(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpcr, u64 *tb)
- {
--	struct kvmppc_vcore *vc = vcpu->arch.vcore;
- 	unsigned long host_psscr;
- 	unsigned long msr;
- 	struct hv_guest_state hvregs;
-@@ -4118,7 +4124,7 @@ static int kvmhv_vcpu_entry_p9_nested(struct kvm_vcpu *vcpu, u64 time_limit, uns
- 	if (!(lpcr & LPCR_LD)) /* Sign extend if not using large decrementer */
- 		dec = (s32) dec;
- 	*tb = mftb();
--	vcpu->arch.dec_expires = dec + (*tb + vc->tb_offset);
-+	vcpu->arch.dec_expires = dec + (*tb + kvmppc_get_tb_offset_hv(vcpu));
- 
- 	timer_rearm_host_dec(*tb);
- 
-@@ -4176,7 +4182,7 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
- 		__this_cpu_write(cpu_in_guest, NULL);
- 
- 		if (trap == BOOK3S_INTERRUPT_SYSCALL &&
--		    !(vcpu->arch.shregs.msr & MSR_PR)) {
-+		    !(kvmppc_get_msr(vcpu) & MSR_PR)) {
- 			unsigned long req = kvmppc_get_gpr(vcpu, 3);
- 
- 			/*
-@@ -4655,7 +4661,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
- 
- 	if (!nested) {
- 		kvmppc_core_prepare_to_enter(vcpu);
--		if (vcpu->arch.shregs.msr & MSR_EE) {
-+		if (kvmppc_get_msr(vcpu) & MSR_EE) {
- 			if (xive_interrupt_pending(vcpu))
- 				kvmppc_inject_interrupt_hv(vcpu,
- 						BOOK3S_INTERRUPT_EXTERNAL, 0);
-@@ -4677,7 +4683,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
- 
- 	tb = mftb();
- 
--	kvmppc_update_vpa_dispatch_p9(vcpu, vc, tb + vc->tb_offset);
-+	kvmppc_update_vpa_dispatch_p9(vcpu, vc, tb + kvmppc_get_tb_offset_hv(vcpu));
- 
- 	trace_kvm_guest_enter(vcpu);
- 
-@@ -4844,7 +4850,7 @@ static int kvmppc_vcpu_run_hv(struct kvm_vcpu *vcpu)
- 		msr |= MSR_VSX;
- 	if ((cpu_has_feature(CPU_FTR_TM) ||
- 	    cpu_has_feature(CPU_FTR_P9_TM_HV_ASSIST)) &&
--			(vcpu->arch.hfscr & HFSCR_TM))
-+			(kvmppc_get_hfscr_hv(vcpu) & HFSCR_TM))
- 		msr |= MSR_TM;
- 	msr = msr_check_and_set(msr);
- 
-@@ -4868,7 +4874,7 @@ static int kvmppc_vcpu_run_hv(struct kvm_vcpu *vcpu)
- 		if (run->exit_reason == KVM_EXIT_PAPR_HCALL) {
- 			accumulate_time(vcpu, &vcpu->arch.hcall);
- 
--			if (WARN_ON_ONCE(vcpu->arch.shregs.msr & MSR_PR)) {
-+			if (WARN_ON_ONCE(kvmppc_get_msr(vcpu) & MSR_PR)) {
- 				/*
- 				 * These should have been caught reflected
- 				 * into the guest by now. Final sanity check:
-diff --git a/arch/powerpc/kvm/book3s_hv.h b/arch/powerpc/kvm/book3s_hv.h
-index 2f2e59d7d433..7a7005189ab1 100644
---- a/arch/powerpc/kvm/book3s_hv.h
-+++ b/arch/powerpc/kvm/book3s_hv.h
-@@ -50,3 +50,62 @@ void accumulate_time(struct kvm_vcpu *vcpu, struct kvmhv_tb_accumulator *next);
- #define start_timing(vcpu, next) do {} while (0)
- #define end_timing(vcpu) do {} while (0)
- #endif
-+
-+#define HV_WRAPPER_SET(reg, size)					\
-+static inline void kvmppc_set_##reg ##_hv(struct kvm_vcpu *vcpu, u##size val)	\
-+{									\
-+	vcpu->arch.reg = val;						\
-+}
-+
-+#define HV_WRAPPER_GET(reg, size)					\
-+static inline u##size kvmppc_get_##reg ##_hv(struct kvm_vcpu *vcpu)	\
-+{									\
-+	return vcpu->arch.reg;						\
-+}
-+
-+#define HV_WRAPPER(reg, size)						\
-+	HV_WRAPPER_SET(reg, size)					\
-+	HV_WRAPPER_GET(reg, size)					\
-+
-+#define HV_ARRAY_WRAPPER_SET(reg, size)					\
-+static inline void kvmppc_set_##reg ##_hv(struct kvm_vcpu *vcpu, int i, u##size val)	\
-+{									\
-+	vcpu->arch.reg[i] = val;					\
-+}
-+
-+#define HV_ARRAY_WRAPPER_GET(reg, size)					\
-+static inline u##size kvmppc_get_##reg ##_hv(struct kvm_vcpu *vcpu, int i)	\
-+{									\
-+	return vcpu->arch.reg[i];					\
-+}
-+
-+#define HV_ARRAY_WRAPPER(reg, size)					\
-+	HV_ARRAY_WRAPPER_SET(reg, size)					\
-+	HV_ARRAY_WRAPPER_GET(reg, size)					\
-+
-+HV_WRAPPER(mmcra, 64)
-+HV_WRAPPER(hfscr, 64)
-+HV_WRAPPER(fscr, 64)
-+HV_WRAPPER(dscr, 64)
-+HV_WRAPPER(purr, 64)
-+HV_WRAPPER(spurr, 64)
-+HV_WRAPPER(amr, 64)
-+HV_WRAPPER(uamor, 64)
-+HV_WRAPPER(siar, 64)
-+HV_WRAPPER(sdar, 64)
-+HV_WRAPPER(iamr, 64)
-+HV_WRAPPER(dawr0, 64)
-+HV_WRAPPER(dawr1, 64)
-+HV_WRAPPER(dawrx0, 64)
-+HV_WRAPPER(dawrx1, 64)
-+HV_WRAPPER(ciabr, 64)
-+HV_WRAPPER(wort, 64)
-+HV_WRAPPER(ppr, 64)
-+HV_WRAPPER(ctrl, 64)
-+
-+HV_ARRAY_WRAPPER(mmcr, 64)
-+HV_ARRAY_WRAPPER(sier, 64)
-+HV_ARRAY_WRAPPER(pmc, 32)
-+
-+HV_WRAPPER(pvr, 32)
-+HV_WRAPPER(pspb, 32)
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index da85f046377a..9f9e9aab6015 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -182,9 +182,13 @@ EXPORT_SYMBOL_GPL(kvmppc_hwrng_present);
- 
- long kvmppc_rm_h_random(struct kvm_vcpu *vcpu)
- {
-+	unsigned long rand;
-+
- 	if (ppc_md.get_random_seed &&
--	    ppc_md.get_random_seed(&vcpu->arch.regs.gpr[4]))
-+	    ppc_md.get_random_seed(&rand)) {
-+		kvmppc_set_gpr(vcpu, 4, rand);
- 		return H_SUCCESS;
-+	}
- 
- 	return H_HARDWARE;
- }
-@@ -510,7 +514,7 @@ void kvmppc_set_msr_hv(struct kvm_vcpu *vcpu, u64 msr)
- 	 */
- 	if ((msr & MSR_TS_MASK) == MSR_TS_MASK)
- 		msr &= ~MSR_TS_MASK;
--	vcpu->arch.shregs.msr = msr;
-+	kvmppc_set_msr_fast(vcpu, msr);
- 	kvmppc_end_cede(vcpu);
- }
- EXPORT_SYMBOL_GPL(kvmppc_set_msr_hv);
-@@ -548,7 +552,7 @@ static void inject_interrupt(struct kvm_vcpu *vcpu, int vec, u64 srr1_flags)
- 	kvmppc_set_srr0(vcpu, pc);
- 	kvmppc_set_srr1(vcpu, (msr & SRR1_MSR_BITS) | srr1_flags);
- 	kvmppc_set_pc(vcpu, new_pc);
--	vcpu->arch.shregs.msr = new_msr;
-+	kvmppc_set_msr_fast(vcpu, new_msr);
- }
- 
- void kvmppc_inject_interrupt_hv(struct kvm_vcpu *vcpu, int vec, u64 srr1_flags)
-diff --git a/arch/powerpc/kvm/book3s_hv_p9_entry.c b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-index 34f1db212824..34bc0a8a1288 100644
---- a/arch/powerpc/kvm/book3s_hv_p9_entry.c
-+++ b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-@@ -305,7 +305,7 @@ static void switch_mmu_to_guest_radix(struct kvm *kvm, struct kvm_vcpu *vcpu, u6
- 	u32 pid;
- 
- 	lpid = nested ? nested->shadow_lpid : kvm->arch.lpid;
--	pid = vcpu->arch.pid;
-+	pid = kvmppc_get_pid(vcpu);
- 
- 	/*
- 	 * Prior memory accesses to host PID Q3 must be completed before we
-@@ -330,7 +330,7 @@ static void switch_mmu_to_guest_hpt(struct kvm *kvm, struct kvm_vcpu *vcpu, u64
- 	int i;
- 
- 	lpid = kvm->arch.lpid;
--	pid = vcpu->arch.pid;
-+	pid = kvmppc_get_pid(vcpu);
- 
- 	/*
- 	 * See switch_mmu_to_guest_radix. ptesync should not be required here
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index ccfd96965630..3b43c3d00311 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -15,6 +15,7 @@
- #include <asm/cputhreads.h>
- #include <asm/hmi.h>
- #include <asm/kvm_ppc.h>
-+#include "book3s_hv.h"
- 
- /* SRR1 bits for machine check on POWER7 */
- #define SRR1_MC_LDSTERR		(1ul << (63-42))
-@@ -173,14 +174,14 @@ long kvmppc_p9_realmode_hmi_handler(struct kvm_vcpu *vcpu)
- 		ppc_md.hmi_exception_early(NULL);
- 
- out:
--	if (vc->tb_offset) {
-+	if (kvmppc_get_tb_offset_hv(vcpu)) {
- 		u64 new_tb = mftb() + vc->tb_offset;
- 		mtspr(SPRN_TBU40, new_tb);
- 		if ((mftb() & 0xffffff) < (new_tb & 0xffffff)) {
- 			new_tb += 0x1000000;
- 			mtspr(SPRN_TBU40, new_tb);
- 		}
--		vc->tb_offset_applied = vc->tb_offset;
-+		vc->tb_offset_applied = kvmppc_get_tb_offset_hv(vcpu);
- 	}
- 
- 	return ret;
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 9182324dbef9..17cb75a127b0 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -776,8 +776,8 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
- 			r = rev[i].guest_rpte | (r & (HPTE_R_R | HPTE_R_C));
- 			r &= ~HPTE_GR_RESERVED;
- 		}
--		vcpu->arch.regs.gpr[4 + i * 2] = v;
--		vcpu->arch.regs.gpr[5 + i * 2] = r;
-+		kvmppc_set_gpr(vcpu, 4 + i * 2, v);
-+		kvmppc_set_gpr(vcpu, 5 + i * 2, r);
- 	}
- 	return H_SUCCESS;
- }
-@@ -824,7 +824,7 @@ long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
- 			}
- 		}
- 	}
--	vcpu->arch.regs.gpr[4] = gr;
-+	kvmppc_set_gpr(vcpu, 4, gr);
- 	ret = H_SUCCESS;
-  out:
- 	unlock_hpte(hpte, v & ~HPTE_V_HVLOCK);
-@@ -872,7 +872,7 @@ long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
- 			kvmppc_set_dirty_from_hpte(kvm, v, gr);
- 		}
- 	}
--	vcpu->arch.regs.gpr[4] = gr;
-+	kvmppc_set_gpr(vcpu, 4, gr);
- 	ret = H_SUCCESS;
-  out:
- 	unlock_hpte(hpte, v & ~HPTE_V_HVLOCK);
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index e165bfa842bf..e42984878503 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -481,7 +481,7 @@ static void icp_rm_down_cppr(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
- 
- unsigned long xics_rm_h_xirr_x(struct kvm_vcpu *vcpu)
- {
--	vcpu->arch.regs.gpr[5] = get_tb();
-+	kvmppc_set_gpr(vcpu, 5, get_tb());
- 	return xics_rm_h_xirr(vcpu);
- }
- 
-@@ -518,7 +518,7 @@ unsigned long xics_rm_h_xirr(struct kvm_vcpu *vcpu)
- 	} while (!icp_rm_try_update(icp, old_state, new_state));
- 
- 	/* Return the result in GPR4 */
--	vcpu->arch.regs.gpr[4] = xirr;
-+	kvmppc_set_gpr(vcpu, 4, xirr);
- 
- 	return check_too_hard(xics, icp);
- }
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index f4115819e738..4adff4f1896d 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -29,6 +29,7 @@
- #include <linux/seq_file.h>
- 
- #include "book3s_xive.h"
-+#include "book3s_hv.h"
- 
- #define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_mmio))
- #define __x_trig_page(xd)	((void __iomem *)((xd)->trig_mmio))
-@@ -328,7 +329,7 @@ static unsigned long xive_vm_h_xirr(struct kvm_vcpu *vcpu)
- 	 */
- 
- 	/* Return interrupt and old CPPR in GPR4 */
--	vcpu->arch.regs.gpr[4] = hirq | (old_cppr << 24);
-+	kvmppc_set_gpr(vcpu, 4, hirq | (old_cppr << 24));
- 
- 	return H_SUCCESS;
- }
-@@ -364,7 +365,7 @@ static unsigned long xive_vm_h_ipoll(struct kvm_vcpu *vcpu, unsigned long server
- 	hirq = xive_vm_scan_interrupts(xc, pending, scan_poll);
- 
- 	/* Return interrupt and old CPPR in GPR4 */
--	vcpu->arch.regs.gpr[4] = hirq | (xc->cppr << 24);
-+	kvmppc_set_gpr(vcpu, 4, hirq | (xc->cppr << 24));
- 
- 	return H_SUCCESS;
- }
-@@ -2779,8 +2780,6 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
- 
- int kvmppc_xive_xics_hcall(struct kvm_vcpu *vcpu, u32 req)
- {
--	struct kvmppc_vcore *vc = vcpu->arch.vcore;
--
- 	/* The VM should have configured XICS mode before doing XICS hcalls. */
- 	if (!kvmppc_xics_enabled(vcpu))
- 		return H_TOO_HARD;
-@@ -2799,7 +2798,7 @@ int kvmppc_xive_xics_hcall(struct kvm_vcpu *vcpu, u32 req)
- 		return xive_vm_h_ipoll(vcpu, kvmppc_get_gpr(vcpu, 4));
- 	case H_XIRR_X:
- 		xive_vm_h_xirr(vcpu);
--		kvmppc_set_gpr(vcpu, 5, get_tb() + vc->tb_offset);
-+		kvmppc_set_gpr(vcpu, 5, get_tb() + kvmppc_get_tb_offset_hv(vcpu));
- 		return H_SUCCESS;
- 	}
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 7197c8256668..ca9793c3d437 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1729,7 +1729,7 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
- 			val = get_reg_val(reg->id, vcpu->arch.vr.vscr.u[3]);
- 			break;
- 		case KVM_REG_PPC_VRSAVE:
--			val = get_reg_val(reg->id, vcpu->arch.vrsave);
-+			val = get_reg_val(reg->id, kvmppc_get_vrsave(vcpu));
- 			break;
- #endif /* CONFIG_ALTIVEC */
- 		default:
-@@ -1784,7 +1784,7 @@ int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
- 				r = -ENXIO;
- 				break;
- 			}
--			vcpu->arch.vrsave = set_reg_val(reg->id, val);
-+			kvmppc_set_vrsave(vcpu, set_reg_val(reg->id, val));
- 			break;
- #endif /* CONFIG_ALTIVEC */
- 		default:
 -- 
 2.31.1
 
