@@ -4,54 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56A69C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Jun 2023 21:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AC50C7EE2C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 04:06:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QZ9R85yCvz3dy3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 07:51:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QZKmw1HTWz3f6Z
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jun 2023 14:06:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=lJmPSA5r;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uxKGktXN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.41; helo=out-41.mta0.migadu.com; envelope-from=kent.overstreet@linux.dev; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=lJmPSA5r;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uxKGktXN;
 	dkim-atps=neutral
-X-Greylist: delayed 584 seconds by postgrey-1.36 at boromir; Mon, 05 Jun 2023 07:50:12 AEST
-Received: from out-41.mta0.migadu.com (out-41.mta0.migadu.com [91.218.175.41])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZ9QD6n1jz3cdr
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 07:50:07 +1000 (AEST)
-Date: Sun, 4 Jun 2023 17:40:01 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1685914810;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Et8ABs17Zkfn2mGnERyKGLy92viAhCiNpbl07PFjtnE=;
-	b=lJmPSA5rKs24/0LEEceFQVOeSXhUoE0+fis7PHaMYfcE2LZdC95JDmW0A61ctvzkYppcPe
-	W9mzvDnQ++G15OC4MG7fFAFeLDHkLYUk7wWialJK1ki4sRZ8GoqzW1U3lBIfZIfX0tb2f2
-	f+19wUtFVDPjGlYI9R+Uk+lqqtnlv4Q=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Kent Overstreet <kent.overstreet@linux.dev>
-To: Song Liu <song@kernel.org>
-Subject: Re: [PATCH 00/13] mm: jit/text allocator
-Message-ID: <ZH0EseWI9F1n9yJx@moria.home.lan>
-References: <20230601101257.530867-1-rppt@kernel.org>
- <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
- <ZHjgIH3aX9dCvVZc@moria.home.lan>
- <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
- <CAPhsuW7Euczff_KB70nuH=Hhf2EYHAf=xiQR7mFqVfByhD34XA@mail.gmail.com>
- <ZHzRxE5V6YzGVsHy@moria.home.lan>
- <CAPhsuW7iEDa44jxc_7Cj4KnVhtct-UTO2JtVK-U7o2ynn2iX8Q@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZKlw05kjz3cCc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 14:06:03 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id EA48E60C3D
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 04:06:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E194C4339B
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 04:06:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1685937961;
+	bh=WtI1jY3mnr9zb4/0mcezfP7YgsPqPtpWRWa72DAZTTg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=uxKGktXNqn49bEfc54rxrLont7pLs83GyZuzAufBwsGBjuGMKdcRP/bEdwYmfXXxU
+	 WvxTYj5OfeXmTt5HLnDLwPgr67Lkt70CP1EvdU2veiDINIXLIDAS+iKL+CqrOBDxNc
+	 W/VQJXu20GHLghTy7G8UfIn1gM+F5ueXv0na8lU8CSN0FmokvQ65P4mX8K8i05YG/W
+	 fPh72tKYwA3H59nPmnDH3bp9qH5k5y+9C+A7tg1dtcxIc9fAAEgtE2WRW9gNO+56RG
+	 rnpEhaZc8TsRLxnuELVYU2NxAebO69dROiM74lzh42BNKszJ2YPFsTB9bCrjTQGdS0
+	 SNLJmYWsBwYSA==
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-2b1b6865c7cso28305131fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Jun 2023 21:06:01 -0700 (PDT)
+X-Gm-Message-State: AC+VfDy5FzrVg5siq9afnVNOl4F/Mz9pJ734P9YlY0AxR/BCi9TU9TD9
+	F+lanURDiUc+XdOZ560j39xj9RKkBe8SkNTZ4QM=
+X-Google-Smtp-Source: ACHHUZ5GrSEK3PQNTobRaaPR4GI9Q/dG/dH9vtDqov4NPtsLbAuvSoOBGIqnwRO1u3fwexaWyE5OrfsdUvjgUci7FZk=
+X-Received: by 2002:a2e:2419:0:b0:2ad:d6cd:efdd with SMTP id
+ k25-20020a2e2419000000b002add6cdefddmr3089294ljk.32.1685937959380; Sun, 04
+ Jun 2023 21:05:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPhsuW7iEDa44jxc_7Cj4KnVhtct-UTO2JtVK-U7o2ynn2iX8Q@mail.gmail.com>
-X-Migadu-Flow: FLOW_OUT
+References: <20230601101257.530867-1-rppt@kernel.org> <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+ <ZHjgIH3aX9dCvVZc@moria.home.lan> <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+ <CAPhsuW7Euczff_KB70nuH=Hhf2EYHAf=xiQR7mFqVfByhD34XA@mail.gmail.com>
+ <ZHzRxE5V6YzGVsHy@moria.home.lan> <CAPhsuW7iEDa44jxc_7Cj4KnVhtct-UTO2JtVK-U7o2ynn2iX8Q@mail.gmail.com>
+ <ZH0EseWI9F1n9yJx@moria.home.lan>
+In-Reply-To: <ZH0EseWI9F1n9yJx@moria.home.lan>
+From: Song Liu <song@kernel.org>
+Date: Sun, 4 Jun 2023 21:05:47 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW7S40xCz_e0fdimfC+ybO=kvMg3SSzTd1s4qiOcvmJJcA@mail.gmail.com>
+Message-ID: <CAPhsuW7S40xCz_e0fdimfC+ybO=kvMg3SSzTd1s4qiOcvmJJcA@mail.gmail.com>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+To: Kent Overstreet <kent.overstreet@linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,32 +77,52 @@ Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catali
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Jun 04, 2023 at 02:22:30PM -0700, Song Liu wrote:
-> On Sun, Jun 4, 2023 at 11:02 AM Kent Overstreet
-> <kent.overstreet@linux.dev> wrote:
+On Sun, Jun 4, 2023 at 2:40=E2=80=AFPM Kent Overstreet
+<kent.overstreet@linux.dev> wrote:
+>
+> On Sun, Jun 04, 2023 at 02:22:30PM -0700, Song Liu wrote:
+> > On Sun, Jun 4, 2023 at 11:02=E2=80=AFAM Kent Overstreet
+> > <kent.overstreet@linux.dev> wrote:
+> > >
+> > > On Fri, Jun 02, 2023 at 11:20:58AM -0700, Song Liu wrote:
+> > > > IIUC, arm64 uses VMALLOC address space for BPF programs. The reason
+> > > > is each BPF program uses at least 64kB (one page) out of the 128MB
+> > > > address space. Puranjay Mohan (CC'ed) is working on enabling
+> > > > bpf_prog_pack for arm64. Once this work is done, multiple BPF progr=
+ams
+> > > > will be able to share a page. Will this improvement remove the need=
+ to
+> > > > specify a different address range for BPF programs?
+> > >
+> > > Can we please stop working on BPF specific sub page allocation and fo=
+cus
+> > > on doing this in mm/? This never should have been in BPF in the first
+> > > place.
 > >
-> > On Fri, Jun 02, 2023 at 11:20:58AM -0700, Song Liu wrote:
-> > > IIUC, arm64 uses VMALLOC address space for BPF programs. The reason
-> > > is each BPF program uses at least 64kB (one page) out of the 128MB
-> > > address space. Puranjay Mohan (CC'ed) is working on enabling
-> > > bpf_prog_pack for arm64. Once this work is done, multiple BPF programs
-> > > will be able to share a page. Will this improvement remove the need to
-> > > specify a different address range for BPF programs?
+> > That work is mostly independent of the allocator work we are discussing=
+ here.
+> > The goal Puranjay's work is to enable the arm64 BPF JIT engine to use a
+> > ROX allocator. The allocator could be the bpf_prog_pack allocator, or j=
+italloc,
+> > or module_alloc_type. Puranjay is using bpf_prog_alloc for now. But onc=
+e
+> > jitalloc or module_alloc_type (either one) is merged, we will migrate B=
+PF
+> > JIT engines (x86_64 and arm64) to the new allocator and then tear down
+> > bpf_prog_pack.
 > >
-> > Can we please stop working on BPF specific sub page allocation and focus
-> > on doing this in mm/? This never should have been in BPF in the first
-> > place.
-> 
-> That work is mostly independent of the allocator work we are discussing here.
-> The goal Puranjay's work is to enable the arm64 BPF JIT engine to use a
-> ROX allocator. The allocator could be the bpf_prog_pack allocator, or jitalloc,
-> or module_alloc_type. Puranjay is using bpf_prog_alloc for now. But once
-> jitalloc or module_alloc_type (either one) is merged, we will migrate BPF
-> JIT engines (x86_64 and arm64) to the new allocator and then tear down
-> bpf_prog_pack.
-> 
-> Does this make sense?
+> > Does this make sense?
+>
+> Yeah, as long as that's the plan. Maybe one of you could tell us what
+> issues were preventing prog_pack from being used in the first place, it
+> might be relevant - this is the time to get the new allocator API right.
 
-Yeah, as long as that's the plan. Maybe one of you could tell us what
-issues were preventing prog_pack from being used in the first place, it
-might be relevant - this is the time to get the new allocator API right.
+The JIT engine does a lot of writes. Instead of doing many text_poke(),
+we are using a temporary RW write buffer, and then do text_poke_copy()
+at the end. To make this work, we need the JIT engine to be able to
+handle an RW temporary buffer and an RO final memory region. There
+is nothing preventing prog_pack to work. It is just we need to do the
+work.
+
+Thanks,
+Song
