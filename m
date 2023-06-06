@@ -4,55 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31DB6C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 10:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C50D2C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 18:23:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qb5y530qVz3fBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 20:17:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QbJkP0b8xz3f04
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 04:23:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ex2boOSb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZWPc2Ay9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ex2boOSb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZWPc2Ay9;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qb5x76GWtz3drq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 20:16:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbJjQ08g4z2xHb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 04:22:17 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8F6BF6250C;
-	Tue,  6 Jun 2023 10:16:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16CCDC433EF;
-	Tue,  6 Jun 2023 10:16:27 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id E3E26636A6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 18:22:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 278B9C43321
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 18:22:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686046599;
-	bh=K3mQNwoT9j+uKtNH0+N5SGAruipqVMe0nyrOVYu8zmA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Ex2boOSbFX9F8vILoj2ER6OMGqZieI/qXxa+Cl88F6P5WueebucHT8gXYMljU/UwF
-	 W4Vwtw16CB66Ckf8CUcEwiMgsp0Rl7Zp+sWmc7WhCTWF54CsHU5is7Yegd2qZ+FcpB
-	 7HYr90xDXGc4Q+jlXpM3iwKf1+z1TAE79jym8dBpk7/sIwryEOoaJwZE+mZ+/dgO9Q
-	 jbUZZ/yVspF9cToZ4ExktC3lUSHmqXSahqJcQT5b1PfE/IsSC9GrwIVg8JzQsfRBlA
-	 +FWytBECVY5td4H8LIUSl6ZWwnci/X0OdWg6sGet7yNw0Tt3OFZ9/6khP83arPzxeP
-	 mpCOpEPlPas8A==
-Date: Tue, 6 Jun 2023 13:16:08 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 00/13] mm: jit/text allocator
-Message-ID: <20230606101608.GC52412@kernel.org>
-References: <20230601101257.530867-1-rppt@kernel.org>
- <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
- <ZHjgIH3aX9dCvVZc@moria.home.lan>
- <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
- <20230605092040.GB3460@kernel.org>
- <ZH20XkD74prrdN4u@FVFF77S0Q05N>
+	s=k20201202; t=1686075734;
+	bh=08bgDTu6K2r14VqmkEIMfCPJQ/ZZrnAx7Zh60inB9tQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=ZWPc2Ay9qV+46W5EIl1Hat/oWhCmkf2atoI7Djyx7M9K8nTcPWM51zO0JgXQR/xJA
+	 t6kkVflNQu8aEchQ0gWokejvbn0lD4N+mkDVLz/vpv4NfXuw4Ue4w5/ggGi9dBfKiZ
+	 FbyGdgANCc28tlTGlHG3sjNhVLTPxaSnMiPYhxWksxnkaN6w7Z8t8XpDCqJBTwrewz
+	 7miB72dJ8VC2moDFlWb2Dg+2pHaD8TB88qpU65gh5ZEErvyTm+QOEYn4FI4IN5NnX+
+	 vSaQ/C5uDNk1W0XxM90aSXxJjvBdgk4T++XB8N2/4BPrh3DvP9IK4m5Qlazjdmj/3m
+	 EHdGa+FT3FpmQ==
+Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-2b1a4250b07so75710931fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 11:22:14 -0700 (PDT)
+X-Gm-Message-State: AC+VfDxg9qRj/HOyLl3qwJdCWVqYWS+Rh1Lg9dmVcvVPLozSQ+K4k+Nr
+	tjHnrH2UeXNPgqjC7Vg09p0kOE2K6imbnl2yaA4=
+X-Google-Smtp-Source: ACHHUZ5bLSr3tA3IB8xCjeC0rEYdnEDeq7vmc1y/QuS5oHjyhnnuqZDpSw2PwmODz4CMTnRxT8zG59Qp1zLSa+hdG70=
+X-Received: by 2002:a2e:82d0:0:b0:2b0:297c:cbdf with SMTP id
+ n16-20020a2e82d0000000b002b0297ccbdfmr1546782ljh.1.1686075731505; Tue, 06 Jun
+ 2023 11:22:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <20230601101257.530867-1-rppt@kernel.org> <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+ <ZHjgIH3aX9dCvVZc@moria.home.lan> <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+ <20230605092040.GB3460@kernel.org> <ZH20XkD74prrdN4u@FVFF77S0Q05N>
 In-Reply-To: <ZH20XkD74prrdN4u@FVFF77S0Q05N>
+From: Song Liu <song@kernel.org>
+Date: Tue, 6 Jun 2023 11:21:59 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com>
+Message-ID: <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+To: Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,60 +70,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozla
- bs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.o
+ zlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 05, 2023 at 11:09:34AM +0100, Mark Rutland wrote:
-> On Mon, Jun 05, 2023 at 12:20:40PM +0300, Mike Rapoport wrote:
-> > On Fri, Jun 02, 2023 at 10:35:09AM +0100, Mark Rutland wrote:
+On Mon, Jun 5, 2023 at 3:09=E2=80=AFAM Mark Rutland <mark.rutland@arm.com> =
+wrote:
+
+[...]
+
+> > > > Can you give more detail on what parameters you need? If the only e=
+xtra
+> > > > parameter is just "does this allocation need to live close to kerne=
+l
+> > > > text", that's not that big of a deal.
+> > >
+> > > My thinking was that we at least need the start + end for each caller=
+. That
+> > > might be it, tbh.
 > >
+> > Do you mean that modules will have something like
+> >
+> >       jit_text_alloc(size, MODULES_START, MODULES_END);
+> >
+> > and kprobes will have
+> >
+> >       jit_text_alloc(size, KPROBES_START, KPROBES_END);
+> > ?
+>
+> Yes.
+
+How about we start with two APIs:
+     jit_text_alloc(size);
+     jit_text_alloc_range(size, start, end);
+
+AFAICT, arm64 is the only arch that requires the latter API. And TBH, I am
+not quite convinced it is needed.
+
+>
 > > It sill can be achieved with a single jit_alloc_arch_params(), just by
 > > adding enum jit_type parameter to jit_text_alloc().
-> 
+>
 > That feels backwards to me; it centralizes a bunch of information about
-> distinct users to be able to shove that into a static array, when the callsites
-> can pass that information. 
+> distinct users to be able to shove that into a static array, when the cal=
+lsites
+> can pass that information.
 
-The goal was not to shove everything into an array, but centralize
-architecture requirements for code allocations. The callsites don't have
-that information per se, they get it from the arch code, so having this
-information in a single place per arch is better than spreading
-MODULE_START, KPROBES_START etc all over.
+I think we only two type of users: module and everything else (ftrace, kpro=
+be,
+bpf stuff). The key differences are:
 
-I'd agree though that having types for jit_text_alloc is ugly and this
-should be handled differently.
- 
+  1. module uses text and data; while everything else only uses text.
+  2. module code is generated by the compiler, and thus has stronger
+  requirements in address ranges; everything else are generated via some
+  JIT or manual written assembly, so they are more flexible with address
+  ranges (in JIT, we can avoid using instructions that requires a specific
+  address range).
+
+The next question is, can we have the two types of users share the same
+address ranges? If not, we can reserve the preferred range for modules,
+and let everything else use the other range. I don't see reasons to further
+separate users in the "everything else" group.
+
+>
 > What's *actually* common after separating out the ranges? Is it just the
 > permissions?
 
-On x86 everything, on arm64 apparently just the permissions.
+I believe permission is the key, as we need the hardware to enforce
+permission.
 
-I've started to summarize what are the restrictions for code placement for
-modules, kprobes and bpf on different architectures, that's roughly what
-I've got so far:
-
-* x86 and s390 need everything within modules address space because of
-PC-relative
-* arm, arm64, loongarch, sparc64, riscv64, some of mips and
-powerpc32 configurations require a dedicated modules address space; the
-rest just use vmalloc address space
-* all architectures that support kprobes except x86 and s390 don't use
-relative jumps, so they don't care where kprobes insn_page will live
-* not sure yet about BPF. Looks like on arm and arm64 it does not use
-relative jumps, so it can be anywhere, didn't dig enough about the others.
-
-> If we want this to be able to share allocations and so on, why can't we do this
-> like a kmem_cache, and have the callsite pass a pointer to the allocator data?
-> That would make it easy for callsites to share an allocator or use a distinct
+>
+> If we want this to be able to share allocations and so on, why can't we d=
+o this
+> like a kmem_cache, and have the callsite pass a pointer to the allocator =
+data?
+> That would make it easy for callsites to share an allocator or use a dist=
+inct
 > one.
 
-This maybe something worth exploring.
- 
-> Thanks,
-> Mark.
+Sharing among different call sites will give us more benefit (in TLB
+misses rate,
+etc.). For example, a 2MB page may host text of two kernel modules, 4 kprob=
+es,
+6 ftrace trampolines, and 10 BPF programs. All of these only require one en=
+try
+in the iTLB.
 
--- 
-Sincerely yours,
-Mike.
+Thanks,
+Song
