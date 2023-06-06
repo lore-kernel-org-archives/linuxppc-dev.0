@@ -4,33 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE906C7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 16:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FE6DC77B73
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 17:20:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QbGcG18Wzz3fFn
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 02:47:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QbGbj2lDHz3bck
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 02:47:12 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 356GgvdA031913;
-	Tue, 6 Jun 2023 11:42:57 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 356GguQ2031912;
-	Tue, 6 Jun 2023 11:42:56 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 6 Jun 2023 11:42:56 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Umesh Kalappa <umesh.kalappa0@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QbHL63Q9Lz3f8s
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 03:20:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mentor.com (client-ip=68.232.141.98; helo=esa2.mentor.iphmx.com; envelope-from=joseph_myers@mentor.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 63 seconds by postgrey-1.36 at boromir; Wed, 07 Jun 2023 03:20:00 AEST
+Received: from esa2.mentor.iphmx.com (esa2.mentor.iphmx.com [68.232.141.98])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbHKX6vrpz3blS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 03:20:00 +1000 (AEST)
+X-IronPort-AV: E=Sophos;i="6.00,221,1681200000"; 
+   d="scan'208";a="8982264"
+Received: from orw-gwy-02-in.mentorg.com ([192.94.38.167])
+  by esa2.mentor.iphmx.com with ESMTP; 06 Jun 2023 09:18:52 -0800
+IronPort-SDR: WaDFQSCeIUx5yP0ZEaCfRHB8w5dJotp+BMYNHVqwEj/E6mfGSoC9KKuyaAjTDjI8+gLMMb2Zgi
+ 83Fm9azaOuOD0G50wGE9H4uMAIIabl57hUAJsAzAB2v7Xms5LEoy8pchYSwIQWvRFK6mbIxSMB
+ LloFVbOw053McNcNRPgM3lX7+impBX1jrmzPDe6zTm5/2FyQsFOZlyoC7ZOODU20YEDY+56EER
+ csvyuFiLfnc7x4F27Ml3XU3b3ekVikl8bv3EFmU8eHFgH4SNFatsmAhWrMScqJsKYvlN3/p5DG
+ mWc=
+Date: Tue, 6 Jun 2023 17:18:47 +0000
+From: Joseph Myers <joseph@codesourcery.com>
+To: Andrew Pinski <pinskia@gmail.com>
 Subject: Re: Passing the complex args in the GPR's
-Message-ID: <20230606164256.GQ19790@gate.crashing.org>
-References: <20220524093828.505575-1-npiggin@gmail.com> <CAGfacvTu_8tZnndLqbRJeU4UJrnq+tCchiZyFFqOE-hXM0=wCA@mail.gmail.com> <CA+=Sn1=gt-nf4T3vfWDKQLRNKkuBXh98nLbTtiCGDSPhMxyRiQ@mail.gmail.com> <CAGfacvQ84ZexaH3Wgdz-vL3Y2MkKEtqqMg_jOZ15++rhNvZuXA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAGfacvQ84ZexaH3Wgdz-vL3Y2MkKEtqqMg_jOZ15++rhNvZuXA@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <CA+=Sn1=gt-nf4T3vfWDKQLRNKkuBXh98nLbTtiCGDSPhMxyRiQ@mail.gmail.com>
+Message-ID: <c3e887b3-7c98-22b9-75d8-39edd7631d3@codesourcery.com>
+References: <20220524093828.505575-1-npiggin@gmail.com> <CAGfacvTu_8tZnndLqbRJeU4UJrnq+tCchiZyFFqOE-hXM0=wCA@mail.gmail.com> <CA+=Sn1=gt-nf4T3vfWDKQLRNKkuBXh98nLbTtiCGDSPhMxyRiQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+X-Originating-IP: [137.202.0.90]
+X-ClientProxiedBy: svr-ies-mbx-10.mgc.mentorg.com (139.181.222.10) To
+ svr-ies-mbx-10.mgc.mentorg.com (139.181.222.10)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,30 +48,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gcc@gcc.gnu.org, libc-alpha@sourceware.org, Andrew Pinski <pinskia@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Paul E Murphy <murphyp@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: gcc@gcc.gnu.org, libc-alpha@sourceware.org, Umesh Kalappa <umesh.kalappa0@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Paul E Murphy <murphyp@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+On Tue, 6 Jun 2023, Andrew Pinski via Gcc wrote:
 
-On Tue, Jun 06, 2023 at 08:35:22PM +0530, Umesh Kalappa wrote:
-> Hi Adnrew,
-> Thank you for the quick response and for PPC64 too ,we do have
-> mismatches in ABI b/w complex operations like
-> https://godbolt.org/z/bjsYovx4c .
+> You are looking at the wrong ABI document.
+> That is for the 64bit ABI.
+> The 32bit ABI document is located at:
+> http://refspecs.linux-foundation.org/elf/elfspec_ppc.pdf
 > 
-> Any reason why GCC chose to use GPR 's here ?
+> Plus the 32bit ABI document does not document Complex argument passing
+> as it was written in 1995 and never updated.
 
-What did you expect, what happened instead?  Why did you expect that,
-and why then is it an error what did happen?
+For the 32-bit ABI see 
+https://www.polyomino.org.uk/publications/2011/Power-Arch-32-bit-ABI-supp-1.0-Unified.pdf 
+(sources at https://github.com/ryanarn/powerabi - power.org has long since 
+disappeared).
 
-You used -O0.  As long as the code works, all is fine.  But unoptimised
-code frequently is hard to read, please use -O2 instead?
-
-As Andrew says, why did you use -m32 for GCC but -m64 for LLVM?  It is
-hard to compare those at all!  32-bit PowerPC Linux ABI (based on 32-bit
-PowerPC ELF ABI from 1995, BE version) vs. 64-bit ELFv2 ABI from 2015
-(LE version).
-
-
-Segher
+-- 
+Joseph S. Myers
+joseph@codesourcery.com
