@@ -4,296 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4AF5C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 00:17:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCF29C77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 03:46:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QZrdf0fyQz3f8G
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 10:17:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QZxH30tcgz3f7b
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 13:46:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=o54X53Hf;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=frxgAGfr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mail.zeus03.de (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=grundler@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=o54X53Hf;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=frxgAGfr;
 	dkim-atps=neutral
-Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZQrY3qGxz3c4w
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2023 17:55:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
-	date:from:to:subject:message-id:references:mime-version
-	:content-type:in-reply-to; s=k1; bh=qNV9qf6rhJyxF+PFiRZlT81q/Mvm
-	db/EcAsD5Y7RO4A=; b=o54X53HfsxbpVsf5OsUMs5hqfUKh1FtMAgIvGYf/ao8X
-	OfgN/S/1QbXgW8iXetNizszdV6LmLLnwJIh/Ml2IAWrSsKhBUlY5kCxt0pa+RfrM
-	Hgft1OFLr+tM1Ea0Ob4WmgW4UT5YMSDHvFkIuQkEfMYIGIj3rB9wkDUyFzgsx04=
-Received: (qmail 2935631 invoked from network); 5 Jun 2023 09:54:54 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 5 Jun 2023 09:54:54 +0200
-X-UD-Smtp-Session: l3s3148p1@qaPYN1391MQujnt4
-Date: Mon, 5 Jun 2023 09:54:53 +0200
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Thor Thayer <thor.thayer@linux.intel.com>,
-	Elie Morisse <syniurge@gmail.com>,
-	Shyam Sundar S K <shyam-sundar.s-k@amd.com>,
-	Brendan Higgins <brendan.higgins@linux.dev>,
-	Codrin Ciubotariu <codrin.ciubotariu@microchip.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@microchip.com>,
-	ye xingchen <ye.xingchen@zte.com.cn>,
-	Krzysztof Adamski <krzysztof.adamski@nokia.com>,
-	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Allison Randal <allison@lohutok.net>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Kamal Dasu <kdasu.kdev@gmail.com>,
-	Michal Simek <michal.simek@amd.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Jochen Friedrich <jochen@scram.de>,
-	Benson Leung <bleung@chromium.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Jarkko Nikula <jarkko.nikula@linux.intel.com>,
-	Baruch Siach <baruch@tkos.co.il>,
-	Jean-Marie Verdun <verdun@hpe.com>,
-	Nick Hawkins <nick.hawkins@hpe.com>,
-	Dong Aisheng <aisheng.dong@nxp.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Oleksij Rempel <linux@rempel-privat.de>,
-	Jean Delvare <jdelvare@suse.com>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Chris Pringle <chris.pringle@phabrix.com>,
-	Vladimir Zapolskiy <vz@mleia.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Julia Lawall <Julia.Lawall@inria.fr>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>,
-	Khalil Blaiech <kblaiech@nvidia.com>,
-	Asmaa Mnebhi <asmaa@nvidia.com>,
-	Vadim Pasternak <vadimp@nvidia.com>,
-	Michael Shych <michaelsh@nvidia.com>,
-	Chris Packham <chris.packham@alliedtelesis.co.nz>,
-	Qii Wang <qii.wang@mediatek.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Stefan Roese <sr@denx.de>,
-	Gregory CLEMENT <gregory.clement@bootlin.com>,
-	Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
-	Stefan Wahren <stefan.wahren@i2se.com>,
-	Avi Fishman <avifishman70@gmail.com>,
-	Tomer Maimon <tmaimon77@gmail.com>,
-	Tali Perry <tali.perry1@gmail.com>,
-	Peter Korsgaard <peter@korsgaard.com>, Andrew Lunn <andrew@lunn.ch>,
-	Robert Richter <rric@kernel.org>, Tony Lindgren <tony@atomide.com>,
-	Aaro Koskinen <aaro.koskinen@iki.fi>,
-	Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-	Vignesh R <vigneshr@ti.com>, Michael Ellerman <mpe@ellerman.id.au>,
-	Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>,
-	Rob Herring <robh@kernel.org>,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Loic Poulain <loic.poulain@linaro.org>,
-	Robert Foss <rfoss@kernel.org>, Andy Gross <agross@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Chris Brandt <chris.brandt@renesas.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Jim Cromie <jim.cromie@gmail.com>,
-	Patrice Chotard <patrice.chotard@foss.st.com>,
-	Pierre-Yves MORDRET <pierre-yves.mordret@foss.st.com>,
-	Alain Volmat <alain.volmat@foss.st.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Chen-Yu Tsai <wens@csie.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Laxman Dewangan <ldewangan@nvidia.com>,
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Wei Chen <harperchen1110@gmail.com>,
-	George Cherian <gcherian@marvell.com>,
-	Peter Rosin <peda@axentia.se>,
-	Peter Korsgaard <peter.korsgaard@barco.com>,
-	linux-aspeed@lists.ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Jan Dabros <jsd@semihalf.com>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Guenter Roeck <groeck@chromium.org>,
-	linux-riscv@lists.infradead.org, Fabio Estevam <festevam@gmail.com>,
-	linux-stm32@st-md-mailman.stormreply.com,
-	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-	Jerome Brunet <jbrunet@baylibre.com>,
-	chrome-platform@lists.linux.dev, linux-samsung-soc@vger.kernel.org,
-	Benjamin Fair <benjaminfair@google.com>,
-	linux-rockchip@lists.infradead.org, openbmc@lists.ozlabs.org,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Nancy Yuen <yuenn@google.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	NXP Linux Team <linux-imx@nxp.com>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	linux-sunxi@lists.linux.dev, Joel Stanley <joel@jms.id.au>,
-	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-	linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
-	linux-mediatek@lists.infradead.org,
-	linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
-	linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	linux-arm-kernel@lists.infradead.org,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Andrew Jeffery <andrew@aj.id.au>,
-	Patrick Venture <venture@google.com>, linux-mips@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	Dmitry Osipenko <digetx@gmail.com>, asahi@lists.linux.dev,
-	kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
-	linux-i2c@vger.kernel.org
-Subject: Re: [PATCH 00/89] i2c: Convert to platform remove callback returning
- void
-Message-ID: <ZH2UzYLPEQay3MBT@shikoro>
-Mail-Followup-To: Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Thor Thayer <thor.thayer@linux.intel.com>,
-	Elie Morisse <syniurge@gmail.com>,
-	Shyam Sundar S K <shyam-sundar.s-k@amd.com>,
-	Brendan Higgins <brendan.higgins@linux.dev>,
-	Codrin Ciubotariu <codrin.ciubotariu@microchip.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@microchip.com>,
-	ye xingchen <ye.xingchen@zte.com.cn>,
-	Krzysztof Adamski <krzysztof.adamski@nokia.com>,
-	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Allison Randal <allison@lohutok.net>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Kamal Dasu <kdasu.kdev@gmail.com>,
-	Michal Simek <michal.simek@amd.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Jochen Friedrich <jochen@scram.de>,
-	Benson Leung <bleung@chromium.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Jarkko Nikula <jarkko.nikula@linux.intel.com>,
-	Baruch Siach <baruch@tkos.co.il>,
-	Jean-Marie Verdun <verdun@hpe.com>,
-	Nick Hawkins <nick.hawkins@hpe.com>,
-	Dong Aisheng <aisheng.dong@nxp.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Oleksij Rempel <linux@rempel-privat.de>,
-	Jean Delvare <jdelvare@suse.com>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Chris Pringle <chris.pringle@phabrix.com>,
-	Vladimir Zapolskiy <vz@mleia.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Julia Lawall <Julia.Lawall@inria.fr>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>,
-	Khalil Blaiech <kblaiech@nvidia.com>,
-	Asmaa Mnebhi <asmaa@nvidia.com>,
-	Vadim Pasternak <vadimp@nvidia.com>,
-	Michael Shych <michaelsh@nvidia.com>,
-	Chris Packham <chris.packham@alliedtelesis.co.nz>,
-	Qii Wang <qii.wang@mediatek.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Stefan Roese <sr@denx.de>,
-	Gregory CLEMENT <gregory.clement@bootlin.com>,
-	Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
-	Stefan Wahren <stefan.wahren@i2se.com>,
-	Avi Fishman <avifishman70@gmail.com>,
-	Tomer Maimon <tmaimon77@gmail.com>,
-	Tali Perry <tali.perry1@gmail.com>,
-	Peter Korsgaard <peter@korsgaard.com>, Andrew Lunn <andrew@lunn.ch>,
-	Robert Richter <rric@kernel.org>, Tony Lindgren <tony@atomide.com>,
-	Aaro Koskinen <aaro.koskinen@iki.fi>,
-	Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-	Vignesh R <vigneshr@ti.com>, Michael Ellerman <mpe@ellerman.id.au>,
-	Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>,
-	Rob Herring <robh@kernel.org>,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Loic Poulain <loic.poulain@linaro.org>,
-	Robert Foss <rfoss@kernel.org>, Andy Gross <agross@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Chris Brandt <chris.brandt@renesas.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Jim Cromie <jim.cromie@gmail.com>,
-	Patrice Chotard <patrice.chotard@foss.st.com>,
-	Pierre-Yves MORDRET <pierre-yves.mordret@foss.st.com>,
-	Alain Volmat <alain.volmat@foss.st.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Chen-Yu Tsai <wens@csie.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Laxman Dewangan <ldewangan@nvidia.com>,
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Wei Chen <harperchen1110@gmail.com>,
-	George Cherian <gcherian@marvell.com>,
-	Peter Rosin <peda@axentia.se>,
-	Peter Korsgaard <peter.korsgaard@barco.com>,
-	linux-aspeed@lists.ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Jan Dabros <jsd@semihalf.com>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Guenter Roeck <groeck@chromium.org>,
-	linux-riscv@lists.infradead.org, Fabio Estevam <festevam@gmail.com>,
-	linux-stm32@st-md-mailman.stormreply.com,
-	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-	Jerome Brunet <jbrunet@baylibre.com>,
-	chrome-platform@lists.linux.dev, linux-samsung-soc@vger.kernel.org,
-	Benjamin Fair <benjaminfair@google.com>,
-	linux-rockchip@lists.infradead.org, openbmc@lists.ozlabs.org,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Nancy Yuen <yuenn@google.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	NXP Linux Team <linux-imx@nxp.com>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	linux-sunxi@lists.linux.dev, Joel Stanley <joel@jms.id.au>,
-	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-	linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
-	linux-mediatek@lists.infradead.org,
-	linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
-	linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	linux-arm-kernel@lists.infradead.org,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Andrew Jeffery <andrew@aj.id.au>,
-	Patrick Venture <venture@google.com>, linux-mips@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	Dmitry Osipenko <digetx@gmail.com>, asahi@lists.linux.dev,
-	kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
-	linux-i2c@vger.kernel.org
-References: <20230508205306.1474415-1-u.kleine-koenig@pengutronix.de>
- <20230601073322.ww25ajaurktqsryr@pengutronix.de>
- <ZHijKtBbH2sCSuT4@shikoro>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZxG82gnQz3brd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 13:45:51 +1000 (AEST)
+Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-3f7024e66adso21765e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2023 20:45:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1686023147; x=1688615147;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MODHFUV4L/O4bsTMBgQrkhxsTETNlqjXeaBSjrqN1Uk=;
+        b=frxgAGfrDnlTrD42lcQ7EhX80pQETt7hpvj8GDOShd8Qm3LsLOQhXG9GktUcX8+aAN
+         FESb+VQ/W9n8KrHbpJ/yssGP8pyUvUeQsV7z7n5BZPAI6DaZ3XBaeGnKrlvJjMPzxL08
+         ixdCgE2ARx1DbXxdv89dCRKsmHzSiD8mlk3F8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686023147; x=1688615147;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=MODHFUV4L/O4bsTMBgQrkhxsTETNlqjXeaBSjrqN1Uk=;
+        b=YYhrOvl7g+/rAHh03dz2TepvvFyamD68Mbnv5rQhYcGPHnj4kSV6nA+fgCUfJRqVqb
+         Lxp6Cb/fl0cdbVNI8NgNrQk7IYd3kTBWHVBXqbh8l39GFjqbAl8xQDVv5TW5EjtJJiEl
+         d6n26LNHl7hIjhhOd/3FQ2FSdE5CrhdA4/PX9ZIywgRvZCj4BdELAtalS3+PiZoCUtBC
+         PAEKVPcnC5vBMVp+PzDgUV8Xt/K2473eQaqxKqmFbqnMzvOoTQrwZZS362DcAzsZTKHD
+         Q8Rie8omuLxLi7ZS+ZOWH7xvbvYUyvsMHMzELCQfOlNTSi0t3BKz+y0ep4sKLjNpWRDj
+         KfXQ==
+X-Gm-Message-State: AC+VfDzHx5IOIj7A1wM18sUVbS5I1Mc9leGlhzGwdOH5up7SKHbplIDt
+	3pulo4p3EBgtShqT4HQ3FShE/zNQ5OoSP24Jag6Xog==
+X-Google-Smtp-Source: ACHHUZ6cKWdn8RJJ4txWpjrym0MbSBGurkQHLRhoVCkS31iSwlAMf58ngZXL41h0idPTPoMMTPAScMfKOb/zwtTzWTg=
+X-Received: by 2002:a05:600c:3b90:b0:3f7:ba55:d038 with SMTP id
+ n16-20020a05600c3b9000b003f7ba55d038mr115349wms.6.1686023147021; Mon, 05 Jun
+ 2023 20:45:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="pOTGJ+ASVLoKQ1Xi"
-Content-Disposition: inline
-In-Reply-To: <ZHijKtBbH2sCSuT4@shikoro>
-X-Mailman-Approved-At: Tue, 06 Jun 2023 10:16:36 +1000
+References: <CANEJEGvKRVGLYPmD3kujg6veq5KR7J+rAu6ni92wUz72KGtyBA@mail.gmail.com>
+ <20230407194645.GA3814486@bhelgaas> <CANEJEGscz3F-6cZcp7dBVekpxHMNXZWgUW2ic3xd6hm3xWH6ZQ@mail.gmail.com>
+In-Reply-To: <CANEJEGscz3F-6cZcp7dBVekpxHMNXZWgUW2ic3xd6hm3xWH6ZQ@mail.gmail.com>
+From: Grant Grundler <grundler@chromium.org>
+Date: Mon, 5 Jun 2023 20:45:34 -0700
+Message-ID: <CANEJEGsP2uV2SnHgs6h4Z9V3Fk9jKK4x2PL8g4a33kqvr0WDEg@mail.gmail.com>
+Subject: Re: [PATCHv2 pci-next 2/2] PCI/AER: Rate limit the reporting of the
+ correctable errors
+To: Grant Grundler <grundler@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -305,45 +74,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Rajat Jain <rajatja@chromium.org>, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Oliver O 'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+[plain text only this time...]
 
---pOTGJ+ASVLoKQ1Xi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, May 17, 2023 at 11:11=E2=80=AFPM Grant Grundler <grundler@chromium.=
+org> wrote:
+>
+> On Fri, Apr 7, 2023 at 12:46=E2=80=AFPM Bjorn Helgaas <helgaas@kernel.org=
+> wrote:
+> ...
+> > But I don't think we need output in a single step; we just need a
+> > single instance of ratelimit_state (or one for CPER path and another
+> > for native AER path), and that can control all the output for a single
+> > error.  E.g., print_hmi_event_info() looks like this:
+> >
+> >   static void print_hmi_event_info(...)
+> >   {
+> >     static DEFINE_RATELIMIT_STATE(rs, ...);
+> >
+> >     if (__ratelimit(&rs)) {
+> >       printk("%s%s Hypervisor Maintenance interrupt ...");
+> >       printk("%s Error detail: %s\n", ...);
+> >       printk("%s      HMER: %016llx\n", ...);
+> >     }
+> >   }
+> >
+> > I think it's nice that the struct ratelimit_state is explicit and
+> > there's no danger of breaking it when adding another printk later.
+>
+> Since the output is spread across at least two functions, I think your
+> proposal is a better solution.
+>
+> I'm not happy with the patch series I sent in my previous reply as an
+> attachment. It's only marginally better than the original code.
 
-On Thu, Jun 01, 2023 at 03:54:50PM +0200, Wolfram Sang wrote:
->=20
-> > I wonder how this series will go in. My expectation was that Wolfram
-> > picks up the whole series via his tree?!
->=20
-> Will do. I am currently super-busy, though.
+Despite not being happy about it, after a week of vacation I now think
+it would be better to include them as is since they solve the
+immediate problems and then solve the above two issues in additional
+patches. The two changes I have prepared so far correctly fix the
+original issues they intended to fix and don't affect the new issues
+we've found.
 
-Whole series applied to for-next. I squashed all the commits into one.
-These are mostly simple changes which we won't revert anyhow, but fix
-incrementally if we ever find an issue.
+I'll post a V3 of this series tonight after making sure it at least
+compiles and "looks right".
 
+cheers,
+grant
 
---pOTGJ+ASVLoKQ1Xi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmR9lM0ACgkQFA3kzBSg
-KbZSPhAAsfk7pusys7GFW8hUTH1/MqaEtjs2e4zgiR1STw1eeim+O6Ayd8LuEdGz
-eXWZfv2E4SYhFi1+lXo4jFP3tPkCynMqn8BLbfRwq6XzXboMRQtEOXXnmRM7aOKN
-5x2CbAPlQQZ3A4Bbht92ESvKN54WRDM8V5wg0YUkowAlK6wtG0H8ajUOqYJdfVeN
-OPftzfdxQUDphHtitAoIYgHrz8UDxZSuASIjHBbb5ppBwZNtxc81DQYuIE42ajf8
-uYRrujqm1lKaRKdWvbZrOwZ42he5QLFl88mVLpQ9OmuhexOuBryk/847XdGDUMP6
-LdI40mazpIk+X2txyOySPbR0e3nCmq8gHBUKw1VQ3FMcCwAf60CxaO6fz0WLKPnU
-ezWsW6ETk7l52upnb0oSFnTH7ZHBN30Ebtb6xqMoDWs4i6RX/DX//leVHoHb+rD1
-tj0EV3wgmvXgyo2wcha8I05YeTYiFofK5PmHq3L3yXBDusslXdEsyVdFU/Mjy01G
-vFMWb2wJliDaJy3u9c2LkNBeWdlScTUM7U978o1sakXd6k4AcFJ9iufF0QDoTKqF
-iZmdoZaQuVCiGtwB/gUFMtbQDnikh1r2XxLSeeIIe1Fj2yfWr/GzVUq2tCzWu2J/
-D0nf7ftd8Y/SK1BYHfuuHox68zo4O8+CNB9WKjgkdt4JsXBlV0U=
-=xv1r
------END PGP SIGNATURE-----
-
---pOTGJ+ASVLoKQ1Xi--
+>
+> I need another day or two to see if I can implement your proposal correct=
+ly.
+>
+> cheers,
+> grant
