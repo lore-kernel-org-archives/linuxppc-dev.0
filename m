@@ -4,62 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D379C7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 14:59:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45F33C7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 15:17:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QbDC23M13z3f7F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 00:59:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QbDbp3XPLz3dwS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 01:17:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=N/F0UBoM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=k+vHbMO0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=pinskia@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=pinskia@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=N/F0UBoM;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=k+vHbMO0;
 	dkim-atps=neutral
-Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbDB51Qpzz3c2j
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 00:58:20 +1000 (AEST)
-Received: by mail-qk1-x729.google.com with SMTP id af79cd13be357-75ca95c4272so558475785a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 07:58:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbDZr3dTKz3cD5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 01:16:19 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-2565a896d07so2756557a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 08:16:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686063496; x=1688655496;
+        d=gmail.com; s=20221208; t=1686064576; x=1688656576;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=uZGd3CtyVRHniSRiKmrR9VngFl3/OkPZT5Aeljmfrbg=;
-        b=N/F0UBoM9qWIuK7f0WIYxcvppNzs0Bsl/Uwe+w9zQfYvASOWisXfGSNPhE3W10kBGN
-         Ir6+MwYFBSr4g+XoDhcwnzRq6taDPGCzhb1k7UveyVKAlEcsBKsrP0ppgUNUgF2Q/1g/
-         4U/RzCLiB33GusPs223+n0HYCwPvOuZT9oaYHFdLJBnv+EkQEAWM3PQp2FwXNMOWH0sm
-         j9f0sX9V9uyf7cFBP8itdZYe1bZy/vpVd6c0gNqDrePNaz4Eu3T0X6lWnpBoTiVfSlfO
-         7sWrGl9NZbUPwVwVwyhxFriXH3gflnE+xLbsqyhYpD92KvKJW4ViPADMD0cqwFBcvr/h
-         W5hw==
+        bh=6/U+Ir10TGo+FRDrkNKeDyfsxj4MHF2AjGsKRO5a6iw=;
+        b=k+vHbMO0x9r5nFFW3cGiEtLVY+avVzey1xjXlHNmKgHLMZ+X9nA+eZVwjr/VAv0PAO
+         TMc3bNNHTTRTbROJGsaGlAdi4/vCSr7h+tEBxPhb1Ful8PxK/fuOQLPsD9WTliLnVsNA
+         Va8HXQSGndNZ5S1Mv1w8XWFW79bY46Qv9kGEodwHmw89Xbg7dXJIxDi7Vb7LR+PJLGHO
+         W9wldRrkGZSIDQuCRv3DLV3UgcNwwMhqc+78aiBfWWCcaqSlLzFGBLEGEfxecwx7/AAQ
+         3kB9doPp+eGOcIyf24o4xDL44+3jBSRP217vzbJr9lwK0qlkq7GbvTskx3hzvcdFIf+3
+         IYzw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686063496; x=1688655496;
+        d=1e100.net; s=20221208; t=1686064576; x=1688656576;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=uZGd3CtyVRHniSRiKmrR9VngFl3/OkPZT5Aeljmfrbg=;
-        b=N38Gbm8GldVH/d+569VcZ7vZogxFwXnIZ8GsCzJCXttlmSIajJzDn4wJj5+Duz5y3P
-         DSxGHiKszEaWpDIOB/uHvK4ilvFSr9Yt9/nxPfq6pi0K0XwDui5y9GOFwADPj48pUPgH
-         wr9BUNn1gGGH8uliTvyHpLBQhLJSbDypJdMqpT2hgbKXKg/qQIWfFa3pBm38scWS5qQW
-         VwRgoNc51EkZ5nvUkp2VG4Tp/fY5Ui9mlM8Env/wOpvSrMKZWuMxhppk5shFN6sz/jFd
-         CfhgkEYQmpUP7xd3b0X2y6wY1p9bBhcY1b9wDafPQIYHNZw4RApWqim8FNFNXNLfM5kP
-         9j/Q==
-X-Gm-Message-State: AC+VfDzX9Lk2MiVObqYwcnfbEZZ4dzqzk5Mwy2qnxoZlNQ5zen6kksNk
-	JXIh4velYBlgHzKn13deURRqNqM9ZRDNsOQ7ANc=
-X-Google-Smtp-Source: ACHHUZ5KXHC71e2qqBxlJfkddDxG1SLLg2jRxnm2hgEir990PF12el+u1G2qgn1fxyqFzSgaye3uiLVHkzDZZS+0JYM=
-X-Received: by 2002:a05:620a:8b8b:b0:75b:23a1:8e76 with SMTP id
- qx11-20020a05620a8b8b00b0075b23a18e76mr1982369qkn.71.1686063496383; Tue, 06
- Jun 2023 07:58:16 -0700 (PDT)
+        bh=6/U+Ir10TGo+FRDrkNKeDyfsxj4MHF2AjGsKRO5a6iw=;
+        b=YzivwMmvWcBY8u7T2Aeonzonuhay5xq46aqPTqIcXgHJNeJNUz2cmJecG8t5MOD0YE
+         rfh6ktZ3nykg9BZ66+wRfh36M8Y2zvlUfURQntI3xXCd4DAbSVwtzyTyMeuNBmqV5MhT
+         fBVYSVkHHROL9bf+XFVqLTqzT5BZND+SB0QpbWtf7YG8NNXGSt3xXwCs6hnNyUgApyEU
+         hzWMnwo4z3x6h9VOOdcXrdj78zymcEccZbztorFwtj053s8a6kxNaBLp/y7On5PV4Mgi
+         DLg8tCcCdqsfU9CkAbbrRkIb1H8x69NIeuA4z+cmDAQbjaU/I7XWPkiPBm4qcgdemSaf
+         vPhA==
+X-Gm-Message-State: AC+VfDzSKIJcuaTAWTImldYiG6/jn7o8UkZfwgBCRf91cPbftKRnWfze
+	MIaxZTGlR5lUgO5UGQP08zRYXn6AuLPE9BpuwCE=
+X-Google-Smtp-Source: ACHHUZ6rFRjp5lc97f7xHtSAY09tlQIMG/3u4xxbGGz1jSL9FsMMW2l89cSpHShnWwjRadGlTGZlIM2cwFIsCQJnUJM=
+X-Received: by 2002:a17:90b:11d1:b0:259:548b:d394 with SMTP id
+ gv17-20020a17090b11d100b00259548bd394mr1243799pjb.28.1686064576444; Tue, 06
+ Jun 2023 08:16:16 -0700 (PDT)
 MIME-Version: 1.0
 References: <20220524093828.505575-1-npiggin@gmail.com> <CAGfacvTu_8tZnndLqbRJeU4UJrnq+tCchiZyFFqOE-hXM0=wCA@mail.gmail.com>
-In-Reply-To: <CAGfacvTu_8tZnndLqbRJeU4UJrnq+tCchiZyFFqOE-hXM0=wCA@mail.gmail.com>
+ <CA+=Sn1=gt-nf4T3vfWDKQLRNKkuBXh98nLbTtiCGDSPhMxyRiQ@mail.gmail.com> <CAGfacvQ84ZexaH3Wgdz-vL3Y2MkKEtqqMg_jOZ15++rhNvZuXA@mail.gmail.com>
+In-Reply-To: <CAGfacvQ84ZexaH3Wgdz-vL3Y2MkKEtqqMg_jOZ15++rhNvZuXA@mail.gmail.com>
 From: Andrew Pinski <pinskia@gmail.com>
-Date: Tue, 6 Jun 2023 07:58:05 -0700
-Message-ID: <CA+=Sn1=gt-nf4T3vfWDKQLRNKkuBXh98nLbTtiCGDSPhMxyRiQ@mail.gmail.com>
+Date: Tue, 6 Jun 2023 08:16:05 -0700
+Message-ID: <CA+=Sn1mZ5VfFQ88T=S2LYV=gKEd_PbnFChsHkdojUhWXwRONqA@mail.gmail.com>
 Subject: Re: Passing the complex args in the GPR's
 To: Umesh Kalappa <umesh.kalappa0@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -79,47 +80,68 @@ Cc: gcc@gcc.gnu.org, libc-alpha@sourceware.org, Nicholas Piggin <npiggin@gmail.c
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 6, 2023 at 7:50=E2=80=AFAM Umesh Kalappa via Libc-alpha
-<libc-alpha@sourceware.org> wrote:
+On Tue, Jun 6, 2023 at 8:05=E2=80=AFAM Umesh Kalappa <umesh.kalappa0@gmail.=
+com> wrote:
 >
-> Hi all ,
+> Hi Adnrew,
+> Thank you for the quick response and for PPC64 too ,we do have
+> mismatches in ABI b/w complex operations like
+> https://godbolt.org/z/bjsYovx4c .
 >
-> For the test case https://godbolt.org/z/vjs1vfs5W ,we see the mismatch
-> in the ABI b/w gcc and clang .
->
-> Do we have any supporting documents that second the GCC behaviour over CL=
-ANG ?
->
-> EABI states like
->
-> In the Power Architecture 64-Bit ELF V2 ABI Specification document
-> (v1.1 from 16 July 2015)
+> Any reason why GCC chose to use GPR 's here ?
 
-You are looking at the wrong ABI document.
-That is for the 64bit ABI.
-The 32bit ABI document is located at:
-http://refspecs.linux-foundation.org/elf/elfspec_ppc.pdf
-
-Plus the 32bit ABI document does not document Complex argument passing
-as it was written in 1995 and never updated.
-
-https://www.nxp.com/docs/en/reference-manual/E500ABIUG.pdf does not
-document it either.
-
-Thanks,
-Andrew Pinski
+Yes because it was set before 2003. There could not be an ABI break.
+r0-50273-gded9bf77e35ce9a2246 fixed GCC for the AIX ABI though.
 
 >
-> Page 53:
->
-> Map complex floating-point and complex integer types as if the
-> argument was specified as separate real
-> and imaginary parts.
->
-> and in this case the double complexes are broken down with double real
-> and double img and expected to pass in FPR not the GPR.
->
->
->
-> Thank you
 > ~Umesh
+>
+> On Tue, Jun 6, 2023 at 8:28=E2=80=AFPM Andrew Pinski <pinskia@gmail.com> =
+wrote:
+> >
+> > On Tue, Jun 6, 2023 at 7:50=E2=80=AFAM Umesh Kalappa via Libc-alpha
+> > <libc-alpha@sourceware.org> wrote:
+> > >
+> > > Hi all ,
+> > >
+> > > For the test case https://godbolt.org/z/vjs1vfs5W ,we see the mismatc=
+h
+> > > in the ABI b/w gcc and clang .
+> > >
+> > > Do we have any supporting documents that second the GCC behaviour ove=
+r CLANG ?
+> > >
+> > > EABI states like
+> > >
+> > > In the Power Architecture 64-Bit ELF V2 ABI Specification document
+> > > (v1.1 from 16 July 2015)
+> >
+> > You are looking at the wrong ABI document.
+> > That is for the 64bit ABI.
+> > The 32bit ABI document is located at:
+> > http://refspecs.linux-foundation.org/elf/elfspec_ppc.pdf
+> >
+> > Plus the 32bit ABI document does not document Complex argument passing
+> > as it was written in 1995 and never updated.
+> >
+> > https://www.nxp.com/docs/en/reference-manual/E500ABIUG.pdf does not
+> > document it either.
+> >
+> > Thanks,
+> > Andrew Pinski
+> >
+> > >
+> > > Page 53:
+> > >
+> > > Map complex floating-point and complex integer types as if the
+> > > argument was specified as separate real
+> > > and imaginary parts.
+> > >
+> > > and in this case the double complexes are broken down with double rea=
+l
+> > > and double img and expected to pass in FPR not the GPR.
+> > >
+> > >
+> > >
+> > > Thank you
+> > > ~Umesh
