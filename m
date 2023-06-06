@@ -4,88 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB756C7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 05:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6D1CC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 06:48:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QZz8d294Nz3fmH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 15:11:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qb1JL0Nk4z3f85
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 16:48:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XseMTiaZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=p2mLvfL6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::335; helo=mail-ot1-x335.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XseMTiaZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=p2mLvfL6;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-x335.google.com (mail-ot1-x335.google.com [IPv6:2607:f8b0:4864:20::335])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZysf18QNz3dy5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 14:58:13 +1000 (AEST)
-Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3564l51V025049;
-	Tue, 6 Jun 2023 04:57:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=GtXXV1ea1Un9rzXBlZn1s5dS8N5u95C6wuxdWHgOLpc=;
- b=XseMTiaZv30dWFFU3mfNuZ8HlewJLYCwiPmerkCLew8fI2BZkrBgCrJ3VfoCMCSknck9
- GGyYB15urjkHUP/v7peUDNwnlHhUsIS+nUObaZzq46zThcqAvv/R8Bta09o9xFgQyBU9
- JHUZzQEZKlxAWP+/szwuRtU4bmuWCbAjGdZZzRWQZm+JB+twyKKbhZ3CHLMoBNTLRZOz
- jtNwcAD6GRotAMPfvsqT0YGXb8n4uSZHlHJW+LYtW0+fpESzzpkfSSLu6wpdy1Y766zf
- 5+EagsjjRVw0uy4lhc+f4WM+ulw3PJfAMQ5nTq4MC5ePpl+dTkoyKtdEEZVjcMDRpc+Q wA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r1x30g4k0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 06 Jun 2023 04:57:58 +0000
-Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3564vspD018879;
-	Tue, 6 Jun 2023 04:57:57 GMT
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com [169.47.144.26])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r1x30g4jt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 06 Jun 2023 04:57:57 +0000
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
-	by ppma04wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3560s4h5026536;
-	Tue, 6 Jun 2023 04:57:57 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([9.208.130.101])
-	by ppma04wdc.us.ibm.com (PPS) with ESMTPS id 3qyxfs55jr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 06 Jun 2023 04:57:57 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3564vue83932814
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 6 Jun 2023 04:57:56 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 16D1C58063;
-	Tue,  6 Jun 2023 04:57:56 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 434B25804B;
-	Tue,  6 Jun 2023 04:57:51 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.109.204.255])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  6 Jun 2023 04:57:50 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org, akpm@linux-foundation.org, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH 16/16] powerpc/book3s64/radix: Remove mmu_vmemmap_psize
-Date: Tue,  6 Jun 2023 10:26:08 +0530
-Message-Id: <20230606045608.55127-17-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qb1HN3Hwnz3bkD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 16:47:10 +1000 (AEST)
+Received: by mail-ot1-x335.google.com with SMTP id 46e09a7af769-6b2041315a5so1177522a34.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2023 23:47:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1686034025; x=1688626025;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=FpS+7Y45j46Pn0A0Vwj2taJ0XM2ZW9Br3yi/49LLWqo=;
+        b=p2mLvfL67Uh7IORNJ/w5kOyJ71XGhQqUNGf8h1V8elYjKvNR6O+CPy7kufKtzy8FZa
+         9ZuphV2Sf0cy8+f+wjwoGgd1fkqpDOwtB7L4cdXoJLw70VInSA32Nuv3+CXijTs1xFee
+         jf9OCjyc/4cdGrMXo/NazaRphXAWhP1/TpbNLQ1V65GrUJak/Dd3eLxzb+ZU+E4IYzNR
+         W+un9xMZW28aVYAEkRaCztMkXV402ugz0NTvDYKmSYEITKPtMwhhMDMo0ISIFedgz7F3
+         0WqClKKzotSvludI6Dh/kvCI9el3stOJHUhEZb1MrBwT/eVK8tHuObkc94hwyPnh3LDU
+         YYpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686034025; x=1688626025;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=FpS+7Y45j46Pn0A0Vwj2taJ0XM2ZW9Br3yi/49LLWqo=;
+        b=Q6Lk9BtT9fd867h6CjFim8+hU1oGdpPfRKpaRUkH5Gx0xtOG9rp/vLM4fq7ZEH1jzn
+         r8USrkxME8TOMzXbJi7pHq4s1+qAdhzPyJ+pfP2TjCrfN1dBK2s48GUjdpx/0uqCpUE3
+         2EgL+2GbLp1OLd/WhXwdW4HceGtdZr90Ptk1XtJx6f7cVdVaBJJ7RWaw1719l5TimqkQ
+         tUqa8uHkh6mALs4S4d3rx2BBNn5oElqo+F8BzvI18EwmOR65+LGv1+PA/wgIqygDCeC7
+         rMtjjdHG7gCFZkwOUKdWmreqkcdsJa8pCtWHiuDYilcNJ3Kl8ZXVNmFxqv/tnT3UpuDC
+         QU9A==
+X-Gm-Message-State: AC+VfDyGwzFRZNG8Gyu0P/dPv6SCx3ABNwqK7sRxisHhmJ4CQoKS9sH4
+	omluJFXjPBDuJ8EODZH4zttsPtj1Tns=
+X-Google-Smtp-Source: ACHHUZ5bHvn09zgpXCCMeRANZIvt1BqulKPJYmG8y7dCYAiYwG+huEgKqo5jjAFxna+a9rEU2DMOHw==
+X-Received: by 2002:a9d:7cc3:0:b0:6b1:593d:539 with SMTP id r3-20020a9d7cc3000000b006b1593d0539mr1221012otn.21.1686034025155;
+        Mon, 05 Jun 2023 23:47:05 -0700 (PDT)
+Received: from wheely.local0.net ([1.146.61.5])
+        by smtp.gmail.com with ESMTPSA id c14-20020aa78e0e000000b0063d24fcc2besm6130449pfr.125.2023.06.05.23.47.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 05 Jun 2023 23:47:04 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/4] powerpc/boot: build flags refactoring
+Date: Tue,  6 Jun 2023 16:46:53 +1000
+Message-Id: <20230606064657.183969-1-npiggin@gmail.com>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230606045608.55127-1-aneesh.kumar@linux.ibm.com>
-References: <20230606045608.55127-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: y6PYvbcgktADezP7_nTK8pUvZVPzpawv
-X-Proofpoint-GUID: 48BU0m1fEnJh5Q_ak7NwkVSsm_WRDXn-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-06_02,2023-06-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
- clxscore=1015 bulkscore=0 lowpriorityscore=0 priorityscore=1501
- adultscore=0 spamscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2304280000 definitions=main-2306060040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,82 +75,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Will Deacon <will@kernel.org>, Muchun Song <muchun.song@linux.dev>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>, Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Joao Martins <joao.m.martins@oracle.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is not used by radix anymore.
+This is a rebase of the series here. It's no longer a fix because
+the clang build issue got a minimal fix. A couple were merged, and
+I pulled the rest of the boot specific ones into this series.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/book3s64/radix_pgtable.c | 10 ----------
- arch/powerpc/mm/init_64.c                | 21 ++++++++++++++-------
- 2 files changed, 14 insertions(+), 17 deletions(-)
+https://lore.kernel.org/linuxppc-dev/20230426055848.402993-1-npiggin@gmail.com/
 
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 82d36df52a8d..b59219751599 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -601,16 +601,6 @@ void __init radix__early_init_mmu(void)
- 	mmu_virtual_psize = MMU_PAGE_4K;
- #endif
- 
--#ifdef CONFIG_SPARSEMEM_VMEMMAP
--	/* vmemmap mapping */
--	if (mmu_psize_defs[MMU_PAGE_2M].shift) {
--		/*
--		 * map vmemmap using 2M if available
--		 */
--		mmu_vmemmap_psize = MMU_PAGE_2M;
--	} else
--		mmu_vmemmap_psize = mmu_virtual_psize;
--#endif
- 	/*
- 	 * initialize page table size
- 	 */
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 5701faca39ef..6db7a063ba63 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -198,17 +198,12 @@ bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long start,
- 	return false;
- }
- 
--int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
--		struct vmem_altmap *altmap)
-+int __meminit __vmemmap_populate(unsigned long start, unsigned long end, int node,
-+				 struct vmem_altmap *altmap)
- {
- 	bool altmap_alloc;
- 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
- 
--#ifdef CONFIG_PPC_BOOK3S_64
--	if (radix_enabled())
--		return radix__vmemmap_populate(start, end, node, altmap);
--#endif
--
- 	/* Align to the page size of the linear mapping. */
- 	start = ALIGN_DOWN(start, page_size);
- 
-@@ -277,6 +272,18 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
- 	return 0;
- }
- 
-+int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
-+			       struct vmem_altmap *altmap)
-+{
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (radix_enabled())
-+		return radix__vmemmap_populate(start, end, node, altmap);
-+#endif
-+
-+	return __vmemmap_populate(start, end, node, altmap);
-+}
-+
- #ifdef CONFIG_MEMORY_HOTPLUG
- static unsigned long vmemmap_list_free(unsigned long start)
- {
+Thanks,
+Nick
+
+Nicholas Piggin (4):
+  powerpc/boot: Separate target flags from BOOTCFLAGS
+  powerpc/boot: Separate CPP flags from BOOTCFLAGS
+  powerpc/boot: Separate BOOTCFLAGS from BOOTASFLAGS
+  powerpc/boot: Clean up Makefile after cflags and asflags separation
+
+ arch/powerpc/boot/Makefile | 66 ++++++++++++++++++++------------------
+ 1 file changed, 34 insertions(+), 32 deletions(-)
+
 -- 
 2.40.1
 
