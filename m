@@ -4,53 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87D4EC77B73
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 14:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D379C7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 14:59:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QbCL45zHpz3cdy
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 00:20:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QbDC23M13z3f7F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 00:59:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FtdmKnJT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=N/F0UBoM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=tzungbi@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=pinskia@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FtdmKnJT;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=N/F0UBoM;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qb3g76MXDz3c46
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 18:34:27 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E555A62EB2;
-	Tue,  6 Jun 2023 08:34:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8EF9C4339B;
-	Tue,  6 Jun 2023 08:34:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686040464;
-	bh=IBidPa4YTyIF5atWcJcRcHpMTfYQvXCVIu3C1ReCwe8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FtdmKnJTbh0Th4rLzQVdzsyHI4nobuWxYORj11iWeWhGlMgvLcF7mRuKDFP/3SjWj
-	 E5Za6vAzdwMhU2Fl7W+Yd14DBVHDobnBWLRAmob+EsEIFyB5d80PGYjA3JIjQUBajb
-	 InBHOAv0cNMXRLtMH0xOOu4RRhUp3kA2MYZeOzlJOygnQC7JmPUZ5PDtqTXJfHRnP2
-	 1AWELankUVH81S+2sDfidjLYiiUjlwt7jNuRuO9T4Eih88JdAH2XgOt0pTjw3cIR7b
-	 lmQCCanbigXkSgQ/AIlWp5wfiem/MA7KeHluPdl6au2zq8eAq591Yb0A87DeofIIFq
-	 Tf4L4UWn/XCBw==
-Date: Tue, 6 Jun 2023 16:34:15 +0800
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: Yu Zhao <yuzhao@google.com>
-Subject: Re: [PATCH mm-unstable v2 01/10] mm/kvm: add
- mmu_notifier_ops->test_clear_young()
-Message-ID: <ZH7vh1GmsV+UCPwv@google.com>
-References: <20230526234435.662652-1-yuzhao@google.com>
- <20230526234435.662652-2-yuzhao@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbDB51Qpzz3c2j
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 00:58:20 +1000 (AEST)
+Received: by mail-qk1-x729.google.com with SMTP id af79cd13be357-75ca95c4272so558475785a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 07:58:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1686063496; x=1688655496;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uZGd3CtyVRHniSRiKmrR9VngFl3/OkPZT5Aeljmfrbg=;
+        b=N/F0UBoM9qWIuK7f0WIYxcvppNzs0Bsl/Uwe+w9zQfYvASOWisXfGSNPhE3W10kBGN
+         Ir6+MwYFBSr4g+XoDhcwnzRq6taDPGCzhb1k7UveyVKAlEcsBKsrP0ppgUNUgF2Q/1g/
+         4U/RzCLiB33GusPs223+n0HYCwPvOuZT9oaYHFdLJBnv+EkQEAWM3PQp2FwXNMOWH0sm
+         j9f0sX9V9uyf7cFBP8itdZYe1bZy/vpVd6c0gNqDrePNaz4Eu3T0X6lWnpBoTiVfSlfO
+         7sWrGl9NZbUPwVwVwyhxFriXH3gflnE+xLbsqyhYpD92KvKJW4ViPADMD0cqwFBcvr/h
+         W5hw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686063496; x=1688655496;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uZGd3CtyVRHniSRiKmrR9VngFl3/OkPZT5Aeljmfrbg=;
+        b=N38Gbm8GldVH/d+569VcZ7vZogxFwXnIZ8GsCzJCXttlmSIajJzDn4wJj5+Duz5y3P
+         DSxGHiKszEaWpDIOB/uHvK4ilvFSr9Yt9/nxPfq6pi0K0XwDui5y9GOFwADPj48pUPgH
+         wr9BUNn1gGGH8uliTvyHpLBQhLJSbDypJdMqpT2hgbKXKg/qQIWfFa3pBm38scWS5qQW
+         VwRgoNc51EkZ5nvUkp2VG4Tp/fY5Ui9mlM8Env/wOpvSrMKZWuMxhppk5shFN6sz/jFd
+         CfhgkEYQmpUP7xd3b0X2y6wY1p9bBhcY1b9wDafPQIYHNZw4RApWqim8FNFNXNLfM5kP
+         9j/Q==
+X-Gm-Message-State: AC+VfDzX9Lk2MiVObqYwcnfbEZZ4dzqzk5Mwy2qnxoZlNQ5zen6kksNk
+	JXIh4velYBlgHzKn13deURRqNqM9ZRDNsOQ7ANc=
+X-Google-Smtp-Source: ACHHUZ5KXHC71e2qqBxlJfkddDxG1SLLg2jRxnm2hgEir990PF12el+u1G2qgn1fxyqFzSgaye3uiLVHkzDZZS+0JYM=
+X-Received: by 2002:a05:620a:8b8b:b0:75b:23a1:8e76 with SMTP id
+ qx11-20020a05620a8b8b00b0075b23a18e76mr1982369qkn.71.1686063496383; Tue, 06
+ Jun 2023 07:58:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230526234435.662652-2-yuzhao@google.com>
-X-Mailman-Approved-At: Wed, 07 Jun 2023 00:19:27 +1000
+References: <20220524093828.505575-1-npiggin@gmail.com> <CAGfacvTu_8tZnndLqbRJeU4UJrnq+tCchiZyFFqOE-hXM0=wCA@mail.gmail.com>
+In-Reply-To: <CAGfacvTu_8tZnndLqbRJeU4UJrnq+tCchiZyFFqOE-hXM0=wCA@mail.gmail.com>
+From: Andrew Pinski <pinskia@gmail.com>
+Date: Tue, 6 Jun 2023 07:58:05 -0700
+Message-ID: <CA+=Sn1=gt-nf4T3vfWDKQLRNKkuBXh98nLbTtiCGDSPhMxyRiQ@mail.gmail.com>
+Subject: Re: Passing the complex args in the GPR's
+To: Umesh Kalappa <umesh.kalappa0@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,29 +75,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, x86@kernel.org, Gavin Shan <gshan@redhat.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, Ben Gardon <bgardon@google.com>, Chao Peng <chao.p.peng@linux.intel.com>, Will Deacon <will@kernel.org>, Gaosheng Cui <cuigaosheng1@huawei.com>, Marc Zyngier <maz@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Alistair Popple <apopple@nvidia.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Zenghui Yu <yuzenghui@huawei.com>, linux-trace-kernel@vger.kernel.org, linux-mm@google.com, Thomas Huth <thuth@redhat.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Steven Rostedt <rostedt@goodmis.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Fab
- iano Rosas <farosas@linux.ibm.com>, Michael Larabel <michael@michaellarabel.com>, Sean Christopherson <seanjc@google.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
+Cc: gcc@gcc.gnu.org, libc-alpha@sourceware.org, Nicholas Piggin <npiggin@gmail.com>, Paul E Murphy <murphyp@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 26, 2023 at 05:44:26PM -0600, Yu Zhao wrote:
-> +/*
-> + * Architectures that implement kvm_arch_test_clear_young() should override
-> + * kvm_arch_has_test_clear_young().
-> + *
-> + * kvm_arch_has_test_clear_young() is allowed to return false positive, i.e., it
-> + * can return true if kvm_arch_test_clear_young() is supported but disabled due
-> + * to some runtime constraint. In this case, kvm_arch_test_clear_young() should
+On Tue, Jun 6, 2023 at 7:50=E2=80=AFAM Umesh Kalappa via Libc-alpha
+<libc-alpha@sourceware.org> wrote:
+>
+> Hi all ,
+>
+> For the test case https://godbolt.org/z/vjs1vfs5W ,we see the mismatch
+> in the ABI b/w gcc and clang .
+>
+> Do we have any supporting documents that second the GCC behaviour over CL=
+ANG ?
+>
+> EABI states like
+>
+> In the Power Architecture 64-Bit ELF V2 ABI Specification document
+> (v1.1 from 16 July 2015)
 
-Is it a typo here?  s/kvm_arch_test_clear_young/kvm_arch_has_test_clear_young/.
+You are looking at the wrong ABI document.
+That is for the 64bit ABI.
+The 32bit ABI document is located at:
+http://refspecs.linux-foundation.org/elf/elfspec_ppc.pdf
 
-> +static inline int mmu_notifier_clear_young(struct mm_struct *mm,
-> +					   unsigned long start,
-> +					   unsigned long end)
-> +{
-> +	return 0;
-> +}
-> +
+Plus the 32bit ABI document does not document Complex argument passing
+as it was written in 1995 and never updated.
 
-This looks irrelevant to the patch but a fix for commit 1d7715c676a1
-("mmu-notifier: add clear_young callback") instead.
+https://www.nxp.com/docs/en/reference-manual/E500ABIUG.pdf does not
+document it either.
+
+Thanks,
+Andrew Pinski
+
+>
+> Page 53:
+>
+> Map complex floating-point and complex integer types as if the
+> argument was specified as separate real
+> and imaginary parts.
+>
+> and in this case the double complexes are broken down with double real
+> and double img and expected to pass in FPR not the GPR.
+>
+>
+>
+> Thank you
+> ~Umesh
