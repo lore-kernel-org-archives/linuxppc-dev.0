@@ -4,68 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5E20C7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 03:56:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC07BC7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 04:31:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QZxVP2wj0z3f8Y
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 13:56:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QZyH30DSBz3fCX
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 14:31:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=c6TZBnZm;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=NkMg/qr3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=grundler@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=grundler@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=c6TZBnZm;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=NkMg/qr3;
 	dkim-atps=neutral
-Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZxSX5Qbtz3f4W
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 13:54:52 +1000 (AEST)
-Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-543c692db30so1204631a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2023 20:54:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZxDZ0hVCz3brd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 13:44:29 +1000 (AEST)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-3f7359a3b78so40655e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2023 20:44:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1686023690; x=1688615690;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Zl0xSYFVXihxlFwU2GI1A7DmXGMBSodJ+vcgxYeTY0Q=;
-        b=c6TZBnZm4tjQlimIKuxQRIpQb8QaOyqNIC3Ybs3R1I6QmAUHBdQ6VrOpRmH5sJzlHl
-         yNmYpXjlJeKbgoxlirqPmoAAXwNKYE025hH6CtoReVgEIf39AnRgPxBYn8s75U2Dz/3p
-         LMG/pkrnhM1SXB7U+oq9nukDzv5jxXZm9PchQ=
+        d=chromium.org; s=google; t=1686023063; x=1688615063;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=iftkf2df8ANImf6BgTxCsl6iQc2J2N5tuIojpUh0gBM=;
+        b=NkMg/qr3GDnS9llAsChIvIz1iftdnBvAbn3ldeRzB/kHRoaJejfxiYEiUvc8826ILE
+         b19s9rBHOqbsLChWxUr4LzrwDZoIbOpo6n3yzcSK0W1H9LTxZO1n/DeG1P08Y2uUxrNb
+         dAPlpZrXRzGbYqME041FQYVU/BJYOFppT8WAU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686023690; x=1688615690;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Zl0xSYFVXihxlFwU2GI1A7DmXGMBSodJ+vcgxYeTY0Q=;
-        b=djmDwl5azMyBzn/rp6GKFsQy+6Uys1YNSWoEY9/GsAorBUkkeM0iM9l8lwCPK4ZyHk
-         l8ONIwOVCWvHtgvwQvQV70cbvqJaAeeGl2mUbiWnryxFQh0Aks1AjVq387U6gxI0Rw0L
-         yAm4bg0qLc0oP+gtPtlrGS/gHST0US+l40x+jI7avr+XnzzChXtt4HY0qlJIFFGPoP48
-         LnSXCpgMOHCrEcxR78vIoBxDE7qG9Sj7cbKevQhE+x4p+c0xZGQKtjZF7ejuPUFW2NFz
-         jhvcGWHUISiuWYC/qsoey3z5KNGsY4qpQVXvsu5VmAhJa/IWumeo8PwFYKFy79lKocwV
-         imng==
-X-Gm-Message-State: AC+VfDxIuGVDXKbambTEQJpPmvuRS5ghE/PCqcVWBLKcXq1yJqjBDhnr
-	m9BRGnUWUbSrqds+ziiQVbuEmg==
-X-Google-Smtp-Source: ACHHUZ7/CrXntbChZr3gqIpdTn+xlRnOrx/HP0LFPjZRwolM/ohxcYZ6OUGoLPPIj8t4jX8e+O5LZQ==
-X-Received: by 2002:a05:6a20:d806:b0:101:73a9:1683 with SMTP id iv6-20020a056a20d80600b0010173a91683mr1218950pzb.33.1686023690390;
-        Mon, 05 Jun 2023 20:54:50 -0700 (PDT)
-Received: from grundler-glapstation.lan ([70.134.62.80])
-        by smtp.gmail.com with ESMTPSA id e11-20020a17090301cb00b001ac5b0a959bsm7346636plh.24.2023.06.05.20.54.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Jun 2023 20:54:50 -0700 (PDT)
-From: Grant Grundler <grundler@chromium.org>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	"Oliver O \ 'Halloran" <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCHv3 pci-next 2/2] PCI/AER: Rate limit the reporting of the correctable errors
-Date: Mon,  5 Jun 2023 20:54:42 -0700
-Message-ID: <20230606035442.2886343-2-grundler@chromium.org>
-X-Mailer: git-send-email 2.41.0.rc0.172.g3f132b7071-goog
-In-Reply-To: <20230606035442.2886343-1-grundler@chromium.org>
-References: <20230606035442.2886343-1-grundler@chromium.org>
+        d=1e100.net; s=20221208; t=1686023063; x=1688615063;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=iftkf2df8ANImf6BgTxCsl6iQc2J2N5tuIojpUh0gBM=;
+        b=X2DWCYIwHGIAfISo8XPOWJrhD2sMlXjz5hQr1iIxJx8+lLdrFDCQZTK0BvKapEnLtr
+         lNA4zgqjh3bRHoPFca9z38xDzS1nxWtTqXzBX9ik/e5L94agdLVYOfKw5hr/z43dY1rM
+         l4+QpVDHy15SVtdd10Sx2Dv8e/fI/mSZgMo9H6pawPxKDkrbIUWIX6DgytSANlFyvAVw
+         ib8xHaz4liVMu0y6L7gxg14PYhM7bneNX6dwkgJ2OTbTXP3YkrdH8CBdmeaMqnNVk7CB
+         ZpI/70vmEc34qLKgRuFlKpCpZwWXsGdiifUiLvhdE81SIwwWZ6wGd9p9JqpyTRA826KF
+         71oQ==
+X-Gm-Message-State: AC+VfDzhIqeSV6KFN1gduUE6O9s9Uq1PRxvMrUW9OHP5sWH9A5IavJaA
+	FNIFqtfyf6t37gfo9u8gOUFVf58y4py2i91KVpwplA==
+X-Google-Smtp-Source: ACHHUZ5838FmJNGVv1gKne3dr6SrJ9LLo9rk5oX1YXP96/4xSFDmcr5KRpGvFhwWjLRp2ZflF9/f2BK0qG9I4px8n9E=
+X-Received: by 2002:a05:600c:881a:b0:3f1:9a3d:4f7f with SMTP id
+ gy26-20020a05600c881a00b003f19a3d4f7fmr49883wmb.1.1686023062853; Mon, 05 Jun
+ 2023 20:44:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CANEJEGvKRVGLYPmD3kujg6veq5KR7J+rAu6ni92wUz72KGtyBA@mail.gmail.com>
+ <20230407194645.GA3814486@bhelgaas> <CANEJEGscz3F-6cZcp7dBVekpxHMNXZWgUW2ic3xd6hm3xWH6ZQ@mail.gmail.com>
+In-Reply-To: <CANEJEGscz3F-6cZcp7dBVekpxHMNXZWgUW2ic3xd6hm3xWH6ZQ@mail.gmail.com>
+From: Grant Grundler <grundler@chromium.org>
+Date: Mon, 5 Jun 2023 20:44:10 -0700
+Message-ID: <CANEJEGs_ni14PZ0VQcNHF+epBspQwOWLu1Yo8KyF3RhpGscV6w@mail.gmail.com>
+Subject: Re: [PATCHv2 pci-next 2/2] PCI/AER: Rate limit the reporting of the
+ correctable errors
+To: Grant Grundler <grundler@chromium.org>
+Content-Type: multipart/alternative; boundary="000000000000bf320105fd6dd552"
+X-Mailman-Approved-At: Tue, 06 Jun 2023 14:30:55 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,175 +73,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rajat Jain <rajatja@chromium.org>, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>, Grant Grundler <grundler@chromium.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Rajat Jain <rajatja@chromium.org>, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Oliver O 'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rajat Khandelwal <rajat.khandelwal@linux.intel.com>
+--000000000000bf320105fd6dd552
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-There are many instances where correctable errors tend to inundate
-the message buffer. We observe such instances during thunderbolt PCIe
-tunneling.
+On Wed, May 17, 2023 at 11:11=E2=80=AFPM Grant Grundler <grundler@chromium.=
+org>
+wrote:
 
-It's true that they are mitigated by the hardware and are non-fatal
-but we shouldn't be spamming the logs with such correctable errors as it
-confuses other kernel developers less familiar with PCI errors, support
-staff, and users who happen to look at the logs, hence rate limit them.
+> On Fri, Apr 7, 2023 at 12:46=E2=80=AFPM Bjorn Helgaas <helgaas@kernel.org=
+> wrote:
+> ...
+> > But I don't think we need output in a single step; we just need a
+> > single instance of ratelimit_state (or one for CPER path and another
+> > for native AER path), and that can control all the output for a single
+> > error.  E.g., print_hmi_event_info() looks like this:
+> >
+> >   static void print_hmi_event_info(...)
+> >   {
+> >     static DEFINE_RATELIMIT_STATE(rs, ...);
+> >
+> >     if (__ratelimit(&rs)) {
+> >       printk("%s%s Hypervisor Maintenance interrupt ...");
+> >       printk("%s Error detail: %s\n", ...);
+> >       printk("%s      HMER: %016llx\n", ...);
+> >     }
+> >   }
+> >
+> > I think it's nice that the struct ratelimit_state is explicit and
+> > there's no danger of breaking it when adding another printk later.
+>
+> Since the output is spread across at least two functions, I think your
+> proposal is a better solution.
+>
+> I'm not happy with the patch series I sent in my previous reply as an
+> attachment. It's only marginally better than the original code.
+>
 
-A typical example log inside an HP TBT4 dock:
-[54912.661142] pcieport 0000:00:07.0: AER: Multiple Corrected error received: 0000:2b:00.0
-[54912.661194] igc 0000:2b:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
-[54912.661203] igc 0000:2b:00.0:   device [8086:5502] error status/mask=00001100/00002000
-[54912.661211] igc 0000:2b:00.0:    [ 8] Rollover
-[54912.661219] igc 0000:2b:00.0:    [12] Timeout
-[54982.838760] pcieport 0000:00:07.0: AER: Corrected error received: 0000:2b:00.0
-[54982.838798] igc 0000:2b:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
-[54982.838808] igc 0000:2b:00.0:   device [8086:5502] error status/mask=00001000/00002000
-[54982.838817] igc 0000:2b:00.0:    [12] Timeout
+Despite not being happy about it, after a week of vacation I now think it
+would be better to include them as is since they solve the immediate
+problems and then solve the above two issues in additional patches. The two
+changes I have prepared so far correctly fix the original issues they
+intended to fix and don't affect the new issues we've found.
 
-This gets repeated continuously, thus inundating the buffer.
+I'll post a V3 of this series tonight after making sure it at least
+compiles and "looks right".
 
-Signed-off-by: Rajat Khandelwal <rajat.khandelwal@linux.intel.com>
-Signed-off-by: Grant Grundler <grundler@chromium.org>
----
- drivers/pci/pcie/aer.c | 80 +++++++++++++++++++++++++++---------------
- 1 file changed, 51 insertions(+), 29 deletions(-)
+cheers,
+grant
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index d7bfc6070ddb..830f5a1261c9 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -686,26 +686,36 @@ static void __aer_print_error(struct pci_dev *dev,
- 			      struct aer_err_info *info)
- {
- 	const char **strings;
-+	char aer_msg[512];
- 	unsigned long status = info->status & ~info->mask;
--	const char *level, *errmsg;
- 	int i;
- 
--	if (info->severity == AER_CORRECTABLE) {
--		strings = aer_correctable_error_string;
--		level = KERN_INFO;
--	} else {
--		strings = aer_uncorrectable_error_string;
--		level = KERN_ERR;
--	}
-+	memset(aer_msg, 0, sizeof(*aer_msg));
-+	snprintf(aer_msg, sizeof(*aer_msg), "aer_status: 0x%08x, aer_mask: 0x%08x\n",
-+			info->status, info->mask);
-+
-+	strings = (info->severity == AER_CORRECTABLE) ?
-+		aer_correctable_error_string : aer_uncorrectable_error_string;
- 
- 	for_each_set_bit(i, &status, 32) {
--		errmsg = strings[i];
-+		const char *errmsg = strings[i];
-+		char bitmsg[64];
-+		memset(bitmsg, 0, sizeof(*bitmsg));
-+
- 		if (!errmsg)
- 			errmsg = "Unknown Error Bit";
- 
--		pci_printk(level, dev, "   [%2d] %-22s%s\n", i, errmsg,
--				info->first_error == i ? " (First)" : "");
-+		snprintf(bitmsg, sizeof(*bitmsg), "   [%2d] %-22s%s\n", i, errmsg,
-+			    info->first_error == i ? " (First)" : "");
-+
-+		strlcat(aer_msg, bitmsg, sizeof(*aer_msg));
- 	}
-+
-+	if (info->severity == AER_CORRECTABLE)
-+		pci_info_ratelimited(dev, "%s", aer_msg);
-+	else
-+		pci_err(dev, "%s", aer_msg):
-+
- 	pci_dev_aer_stats_incr(dev, info);
- }
- 
-@@ -713,7 +723,6 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
- {
- 	int layer, agent;
- 	int id = ((dev->bus->number << 8) | dev->devfn);
--	const char *level;
- 
- 	if (!info->status) {
- 		pci_err(dev, "PCIe Bus Error: severity=%s, type=Inaccessible, (Unregistered Agent ID)\n",
-@@ -724,14 +733,19 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
- 	layer = AER_GET_LAYER_ERROR(info->severity, info->status);
- 	agent = AER_GET_AGENT(info->severity, info->status);
- 
--	level = (info->severity == AER_CORRECTABLE) ? KERN_INFO : KERN_ERR;
--
--	pci_printk(level, dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
--		   aer_error_severity_string[info->severity],
--		   aer_error_layer[layer], aer_agent_string[agent]);
--
--	pci_printk(level, dev, "  device [%04x:%04x] error status/mask=%08x/%08x\n",
--		   dev->vendor, dev->device, info->status, info->mask);
-+	if (info->severity == AER_CORRECTABLE) {
-+		pci_info_ratelimited(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n"
-+				"  device [%04x:%04x] error status/mask=%08x/%08x\n",
-+				     aer_error_severity_string[info->severity],
-+				     aer_error_layer[layer], aer_agent_string[agent],
-+				     dev->vendor, dev->device, info->status, info->mask);
-+	} else {
-+		pci_err(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
-+			"  device [%04x:%04x] error status/mask=%08x/%08x\n",
-+			aer_error_severity_string[info->severity],
-+			aer_error_layer[layer], aer_agent_string[agent],
-+			dev->vendor, dev->device, info->status, info->mask);
-+	}
- 
- 	__aer_print_error(dev, info);
- 
-@@ -751,11 +765,19 @@ static void aer_print_port_info(struct pci_dev *dev, struct aer_err_info *info)
- 	u8 bus = info->id >> 8;
- 	u8 devfn = info->id & 0xff;
- 
--	pci_info(dev, "%s%s error received: %04x:%02x:%02x.%d\n",
--		 info->multi_error_valid ? "Multiple " : "",
--		 aer_error_severity_string[info->severity],
--		 pci_domain_nr(dev->bus), bus, PCI_SLOT(devfn),
--		 PCI_FUNC(devfn));
-+	if (info->severity == AER_CORRECTABLE)
-+		pci_info_ratelimited(dev, "%s%s error received: %04x:%02x:%02x.%d\n",
-+				     info->multi_error_valid ? "Multiple " : "",
-+				     aer_error_severity_string[info->severity],
-+				     pci_domain_nr(dev->bus), bus, PCI_SLOT(devfn),
-+				     PCI_FUNC(devfn));
-+	else
-+		pci_info(dev, "%s%s error received: %04x:%02x:%02x.%d\n",
-+			 info->multi_error_valid ? "Multiple " : "",
-+			 aer_error_severity_string[info->severity],
-+			 pci_domain_nr(dev->bus), bus, PCI_SLOT(devfn),
-+			 PCI_FUNC(devfn));
-+
- }
- 
- #ifdef CONFIG_ACPI_APEI_PCIEAER
-@@ -798,7 +820,7 @@ void cper_print_aer(struct pci_dev *dev, int aer_severity,
- 	info.first_error = PCI_ERR_CAP_FEP(aer->cap_control);
- 
- 	if (aer_severity == AER_CORRECTABLE)
--		pci_info(dev, "aer_status: 0x%08x, aer_mask: 0x%08x\n", status, mask);
-+		pci_info_ratelimited(dev, "aer_status: 0x%08x, aer_mask: 0x%08x\n", status, mask);
- 	else
- 		pci_err(dev, "aer_status: 0x%08x, aer_mask: 0x%08x\n", status, mask);
- 
-@@ -808,9 +830,9 @@ void cper_print_aer(struct pci_dev *dev, int aer_severity,
- 		pci_info(dev, "aer_layer=%s, aer_agent=%s\n",
- 			aer_error_layer[layer], aer_agent_string[agent]);
- 	} else {
--		pci_err(dev, "aer_layer=%s, aer_agent=%s\n",
--			aer_error_layer[layer], aer_agent_string[agent]);
--		pci_err(dev, "aer_uncor_severity: 0x%08x\n",
-+		pci_err(dev, "aer_layer=%s, aer_agent=%s,"
-+			" aer_uncor_severity=0x%08x\n",
-+			aer_error_layer[layer], aer_agent_string[agent],
- 			aer->uncor_severity);
- 	}
- 
--- 
-2.41.0.rc0.172.g3f132b7071-goog
 
+> I need another day or two to see if I can implement your proposal
+> correctly.
+>
+> cheers,
+> grant
+>
+
+--000000000000bf320105fd6dd552
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Wed, May 17, 2023 at 11:11=E2=80=
+=AFPM Grant Grundler &lt;<a href=3D"mailto:grundler@chromium.org">grundler@=
+chromium.org</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" styl=
+e=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);paddin=
+g-left:1ex">On Fri, Apr 7, 2023 at 12:46=E2=80=AFPM Bjorn Helgaas &lt;<a hr=
+ef=3D"mailto:helgaas@kernel.org" target=3D"_blank">helgaas@kernel.org</a>&g=
+t; wrote:<br>
+...<br>
+&gt; But I don&#39;t think we need output in a single step; we just need a<=
+br>
+&gt; single instance of ratelimit_state (or one for CPER path and another<b=
+r>
+&gt; for native AER path), and that can control all the output for a single=
+<br>
+&gt; error.=C2=A0 E.g., print_hmi_event_info() looks like this:<br>
+&gt;<br>
+&gt;=C2=A0 =C2=A0static void print_hmi_event_info(...)<br>
+&gt;=C2=A0 =C2=A0{<br>
+&gt;=C2=A0 =C2=A0 =C2=A0static DEFINE_RATELIMIT_STATE(rs, ...);<br>
+&gt;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0if (__ratelimit(&amp;rs)) {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;%s%s Hypervisor Maintenance int=
+errupt ...&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;%s Error detail: %s\n&quot;, ..=
+.);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;%s=C2=A0 =C2=A0 =C2=A0 HMER: %0=
+16llx\n&quot;, ...);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0}<br>
+&gt;=C2=A0 =C2=A0}<br>
+&gt;<br>
+&gt; I think it&#39;s nice that the struct ratelimit_state is explicit and<=
+br>
+&gt; there&#39;s no danger of breaking it when adding another printk later.=
+<br>
+<br>
+Since the output is spread across at least two functions, I think your<br>
+proposal is a better solution.<br>
+<br>
+I&#39;m not happy with the patch series I sent in my previous reply as an<b=
+r>
+attachment. It&#39;s only marginally better than the original code.<br></bl=
+ockquote><div><br></div><div>Despite not being happy about it, after a week=
+ of vacation I now think it would be better to include them as is since the=
+y solve the immediate problems and then solve the above two issues in addit=
+ional patches. The two changes I have prepared so far correctly fix the ori=
+ginal issues they intended to fix and don&#39;t affect the new issues we&#3=
+9;ve found.</div><div><br></div><div>I&#39;ll post a V3 of this series toni=
+ght after making sure it at least compiles and &quot;looks right&quot;.</di=
+v><div><br></div><div>cheers,</div><div>grant</div><div><br></div><blockquo=
+te class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px =
+solid rgb(204,204,204);padding-left:1ex">
+<br>
+I need another day or two to see if I can implement your proposal correctly=
+.<br>
+<br>
+cheers,<br>
+grant<br>
+</blockquote></div></div>
+
+--000000000000bf320105fd6dd552--
