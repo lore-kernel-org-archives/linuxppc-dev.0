@@ -4,65 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3CE1C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 07:23:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00589C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 08:58:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qb24p4n6bz3f1S
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 17:23:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qb4Bd39tXz3f8j
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 18:58:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NDS2y21Y;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=BFPBPBMO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NDS2y21Y;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=BFPBPBMO;
 	dkim-atps=neutral
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qb23s1gH3z3c4B
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 17:22:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1686036137; x=1717572137;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=42Zq2VVVmL82oSxttVhxIe0JhaOWSJB60Dpa1lLTJ8c=;
-  b=NDS2y21YxZPzvaFxT3dIHWoK9aawAr6tAgh7RuwLVhJgua0bKF5L3MvL
-   gTjVq9+rGvzIDGh4lfKfX6HI67QxyVdmgAswHvqigsj5Ynv3hGuRbFu0g
-   +k9MeRYPea/o3s2Lmj1xUtwFuSff5L0FT0oZz/w/PeNW3Bvoo64NwtFDb
-   TWjrfecw12PP7NvJ9bSGIk4R8Xax1wbDnfolL8zWQe1xbVlONhHY2R1r9
-   MCe5uWM4uPyai4q1zyHEOIfzcuECh05A4PPKnKNB9VPUNqTO16hxLYBQz
-   Hy2rKGcy8hrHAicAswYlnn5UowdyMOHTnTzUMjIAVyREzGo7Dsaxm0t7P
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="336214500"
-X-IronPort-AV: E=Sophos;i="6.00,219,1681196400"; 
-   d="scan'208";a="336214500"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jun 2023 00:22:06 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="821505090"
-X-IronPort-AV: E=Sophos;i="6.00,219,1681196400"; 
-   d="scan'208";a="821505090"
-Received: from lkp-server01.sh.intel.com (HELO 15ab08e44a81) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 06 Jun 2023 00:22:04 -0700
-Received: from kbuild by 15ab08e44a81 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1q6R11-0004xz-13;
-	Tue, 06 Jun 2023 07:22:03 +0000
-Date: Tue, 6 Jun 2023 15:21:05 +0800
-From: kernel test robot <lkp@intel.com>
-To: Grant Grundler <grundler@chromium.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O 'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCHv3 pci-next 2/2] PCI/AER: Rate limit the reporting of the
- correctable errors
-Message-ID: <202306061553.YXoBaXAM-lkp@intel.com>
-References: <20230606035442.2886343-2-grundler@chromium.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230606035442.2886343-2-grundler@chromium.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qb49c55Ddz3cD5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 18:57:22 +1000 (AEST)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-1b011cffef2so54529085ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 01:57:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1686041839; x=1688633839;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KsotnkYKJJ++RTq8ZDtbyGBYv6z9/iH+HO0zFVXW2NY=;
+        b=BFPBPBMOf8PaUueNf8+J6cBztMB5syO78BMYAFc1m1fjSMKH/wMqWhHONypMA29RMO
+         JtBnIWN7Jsasj7/GY5Y1TAs6jlKQSn1WsWS8qDZ4F6hadfLZ7NTHz4jLdmhSp4SP2ZhM
+         b/cfC+/Eg5ingZrGS8jXDxJwMuFPZzJOGSlXawGgRVQnirUI/qdJagt2EoFxzMlip5OL
+         r624yUamptZtkyS0pcyo3eGZxkmqCzcS3/aQ3TudnaI2i5o0tToip0hiexqVRgyGkr0Q
+         ZCykcnep9ptsT5gra0Pz2sxmMrMjenSdFGVVwMA2uJkNg8TvGyi8dYKZgfpAsVNzA2/y
+         qerg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686041839; x=1688633839;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=KsotnkYKJJ++RTq8ZDtbyGBYv6z9/iH+HO0zFVXW2NY=;
+        b=Hk3ZwGe7sZdd5S5o73EGBI4qnVw0i8RrRe2/LTTWVi5f+LTv3H6Sc6tcIcLvAjbcGt
+         FpfODRMzpIjqubBHom0AbBR6oOQiZl26cYsoyzzYbhK0I5l5BVJvVp/S3zi3MFbLNt9U
+         eopY6gpqSR3m1bjvZV/2WZoHkepv9FaTc79FxEBExbDBz0jXu1D2m6om5YEE+XEIsh+q
+         3UxQEBg61PQcJclL5VHLPDiptphqcCWpIw1bcnXka418HEZABXTQOWAOKpiMdHhXFAgr
+         DJ1Ih6tWEFvLZ/m7Q2Ef1lOOLg1KMVULSzNFuedJTzN1xRZgmp5n48S0DGXGVjYBxeeK
+         MNWw==
+X-Gm-Message-State: AC+VfDzUF7TO+9gO7mkfzJW4ny1QeyaCs1+loOQNTq6S6Yt/woMGUnb6
+	V+tKhL4VwHnVDNXKPV5O+ts=
+X-Google-Smtp-Source: ACHHUZ4vx4ct4+UKChRJItU5T4VejzTrB4ZZ6XhJCp/+chr8riquVxvwcjpWSDzxg/yW8vU2i3C7QA==
+X-Received: by 2002:a17:902:db0f:b0:1b0:4bc7:31ee with SMTP id m15-20020a170902db0f00b001b04bc731eemr1570388plx.32.1686041839240;
+        Tue, 06 Jun 2023 01:57:19 -0700 (PDT)
+Received: from localhost ([203.221.142.9])
+        by smtp.gmail.com with ESMTPSA id x20-20020a170902ea9400b001a6d4ea7301sm7924557plb.251.2023.06.06.01.57.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 06 Jun 2023 01:57:18 -0700 (PDT)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 06 Jun 2023 18:57:03 +1000
+Message-Id: <CT5FY0YBBTYX.X4UB9DSZQCMY@wheely>
+Subject: Re: [PATCH] powerpc/interrupt: Don't read MSR from
+ interrupt_exit_kernel_prepare()
+From: "Nicholas Piggin" <npiggin@gmail.com>
+To: "Christophe Leroy" <christophe.leroy@csgroup.eu>, "Michael Ellerman"
+ <mpe@ellerman.id.au>
+X-Mailer: aerc 0.14.0
+References: <df36c6205ab64326fb1b991993c82057e92ace2f.1685955214.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <df36c6205ab64326fb1b991993c82057e92ace2f.1685955214.git.christophe.leroy@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,115 +81,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rajat Jain <rajatja@chromium.org>, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>, Grant Grundler <grundler@chromium.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Grant,
+On Mon Jun 5, 2023 at 6:55 PM AEST, Christophe Leroy wrote:
+> A disassembly of interrupt_exit_kernel_prepare() shows a useless read
+> of MSR register. This is shown by r9 being re-used immediately without
+> doing anything with the value read.
+>
+>   c000e0e0:       60 00 00 00     nop
+>   c000e0e4:       7d 3a c2 a6     mfmd_ap r9
+>   c000e0e8:       7d 20 00 a6     mfmsr   r9
+>   c000e0ec:       7c 51 13 a6     mtspr   81,r2
+>   c000e0f0:       81 3f 00 84     lwz     r9,132(r31)
+>   c000e0f4:       71 29 80 00     andi.   r9,r9,32768
+>
+> This is due to the use of local_irq_save(). The flags read by
+> local_irq_save() are never used, use local_irq_disable() instead.
 
-kernel test robot noticed the following build errors:
+I did have a patch that warns if you do a local_irq_disable() when
+irqs are disabled which is why I did this, but it is kind of silly.
 
-[auto build test ERROR on pci/next]
-[also build test ERROR on pci/for-linus linus/master v6.4-rc5 next-20230606]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+You could do 'if (!irqs_disabled()) local_irq_disable()'
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Grant-Grundler/PCI-AER-Rate-limit-the-reporting-of-the-correctable-errors/20230606-115515
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
-patch link:    https://lore.kernel.org/r/20230606035442.2886343-2-grundler%40chromium.org
-patch subject: [PATCHv3 pci-next 2/2] PCI/AER: Rate limit the reporting of the correctable errors
-config: x86_64-rhel-8.3 (https://download.01.org/0day-ci/archive/20230606/202306061553.YXoBaXAM-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-reproduce (this is a W=1 build):
-        git remote add pci https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git
-        git fetch pci next
-        git checkout pci/next
-        b4 shazam https://lore.kernel.org/r/20230606035442.2886343-2-grundler@chromium.org
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 O=build_dir ARCH=x86_64 olddefconfig
-        make W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/pci/pcie/
+Unfortunately that adds another branch but if it is not taken
+frequently then maybe avoiding the mtMSR/EID would make it a win?
+If you don't change that I might end up doing it if I can get that
+warning patch merged (needs a few core kernel changes).
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202306061553.YXoBaXAM-lkp@intel.com/
+I wonder how much that would help local_irq_save too, if interrupts
+are already disabled then avoid the mt? Maybe those things are not
+very costly on smaller in-order cores.
 
-All error/warnings (new ones prefixed by >>):
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-   drivers/pci/pcie/aer.c: In function '__aer_print_error':
->> drivers/pci/pcie/aer.c:717:44: error: expected ';' before ':' token
-     717 |                 pci_err(dev, "%s", aer_msg):
-         |                                            ^
-   In file included from include/linux/device.h:15,
-                    from include/linux/pci.h:37,
-                    from drivers/pci/pcie/aer.c:20:
-   drivers/pci/pcie/aer.c: In function 'aer_print_error':
->> drivers/pci/pcie/aer.c:15:21: warning: too many arguments for format [-Wformat-extra-args]
-      15 | #define pr_fmt(fmt) "AER: " fmt
-         |                     ^~~~~~~
-   include/linux/dev_printk.h:110:30: note: in definition of macro 'dev_printk_index_wrap'
-     110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
-         |                              ^~~
-   drivers/pci/pcie/aer.c:16:17: note: in expansion of macro 'pr_fmt'
-      16 | #define dev_fmt pr_fmt
-         |                 ^~~~~~
-   include/linux/dev_printk.h:144:56: note: in expansion of macro 'dev_fmt'
-     144 |         dev_printk_index_wrap(_dev_err, KERN_ERR, dev, dev_fmt(fmt), ##__VA_ARGS__)
-         |                                                        ^~~~~~~
-   include/linux/pci.h:2600:41: note: in expansion of macro 'dev_err'
-    2600 | #define pci_err(pdev, fmt, arg...)      dev_err(&(pdev)->dev, fmt, ##arg)
-         |                                         ^~~~~~~
-   drivers/pci/pcie/aer.c:743:17: note: in expansion of macro 'pci_err'
-     743 |                 pci_err(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
-         |                 ^~~~~~~
-   drivers/pci/pcie/aer.c: At top level:
-   drivers/pci/pcie/aer.c:626:13: warning: 'pci_dev_aer_stats_incr' defined but not used [-Wunused-function]
-     626 | static void pci_dev_aer_stats_incr(struct pci_dev *pdev,
-         |             ^~~~~~~~~~~~~~~~~~~~~~
+>
+> Fixes: 13799748b957 ("powerpc/64: use interrupt restart table to speed up=
+ return from interrupt")
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/kernel/interrupt.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interr=
+upt.c
+> index e34c72285b4e..f3fc5fe919d9 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -368,7 +368,6 @@ void preempt_schedule_irq(void);
+> =20
+>  notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs=
+)
+>  {
+> -	unsigned long flags;
+>  	unsigned long ret =3D 0;
+>  	unsigned long kuap;
+>  	bool stack_store =3D read_thread_flags() & _TIF_EMULATE_STACK_STORE;
+> @@ -392,7 +391,7 @@ notrace unsigned long interrupt_exit_kernel_prepare(s=
+truct pt_regs *regs)
+> =20
+>  	kuap =3D kuap_get_and_assert_locked();
+> =20
+> -	local_irq_save(flags);
+> +	local_irq_disable();
+> =20
+>  	if (!arch_irq_disabled_regs(regs)) {
+>  		/* Returning to a kernel context with local irqs enabled. */
+> --=20
+> 2.40.1
 
-
-vim +717 drivers/pci/pcie/aer.c
-
-   684	
-   685	static void __aer_print_error(struct pci_dev *dev,
-   686				      struct aer_err_info *info)
-   687	{
-   688		const char **strings;
-   689		char aer_msg[512];
-   690		unsigned long status = info->status & ~info->mask;
-   691		int i;
-   692	
-   693		memset(aer_msg, 0, sizeof(*aer_msg));
-   694		snprintf(aer_msg, sizeof(*aer_msg), "aer_status: 0x%08x, aer_mask: 0x%08x\n",
-   695				info->status, info->mask);
-   696	
-   697		strings = (info->severity == AER_CORRECTABLE) ?
-   698			aer_correctable_error_string : aer_uncorrectable_error_string;
-   699	
-   700		for_each_set_bit(i, &status, 32) {
-   701			const char *errmsg = strings[i];
-   702			char bitmsg[64];
-   703			memset(bitmsg, 0, sizeof(*bitmsg));
-   704	
-   705			if (!errmsg)
-   706				errmsg = "Unknown Error Bit";
-   707	
-   708			snprintf(bitmsg, sizeof(*bitmsg), "   [%2d] %-22s%s\n", i, errmsg,
-   709				    info->first_error == i ? " (First)" : "");
-   710	
-   711			strlcat(aer_msg, bitmsg, sizeof(*aer_msg));
-   712		}
-   713	
-   714		if (info->severity == AER_CORRECTABLE)
-   715			pci_info_ratelimited(dev, "%s", aer_msg);
-   716		else
- > 717			pci_err(dev, "%s", aer_msg):
-   718	
-   719		pci_dev_aer_stats_incr(dev, info);
-   720	}
-   721	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
