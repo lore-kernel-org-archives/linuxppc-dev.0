@@ -4,64 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC07BC7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 04:31:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F19CAC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 04:57:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QZyH30DSBz3fCX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 14:31:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QZysB3PKLz3f7P
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 14:57:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=NkMg/qr3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XtRGTHGb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=grundler@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=NkMg/qr3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XtRGTHGb;
 	dkim-atps=neutral
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZxDZ0hVCz3brd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 13:44:29 +1000 (AEST)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-3f7359a3b78so40655e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2023 20:44:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1686023063; x=1688615063;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=iftkf2df8ANImf6BgTxCsl6iQc2J2N5tuIojpUh0gBM=;
-        b=NkMg/qr3GDnS9llAsChIvIz1iftdnBvAbn3ldeRzB/kHRoaJejfxiYEiUvc8826ILE
-         b19s9rBHOqbsLChWxUr4LzrwDZoIbOpo6n3yzcSK0W1H9LTxZO1n/DeG1P08Y2uUxrNb
-         dAPlpZrXRzGbYqME041FQYVU/BJYOFppT8WAU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686023063; x=1688615063;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=iftkf2df8ANImf6BgTxCsl6iQc2J2N5tuIojpUh0gBM=;
-        b=X2DWCYIwHGIAfISo8XPOWJrhD2sMlXjz5hQr1iIxJx8+lLdrFDCQZTK0BvKapEnLtr
-         lNA4zgqjh3bRHoPFca9z38xDzS1nxWtTqXzBX9ik/e5L94agdLVYOfKw5hr/z43dY1rM
-         l4+QpVDHy15SVtdd10Sx2Dv8e/fI/mSZgMo9H6pawPxKDkrbIUWIX6DgytSANlFyvAVw
-         ib8xHaz4liVMu0y6L7gxg14PYhM7bneNX6dwkgJ2OTbTXP3YkrdH8CBdmeaMqnNVk7CB
-         ZpI/70vmEc34qLKgRuFlKpCpZwWXsGdiifUiLvhdE81SIwwWZ6wGd9p9JqpyTRA826KF
-         71oQ==
-X-Gm-Message-State: AC+VfDzhIqeSV6KFN1gduUE6O9s9Uq1PRxvMrUW9OHP5sWH9A5IavJaA
-	FNIFqtfyf6t37gfo9u8gOUFVf58y4py2i91KVpwplA==
-X-Google-Smtp-Source: ACHHUZ5838FmJNGVv1gKne3dr6SrJ9LLo9rk5oX1YXP96/4xSFDmcr5KRpGvFhwWjLRp2ZflF9/f2BK0qG9I4px8n9E=
-X-Received: by 2002:a05:600c:881a:b0:3f1:9a3d:4f7f with SMTP id
- gy26-20020a05600c881a00b003f19a3d4f7fmr49883wmb.1.1686023062853; Mon, 05 Jun
- 2023 20:44:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QZyrB32kJz3c7Q
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 14:56:57 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3564bwOx032116;
+	Tue, 6 Jun 2023 04:56:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=lczS+3n1eVCHvm0ULIz5VuW4f/yn5ncHrY2/uwlQksg=;
+ b=XtRGTHGblMsx1fG5KtspHWYS939MhLeaszYQLZ/lOtNI9JVZQtbYJJUig0hacn5+2ChF
+ P/cwbY7ixbUiO2qxLOK7e2GuvO+beV9PV/Z6w7j8KbAm9TU0WCiYsvMQMjywY3npR44q
+ decFOM/7OvJ2X1gSGqzYg5LnWrUaNcZwOTgZK8gV607NKvpFwDH41gV4/T+ydGnt0pk0
+ sIKD9paiGEnehqLS9UGY86UVA1D9uW699eaySZ7H7shcIyemhiR4xVmtyaJ3PuZHwubY
+ eqLrzP9G/DsU0E5NwhF9yc7yxE/QUMm724fLVJDatxnTLGiBZz9y2RCSwy27FQ2tPnVD rA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r1wqxgex9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 06 Jun 2023 04:56:30 +0000
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3564kkCs030491;
+	Tue, 6 Jun 2023 04:56:30 GMT
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com [169.53.41.122])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r1wqxgex4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 06 Jun 2023 04:56:30 +0000
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+	by ppma04dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3564mAkB013549;
+	Tue, 6 Jun 2023 04:56:29 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([9.208.130.99])
+	by ppma04dal.us.ibm.com (PPS) with ESMTPS id 3qyxqqvbya-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 06 Jun 2023 04:56:29 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3564uSrO35652186
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 6 Jun 2023 04:56:28 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E1D9D58055;
+	Tue,  6 Jun 2023 04:56:27 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 21BAD5804B;
+	Tue,  6 Jun 2023 04:56:23 +0000 (GMT)
+Received: from skywalker.in.ibm.com (unknown [9.109.204.255])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  6 Jun 2023 04:56:22 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+Subject: [PATCH 00/16] Add support for DAX vmemmap optimization for ppc64
+Date: Tue,  6 Jun 2023 10:25:52 +0530
+Message-Id: <20230606045608.55127-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-References: <CANEJEGvKRVGLYPmD3kujg6veq5KR7J+rAu6ni92wUz72KGtyBA@mail.gmail.com>
- <20230407194645.GA3814486@bhelgaas> <CANEJEGscz3F-6cZcp7dBVekpxHMNXZWgUW2ic3xd6hm3xWH6ZQ@mail.gmail.com>
-In-Reply-To: <CANEJEGscz3F-6cZcp7dBVekpxHMNXZWgUW2ic3xd6hm3xWH6ZQ@mail.gmail.com>
-From: Grant Grundler <grundler@chromium.org>
-Date: Mon, 5 Jun 2023 20:44:10 -0700
-Message-ID: <CANEJEGs_ni14PZ0VQcNHF+epBspQwOWLu1Yo8KyF3RhpGscV6w@mail.gmail.com>
-Subject: Re: [PATCHv2 pci-next 2/2] PCI/AER: Rate limit the reporting of the
- correctable errors
-To: Grant Grundler <grundler@chromium.org>
-Content-Type: multipart/alternative; boundary="000000000000bf320105fd6dd552"
-X-Mailman-Approved-At: Tue, 06 Jun 2023 14:30:55 +1000
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: c5VX_zwLJ2xoFbkfnhOsPv5PIShQNwJ4
+X-Proofpoint-GUID: zrjaZhppAYsqUQXzd8a7u7hDjiuyRZVo
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
+ definitions=2023-06-06_02,2023-06-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 spamscore=0
+ mlxscore=0 impostorscore=0 malwarescore=0 mlxlogscore=999 suspectscore=0
+ phishscore=0 bulkscore=0 lowpriorityscore=0 priorityscore=1501
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2304280000 definitions=main-2306060040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,129 +94,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rajat Jain <rajatja@chromium.org>, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Oliver O 'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Will Deacon <will@kernel.org>, Muchun Song <muchun.song@linux.dev>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>, Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Joao Martins <joao.m.martins@oracle.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000bf320105fd6dd552
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This patch series implements changes required to support DAX vmemmap
+optimization for ppc64. The vmemmap optimization is only enabled with radix MMU
+translation and 1GB PUD mapping with 64K page size. The patch series also split
+hugetlb vmemmap optimization as a separate Kconfig variable so that
+architectures can enable DAX vmemmap optimization without enabling hugetlb
+vmemmap optimization. This should enable architectures like arm64 to enable DAX
+vmemmap optimization while they can't enable hugetlb vmemmap optimization. More
+details of the same are in patch "mm/vmemmap optimization: Split hugetlb and
+d
 
-On Wed, May 17, 2023 at 11:11=E2=80=AFPM Grant Grundler <grundler@chromium.=
-org>
-wrote:
+Aneesh Kumar K.V (16):
+  powerpc/mm/book3s64: Use pmdp_ptep helper instead of typecasting.
+  powerpc/book3s64/mm: mmu_vmemmap_psize is used by radix
+  powerpc/book3s64/mm: Fix DirectMap stats in /proc/meminfo
+  powerpc/book3s64/mm: Use PAGE_KERNEL instead of opencoding
+  powerpc/mm/dax: Fix the condition when checking if altmap vmemap can
+    cross-boundary
+  mm/hugepage pud: Allow arch-specific helper function to check huge
+    page pud support
+  mm: Change pudp_huge_get_and_clear_full take vm_area_struct as arg
+  mm/vmemmap: Improve vmemmap_can_optimize and allow architectures to
+    override
+  mm/vmemmap: Allow architectures to override how vmemmap optimization
+    works
+  mm: Add __HAVE_ARCH_PUD_SAME similar to __HAVE_ARCH_P4D_SAME
+  mm/huge pud: Use transparent huge pud helpers only with
+    CONFIG_TRANSPARENT_HUGEPAGE
+  mm/vmemmap optimization: Split hugetlb and devdax vmemmap optimization
+  powerpc/book3s64/mm: Enable transparent pud hugepage
+  powerpc/book3s64/vmemmap: Switch radix to use a different vmemmap
+    handling function
+  powerpc/book3s64/radix: Add support for vmemmap optimization for radix
+  powerpc/book3s64/radix: Remove mmu_vmemmap_psize
 
-> On Fri, Apr 7, 2023 at 12:46=E2=80=AFPM Bjorn Helgaas <helgaas@kernel.org=
-> wrote:
-> ...
-> > But I don't think we need output in a single step; we just need a
-> > single instance of ratelimit_state (or one for CPER path and another
-> > for native AER path), and that can control all the output for a single
-> > error.  E.g., print_hmi_event_info() looks like this:
-> >
-> >   static void print_hmi_event_info(...)
-> >   {
-> >     static DEFINE_RATELIMIT_STATE(rs, ...);
-> >
-> >     if (__ratelimit(&rs)) {
-> >       printk("%s%s Hypervisor Maintenance interrupt ...");
-> >       printk("%s Error detail: %s\n", ...);
-> >       printk("%s      HMER: %016llx\n", ...);
-> >     }
-> >   }
-> >
-> > I think it's nice that the struct ratelimit_state is explicit and
-> > there's no danger of breaking it when adding another printk later.
->
-> Since the output is spread across at least two functions, I think your
-> proposal is a better solution.
->
-> I'm not happy with the patch series I sent in my previous reply as an
-> attachment. It's only marginally better than the original code.
->
+ Documentation/mm/vmemmap_dedup.rst            |   1 +
+ Documentation/powerpc/vmemmap_dedup.rst       | 101 ++++
+ arch/loongarch/Kconfig                        |   2 +-
+ arch/powerpc/Kconfig                          |   1 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h  | 156 ++++-
+ arch/powerpc/include/asm/book3s/64/radix.h    |  47 ++
+ .../include/asm/book3s/64/tlbflush-radix.h    |   2 +
+ arch/powerpc/include/asm/book3s/64/tlbflush.h |   8 +
+ arch/powerpc/include/asm/pgtable.h            |   3 +
+ arch/powerpc/mm/book3s64/pgtable.c            |  78 +++
+ arch/powerpc/mm/book3s64/radix_pgtable.c      | 551 ++++++++++++++++--
+ arch/powerpc/mm/book3s64/radix_tlb.c          |   7 +
+ arch/powerpc/mm/init_64.c                     |  39 +-
+ arch/powerpc/platforms/Kconfig.cputype        |   1 +
+ arch/riscv/Kconfig                            |   2 +-
+ arch/x86/Kconfig                              |   3 +-
+ drivers/nvdimm/pfn_devs.c                     |   2 +-
+ fs/Kconfig                                    |   2 +-
+ include/linux/mm.h                            |  32 +-
+ include/linux/pgtable.h                       |  11 +-
+ include/trace/events/thp.h                    |  17 +
+ mm/Kconfig                                    |   5 +-
+ mm/debug_vm_pgtable.c                         |   2 +-
+ mm/huge_memory.c                              |   2 +-
+ mm/mm_init.c                                  |   2 +-
+ mm/mremap.c                                   |   2 +-
+ mm/sparse-vmemmap.c                           |   3 +
+ 27 files changed, 1005 insertions(+), 77 deletions(-)
+ create mode 100644 Documentation/powerpc/vmemmap_dedup.rst
 
-Despite not being happy about it, after a week of vacation I now think it
-would be better to include them as is since they solve the immediate
-problems and then solve the above two issues in additional patches. The two
-changes I have prepared so far correctly fix the original issues they
-intended to fix and don't affect the new issues we've found.
+-- 
+2.40.1
 
-I'll post a V3 of this series tonight after making sure it at least
-compiles and "looks right".
-
-cheers,
-grant
-
-
-> I need another day or two to see if I can implement your proposal
-> correctly.
->
-> cheers,
-> grant
->
-
---000000000000bf320105fd6dd552
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
-<div dir=3D"ltr" class=3D"gmail_attr">On Wed, May 17, 2023 at 11:11=E2=80=
-=AFPM Grant Grundler &lt;<a href=3D"mailto:grundler@chromium.org">grundler@=
-chromium.org</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" styl=
-e=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);paddin=
-g-left:1ex">On Fri, Apr 7, 2023 at 12:46=E2=80=AFPM Bjorn Helgaas &lt;<a hr=
-ef=3D"mailto:helgaas@kernel.org" target=3D"_blank">helgaas@kernel.org</a>&g=
-t; wrote:<br>
-...<br>
-&gt; But I don&#39;t think we need output in a single step; we just need a<=
-br>
-&gt; single instance of ratelimit_state (or one for CPER path and another<b=
-r>
-&gt; for native AER path), and that can control all the output for a single=
-<br>
-&gt; error.=C2=A0 E.g., print_hmi_event_info() looks like this:<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0static void print_hmi_event_info(...)<br>
-&gt;=C2=A0 =C2=A0{<br>
-&gt;=C2=A0 =C2=A0 =C2=A0static DEFINE_RATELIMIT_STATE(rs, ...);<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0if (__ratelimit(&amp;rs)) {<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;%s%s Hypervisor Maintenance int=
-errupt ...&quot;);<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;%s Error detail: %s\n&quot;, ..=
-.);<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;%s=C2=A0 =C2=A0 =C2=A0 HMER: %0=
-16llx\n&quot;, ...);<br>
-&gt;=C2=A0 =C2=A0 =C2=A0}<br>
-&gt;=C2=A0 =C2=A0}<br>
-&gt;<br>
-&gt; I think it&#39;s nice that the struct ratelimit_state is explicit and<=
-br>
-&gt; there&#39;s no danger of breaking it when adding another printk later.=
-<br>
-<br>
-Since the output is spread across at least two functions, I think your<br>
-proposal is a better solution.<br>
-<br>
-I&#39;m not happy with the patch series I sent in my previous reply as an<b=
-r>
-attachment. It&#39;s only marginally better than the original code.<br></bl=
-ockquote><div><br></div><div>Despite not being happy about it, after a week=
- of vacation I now think it would be better to include them as is since the=
-y solve the immediate problems and then solve the above two issues in addit=
-ional patches. The two changes I have prepared so far correctly fix the ori=
-ginal issues they intended to fix and don&#39;t affect the new issues we&#3=
-9;ve found.</div><div><br></div><div>I&#39;ll post a V3 of this series toni=
-ght after making sure it at least compiles and &quot;looks right&quot;.</di=
-v><div><br></div><div>cheers,</div><div>grant</div><div><br></div><blockquo=
-te class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px =
-solid rgb(204,204,204);padding-left:1ex">
-<br>
-I need another day or two to see if I can implement your proposal correctly=
-.<br>
-<br>
-cheers,<br>
-grant<br>
-</blockquote></div></div>
-
---000000000000bf320105fd6dd552--
