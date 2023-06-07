@@ -4,61 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C50D2C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jun 2023 18:23:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D3E4C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 03:50:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QbJkP0b8xz3f04
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 04:23:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QbYJd5Z7kz3dxd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 13:50:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZWPc2Ay9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Pqkuvwjf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZWPc2Ay9;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Pqkuvwjf;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbJjQ08g4z2xHb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 04:22:17 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E3E26636A6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 18:22:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 278B9C43321
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2023 18:22:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686075734;
-	bh=08bgDTu6K2r14VqmkEIMfCPJQ/ZZrnAx7Zh60inB9tQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ZWPc2Ay9qV+46W5EIl1Hat/oWhCmkf2atoI7Djyx7M9K8nTcPWM51zO0JgXQR/xJA
-	 t6kkVflNQu8aEchQ0gWokejvbn0lD4N+mkDVLz/vpv4NfXuw4Ue4w5/ggGi9dBfKiZ
-	 FbyGdgANCc28tlTGlHG3sjNhVLTPxaSnMiPYhxWksxnkaN6w7Z8t8XpDCqJBTwrewz
-	 7miB72dJ8VC2moDFlWb2Dg+2pHaD8TB88qpU65gh5ZEErvyTm+QOEYn4FI4IN5NnX+
-	 vSaQ/C5uDNk1W0XxM90aSXxJjvBdgk4T++XB8N2/4BPrh3DvP9IK4m5Qlazjdmj/3m
-	 EHdGa+FT3FpmQ==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-2b1a4250b07so75710931fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 11:22:14 -0700 (PDT)
-X-Gm-Message-State: AC+VfDxg9qRj/HOyLl3qwJdCWVqYWS+Rh1Lg9dmVcvVPLozSQ+K4k+Nr
-	tjHnrH2UeXNPgqjC7Vg09p0kOE2K6imbnl2yaA4=
-X-Google-Smtp-Source: ACHHUZ5bLSr3tA3IB8xCjeC0rEYdnEDeq7vmc1y/QuS5oHjyhnnuqZDpSw2PwmODz4CMTnRxT8zG59Qp1zLSa+hdG70=
-X-Received: by 2002:a2e:82d0:0:b0:2b0:297c:cbdf with SMTP id
- n16-20020a2e82d0000000b002b0297ccbdfmr1546782ljh.1.1686075731505; Tue, 06 Jun
- 2023 11:22:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QbYHj2GG0z2ynx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2023 13:49:20 +1000 (AEST)
+Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-565e8d575cbso64310317b3.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2023 20:49:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1686109756; x=1688701756;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=z7egDDp6MmQZCbbodxJ12b9UShhbnTUq6PVtm9aM+04=;
+        b=Pqkuvwjf09O59UPXdhhO7tjU33/VqFu4i39Q1X5ngvz5wkjB5jztMKPW4Oy+gYaN7f
+         ryMo/pvFu2ihp6hoUNLGrxxJwEg8cYMz5y/fZ40STo2ayOGik+sBKWhCpCfn0AUciN7G
+         u/GoJh9IbWauEReNRcuISo1bdmXC0fxzeRJsQoJjK/V1wht50c5ITiIrEruEX8FLCjD2
+         dukvUd3PuNbqeJ+lutclQGH56tlKSgwPULdPaCAne7DDEI6NLUhCoAXG+BWCQuQ+cPUd
+         LuL0hGsrAkgsHjfC8Mobph1RQY6cg81EchUXYFPmRFE9lQLqL6vwX8Y9XC9AJeP/FN6P
+         1U9A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686109756; x=1688701756;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=z7egDDp6MmQZCbbodxJ12b9UShhbnTUq6PVtm9aM+04=;
+        b=axvKqF+R2quPV6oI6W7wR/zZ1QTc7siXQ7qAnfoyziVCnJ9VZOB6GFOcOhvgN8VOIi
+         OopiMmVrdccD+4ZxrtCpuXJtbFqB2d+RDw/RX8wuTXMhXBnnzTMBHiPDMMRwrQDwPfJ1
+         LQrkvCd77s48GQpN62seKbwnCh8p5S9bmeCI7nWloQACMSJxsh0N4HSJvAJ6ie3D6P90
+         NgC6JF9iiG6iTBnRZBKlK/jnfGnzpIWTHLlcMAaOFIcbyL91e2T2+xuGXmLkuTN9lfxu
+         EZRNmf/s0qasS6Jsl6phg/YOpCU04QgjezEX9Z0nPvwQMIQVE6jH9vqEINFoLvgNjjTM
+         Wttw==
+X-Gm-Message-State: AC+VfDzk0vA8+daL/B89gg6zN9J6EwMGXf/dRq9y8RyvCFRuh4UxfFpr
+	50DdmIeyxO4KSBFndpc1TpH4tw==
+X-Google-Smtp-Source: ACHHUZ6FeY70tXV92DFudQ4t5nR7rwwIAGb4bJwe8V5V4ANCDpC/kaCGZoHb9LVSkohk9DbNmeTmEg==
+X-Received: by 2002:a0d:cb47:0:b0:565:c96b:f526 with SMTP id n68-20020a0dcb47000000b00565c96bf526mr4712606ywd.19.1686109756614;
+        Tue, 06 Jun 2023 20:49:16 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id s11-20020a81bf4b000000b00555df877a4csm4446640ywk.102.2023.06.06.20.49.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 06 Jun 2023 20:49:15 -0700 (PDT)
+Date: Tue, 6 Jun 2023 20:49:04 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Subject: Re: [PATCH 05/12] powerpc: add pte_free_defer() for pgtables sharing
+ page
+In-Reply-To: <ZH+EMp9RuEVOjVNb@ziepe.ca>
+Message-ID: <9130acb-193-6fdd-f8df-75766e663978@google.com>
+References: <35e983f5-7ed3-b310-d949-9ae8b130cdab@google.com> <28eb289f-ea2c-8eb9-63bb-9f7d7b9ccc11@google.com> <ZHSwWgLWaEd+zi/g@casper.infradead.org> <ZHn6n5eVTsr4Wl8x@ziepe.ca> <4df4909f-f5dd-6f94-9792-8f2949f542b3@google.com> <ZH95oobIqN0WO5MK@ziepe.ca>
+ <ZH+DAxLhIYpTlIFc@x1n> <ZH+EMp9RuEVOjVNb@ziepe.ca>
 MIME-Version: 1.0
-References: <20230601101257.530867-1-rppt@kernel.org> <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
- <ZHjgIH3aX9dCvVZc@moria.home.lan> <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
- <20230605092040.GB3460@kernel.org> <ZH20XkD74prrdN4u@FVFF77S0Q05N>
-In-Reply-To: <ZH20XkD74prrdN4u@FVFF77S0Q05N>
-From: Song Liu <song@kernel.org>
-Date: Tue, 6 Jun 2023 11:21:59 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com>
-Message-ID: <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com>
-Subject: Re: [PATCH 00/13] mm: jit/text allocator
-To: Mark Rutland <mark.rutland@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,92 +78,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.o
- zlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Axel Rasmussen <axelrasmussen@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Anshuman Khandual <anshu
+ man.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Minchan Kim <minchan@kernel.org>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 5, 2023 at 3:09=E2=80=AFAM Mark Rutland <mark.rutland@arm.com> =
-wrote:
+On Tue, 6 Jun 2023, Jason Gunthorpe wrote:
+> On Tue, Jun 06, 2023 at 03:03:31PM -0400, Peter Xu wrote:
+> > On Tue, Jun 06, 2023 at 03:23:30PM -0300, Jason Gunthorpe wrote:
+> > > On Mon, Jun 05, 2023 at 08:40:01PM -0700, Hugh Dickins wrote:
+> > > 
+> > > > diff --git a/arch/powerpc/mm/pgtable-frag.c b/arch/powerpc/mm/pgtable-frag.c
+> > > > index 20652daa1d7e..e4f58c5fc2ac 100644
+> > > > --- a/arch/powerpc/mm/pgtable-frag.c
+> > > > +++ b/arch/powerpc/mm/pgtable-frag.c
+> > > > @@ -120,3 +120,54 @@ void pte_fragment_free(unsigned long *table, int kernel)
+> > > >  		__free_page(page);
+> > > >  	}
+> > > >  }
+> > > > +
+> > > > +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> > > > +#define PTE_FREE_DEFERRED 0x10000 /* beyond any PTE_FRAG_NR */
+> > > > +
+> > > > +static void pte_free_now(struct rcu_head *head)
+> > > > +{
+> > > > +	struct page *page;
+> > > > +	int refcount;
+> > > > +
+> > > > +	page = container_of(head, struct page, rcu_head);
+> > > > +	refcount = atomic_sub_return(PTE_FREE_DEFERRED - 1,
+> > > > +				     &page->pt_frag_refcount);
+> > > > +	if (refcount < PTE_FREE_DEFERRED) {
+> > > > +		pte_fragment_free((unsigned long *)page_address(page), 0);
+> > > > +		return;
+> > > > +	}
+> > > 
+> > > From what I can tell power doesn't recycle the sub fragment into any
+> > > kind of free list. It just waits for the last fragment to be unused
+> > > and then frees the whole page.
 
-[...]
+Yes, it's relatively simple in that way: not as sophisticated as s390.
 
-> > > > Can you give more detail on what parameters you need? If the only e=
-xtra
-> > > > parameter is just "does this allocation need to live close to kerne=
-l
-> > > > text", that's not that big of a deal.
-> > >
-> > > My thinking was that we at least need the start + end for each caller=
-. That
-> > > might be it, tbh.
-> >
-> > Do you mean that modules will have something like
-> >
-> >       jit_text_alloc(size, MODULES_START, MODULES_END);
-> >
-> > and kprobes will have
-> >
-> >       jit_text_alloc(size, KPROBES_START, KPROBES_END);
-> > ?
->
-> Yes.
+> > > 
+> > > So why not simply go into pte_fragment_free() and do the call_rcu directly:
+> > > 
+> > > 	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
+> > > 	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
+> > > 		if (!kernel)
+> > > 			pgtable_pte_page_dtor(page);
+> > > 		call_rcu(&page->rcu_head, free_page_rcu)
+> > 
+> > We need to be careful on the lock being freed in pgtable_pte_page_dtor(),
+> > in Hugh's series IIUC we need the spinlock being there for the rcu section
+> > alongside the page itself.  So even if to do so we'll need to also rcu call 
+> > pgtable_pte_page_dtor() when needed.
 
-How about we start with two APIs:
-     jit_text_alloc(size);
-     jit_text_alloc_range(size, start, end);
+Thanks, Peter, yes that's right.
 
-AFAICT, arm64 is the only arch that requires the latter API. And TBH, I am
-not quite convinced it is needed.
+> 
+> Er yes, I botched that, the dtor and the free_page should be in a the
+> rcu callback function
 
->
-> > It sill can be achieved with a single jit_alloc_arch_params(), just by
-> > adding enum jit_type parameter to jit_text_alloc().
->
-> That feels backwards to me; it centralizes a bunch of information about
-> distinct users to be able to shove that into a static array, when the cal=
-lsites
-> can pass that information.
+But it was just a botched detail, and won't have answered Jason's doubt.
 
-I think we only two type of users: module and everything else (ftrace, kpro=
-be,
-bpf stuff). The key differences are:
+I had three (or perhaps it amounts to two) reasons for doing it this way:
+none of which may seem good enough reasons to you.  Certainly I'd agree
+that the way it's done seems... arcane.
 
-  1. module uses text and data; while everything else only uses text.
-  2. module code is generated by the compiler, and thus has stronger
-  requirements in address ranges; everything else are generated via some
-  JIT or manual written assembly, so they are more flexible with address
-  ranges (in JIT, we can avoid using instructions that requires a specific
-  address range).
+One, as I've indicated before, I don't actually dare to go all
+the way into RCU freeing of all page tables for powerpc (or any other):
+I should think it's a good idea that everyone wants in the end, but I'm
+limited by my time and competence - and dread of losing my way in the
+mmu_gather TLB #ifdef maze.  It's work for someone else not me.
 
-The next question is, can we have the two types of users share the same
-address ranges? If not, we can reserve the preferred range for modules,
-and let everything else use the other range. I don't see reasons to further
-separate users in the "everything else" group.
+(pte_free_defer() do as you suggest, without changing pte_fragment_free()
+itself?  No, that doesn't work out when defer does, say, the decrement of
+pt_frag_refcount from 2 to 1, then pte_fragment_free() does the decrement
+from 1 to 0: page freed without deferral.)
 
->
-> What's *actually* common after separating out the ranges? Is it just the
-> permissions?
+Two, this was the code I'd worked out before, and was used in production,
+so I had confidence in it - it was just my mistake that I'd forgotten the
+single rcu_head issue, and thought I could avoid it in the initial posting.
+powerpc has changed around since then, but apparently not in any way that
+affects this.  And it's too easy to agree in review that something can be
+simpler, without bringing back to mind why the complications are there.
 
-I believe permission is the key, as we need the hardware to enforce
-permission.
+Three (just an explanation of why the old code was like this), powerpc
+relies on THP's page table deposit+withdraw protocol, even for shmem/
+file THPs.  I've skirted that issue in this series, by sticking with
+retract_page_tables(), not attempting to insert huge pmd immediately.
+But if huge pmd is inserted to replace ptetable pmd, then ptetable must
+be deposited: pte_free_defer() as written protects the deposited ptetable
+from then being freed without deferral (rather like in the example above).
 
->
-> If we want this to be able to share allocations and so on, why can't we d=
-o this
-> like a kmem_cache, and have the callsite pass a pointer to the allocator =
-data?
-> That would make it easy for callsites to share an allocator or use a dist=
-inct
-> one.
+But does not protect it from being withdrawn and reused within that
+grace period.  Jann has grave doubts whether that can ever be allowed
+(or perhaps I should grant him certainty, and examples that it cannot).
+I did convince myself, back in the day, that it was safe here: but I'll
+have to put in a lot more thought to re-justify it now, and on the way
+may instead be completely persuaded by Jann.
 
-Sharing among different call sites will give us more benefit (in TLB
-misses rate,
-etc.). For example, a 2MB page may host text of two kernel modules, 4 kprob=
-es,
-6 ftrace trampolines, and 10 BPF programs. All of these only require one en=
-try
-in the iTLB.
+Not very good reasons: good enough, or can you supply a better patch?
 
 Thanks,
-Song
+Hugh
