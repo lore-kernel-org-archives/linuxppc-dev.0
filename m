@@ -4,64 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1975C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jun 2023 23:55:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14CBBC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 00:50:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc43c675Sz3f17
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 09:55:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc5Gp0rsPz3f7S
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 10:50:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EBEakHqu;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=iXTEGvg/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::129; helo=mail-il1-x129.google.com; envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EBEakHqu;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=iXTEGvg/;
 	dkim-atps=neutral
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-x129.google.com (mail-il1-x129.google.com [IPv6:2607:f8b0:4864:20::129])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc42b6w9Hz3cLX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 09:54:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1686182088; x=1717718088;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=o0coyrEYJkX6FBDvnT+ZO3PeoSubsXx9+zPnYTYGm44=;
-  b=EBEakHqu1xI8R28lKygfFIP8hwop4qtdHIkhtchQKJtZICNyd74W5dUX
-   yzllyx5KiqgFQi4nkqi+F03mevKb9TQ2cJxClUVZhXveuK0Zkhz99agLT
-   N0EYA7L2WiBFlqT0ZdaKYS+mYjE+wbjVgY0kStHC6wn5sez22oBjS9vnf
-   i9qgboIUS5y/zlh/QPX3fjdyOYS5NDTtjtfyxOdBptN28RTKRfjlCBgdh
-   3iv3GZd/w7PKWpuNjZw2pnWF5bh9Mvor3fmq/IJ9gos9Tt9BTI6/zBa3j
-   xNSKY7x7fYE7wug0dvMNe7d5Cz9vVquHy/0UUhnOzXWVefR0sXweBKOCF
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10734"; a="337503239"
-X-IronPort-AV: E=Sophos;i="6.00,225,1681196400"; 
-   d="scan'208";a="337503239"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jun 2023 16:54:38 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10734"; a="774826443"
-X-IronPort-AV: E=Sophos;i="6.00,225,1681196400"; 
-   d="scan'208";a="774826443"
-Received: from lkp-server01.sh.intel.com (HELO 15ab08e44a81) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 07 Jun 2023 16:54:34 -0700
-Received: from kbuild by 15ab08e44a81 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1q72z3-000711-1U;
-	Wed, 07 Jun 2023 23:54:33 +0000
-Date: Thu, 8 Jun 2023 07:54:20 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
-	akpm@linux-foundation.org, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu
-Subject: Re: [PATCH 15/16] powerpc/book3s64/radix: Add support for vmemmap
- optimization for radix
-Message-ID: <202306080711.eEcyyPFk-lkp@intel.com>
-References: <20230606045608.55127-16-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc5Fn1pb5z3dtG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 10:49:30 +1000 (AEST)
+Received: by mail-il1-x129.google.com with SMTP id e9e14a558f8ab-33d0b7114a9so10644505ab.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 17:49:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1686185367; x=1688777367;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nhl3RV14fXn8RdG370rcvuPNBbtc0Bpx0+NmOZMVtZc=;
+        b=iXTEGvg/ILHFZ4MmctWZrcsjVwX8MURaCUVKSgPXQ4f9X0AhamZU9vmta1Ned9mTP3
+         6D9QPRXrJjgLtL5RxnlXzAhQZ67A8838Hh98Eq4zkBKEmPCImr42n3zz6cZq6DNGLyeD
+         uScK4Z7i3X+PqwzuHBypvz+xsyH0yewKYaIE4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686185367; x=1688777367;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nhl3RV14fXn8RdG370rcvuPNBbtc0Bpx0+NmOZMVtZc=;
+        b=f1IFqbzqMSGa2jjLMiPpChBIDNAUCVViK4k7Gdlaa9Xd1d/oGP0pOAjydUaiAjx2B8
+         s39PdnchX15nsxAKIn7+wzCj5n84Xr/+HJbh/qK9u6QKdswiaaQJfgFaMv9tqH/ulEYs
+         ulzmZEef3R3lIlhc0ctuyQtoUOr8pc7GU+VomeN1eVON9cSbexKHPdxRBR29SwJ4w9iV
+         01zgbgeULE/gvtbVTTREKxD0Nh4lEmw1SziEsaW4Qm8/nlz98SxB2DltOSZM+BtPbJac
+         bw/c015Jrcul2jN2Ih94NkZEzZKuvOYa5s+wo3g04qou/o/BckjqfjxDlMbdZRkd6Qz0
+         sMTg==
+X-Gm-Message-State: AC+VfDxP3OdHnHmo1dXcHurlaWufjmFVITovMH7rtR8Ljy/pwqHfacSB
+	EsTFUnl5zZnivZ2tQE8fkBbcJUF8xiEwAukr180=
+X-Google-Smtp-Source: ACHHUZ4tvFx5y62BU7wPGs9dBTsSn42tQnPIsM0nm0HYzeZiV/RPAjy3OcX2zth2Icc60bEZVmnUQw==
+X-Received: by 2002:a92:dacb:0:b0:33e:5113:577b with SMTP id o11-20020a92dacb000000b0033e5113577bmr3390765ilq.13.1686185366788;
+        Wed, 07 Jun 2023 17:49:26 -0700 (PDT)
+Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com. [209.85.214.173])
+        by smtp.gmail.com with ESMTPSA id n9-20020aa78a49000000b0065e279c5c2csm4435168pfa.181.2023.06.07.17.49.26
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 07 Jun 2023 17:49:26 -0700 (PDT)
+Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-1b1b51ec3e9so75005ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 17:49:26 -0700 (PDT)
+X-Received: by 2002:a92:c54d:0:b0:33e:6b65:6f78 with SMTP id
+ a13-20020a92c54d000000b0033e6b656f78mr16489ilj.27.1686181007418; Wed, 07 Jun
+ 2023 16:36:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230606045608.55127-16-aneesh.kumar@linux.ibm.com>
+References: <20230607152432.5435-1-pmladek@suse.com> <20230607152432.5435-5-pmladek@suse.com>
+In-Reply-To: <20230607152432.5435-5-pmladek@suse.com>
+From: Doug Anderson <dianders@chromium.org>
+Date: Wed, 7 Jun 2023 16:36:35 -0700
+X-Gmail-Original-Message-ID: <CAD=FV=VV3Y7KoZWPtZfmfRsUCftAgo_CLRDazrYSgbR2XJKf=g@mail.gmail.com>
+Message-ID: <CAD=FV=VV3Y7KoZWPtZfmfRsUCftAgo_CLRDazrYSgbR2XJKf=g@mail.gmail.com>
+Subject: Re: [PATCH 4/7] watchdog/hardlockup: Enable HAVE_NMI_WATCHDOG only on sparc64
+To: Petr Mladek <pmladek@suse.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,43 +82,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Muchun Song <muchun.song@linux.dev>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, oe-kbuild-all@lists.linux.dev, Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Joao Martins <joao.m.martins@oracle.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-perf-users@vger.kernel.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Aneesh,
+Hi,
 
-kernel test robot noticed the following build warnings:
+On Wed, Jun 7, 2023 at 8:25=E2=80=AFAM Petr Mladek <pmladek@suse.com> wrote=
+:
+>
+> diff --git a/arch/Kconfig b/arch/Kconfig
+> index 13c6e596cf9e..57f15babe188 100644
+> --- a/arch/Kconfig
+> +++ b/arch/Kconfig
+> @@ -404,10 +404,9 @@ config HAVE_NMI_WATCHDOG
+>         depends on HAVE_NMI
+>         bool
+>         help
+> -         The arch provides its own hardlockup detector implementation in=
+stead
+> +         Sparc64 provides its own hardlockup detector implementation ins=
+tead
+>           of the generic perf one.
 
-[auto build test WARNING on powerpc/next]
-[also build test WARNING on powerpc/fixes akpm-mm/mm-everything linus/master v6.4-rc5]
-[cannot apply to nvdimm/libnvdimm-for-next tip/x86/core nvdimm/dax-misc next-20230607]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+It's a little weird to document generic things with the specifics of
+the user. The exception, IMO, is when something is deprecated.
+Personally, it would sound less weird to me to say something like:
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Aneesh-Kumar-K-V/powerpc-mm-book3s64-Use-pmdp_ptep-helper-instead-of-typecasting/20230606-125913
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-patch link:    https://lore.kernel.org/r/20230606045608.55127-16-aneesh.kumar%40linux.ibm.com
-patch subject: [PATCH 15/16] powerpc/book3s64/radix: Add support for vmemmap optimization for radix
-reproduce:
-        git remote add powerpc https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
-        git fetch powerpc next
-        git checkout powerpc/next
-        b4 shazam https://lore.kernel.org/r/20230606045608.55127-16-aneesh.kumar@linux.ibm.com
-        make menuconfig
-        # enable CONFIG_COMPILE_TEST, CONFIG_WARN_MISSING_DOCUMENTS, CONFIG_WARN_ABI_ERRORS
-        make htmldocs
+The arch provides its own hardlockup detector implementation instead
+of the generic perf one. This is a deprecated thing to do and kept
+around until sparc64 provides a full hardlockup implementation or
+moves to generic code.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202306080711.eEcyyPFk-lkp@intel.com/
 
-All warnings (new ones prefixed by >>):
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index d201f5d3876b..4b4aa0f941f9 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -1050,15 +1050,13 @@ config HAVE_HARDLOCKUP_DETECTOR_BUDDY
+>  #      sparc64: has a custom implementation which is not using the commo=
+n
+>  #              hardlockup command line options and sysctl interface.
+>  #
+> -# Note that HAVE_NMI_WATCHDOG is used to distinguish the sparc64 specifi=
+c
+> -# implementaion. It is automatically enabled also for other arch-specifi=
+c
+> -# variants which set HAVE_HARDLOCKUP_DETECTOR_ARCH. It makes the check
+> -# of avaialable and supported variants quite tricky.
+> +# Note that HAVE_NMI_WATCHDOG is set when the sparc64 specific implement=
+ation
+> +# is used.
+>  #
+>  config HARDLOCKUP_DETECTOR
+>         bool "Detect Hard Lockups"
+> -       depends on DEBUG_KERNEL && !S390
+> -       depends on ((HAVE_HARDLOCKUP_DETECTOR_PERF || HAVE_HARDLOCKUP_DET=
+ECTOR_BUDDY) && !HAVE_NMI_WATCHDOG) || HAVE_HARDLOCKUP_DETECTOR_ARCH
+> +       depends on DEBUG_KERNEL && !S390 && !HAVE_NMI_WATCHDOG
+> +       depends on HAVE_HARDLOCKUP_DETECTOR_PERF || HAVE_HARDLOCKUP_DETEC=
+TOR_BUDDY || HAVE_HARDLOCKUP_DETECTOR_ARCH
 
->> Documentation/powerpc/vmemmap_dedup.rst: WARNING: document isn't included in any toctree
+If you add the "!HAVE_NMI_WATCHDOG" as a dependency to
+HAVE_HARDLOCKUP_DETECTOR_BUDDY, as discussed in a previous patch, you
+can skip adding it here.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+
+>         imply HARDLOCKUP_DETECTOR_PERF
+>         imply HARDLOCKUP_DETECTOR_BUDDY
+>         select LOCKUP_DETECTOR
+> @@ -1079,7 +1077,7 @@ config HARDLOCKUP_DETECTOR_PREFER_BUDDY
+>         bool "Prefer the buddy CPU hardlockup detector"
+>         depends on HARDLOCKUP_DETECTOR
+>         depends on HAVE_HARDLOCKUP_DETECTOR_PERF && HAVE_HARDLOCKUP_DETEC=
+TOR_BUDDY
+> -       depends on !HAVE_NMI_WATCHDOG
+> +       depends on !HAVE_HARLOCKUP_DETECTOR_ARCH
+
+Don't need this. Architectures never are allowed to define
+HAVE_HARDLOCKUP_DETECTOR_PERF and HAVE_HARLOCKUP_DETECTOR_ARCH
+
+
+>         default n
+>         help
+>           Say Y here to prefer the buddy hardlockup detector over the per=
+f one.
+> @@ -1096,7 +1094,7 @@ config HARDLOCKUP_DETECTOR_PERF
+>         bool
+>         depends on HARDLOCKUP_DETECTOR
+>         depends on HAVE_HARDLOCKUP_DETECTOR_PERF && !HARDLOCKUP_DETECTOR_=
+PREFER_BUDDY
+> -       depends on !HAVE_NMI_WATCHDOG
+> +       depends on !HAVE_HARDLOCKUP_DETECTOR_ARCH
+
+Similarly, don't need this.
+
+
+>         select HARDLOCKUP_DETECTOR_COUNTS_HRTIMER
+>
+>  config HARDLOCKUP_DETECTOR_BUDDY
+> @@ -1104,7 +1102,7 @@ config HARDLOCKUP_DETECTOR_BUDDY
+>         depends on HARDLOCKUP_DETECTOR
+>         depends on HAVE_HARDLOCKUP_DETECTOR_BUDDY
+>         depends on !HAVE_HARDLOCKUP_DETECTOR_PERF || HARDLOCKUP_DETECTOR_=
+PREFER_BUDDY
+> -       depends on !HAVE_NMI_WATCHDOG
+> +       depends on !HAVE_HARDLOCKUP_DETECTOR_ARCH
+
+Similarly, don't need this.
+
+
+In general I don't object to splitting out HAVE_NMI_WATCHDOG from
+HAVE_HARDLOCKUP_DETECTOR_ARCH.
