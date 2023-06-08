@@ -4,65 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A71EC7EE25
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 03:26:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F4C0C7EE25
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 03:27:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc8kr5TjNz3fF8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 13:26:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc8lp0ccWz3fc4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 13:27:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=r72vBD0V;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=KoW2Cai7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::34; helo=mail-oa1-x34.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::22a; helo=mail-oi1-x22a.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=r72vBD0V;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=KoW2Cai7;
 	dkim-atps=neutral
-Received: from mail-oa1-x34.google.com (mail-oa1-x34.google.com [IPv6:2001:4860:4864:20::34])
+Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc8hr0g4gz3cNY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 13:24:43 +1000 (AEST)
-Received: by mail-oa1-x34.google.com with SMTP id 586e51a60fabf-19f31d6b661so154619fac.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 20:24:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc8hr3gl2z3cGk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 13:24:44 +1000 (AEST)
+Received: by mail-oi1-x22a.google.com with SMTP id 5614622812f47-39a505b901dso134282b6e.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 20:24:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686194676; x=1688786676;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=p5/+1fA9UdZZNdwm0m4IZsRyaLZTXCA/ALBNzcoctxQ=;
-        b=r72vBD0V9bJw0TEBoWHcQsXoI2/S17ZQ+6d18DHgGj2FZJZ7ySvdeAOC7LGAdfrlp8
-         xDBOGBN0FRgV4q008qbnWTt2usLpE2uFSlB3Uu/TtPAuAcxkk/2kYpscNeLaXqyDljRk
-         55Z+kE9OL2wZu3YITn7AAl5txn6CdKOu7LjmEFf2sGZveqdIClf6ZRWfc5WT4CAnoe0n
-         f2UCmZ/yaBs1s7yY2SKJc6O0kbg+bKHu7YacYwa+k09LysMJkS0YmJvbuAWeuXnSXA3j
-         u9vXIxcZ4a1imO8k7Bas76cNuCdaot1uW2mqBJEN92a+/EKcW/4naoPy0yxZAthukFUC
-         NCDg==
+        d=gmail.com; s=20221208; t=1686194682; x=1688786682;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=amk+85rcFOEG0VcwuC0GEJTQvC7gKI7CfBL/n9y3Wjk=;
+        b=KoW2Cai7O57Pl3gqJ9zgbc22dpLlVb7iGVHoWl5Z8VXh082/fIfw3dubwBorOs33IQ
+         4ZCqSaIt8cQJtOOSvoYpIq2TThd6bR0sVQkNy5WQZJWVGo4P1nPuDY5YxPlObTQ9jXsa
+         WAq3ku+12nxQomVObqlFCWMwrsuySN589sjuFj+0VjDH5LRNTLoECGq5Ba4OcP70NfUi
+         5NSq5VJrVLPbxzfxDZhHfjBX5gh5eCzTTqNHQGZtRHb/FW5zNTv6KZ+8CpzDlFfPPXzG
+         vFrN3/WXaK2NdzHWZXROg59TOz0RGZkY4EMtbJjcH5JyKoUuiyKGkaYdMusMAr5jkvKN
+         LI2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686194676; x=1688786676;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=p5/+1fA9UdZZNdwm0m4IZsRyaLZTXCA/ALBNzcoctxQ=;
-        b=Mciae8Tr6Wu3avpOq6wJ8Lsf209PDeh6rcW5ibrsZgbCzYXq3X8OeND1e/DbtB62xd
-         Y8v4YY67lgXs2BwGT7Ma+Xqh+SbLVHd2S59d6uEnH0xEp+EjBVOYI7G1DhepSv7Adv8u
-         K++uAeKLcOc1RkT9hfd77MENN9I5mTxqcS78Ath2dJ9KO9EWC63wdNzk78nUQHeB/cY/
-         k/lz6vNbp647SfYf0z7/yTk1MbLDkGn+Iq7AHUqWl0josEoQkbpVGSCvXEkl6Ztnywrm
-         5hSWKbf5oC/gPtmaFyCTJmNZFnzcHgkUuWc2cFkq/BVa1j+l75cCT48zYBX0OU3Cp7zW
-         dK2w==
-X-Gm-Message-State: AC+VfDyHplmDgDBjizfLOsnAWaWcXEGJg4/1UAq6fJySLwuHmBG0ZyfE
-	RyIDE6+9lT0XUrKxt3AVDfQ=
-X-Google-Smtp-Source: ACHHUZ7SSMbx5SlpVrW00IgxXImnEczLcGdqRZGJzWtx+RigbzuqXWtGqLLbKluldGPnlDoLooa+1A==
-X-Received: by 2002:a05:6871:503:b0:187:e05e:a4f0 with SMTP id s3-20020a056871050300b00187e05ea4f0mr6654834oal.26.1686194675743;
-        Wed, 07 Jun 2023 20:24:35 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1686194682; x=1688786682;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=amk+85rcFOEG0VcwuC0GEJTQvC7gKI7CfBL/n9y3Wjk=;
+        b=Jjil4ojA5ShTxEWRMQ/xloAY1iCvp/fRxmUQmoY8+jbCbmJQ4lBKanL2DhqXxMCKtn
+         L06XJ2BtsFvhHEGJICAariOXiqIBCbBnGnDMBTjWky4/6UzHdQlCypYBbnkcvj2hZcHY
+         2epjLHNltXQxrlW+zxlxUPSkHpg2y4HGPkzMBPXp0Q/lj8LtaJX/n3HODyGxaDcBu+y8
+         4xY0JPUrdHx4w0ZfugJ3cdvMb1sk9mXe1h8bmFxOKQtotgI9oPNIkT0/UhTsKlN/FL7a
+         dsdZT6mpnJanVNL7wB0MOQjFI2tKS3mCrFiQR0j/wYg7SkG19bpH3Gssw4bTozfcoaqy
+         H5sw==
+X-Gm-Message-State: AC+VfDwCEIJ6mHoOh2S+BoZTMfmlKFzv8xDqMGxO8ij/2fIdRIgVDS1s
+	3YFM1/Ija2+F8EIrO26UhBeQOrMsVqg=
+X-Google-Smtp-Source: ACHHUZ52jpFSNcSJqFuHZeU6QrpkZcVwzp1YQoGV2ph/MtJ+gQ0dqW58LzXNOK9Zb3AWfX1DlRKnmg==
+X-Received: by 2002:a05:6808:496:b0:394:45ad:3ea7 with SMTP id z22-20020a056808049600b0039445ad3ea7mr7593080oid.5.1686194681878;
+        Wed, 07 Jun 2023 20:24:41 -0700 (PDT)
 Received: from wheely.local0.net (58-6-224-112.tpgi.com.au. [58.6.224.112])
-        by smtp.gmail.com with ESMTPSA id s12-20020a17090a5d0c00b0025930e50e28sm2015629pji.41.2023.06.07.20.24.32
+        by smtp.gmail.com with ESMTPSA id s12-20020a17090a5d0c00b0025930e50e28sm2015629pji.41.2023.06.07.20.24.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jun 2023 20:24:34 -0700 (PDT)
+        Wed, 07 Jun 2023 20:24:41 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm@vger.kernel.org,
 	Paolo Bonzini <pbonzini@redhat.com>
-Subject: [PATCH v3 0/6] KVM: selftests: add powerpc support
-Date: Thu,  8 Jun 2023 13:24:19 +1000
-Message-Id: <20230608032425.59796-1-npiggin@gmail.com>
+Subject: [PATCH v3 2/6] KVM: selftests: Add aligned guest physical page allocator
+Date: Thu,  8 Jun 2023 13:24:21 +1000
+Message-Id: <20230608032425.59796-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230608032425.59796-1-npiggin@gmail.com>
+References: <20230608032425.59796-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -80,66 +83,106 @@ Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series adds initial KVM selftests support for powerpc
-(64-bit, BookS, radix MMU).
+powerpc will require this to allocate MMU tables in guest memory that
+are larger than guest base page size.
 
-Since v2:
-- Added a couple of new tests (patch 5,6)
-- Make default page size match host page size.
-- Check for radix MMU capability.
-- Build a few more of the generic tests.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ .../selftests/kvm/include/kvm_util_base.h     |  2 +
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 44 ++++++++++++-------
+ 2 files changed, 29 insertions(+), 17 deletions(-)
 
-Since v1:
-- Update MAINTAINERS KVM PPC entry to include kvm selftests.
-- Fixes and cleanups from Sean's review including new patch 1.
-- Add 4K guest page support requiring new patch 2.
-
-Thanks,
-Nick
-
-Nicholas Piggin (6):
-  KVM: selftests: Move pgd_created check into virt_pgd_alloc
-  KVM: selftests: Add aligned guest physical page allocator
-  KVM: PPC: selftests: add support for powerpc
-  KVM: PPC: selftests: add selftests sanity tests
-  KVM: PPC: selftests: Add a TLBIEL virtualisation tester
-  KVM: PPC: selftests: Add interrupt performance tester
-
- MAINTAINERS                                   |   2 +
- tools/testing/selftests/kvm/Makefile          |  23 +
- .../selftests/kvm/include/kvm_util_base.h     |  29 +
- .../selftests/kvm/include/powerpc/hcall.h     |  21 +
- .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
- .../selftests/kvm/include/powerpc/processor.h |  46 ++
- .../selftests/kvm/lib/aarch64/processor.c     |   4 -
- tools/testing/selftests/kvm/lib/guest_modes.c |  27 +-
- tools/testing/selftests/kvm/lib/kvm_util.c    |  56 +-
- .../selftests/kvm/lib/powerpc/handlers.S      |  93 +++
- .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
- .../selftests/kvm/lib/powerpc/processor.c     | 541 ++++++++++++++++++
- .../testing/selftests/kvm/lib/powerpc/ucall.c |  30 +
- .../selftests/kvm/lib/riscv/processor.c       |   4 -
- .../selftests/kvm/lib/s390x/processor.c       |   4 -
- .../selftests/kvm/lib/x86_64/processor.c      |   7 +-
- tools/testing/selftests/kvm/powerpc/helpers.h |  46 ++
- .../selftests/kvm/powerpc/interrupt_perf.c    | 199 +++++++
- .../testing/selftests/kvm/powerpc/null_test.c | 166 ++++++
- .../selftests/kvm/powerpc/rtas_hcall.c        | 136 +++++
- .../selftests/kvm/powerpc/tlbiel_test.c       | 508 ++++++++++++++++
- 21 files changed, 1981 insertions(+), 38 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
- create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
- create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
- create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
- create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
- create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
- create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
- create mode 100644 tools/testing/selftests/kvm/powerpc/helpers.h
- create mode 100644 tools/testing/selftests/kvm/powerpc/interrupt_perf.c
- create mode 100644 tools/testing/selftests/kvm/powerpc/null_test.c
- create mode 100644 tools/testing/selftests/kvm/powerpc/rtas_hcall.c
- create mode 100644 tools/testing/selftests/kvm/powerpc/tlbiel_test.c
-
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index d630a0a1877c..42d03ae08ecb 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -680,6 +680,8 @@ const char *exit_reason_str(unsigned int exit_reason);
+ 
+ vm_paddr_t vm_phy_page_alloc(struct kvm_vm *vm, vm_paddr_t paddr_min,
+ 			     uint32_t memslot);
++vm_paddr_t vm_phy_pages_alloc_align(struct kvm_vm *vm, size_t num, size_t align,
++			      vm_paddr_t paddr_min, uint32_t memslot);
+ vm_paddr_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+ 			      vm_paddr_t paddr_min, uint32_t memslot);
+ vm_paddr_t vm_alloc_page_table(struct kvm_vm *vm);
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 298c4372fb1a..68558d60f949 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -1903,6 +1903,7 @@ const char *exit_reason_str(unsigned int exit_reason)
+  * Input Args:
+  *   vm - Virtual Machine
+  *   num - number of pages
++ *   align - pages alignment
+  *   paddr_min - Physical address minimum
+  *   memslot - Memory region to allocate page from
+  *
+@@ -1916,7 +1917,7 @@ const char *exit_reason_str(unsigned int exit_reason)
+  * and their base address is returned. A TEST_ASSERT failure occurs if
+  * not enough pages are available at or above paddr_min.
+  */
+-vm_paddr_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
++vm_paddr_t vm_phy_pages_alloc_align(struct kvm_vm *vm, size_t num, size_t align,
+ 			      vm_paddr_t paddr_min, uint32_t memslot)
+ {
+ 	struct userspace_mem_region *region;
+@@ -1930,24 +1931,27 @@ vm_paddr_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+ 		paddr_min, vm->page_size);
+ 
+ 	region = memslot2region(vm, memslot);
+-	base = pg = paddr_min >> vm->page_shift;
+-
+-	do {
+-		for (; pg < base + num; ++pg) {
+-			if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+-				base = pg = sparsebit_next_set(region->unused_phy_pages, pg);
+-				break;
++	base = paddr_min >> vm->page_shift;
++
++again:
++	base = (base + align - 1) & ~(align - 1);
++	for (pg = base; pg < base + num; ++pg) {
++		if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
++			base = sparsebit_next_set(region->unused_phy_pages, pg);
++			if (!base) {
++				fprintf(stderr, "No guest physical pages "
++					"available, paddr_min: 0x%lx "
++					"page_size: 0x%x memslot: %u "
++					"num_pages: %lu align: %lu\n",
++					paddr_min, vm->page_size, memslot,
++					num, align);
++				fputs("---- vm dump ----\n", stderr);
++				vm_dump(stderr, vm, 2);
++				TEST_ASSERT(false, "false");
++				abort();
+ 			}
++			goto again;
+ 		}
+-	} while (pg && pg != base + num);
+-
+-	if (pg == 0) {
+-		fprintf(stderr, "No guest physical page available, "
+-			"paddr_min: 0x%lx page_size: 0x%x memslot: %u\n",
+-			paddr_min, vm->page_size, memslot);
+-		fputs("---- vm dump ----\n", stderr);
+-		vm_dump(stderr, vm, 2);
+-		abort();
+ 	}
+ 
+ 	for (pg = base; pg < base + num; ++pg)
+@@ -1956,6 +1960,12 @@ vm_paddr_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+ 	return base * vm->page_size;
+ }
+ 
++vm_paddr_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
++			      vm_paddr_t paddr_min, uint32_t memslot)
++{
++	return vm_phy_pages_alloc_align(vm, num, 1, paddr_min, memslot);
++}
++
+ vm_paddr_t vm_phy_page_alloc(struct kvm_vm *vm, vm_paddr_t paddr_min,
+ 			     uint32_t memslot)
+ {
 -- 
 2.40.1
 
