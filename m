@@ -4,80 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD182C7EE29
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 19:28:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 840F5C7EE45
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 19:29:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QcZ4x0HNFz3fkx
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 05:28:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QcZ5t1Hhpz3fmm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 05:29:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gDCHlcWH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=qeZyDOuR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gDCHlcWH;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=qeZyDOuR;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QcZ3C5MY4z3f6B
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 05:27:03 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 358JC72q028226;
-	Thu, 8 Jun 2023 19:26:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=Vdtjy7KMBO+X9Z7rUqm5H88eVKYCvsbAqEigHgRUlN8=;
- b=gDCHlcWHLywVSNpQqHtoWrDy+1u3KflybmHGkzL1pZVQtflFrOO+8nNAJMv5xy3BuKDV
- H7H6pUTVxsXx0XwRzIDrKLyk5kgMW/+NODFQwb/ALs2bGxY+OQuiEFm6DqwMLTUPuLvf
- Ljy5BtOnwVbNJrvqwI9iWtvrPRTB//3LfCsMY3tAOkvVY5cHxNqseEm3EFzMkVLzBEn2
- mZkRl+nDwtcewoPxLtVy6d3x/FQuFge2U5mhim+10xmM9a5PdiS/RlTx+7TuBrU02QTe
- qwKP44g6Xae0V4VKbk0y26+6VuisW4YoGNHVoo0PVURkSVJW4Edg1tELYZryLhNINORM 0g== 
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com [169.63.121.186])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r3mxdgc4j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Jun 2023 19:26:46 +0000
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
-	by ppma03wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 358GqV3E022662;
-	Thu, 8 Jun 2023 19:26:44 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
-	by ppma03wdc.us.ibm.com (PPS) with ESMTPS id 3r2a77j7j1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Jun 2023 19:26:44 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 358JQhti32899620
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 8 Jun 2023 19:26:43 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7902558063;
-	Thu,  8 Jun 2023 19:26:43 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4CA1C5805F;
-	Thu,  8 Jun 2023 19:26:43 +0000 (GMT)
-Received: from rhel-laptop.ibm.com (unknown [9.61.61.30])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  8 Jun 2023 19:26:43 +0000 (GMT)
-From: gjoyce@linux.vnet.ibm.com
-To: linux-block@vger.kernel.org
-Subject: [PATCH v5 1/3] block: sed-opal: Implement IOC_OPAL_DISCOVERY
-Date: Thu,  8 Jun 2023 14:26:40 -0500
-Message-Id: <20230608192642.516566-2-gjoyce@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230608192642.516566-1-gjoyce@linux.vnet.ibm.com>
-References: <20230608192642.516566-1-gjoyce@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QcZ3k52lMz3fdn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 05:27:30 +1000 (AEST)
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-568af2f6454so8803477b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2023 12:27:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1686252447; x=1688844447;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=jq3xrA6xvDVzvCSVs0I+t9KBGN0vgt1rJHLesOzHUeM=;
+        b=qeZyDOuR1Ocm6uD+TD8H/qooj7RzNFAiwCA/UqStNTHWJ9eTjvcv/8Jq76xJdFB16m
+         9vZjnF1AyEaJnSc8jl/F1i1cVEQ7u2Ksx/OtGK4kAnOQneochRX+8Uo2nfHZ+IrggDdD
+         8+N7/1JLxtH1E0e/CwR5x6nt/ET/TtrIOFNieXovV1RuuXkZkQgSV5Jae+9SGKAEV2ls
+         YNv4h9+C2a+hHml6224b2D5gDdWuYPDND/n0XtPM1ecc2OJLce4FWSFBO4HGDd7/83bC
+         7o6bLjq43ZCC/kx1k33o8ly3OOe+X/CVjUPlD/YBOO/8+E1ljdocxCQmjAw/takWi4D5
+         1nfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686252447; x=1688844447;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=jq3xrA6xvDVzvCSVs0I+t9KBGN0vgt1rJHLesOzHUeM=;
+        b=fuwIKjhphDaPHly8omymhRieGbVjQAMYR96JYfXYB8FX4aJxvbQYxI7N8YdMHDSQDb
+         Db904y96T6vyWT4WwUC92VOVjbBYeX81R+dX7EOQAOuvWgk3HYCpOdufTQSY0ii2E2xy
+         qRrnVbDrgRoe0zNT5YZcrcDeMeDsfk4tqUI1YyI8EEokx+OpbtOoc+Tv/ADs1m2uimjv
+         TiZNFlm1Doq+63gTHtbmurcg35vK1KDNvSk7eHQSxjvhGH3tIq0GgAh3X4HoHjhQyi7U
+         JeLViB9Ly6039JtLJaE8PWptlvuL1a1hPO1GeE2oyLCN6kFQXYeXvt6eAO7jAjPnC/zt
+         S4hA==
+X-Gm-Message-State: AC+VfDxX04ytzBhIUZ+zB9oSZYFjvxnkL1C6nxouBIcDzaBmopUSuS7s
+	LKOr0wD3navbkHowF0h2aLrpTA==
+X-Google-Smtp-Source: ACHHUZ4CKoILR2pPYJTWor9o0GBjI/ipQ0oNmgXRrLGWYF5f0T4KrdmmHl6o2FyAVA33XKtCaimxFg==
+X-Received: by 2002:a0d:ca88:0:b0:569:fdd1:24a7 with SMTP id m130-20020a0dca88000000b00569fdd124a7mr493494ywd.51.1686252447226;
+        Thu, 08 Jun 2023 12:27:27 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id f123-20020a0dc381000000b0054bfc94a10dsm119559ywd.47.2023.06.08.12.27.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 08 Jun 2023 12:27:26 -0700 (PDT)
+Date: Thu, 8 Jun 2023 12:27:22 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 15/23] s390: allow pte_offset_map_lock() to fail
+In-Reply-To: <a4963be9-7aa6-350-66d0-2ba843e1af44@google.com>
+Message-ID: <3ff29363-336a-9733-12a1-5c31a45c8aeb@google.com>
+References: <a4963be9-7aa6-350-66d0-2ba843e1af44@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: oaAHid84aGBfnAM5OJrfF1jdyPQSMT3R
-X-Proofpoint-ORIG-GUID: oaAHid84aGBfnAM5OJrfF1jdyPQSMT3R
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-08_14,2023-06-08_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- priorityscore=1501 mlxlogscore=999 suspectscore=0 malwarescore=0
- adultscore=0 impostorscore=0 clxscore=1015 bulkscore=0 spamscore=0
- mlxscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306080165
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,143 +76,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, gjoyce@linux.vnet.ibm.com, nayna@linux.ibm.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, C
+ hris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+In rare transient cases, not yet made possible, pte_offset_map() and
+pte_offset_map_lock() may not find a page table: handle appropriately.
 
-Add IOC_OPAL_DISCOVERY ioctl to return raw discovery data to a SED Opal
-application. This allows the application to display drive capabilities
-and state.
+Add comment on mm's contract with s390 above __zap_zero_pages(),
+and fix old comment there: must be called after THP was disabled.
 
-Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Jonathan Derrick <jonathan.derrick@linux.dev>
+Signed-off-by: Hugh Dickins <hughd@google.com>
 ---
- block/sed-opal.c              | 38 ++++++++++++++++++++++++++++++++---
- include/linux/sed-opal.h      |  1 +
- include/uapi/linux/sed-opal.h |  6 ++++++
- 3 files changed, 42 insertions(+), 3 deletions(-)
+ arch/s390/kernel/uv.c  |  2 ++
+ arch/s390/mm/gmap.c    |  9 ++++++++-
+ arch/s390/mm/pgtable.c | 12 +++++++++---
+ 3 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/block/sed-opal.c b/block/sed-opal.c
-index c18339446ef3..67c6c4f2b4b0 100644
---- a/block/sed-opal.c
-+++ b/block/sed-opal.c
-@@ -463,8 +463,11 @@ static int execute_steps(struct opal_dev *dev,
- 	return error;
- }
+diff --git a/arch/s390/kernel/uv.c b/arch/s390/kernel/uv.c
+index cb2ee06df286..3c62d1b218b1 100644
+--- a/arch/s390/kernel/uv.c
++++ b/arch/s390/kernel/uv.c
+@@ -294,6 +294,8 @@ int gmap_make_secure(struct gmap *gmap, unsigned long gaddr, void *uvcb)
  
--static int opal_discovery0_end(struct opal_dev *dev)
-+static int opal_discovery0_end(struct opal_dev *dev, void *data)
- {
-+	struct opal_discovery *discv_out = data; /* may be NULL */
-+	u8 __user *buf_out;
-+	u64 len_out;
- 	bool found_com_id = false, supported = true, single_user = false;
- 	const struct d0_header *hdr = (struct d0_header *)dev->resp;
- 	const u8 *epos = dev->resp, *cpos = dev->resp;
-@@ -480,6 +483,15 @@ static int opal_discovery0_end(struct opal_dev *dev)
+ 	rc = -ENXIO;
+ 	ptep = get_locked_pte(gmap->mm, uaddr, &ptelock);
++	if (!ptep)
++		goto out;
+ 	if (pte_present(*ptep) && !(pte_val(*ptep) & _PAGE_INVALID) && pte_write(*ptep)) {
+ 		page = pte_page(*ptep);
+ 		rc = -EAGAIN;
+diff --git a/arch/s390/mm/gmap.c b/arch/s390/mm/gmap.c
+index dc90d1eb0d55..3a2a31a15ea8 100644
+--- a/arch/s390/mm/gmap.c
++++ b/arch/s390/mm/gmap.c
+@@ -2537,7 +2537,12 @@ static inline void thp_split_mm(struct mm_struct *mm)
+  * Remove all empty zero pages from the mapping for lazy refaulting
+  * - This must be called after mm->context.has_pgste is set, to avoid
+  *   future creation of zero pages
+- * - This must be called after THP was enabled
++ * - This must be called after THP was disabled.
++ *
++ * mm contracts with s390, that even if mm were to remove a page table,
++ * racing with the loop below and so causing pte_offset_map_lock() to fail,
++ * it will never insert a page table containing empty zero pages once
++ * mm_forbids_zeropage(mm) i.e. mm->context.has_pgste is set.
+  */
+ static int __zap_zero_pages(pmd_t *pmd, unsigned long start,
+ 			   unsigned long end, struct mm_walk *walk)
+@@ -2549,6 +2554,8 @@ static int __zap_zero_pages(pmd_t *pmd, unsigned long start,
+ 		spinlock_t *ptl;
+ 
+ 		ptep = pte_offset_map_lock(walk->mm, pmd, addr, &ptl);
++		if (!ptep)
++			break;
+ 		if (is_zero_pfn(pte_pfn(*ptep)))
+ 			ptep_xchg_direct(walk->mm, addr, ptep, __pte(_PAGE_INVALID));
+ 		pte_unmap_unlock(ptep, ptl);
+diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
+index 6effb24de6d9..3bd2ab2a9a34 100644
+--- a/arch/s390/mm/pgtable.c
++++ b/arch/s390/mm/pgtable.c
+@@ -829,7 +829,7 @@ int set_guest_storage_key(struct mm_struct *mm, unsigned long addr,
+ 	default:
  		return -EFAULT;
  	}
+-
++again:
+ 	ptl = pmd_lock(mm, pmdp);
+ 	if (!pmd_present(*pmdp)) {
+ 		spin_unlock(ptl);
+@@ -850,6 +850,8 @@ int set_guest_storage_key(struct mm_struct *mm, unsigned long addr,
+ 	spin_unlock(ptl);
  
-+	if (discv_out) {
-+		buf_out = (u8 __user *)(uintptr_t)discv_out->data;
-+		len_out = min_t(u64, discv_out->size, hlen);
-+		if (buf_out && copy_to_user(buf_out, dev->resp, len_out))
-+			return -EFAULT;
-+
-+		discv_out->size = hlen; /* actual size of data */
-+	}
-+
- 	epos += hlen; /* end of buffer */
- 	cpos += sizeof(*hdr); /* current position on buffer */
- 
-@@ -565,13 +577,13 @@ static int opal_discovery0(struct opal_dev *dev, void *data)
- 	if (ret)
- 		return ret;
- 
--	return opal_discovery0_end(dev);
-+	return opal_discovery0_end(dev, data);
- }
- 
- static int opal_discovery0_step(struct opal_dev *dev)
- {
- 	const struct opal_step discovery0_step = {
--		opal_discovery0,
-+		opal_discovery0, NULL
- 	};
- 
- 	return execute_step(dev, &discovery0_step, 0);
-@@ -2435,6 +2447,22 @@ static int opal_secure_erase_locking_range(struct opal_dev *dev,
- 	return ret;
- }
- 
-+static int opal_get_discv(struct opal_dev *dev, struct opal_discovery *discv)
-+{
-+	const struct opal_step discovery0_step = {
-+		opal_discovery0, discv
-+	};
-+	int ret = 0;
-+
-+	mutex_lock(&dev->dev_lock);
-+	setup_opal_dev(dev);
-+	ret = execute_step(dev, &discovery0_step, 0);
-+	mutex_unlock(&dev->dev_lock);
-+	if (ret)
-+		return ret;
-+	return discv->size; /* modified to actual length of data */
-+}
-+
- static int opal_erase_locking_range(struct opal_dev *dev,
- 				    struct opal_session_info *opal_session)
- {
-@@ -3056,6 +3084,10 @@ int sed_ioctl(struct opal_dev *dev, unsigned int cmd, void __user *arg)
- 	case IOC_OPAL_GET_GEOMETRY:
- 		ret = opal_get_geometry(dev, arg);
- 		break;
-+	case IOC_OPAL_DISCOVERY:
-+		ret = opal_get_discv(dev, p);
-+		break;
-+
+ 	ptep = pte_offset_map_lock(mm, pmdp, addr, &ptl);
++	if (!ptep)
++		goto again;
+ 	new = old = pgste_get_lock(ptep);
+ 	pgste_val(new) &= ~(PGSTE_GR_BIT | PGSTE_GC_BIT |
+ 			    PGSTE_ACC_BITS | PGSTE_FP_BIT);
+@@ -938,7 +940,7 @@ int reset_guest_reference_bit(struct mm_struct *mm, unsigned long addr)
  	default:
- 		break;
+ 		return -EFAULT;
  	}
-diff --git a/include/linux/sed-opal.h b/include/linux/sed-opal.h
-index bbae1e52ab4f..ef65f589fbeb 100644
---- a/include/linux/sed-opal.h
-+++ b/include/linux/sed-opal.h
-@@ -47,6 +47,7 @@ static inline bool is_sed_ioctl(unsigned int cmd)
- 	case IOC_OPAL_GET_STATUS:
- 	case IOC_OPAL_GET_LR_STATUS:
- 	case IOC_OPAL_GET_GEOMETRY:
-+	case IOC_OPAL_DISCOVERY:
- 		return true;
+-
++again:
+ 	ptl = pmd_lock(mm, pmdp);
+ 	if (!pmd_present(*pmdp)) {
+ 		spin_unlock(ptl);
+@@ -955,6 +957,8 @@ int reset_guest_reference_bit(struct mm_struct *mm, unsigned long addr)
+ 	spin_unlock(ptl);
+ 
+ 	ptep = pte_offset_map_lock(mm, pmdp, addr, &ptl);
++	if (!ptep)
++		goto again;
+ 	new = old = pgste_get_lock(ptep);
+ 	/* Reset guest reference bit only */
+ 	pgste_val(new) &= ~PGSTE_GR_BIT;
+@@ -1000,7 +1004,7 @@ int get_guest_storage_key(struct mm_struct *mm, unsigned long addr,
+ 	default:
+ 		return -EFAULT;
  	}
- 	return false;
-diff --git a/include/uapi/linux/sed-opal.h b/include/uapi/linux/sed-opal.h
-index dc2efd345133..7f5732c5bdc5 100644
---- a/include/uapi/linux/sed-opal.h
-+++ b/include/uapi/linux/sed-opal.h
-@@ -173,6 +173,11 @@ struct opal_geometry {
- 	__u8  __align[3];
- };
+-
++again:
+ 	ptl = pmd_lock(mm, pmdp);
+ 	if (!pmd_present(*pmdp)) {
+ 		spin_unlock(ptl);
+@@ -1017,6 +1021,8 @@ int get_guest_storage_key(struct mm_struct *mm, unsigned long addr,
+ 	spin_unlock(ptl);
  
-+struct opal_discovery {
-+	__u64 data;
-+	__u64 size;
-+};
-+
- #define IOC_OPAL_SAVE		    _IOW('p', 220, struct opal_lock_unlock)
- #define IOC_OPAL_LOCK_UNLOCK	    _IOW('p', 221, struct opal_lock_unlock)
- #define IOC_OPAL_TAKE_OWNERSHIP	    _IOW('p', 222, struct opal_key)
-@@ -192,5 +197,6 @@ struct opal_geometry {
- #define IOC_OPAL_GET_STATUS         _IOR('p', 236, struct opal_status)
- #define IOC_OPAL_GET_LR_STATUS      _IOW('p', 237, struct opal_lr_status)
- #define IOC_OPAL_GET_GEOMETRY       _IOR('p', 238, struct opal_geometry)
-+#define IOC_OPAL_DISCOVERY          _IOW('p', 239, struct opal_discovery)
- 
- #endif /* _UAPI_SED_OPAL_H */
+ 	ptep = pte_offset_map_lock(mm, pmdp, addr, &ptl);
++	if (!ptep)
++		goto again;
+ 	pgste = pgste_get_lock(ptep);
+ 	*key = (pgste_val(pgste) & (PGSTE_ACC_BITS | PGSTE_FP_BIT)) >> 56;
+ 	paddr = pte_val(*ptep) & PAGE_MASK;
 -- 
-gjoyce@linux.vnet.ibm.com
+2.35.3
 
