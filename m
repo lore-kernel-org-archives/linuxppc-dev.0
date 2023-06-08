@@ -4,83 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F3F6C7EE25
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 18:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0804C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 19:08:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QcXnT4S6Lz3fC1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 04:30:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QcYf705Ltz3f6t
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 05:08:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NGxOWhKq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=gLnB65KD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NGxOWhKq;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=gLnB65KD;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QcXmQ6jRLz3dw1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 04:29:10 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 358Hk2HQ001398;
-	Thu, 8 Jun 2023 18:28:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : reply-to : to : cc : date : in-reply-to : references : content-type
- : mime-version : content-transfer-encoding; s=pp1;
- bh=iVL1UK1s3nj9G//sIoTKdRL7E54mZot0meikSd2hvBM=;
- b=NGxOWhKqy+InLGkSOMN9YzrYTKjiAxvYFuWufDWQ14iYnStYAUc3QPNUm8NOLjQ7H2ty
- g8T7IQUSyxsffjmGKP53k87fyRwAXaiSyWWZ3yJmDrHwO6y+AW/s7z6GRIXSyWp4F587
- JKOZd4feKWcK48mEh0pN7Cb62JrTj0ta1RYLjdvhGSiRAseDSEbXsjAo6qdpR7uqkvTW
- 4gjLOaqnOIlHFPIIwSEjf2A4dcEXm13UZphtP8h47W9SzJLiztCbSXsG++FwHQs6TpIh
- 6qLAE3vpBW6uU1RLwOxlH+LkybuhEkW+PlAKXh867lQy6FwEVawvIKkVH31mFJXvISRg ug== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r3jtm33v2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Jun 2023 18:28:53 +0000
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
-	by ppma01dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 358GrY0e008967;
-	Thu, 8 Jun 2023 18:28:52 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
-	by ppma01dal.us.ibm.com (PPS) with ESMTPS id 3r2a77fe87-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Jun 2023 18:28:52 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 358ISpgi34407158
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 8 Jun 2023 18:28:51 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0C54F5805A;
-	Thu,  8 Jun 2023 18:28:51 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C23E158052;
-	Thu,  8 Jun 2023 18:28:50 +0000 (GMT)
-Received: from rhel-laptop.ibm.com (unknown [9.61.61.30])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  8 Jun 2023 18:28:50 +0000 (GMT)
-Message-ID: <afc0ff6d83ea72f94b8f9e95476fa987d8ff8f17.camel@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 RESEND 0/3] sed-opal: keyrings, discovery, revert,
- key store
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-To: Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org
-Date: Thu, 08 Jun 2023 13:28:50 -0500
-In-Reply-To: <e340332d-ef64-9fa9-b4d6-927a3c271730@kernel.dk>
-References: <20230601223745.2136203-1-gjoyce@linux.vnet.ibm.com>
-	 <e340332d-ef64-9fa9-b4d6-927a3c271730@kernel.dk>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: LB_5UiyCs25L4UNrVlww0UIoK32-SzWK
-X-Proofpoint-ORIG-GUID: LB_5UiyCs25L4UNrVlww0UIoK32-SzWK
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-08_13,2023-06-08_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
- priorityscore=1501 lowpriorityscore=0 mlxscore=0 clxscore=1015 spamscore=0
- bulkscore=0 mlxlogscore=925 suspectscore=0 adultscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2305260000
- definitions=main-2306080159
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QcYd55whjz3dxw
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 05:07:52 +1000 (AEST)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-565eb83efe4so8963727b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2023 12:07:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1686251269; x=1688843269;
+        h=mime-version:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=mFXKG+o8ou8b37NYYPzSeVEYTzI6RrQFUcBP7+Z0kCs=;
+        b=gLnB65KDapj/L8oyti3OCPecdhfNzwnK27SyCP2Ij67wjZIq+Urt/Xj2ohzoxWGcqt
+         9md6NykL5+BICuB+yTQeY5noQu9v1v2MRkxsYM467PbVoGKY6MsnqM4jAqCuFHP/FIOV
+         Nmc3w5j8hy4a/q9QA4nUfQcqIorbpGtzTxxEZU3pKmFAyFx7OeJiQ8OIYPYs4ppaQJ99
+         d7EiKfcmdkw5gC0oGauuDJG9I1T0YqKfADh5DbR+Bsy6i3IAOqDTgdIwUCl9173XfMxd
+         gqB+NbUlpX0CJ1Eyi3fexT8Oih2q1dLLzjaj4zv6Fl4AW8zYJNZ/E0CIlX5rvC2IOp4N
+         oYyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686251269; x=1688843269;
+        h=mime-version:message-id:subject:cc:to:from:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=mFXKG+o8ou8b37NYYPzSeVEYTzI6RrQFUcBP7+Z0kCs=;
+        b=QXnfU8Labr+BjyWmoDDIsE169OGmNlb6I8VFIVqbIg3QkiJmM9oFWI8hEagxyNZMmU
+         cTAeQBSk1iHcyNb9nihnNhhCc+2Axe7uKmyHVq47yPOOQ6WHAhh9wYtbOX7hHk9lwZQy
+         UZlM5Kjcp6U4KrkYiV6GFDVCUdpju2vTLcX76m07mBKuZY6eX4K1BEkSpJBwMMkTvc4q
+         P6S2pQO/x+oQpeZV0N0QhhCd1gTUzz3kLqNbpo9R1WmASspJV4+y52MtP3Qe24mDEp5w
+         9uO+LdNH4GASdC5A9OxytXiwHTZzbDAcpvaJ1vaBnYpoLwdjksdCiKVd8xIRMtq3W07J
+         g9wA==
+X-Gm-Message-State: AC+VfDyV7pRqrGek0OBPwNNVMefRH+5ZaQHSUcf3BMSagqRFnT8VtGYF
+	Ixk03GCveXhZV8jyfTi3E8W/cw==
+X-Google-Smtp-Source: ACHHUZ4Dnk2jZ5ALQkJtH8c5bPqBsquF3+AZZ+zLteBdxMPlpIWo547PqJq12gBBTgb+B20F8e/7/A==
+X-Received: by 2002:a81:7b0b:0:b0:561:afca:5b4d with SMTP id w11-20020a817b0b000000b00561afca5b4dmr662072ywc.3.1686251268705;
+        Thu, 08 Jun 2023 12:07:48 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id j77-20020a819250000000b00565862c5e90sm103014ywg.83.2023.06.08.12.07.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 08 Jun 2023 12:07:48 -0700 (PDT)
+Date: Thu, 8 Jun 2023 12:07:36 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 00/23] arch: allow pte_offset_map[_lock]() to fail
+Message-ID: <a4963be9-7aa6-350-66d0-2ba843e1af44@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,50 +74,165 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: gjoyce@linux.vnet.ibm.com
-Cc: nayna@linux.ibm.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, C
+ hris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2023-06-05 at 15:14 -0600, Jens Axboe wrote:
-> On 6/1/23 4:37PM, gjoyce@linux.vnet.ibm.com wrote:
-> > From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-> > 
-> > This patchset has gone through numerous rounds of review and
-> > all comments/suggetions have been addressed. I believe that
-> > this patchset is ready for inclusion.
-> > 
-> > TCG SED Opal is a specification from The Trusted Computing Group
-> > that allows self encrypting storage devices (SED) to be locked at
-> > power on and require an authentication key to unlock the drive.
-> > 
-> > The current SED Opal implementation in the block driver
-> > requires that authentication keys be provided in an ioctl
-> > so that they can be presented to the underlying SED
-> > capable drive. Currently, the key is typically entered by
-> > a user with an application like sedutil or sedcli. While
-> > this process works, it does not lend itself to automation
-> > like unlock by a udev rule.
-> > 
-> > The SED block driver has been extended so it can alternatively
-> > obtain a key from a sed-opal kernel keyring. The SED ioctls
-> > will indicate the source of the key, either directly in the
-> > ioctl data or from the keyring.
-> > 
-> > Two new SED ioctls have also been added. These are:
-> >   1) IOC_OPAL_REVERT_LSP to revert LSP state
-> >   2) IOC_OPAL_DISCOVERY to discover drive capabilities/state
-> > 
-> > change log v4:
-> >         - rebase to 6.3-rc7
-> > 	- replaced "255" magic number with U8_MAX
-> 
-> None of this applies for for-6.5/block, and I'm a little puzzled
-> as to why you'd rebase to an old kernel rather than a 6.4-rc at
-> least?
-> 
-> Please resend one that is current.
+Here is v2 series of patches to various architectures, based on v6.4-rc5:
+preparing for v2 of changes following in mm, affecting pte_offset_map()
+and pte_offset_map_lock().  There are very few differences from v1:
+noted patch by patch below.
 
-Rebase to for-6.5/block coming shortly.
+v1 was "arch: allow pte_offset_map[_lock]() to fail"
+https://lore.kernel.org/linux-mm/77a5d8c-406b-7068-4f17-23b7ac53bc83@google.com/
+series of 23 posted on 2023-05-09,
+followed by "mm: allow pte_offset_map[_lock]() to fail"
+https://lore.kernel.org/linux-mm/68a97fbe-5c1e-7ac6-72c-7b9c6290b370@google.com/
+series of 31 posted on 2023-05-21,
+followed by  "mm: free retracted page table by RCU"
+https://lore.kernel.org/linux-mm/35e983f5-7ed3-b310-d949-9ae8b130cdab@google.com/
+series of 12 posted on 2023-05-28.
 
+The first two series are "independent": neither depends
+for build or correctness on the other, and the arch patches can either be
+merged separately via arch trees, or be picked up by akpm; but both series
+must be in before the third series is added to make the effective changes
+(and that adds just a little more in arm, powerpc, s390 and sparc).
 
+What is it all about?  Some mmap_lock avoidance i.e. latency reduction.
+Initially just for the case of collapsing shmem or file pages to THPs;
+but likely to be relied upon later in other contexts e.g. freeing of
+empty page tables (but that's not work I'm doing).  mmap_write_lock
+avoidance when collapsing to anon THPs?  Perhaps, but again that's not
+work I've done: a quick attempt was not as easy as the shmem/file case.
+
+I would much prefer not to have to make these small but wide-ranging
+changes for such a niche case; but failed to find another way, and
+have heard that shmem MADV_COLLAPSE's usefulness is being limited by
+that mmap_write_lock it currently requires.
+
+These changes (though of course not these exact patches, and not all
+of these architectures!) have been in Google's data centre kernel for
+three years now: we do rely upon them.
+
+What are the per-arch changes about?  Generally, two things.
+
+One: the current mmap locking may not be enough to guard against that
+tricky transition between pmd entry pointing to page table, and empty
+pmd entry, and pmd entry pointing to huge page: pte_offset_map() will
+have to validate the pmd entry for itself, returning NULL if no page
+table is there.  What to do about that varies: often the nearby error
+handling indicates just to skip it; but in some cases a "goto again"
+looks appropriate (and if that risks an infinite loop, then there
+must have been an oops, or pfn 0 mistaken for page table, before).
+
+Deeper study of each site might show that 90% of them here in arch
+code could only fail if there's corruption e.g. a transition to THP
+would be surprising on an arch without HAVE_ARCH_TRANSPARENT_HUGEPAGE.
+But given the likely extension to freeing empty page tables, I have
+not limited this set of changes to THP; and it has been easier, and
+sets a better example, if each site is given appropriate handling.
+
+Two: pte_offset_map() will need to do an rcu_read_lock(), with the
+corresponding rcu_read_unlock() in pte_unmap().  But most architectures
+never supported CONFIG_HIGHPTE, so some don't always call pte_unmap()
+after pte_offset_map(), or have used userspace pte_offset_map() where
+pte_offset_kernel() is more correct.  No problem in the current tree,
+but a problem once an rcu_read_unlock() will be needed to keep balance.
+
+A common special case of that comes in arch/*/mm/hugetlbpage.c, if
+the architecture supports hugetlb pages down at the lowest PTE level.
+huge_pte_alloc() uses pte_alloc_map(), but generic hugetlb code does
+no corresponding pte_unmap(); similarly for huge_pte_offset().
+Thanks to Mike Kravetz and Andrew Morton, v6.4-rc1 already provides
+pte_alloc_huge() and pte_offset_huge() to help fix up those cases.
+
+This posting is based on v6.4-rc5, but good for any v6.4-rc,
+current mm-everything and linux-next.
+
+01/23 arm: allow pte_offset_map[_lock]() to fail
+      v2: same as v1
+02/23 arm64: allow pte_offset_map() to fail
+      v2: add ack from Catalin
+03/23 arm64/hugetlb: pte_alloc_huge() pte_offset_huge()
+      v2: add ack from Catalin
+04/23 ia64/hugetlb: pte_alloc_huge() pte_offset_huge()
+      v2: same as v1
+05/23 m68k: allow pte_offset_map[_lock]() to fail
+      v2: same as v1
+06/23 microblaze: allow pte_offset_map() to fail
+      v2: same as v1
+07/23 mips: update_mmu_cache() can replace __update_tlb()
+      v2: same as v1
+08/23 parisc: add pte_unmap() to balance get_ptep()
+      v2: typo fix from Helge; stronger commit message
+09/23 parisc: unmap_uncached_pte() use pte_offset_kernel()
+      v2: same as v1
+10/23 parisc/hugetlb: pte_alloc_huge() pte_offset_huge()
+      v2: same as v1
+11/23 powerpc: kvmppc_unmap_free_pmd() pte_offset_kernel()
+      v2: same as v1
+12/23 powerpc: allow pte_offset_map[_lock]() to fail
+      v2: same as v1
+13/23 powerpc/hugetlb: pte_alloc_huge()
+      v2: same as v1
+14/23 riscv/hugetlb: pte_alloc_huge() pte_offset_huge()
+      v2: add review from Alex, ack from Palmer
+15/23 s390: allow pte_offset_map_lock() to fail
+      v2: add comment for Claudio
+16/23 s390: gmap use pte_unmap_unlock() not spin_unlock()
+      v2: add ack from Alexander
+17/23 sh/hugetlb: pte_alloc_huge() pte_offset_huge()
+      v2: same as v1
+18/23 sparc/hugetlb: pte_alloc_huge() pte_offset_huge()
+      v2: same as v1
+19/23 sparc: allow pte_offset_map() to fail
+      v2: same as v1
+20/23 sparc: iounit and iommu use pte_offset_kernel()
+      v2: same as v1
+21/23 x86: Allow get_locked_pte() to fail
+      v2: add WARN_ON_ONCE from PeterZ
+22/23 x86: sme_populate_pgd() use pte_offset_kernel()
+      v2: same as v1
+23/23 xtensa: add pte_unmap() to balance pte_offset_map()
+      v2: stronger commit message
+
+ arch/arm/lib/uaccess_with_memcpy.c      |  3 ++
+ arch/arm/mm/fault-armv.c                |  5 +++-
+ arch/arm/mm/fault.c                     |  3 ++
+ arch/arm64/mm/fault.c                   |  3 ++
+ arch/arm64/mm/hugetlbpage.c             | 11 ++-----
+ arch/ia64/mm/hugetlbpage.c              |  4 +--
+ arch/m68k/include/asm/mmu_context.h     |  6 ++--
+ arch/m68k/kernel/sys_m68k.c             |  2 ++
+ arch/m68k/mm/mcfmmu.c                   | 52 +++++++++++++--------------------
+ arch/microblaze/kernel/signal.c         |  5 ++--
+ arch/mips/include/asm/pgtable.h         | 15 ++--------
+ arch/mips/mm/tlb-r3k.c                  |  5 ++--
+ arch/mips/mm/tlb-r4k.c                  |  9 ++----
+ arch/parisc/kernel/cache.c              | 26 +++++++++++++----
+ arch/parisc/kernel/pci-dma.c            |  2 +-
+ arch/parisc/mm/hugetlbpage.c            |  4 +--
+ arch/powerpc/kvm/book3s_64_mmu_radix.c  |  2 +-
+ arch/powerpc/mm/book3s64/hash_tlb.c     |  4 +++
+ arch/powerpc/mm/book3s64/subpage_prot.c |  2 ++
+ arch/powerpc/mm/hugetlbpage.c           |  2 +-
+ arch/powerpc/xmon/xmon.c                |  5 +++-
+ arch/riscv/mm/hugetlbpage.c             |  4 +--
+ arch/s390/kernel/uv.c                   |  2 ++
+ arch/s390/mm/gmap.c                     | 31 ++++++++++++--------
+ arch/s390/mm/pgtable.c                  | 12 ++++++--
+ arch/sh/mm/hugetlbpage.c                |  4 +--
+ arch/sparc/kernel/signal32.c            |  2 ++
+ arch/sparc/mm/fault_64.c                |  3 ++
+ arch/sparc/mm/hugetlbpage.c             |  4 +--
+ arch/sparc/mm/io-unit.c                 |  2 +-
+ arch/sparc/mm/iommu.c                   |  2 +-
+ arch/sparc/mm/tlb.c                     |  2 ++
+ arch/x86/kernel/ldt.c                   |  6 ++--
+ arch/x86/mm/mem_encrypt_identity.c      |  2 +-
+ arch/xtensa/mm/tlb.c                    |  5 +++-
+ 35 files changed, 146 insertions(+), 105 deletions(-)
+
+Hugh
