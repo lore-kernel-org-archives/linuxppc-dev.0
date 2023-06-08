@@ -4,77 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49150C7EE29
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 19:37:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDCDAC7EE25
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 19:38:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QcZHk5jHlz3g2Z
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 05:37:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QcZJq3MJlz3g23
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 05:38:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ap+OGTXl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=IGMMSO5m;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::230; helo=mail-oi1-x230.google.com; envelope-from=hughd@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ap+OGTXl;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=IGMMSO5m;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-x230.google.com (mail-oi1-x230.google.com [IPv6:2607:f8b0:4864:20::230])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QcZD000KQz3g4Y
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 05:34:39 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 358JWcKV027478;
-	Thu, 8 Jun 2023 19:34:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=6iDW1kX4q82sjHfPDMuszudpwL6b3DfvJyHTBZ4tFww=;
- b=Ap+OGTXl6ICJxxWpD6ASHMSUzpQAjC2mod8HTo2SePvvNM0VpCTb5uiiuaKWFdOz3XRs
- eLWC+VVJ2G1Rk6C/Vak4BJvKTwO86ejG95OTgMw7/bcCZa76euRjy9VkjSEU/il0LJ/M
- RGvEvRV5a8ptXuh1+DtMEB5vrNalfHaI45gdvu6dWhXAId0w7GcUOZGJCd2E+tnd9ZQo
- 7cpjmx1oM7MPYdMt9WXYl1Lvkr3FM67U38WEp8/B98vJOeBlQti4/oqZLL4YmG6tpwLq
- F8qSb/+piDGa2oRmx62bNUtBvL4qQF3OGwEsXj+nMqVqZg1MmtIKm7X53bREQNEqShXh Ow== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com [169.47.144.27])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r3n7tr2dc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Jun 2023 19:34:30 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
-	by ppma05wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 358HIijO008334;
-	Thu, 8 Jun 2023 19:26:44 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
-	by ppma05wdc.us.ibm.com (PPS) with ESMTPS id 3r2a78a6y5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Jun 2023 19:26:44 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 358JQhm240108322
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 8 Jun 2023 19:26:43 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 472B15805D;
-	Thu,  8 Jun 2023 19:26:43 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 198A858055;
-	Thu,  8 Jun 2023 19:26:43 +0000 (GMT)
-Received: from rhel-laptop.ibm.com (unknown [9.61.61.30])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  8 Jun 2023 19:26:43 +0000 (GMT)
-From: gjoyce@linux.vnet.ibm.com
-To: linux-block@vger.kernel.org
-Subject: [PATCH v5 0/3] sed-opal: keyrings, discovery, revert, key store
-Date: Thu,  8 Jun 2023 14:26:39 -0500
-Message-Id: <20230608192642.516566-1-gjoyce@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.31.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QcZDj3WpRz3fmM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 05:35:17 +1000 (AEST)
+Received: by mail-oi1-x230.google.com with SMTP id 5614622812f47-392116b8f31so42197b6e.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2023 12:35:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1686252914; x=1688844914;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=kr0PEHV5OnE+EEUWt8DnaCebmsfgt0XKMU/SCuO3z3o=;
+        b=IGMMSO5mseD7tMe+rRtOIzITR5LLF6gSj6DDkJB5GA4sfv+l0xQcNm+4SRn9cSTA+K
+         bzPDoNl4QAtanNBNtw4EO4Jh9TOBqBvtAeMzqVR0kpqSUA/L/bvTchhidEBh3MP4oHsE
+         7zzo3x/NewiOg3sZOatxsUi0TcVM8A38QB4oSQfrmI5m9Mp6eOh1v9F27aPIV0BM3Y9m
+         jqm85o0LQ0rhNRucFZ0i7HQcaeWJpsz64iPtGPt0XsZOnDRNlY3xajIra5PnrJSK9OoE
+         jKjJyQ6PxwcJN3nFoobZxXBieXcQTT3OQ2VZ4F5eEeV/iMRllpjt6DpnkAeaktGC324Y
+         dn+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686252914; x=1688844914;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=kr0PEHV5OnE+EEUWt8DnaCebmsfgt0XKMU/SCuO3z3o=;
+        b=Vn0RnlNH/oPHjuUZomH8JWqN+9+Ado0RgxOWOyYuAVykGojTz/SeRFhSkJA3ukuE6e
+         FcmQPkZQxyDKX/Bu+jzpLgP4Qb4oY/mId7Z7MI71/r3zOGvKTc+60X7ihIdefZXW+Jzv
+         Rgsj55qMZA6br0lUjt0WWRH6wD0kMTuvTJIvWqaHgHRjPA2jNCWZuMmz/VoQw6qI5f9x
+         WF67Gex7bzfo+j0Z6h089uQ40bQCYKq4C5xooPzQJ4uNva/l9aL5bIRJyVZezGUTsRzB
+         E3QUF9Ifwodpabz1Ri9MlHQTO8T7dl9bqViM6mvJT1fAhfkAVcaUJGKzqaQwnD7dZjsF
+         CeRg==
+X-Gm-Message-State: AC+VfDwmEg2di4SJVXtN+adSasrA4dABIwC+TRWdm9OK9ecvOT/OsB7E
+	QIRlFXR2b8gUzwgwnC9i8OVZqA==
+X-Google-Smtp-Source: ACHHUZ7gdIjuH/6E76ySqRN8WufhpANLQ+j2jIa26lg+ERfDlrQvd+huECUh9/LluoEXiOqTeuRs9w==
+X-Received: by 2002:a05:6808:cd:b0:39a:519c:2a6a with SMTP id t13-20020a05680800cd00b0039a519c2a6amr6836715oic.43.1686252914190;
+        Thu, 08 Jun 2023 12:35:14 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id g137-20020a0ddd8f000000b0055d8768408dsm108055ywe.105.2023.06.08.12.35.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 08 Jun 2023 12:35:13 -0700 (PDT)
+Date: Thu, 8 Jun 2023 12:35:09 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 21/23] x86: Allow get_locked_pte() to fail
+In-Reply-To: <a4963be9-7aa6-350-66d0-2ba843e1af44@google.com>
+Message-ID: <b7fa8547-4f28-ec82-9893-1b2eb58e40b4@google.com>
+References: <a4963be9-7aa6-350-66d0-2ba843e1af44@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: DKNj3BRFOGbSdiTI6htYECpLX7teCiKB
-X-Proofpoint-GUID: DKNj3BRFOGbSdiTI6htYECpLX7teCiKB
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-08_14,2023-06-08_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 malwarescore=0
- lowpriorityscore=0 mlxlogscore=912 phishscore=0 impostorscore=0
- priorityscore=1501 mlxscore=0 spamscore=0 suspectscore=0 clxscore=1015
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306080170
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,72 +76,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, gjoyce@linux.vnet.ibm.com, nayna@linux.ibm.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, John David Anglin <dave.anglin@bell.net>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, C
+ hris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+In rare transient cases, not yet made possible, pte_offset_map() and
+pte_offset_map_lock() may not find a page table: handle appropriately.
 
-Patchset rebased to for-6.5/block
+Signed-off-by: Hugh Dickins <hughd@google.com>
+---
+ arch/x86/kernel/ldt.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-This patchset has gone through numerous rounds of review and
-all comments/suggetions have been addressed. I believe that
-this patchset is ready for inclusion.
-
-TCG SED Opal is a specification from The Trusted Computing Group
-that allows self encrypting storage devices (SED) to be locked at
-power on and require an authentication key to unlock the drive.
-
-The current SED Opal implementation in the block driver
-requires that authentication keys be provided in an ioctl
-so that they can be presented to the underlying SED
-capable drive. Currently, the key is typically entered by
-a user with an application like sedutil or sedcli. While
-this process works, it does not lend itself to automation
-like unlock by a udev rule.
-
-The SED block driver has been extended so it can alternatively
-obtain a key from a sed-opal kernel keyring. The SED ioctls
-will indicate the source of the key, either directly in the
-ioctl data or from the keyring.
-
-Two new SED ioctls have also been added. These are:
-  1) IOC_OPAL_REVERT_LSP to revert LSP state
-  2) IOC_OPAL_DISCOVERY to discover drive capabilities/state
-
-change log v5:
-        - rebase to for-6.5/block
-
-change log v4:
-        - rebase to 6.3-rc7
-        - replaced "255" magic number with U8_MAX
-
-change log:
-        - rebase to 6.x
-        - added latest reviews
-        - removed platform functions for persistent key storage
-        - replaced key update logic with key_create_or_update()
-        - minor bracing and padding changes
-        - add error returns
-        - opal_key structure is application provided but kernel
-          verified
-        - added brief description of TCG SED Opal
-
-
-Greg Joyce (3):
-  block: sed-opal: Implement IOC_OPAL_DISCOVERY
-  block: sed-opal: Implement IOC_OPAL_REVERT_LSP
-  block: sed-opal: keyring support for SED keys
-
- block/Kconfig                 |   2 +
- block/opal_proto.h            |   4 +
- block/sed-opal.c              | 252 +++++++++++++++++++++++++++++++++-
- include/linux/sed-opal.h      |   5 +
- include/uapi/linux/sed-opal.h |  25 +++-
- 5 files changed, 282 insertions(+), 6 deletions(-)
-
-
-base-commit: 1341c7d2ccf42ed91aea80b8579d35bc1ea381e2
+diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
+index 525876e7b9f4..adc67f98819a 100644
+--- a/arch/x86/kernel/ldt.c
++++ b/arch/x86/kernel/ldt.c
+@@ -367,8 +367,10 @@ static void unmap_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt)
+ 
+ 		va = (unsigned long)ldt_slot_va(ldt->slot) + offset;
+ 		ptep = get_locked_pte(mm, va, &ptl);
+-		pte_clear(mm, va, ptep);
+-		pte_unmap_unlock(ptep, ptl);
++		if (!WARN_ON_ONCE(!ptep)) {
++			pte_clear(mm, va, ptep);
++			pte_unmap_unlock(ptep, ptl);
++		}
+ 	}
+ 
+ 	va = (unsigned long)ldt_slot_va(ldt->slot);
 -- 
-gjoyce@linux.vnet.ibm.com
+2.35.3
 
