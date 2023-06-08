@@ -4,64 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48B21C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 02:46:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F7C8C7EE25
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 03:25:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc7rM2yZTz3dxg
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 12:46:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc8jv3CZ6z3dxB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 13:25:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=JyKG9gVI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=d9EhnBem;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::732; helo=mail-qk1-x732.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=JyKG9gVI;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=d9EhnBem;
 	dkim-atps=neutral
-Received: from mail-qk1-x732.google.com (mail-qk1-x732.google.com [IPv6:2607:f8b0:4864:20::732])
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc7qP5h5jz3cBL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 12:45:19 +1000 (AEST)
-Received: by mail-qk1-x732.google.com with SMTP id af79cd13be357-75d44cb20a2so8365585a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 19:45:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc8hr0cD6z3cGk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 13:24:42 +1000 (AEST)
+Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-53fe2275249so4554a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 20:24:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686192312; x=1688784312;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=teN9p0t9Py9PEukUc7/cqagMxz/5d+anLF3de3OjgMs=;
-        b=JyKG9gVIrKRNvg08FK0kze79jE+HPGg14Ppzb0B87BxKnQTHTcgU05NSJw/u+1OiNC
-         qNs9ope2ux+R/3VumkcD5W8q0tVfR3vowKfKXIyOfN7+0itWGFz82ba8wHsl43SpfsgA
-         WrSVxEvKOcTcsLLrIUSy9kXaMRg/QAzVS7xzU560e9WoflWDJmcgi9T6IbkfFldbM5Sy
-         VIor5qle13B3gjcYydJ+71yiJYAk+0J0QSBpH2P20IdOg9F5EiJBQgWIhTahq4KIybQq
-         unrLP2gYRdX9Ix3VYpjQsg7X0wyHaMqescICLJvWTkw4/Va/RAlPoR33hrl0KVfE3qH6
-         SfXA==
+        d=gmail.com; s=20221208; t=1686194679; x=1688786679;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VOCdNvewECOQ5+r30J+0zwy8ziQLU8oKSXOMN2+Hq4s=;
+        b=d9EhnBemmD2f4oibbfAEEtWejICQ1rNiFBazg0jFGkD4tHwSNxfejfLeSyWocMTaLl
+         69ynTHOgeRffw9JCwU/y0mkCtCcRzp2JHpPre42leBmr68P2ymOJOS1NDhptQVpW7X6i
+         OuTRe1NRirHOLlD1MDgzWUn20RpLjBGhZqNJ9T4QpmYittxkECm/5cS7vFLw/DAsHcew
+         ThrwAgWJ+opa5bWMZGPTAachovkIliDPpSvhae4lb1OTYqOhKYA1wORhDjSg+pwrwt9K
+         mAyxel8HQuUxkV8F6oZKoh5+SB2GPc84eFHWuvG3IfNBkKX+AyUTIjyhmdcYcWEA2oIH
+         dwew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686192312; x=1688784312;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=teN9p0t9Py9PEukUc7/cqagMxz/5d+anLF3de3OjgMs=;
-        b=j+KrBR9j38OCiqHvVD8vjlez+MjYTBxm6eY8j+uHyPQK5Dv2V1IiCeSsOw1rSYj3hZ
-         pXBhc/gjCIZWwSTH/5IP+kgprifHvDj9NmTVgsfx0jIdE07lBs1Vn/JIVj+1L4+a+yF+
-         nu5bl2HR0a8z/NKxAOdtXfZhckGMUl+WEN5QNRNmCutX5C6/OCwrWIxClBdZnQkvdEvd
-         IbGPlk9X/MBqxHi17MLFLWg2c7w7iZzbV0yvFJkW52rFyY/1W9oBBZYh/Y6aMLbQ9mqg
-         bfFAOqXYiTDw/WnNBbTZrIbw4jEi+qOymfz7yRtKihhaCKFi+4Rlg7mJ3sdfgO0PEzLj
-         DKRA==
-X-Gm-Message-State: AC+VfDwVl5UFXoeqO8N3WIDnurg2YmySYrO4dVOmfiL+syeiTsYRkXgP
-	lfuP5nnbcDgbajsabrZc+hY/5K+wsio=
-X-Google-Smtp-Source: ACHHUZ5U53tkB/Ijo7k2JmytjfmtxBzc/YSVbJKsamc7Fx4I05POeWa4lQTTG1qRKoS80xXM2zYKRQ==
-X-Received: by 2002:a05:620a:4690:b0:75d:5321:fa40 with SMTP id bq16-20020a05620a469000b0075d5321fa40mr4207972qkb.51.1686192311907;
-        Wed, 07 Jun 2023 19:45:11 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1686194679; x=1688786679;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VOCdNvewECOQ5+r30J+0zwy8ziQLU8oKSXOMN2+Hq4s=;
+        b=L1jqLioZJ9FAMdIQ3JU1T52HrGquXrCXpH4npxua0nXGb6sFsWieKU0uoJw4RuFuMg
+         3a/+37VizwWp8BYPog7mAT2/NFdGR4nDC7+kC8aSuWstn7SA8M7DTkQxsLGaZId3GaVJ
+         C0H8+JBwzp6m72s0UOYt6QCxTlfFIzXL9aFFWd0zxeJKimXpxyuA6u0mVbgKu1bAtGtm
+         Bh9K28O9gP5rwLC8qWL8T2KtxrMB+oNDZHz9g2qZ5XaW+hx4uv/XAJqpGKQZwjNl9dtR
+         aoroyabGn8g4Ndc90UnVuN/8vudcF/MtrlaLRwBo1vIT97iobCqxIiLsgVs96SXGwjoC
+         vOmg==
+X-Gm-Message-State: AC+VfDynAjn2+Vx55+6Kn7RuGHuA/fEAaE563qvS+l7BR2wvIktrMvHz
+	stsWgSt9TQfH/S8KrP1LgtY=
+X-Google-Smtp-Source: ACHHUZ6Fc9Zs7wtSCeCsqeNk7P4TIUVPbOq/F2Y/2HPWYYO86i9s/Q34WVH0CArGjz6ZCHpbTvyAxw==
+X-Received: by 2002:a17:90a:4409:b0:256:675c:e552 with SMTP id s9-20020a17090a440900b00256675ce552mr3139034pjg.13.1686194678781;
+        Wed, 07 Jun 2023 20:24:38 -0700 (PDT)
 Received: from wheely.local0.net (58-6-224-112.tpgi.com.au. [58.6.224.112])
-        by smtp.gmail.com with ESMTPSA id gt1-20020a17090af2c100b002591b957641sm173870pjb.41.2023.06.07.19.45.09
+        by smtp.gmail.com with ESMTPSA id s12-20020a17090a5d0c00b0025930e50e28sm2015629pji.41.2023.06.07.20.24.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jun 2023 19:45:11 -0700 (PDT)
+        Wed, 07 Jun 2023 20:24:38 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] KVM: PPC: Update MAINTAINERS
-Date: Thu,  8 Jun 2023 12:45:04 +1000
-Message-Id: <20230608024504.58189-1-npiggin@gmail.com>
+To: kvm@vger.kernel.org,
+	Paolo Bonzini <pbonzini@redhat.com>
+Subject: [PATCH v3 1/6] KVM: selftests: Move pgd_created check into virt_pgd_alloc
+Date: Thu,  8 Jun 2023 13:24:20 +1000
+Message-Id: <20230608032425.59796-2-npiggin@gmail.com>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230608032425.59796-1-npiggin@gmail.com>
+References: <20230608032425.59796-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,42 +79,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael is merging KVM PPC patches via the powerpc tree and KVM topic
-branches. He doesn't necessarily have time to be across all of KVM so
-is reluctant to call himself maintainer, but for the mechanics of how
-patches flow upstream, it is maintained and does make sense to have
-some contact people in MAINTAINERS.
-
-So add Michael Ellerman as KVM PPC maintainer and myself as reviewer.
-Split out the subarchs that don't get so much attention.
+virt_arch_pgd_alloc all do the same test and set of pgd_created. Move
+this into common code.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- MAINTAINERS | 6 ++++++
- 1 file changed, 6 insertions(+)
+ tools/testing/selftests/kvm/include/kvm_util_base.h | 5 +++++
+ tools/testing/selftests/kvm/lib/aarch64/processor.c | 4 ----
+ tools/testing/selftests/kvm/lib/riscv/processor.c   | 4 ----
+ tools/testing/selftests/kvm/lib/s390x/processor.c   | 4 ----
+ tools/testing/selftests/kvm/lib/x86_64/processor.c  | 7 ++-----
+ 5 files changed, 7 insertions(+), 17 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 0dab9737ec16..44417acd2936 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11379,7 +11379,13 @@ F:	arch/mips/include/uapi/asm/kvm*
- F:	arch/mips/kvm/
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index a089c356f354..d630a0a1877c 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -822,7 +822,12 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm);
  
- KERNEL VIRTUAL MACHINE FOR POWERPC (KVM/powerpc)
-+M:	Michael Ellerman <mpe@ellerman.id.au>
-+R:	Nicholas Piggin <npiggin@gmail.com>
- L:	linuxppc-dev@lists.ozlabs.org
-+L:	kvm@vger.kernel.org
-+S:	Maintained (Book3S 64-bit HV)
-+S:	Odd fixes (Book3S 64-bit PR)
-+S:	Orphan (Book3E and 32-bit)
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/ppc-kvm
- F:	arch/powerpc/include/asm/kvm*
- F:	arch/powerpc/include/uapi/asm/kvm*
+ static inline void virt_pgd_alloc(struct kvm_vm *vm)
+ {
++	if (vm->pgd_created)
++		return;
++
+ 	virt_arch_pgd_alloc(vm);
++
++	vm->pgd_created = true;
+ }
+ 
+ /*
+diff --git a/tools/testing/selftests/kvm/lib/aarch64/processor.c b/tools/testing/selftests/kvm/lib/aarch64/processor.c
+index 3a0259e25335..3da3ec7c5b23 100644
+--- a/tools/testing/selftests/kvm/lib/aarch64/processor.c
++++ b/tools/testing/selftests/kvm/lib/aarch64/processor.c
+@@ -96,13 +96,9 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
+ {
+ 	size_t nr_pages = page_align(vm, ptrs_per_pgd(vm) * 8) / vm->page_size;
+ 
+-	if (vm->pgd_created)
+-		return;
+-
+ 	vm->pgd = vm_phy_pages_alloc(vm, nr_pages,
+ 				     KVM_GUEST_PAGE_TABLE_MIN_PADDR,
+ 				     vm->memslots[MEM_REGION_PT]);
+-	vm->pgd_created = true;
+ }
+ 
+ static void _virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
+diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+index d146ca71e0c0..7695ba2cd369 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/processor.c
++++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+@@ -57,13 +57,9 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
+ {
+ 	size_t nr_pages = page_align(vm, ptrs_per_pte(vm) * 8) / vm->page_size;
+ 
+-	if (vm->pgd_created)
+-		return;
+-
+ 	vm->pgd = vm_phy_pages_alloc(vm, nr_pages,
+ 				     KVM_GUEST_PAGE_TABLE_MIN_PADDR,
+ 				     vm->memslots[MEM_REGION_PT]);
+-	vm->pgd_created = true;
+ }
+ 
+ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
+diff --git a/tools/testing/selftests/kvm/lib/s390x/processor.c b/tools/testing/selftests/kvm/lib/s390x/processor.c
+index 15945121daf1..358e03f09c7a 100644
+--- a/tools/testing/selftests/kvm/lib/s390x/processor.c
++++ b/tools/testing/selftests/kvm/lib/s390x/processor.c
+@@ -17,16 +17,12 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
+ 	TEST_ASSERT(vm->page_size == 4096, "Unsupported page size: 0x%x",
+ 		    vm->page_size);
+ 
+-	if (vm->pgd_created)
+-		return;
+-
+ 	paddr = vm_phy_pages_alloc(vm, PAGES_PER_REGION,
+ 				   KVM_GUEST_PAGE_TABLE_MIN_PADDR,
+ 				   vm->memslots[MEM_REGION_PT]);
+ 	memset(addr_gpa2hva(vm, paddr), 0xff, PAGES_PER_REGION * vm->page_size);
+ 
+ 	vm->pgd = paddr;
+-	vm->pgd_created = true;
+ }
+ 
+ /*
+diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+index d4a0b504b1e0..d4deb2718e86 100644
+--- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+@@ -127,11 +127,8 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
+ 	TEST_ASSERT(vm->mode == VM_MODE_PXXV48_4K, "Attempt to use "
+ 		"unknown or unsupported guest mode, mode: 0x%x", vm->mode);
+ 
+-	/* If needed, create page map l4 table. */
+-	if (!vm->pgd_created) {
+-		vm->pgd = vm_alloc_page_table(vm);
+-		vm->pgd_created = true;
+-	}
++	/* Create page map l4 table. */
++	vm->pgd = vm_alloc_page_table(vm);
+ }
+ 
+ static void *virt_get_pte(struct kvm_vm *vm, uint64_t *parent_pte,
 -- 
 2.40.1
 
