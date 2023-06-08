@@ -4,70 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A755C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 03:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC648C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 07:06:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qc8r50k0Vz3fmB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 13:31:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=RXSSoF6/;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=RXSSoF6/;
-	dkim-atps=neutral
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qc8j85Sjwz3c71
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 13:25:00 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-1b01dac1a82so180175ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2023 20:25:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686194698; x=1688786698;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SKaHgr+HL1117S3Jb0aiH5upNruURl+KhWKkgZPggeU=;
-        b=RXSSoF6/UG7yQ3r8E8hAePxnc2Sm1OYVC6HZJwNG7h/9pNEy0g4rhTDZORYspmc4j+
-         JlKG7R/MRd5qsIXjy4XTgvLjLo+4nMBz72TXeGkeEJuf2mV4SxpotNfga70I7vBkzKgE
-         Ok15EbcgRrzT/XsJ+gCoL7oYSsrqq5iMth45B+y2RzHIvvBtPNS/tKMizfol39chJ7F5
-         2EoUTqjGPnOPBpCxnBwphX9kxwKf8xIPi3rtK6ycBGa0+Bk4DmMAdmeHzVDc9kuHBfFL
-         SO/uX2LZkKld7RViInfEeHW4Sk8M5ldvrPOhWkVBSWg55tH4//wbFJPKquxzs2UjPTu4
-         C1tg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686194698; x=1688786698;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=SKaHgr+HL1117S3Jb0aiH5upNruURl+KhWKkgZPggeU=;
-        b=e0odKcdrAJLM2ETJGRqSZTAXw4lbko9dwNoQlgmkVa96A9/NJ1VpuKo93law8De/p0
-         LZ8uFneeHS1ILFgzctZ22IWLnuywvQDHhskMH9tk/OrDzhmczGzuCVuyjoxebInRJ+c3
-         72M8FYtZniPaicrOMQeT0paufrQuamHnkOQobaJhP8fkelKDhVv5GNUXw6E8taGBcK+1
-         /rWTNVxgty5opitWot/m2s0qw6FQ38IszCqP6R3L0kT4m1iuB4s2601OBWdAUomlHtzJ
-         P3kw56yyHn3P+/lTNbJkGncqXfv6DtFKW37HMOnOn+fUXg01WwMqH9nxyiFxDu8dAPwk
-         EeZA==
-X-Gm-Message-State: AC+VfDzqDKeENxQGr46M1YwC+ELimUjcTU7Ex9WVPReLkz+31nhwJ8RO
-	3NkA4kzeerinPrTClm86Sbk=
-X-Google-Smtp-Source: ACHHUZ7I51jMXcRhU4L0iRuO4wTdv5VNRALpAastt2XMOL+tebny1cqSEqZmj7MsagjiwC9XLtJeEg==
-X-Received: by 2002:a17:90a:1901:b0:259:e75a:bdc9 with SMTP id 1-20020a17090a190100b00259e75abdc9mr827229pjg.27.1686194698170;
-        Wed, 07 Jun 2023 20:24:58 -0700 (PDT)
-Received: from wheely.local0.net (58-6-224-112.tpgi.com.au. [58.6.224.112])
-        by smtp.gmail.com with ESMTPSA id s12-20020a17090a5d0c00b0025930e50e28sm2015629pji.41.2023.06.07.20.24.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jun 2023 20:24:57 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm@vger.kernel.org,
-	Paolo Bonzini <pbonzini@redhat.com>
-Subject: [PATCH v3 6/6] KVM: PPC: selftests: Add interrupt performance tester
-Date: Thu,  8 Jun 2023 13:24:25 +1000
-Message-Id: <20230608032425.59796-7-npiggin@gmail.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230608032425.59796-1-npiggin@gmail.com>
-References: <20230608032425.59796-1-npiggin@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QcFd40GrGz3dyw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jun 2023 17:06:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=yangtiezhu@loongson.cn; receiver=<UNKNOWN>)
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QcFcP3RFDz3cKW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2023 17:06:10 +1000 (AEST)
+Received: from loongson.cn (unknown [113.200.148.30])
+	by gateway (Coremail) with SMTP id _____8BxLutwfYFkMnIAAA--.1779S3;
+	Thu, 08 Jun 2023 15:04:16 +0800 (CST)
+Received: from [10.130.0.149] (unknown [113.200.148.30])
+	by localhost.localdomain (Coremail) with SMTP id AQAAf8BxC8ptfYFk49MGAA--.13616S3;
+	Thu, 08 Jun 2023 15:04:14 +0800 (CST)
+Subject: Re: [RFC PATCH] asm-generic: Unify uapi bitsperlong.h
+To: Arnd Bergmann <arnd@arndb.de>
+References: <1683615903-10862-1-git-send-email-yangtiezhu@loongson.cn>
+ <b9624545-2c80-49a1-ac3c-39264a591f7b@app.fastmail.com>
+From: Tiezhu Yang <yangtiezhu@loongson.cn>
+Message-ID: <76d3be65-91df-7969-5303-38231a7df926@loongson.cn>
+Date: Thu, 8 Jun 2023 15:04:13 +0800
+User-Agent: Mozilla/5.0 (X11; Linux mips64; rv:45.0) Gecko/20100101
+ Thunderbird/45.4.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <b9624545-2c80-49a1-ac3c-39264a591f7b@app.fastmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID: AQAAf8BxC8ptfYFk49MGAA--.13616S3
+X-CM-SenderInfo: p1dqw3xlh2x3gn0dqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBj93XoWxXw1UJry5Ww1rXr47ZrW8AFc_yoW5Ww1UpF
+	47Jw12gF4qkr1ftrn7Gw47Za45Jwn3Ka1ak39agryxZFW5Wry7trZF9rWagFykXrW8tF4q
+	vrZ8tryjkay8AagCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUPab4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+	xVW8Jr0_Cr1UM2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+	tVWrXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI4
+	8JMxk0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vI
+	r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Gr0_Xr1lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWx
+	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU4Xo7DU
+	UUU
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,237 +63,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org, llvm@lists.linux.dev, linux-ia64@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-parisc@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, loongson-kernel@lists.loongnix.cn
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a little perf tester for interrupts that go to guest, host, and
-userspace.
+Hi all,
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../selftests/kvm/powerpc/interrupt_perf.c    | 199 ++++++++++++++++++
- 2 files changed, 200 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/powerpc/interrupt_perf.c
+On 05/09/2023 05:37 PM, Arnd Bergmann wrote:
+> On Tue, May 9, 2023, at 09:05, Tiezhu Yang wrote:
+>> Now we specify the minimal version of GCC as 5.1 and Clang/LLVM as 11.0.0
+>> in Documentation/process/changes.rst, __CHAR_BIT__ and __SIZEOF_LONG__ are
+>> usable, just define __BITS_PER_LONG as (__CHAR_BIT__ * __SIZEOF_LONG__) in
+>> asm-generic uapi bitsperlong.h, simpler, works everywhere.
+>>
+>> Remove all the arch specific uapi bitsperlong.h which will be generated as
+>> arch/*/include/generated/uapi/asm/bitsperlong.h.
+>>
+>> Suggested-by: Xi Ruoyao <xry111@xry111.site>
+>> Link:
+>> https://lore.kernel.org/all/d3e255e4746de44c9903c4433616d44ffcf18d1b.camel@xry111.site/
+>> Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
+>
+> I originally introduced the bitsperlong.h header, and I'd love to
+> see it removed if it's no longer needed. Your patch certainly
+> seems like it does this well.
+>
+> There is one minor obstacle to this, which is that the compiler
+> requirements for uapi headers are not the same as for kernel
+> internal code. In particular, the uapi headers may be included
+> by user space code that is built with an older compiler version,
+> or with a compiler that is not gcc or clang.
+>
+> I think we are completely safe on the architectures that were
+> added since the linux-3.x days (arm64, riscv, csky, openrisc,
+> loongarch, nios2, and hexagon), but for the older ones there
+> is a regression risk. Especially on targets that are not that
+> actively maintained (sparc, alpha, ia64, sh, ...) there is
+> a good chance that users are stuck on ancient toolchains.
+>
+> It's probably also a safe assumption that anyone with an older
+> libc version won't be using the latest kernel headers, so
+> I think we can still do this across architectures if both
+> glibc and musl already require a compiler that is new enough,
+> or alternatively if we know that the kernel headers require
+> a new compiler for other reasons and nobody has complained.
+>
+> For glibc, it looks the minimum compiler version was raised
+> from gcc-5 to gcc-8 four years ago, so we should be fine.
+>
+> In musl, the documentation states that at least gcc-3.4 or
+> clang-3.2 are required, which probably predate the
+> __SIZEOF_LONG__ macro. On the other hand, musl was only
+> released in 2011, and building musl itself explicitly
+> does not require kernel uapi headers, so this may not
+> be too critical.
+>
+> There is also uClibc, but I could not find any minimum
+> supported compiler version for that. Most commonly, this
+> one is used for cross-build environments, so it's also
+> less likely to have libc/gcc/headers being wildly out of
+> sync. Not sure.
+>
+>       Arnd
+>
+> [1] https://sourceware.org/pipermail/libc-alpha/2019-January/101010.html
+>
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index aa3a8ca676c2..834f98971b0c 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -184,6 +184,7 @@ TEST_GEN_PROGS_riscv += kvm_page_table_test
- TEST_GEN_PROGS_riscv += set_memory_region_test
- TEST_GEN_PROGS_riscv += kvm_binary_stats_test
- 
-+TEST_GEN_PROGS_powerpc += powerpc/interrupt_perf
- TEST_GEN_PROGS_powerpc += powerpc/null_test
- TEST_GEN_PROGS_powerpc += powerpc/rtas_hcall
- TEST_GEN_PROGS_powerpc += powerpc/tlbiel_test
-diff --git a/tools/testing/selftests/kvm/powerpc/interrupt_perf.c b/tools/testing/selftests/kvm/powerpc/interrupt_perf.c
-new file mode 100644
-index 000000000000..50d078899e22
---- /dev/null
-+++ b/tools/testing/selftests/kvm/powerpc/interrupt_perf.c
-@@ -0,0 +1,199 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Test basic guest interrupt/exit performance.
-+ */
-+
-+#define _GNU_SOURCE /* for program_invocation_short_name */
-+#include <fcntl.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sched.h>
-+#include <sys/ioctl.h>
-+#include <sys/time.h>
-+#include <sys/sysinfo.h>
-+#include <signal.h>
-+
-+#include "test_util.h"
-+#include "kvm_util.h"
-+#include "kselftest.h"
-+#include "processor.h"
-+#include "helpers.h"
-+#include "hcall.h"
-+
-+static bool timeout;
-+static unsigned long count;
-+static struct kvm_vm *kvm_vm;
-+
-+static void set_timer(int sec)
-+{
-+	struct itimerval timer;
-+
-+	timeout = false;
-+
-+	timer.it_value.tv_sec  = sec;
-+	timer.it_value.tv_usec = 0;
-+	timer.it_interval = timer.it_value;
-+	TEST_ASSERT(setitimer(ITIMER_REAL, &timer, NULL) == 0,
-+			"setitimer failed %s", strerror(errno));
-+}
-+
-+static void sigalrm_handler(int sig)
-+{
-+	timeout = true;
-+	sync_global_to_guest(kvm_vm, timeout);
-+}
-+
-+static void init_timers(void)
-+{
-+	TEST_ASSERT(signal(SIGALRM, sigalrm_handler) != SIG_ERR,
-+		    "Failed to register SIGALRM handler, errno = %d (%s)",
-+		    errno, strerror(errno));
-+}
-+
-+static void program_interrupt_handler(struct ex_regs *regs)
-+{
-+	regs->nia += 4;
-+}
-+
-+static void program_interrupt_guest_code(void)
-+{
-+	unsigned long nr = 0;
-+
-+	while (!timeout) {
-+		asm volatile("trap");
-+		nr++;
-+		barrier();
-+	}
-+	count = nr;
-+
-+	GUEST_DONE();
-+}
-+
-+static void program_interrupt_test(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_vm *vm;
-+
-+	/* Create VM */
-+	vm = vm_create_with_one_vcpu(&vcpu, program_interrupt_guest_code);
-+	kvm_vm = vm;
-+	vm_install_exception_handler(vm, 0x700, program_interrupt_handler);
-+
-+	set_timer(1);
-+
-+	while (!timeout) {
-+		vcpu_run(vcpu);
-+		barrier();
-+	}
-+
-+	sync_global_from_guest(vm, count);
-+
-+	kvm_vm = NULL;
-+	vm_install_exception_handler(vm, 0x700, NULL);
-+
-+	kvm_vm_free(vm);
-+
-+	printf("%lu guest interrupts per second\n", count);
-+	count = 0;
-+}
-+
-+static void heai_guest_code(void)
-+{
-+	unsigned long nr = 0;
-+
-+	while (!timeout) {
-+		asm volatile(".long 0");
-+		nr++;
-+		barrier();
-+	}
-+	count = nr;
-+
-+	GUEST_DONE();
-+}
-+
-+static void heai_test(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_vm *vm;
-+
-+	/* Create VM */
-+	vm = vm_create_with_one_vcpu(&vcpu, heai_guest_code);
-+	kvm_vm = vm;
-+	vm_install_exception_handler(vm, 0x700, program_interrupt_handler);
-+
-+	set_timer(1);
-+
-+	while (!timeout) {
-+		vcpu_run(vcpu);
-+		barrier();
-+	}
-+
-+	sync_global_from_guest(vm, count);
-+
-+	kvm_vm = NULL;
-+	vm_install_exception_handler(vm, 0x700, NULL);
-+
-+	kvm_vm_free(vm);
-+
-+	printf("%lu guest exits per second\n", count);
-+	count = 0;
-+}
-+
-+static void hcall_guest_code(void)
-+{
-+	for (;;)
-+		hcall0(H_RTAS);
-+}
-+
-+static void hcall_test(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_vm *vm;
-+
-+	/* Create VM */
-+	vm = vm_create_with_one_vcpu(&vcpu, hcall_guest_code);
-+	kvm_vm = vm;
-+
-+	set_timer(1);
-+
-+	while (!timeout) {
-+		vcpu_run(vcpu);
-+		count++;
-+		barrier();
-+	}
-+
-+	kvm_vm = NULL;
-+
-+	kvm_vm_free(vm);
-+
-+	printf("%lu KVM exits per second\n", count);
-+	count = 0;
-+}
-+
-+struct testdef {
-+	const char *name;
-+	void (*test)(void);
-+} testlist[] = {
-+	{ "guest interrupt test", program_interrupt_test},
-+	{ "guest exit test", heai_test},
-+	{ "KVM exit test", hcall_test},
-+};
-+
-+int main(int argc, char *argv[])
-+{
-+	int idx;
-+
-+	ksft_print_header();
-+
-+	ksft_set_plan(ARRAY_SIZE(testlist));
-+
-+	init_timers();
-+
-+	for (idx = 0; idx < ARRAY_SIZE(testlist); idx++) {
-+		testlist[idx].test();
-+		ksft_test_result_pass("%s\n", testlist[idx].name);
-+	}
-+
-+	ksft_finished();	/* Print results and exit() accordingly */
-+}
--- 
-2.40.1
+Thanks Arnd for the detailed reply.
+Any more comments? What should I do in the next step?
+
+Thanks,
+Tiezhu
 
