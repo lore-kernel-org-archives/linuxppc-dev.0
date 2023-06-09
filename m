@@ -4,80 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D804FC7EE29
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 13:52:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7947FC7EE29
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 18:19:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qd2Zv5py1z3fQJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 23:52:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qd8Vy4gb1z30QQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jun 2023 04:19:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Sv/dMLeY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VHEpsPG3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Sv/dMLeY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VHEpsPG3;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qd2Yt2kzvz3cgV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 23:51:45 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 359Dk5Bi032170;
-	Fri, 9 Jun 2023 13:51:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=Hk5gwr3dbM/bpL7tKeon2xDKb2QgqF1LR1yXSigjt0w=;
- b=Sv/dMLeYrn3vY29Ye7sHg1ZgbCgTQ+JWXzPWs5IXxadHwzFozN9axfCdMuKT2MCesYji
- mD/lEOTWFr6d1vQyvSavIIoFl8uYOHRBlrzT6+4BvTqdrMmTVVRzeJC2Kgf0v4x4DwuP
- Qq9ixtuIrlSDojpUfIDJIf7RlXna+OSFu/de905qbw9HHn+69Y1I1imGh83B1zxjB7o7
- C8SQ6RoRGxYe0qvPjSLJQccpfduuLJajF5QodMvVW03iUMZn4NhnA0L9sDA4CsF5KvOf
- Dn/9boJGQ+IdpuRPnYKpQG0YrFnGy8a7VQEDekznfsVfdxNHc7pXQt0Mm7q6oASqQvq8 8g== 
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r458fg4sb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 09 Jun 2023 13:51:40 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 359BK06R002012;
-	Fri, 9 Jun 2023 13:51:38 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3r2a77hdj1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 09 Jun 2023 13:51:37 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 359DpY3N20382408
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 9 Jun 2023 13:51:34 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7F20020049;
-	Fri,  9 Jun 2023 13:51:34 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 75ED520040;
-	Fri,  9 Jun 2023 13:51:33 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.171.39.141])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri,  9 Jun 2023 13:51:33 +0000 (GMT)
-Date: Fri, 9 Jun 2023 19:21:31 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/fadump: invoke ibm,os-term with
- rtas_call_unlocked()
-Message-ID: <pfkucghirvgpzk2hvch72ojl5rqkadrwvltjdpkim4nxz7hk6s@22vzuqhfuptv>
-References: <20230609071404.425529-1-hbathini@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230609071404.425529-1-hbathini@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: sMoYFR8oXk7gQfx-uEjSP9X3Ww-mnv9Q
-X-Proofpoint-GUID: sMoYFR8oXk7gQfx-uEjSP9X3Ww-mnv9Q
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-09_09,2023-06-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 spamscore=0
- clxscore=1015 suspectscore=0 malwarescore=0 phishscore=0 adultscore=0
- lowpriorityscore=0 priorityscore=1501 impostorscore=0 mlxlogscore=999
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306090115
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qd8Tx1SnNz3dvv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2023 04:18:45 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 3F53361C47;
+	Fri,  9 Jun 2023 18:18:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4399CC433EF;
+	Fri,  9 Jun 2023 18:18:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1686334720;
+	bh=OkmOjAVxbADsnonDXUvbpbOYXcARtzlVbMXpej3Goow=;
+	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
+	b=VHEpsPG36fQdX2HQ9TT0HQ9jlHnjzogNa/lG/M/U4MsI+8OH1QctOr/lFeVxpv00H
+	 H3jciWKo96iS5xmSem0O6kK3DoFkad3DOfv/TkT9nJy6t2lxdaCnZlucGLT7x8kX43
+	 amZotwt2agJT2CpLoo5KlM9Wx/DaMAyIHZPO+BSpNd/7kn0D5ew8j6JNG50t6OIHqm
+	 VDSbFNl74YwT6PRF1zZY++oGKfuI2VVhgKwiaY8HtlKNHlgrqVVxiTfv0TQNgAKzPy
+	 uIIsouM91WugRN7xVTMIjD7syzE/iggxPvHdbbogiXfIizohEOprbInhYH+re8OGfr
+	 o8WrwnGESMgYg==
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 09 Jun 2023 21:18:32 +0300
+Message-Id: <CT8BRJZS8RQU.9ICEA2UAFC7G@suppilovahvero>
+Subject: Re: [PATCH v9 2/4] tpm: of: Make of-tree specific function commonly
+ available
+From: "Jarkko Sakkinen" <jarkko@kernel.org>
+To: "Jerry Snitselaar" <jsnitsel@redhat.com>, "Stefan Berger"
+ <stefanb@linux.ibm.com>
+X-Mailer: aerc 0.14.0
+References: <20230418134409.177485-1-stefanb@linux.ibm.com>
+ <20230418134409.177485-3-stefanb@linux.ibm.com>
+ <e4dcxwp63uisirxwanjwrhzrnve45wqnxhijfp4oq274r4neco@v2btoy43ue5h>
+In-Reply-To: <e4dcxwp63uisirxwanjwrhzrnve45wqnxhijfp4oq274r4neco@v2btoy43ue5h>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,46 +64,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: mahesh@linux.ibm.com
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: devicetree@vger.kernel.org, Coiby Xu <coxu@redhat.com>, Frank Rowand <frowand.list@gmail.com>, Nageswara R
+ Sastry <rnsastry@linux.ibm.com>, nayna@linux.ibm.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2023-06-09 12:44:04 Fri, Hari Bathini wrote:
-> Invoke ibm,os-term call with rtas_call_unlocked(), without using the
-> RTAS spinlock, to avoid deadlock in the unlikely event of a machine
-> crash while making an RTAS call.
-> 
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/rtas.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index c087eeee320f..a8192e5b1a5f 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -1587,6 +1587,7 @@ static bool ibm_extended_os_term;
->  void rtas_os_term(char *str)
->  {
->  	s32 token = rtas_function_token(RTAS_FN_IBM_OS_TERM);
-> +	static struct rtas_args args;
->  	int status;
->  
->  	/*
-> @@ -1607,7 +1608,8 @@ void rtas_os_term(char *str)
->  	 * schedules.
->  	 */
->  	do {
-> -		status = rtas_call(token, 1, 1, NULL, __pa(rtas_os_term_buf));
-> +		rtas_call_unlocked(&args, token, 1, 1, NULL, __pa(rtas_os_term_buf));
-> +		status = be32_to_cpu(args.rets[0]);
+On Thu May 25, 2023 at 1:56 AM EEST, Jerry Snitselaar wrote:
+> On Tue, Apr 18, 2023 at 09:44:07AM -0400, Stefan Berger wrote:
+> > Simplify tpm_read_log_of() by moving reusable parts of the code into
+> > an inline function that makes it commonly available so it can be
+> > used also for kexec support. Call the new of_tpm_get_sml_parameters()
+> > function from the TPM Open Firmware driver.
+> >=20
+> > Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
+> > Cc: Jarkko Sakkinen <jarkko@kernel.org>
+> > Cc: Jason Gunthorpe <jgg@ziepe.ca>
+> > Cc: Rob Herring <robh+dt@kernel.org>
+> > Cc: Frank Rowand <frowand.list@gmail.com>
+> > Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
+> > Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
+> > Tested-by: Coiby Xu <coxu@redhat.com>
+> > Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
+> >=20
+>
+> Reviewed-by: Jerry Snitselaar <jsnitsel@redhat.com>
 
-Looks good to me.
+If I just pick tpm only patches they won't apply so maybe TPM changes
+should be better separated if that is by any means possible.
 
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Open for counter proposals. Just my thoughts...
 
->  	} while (rtas_busy_delay_time(status));
+I.e. I'm mainly wondering why TPM patches depend on IMA patches?
 
-Thanks,
--Mahesh.
+BR, Jarkko
+
