@@ -4,54 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B58BDC7EE2E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 12:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A88EEC7EE29
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 13:07:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qd1LZ1cFjz3fN1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 22:56:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qd1ZL1JJfz3fgW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 23:07:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EwB3F//8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YeKUQ/Bd;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qd1KX67WMz3f0T
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 22:56:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qd1YL3vMtz3f0s
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 23:06:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EwB3F//8;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YeKUQ/Bd;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Qd1KQ2t5Qz4x3x;
-	Fri,  9 Jun 2023 22:55:54 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Qd1YJ2s0Tz4x3x;
+	Fri,  9 Jun 2023 23:06:12 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1686315355;
-	bh=6hU42edEeCSuu+D9dpO9GvNrSsgyCJqWaGuZfm40wB0=;
+	s=201909; t=1686315972;
+	bh=ZwdtArgZhBZiJXxJG3SFap/Lyw4wRqeEqOCi/Ko2N+o=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=EwB3F//8pFCLNpmDUVeIo8piNUnx0Gt2G0w+0UXSMJrP1U57KHSECjtlTuFqAYtZc
-	 L+mvTbBkg/fnsaZ34YaMSb09wNzpJfePZNiPn518SIurg50xsYo5FIesgQldwcalbo
-	 0javXPbZ1zQjFhXDiPPtmTttttkc3QYUc8dhiGvBO71eaQcOr4UUgB3MD891tkir1Z
-	 xWzMVc/ot7HOLiZ0VIkY9jiO92sW7gQk/WZTIrHIwnHgvYrtHAw5ZwZyPyLoB28Ig6
-	 ZKaHSoEHZaLDlAKDJA/gEfmY7sPUuranAuGb+v8HPgmOy/vAcB5oZJONcLz0LdoMMW
-	 tuBc+47MFsM6g==
+	b=YeKUQ/BdMwGKCIH52MSQgeU3oixBIPV7DZy10o0jJ53/1rG/1MRuBgwM1Z44S+xBL
+	 Hpny86yM/+VKCjyhjRtoCvCN8XbKkh4woU+s1GrHJbVm8RNh9vmGFJVQUGSHVN6FkD
+	 TuV8uf5I5iZw/9dayZcbBc+d8P86iJ/Hlv5NAHgNYjjNBDbOeFBXvqEcr7JFmbtLmE
+	 uoGd0EkNuEf2kOJUlRKs5TA4N2LVvhf1W4rzSeLlFgC/fjRj/mBe8EApzxq/0KeHwo
+	 KGbJ5GvV3gFTf/74JWgMdw/C52Ke48rmrygu4J53JliPgsiEULWPDkvSgQ3nxg+up3
+	 sruFt3Z+AzBqg==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Marco Elver
- <elver@google.com>
-Subject: Re: [PATCH 1/3] kcsan: Don't expect 64 bits atomic builtins from 32
- bits architectures
-In-Reply-To: <662d074e-58cf-3bde-f454-e58d04803f34@csgroup.eu>
-References: <cover.1683892665.git.christophe.leroy@csgroup.eu>
- <d9c6afc28d0855240171a4e0ad9ffcdb9d07fceb.1683892665.git.christophe.leroy@csgroup.eu>
- <CANpmjNMm-2Tdhp6rDzA7CYvotmmGmLUnZnA_35yLUvxHB=7s0g@mail.gmail.com>
- <662d074e-58cf-3bde-f454-e58d04803f34@csgroup.eu>
-Date: Fri, 09 Jun 2023 22:55:49 +1000
-Message-ID: <877cschk16.fsf@mail.lhotse>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/signal32: Force inlining of
+ __unsafe_save_user_regs() and save_tm_user_regs_unsafe()
+In-Reply-To: <CT5FZBY14ZM4.OYXBJNXQU9A2@wheely>
+References: <7e469c8f01860a69c1ada3ca6a5e2aa65f0f74b2.1685955220.git.christophe.leroy@csgroup.eu>
+ <CT5FZBY14ZM4.OYXBJNXQU9A2@wheely>
+Date: Fri, 09 Jun 2023 23:06:11 +1000
+Message-ID: <874jnghjjw.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,44 +60,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Chris Zankel <chris@zankel.net>, "Paul E. McKenney" <paulmck@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, Rohan McLure <rmclure@linux.ibm.com>, "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Vyukov <dvyukov@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 12/05/2023 =C3=A0 18:09, Marco Elver a =C3=A9crit=C2=A0:
->> On Fri, 12 May 2023 at 17:31, Christophe Leroy
->> <christophe.leroy@csgroup.eu> wrote:
->>>
->>> Activating KCSAN on a 32 bits architecture leads to the following
->>> link-time failure:
->>>
->>>      LD      .tmp_vmlinux.kallsyms1
->>>    powerpc64-linux-ld: kernel/kcsan/core.o: in function `__tsan_atomic6=
-4_load':
->>>    kernel/kcsan/core.c:1273: undefined reference to `__atomic_load_8'
->>>    powerpc64-linux-ld: kernel/kcsan/core.o: in function `__tsan_atomic6=
-4_store':
->>>    kernel/kcsan/core.c:1273: undefined reference to `__atomic_store_8'
-...
->>>
->>> 32 bits architectures don't have 64 bits atomic builtins. Only
->>> include DEFINE_TSAN_ATOMIC_OPS(64) on 64 bits architectures.
->>>
->>> Fixes: 0f8ad5f2e934 ("kcsan: Add support for atomic builtins")
->>> Suggested-by: Marco Elver <elver@google.com>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->>=20
->> Reviewed-by: Marco Elver <elver@google.com>
->>=20
->> Do you have your own tree to take this through with the other patches?
+"Nicholas Piggin" <npiggin@gmail.com> writes:
+> On Mon Jun 5, 2023 at 6:58 PM AEST, Christophe Leroy wrote:
+>> Looking at generated code for handle_signal32() shows calls to a
+>> function called __unsafe_save_user_regs.constprop.0 while user access
+>> is open.
+>>
+>> And that __unsafe_save_user_regs.constprop.0 function has two nops at
+>> the begining, allowing it to be traced, which is unexpected during
+>> user access open window.
+>>
+>> The solution could be to mark __unsafe_save_user_regs() no trace, but
+>> to be on the safe side the most efficient is to flag it __always_inline
+>> as already done for function __unsafe_restore_general_regs(). The
+>> function is relatively small and only called twice, so the size
+>> increase will remain in the noise.
+>>
+>> Do the same with save_tm_user_regs_unsafe() as it may suffer the
+>> same issue.
 >
-> I don't have my own tree but I guess that it can be taken by Michael for=
-=20
-> 6.5 via powerpc tree with acks from you and Max.
->
-> Michael is that ok for you ?
+> Could you put a comment so someone doesn't uninline it later?
 
-Yeah I can take it.
+I think the "unsafe" in the name is probably sufficient to warn people
+off, but you never know. Still I'd happily take a patch to add comments :)
+
+> Marking it notrace as well would be sufficient for a comment, if that works.
+
+I nearly did that when applying, but I'm not sure it won't change the
+code generation, so I left it as-is.
 
 cheers
