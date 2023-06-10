@@ -4,53 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95A82C7EE29
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jun 2023 20:18:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1DB9C7EE29
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jun 2023 21:11:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qdq5B03fDz3dyN
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 06:18:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QdrGH0Y8sz3fbC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 07:11:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ZJPuUMqP;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=qeRl1VvS;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=mIxLEuMf;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=euWjH8gK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ZJPuUMqP;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=qeRl1VvS;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=mIxLEuMf;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=euWjH8gK;
 	dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+X-Greylist: delayed 3613 seconds by postgrey-1.36 at boromir; Sun, 11 Jun 2023 07:10:10 AEST
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qdq4G116Fz3cLX
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jun 2023 06:17:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QdrFG425lz3dyJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jun 2023 07:10:10 +1000 (AEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1686427785;
+	s=2020; t=1686431402;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=VN3pKad915lgXyIEKLmAqU9HFdxhV2U8JR5HtaJJWAo=;
-	b=ZJPuUMqPysjPBQOtwRD8hr8P3yWoBfFxIFRfQbmUhqrHISkVZgbVnK1l0yUcMF13n0ef88
-	A2mJqnviZJYpqgkQxY2B/Iddyx7txFX0h7NoqsWvq/aS5ZDorHIECmwNtSrRXy99v55CFX
-	vZk43IJuf1X9d6CQLl075CFuu5/Oys6EwYSawzk0iZamSVUjy9LANvOHsSKUag4l5ZR9nR
-	Q3HlMi8k3dy1cxqrx9MNhyByLxphQeKZcd+bAxaElUyTvpVkQJS4oaIFSPIPWBwG7gb0HL
-	AChWt/fe3Tma07iCZKUYsldPKXecOY2zpmpzjEFW0m1Ll51NyD0YY7gKE/Zb1A==
+	bh=OrTOePfREEciLtXfuUl8hDBbpqxfuVX9i8krldtKOAY=;
+	b=mIxLEuMfpk7GLDEgCpK9RyCRztksQ2KR3hAfMuUhrBxRYYleSd5DnOtm7ueortcishYe19
+	1S3NCaeWweymMMTeajLKGDRPfP6A7h+cWuuhPVjqs7xab9LdbEqCXXM9RS68w8R9XqB9BZ
+	4PIW8qLbXp5ciqzVsEtE8EjSTrCKdENU4gb1cv+to6rZdVsEOkMBGKWAnh98pBszQtxgnU
+	8lDkey+xZts7l6QsZXD7ia8QVzlPSzO5t8Y2MCiAUCK2vDl0fvFbTRyc46SewJAEaTFzZn
+	nix/DX0ipblz/7S2xlwnlD01kFvYdf0DBWi6eAE0b/adb7YBwsNvqK4ZKPcZYw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1686427785;
+	s=2020e; t=1686431402;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=VN3pKad915lgXyIEKLmAqU9HFdxhV2U8JR5HtaJJWAo=;
-	b=qeRl1VvSqXcJA/dkR81UjTvbzFNl35KrBMfEEJ9dLP6GgKhRJYWyergbo9UAvaIL3/t4PF
-	efaD08GmnCbVq0CA==
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/9] cpu/SMT: Allow enabling partial SMT states via sysfs
-In-Reply-To: <20230524155630.794584-6-mpe@ellerman.id.au>
+	bh=OrTOePfREEciLtXfuUl8hDBbpqxfuVX9i8krldtKOAY=;
+	b=euWjH8gK9tkmFZKPMC2SdGkEjWDHeY4U+j35rBJnG7zt2xQX5s8P3nel+NXuc2olh8obYc
+	hsPx70kBtP45khAg==
+To: Laurent Dufour <ldufour@linux.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/9] powerpc: Add HOTPLUG_SMT support
+In-Reply-To: <6e86aedb-9349-afd4-0bcb-1949e828f997@linux.ibm.com>
 References: <20230524155630.794584-1-mpe@ellerman.id.au>
- <20230524155630.794584-6-mpe@ellerman.id.au>
-Date: Sat, 10 Jun 2023 22:09:44 +0200
-Message-ID: <87r0qj84fr.ffs@tglx>
+ <20230524155630.794584-8-mpe@ellerman.id.au>
+ <5752a488-be54-61a0-6d18-647456abc4ee@linux.ibm.com>
+ <6e86aedb-9349-afd4-0bcb-1949e828f997@linux.ibm.com>
+Date: Sat, 10 Jun 2023 23:10:02 +0200
+Message-ID: <87h6rf81n9.ffs@tglx>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,80 +68,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, dave.hansen@linux.intel.com, mingo@redhat.com, bp@alien8.de, ldufour@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, x86@kernel.org, mingo@redhat.com, bp@alien8.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 25 2023 at 01:56, Michael Ellerman wrote:
-> There is a hook which allows arch code to control how many threads per
-
-Can you please write out architecture in changelogs and comments?
-
-I know 'arch' is commonly used but while my brain parser tolerates
-'arch_' prefixes it raises an exception on 'arch' in prose as 'arch' is
-a regular word with a completely different meaning. Changelogs and
-comments are not space constraint.
-
-> @@ -2505,20 +2505,38 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
->  	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
->  		return -ENODEV;
+On Thu, Jun 01 2023 at 18:19, Laurent Dufour wrote:
+> @@ -435,12 +435,17 @@ void __init cpu_smt_disable(bool force)
+>   * The decision whether SMT is supported can only be done after the full
+>   * CPU identification. Called from architecture code.
+>   */
+> -void __init cpu_smt_check_topology(unsigned int num_threads)
+> +void __init cpu_smt_check_topology(unsigned int num_threads,
+> +				   unsigned int max_threads)
+>  {
+>  	if (!topology_smt_supported())
+>  		cpu_smt_control = CPU_SMT_NOT_SUPPORTED;
 >  
-> -	if (sysfs_streq(buf, "on"))
-> +	if (sysfs_streq(buf, "on")) {
->  		ctrlval = CPU_SMT_ENABLED;
-> -	else if (sysfs_streq(buf, "off"))
-> +		num_threads = cpu_smt_max_threads;
-> +	} else if (sysfs_streq(buf, "off")) {
->  		ctrlval = CPU_SMT_DISABLED;
-> -	else if (sysfs_streq(buf, "forceoff"))
-> +		num_threads = 1;
-> +	} else if (sysfs_streq(buf, "forceoff")) {
->  		ctrlval = CPU_SMT_FORCE_DISABLED;
-> -	else
-> +		num_threads = 1;
-> +	} else if (kstrtoint(buf, 10, &num_threads) == 0) {
-> +		if (num_threads == 1)
-> +			ctrlval = CPU_SMT_DISABLED;
-> +		else if (num_threads > 1 && topology_smt_threads_supported(num_threads))
-> +			ctrlval = CPU_SMT_ENABLED;
-> +		else
-> +			return -EINVAL;
-> +	} else {
->  		return -EINVAL;
-> +	}
->  
->  	ret = lock_device_hotplug_sysfs();
->  	if (ret)
->  		return ret;
->  
-> -	if (ctrlval != cpu_smt_control) {
-> +	orig_threads = cpu_smt_num_threads;
-> +	cpu_smt_num_threads = num_threads;
+> -	cpu_smt_max_threads = num_threads;
+> +	cpu_smt_max_threads = max_threads;
 > +
-> +	if (num_threads > orig_threads) {
-> +		ret = cpuhp_smt_enable();
-> +	} else if (num_threads < orig_threads) {
-> +		ret = cpuhp_smt_disable(ctrlval);
-> +	} else if (ctrlval != cpu_smt_control) {
->  		switch (ctrlval) {
->  		case CPU_SMT_ENABLED:
->  			ret = cpuhp_smt_enable();
+> +	WARN_ON(num_threads > max_threads);
+> +	if (num_threads > max_threads)
+> +		num_threads = max_threads;
 
-This switch case does not make sense anymore.
+This does not work. The call site does:
 
-The only situation which reaches this is when the control value goes
-from CPU_SMT_DISABLED to CPU_SMT_FORCE_DISABLED because that's not
-changing the number of threads.
+> +	cpu_smt_check_topology(smt_enabled_at_boot, threads_per_core);
 
-So something like this is completely sufficient:
+smt_enabled_at_boot is 0 when 'smt-enabled=off', which is not what the
+hotplug core expects. If SMT is disabled it brings up the primary
+thread, which means cpu_smt_num_threads = 1.
 
-	if (num_threads > orig_threads)
-		ret = cpuhp_smt_enable();
-        else if (num_threads < orig_threads || ctrval == CPU_SMT_FORCE_DISABLED)
-		ret = cpuhp_smt_disable(ctrlval);
+This needs more thoughts to avoid a completely inconsistent duct tape
+mess.
 
-No?
+Btw, the command line parser and the variable smt_enabled_at_boot being
+type int allow negative number of threads too... Maybe not what you want.
 
 Thanks,
 
         tglx
+
+
+
+
