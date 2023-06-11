@@ -4,55 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8077FC77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jun 2023 22:57:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1EA6C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 17:19:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qdtd45mvYz3fbC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 08:57:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=npo+qrCH;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xry111.site (client-ip=2001:470:683e::1; helo=xry111.site; envelope-from=xry111@xry111.site; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=npo+qrCH;
-	dkim-atps=neutral
-X-Greylist: delayed 352 seconds by postgrey-1.36 at boromir; Fri, 09 Jun 2023 23:11:19 AEST
-Received: from xry111.site (xry111.site [IPv6:2001:470:683e::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qd1gC164pz3f0G
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 23:11:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=xry111.site;
-	s=default; t=1686315913;
-	bh=hT63nSeqfXe+w/wcTH/EVqDDlEdDBDYjRZhYbxbpM9E=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=npo+qrCHsIrTavth6RFp9whOgzBlVXmzRzYXUH+dxBlx16fsDq62B5M0BsrtN4VtJ
-	 1fdfpCWNVPfQBRPxlsk/T5jnywsDDxzlQF9T3tubgjW3v4DrYce6kTsX/rRJiWMx5i
-	 hBEItCRBrPuBf/r8DMY+d6WFyBryIiRnxabHdAlU=
-Received: from [192.168.124.11] (unknown [113.140.11.3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-384) server-digest SHA384)
-	(Client did not present a certificate)
-	(Authenticated sender: xry111@xry111.site)
-	by xry111.site (Postfix) with ESMTPSA id 48AE16638D;
-	Fri,  9 Jun 2023 09:05:09 -0400 (EDT)
-Message-ID: <5de9d69817138f2ccae0867b5ccb602dcfa007a3.camel@xry111.site>
-Subject: Re: [RFC PATCH] asm-generic: Unify uapi bitsperlong.h
-From: Xi Ruoyao <xry111@xry111.site>
-To: Tiezhu Yang <yangtiezhu@loongson.cn>, Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 09 Jun 2023 21:05:07 +0800
-In-Reply-To: <ca4c4968-411d-4e2c-543e-ffb62413ddef@loongson.cn>
-References: <1683615903-10862-1-git-send-email-yangtiezhu@loongson.cn>
-	 <b9624545-2c80-49a1-ac3c-39264a591f7b@app.fastmail.com>
-	 <76d3be65-91df-7969-5303-38231a7df926@loongson.cn>
-	 <a3a4f48a-07d4-4ed9-bc53-5d383428bdd2@app.fastmail.com>
-	 <ca4c4968-411d-4e2c-543e-ffb62413ddef@loongson.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.2 
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM4t29nnz30Ln
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 03:19:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
+X-Greylist: delayed 279 seconds by postgrey-1.37 at boromir; Mon, 12 Jun 2023 03:19:10 AEST
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM4G6NT5z2yRV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 03:19:10 +1000 (AEST)
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+	id 1966992009E; Sun, 11 Jun 2023 19:19:09 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by angie.orcam.me.uk (Postfix) with ESMTP id 134EB92009D;
+	Sun, 11 Jun 2023 18:19:09 +0100 (BST)
+Date: Sun, 11 Jun 2023 18:19:08 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@orcam.me.uk>
+To: Bjorn Helgaas <bhelgaas@google.com>, 
+    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+    Oliver O'Halloran <oohall@gmail.com>, 
+    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+    Christophe Leroy <christophe.leroy@csgroup.eu>, 
+    Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>, 
+    "David S. Miller" <davem@davemloft.net>, 
+    Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
+    Paolo Abeni <pabeni@redhat.com>
+Subject: [PATCH v9 00/14] pci: Work around ASMedia ASM2824 PCIe link training
+ failures
+Message-ID: <alpine.DEB.2.21.2305310024400.59226@angie.orcam.me.uk>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-X-Mailman-Approved-At: Sun, 11 Jun 2023 08:56:39 +1000
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,35 +47,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org, loongarch@lists.linux.dev, linux-parisc@vger.kernel.org, llvm@lists.linux.dev, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, loongson-kernel@lists.loongnix.cn
+Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, David Abdurachmanov <david.abdurachmanov@gmail.com>, linux-rdma@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, Stefan Roese <sr@denx.de>, Jim Wilson <wilson@tuliptree.org>, netdev@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2023-06-09 at 14:50 +0800, Tiezhu Yang wrote:
+Hi,
 
-/* snip */
+ This is v9 of the change to work around a PCIe link training phenomenon 
+where a pair of devices both capable of operating at a link speed above 
+2.5GT/s seems unable to negotiate the link speed and continues training 
+indefinitely with the Link Training bit switching on and off repeatedly 
+and the data link layer never reaching the active state.
 
-> > > > In musl, the documentation states that at least gcc-3.4 or
-> > > > clang-3.2 are required, which probably predate the
-> > > > __SIZEOF_LONG__ macro.
+ With several requests addressed and a few extra issues spotted this
+version has now grown to 14 patches.  It has been verified for device 
+enumeration with and without PCI_QUIRKS enabled, using the same piece of 
+RISC-V hardware as previously.  Hot plug or reset events have not been 
+verified, as this is difficult if at all feasible with hardware in 
+question.
 
-Indeed, I've digged some history and __SIZEOF_LONG__ was added into GCC-
-4.3 (in 2008).  And I didn't realize the bitsperlong.h in tools
-directory is a copy from uapi.
+ Last iteration: 
+<https://lore.kernel.org/r/alpine.DEB.2.21.2304060100160.13659@angie.orcam.me.uk/>, 
+and my input to it:
+<https://lore.kernel.org/r/alpine.DEB.2.21.2306080224280.36323@angie.orcam.me.uk/>.
 
-> > > > On the other hand, musl was only
-> > > > released in 2011, and building musl itself explicitly
-> > > > does not require kernel uapi headers, so this may not
-> > > > be too critical.
-
-> Only arm64, riscv and loongarch belong to the newer architectures
-> which are related with this change, I am not sure it is necessary
-> to "unify" uapi bitsperlong.h for them.
-
-At least it will stop the engineers working on "the next architecture"
-from adding an unneeded bitsperlong.h :).
-
-
---=20
-Xi Ruoyao <xry111@xry111.site>
-School of Aerospace Science and Technology, Xidian University
+  Maciej
