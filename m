@@ -4,35 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20214C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 17:26:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92913C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 17:27:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QfMDn5j3Qz3dNM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 03:26:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM5S1CbDz30f3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 03:20:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfMFL1qxrz3cJB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 03:27:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM764nN9z3c5d
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 03:21:38 +1000 (AEST)
 Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 974869200CC; Sun, 11 Jun 2023 19:20:10 +0200 (CEST)
+	id 2EE2992009C; Sun, 11 Jun 2023 19:14:16 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 91D4E9200CA;
-	Sun, 11 Jun 2023 18:20:10 +0100 (BST)
-Date: Sun, 11 Jun 2023 18:20:10 +0100 (BST)
+	by angie.orcam.me.uk (Postfix) with ESMTP id 202D892009B;
+	Sun, 11 Jun 2023 18:14:16 +0100 (BST)
+Date: Sun, 11 Jun 2023 18:14:16 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@orcam.me.uk>
-To: Bjorn Helgaas <bhelgaas@google.com>, 
-    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-    Oliver O'Halloran <oohall@gmail.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    Christophe Leroy <christophe.leroy@csgroup.eu>, 
-    Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>, 
-    "David S. Miller" <davem@davemloft.net>, 
-    Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
-    Paolo Abeni <pabeni@redhat.com>
-Subject: [PATCH v9 14/14] PCI: Work around PCIe link training failures
-In-Reply-To: <alpine.DEB.2.21.2305310024400.59226@angie.orcam.me.uk>
-Message-ID: <alpine.DEB.2.21.2305310038540.59226@angie.orcam.me.uk>
-References: <alpine.DEB.2.21.2305310024400.59226@angie.orcam.me.uk>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v8 7/7] PCI: Work around PCIe link training failures
+In-Reply-To: <20230504222048.GA887151@bhelgaas>
+Message-ID: <alpine.DEB.2.21.2306080224280.36323@angie.orcam.me.uk>
+References: <20230504222048.GA887151@bhelgaas>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -47,246 +39,355 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, David Abdurachmanov <david.abdurachmanov@gmail.com>, linux-rdma@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, Stefan Roese <sr@denx.de>, Jim Wilson <wilson@tuliptree.org>, netdev@vger.kernel.org
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Oliver O'Halloran <oohall@gmail.com>, Stefan Roese <sr@denx.de>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Jim Wilson <wilson@tuliptree.org>, Nicholas Piggin <npiggin@gmail.com>, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, David Abdurachmanov <david.abdurachmanov@gmail.com>, linuxppc-dev@lists.ozlabs.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Lukas Wunner <lukas@wunner.de>, netdev@vger.kernel.org, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Attempt to handle cases such as with a downstream port of the ASMedia 
-ASM2824 PCIe switch where link training never completes and the link 
-continues switching between speeds indefinitely with the data link layer 
-never reaching the active state.
+On Thu, 4 May 2023, Bjorn Helgaas wrote:
 
-It has been observed with a downstream port of the ASMedia ASM2824 Gen 3 
-switch wired to the upstream port of the Pericom PI7C9X2G304 Gen 2 
-switch, using a Delock Riser Card PCI Express x1 > 2 x PCIe x1 device, 
-P/N 41433, wired to a SiFive HiFive Unmatched board.  In this setup the 
-switches are supposed to negotiate the link speed of preferably 5.0GT/s, 
-falling back to 2.5GT/s.
+> We talked about reusing pcie_retrain_link() earlier.  IIRC that didn't
+> work: ASPM needs to use PCI_EXP_LNKSTA_LT because not all devices
+> support PCI_EXP_LNKSTA_DLLLA, and you need PCI_EXP_LNKSTA_DLLLA
+> because the erratum makes PCI_EXP_LNKSTA_LT flap.
+> 
+> What if we made pcie_retrain_link() reusable by making it:
+> 
+>   bool pcie_retrain_link(struct pci_dev *pdev, u16 link_status_bit)
+> 
+> so ASPM could use pcie_retrain_link(link->pdev, PCI_EXP_LNKSTA_LT) and
+> you could use pcie_retrain_link(dev, PCI_EXP_LNKSTA_DLLLA)?
 
-Instead the link continues oscillating between the two speeds, at the 
-rate of 34-35 times per second, with link training reported repeatedly 
-active ~84% of the time.  Forcibly limiting the target link speed to 
-2.5GT/s with the upstream ASM2824 device however makes the two switches 
-communicate correctly.  Removing the speed restriction afterwards makes 
-the two devices switch to 5.0GT/s then.
+ This is somewhat more complicated, because of the inverted logic between 
+the two status bits.  Therefore I think a boolean flag is more adequate 
+with preparatory logic within the function itself.  This will tighten the 
+call interface as well.
 
-Make use of these observations then and detect the inability to train 
-the link, by checking for the Data Link Layer Link Active status bit 
-being off while the Link Bandwidth Management Status indicating that 
-hardware has changed the link speed or width in an attempt to correct 
-unreliable link operation.
+> Maybe do it two steps?
+> 
+>   1) Move pcie_retrain_link() just after pcie_wait_for_link() and make
+>   it take link->pdev instead of link.
+> 
+>   2) Add the bit parameter.
 
-Restrict the speed to 2.5GT/s then with the Target Link Speed field, 
-request a retrain and wait 200ms for the data link to go up.  If this 
-turns out successful, then lift the restriction, letting the devices 
-negotiate a higher speed.
+ Having compared the two pieces side by side now I think it makes sense.  
+While there are minor differences, most prominently the original code is 
+more aggressive than mine in polling the status bit, I think these details 
+are not significant enough to argue over them here.  And we can consider 
+switching to more modern `usleep_range' interface separately.
 
-Also check for a 2.5GT/s speed restriction the firmware may have already 
-arranged and lift it too with ports of devices known to continue working 
-afterwards, currently the ASM2824 only, that already report their data 
-link being up.
+ A minor pessimisation resulting is that LNKSTA has to be reread in the 
+caller after return from `pcie_retrain_link'; previously the last value 
+read in the poll loop could have been reused.
 
-Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
-Link: https://lore.kernel.org/r/alpine.DEB.2.21.2203022037020.56670@angie.orcam.me.uk/
-Link: https://source.denx.de/u-boot/u-boot/-/commit/a398a51ccc68
----
-Changes from v8:
+> I'm OK with having pcie_retrain_link() in pci.c, but the surrounding
+> logic about restricting to 2.5GT/s, retraining, removing the
+> restriction, retraining again is stuff I'd rather have in quirks.c so
+> it doesn't clutter pci.c.
 
-- Rename `pcie_downstream_link_retrain' to `pcie_failed_link_retrain', add 
-  a prototype in "pci.h", moving the stub implementation under !PCI_QUIRKS 
-  umbrella.
+ Well, it was there in quirks.c originally and I only moved this piece 
+following your earlier suggestion:
 
-- Move back to quirks.c, though as an internal API call rather than a 
-  regular quirk.
+> If we think the first part (attempting the retrain) is safe to do
+> whenever the link is down, maybe we should do that more directly as
+> part of the PCI core instead of as a quirk?
 
-- Adjust for PCIE_LINK_RETRAIN_TIMEOUT_MS expressed in milliseconds rather 
-  than jiffies.
+as in here: <https://lore.kernel.org/r/20221109050418.GA529724@bhelgaas/>, 
+though if you did change your mind after all, I can move it back, sure.  
+It's not always that the first thought is the best, or sometimes good at 
+all.
 
-- Use a `pcie_retrain_link' call rather than retraining inline, and also 
-  use it in the restriction lift path, making it another possible failure 
-  point.
+> I think it'd be good if the pci_device_add() path made clear that this
+> is a workaround for a problem, e.g.,
+> 
+>   void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+>   {
+>     ...
+>     if (pcie_link_failed(dev))
+>       pcie_fix_link_train(dev);
+> 
+> where pcie_fix_link_train() could live in quirks.c (with a stub when
+> CONFIG_PCI_QUIRKS isn't enabled).  It *might* even be worth adding it
+> and the stub first because that's a trivial patch and wouldn't clutter
+> the probe.c git history with all the grotty details about ASM2824 and
+> this topology.
 
-No changes from v7.
+ I have added a stub now, both as an intermediate step and ultimately for 
+!PCI_QUIRKS, but I disagree about having the check in pci.c and the fix in 
+quirks.c, because from the code structure's point of view it makes no 
+sense IMHO to have the check enabled and the fix disabled both at a time 
+for !PCI_QUIRKS, even if the compiler would actually optimise the check 
+away in that case.
 
-Changes from v6:
+ Please let me know if you maintain your suggestion and if so, then why 
+you find it so important.  I think with the use of `pcie_retrain_link' 
+this code has become straightforward enough not to need to be split or 
+factored out any further (and while factoring out the conditionals only 
+would make some sense to me, it would require duplicating configuration 
+register accesses even further).
 
-- Regenerate against 6.3-rc5.
+> > +int pcie_downstream_link_retrain(struct pci_dev *dev)
+> > +{
+> > +	static const struct pci_device_id ids[] = {
+> > +		{ PCI_VDEVICE(ASMEDIA, 0x2824) }, /* ASMedia ASM2824 */
+> > +		{}
+> > +	};
+> > +	u16 lnksta, lnkctl2;
+> > +
+> > +	if (!pci_is_pcie(dev) || !pcie_downstream_port(dev) ||
+> > +	    !pcie_cap_has_lnkctl2(dev) || !dev->link_active_reporting)
+> > +		return -1;
+> > +
+> > +	pcie_capability_read_word(dev, PCI_EXP_LNKCTL2, &lnkctl2);
+> > +	pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
+> > +	if ((lnksta & (PCI_EXP_LNKSTA_LBMS | PCI_EXP_LNKSTA_DLLLA)) ==
+> > +	    PCI_EXP_LNKSTA_LBMS) {
+> 
+> You go to some trouble to make sure PCI_EXP_LNKSTA_LBMS is set, and I
+> can't remember what the reason is.  If you make a preparatory patch
+> like this, it would give a place for that background, e.g.,
 
-- Shorten the lore.kernel.org archive link in the change description.
+ It has been already documented along with the code in question:
 
-Changes from v5:
+ * With the ASM2824 we can rely on the otherwise optional Data Link Layer
+ * Link Active status bit and in the failed link training scenario it will
+ * be off along with the Link Bandwidth Management Status indicating that
+ * hardware has changed the link speed or width in an attempt to correct
+ * unreliable link operation.  For a port that has been left unconnected
+ * both bits will be clear.  [...]
 
-- Move from a quirk into PCI core and call at device probing, hot-plug,
-  reset and resume.  Keep the ASMedia part under CONFIG_PCI_QUIRKS.
+>   +bool pcie_link_failed(struct pci_dev *dev)
+>   +{
+>   +       u16 lnksta;
+>   +
+>   +       if (!pci_is_pcie(dev) || !pcie_downstream_port(dev) ||
+>   +           !pcie_cap_has_lnkctl2(dev) || !dev->link_active_reporting)
+>   +               return false;
+>   +
+>   +       pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
+>   +       if ((lnksta & (PCI_EXP_LNKSTA_LBMS | PCI_EXP_LNKSTA_DLLLA)) ==
+>   +                       PCI_EXP_LNKSTA_LBMS)
+>   +               return true;
+>   +
+>   +       return false;
+>   +}
+> 
+> If this is a generic thing and checking PCI_EXP_LNKSTA_LBMS makes
+> sense for everybody, it could go in pci.c; otherwise it could go in
+> quirks.c as well.  I guess it's not *truly* generic anyway because it
+> only detects link training failures for devices that have LNKCTL2 and
+> link_active_reporting.
 
-- Rely on `dev->link_active_reporting' rather than re-retrieving the 
-  capability.
+ I do not have enough information to tell whether this is generic or not.  
 
-Changes from v4:
+ Checking for PCI_EXP_LNKSTA_LBMS is important, because otherwise this 
+code would attempt to retrain every empty slot or otherwise unconnected 
+PCIe link, which we do not want to do and which would surely take a lot of 
+time with some of the larger systems, to say nothing of the log clutter 
+showing that there is something wrong with the system while indeed there 
+is nothing.
 
-- Remove <linux/bug.h> inclusion no longer needed.
+ Out of all the ports whose data link layer is not in the DL_Active state 
+the LBMS bit is only set for the failed link in my system and I suspect it 
+is related to the link speed negotiation erratum causing unsuccessful link 
+training to repeat indefinitely.
 
-- Make the quirk generic based on probing device features rather than 
-  specific to the ASM2824 part only; take the Retrain Link bit erratum 
-  into account.
+ By definition LBMS cannot be set for an unconnected link, because the bit 
+is only allowed to be set for an event observed that has happened with a 
+port reporting no DL_Down status at any time throughout the event, which 
+can only happen with the physical layer up, which of course cannot happen 
+for an unconnected link (of course I can imagine another erratum affecting 
+the LBMS bit, but that has not been reported yet).
 
-- Still lift the 2.5GT/s speed restriction with the ASM2824 only.
+ While making sure I got all the details in the previous paragraph right I 
+have gone through a reference to the DL_Feature data link layer state (and 
+a potential need to disable it for interacting with a non-compliant legacy 
+downstream device), but neither device involved supports it, so it can't 
+possibly be the cause for the phenomenon observed.
 
-- Increase retrain timeout from 200ms to 1s (PCIE_LINK_RETRAIN_TIMEOUT).
+ IOW the LBMS bit serves the purpose of indicating that there is actually 
+a device down an inactive link (the state of the physical layer's LinkUp 
+bit is not directly accessible via software).  And one might argue that 
+the state where LBMS is set but DLLLA is clear (where actually supported) 
+after a device reset is indeed a generic sign of an odd link training 
+issue.
 
-- Remove retrain success notification.
+ If you think it would make sense to include any piece of the text above 
+with the existing documentation, then I'll be happy to improve it.
 
-- Use PCIe helpers rather than generic PCI functions throughout.
+> > +	if (IS_ENABLED(CONFIG_PCI_QUIRKS) && (lnksta & PCI_EXP_LNKSTA_DLLLA) &&
+> > +	    (lnkctl2 & PCI_EXP_LNKCTL2_TLS) == PCI_EXP_LNKCTL2_TLS_2_5GT &&
+> > +	    pci_match_id(ids, dev)) {
+> > +		u32 lnkcap;
+> > +		u16 lnkctl;
+> > +
+> > +		pci_info(dev, "removing 2.5GT/s downstream link speed restriction\n");
+> > +		pcie_capability_read_dword(dev, PCI_EXP_LNKCAP, &lnkcap);
+> > +		pcie_capability_read_word(dev, PCI_EXP_LNKCTL, &lnkctl);
+> > +		lnkctl |= PCI_EXP_LNKCTL_RL;
+> > +		lnkctl2 &= ~PCI_EXP_LNKCTL2_TLS;
+> > +		lnkctl2 |= lnkcap & PCI_EXP_LNKCAP_SLS;
+> > +		pcie_capability_write_word(dev, PCI_EXP_LNKCTL2, lnkctl2);
+> > +		pcie_capability_write_word(dev, PCI_EXP_LNKCTL, lnkctl);
+> 
+> This starts a retrain; should we wait for training to complete?
 
-- Trim down and update the wording of the change description for the 
-  switch from an ASM2824-specific to a generic fixup.
+ Yep, why not, with `pcie_retrain_link' now updated it's trivial, and we 
+can then also verify the result (and do nothing about it except for 
+reporting, as it's supposed to never happen, so let's just wait and see).
 
-Changes from v3:
+> If we put most of this into a pcie_fix_link_train() (separated from
+> detecting the *need* to fix something), could it be made to look
+> sort of like this?  (I suppose you'd want to return bool and rename
+> it that reads naturally, e.g., "pcie_link_forcibly_retrained()",
+> "pcie_link_retrained()", etc)
 
-- Remove the <linux/pci_ids.h> entry for the ASM2824.
+ Ah, I concluded to make it return `bool' independently, having not seen 
+this suggestion of yours yet, so it seems like we're getting in sync, and 
+likewise I renamed the function to `pcie_failed_link_retrain' already.
 
-Changes from v2:
+>   +void pcie_fix_link_train(struct pci_dev *dev)
+>   +{
+>   +       u16 lnkctl2;
+>   +       u32 lnkcap;
+>   +       bool linkup;
+>   +
+>   +       pci_info(dev, "attempting link retrain at 2.5GT/s\n");
+>   +       pcie_capability_read_word(dev, PCI_EXP_LNKCTL2, &lnkctl2);
+>   +       lnkctl2 &= ~PCI_EXP_LNKCTL2_TLS;
+>   +       lnkctl2 |= PCI_EXP_LNKCTL2_TLS_2_5GT;
+>   +       pcie_capability_write_word(dev, PCI_EXP_LNKCTL2, lnkctl2);
+>   +
+>   +       linkup = pcie_retrain_link(dev, PCI_EXP_LNKSTA_DLLLA);
+>   +       if (!linkup) {
+>   +               pci_info(dev, "retraining failed\n");
+>   +               return;
+>   +       }
+>   +
+>   +       if (LNKCAP supports only 2.5GT/s)
+>   +               return;
+>   +
+>   +       if (!pci_match_id(ids, dev))
+>   +               return;
+> 
+> Your comment said "if we know this is *safe*"; I can't remember if
+> pci_match_id() is there to avoid a known problem?
 
-- Regenerate for 5.17-rc2 for a merge conflict.
+ It's the other way round, the intent is to lift the speed restriction and 
+retrain for devices known to succeed and survive only.
 
-- Replace BUG_ON for a missing PCI Express capability with WARN_ON and an
-  early return.
+ It cannot be universally guaranteed that such a retrain will succeed even 
+if 2.5GT/s works, and moreover this piece is independent from the attempt 
+to recover made immediately above and will also run where the firmware has 
+clamped the speed of the link somehow, whether for this erratum or for 
+another reason (remember that the speed clamp is sticky, so it will have 
+survived our bus/interconnect hierarchy reset).
 
-Changes from v1:
+ In particular Pali has reported (in an earlier discussion concerning this 
+erratum on the U-Boot mailing list) the existence of downstream devices 
+that lock up when a link retrain is attempted, so we don't want to request 
+one for an otherwise known-working link (retraining a dead link won't hurt 
+of course regardless, because at worst it'll just stay in its non-working 
+state, and we don't have a way to figure out what might be there anyway).  
+Cf. <https://lists.denx.de/pipermail/u-boot/2021-November/467201.html>.
 
-- Regenerate for a merge conflict.
----
- drivers/pci/pci.h    |    3 +
- drivers/pci/quirks.c |   93 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 95 insertions(+), 1 deletion(-)
+> > +/* Same as above, but called for a downstream device.  */
+> > +static int pcie_upstream_link_retrain(struct pci_dev *dev)
+> > +{
+> > +	struct pci_dev *bridge;
+> > +
+> > +	bridge = pci_upstream_bridge(dev);
+> > +	if (bridge)
+> > +		return pcie_downstream_link_retrain(bridge);
+> > +	else
+> > +		return -1;
+> > +}
+> > +
+> >  static int pci_acs_enable;
+> >  
+> >  /**
+> > @@ -1148,8 +1274,8 @@ void pci_resume_bus(struct pci_bus *bus)
+> >  
+> >  static int pci_dev_wait(struct pci_dev *dev, char *reset_type, int timeout)
+> >  {
+> > +	int retrain = 0;
+> >  	int delay = 1;
+> > -	u32 id;
+> >  
+> >  	/*
+> >  	 * After reset, the device should not silently discard config
+> > @@ -1163,21 +1289,37 @@ static int pci_dev_wait(struct pci_dev *
+> >  	 * Command register instead of Vendor ID so we don't have to
+> >  	 * contend with the CRS SV value.
+> >  	 */
+> > -	pci_read_config_dword(dev, PCI_COMMAND, &id);
+> > -	while (PCI_POSSIBLE_ERROR(id)) {
+> > +	for (;;) {
+> > +		u32 id;
+> > +
+> > +		pci_read_config_dword(dev, PCI_COMMAND, &id);
+> > +		if (!PCI_POSSIBLE_ERROR(id)) {
+> > +			if (delay > PCI_RESET_WAIT)
+> > +				pci_info(dev, "ready %dms after %s\n",
+> > +					 delay - 1, reset_type);
+> > +			break;
+> > +		}
+> > +
+> >  		if (delay > timeout) {
+> >  			pci_warn(dev, "not ready %dms after %s; giving up\n",
+> >  				 delay - 1, reset_type);
+> >  			return -ENOTTY;
+> >  		}
+> >  
+> > -		if (delay > PCI_RESET_WAIT)
+> > +		if (delay > PCI_RESET_WAIT) {
+> > +			if (!retrain) {
+> > +				retrain = 1;
+> > +				if (pcie_upstream_link_retrain(dev) == 0) {
+> > +					delay = 1;
+> > +					continue;
+> > +				}
+> > +			}
+> >  			pci_info(dev, "not ready %dms after %s; waiting\n",
+> >  				 delay - 1, reset_type);
+> > +		}
+> 
+> Thanks for fixing this in the reset path, too.  Can we move this part
+> to a separate patch?  It's related to the rest of the patch, but it
+> looks so much different that I think it would be easier to understand
+> by itself.
 
-linux-pcie-asm2824-manual-retrain.diff
-Index: linux-macro/drivers/pci/pci.h
-===================================================================
---- linux-macro.orig/drivers/pci/pci.h
-+++ linux-macro/drivers/pci/pci.h
-@@ -539,6 +539,7 @@ void pci_acs_init(struct pci_dev *dev);
- int pci_dev_specific_acs_enabled(struct pci_dev *dev, u16 acs_flags);
- int pci_dev_specific_enable_acs(struct pci_dev *dev);
- int pci_dev_specific_disable_acs_redir(struct pci_dev *dev);
-+bool pcie_failed_link_retrain(struct pci_dev *dev);
- #else
- static inline int pci_dev_specific_acs_enabled(struct pci_dev *dev,
- 					       u16 acs_flags)
-@@ -553,11 +554,11 @@ static inline int pci_dev_specific_disab
- {
- 	return -ENOTTY;
- }
--#endif
- static inline bool pcie_failed_link_retrain(struct pci_dev *dev)
- {
- 	return false;
- }
-+#endif
- 
- /* PCI error reporting and recovery */
- pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
-Index: linux-macro/drivers/pci/quirks.c
-===================================================================
---- linux-macro.orig/drivers/pci/quirks.c
-+++ linux-macro/drivers/pci/quirks.c
-@@ -33,6 +33,99 @@
- #include <linux/switchtec.h>
- #include "pci.h"
- 
-+/*
-+ * Retrain the link of a downstream PCIe port by hand if necessary.
-+ *
-+ * This is needed at least where a downstream port of the ASMedia ASM2824
-+ * Gen 3 switch is wired to the upstream port of the Pericom PI7C9X2G304
-+ * Gen 2 switch, and observed with the Delock Riser Card PCI Express x1 >
-+ * 2 x PCIe x1 device, P/N 41433, plugged into the SiFive HiFive Unmatched
-+ * board.
-+ *
-+ * In such a configuration the switches are supposed to negotiate the link
-+ * speed of preferably 5.0GT/s, falling back to 2.5GT/s.  However the link
-+ * continues switching between the two speeds indefinitely and the data
-+ * link layer never reaches the active state, with link training reported
-+ * repeatedly active ~84% of the time.  Forcing the target link speed to
-+ * 2.5GT/s with the upstream ASM2824 device makes the two switches talk to
-+ * each other correctly however.  And more interestingly retraining with a
-+ * higher target link speed afterwards lets the two successfully negotiate
-+ * 5.0GT/s.
-+ *
-+ * With the ASM2824 we can rely on the otherwise optional Data Link Layer
-+ * Link Active status bit and in the failed link training scenario it will
-+ * be off along with the Link Bandwidth Management Status indicating that
-+ * hardware has changed the link speed or width in an attempt to correct
-+ * unreliable link operation.  For a port that has been left unconnected
-+ * both bits will be clear.  So use this information to detect the problem
-+ * rather than polling the Link Training bit and watching out for flips or
-+ * at least the active status.
-+ *
-+ * Since the exact nature of the problem isn't known and in principle this
-+ * could trigger where an ASM2824 device is downstream rather upstream,
-+ * apply this erratum workaround to any downstream ports as long as they
-+ * support Link Active reporting and have the Link Control 2 register.
-+ * Restrict the speed to 2.5GT/s then with the Target Link Speed field,
-+ * request a retrain and wait 200ms for the data link to go up.
-+ *
-+ * If this turns out successful and we know by the Vendor:Device ID it is
-+ * safe to do so, then lift the restriction, letting the devices negotiate
-+ * a higher speed.  Also check for a similar 2.5GT/s speed restriction the
-+ * firmware may have already arranged and lift it with ports that already
-+ * report their data link being up.
-+ *
-+ * Return TRUE if the link has been successfully retrained, otherwise FALSE.
-+ */
-+bool pcie_failed_link_retrain(struct pci_dev *dev)
-+{
-+	static const struct pci_device_id ids[] = {
-+		{ PCI_VDEVICE(ASMEDIA, 0x2824) }, /* ASMedia ASM2824 */
-+		{}
-+	};
-+	u16 lnksta, lnkctl2;
-+
-+	if (!pci_is_pcie(dev) || !pcie_downstream_port(dev) ||
-+	    !pcie_cap_has_lnkctl2(dev) || !dev->link_active_reporting)
-+		return false;
-+
-+	pcie_capability_read_word(dev, PCI_EXP_LNKCTL2, &lnkctl2);
-+	pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
-+	if ((lnksta & (PCI_EXP_LNKSTA_LBMS | PCI_EXP_LNKSTA_DLLLA)) ==
-+	    PCI_EXP_LNKSTA_LBMS) {
-+		pci_info(dev, "broken device, retraining non-functional downstream link at 2.5GT/s\n");
-+
-+		lnkctl2 &= ~PCI_EXP_LNKCTL2_TLS;
-+		lnkctl2 |= PCI_EXP_LNKCTL2_TLS_2_5GT;
-+		pcie_capability_write_word(dev, PCI_EXP_LNKCTL2, lnkctl2);
-+
-+		if (!pcie_retrain_link(dev, false)) {
-+			pci_info(dev, "retraining failed\n");
-+			return false;
-+		}
-+
-+		pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
-+	}
-+
-+	if ((lnksta & PCI_EXP_LNKSTA_DLLLA) &&
-+	    (lnkctl2 & PCI_EXP_LNKCTL2_TLS) == PCI_EXP_LNKCTL2_TLS_2_5GT &&
-+	    pci_match_id(ids, dev)) {
-+		u32 lnkcap;
-+
-+		pci_info(dev, "removing 2.5GT/s downstream link speed restriction\n");
-+		pcie_capability_read_dword(dev, PCI_EXP_LNKCAP, &lnkcap);
-+		lnkctl2 &= ~PCI_EXP_LNKCTL2_TLS;
-+		lnkctl2 |= lnkcap & PCI_EXP_LNKCAP_SLS;
-+		pcie_capability_write_word(dev, PCI_EXP_LNKCTL2, lnkctl2);
-+
-+		if (!pcie_retrain_link(dev, false)) {
-+			pci_info(dev, "retraining failed\n");
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
- static ktime_t fixup_debug_start(struct pci_dev *dev,
- 				 void (*fn)(struct pci_dev *dev))
- {
+ I think making a system halfway-fixed would make little sense, but with 
+the actual fix actually made last as you suggested I think this can be 
+split off, because it'll make no functional change by itself.
+
+ While at it I have verified that the initial value of `retrain' does not 
+have to be changed for the compiler to optimise away any code related to 
+it in the !PCI_QUIRKS case where `pcie_parent_link_retrain' gets optimised 
+away too, so we're good here.
+
+ I changed `retrain' to `bool' though and inverted the logic as I find it 
+more natural this way.
+
+> I think I might try to fold the pcie_upstream_link_retrain() directly
+> in here because the "upstream link retrain" in the function name
+> doesn't really make sense in PCIe terms.
+
+ Well, it does, as you can indeed request a retrain for an upstream port 
+device.  This is not however what this function does, so I agree it's 
+confusing.  I have replaced "upstream" with "parent" in the function name 
+then to avoid this ambiguity.
+
+ Otherwise I think factoring this piece out makes code more readable, as 
+it's already quite deeply nested in blocks, and the compiler will inline 
+it anyway, so I'd rather keep it as a separate function.
+
+ With the observations made I'll be posting a rewritten patch series now.  
+I realise there might still be issues outstanding, but this rewrite was 
+already humongous enough and I think it deserves a second pair of eyeballs 
+before massaging it any further.
+
+ And last but not least, thank you for waiting, it was quite a stretch for 
+me to fit this effort in among all the stuff currently on my table and all 
+the unforeseen events.
+
+  Maciej
