@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 973B0C77B7A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 17:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C257AC7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jun 2023 17:26:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QfMCY293Mz2xH6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 03:25:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfMDF3Sc9z3cCw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 03:26:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
 Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM5H5VN6z301c
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 03:20:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfM5M6HdNz30fj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 03:20:07 +1000 (AEST)
 Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 529979200C9; Sun, 11 Jun 2023 19:20:02 +0200 (CEST)
+	id 6DEA69200CB; Sun, 11 Jun 2023 19:20:06 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 4E1479200C0;
-	Sun, 11 Jun 2023 18:20:02 +0100 (BST)
-Date: Sun, 11 Jun 2023 18:20:02 +0100 (BST)
+	by angie.orcam.me.uk (Postfix) with ESMTP id 66A4F9200CA;
+	Sun, 11 Jun 2023 18:20:06 +0100 (BST)
+Date: Sun, 11 Jun 2023 18:20:06 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@orcam.me.uk>
 To: Bjorn Helgaas <bhelgaas@google.com>, 
     Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
@@ -29,10 +29,10 @@ To: Bjorn Helgaas <bhelgaas@google.com>,
     "David S. Miller" <davem@davemloft.net>, 
     Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
     Paolo Abeni <pabeni@redhat.com>
-Subject: [PATCH v9 12/14] PCI: Provide stub failed link recovery for device
- probing and hot plug
+Subject: [PATCH v9 13/14] PCI: Add failed link recovery for device reset
+ events
 In-Reply-To: <alpine.DEB.2.21.2305310024400.59226@angie.orcam.me.uk>
-Message-ID: <alpine.DEB.2.21.2306111619570.64925@angie.orcam.me.uk>
+Message-ID: <alpine.DEB.2.21.2306111631050.64925@angie.orcam.me.uk>
 References: <alpine.DEB.2.21.2305310024400.59226@angie.orcam.me.uk>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
@@ -52,62 +52,97 @@ Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, David Abdurachmanov <david.ab
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This now fails unconditionally and will be always optimised away, but 
-provides for quirks to implement recovery for failed links detected in 
-device probing and device hot plug events.
+Request failed link recovery with any upstream bridge where a device has 
+not come back after reset within PCI_RESET_WAIT time.  Reset the polling 
+interval if recovery succeeded, otherwise continue as usual.
 
 Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
 ---
 New change in v9, factored out from 7/7:
 
+- Remove duplicate succesful completion report previously added (not sure 
+  where it came from, possibly an unnoticed leftover from experiments).
+
+- Make the type of `retrain' variable `bool' rather than `int' and invert
+  the logic used.
+
 - Rename `pcie_downstream_link_retrain' to `pcie_failed_link_retrain'.
 
-- Add stub implementation in "pci.h".
+- Rename `pcie_upstream_link_retrain' to `pcie_parent_link_retrain'.  Add 
+  documentation.
 ---
- drivers/pci/pci.c   |    2 ++
- drivers/pci/pci.h   |    4 ++++
- drivers/pci/probe.c |    2 ++
- 3 files changed, 8 insertions(+)
+ drivers/pci/pci.c |   39 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 5 deletions(-)
 
-linux-pcie-failed-link-retrain.diff
+linux-pcie-dev-wait-link-retrain.diff
 Index: linux-macro/drivers/pci/pci.c
 ===================================================================
 --- linux-macro.orig/drivers/pci/pci.c
 +++ linux-macro/drivers/pci/pci.c
-@@ -4912,6 +4912,8 @@ static bool pcie_wait_for_link_delay(str
- 	if (active)
- 		msleep(20);
- 	ret = pcie_wait_for_link_status(pdev, false, active);
-+	if (active && !ret)
-+		ret = pcie_failed_link_retrain(pdev);
- 	if (active && ret)
- 		msleep(delay);
- 
-Index: linux-macro/drivers/pci/pci.h
-===================================================================
---- linux-macro.orig/drivers/pci/pci.h
-+++ linux-macro/drivers/pci/pci.h
-@@ -554,6 +554,10 @@ static inline int pci_dev_specific_disab
- 	return -ENOTTY;
+@@ -1146,10 +1146,27 @@ void pci_resume_bus(struct pci_bus *bus)
+ 		pci_walk_bus(bus, pci_resume_one, NULL);
  }
- #endif
-+static inline bool pcie_failed_link_retrain(struct pci_dev *dev)
+ 
++/**
++ * pcie_parent_link_retrain - Check and retrain link we are downstream from
++ * @dev: PCI device to handle.
++ *
++ * Return TRUE if the link was retrained, FALSE otherwise.
++ */
++static bool pcie_parent_link_retrain(struct pci_dev *dev)
 +{
-+	return false;
-+}
- 
- /* PCI error reporting and recovery */
- pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
-Index: linux-macro/drivers/pci/probe.c
-===================================================================
---- linux-macro.orig/drivers/pci/probe.c
-+++ linux-macro/drivers/pci/probe.c
-@@ -2549,6 +2549,8 @@ void pci_device_add(struct pci_dev *dev,
- 	dma_set_max_seg_size(&dev->dev, 65536);
- 	dma_set_seg_boundary(&dev->dev, 0xffffffff);
- 
-+	pcie_failed_link_retrain(dev);
++	struct pci_dev *bridge;
 +
- 	/* Fix up broken headers */
- 	pci_fixup_device(pci_fixup_header, dev);
++	bridge = pci_upstream_bridge(dev);
++	if (bridge)
++		return pcie_failed_link_retrain(bridge);
++	else
++		return false;
++}
++
+ static int pci_dev_wait(struct pci_dev *dev, char *reset_type, int timeout)
+ {
++	bool retrain = true;
+ 	int delay = 1;
+-	u32 id;
  
+ 	/*
+ 	 * After reset, the device should not silently discard config
+@@ -1163,21 +1180,33 @@ static int pci_dev_wait(struct pci_dev *
+ 	 * Command register instead of Vendor ID so we don't have to
+ 	 * contend with the CRS SV value.
+ 	 */
+-	pci_read_config_dword(dev, PCI_COMMAND, &id);
+-	while (PCI_POSSIBLE_ERROR(id)) {
++	for (;;) {
++		u32 id;
++
++		pci_read_config_dword(dev, PCI_COMMAND, &id);
++		if (!PCI_POSSIBLE_ERROR(id))
++			break;
++
+ 		if (delay > timeout) {
+ 			pci_warn(dev, "not ready %dms after %s; giving up\n",
+ 				 delay - 1, reset_type);
+ 			return -ENOTTY;
+ 		}
+ 
+-		if (delay > PCI_RESET_WAIT)
++		if (delay > PCI_RESET_WAIT) {
++			if (retrain) {
++				retrain = false;
++				if (pcie_parent_link_retrain(dev)) {
++					delay = 1;
++					continue;
++				}
++			}
+ 			pci_info(dev, "not ready %dms after %s; waiting\n",
+ 				 delay - 1, reset_type);
++		}
+ 
+ 		msleep(delay);
+ 		delay *= 2;
+-		pci_read_config_dword(dev, PCI_COMMAND, &id);
+ 	}
+ 
+ 	if (delay > PCI_RESET_WAIT)
