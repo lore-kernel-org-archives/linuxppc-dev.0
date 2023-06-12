@@ -4,62 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18611C7EE29
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jun 2023 17:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B01D2C7EE25
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 10:44:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qd6q61NK1z3fc4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jun 2023 03:03:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q+dI+cmw;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q+dI+cmw;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qd6p50lwFz3dx1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2023 03:02:36 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 0F3FA65A3B
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 17:02:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE4D6C433B3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2023 17:02:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686330152;
-	bh=vxAb82+vAl+BH98Z/zX2UFkfYunrykLKznTO4Bf32/o=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Q+dI+cmwHEvIObOXxBsxyLekwmm76nF9mGs/vdLlr9pWiFEOIysNhWUdd8PCPTZ60
-	 LGGzk92gX0XuOyi4c26mYX3WPE87Sa8gWWUHUcQn3brBzeJWQThR6bQGMoW8J4LXj2
-	 /rRDcmDl6AO9YE0mvQ8g/y0o2DWJ6lY1sgodoPu5UtSM0BhSA/NrKC725qSlwzaMbW
-	 LIHQKoajXtYBZmHeGyhSCo2catvq01eWOqhjFyA0VEGDaMp7xHaZwMDzYeTK06Q/xY
-	 rwzqQP0Yl8UvtbdxwWkN+eVpQSLM8A1ii33t60UlF5wAwY777uNuFBnLsUA8TSvepk
-	 QZiKMOywmlWog==
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-4f644dffd71so2619962e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2023 10:02:31 -0700 (PDT)
-X-Gm-Message-State: AC+VfDzuJlCYLjwifYwUIQY9hm++ig0bum+SjxF02yunxWn0ceLQRCvB
-	Nhqj7qTfzHImz6s3slarzkwdwAraTKsF20fsA3s=
-X-Google-Smtp-Source: ACHHUZ4u3y79XyQLMHF4er59h6QhhYai8KonYYOOA8YDDos4NgFbnLZdqPfEIRGQCpyydTzD04kcj6u0lkxU6y+OWW4=
-X-Received: by 2002:a2e:9891:0:b0:2b1:e5d8:d008 with SMTP id
- b17-20020a2e9891000000b002b1e5d8d008mr1338098ljj.37.1686330149805; Fri, 09
- Jun 2023 10:02:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfpGc6M8Rz30gQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 20:44:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 583 seconds by postgrey-1.37 at boromir; Mon, 12 Jun 2023 20:44:10 AEST
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QfpG22Ck3z306V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 20:44:08 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5C32F2F4;
+	Mon, 12 Jun 2023 03:34:37 -0700 (PDT)
+Received: from FVFF77S0Q05N (unknown [10.57.27.163])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5BAC03F663;
+	Mon, 12 Jun 2023 03:33:47 -0700 (PDT)
+Date: Mon, 12 Jun 2023 11:33:41 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Douglas Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v5 15/18] watchdog/perf: Add a weak function for an arch
+ to detect if perf can use NMIs
+Message-ID: <ZIb0hd8djM+jJviF@FVFF77S0Q05N>
+References: <20230519101840.v5.18.Ia44852044cdcb074f387e80df6b45e892965d4a1@changeid>
+ <20230519101840.v5.15.Ic55cb6f90ef5967d8aaa2b503a4e67c753f64d3a@changeid>
 MIME-Version: 1.0
-References: <20230601101257.530867-1-rppt@kernel.org> <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
- <ZHjgIH3aX9dCvVZc@moria.home.lan> <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
- <20230605092040.GB3460@kernel.org> <ZH20XkD74prrdN4u@FVFF77S0Q05N>
- <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com> <20230608184116.GJ52412@kernel.org>
-In-Reply-To: <20230608184116.GJ52412@kernel.org>
-From: Song Liu <song@kernel.org>
-Date: Fri, 9 Jun 2023 10:02:16 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW5YYa6nQhO2=zor75XkdKpFysZD42DgDRkKZvQT6aMqcA@mail.gmail.com>
-Message-ID: <CAPhsuW5YYa6nQhO2=zor75XkdKpFysZD42DgDRkKZvQT6aMqcA@mail.gmail.com>
-Subject: Re: [PATCH 00/13] mm: jit/text allocator
-To: Mike Rapoport <rppt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230519101840.v5.15.Ic55cb6f90ef5967d8aaa2b503a4e67c753f64d3a@changeid>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,155 +43,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@l
- ists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: Ian Rogers <irogers@google.com>, ito-yuichi@fujitsu.com, Lecopzer Chen <lecopzer.chen@mediatek.com>, ravi.v.shankar@intel.com, Catalin Marinas <catalin.marinas@arm.com>, ricardo.neri@intel.com, Stephane Eranian <eranian@google.com>, sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Will Deacon <will@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Andi Kleen <ak@linux.intel.com>, Marc Zyngier <maz@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Matthias Kaehlcke <mka@chromium.org>, kgdb-bugreport@lists.sourceforge.net, Masayoshi Mizuma <msys.mizuma@gmail.com>, Petr Mladek <pmladek@suse.com>, Tzung-Bi Shih <tzungbi@chromium.org>, npiggin@gmail.com, Stephen Boyd <swboyd@chromium.org>, Pingfan Liu <kernelfans@gmail.com>, linux-arm-kernel@lists.infradead.org, Sumit Garg <sumit.garg@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.o
+ rg, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 8, 2023 at 11:41=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wro=
-te:
->
-> On Tue, Jun 06, 2023 at 11:21:59AM -0700, Song Liu wrote:
-> > On Mon, Jun 5, 2023 at 3:09=E2=80=AFAM Mark Rutland <mark.rutland@arm.c=
-om> wrote:
-> >
-> > [...]
-> >
-> > > > > > Can you give more detail on what parameters you need? If the on=
-ly extra
-> > > > > > parameter is just "does this allocation need to live close to k=
-ernel
-> > > > > > text", that's not that big of a deal.
-> > > > >
-> > > > > My thinking was that we at least need the start + end for each ca=
-ller. That
-> > > > > might be it, tbh.
-> > > >
-> > > > Do you mean that modules will have something like
-> > > >
-> > > >       jit_text_alloc(size, MODULES_START, MODULES_END);
-> > > >
-> > > > and kprobes will have
-> > > >
-> > > >       jit_text_alloc(size, KPROBES_START, KPROBES_END);
-> > > > ?
-> > >
-> > > Yes.
-> >
-> > How about we start with two APIs:
-> >      jit_text_alloc(size);
-> >      jit_text_alloc_range(size, start, end);
-> >
-> > AFAICT, arm64 is the only arch that requires the latter API. And TBH, I=
- am
-> > not quite convinced it is needed.
->
-> Right now arm64 and riscv override bpf and kprobes allocations to use the
-> entire vmalloc address space, but having the ability to allocate generate=
-d
-> code outside of modules area may be useful for other architectures.
->
-> Still the start + end for the callers feels backwards to me because the
-> callers do not define the ranges, but rather the architectures, so we sti=
-ll
-> need a way for architectures to define how they want allocate memory for
-> the generated code.
+On Fri, May 19, 2023 at 10:18:39AM -0700, Douglas Anderson wrote:
+> On arm64, NMI support needs to be detected at runtime. Add a weak
+> function to the perf hardlockup detector so that an architecture can
+> implement it to detect whether NMIs are available.
+> 
+> Signed-off-by: Douglas Anderson <dianders@chromium.org>
+> ---
+> While I won't object to this patch landing, I consider it part of the
+> arm64 perf hardlockup effort. I would be OK with the earlier patches
+> in the series landing and then not landing ${SUBJECT} patch nor
+> anything else later.
 
-Yeah, this makes sense.
-
->
-> > > > It sill can be achieved with a single jit_alloc_arch_params(), just=
- by
-> > > > adding enum jit_type parameter to jit_text_alloc().
-> > >
-> > > That feels backwards to me; it centralizes a bunch of information abo=
-ut
-> > > distinct users to be able to shove that into a static array, when the=
- callsites
-> > > can pass that information.
-> >
-> > I think we only two type of users: module and everything else (ftrace, =
-kprobe,
-> > bpf stuff). The key differences are:
-> >
-> >   1. module uses text and data; while everything else only uses text.
-> >   2. module code is generated by the compiler, and thus has stronger
-> >   requirements in address ranges; everything else are generated via som=
-e
-> >   JIT or manual written assembly, so they are more flexible with addres=
-s
-> >   ranges (in JIT, we can avoid using instructions that requires a speci=
-fic
-> >   address range).
-> >
-> > The next question is, can we have the two types of users share the same
-> > address ranges? If not, we can reserve the preferred range for modules,
-> > and let everything else use the other range. I don't see reasons to fur=
-ther
-> > separate users in the "everything else" group.
->
-> I agree that we can define only two types: modules and everything else an=
-d
-> let the architectures define if they need different ranges for these two
-> types, or want the same range for everything.
->
-> With only two types we can have two API calls for alloc, and a single
-> structure that defines the ranges etc from the architecture side rather
-> than spread all over.
->
-> Like something along these lines:
->
->         struct execmem_range {
->                 unsigned long   start;
->                 unsigned long   end;
->                 unsigned long   fallback_start;
->                 unsigned long   fallback_end;
->                 pgprot_t        pgprot;
->                 unsigned int    alignment;
->         };
->
->         struct execmem_modules_range {
->                 enum execmem_module_flags flags;
->                 struct execmem_range text;
->                 struct execmem_range data;
->         };
->
->         struct execmem_jit_range {
->                 struct execmem_range text;
->         };
->
->         struct execmem_params {
->                 struct execmem_modules_range    modules;
->                 struct execmem_jit_range        jit;
->         };
->
->         struct execmem_params *execmem_arch_params(void);
->
->         void *execmem_text_alloc(size_t size);
->         void *execmem_data_alloc(size_t size);
->         void execmem_free(void *ptr);
-
-With the jit variation, maybe we can just call these
-module_[text|data]_alloc()?
-
-btw: Depending on the implementation of the allocator, we may also
-need separate free()s for text and data.
-
->
->         void *jit_text_alloc(size_t size);
->         void jit_free(void *ptr);
->
-
-[...]
-
-How should we move ahead from here?
-
-AFAICT, all these changes can be easily extended and refactored
-in the future, so we don't have to make it perfect the first time.
-OTOH, having the interface committed (either this set or my
-module_alloc_type version) can unblock works in the binpack
-allocator and the users side. Therefore, I think we can move
-relatively fast here?
+FWIW, everything prior to this looks fine to me, so I reckon it'd be worth
+splitting the series here and getting the buddy lockup detector in first, to
+avoid a log-jam on all the subsequent NMI bits.
 
 Thanks,
-Song
+Mark.
+
+> I'll also note that, as an alternative to this, it would be nice if we
+> could figure out how to make perf_event_create_kernel_counter() fail
+> on arm64 if NMIs aren't available. Maybe we could add a "must_use_nmi"
+> element to "struct perf_event_attr"?
+> 
+> (no changes since v4)
+> 
+> Changes in v4:
+> - ("Add a weak function for an arch to detect ...") new for v4.
+> 
+>  include/linux/nmi.h    |  1 +
+>  kernel/watchdog_perf.c | 12 +++++++++++-
+>  2 files changed, 12 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/nmi.h b/include/linux/nmi.h
+> index 47db14e7da52..eb616fc07c85 100644
+> --- a/include/linux/nmi.h
+> +++ b/include/linux/nmi.h
+> @@ -210,6 +210,7 @@ static inline bool trigger_single_cpu_backtrace(int cpu)
+>  
+>  #ifdef CONFIG_HARDLOCKUP_DETECTOR_PERF
+>  u64 hw_nmi_get_sample_period(int watchdog_thresh);
+> +bool arch_perf_nmi_is_available(void);
+>  #endif
+>  
+>  #if defined(CONFIG_HARDLOCKUP_CHECK_TIMESTAMP) && \
+> diff --git a/kernel/watchdog_perf.c b/kernel/watchdog_perf.c
+> index 349fcd4d2abc..8ea00c4a24b2 100644
+> --- a/kernel/watchdog_perf.c
+> +++ b/kernel/watchdog_perf.c
+> @@ -234,12 +234,22 @@ void __init hardlockup_detector_perf_restart(void)
+>  	}
+>  }
+>  
+> +bool __weak __init arch_perf_nmi_is_available(void)
+> +{
+> +	return true;
+> +}
+> +
+>  /**
+>   * watchdog_hardlockup_probe - Probe whether NMI event is available at all
+>   */
+>  int __init watchdog_hardlockup_probe(void)
+>  {
+> -	int ret = hardlockup_detector_event_create();
+> +	int ret;
+> +
+> +	if (!arch_perf_nmi_is_available())
+> +		return -ENODEV;
+> +
+> +	ret = hardlockup_detector_event_create();
+>  
+>  	if (ret) {
+>  		pr_info("Perf NMI watchdog permanently disabled\n");
+> -- 
+> 2.40.1.698.g37aff9b760-goog
+> 
