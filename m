@@ -4,59 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CBD1C7EE43
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 20:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76752C7EE2E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jun 2023 21:47:58 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWGX6Esm;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qg2rq0LL1z3cYc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 06:11:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.46; helo=mail-ot1-f46.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-f46.google.com (mail-ot1-f46.google.com [209.85.210.46])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qg4zw5tpmz3bXM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 07:47:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWGX6Esm;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 728 seconds by postgrey-1.37 at boromir; Tue, 13 Jun 2023 07:47:02 AEST
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qg27K1Yylz308s
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2023 05:39:08 +1000 (AEST)
-Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-6b2dbca2daeso1767761a34.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 12:39:08 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686598745; x=1689190745;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=QqdHZRyf0AXNBHWGF0CLQrBOhqQeYTmWOmQD+ocjfOs=;
-        b=kkWWHkpNdKj63TBMrHySqJyzzhIc1qjOXUp6LhZThJ4mikJrEcH0VVhNLHfH9Qo8H+
-         7i4k/2znHSSHlUTmPlZKIOnyPZS7zuADMThwNlJ6oL5ABciXDSOodTuVxsC1718yxACA
-         b7h7F5HbBej8Kv/rHPQBUtsJbiXpGcXDkGnKcPj/8RFdxCmxqq3iRBfKAZy1Svk8B2eA
-         hvb/HX/47XdO4z08h5xKADrEIuJ2rUYBAhbADMIFw7aeTP+NbVMq3fg1pZOfCaifLNin
-         qLwERASvWw4k/anz7Thq2+tU14VQ7MKlYEYrLkspWH23Zqr/cFV4o0NkK8sbjJ5HTDXf
-         QRjw==
-X-Gm-Message-State: AC+VfDz055o1hBbw2T/6wQBRgizvanhaRZlW5LqfmMslPrkgp2C6XtNY
-	8cIF+jNt6C+yLyyhI5PKtqWlCZHPyd93EQ==
-X-Google-Smtp-Source: ACHHUZ7zTd7Ph4eM6ByyS6uitiXt9iQKupjqcoAJbV4suO80SLr2uK2rM4rU4j+5SVtUlAKMmaurOg==
-X-Received: by 2002:a9d:4b09:0:b0:6b1:d368:557c with SMTP id q9-20020a9d4b09000000b006b1d368557cmr7043842otf.30.1686598744740;
-        Mon, 12 Jun 2023 12:39:04 -0700 (PDT)
-Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com. [209.85.210.52])
-        by smtp.gmail.com with ESMTPSA id b5-20020a056830104500b006b169acf1b5sm4173942otp.63.2023.06.12.12.39.02
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Jun 2023 12:39:03 -0700 (PDT)
-Received: by mail-ot1-f52.google.com with SMTP id 46e09a7af769-6b2e1023f30so1654005a34.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2023 12:39:02 -0700 (PDT)
-X-Received: by 2002:a05:6358:c6a9:b0:12b:db2f:9d2b with SMTP id
- fe41-20020a056358c6a900b0012bdb2f9d2bmr2288064rwb.22.1686598742584; Mon, 12
- Jun 2023 12:39:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qg4yt1HJSz2xHb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2023 07:47:02 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 5205A62AEB;
+	Mon, 12 Jun 2023 21:34:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D36BC433EF;
+	Mon, 12 Jun 2023 21:34:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1686605690;
+	bh=h0CRiC60VVAZqmO+EH1iTk5RAONQQFwe4r5bnxWeBYM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=WWGX6EsmQ2I3j/HZk09nSijqLsLqKh2zR9pZKyLx/B0jIXGPm7WOm6aHPsipPOPiY
+	 jbuqr2L5NdxGQ25vQ0efNR0RvVTA/m99hLadgsoxeMr2Yr4F8lHDdx8RspQzi7W43/
+	 mLC5DXypQ1i3u7doi7r5ZuwkTyjLzEfegN8R501cyMOXLvlLRW9VI2Ncve7nqZpdCc
+	 NEaiFAjaKVxiKSOlPYg1cGzREgYQilsaa62hJ0h6RiWVYxtKmWXyFXZ0lBGx5e1JWW
+	 26oQT3m1G5nZ691Qq/SnJu3UQtk8Wk6rKOBVtLl9V+SVu1rHNR6YSCJNrSY+wvrhZ3
+	 1QMTS9aeu3yow==
+Date: Tue, 13 Jun 2023 00:34:11 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Song Liu <song@kernel.org>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+Message-ID: <20230612213411.GP52412@kernel.org>
+References: <20230601101257.530867-1-rppt@kernel.org>
+ <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+ <ZHjgIH3aX9dCvVZc@moria.home.lan>
+ <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+ <20230605092040.GB3460@kernel.org>
+ <ZH20XkD74prrdN4u@FVFF77S0Q05N>
+ <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com>
+ <20230608184116.GJ52412@kernel.org>
+ <CAPhsuW5YYa6nQhO2=zor75XkdKpFysZD42DgDRkKZvQT6aMqcA@mail.gmail.com>
 MIME-Version: 1.0
-References: <20230612172805.681179-1-eric.devolder@oracle.com> <20230612172805.681179-8-eric.devolder@oracle.com>
-In-Reply-To: <20230612172805.681179-8-eric.devolder@oracle.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 12 Jun 2023 21:38:50 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXAbRVALNVwFhO1S3zsOuVj7OidEF8=0K=qQ-kFn6JQiA@mail.gmail.com>
-Message-ID: <CAMuHMdXAbRVALNVwFhO1S3zsOuVj7OidEF8=0K=qQ-kFn6JQiA@mail.gmail.com>
-Subject: Re: [PATCH v1 07/21] m68k/kexec: refactor for kernel/Kconfig.kexec
-To: Eric DeVolder <eric.devolder@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 13 Jun 2023 05:57:01 +1000
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPhsuW5YYa6nQhO2=zor75XkdKpFysZD42DgDRkKZvQT6aMqcA@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,33 +69,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, rmk+kernel@armlinux.org.uk, paulmck@kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, chenhuacai@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, 86@kernel.org, mingo@redhat.com, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, ardb@kernel.org, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-
- m68k@lists.linux-m68k.org, bp@alien8.de, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, tglx@linutronix.de, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, bhe@redhat.com, linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel@vger.kernel.org, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@l
+ ists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 12, 2023 at 7:29=E2=80=AFPM Eric DeVolder <eric.devolder@oracle=
-.com> wrote:
-> The kexec and crash kernel options are provided in the common
-> kernel/Kconfig.kexec. Utilize the common options and provide
-> the ARCH_HAS_ and ARCH_SUPPORTS_ entries to recreate the
-> equivalent set of KEXEC and CRASH options.
->
-> Signed-off-by: Eric DeVolder <eric.devolder@oracle.com>
+On Fri, Jun 09, 2023 at 10:02:16AM -0700, Song Liu wrote:
+> On Thu, Jun 8, 2023 at 11:41 AM Mike Rapoport <rppt@kernel.org> wrote:
+> >
+> > On Tue, Jun 06, 2023 at 11:21:59AM -0700, Song Liu wrote:
+> > > On Mon, Jun 5, 2023 at 3:09 AM Mark Rutland <mark.rutland@arm.com> wrote:
+> > >
+> > > [...]
+> > >
+> > > > > > > Can you give more detail on what parameters you need? If the only extra
+> > > > > > > parameter is just "does this allocation need to live close to kernel
+> > > > > > > text", that's not that big of a deal.
+> > > > > >
+> > > > > > My thinking was that we at least need the start + end for each caller. That
+> > > > > > might be it, tbh.
+> > > > >
+> > > > > Do you mean that modules will have something like
+> > > > >
+> > > > >       jit_text_alloc(size, MODULES_START, MODULES_END);
+> > > > >
+> > > > > and kprobes will have
+> > > > >
+> > > > >       jit_text_alloc(size, KPROBES_START, KPROBES_END);
+> > > > > ?
+> > > >
+> > > > Yes.
+> > >
+> > > How about we start with two APIs:
+> > >      jit_text_alloc(size);
+> > >      jit_text_alloc_range(size, start, end);
+> > >
+> > > AFAICT, arm64 is the only arch that requires the latter API. And TBH, I am
+> > > not quite convinced it is needed.
+> >
+> > Right now arm64 and riscv override bpf and kprobes allocations to use the
+> > entire vmalloc address space, but having the ability to allocate generated
+> > code outside of modules area may be useful for other architectures.
+> >
+> > Still the start + end for the callers feels backwards to me because the
+> > callers do not define the ranges, but rather the architectures, so we still
+> > need a way for architectures to define how they want allocate memory for
+> > the generated code.
+> 
+> Yeah, this makes sense.
+> 
+> >
+> > > > > It sill can be achieved with a single jit_alloc_arch_params(), just by
+> > > > > adding enum jit_type parameter to jit_text_alloc().
+> > > >
+> > > > That feels backwards to me; it centralizes a bunch of information about
+> > > > distinct users to be able to shove that into a static array, when the callsites
+> > > > can pass that information.
+> > >
+> > > I think we only two type of users: module and everything else (ftrace, kprobe,
+> > > bpf stuff). The key differences are:
+> > >
+> > >   1. module uses text and data; while everything else only uses text.
+> > >   2. module code is generated by the compiler, and thus has stronger
+> > >   requirements in address ranges; everything else are generated via some
+> > >   JIT or manual written assembly, so they are more flexible with address
+> > >   ranges (in JIT, we can avoid using instructions that requires a specific
+> > >   address range).
+> > >
+> > > The next question is, can we have the two types of users share the same
+> > > address ranges? If not, we can reserve the preferred range for modules,
+> > > and let everything else use the other range. I don't see reasons to further
+> > > separate users in the "everything else" group.
+> >
+> > I agree that we can define only two types: modules and everything else and
+> > let the architectures define if they need different ranges for these two
+> > types, or want the same range for everything.
+> >
+> > With only two types we can have two API calls for alloc, and a single
+> > structure that defines the ranges etc from the architecture side rather
+> > than spread all over.
+> >
+> > Like something along these lines:
+> >
+> >         struct execmem_range {
+> >                 unsigned long   start;
+> >                 unsigned long   end;
+> >                 unsigned long   fallback_start;
+> >                 unsigned long   fallback_end;
+> >                 pgprot_t        pgprot;
+> >                 unsigned int    alignment;
+> >         };
+> >
+> >         struct execmem_modules_range {
+> >                 enum execmem_module_flags flags;
+> >                 struct execmem_range text;
+> >                 struct execmem_range data;
+> >         };
+> >
+> >         struct execmem_jit_range {
+> >                 struct execmem_range text;
+> >         };
+> >
+> >         struct execmem_params {
+> >                 struct execmem_modules_range    modules;
+> >                 struct execmem_jit_range        jit;
+> >         };
+> >
+> >         struct execmem_params *execmem_arch_params(void);
+> >
+> >         void *execmem_text_alloc(size_t size);
+> >         void *execmem_data_alloc(size_t size);
+> >         void execmem_free(void *ptr);
+> 
+> With the jit variation, maybe we can just call these
+> module_[text|data]_alloc()?
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+I was thinking about "execmem_*_alloc()" for allocations that must be close to kernel
+image, like modules, ftrace on x86 and s390 and maybe something else in the
+future.
 
-Gr{oetje,eeting}s,
+And jit_text_alloc() for allocations that can reside anywhere.
 
-                        Geert
+I tried to find a different name for 'struct execmem_modules_range' but
+couldn't think of anything better than 'struct execmem_close_to_kernel', so
+I've left modules in the name.
+ 
+> btw: Depending on the implementation of the allocator, we may also
+> need separate free()s for text and data.
+> 
+> >
+> >         void *jit_text_alloc(size_t size);
+> >         void jit_free(void *ptr);
+> >
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+Let's just add jit_free() for completeness even if it will be the same as
+execmem_free() for now.
+ 
+> [...]
+> 
+> How should we move ahead from here?
+> 
+> AFAICT, all these changes can be easily extended and refactored
+> in the future, so we don't have to make it perfect the first time.
+> OTOH, having the interface committed (either this set or my
+> module_alloc_type version) can unblock works in the binpack
+> allocator and the users side. Therefore, I think we can move
+> relatively fast here?
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Once the interface and architecture abstraction is ready we can work on the
+allocator and the users. We also need to update text_poking/alternatives on
+architectures that would allocate executable memory as ROX. I did some
+quick tests and with these patches 'modprobe xfs' takes tens time more than
+before.
+ 
+> Thanks,
+> Song
+
+-- 
+Sincerely yours,
+Mike.
