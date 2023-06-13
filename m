@@ -4,84 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26C0BEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 18:35:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE18DEB64D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 18:53:22 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l6DF4uDB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OhDtwapg;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgcgw3GTYz30Py
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 04:35:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgd411DJbz30fj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 04:53:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l6DF4uDB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OhDtwapg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 4635 seconds by postgrey-1.37 at boromir; Wed, 14 Jun 2023 04:35:02 AEST
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qgcft11f1z30G5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 04:35:01 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DH5Rcf024499;
-	Tue, 13 Jun 2023 17:17:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=dFSraVinl+BLCsZQIM3RuB2udWihv+RswbiC5KzODqw=;
- b=l6DF4uDBcbjxI5I9b60mKlzkqzfZsW+bgjwoyML1v4IJmtuj03ZkHK3RcnKeRnCrFOad
- JGJcOSUfKqUNCSXmkLpv4LMIoUxjkvtRM3gPoFcAQQnI2glhQ7W7KAA/lP/pdiWId+hL
- znCmJhZB+JOhkVdWloCf1jHjI2SBiG464gPd+0n7lfh2m/4VpSxMUr32jvih5CTd5RaJ
- /rpkcGPbG+K3dM0Ts7OpFtC7pAfqqgwTJGA72xMHqyMs0e/lQVnWfyW5sLF2yw0Cx2ue
- Ipb0I7LvXKfFki0ikvr9Q9n1fe+xzM80+EUX9cuNoDXnlXnpIePyxH35y1Y0W6aHoHoa wA== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6vce0gxg-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qgd313xnLz30J1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 04:52:28 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGkL4K009924;
+	Tue, 13 Jun 2023 17:04:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=1YX+PY5dwKVfiN13QWKPQtlJpQ3SPm1/lHlQ6wfr87E=;
+ b=OhDtwapgrvIhRMB7LmT3eEOyaY/1c7vGZ2sa/+VjZHkecyN9gA4y4l1gFgWffCsqX5tz
+ qfV9zQXGKSq3GGThE/hkpkB5XEjJNxHeVnpQMiNJn26noVvQ1e/6HBJwWZ8MkIADxlzm
+ NTwIynuWFdyA5sm9DVnBysdkAUVrKhmq/OJkazuyLAhLJoU1mTY+B3ZgFa9JexlIPz+q
+ 5IZfdtBcOcglz6Jlrvu4bnIrTUP2OUhlYjhtkFz7hT7jpFY+LtBDH/46Stj1QAid1FJa
+ oMDBPwymHZwj6ppSTAn1IAb2stZCQX7OGdd1NsCGcBvHRdSPM44gbJXBh754KDqkEyCT zg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v950f4b-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:17:42 +0000
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
-	by ppma01wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGV2bS002749;
-	Tue, 13 Jun 2023 17:17:40 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([9.208.129.119])
-	by ppma01wdc.us.ibm.com (PPS) with ESMTPS id 3r4gt59fsd-1
+	Tue, 13 Jun 2023 17:04:56 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DGxfiS023143;
+	Tue, 13 Jun 2023 17:04:55 GMT
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v950ew0-9
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:17:40 +0000
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DHHdU135783230
+	Tue, 13 Jun 2023 17:04:54 +0000
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+	by ppma06fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35D8o1fF017849;
+	Tue, 13 Jun 2023 16:42:51 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma06fra.de.ibm.com (PPS) with ESMTPS id 3r4gedsqbm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Jun 2023 16:42:51 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGglH721431018
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 13 Jun 2023 17:17:39 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 738A45805D;
-	Tue, 13 Jun 2023 17:17:39 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5A4D358052;
-	Tue, 13 Jun 2023 17:17:39 +0000 (GMT)
-Received: from [9.24.27.252] (unknown [9.24.27.252])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 13 Jun 2023 17:17:39 +0000 (GMT)
-Message-ID: <ee63bcc9-4e06-198b-b3a2-5519bc11a83c@linux.vnet.ibm.com>
-Date: Tue, 13 Jun 2023 12:17:39 -0500
+	Tue, 13 Jun 2023 16:42:47 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8BA042004F;
+	Tue, 13 Jun 2023 16:42:47 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4EEDA20040;
+	Tue, 13 Jun 2023 16:42:44 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.111.115])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Jun 2023 16:42:44 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org,
+        ravi.bangoria@amd.com, john.g.garry@oracle.com
+Subject: [PATCH 11/17] perf/tests/shell: fix shellscript errors for lock_contention.sh
+Date: Tue, 13 Jun 2023 22:11:39 +0530
+Message-Id: <20230613164145.50488-12-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
+References: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.11.0
-Subject: Re: [PATCH] powerpc/iommu: TCEs are incorrectly manipulated with
- DLPAR add/remove of memory
-Content-Language: en-US
-To: mpe@ellerman.id.au
-References: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
-From: Gaurav Batra <gbatra@linux.vnet.ibm.com>
-In-Reply-To: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: nnSFck0S0ttQcvKw6bkGF27DUn21aOih
-X-Proofpoint-ORIG-GUID: nnSFck0S0ttQcvKw6bkGF27DUn21aOih
+X-Proofpoint-GUID: TyUleZdVfl0yXrlJSYRAx9Md6EnJ0DDm
+X-Proofpoint-ORIG-GUID: 2hiP3IIjdzFwdct_h3mbGvtT__ZIV4yp
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-13_19,2023-06-12_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=999 suspectscore=0 mlxscore=0 adultscore=0 spamscore=0
- phishscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ clxscore=1015 malwarescore=0 suspectscore=0 impostorscore=0 mlxscore=0
+ bulkscore=0 spamscore=0 priorityscore=1501 mlxlogscore=999 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2305260000 definitions=main-2306130151
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,133 +97,234 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, Anushree Mathur <anushree.mathur2@ibm.com>, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, Abhirup Deb <abhirupdeb@linux.vnet.ibm.com>, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Michael,
+From: Abhirup Deb <abhirupdeb@linux.vnet.ibm.com>
 
-I found this bug while going though the code. This bug is exposed when 
-DDW is smaller than the max memory of the LPAR. This will result in 
-creating DDW which will have Dynamically mapped TCEs (no direct mapping).
+Use quotes around variables to prevent POSIX word expansion,
+use uppercase for signals(INT, TERM, EXIT) to avoid mixed/lower case
+naming of signals and replace "==" with "=" as "==" is not
+supported by POSIX shell.
 
-I would like to stress that this  bug is exposed only in Upstream 
-kernel. Current kernel level in Distros are not exposed to this since 
-they don't have the  concept of "dynamically mapped" DDW.
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+Signed-off-by: Abhirup Deb <abhirupdeb@linux.vnet.ibm.com>
+Signed-off-by: Anushree Mathur <anushree.mathur2@ibm.com>
+---
+ tools/perf/tests/shell/lock_contention.sh | 70 +++++++++++------------
+ 1 file changed, 35 insertions(+), 35 deletions(-)
 
-I didn't have access to any of the P10 boxes with large amount of memory 
-to  re-create the scenario. On P10 we have 2MB TCEs, which results in 
-DDW large enough to be able to cover  max memory I could have for the 
-LPAR. As a result,  IO Bus Addresses generated were always within DDW 
-limits and no H_PARAMETER was returned by HCALL.
+diff --git a/tools/perf/tests/shell/lock_contention.sh b/tools/perf/tests/shell/lock_contention.sh
+index be5fcafb26aa..f2cc187b6186 100755
+--- a/tools/perf/tests/shell/lock_contention.sh
++++ b/tools/perf/tests/shell/lock_contention.sh
+@@ -11,14 +11,14 @@ result=$(mktemp /tmp/__perf_test.result.XXXXX)
+ cleanup() {
+ 	rm -f ${perfdata}
+ 	rm -f ${result}
+-	trap - exit term int
++	trap - EXIT TERM INT
+ }
+ 
+ trap_cleanup() {
+ 	cleanup
+ 	exit ${err}
+ }
+-trap trap_cleanup exit term int
++trap trap_cleanup EXIT TERM INT
+ 
+ check() {
+ 	if [ `id -u` != 0 ]; then
+@@ -40,8 +40,8 @@ test_record()
+ 	perf lock record -o ${perfdata} -- perf bench sched messaging > /dev/null 2>&1
+ 	# the output goes to the stderr and we expect only 1 output (-E 1)
+ 	perf lock contention -i ${perfdata} -E 1 -q 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] Recorded result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] Recorded result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -58,8 +58,8 @@ test_bpf()
+ 
+ 	# the perf lock contention output goes to the stderr
+ 	perf lock con -a -b -E 1 -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] BPF result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] BPF result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -70,8 +70,8 @@ test_record_concurrent()
+ 	echo "Testing perf lock record and perf lock contention at the same time"
+ 	perf lock record -o- -- perf bench sched messaging 2> /dev/null | \
+ 	perf lock contention -i- -E 1 -q 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] Recorded result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] Recorded result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -81,8 +81,8 @@ test_aggr_task()
+ {
+ 	echo "Testing perf lock contention --threads"
+ 	perf lock contention -i ${perfdata} -t -E 1 -q 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] Recorded result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] Recorded result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -93,8 +93,8 @@ test_aggr_task()
+ 
+ 	# the perf lock contention output goes to the stderr
+ 	perf lock con -a -b -t -E 1 -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] BPF result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] BPF result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -104,8 +104,8 @@ test_aggr_addr()
+ {
+ 	echo "Testing perf lock contention --lock-addr"
+ 	perf lock contention -i ${perfdata} -l -E 1 -q 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] Recorded result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] Recorded result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -116,8 +116,8 @@ test_aggr_addr()
+ 
+ 	# the perf lock contention output goes to the stderr
+ 	perf lock con -a -b -l -E 1 -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] BPF result count is not 1:" $(cat "${result}" | wc -l)
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] BPF result count is not 1:" "$(cat "${result}" | wc -l)"
+ 		err=1
+ 		exit
+ 	fi
+@@ -127,8 +127,8 @@ test_type_filter()
+ {
+ 	echo "Testing perf lock contention --type-filter (w/ spinlock)"
+ 	perf lock contention -i ${perfdata} -Y spinlock -q 2> ${result}
+-	if [ $(grep -c -v spinlock "${result}") != "0" ]; then
+-		echo "[Fail] Recorded result should not have non-spinlocks:" $(cat "${result}")
++	if [ "$(grep -c -v spinlock "${result}")" != "0" ]; then
++		echo "[Fail] Recorded result should not have non-spinlocks:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -138,8 +138,8 @@ test_type_filter()
+ 	fi
+ 
+ 	perf lock con -a -b -Y spinlock -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(grep -c -v spinlock "${result}") != "0" ]; then
+-		echo "[Fail] BPF result should not have non-spinlocks:" $(cat "${result}")
++	if [ "$(grep -c -v spinlock "${result}")" != "0" ]; then
++		echo "[Fail] BPF result should not have non-spinlocks:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -149,7 +149,7 @@ test_lock_filter()
+ {
+ 	echo "Testing perf lock contention --lock-filter (w/ tasklist_lock)"
+ 	perf lock contention -i ${perfdata} -l -q 2> ${result}
+-	if [ $(grep -c tasklist_lock "${result}") != "1" ]; then
++	if [ "$(grep -c tasklist_lock "${result}")" != "1" ]; then
+ 		echo "[Skip] Could not find 'tasklist_lock'"
+ 		return
+ 	fi
+@@ -159,8 +159,8 @@ test_lock_filter()
+ 	# find out the type of tasklist_lock
+ 	local type=$(head -1 "${result}" | awk '{ print $8 }' | sed -e 's/:.*//')
+ 
+-	if [ $(grep -c -v "${type}" "${result}") != "0" ]; then
+-		echo "[Fail] Recorded result should not have non-${type} locks:" $(cat "${result}")
++	if [ "$(grep -c -v "${type}" "${result}")" != "0" ]; then
++		echo "[Fail] Recorded result should not have non-${type} locks:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -170,8 +170,8 @@ test_lock_filter()
+ 	fi
+ 
+ 	perf lock con -a -b -L tasklist_lock -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(grep -c -v "${type}" "${result}") != "0" ]; then
+-		echo "[Fail] BPF result should not have non-${type} locks:" $(cat "${result}")
++	if [ "$(grep -c -v "${type}" "${result}")" != "0" ]; then
++		echo "[Fail] BPF result should not have non-${type} locks:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -181,14 +181,14 @@ test_stack_filter()
+ {
+ 	echo "Testing perf lock contention --callstack-filter (w/ unix_stream)"
+ 	perf lock contention -i ${perfdata} -v -q 2> ${result}
+-	if [ $(grep -c unix_stream "${result}") == "0" ]; then
++	if [ "$(grep -c unix_stream "${result}")" = "0" ]; then
+ 		echo "[Skip] Could not find 'unix_stream'"
+ 		return
+ 	fi
+ 
+ 	perf lock contention -i ${perfdata} -E 1 -S unix_stream -q 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] Recorded result should have a lock from unix_stream:" $(cat "${result}")
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] Recorded result should have a lock from unix_stream:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -198,8 +198,8 @@ test_stack_filter()
+ 	fi
+ 
+ 	perf lock con -a -b -S unix_stream -E 1 -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] BPF result should have a lock from unix_stream:" $(cat "${result}")
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] BPF result should have a lock from unix_stream:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -209,14 +209,14 @@ test_aggr_task_stack_filter()
+ {
+ 	echo "Testing perf lock contention --callstack-filter with task aggregation"
+ 	perf lock contention -i ${perfdata} -v -q 2> ${result}
+-	if [ $(grep -c unix_stream "${result}") == "0" ]; then
++	if [ "$(grep -c unix_stream "${result}")" = "0" ]; then
+ 		echo "[Skip] Could not find 'unix_stream'"
+ 		return
+ 	fi
+ 
+ 	perf lock contention -i ${perfdata} -t -E 1 -S unix_stream -q 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] Recorded result should have a task from unix_stream:" $(cat "${result}")
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] Recorded result should have a task from unix_stream:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -226,8 +226,8 @@ test_aggr_task_stack_filter()
+ 	fi
+ 
+ 	perf lock con -a -b -t -S unix_stream -E 1 -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ $(cat "${result}" | wc -l) != "1" ]; then
+-		echo "[Fail] BPF result should have a task from unix_stream:" $(cat "${result}")
++	if [ "$(cat "${result}" | wc -l)" != "1" ]; then
++		echo "[Fail] BPF result should have a task from unix_stream:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+-- 
+2.39.1
 
-So, I hacked the kernel to force the use of 64K TCEs. This resulted in 
-DDW smaller than max memory.
-
-When I tried to DLPAR ADD memory, it failed with error code of -4 
-(H_PARAMETER) from HCALL (H_PUT_TCE/H_PUT_TCE_INDIRECT), when 
-iommu_mem_notifier() invoked tce_setrange_multi_pSeriesLP().
-
-I didn't test the DLPAR REMOVE path, to verify if incorrect TCEs are 
-removed by tce_clearrange_multi_pSeriesLP(), since I would need to hack 
-kernel to force dynamically added TCEs to the high IO Bus Addresses. 
-But, the concept is  same.
-
-Thanks,
-
-Gaurav
-
-On 6/13/23 12:16 PM, Gaurav Batra wrote:
-> When memory is dynamically added/removed, iommu_mem_notifier() is invoked. This
-> routine traverses through all the DMA windows (DDW only, not default windows)
-> to add/remove "direct" TCE mappings. The routines for this purpose are
-> tce_clearrange_multi_pSeriesLP() and tce_clearrange_multi_pSeriesLP().
->
-> Both these routines are designed for Direct mapped DMA windows only.
->
-> The issue is that there could be some DMA windows in the list which are not
-> "direct" mapped. Calling these routines will either,
->
-> 1) remove some dynamically mapped TCEs, Or
-> 2) try to add TCEs which are out of bounds and HCALL returns H_PARAMETER
->
-> Here are the side affects when these routines are incorrectly invoked for
-> "dynamically" mapped DMA windows.
->
-> tce_setrange_multi_pSeriesLP()
->
-> This adds direct mapped TCEs. Now, this could invoke HCALL to add TCEs with
-> out-of-bound range. In this scenario, HCALL will return H_PARAMETER and DLAR
-> ADD of memory will fail.
->
-> tce_clearrange_multi_pSeriesLP()
->
-> This will remove range of TCEs. The TCE range that is calculated, depending on
-> the memory range being added, could infact be mapping some other memory
-> address (for dynamic DMA window scenario). This will wipe out those TCEs.
->
-> The solution is for iommu_mem_notifier() to only invoke these routines for
-> "direct" mapped DMA windows.
->
-> Signed-off-by: Gaurav Batra <gbatra@linux.vnet.ibm.com>
-> Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/pseries/iommu.c | 17 +++++++++++++----
->   1 file changed, 13 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 918f511837db..24dd61636400 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -363,6 +363,7 @@ struct dynamic_dma_window_prop {
->   struct dma_win {
->   	struct device_node *device;
->   	const struct dynamic_dma_window_prop *prop;
-> +	bool    direct;
->   	struct list_head list;
->   };
->
-> @@ -1409,6 +1410,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->   		goto out_del_prop;
->
->   	if (direct_mapping) {
-> +		window->direct = true;
-> +
->   		/* DDW maps the whole partition, so enable direct DMA mapping */
->   		ret = walk_system_ram_range(0, memblock_end_of_DRAM() >> PAGE_SHIFT,
->   					    win64->value, tce_setrange_multi_pSeriesLP_walk);
-> @@ -1425,6 +1428,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->   		int i;
->   		unsigned long start = 0, end = 0;
->
-> +		window->direct = false;
-> +
->   		for (i = 0; i < ARRAY_SIZE(pci->phb->mem_resources); i++) {
->   			const unsigned long mask = IORESOURCE_MEM_64 | IORESOURCE_MEM;
->
-> @@ -1587,8 +1592,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
->   	case MEM_GOING_ONLINE:
->   		spin_lock(&dma_win_list_lock);
->   		list_for_each_entry(window, &dma_win_list, list) {
-> -			ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
-> -					arg->nr_pages, window->prop);
-> +			if (window->direct) {
-> +				ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
-> +						arg->nr_pages, window->prop);
-> +			}
->   			/* XXX log error */
->   		}
->   		spin_unlock(&dma_win_list_lock);
-> @@ -1597,8 +1604,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
->   	case MEM_OFFLINE:
->   		spin_lock(&dma_win_list_lock);
->   		list_for_each_entry(window, &dma_win_list, list) {
-> -			ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
-> -					arg->nr_pages, window->prop);
-> +			if (window->direct) {
-> +				ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
-> +						arg->nr_pages, window->prop);
-> +			}
->   			/* XXX log error */
->   		}
->   		spin_unlock(&dma_win_list_lock);
