@@ -4,64 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E81DEB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 21:17:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4DF9EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 22:09:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=zQ7R5o0c;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Js6q8+xF;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Js6q8+xF;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QghG66hL7z3bTV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 07:17:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QgjQb2h2bz30PD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 08:09:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=zQ7R5o0c;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Js6q8+xF;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Js6q8+xF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::449; helo=mail-pf1-x449.google.com; envelope-from=3otyizaykdkkbnjwslpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x449.google.com (mail-pf1-x449.google.com [IPv6:2607:f8b0:4864:20::449])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 13 Jun 2023 22:28:12 AEST
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QghF35Qn0z2xpy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 07:16:21 +1000 (AEST)
-Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-661fcfbafdaso3510772b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2023 14:16:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1686690978; x=1689282978;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=zoXsbeVfXLLEsjLQrLANrMHnuV7SIcBeWtBPaSlJE0U=;
-        b=zQ7R5o0craf7u+8BFUd0XqKzaiFd07QQ12Eidv2oX82/8xpvNaNd5d3F1TCTk6N0Hu
-         7fMAmHEwJDyPmDip2pmYEeWftlaTmP5dIu41ZGeOFz45S21m6tXwg30hbcF3thUzi676
-         vzpD724q+62Lf8U9Gs9MKk4E/8JtwMR99WvwZB1LR98kFvEt6ayHb9QgvMry583OCgJV
-         lblJoGrE/X04cAdDQliEfEc/u/0GX09ErJvgFy+LvpVV5l8d0IOk2DTITEBHELAeAkNh
-         50M+uJ4OhYkQVSE9h6BW4mKFbmJK1/oUtMREUc0flhuMb3gVbi/lwRS/0faB5gRn/RtF
-         ddZw==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgSWc74NGz2xq3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2023 22:28:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1686659290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x4X42epITHEmHx9Rdq7WZvtJt4reSEJsGpXTx4uakPs=;
+	b=Js6q8+xFWhfup7yzBkqE2tMJhA8I1NXIAnnb9N6UlvhktCEM0/Z03UagXiTFX6t/E7c/vY
+	R63BmRwIDzYR7xediA00s49i8xseh+HySzWZP1iJMoznbQOsQBKp5lG/trpb2cLVhEyYzo
+	JkpRKwBXmpHFkJDJG7svaxqB4Di4q6I=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1686659290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x4X42epITHEmHx9Rdq7WZvtJt4reSEJsGpXTx4uakPs=;
+	b=Js6q8+xFWhfup7yzBkqE2tMJhA8I1NXIAnnb9N6UlvhktCEM0/Z03UagXiTFX6t/E7c/vY
+	R63BmRwIDzYR7xediA00s49i8xseh+HySzWZP1iJMoznbQOsQBKp5lG/trpb2cLVhEyYzo
+	JkpRKwBXmpHFkJDJG7svaxqB4Di4q6I=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-46-ved2DD4INoGnJ_VlrxoT-g-1; Tue, 13 Jun 2023 08:26:58 -0400
+X-MC-Unique: ved2DD4INoGnJ_VlrxoT-g-1
+Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-30fc67636a2so779582f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2023 05:26:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686690978; x=1689282978;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=zoXsbeVfXLLEsjLQrLANrMHnuV7SIcBeWtBPaSlJE0U=;
-        b=JyqHWCqaxRpNT66zQuPUkbexOWp63Gew6/IW7UwTPWOr4PFdA2atNY6EIpwK1exYQc
-         FbBmJ0lmt+cjwf7ERy79moIWyMxOvpIzBtzJ2oqQ7soVGrx3wqbzC1Z0p/2M32WiJuVj
-         WfZ9PresHLtG1/FAin1Go2t1AqLDxUZdkXjvfiBEXN/i3yDyx6CNZaTho2O3ZWJJrHjb
-         uFt02XJGNkWwJyp9EEJt46InFPQFOtp0FkWTZH0yQ8rHtFa5diaTLwZZ6N3P2rqjKjsj
-         SwK4l+q3B+uYAL4jQXtYg2jtA8z2ag2W2PRAVhGuTIzAupAsar4CKo6HLuH3lx9QDXux
-         ru6g==
-X-Gm-Message-State: AC+VfDxhMuD83SCboqAX71WHldtf7yU1hxeO5SLSz294EoVAeGiMsTEO
-	2A0JqjRd1acXqm4LQCdu6U1lSx/f67c=
-X-Google-Smtp-Source: ACHHUZ7p7HWyWa7uo6JIcTCl2qEWne7t8Z1pA5sTVB2E6o4i4fbc3cAgW8yVZwQOXwCLEQAIaBcF/pXVJrY=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a05:6a00:2d1d:b0:63a:ff2a:bf9f with SMTP id
- fa29-20020a056a002d1d00b0063aff2abf9fmr9201pfb.2.1686690978636; Tue, 13 Jun
- 2023 14:16:18 -0700 (PDT)
-Date: Tue, 13 Jun 2023 14:16:16 -0700
-In-Reply-To: <20230315101606.10636-1-wei.w.wang@intel.com>
-Mime-Version: 1.0
-References: <20230315101606.10636-1-wei.w.wang@intel.com>
-Message-ID: <ZIjcoOaexz5YAyWT@google.com>
-Subject: Re: [PATCH RESEND v2] KVM: move KVM_CAP_DEVICE_CTRL to the generic check
-From: Sean Christopherson <seanjc@google.com>
-To: Wei Wang <wei.w.wang@intel.com>
-Content-Type: text/plain; charset="us-ascii"
+        d=1e100.net; s=20221208; t=1686659217; x=1689251217;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=x4X42epITHEmHx9Rdq7WZvtJt4reSEJsGpXTx4uakPs=;
+        b=YUphOTshNYwTCty3ACwH4VOTB3sEGmuCqdtJiHgK/45jEx/Kagr91g4e0TbdNTrx77
+         zvGfFt3j1tBKhTOF3KlZ5bwx2Y9CRkA1a+FX2IMcf3CE0Dlws17PhkFoi1RJYfHqJVxs
+         xPmLKDQcqvFTyMT9lec5odZj8knkux4DX/jT1HuS1xJ0csoj099JjysmKuJi22Tai2BN
+         lDoArRFQOsYzmh8V9RWKRPCRTtS5r1Aiu2EBempqO3QREFCODdzExy70f3PzggE6azS6
+         qX2xJ5/UkgbgtWN4fQ6lAW/vYml2qdV1N3MKl4aRilTQHBCM/9da2lPHI55p00r8JouD
+         UZVQ==
+X-Gm-Message-State: AC+VfDzXE4dClhRRmv9I2BLc9ycGmeoEkEAhcfgU9RlP6UJGnpV+WnUp
+	j+G50nGs71ibsVR6HTN1dXOWdQOqO6114/xu9Fv6GvjVB/7J9Qx1/xb88DCO6NdIFGNxOINW6Ey
+	nyU18Miu/HpRHeVurc/v9H7guyw==
+X-Received: by 2002:a5d:6acd:0:b0:30f:b7b4:3e55 with SMTP id u13-20020a5d6acd000000b0030fb7b43e55mr6371741wrw.19.1686659216770;
+        Tue, 13 Jun 2023 05:26:56 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ4yteTIZOrnVCopzRkUBsfyPnfoDVYPpW9xv2sO4EBsmO+rg3naLzU0Pz+CwjSuscU8Zw+bFQ==
+X-Received: by 2002:a5d:6acd:0:b0:30f:b7b4:3e55 with SMTP id u13-20020a5d6acd000000b0030fb7b43e55mr6371694wrw.19.1686659216382;
+        Tue, 13 Jun 2023 05:26:56 -0700 (PDT)
+Received: from ?IPV6:2003:cb:c710:ff00:1a06:80f:733a:e8c6? (p200300cbc710ff001a06080f733ae8c6.dip0.t-ipconnect.de. [2003:cb:c710:ff00:1a06:80f:733a:e8c6])
+        by smtp.gmail.com with ESMTPSA id i1-20020adff301000000b002f28de9f73bsm15275419wro.55.2023.06.13.05.26.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 13 Jun 2023 05:26:55 -0700 (PDT)
+Message-ID: <497e571e-e4de-7634-7da6-683599a4bbba@redhat.com>
+Date: Tue, 13 Jun 2023 14:26:53 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v9 01/42] mm: Rename arch pte_mkwrite()'s to
+ pte_mkwrite_novma()
+To: Rick Edgecombe <rick.p.edgecombe@intel.com>, x86@kernel.org,
+ "H . Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-mm@kvack.org, linux-arch@vger.kernel.org,
+ linux-api@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Andy Lutomirski <luto@kernel.org>, Balbir Singh <bsingharora@gmail.com>,
+ Borislav Petkov <bp@alien8.de>, Cyrill Gorcunov <gorcunov@gmail.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Eugene Syromiatnikov <esyr@redhat.com>, Florian Weimer <fweimer@redhat.com>,
+ "H . J . Lu" <hjl.tools@gmail.com>, Jann Horn <jannh@google.com>,
+ Jonathan Corbet <corbet@lwn.net>, Kees Cook <keescook@chromium.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>, Nadav Amit <nadav.amit@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+ Peter Zijlstra <peterz@infradead.org>, Randy Dunlap <rdunlap@infradead.org>,
+ Weijiang Yang <weijiang.yang@intel.com>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ John Allen <john.allen@amd.com>, kcc@google.com, eranian@google.com,
+ rppt@kernel.org, jamorris@linux.microsoft.com, dethoma@microsoft.com,
+ akpm@linux-foundation.org, Andrew.Cooper3@citrix.com,
+ christina.schimpe@intel.com, debug@rivosinc.com, szabolcs.nagy@arm.com,
+ torvalds@linux-foundation.org, broonie@kernel.org
+References: <20230613001108.3040476-1-rick.p.edgecombe@intel.com>
+ <20230613001108.3040476-2-rick.p.edgecombe@intel.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <20230613001108.3040476-2-rick.p.edgecombe@intel.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Wed, 14 Jun 2023 08:08:01 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,96 +127,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Albert Ou <aou@eecs.berkeley.edu>, Janosch Frank <frankja@linux.ibm.com>, kvm@vger.kernel.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, kvmarm@lists.linux.dev, pbonzini@redhat.com, linux-riscv@lists.infradead.org, Christian Borntraeger <borntraeger@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-s390@vger.kernel.org, Michal Simek <monstr@monstr.eu>, linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-csky@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Linus Torvalds <torvalds@linuxfoundation.org>, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-+<everyone else>
-
-Please use scripts/get_maintainer.pl to generate the To/Cc lists.  This may be
-trivial, but it still needs eyeballs from the relevant maintainers.
-
-On Wed, Mar 15, 2023, Wei Wang wrote:
-> KVM_CAP_DEVICE_CTRL allows userspace to check if the kvm_device
-> framework (e.g. KVM_CREATE_DEVICE) is supported by KVM. Move
-> KVM_CAP_DEVICE_CTRL to the generic check for the two reasons:
-> 1) it already supports arch agnostic usages (i.e. KVM_DEV_TYPE_VFIO).
-> For example, userspace VFIO implementation may needs to create
-> KVM_DEV_TYPE_VFIO on x86, riscv, or arm etc. It is simpler to have it
-> checked at the generic code than at each arch's code.
-> 2) KVM_CREATE_DEVICE has been added to the generic code.
+On 13.06.23 02:10, Rick Edgecombe wrote:
+> The x86 Shadow stack feature includes a new type of memory called shadow
+> stack. This shadow stack memory has some unusual properties, which requires
+> some core mm changes to function properly.
 > 
-> Link: https://lore.kernel.org/all/20221215115207.14784-1-wei.w.wang@intel.com
-> Signed-off-by: Wei Wang <wei.w.wang@intel.com>
-> Reviewed-by: Sean Christopherson <seanjc@google.com>
+> One of these unusual properties is that shadow stack memory is writable,
+> but only in limited ways. These limits are applied via a specific PTE
+> bit combination. Nevertheless, the memory is writable, and core mm code
+> will need to apply the writable permissions in the typical paths that
+> call pte_mkwrite(). Future patches will make pte_mkwrite() take a VMA, so
+> that the x86 implementation of it can know whether to create regular
+> writable memory or shadow stack memory.
+> 
+> But there are a couple of challenges to this. Modifying the signatures of
+> each arch pte_mkwrite() implementation would be error prone because some
+> are generated with macros and would need to be re-implemented. Also, some
+> pte_mkwrite() callers operate on kernel memory without a VMA.
+> 
+> So this can be done in a three step process. First pte_mkwrite() can be
+> renamed to pte_mkwrite_novma() in each arch, with a generic pte_mkwrite()
+> added that just calls pte_mkwrite_novma(). Next callers without a VMA can
+> be moved to pte_mkwrite_novma(). And lastly, pte_mkwrite() and all callers
+> can be changed to take/pass a VMA.
+> 
+> Start the process by renaming pte_mkwrite() to pte_mkwrite_novma() and
+> adding the pte_mkwrite() wrapper in linux/pgtable.h. Apply the same
+> pattern for pmd_mkwrite(). Since not all archs have a pmd_mkwrite_novma(),
+> create a new arch config HAS_HUGE_PAGE that can be used to tell if
+> pmd_mkwrite() should be defined. Otherwise in the !HAS_HUGE_PAGE cases the
+> compiler would not be able to find pmd_mkwrite_novma().
+> 
+> No functional change.
+> 
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-alpha@vger.kernel.org
+> Cc: linux-snps-arc@lists.infradead.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-csky@vger.kernel.org
+> Cc: linux-hexagon@vger.kernel.org
+> Cc: linux-ia64@vger.kernel.org
+> Cc: loongarch@lists.linux.dev
+> Cc: linux-m68k@lists.linux-m68k.org
+> Cc: Michal Simek <monstr@monstr.eu>
+> Cc: Dinh Nguyen <dinguyen@kernel.org>
+> Cc: linux-mips@vger.kernel.org
+> Cc: openrisc@lists.librecores.org
+> Cc: linux-parisc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-riscv@lists.infradead.org
+> Cc: linux-s390@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: sparclinux@vger.kernel.org
+> Cc: linux-um@lists.infradead.org
+> Cc: linux-arch@vger.kernel.org
+> Cc: linux-mm@kvack.org
+> Suggested-by: Linus Torvalds <torvalds@linuxfoundation.org>
+> Signed-off-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+> Link: https://lore.kernel.org/lkml/CAHk-=wiZjSu7c9sFYZb3q04108stgHff2wfbokGCCgW7riz+8Q@mail.gmail.com/
 > ---
->  arch/arm64/kvm/arm.c       | 1 -
->  arch/powerpc/kvm/powerpc.c | 1 -
->  arch/riscv/kvm/vm.c        | 1 -
->  arch/s390/kvm/kvm-s390.c   | 1 -
->  virt/kvm/kvm_main.c        | 1 +
->  5 files changed, 1 insertion(+), 4 deletions(-)
+> Hi Non-x86 Arch’s,
 > 
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index 3bd732eaf087..96329e675771 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -202,7 +202,6 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  		r = vgic_present;
->  		break;
->  	case KVM_CAP_IOEVENTFD:
-> -	case KVM_CAP_DEVICE_CTRL:
->  	case KVM_CAP_USER_MEMORY:
->  	case KVM_CAP_SYNC_MMU:
->  	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 4c5405fc5538..185efed23896 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -526,7 +526,6 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  	case KVM_CAP_ENABLE_CAP:
->  	case KVM_CAP_ONE_REG:
->  	case KVM_CAP_IOEVENTFD:
-> -	case KVM_CAP_DEVICE_CTRL:
->  	case KVM_CAP_IMMEDIATE_EXIT:
->  	case KVM_CAP_SET_GUEST_DEBUG:
->  		r = 1;
-> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-> index 65a964d7e70d..6efe93b282e1 100644
-> --- a/arch/riscv/kvm/vm.c
-> +++ b/arch/riscv/kvm/vm.c
-> @@ -57,7 +57,6 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  
->  	switch (ext) {
->  	case KVM_CAP_IOEVENTFD:
-> -	case KVM_CAP_DEVICE_CTRL:
->  	case KVM_CAP_USER_MEMORY:
->  	case KVM_CAP_SYNC_MMU:
->  	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
-> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> index 39b36562c043..7b097b5253ca 100644
-> --- a/arch/s390/kvm/kvm-s390.c
-> +++ b/arch/s390/kvm/kvm-s390.c
-> @@ -556,7 +556,6 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  	case KVM_CAP_ENABLE_CAP:
->  	case KVM_CAP_S390_CSS_SUPPORT:
->  	case KVM_CAP_IOEVENTFD:
-> -	case KVM_CAP_DEVICE_CTRL:
->  	case KVM_CAP_S390_IRQCHIP:
->  	case KVM_CAP_VM_ATTRIBUTES:
->  	case KVM_CAP_MP_STATE:
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index d255964ec331..71cc63640173 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -4523,6 +4523,7 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
->  #endif
->  	case KVM_CAP_BINARY_STATS_FD:
->  	case KVM_CAP_SYSTEM_EVENT_DATA:
-> +	case KVM_CAP_DEVICE_CTRL:
->  		return 1;
->  	default:
->  		break;
-> -- 
-> 2.27.0
+> x86 has a feature that allows for the creation of a special type of
+> writable memory (shadow stack) that is only writable in limited specific
+> ways. Previously, changes were proposed to core MM code to teach it to
+> decide when to create normally writable memory or the special shadow stack
+> writable memory, but David Hildenbrand suggested[0] to change
+> pXX_mkwrite() to take a VMA, so awareness of shadow stack memory can be
+> moved into x86 code. Later Linus suggested a less error-prone way[1] to go
+> about this after the first attempt had a bug.
 > 
+> Since pXX_mkwrite() is defined in every arch, it requires some tree-wide
+> changes. So that is why you are seeing some patches out of a big x86
+> series pop up in your arch mailing list. There is no functional change.
+> After this refactor, the shadow stack series goes on to use the arch
+> helpers to push arch memory details inside arch/x86 and other arch's
+> with upcoming shadow stack features.
+> 
+> Testing was just 0-day build testing.
+> 
+> Hopefully that is enough context. Thanks!
+> 
+> [0] https://lore.kernel.org/lkml/0e29a2d0-08d8-bcd6-ff26-4bea0e4037b0@redhat.com/
+> [1] https://lore.kernel.org/lkml/CAHk-=wiZjSu7c9sFYZb3q04108stgHff2wfbokGCCgW7riz+8Q@mail.gmail.com/
+> ---
+
+Acked-by: David Hildenbrand <david@redhat.com>
+
+-- 
+Cheers,
+
+David / dhildenb
+
