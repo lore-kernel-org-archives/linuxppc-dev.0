@@ -4,86 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9B3EEB64D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 17:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DC3CEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 17:17:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jdo/w2gX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ayFbTFcI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QgZt44B5Fz30Ns
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:14:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QgZxj04rhz30gh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:17:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jdo/w2gX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ayFbTFcI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgZmR0CJxz30hf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 03:09:42 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DH9JsB023745;
-	Tue, 13 Jun 2023 17:09:35 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgZwj4Cxpz2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 03:16:53 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DH8pmW028400;
+	Tue, 13 Jun 2023 17:16:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-type : content-transfer-encoding :
- mime-version; s=pp1; bh=b048L4Es89zXJhgbgHtFgRLsJ/7vFLw0apd174PjJnY=;
- b=jdo/w2gXxnlVBigG+la9eVavxTwX2sAn6Z1fxWNEwfcH2Lgfno7Z6MnSqUe73VYIlSdT
- NFNL9oQWUg3c6lS+MbDId3Ym9zMtsAu2deonFjoEAF3mtoy4/2lixJ6CaZme2I/vtySV
- Uyc7EXrlcGxMlBQy+4nfIldRaBDjg4T6j/Y4iLB4YFoJ7/oWl4vDI5+vc+M5teKfoUvo
- Yfhtk2zY1ygI2JU1BZQqHBT/Nj9iHqAGKhp95MGa6Y9Qzn4PSozZL+SY5WLx1w29fcex
- iTig+w69rOwc5uALWwCczmD0nqTtvK4IOZmf0A63gmXauN70LOn9+mYJ1lYOpRRJE1gn 1w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v94remt-1
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=t0OkUOaZzv803siDhVjvJRNLhxV1+7O3iVNBtawpCUc=;
+ b=ayFbTFcIwhXUjNMf5nju7lupFyltl3kr1c7OFgYO1cshPVtqFtofs/jA/xx2ro+LAxu/
+ DAnl+d9fSTn2npd3sN4Ft44yCRMyqCPtQnHnMauXT5Z7cXeGMy7ljyLkd14OVBOCbdNl
+ HrFQ63IVU2FvJ+ybIBk858ZA6QduhnQfxu+nW15Vh544osKvzNJtbCJsqmfMYGzC0JPB
+ 51b3bHZttJc4UtJSVrGeHHpzjrznmZW7UD5g69b3jG52Pf0QIx7H+RY/GGDZhuNavYe5
+ RviOaks2br97Y/yyj60MwN2oWSeP1DfLzJEVHYOOqLGRFc7pth85Na/Etu1iv9uBTT9S OA== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6uuf12d6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:09:34 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DH9V17025140;
-	Tue, 13 Jun 2023 17:09:34 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v94re6x-4
+	Tue, 13 Jun 2023 17:16:44 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+	by ppma03dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35D98Ww6030258;
+	Tue, 13 Jun 2023 17:16:43 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([9.208.130.98])
+	by ppma03dal.us.ibm.com (PPS) with ESMTPS id 3r4gt4wf4t-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:09:33 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35D1QJOx008529;
-	Tue, 13 Jun 2023 16:41:57 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3r4gee2a69-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 16:41:57 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGfskL55312834
+	Tue, 13 Jun 2023 17:16:43 +0000
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DHGg1462914846
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 13 Jun 2023 16:41:54 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3B9332004B;
-	Tue, 13 Jun 2023 16:41:54 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5FC4520043;
-	Tue, 13 Jun 2023 16:41:51 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.111.115])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 13 Jun 2023 16:41:51 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org,
-        ravi.bangoria@amd.com, john.g.garry@oracle.com
-Subject: [PATCH 00/17] tool/perf/test: Fix shellcheck coding/formatting issues of test shell scripts
-Date: Tue, 13 Jun 2023 22:11:28 +0530
-Message-Id: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
-Content-Type: text/plain; charset=UTF-8
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: V5eZJ5wppojWsx28c92xj8LHhfKWNewm
-X-Proofpoint-ORIG-GUID: i_o7wYRHjwvMmh_vzK0xqEOKFIWNAVE7
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	Tue, 13 Jun 2023 17:16:42 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 52F9458056;
+	Tue, 13 Jun 2023 17:16:42 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3365058052;
+	Tue, 13 Jun 2023 17:16:42 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.24.27.252])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Jun 2023 17:16:42 +0000 (GMT)
+From: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc/iommu: TCEs are incorrectly manipulated with DLPAR add/remove of memory
+Date: Tue, 13 Jun 2023 12:16:41 -0500
+Message-Id: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.39.2 (Apple Git-143)
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 1L4Lly0n1PtgqAWvSeLq5RMCO3e3z51Y
+X-Proofpoint-ORIG-GUID: 1L4Lly0n1PtgqAWvSeLq5RMCO3e3z51Y
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-13_19,2023-06-12_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- impostorscore=0 mlxscore=0 suspectscore=0 mlxlogscore=999 phishscore=0
- malwarescore=0 lowpriorityscore=0 bulkscore=0 clxscore=1015 adultscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 suspectscore=0
+ phishscore=0 impostorscore=0 malwarescore=0 adultscore=0 mlxscore=0
+ lowpriorityscore=0 priorityscore=1501 spamscore=0 bulkscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2305260000 definitions=main-2306130151
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -96,88 +86,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Gaurav Batra <gbatra@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Patchset covers a set of fixes for coding/formatting issues observed while
-running shellcheck tool on the perf test shell scripts. Shellcheck is a static
-analysis tool that can find semantic/syntax bugs in the shell scripts.
+When memory is dynamically added/removed, iommu_mem_notifier() is invoked. This
+routine traverses through all the DMA windows (DDW only, not default windows)
+to add/remove "direct" TCE mappings. The routines for this purpose are
+tce_clearrange_multi_pSeriesLP() and tce_clearrange_multi_pSeriesLP().
 
-Patches 1-14 fixes the issues found with shellcheck. Patch 15, 16
-and patch 17 address a fix in task_analyzer test.
+Both these routines are designed for Direct mapped DMA windows only.
 
-This cleanup is a pre-requisite to include a build option for shellcheck
-discussed here: https://www.spinics.net/lists/linux-perf-users/msg25553.html
-Also this is first set of patches. There will be one more set which will
-include build option for shellcheck as discussed in the mail thread.
+The issue is that there could be some DMA windows in the list which are not
+"direct" mapped. Calling these routines will either,
 
-Abhirup Deb (2):
-  tools/perf/tests: fix test_arm_spe.sh signal case issues
-  perf/tests/shell: fix shellscript errors for lock_contention.sh
+1) remove some dynamically mapped TCEs, Or
+2) try to add TCEs which are out of bounds and HCALL returns H_PARAMETER
 
-Aboorva Devarajan (1):
-  tools/perf/tests: Fix shellcheck issues in test_task_analyzer.sh file
+Here are the side affects when these routines are incorrectly invoked for
+"dynamically" mapped DMA windows.
 
-Aditya Gupta (3):
-  perf tests task_analyzer: fix bad substitution ${$1}
-  perf tests task_analyzer: print command on failure
-  perf tests task_analyzer: skip tests if no libtraceevent support
+tce_setrange_multi_pSeriesLP()
 
-Akanksha J N (1):
-  tools/perf/tests: Fix shellcheck warnings for
-    trace+probe_vfs_getname.sh
+This adds direct mapped TCEs. Now, this could invoke HCALL to add TCEs with
+out-of-bound range. In this scenario, HCALL will return H_PARAMETER and DLAR
+ADD of memory will fail.
 
-Anushree Mathur (1):
-  perf/tests/shell : Shellcheck fixes for perf test
-    "test_arm_coresight.sh"
+tce_clearrange_multi_pSeriesLP()
 
-Barnali Guha Thakurata (1):
-  tools/perf/tests/shell/stat_all_metrics: Fix shellcheck warning SC2076
-    in stat_all_metrics.sh
+This will remove range of TCEs. The TCE range that is calculated, depending on
+the memory range being added, could infact be mapping some other memory
+address (for dynamic DMA window scenario). This will wipe out those TCEs.
 
-Disha Goel (1):
-  tools/perf/tests: fix shellcheck warning for stat+json_output
+The solution is for iommu_mem_notifier() to only invoke these routines for
+"direct" mapped DMA windows.
 
-Geetika (1):
-  tools/perf/tests: Fix all POSIX sh warnings in perf shell test
-    test_brstack.sh
+Signed-off-by: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-Korrapati Likhitha (1):
-  tools/perf/tests: Fix shellcheck warnings for stat+csv_output
-
-Samir Mulani (1):
-  tools/perf/tests: fixed shellcheck warnings for perf shell scripts
-
-Shirisha G (1):
-  tools/perf/tests: fix shellcheck warnings for daemon.sh
-
-Sourabh Jain (1):
-  perf: get rid of unused import
-
-Spoorthy S (2):
-  shellcheck : fixing signal names and adding double quotes for
-    expression in test_arm_callgraph_fp
-  tools/perf/tests: Fix all POSIX sh warnings in stat+shadow_stat.sh
-
- .../scripts/python/arm-cs-trace-disasm.py     |   1 -
- tools/perf/tests/shell/buildid.sh             |  12 +-
- tools/perf/tests/shell/daemon.sh              | 113 ++++++++++++------
- tools/perf/tests/shell/lock_contention.sh     |  70 +++++------
- .../shell/record+probe_libc_inet_pton.sh      |   6 +-
- .../shell/record+script_probe_vfs_getname.sh  |   4 +-
- tools/perf/tests/shell/stat+csv_output.sh     |   4 +-
- tools/perf/tests/shell/stat+json_output.sh    |   2 +-
- tools/perf/tests/shell/stat+shadow_stat.sh    |   4 +-
- tools/perf/tests/shell/stat_all_metrics.sh    |   6 +-
- .../perf/tests/shell/test_arm_callgraph_fp.sh |   6 +-
- tools/perf/tests/shell/test_arm_coresight.sh  |   6 +-
- tools/perf/tests/shell/test_arm_spe.sh        |   2 +-
- tools/perf/tests/shell/test_brstack.sh        |  12 +-
- tools/perf/tests/shell/test_task_analyzer.sh  |  98 ++++++++-------
- .../tests/shell/trace+probe_vfs_getname.sh    |   6 +-
- 16 files changed, 203 insertions(+), 149 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 918f511837db..24dd61636400 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -363,6 +363,7 @@ struct dynamic_dma_window_prop {
+ struct dma_win {
+ 	struct device_node *device;
+ 	const struct dynamic_dma_window_prop *prop;
++	bool    direct;
+ 	struct list_head list;
+ };
+ 
+@@ -1409,6 +1410,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 		goto out_del_prop;
+ 
+ 	if (direct_mapping) {
++		window->direct = true;
++
+ 		/* DDW maps the whole partition, so enable direct DMA mapping */
+ 		ret = walk_system_ram_range(0, memblock_end_of_DRAM() >> PAGE_SHIFT,
+ 					    win64->value, tce_setrange_multi_pSeriesLP_walk);
+@@ -1425,6 +1428,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 		int i;
+ 		unsigned long start = 0, end = 0;
+ 
++		window->direct = false;
++
+ 		for (i = 0; i < ARRAY_SIZE(pci->phb->mem_resources); i++) {
+ 			const unsigned long mask = IORESOURCE_MEM_64 | IORESOURCE_MEM;
+ 
+@@ -1587,8 +1592,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+ 	case MEM_GOING_ONLINE:
+ 		spin_lock(&dma_win_list_lock);
+ 		list_for_each_entry(window, &dma_win_list, list) {
+-			ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
+-					arg->nr_pages, window->prop);
++			if (window->direct) {
++				ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
++						arg->nr_pages, window->prop);
++			}
+ 			/* XXX log error */
+ 		}
+ 		spin_unlock(&dma_win_list_lock);
+@@ -1597,8 +1604,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+ 	case MEM_OFFLINE:
+ 		spin_lock(&dma_win_list_lock);
+ 		list_for_each_entry(window, &dma_win_list, list) {
+-			ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
+-					arg->nr_pages, window->prop);
++			if (window->direct) {
++				ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
++						arg->nr_pages, window->prop);
++			}
+ 			/* XXX log error */
+ 		}
+ 		spin_unlock(&dma_win_list_lock);
 -- 
-2.39.1
+2.39.2 (Apple Git-143)
 
