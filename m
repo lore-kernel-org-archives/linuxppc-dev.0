@@ -4,86 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AB86EB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 18:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26C0BEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 18:35:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=X3R07dkM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l6DF4uDB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QgcW20pppz30fb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 04:28:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgcgw3GTYz30Py
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 04:35:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=X3R07dkM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l6DF4uDB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 4635 seconds by postgrey-1.37 at boromir; Wed, 14 Jun 2023 04:35:02 AEST
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgcV3340Vz30Nq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 04:27:22 +1000 (AEST)
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGxWW5009865;
-	Tue, 13 Jun 2023 17:05:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=xXqazhbUhrY4R1kuhMOqzVzZJOLanweyTr6rW+QihGU=;
- b=X3R07dkMtCHwk6Uzj1eiEUiV+smBJwIXjFEcvfvKzjRCLRk0L38DP9GofqC1LY2BCkaW
- E1zJDlc4Pu3C75bDt6Lj4kTGiiXNdIrR+Lh0zSoNin7/WZ/i7ULnkAcmsSkL+ikA2gbp
- HNPT4OhR78Adbs+I1uksET9tJr9LAxRWiSKQy38eg9dwlQXl4mhcIyaOkiIIssNZ4WMM
- C82LvX6nFhDJbzMGatP8Wa3m/u8+VKvn3x3tFoKbIfr7BMNKw17bAV5ECUGZ+Vaknsuo
- nGbGSx8987KTX7FfkgzQ7cZKjjdR8KVdRR7ToPKUXe6gO9B2AsyHlsmKY6pTgtWdyR6j ug== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6vf884fw-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qgcft11f1z30G5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 04:35:01 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DH5Rcf024499;
+	Tue, 13 Jun 2023 17:17:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=dFSraVinl+BLCsZQIM3RuB2udWihv+RswbiC5KzODqw=;
+ b=l6DF4uDBcbjxI5I9b60mKlzkqzfZsW+bgjwoyML1v4IJmtuj03ZkHK3RcnKeRnCrFOad
+ JGJcOSUfKqUNCSXmkLpv4LMIoUxjkvtRM3gPoFcAQQnI2glhQ7W7KAA/lP/pdiWId+hL
+ znCmJhZB+JOhkVdWloCf1jHjI2SBiG464gPd+0n7lfh2m/4VpSxMUr32jvih5CTd5RaJ
+ /rpkcGPbG+K3dM0Ts7OpFtC7pAfqqgwTJGA72xMHqyMs0e/lQVnWfyW5sLF2yw0Cx2ue
+ Ipb0I7LvXKfFki0ikvr9Q9n1fe+xzM80+EUX9cuNoDXnlXnpIePyxH35y1Y0W6aHoHoa wA== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6vce0gxg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:05:08 +0000
-Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DH06Ff010902;
-	Tue, 13 Jun 2023 17:05:08 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6vf88413-23
+	Tue, 13 Jun 2023 17:17:42 +0000
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+	by ppma01wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGV2bS002749;
+	Tue, 13 Jun 2023 17:17:40 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([9.208.129.119])
+	by ppma01wdc.us.ibm.com (PPS) with ESMTPS id 3r4gt59fsd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:05:08 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35D3VE0r011851;
-	Tue, 13 Jun 2023 16:42:43 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3r4gt52abc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 16:42:43 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGgd3C42730054
+	Tue, 13 Jun 2023 17:17:40 +0000
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DHHdU135783230
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 13 Jun 2023 16:42:39 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C485E20043;
-	Tue, 13 Jun 2023 16:42:39 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B43DD20040;
-	Tue, 13 Jun 2023 16:42:36 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.111.115])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 13 Jun 2023 16:42:36 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org,
-        ravi.bangoria@amd.com, john.g.garry@oracle.com
-Subject: [PATCH 09/17] tools/perf/tests: Fix shellcheck issues in test_task_analyzer.sh file
-Date: Tue, 13 Jun 2023 22:11:37 +0530
-Message-Id: <20230613164145.50488-10-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
-References: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
+	Tue, 13 Jun 2023 17:17:39 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 738A45805D;
+	Tue, 13 Jun 2023 17:17:39 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5A4D358052;
+	Tue, 13 Jun 2023 17:17:39 +0000 (GMT)
+Received: from [9.24.27.252] (unknown [9.24.27.252])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Jun 2023 17:17:39 +0000 (GMT)
+Message-ID: <ee63bcc9-4e06-198b-b3a2-5519bc11a83c@linux.vnet.ibm.com>
+Date: Tue, 13 Jun 2023 12:17:39 -0500
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.11.0
+Subject: Re: [PATCH] powerpc/iommu: TCEs are incorrectly manipulated with
+ DLPAR add/remove of memory
+Content-Language: en-US
+To: mpe@ellerman.id.au
+References: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
+From: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+In-Reply-To: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: WO2aE8RNlzL32jjq65LkYNgrHOFwdWCc
-X-Proofpoint-ORIG-GUID: jo5yF4Hs415RIzitCOOCnjns3XwVmqe7
+X-Proofpoint-GUID: nnSFck0S0ttQcvKw6bkGF27DUn21aOih
+X-Proofpoint-ORIG-GUID: nnSFck0S0ttQcvKw6bkGF27DUn21aOih
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-13_19,2023-06-12_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=980
- suspectscore=0 spamscore=0 malwarescore=0 clxscore=1015 mlxscore=0
- bulkscore=0 phishscore=0 lowpriorityscore=0 priorityscore=1501
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ mlxlogscore=999 suspectscore=0 mlxscore=0 adultscore=0 spamscore=0
+ phishscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015
  impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2305260000 definitions=main-2306130151
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,204 +94,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, Aboorva Devarajan <aboorvad@linux.vnet.ibm.com>, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Aboorva Devarajan <aboorvad@linux.vnet.ibm.com>
+Hello Michael,
 
-Fixed the following shellcheck issues in test_task_analyzer.sh file:
+I found this bug while going though the code. This bug is exposed when 
+DDW is smaller than the max memory of the LPAR. This will result in 
+creating DDW which will have Dynamically mapped TCEs (no direct mapping).
 
-SC2086: Double quote to prevent globbing and word splitting
-warnings in shell-check.
-Fixes the following shellcheck issues,
+I would like to stress that this  bug is exposed only in Upstream 
+kernel. Current kernel level in Distros are not exposed to this since 
+they don't have the  concept of "dynamically mapped" DDW.
 
-SC2086: Double quote to prevent globbing and word splitting
-warnings in shell-check.
+I didn't have access to any of the P10 boxes with large amount of memory 
+to  re-create the scenario. On P10 we have 2MB TCEs, which results in 
+DDW large enough to be able to cover  max memory I could have for the 
+LPAR. As a result,  IO Bus Addresses generated were always within DDW 
+limits and no H_PARAMETER was returned by HCALL.
 
-Before Patch:
+So, I hacked the kernel to force the use of 64K TCEs. This resulted in 
+DDW smaller than max memory.
 
-$ shellcheck ./test_task_analyzer.sh  | grep "SC2086" | ...
-In ./test_task_analyzer.sh line 13:
-SC2086: Double quote to prevent globbing and word splitting.
-In ./test_task_analyzer.sh line 24:
-SC2086: Double quote to prevent globbing and word splitting.
-In ./test_task_analyzer.sh line 39:
-SC2086: Double quote to prevent globbing and word splitting.
+When I tried to DLPAR ADD memory, it failed with error code of -4 
+(H_PARAMETER) from HCALL (H_PUT_TCE/H_PUT_TCE_INDIRECT), when 
+iommu_mem_notifier() invoked tce_setrange_multi_pSeriesLP().
 
-After Patch:
-$ shellcheck ./test_task_analyzer.sh  | grep -i "SC2086"
-None
+I didn't test the DLPAR REMOVE path, to verify if incorrect TCEs are 
+removed by tce_clearrange_multi_pSeriesLP(), since I would need to hack 
+kernel to force dynamically added TCEs to the high IO Bus Addresses. 
+But, the concept is  same.
 
-perf test result after patch:
+Thanks,
 
-PASS: "test_basic"
-PASS: "test_ns_rename"
-PASS: "test_ms_filtertasks_highlight"
-PASS: "test_extended_times_timelimit_limittasks"
-PASS: "test_summary"
-PASS: "test_summaryextended"
-PASS: "test_summaryonly"
-PASS: "test_extended_times_summary_ns"
-PASS: "test_extended_times_summary_ns"
-PASS: "test_csv"
-PASS: "test_csvsummary"
-PASS: "test_csv_extended_times"
-PASS: "test_csvsummary_extended"
+Gaurav
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Signed-off-by: Aboorva Devarajan <aboorvad@linux.vnet.ibm.com>
----
- tools/perf/tests/shell/test_task_analyzer.sh | 54 ++++++++++----------
- 1 file changed, 27 insertions(+), 27 deletions(-)
-
-diff --git a/tools/perf/tests/shell/test_task_analyzer.sh b/tools/perf/tests/shell/test_task_analyzer.sh
-index a98e4ab66040..4264b54b654b 100755
---- a/tools/perf/tests/shell/test_task_analyzer.sh
-+++ b/tools/perf/tests/shell/test_task_analyzer.sh
-@@ -10,7 +10,7 @@ cleanup() {
-   rm -f perf.data.old
-   rm -f csv
-   rm -f csvsummary
--  rm -rf $tmpdir
-+  rm -rf "$tmpdir"
-   trap - exit term int
- }
- 
-@@ -21,7 +21,7 @@ trap_cleanup() {
- trap trap_cleanup exit term int
- 
- report() {
--	if [ $1 = 0 ]; then
-+	if [ "$1" = 0 ]; then
- 		echo "PASS: \"$2\""
- 	else
- 		echo "FAIL: \"$2\" Error message: \"$3\""
-@@ -36,11 +36,11 @@ check_exec_0() {
- }
- 
- find_str_or_fail() {
--	grep -q "$1" $2
--	if [ $? != 0 ]; then
--		report 1 $3 "Failed to find required string:'${1}'."
-+	grep -q "$1" "$2"
-+	if [ "$?" != 0 ]; then
-+		report 1 "$3" "Failed to find required string:'${1}'."
- 	else
--		report 0 $3
-+		report 0 "$3"
- 	fi
- }
- 
-@@ -52,86 +52,86 @@ prepare_perf_data() {
- # check standard inkvokation with no arguments
- test_basic() {
- 	out="$tmpdir/perf.out"
--	perf script report task-analyzer > $out
-+	perf script report task-analyzer > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Comm" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Comm" "$out" "${FUNCNAME[0]}"
- }
- 
- test_ns_rename(){
- 	out="$tmpdir/perf.out"
--	perf script report task-analyzer --ns --rename-comms-by-tids 0:random > $out
-+	perf script report task-analyzer --ns --rename-comms-by-tids 0:random > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Comm" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Comm" "$out" "${FUNCNAME[0]}"
- }
- 
- test_ms_filtertasks_highlight(){
- 	out="$tmpdir/perf.out"
- 	perf script report task-analyzer --ms --filter-tasks perf --highlight-tasks perf \
--	> $out
-+	> "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Comm" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Comm" "$out" "${FUNCNAME[0]}"
- }
- 
- test_extended_times_timelimit_limittasks() {
- 	out="$tmpdir/perf.out"
- 	perf script report task-analyzer --extended-times --time-limit :99999 \
--	--limit-to-tasks perf > $out
-+	--limit-to-tasks perf > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Out-Out" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Out-Out" "$out" "${FUNCNAME[0]}"
- }
- 
- test_summary() {
- 	out="$tmpdir/perf.out"
--	perf script report task-analyzer --summary > $out
-+	perf script report task-analyzer --summary > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Summary" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Summary" "$out" "${FUNCNAME[0]}"
- }
- 
- test_summaryextended() {
- 	out="$tmpdir/perf.out"
--	perf script report task-analyzer --summary-extended > $out
-+	perf script report task-analyzer --summary-extended > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Inter Task Times" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Inter Task Times" "$out" "${FUNCNAME[0]}"
- }
- 
- test_summaryonly() {
- 	out="$tmpdir/perf.out"
--	perf script report task-analyzer --summary-only > $out
-+	perf script report task-analyzer --summary-only > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Summary" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Summary" "$out" "${FUNCNAME[0]}"
- }
- 
- test_extended_times_summary_ns() {
- 	out="$tmpdir/perf.out"
--	perf script report task-analyzer --extended-times --summary --ns > $out
-+	perf script report task-analyzer --extended-times --summary --ns > "$out"
- 	check_exec_0 "perf"
--	find_str_or_fail "Out-Out" $out ${FUNCNAME[0]}
--	find_str_or_fail "Summary" $out ${FUNCNAME[0]}
-+	find_str_or_fail "Out-Out" "$out" "${FUNCNAME[0]}"
-+	find_str_or_fail "Summary" "$out" "${FUNCNAME[0]}"
- }
- 
- test_csv() {
- 	perf script report task-analyzer --csv csv > /dev/null
- 	check_exec_0 "perf"
--	find_str_or_fail "Comm;" csv ${FUNCNAME[0]}
-+	find_str_or_fail "Comm;" csv "${FUNCNAME[0]}"
- }
- 
- test_csv_extended_times() {
- 	perf script report task-analyzer --csv csv --extended-times > /dev/null
- 	check_exec_0 "perf"
--	find_str_or_fail "Out-Out;" csv ${FUNCNAME[0]}
-+	find_str_or_fail "Out-Out;" csv "${FUNCNAME[0]}"
- }
- 
- test_csvsummary() {
- 	perf script report task-analyzer --csv-summary csvsummary > /dev/null
- 	check_exec_0 "perf"
--	find_str_or_fail "Comm;" csvsummary ${FUNCNAME[0]}
-+	find_str_or_fail "Comm;" csvsummary "${FUNCNAME[0]}"
- }
- 
- test_csvsummary_extended() {
- 	perf script report task-analyzer --csv-summary csvsummary --summary-extended \
- 	>/dev/null
- 	check_exec_0 "perf"
--	find_str_or_fail "Out-Out;" csvsummary ${FUNCNAME[0]}
-+	find_str_or_fail "Out-Out;" csvsummary "${FUNCNAME[0]}"
- }
- 
- prepare_perf_data
--- 
-2.39.1
-
+On 6/13/23 12:16 PM, Gaurav Batra wrote:
+> When memory is dynamically added/removed, iommu_mem_notifier() is invoked. This
+> routine traverses through all the DMA windows (DDW only, not default windows)
+> to add/remove "direct" TCE mappings. The routines for this purpose are
+> tce_clearrange_multi_pSeriesLP() and tce_clearrange_multi_pSeriesLP().
+>
+> Both these routines are designed for Direct mapped DMA windows only.
+>
+> The issue is that there could be some DMA windows in the list which are not
+> "direct" mapped. Calling these routines will either,
+>
+> 1) remove some dynamically mapped TCEs, Or
+> 2) try to add TCEs which are out of bounds and HCALL returns H_PARAMETER
+>
+> Here are the side affects when these routines are incorrectly invoked for
+> "dynamically" mapped DMA windows.
+>
+> tce_setrange_multi_pSeriesLP()
+>
+> This adds direct mapped TCEs. Now, this could invoke HCALL to add TCEs with
+> out-of-bound range. In this scenario, HCALL will return H_PARAMETER and DLAR
+> ADD of memory will fail.
+>
+> tce_clearrange_multi_pSeriesLP()
+>
+> This will remove range of TCEs. The TCE range that is calculated, depending on
+> the memory range being added, could infact be mapping some other memory
+> address (for dynamic DMA window scenario). This will wipe out those TCEs.
+>
+> The solution is for iommu_mem_notifier() to only invoke these routines for
+> "direct" mapped DMA windows.
+>
+> Signed-off-by: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+> Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/platforms/pseries/iommu.c | 17 +++++++++++++----
+>   1 file changed, 13 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 918f511837db..24dd61636400 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -363,6 +363,7 @@ struct dynamic_dma_window_prop {
+>   struct dma_win {
+>   	struct device_node *device;
+>   	const struct dynamic_dma_window_prop *prop;
+> +	bool    direct;
+>   	struct list_head list;
+>   };
+>
+> @@ -1409,6 +1410,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>   		goto out_del_prop;
+>
+>   	if (direct_mapping) {
+> +		window->direct = true;
+> +
+>   		/* DDW maps the whole partition, so enable direct DMA mapping */
+>   		ret = walk_system_ram_range(0, memblock_end_of_DRAM() >> PAGE_SHIFT,
+>   					    win64->value, tce_setrange_multi_pSeriesLP_walk);
+> @@ -1425,6 +1428,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>   		int i;
+>   		unsigned long start = 0, end = 0;
+>
+> +		window->direct = false;
+> +
+>   		for (i = 0; i < ARRAY_SIZE(pci->phb->mem_resources); i++) {
+>   			const unsigned long mask = IORESOURCE_MEM_64 | IORESOURCE_MEM;
+>
+> @@ -1587,8 +1592,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+>   	case MEM_GOING_ONLINE:
+>   		spin_lock(&dma_win_list_lock);
+>   		list_for_each_entry(window, &dma_win_list, list) {
+> -			ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
+> -					arg->nr_pages, window->prop);
+> +			if (window->direct) {
+> +				ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
+> +						arg->nr_pages, window->prop);
+> +			}
+>   			/* XXX log error */
+>   		}
+>   		spin_unlock(&dma_win_list_lock);
+> @@ -1597,8 +1604,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+>   	case MEM_OFFLINE:
+>   		spin_lock(&dma_win_list_lock);
+>   		list_for_each_entry(window, &dma_win_list, list) {
+> -			ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
+> -					arg->nr_pages, window->prop);
+> +			if (window->direct) {
+> +				ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
+> +						arg->nr_pages, window->prop);
+> +			}
+>   			/* XXX log error */
+>   		}
+>   		spin_unlock(&dma_win_list_lock);
