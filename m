@@ -4,56 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58F7FEB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 20:35:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74FE8EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 21:10:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wk7pTSUE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZwHrH/Ut;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QggKc5G7Rz30f9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 06:35:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgh6T5RFBz30hw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 07:10:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wk7pTSUE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZwHrH/Ut;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QggJb1DBGz30FW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 06:34:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qgh5P6XPhz2xpl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 07:09:45 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 5A9EF6187D;
-	Tue, 13 Jun 2023 20:34:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F759C433C8;
-	Tue, 13 Jun 2023 20:34:18 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 459FD63B01;
+	Tue, 13 Jun 2023 21:09:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1CA2C433C0;
+	Tue, 13 Jun 2023 21:09:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686688458;
-	bh=jwNp4h9PPEmYXaB0IJltuMdZjveh3KTKFfP9o02XV4k=;
+	s=k20201202; t=1686690580;
+	bh=CnDPIeLogwBWCfXwDFCGYSnn6freMhcPiMKmnauZmK8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Wk7pTSUE9YZG6Qzyiy/LXXi9unpTZEKB6P6Wl2VeX5UcV5Rpe1MwPOzgzajVVoqD4
-	 DmzILRapqXpUeg++De+d8OTR5Gx93TZ40ZRsrOhFjxAL3uF8inM3Cl83BIEF9BNG44
-	 qWb37EZ5sSVUZLPAjaCICNi3yo9aezcsQw3aIbF0wr2pmusjqFkkzWDE9TER23bi8p
-	 6HtPjLPKmK84T8a8TcBwDY0JaSVAnaakRjJvAdX+W79M3STSQZvdUMfEE78po1siCE
-	 Er0OxeMmAMT86IXmkQTJDYq/m1Il3eA0JuGoRNIKG9DMCiakp8OmeOvaZsQpEFG34S
-	 FMWe7X/aqsGuQ==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 0A42240692; Tue, 13 Jun 2023 17:34:16 -0300 (-03)
-Date: Tue, 13 Jun 2023 17:34:15 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/17] tool/perf/test: Fix shellcheck coding/formatting
- issues of test shell scripts
-Message-ID: <ZIjSxwyna2ExW8JQ@kernel.org>
-References: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
+	b=ZwHrH/UtQy5gtJuV6CZdRxLuHzTaAkiUGIx/JgEU65AMLsBIKZ0sWdlw1vTEQYgdy
+	 gSLYt19YIoeRBe5zYzLlgTuRTMMo3kgRmlRYZUwN9+y0DX2gj67q8Dp8pJtQUo0gHp
+	 Oy60KuQPQMSSexOGqUQrMmT3Fgb1GBewXzaMMxDEmcoyUN9bNnKzEk/bEsVagentbs
+	 IrjokONRoY0TE+yzqvQqq0avTQyKOfbb7gZycLtP7znx6sVR7tnvKBFHLqFKSVwEs2
+	 kIA6GPsL9JTaWmKMWc1Wdyo1oerK/huG9zsVu6RfIYfLEAg8ULTJ9IL3DRtm5ddTXF
+	 JrMlJp241w1cA==
+Date: Wed, 14 Jun 2023 00:09:00 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Kent Overstreet <kent.overstreet@linux.dev>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+Message-ID: <20230613210900.GV52412@kernel.org>
+References: <20230601101257.530867-1-rppt@kernel.org>
+ <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+ <ZHjgIH3aX9dCvVZc@moria.home.lan>
+ <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+ <20230605092040.GB3460@kernel.org>
+ <ZH20XkD74prrdN4u@FVFF77S0Q05N>
+ <CAPhsuW7ntn_HpVWdGK_hYVd3zsPEFToBNfmtt0m6K8SwfxJ66Q@mail.gmail.com>
+ <20230608184116.GJ52412@kernel.org>
+ <ZIi7zmey0w61EG25@moria.home.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
-X-Url: http://acmel.wordpress.com
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ZIi7zmey0w61EG25@moria.home.lan>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,97 +70,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irogers@google.com, maddy@linux.ibm.com, john.g.garry@oracle.com, kjain@linux.ibm.com, ravi.bangoria@amd.com, linux-perf-users@vger.kernel.org, jolsa@kernel.org, namhyung@kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Tue, Jun 13, 2023 at 10:11:28PM +0530, Athira Rajeev escreveu:
-> Patchset covers a set of fixes for coding/formatting issues observed while
-> running shellcheck tool on the perf test shell scripts. Shellcheck is a static
-> analysis tool that can find semantic/syntax bugs in the shell scripts.
+On Tue, Jun 13, 2023 at 02:56:14PM -0400, Kent Overstreet wrote:
+> On Thu, Jun 08, 2023 at 09:41:16PM +0300, Mike Rapoport wrote:
+> > On Tue, Jun 06, 2023 at 11:21:59AM -0700, Song Liu wrote:
+> > > On Mon, Jun 5, 2023 at 3:09 AM Mark Rutland <mark.rutland@arm.com> wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > > > > Can you give more detail on what parameters you need? If the only extra
+> > > > > > > parameter is just "does this allocation need to live close to kernel
+> > > > > > > text", that's not that big of a deal.
+> > > > > >
+> > > > > > My thinking was that we at least need the start + end for each caller. That
+> > > > > > might be it, tbh.
+> > > > >
+> > > > > Do you mean that modules will have something like
+> > > > >
+> > > > >       jit_text_alloc(size, MODULES_START, MODULES_END);
+> > > > >
+> > > > > and kprobes will have
+> > > > >
+> > > > >       jit_text_alloc(size, KPROBES_START, KPROBES_END);
+> > > > > ?
+> > > >
+> > > > Yes.
+> > > 
+> > > How about we start with two APIs:
+> > >      jit_text_alloc(size);
+> > >      jit_text_alloc_range(size, start, end);
+> > > 
+> > > AFAICT, arm64 is the only arch that requires the latter API. And TBH, I am
+> > > not quite convinced it is needed.
+> >  
+> > Right now arm64 and riscv override bpf and kprobes allocations to use the
+> > entire vmalloc address space, but having the ability to allocate generated
+> > code outside of modules area may be useful for other architectures.
+> > 
+> > Still the start + end for the callers feels backwards to me because the
+> > callers do not define the ranges, but rather the architectures, so we still
+> > need a way for architectures to define how they want allocate memory for
+> > the generated code.
+> 
+> So, the start + end just comes from the need to keep relative pointers
+> under a certain size. I think this could be just a flag, I see no reason
+> to expose actual addresses here.
 
-Thanks, applied the series.
-
-- Arnaldo
- 
-> Patches 1-14 fixes the issues found with shellcheck. Patch 15, 16
-> and patch 17 address a fix in task_analyzer test.
-> 
-> This cleanup is a pre-requisite to include a build option for shellcheck
-> discussed here: https://www.spinics.net/lists/linux-perf-users/msg25553.html
-> Also this is first set of patches. There will be one more set which will
-> include build option for shellcheck as discussed in the mail thread.
-> 
-> Abhirup Deb (2):
->   tools/perf/tests: fix test_arm_spe.sh signal case issues
->   perf/tests/shell: fix shellscript errors for lock_contention.sh
-> 
-> Aboorva Devarajan (1):
->   tools/perf/tests: Fix shellcheck issues in test_task_analyzer.sh file
-> 
-> Aditya Gupta (3):
->   perf tests task_analyzer: fix bad substitution ${$1}
->   perf tests task_analyzer: print command on failure
->   perf tests task_analyzer: skip tests if no libtraceevent support
-> 
-> Akanksha J N (1):
->   tools/perf/tests: Fix shellcheck warnings for
->     trace+probe_vfs_getname.sh
-> 
-> Anushree Mathur (1):
->   perf/tests/shell : Shellcheck fixes for perf test
->     "test_arm_coresight.sh"
-> 
-> Barnali Guha Thakurata (1):
->   tools/perf/tests/shell/stat_all_metrics: Fix shellcheck warning SC2076
->     in stat_all_metrics.sh
-> 
-> Disha Goel (1):
->   tools/perf/tests: fix shellcheck warning for stat+json_output
-> 
-> Geetika (1):
->   tools/perf/tests: Fix all POSIX sh warnings in perf shell test
->     test_brstack.sh
-> 
-> Korrapati Likhitha (1):
->   tools/perf/tests: Fix shellcheck warnings for stat+csv_output
-> 
-> Samir Mulani (1):
->   tools/perf/tests: fixed shellcheck warnings for perf shell scripts
-> 
-> Shirisha G (1):
->   tools/perf/tests: fix shellcheck warnings for daemon.sh
-> 
-> Sourabh Jain (1):
->   perf: get rid of unused import
-> 
-> Spoorthy S (2):
->   shellcheck : fixing signal names and adding double quotes for
->     expression in test_arm_callgraph_fp
->   tools/perf/tests: Fix all POSIX sh warnings in stat+shadow_stat.sh
-> 
->  .../scripts/python/arm-cs-trace-disasm.py     |   1 -
->  tools/perf/tests/shell/buildid.sh             |  12 +-
->  tools/perf/tests/shell/daemon.sh              | 113 ++++++++++++------
->  tools/perf/tests/shell/lock_contention.sh     |  70 +++++------
->  .../shell/record+probe_libc_inet_pton.sh      |   6 +-
->  .../shell/record+script_probe_vfs_getname.sh  |   4 +-
->  tools/perf/tests/shell/stat+csv_output.sh     |   4 +-
->  tools/perf/tests/shell/stat+json_output.sh    |   2 +-
->  tools/perf/tests/shell/stat+shadow_stat.sh    |   4 +-
->  tools/perf/tests/shell/stat_all_metrics.sh    |   6 +-
->  .../perf/tests/shell/test_arm_callgraph_fp.sh |   6 +-
->  tools/perf/tests/shell/test_arm_coresight.sh  |   6 +-
->  tools/perf/tests/shell/test_arm_spe.sh        |   2 +-
->  tools/perf/tests/shell/test_brstack.sh        |  12 +-
->  tools/perf/tests/shell/test_task_analyzer.sh  |  98 ++++++++-------
->  .../tests/shell/trace+probe_vfs_getname.sh    |   6 +-
->  16 files changed, 203 insertions(+), 149 deletions(-)
-> 
-> -- 
-> 2.39.1
-> 
+It's the other way around. The start + end comes from the need to restrict
+allocation to certain range because of the relative addressing. I don't see
+how a flag can help here.
 
 -- 
-
-- Arnaldo
+Sincerely yours,
+Mike.
