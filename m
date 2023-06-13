@@ -4,80 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED2E5EB64D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 17:11:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AAB2EB64D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 17:12:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZK74EVeJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G+I7tr8t;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QgZpz2rdvz30gQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:11:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QgZqy3hK4z3bwJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:12:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZK74EVeJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G+I7tr8t;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgZl05j06z30Nq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 03:08:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgZl22v2Jz30Nq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 03:08:30 +1000 (AEST)
 Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGkDau005244;
-	Tue, 13 Jun 2023 17:08:20 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGkHEQ005364;
+	Tue, 13 Jun 2023 17:08:22 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=MJCi4rdKvumiWm1f5MMStY/3GwHkKfGUGXbY+nKZkrs=;
- b=ZK74EVeJm+lenJoWUG9WIOlFrAICHSjCZjJTFSTgA3lGZR5CLKh3xFj5piVvB+Z9E+i5
- pmqHgZ+6XmXGWu+d6WKB4EN0qDoxDXwDBLqFJaJ+oYhlaiu1SXkqVy9KzgKbbis9udQ2
- 0W2a+GEJ8KwQzGKhem8La7dw89FT5HkxucBkAPx3zKD897+m//KK0gmv5nRV0fIAN0zB
- K4VteEU3RokTiEOvHep/OIxqVhqNEKh02mbmZgZex7hLYtBR/YmymxA2zRcq8LnRDWEB
- zHp4xoM6RZbAsy40rNp7xuPoy04Zfk3DhRjpoyWxIb+SA1iYINFVncJ5ApFKahxbPhP/ Vw== 
+ bh=+1A1zqfHEUbYWB9uBTPci1+yQHUq42Huy66HuxFasQ0=;
+ b=G+I7tr8thUdOz9PzzePtLAUSSWgHHR5bAipkAO+EPGY3YG2lThDzgeROYZY5Dkvakq2+
+ q5FIqeZSfvX8GlMhJc1/g76FK4kWGEsGvdDmDdlyfVC5GsFFJhDE+B1tkwJhgWXfEoyB
+ z6LvzkOLwLLQqi8kk87DAjQYmuLNxuOsRf+0RqZvrSXiei2YqhdwFRYx2OP8RlIduGAv
+ dBFa43XIZZdbzYL/X+oMOLYnqkPR9wFtzpsouT7LCyh3wEqMMhu0Tra7tcubZ5pv1QD1
+ geqIiyLHQqguooegMiYxwD1BGMVn2l7NrjjE6hCUlBNFBsR/FdMmBZ2qevlP880wCv1c Zw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs1ep-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs1g7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:08:19 +0000
+	Tue, 13 Jun 2023 17:08:22 +0000
 Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DH8CV1003159;
-	Tue, 13 Jun 2023 17:08:18 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs103-8
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DH8LBI004165;
+	Tue, 13 Jun 2023 17:08:21 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs0yx-9
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:08:18 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35DDkE6U031182;
-	Tue, 13 Jun 2023 16:42:54 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3r4gt4sqb9-1
+	Tue, 13 Jun 2023 17:08:21 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35D9HtPs009704;
+	Tue, 13 Jun 2023 16:43:08 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3r4gee2a8r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 16:42:54 +0000
+	Tue, 13 Jun 2023 16:43:08 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGgpWN26477276
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGh4QS57934194
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 13 Jun 2023 16:42:51 GMT
+	Tue, 13 Jun 2023 16:43:05 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EC4CF20043;
-	Tue, 13 Jun 2023 16:42:50 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id D27432004B;
+	Tue, 13 Jun 2023 16:43:04 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ED5C42004B;
-	Tue, 13 Jun 2023 16:42:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C70B820040;
+	Tue, 13 Jun 2023 16:43:01 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.111.115])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 13 Jun 2023 16:42:47 +0000 (GMT)
+	Tue, 13 Jun 2023 16:43:01 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org,
         ravi.bangoria@amd.com, john.g.garry@oracle.com
-Subject: [PATCH 12/17] tools/perf/tests: fixed shellcheck warnings for perf shell scripts
-Date: Tue, 13 Jun 2023 22:11:40 +0530
-Message-Id: <20230613164145.50488-13-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH 16/17] perf tests task_analyzer: print command on failure
+Date: Tue, 13 Jun 2023 22:11:44 +0530
+Message-Id: <20230613164145.50488-17-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
 References: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: qLVZjKszjqUn-ZNcSE4oxPKnY2c6u_yT
-X-Proofpoint-ORIG-GUID: Y00nVgJrSLKthbk45Q3irvU--lplthlx
+X-Proofpoint-GUID: UFZJGs7T_y080kAQGblyBSHAWVfOkisy
+X-Proofpoint-ORIG-GUID: QRzyQ15-wQU0Ob75Dqcq_EhZqsZNppCn
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-13_19,2023-06-12_02,2023-05-22_02
@@ -97,114 +97,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, Samir Mulani <samir@linux.vnet.ibm.com>, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, Aditya Gupta <adityag@linux.ibm.com>, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Samir Mulani <samir@linux.vnet.ibm.com>
+From: Aditya Gupta <adityag@linux.ibm.com>
 
-Fixed the shellcheck warnings in buildid.sh, record+probe_libc_inet_pton.sh
-and record+script_probe_vfs_getname.sh perf shell scripts:
-
-1. Prefer [ p ] && [ q ] as [ p -a q ] is not well defined.
-2. Prefer [ p ] || [ q ] as [ p -o q ] is not well defined.
-3. Used * argument to avoid the argument mixes string and array
-4. Resolved issue for variable refernce, where the variable is
-   being used before it has been initialized.
-5. Resolved word splitting issue (syntax error).
-6. The "err" variable has been removed from buildid.sh since
-   it is not used anywhere in the code.
+Instead of printing "perf command failed" everytime, print the exact
+command that run earlier
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Signed-off-by: Samir Mulani <samir@linux.vnet.ibm.com>
+Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
 ---
- tools/perf/tests/shell/buildid.sh                    | 12 ++++++------
- .../perf/tests/shell/record+probe_libc_inet_pton.sh  |  6 +++---
- .../tests/shell/record+script_probe_vfs_getname.sh   |  4 ++--
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ tools/perf/tests/shell/test_task_analyzer.sh | 24 ++++++++++----------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/tools/perf/tests/shell/buildid.sh b/tools/perf/tests/shell/buildid.sh
-index 0ce22ea0a7f1..3383ca3399d4 100755
---- a/tools/perf/tests/shell/buildid.sh
-+++ b/tools/perf/tests/shell/buildid.sh
-@@ -83,12 +83,12 @@ check()
- 	# in case of pe-file.exe file
- 	echo $1 | grep ".exe"
- 	if [ $? -eq 0 ]; then
--		if [ -x $1  -a ! -x $file ]; then
-+		if [ -x $1 ] && [ ! -x $file ]; then
- 			echo "failed: file ${file} executable does not exist"
- 			exit 1
- 		fi
+diff --git a/tools/perf/tests/shell/test_task_analyzer.sh b/tools/perf/tests/shell/test_task_analyzer.sh
+index 84ab7e7f57d5..b094eeb3bf66 100755
+--- a/tools/perf/tests/shell/test_task_analyzer.sh
++++ b/tools/perf/tests/shell/test_task_analyzer.sh
+@@ -53,14 +53,14 @@ prepare_perf_data() {
+ test_basic() {
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer"
+ 	find_str_or_fail "Comm" "$out" "${FUNCNAME[0]}"
+ }
  
--		if [ ! -x $file -a ! -e $file ]; then
-+		if [ ! -x $file ] && [ ! -e $file ]; then
- 			echo "failed: file ${file} does not exist"
- 			exit 1
- 		fi
-@@ -136,10 +136,10 @@ test_record()
- 	log_err=$(mktemp /tmp/perf.log.err.XXX)
- 	perf="perf --buildid-dir ${build_id_dir}"
+ test_ns_rename(){
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --ns --rename-comms-by-tids 0:random > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --ns --rename-comms-by-tids 0:random"
+ 	find_str_or_fail "Comm" "$out" "${FUNCNAME[0]}"
+ }
  
--	echo "running: perf record $@"
--	${perf} record --buildid-all -o ${data} $@ 1>${log_out} 2>${log_err}
-+	echo "running: perf record $*"
-+	${perf} record --buildid-all -o ${data} "$@" 1>${log_out} 2>${log_err}
- 	if [ $? -ne 0 ]; then
--		echo "failed: record $@"
-+		echo "failed: record $*"
- 		echo "see log: ${log_err}"
- 		exit 1
- 	fi
-@@ -172,4 +172,4 @@ if [ ${run_pe} -eq 1 ]; then
- 	rm -r ${wineprefix}
- fi
+@@ -68,7 +68,7 @@ test_ms_filtertasks_highlight(){
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --ms --filter-tasks perf --highlight-tasks perf \
+ 	> "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --ms --filter-tasks perf --highlight-tasks perf"
+ 	find_str_or_fail "Comm" "$out" "${FUNCNAME[0]}"
+ }
  
--exit ${err}
-+exit 0
-diff --git a/tools/perf/tests/shell/record+probe_libc_inet_pton.sh b/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
-index bbb5b3d185fa..0934fb0cd68f 100755
---- a/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
-+++ b/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
-@@ -10,8 +10,8 @@
- # SPDX-License-Identifier: GPL-2.0
- # Arnaldo Carvalho de Melo <acme@kernel.org>, 2017
+@@ -76,61 +76,61 @@ test_extended_times_timelimit_limittasks() {
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --extended-times --time-limit :99999 \
+ 	--limit-to-tasks perf > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --extended-times --time-limit :99999 --limit-to-tasks perf"
+ 	find_str_or_fail "Out-Out" "$out" "${FUNCNAME[0]}"
+ }
  
--. $(dirname $0)/lib/probe.sh
--. $(dirname $0)/lib/probe_vfs_getname.sh
-+. "$(dirname "$0")/lib/probe.sh"
-+. "$(dirname "$0")/lib/probe_vfs_getname.sh"
+ test_summary() {
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --summary > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --summary"
+ 	find_str_or_fail "Summary" "$out" "${FUNCNAME[0]}"
+ }
  
- libc=$(grep -w libc /proc/self/maps | head -1 | sed -r 's/.*[[:space:]](\/.*)/\1/g')
- nm -Dg $libc 2>/dev/null | fgrep -q inet_pton || exit 254
-@@ -23,7 +23,7 @@ add_libc_inet_pton_event() {
- 	event_name=$(perf probe -f -x $libc -a inet_pton 2>&1 | tail -n +2 | head -n -5 | \
- 			grep -P -o "$event_pattern(?=[[:space:]]\(on inet_pton in $libc\))")
+ test_summaryextended() {
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --summary-extended > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --summary-extended"
+ 	find_str_or_fail "Inter Task Times" "$out" "${FUNCNAME[0]}"
+ }
  
--	if [ $? -ne 0 -o -z "$event_name" ] ; then
-+	if [ $? -ne 0 ] || [ -z "$event_name" ] ; then
- 		printf "FAIL: could not add event\n"
- 		return 1
- 	fi
-diff --git a/tools/perf/tests/shell/record+script_probe_vfs_getname.sh b/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
-index 1341437e1bd9..7f664f1889d9 100755
---- a/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
-+++ b/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
-@@ -9,11 +9,11 @@
- # SPDX-License-Identifier: GPL-2.0
- # Arnaldo Carvalho de Melo <acme@kernel.org>, 2017
+ test_summaryonly() {
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --summary-only > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --summary-only"
+ 	find_str_or_fail "Summary" "$out" "${FUNCNAME[0]}"
+ }
  
--. $(dirname $0)/lib/probe.sh
-+. "$(dirname "$0")/lib/probe.sh"
+ test_extended_times_summary_ns() {
+ 	out="$tmpdir/perf.out"
+ 	perf script report task-analyzer --extended-times --summary --ns > "$out"
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --extended-times --summary --ns"
+ 	find_str_or_fail "Out-Out" "$out" "${FUNCNAME[0]}"
+ 	find_str_or_fail "Summary" "$out" "${FUNCNAME[0]}"
+ }
  
- skip_if_no_perf_probe || exit 2
+ test_csv() {
+ 	perf script report task-analyzer --csv csv > /dev/null
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --csv csv"
+ 	find_str_or_fail "Comm;" csv "${FUNCNAME[0]}"
+ }
  
--. $(dirname $0)/lib/probe_vfs_getname.sh
-+. "$(dirname "$0")/lib/probe_vfs_getname.sh"
+ test_csv_extended_times() {
+ 	perf script report task-analyzer --csv csv --extended-times > /dev/null
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --csv csv --extended-times"
+ 	find_str_or_fail "Out-Out;" csv "${FUNCNAME[0]}"
+ }
  
- record_open_file() {
- 	echo "Recording open file:"
+ test_csvsummary() {
+ 	perf script report task-analyzer --csv-summary csvsummary > /dev/null
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --csv-summary csvsummary"
+ 	find_str_or_fail "Comm;" csvsummary "${FUNCNAME[0]}"
+ }
+ 
+ test_csvsummary_extended() {
+ 	perf script report task-analyzer --csv-summary csvsummary --summary-extended \
+ 	>/dev/null
+-	check_exec_0 "perf"
++	check_exec_0 "perf script report task-analyzer --csv-summary csvsummary --summary-extended"
+ 	find_str_or_fail "Out-Out;" csvsummary "${FUNCNAME[0]}"
+ }
+ 
 -- 
 2.39.1
 
