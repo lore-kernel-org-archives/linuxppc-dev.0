@@ -4,80 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEFD9EB64D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 17:11:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED2E5EB64D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 17:11:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TkGdjeEK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZK74EVeJ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QgZp02FXDz30gq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:11:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QgZpz2rdvz30gQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:11:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TkGdjeEK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZK74EVeJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgZl022ndz30NK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgZl05j06z30Nq
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 03:08:28 +1000 (AEST)
 Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGkHEN005364;
-	Tue, 13 Jun 2023 17:08:21 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35DGkDau005244;
+	Tue, 13 Jun 2023 17:08:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=ENQmD46c5YBItFlsdaqoRkCUe0nhD//Wkt5f9ekGWCU=;
- b=TkGdjeEK+t07yuyMceLvi4nY9vUn2pHkh10fVvu25aLtGJ+gIuPqcKmEyk32wcKn7IIN
- whrgwKiqbQkrbZW79rdDk2qsbWODh2U6mOt1UDnQwn7uZGG5kuwdBsKCpkB6/JnSDs+4
- a6K/4eb6rCznlQfFcFXdFLQvrUP0fgQ4sYQAckGsgM0XlAlxvduJPkFhV809roszUnFN
- 3IFm/Gfo1cFoTiTwJesjTpqdjQsr/Py9mxIurm0gNuE0d37fVpSia3Yib2GVavBnK2c8
- VOduSB8CSSozZUh8OmO+oReqA0SBIQfQFenDQxrK3gtX3fXSXA/4rjSa9jeVuLuJeNmd EA== 
+ bh=MJCi4rdKvumiWm1f5MMStY/3GwHkKfGUGXbY+nKZkrs=;
+ b=ZK74EVeJm+lenJoWUG9WIOlFrAICHSjCZjJTFSTgA3lGZR5CLKh3xFj5piVvB+Z9E+i5
+ pmqHgZ+6XmXGWu+d6WKB4EN0qDoxDXwDBLqFJaJ+oYhlaiu1SXkqVy9KzgKbbis9udQ2
+ 0W2a+GEJ8KwQzGKhem8La7dw89FT5HkxucBkAPx3zKD897+m//KK0gmv5nRV0fIAN0zB
+ K4VteEU3RokTiEOvHep/OIxqVhqNEKh02mbmZgZex7hLYtBR/YmymxA2zRcq8LnRDWEB
+ zHp4xoM6RZbAsy40rNp7xuPoy04Zfk3DhRjpoyWxIb+SA1iYINFVncJ5ApFKahxbPhP/ Vw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs1ff-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs1ep-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:08:20 +0000
+	Tue, 13 Jun 2023 17:08:19 +0000
 Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DH8CV3003159;
-	Tue, 13 Jun 2023 17:08:20 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35DH8CV1003159;
+	Tue, 13 Jun 2023 17:08:18 GMT
 Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs103-10
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r6v0hs103-8
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 17:08:20 +0000
+	Tue, 13 Jun 2023 17:08:18 +0000
 Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35DFeuaE023360;
-	Tue, 13 Jun 2023 16:42:39 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3r4gt4sqb3-1
+	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35DDkE6U031182;
+	Tue, 13 Jun 2023 16:42:54 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3r4gt4sqb9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Jun 2023 16:42:39 +0000
+	Tue, 13 Jun 2023 16:42:54 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGgaxK62521632
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35DGgpWN26477276
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 13 Jun 2023 16:42:36 GMT
+	Tue, 13 Jun 2023 16:42:51 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 53BBF20043;
-	Tue, 13 Jun 2023 16:42:36 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id EC4CF20043;
+	Tue, 13 Jun 2023 16:42:50 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3CF7020040;
-	Tue, 13 Jun 2023 16:42:33 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id ED5C42004B;
+	Tue, 13 Jun 2023 16:42:47 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.111.115])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 13 Jun 2023 16:42:33 +0000 (GMT)
+	Tue, 13 Jun 2023 16:42:47 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org,
         ravi.bangoria@amd.com, john.g.garry@oracle.com
-Subject: [PATCH 08/17] tools/perf/tests/shell/stat_all_metrics: Fix shellcheck warning SC2076 in stat_all_metrics.sh
-Date: Tue, 13 Jun 2023 22:11:36 +0530
-Message-Id: <20230613164145.50488-9-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH 12/17] tools/perf/tests: fixed shellcheck warnings for perf shell scripts
+Date: Tue, 13 Jun 2023 22:11:40 +0530
+Message-Id: <20230613164145.50488-13-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
 References: <20230613164145.50488-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: yLHv54M5GrURSpn0-2Sg_DcEePvGMGTg
-X-Proofpoint-ORIG-GUID: qU4nhpVaDeRw2XBuIU9xhQW0LkLWrjzs
+X-Proofpoint-GUID: qLVZjKszjqUn-ZNcSE4oxPKnY2c6u_yT
+X-Proofpoint-ORIG-GUID: Y00nVgJrSLKthbk45Q3irvU--lplthlx
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-13_19,2023-06-12_02,2023-05-22_02
@@ -97,71 +97,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, Barnali Guha Thakurata <barnali@linux.ibm.com>, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, Samir Mulani <samir@linux.vnet.ibm.com>, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Barnali Guha Thakurata <barnali@linux.ibm.com>
+From: Samir Mulani <samir@linux.vnet.ibm.com>
 
-Fixed shellcheck warning SC2076 in stat_all_metrics.sh.
+Fixed the shellcheck warnings in buildid.sh, record+probe_libc_inet_pton.sh
+and record+script_probe_vfs_getname.sh perf shell scripts:
 
-Before the patch:
-shell$ shellcheck stat_all_metrics.sh
-
-In stat_all_metrics.sh line 9:
-  if [[ "$result" =~ "${m:0:50}" ]] || [[ "$result" =~ "<not supported>" ]]
-                     ^---------^ SC2076: Don't quote right-hand
-side of =~, it'll match literally rather than as a regex.
-
-In stat_all_metrics.sh line 15:
-  if [[ "$result" =~ "${m:0:50}" ]]
-                     ^---------^ SC2076: Don't quote right-hand
-side of =~, it'll match literally rather than as a regex.
-
-In stat_all_metrics.sh line 22:
-  if [[ "$result" =~ "${m:0:50}" ]]
-                     ^---------^ SC2076: Don't quote right-hand
-side of =~, it'll match literally rather than as a regex.
-
-After the patch:
-shell$ shellcheck stat_all_metrics.sh
-shell$
+1. Prefer [ p ] && [ q ] as [ p -a q ] is not well defined.
+2. Prefer [ p ] || [ q ] as [ p -o q ] is not well defined.
+3. Used * argument to avoid the argument mixes string and array
+4. Resolved issue for variable refernce, where the variable is
+   being used before it has been initialized.
+5. Resolved word splitting issue (syntax error).
+6. The "err" variable has been removed from buildid.sh since
+   it is not used anywhere in the code.
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Signed-off-by: Barnali Guha Thakurata <barnali@linux.ibm.com>
+Signed-off-by: Samir Mulani <samir@linux.vnet.ibm.com>
 ---
- tools/perf/tests/shell/stat_all_metrics.sh | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ tools/perf/tests/shell/buildid.sh                    | 12 ++++++------
+ .../perf/tests/shell/record+probe_libc_inet_pton.sh  |  6 +++---
+ .../tests/shell/record+script_probe_vfs_getname.sh   |  4 ++--
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/tools/perf/tests/shell/stat_all_metrics.sh b/tools/perf/tests/shell/stat_all_metrics.sh
-index 22e9cb294b40..54774525e18a 100755
---- a/tools/perf/tests/shell/stat_all_metrics.sh
-+++ b/tools/perf/tests/shell/stat_all_metrics.sh
-@@ -6,20 +6,20 @@ err=0
- for m in $(perf list --raw-dump metrics); do
-   echo "Testing $m"
-   result=$(perf stat -M "$m" true 2>&1)
--  if [[ "$result" =~ "${m:0:50}" ]] || [[ "$result" =~ "<not supported>" ]]
-+  if [[ "$result" =~ ${m:0:50} ]] || [[ "$result" =~ "<not supported>" ]]
-   then
-     continue
-   fi
-   # Failed so try system wide.
-   result=$(perf stat -M "$m" -a sleep 0.01 2>&1)
--  if [[ "$result" =~ "${m:0:50}" ]]
-+  if [[ "$result" =~ ${m:0:50} ]]
-   then
-     continue
-   fi
-   # Failed again, possibly the workload was too small so retry with something
-   # longer.
-   result=$(perf stat -M "$m" perf bench internals synthesize 2>&1)
--  if [[ "$result" =~ "${m:0:50}" ]]
-+  if [[ "$result" =~ ${m:0:50} ]]
-   then
-     continue
-   fi
+diff --git a/tools/perf/tests/shell/buildid.sh b/tools/perf/tests/shell/buildid.sh
+index 0ce22ea0a7f1..3383ca3399d4 100755
+--- a/tools/perf/tests/shell/buildid.sh
++++ b/tools/perf/tests/shell/buildid.sh
+@@ -83,12 +83,12 @@ check()
+ 	# in case of pe-file.exe file
+ 	echo $1 | grep ".exe"
+ 	if [ $? -eq 0 ]; then
+-		if [ -x $1  -a ! -x $file ]; then
++		if [ -x $1 ] && [ ! -x $file ]; then
+ 			echo "failed: file ${file} executable does not exist"
+ 			exit 1
+ 		fi
+ 
+-		if [ ! -x $file -a ! -e $file ]; then
++		if [ ! -x $file ] && [ ! -e $file ]; then
+ 			echo "failed: file ${file} does not exist"
+ 			exit 1
+ 		fi
+@@ -136,10 +136,10 @@ test_record()
+ 	log_err=$(mktemp /tmp/perf.log.err.XXX)
+ 	perf="perf --buildid-dir ${build_id_dir}"
+ 
+-	echo "running: perf record $@"
+-	${perf} record --buildid-all -o ${data} $@ 1>${log_out} 2>${log_err}
++	echo "running: perf record $*"
++	${perf} record --buildid-all -o ${data} "$@" 1>${log_out} 2>${log_err}
+ 	if [ $? -ne 0 ]; then
+-		echo "failed: record $@"
++		echo "failed: record $*"
+ 		echo "see log: ${log_err}"
+ 		exit 1
+ 	fi
+@@ -172,4 +172,4 @@ if [ ${run_pe} -eq 1 ]; then
+ 	rm -r ${wineprefix}
+ fi
+ 
+-exit ${err}
++exit 0
+diff --git a/tools/perf/tests/shell/record+probe_libc_inet_pton.sh b/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
+index bbb5b3d185fa..0934fb0cd68f 100755
+--- a/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
++++ b/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
+@@ -10,8 +10,8 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # Arnaldo Carvalho de Melo <acme@kernel.org>, 2017
+ 
+-. $(dirname $0)/lib/probe.sh
+-. $(dirname $0)/lib/probe_vfs_getname.sh
++. "$(dirname "$0")/lib/probe.sh"
++. "$(dirname "$0")/lib/probe_vfs_getname.sh"
+ 
+ libc=$(grep -w libc /proc/self/maps | head -1 | sed -r 's/.*[[:space:]](\/.*)/\1/g')
+ nm -Dg $libc 2>/dev/null | fgrep -q inet_pton || exit 254
+@@ -23,7 +23,7 @@ add_libc_inet_pton_event() {
+ 	event_name=$(perf probe -f -x $libc -a inet_pton 2>&1 | tail -n +2 | head -n -5 | \
+ 			grep -P -o "$event_pattern(?=[[:space:]]\(on inet_pton in $libc\))")
+ 
+-	if [ $? -ne 0 -o -z "$event_name" ] ; then
++	if [ $? -ne 0 ] || [ -z "$event_name" ] ; then
+ 		printf "FAIL: could not add event\n"
+ 		return 1
+ 	fi
+diff --git a/tools/perf/tests/shell/record+script_probe_vfs_getname.sh b/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
+index 1341437e1bd9..7f664f1889d9 100755
+--- a/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
++++ b/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
+@@ -9,11 +9,11 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # Arnaldo Carvalho de Melo <acme@kernel.org>, 2017
+ 
+-. $(dirname $0)/lib/probe.sh
++. "$(dirname "$0")/lib/probe.sh"
+ 
+ skip_if_no_perf_probe || exit 2
+ 
+-. $(dirname $0)/lib/probe_vfs_getname.sh
++. "$(dirname "$0")/lib/probe_vfs_getname.sh"
+ 
+ record_open_file() {
+ 	echo "Recording open file:"
 -- 
 2.39.1
 
