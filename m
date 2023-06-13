@@ -4,35 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DECBEB64D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 15:59:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 730AAEB64D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jun 2023 16:02:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QgYBx3zRDz3bXl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 01:59:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QgYGt6v8hz3bf6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 02:02:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 332 seconds by postgrey-1.37 at boromir; Wed, 14 Jun 2023 01:58:32 AEST
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgYBJ71QKz302F
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 01:58:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgYGL5Hvvz30LQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 02:02:02 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 44BA762F0B;
-	Tue, 13 Jun 2023 15:58:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 710A6C433D9;
-	Tue, 13 Jun 2023 15:58:28 +0000 (UTC)
-Date: Tue, 13 Jun 2023 16:58:25 +0100
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 049A262FB0;
+	Tue, 13 Jun 2023 15:52:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D806C433F0;
+	Tue, 13 Jun 2023 15:52:48 +0000 (UTC)
 From: Catalin Marinas <catalin.marinas@arm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the mm tree
-Message-ID: <ZIiSITqP1cXkR8Uz@arm.com>
-References: <20230613162119.4a7a7d3c@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/3] Move the ARCH_DMA_MINALIGN definition to asm/cache.h
+Date: Tue, 13 Jun 2023 16:52:42 +0100
+Message-Id: <20230613155245.1228274-1-catalin.marinas@arm.com>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230613162119.4a7a7d3c@canb.auug.org.au>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,83 +41,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Michal Simek <monstr@monstr.eu>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Linus Torvalds <torvalds@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Stephen,
+Hi,
 
-On Tue, Jun 13, 2023 at 04:21:19PM +1000, Stephen Rothwell wrote:
-> After merging the mm tree, today's linux-next build (powerpc
-> ppc44x_defconfig) failed like this:
-> 
-> In file included from arch/powerpc/include/asm/page.h:247,
->                  from arch/powerpc/include/asm/thread_info.h:13,
->                  from include/linux/thread_info.h:60,
->                  from include/asm-generic/preempt.h:5,
->                  from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                  from include/linux/preempt.h:78,
->                  from include/linux/spinlock.h:56,
->                  from include/linux/ipc.h:5,
->                  from include/uapi/linux/sem.h:5,
->                  from include/linux/sem.h:5,
->                  from include/linux/compat.h:14,
->                  from arch/powerpc/kernel/asm-offsets.c:12:
-> arch/powerpc/include/asm/page_32.h:16: warning: "ARCH_DMA_MINALIGN" redefined
->    16 | #define ARCH_DMA_MINALIGN       L1_CACHE_BYTES
->       | 
-> In file included from include/linux/time.h:5,
->                  from include/linux/compat.h:10:
-> include/linux/cache.h:104: note: this is the location of the previous definition
->   104 | #define ARCH_DMA_MINALIGN __alignof__(unsigned long long)
->       | 
-> 
-> (lots of theses)
-> 
-> Caused by commit
-> 
->   cc7335787e73 ("mm/slab: decouple ARCH_KMALLOC_MINALIGN from ARCH_DMA_MINALIGN")
-> 
-> I have applied the following hack for today - we need something better.
+The ARCH_KMALLOC_MINALIGN reduction series defines a generic
+ARCH_DMA_MINALIGN in linux/cache.h:
 
-I just posted this series fixing it for powerpc, microblaze and sh. I
-did not add the #ifndef __powerpc64__ line since
-CONFIG_NOT_COHERENT_CACHE should not be enabled for those builds.
+https://lore.kernel.org/r/20230612153201.554742-2-catalin.marinas@arm.com/
 
-https://lore.kernel.org/r/20230613155245.1228274-1-catalin.marinas@arm.com
+Unfortunately, this causes a duplicate definition warning for
+microblaze, powerpc (32-bit only) and sh as these architectures define
+ARCH_DMA_MINALIGN in a different file than asm/cache.h. Move the macro
+to asm/cache.h to avoid this issue and also bring them in line with the
+other architectures.
 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 13 Jun 2023 16:07:16 +1000
-> Subject: [PATCH] fix up for "mm/slab: decouple ARCH_KMALLOC_MINALIGN from ARCH_DMA_MINALIGN"
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/include/asm/cache.h | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-> index ae0a68a838e8..e9be1396dfd1 100644
-> --- a/arch/powerpc/include/asm/cache.h
-> +++ b/arch/powerpc/include/asm/cache.h
-> @@ -142,5 +142,14 @@ static inline void iccci(void *addr)
->  }
->  
->  #endif /* !__ASSEMBLY__ */
-> +
-> +#ifndef __powerpc64__
-> +#ifdef CONFIG_NOT_COHERENT_CACHE
-> +#ifndef ARCH_DMA_MINALIGN
-> +#define ARCH_DMA_MINALIGN	L1_CACHE_BYTES
-> +#endif
-> +#endif
-> +#endif
-> +
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_POWERPC_CACHE_H */
+Andrew, if the arch maintainers cc'ed are fine with such change, could
+you please take these three patches together with the
+ARCH_KMALLOC_MINALIGN series?
 
-I think it should also remove the ARCH_DMA_MINALIGN from asm/page.h (as
-I did in my series; sorry I did not cc you, only noticed now that you
-reported it as well).
+Thank you.
 
--- 
-Catalin
+Catalin Marinas (3):
+  powerpc: Move the ARCH_DMA_MINALIGN definition to asm/cache.h
+  microblaze: Move the ARCH_{DMA,SLAB}_MINALIGN definitions to
+    asm/cache.h
+  sh: Move the ARCH_DMA_MINALIGN definition to asm/cache.h
+
+ arch/microblaze/include/asm/cache.h | 5 +++++
+ arch/microblaze/include/asm/page.h  | 5 -----
+ arch/powerpc/include/asm/cache.h    | 4 ++++
+ arch/powerpc/include/asm/page_32.h  | 4 ----
+ arch/sh/include/asm/cache.h         | 6 ++++++
+ arch/sh/include/asm/page.h          | 6 ------
+ 6 files changed, 15 insertions(+), 15 deletions(-)
+
