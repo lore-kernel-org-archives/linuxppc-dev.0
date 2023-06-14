@@ -4,49 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D05FEB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 05:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0817EEB64DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 06:52:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rYYjExOe;
+	dkim=fail reason="unknown key version" header.d=208.org header.i=@208.org header.a=rsa-sha256 header.s=dkim header.b=TH5cjuzq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgvpp3tbPz30ht
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 15:57:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgx1g6h9Qz30fx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 16:52:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rYYjExOe;
+	dkim=fail reason="unknown key version" header.d=208.org header.i=@208.org header.a=rsa-sha256 header.s=dkim header.b=TH5cjuzq;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=208suo.com (client-ip=183.242.55.162; helo=mail.208.org; envelope-from=baomingtong001@208suo.com; receiver=lists.ozlabs.org)
+Received: from mail.208.org (unknown [183.242.55.162])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qgvnq6r12z300q
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 15:57:03 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Qgvnl6MVqz4x1d;
-	Wed, 14 Jun 2023 15:56:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1686722219;
-	bh=NJMCszZ2hm+epJD/b0/Po9iHFnpLLa6pwtEYRGUJdg4=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=rYYjExOevnMF7VSK016ySJJkxyfYKfvocJ/hE9AX27BM+sOECgHU0HNhYT0O7nrN2
-	 vyDzsumvC+wkHAcKJM+8UrMsqA266ztoQ/59pPNwQB1T8asqzDUa8Tgj7K3iFutMWg
-	 nYpSZcN5oE2tXc3B7f+r9vShGxjta70K78hmp6Lz+vqLmnDCD/tocmltGAr2whGjb+
-	 LtBcZXJ8L/FCfjm/l7navUSEV0SoS8ZujmZrq+DBaPZrQ/zqq1cU49Rx6BCmTVku1X
-	 SP+KChTEHC5vebS5t5to/Gw66pgAILz6q+h19qAcEm7yMzaWvOaQwn38y/pwKRP4e4
-	 br12yYv5yvMYA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 4/4] powerpc/64s: Use POWER10 stsync barrier for wmb()
-In-Reply-To: <87wn07foos.fsf@mail.lhotse>
-References: <20230609100026.8946-1-npiggin@gmail.com>
- <20230609100026.8946-4-npiggin@gmail.com> <87wn07foos.fsf@mail.lhotse>
-Date: Wed, 14 Jun 2023 15:56:57 +1000
-Message-ID: <87ttvafuxi.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qgx0f72QJz309J
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 16:51:30 +1000 (AEST)
+Received: from mail.208.org (email.208.org [127.0.0.1])
+	by mail.208.org (Postfix) with ESMTP id 4Qgx0Q6fzKzBQJYg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 14:51:18 +0800 (CST)
+Authentication-Results: mail.208.org (amavisd-new); dkim=pass
+	reason="pass (just generated, assumed good)" header.d=208.org
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=208.org; h=
+	content-transfer-encoding:content-type:message-id:user-agent
+	:references:in-reply-to:subject:to:from:date:mime-version; s=
+	dkim; t=1686725478; x=1689317479; bh=al9eC0wF9Cr04Db3aeUxvwdfMDY
+	yTZcCS6mBC7etczI=; b=TH5cjuzqNESH8AIn2MMiag4E6xxN9ju3AMP6SF4CK6p
+	AHNhcUZh8AD1kfNDABq2hRomDZ88yeEao6LzL2tgiSYLDir/ck4glkhICi3XCre+
+	AvvRgtTPKsf3vTff0404ZJq00EN2BJ4gi2zLKQ9ESdwNe2ynzl7AfsHvi/y7VCe+
+	7rPpa1vOHEziYpMR+T9ExeOoiG/BOQgr8IRdkKRGBIg1j0/Izw0gDgX2knfhzeUR
+	z05BIkQj6m20bahbTcCresu6x6uGkJIXiFXWFA/SIPFZy+BIXeLVrZUjBUtQFXpK
+	xrI/wTY1IkE9AkiMhhuMNuwUORYVxQD+HVo5UVBNy7A==
+X-Virus-Scanned: amavisd-new at mail.208.org
+Received: from mail.208.org ([127.0.0.1])
+	by mail.208.org (mail.208.org [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id Y4FMf7DHzi0Z for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Jun 2023 14:51:18 +0800 (CST)
+Received: from localhost (email.208.org [127.0.0.1])
+	by mail.208.org (Postfix) with ESMTPSA id 4Qgx0Q3RT1zBJLB3;
+	Wed, 14 Jun 2023 14:51:18 +0800 (CST)
 MIME-Version: 1.0
-Content-Type: text/plain
+Date: Wed, 14 Jun 2023 14:51:18 +0800
+From: baomingtong001@208suo.com
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ shuah@kernel.org
+Subject: [PATCH] selftests/powerpc: remove unneeded variable
+In-Reply-To: <20230614064848.5648-1-luojianhong@cdjrlc.com>
+References: <20230614064848.5648-1-luojianhong@cdjrlc.com>
+User-Agent: Roundcube Webmail
+Message-ID: <d71a676bc9e2af23b3a89459c7320f74@208suo.com>
+X-Sender: baomingtong001@208suo.com
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,37 +70,216 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Nicholas Piggin <npiggin@gmail.com> writes:
->> The most expensive ordering for hwsync to provide is the store-load
->> barrier, because all prior stores have to be drained to the caches
->> before subsequent instructions can complete.
->>
->> stsync just orders stores which means it can just be a barrer that
->> goes down the store queue and orders draining, and does not prevent
->> completion of subsequent instructions. So it should be faster than
->> hwsync.
->>
->> Use stsync for wmb(). Older processors that don't recognise the SC
->> field should treat this as hwsync.
->
-> qemu (7.1) emulating ppc64e does not :/
->
->   mpic: Setting up MPIC " OpenPIC  " version 1.2 at fe0040000, max 1 CPUs
->   mpic: ISU size: 256, shift: 8, mask: ff
->   mpic: Initializing for 256 sources
->   Oops: Exception in kernel mode, sig: 4 [#1]
-..
->
-> I guess just put it behind an #ifdef 64S.
+fix the following coccicheck warning:
 
-That doesn't work because qemu emulating a G5 also doesn't accept it.
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:530:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:558:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:576:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:591:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:407:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:466:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:481:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:502:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:322:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:340:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:356:5-7: 
+Unneeded variable: "rc". Return "0".
+tools/testing/selftests/powerpc/alignment/alignment_handler.c:388:5-7: 
+Unneeded variable: "rc". Return "0".
 
-So either we need to get qemu updated and wait a while for that to
-percolate, or do some runtime patching of wmbs in the kernel >_<
+Signed-off-by: Mingtong Bao <baomingtong001@208suo.com>
+---
+  .../powerpc/alignment/alignment_handler.c     | 36 +++++++------------
+  1 file changed, 12 insertions(+), 24 deletions(-)
 
-cheers
+diff --git 
+a/tools/testing/selftests/powerpc/alignment/alignment_handler.c 
+b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
+index 33ee34fc0828..56fc26c2b75a 100644
+--- a/tools/testing/selftests/powerpc/alignment/alignment_handler.c
++++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
+@@ -319,7 +319,6 @@ static bool can_open_cifile(void)
+
+  int test_alignment_handler_vsx_206(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_06));
+@@ -332,12 +331,11 @@ int test_alignment_handler_vsx_206(void)
+      STORE_VSX_XFORM_TEST(stxvd2x);
+      STORE_VSX_XFORM_TEST(stxvw4x);
+      STORE_VSX_XFORM_TEST(stxsdx);
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_vsx_207(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_2_07));
+@@ -348,12 +346,11 @@ int test_alignment_handler_vsx_207(void)
+      LOAD_VSX_XFORM_TEST(lxsiwzx);
+      STORE_VSX_XFORM_TEST(stxsspx);
+      STORE_VSX_XFORM_TEST(stxsiwx);
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_vsx_300(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+
+@@ -380,12 +377,11 @@ int test_alignment_handler_vsx_300(void)
+      STORE_VSX_XFORM_TEST(stxvx);
+      STORE_VSX_XFORM_TEST(stxvl);
+      STORE_VSX_XFORM_TEST(stxvll);
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_vsx_prefix(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_1));
+@@ -399,12 +395,11 @@ int test_alignment_handler_vsx_prefix(void)
+      STORE_VSX_8LS_PREFIX_TEST(PSTXSSP, 0);
+      STORE_VSX_8LS_PREFIX_TEST(PSTXV0, 0);
+      STORE_VSX_8LS_PREFIX_TEST(PSTXV1, 1);
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_integer(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+
+@@ -458,12 +453,11 @@ int test_alignment_handler_integer(void)
+      STORE_DFORM_TEST(stmw);
+  #endif
+
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_integer_206(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_06));
+@@ -473,12 +467,11 @@ int test_alignment_handler_integer_206(void)
+      LOAD_XFORM_TEST(ldbrx);
+      STORE_XFORM_TEST(stdbrx);
+
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_integer_prefix(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_1));
+@@ -494,12 +487,11 @@ int test_alignment_handler_integer_prefix(void)
+      STORE_MLS_PREFIX_TEST(PSTH);
+      STORE_MLS_PREFIX_TEST(PSTW);
+      STORE_8LS_PREFIX_TEST(PSTD);
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_vmx(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap(PPC_FEATURE_HAS_ALTIVEC));
+@@ -522,12 +514,11 @@ int test_alignment_handler_vmx(void)
+      STORE_VMX_XFORM_TEST(stvehx);
+      STORE_VMX_XFORM_TEST(stvewx);
+      STORE_VMX_XFORM_TEST(stvxl);
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_fp(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+
+@@ -550,12 +541,11 @@ int test_alignment_handler_fp(void)
+      STORE_FLOAT_XFORM_TEST(stfsux);
+      STORE_FLOAT_XFORM_TEST(stfiwx);
+
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_fp_205(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_05));
+@@ -568,12 +558,11 @@ int test_alignment_handler_fp_205(void)
+      STORE_FLOAT_DFORM_TEST(stfdp);
+      STORE_FLOAT_XFORM_TEST(stfdpx);
+
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_fp_206(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_06));
+@@ -582,13 +571,12 @@ int test_alignment_handler_fp_206(void)
+
+      LOAD_FLOAT_XFORM_TEST(lfiwzx);
+
+-    return rc;
++    return 0;
+  }
+
+  int test_alignment_handler_fp_prefix(void)
+  {
+-    int rc = 0;
+
+      SKIP_IF(!can_open_cifile());
+      SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_1));
+@@ -599,7 +587,7 @@ int test_alignment_handler_fp_prefix(void)
+      LOAD_FLOAT_MLS_PREFIX_TEST(PLFD);
+      STORE_FLOAT_MLS_PREFIX_TEST(PSTFS);
+      STORE_FLOAT_MLS_PREFIX_TEST(PSTFD);
+-    return rc;
++    return 0;
+  }
+
+  void usage(char *prog)
