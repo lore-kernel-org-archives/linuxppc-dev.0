@@ -4,58 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85594EB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 21:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62AAEEB64D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 23:13:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JSy2cjQ3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ogTbDU4U;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QhJMb6Hq8z3bWp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 07:24:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QhLnB6YZqz3bjw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 09:13:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JSy2cjQ3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ogTbDU4U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=dinguyen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhJLc0kkjz2yjk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2023 07:23:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhLm86tsDz30gt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2023 09:12:08 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 34A296257E;
-	Wed, 14 Jun 2023 21:23:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E219C433C8;
-	Wed, 14 Jun 2023 21:23:12 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 7DD0C63F3E;
+	Wed, 14 Jun 2023 23:12:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A0331C433C8;
+	Wed, 14 Jun 2023 23:12:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686777794;
-	bh=sfZlQC0KRiU3VFMaS6H5djLiaDuaR3UyKKAHotXoEC4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=JSy2cjQ3EfZqDH+GRmJ+mjVAAcseGIvPUq3lquiQxXqEjjGqwU+HemD7F3wiC1btN
-	 oSofDjGtfqLFUZE6+eF26LaNmlZ0XJSVLI8h3M4XLmim/HM29Na3QWm9DVPo2aVCXI
-	 K79BAGLxK+0MfFwKGWozB9O2gr9yZd3Cu5CIDwhRjdpR3tn5b309NHjtR2IQGAy5FI
-	 ii48Ct/zrPJGlO6GMB0nxU3tTn8XzvIvT2D58R4sk2Mn4rxTjXdkRPrgiKhp+20BR7
-	 UEwrTSQZ099UBshJbATcCyWw+lXzjKCSDECSlkjbQFiwFpFsJU9nBH5UIC1JXPi4An
-	 txkWeQKuOaEyQ==
-Message-ID: <5729b45b-6a19-2aa8-8722-c50e6a1fceea@kernel.org>
-Date: Wed, 14 Jun 2023 16:23:10 -0500
+	s=k20201202; t=1686784324;
+	bh=uuKmp0xLbJ5YLoXCGTYIkQIfZt6VXITzXOV+Cj45BTI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=ogTbDU4Uv9JOYzRjb1ir3GDsm+szQnq9G6AhIHnP+mhZTTtBtUt+m2dTw5fsGg+gk
+	 W5XFjTwKQSWpQzYo0rEnLIrj8uImDiUupNFOHK8h68bTQR8SIrVkKgFStLpSp5EEqS
+	 hyuE86lZ0Zq70qYipafi4hANX7D3suzy1H3Gx1YbaUk/FU0PjFjxf/PcfYb9bAovAr
+	 D5gZZOHs4YmmU97d0RxGs3ynOj1+cR9jx75h0B32XYECrARN3IV/8v6gzSjih6AmKy
+	 Urorc+arUzvzpyATsT0YOUSiz/jiz7sRxfVxknMk+zRqhfT2k+coxxBgjL7Rkank4M
+	 h5oLj5W53H/Vw==
+Date: Wed, 14 Jun 2023 18:12:03 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: "Maciej W. Rozycki" <macro@orcam.me.uk>
+Subject: Re: [PATCH v9 00/14] pci: Work around ASMedia ASM2824 PCIe link
+ training failures
+Message-ID: <20230614231203.GA1451606@bhelgaas>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v4 27/34] nios2: Convert __pte_free_tlb() to use ptdescs
-Content-Language: en-US
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-References: <20230612210423.18611-1-vishal.moola@gmail.com>
- <20230612210423.18611-28-vishal.moola@gmail.com>
- <e52c7a74-da68-08d2-54e2-f95a8c5b52e7@kernel.org>
- <CAMuHMdXPASfLM8St_JZOW3Wke+ickJoo1oDr+orRbTERy=Zgwg@mail.gmail.com>
-From: Dinh Nguyen <dinguyen@kernel.org>
-In-Reply-To: <CAMuHMdXPASfLM8St_JZOW3Wke+ickJoo1oDr+orRbTERy=Zgwg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.21.2305310024400.59226@angie.orcam.me.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,51 +61,223 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, "Vishal Moola \(Oracle\)" <vishal.moola@gmail.com>, linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org, Hugh Dickins <hughd@google.com>, linux-csky@vger.kernel.org, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Oliver O'Halloran <oohall@gmail.com>, Stefan Roese <sr@denx.de>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Jim Wilson <wilson@tuliptree.org>, Nicholas Piggin <npiggin@gmail.com>, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, David Abdurachmanov <david.abdurachmanov@gmail.com>, linuxppc-dev@lists.ozlabs.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Lukas Wunner <lukas@wunner.de>, netdev@vger.kernel.org, Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 6/14/23 04:30, Geert Uytterhoeven wrote:
-> Hi Dinh,
+On Sun, Jun 11, 2023 at 06:19:08PM +0100, Maciej W. Rozycki wrote:
+> Hi,
 > 
-> On Wed, Jun 14, 2023 at 12:17 AM Dinh Nguyen <dinguyen@kernel.org> wrote:
->> On 6/12/23 16:04, Vishal Moola (Oracle) wrote:
->>> Part of the conversions to replace pgtable constructor/destructors with
->>> ptdesc equivalents.
->>>
->>> Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
->>> ---
->>>    arch/nios2/include/asm/pgalloc.h | 8 ++++----
->>>    1 file changed, 4 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/arch/nios2/include/asm/pgalloc.h b/arch/nios2/include/asm/pgalloc.h
->>> index ecd1657bb2ce..ce6bb8e74271 100644
->>> --- a/arch/nios2/include/asm/pgalloc.h
->>> +++ b/arch/nios2/include/asm/pgalloc.h
->>> @@ -28,10 +28,10 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
->>>
->>>    extern pgd_t *pgd_alloc(struct mm_struct *mm);
->>>
->>> -#define __pte_free_tlb(tlb, pte, addr)                               \
->>> -     do {                                                    \
->>> -             pgtable_pte_page_dtor(pte);                     \
->>> -             tlb_remove_page((tlb), (pte));                  \
->>> +#define __pte_free_tlb(tlb, pte, addr)                                       \
->>> +     do {                                                            \
->>> +             pagetable_pte_dtor(page_ptdesc(pte));                   \
->>> +             tlb_remove_page_ptdesc((tlb), (page_ptdesc(pte)));      \
->>>        } while (0)
->>>
->>>    #endif /* _ASM_NIOS2_PGALLOC_H */
->>
->> Applied!
+>  This is v9 of the change to work around a PCIe link training phenomenon 
+> where a pair of devices both capable of operating at a link speed above 
+> 2.5GT/s seems unable to negotiate the link speed and continues training 
+> indefinitely with the Link Training bit switching on and off repeatedly 
+> and the data link layer never reaching the active state.
 > 
-> I don't think you can just apply this patch, as the new functions
-> were only introduced in [PATCH v4 05/34] of this series.
+>  With several requests addressed and a few extra issues spotted this
+> version has now grown to 14 patches.  It has been verified for device 
+> enumeration with and without PCI_QUIRKS enabled, using the same piece of 
+> RISC-V hardware as previously.  Hot plug or reset events have not been 
+> verified, as this is difficult if at all feasible with hardware in 
+> question.
 > 
+>  Last iteration: 
+> <https://lore.kernel.org/r/alpine.DEB.2.21.2304060100160.13659@angie.orcam.me.uk/>, 
+> and my input to it:
+> <https://lore.kernel.org/r/alpine.DEB.2.21.2306080224280.36323@angie.orcam.me.uk/>.
 
-Ah, thanks for the pointer!
+Thanks, I applied these to pci/enumeration for v6.5.
 
-Dinh
+I tweaked a few things, so double-check to be sure I didn't break
+something:
+
+  - Moved dev->link_active_reporting init to set_pcie_port_type()
+    because it does other PCIe-related stuff.
+
+  - Reordered to keep all the link_active_reporting things together.
+
+  - Reordered to clean up & factor pcie_retrain_link() before exposing
+    it to the rest of the PCI core.
+
+  - Moved pcie_retrain_link() a little earlier to keep it next to
+    pcie_wait_for_link_status().
+
+  - Squashed the stubs into the actual quirk so we don't have the
+    intermediate state where we call the stubs but they never do
+    anything (let me know if there's a reason we need your order).
+
+  - Inline pcie_parent_link_retrain(), which seemed like it didn't add
+    enough to be worthwhile.
+
+Interdiff below:
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 80694e2574b8..f11268924c8f 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1153,27 +1153,16 @@ void pci_resume_bus(struct pci_bus *bus)
+ 		pci_walk_bus(bus, pci_resume_one, NULL);
+ }
+ 
+-/**
+- * pcie_parent_link_retrain - Check and retrain link we are downstream from
+- * @dev: PCI device to handle.
+- *
+- * Return TRUE if the link was retrained, FALSE otherwise.
+- */
+-static bool pcie_parent_link_retrain(struct pci_dev *dev)
+-{
+-	struct pci_dev *bridge;
+-
+-	bridge = pci_upstream_bridge(dev);
+-	if (bridge)
+-		return pcie_failed_link_retrain(bridge);
+-	else
+-		return false;
+-}
+-
+ static int pci_dev_wait(struct pci_dev *dev, char *reset_type, int timeout)
+ {
+-	bool retrain = true;
+ 	int delay = 1;
++	bool retrain = false;
++	struct pci_dev *bridge;
++
++	if (pci_is_pcie(dev)) {
++		retrain = true;
++		bridge = pci_upstream_bridge(dev);
++	}
+ 
+ 	/*
+ 	 * After reset, the device should not silently discard config
+@@ -1201,9 +1190,9 @@ static int pci_dev_wait(struct pci_dev *dev, char *reset_type, int timeout)
+ 		}
+ 
+ 		if (delay > PCI_RESET_WAIT) {
+-			if (retrain) {
++			if (retrain && bridge) {
+ 				retrain = false;
+-				if (pcie_parent_link_retrain(dev)) {
++				if (pcie_failed_link_retrain(bridge)) {
+ 					delay = 1;
+ 					continue;
+ 				}
+@@ -4914,6 +4903,38 @@ static bool pcie_wait_for_link_status(struct pci_dev *pdev,
+ 	return (lnksta & lnksta_mask) == lnksta_match;
+ }
+ 
++/**
++ * pcie_retrain_link - Request a link retrain and wait for it to complete
++ * @pdev: Device whose link to retrain.
++ * @use_lt: Use the LT bit if TRUE, or the DLLLA bit if FALSE, for status.
++ *
++ * Retrain completion status is retrieved from the Link Status Register
++ * according to @use_lt.  It is not verified whether the use of the DLLLA
++ * bit is valid.
++ *
++ * Return TRUE if successful, or FALSE if training has not completed
++ * within PCIE_LINK_RETRAIN_TIMEOUT_MS milliseconds.
++ */
++bool pcie_retrain_link(struct pci_dev *pdev, bool use_lt)
++{
++	u16 lnkctl;
++
++	pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &lnkctl);
++	lnkctl |= PCI_EXP_LNKCTL_RL;
++	pcie_capability_write_word(pdev, PCI_EXP_LNKCTL, lnkctl);
++	if (pdev->clear_retrain_link) {
++		/*
++		 * Due to an erratum in some devices the Retrain Link bit
++		 * needs to be cleared again manually to allow the link
++		 * training to succeed.
++		 */
++		lnkctl &= ~PCI_EXP_LNKCTL_RL;
++		pcie_capability_write_word(pdev, PCI_EXP_LNKCTL, lnkctl);
++	}
++
++	return pcie_wait_for_link_status(pdev, use_lt, !use_lt);
++}
++
+ /**
+  * pcie_wait_for_link_delay - Wait until link is active or inactive
+  * @pdev: Bridge device
+@@ -4968,37 +4989,6 @@ bool pcie_wait_for_link(struct pci_dev *pdev, bool active)
+ 	return pcie_wait_for_link_delay(pdev, active, 100);
+ }
+ 
+-/**
+- * pcie_retrain_link - Request a link retrain and wait for it to complete
+- * @pdev: Device whose link to retrain.
+- * @use_lt: Use the LT bit if TRUE, or the DLLLA bit if FALSE, for status.
+- *
+- * Retrain completion status is retrieved from the Link Status Register
+- * according to @use_lt.  It is not verified whether the use of the DLLLA
+- * bit is valid.
+- *
+- * Return TRUE if successful, or FALSE if training has not completed.
+- */
+-bool pcie_retrain_link(struct pci_dev *pdev, bool use_lt)
+-{
+-	u16 lnkctl;
+-
+-	pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &lnkctl);
+-	lnkctl |= PCI_EXP_LNKCTL_RL;
+-	pcie_capability_write_word(pdev, PCI_EXP_LNKCTL, lnkctl);
+-	if (pdev->clear_retrain_link) {
+-		/*
+-		 * Due to an erratum in some devices the Retrain Link bit
+-		 * needs to be cleared again manually to allow the link
+-		 * training to succeed.
+-		 */
+-		lnkctl &= ~PCI_EXP_LNKCTL_RL;
+-		pcie_capability_write_word(pdev, PCI_EXP_LNKCTL, lnkctl);
+-	}
+-
+-	return pcie_wait_for_link_status(pdev, use_lt, !use_lt);
+-}
+-
+ /*
+  * Find maximum D3cold delay required by all the devices on the bus.  The
+  * spec says 100 ms, but firmware can lower it and we allow drivers to
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 016a9d4a61f7..f547db0a728f 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1526,6 +1526,7 @@ void set_pcie_port_type(struct pci_dev *pdev)
+ {
+ 	int pos;
+ 	u16 reg16;
++	u32 reg32;
+ 	int type;
+ 	struct pci_dev *parent;
+ 
+@@ -1539,6 +1540,10 @@ void set_pcie_port_type(struct pci_dev *pdev)
+ 	pci_read_config_dword(pdev, pos + PCI_EXP_DEVCAP, &pdev->devcap);
+ 	pdev->pcie_mpss = FIELD_GET(PCI_EXP_DEVCAP_PAYLOAD, pdev->devcap);
+ 
++	pcie_capability_read_dword(pdev, PCI_EXP_LNKCAP, &reg32);
++	if (reg32 & PCI_EXP_LNKCAP_DLLLARC)
++		pdev->link_active_reporting = 1;
++
+ 	parent = pci_upstream_bridge(pdev);
+ 	if (!parent)
+ 		return;
+@@ -1828,7 +1833,6 @@ int pci_setup_device(struct pci_dev *dev)
+ 	int err, pos = 0;
+ 	struct pci_bus_region region;
+ 	struct resource *res;
+-	u32 linkcap;
+ 
+ 	hdr_type = pci_hdr_type(dev);
+ 
+@@ -1876,10 +1880,6 @@ int pci_setup_device(struct pci_dev *dev)
+ 	/* "Unknown power state" */
+ 	dev->current_state = PCI_UNKNOWN;
+ 
+-	/* Set it early to make it available to fixups, etc.  */
+-	pcie_capability_read_dword(dev, PCI_EXP_LNKCAP, &linkcap);
+-	dev->link_active_reporting = !!(linkcap & PCI_EXP_LNKCAP_DLLLARC);
+-
+ 	/* Early fixups, before probing the BARs */
+ 	pci_fixup_device(pci_fixup_early, dev);
+ 
