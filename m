@@ -4,63 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC3C7EB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 03:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34A0AEB64D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 04:11:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="unknown key version" header.d=208.org header.i=@208.org header.a=rsa-sha256 header.s=dkim header.b=c6jHFt+8;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=DFfOrXRu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qgrrn166Gz3bSt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 13:44:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QgsRY20z8z30hw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jun 2023 14:11:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="unknown key version" header.d=208.org header.i=@208.org header.a=rsa-sha256 header.s=dkim header.b=c6jHFt+8;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=DFfOrXRu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=208suo.com (client-ip=183.242.55.162; helo=mail.208.org; envelope-from=baomingtong001@208suo.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 464 seconds by postgrey-1.37 at boromir; Wed, 14 Jun 2023 12:42:43 AEST
-Received: from mail.208.org (unknown [183.242.55.162])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgqTb68Zgz306B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 12:42:43 +1000 (AEST)
-Received: from mail.208.org (email.208.org [127.0.0.1])
-	by mail.208.org (Postfix) with ESMTP id 4QgqJP5TJ2zBJL9w
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 10:34:45 +0800 (CST)
-Authentication-Results: mail.208.org (amavisd-new); dkim=pass
-	reason="pass (just generated, assumed good)" header.d=208.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=208.org; h=
-	content-transfer-encoding:content-type:message-id:user-agent
-	:references:in-reply-to:subject:to:from:date:mime-version; s=
-	dkim; t=1686710085; x=1689302086; bh=/153KFImgT+gktyfP9V8RqyB2R8
-	agRq0rd6nSMh42WI=; b=c6jHFt+8uhaVx8AgCb70a/2HxXNGL3cV1/olgvE6wsM
-	b/Nc7kYIM+dhAFrRDhaABSDg2lUujKDHq+BsZxMs1SazTBEeXbIS0FvG1ayEk3t+
-	4YnM7iK9LskVvxahleYV2o23Bpa7DvM9Kwd08hBI0JW1QeUAI4zs+tbkLX/8OmOt
-	ZztmzXwJSKkoOioKlzuZ3EbBAZyjZ8i0ot+vR/oO11O7YmwFW+CWF1T/9/HdZPKo
-	t0s+ocM1sVA1guZRPlzBOLPIh19EnVvbwV4M3/3OC+f3vKdZBJdg4XH3/TLzrpMC
-	sGrV5RCaHsceH055a+TawgjEDXyo3P2db9ADeIqMLIA==
-X-Virus-Scanned: amavisd-new at mail.208.org
-Received: from mail.208.org ([127.0.0.1])
-	by mail.208.org (mail.208.org [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id HuEjzm4sUO9a for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jun 2023 10:34:45 +0800 (CST)
-Received: from localhost (email.208.org [127.0.0.1])
-	by mail.208.org (Postfix) with ESMTPSA id 4QgqJP2FFCzBJCMY;
-	Wed, 14 Jun 2023 10:34:45 +0800 (CST)
-MIME-Version: 1.0
-Date: Wed, 14 Jun 2023 10:34:45 +0800
-From: baomingtong001@208suo.com
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
- pbonzini@redhat.com, paulus@ozlabs.org, seanjc@google.com, thuth@redhat.com
-Subject: [PATCH] KVM: PPC: remove unneeded variable
-In-Reply-To: <20230614023206.3865-1-luojianhong@cdjrlc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QgsQW3c7Yz301d
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2023 14:10:11 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
+	id 4QgsQT3Xndz4x4G; Wed, 14 Jun 2023 14:10:09 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
+	s=201707; t=1686715809;
+	bh=wvvRc9qy6Ni7t/b7z+9GETWf6P/wewVtlrltmdxCvjw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DFfOrXRu+Zyg3+Fad0QP8M1k5KhwxTXq8rYTpjt/ZqPs1emMh/0XpTc9GFfMQTXpC
+	 x1Tg15tU6Ag18OQXH0RWERG/mlTQZwCdy/qgcFkoETTyIz015+f4eMr4vsq2rOrt7N
+	 qkAEVOn27CnNPfU9vby0DDO2A5+XP00l9JqBzdCOz2nygF0MTFJ43y8nxi2nkXHraF
+	 /7v6wQr2btfPPr6FGm0M3oBIfqVgehn3CxNCfHugZuUnu3ApTGMxmJ68Hd6fuWQGPf
+	 FeZEJDiMEvlv1oCGlooxUfOdEz9qIchWVxiOeCulNIJYhnrHxW7AJgK/nx8h55syBh
+	 QRRhLB5gU9FJg==
+Date: Wed, 14 Jun 2023 14:10:05 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: baomingtong001@208suo.com
+Subject: Re: [PATCH] KVM: PPC: remove unneeded variable
+Message-ID: <ZIk9nVjY4G2xInd1@cleo>
 References: <20230614023206.3865-1-luojianhong@cdjrlc.com>
-User-Agent: Roundcube Webmail
-Message-ID: <de7ae31f88510a6b04f29fc01ab44854@208suo.com>
-X-Sender: baomingtong001@208suo.com
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Wed, 14 Jun 2023 13:43:36 +1000
+ <de7ae31f88510a6b04f29fc01ab44854@208suo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <de7ae31f88510a6b04f29fc01ab44854@208suo.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,37 +55,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: thuth@redhat.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, seanjc@google.com, pbonzini@redhat.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-fix the following coccicheck warning:
+On Wed, Jun 14, 2023 at 10:34:45AM +0800, baomingtong001@208suo.com wrote:
+> fix the following coccicheck warning:
+> 
+> arch/powerpc/kvm/book3s_pr.c:424:5-6: Unneeded variable: "r".
+> 
+> Signed-off-by: Mingtong Bao <baomingtong001@208suo.com>
+> ---
+>  arch/powerpc/kvm/book3s_pr.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index 9118242063fb..d03b31b240d7 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -421,14 +421,14 @@ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu)
+> 
+>  static int kvmppc_core_check_requests_pr(struct kvm_vcpu *vcpu)
+>  {
+> -    int r = 1; /* Indicate we want to get back into the guest */
+> +    /* Indicate we want to get back into the guest */
 
-arch/powerpc/kvm/book3s_pr.c:424:5-6: Unneeded variable: "r".
+Instead of leaving the comment here, where it makes no sense, please
+move it to the return statement below.
 
-Signed-off-by: Mingtong Bao <baomingtong001@208suo.com>
----
-  arch/powerpc/kvm/book3s_pr.c | 4 ++--
-  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+>      /* We misuse TLB_FLUSH to indicate that we want to clear
+>         all shadow cache entries */
+>      if (kvm_check_request(KVM_REQ_TLB_FLUSH, vcpu))
+>          kvmppc_mmu_pte_flush(vcpu, 0, 0);
+> 
+> -    return r;
+> +    return 1;
+>  }
+> 
+>  /************* MMU Notifiers *************/
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 9118242063fb..d03b31b240d7 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -421,14 +421,14 @@ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu)
-
-  static int kvmppc_core_check_requests_pr(struct kvm_vcpu *vcpu)
-  {
--    int r = 1; /* Indicate we want to get back into the guest */
-+    /* Indicate we want to get back into the guest */
-
-      /* We misuse TLB_FLUSH to indicate that we want to clear
-         all shadow cache entries */
-      if (kvm_check_request(KVM_REQ_TLB_FLUSH, vcpu))
-          kvmppc_mmu_pte_flush(vcpu, 0, 0);
-
--    return r;
-+    return 1;
-  }
-
-  /************* MMU Notifiers *************/
+Paul.
