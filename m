@@ -4,64 +4,211 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9F19EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 20:44:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0BD5EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 21:05:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=nQbZV095;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-03-30 header.b=wyat3ELL;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=Hg9v3eja;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QhvQq0Pddz3bsP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 06:44:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QhvvM0Tc3z3bnQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 07:05:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=nQbZV095;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-03-30 header.b=wyat3ELL;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=Hg9v3eja;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::a49; helo=mail-vk1-xa49.google.com; envelope-from=3geolzaykdf8pb7kg9dlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-vk1-xa49.google.com (mail-vk1-xa49.google.com [IPv6:2607:f8b0:4864:20::a49])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=eric.devolder@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhvPs5pzCz30FW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 06:43:11 +1000 (AEST)
-Received: by mail-vk1-xa49.google.com with SMTP id 71dfb90a1353d-46e6f186080so763784e0c.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2023 13:43:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhnXn6S0vz2yJT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 02:18:48 +1000 (AEST)
+Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35FEOKH1029534;
+	Thu, 15 Jun 2023 16:18:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2023-03-30;
+ bh=egzuNSKSK+qIHfc8O9DXl7XhkqwOecL5pACkhjEBS4E=;
+ b=wyat3ELL3fB6apGs5rSUcLjbgjrtm3A7Y+kudvrxf1vz8/iq/1gQ8v9U1v7T6+DB3qAp
+ 7Umi4OfQyRwjU6wCmJ0XgtG/CNL+xurQ+ugaFcJMAtNllYDTxptdX4EO0XbremYtDXSM
+ wWiajxKWEiISCovzSFXQgQO7bBRMry497k9ksaF+suJ9LIXdrq7GOZqqBRIdnhyBSxSc
+ YxRa27n5cipr39Ga2IWzRXHJB+eBzTeCL1aBoWAGJ7/2BHWz6d6KeU+ZiXWA1ErggyED
+ 4YLqtuMIcd0zdho3vkEwwnbfVwjKlf5sbwqVPom+Utnb/AUA6kAkvgcBkoV3k7wtZTiZ YQ== 
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3r4g3btj1j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 15 Jun 2023 16:18:25 +0000
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 35FExxMJ011520;
+	Thu, 15 Jun 2023 16:18:24 GMT
+Received: from nam04-bn8-obe.outbound.protection.outlook.com (mail-bn8nam04lp2041.outbound.protection.outlook.com [104.47.74.41])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3r4fm75xfv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 15 Jun 2023 16:18:24 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Bh6AvlrRzxMaOPgYyChM1lQMqHWVIBou3wlNIBps3TFKbnrc/VEh3Bb5TpbuYH0pNP2Sdg3sjeoXv8YoF2R6eTMLt5jY+YxcdVdYPWYr0d953ThSODF5/xzxUAytLjiT8Ca7D40X6yFqkOGlkgB3xcCgRg8b14zI5qQJuxn3SW89DGNHHkdqNT+kHbZBPnmk/4FP1JcE2DoocpXBPt7mWHwiqWkvhS+nR+ivbouqF5G6dctIlEl8RZiFvE4nAZ5omuXziK2UsN8oJm0Esg2MHbx1el+3suTKj6GjkhCeptvkHA7PQxTRPOPMvUuxBOpPMfnplUKWE8YjG7lMrvLN9g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=egzuNSKSK+qIHfc8O9DXl7XhkqwOecL5pACkhjEBS4E=;
+ b=jJzMQ4y3LluVbG0nqvt258rnhnM29wwlzpFeufZG66E7eBM8zzn+Ehx6kRskOHKgweJlHTgAAjQ+TWbiDx3Hb4jlNfNVRSwPdfemWEZCSxLPdkJxofiz/tFf6vT5t+EKlQPdSIq1xW7l1nQunM5q6+fwSYVvztSgaYQICnm53s/Nwu2Dv31jQ9UsoxWl7DtszWs52MmTBIZqEadyDK6iRTJuELpOg0IO1moas1Y2RRJ7vw977G8xOcEyXw70i/9Laqs1hxGOKjBK+kbZ5UGMW28zyYlqw/xZhq3ELKdPdhIzu8C7SoSXP9j8jSEtF/kJadr/cfMARPWtamxpEWPIqw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1686861788; x=1689453788;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ncA8NUQ/d7RIXyoqKxF4dofBT4rINO6z44852n+jNFs=;
-        b=nQbZV095qPTODM38p030xUkUE5YvPu/SZRzBpPfAXb+fLsoa1IGO9yqckVeOQshL6T
-         K+JwXgnKUHxQEx5636G+4fgYCnUVleMvPleLvieSaIvK9v+lIL8nmEZQO8QButhEQLZv
-         lW//NSLqYnHhKpkWpZb3umXstgQFcdd2srXFlCBcWln+720WttnI0XQ9xBtmd1Evi7YL
-         a5oQG5UTyBCNvIUY6C/RgnT59oqEOLyP8z+w1VtbmtIDLYsjgcDSunfFLuBPr1wPUPYU
-         pwLL1WcZBPSf8UWLLktIi6pDH2d+QINc05EvgnluyEVFUlX2ucegVqKnUxlMpj7qFseF
-         q1sQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686861788; x=1689453788;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ncA8NUQ/d7RIXyoqKxF4dofBT4rINO6z44852n+jNFs=;
-        b=ZbZRu+jMI+WlFZkrvjrkCPiKlctmOtpz0jSMwjNJxxzYSrKVJlaGYUmonmLXMYCurY
-         VzTxTPIJF/F4CeUEtBZSHap7tAAlwjxBmwnPiugArWxsQYMzVdESUOqC+utnpnomoThp
-         vBsbdwyXXvu+5A+No0GEL1s2tyHrsYdaXLi7kJ7FHuQqtd0HkyaBEFm+IyCIsR6z/lcx
-         cmt8T7M0SDVgenOc4hprxpsLO7YrpShwPaQgsmbPR8lx5z+mS+9a8SbybP/DREHrT96k
-         R/a/R4lGF7nY+D6LH2TWF2xXn2XtoOFny8qx5LwE52/Bjg1a54WJn/1pU23lZynuNL7J
-         SAJg==
-X-Gm-Message-State: AC+VfDy8T/CydmYKuyISeOgVqxjpJaahbARA4GGrKXS/+p0umkzidDT8
-	2xR51gkT8NsIlr+HdROdPV7V7B0OY4Q=
-X-Google-Smtp-Source: ACHHUZ58VbUpKiHJn4yWrs3hFzFVgLfs2NAcssDwAzKOV57o1C8oPk/BJPOHvBI5DAEtAMIVLjSdWrCDPAY=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:3495:0:b0:bc3:9cd9:6e0e with SMTP id
- b143-20020a253495000000b00bc39cd96e0emr732274yba.10.1686848384875; Thu, 15
- Jun 2023 09:59:44 -0700 (PDT)
-Date: Thu, 15 Jun 2023 09:59:43 -0700
-In-Reply-To: <20230526234435.662652-9-yuzhao@google.com>
-Mime-Version: 1.0
-References: <20230526234435.662652-1-yuzhao@google.com> <20230526234435.662652-9-yuzhao@google.com>
-Message-ID: <ZItDf5lpKJz7uezP@google.com>
-Subject: Re: [PATCH mm-unstable v2 08/10] kvm/x86: move tdp_mmu_enabled and shadow_accessed_mask
-From: Sean Christopherson <seanjc@google.com>
-To: Yu Zhao <yuzhao@google.com>
-Content-Type: text/plain; charset="us-ascii"
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=egzuNSKSK+qIHfc8O9DXl7XhkqwOecL5pACkhjEBS4E=;
+ b=Hg9v3ejaKwec4+0T6E3LOY9ZjUiuQmCgUolacHbpnqRT4YBFiYcMXpLoQ2pTnnGXA4WBB//jJKd2cjXzgSyzLFBaXsbKoaiD8sjAl5xA72ajzZ83rx+L1mBa9Xh9IhFslRNcmEtw6+q4M70tDzaBWvR4E9Upq5zm5Yhi0J/rkrc=
+Received: from CO1PR10MB4531.namprd10.prod.outlook.com (2603:10b6:303:6c::22)
+ by PH7PR10MB7105.namprd10.prod.outlook.com (2603:10b6:510:27f::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.38; Thu, 15 Jun
+ 2023 16:17:54 +0000
+Received: from CO1PR10MB4531.namprd10.prod.outlook.com
+ ([fe80::8b8f:b4b1:bb78:b048]) by CO1PR10MB4531.namprd10.prod.outlook.com
+ ([fe80::8b8f:b4b1:bb78:b048%5]) with mapi id 15.20.6500.025; Thu, 15 Jun 2023
+ 16:17:54 +0000
+Message-ID: <aaddd54b-d1d6-d979-ba48-a2f89552a809@oracle.com>
+Date: Thu, 15 Jun 2023 11:17:30 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v1 10/21] powerpc/kexec: refactor for kernel/Kconfig.kexec
+Content-Language: en-US
+To: Michael Ellerman <mpe@ellerman.id.au>, linux@armlinux.org.uk,
+        catalin.marinas@arm.com, will@kernel.org, chenhuacai@kernel.org,
+        geert@linux-m68k.org, tsbogend@alpha.franken.de,
+        James.Bottomley@HansenPartnership.com, deller@gmx.de,
+        ysato@users.sourceforge.jp, dalias@libc.org,
+        glaubitz@physik.fu-berlin.de, tglx@linutronix.de, mingo@redhat.com,
+        bp@alien8.de, dave.hansen@linux.intel.com,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linux-sh@vger.kernel.org
+References: <20230612172805.681179-1-eric.devolder@oracle.com>
+ <20230612172805.681179-11-eric.devolder@oracle.com>
+ <87fs6tflfi.fsf@mail.lhotse>
+From: Eric DeVolder <eric.devolder@oracle.com>
+In-Reply-To: <87fs6tflfi.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: LO2P265CA0486.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:13a::11) To CO1PR10MB4531.namprd10.prod.outlook.com
+ (2603:10b6:303:6c::22)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR10MB4531:EE_|PH7PR10MB7105:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7ab6c3de-adbe-4ef5-553a-08db6dbc12c2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	DsLIy7lKv9Di/mt385Itvl/Ec+uFFbgpvOBVVueYZ+L1lKplDIzxCh4BltNluVr9YvOJGddDK9E4AzX7t1gqvsc33tF6eZY2efzFkYchT00k8WWEBJExqtlfbTgobdiGWT5y0vrcInkgfZ1B+UxRSFkf7Aae9kpyYWNoLkmC22/nHkvGgTURXYVdJw0oj7/tE0bvNI4lcmYSr9E8yLgpiDxiJSDqwrzW6o5p51/2+mh406k4IUeMI0ZIyebJIedviZfNV9dt5j1bUxen/IiAyE/SVL0lunLagWzfaNF7GfC+hB6H0rVXg3PWdqeDb1fD2evjk+pGY7iQaI7xUiMrXVRjZzq9YH1FQAgTl+nf9WoKjXbiCk4py5fQJTh9bCS1Vxn03n8Xw3Ed+1XEvbCj8GCRvoJ/BmzfEsirmOeqFHlmTMt4sMaruKKEvnJMlKyd9ElP8Q/WTZc8DJSH5cMSA8Ur3P0JV5gnLLMYYAAYj1+9GsEEMAkHRlI1GKtsXV08peqiRm3ncCKeTLsEdmVHTjmlra+e+PQXiCQUgpzANizye7LDaGQXKP8a1Ri9y0dxWIr2MSGk4s0hwvNZfZsm1oUw3MVqwyUx5zeN0J5XcmklIlJDBpGK2zDLe8uo1DbXlSBOIU3zSF5FGr3aAXuM+jJl8r+UWOiVrEj3kj9FqQs=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR10MB4531.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(396003)(366004)(376002)(346002)(136003)(39860400002)(451199021)(186003)(6666004)(478600001)(921005)(66946007)(41300700001)(8936002)(8676002)(4326008)(66476007)(316002)(38100700002)(2616005)(66556008)(107886003)(83380400001)(53546011)(6512007)(26005)(6486002)(6506007)(86362001)(7416002)(7406005)(5660300002)(2906002)(31696002)(7366002)(36756003)(31686004)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?RHowNUZjVnlva2VPaGMyRU9YWCt3WnU3V21tNVpSeEFBanA5Y0kxZk5nWFFD?=
+ =?utf-8?B?L21RUU9zWjRoRXFmNnM4MlZkM3lINVkvaDh0RzY5Zmk2Y2k4QnVENHNwQkI4?=
+ =?utf-8?B?RXpmdm5tUzJYZ2FjY2NhUzZwWHMySjhrcitQT2NkaXowaW1sZkxmajg3aVhU?=
+ =?utf-8?B?by9Ma1RJM2dFYXBrVm01dENjNGtReGxrUXNFN04zR0JWL0FCbmR6U3MwZWIr?=
+ =?utf-8?B?WER5eFBLUlZuV1lNcDVCUGtTRWorTHN2aENSYlpSMjlveUhxdjhSUE5sN0ZL?=
+ =?utf-8?B?RGFzQnRNdjlNM01yL0F6ODFWSmQxS3ZPK3p3ejBIR0pOQzFiTExMRmxrU1F6?=
+ =?utf-8?B?a2lGZWVEUUxKQ0VCbklJeTZPM0wzWDNRT05aRDMzaHYxd25PR3lIaWdDUjFk?=
+ =?utf-8?B?TVZSTk5ubkdpcmhBRzU1RmI5cUlaSHZnc25uYWhHL2p6blRXZklvRjI2MFh3?=
+ =?utf-8?B?TzlQRFNGYk9FbE5PajBpSWVmNWJsR3RIZ1A2dExYUTFmK1dsaW82RUdlUERV?=
+ =?utf-8?B?c0dOWEYrcHozSkJzTXhJN0F4bW1HblJZV0UwaUdVMkp3RHlqK0d4VXlBSFFI?=
+ =?utf-8?B?UkU2RFRXdmFSWk8rM2RqdHRrN0VQQmVIeFNxY2tpdHZvN01YZ2F6Ky9Ed3k0?=
+ =?utf-8?B?SExxbC85OFJ5MTVSYjdGbjJ1Z0ZHQkpHREplMllvdmNkM3BWU29VK21WdWVP?=
+ =?utf-8?B?WUZqdm5WazJyT1AydU9pZU5TcTZqWmZIVmJPalVpM3B1ZkUzakQ0cGdMQzh4?=
+ =?utf-8?B?NU1JWTF1cEZPbDdGdEMvOU9ML0VUVXFmSHdBTmhNWFIwaWJuNGMzMU9wUDJN?=
+ =?utf-8?B?dnhqb210VHBjYUNNcTBEUXNaUGpYMFc2Ly9ibUxST0lyTHpMcjBBU3RXNTJH?=
+ =?utf-8?B?aXJiQkJ6VXVUT3FRSWtObXFZSzFId1pmS0JFQ3RTKzdycE9wMGVWWWtvNTVT?=
+ =?utf-8?B?MWExOEZNdmRST2R2SVFVVENmamF2N0dha0RqTFB1S2ZNMkRVRkpSZVdVOG93?=
+ =?utf-8?B?ekNQWWVXemhSSUpqdEJxbk5jUGFKcjhNN3RXNWF1K0lxSnQza0hSQ09VK2JX?=
+ =?utf-8?B?RThWMWRoOXVaMVVwMGJiMkpRKzdBbzdvcUdwV1Zjd0xGWTVDUU1FcHQ5anFt?=
+ =?utf-8?B?ZSt4WWFPcWp3MkNablFGdXU1Vi92STBSNWJ5NUFiazBoVy9Uek5SVmU5Z05x?=
+ =?utf-8?B?dEZDM0RFTTJab0FocDFzY0wwcG5WdDJrQ3JjT2NCTWpBMW0xOXdOemJ0WHp1?=
+ =?utf-8?B?aTBFUkNYVzNKa0kwVTYxaHJYcUZibWdkbldmV2d5Zm9uaFVuc3JZVi9aL1I3?=
+ =?utf-8?B?UkhFV0xqTzNxbVN5RExTYTJzcFc4bnlkdExrV2huektRY2NGcmJlS1Vab0Jx?=
+ =?utf-8?B?ZVBscEI2YmE2TlZmbURqbFVEbTI4Ty9rYVhBOHpGU1hWVG5UenVna0hvaS9V?=
+ =?utf-8?B?amdmT3hqRDZuTStVNnN0NllaVlNlYWt5TWpad3hwNHUvZ0Nwa1MwVUZ1Qkta?=
+ =?utf-8?B?YmdkRmRRaXBsWkVLOXJNZHZPdVI4NFBGeUJmRWdEbFM2VERhWFhyWnNiWkUv?=
+ =?utf-8?B?WGhZeHZ0QU5SWnp6N080L1RKbE1vL2RIVXo1MzAyejZMTkJEVlZFeTZhMyth?=
+ =?utf-8?B?cWpSRnV2T0tTVDNDWFRtS2RPNzlya29PeHpDcFlhNmMvSFhpOHRwZldlSFJk?=
+ =?utf-8?B?Zis2YVhSSERJVlNjZldHU3E3bEpCMi9uUkNmWWt6S1drSEdLdzdQUHRoSVhL?=
+ =?utf-8?B?Tmk4aDkyOXdVZmU4WWN3ckNWcnhKcSszS0hsRkdSaVVwaTlrTDBiQzFtNzdP?=
+ =?utf-8?B?eG1vYVdzWHM3eVpBYk0zbWtXYk56dm9WNGptUDY5VkN5L3dKV29DWFZUaFkx?=
+ =?utf-8?B?WGIzbDh5bHNUUjMxRTIzR2ZJTWEwaWM1R05FR00zWVdNUjFUUlV6RGVMRjdv?=
+ =?utf-8?B?cW5mRnRUVjMvL25TRGJpNTE5RlQ0Sm1BK0xyZEVUenU1SWJPWDdjNlBVckdv?=
+ =?utf-8?B?d2xDN3Nwc1EyRWFpSjBjekZQRitiaFgzZVl2cld3c0J4aFdTbFZZSzlmMUU4?=
+ =?utf-8?B?WTVjV2pEMytMblFIUkxnUmtBMllJSkNRQ2tBaDJNWThMblVFMVZ0d3hkc2Fq?=
+ =?utf-8?B?VUpIL1ozb0lsN3pOaU1QZEgrVlhLbFNYVUlFQ1JzK1FTWTNXS25TcktKQVRC?=
+ =?utf-8?B?Umc9PQ==?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 	=?utf-8?B?dTZvblZXNldaZmRaaUpHQmNxZy9CWmE5dXp5MWJuWTZCeVRjK1FzR1JlUDQ2?=
+ =?utf-8?B?NWpobS84V3VrRElCeFo3Q3g2cWRsRllIWFBqaDNFVllMV1hkVnQ5a2JIMWhQ?=
+ =?utf-8?B?Z09Pbm1VQm8xVzBVMUs1RWFGTDNqd2RuT2V3eDh5Rk8rRFhVaXlzOVdudnFj?=
+ =?utf-8?B?RW5rYnRpRkVlSUZ4SlJBRXhkNDFwZ1BhSUpYZjZtTUdEVkpmaXBWN1MwMXRz?=
+ =?utf-8?B?cUJpcjFQZ3NmZU9vTWhHaGcyRXl3S1dBSWRsNHFUS0pONVJEL3k5VGM4NmVL?=
+ =?utf-8?B?allEUWk2bTVKSkw1d1UzL2o3aEY4NDRnSjN3dTlwclZLWldHclpaMkNadmFl?=
+ =?utf-8?B?VHY3SjdUdjFGOHpsZ2ltU0RjK3hXTTJxVFJia2VMd0pyYzFYQTZaeHk3blR1?=
+ =?utf-8?B?Q1Z0d1p1WHdlazBLdmZFN0oxNmorb3BCR3hpY3Jqd1BRdFJlYktNRUFCOUJU?=
+ =?utf-8?B?MzVSMnhYeWhRaGk4cHVFZ3BXVnpveTNsWTZFVHhETnlIZ0JTeTEyZWlPeHN6?=
+ =?utf-8?B?S2QrK3hTN3l1N0ltbmlQRWprYVg4bjhjckp3eW5YalVaTjJpdTB2YU9oWDY3?=
+ =?utf-8?B?eG9zOEhVaHhOZ0xpNyt4aS9TZDZFRjNCUXM4NlNSTmlidk5mSG1ZdzhMcEs1?=
+ =?utf-8?B?eE1VcDF1UmIyWmdYR2pXU1VzU2VaSE1IdkU5Rnd1b1ZxektBMFcvSElFcGw4?=
+ =?utf-8?B?TG41OW5mekJ0RHZMU3k3OFUzOENJZDI2MVgwTXRCYzgyNG16YllWc3ZHSUlB?=
+ =?utf-8?B?bVJlSDdRcUlpQ2NrZEZlU0pUS2c0Z1ZtaVJDVUN4alQ3YWlHYTZ1OE5zVldy?=
+ =?utf-8?B?SzhQUUtJbFFJN0c2b2V3eW5BTzdjVTBYdkVKdVJXNm50SFJoSlo5SmxLOWRE?=
+ =?utf-8?B?cG1YM2kzM1dTMFpWOHBSck93NHJqaUhrM1pQUmJUZ29EQ3h6WUJVVTNyaElF?=
+ =?utf-8?B?Z0J2azNVYmZuNXphakZNQkNqVFk2S3ZhazFZNkN2WjZVR0FQRDA1aUFCQzZF?=
+ =?utf-8?B?MHRsSHhvcHhFK3VGbzdoYUp3WjQ5L1R0MWlFMktzdmFwb1pKL1FZU2g3YlpM?=
+ =?utf-8?B?QlFvNXRXWWVlUVNCekJkdzBtSkYyOUkvVEY1TTdmN2ZiVkNNUDhiUzZYclBV?=
+ =?utf-8?B?Wit6dlIrYmw5K2RCSkUxZGhGZWNDWmZGWXlOWHNlajJMWkcvNFNrbnNnK0hp?=
+ =?utf-8?B?QjBhUnVBdHZLNTA2ZmU4cXhZNG9IdG1LR2dWYWdkT0hZWTRuNWVubDl2RCtU?=
+ =?utf-8?B?S3lSWFBMOTFGYVRRTmRRWUNiUzNGSThRNGNUeEIyVzY3QjN0M2ZOU2Z3VUx0?=
+ =?utf-8?B?L3Bqa1JoU1U4a0V1YVJwK2cxRVhTa0JEQjFLTFl5YzBaWmtPN3JoNkJMLzFD?=
+ =?utf-8?B?bG1Hd1kxc3pSZXNqbTVna3NqSE5oQ1licU5zSEhDWkluV0h6Rys0S3IzU3pT?=
+ =?utf-8?B?bmlHOFdZaHcxN2thU1dBeisvTHVzaDd1dUdWRk9zUTM0N2hDUVZYQ2Racldq?=
+ =?utf-8?B?UG1DRHVyTHFLTjFCSGlla0ZNTU5xc251d3I2bXFEUlE3WWsrM3RESVRtUHFY?=
+ =?utf-8?B?U1RldGxqN1pLOUc1ZEhnUytGYzlQb3VhWEIxK2lhVU43RlVpV1FoZFRlc3NV?=
+ =?utf-8?B?OWo1eXJtbUtWL1M4NGo3cWlOaHRPVEdpVHU1M0k5SU95TnJxenNMZDJWcDdI?=
+ =?utf-8?B?REdNS0pvZkUrbGRsTk95TDhmSHRDRzRkTEw2RmhzNy8wY25TRlRaYmhPS011?=
+ =?utf-8?B?Qm1mVkxtQ3RyOEpsVlBxaXRnWTV3d3BhQW9WWDV4aS9Wam9NOG5pOGZWL2kz?=
+ =?utf-8?B?M2lJVzZBdDlWMWVxTUZpV1N4VWdCS1RCK2phZlQ0cEl3bkRqT2pZb2FpQmhP?=
+ =?utf-8?B?ZnRYWXdyWWZvazFrUWNZVU5qOS9SSDVWdnNHOHlWT2ZmOEpWWC9Kc3hValUy?=
+ =?utf-8?B?VThDc3MzOEtEdXpnNi92bWs5VlU3MzhXTEs2azk1MWwyejBUMTcwRGJkb1Ru?=
+ =?utf-8?B?dG1XNlIxbldXVTdZU2YzU0RJMmM1a2FRWUpZdldFTms4MEp0L252Ymx3d2Jh?=
+ =?utf-8?B?QlFsNm9XbEdXTG5XNEJuZE0raVdWbDB1Njk1TVlIUERDRjNkMmI2NlF2N0xs?=
+ =?utf-8?B?V0Y3THBtWm1hMnMrSW9zTFp1bjZNNlloTXNPN2NmZmI2RlFwdmpVZGliNjhj?=
+ =?utf-8?B?d2hrNGhPTTRmaE5lQzRhUFpnNW94SU40RFM3OUtBT25xZ2tISDBFZ3NsQnpQ?=
+ =?utf-8?B?YUJWekpsYkk3WEs5eXgxY1NWS3VOa1NTVHpxZGk3blZNbFVtcy9kd2p1ZXNB?=
+ =?utf-8?B?YjRhZnFveEVEQzJMa2p4bngvemh1SVdTYnZyZ0JKNmJwNDlicittWkpUVUdt?=
+ =?utf-8?Q?bjG1MeNCPZFjMF3qmZ3sScw8qTN2j7XKCpx83udbqUfyj?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-1: 	9ewZtt6tpEXmtGdDw6MiZ6y9IObPKFBG731Hh7KVRlVFmghrcap4gNDt0CKQ1jkORdo57HygL7gVC+GPckeVuhFv7XFCAJ5L2eqneKfYObh72aUv8HD7Ei7EHPr/ZPgLSXfMNj7MxRUTjO9mDfe78sbdIbl/KUKZeN+kI+D0ROR/xDHB3Lx8X8zZPxNTTFM17DqV/DgxSjPoOokpgUuZdt1J8hqbkTc15Zl4cJWOnC4pyKtnyLOU104u1i/Q4q+wfYQzPTHREdK734f6Djt4DXUsv+/GhegJ4S3GrsuqZ9Nt7bMWYRkLH//8X+tra07jpmYHIF12jpYCNUPvT3O2UXH5XO8Pg5wva44BNQvSuZLF8pv7sQl25MAVJjNqjX/TMHr8JeLZP09OFrFad2ulGUzvT5ANxgUucPiEz2HHLpwvYCrkOC4sRN0RbazuJHOx6xd+boMdWlW8mA==
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7ab6c3de-adbe-4ef5-553a-08db6dbc12c2
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR10MB4531.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2023 16:17:54.2091
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: DRuF9eTAuNV+EiNtCuzVOMF701zGEDD0NV6VZFdvSbQ0cKx4PCSCZQxG93GZVGOXCFFbu6qbifDx/UOnc0J8o0JuGOCLxrL3GhxzNkxxbig=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR10MB7105
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-06-15_13,2023-06-15_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 bulkscore=0 mlxscore=0
+ spamscore=0 malwarescore=0 adultscore=0 phishscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2305260000
+ definitions=main-2306150143
+X-Proofpoint-ORIG-GUID: GIS-WB9q4G03piAM7RqkoUwRFWt3haOi
+X-Proofpoint-GUID: GIS-WB9q4G03piAM7RqkoUwRFWt3haOi
+X-Mailman-Approved-At: Fri, 16 Jun 2023 05:50:10 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,188 +220,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, x86@kernel.org, Gavin Shan <gshan@redhat.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, Ben Gardon <bgardon@google.com>, Chao Peng <chao.p.peng@linux.intel.com>, Will Deacon <will@kernel.org>, Gaosheng Cui <cuigaosheng1@huawei.com>, Marc Zyngier <maz@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Alistair Popple <apopple@nvidia.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Zenghui Yu <yuzenghui@huawei.com>, linux-trace-kernel@vger.kernel.org, linux-mm@google.com, Thomas Huth <thuth@redhat.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Steven Rostedt <rostedt@goodmis.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Fabiano Rosas <farosas@linux.ibm.com>, Michael Larabel <michael@michaellarabel.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
+Cc: peterz@infradead.org, linus.walleij@linaro.org, thunder.leizhen@huawei.com, hpa@zytor.com, kernel@xen0n.name, ardb@kernel.org, tsi@tuyoix.net, agordeev@linux.ibm.com, paulmck@kernel.org, bhe@redhat.com, masahiroy@kernel.org, konrad.wilk@oracle.com, sebastian.reichel@collabora.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, aou@eecs.berkeley.edu, keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, rmk+kernel@armlinux.org.uk, paul.walmsley@sifive.com, boris.ostrovsky@oracle.com, ziy@nvidia.com, hbathini@linux.ibm.com, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 26, 2023, Yu Zhao wrote:
-> tdp_mmu_enabled and shadow_accessed_mask are needed to implement
-> kvm_arch_has_test_clear_young().
+
+
+On 6/14/23 22:34, Michael Ellerman wrote:
+> Eric DeVolder <eric.devolder@oracle.com> writes:
 > 
-> Signed-off-by: Yu Zhao <yuzhao@google.com>
-> ---
->  arch/x86/include/asm/kvm_host.h | 6 ++++++
->  arch/x86/kvm/mmu.h              | 6 ------
->  arch/x86/kvm/mmu/spte.h         | 1 -
->  3 files changed, 6 insertions(+), 7 deletions(-)
+>> The kexec and crash kernel options are provided in the common
+>> kernel/Kconfig.kexec. Utilize the common options and provide
+>> the ARCH_HAS_ and ARCH_SUPPORTS_ entries to recreate the
+>> equivalent set of KEXEC and CRASH options.
+>>
+>> Signed-off-by: Eric DeVolder <eric.devolder@oracle.com>
+>> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> ---
+>>   arch/powerpc/Kconfig | 55 ++++++++++++++------------------------------
+>>   1 file changed, 17 insertions(+), 38 deletions(-)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index bff5820b7cda..36f2fe0cc8a5 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -588,41 +588,21 @@ config PPC64_SUPPORTS_MEMORY_FAILURE
+>>   	default "y" if PPC_POWERNV
+>>   	select ARCH_SUPPORTS_MEMORY_FAILURE
+>>   
+>> -config KEXEC
+>> -	bool "kexec system call"
+>> -	depends on PPC_BOOK3S || PPC_E500 || (44x && !SMP)
+>> -	select KEXEC_CORE
+>> -	help
+>> -	  kexec is a system call that implements the ability to shutdown your
+>> -	  current kernel, and to start another kernel.  It is like a reboot
+>> -	  but it is independent of the system firmware.   And like a reboot
+>> -	  you can start any kernel with it, not just Linux.
+>> -
+>> -	  The name comes from the similarity to the exec system call.
+>> -
+>> -	  It is an ongoing process to be certain the hardware in a machine
+>> -	  is properly shutdown, so do not be surprised if this code does not
+>> -	  initially work for you.  As of this writing the exact hardware
+>> -	  interface is strongly in flux, so no good recommendation can be
+>> -	  made.
+>> -
+>> -config KEXEC_FILE
+>> -	bool "kexec file based system call"
+>> -	select KEXEC_CORE
+>> -	select HAVE_IMA_KEXEC if IMA
+>> -	select KEXEC_ELF
+>> -	depends on PPC64
+>> -	depends on CRYPTO=y
+>> -	depends on CRYPTO_SHA256=y
+> ...
+>> +
+>> +config ARCH_HAS_KEXEC_FILE
+>> +	def_bool PPC64 && CRYPTO && CRYPTO_SHA256
 > 
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index fb9d1f2d6136..753c67072c47 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -1772,6 +1772,7 @@ struct kvm_arch_async_pf {
->  
->  extern u32 __read_mostly kvm_nr_uret_msrs;
->  extern u64 __read_mostly host_efer;
-> +extern u64 __read_mostly shadow_accessed_mask;
->  extern bool __read_mostly allow_smaller_maxphyaddr;
->  extern bool __read_mostly enable_apicv;
->  extern struct kvm_x86_ops kvm_x86_ops;
-> @@ -1855,6 +1856,11 @@ void kvm_fire_mask_notifiers(struct kvm *kvm, unsigned irqchip, unsigned pin,
->  			     bool mask);
->  
->  extern bool tdp_enabled;
-> +#ifdef CONFIG_X86_64
-> +extern bool tdp_mmu_enabled;
-> +#else
-> +#define tdp_mmu_enabled false
-> +#endif
-
-I would much prefer that these be kept in kvm/mmu.h.  And looking at all the arch
-code, there's no reason to make kvm_arch_has_test_clear_young() a runtime callback,
-all of the logic is constant relative to when KVM is loaded.
-
-So rather than have generic KVM pull from arch code, what if we have arch code
-push info to generic KVM?  We could even avoid #ifdefs if arch code passed in its
-handler.  That might result in an extra indirect branch though, so it might be
-better to just use a flag?  E.g. the x86 conversion would be something like this.
-
----
- arch/x86/kvm/mmu/mmu.c     |  5 +++++
- arch/x86/kvm/mmu/tdp_mmu.c |  2 +-
- arch/x86/kvm/mmu/tdp_mmu.h |  1 +
- include/linux/kvm_host.h   | 24 ++++--------------------
- virt/kvm/kvm_main.c        | 14 ++++++++++----
- 5 files changed, 21 insertions(+), 25 deletions(-)
-
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index c8ebe542c565..84a4a83540f0 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -5809,6 +5809,11 @@ void kvm_configure_mmu(bool enable_tdp, int tdp_forced_root_level,
- 		max_huge_page_level = PG_LEVEL_1G;
- 	else
- 		max_huge_page_level = PG_LEVEL_2M;
-+
-+	if (tdp_mmu_enabled && kvm_ad_enabled())
-+		kvm_init_test_clear_young(kvm_tdp_mmu_test_clear_young);
-+	else
-+		kvm_init_test_clear_young(NULL);
- }
- EXPORT_SYMBOL_GPL(kvm_configure_mmu);
- 
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index f463d54228f8..e878c88f0e02 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -1308,7 +1308,7 @@ bool kvm_tdp_mmu_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	return kvm_tdp_mmu_handle_gfn(kvm, range, test_age_gfn);
- }
- 
--bool kvm_arch_test_clear_young(struct kvm *kvm, struct kvm_gfn_range *range)
-+bool kvm_tdp_mmu_test_clear_young(struct kvm *kvm, struct kvm_gfn_range *range)
- {
- 	struct kvm_mmu_page *root;
- 	int offset = ffs(shadow_accessed_mask) - 1;
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.h b/arch/x86/kvm/mmu/tdp_mmu.h
-index 0a63b1afabd3..aaa0b75b3896 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.h
-+++ b/arch/x86/kvm/mmu/tdp_mmu.h
-@@ -34,6 +34,7 @@ bool kvm_tdp_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range,
- bool kvm_tdp_mmu_age_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
- bool kvm_tdp_mmu_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range);
- bool kvm_tdp_mmu_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range);
-+bool kvm_tdp_mmu_test_clear_young(struct kvm *kvm, struct kvm_gfn_range *range);
- 
- bool kvm_tdp_mmu_wrprot_slot(struct kvm *kvm,
- 			     const struct kvm_memory_slot *slot, int min_level);
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 1714f82a0c47..7a0922cbc36f 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -264,31 +264,15 @@ struct kvm_gfn_range {
- 	pte_t pte;
- 	bool may_block;
- };
-+
-+typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
-+
- bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
- bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range);
- bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range);
- bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range);
- bool kvm_should_clear_young(struct kvm_gfn_range *range, gfn_t gfn);
--bool kvm_arch_test_clear_young(struct kvm *kvm, struct kvm_gfn_range *range);
--#endif
--
--/*
-- * Architectures that implement kvm_arch_test_clear_young() should override
-- * kvm_arch_has_test_clear_young().
-- *
-- * kvm_arch_has_test_clear_young() is allowed to return false positive, i.e., it
-- * can return true if kvm_arch_test_clear_young() is supported but disabled due
-- * to some runtime constraint. In this case, kvm_arch_test_clear_young() should
-- * return true; otherwise, it should return false.
-- *
-- * For each young KVM PTE, kvm_arch_test_clear_young() should call
-- * kvm_should_clear_young() to decide whether to clear the accessed bit.
-- */
--#ifndef kvm_arch_has_test_clear_young
--static inline bool kvm_arch_has_test_clear_young(void)
--{
--	return false;
--}
-+void kvm_init_test_clear_young(hva_handler_t arch_test_clear_young);
- #endif
- 
- enum {
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index ef2790469fda..ac83cfb30771 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -530,8 +530,6 @@ static void kvm_mmu_notifier_invalidate_range(struct mmu_notifier *mn,
- 	srcu_read_unlock(&kvm->srcu, idx);
- }
- 
--typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
--
- typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
- 			     unsigned long end);
- 
-@@ -859,6 +857,14 @@ bool kvm_should_clear_young(struct kvm_gfn_range *range, gfn_t gfn)
- 	return args->clear;
- }
- 
-+static hva_handler_t kvm_test_clear_young;
-+
-+void kvm_init_test_clear_young(hva_handler_t arch_test_clear_young)
-+{
-+	WARN_ON_ONCE(!list_empty(&vm_list));
-+	kvm_test_clear_young = arch_test_clear_young;
-+}
-+
- static int kvm_mmu_notifier_test_clear_young(struct mmu_notifier *mn, struct mm_struct *mm,
- 					     unsigned long start, unsigned long end,
- 					     bool clear, unsigned long *bitmap)
-@@ -873,7 +879,7 @@ static int kvm_mmu_notifier_test_clear_young(struct mmu_notifier *mn, struct mm_
- 
- 	trace_kvm_age_hva(start, end);
- 
--	if (kvm_arch_has_test_clear_young()) {
-+	if (kvm_test_clear_young) {
- 		struct test_clear_young_args args = {
- 			.bitmap	= bitmap,
- 			.end	= end,
-@@ -882,7 +888,7 @@ static int kvm_mmu_notifier_test_clear_young(struct mmu_notifier *mn, struct mm_
- 
- 		range.args = &args;
- 		range.lockless = true;
--		range.handler = kvm_arch_test_clear_young;
-+		range.handler = kvm_test_clear_young;
- 
- 		if (!__kvm_handle_hva_range(kvm, &range))
- 			return args.young ? MMU_NOTIFIER_RANGE_LOCKLESS : 0;
-
-base-commit: 39ca80f27cc0d2a37b4e3d07bbf763d4954934d7
--- 
-
+> The =y's got lost here.
+> 
+> I think they were both meaningful, because both options are tristate. So
+> this previously required them to be built-in (=y), whereas after your
+> patch it will allow them to be modules.
+> 
+> I don't know for sure that those options need to be built-in, but that's
+> what the code does now, so this patch shouldn't change it, at least
+> without an explanation.
+> 
+> cheers
+Thanks Michael, I've applied =y's. Good catch!
+eric
