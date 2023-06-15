@@ -4,84 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1749DEB64DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 04:58:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 686CBEB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 04:59:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hI9rkmRJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KB2Fyunh;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QhVRz2JL0z3bWr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 14:58:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QhVSx6Wmbz3bnL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 14:59:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hI9rkmRJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KB2Fyunh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhVQx49MVz301r
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2023 14:57:45 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35F4oA5t016249;
-	Thu, 15 Jun 2023 04:57:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=QRO6qslRxLMBHdrNAEHhlb8acejnUpzeB+PuRGl7aiM=;
- b=hI9rkmRJfazcbCTXR2xp8o6MhdMNJ3xbxeMhItl90Ca0Yk+f8rrjl0CadPm4dyPGkLq0
- E7bSra7iwBEwAVBH9NxdUx61c+LvBBc33pejNAe7s6nEVgr6+nOoTbAu4PW8R1YhvbtX
- RNZAeTNzbzWU+hWrJ2U6KY8SuBTrJkLLaEIzege5nuM0eIC8gavtEksMttqA9OJVaP1W
- I876NM0JY++Syxjn+jNnfvUpqLlgBGpHDkvc1O9TNj2ZJOV5EGnzhdgnx082bsIOcFfu
- SF7RVA8feV1C9XFdxmmweRMltkuCHLs4ozszwaNZcPDu4ay1mJppCt2uNxv/IJ97RIcG KQ== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r7uy8042u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 04:57:39 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35ELnEGk028076;
-	Thu, 15 Jun 2023 04:57:37 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3r4gee3bfh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 04:57:36 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35F4vYCC40567068
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 15 Jun 2023 04:57:34 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 90C202004D;
-	Thu, 15 Jun 2023 04:57:34 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 845C420043;
-	Thu, 15 Jun 2023 04:57:33 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.109.241.192])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 15 Jun 2023 04:57:33 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.600.7\))
-Subject: Re: [6.4-rc6] Crash during a kexec operation
- (tpm_amd_is_rng_defective)
-From: Sachin Sant <sachinp@linux.ibm.com>
-In-Reply-To: <87o7lhfmoh.fsf@mail.lhotse>
-Date: Thu, 15 Jun 2023 10:27:22 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <CA0088E4-2851-4AFF-94F8-2A07C5CDA8D8@linux.ibm.com>
-References: <99B81401-DB46-49B9-B321-CF832B50CAC3@linux.ibm.com>
- <87o7lhfmoh.fsf@mail.lhotse>
-To: Michael Ellerman <michaele@au1.ibm.com>
-X-Mailer: Apple Mail (2.3731.600.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 2pyyleCB6dtQ8bl6VTfNFnseYveB8qag
-X-Proofpoint-GUID: 2pyyleCB6dtQ8bl6VTfNFnseYveB8qag
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-15_02,2023-06-14_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 bulkscore=0
- suspectscore=0 impostorscore=0 mlxlogscore=790 phishscore=0
- priorityscore=1501 malwarescore=0 clxscore=1015 mlxscore=0 adultscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306150037
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhSPz6MwXz300q
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2023 13:26:47 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QhSPm1K9Bz4wjB;
+	Thu, 15 Jun 2023 13:26:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1686799607;
+	bh=bmc6oqF5FNKBZGg1/rZAHOUSx4X5esqFgaD2hQBXRq8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=KB2FyunhTuXf+jozautVWXZthKKCB+waS3cucwpJbJk0s24v4KKDQVWgg9Q1V6jR3
+	 0vEX2OWPXK/8QOdVINYGXUEXFhmEMCe6tR8/kJ2gs4NvUNlqzJka9/WRx2Av26B2bo
+	 vITH1k1S5enB4XE2YnFXxPCt6IWEd6YUcRno10b5k49kD4HUIdaDZUg9pyurS1KRTV
+	 HGZpbW1b+az+ld9IyfWGAhCPNIYxUEB/mIcl6YmKDvB1j32ka+tFJzfZQQ8K4TE/RF
+	 jdgpZreP8tke/E0lPR+QDG6MJzN4Q+6VqMmtmB3YLVvYFkFLRyyYqL9Imhecexc6g6
+	 0X6N/8mTgEXyA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Eric DeVolder <eric.devolder@oracle.com>, Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH v1 00/21] refactor Kconfig to consolidate KEXEC and
+ CRASH options
+In-Reply-To: <8a97f096-2bdc-0298-a1c5-8d48dbf94179@oracle.com>
+References: <20230612172805.681179-1-eric.devolder@oracle.com>
+ <202306131314.EFA558B7@keescook>
+ <8a97f096-2bdc-0298-a1c5-8d48dbf94179@oracle.com>
+Date: Thu, 15 Jun 2023 13:26:35 +1000
+Message-ID: <87ilbpflsk.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Mailman-Approved-At: Thu, 15 Jun 2023 14:58:14 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,132 +61,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jarkko@kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, rmk+kernel@armlinux.org.uk, paulmck@kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, chenhuacai@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, mingo@redhat.com, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, ardb@kernel.org, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, ziy@nvidia.com, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-m68k@lists.linux-m68k.org, bp@alien8.de, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, bhe@redhat.com, linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel@vger.kernel.org, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Eric DeVolder <eric.devolder@oracle.com> writes:
+> On 6/13/23 15:21, Kees Cook wrote:
+>> On Mon, Jun 12, 2023 at 01:27:52PM -0400, Eric DeVolder wrote:
+>>> The Kconfig is refactored to consolidate KEXEC and CRASH options from
+>>> various arch/<arch>/Kconfig files into new file kernel/Kconfig.kexec.
+>> 
+>> This looks very nice!
+>> 
+> Thank you Kees!
+>
+>>> [...]
+>>> - The boolean ARCH_HAS_<option> in effect allows the arch to determine
+>>>    when the feature is allowed.  Archs which don't have the feature
+>>>    simply do not provide the corresponding ARCH_HAS_<option>.
+>>>    For each arch, where there previously were KEXEC and/or CRASH
+>>>    options, these have been replaced with the corresponding boolean
+>>>    ARCH_HAS_<option>, and an appropriate def_bool statement.
+>>>
+>>>    For example, if the arch supports KEXEC_FILE, then the
+>>>    ARCH_HAS_KEXEC_FILE simply has a 'def_bool y'. This permits the
+>>>    KEXEC_FILE option to be available.
+>>>
+>>>    If the arch has a 'depends on' statement in its original coding
+>>>    of the option, then that expression becomes part of the def_bool
+>>>    expression. For example, arm64 had:
+>>>
+>>>    config KEXEC
+>>>      depends on PM_SLEEP_SMP
+>>>
+>>>    and in this solution, this converts to:
+>>>
+>>>    config ARCH_HAS_KEXEC
+>>>      def_bool PM_SLEEP_SMP
+>>>
+>>>
+>>> - In order to account for the differences in the config coding for
+>>>    the three common options, the ARCH_SUPPORTS_<option> is used.
+>>>    This options has a 'depends on <option>' statement to couple it
+>>>    to the main option, and from there can insert the differences
+>>>    from the common option and the arch original coding of that option.
+>>>
+>>>    For example, a few archs enable CRYPTO and CRYTPO_SHA256 for
+>>>    KEXEC_FILE. These require a ARCH_SUPPORTS_KEXEC_FILE and
+>>>    'select CRYPTO' and 'select CRYPTO_SHA256' statements.
+>> 
+>> Naming nit: "HAS" and "SUPPORTS" feel very similar, and looking at
+>> existing configs, "ARCH_SUPPORTS_..." is already used for doing this
+>> kind of bare "bool" management. e.g. see ARCH_SUPPORTS_INT128
+>> 
+>> It looks like you need to split "depends" and "select" so the options
+>> can be chosen separately from the "selectable" configs.
+>> 
+>> How about naming this ARCH_SELECTS_<option>, since that's what it's
+>> there for?
+>> 
+> I'm OK with this. Let's see if others agree?
 
->> [ 34.381788] Code: 5463063e 408201c8 38210080 4e800020 60000000 =
-60000000 60000000 7c0802a6 fbe10078 7c7f1b78 f8010090 e9230728 =
-<e9890050> 2c2c0000 41820020 7d8903a6=20
->=20
->  2c:   28 07 23 e9     ld      r9,1832(r3)
->  30:   50 00 89 e9     ld      r12,80(r9)
->=20
-> Where r3 is *chip.
-> r9 is NULL, and 80 =3D 0x50.
->=20
-> Looks like a NULL chip->ops, which oopses in:
->=20
-> static int tpm_request_locality(struct tpm_chip *chip)
-> {
-> int rc;
->=20
-> if (!chip->ops->request_locality)
->=20
->=20
-> Can you test the patch below?
->=20
+Yeah please rename one or both of them. At a glance the difference
+between HAS and SUPPORTS is very non-obvious.
 
-It proceeds further but then run into following crash
+I like Kees' suggestion to use ARCH_SUPPORTS and ARCH_SELECTS.
 
-[  103.269574] Kernel attempted to read user page (18) - exploit =
-attempt? (uid: 0)
-[  103.269589] BUG: Kernel NULL pointer dereference on read at =
-0x00000018
-[  103.269595] Faulting instruction address: 0xc0000000009dcf34
-[  103.269599] Oops: Kernel access of bad area, sig: 11 [#1]
-[  103.269602] LE PAGE_SIZE=3D64K MMU=3DRadix SMP NR_CPUS=3D2048 NUMA =
-pSeries
-[  103.269606] Modules linked in: dm_mod(E) nft_fib_inet(E) =
-nft_fib_ipv4(E) nft_fib_ipv6(E) nft_fib(E) nft_reject_inet(E) =
-nf_reject_ipv4(E) nf_reject_ipv6(E) nft_reject(E) nft_ct(E) =
-nft_chain_nat(E) nf_nat(E) nf_conntrack(E) nf_defrag_ipv6(E) =
-nf_defrag_ipv4(E) bonding(E) tls(E) rfkill(E) ip_set(E) sunrpc(E) =
-nf_tables(E) nfnetlink(E) pseries_rng(E) aes_gcm_p10_crypto(E) drm(E) =
-drm_panel_orientation_quirks(E) xfs(E) libcrc32c(E) sd_mod(E) sr_mod(E) =
-t10_pi(E) crc64_rocksoft_generic(E) cdrom(E) crc64_rocksoft(E) crc64(E) =
-sg(E) ibmvscsi(E) scsi_transport_srp(E) ibmveth(E) vmx_crypto(E) fuse(E)
-[  103.269644] CPU: 18 PID: 6872 Comm: kexec Kdump: loaded Tainted: G    =
-        E      6.4.0-rc6-dirty #8
-[  103.269649] Hardware name: IBM,9080-HEX POWER10 (raw) 0x800200 =
-0xf000006 of:IBM,FW1030.20 (NH1030_058) hv:phyp pSeries
-[  103.269653] NIP:  c0000000009dcf34 LR: c0000000009dd2bc CTR: =
-c0000000009eaa60
-[  103.269656] REGS: c0000000a113f510 TRAP: 0300   Tainted: G            =
-E       (6.4.0-rc6-dirty)
-[  103.269660] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  =
-CR: 88484886  XER: 00000001
-[  103.269669] CFAR: c0000000009dd2b8 DAR: 0000000000000018 DSISR: =
-40000000 IRQMASK: 0  [  103.269669] GPR00: c0000000009dd2bc =
-c0000000a113f7b0 c0000000014a1500 c000000090310000  [  103.269669] =
-GPR04: c00000009f770000 0000000000000016 0000060000007a01 =
-0000000000000016  [  103.269669] GPR08: c00000009f770000 =
-0000000000000000 0000000000000000 0000000000008000  [  103.269669] =
-GPR12: c0000000009eaa60 c00000135fab7f00 0000000000000000 =
-0000000000000000  [  103.269669] GPR16: 0000000000000000 =
-0000000000000000 0000000000000000 0000000000000000  [  103.269669] =
-GPR20: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000000  [  103.269669] GPR24: 0000000000000000 =
-0000000000000016 c000000090310000 0000000000001000  [  103.269669] =
-GPR28: c00000009f770000 000000007a010000 c00000009f770000 =
-c000000090310000  [  103.269707] NIP [c0000000009dcf34] =
-tpm_try_transmit+0x74/0x300
-[  103.269713] LR [c0000000009dd2bc] tpm_transmit+0xfc/0x190
-[  103.269717] Call Trace:
-[  103.269718] [c0000000a113f7b0] [c0000000a113f880] 0xc0000000a113f880 =
-(unreliable)
-[  103.269724] [c0000000a113f840] [c0000000009dd2bc] =
-tpm_transmit+0xfc/0x190
-[  103.269727] [c0000000a113f900] [c0000000009dd398] =
-tpm_transmit_cmd+0x48/0x110
-[  103.269731] [c0000000a113f980] [c0000000009df1b0] =
-tpm2_get_tpm_pt+0x140/0x230
-[  103.269736] [c0000000a113fa20] [c0000000009db208] =
-tpm_amd_is_rng_defective+0xb8/0x250
-[  103.269739] [c0000000a113faa0] [c0000000009db828] =
-tpm_chip_unregister+0x138/0x160
-[  103.269743] [c0000000a113fae0] [c0000000009eaa94] =
-tpm_ibmvtpm_remove+0x34/0x130
-[  103.269748] [c0000000a113fb50] [c000000000115738] =
-vio_bus_remove+0x58/0xd0
-[  103.269754] [c0000000a113fb90] [c000000000a01dcc] =
-device_shutdown+0x21c/0x39c
-[  103.269758] [c0000000a113fc20] [c0000000001a2684] =
-kernel_restart_prepare+0x54/0x70
-[  103.269762] [c0000000a113fc40] [c000000000292c48] =
-kernel_kexec+0xa8/0x100
-[  103.269766] [c0000000a113fcb0] [c0000000001a2cd4] =
-__do_sys_reboot+0x214/0x2c0
-[  103.269770] [c0000000a113fe10] [c000000000034adc] =
-system_call_exception+0x13c/0x340
-[  103.269776] [c0000000a113fe50] [c00000000000d05c] =
-system_call_vectored_common+0x15c/0x2ec
-[  103.269781] --- interrupt: 3000 at 0x7fff805459f0
-[  103.269784] NIP:  00007fff805459f0 LR: 0000000000000000 CTR: =
-0000000000000000
-[  103.269786] REGS: c0000000a113fe80 TRAP: 3000   Tainted: G            =
-E       (6.4.0-rc6-dirty)
-[  103.269790] MSR:  800000000280f033 =
-<SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42422884  XER: 00000000
-[  103.269799] IRQMASK: 0  [  103.269799] GPR00: 0000000000000058 =
-00007fffc07a68c0 0000000110437f00 fffffffffee1dead  [  103.269799] =
-GPR04: 0000000028121969 0000000045584543 0000000000000000 =
-0000000000000003  [  103.269799] GPR08: 0000000000100000 =
-0000000000000000 0000000000000000 0000000000000000  [  103.269799] =
-GPR12: 0000000000000000 00007fff8089b2c0 000000011042f598 =
-0000000000000000  [  103.269799] GPR16: ffffffffffffffff =
-0000000000000000 000000011040fcc0 0000000000000000  [  103.269799] =
-GPR20: 0000000000008913 0000000000008914 0000000149c61020 =
-0000000000000003  [  103.269799] GPR24: 0000000000000000 =
-0000000000000001 0000000000000003 00007fffc07a6a40  [  103.269799] =
-GPR28: 0000000110409f10 00007fff806419c0 0000000149c61080 =
-0000000149c61040  [  103.269833] NIP [00007fff805459f0] 0x7fff805459f0
-[  103.269836] LR [0000000000000000] 0x0
-[  103.269838] --- interrupt: 3000
-[  103.269839] Code: 83a40006 2c090000 41820208 7c0802a6 79250020 =
-7c25d840 f80100a0 41810224 fbe10088 f8410018 7c7f1b78 e9230728 =
-<e9890018> 7d8903a6 4e800421 e8410018  [  103.269852] ---[ end trace =
-0000000000000000 ]=E2=80=94
-
-- Sachin
+cheers
