@@ -4,79 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15255EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 15:51:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B869EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 15:52:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m+WunK/I;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LMcXj9k7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QhmxX54Mrz3c3R
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 01:51:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QhmyW5hX1z3c2m
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 01:52:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m+WunK/I;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LMcXj9k7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhmtM1yYJz3bX9
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhmtM3SGbz3bmp
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 01:48:59 +1000 (AEST)
 Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35FFHMOg017877;
-	Thu, 15 Jun 2023 15:48:34 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35FFfnd1004326;
+	Thu, 15 Jun 2023 15:48:45 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=Z3BXx87NONENKyRCVCG4NKF1gcn0Sn0umYhm4oYj4BE=;
- b=m+WunK/IOHWMbgZzY32kuxcQDnvGTp2wdGf0N5XWp9lvmn8+O7REY9SL+wjg7wjnREBY
- l51RIDawtCIERuv4y/kGq+w1ZkkVutMI5eMG2+taOF1RebzOQM761auH/krVI9dRLBQ8
- 0Ag0sd0a+vqiUO57dq+sO0XWooI9tXdnoiOqXH6Q9/V520g10GVhDP5BU3fT9i7eBNuS
- qovrS2IK/7Gn8lmKNeXE0YdDwskiXw+Xr4dtEURMa4mPBuS+rojBsd3SX/QUAhVPle0n
- 8OR4eujVdYCXiQB+wc63+o0IKKZaQfgnqlOgWdT0qJnh9ZM3zfYBJRUUMf6Z6W30TJGB hg== 
+ bh=mXs6gwj2eCRX2IPjfYmQ/36SBWEbWvuOsFEbBfkdNfA=;
+ b=LMcXj9k7+2kd3iheIQTbVl4il8Z84RUrtBBZzP7kg8Xnnt58z5Oug07HCUmydH+211Zl
+ J/p8pJlTaa2ssyaB2tFeeCf6EdjmRa8pN5hRDtDIngAE5TUSE29WJur7+dBEhy1VS2PT
+ LjIZ8ufmICJ9daplIhii8Gb9Rw1Qw7GOEVf0Ctrg14mRyse+sMtxDRzQ/BtwGMysa+bf
+ Fl92gF2TuwOLJwWQXicp4wOL3E/V8hsAx3l/9tG4OzrPO3KdbH7h2XSvIfb0sn8FHZAK
+ dGwJx5YohWtxQUKGCoSN+L6rQTOIrsVe/wEx9aJl2i3gM0f9cZFyV3Tz9QpX5C1z+ZjN Rg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r855fh7uu-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r855fh8bn-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 15:48:33 +0000
+	Thu, 15 Jun 2023 15:48:42 +0000
 Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35FFg3CH005425;
-	Thu, 15 Jun 2023 15:47:25 GMT
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r855fh3vk-1
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35FFgW7t010623;
+	Thu, 15 Jun 2023 15:47:32 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r855fh42r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 15:47:25 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35F5j377026971;
-	Thu, 15 Jun 2023 15:46:40 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3r4gt52r2s-1
+	Thu, 15 Jun 2023 15:47:32 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35F2kCxO030742;
+	Thu, 15 Jun 2023 15:46:43 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3r4gt53pbb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 15:46:40 +0000
+	Thu, 15 Jun 2023 15:46:42 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35FFkbgF61931940
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35FFkeZI43254166
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 15 Jun 2023 15:46:37 GMT
+	Thu, 15 Jun 2023 15:46:40 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C7C302004D;
-	Thu, 15 Jun 2023 15:46:37 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 94F9D2004B;
+	Thu, 15 Jun 2023 15:46:40 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4F92520043;
-	Thu, 15 Jun 2023 15:46:37 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1CD9120043;
+	Thu, 15 Jun 2023 15:46:40 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.144.159.119])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 15 Jun 2023 15:46:37 +0000 (GMT)
+	Thu, 15 Jun 2023 15:46:40 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/10] cpu/SMT: Move smt/control simple exit cases earlier
-Date: Thu, 15 Jun 2023 17:46:27 +0200
-Message-ID: <20230615154635.13660-3-ldufour@linux.ibm.com>
+Subject: [PATCH 07/10] cpu/SMT: Allow enabling partial SMT states via sysfs
+Date: Thu, 15 Jun 2023 17:46:32 +0200
+Message-ID: <20230615154635.13660-8-ldufour@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230615154635.13660-1-ldufour@linux.ibm.com>
 References: <20230615154635.13660-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: FAcxk4wfwW8CUIwp5TqzGbT7Q6rnTN1S
-X-Proofpoint-ORIG-GUID: U67IZCq5D10t0m1mh1XSjryU96tz66Bq
+X-Proofpoint-GUID: QZffo4F3DHL1OtroLkrhyTU5lF0vyb9b
+X-Proofpoint-ORIG-GUID: 0sckBeqcPr-K8FHnGUSAMwyWHXxhIUAz
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-06-15_12,2023-06-15_01,2023-05-22_02
@@ -102,50 +102,116 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-Move the simple exit cases, ie. which don't depend on the value written,
-earlier in the function. That makes it clearer that regardless of the
-input those states can not be transitioned out of.
+Add support to the /sys/devices/system/cpu/smt/control interface for
+enabling a specified number of SMT threads per core, including partial
+SMT states where not all threads are brought online.
 
-That does have a user-visible effect, in that the error returned will
-now always be EPERM/ENODEV for those states, regardless of the value
-written. Previously writing an invalid value would return EINVAL even
-when in those states.
+The current interface accepts "on" and "off", to enable either 1 or all
+SMT threads per core.
+
+This commit allows writing an integer, between 1 and the number of SMT
+threads supported by the machine. Writing 1 is a synonym for "off", 2 or
+more enables SMT with the specified number of threads.
+
+When reading the file, if all threads are online "on" is returned, to
+avoid changing behaviour for existing users. If some other number of
+threads is online then the integer value is returned.
+
+There is a hook which allows arch code to control how many threads per
+core are supported. To retain the existing behaviour, the x86 hook only
+supports 1 thread or all threads.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- kernel/cpu.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ .../ABI/testing/sysfs-devices-system-cpu      |  1 +
+ kernel/cpu.c                                  | 39 ++++++++++++++++---
+ 2 files changed, 34 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index f54867cadb0f..3c4cfb59d495 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -555,6 +555,7 @@ Description:	Control Symmetric Multi Threading (SMT)
+ 			 ================ =========================================
+ 			 "on"		  SMT is enabled
+ 			 "off"		  SMT is disabled
++			 "<N>"		  SMT is enabled with N threads per core.
+ 			 "forceoff"	  SMT is force disabled. Cannot be changed.
+ 			 "notsupported"   SMT is not supported by the CPU
+ 			 "notimplemented" SMT runtime toggling is not
 diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 237394e0574a..c67049bb3fc8 100644
+index ae2fa26a5b63..248f0734098a 100644
 --- a/kernel/cpu.c
 +++ b/kernel/cpu.c
-@@ -2482,6 +2482,12 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
+@@ -2507,7 +2507,7 @@ static ssize_t
+ __store_smt_control(struct device *dev, struct device_attribute *attr,
+ 		    const char *buf, size_t count)
  {
- 	int ctrlval, ret;
+-	int ctrlval, ret;
++	int ctrlval, ret, num_threads, orig_threads;
  
-+	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
-+		return -EPERM;
-+
-+	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
-+		return -ENODEV;
-+
- 	if (sysfs_streq(buf, "on"))
+ 	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
+ 		return -EPERM;
+@@ -2515,20 +2515,38 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
+ 	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
+ 		return -ENODEV;
+ 
+-	if (sysfs_streq(buf, "on"))
++	if (sysfs_streq(buf, "on")) {
  		ctrlval = CPU_SMT_ENABLED;
- 	else if (sysfs_streq(buf, "off"))
-@@ -2491,12 +2497,6 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
- 	else
+-	else if (sysfs_streq(buf, "off"))
++		num_threads = cpu_smt_max_threads;
++	} else if (sysfs_streq(buf, "off")) {
+ 		ctrlval = CPU_SMT_DISABLED;
+-	else if (sysfs_streq(buf, "forceoff"))
++		num_threads = 1;
++	} else if (sysfs_streq(buf, "forceoff")) {
+ 		ctrlval = CPU_SMT_FORCE_DISABLED;
+-	else
++		num_threads = 1;
++	} else if (kstrtoint(buf, 10, &num_threads) == 0) {
++		if (num_threads == 1)
++			ctrlval = CPU_SMT_DISABLED;
++		else if (num_threads > 1 && topology_smt_threads_supported(num_threads))
++			ctrlval = CPU_SMT_ENABLED;
++		else
++			return -EINVAL;
++	} else {
  		return -EINVAL;
++	}
  
--	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
--		return -EPERM;
--
--	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
--		return -ENODEV;
--
  	ret = lock_device_hotplug_sysfs();
  	if (ret)
  		return ret;
+ 
+-	if (ctrlval != cpu_smt_control) {
++	orig_threads = cpu_smt_num_threads;
++	cpu_smt_num_threads = num_threads;
++
++	if (num_threads > orig_threads) {
++		ret = cpuhp_smt_enable();
++	} else if (num_threads < orig_threads) {
++		ret = cpuhp_smt_disable(ctrlval);
++	} else if (ctrlval != cpu_smt_control) {
+ 		switch (ctrlval) {
+ 		case CPU_SMT_ENABLED:
+ 			ret = cpuhp_smt_enable();
+@@ -2566,6 +2584,15 @@ static ssize_t control_show(struct device *dev,
+ {
+ 	const char *state = smt_states[cpu_smt_control];
+ 
++	/*
++	 * If SMT is enabled but not all threads are enabled then show the
++	 * number of threads. If all threads are enabled show "on". Otherwise
++	 * show the state name.
++	 */
++	if (cpu_smt_control == CPU_SMT_ENABLED &&
++	    cpu_smt_num_threads != cpu_smt_max_threads)
++		return sysfs_emit(buf, "%d\n", cpu_smt_num_threads);
++
+ 	return snprintf(buf, PAGE_SIZE - 2, "%s\n", state);
+ }
+ 
 -- 
 2.41.0
 
