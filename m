@@ -4,64 +4,120 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 395BEEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 20:20:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA07EEB64DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 20:21:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=EuTGS91H;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=DAPnDUV2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qhtvy3pKcz3bZF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 06:20:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qhtx72ZwLz3bnv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 06:21:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=EuTGS91H;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=DAPnDUV2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::849; helo=mail-qt1-x849.google.com; envelope-from=3o02lzaykdjyi40d926ee6b4.2ecb8dknff2-34lb8iji.epb01i.eh6@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com [IPv6:2607:f8b0:4864:20::849])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:7e1b::609; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on20609.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e1b::609])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qhttz04vzz2xqp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 06:19:53 +1000 (AEST)
-Received: by mail-qt1-x849.google.com with SMTP id d75a77b69052e-3f9dc388636so75071cf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2023 13:19:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1686860390; x=1689452390;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3VaVpYnKKIXM0ZMJBv2BahWS6rKgSDR5ikxQlp7Qm5M=;
-        b=EuTGS91HsthvX7goK5i2bE192NgKPLER56ZiTGZExzaOLyziPUNZmDI8gUA8rK2QIX
-         8MUfochdPJO7GF4xOLP7zJFlDmkAYA/muE5oqze+6m55Tl/n7uJIQEYVDTdv/21OeIfd
-         tCafixtcTihj8H4PvXEYhVBWXeHkRuCcAM0EU11DCi5tLjZ5lxfTTYiLlAVInteXhKvk
-         LiM8fzLLcXpg6feUVq1U1NAiCiaXRpM2F6Tp24lZK3GcJUD4qzf0B176FnQwXRnLE+oK
-         kvUVbwSvbxf4poeSHpupSYldz5y5dmjJAUFbd9eEIj6mEqz8I6JvZowPlSovg/ZOR+rq
-         goFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686860390; x=1689452390;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=3VaVpYnKKIXM0ZMJBv2BahWS6rKgSDR5ikxQlp7Qm5M=;
-        b=d3ekxkDZ90lHcQS4ZFLPbHTjlB1nOmmjd09VfBQW8kWcSgRUDdbVWFvVxG290X6WMA
-         or2Oz6fC8D5S5nsHL1TIZ59qfU5aAwgBBsbFkx2dWaIryJgjrW1y4Kal1aMFaQRctkQU
-         LJSx2nyzY1yeYITerZ2HJ1GcLzZ6pGl4DK4oReOB1ZhZFfy+G0bV6FjQKY2IwoI6r08I
-         HNmBQCMK8HhSrO1lMYD8PijJTP7kTFsPkum/NTZsgn7BSe/HeLIseHfbKxBy5mHAWEZt
-         cUCeTnGyUa9sSbRzMy216sKUIKNc3C46WWxidcda9kzX35ax+mnvRntwLjb3KeTkhXX9
-         CA8w==
-X-Gm-Message-State: AC+VfDwKl0o2JBFjNYycr5rAt7qANjVMexkUdRjIuXcUeuBpA0fLmdVV
-	9kibVanIIoPhdAyxc6PrzPclJ99vXTA=
-X-Google-Smtp-Source: ACHHUZ4cQlpzVe0KczazAvYqGjGYoNkXv8UVqui26XxKS9kOBWmazT/WNj+BhRRRMGskVfw0J/AilzSk6Q0=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a17:902:f7d3:b0:1b5:147f:d8d1 with SMTP id
- h19-20020a170902f7d300b001b5147fd8d1mr547182plw.3.1686850979254; Thu, 15 Jun
- 2023 10:42:59 -0700 (PDT)
-Date: Thu, 15 Jun 2023 10:42:57 -0700
-In-Reply-To: <20230526234435.662652-2-yuzhao@google.com>
-Mime-Version: 1.0
-References: <20230526234435.662652-1-yuzhao@google.com> <20230526234435.662652-2-yuzhao@google.com>
-Message-ID: <ZItNoeWriZgLUaon@google.com>
-Subject: Re: [PATCH mm-unstable v2 01/10] mm/kvm: add mmu_notifier_ops->test_clear_young()
-From: Sean Christopherson <seanjc@google.com>
-To: Yu Zhao <yuzhao@google.com>
-Content-Type: text/plain; charset="us-ascii"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qhp3l5rMTz305Q
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 02:42:11 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=mpN/NmmGiNpIeaQRp5XS+Z3lTIMPHZLhNVsC/E8wFl1DkTq8mSWBtuLfCj276/lBwtl2bvHxdoN2iS7DhmbFA0zrKWkGNUKWRNj/d4sAcdVrHcTDg+emz0jqGMppQVj+WKEL/tsoyk5V5WzWMNnuC0RyrWF7qers+cIDiwbxKHja6gRqjYI5M6OjrvpEfrgYqkdL6UqGbRlhRaoAOqvfLVhZ674nz1V6vRRczWi36V7G7UuI+3AS8UNucmK1G8BisyIskyIGeyJvuHyhQDTQiQGP1G+h4zXTsDmSW4/EEIwY9pdis2nw4DBgc9fXKe2K/CC8Mcq03fA+px4Pqx/PQA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=eY13Iy66TAijaXO/TIrdxtpXHWr/pIGI1rk4vPNjT8g=;
+ b=RSt5wfITXMOFMicshpnsE2WMUpSsezUYhI9gjNfVKubfpRTJ6rQo8XTvdrgsLv5g98BNWpHqFqXFg+CYUbvKRU6CfgLIScYXqfkNeB5ZqdbNrKdas1zilObXEollXxz04j2qyWpdmBCo4ckmHnOy3BemLcRaMC/9AMgON1hriyOoz/Zl1edKhWe8IOk1oxN6j+SWMjUeJBhwuljlqzq712ooiS93sUDSm5HjdPPj2k6ojZuFkSao/2Bo0gdrqkFj5prksfphdY4TqBb366TYX83hOh0zSJwzo0CrJ94ggIMWYfY8pzyBsolx1sNDllZZ2HMK1z0qO1EKUu8zDJp69A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=eY13Iy66TAijaXO/TIrdxtpXHWr/pIGI1rk4vPNjT8g=;
+ b=DAPnDUV2WNslr0FIPq38e8BqVGM+jWD1KdSxkZ39nhRWslYBd/+ppurb2KAFjrLvhMRM4l3tH+UjZxkvnMhfuv69vGiXkIo3UJcMhQR7oOmf24UjvPonhi3lYHPwZ6KP7wVi74hTg//g/wovpt7/QIisUpu6j6hAs+7LteGAwNA=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM6PR04MB4838.eurprd04.prod.outlook.com (2603:10a6:20b:4::16)
+ by AS8PR04MB8181.eurprd04.prod.outlook.com (2603:10a6:20b:3f5::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6500.25; Thu, 15 Jun
+ 2023 16:41:49 +0000
+Received: from AM6PR04MB4838.eurprd04.prod.outlook.com
+ ([fe80::4a2a:262e:415f:e41c]) by AM6PR04MB4838.eurprd04.prod.outlook.com
+ ([fe80::4a2a:262e:415f:e41c%7]) with mapi id 15.20.6477.035; Thu, 15 Jun 2023
+ 16:41:49 +0000
+From: Frank Li <Frank.Li@nxp.com>
+To: mani@kernel.org,
+	Minghuan Lian <minghuan.Lian@nxp.com>,
+	Mingkai Hu <mingkai.hu@nxp.com>,
+	Roy Zang <roy.zang@nxp.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	Rob Herring <robh@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	linuxppc-dev@lists.ozlabs.org (open list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+	linux-pci@vger.kernel.org (open list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+	linux-arm-kernel@lists.infradead.org (moderated list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 2/2] PCI: layerscape: Add the workaround for lost link capablities during reset
+Date: Thu, 15 Jun 2023 12:41:12 -0400
+Message-Id: <20230615164113.2270698-2-Frank.Li@nxp.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230615164113.2270698-1-Frank.Li@nxp.com>
+References: <20230615164113.2270698-1-Frank.Li@nxp.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: BY5PR13CA0036.namprd13.prod.outlook.com
+ (2603:10b6:a03:180::49) To AM6PR04MB4838.eurprd04.prod.outlook.com
+ (2603:10a6:20b:4::16)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM6PR04MB4838:EE_|AS8PR04MB8181:EE_
+X-MS-Office365-Filtering-Correlation-Id: 54adf62c-5a7a-4374-9831-08db6dbf6a25
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	vIB1cNzQg3gdbMUduBwZTUO0tbeb0Vjm9eu/4MbVIkefqjHQ4NRb7y24O51hQAP4B4PVmclYmovGhw9tVHNm++Fwtm/eEYMJHe/rVK5TQoQDGzLdHDPpzeyeDqW2pRmc+UkcKKwbjsMgyki6F78TmKNgX03M5HmZMwKk1JSKgZg+fEkfa12Lz8vUXAXlRQVhJowShRX1E5ksUawl90aogqwE/bmeksU9FvFvI/c28sonSJ1bpckQ+/ZbppnQ8ho97amxeohmDf89Jg8t7VEpUOgp1XPIbtnvjb5Sb6uK+EXSslhRiHhCYKXeuc7aQrJOSVKKoyYWG1zSQq7bENIJJ5EG/0zZIcWloFF/XB3KMoftWOTg5+Oc90q/yvG1p+h7YkgdStE/cmqQP2vJGKEDezbtL9oHrmxMAe7Ss/IYLIrXuSLPcs3gmTWarptoIRc8ObgfOV+Bopgb3slUkiQg3TbI5i94IkNtfH6CmTd6HV3YCiAANkSfKLopjBIoMeajPU5Jp8oJ13CDl5bi4haGu8tfSbMo+Eg27dl/8xpolEuLWSNdMXI94lhaFoLvqGu1wPmzJVS+nFXPHWD2Hl+T+XvCiThunUBf3nGhpt6IHzpkHR7kcKSeBfDi9BDLzoMIP3rYw0vNwEgeP6qZ0uypAg==
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM6PR04MB4838.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(366004)(136003)(396003)(376002)(39860400002)(451199021)(26005)(36756003)(1076003)(6506007)(6512007)(478600001)(186003)(6666004)(6486002)(52116002)(2906002)(316002)(41300700001)(86362001)(921005)(8676002)(8936002)(5660300002)(7416002)(38100700002)(38350700002)(110136005)(2616005)(66476007)(66946007)(66556008)(4326008);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?5KpThGf3lAtmTcJcgNuwEQbwdv8GfvouajbFfMepqshO1XmHk3zi1REKZQHa?=
+ =?us-ascii?Q?MCl24xKiGrO78UJg347my2sqovzkJlz/Y6W1A0hZQLf6H1LrnhOk/80HlsfL?=
+ =?us-ascii?Q?MD8+UAip6fNBmL+7azhJkje+44dlfrC6Gz5quBiU0Df85NiP7hwm5QrtQPZT?=
+ =?us-ascii?Q?oHKG+XeeOasrlEwH6Tb+Z/ILtQyZqjiWAIYWrqxUjrb1x1XNpMJoYU3gu1O3?=
+ =?us-ascii?Q?YzXjn7O1zOJEyS1LaffUMu9kn7vtSwXjNo+Seb/Uur7DqdudxNbyabdNMtkz?=
+ =?us-ascii?Q?tfOQCtg8a7EMi09FRHOqosZzygcGOtff1WbV9Gq+a6qbVcey6VUJ8yXNXd3j?=
+ =?us-ascii?Q?b22ULTnzJBph9RxgC4b8UD6pBuJLf4VMDsxpq+9XKKl07BV/7X05dez9Yn1F?=
+ =?us-ascii?Q?ExSMSb6vi7WLop1jGtlwQ6jA+rOfc+6Iba8A24HXc9lJ2sFwLU2vV1gJT6K8?=
+ =?us-ascii?Q?obTVo9iVkkhsPGVVAlJzw+gkLOABUJJqMxubWbn8attg93LImRZUb7/IXzUt?=
+ =?us-ascii?Q?Ie+izSso/Zv47Go4ZxE3LSj5DPuY/ODNt3gMSa+KIh8BAAlCvUehqAnPkrzr?=
+ =?us-ascii?Q?w+iRKy4xOBskT+1zEHxUUW2gAv9TX19rdZ4ADCji1S8T49qRgFj2K8MtpH4S?=
+ =?us-ascii?Q?62GLRKBDb13VpYz/e5V+uJb0KmcjQZTuw4bwEAAx7bsDL7DuJfOAxlz8k93P?=
+ =?us-ascii?Q?sOIyqUUjGtOS9A30m+V1aitwRpKipFuJGqx/8/JjWhktpqoLk98sJCFtj3/i?=
+ =?us-ascii?Q?w7TliecpIlh3soj3QWAopaaIKsl4RBb4KpY8gNFNbsb06JD/YHafqhYslIz1?=
+ =?us-ascii?Q?Rol2VpNMAEY3SbiU+6yDYZcvJ3oPy4QItFH+hiP+Ew43R3LclCL18I7Qp+Vx?=
+ =?us-ascii?Q?H6JF4XhpZkQ9faOTKluJa4hJRi844pHJ4eTThFrGBz3OiO+bk2lBzPpQG1+g?=
+ =?us-ascii?Q?QmNg4WfkSSrtMCaCvULrp9kj0O5dicqfMUorqVqwiSHOZ5jQCkTLaj9x07E6?=
+ =?us-ascii?Q?hHIOnZvGjqlYKBvnZmslFf2NAtrKq2IDCgFj68tw9C3KG11SZyyBOYg7unnZ?=
+ =?us-ascii?Q?x6N1OzpWrG7TEV+C9pkKHbSv+PWAvwm8AqfFFOrWF3qrw8YQaFZjUGympsgI?=
+ =?us-ascii?Q?eDdiVh9jD1+lf562EELtbbpSQ+LW0zpWQJAu2/F3/J/GzGMvHPGn0Q5zOD+s?=
+ =?us-ascii?Q?IY3Gz71KJhZeLOJbuN20p7s3+IjJetppUgaTyUK8wi4vaWo9V/5zV+KfW0Rl?=
+ =?us-ascii?Q?/HG0qKa07PR00SDUjrOnzJoySTDNiJwLXwyJedeNvl1m//F/k+5fwraaHi9/?=
+ =?us-ascii?Q?S1l0NA/dgXYztquPimHqCEd+IcBlLSJWVC3B4jbS6elb60LaozXig5Ba5QlJ?=
+ =?us-ascii?Q?W5G8Z1Y+raiMw6UJwEZaJDJ127Vj5cMFIBTE+pshE+gykyfJujLznv/QVAyj?=
+ =?us-ascii?Q?mHmBLOhKo8nqcc0LyZzJ4VCtK9IyKy/PqozM0ELrldgJvhYSOCfiEsB1UJAK?=
+ =?us-ascii?Q?fHWUip4QegUPr5J7QeH08N7FZxL4afkfz9Djg7Ywb/Uhre4Ksp3KkJS1cO7Z?=
+ =?us-ascii?Q?oVunmza+lD+mtU82tiblMeKEovocomHWr2naaF0H?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 54adf62c-5a7a-4374-9831-08db6dbf6a25
+X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB4838.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2023 16:41:49.1632
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Ky+yVdNbR8Hb3tgVcy6S1469JSV8JwvJkmOSIW/pAL9tC07tira9nt1VpPZ3kCoQUszy4b7+w2rDR7cmc6ioIg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8181
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,252 +129,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, x86@kernel.org, Gavin Shan <gshan@redhat.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, Ben Gardon <bgardon@google.com>, Chao Peng <chao.p.peng@linux.intel.com>, Will Deacon <will@kernel.org>, Gaosheng Cui <cuigaosheng1@huawei.com>, Marc Zyngier <maz@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Alistair Popple <apopple@nvidia.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Zenghui Yu <yuzenghui@huawei.com>, linux-trace-kernel@vger.kernel.org, linux-mm@google.com, Thomas Huth <thuth@redhat.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Steven Rostedt <rostedt@goodmis.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Fabiano Rosas <farosas@linux.ibm.com>, Michael Larabel <michael@michaellarabel.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
+Cc: imx@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 26, 2023, Yu Zhao wrote:
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 0e571e973bc2..374262545f96 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -258,6 +258,7 @@ int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
->  #ifdef KVM_ARCH_WANT_MMU_NOTIFIER
->  struct kvm_gfn_range {
->  	struct kvm_memory_slot *slot;
-> +	void *args;
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
 
-There's no reason to make this "void *", just declare "struct test_clear_young_args"
-in the header.  Arch code won't be able to use it regardless.  And I vote for
-something more like "test_clear_young_metadata", as there's far more information
-in there than just function arguments.
+A workaround for the issue where the PCI Express Endpoint (EP) controller
+loses the values of the Maximum Link Width and Supported Link Speed from
+the Link Capabilities Register, which initially configured by the Reset
+Configuration Word (RCW) during a link-down or hot reset event.
 
-And to stave off the argument that "void *" would allow reuse, take this opportunity
-to unionize the test_clear_young field with the change_pte field, e.g.
-
-	/* comment about these fields being callback specific. */
-	union {
-		struct test_clear_young_metadata *metadata;
-		pte_t pte;
-		unsigned long callback_arg; /* needs a better name */
-	};
-
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 51e4882d0873..31ee58754b19 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -541,6 +541,7 @@ typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
->  typedef void (*on_unlock_fn_t)(struct kvm *kvm);
->  
->  struct kvm_hva_range {
-> +	void *args;
-
-Same feedback as kvm_gfn_range.
-
->  	unsigned long start;
->  	unsigned long end;
->  	pte_t pte;
-> @@ -549,6 +550,7 @@ struct kvm_hva_range {
->  	on_unlock_fn_t on_unlock;
->  	bool flush_on_ret;
->  	bool may_block;
-> +	bool lockless;
->  };
->  
->  /*
-> @@ -602,6 +604,8 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
->  			hva_end = min(range->end, slot->userspace_addr +
->  						  (slot->npages << PAGE_SHIFT));
->  
-> +			gfn_range.args = range->args;
-
-And this goes away because the generic callback_arg is what gets propagated.
-
-> +
->  			/*
->  			 * To optimize for the likely case where the address
->  			 * range is covered by zero or one memslots, don't
-> @@ -619,7 +623,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
->  			gfn_range.end = hva_to_gfn_memslot(hva_end + PAGE_SIZE - 1, slot);
->  			gfn_range.slot = slot;
->  
-> -			if (!locked) {
-> +			if (!range->lockless && !locked) {
->  				locked = true;
->  				KVM_MMU_LOCK(kvm);
->  				if (!IS_KVM_NULL_FN(range->on_lock))
-> @@ -628,6 +632,9 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
->  					break;
->  			}
->  			ret |= range->handler(kvm, &gfn_range);
-> +
-> +			if (range->lockless && ret)
-
-I don't like overloading "lockless" to also mean "stop on ret".  Just add another
-flag, there's literally no cost for most callbacks as everything is constant at
-compile time and gets optimized away.
-
-> +		range.args = &args;
-> +		range.lockless = true;
-
-The lockless and stop_on_ret behavior needs comments.
-
-> +		range.handler = kvm_arch_test_clear_young;
-> +
-> +		if (!__kvm_handle_hva_range(kvm, &range))
-> +			return args.young ? MMU_NOTIFIER_RANGE_LOCKLESS : 0;
-> +	}
-> +
-> +	if (bitmap)
-> +		return 0;
-> +
-> +	range.args = NULL;
-> +	range.lockless = false;
-
-No need to manually clear these, they'll be zeroed by the initialization code.
-
-E.g. all in all, something like so
-
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+Signed-off-by: Frank Li <Frank.Li@nxp.com>
 ---
- include/linux/kvm_host.h |  9 +++++++--
- virt/kvm/kvm_main.c      | 29 +++++++++++++++++------------
- 2 files changed, 24 insertions(+), 14 deletions(-)
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 7a0922cbc36f..e04605061f5e 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -256,12 +256,17 @@ int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
- #endif
- 
- #ifdef KVM_ARCH_WANT_MMU_NOTIFIER
-+struct test_clear_young_metadata;
-+
- struct kvm_gfn_range {
- 	struct kvm_memory_slot *slot;
--	void *args;
- 	gfn_t start;
- 	gfn_t end;
--	pte_t pte;
-+	union {
-+		struct test_clear_young_metadata *metadata;
-+		pte_t pte;
-+		unsigned long callback_arg;
-+	};
- 	bool may_block;
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+index 4e4fdd1dfea7..2ef02d827eeb 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -45,6 +45,7 @@ struct ls_pcie_ep {
+ 	struct pci_epc_features		*ls_epc;
+ 	const struct ls_pcie_ep_drvdata *drvdata;
+ 	int				irq;
++	u32				lnkcap;
+ 	bool				big_endian;
  };
  
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index ac83cfb30771..8cf4fee9cd8b 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -536,16 +536,20 @@ typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
- typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+@@ -73,6 +74,7 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
+ 	struct ls_pcie_ep *pcie = dev_id;
+ 	struct dw_pcie *pci = pcie->pci;
+ 	u32 val, cfg;
++	u8 offset;
  
- struct kvm_hva_range {
--	void *args;
- 	unsigned long start;
- 	unsigned long end;
--	pte_t pte;
- 	hva_handler_t handler;
-+	union {
-+		struct test_clear_young_metadata *metadata;
-+		pte_t pte;
-+		unsigned long callback_arg;
-+	};
- 	on_lock_fn_t on_lock;
- 	on_unlock_fn_t on_unlock;
- 	bool flush_on_ret;
- 	bool may_block;
- 	bool lockless;
-+	bool stop_on_ret;
- };
+ 	val = ls_lut_readl(pcie, PEX_PF0_PME_MES_DR);
+ 	ls_lut_writel(pcie, PEX_PF0_PME_MES_DR, val);
+@@ -81,6 +83,13 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
+ 		return IRQ_NONE;
  
- /*
-@@ -576,6 +580,9 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 	struct kvm_memslots *slots;
- 	int i, idx;
- 
-+	BUILD_BUG_ON(sizeof(gfn_range.callback_arg) != sizeof(gfn_range.pte) ||
-+		     sizeof(gfn_range.callback_arg) != sizeof(gfn_range.metadata));
+ 	if (val & PEX_PF0_PME_MES_DR_LUD) {
 +
- 	if (WARN_ON_ONCE(range->end <= range->start))
- 		return 0;
++		offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
++
++		dw_pcie_dbi_ro_wr_en(pci);
++		dw_pcie_writew_dbi(pci, offset + PCI_EXP_LNKCAP, pcie->lnkcap);
++		dw_pcie_dbi_ro_wr_dis(pci);
++
+ 		cfg = ls_lut_readl(pcie, PEX_PF0_CONFIG);
+ 		cfg |= PEX_PF0_CFG_READY;
+ 		ls_lut_writel(pcie, PEX_PF0_CONFIG, cfg);
+@@ -216,6 +225,7 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
+ 	struct ls_pcie_ep *pcie;
+ 	struct pci_epc_features *ls_epc;
+ 	struct resource *dbi_base;
++	u8 offset;
+ 	int ret;
  
-@@ -599,16 +606,14 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 			hva_end = min(range->end, slot->userspace_addr +
- 						  (slot->npages << PAGE_SHIFT));
+ 	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
+@@ -252,6 +262,9 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
  
--			gfn_range.args = range->args;
--
- 			/*
- 			 * To optimize for the likely case where the address
- 			 * range is covered by zero or one memslots, don't
- 			 * bother making these conditional (to avoid writes on
- 			 * the second or later invocation of the handler).
- 			 */
--			gfn_range.pte = range->pte;
- 			gfn_range.may_block = range->may_block;
-+			gfn_range.callback_arg = range->callback_arg;
+ 	platform_set_drvdata(pdev, pcie);
  
- 			/*
- 			 * {gfn(page) | page intersects with [hva_start, hva_end)} =
-@@ -628,7 +633,8 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 			}
- 			ret |= range->handler(kvm, &gfn_range);
- 
--			if (range->lockless && ret)
-+			/* comment goes here. */
-+			if (range->stop_on_ret && ret)
- 				break;
- 		}
- 	}
-@@ -830,7 +836,7 @@ static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
- 	return kvm_handle_hva_range(mn, start, end, __pte(0), kvm_age_gfn);
- }
- 
--struct test_clear_young_args {
-+struct test_clear_young_metadata {
- 	unsigned long *bitmap;
- 	unsigned long end;
- 	bool clear;
-@@ -839,7 +845,7 @@ struct test_clear_young_args {
- 
- bool kvm_should_clear_young(struct kvm_gfn_range *range, gfn_t gfn)
- {
--	struct test_clear_young_args *args = range->args;
-+	struct test_clear_young_metadata *args = range->metadata;
- 
- 	VM_WARN_ON_ONCE(gfn < range->start || gfn >= range->end);
- 
-@@ -880,14 +886,15 @@ static int kvm_mmu_notifier_test_clear_young(struct mmu_notifier *mn, struct mm_
- 	trace_kvm_age_hva(start, end);
- 
- 	if (kvm_test_clear_young) {
--		struct test_clear_young_args args = {
-+		struct test_clear_young_metadata args = {
- 			.bitmap	= bitmap,
- 			.end	= end,
- 			.clear	= clear,
- 		};
- 
--		range.args = &args;
- 		range.lockless = true;
-+		range.stop_on_ret = true;
-+		range.metadata = &args;
- 		range.handler = kvm_test_clear_young;
- 
- 		if (!__kvm_handle_hva_range(kvm, &range))
-@@ -897,8 +904,6 @@ static int kvm_mmu_notifier_test_clear_young(struct mmu_notifier *mn, struct mm_
- 	if (bitmap)
- 		return 0;
- 
--	range.args = NULL;
--	range.lockless = false;
- 	range.handler = clear ? kvm_age_gfn : kvm_test_age_gfn;
- 
- 	return __kvm_handle_hva_range(kvm, &range) ? MMU_NOTIFIER_RANGE_YOUNG : 0;
-
-base-commit: 7a5d8be2c18415b73b9380741095f439d6983a40
++	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
++	pcie->lnkcap = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
++
+ 	ret = dw_pcie_ep_init(&pci->ep);
+ 	if (ret)
+ 		return ret;
 -- 
+2.34.1
 
