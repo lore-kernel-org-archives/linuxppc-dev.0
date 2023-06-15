@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 890ADEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 15:48:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEF97EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jun 2023 15:49:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=krst2C3+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZtllXgKZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QhmsR4Z4Kz3btP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 01:48:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QhmtQ21Cdz3by2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 01:49:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=krst2C3+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZtllXgKZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhmrP4bBYz3bVP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QhmrP4McJz30hG
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 01:47:17 +1000 (AEST)
 Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35FF7P7s002298;
-	Thu, 15 Jun 2023 15:46:45 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35FFfmbA031929;
+	Thu, 15 Jun 2023 15:46:49 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=HyPT7JhScHY14W+4yC0YwDdKiDyYVhW1/dxqq65NYJI=;
- b=krst2C3+gXxJYDbopCRfm9DLkau3GcMzBDl6WZsSs9dkP9+4AkKPonlJAQQa540MppPm
- DGQ1U8MRiiwsawGTqB8ZXKviXFlosyErjdOWd16+5GuxQASB1AiPWHpI4uzzw4blbPIy
- vkBdMj94a4iLoJqlGGBbtO92idqvjaGgR6xNxU87jrFVO+CLgzNX48S/r3LPi2MdLNid
- udwsoDhUzQPlYNi/m3d5eiVV/epvCS0RH3VPyTwPQKzm2CZLyhGHvj4AqJHuUl3EDpIc
- /J7ArH2xM0AIsT/sFM7zmZPZjs8u8AASB4qYFj4N2cJwVHTBrM3OChsNP7PFxwyKY2MM Uw== 
+ bh=jVW7yohLK9Vw3P0klRV5j1vQuRogcPT4LlvarI8f2XM=;
+ b=ZtllXgKZw/g4uFoHc8DU3jpSMWboQk0VcUXkOmRd5qXblaICbrqJY3aY/fq0SkX1ISrZ
+ /R7Z+ZWDG5q/LPeUBJtb+hA9ObKTd7gRNjTHG0CBPbYvR5eaeTvqOkWLtEBWkVAttYdi
+ uBYYMhnjPY1eyuoC6RI32Y0sApmBCm6vuxXxmTezGvh8xeIndybC1w0oZzl2efq9hKf/
+ ta1uhPYYR9mqhbcQwv6bi4mcWTgC7Y+ASGmpqOix2ryoMkmpsR2boiIfDBBpNjBuwhCv
+ EeYmBqPRREyxVkfhwyd3vDqwi7J4574kC+ygjIeOfyNHBBgKpkRlAAIjnQJa9HPZS2Ys JQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r84qb1yhd-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r84qb1yms-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 15:46:45 +0000
+	Thu, 15 Jun 2023 15:46:48 +0000
 Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35FFGq7A014158;
-	Thu, 15 Jun 2023 15:46:44 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r84qb1yfr-1
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35FFIJmU020546;
+	Thu, 15 Jun 2023 15:46:48 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3r84qb1yj6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 15 Jun 2023 15:46:48 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35F10bch012068;
+	Thu, 15 Jun 2023 15:46:45 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3r4gt52r47-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Thu, 15 Jun 2023 15:46:44 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35F2kCxN030742;
-	Thu, 15 Jun 2023 15:46:41 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3r4gt53pba-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jun 2023 15:46:41 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35FFkd3N19989232
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35FFkgVg20710028
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 15 Jun 2023 15:46:39 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7773120040;
-	Thu, 15 Jun 2023 15:46:39 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F3C2220043;
-	Thu, 15 Jun 2023 15:46:38 +0000 (GMT)
+	Thu, 15 Jun 2023 15:46:42 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7DE8A20040;
+	Thu, 15 Jun 2023 15:46:42 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E3C8A20043;
+	Thu, 15 Jun 2023 15:46:41 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.144.159.119])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 15 Jun 2023 15:46:38 +0000 (GMT)
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 15 Jun 2023 15:46:41 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/10] cpu/SMT: Create topology_smt_threads_supported()
-Date: Thu, 15 Jun 2023 17:46:30 +0200
-Message-ID: <20230615154635.13660-6-ldufour@linux.ibm.com>
+Subject: [PATCH 10/10] powerpc/pseries: Honour current SMT state when DLPAR onlining CPUs
+Date: Thu, 15 Jun 2023 17:46:35 +0200
+Message-ID: <20230615154635.13660-11-ldufour@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230615154635.13660-1-ldufour@linux.ibm.com>
 References: <20230615154635.13660-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: GKY_m6eO-S-9CF-jGda-6u9bAXCzu_wL
-X-Proofpoint-ORIG-GUID: nvzwFDIsa5kbDWYfeiYiz2CuKupDqmI2
+X-Proofpoint-GUID: nXfwAgs5Y7mDP_h_f298NttcCwBTagAh
+X-Proofpoint-ORIG-GUID: ILE6_SZWj42_A3EWK-8GoGAfYD46l_34
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-06-15_12,2023-06-15_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 impostorscore=0
- adultscore=0 lowpriorityscore=0 bulkscore=0 mlxlogscore=497 phishscore=0
+ adultscore=0 lowpriorityscore=0 bulkscore=0 mlxlogscore=879 phishscore=0
  spamscore=0 suspectscore=0 malwarescore=0 priorityscore=1501 clxscore=1015
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2305260000
  definitions=main-2306150136
@@ -102,64 +102,33 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-A subsequent patch will enable partial SMT states, ie. when not all SMT
-threads are brought online.
-
-To support that, add an arch helper to check how many SMT threads are
-supported.
-
-To retain existing behaviour, the x86 implementation only allows a
-single thread or all threads to be online.
+Integrate with the generic SMT support, so that when a CPU is DLPAR
+onlined it is brought up with the correct SMT mode.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/x86/include/asm/topology.h |  2 ++
- arch/x86/kernel/smpboot.c       | 12 ++++++++++++
- 2 files changed, 14 insertions(+)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 87358a8fe843..232df5ffab34 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -143,6 +143,7 @@ int topology_update_die_map(unsigned int dieid, unsigned int cpu);
- int topology_phys_to_logical_pkg(unsigned int pkg);
- int topology_phys_to_logical_die(unsigned int die, unsigned int cpu);
- bool topology_is_primary_thread(unsigned int cpu);
-+bool topology_smt_threads_supported(unsigned int threads);
- #else
- #define topology_max_packages()			(1)
- static inline int
-@@ -155,6 +156,7 @@ static inline int topology_phys_to_logical_die(unsigned int die,
- static inline int topology_max_die_per_package(void) { return 1; }
- static inline int topology_max_smt_threads(void) { return 1; }
- static inline bool topology_is_primary_thread(unsigned int cpu) { return true; }
-+static inline bool topology_smt_threads_supported(unsigned int threads) { return false; }
- #endif
- 
- static inline void arch_fix_phys_package_id(int num, u32 slot)
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 3052c171668d..d163ef55577b 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -278,6 +278,18 @@ bool topology_is_primary_thread(unsigned int cpu)
- 	return apic_id_is_primary_thread(per_cpu(x86_cpu_to_apicid, cpu));
- }
- 
-+/**
-+ * topology_smt_threads_supported - Check if the given number of SMT threads
-+ *				    is supported.
-+ *
-+ * @threads:	The number of SMT threads.
-+ */
-+bool topology_smt_threads_supported(unsigned int threads)
-+{
-+	// Only support a single thread or all threads.
-+	return threads == 1 || threads == smp_num_siblings;
-+}
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 61fb7cb00880..e62835a12d73 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -398,6 +398,14 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 		for_each_present_cpu(cpu) {
+ 			if (get_hard_smp_processor_id(cpu) != thread)
+ 				continue;
 +
- /**
-  * topology_phys_to_logical_pkg - Map a physical package id to a logical
-  *
++			if (!topology_is_primary_thread(cpu)) {
++				if (cpu_smt_control != CPU_SMT_ENABLED)
++					break;
++				if (!topology_smt_thread_allowed(cpu))
++					break;
++			}
++
+ 			cpu_maps_update_done();
+ 			find_and_update_cpu_nid(cpu);
+ 			rc = device_online(get_cpu_device(cpu));
 -- 
 2.41.0
 
