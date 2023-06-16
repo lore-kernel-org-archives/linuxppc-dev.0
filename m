@@ -4,61 +4,147 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2EC1EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 18:57:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 593CDEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 19:04:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DR8ZwzCH;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GTPD8ONH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QjT191p0Sz3by2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Jun 2023 04:57:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QjT9C62t1z3bw4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Jun 2023 05:04:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DR8ZwzCH;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GTPD8ONH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e8a::60d; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2060d.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e8a::60d])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QjT0C1d4Dz2ys1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2023 04:56:27 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 3A348631A0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 18:56:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23FC7C433B7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 18:56:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1686941784;
-	bh=TiK/t/XTSx2fh8UkKw1baZqCETUm1DZqQZdzQBTpc/g=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=DR8ZwzCHVtydoaaxjVYJNAWu/EazGdygIZ9Srkd4r4zGNu0UV5wrYj4MX5arzEodp
-	 UNvhvBrh5U4xGmDl5sewm5lcUokl1lD7VTeAPUPHyzYKCOX5F7Je9AJgJ0HqJqpHT2
-	 dLMHymuA0MzirGgPHvlvL6U36HV4H2mHBFM4sA3+uLQ6uro16QwzRETHZvWuu01q0L
-	 oEQm2Ghzu8fuJWG7gSLOHi6X72YNM+NGXR0jzbSIhti31b9mqhQFKwVaQG4h1o8jl3
-	 sPN9LHTye4cTeZayTOrwNQq2w+QcnqfrU6lZ/h2mtxqSWd8YF98VAdngnnwpTSEIq6
-	 2Cv/9seiufkYQ==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-2b34ac4b6e8so14417881fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2023 11:56:23 -0700 (PDT)
-X-Gm-Message-State: AC+VfDzB5X8yHoMeFM3nfnmdBOJY8kae5+W8h+6AGMctJs+NBZ1Yx90Q
-	x1ROIo4vnGHTm11TW2KYGWG6PAeFf9w2FwM5ru4=
-X-Google-Smtp-Source: ACHHUZ5T8e7wpuuhOjnmCbHsB2+OgDZlJJ7sUOEWS0dN9xCa2iZ6+8btSZBMXNDx9vhO1lFKVvsg0dPvz5VmaKvg8Zw=
-X-Received: by 2002:a2e:80c2:0:b0:2b2:f9c8:6ad1 with SMTP id
- r2-20020a2e80c2000000b002b2f9c86ad1mr2553844ljg.42.1686941782011; Fri, 16 Jun
- 2023 11:56:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QjT876tRLz3bdV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2023 05:03:17 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=bwiRq+w97h2KBRcela5ePlCGIANVW46bp4tOF48sPJlqKTnN7swN2cbkBvWF9k47zT9lNzQcndTxfTts4wHmT9S3XVLWpCpxoZcFTaL20hY33HVZw8LEM3yzkG5GrLF4Ez80e9J1h1mkj51jTFdwhawOhLsWYnmkm5l9E9CuorsjCAlJDyQxg6qsrhN5qf/H/zZ4QytlLaB7uSs4JMmEsA2cfzFQSV35tAVSDfMcrVL8vqsuVV+F096LpYA6Idxt9feMLX58PCbA0eaPFL+LiTM7QNi5zjyv94lpuNk2GAD3qhhUC+tkJLpemkC7jqwMprkQtxwecaBd/5XqIhptAQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=w0IYW6GJyVFiPWG2flp9VBNO5eU+viukK8rqNAbYods=;
+ b=emK7MmONgTeT5x00wvZhWeNySTxerVzMUIRmorbgblV29eQAZEWzBQEH8W78fbImcjfJpsF6ZnEcwYkyimtE6BXZRUrUTTiIUvoxmUULWLGcWjc/6Ik/kBd7owYWM/uYT7+rTxipBLfvb8iXZ+/mECYgBnJLVO9E+QVxCgGpMA0sEsEzM8rVo449eLh4W9iXjZ8WknLCQgBkm1wZe8ysdtUThLL1Fh/Dpji4V5tU0m+N7q650jeHnwK3PSrOjtzzxsXdEL/sN1dCLIT05Chx6GzPYKbRY1gl93FPIMk99o96GDoTfKqwr3Op3BioHWKfdn+xXpXhSqK8A5S7QN0a0w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=w0IYW6GJyVFiPWG2flp9VBNO5eU+viukK8rqNAbYods=;
+ b=GTPD8ONHaU0LezpP7x5wBd4zqKS3levxHXqsGGaTRPVCzpGf46nWYePhUW6pBMp++3b8KY6UMP6ndWXNTVBpLcR5grBrS72dPLd0YZyRdAt4AbxoLaBmfWUe1sJsvCkLOsdx2bmN/C3SJkBEfVlicKugimkI0omZaQqwryhYAIQFFdmpQiQjJsrNylddVfc5wRTHY9fS7+BAasxJjfk528U57PpTK+xSmhyOgpJL58rwWiJHzgZGjbmUk3UKITGllxSqy3NUNgH3ycO0lMbVNet/V1ZjXplCDPcEtOXEWtlcJngpd87BrUm+VSUK0gfT+gTy7dbIE6bFfTMEjfAOBw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
+ by SJ1PR12MB6051.namprd12.prod.outlook.com (2603:10b6:a03:48a::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.37; Fri, 16 Jun
+ 2023 19:02:57 +0000
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::f7a7:a561:87e9:5fab]) by LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::f7a7:a561:87e9:5fab%7]) with mapi id 15.20.6477.037; Fri, 16 Jun 2023
+ 19:02:57 +0000
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Andy Gross <agross@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	iommu@lists.linux.dev,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Joerg Roedel <joro@8bytes.org>,
+	Kevin Tian <kevin.tian@intel.com>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-sunxi@lists.linux.dev,
+	linux-tegra@vger.kernel.org,
+	Russell King <linux@armlinux.org.uk>,
+	linuxppc-dev@lists.ozlabs.org,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Matthew Rosato <mjrosato@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Orson Zhai <orsonzhai@gmail.com>,
+	Rob Clark <robdclark@gmail.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Krishna Reddy <vdumpa@nvidia.com>,
+	Chen-Yu Tsai <wens@csie.org>,
+	Will Deacon <will@kernel.org>,
+	Yong Wu <yong.wu@mediatek.com>,
+	Chunyan Zhang <zhang.lyra@gmail.com>
+Subject: [PATCH v4 03/25] powerpc/iommu: Setup a default domain and remove set_platform_dma_ops
+Date: Fri, 16 Jun 2023 16:02:32 -0300
+Message-Id: <3-v4-874277bde66e+1a9f6-iommu_all_defdom_jgg@nvidia.com>
+In-Reply-To: <0-v4-874277bde66e+1a9f6-iommu_all_defdom_jgg@nvidia.com>
+References: 
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: BL1P221CA0005.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:208:2c5::19) To LV2PR12MB5869.namprd12.prod.outlook.com
+ (2603:10b6:408:176::16)
 MIME-Version: 1.0
-References: <20230616085038.4121892-1-rppt@kernel.org> <20230616085038.4121892-6-rppt@kernel.org>
-In-Reply-To: <20230616085038.4121892-6-rppt@kernel.org>
-From: Song Liu <song@kernel.org>
-Date: Fri, 16 Jun 2023 11:56:09 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW7qEEbyEBUPETHxMj+Kusow5zTk3Q4cRNo0qV+quUsZNA@mail.gmail.com>
-Message-ID: <CAPhsuW7qEEbyEBUPETHxMj+Kusow5zTk3Q4cRNo0qV+quUsZNA@mail.gmail.com>
-Subject: Re: [PATCH v2 05/12] modules, execmem: drop module_alloc
-To: Mike Rapoport <rppt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|SJ1PR12MB6051:EE_
+X-MS-Office365-Filtering-Correlation-Id: c4a91485-1b41-428a-b676-08db6e9c4ae5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	fBa9VnyFRHphLXKFCM2lZtE19VQhnifvAAXXqlRQotWxQDUtnDX8zhSLrOOwaTBMIo3OwpCuJNA39vmzra1X806qmVFwFLEG4a1H4mEtHLfAYvkcBGRetvDZXXdHQ5vM3BCLITvkckkTQMbEjbt6DCjVbhzdrmqPD02SofMUHbSjHAzTfN87Bpw9c8PIKRrG/+3RuhxIs/VgTRljfrDyYUI5Usmtzp7+gcA8oKYU5Z1xmQgsiT8UdAzdxQHQmbsRHGplQJYelcBw7A8OQ1jUI2kp9rm7ThKWYuI6RB70EWYYpgEgslISAWu2otDoTzaNimBo+Sz4cs252p4EX64c5K7lKdrXoGw5/7hFTG4M/tAOZD4hAt62BZrjx2e5NjVPtn3Dv6usbES4E8BkSqzZ7Vk/mCt+HluJLjc5fHRBpIZWHt1yNIfAx33Kdxa1qy9vpwq/7npGZNcC6uDnYwYlBBSoeMvSZ6J5aEvJEXrki06D8HJ436S+4KJaIPMC/uGpjivhVqRY/hG5vHjWJytUftNd99bmkIrPoNpmu8cu46lvPRw4trWa+U4cdzXaXomY7zUZMZiCc/czpGbjc7prCbVVsy66pNs631z38bpuFClbIZGOj8fuuBgwj3qnBGnC
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(396003)(366004)(346002)(39860400002)(136003)(376002)(451199021)(2906002)(83380400001)(2616005)(36756003)(86362001)(921005)(38100700002)(8676002)(8936002)(5660300002)(107886003)(66556008)(316002)(478600001)(66476007)(66946007)(4326008)(6666004)(6486002)(186003)(7416002)(6506007)(54906003)(7406005)(110136005)(41300700001)(26005)(6512007)(4216001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?zKwQdTkaioHxvkDk3Sl6nnslP2ixZRT8kZDLZ4flJAT7Q5CJPiC2J1/Kaf5Y?=
+ =?us-ascii?Q?YhsmaLPUy9FiXCCpfpyg/xEDnxBfe3D0BCnbx/LcLWhtrvBj8JNl0nNBSwBA?=
+ =?us-ascii?Q?mm4S66pCcxuN8CyhV6zq8651I/1kKMEwHMoWLB9KrlZ06pCcdfe+dSH76lRi?=
+ =?us-ascii?Q?afXge0/DIqTsmkk9V+PJhNyoaw5xcd2v6j9hDOu8iEhi2Z3rZ3GDXBJ1WHz9?=
+ =?us-ascii?Q?OJYCWxE+IsjUBEjILn8Mm3QRBfK7CAh/hF3WRDS+qlR2v8zo1+/2mkt6OFfi?=
+ =?us-ascii?Q?4B1YNJe3og3N2kXbhiwlaSy6GT1Ozxfj5vkm1QGgMOrJNtWcUBGtPw9mSuU2?=
+ =?us-ascii?Q?IfR4Y010excDaR9T2Rl2gorICjpwZKs+L6uCP/mJSysMSFQhNLbDAxeVjTw1?=
+ =?us-ascii?Q?DwPq4YZSAmSBEASCy9dohCqAb4X9HA/8rtTGGDkhyLJyDtjdnPobXbO7vh5U?=
+ =?us-ascii?Q?314T5us9V/zaD1/h34zZPMwxs4/WbmJH+e8rrCERpzt+5WBeFOgVtPydMkwj?=
+ =?us-ascii?Q?BipnTFtZMXAjwRfIWFDIpF+5ukWK5pCzxftDv7KzdBXDA+Cw6Yk3ZrglXZi1?=
+ =?us-ascii?Q?LNT4SIoFqP2/2THUmS3WyA4Cr3Y9Yhg+4gj1i3jvlg8F9hV0TXHst5Bg+GgD?=
+ =?us-ascii?Q?Or0BHCf1Jrs7Q43ItwhA+t9R+MFZwT9omzLQs1MrS4zsJs22RtQB5H0ROYFZ?=
+ =?us-ascii?Q?i7W52tHTsV2dybUDXfpJ2CsvH3ItSp+t4gXDYZ7f8s+9CP18VghBW6u2ixbF?=
+ =?us-ascii?Q?SaTxeK9ZAtLXbC01JJ+UEcidk4A1e80IjHbwPacNmGzxHvP+RY3ZOnrBg12P?=
+ =?us-ascii?Q?Hm6itfge38Kwt1OtcYbhQqVDIeNubqhhPxUR9S32wslSNKQRftCeIHnveaAo?=
+ =?us-ascii?Q?3V9F+DCMOLnm4nB2++/xohNf0YRSW3uKDpGAVkkYUAsFOqpDAxTuO8+bjQWe?=
+ =?us-ascii?Q?cVCclD3ZczF6/sVYhlT4vbFLv3f7lNsHiXr3V6xAHz90nzhSVSs6wCLeo/Y5?=
+ =?us-ascii?Q?6jgHQCaoGMXJCF4vzOltdaarjrBawNkgZQJwPCSPCL8BOg1ySYfwdRAHZj/A?=
+ =?us-ascii?Q?fte9WMRL9mznmRSSuA6YLNFtSk1pP8xa2KcLj99B4SRvPXEt8OrC675LS4Jn?=
+ =?us-ascii?Q?QWr+ayOGnN+gDjiiZKGfBdK7Y2R/VceZ5fieNdY1B4R1+QnbhQnebH0pTVCf?=
+ =?us-ascii?Q?V5C1niFazrJQj3zhAvIC2nP/nVqWogdsUyN13gSabGZGeoWE1VXrCEDDVCrs?=
+ =?us-ascii?Q?VhMva3TzXIRgEcR68MFAxDP7+4klIwiOlHfzjZBfwMVMBb+SR8TTfK0C/+35?=
+ =?us-ascii?Q?xmupU0SrHzJDl6S0DZ8nRLSgAMsUHqB0NxHQ04IwpRWaWlS0YN5LgTvok0To?=
+ =?us-ascii?Q?03bPcl7Rn0lItewvBNliYogUit7WQAdxSp9jY0L5RT5MeCSqHTiiI/jByjrU?=
+ =?us-ascii?Q?ZIBf8OttH0+rcOoHuNdmxyETsKTlRVvSkg7cZ2nGv1pU1/GtM2KC+ycfgNKN?=
+ =?us-ascii?Q?HZM+Pid8QzhFjdY4yV3zMw1UDpGnaqTUSI5PldA9+BegMICWUIJQMXwMPRBv?=
+ =?us-ascii?Q?dlijmrEmRNkbhmj1RiXoTqsYCvGxUFUnninUH7C6?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c4a91485-1b41-428a-b676-08db6e9c4ae5
+X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jun 2023 19:02:55.4828
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6/gWwCOB/P+no1x2kfJRyUfQVe4iBUHDrj+OTmbxkxzIRNabZtbCnm9IcgbBgnJT
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ1PR12MB6051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,139 +156,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: Thierry Reding <treding@nvidia.com>, Niklas Schnelle <schnelle@linux.ibm.com>, Steven Price <steven.price@arm.com>, Nicolin Chen <nicolinc@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, Lu Baolu <baolu.lu@linux.intel.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 16, 2023 at 1:51=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wro=
-te:
->
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
->
-> Define default parameters for address range for code allocations using
-> the current values in module_alloc() and make execmem_text_alloc() use
-> these defaults when an architecure does not supply its specific
-> parameters.
->
-> With this, execmem_text_alloc() implements memory allocation in a way
-> compatible with module_alloc() and can be used as a replacement for
-> module_alloc().
->
-> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+POWER is using the set_platform_dma_ops() callback to hook up its private
+dma_ops, but this is buired under some indirection and is weirdly
+happening for a BLOCKED domain as well.
 
-Acked-by: Song Liu <song@kernel.org>
+For better documentation create a PLATFORM domain to manage the dma_ops,
+since that is what it is for, and make the BLOCKED domain an alias for
+it. BLOCKED is required for VFIO.
 
-> ---
->  include/linux/execmem.h      |  8 ++++++++
->  include/linux/moduleloader.h | 12 ------------
->  kernel/module/main.c         |  7 -------
->  mm/execmem.c                 | 12 ++++++++----
->  4 files changed, 16 insertions(+), 23 deletions(-)
->
-> diff --git a/include/linux/execmem.h b/include/linux/execmem.h
-> index 68b2bfc79993..b9a97fcdf3c5 100644
-> --- a/include/linux/execmem.h
-> +++ b/include/linux/execmem.h
-> @@ -4,6 +4,14 @@
->
->  #include <linux/types.h>
->
-> +#if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && =
-\
-> +               !defined(CONFIG_KASAN_VMALLOC)
-> +#include <linux/kasan.h>
-> +#define MODULE_ALIGN (PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-> +#else
-> +#define MODULE_ALIGN PAGE_SIZE
-> +#endif
-> +
->  /**
->   * struct execmem_range - definition of a memory range suitable for code=
- and
->   *                       related data allocations
-> diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
-> index b3374342f7af..4321682fe849 100644
-> --- a/include/linux/moduleloader.h
-> +++ b/include/linux/moduleloader.h
-> @@ -25,10 +25,6 @@ int module_frob_arch_sections(Elf_Ehdr *hdr,
->  /* Additional bytes needed by arch in front of individual sections */
->  unsigned int arch_mod_section_prepend(struct module *mod, unsigned int s=
-ection);
->
-> -/* Allocator used for allocating struct module, core sections and init
-> -   sections.  Returns NULL on failure. */
-> -void *module_alloc(unsigned long size);
-> -
->  /* Determines if the section name is an init section (that is only used =
-during
->   * module loading).
->   */
-> @@ -113,12 +109,4 @@ void module_arch_cleanup(struct module *mod);
->  /* Any cleanup before freeing mod->module_init */
->  void module_arch_freeing_init(struct module *mod);
->
-> -#if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && =
-\
-> -               !defined(CONFIG_KASAN_VMALLOC)
-> -#include <linux/kasan.h>
-> -#define MODULE_ALIGN (PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-> -#else
-> -#define MODULE_ALIGN PAGE_SIZE
-> -#endif
-> -
->  #endif
-> diff --git a/kernel/module/main.c b/kernel/module/main.c
-> index 43810a3bdb81..b445c5ad863a 100644
-> --- a/kernel/module/main.c
-> +++ b/kernel/module/main.c
-> @@ -1600,13 +1600,6 @@ static void free_modinfo(struct module *mod)
->         }
->  }
->
-> -void * __weak module_alloc(unsigned long size)
-> -{
-> -       return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END,
-> -                       GFP_KERNEL, PAGE_KERNEL_EXEC, VM_FLUSH_RESET_PERM=
-S,
-> -                       NUMA_NO_NODE, __builtin_return_address(0));
-> -}
-> -
->  bool __weak module_init_section(const char *name)
->  {
->         return strstarts(name, ".init");
-> diff --git a/mm/execmem.c b/mm/execmem.c
-> index 2fe36dcc7bdf..a67acd75ffef 100644
-> --- a/mm/execmem.c
-> +++ b/mm/execmem.c
-> @@ -59,9 +59,6 @@ void *execmem_text_alloc(size_t size)
->         unsigned long fallback_end =3D execmem_params.modules.text.fallba=
-ck_end;
->         bool kasan =3D execmem_params.modules.flags & EXECMEM_KASAN_SHADO=
-W;
->
-> -       if (!execmem_params.modules.text.start)
-> -               return module_alloc(size);
-> -
->         return execmem_alloc(size, start, end, align, pgprot,
->                              fallback_start, fallback_end, kasan);
->  }
-> @@ -108,8 +105,15 @@ void __init execmem_init(void)
->  {
->         struct execmem_params *p =3D execmem_arch_params();
->
-> -       if (!p)
-> +       if (!p) {
-> +               p =3D &execmem_params;
-> +               p->modules.text.start =3D VMALLOC_START;
-> +               p->modules.text.end =3D VMALLOC_END;
-> +               p->modules.text.pgprot =3D PAGE_KERNEL_EXEC;
-> +               p->modules.text.alignment =3D 1;
-> +
->                 return;
-> +       }
->
->         if (!execmem_validate_params(p))
->                 return;
-> --
-> 2.35.1
->
+Also removes the leaky allocation of the BLOCKED domain by using a global
+static.
+
+Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+---
+ arch/powerpc/kernel/iommu.c | 38 +++++++++++++++++--------------------
+ 1 file changed, 17 insertions(+), 21 deletions(-)
+
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 67f0b01e6ff575..0f17cd767e1676 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1266,7 +1266,7 @@ struct iommu_table_group_ops spapr_tce_table_group_ops = {
+ /*
+  * A simple iommu_ops to allow less cruft in generic VFIO code.
+  */
+-static int spapr_tce_blocking_iommu_attach_dev(struct iommu_domain *dom,
++static int spapr_tce_platform_iommu_attach_dev(struct iommu_domain *dom,
+ 					       struct device *dev)
+ {
+ 	struct iommu_group *grp = iommu_group_get(dev);
+@@ -1283,17 +1283,22 @@ static int spapr_tce_blocking_iommu_attach_dev(struct iommu_domain *dom,
+ 	return ret;
+ }
+ 
+-static void spapr_tce_blocking_iommu_set_platform_dma(struct device *dev)
+-{
+-	struct iommu_group *grp = iommu_group_get(dev);
+-	struct iommu_table_group *table_group;
++static const struct iommu_domain_ops spapr_tce_platform_domain_ops = {
++	.attach_dev = spapr_tce_platform_iommu_attach_dev,
++};
+ 
+-	table_group = iommu_group_get_iommudata(grp);
+-	table_group->ops->release_ownership(table_group);
+-}
++static struct iommu_domain spapr_tce_platform_domain = {
++	.type = IOMMU_DOMAIN_PLATFORM,
++	.ops = &spapr_tce_platform_domain_ops,
++};
+ 
+-static const struct iommu_domain_ops spapr_tce_blocking_domain_ops = {
+-	.attach_dev = spapr_tce_blocking_iommu_attach_dev,
++static struct iommu_domain spapr_tce_blocked_domain = {
++	.type = IOMMU_DOMAIN_BLOCKED,
++	/*
++	 * FIXME: SPAPR mixes blocked and platform behaviors, the blocked domain
++	 * also sets the dma_api ops
++	 */
++	.ops = &spapr_tce_platform_domain_ops,
+ };
+ 
+ static bool spapr_tce_iommu_capable(struct device *dev, enum iommu_cap cap)
+@@ -1310,18 +1315,9 @@ static bool spapr_tce_iommu_capable(struct device *dev, enum iommu_cap cap)
+ 
+ static struct iommu_domain *spapr_tce_iommu_domain_alloc(unsigned int type)
+ {
+-	struct iommu_domain *dom;
+-
+ 	if (type != IOMMU_DOMAIN_BLOCKED)
+ 		return NULL;
+-
+-	dom = kzalloc(sizeof(*dom), GFP_KERNEL);
+-	if (!dom)
+-		return NULL;
+-
+-	dom->ops = &spapr_tce_blocking_domain_ops;
+-
+-	return dom;
++	return &spapr_tce_blocked_domain;
+ }
+ 
+ static struct iommu_device *spapr_tce_iommu_probe_device(struct device *dev)
+@@ -1357,12 +1353,12 @@ static struct iommu_group *spapr_tce_iommu_device_group(struct device *dev)
+ }
+ 
+ static const struct iommu_ops spapr_tce_iommu_ops = {
++	.default_domain = &spapr_tce_platform_domain,
+ 	.capable = spapr_tce_iommu_capable,
+ 	.domain_alloc = spapr_tce_iommu_domain_alloc,
+ 	.probe_device = spapr_tce_iommu_probe_device,
+ 	.release_device = spapr_tce_iommu_release_device,
+ 	.device_group = spapr_tce_iommu_device_group,
+-	.set_platform_dma_ops = spapr_tce_blocking_iommu_set_platform_dma,
+ };
+ 
+ static struct attribute *spapr_tce_iommu_attrs[] = {
+-- 
+2.40.1
+
