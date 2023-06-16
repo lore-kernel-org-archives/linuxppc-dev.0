@@ -4,61 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0902EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 14:22:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2D65EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jun 2023 14:45:00 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=LaKMDQQb;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QjLvz15MFz3cV5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Jun 2023 00:22:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QjMQ306gXz3bn0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Jun 2023 00:44:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QjLsc73rwz3brV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2023 00:20:20 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4QjL8W17T4z9s2Q;
-	Fri, 16 Jun 2023 15:48:11 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EaFt0lRQC1zX; Fri, 16 Jun 2023 15:48:11 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4QjL8W0LV4z9s2L;
-	Fri, 16 Jun 2023 15:48:11 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 06BE28B783;
-	Fri, 16 Jun 2023 15:48:11 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id dNc3yiRAb-Dc; Fri, 16 Jun 2023 15:48:10 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.18])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C32EF8B77E;
-	Fri, 16 Jun 2023 15:48:10 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35GDm4CX1175654
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 16 Jun 2023 15:48:04 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35GDm4V01175653;
-	Fri, 16 Jun 2023 15:48:04 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Sathvika Vasireddy <sv@linux.ibm.com>
-Subject: [RFC PATCH v1 1/3] Revert "powerpc/bug: Provide better flexibility to WARN_ON/__WARN_FLAGS() with asm goto"
-Date: Fri, 16 Jun 2023 15:47:50 +0200
-Message-Id: <8dd72199549e76e0e9c2aba1c89d5fe2b0cb1663.1686922583.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <cover.1686922583.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QjMNx1GVCz3bVP
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2023 00:44:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=3Rpo3Qrh1P0e60oXjGYAsbC0oxcG5ErnolcmsNGypPI=; b=LaKMDQQbWuL972NkWJq2jkoAm1
+	bE5y26fhj3zZ+y9rmbh/7JV1a5I+6/6egEOvXM1iFCJaKou4QvRffYlRVCPr5nUrP1O4Nw17BP2bn
+	1BmQp0XYiXKgfhYhvHhT/9GrqY75mInOZuyycir1NwZQFqkTRMt6RIIgKk2GjYlXTWcvvQgIt1Pq0
+	NNVlieQrqkkzhGD2m1Kcgy5NPh8yV4T7yc/yQtYRguS7tFUkk7JBqT2vCFYUnU65P+/HneZ6xNjpg
+	psEpKtckF81Z/YGrI9i4jSWqihI18mucRavWqICJUKDxVSDcfsL/YLiOha3rq2ITV6qmcLULbXfvY
+	e1ezIavw==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1qAAfr-0095XF-Cn; Fri, 16 Jun 2023 14:43:39 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 41500300208;
+	Fri, 16 Jun 2023 16:43:37 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 2366D2135D73E; Fri, 16 Jun 2023 16:43:37 +0200 (CEST)
+Date: Fri, 16 Jun 2023 16:43:37 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [RFC PATCH v1 3/3] powerpc: WIP draft support to objtool check
+Message-ID: <20230616144337.GQ83892@hirez.programming.kicks-ass.net>
 References: <cover.1686922583.git.christophe.leroy@csgroup.eu>
+ <8fbf16dd6a89e1b5b05244bd5e0746410674829e.1686922583.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686923268; l=8556; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ROO9AsoCT4C/bNydze6Cc3TokGL0wCdUxEkxEcjDtCU=; b=e0d12zX7a0dBl0vv1a4qulb/z/ZP8HD7YjTtx8n9Vshprjr50J8Www+rxaZO7kb3eOZudDPbO igdmR6WxXMrBLk5no+P/4clxoTfUmYTUQjsnGnvaSO4ieYRJXMObRkK
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8fbf16dd6a89e1b5b05244bd5e0746410674829e.1686922583.git.christophe.leroy@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,276 +62,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Sathvika Vasireddy <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts commit 1e688dd2a3d6759d416616ff07afc4bb836c4213.
 
-That commit aimed at optimising the code around generation of
-WARN_ON/BUG_ON but this leads to a lot of dead code erroneously
-generated by GCC.
+Few comments..
 
-     text	   data	    bss	    dec	    hex	filename
-  9551585	3627834	 224376	13403795	 cc8693	vmlinux.before
-  9535281	3628358	 224376	13388015	 cc48ef	vmlinux.after
+On Fri, Jun 16, 2023 at 03:47:52PM +0200, Christophe Leroy wrote:
 
-Once this change is reverted, in a standard configuration (pmac32 +
-function tracer) the text is reduced by 16k which is around 1.7%
+> diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+> index 0fcf99c91400..f945fe271706 100644
+> --- a/tools/objtool/check.c
+> +++ b/tools/objtool/check.c
+> @@ -236,6 +236,7 @@ static bool __dead_end_function(struct objtool_file *file, struct symbol *func,
+>  		"x86_64_start_reservations",
+>  		"xen_cpu_bringup_again",
+>  		"xen_start_kernel",
+> +		"longjmp",
+>  	};
+>  
+>  	if (!func)
+> @@ -2060,13 +2061,12 @@ static int add_jump_table(struct objtool_file *file, struct instruction *insn,
+>  	 * instruction.
+>  	 */
+>  	list_for_each_entry_from(reloc, &table->sec->reloc_list, list) {
+> -
+>  		/* Check for the end of the table: */
+>  		if (reloc != table && reloc->jump_table_start)
+>  			break;
+>  
+>  		/* Make sure the table entries are consecutive: */
+> -		if (prev_offset && reloc->offset != prev_offset + 8)
+> +		if (prev_offset && reloc->offset != prev_offset + 4)
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/book3s/64/kup.h      |  2 +-
- arch/powerpc/include/asm/bug.h                | 67 +++----------------
- arch/powerpc/include/asm/extable.h            | 14 ----
- arch/powerpc/include/asm/ppc_asm.h            | 11 ++-
- arch/powerpc/kernel/misc_32.S                 |  2 +-
- arch/powerpc/kernel/traps.c                   |  9 +--
- .../powerpc/primitives/asm/extable.h          |  1 -
- 7 files changed, 25 insertions(+), 81 deletions(-)
- delete mode 120000 tools/testing/selftests/powerpc/primitives/asm/extable.h
+Do we want a global variable (from elf.c) called elf_sizeof_long or so?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
-index 54cf46808157..c82323b864e1 100644
---- a/arch/powerpc/include/asm/book3s/64/kup.h
-+++ b/arch/powerpc/include/asm/book3s/64/kup.h
-@@ -90,7 +90,7 @@
- 	/* Prevent access to userspace using any key values */
- 	LOAD_REG_IMMEDIATE(\gpr2, AMR_KUAP_BLOCKED)
- 999:	tdne	\gpr1, \gpr2
--	EMIT_WARN_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
-+	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_BOOK3S_KUAP, 67)
- #endif
- .endm
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index ef42adb44aa3..a565995fb742 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -4,14 +4,13 @@
- #ifdef __KERNEL__
- 
- #include <asm/asm-compat.h>
--#include <asm/extable.h>
- 
- #ifdef CONFIG_BUG
- 
- #ifdef __ASSEMBLY__
- #include <asm/asm-offsets.h>
- #ifdef CONFIG_DEBUG_BUGVERBOSE
--.macro __EMIT_BUG_ENTRY addr,file,line,flags
-+.macro EMIT_BUG_ENTRY addr,file,line,flags
- 	 .section __bug_table,"aw"
- 5001:	 .4byte \addr - .
- 	 .4byte 5002f - .
-@@ -23,7 +22,7 @@
- 	 .previous
- .endm
- #else
--.macro __EMIT_BUG_ENTRY addr,file,line,flags
-+.macro EMIT_BUG_ENTRY addr,file,line,flags
- 	 .section __bug_table,"aw"
- 5001:	 .4byte \addr - .
- 	 .short \flags
-@@ -32,18 +31,6 @@
- .endm
- #endif /* verbose */
- 
--.macro EMIT_WARN_ENTRY addr,file,line,flags
--	EX_TABLE(\addr,\addr+4)
--	__EMIT_BUG_ENTRY \addr,\file,\line,\flags
--.endm
--
--.macro EMIT_BUG_ENTRY addr,file,line,flags
--	.if \flags & 1 /* BUGFLAG_WARNING */
--	.err /* Use EMIT_WARN_ENTRY for warnings */
--	.endif
--	__EMIT_BUG_ENTRY \addr,\file,\line,\flags
--.endm
--
- #else /* !__ASSEMBLY__ */
- /* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-    sizeof(struct bug_entry), respectively */
-@@ -73,16 +60,6 @@
- 		  "i" (sizeof(struct bug_entry)),	\
- 		  ##__VA_ARGS__)
- 
--#define WARN_ENTRY(insn, flags, label, ...)		\
--	asm_volatile_goto(				\
--		"1:	" insn "\n"			\
--		EX_TABLE(1b, %l[label])			\
--		_EMIT_BUG_ENTRY				\
--		: : "i" (__FILE__), "i" (__LINE__),	\
--		  "i" (flags),				\
--		  "i" (sizeof(struct bug_entry)),	\
--		  ##__VA_ARGS__ : : label)
--
- /*
-  * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
-  * optimisations. However depending on the complexity of the condition
-@@ -95,16 +72,7 @@
- } while (0)
- #define HAVE_ARCH_BUG
- 
--#define __WARN_FLAGS(flags) do {				\
--	__label__ __label_warn_on;				\
--								\
--	WARN_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags), __label_warn_on); \
--	barrier_before_unreachable();				\
--	__builtin_unreachable();				\
--								\
--__label_warn_on:						\
--	break;							\
--} while (0)
-+#define __WARN_FLAGS(flags) BUG_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags))
- 
- #ifdef CONFIG_PPC64
- #define BUG_ON(x) do {						\
-@@ -117,25 +85,15 @@ __label_warn_on:						\
- } while (0)
- 
- #define WARN_ON(x) ({						\
--	bool __ret_warn_on = false;				\
--	do {							\
--		if (__builtin_constant_p((x))) {		\
--			if (!(x)) 				\
--				break; 				\
-+	int __ret_warn_on = !!(x);				\
-+	if (__builtin_constant_p(__ret_warn_on)) {		\
-+		if (__ret_warn_on)				\
- 			__WARN();				\
--			__ret_warn_on = true;			\
--		} else {					\
--			__label__ __label_warn_on;		\
--								\
--			WARN_ENTRY(PPC_TLNEI " %4, 0",		\
--				   BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
--				   __label_warn_on,		\
--				   "r" ((__force long)(x)));	\
--			break;					\
--__label_warn_on:						\
--			__ret_warn_on = true;			\
--		}						\
--	} while (0);						\
-+	} else {						\
-+		BUG_ENTRY(PPC_TLNEI " %4, 0",			\
-+			  BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
-+			  "r" (__ret_warn_on));	\
-+	}							\
- 	unlikely(__ret_warn_on);				\
- })
- 
-@@ -148,11 +106,8 @@ __label_warn_on:						\
- #ifdef __ASSEMBLY__
- .macro EMIT_BUG_ENTRY addr,file,line,flags
- .endm
--.macro EMIT_WARN_ENTRY addr,file,line,flags
--.endm
- #else /* !__ASSEMBLY__ */
- #define _EMIT_BUG_ENTRY
--#define _EMIT_WARN_ENTRY
- #endif
- #endif /* CONFIG_BUG */
- 
-diff --git a/arch/powerpc/include/asm/extable.h b/arch/powerpc/include/asm/extable.h
-index 26ce2e5c0fa8..eb91b2d2935a 100644
---- a/arch/powerpc/include/asm/extable.h
-+++ b/arch/powerpc/include/asm/extable.h
-@@ -17,8 +17,6 @@
- 
- #define ARCH_HAS_RELATIVE_EXTABLE
- 
--#ifndef __ASSEMBLY__
--
- struct exception_table_entry {
- 	int insn;
- 	int fixup;
-@@ -30,15 +28,3 @@ static inline unsigned long extable_fixup(const struct exception_table_entry *x)
- }
- 
- #endif
--
--/*
-- * Helper macro for exception table entries
-- */
--#define EX_TABLE(_fault, _target)		\
--	stringify_in_c(.section __ex_table,"a";)\
--	stringify_in_c(.balign 4;)		\
--	stringify_in_c(.long (_fault) - . ;)	\
--	stringify_in_c(.long (_target) - . ;)	\
--	stringify_in_c(.previous)
--
--#endif
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 5f05a984b103..5555b17ed076 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -10,7 +10,6 @@
- #include <asm/ppc-opcode.h>
- #include <asm/firmware.h>
- #include <asm/feature-fixups.h>
--#include <asm/extable.h>
- 
- #ifdef __ASSEMBLY__
- 
-@@ -836,6 +835,16 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
- 
- #endif /*  __ASSEMBLY__ */
- 
-+/*
-+ * Helper macro for exception table entries
-+ */
-+#define EX_TABLE(_fault, _target)		\
-+	stringify_in_c(.section __ex_table,"a";)\
-+	stringify_in_c(.balign 4;)		\
-+	stringify_in_c(.long (_fault) - . ;)	\
-+	stringify_in_c(.long (_target) - . ;)	\
-+	stringify_in_c(.previous)
-+
- #define SOFT_MASK_TABLE(_start, _end)		\
- 	stringify_in_c(.section __soft_mask_table,"a";)\
- 	stringify_in_c(.balign 8;)		\
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index daf8f87d2372..fd11ec42df89 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -237,7 +237,7 @@ _GLOBAL(copy_page)
- 	addi	r3,r3,-4
- 
- 0:	twnei	r5, 0	/* WARN if r3 is not cache aligned */
--	EMIT_WARN_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
-+	EMIT_BUG_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
- 
- 	addi	r4,r4,-4
- 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 9bdd79aa51cf..d3c5de9e9b4d 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1508,13 +1508,8 @@ static void do_program_check(struct pt_regs *regs)
- 
- 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
- 		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
--			const struct exception_table_entry *entry;
--
--			entry = search_exception_tables(bugaddr);
--			if (entry) {
--				regs_set_return_ip(regs, extable_fixup(entry) + regs->nip - bugaddr);
--				return;
--			}
-+			regs_add_return_ip(regs, 4);
-+			return;
- 		}
- 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
- 		return;
-diff --git a/tools/testing/selftests/powerpc/primitives/asm/extable.h b/tools/testing/selftests/powerpc/primitives/asm/extable.h
-deleted file mode 120000
-index 6385f059a951..000000000000
---- a/tools/testing/selftests/powerpc/primitives/asm/extable.h
-+++ /dev/null
-@@ -1 +0,0 @@
--../../../../../../arch/powerpc/include/asm/extable.h
-\ No newline at end of file
--- 
-2.40.1
+>  			break;
+>  
+>  		/* Detect function pointers from contiguous objects: */
+> @@ -2074,7 +2074,10 @@ static int add_jump_table(struct objtool_file *file, struct instruction *insn,
+>  		    reloc->addend == pfunc->offset)
+>  			break;
+>  
+> -		dest_insn = find_insn(file, reloc->sym->sec, reloc->addend);
+> +		if (table->jump_table_is_rel)
+> +			dest_insn = find_insn(file, reloc->sym->sec, reloc->addend + table->offset - reloc->offset);
+> +		else
+> +			dest_insn = find_insn(file, reloc->sym->sec, reloc->addend);
 
+		offset = reloc->addend;
+		if (table->jump_table_is_rel)
+			offset += table->offset - reloc->offset;
+		dest_insn = find_insn(file, reloc->sym->sec, offset);
+
+perhaps?
+
+>  		if (!dest_insn)
+>  			break;
+>  
+> @@ -4024,6 +4022,11 @@ static bool ignore_unreachable_insn(struct objtool_file *file, struct instructio
+>  	if (insn->ignore || insn->type == INSN_NOP || insn->type == INSN_TRAP)
+>  		return true;
+>  
+> +	/* powerpc relocatable files have a word in front of each relocatable function */
+> +	if ((file->elf->ehdr.e_machine == EM_PPC || file->elf->ehdr.e_machine == EM_PPC64) &&
+> +	    (file->elf->ehdr.e_flags & EF_PPC_RELOCATABLE_LIB) &&
+> +	    insn_func(next_insn_same_sec(file, insn)))
+> +		return true;
+
+Can't you simply decode that word to INSN_NOP or so?
