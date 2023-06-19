@@ -4,48 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABA1CEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 09:52:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0764EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 09:53:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p7B1KB7A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C8Epmbxm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql4ng663mz30fM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 19:52:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql4pf0Xk9z3bx3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 19:53:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p7B1KB7A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C8Epmbxm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4mf659wz2yTN
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:52:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4mm57CPz30Q0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:52:08 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id B3F72608CC;
-	Mon, 19 Jun 2023 09:52:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9079FC433C8;
-	Mon, 19 Jun 2023 09:51:59 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id E832260909;
+	Mon, 19 Jun 2023 09:52:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C151AC433C8;
+	Mon, 19 Jun 2023 09:52:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687168320;
-	bh=p9NZtEjGoaSI9Ibz25ldZpy+zzccLXH1kD9SV5qjCgs=;
-	h=From:To:Cc:Subject:Date:From;
-	b=p7B1KB7Az0eiifDcmm3kKck7avpEgUSpF7W7+s7Fq0iTK/aZ8nfrR1St/cnRi4lyW
-	 BNpnXzZ0a9ylLpqvjx7YpJUPqGlDxsNdfzC7rrzDj3hVQT5mIUQYiC03f9gG22oHJy
-	 cCRuwLuj1WZGolevzhsg39McaKfIVN1x/knp3aQbMnjfflMxdtijIdNf08uMaC13EG
-	 6gFElhqELOxlYpdRDAhuueHRhZg7qrwFdEFqIU2VCoyPxG4OAJpbBEbEYHoQtGIOHv
-	 RD01OIa7hTvQiqJTxdeVK31CdrnSOyExo5MY04R67aF7gHJ7ExnTioj7D+1KmCspXP
-	 +2geu+/+QNQxw==
+	s=k20201202; t=1687168325;
+	bh=Iw1Dv20up6Z064YBBB74k6x5kv8HOFxX1mSlj8e9zYU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=C8Epmbxm+rd5I555DhdkzK6hemXQyspSs8tgeBOmmm9VhYPiJYBVmCNd//Nlh2A14
+	 aPRqYzsy5x6N7E6a2WfMKeGBtpyJ64LUpymU+v7wQEjb3xKNfmtLwYKPg20AW2tRmE
+	 jyBx2ZVu4DRvmYL7POuvvDCecCuXZ0wzlGyhJuVAESvPHwawZpUQYw1rx0eyveq7ZA
+	 bEQuM4wHMaUGYhge19MH0AfSTBcUeZ+vK63W3rbsjCtINTSqPo4v7v0o+/EXmQeWLn
+	 7UUoVEeyol8diog1wIsmR9TLGaxxzEwskNDOqugF/xfGDsGONpt7DUZnaH6neL/Gb3
+	 tyxqK7THFO0+A==
 From: Naveen N Rao <naveen@kernel.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 00/17] powerpc/ftrace: refactor and add support for -fpatchable-function-entry
-Date: Mon, 19 Jun 2023 15:17:18 +0530
-Message-Id: <cover.1687166935.git.naveen@kernel.org>
+Subject: [PATCH 02/17] powerpc/module: Remove unused .ftrace.tramp section
+Date: Mon, 19 Jun 2023 15:17:20 +0530
+Message-Id: <9cf6d7f37ba82f7cb6dafecf660f44925c526d8d.1687166935.git.naveen@kernel.org>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <cover.1687166935.git.naveen@kernel.org>
+References: <cover.1687166935.git.naveen@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -63,71 +65,30 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since RFC (*):
-- Patches 1 and 17 have been included in this series due to 
-  dependencies. Both had been posted out separately.
-- Patch 10 has a small change to not throw errors when checking 
-  instruction sequence generated by older toolchains.
+.ftrace.tramp section is not used for any purpose. This code was added
+all the way back in the original commit introducing support for dynamic
+ftrace on ppc64 modules. Remove it.
 
-This has had more testing since and this looks good to me. Christophe 
-mentioned that this results in a slowdown with ftrace [de-]activation on 
-ppc32, but that isn't performance critical and we can address that 
-separately.
+Signed-off-by: Naveen N Rao <naveen@kernel.org>
+---
+ arch/powerpc/include/asm/module.h | 4 ----
+ 1 file changed, 4 deletions(-)
 
-
-(*) http://lore.kernel.org/cover.1686151854.git.naveen@kernel.org
-
-
-- Naveen
-
-
-Naveen N Rao (17):
-  powerpc/ftrace: Fix dropping weak symbols with older toolchains
-  powerpc/module: Remove unused .ftrace.tramp section
-  powerpc64/ftrace: Move ELFv1 and -pg support code into a separate file
-  powerpc/ftrace: Simplify function_graph support in ftrace.c
-  powerpc/ftrace: Use FTRACE_REGS_ADDR to identify the correct ftrace
-    trampoline
-  powerpc/ftrace: Extend ftrace support for large kernels to ppc32
-  powerpc/ftrace: Consolidate ftrace support into fewer files
-  powerpc/ftrace: Refactor ftrace_modify_code()
-  powerpc/ftrace: Stop re-purposing linker generated long branches for
-    ftrace
-  powerpc/ftrace: Add separate ftrace_init_nop() with additional
-    validation
-  powerpc/ftrace: Simplify ftrace_make_nop()
-  powerpc/ftrace: Simplify ftrace_make_call()
-  powerpc/ftrace: Simplify ftrace_modify_call()
-  powerpc/ftrace: Replace use of ftrace_call_replace() with
-    ftrace_create_branch_inst()
-  powerpc/ftrace: Implement ftrace_replace_code()
-  powerpc/ftrace: Add support for -fpatchable-function-entry
-  powerpc/ftrace: Create a dummy stackframe to fix stack unwind
-
- arch/powerpc/Kconfig                          |  14 +-
- arch/powerpc/Makefile                         |   5 +
- arch/powerpc/include/asm/ftrace.h             |  24 +-
- arch/powerpc/include/asm/module.h             |   4 -
- arch/powerpc/include/asm/sections.h           |   2 +
- arch/powerpc/include/asm/vermagic.h           |   4 +-
- arch/powerpc/kernel/module_64.c               |   2 +-
- arch/powerpc/kernel/trace/Makefile            |  12 +-
- arch/powerpc/kernel/trace/ftrace.c            | 910 +++++-------------
- arch/powerpc/kernel/trace/ftrace_64_pg.S      |  67 --
- arch/powerpc/kernel/trace/ftrace_64_pg.c      | 846 ++++++++++++++++
- .../{ftrace_low.S => ftrace_64_pg_entry.S}    |  64 +-
- .../{ftrace_mprofile.S => ftrace_entry.S}     |  78 +-
- arch/powerpc/kernel/vmlinux.lds.S             |   4 -
- .../gcc-check-fpatchable-function-entry.sh    |  26 +
- 15 files changed, 1288 insertions(+), 774 deletions(-)
- delete mode 100644 arch/powerpc/kernel/trace/ftrace_64_pg.S
- create mode 100644 arch/powerpc/kernel/trace/ftrace_64_pg.c
- rename arch/powerpc/kernel/trace/{ftrace_low.S => ftrace_64_pg_entry.S} (54%)
- rename arch/powerpc/kernel/trace/{ftrace_mprofile.S => ftrace_entry.S} (79%)
- create mode 100755 arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
-
-
-base-commit: 12ffddc6444780aec83fa5086673ec005c0bace4
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index ac53606c259430..a8e2e8339fb7f4 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -75,10 +75,6 @@ struct mod_arch_specific {
+ #endif
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+-#    ifdef MODULE
+-	asm(".section .ftrace.tramp,\"ax\",@nobits; .align 3; .previous");
+-#    endif	/* MODULE */
+-
+ int module_trampoline_target(struct module *mod, unsigned long trampoline,
+ 			     unsigned long *target);
+ int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs);
 -- 
 2.40.1
 
