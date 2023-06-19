@@ -4,52 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D690EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 10:08:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63CBEEB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 10:08:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HCUqb8Gr;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=kpNSnf7r;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql5724y6Rz3cds
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 20:07:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql5816dTsz3cRJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 20:08:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HCUqb8Gr;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=kpNSnf7r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4pM0kjGz30f0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:53:31 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4rS0tyNz3c54
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:55:19 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out2.suse.de (Postfix) with ESMTP id 680A91F38A;
+	Mon, 19 Jun 2023 09:55:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1687168508; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BqmUWIwDB6MccYaGRsbpmDX+MgysrUEAbIREmqAE7tY=;
+	b=kpNSnf7reRG026G37InlC9KBsz3JngC4BSohPCpE0Ofc8ydoyz5aDha+1hAEwNWXhASmzX
+	JV7x4Bu/lZZHnRlKAzxfLi3A7L5vetPl1KZBY3/H/ktCk4Lt0ZiiylFlNJrfUgRwyPoKfP
+	BcAm8JrzmAlSyJ7pzGIK0PKATklgyIU=
+Received: from suse.cz (unknown [10.100.208.146])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 7143F602E0;
-	Mon, 19 Jun 2023 09:53:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 424ECC433C8;
-	Mon, 19 Jun 2023 09:53:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687168408;
-	bh=fiYOSGx/yX+rBoVWfDjzvuQpt+N/h7M6dfetR+JOhWA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=HCUqb8GrgIDA9dG2ZUhBvnsrKrltO+YCP5Nj7AFKGAZxolXAhJKoGjNjW16oohjob
-	 00bVBx/H+hkc+mzK6+6L7VZrs67nOZMvB05s2mGdYT+Mz5hTkHTNL99aeLXe10MO9g
-	 73FlAdsniSmO0mxs17MxYkkVlomgCImHlcdjNGMfaLAlHvIyLU2ODfH7p0kuRpyFG0
-	 z+04JLXZuhiV9jWi3xnL50VxqwPEhBG3kSlbUmQ/Yyr+J02J/apcp5cAp2RTwtvM8I
-	 q07Uf4A8UOw1H38bd/oFk3uJ9jMwCoHK2I0GAMGnWFh51533TFSgpgf/+m3c2mCK25
-	 0ugLcHd/avGBA==
-From: Naveen N Rao <naveen@kernel.org>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 04/17] powerpc/ftrace: Simplify function_graph support in ftrace.c
-Date: Mon, 19 Jun 2023 15:17:22 +0530
-Message-Id: <4dc92c4b1ed444dc62b748ae7327acdb9e096864.1687166935.git.naveen@kernel.org>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <cover.1687166935.git.naveen@kernel.org>
-References: <cover.1687166935.git.naveen@kernel.org>
+	by relay2.suse.de (Postfix) with ESMTPS id A3CCF2C141;
+	Mon, 19 Jun 2023 09:55:06 +0000 (UTC)
+Date: Mon, 19 Jun 2023 11:55:06 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v2 4/6] watchdog/hardlockup: Make HAVE_NMI_WATCHDOG
+ sparc64-specific
+Message-ID: <ZJAl-rznBaZubY3-@alley>
+References: <20230616150618.6073-1-pmladek@suse.com>
+ <20230616150618.6073-5-pmladek@suse.com>
+ <CAD=FV=U=ox4ApMbDL7v=ivNF6x=UyG=dd4MU_Dt0rppNCEwCpw@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAD=FV=U=ox4ApMbDL7v=ivNF6x=UyG=dd4MU_Dt0rppNCEwCpw@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,106 +64,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-perf-users@vger.kernel.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since we now support DYNAMIC_FTRACE_WITH_ARGS across ppc32 and ppc64
-ELFv2, we can simplify function_graph tracer support code in ftrace.c
+On Fri 2023-06-16 09:48:06, Doug Anderson wrote:
+> Hi,
+> 
+> On Fri, Jun 16, 2023 at 8:07 AM Petr Mladek <pmladek@suse.com> wrote:
+> >
+> > There are several hardlockup detector implementations and several Kconfig
+> > values which allow selection and build of the preferred one.
+[...]
+> > Note that HARDLOCKUP_DETECTOR_PREFER_BUDDY, HARDLOCKUP_DETECTOR_PERF,
+> > and HARDLOCKUP_DETECTOR_BUDDY may conflict only with
+> > HAVE_HARDLOCKUP_DETECTOR_ARCH. They depend on HARDLOCKUP_DETECTOR
+> > and it is not longer enabled when HAVE_NMI_WATCHDOG is set.
+> >
+> > Signed-off-by: Petr Mladek <pmladek@suse.com>
+> >
+> > watchdog/sparc64: Rename HAVE_NMI_WATCHDOG to HAVE_HARDLOCKUP_WATCHDOG_SPARC64
+[...]
+> > Also the variable is set only on sparc64. Move the definition
+> > from arch/Kconfig to arch/sparc/Kconfig.debug.
+> >
+> > Signed-off-by: Petr Mladek <pmladek@suse.com>
+> 
+> I think you goofed up when squashing the patches. You've now got a
+> second patch subject after your first Signed-off-by and then a second
+> Signed-off-by... I assume everything after the first Signed-off-by
+> should be dropped?
 
-Signed-off-by: Naveen N Rao <naveen@kernel.org>
----
- arch/powerpc/kernel/trace/ftrace.c | 64 ++++--------------------------
- 1 file changed, 7 insertions(+), 57 deletions(-)
+Ah, you are right. It seems that Andrew has fixed this when taking
+the patch.
 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 81a121b56c4d7f..f117124c30325f 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -790,44 +790,10 @@ int __init ftrace_dyn_arch_init(void)
- #endif
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--
--extern void ftrace_graph_call(void);
--extern void ftrace_graph_stub(void);
--
--static int ftrace_modify_ftrace_graph_caller(bool enable)
-+void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
-+		       struct ftrace_ops *op, struct ftrace_regs *fregs)
- {
--	unsigned long ip = (unsigned long)(&ftrace_graph_call);
--	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
--	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
--	ppc_inst_t old, new;
--
--	if (IS_ENABLED(CONFIG_DYNAMIC_FTRACE_WITH_ARGS))
--		return 0;
--
--	old = ftrace_call_replace(ip, enable ? stub : addr, 0);
--	new = ftrace_call_replace(ip, enable ? addr : stub, 0);
--
--	return ftrace_modify_code(ip, old, new);
--}
--
--int ftrace_enable_ftrace_graph_caller(void)
--{
--	return ftrace_modify_ftrace_graph_caller(true);
--}
--
--int ftrace_disable_ftrace_graph_caller(void)
--{
--	return ftrace_modify_ftrace_graph_caller(false);
--}
--
--/*
-- * Hook the return address and push it in the stack of return addrs
-- * in current thread info. Return the address we want to divert to.
-- */
--static unsigned long
--__prepare_ftrace_return(unsigned long parent, unsigned long ip, unsigned long sp)
--{
--	unsigned long return_hooker;
-+	unsigned long sp = fregs->regs.gpr[1];
- 	int bit;
- 
- 	if (unlikely(ftrace_graph_is_dead()))
-@@ -836,31 +802,15 @@ __prepare_ftrace_return(unsigned long parent, unsigned long ip, unsigned long sp
- 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
- 		goto out;
- 
--	bit = ftrace_test_recursion_trylock(ip, parent);
-+	bit = ftrace_test_recursion_trylock(ip, parent_ip);
- 	if (bit < 0)
- 		goto out;
- 
--	return_hooker = ppc_function_entry(return_to_handler);
--
--	if (!function_graph_enter(parent, ip, 0, (unsigned long *)sp))
--		parent = return_hooker;
-+	if (!function_graph_enter(parent_ip, ip, 0, (unsigned long *)sp))
-+		parent_ip = ppc_function_entry(return_to_handler);
- 
- 	ftrace_test_recursion_unlock(bit);
- out:
--	return parent;
-+	fregs->regs.link = parent_ip;
- }
--
--#ifdef CONFIG_DYNAMIC_FTRACE_WITH_ARGS
--void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
--		       struct ftrace_ops *op, struct ftrace_regs *fregs)
--{
--	fregs->regs.link = __prepare_ftrace_return(parent_ip, ip, fregs->regs.gpr[1]);
--}
--#else
--unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
--				    unsigned long sp)
--{
--	return __prepare_ftrace_return(parent, ip, sp);
--}
--#endif
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
--- 
-2.40.1
-
+Thank you both,
+Petr
