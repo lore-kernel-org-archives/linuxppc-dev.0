@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FC95EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 09:55:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FC33EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 09:56:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HFxd+cnN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fpsi3CYW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql4rp1ZgJz3c3M
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 19:55:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql4sm5h4wz3bNm
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 19:56:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HFxd+cnN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fpsi3CYW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4my0ZJ8z30R4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:52:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4n32spcz30f6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:52:23 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 6C192602E0;
-	Mon, 19 Jun 2023 09:52:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EA41C433C8;
-	Mon, 19 Jun 2023 09:52:15 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id BAF1E602E0;
+	Mon, 19 Jun 2023 09:52:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87343C433C8;
+	Mon, 19 Jun 2023 09:52:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687168335;
-	bh=aMr8hjlmZ/quV2LGV9FBITAOvkQNdJP40nE4J0o6PDs=;
+	s=k20201202; t=1687168341;
+	bh=fvNzA4Q938jsAQnFgUt78HMwwQ810FzVX7BIJSSbuFU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=HFxd+cnNy7eaX2+ucWyL9oCRTPEy1yheISSIZGK/A/yVs6V5H+mhNsF3WEWZ7G2rA
-	 mfvfSQg2W6IydSSF/Kr7hyn3GaIAYQB1NJs0BT6M3z+WG5fhkgpx8ipBS4J/gyodBS
-	 8jOHkOfDFB8hAOi0fOP7C3Lz9K3k262s6g8NCDYmKcSq7nT95E/zelCg53lV742klu
-	 OSZYnJnHUWbxchBEdbt0xIWLMkky/ojFftd0VZc8txXdFoMu1vKgt7R7vCCWFZMurb
-	 C0ugf0rGNOEZ0697r0p0O+nDW/kbO0D2RPqaOKz2L8WcK5s3MCXljW7+tV78/6Di7n
-	 L2ihwtK/GMM5w==
+	b=fpsi3CYW+G70ajSQFtErV1h/yNfLRqjCbqErJA4Tk+z8P9FHKA7ugTKicQRN5x4E7
+	 876nv4gi1Z8zZeghWcnjOG+nEc9zJRmaXmoqnG8TKO/5JfqpLwL4JMI8bMr1m7Np1o
+	 KsPVVC3lLQuPWRx5aeMuI0t6dgYGVr2glTKdMX+vw8SQDN9lVhkrYlYuvWfnsipBti
+	 RjOmM7uw/ivQuZ0SaEDv67lkYaHtCCJv++/jMOxHqEKUHiH+vUHvNRZFACjshiEtuY
+	 g2Btz4dIkLplGsAg8fWCq4FjkUSYB2iw3mChdkidoFWIa7Of9Fhgw4ujAlh3BUQaiH
+	 CUes9jsaRareQ==
 From: Naveen N Rao <naveen@kernel.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 01/17] powerpc/ftrace: Fix dropping weak symbols with older toolchains
-Date: Mon, 19 Jun 2023 15:17:19 +0530
-Message-Id: <7b265908a9461e38fc756ef9b569703860a80621.1687166935.git.naveen@kernel.org>
+Subject: [PATCH 14/17] powerpc/ftrace: Replace use of ftrace_call_replace() with ftrace_create_branch_inst()
+Date: Mon, 19 Jun 2023 15:17:32 +0530
+Message-Id: <953513b88fa922ba7a66d772dc1310710efe9177.1687166935.git.naveen@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1687166935.git.naveen@kernel.org>
 References: <cover.1687166935.git.naveen@kernel.org>
@@ -65,41 +65,55 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The minimum level of gcc supported for building the kernel is v5.1.
-v5.x releases of gcc emitted a three instruction sequence for
--mprofile-kernel:
-	mflr	r0
-	std	r0, 16(r1)
-	bl	_mcount
+ftrace_create_branch_inst() is clearer about its intent than
+ftrace_call_replace().
 
-It is only with the v6.x releases that gcc started emitting the two
-instruction sequence for -mprofile-kernel, omitting the second store
-instruction.
-
-With the older three instruction sequence, the actual ftrace location
-can be the 5th instruction into a function. Update the allowed offset
-for ftrace location from 12 to 16 to accommodate the same.
-
-Cc: stable@vger.kernel.org
-Fixes: 7af82ff90a2b06 ("powerpc/ftrace: Ignore weak functions")
 Signed-off-by: Naveen N Rao <naveen@kernel.org>
 ---
- arch/powerpc/include/asm/ftrace.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/trace/ftrace.c | 17 ++---------------
+ 1 file changed, 2 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 91c049d51d0e10..2edc6269b1a357 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -12,7 +12,7 @@
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index c37e22c6c26521..422dd760fbe013 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -41,19 +41,6 @@ static ppc_inst_t ftrace_create_branch_inst(unsigned long ip, unsigned long addr
+ 	return op;
+ }
  
- /* Ignore unused weak functions which will have larger offsets */
- #ifdef CONFIG_MPROFILE_KERNEL
--#define FTRACE_MCOUNT_MAX_OFFSET	12
-+#define FTRACE_MCOUNT_MAX_OFFSET	16
- #elif defined(CONFIG_PPC32)
- #define FTRACE_MCOUNT_MAX_OFFSET	8
- #endif
+-static ppc_inst_t
+-ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
+-{
+-	ppc_inst_t op;
+-
+-	addr = ppc_function_entry((void *)addr);
+-
+-	/* if (link) set op to 'bl' else 'b' */
+-	create_branch(&op, (u32 *)ip, addr, link ? BRANCH_SET_LINK : 0);
+-
+-	return op;
+-}
+-
+ static inline int ftrace_read_inst(unsigned long ip, ppc_inst_t *op)
+ {
+ 	if (copy_inst_from_kernel_nofault(op, (void *)ip)) {
+@@ -275,14 +262,14 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
+ 	int ret;
+ 
+ 	old = ppc_inst_read((u32 *)&ftrace_call);
+-	new = ftrace_call_replace(ip, (unsigned long)func, 1);
++	new = ftrace_create_branch_inst(ip, ppc_function_entry(func), 1);
+ 	ret = ftrace_modify_code(ip, old, new);
+ 
+ 	/* Also update the regs callback function */
+ 	if (IS_ENABLED(CONFIG_DYNAMIC_FTRACE_WITH_REGS) && !ret) {
+ 		ip = (unsigned long)(&ftrace_regs_call);
+ 		old = ppc_inst_read((u32 *)&ftrace_regs_call);
+-		new = ftrace_call_replace(ip, (unsigned long)func, 1);
++		new = ftrace_create_branch_inst(ip, ppc_function_entry(func), 1);
+ 		ret = ftrace_modify_code(ip, old, new);
+ 	}
+ 
 -- 
 2.40.1
 
