@@ -4,77 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3DF7EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 20:19:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7FD0EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 22:30:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=ML1POuSF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CnNz6mVM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QlLhZ0n9xz30hW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jun 2023 06:19:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QlPbN1bWBz30ft
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jun 2023 08:30:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=ML1POuSF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CnNz6mVM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=nadav.amit@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QlLgZ3Yncz30MY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2023 06:18:32 +1000 (AEST)
-Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-544c0d768b9so3195443a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 13:18:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1687205909; x=1689797909;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UmEEut0OCJI0jheFei8v4KFIgPFEx+9Zr0oYZPTVJvw=;
-        b=ML1POuSF5TNYpNiqkU7Wmm/FZLBDFoP32DY+WPylpmv43DoaA/AoXnTGG2wwzhld3j
-         kjkKToRZCKl1S0ycKV+IUNrHAQ8Dvck3h+D7ZuCxy/PFvkOP44vPViwvWsYYl0BBuNgy
-         b/5HPeUCxmK/jPGro6a0V6gtwlQJxSWG+MjbaRDV7mR48t508gCxLWi7cw8WSlTAdLEO
-         3p+win9LgLE5lOsK+rw7eJ7na0iRAHUh7i2pWPNrn0k/YllS2kfgOgB31VmT4hCseChr
-         k2Wm+WLNvD9nhPcsjkRc0OVcXyGOSUiyWGCOpqitL1ReK2kli6NusXAAxFAtCrHDui7k
-         NzgA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687205909; x=1689797909;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=UmEEut0OCJI0jheFei8v4KFIgPFEx+9Zr0oYZPTVJvw=;
-        b=J4EeK1E/5Zd+SN2ghRODX28pSpjVLJb6LN3jYcjcSXL5LLL/qDxqeWL7vLwBeYMOlC
-         1t9lHIhaxh8+CxPy9qi+b2Xlc26T68EAR913flIwwOiTbJphpKb7ICx2/csd24A1Ccku
-         HXrbTbREoLCB5eWl6JnIfyU0+Bdb2ioXE2dOUVsX21c58sZkvapTRSatRb35Jw+zTO26
-         nRJeh+cZuge1zEYyOOnCQi2yQNOyQ2GN25m61qgz0So4uG3mmWUy5vK6/j/DZpdjUTIJ
-         WEN5i+p/F26lVbaXX7RaA1Kky4taXS1A8iXX6R6kbKHaIZvQ7FmCq5RvU+7GLKZqMAYF
-         vL6A==
-X-Gm-Message-State: AC+VfDyIzooHHFSrJfYEbaBUcsCMTsdPB0zAdDNF7EScjeLzbHPPXm86
-	1JcbwXeHprGsIhssjWppYIM=
-X-Google-Smtp-Source: ACHHUZ4MAGz/Bbdlo+4DcmVI4O990mBmojRaVLNYuDWhcs7i7MC/1uf1G62Dkn3iaVvHJNN3c8J+8g==
-X-Received: by 2002:a05:6a21:78a9:b0:10a:cb95:5aa3 with SMTP id bf41-20020a056a2178a900b0010acb955aa3mr14231287pzc.7.1687205909086;
-        Mon, 19 Jun 2023 13:18:29 -0700 (PDT)
-Received: from smtpclient.apple ([66.170.99.1])
-        by smtp.gmail.com with ESMTPSA id k18-20020a637b52000000b005538bf7e3d6sm87568pgn.88.2023.06.19.13.18.26
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 19 Jun 2023 13:18:28 -0700 (PDT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.600.7\))
-Subject: Re: [PATCH v2 02/12] mm: introduce execmem_text_alloc() and
- jit_text_alloc()
-From: Nadav Amit <nadav.amit@gmail.com>
-In-Reply-To: <a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com>
-Date: Mon, 19 Jun 2023 13:18:15 -0700
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <7F566E60-C371-449B-992B-0C435AD6016B@gmail.com>
-References: <20230616085038.4121892-1-rppt@kernel.org>
- <20230616085038.4121892-3-rppt@kernel.org>
- <f9a7eebe-d36e-4587-b99d-35d4edefdd14@app.fastmail.com>
- <20230618080027.GA52412@kernel.org>
- <a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com>
-To: Andy Lutomirski <luto@kernel.org>,
- Song Liu <song@kernel.org>
-X-Mailer: Apple Mail (2.3731.600.7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QlPZJ2Hrfz2ykB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2023 08:29:12 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 6854760EA7;
+	Mon, 19 Jun 2023 22:29:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1966C433CA;
+	Mon, 19 Jun 2023 22:29:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1687213747;
+	bh=H00mx55kuat8LHbKg+m1U0otLiA7SnikJsD1uUzjQeY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=CnNz6mVMqm4dIS1eU4ZFW/Lj1epriJPXJzQgcjhAjLLMY9STCAfSL2aqOaZvdbz+4
+	 /EYge/j6NomUrA4i70IZ3UcNrsmnHGxVjphVmbuPuetKDtvOMH+EAxZe1qLnyLQKaF
+	 ejhq1yZlIkrzlhQpTTe/1yKx16x7sU2u/V86iEfJwRrjbakt8DgNv34i/54d8zl7CD
+	 us4GXsjsS5MBCZ2NyiScvuUqGApy1tpElSo+G8kEyYXiBCsGSsCuds20Ibh2okARkK
+	 Cte2Q/qilfGHyZCuxah7WRHpRKaBoGLxllOfZnh7ty40pDK4RjeYhtnngeXv0QXPvJ
+	 5pEUfGFaNVWpA==
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
+ linux-imx@nxp.com, viorel.suman@nxp.com, 
+ Claudiu Beznea <claudiu.beznea@microchip.com>
+In-Reply-To: <20230614121509.443926-1-claudiu.beznea@microchip.com>
+References: <20230614121509.443926-1-claudiu.beznea@microchip.com>
+Subject: Re: [PATCH] ASoC: imx-audmix: check return value of
+ devm_kasprintf()
+Message-Id: <168721374438.200161.9016810536762850752.b4-ty@kernel.org>
+Date: Mon, 19 Jun 2023 23:29:04 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-c6835
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,37 +67,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, the arch/x86 maintainers <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm <linux-mm@kvack.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf <bpf@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, 14 Jun 2023 15:15:09 +0300, Claudiu Beznea wrote:
+> devm_kasprintf() returns a pointer to dynamically allocated memory.
+> Pointer could be NULL in case allocation fails. Check pointer validity.
+> Identified with coccinelle (kmerr.cocci script).
+> 
+> 
 
+Applied to
 
-> On Jun 19, 2023, at 10:09 AM, Andy Lutomirski <luto@kernel.org> wrote:
->=20
-> But jit_text_alloc() can't do this, because the order of operations =
-doesn't match.  With jit_text_alloc(), the executable mapping shows up =
-before the text is populated, so there is no atomic change from =
-not-there to populated-and-executable.  Which means that there is an =
-opportunity for CPUs, speculatively or otherwise, to start filling =
-various caches with intermediate states of the text, which means that =
-various architectures (even x86!) may need serialization.
->=20
-> For eBPF- and module- like use cases, where JITting/code gen is quite =
-coarse-grained, perhaps something vaguely like:
->=20
-> jit_text_alloc() -> returns a handle and an executable virtual =
-address, but does *not* map it there
-> jit_text_write() -> write to that handle
-> jit_text_map() -> map it and synchronize if needed (no sync needed on =
-x86, I think)
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-Andy, would you mind explaining why you think a sync is not needed? I =
-mean I have a =E2=80=9Cfeeling=E2=80=9D that perhaps TSO can guarantee =
-something based on the order of write and page-table update. Is that the =
-argument?
+Thanks!
 
-On this regard, one thing that I clearly do not understand is why =
-*today* it is ok for users of bpf_arch_text_copy() not to call =
-text_poke_sync(). Am I missing something?
+[1/1] ASoC: imx-audmix: check return value of devm_kasprintf()
+      commit: 2f76e1d6ca524a888d29aafe29f2ad2003857971
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 
