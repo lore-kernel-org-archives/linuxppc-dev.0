@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28DACEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 10:07:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D690EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 10:08:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y50bS7Ip;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HCUqb8Gr;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql5634v6sz3dHP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 20:07:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ql5724y6Rz3cds
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jun 2023 20:07:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y50bS7Ip;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HCUqb8Gr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4pF58bjz3bh5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:53:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ql4pM0kjGz30f0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2023 19:53:31 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 188E2601CD;
-	Mon, 19 Jun 2023 09:53:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDC11C433C0;
-	Mon, 19 Jun 2023 09:53:22 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 7143F602E0;
+	Mon, 19 Jun 2023 09:53:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 424ECC433C8;
+	Mon, 19 Jun 2023 09:53:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687168403;
-	bh=4BIFSN0aQLOkDhEOEPJRJLNag5NGLIcNmv1ORO+002w=;
+	s=k20201202; t=1687168408;
+	bh=fiYOSGx/yX+rBoVWfDjzvuQpt+N/h7M6dfetR+JOhWA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Y50bS7IprMYs5zNAdqpJqlJ2YKG1bojwELtQPrLawaFjYN36E15EYIen55WT/amX+
-	 x9HjX52cSNMXNmCBW3B7/xbQnX+uyPKGdjKbtyHZSWIM2Q3LZ9ERDrYsfm2JWdsPy4
-	 Ma9KZTpZS/EbU/NOzq0+3C5vpEvFl65nuIuHZbJFxIK1LpOJTQybK1/1ZIZK0BCZ6+
-	 TsjPjYteaS3m6yp+sCtq6HC+Q66kcgL6iepqSYMAHT8NF5Mc5WFZlOVr7haK0fQQL+
-	 pr1kOnPsItz3fcsMtBi9eydc+Jj/ciwASRNXsztNfc3oq2e1uAZe47ecXeFzjDhxb+
-	 NbL27HLAb4NOQ==
+	b=HCUqb8GrgIDA9dG2ZUhBvnsrKrltO+YCP5Nj7AFKGAZxolXAhJKoGjNjW16oohjob
+	 00bVBx/H+hkc+mzK6+6L7VZrs67nOZMvB05s2mGdYT+Mz5hTkHTNL99aeLXe10MO9g
+	 73FlAdsniSmO0mxs17MxYkkVlomgCImHlcdjNGMfaLAlHvIyLU2ODfH7p0kuRpyFG0
+	 z+04JLXZuhiV9jWi3xnL50VxqwPEhBG3kSlbUmQ/Yyr+J02J/apcp5cAp2RTwtvM8I
+	 q07Uf4A8UOw1H38bd/oFk3uJ9jMwCoHK2I0GAMGnWFh51533TFSgpgf/+m3c2mCK25
+	 0ugLcHd/avGBA==
 From: Naveen N Rao <naveen@kernel.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 13/17] powerpc/ftrace: Simplify ftrace_modify_call()
-Date: Mon, 19 Jun 2023 15:17:31 +0530
-Message-Id: <06275720939f8ee4c2f61c9e9a3e89b1fa3c441d.1687166935.git.naveen@kernel.org>
+Subject: [PATCH 04/17] powerpc/ftrace: Simplify function_graph support in ftrace.c
+Date: Mon, 19 Jun 2023 15:17:22 +0530
+Message-Id: <4dc92c4b1ed444dc62b748ae7327acdb9e096864.1687166935.git.naveen@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1687166935.git.naveen@kernel.org>
 References: <cover.1687166935.git.naveen@kernel.org>
@@ -65,214 +65,102 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that we validate the ftrace location during initialization in
-ftrace_init_nop(), we can simplify ftrace_modify_call() to patch-in the
-updated branch instruction without worrying about the instructions
-surrounding the ftrace location. Note that we continue to ensure we
-have the expected branch instruction at the ftrace location before
-patching it with the updated branch destination.
+Since we now support DYNAMIC_FTRACE_WITH_ARGS across ppc32 and ppc64
+ELFv2, we can simplify function_graph tracer support code in ftrace.c
 
 Signed-off-by: Naveen N Rao <naveen@kernel.org>
 ---
- arch/powerpc/kernel/trace/ftrace.c | 161 ++++-------------------------
- 1 file changed, 21 insertions(+), 140 deletions(-)
+ arch/powerpc/kernel/trace/ftrace.c | 64 ++++--------------------------
+ 1 file changed, 7 insertions(+), 57 deletions(-)
 
 diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 6ea8b90246a540..c37e22c6c26521 100644
+index 81a121b56c4d7f..f117124c30325f 100644
 --- a/arch/powerpc/kernel/trace/ftrace.c
 +++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -89,33 +89,11 @@ static inline int ftrace_modify_code(unsigned long ip, ppc_inst_t old, ppc_inst_
- 	return ret;
- }
- 
--/*
-- * Helper functions that are the same for both PPC64 and PPC32.
-- */
--static int test_24bit_addr(unsigned long ip, unsigned long addr)
--{
--	addr = ppc_function_entry((void *)addr);
--
--	return is_offset_in_branch_range(addr - ip);
--}
--
- static int is_bl_op(ppc_inst_t op)
- {
- 	return (ppc_inst_val(op) & ~PPC_LI_MASK) == PPC_RAW_BL(0);
- }
- 
--static unsigned long find_bl_target(unsigned long ip, ppc_inst_t op)
--{
--	int offset;
--
--	offset = PPC_LI(ppc_inst_val(op));
--	/* make it signed */
--	if (offset & 0x02000000)
--		offset |= 0xfe000000;
--
--	return ip + (long)offset;
--}
--
- static unsigned long find_ftrace_tramp(unsigned long ip)
- {
- 	int i;
-@@ -130,115 +108,16 @@ static unsigned long find_ftrace_tramp(unsigned long ip)
- }
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
--#ifdef CONFIG_MODULES
--static int
--__ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
--					unsigned long addr)
-+int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr, unsigned long addr)
- {
--	ppc_inst_t op;
--	unsigned long ip = rec->ip;
--	unsigned long entry, ptr, tramp;
--	struct module *mod = rec->arch.mod;
--
--	/* If we never set up ftrace trampolines, then bail */
--	if (!mod->arch.tramp || !mod->arch.tramp_regs) {
--		pr_err("No ftrace trampoline\n");
--		return -EINVAL;
--	}
--
--	/* read where this goes */
--	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
--		pr_err("Fetching opcode failed.\n");
--		return -EFAULT;
--	}
--
--	/* Make sure that this is still a 24bit jump */
--	if (!is_bl_op(op)) {
--		pr_err("Not expected bl: opcode is %08lx\n", ppc_inst_as_ulong(op));
--		return -EINVAL;
--	}
--
--	/* lets find where the pointer goes */
--	tramp = find_bl_target(ip, op);
--	entry = ppc_global_function_entry((void *)old_addr);
--
--	pr_devel("ip:%lx jumps to %lx", ip, tramp);
--
--	if (tramp != entry) {
--		/* old_addr is not within range, so we must have used a trampoline */
--		if (module_trampoline_target(mod, tramp, &ptr)) {
--			pr_err("Failed to get trampoline target\n");
--			return -EFAULT;
--		}
--
--		pr_devel("trampoline target %lx", ptr);
--
--		/* This should match what was called */
--		if (ptr != entry) {
--			pr_err("addr %lx does not match expected %lx\n", ptr, entry);
--			return -EINVAL;
--		}
--	}
--
--	/* The new target may be within range */
--	if (test_24bit_addr(ip, addr)) {
--		/* within range */
--		if (patch_branch((u32 *)ip, addr, BRANCH_SET_LINK)) {
--			pr_err("REL24 out of range!\n");
--			return -EINVAL;
--		}
--
--		return 0;
--	}
--
--	if (rec->flags & FTRACE_FL_REGS)
--		tramp = mod->arch.tramp_regs;
--	else
--		tramp = mod->arch.tramp;
--
--	if (module_trampoline_target(mod, tramp, &ptr)) {
--		pr_err("Failed to get trampoline target\n");
--		return -EFAULT;
--	}
--
--	pr_devel("trampoline target %lx", ptr);
--
--	entry = ppc_global_function_entry((void *)addr);
--	/* This should match what was called */
--	if (ptr != entry) {
--		pr_err("addr %lx does not match expected %lx\n", ptr, entry);
--		return -EINVAL;
--	}
--
--	if (patch_branch((u32 *)ip, tramp, BRANCH_SET_LINK)) {
--		pr_err("REL24 out of range!\n");
--		return -EINVAL;
--	}
--
--	return 0;
--}
--#else
--static int __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr, unsigned long addr)
--{
--	return 0;
--}
--#endif
--
--int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
--			unsigned long addr)
--{
--	unsigned long ip = rec->ip;
-+	unsigned long tramp, tramp_old, ip = rec->ip;
- 	ppc_inst_t old, new;
-+	struct module *mod;
- 
--	/*
--	 * If the calling address is more that 24 bits away,
--	 * then we had to use a trampoline to make the call.
--	 * Otherwise just update the call site.
--	 */
--	if (test_24bit_addr(ip, addr) && test_24bit_addr(ip, old_addr)) {
--		/* within range */
--		old = ftrace_call_replace(ip, old_addr, 1);
--		new = ftrace_call_replace(ip, addr, 1);
-+	if (is_offset_in_branch_range(old_addr - ip) && is_offset_in_branch_range(addr - ip)) {
-+		/* Within range */
-+		old = ftrace_create_branch_inst(ip, old_addr, 1);
-+		new = ftrace_create_branch_inst(ip, addr, 1);
- 		return ftrace_modify_code(ip, old, new);
- 	} else if (core_kernel_text(ip)) {
- 		/*
-@@ -246,20 +125,22 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- 		 * variant, so there is nothing to do here
- 		 */
- 		return 0;
--	} else if (!IS_ENABLED(CONFIG_MODULES)) {
--		/* We should not get here without modules */
--		return -EINVAL;
-+	} else if (IS_ENABLED(CONFIG_MODULES)) {
-+		/* Module code would be going to one of the module stubs */
-+		mod = rec->arch.mod;
-+		if (addr == (unsigned long)ftrace_caller) {
-+			tramp_old = mod->arch.tramp_regs;
-+			tramp = mod->arch.tramp;
-+		} else {
-+			tramp_old = mod->arch.tramp;
-+			tramp = mod->arch.tramp_regs;
-+		}
-+		old = ftrace_create_branch_inst(ip, tramp_old, 1);
-+		new = ftrace_create_branch_inst(ip, tramp, 1);
-+		return ftrace_modify_code(ip, old, new);
- 	}
- 
--	/*
--	 * Out of range jumps are called from modules.
--	 */
--	if (!rec->arch.mod) {
--		pr_err("No module loaded\n");
--		return -EINVAL;
--	}
--
--	return __ftrace_modify_call(rec, old_addr, addr);
-+	return -EINVAL;
- }
+@@ -790,44 +790,10 @@ int __init ftrace_dyn_arch_init(void)
  #endif
  
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-
+-extern void ftrace_graph_call(void);
+-extern void ftrace_graph_stub(void);
+-
+-static int ftrace_modify_ftrace_graph_caller(bool enable)
++void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
++		       struct ftrace_ops *op, struct ftrace_regs *fregs)
+ {
+-	unsigned long ip = (unsigned long)(&ftrace_graph_call);
+-	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
+-	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
+-	ppc_inst_t old, new;
+-
+-	if (IS_ENABLED(CONFIG_DYNAMIC_FTRACE_WITH_ARGS))
+-		return 0;
+-
+-	old = ftrace_call_replace(ip, enable ? stub : addr, 0);
+-	new = ftrace_call_replace(ip, enable ? addr : stub, 0);
+-
+-	return ftrace_modify_code(ip, old, new);
+-}
+-
+-int ftrace_enable_ftrace_graph_caller(void)
+-{
+-	return ftrace_modify_ftrace_graph_caller(true);
+-}
+-
+-int ftrace_disable_ftrace_graph_caller(void)
+-{
+-	return ftrace_modify_ftrace_graph_caller(false);
+-}
+-
+-/*
+- * Hook the return address and push it in the stack of return addrs
+- * in current thread info. Return the address we want to divert to.
+- */
+-static unsigned long
+-__prepare_ftrace_return(unsigned long parent, unsigned long ip, unsigned long sp)
+-{
+-	unsigned long return_hooker;
++	unsigned long sp = fregs->regs.gpr[1];
+ 	int bit;
+ 
+ 	if (unlikely(ftrace_graph_is_dead()))
+@@ -836,31 +802,15 @@ __prepare_ftrace_return(unsigned long parent, unsigned long ip, unsigned long sp
+ 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
+ 		goto out;
+ 
+-	bit = ftrace_test_recursion_trylock(ip, parent);
++	bit = ftrace_test_recursion_trylock(ip, parent_ip);
+ 	if (bit < 0)
+ 		goto out;
+ 
+-	return_hooker = ppc_function_entry(return_to_handler);
+-
+-	if (!function_graph_enter(parent, ip, 0, (unsigned long *)sp))
+-		parent = return_hooker;
++	if (!function_graph_enter(parent_ip, ip, 0, (unsigned long *)sp))
++		parent_ip = ppc_function_entry(return_to_handler);
+ 
+ 	ftrace_test_recursion_unlock(bit);
+ out:
+-	return parent;
++	fregs->regs.link = parent_ip;
+ }
+-
+-#ifdef CONFIG_DYNAMIC_FTRACE_WITH_ARGS
+-void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
+-		       struct ftrace_ops *op, struct ftrace_regs *fregs)
+-{
+-	fregs->regs.link = __prepare_ftrace_return(parent_ip, ip, fregs->regs.gpr[1]);
+-}
+-#else
+-unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
+-				    unsigned long sp)
+-{
+-	return __prepare_ftrace_return(parent, ip, sp);
+-}
+-#endif
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 -- 
 2.40.1
 
