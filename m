@@ -4,41 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A601EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jun 2023 14:51:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86918EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jun 2023 14:54:59 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bygnBfy1;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gjT7Rewc;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QlqN30Hw6z3bVS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jun 2023 00:51:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=8tsz=ci=goodmis.org=rostedt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QlqRj6ycNz3bPG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jun 2023 00:54:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bygnBfy1;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gjT7Rewc;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=ypodemsk@redhat.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 88 seconds by postgrey-1.37 at boromir; Wed, 21 Jun 2023 00:54:05 AEST
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QlqMQ4T7Kz307y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2023 00:51:14 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QlqQj2nkRz2xqH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2023 00:54:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1687272842;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=No1ZAzXRenHK6Spay7fCIW5zNaUlPsGtRXWs40EaAkg=;
+	b=bygnBfy1LeX3f4pzOSHTkWsrezWYuvz3cNqBsAlx8/tSsLsSuwdV9M+i8lNnGLgyWVvKeK
+	urL9G5uvLovWAOKBTF5DIYeJIfaVQOfU0Ym9vEPGCDFLKRgjfQ2mI6CveBlwjQKiC2I7Km
+	i/ThAdlCDDXprCvvsGkpH+jjaUEZQos=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1687272843;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=No1ZAzXRenHK6Spay7fCIW5zNaUlPsGtRXWs40EaAkg=;
+	b=gjT7RewcUqyIt6TsTTjkKQALj3o75h1SoJv7DWg57kyVpKaDxllI8YWEUiEywQsvC3rJUK
+	eRhTI5oo4mpAg0Ch6V6fO6suSCOYVzNVK6K7JwzT64l4Dpt3ANSVqrJkZsvzLJxjYxI8Pu
+	ScJxWfvXI2gqiGAEP3KoA7n+3kx7t4U=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-400-9hW9-9gWM06uUSep_ULxGA-1; Tue, 20 Jun 2023 10:52:31 -0400
+X-MC-Unique: 9hW9-9gWM06uUSep_ULxGA-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 1E247612B3;
-	Tue, 20 Jun 2023 14:51:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC9B6C433CA;
-	Tue, 20 Jun 2023 14:51:06 +0000 (UTC)
-Date: Tue, 20 Jun 2023 10:51:04 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2 06/12] mm/execmem: introduce execmem_data_alloc()
-Message-ID: <20230620105104.60cb64d8@gandalf.local.home>
-In-Reply-To: <87h6r4qo1d.ffs@tglx>
-References: <20230616085038.4121892-1-rppt@kernel.org>
-	<20230616085038.4121892-7-rppt@kernel.org>
-	<87jzw0qu3s.ffs@tglx>
-	<20230618231431.4aj3k5ujye22sqai@moria.home.lan>
-	<87h6r4qo1d.ffs@tglx>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 4169729DD9A3;
+	Tue, 20 Jun 2023 14:46:34 +0000 (UTC)
+Received: from ypodemsk.tlv.csb (unknown [10.39.195.147])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id 863679E9C;
+	Tue, 20 Jun 2023 14:46:25 +0000 (UTC)
+From: Yair Podemsky <ypodemsk@redhat.com>
+To: mtosatti@redhat.com,
+	ppandit@redhat.com,
+	david@redhat.com,
+	linux@armlinux.org.uk,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	davem@davemloft.net,
+	tglx@linutronix.de,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	hpa@zytor.com,
+	keescook@chromium.org,
+	paulmck@kernel.org,
+	frederic@kernel.org,
+	will@kernel.org,
+	peterz@infradead.org,
+	ardb@kernel.org,
+	samitolvanen@google.com,
+	juerg.haefliger@canonical.com,
+	arnd@arndb.de,
+	rmk+kernel@armlinux.org.uk,
+	geert+renesas@glider.be,
+	linus.walleij@linaro.org,
+	akpm@linux-foundation.org,
+	sebastian.reichel@collabora.com,
+	rppt@kernel.org,
+	aneesh.kumar@linux.ibm.com,
+	x86@kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/2] send tlb_remove_table_smp_sync IPI only to necessary CPUs
+Date: Tue, 20 Jun 2023 17:46:16 +0300
+Message-Id: <20230620144618.125703-1-ypodemsk@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,21 +116,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, loongarch@lists.linux.dev, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: ypodemsk@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 19 Jun 2023 02:43:58 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Currently the tlb_remove_table_smp_sync IPI is sent to all CPUs
+indiscriminately, this causes unnecessary work and delays notable in
+real-time use-cases and isolated cpus.
+By limiting the IPI to only be sent to cpus referencing the effected
+mm.
+a config to differentiate architectures that support mm_cpumask from
+those that don't will allow safe usage of this feature.
 
-> Now you might argue that it _is_ a "hotpath" due to the BPF usage, but
-> then even more so as any intermediate wrapper which converts from one
-> data representation to another data representation is not going to
-> increase performance, right?
+changes from -v1:
+- Previous version included a patch to only send the IPI to CPU's with
+context_tracking in the kernel space, this was removed due to race 
+condition concerns.
+- for archs that do not maintain mm_cpumask the mask used should be
+ cpu_online_mask (Peter Zijlstra).
+ 
+ v1: https://lore.kernel.org/all/20230404134224.137038-1-ypodemsk@redhat.com/
 
-Just as a side note. BPF can not attach its return calling code to
-functions that have more than 6 parameters (3 on 32 bit x86), because of
-the way BPF return path trampoline works. It is a requirement that all
-parameters live in registers, and none on the stack.
+Yair Podemsky (2):
+  arch: Introduce ARCH_HAS_CPUMASK_BITS
+  mm/mmu_gather: send tlb_remove_table_smp_sync IPI only to MM CPUs
 
--- Steve
+ arch/Kconfig              |  8 ++++++++
+ arch/arm/Kconfig          |  1 +
+ arch/powerpc/Kconfig      |  1 +
+ arch/s390/Kconfig         |  1 +
+ arch/sparc/Kconfig        |  1 +
+ arch/x86/Kconfig          |  1 +
+ include/asm-generic/tlb.h |  4 ++--
+ mm/khugepaged.c           |  4 ++--
+ mm/mmu_gather.c           | 17 ++++++++++++-----
+ 9 files changed, 29 insertions(+), 9 deletions(-)
+
+-- 
+2.39.3
+
