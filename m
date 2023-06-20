@@ -4,73 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7F70EB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jun 2023 18:03:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA226EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jun 2023 18:33:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=WlDhY0OA;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bqpFt5V3;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bqpFt5V3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QmWZc02JHz3bXx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 04:03:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QmXFL0vC7z3bn8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 04:33:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=WlDhY0OA;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bqpFt5V3;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bqpFt5V3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=nadav.amit@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 20 Jun 2023 18:23:03 AEST
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QmWYZ3wn7z2x9L
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 04:02:24 +1000 (AEST)
-Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-25e820b8bc1so3042428a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2023 11:02:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1687370539; x=1689962539;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ghR3ONQ0xCWF/XsVVqlYhvKkezqnfnGRVsn4IWmNqPA=;
-        b=WlDhY0OAVtt9U/sOOElyyyzC8WQUo6poFN2oaUUbgXb/+d/IcLxLnp/l+UzGUwpnTP
-         qNVRgaSawr/Lks/MVqkXW3vhZ6kxmceUTjHXM6jlyF1GptNr1dqW3DS3mHch/GovOfRj
-         eeIG+2GeD7qLThk604Ls1Dm6ulCuVqsz3HJeNzmw20ui3f1km/wN1Lsn8new91sCB9f4
-         Y/9gdFH2EtmVLBvhgPnz+wuC+/IaW12lqMa1hMv5oCDcKrdyydt7o/GSHiNNyTmCgyjE
-         n6f4GEOsh48n3nZWOX6uYilALlQZViylNfVYvHM7mBlUYr3PiCQJ7ZWpUMc3s5dLxZUE
-         OjEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687370539; x=1689962539;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ghR3ONQ0xCWF/XsVVqlYhvKkezqnfnGRVsn4IWmNqPA=;
-        b=HMVZQi7VeFXI/GxWmsMOOT9m50z8l9GTcp82NbFxrygss4vKV0z95Hc+jc41CVM3ax
-         TxmXT3Fjkn2AjGYqA09w3RqxQt0xI65d/7FWiVdqRQ5y7VczglZyKBwJTxGWcMbJbt4h
-         0Sp/7e8WrvQu1eIjm6yugaM4JcR2ErToofNS0FRYCpJpHIug4og33twR0wot+pOwOUf3
-         PqRq21UUCxzEMVE5uY49K4TvGe2J3U+TYtGRi+lPxIRDZjAAQpmBTKabzFuthYryi+QC
-         cxp3ySpltE9PHYGYK5hA0cnW7NeYea0hQvwWLL5PiDkXn+rLPEQ2DDxsZ6bV5JNbvZR3
-         G6Ww==
-X-Gm-Message-State: AC+VfDx+R/l5f1l+2pQQdsrgls/QbEKOhBVAR9xopnXJC9OtUPElw5mE
-	2634fyGXIhnr/XVD7pwye+M=
-X-Google-Smtp-Source: ACHHUZ6mRoAo2s2oCkgP3Wp2nUTJXsXUGVHNcWUvqJUw9GFNXu1TCgqL3BU4dWywAqRpkfH2O6TdSg==
-X-Received: by 2002:a17:90b:4c8d:b0:25e:a5b2:8463 with SMTP id my13-20020a17090b4c8d00b0025ea5b28463mr11111864pjb.8.1687370539354;
-        Wed, 21 Jun 2023 11:02:19 -0700 (PDT)
-Received: from smtpclient.apple ([66.170.99.1])
-        by smtp.gmail.com with ESMTPSA id r10-20020a638f4a000000b005439aaf0301sm3329045pgn.64.2023.06.21.11.02.16
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 21 Jun 2023 11:02:18 -0700 (PDT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.600.7\))
-Subject: Re: [PATCH v2 2/2] mm/mmu_gather: send tlb_remove_table_smp_sync IPI
- only to MM CPUs
-From: Nadav Amit <nadav.amit@gmail.com>
-In-Reply-To: <20230620144618.125703-3-ypodemsk@redhat.com>
-Date: Wed, 21 Jun 2023 11:02:05 -0700
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <10050BB1-15A4-4E84-B900-B21500B2079B@gmail.com>
-References: <20230620144618.125703-1-ypodemsk@redhat.com>
- <20230620144618.125703-3-ypodemsk@redhat.com>
-To: Yair Podemsky <ypodemsk@redhat.com>
-X-Mailer: Apple Mail (2.3731.600.7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QlflW648wz2y1c
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2023 18:23:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1687249381;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5XHdbMNys0EMjfbiSdwj8lWyGP51R68NotGh4ls9XCg=;
+	b=bqpFt5V3QLI2GxO8ApakkaAjuq9diyMpU8tyAnWFV32Z5ALRzQP7cm/LG5yOhId9EjrydZ
+	TUhZN3ymgbJRCmzQj/umswV++pCbPAc3rQoSN0J6yy7dNvG4Sa4nb/0sRFOuWYQBUiF12T
+	/Eq2WX4EE+2WDrYQKkII35hbmfF2F8U=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1687249381;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5XHdbMNys0EMjfbiSdwj8lWyGP51R68NotGh4ls9XCg=;
+	b=bqpFt5V3QLI2GxO8ApakkaAjuq9diyMpU8tyAnWFV32Z5ALRzQP7cm/LG5yOhId9EjrydZ
+	TUhZN3ymgbJRCmzQj/umswV++pCbPAc3rQoSN0J6yy7dNvG4Sa4nb/0sRFOuWYQBUiF12T
+	/Eq2WX4EE+2WDrYQKkII35hbmfF2F8U=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-653-DHNnL6O0PoOX-_3jeDwo5g-1; Tue, 20 Jun 2023 04:21:49 -0400
+X-MC-Unique: DHNnL6O0PoOX-_3jeDwo5g-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 918E73806739;
+	Tue, 20 Jun 2023 08:21:48 +0000 (UTC)
+Received: from localhost (ovpn-12-166.pek2.redhat.com [10.72.12.166])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id 2B95A2166B26;
+	Tue, 20 Jun 2023 08:21:46 +0000 (UTC)
+Date: Tue, 20 Jun 2023 16:21:42 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Eric DeVolder <eric.devolder@oracle.com>
+Subject: Re: [PATCH v2 02/13] x86/kexec: refactor for kernel/Kconfig.kexec
+Message-ID: <ZJFhlsFN6DxnWsQE@MiWiFi-R3L-srv>
+References: <20230619145801.1064716-1-eric.devolder@oracle.com>
+ <20230619145801.1064716-3-eric.devolder@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230619145801.1064716-3-eric.devolder@oracle.com>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
+X-Mailman-Approved-At: Thu, 22 Jun 2023 04:32:35 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,29 +80,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: geert+renesas@glider.be, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linus.walleij@linaro.org, Dave Hansen <dave.hansen@linux.intel.com>, sebastian.reichel@collabora.com, linux-mm <linux-mm@kvack.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, agordeev@linux.ibm.com, Will Deacon <will@kernel.org>, ardb@kernel.org, linux-arch@vger.kernel.org, linux-s390 <linux-s390@vger.kernel.org>, "Paul E. McKenney" <paulmck@kernel.org>, the arch/x86 maintainers <x86@kernel.org>, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, ppandit@redhat.com, Ingo Molnar <mingo@redhat.com>, samitolvanen@google.com, Christian Borntraeger <borntraeger@linux.ibm.com>, frederic@kernel.org, Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>, gor@linux.ibm.com, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, rmk+kernel@armlinux.org.uk, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, mtosatti@redhat.com, linux-kernel@vger.kernel.org, juerg.haefliger@canonical.com, svens@linux.ibm.com, aneesh.kumar@linux.ibm.com, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, dalias@libc.org, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, rmk+kernel@armlinux.org.uk, paulmck@kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, mingo@redhat.com, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, ardb@kernel.org, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-m68k@lists.linux-m68k.org, bp@alien8.de, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, tglx@linutronix.de, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel@vger.kernel.org, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->=20
-> On Jun 20, 2023, at 7:46 AM, Yair Podemsky <ypodemsk@redhat.com> =
-wrote:
->=20
-> @@ -1525,7 +1525,7 @@ static void collapse_and_free_pmd(struct =
-mm_struct *mm, struct vm_area_struct *v
-> 				addr + HPAGE_PMD_SIZE);
-> 	mmu_notifier_invalidate_range_start(&range);
-> 	pmd =3D pmdp_collapse_flush(vma, addr, pmdp);
-> -	tlb_remove_table_sync_one();
-> +	tlb_remove_table_sync_one(mm);
+Hi Eric,
 
-Can=E2=80=99t pmdp_collapse_flush() have one additional argument =
-=E2=80=9Cfreed_tables=E2=80=9D
-that it would propagate, for instance on x86 to flush_tlb_mm_range() ?
-Then you would not need tlb_remove_table_sync_one() to issue an =
-additional
-IPI, no?
+On 06/19/23 at 10:57am, Eric DeVolder wrote:
+......
+> +config ARCH_SUPPORTS_KEXEC
+> +	def_bool y
+>  
+> -config ARCH_HAS_KEXEC_PURGATORY
+> -	def_bool KEXEC_FILE
+> +config ARCH_SUPPORTS_KEXEC_FILE
+> +	def_bool X86_64 && CRYPTO && CRYPTO_SHA256
+......  
+> +config ARCH_SELECTS_KEXEC_FILE
+> +	def_bool y
+>  	depends on KEXEC_FILE
+> -	help
 
-It just seems that you might still have 2 IPIs in many cases instead of
-one, and unless I am missing something, I don=E2=80=99t see why.
+I am a little confused about this ARCH_SELECTS_XX adding. Wondering what
+limits us defining the ARCH_SUPPORTS_KEXEC_FILE like below? I have limited
+knowledge about Kconfig, please correct me if I am wrong. Thanks in
+advance.
+
+ +config ARCH_SUPPORTS_KEXEC_FILE
+ +	def_bool y
+  	depends on KEXEC_FILE
+  	depends on X86_64 && CRYPTO && CRYPTO_SHA256
+
+> -
+> -	  This option makes the kexec_file_load() syscall check for a valid
+> -	  signature of the kernel image.  The image can still be loaded without
+> -	  a valid signature unless you also enable KEXEC_SIG_FORCE, though if
+> -	  there's a signature that we can check, then it must be valid.
+> -
+> -	  In addition to this option, you need to enable signature
+> -	  verification for the corresponding kernel image type being
+> -	  loaded in order for this to work.
+> -
 
