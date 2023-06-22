@@ -4,171 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7C4DEB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 11:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBC74EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 11:46:05 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bash4qEo;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=H7eu7PC+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmz0H0qyFz30MN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 21:38:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bash4qEo;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jlayton@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmz8r1vwdz3bWS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 21:46:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmx7b5XFrz2ynx;
-	Thu, 22 Jun 2023 20:14:51 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmz7j1r9xz2yyg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 21:45:04 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=SymJEPzxOntUq4SC4sJskmBwvT6BPbdAgd+6pfYGU3o=; b=H7eu7PC+LZCqk4fNSJhv/kl69W
+	8U6V8As6KOBmKg2kD5ex4wFGKKWnPtRo803Fx+Yf30QGwCRgBfeRiL4qzw4TRbjnTosdQIuejaCFC
+	1iNTa3iMcZ2uXF769jUGLi5kNQ6tf1IksNX3/LkdMVB2B38p9cxSxNN+whLaC5IT/fLoRQn1AL1dl
+	Ns4tSlKDPsD86UjDMQ/JUNmvXBElj6Qr0AnuV/qkfgz5h7fAlt7/JZqDz8vNsx3OAo1nM3RR+EpB9
+	4JEhwDORlVc53v42mVogMtwbIU9Djps5h8LL6LxUHa3abkTEfEtYPFaGZzPL/xS3fNbxOwLR/R64p
+	pk98TjzQ==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1qCIk1-00FYgJ-0p; Thu, 22 Jun 2023 11:44:45 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E4277617BB;
-	Thu, 22 Jun 2023 10:14:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2888C433C9;
-	Thu, 22 Jun 2023 10:14:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687428888;
-	bh=7+cabg86v1cYpPv8vDJOW5RfunjhlSEWXfJLwIkmtqs=;
-	h=Subject:From:To:Date:In-Reply-To:References:From;
-	b=bash4qEoN8ysoF4HTnLUBoIb4R/VvEf+WW/D9VIwZ7IkIbfsRZHAuo5DrHgU3mESQ
-	 YV3L6vJlJ5RLoTi5/71VkN5rQAydrP7yy38zcSGGfwasNdQxjqfQEDJO2KhRfaS72P
-	 L3pOkZCMNStmacczTh8Bxts4KstAt3iUVQoAzfNq5O0qEkTp/AQ/ZxnvFiOtuM8Rrh
-	 hGFigQvIDdzAyY8j4H2gTF58blmQ8XCJxFBrtJ8bp21DHjiO/HINP7f4QOOgCaaZnm
-	 wPOh/3PFD9MITyv48Pm3mcErp57QuFgfhsUJhmJROqlUtadgwIZDzlw31/avwVXFpE
-	 VwFt0TPP5toFA==
-Message-ID: <ad4bfb630128709588164db6f1fd2ef39c31d2a5.camel@kernel.org>
-Subject: Re: [PATCH 01/79] fs: add ctime accessors infrastructure
-From: Jeff Layton <jlayton@kernel.org>
-To: Damien Le Moal <dlemoal@kernel.org>, Jeremy Kerr <jk@ozlabs.org>, Arnd
- Bergmann <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>,  Christophe Leroy
- <christophe.leroy@csgroup.eu>, Heiko Carstens <hca@linux.ibm.com>, Vasily
- Gorbik <gor@linux.ibm.com>,  Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
- <svens@linux.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>, Todd Kjos
- <tkjos@android.com>, Martijn Coenen <maco@android.com>, Joel Fernandes
- <joel@joelfernandes.org>, Christian Brauner <brauner@kernel.org>, Carlos
- Llamas <cmllamas@google.com>, Suren Baghdasaryan <surenb@google.com>,
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason
- Gunthorpe <jgg@ziepe.ca>,  Leon Romanovsky <leon@kernel.org>, Brad Warrum
- <bwarrum@linux.ibm.com>, Ritu Agarwal <rituagar@linux.ibm.com>, Eric Van
- Hensbergen <ericvh@kernel.org>, Latchesar Ionkov <lucho@ionkov.net>,
- Dominique Martinet <asmadeus@codewreck.org>, Christian Schoenebeck
- <linux_oss@crudebyte.com>, David Sterba <dsterba@suse.com>, David Howells
- <dhowells@redhat.com>, Marc Dionne <marc.dionne@auristor.com>, Alexander
- Viro <viro@zeniv.linux.org.uk>, Ian Kent <raven@themaw.net>, Luis de
- Bethencourt <luisbg@kernel.org>, Salah Triki <salah.triki@gmail.com>,
- "Tigran A. Aivazian" <aivazian.tigran@gmail.com>, Eric Biederman
- <ebiederm@xmission.com>, Kees Cook <keescook@chromium.org>, Chris Mason
- <clm@fb.com>, Josef Bacik <josef@toxicpanda.com>, Xiubo Li
- <xiubli@redhat.com>, Ilya Dryomov <idryomov@gmail.com>, Jan Harkes
- <jaharkes@cs.cmu.edu>, coda@cs.cmu.edu, Joel Becker <jlbec@evilplan.org>,
- Christoph Hellwig <hch@lst.de>, Nicolas Pitre <nico@fluxnic.net>,  "Rafael
- J. Wysocki" <rafael@kernel.org>, Tyler Hicks <code@tyhicks.com>, Ard
- Biesheuvel <ardb@kernel.org>, Gao Xiang <xiang@kernel.org>, Chao Yu
- <chao@kernel.org>,  Yue Hu <huyue2@coolpad.com>, Jeffle Xu
- <jefflexu@linux.alibaba.com>, Namjae Jeon <linkinjeon@kernel.org>, Sungjong
- Seo <sj1557.seo@samsung.com>, Jan Kara <jack@suse.com>, Theodore Ts'o
- <tytso@mit.edu>, Andreas Dilger <adilger.kernel@dilger.ca>, Jaegeuk Kim
- <jaegeuk@kernel.org>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Miklos
- Szeredi <miklos@szeredi.hu>, Bob Peterson <rpeterso@redhat.com>, Andreas
- Gruenbacher <agruenba@redhat.com>, Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, Mikulas Patocka
- <mikulas@artax.karlin.mff.cuni.cz>,  Mike Kravetz
- <mike.kravetz@oracle.com>, Muchun Song <muchun.song@linux.dev>, David
- Woodhouse <dwmw2@infradead.org>, Dave Kleikamp <shaggy@kernel.org>, Tejun
- Heo <tj@kernel.org>, Trond Myklebust <trond.myklebust@hammerspace.com>,
- Anna Schumaker <anna@kernel.org>, Chuck Lever <chuck.lever@oracle.com>,
- Ryusuke Konishi <konishi.ryusuke@gmail.com>, Anton Altaparmakov
- <anton@tuxera.com>,  Konstantin Komarov
- <almaz.alexandrovich@paragon-software.com>, Mark Fasheh <mark@fasheh.com>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Bob Copeland <me@bobcopeland.com>,
- Mike Marshall <hubcap@omnibond.com>, Martin Brandenburg
- <martin@omnibond.com>, Luis Chamberlain <mcgrof@kernel.org>, Iurii Zaikin
- <yzaikin@google.com>, Tony Luck <tony.luck@intel.com>,  "Guilherme G.
- Piccoli" <gpiccoli@igalia.com>, Anders Larsen <al@alarsen.net>, Steve
- French <sfrench@samba.org>, Paulo Alcantara <pc@manguebit.com>, Ronnie
- Sahlberg <lsahlber@redhat.com>, Shyam Prasad N <sprasad@microsoft.com>, Tom
- Talpey <tom@talpey.com>, Sergey Senozhatsky <senozhatsky@chromium.org>,
- Phillip Lougher <phillip@squashfs.org.uk>, Steven Rostedt
- <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, Evgeniy
- Dushistov <dushistov@mail.ru>, Hans de Goede <hdegoede@redhat.com>,
- "Darrick J. Wong" <djwong@kernel.org>, Naohiro Aota <naohiro.aota@wdc.com>,
- Johannes Thumshirn <jth@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko
- <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Song Liu
- <song@kernel.org>, Yonghong Song <yhs@fb.com>, John Fastabend
- <john.fastabend@gmail.com>, KP Singh <kpsingh@kernel.org>, Stanislav
- Fomichev <sdf@google.com>, Hao Luo <haoluo@google.com>, Jiri Olsa
- <jolsa@kernel.org>,  Hugh Dickins <hughd@google.com>, Andrew Morton
- <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
- Abeni <pabeni@redhat.com>, John Johansen <john.johansen@canonical.com>,
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge
- E. Hallyn" <serge@hallyn.com>, Stephen Smalley
- <stephen.smalley.work@gmail.com>, Eric Paris <eparis@parisplace.org>, 
- Juergen Gross <jgross@suse.com>, Ruihan Li <lrh2000@pku.edu.cn>, Laurent
- Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, Udipto Goswami
- <quic_ugoswami@quicinc.com>,  Linyu Yuan <quic_linyyuan@quicinc.com>, John
- Keeping <john@keeping.me.uk>, Andrzej Pietrasiewicz
- <andrzej.p@collabora.com>, Dan Carpenter <error27@gmail.com>, Yuta Hayama
- <hayama@lineo.co.jp>, Jozef Martiniak <jomajm@gmail.com>, Jens Axboe
- <axboe@kernel.dk>, Alan Stern <stern@rowland.harvard.edu>, Sandeep Dhavale
- <dhavale@google.com>, Dave Chinner <dchinner@redhat.com>, Johannes Weiner
- <hannes@cmpxchg.org>, ZhangPeng <zhangpeng362@huawei.com>, Viacheslav
- Dubeyko <slava@dubeyko.com>, Tetsuo Handa
- <penguin-kernel@I-love.SAKURA.ne.jp>,  Aditya Garg <gargaditya08@live.com>,
- Erez Zadok <ezk@cs.stonybrook.edu>, Yifei Liu <yifeliu@cs.stonybrook.edu>,
- Yu Zhe <yuzhe@nfschina.com>, "Matthew Wilcox (Oracle)"
- <willy@infradead.org>, Oleg Kanatov <okanatov@gmail.com>, "Dr. David Alan
- Gilbert" <linux@treblig.org>, Jiangshan Yi <yijiangshan@kylinos.cn>, xu xin
- <cgel.zte@gmail.com>, Stefan Roesch <shr@devkernel.io>, Zhihao Cheng
- <chengzhihao1@huawei.com>, "Liam R. Howlett" <Liam.Howlett@Oracle.com>, 
- Alexey Dobriyan <adobriyan@gmail.com>, Minghao Chi
- <chi.minghao@zte.com.cn>, Seth Forshee <sforshee@digitalocean.com>, Zeng
- Jingxiang <linuszeng@tencent.com>, Bart Van Assche <bvanassche@acm.org>,
- Mimi Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>,
- Zhang Yi <yi.zhang@huawei.com>, Tom Rix <trix@redhat.com>, "Fabio M. De
- Francesco" <fmdefrancesco@gmail.com>, Chen Zhongjin
- <chenzhongjin@huawei.com>, Zhengchao Shao <shaozhengchao@huawei.com>, Rik
- van Riel <riel@surriel.com>, Jingyu Wang <jingyuwang_vip@163.com>, Hangyu
- Hua <hbh25y@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,  linux-s390@vger.kernel.org,
- linux-rdma@vger.kernel.org,  linux-usb@vger.kernel.org,
- v9fs@lists.linux.dev, linux-fsdevel@vger.kernel.org, 
- linux-afs@lists.infradead.org, autofs@vger.kernel.org, linux-mm@kvack.org, 
- linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org, 
- codalist@coda.cs.cmu.edu, ecryptfs@vger.kernel.org,
- linux-efi@vger.kernel.org,  linux-erofs@lists.ozlabs.org,
- linux-ext4@vger.kernel.org,  linux-f2fs-devel@lists.sourceforge.net,
- cluster-devel@redhat.com,  linux-um@lists.infradead.org,
- linux-mtd@lists.infradead.org,  jfs-discussion@lists.sourceforge.net,
- linux-nfs@vger.kernel.org,  linux-nilfs@vger.kernel.org,
- linux-ntfs-dev@lists.sourceforge.net,  ntfs3@lists.linux.dev,
- ocfs2-devel@oss.oracle.com,  linux-karma-devel@lists.sourceforge.net,
- devel@lists.orangefs.org,  linux-unionfs@vger.kernel.org,
- linux-hardening@vger.kernel.org,  reiserfs-devel@vger.kernel.org,
- linux-cifs@vger.kernel.org,  samba-technical@lists.samba.org,
- linux-trace-kernel@vger.kernel.org,  linux-xfs@vger.kernel.org,
- bpf@vger.kernel.org, netdev@vger.kernel.org,  apparmor@lists.ubuntu.com,
- linux-security-module@vger.kernel.org,  selinux@vger.kernel.org
-Date: Thu, 22 Jun 2023 06:14:30 -0400
-In-Reply-To: <99b3c749-23d9-6f09-fb75-6a84f3d1b066@kernel.org>
-References: <20230621144507.55591-1-jlayton@kernel.org>
-	 <20230621144507.55591-2-jlayton@kernel.org>
-	 <99b3c749-23d9-6f09-fb75-6a84f3d1b066@kernel.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.3 (3.48.3-1.fc38) 
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(Client did not present a certificate)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3B293300274;
+	Thu, 22 Jun 2023 13:44:43 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 1F39524263361; Thu, 22 Jun 2023 13:44:43 +0200 (CEST)
+Date: Thu, 22 Jun 2023 13:44:43 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 08/14] objtool: Fix JUMP_ENTRY_SIZE for bi-arch like
+ powerpc
+Message-ID: <20230622114443.GJ4253@hirez.programming.kicks-ass.net>
+References: <cover.1687430631.git.christophe.leroy@csgroup.eu>
+ <85a0e5fde0c36219332a74871ef4699008ec7edb.1687430631.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Mailman-Approved-At: Thu, 22 Jun 2023 21:37:49 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <85a0e5fde0c36219332a74871ef4699008ec7edb.1687430631.git.christophe.leroy@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -180,50 +63,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Sathvika Vasireddy <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2023-06-22 at 09:46 +0900, Damien Le Moal wrote:
-> On 6/21/23 23:45, Jeff Layton wrote:
-> > struct timespec64 has unused bits in the tv_nsec field that can be used
-> > for other purposes. In future patches, we're going to change how the
-> > inode->i_ctime is accessed in certain inodes in order to make use of
-> > them. In order to do that safely though, we'll need to eradicate raw
-> > accesses of the inode->i_ctime field from the kernel.
-> >=20
-> > Add new accessor functions for the ctime that we can use to replace the=
-m.
-> >=20
-> > Signed-off-by: Jeff Layton <jlayton@kernel.org>
->=20
-> [...]
->=20
-> > +/**
-> > + * inode_ctime_peek - fetch the current ctime from the inode
-> > + * @inode: inode from which to fetch ctime
-> > + *
-> > + * Grab the current ctime from the inode and return it.
-> > + */
-> > +static inline struct timespec64 inode_ctime_peek(const struct inode *i=
-node)
->=20
-> To be consistent with inode_ctime_set(), why not call this one inode_ctim=
-e_get()
+On Thu, Jun 22, 2023 at 12:54:30PM +0200, Christophe Leroy wrote:
+> 	struct jump_entry {
+> 		s32 code;
+> 		s32 target;
+> 		long key;
+> 	};
+> 
+> It means that the size of the third argument depends on
+> whether we are building a 32 bits or 64 bits kernel.
+> 
+> Therefore JUMP_ENTRY_SIZE must depend on elf_class_addrsize(elf).
+> 
+> To allow that, entries[] table must be initialised at runtime. This is
+> easily done by moving it into its only user which is special_get_alts().
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-In later patches fetching the ctime for presentation may have side
-effects on certain filesystems. Using "peek" here is a hint that we want
-to avoid those side effects in these calls.
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-> ? Also, inode_set_ctime() & inode_get_ctime() may be a little more natura=
-l. But
-> no strong opinion about that though.
->=20
+However, it doesn't apply to tip/objtool/core because Josh went and
+renamed a bunch of things including elf_class_addrsize(). It's now
+elf_addr_siize().
 
-I like the consistency of the inode_ctime_* prefix. It makes it simpler
-to find these calls when grepping, etc.
-
-That said, my opinions on naming are pretty loosely-held, so if the
-consensus is that the names should as you suggest, I'll go along with
-it.
---=20
-Jeff Layton <jlayton@kernel.org>
+> ---
+>  .../arch/powerpc/include/arch/special.h       |  2 +-
+>  tools/objtool/special.c                       | 55 +++++++++----------
+>  2 files changed, 28 insertions(+), 29 deletions(-)
+> 
+> diff --git a/tools/objtool/arch/powerpc/include/arch/special.h b/tools/objtool/arch/powerpc/include/arch/special.h
+> index ffef9ada7133..ede05633c2e4 100644
+> --- a/tools/objtool/arch/powerpc/include/arch/special.h
+> +++ b/tools/objtool/arch/powerpc/include/arch/special.h
+> @@ -6,7 +6,7 @@
+>  #define EX_ORIG_OFFSET 0
+>  #define EX_NEW_OFFSET 4
+>  
+> -#define JUMP_ENTRY_SIZE 16
+> +#define JUMP_ENTRY_SIZE (8 + elf_class_addrsize(elf)) /* 12 on PPC32, 16 on PPC64 */
+>  #define JUMP_ORIG_OFFSET 0
+>  #define JUMP_NEW_OFFSET 4
+>  #define JUMP_KEY_OFFSET 8
+> diff --git a/tools/objtool/special.c b/tools/objtool/special.c
+> index baa85c31526b..4015c1cd0fe1 100644
+> --- a/tools/objtool/special.c
+> +++ b/tools/objtool/special.c
+> @@ -26,34 +26,6 @@ struct special_entry {
+>  	unsigned char key; /* jump_label key */
+>  };
+>  
+> -static const struct special_entry entries[] = {
+> -	{
+> -		.sec = ".altinstructions",
+> -		.group = true,
+> -		.size = ALT_ENTRY_SIZE,
+> -		.orig = ALT_ORIG_OFFSET,
+> -		.orig_len = ALT_ORIG_LEN_OFFSET,
+> -		.new = ALT_NEW_OFFSET,
+> -		.new_len = ALT_NEW_LEN_OFFSET,
+> -		.feature = ALT_FEATURE_OFFSET,
+> -	},
+> -	{
+> -		.sec = "__jump_table",
+> -		.jump_or_nop = true,
+> -		.size = JUMP_ENTRY_SIZE,
+> -		.orig = JUMP_ORIG_OFFSET,
+> -		.new = JUMP_NEW_OFFSET,
+> -		.key = JUMP_KEY_OFFSET,
+> -	},
+> -	{
+> -		.sec = "__ex_table",
+> -		.size = EX_ENTRY_SIZE,
+> -		.orig = EX_ORIG_OFFSET,
+> -		.new = EX_NEW_OFFSET,
+> -	},
+> -	{},
+> -};
+> -
+>  void __weak arch_handle_alternative(unsigned short feature, struct special_alt *alt)
+>  {
+>  }
+> @@ -144,6 +116,33 @@ int special_get_alts(struct elf *elf, struct list_head *alts)
+>  	unsigned int nr_entries;
+>  	struct special_alt *alt;
+>  	int idx, ret;
+> +	const struct special_entry entries[] = {
+> +		{
+> +			.sec = ".altinstructions",
+> +			.group = true,
+> +			.size = ALT_ENTRY_SIZE,
+> +			.orig = ALT_ORIG_OFFSET,
+> +			.orig_len = ALT_ORIG_LEN_OFFSET,
+> +			.new = ALT_NEW_OFFSET,
+> +			.new_len = ALT_NEW_LEN_OFFSET,
+> +			.feature = ALT_FEATURE_OFFSET,
+> +		},
+> +		{
+> +			.sec = "__jump_table",
+> +			.jump_or_nop = true,
+> +			.size = JUMP_ENTRY_SIZE,
+> +			.orig = JUMP_ORIG_OFFSET,
+> +			.new = JUMP_NEW_OFFSET,
+> +			.key = JUMP_KEY_OFFSET,
+> +		},
+> +		{
+> +			.sec = "__ex_table",
+> +			.size = EX_ENTRY_SIZE,
+> +			.orig = EX_ORIG_OFFSET,
+> +			.new = EX_NEW_OFFSET,
+> +		},
+> +		{},
+> +	};
+>  
+>  	INIT_LIST_HEAD(alts);
+>  
+> -- 
+> 2.40.1
+> 
