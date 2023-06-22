@@ -4,54 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C9EEEB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 10:02:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87147EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 10:55:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmws52Vs0z30PC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 20:02:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmy2W5gxMz3bsw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 20:55:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QmwrT3Cy6z2ys6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 20:01:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmy1z23v4z305Q
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 20:55:00 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4QmwrM6bmFz9sRZ;
-	Thu, 22 Jun 2023 12:01:39 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4Qmy1q6VQPz9sRm;
+	Thu, 22 Jun 2023 12:54:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id RK95xLhTf3n4; Thu, 22 Jun 2023 12:01:39 +0200 (CEST)
+	with ESMTP id 8vteKcmK8t2W; Thu, 22 Jun 2023 12:54:55 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4QmwrM5vZBz9sRX;
-	Thu, 22 Jun 2023 12:01:39 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Qmy1q5sm3z9sRF;
+	Thu, 22 Jun 2023 12:54:55 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C6B2F8B767;
-	Thu, 22 Jun 2023 12:01:39 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C4C7C8B77B;
+	Thu, 22 Jun 2023 12:54:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id fISwiA53pAFa; Thu, 22 Jun 2023 12:01:39 +0200 (CEST)
+	with ESMTP id w-Xb_LZrU174; Thu, 22 Jun 2023 12:54:55 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.14])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 895B68B763;
-	Thu, 22 Jun 2023 12:01:39 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 742178B763;
+	Thu, 22 Jun 2023 12:54:55 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35MA1XYR2369438
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35MAsmn82382519
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 22 Jun 2023 12:01:33 +0200
+	Thu, 22 Jun 2023 12:54:48 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35MA1WnH2369368;
-	Thu, 22 Jun 2023 12:01:32 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35MAsmqK2382518;
+	Thu, 22 Jun 2023 12:54:48 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2] powerpc/ptrace: Split gpr32_set_common
-Date: Thu, 22 Jun 2023 12:01:23 +0200
-Message-Id: <b8d6ae4483fcfd17524e79d803c969694a85cc02.1687428075.git.christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Josh Poimboeuf <jpoimboe@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Sathvika Vasireddy <sv@linux.ibm.com>,
+        Naveen N Rao <naveen@kernel.org>
+Subject: [PATCH v2 01/14] powerpc/kuap: Avoid unnecessary reads of MD_AP
+Date: Thu, 22 Jun 2023 12:54:23 +0200
+Message-Id: <d6de17e1bd51292ccacacd4c26b7753f61ed9e40.1687430631.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <cover.1687430631.git.christophe.leroy@csgroup.eu>
+References: <cover.1687430631.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1687428082; l=4986; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=x7WBIUROaeeEePPB8kKEkVksIM/j0JxJ7CLtcjIgVBU=; b=w82uxJfFgPFgw1VFeR7wjL7eAKwvFNATy2EKHvGy/VDBdXkLDvCId1SDfx+U4DCWXQWYQI9m9 5K2i5XYV25jDIWqHmLlSMZDMdlgTeVlcAA6dxfVRGpwjVjDyGQpHAB2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1687431271; l=2619; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=MpFKL0d/EfDJ0kCQxhMEiBWz5R0LOuG+v/7pxC8nbYg=; b=lIpRpaI09XZmhhy+YR7CdWwkYmzpry2LXIIWDSQStUfsyqJjFWQNgq15ypsV29F9ZenjCrkVz pNgnKLa3niWDMazVQ7yuEMIzWnW4uv2xxGR8iDei21rePlRN0EymOCz
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,176 +75,74 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-objtool report the following warning:
+A disassembly of interrupt_exit_kernel_prepare() shows a useless read
+of MD_AP register. This is shown by r9 being re-used immediately without
+doing anything with the value read.
 
-  arch/powerpc/kernel/ptrace/ptrace-view.o: warning: objtool:
-    gpr32_set_common+0x23c (.text+0x860): redundant UACCESS disable
+  c000e0e0:       60 00 00 00     nop
+  c000e0e4: ===>  7d 3a c2 a6     mfmd_ap r9	<====
+  c000e0e8:       7d 20 00 a6     mfmsr   r9
+  c000e0ec:       7c 51 13 a6     mtspr   81,r2
+  c000e0f0:       81 3f 00 84     lwz     r9,132(r31)
+  c000e0f4:       71 29 80 00     andi.   r9,r9,32768
 
-gpr32_set_common() conditionnaly opens and closes UACCESS based on
-whether kbuf point is NULL or not. This is wackelig.
+kuap_get_and_assert_locked() is paired with kuap_kernel_restore()
+and are only used in interrupt_exit_kernel_prepare(). The value
+returned by kuap_get_and_assert_locked() is only used by
+kuap_kernel_restore().
 
-Split gpr32_set_common() in two fonctions, one for user one for
-kernel.
+On 8xx, kuap_kernel_restore() doesn't use the value read by
+kuap_get_and_assert_locked() so modify kuap_get_and_assert_locked()
+to not perform the read of MD_AP and return 0 instead.
+
+The same applies on BOOKE.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Mark gpr32_set_common_kernel() and gpr32_set_common_user() static
----
- arch/powerpc/kernel/ptrace/ptrace-view.c | 106 ++++++++++++++---------
- 1 file changed, 67 insertions(+), 39 deletions(-)
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h | 8 ++------
+ arch/powerpc/include/asm/nohash/kup-booke.h  | 6 ++----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-view.c b/arch/powerpc/kernel/ptrace/ptrace-view.c
-index 3910cd7bb2d9..42abbed452cd 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-view.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-view.c
-@@ -716,73 +716,89 @@ int gpr32_get_common(struct task_struct *target,
- 	return membuf_zero(&to, (ELF_NGREG - PT_REGS_COUNT) * sizeof(u32));
- }
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index c44d97751723..8579210f2a6a 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -41,14 +41,10 @@ static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kua
  
--int gpr32_set_common(struct task_struct *target,
--		     const struct user_regset *regset,
--		     unsigned int pos, unsigned int count,
--		     const void *kbuf, const void __user *ubuf,
--		     unsigned long *regs)
-+static int gpr32_set_common_kernel(struct task_struct *target,
-+				   const struct user_regset *regset,
-+				   unsigned int pos, unsigned int count,
-+				   const void *kbuf, unsigned long *regs)
+ static inline unsigned long __kuap_get_and_assert_locked(void)
  {
- 	const compat_ulong_t *k = kbuf;
-+
-+	pos /= sizeof(compat_ulong_t);
-+	count /= sizeof(compat_ulong_t);
-+
-+	for (; count > 0 && pos < PT_MSR; --count)
-+		regs[pos++] = *k++;
-+
-+	if (count > 0 && pos == PT_MSR) {
-+		set_user_msr(target, *k++);
-+		++pos;
-+		--count;
-+	}
-+
-+	for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
-+		regs[pos++] = *k++;
-+	for (; count > 0 && pos < PT_TRAP; --count, ++pos)
-+		++k;
-+
-+	if (count > 0 && pos == PT_TRAP) {
-+		set_user_trap(target, *k++);
-+		++pos;
-+		--count;
-+	}
-+
-+	kbuf = k;
-+	pos *= sizeof(compat_ulong_t);
-+	count *= sizeof(compat_ulong_t);
-+	user_regset_copyin_ignore(&pos, &count, &kbuf, NULL,
-+				  (PT_TRAP + 1) * sizeof(compat_ulong_t), -1);
-+	return 0;
-+}
-+
-+static int gpr32_set_common_user(struct task_struct *target,
-+				 const struct user_regset *regset,
-+				 unsigned int pos, unsigned int count,
-+				 const void __user *ubuf, unsigned long *regs)
-+{
- 	const compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
- 
--	if (!kbuf && !user_read_access_begin(u, count))
-+	if (!user_read_access_begin(u, count))
- 		return -EFAULT;
- 
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
- 
--	if (kbuf)
--		for (; count > 0 && pos < PT_MSR; --count)
--			regs[pos++] = *k++;
--	else
--		for (; count > 0 && pos < PT_MSR; --count) {
--			unsafe_get_user(reg, u++, Efault);
--			regs[pos++] = reg;
--		}
+-	unsigned long kuap;
 -
-+	for (; count > 0 && pos < PT_MSR; --count) {
-+		unsafe_get_user(reg, u++, Efault);
-+		regs[pos++] = reg;
-+	}
+-	kuap = mfspr(SPRN_MD_AP);
+-
+ 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		WARN_ON_ONCE(kuap >> 16 != MD_APG_KUAP >> 16);
++		WARN_ON_ONCE(mfspr(SPRN_MD_AP) >> 16 != MD_APG_KUAP >> 16);
  
- 	if (count > 0 && pos == PT_MSR) {
--		if (kbuf)
--			reg = *k++;
--		else
--			unsafe_get_user(reg, u++, Efault);
-+		unsafe_get_user(reg, u++, Efault);
- 		set_user_msr(target, reg);
- 		++pos;
- 		--count;
- 	}
- 
--	if (kbuf) {
--		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
--			regs[pos++] = *k++;
--		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
--			++k;
--	} else {
--		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
--			unsafe_get_user(reg, u++, Efault);
--			regs[pos++] = reg;
--		}
--		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
--			unsafe_get_user(reg, u++, Efault);
-+	for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
-+		unsafe_get_user(reg, u++, Efault);
-+		regs[pos++] = reg;
- 	}
-+	for (; count > 0 && pos < PT_TRAP; --count, ++pos)
-+		unsafe_get_user(reg, u++, Efault);
- 
- 	if (count > 0 && pos == PT_TRAP) {
--		if (kbuf)
--			reg = *k++;
--		else
--			unsafe_get_user(reg, u++, Efault);
-+		unsafe_get_user(reg, u++, Efault);
- 		set_user_trap(target, reg);
- 		++pos;
- 		--count;
- 	}
--	if (!kbuf)
--		user_read_access_end();
-+	user_read_access_end();
- 
--	kbuf = k;
- 	ubuf = u;
- 	pos *= sizeof(reg);
- 	count *= sizeof(reg);
--	user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
-+	user_regset_copyin_ignore(&pos, &count, NULL, &ubuf,
- 				  (PT_TRAP + 1) * sizeof(reg), -1);
- 	return 0;
- 
-@@ -791,6 +807,18 @@ int gpr32_set_common(struct task_struct *target,
- 	return -EFAULT;
+-	return kuap;
++	return 0;
  }
  
-+int gpr32_set_common(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     const void *kbuf, const void __user *ubuf,
-+		     unsigned long *regs)
-+{
-+	if (kbuf)
-+		return gpr32_set_common_kernel(target, regset, pos, count, kbuf, regs);
-+	else
-+		return gpr32_set_common_user(target, regset, pos, count, ubuf, regs);
-+}
-+
- static int gpr32_get(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     struct membuf to)
+ static inline void __allow_user_access(void __user *to, const void __user *from,
+diff --git a/arch/powerpc/include/asm/nohash/kup-booke.h b/arch/powerpc/include/asm/nohash/kup-booke.h
+index 49bb41ed0816..823c5a3a96d8 100644
+--- a/arch/powerpc/include/asm/nohash/kup-booke.h
++++ b/arch/powerpc/include/asm/nohash/kup-booke.h
+@@ -58,12 +58,10 @@ static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kua
+ 
+ static inline unsigned long __kuap_get_and_assert_locked(void)
+ {
+-	unsigned long kuap = mfspr(SPRN_PID);
+-
+ 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		WARN_ON_ONCE(kuap);
++		WARN_ON_ONCE(mfspr(SPRN_PID));
+ 
+-	return kuap;
++	return 0;
+ }
+ 
+ static inline void __allow_user_access(void __user *to, const void __user *from,
 -- 
 2.40.1
 
