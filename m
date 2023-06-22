@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E50BEEB64DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 10:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CD5AEB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 10:58:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmy5S1z8Xz3bs0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 20:58:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmy611S2zz3cZw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 20:58:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmy2L13wzz3bNn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 20:55:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmy2Q0R69z3bl6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 20:55:25 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Qmy1z2rnNz9sRn;
-	Thu, 22 Jun 2023 12:55:03 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4Qmy210013z9sRm;
+	Thu, 22 Jun 2023 12:55:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id V2sTXnLGuWS1; Thu, 22 Jun 2023 12:55:03 +0200 (CEST)
+	with ESMTP id JzeXHVWfZ6P7; Thu, 22 Jun 2023 12:55:04 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Qmy1v6Sspz9sRs;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Qmy1v70Wsz9sRt;
 	Thu, 22 Jun 2023 12:54:59 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DA12C8B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EC07F8B763;
 	Thu, 22 Jun 2023 12:54:59 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Xnxzm3g9CkGg; Thu, 22 Jun 2023 12:54:59 +0200 (CEST)
+	with ESMTP id qI5FN3vJJBbQ; Thu, 22 Jun 2023 12:54:59 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.14])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3732F8B77C;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3B8978B77D;
 	Thu, 22 Jun 2023 12:54:59 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35MAssr72382583
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35MAsrUl2382567
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 22 Jun 2023 12:54:54 +0200
+	Thu, 22 Jun 2023 12:54:53 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35MAssQM2382582;
-	Thu, 22 Jun 2023 12:54:54 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35MAsrTX2382566;
+	Thu, 22 Jun 2023 12:54:53 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -50,14 +50,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Sathvika Vasireddy <sv@linux.ibm.com>,
         Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH v2 08/14] objtool: Fix JUMP_ENTRY_SIZE for bi-arch like powerpc
-Date: Thu, 22 Jun 2023 12:54:30 +0200
-Message-Id: <85a0e5fde0c36219332a74871ef4699008ec7edb.1687430631.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 04/14] powerpc/kuap: Make disabling KUAP at boottime impossible except on book3s/64
+Date: Thu, 22 Jun 2023 12:54:26 +0200
+Message-Id: <8e178a6823aee38af74dc59d246185bfc4d846d9.1687430631.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1687430631.git.christophe.leroy@csgroup.eu>
 References: <cover.1687430631.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1687431272; l=2995; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=oDQ+yu2c80GlkN1xTGQWllMn8lTFly+buQPlZ9vYv6s=; b=6vfsq3Ai6s9XeMQ1kxtJ6r3TF2kx85UhChrMJNVC4mdQ8sLprQlge6yFmcRWx40NJePTmHT3I XfRCVc4YhaAB1BLREE9Z8hKbzZY5Mz6XVdJI3m/cPrUXr8TtPxzAFbs
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1687431271; l=3711; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=qpT8lcamvy7dK8UQJBZ5uk7RcXiHWOqfTZFEErmAGRw=; b=U9dBB/+u2VxlX8iaDgxnhExM/RgR10aljKoyAeC7MwwAM4kZ9SACfIvBAxTwuSXLsBum47C4N sDEorkMzxQ9BeRp2ptsdZog+OJi/GMkLEY8tvjfOdyAwl5qhcZkfMOb
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,111 +75,120 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-	struct jump_entry {
-		s32 code;
-		s32 target;
-		long key;
-	};
+It is possible to disable KUAP at boottime with 'nosmap' parameter.
 
-It means that the size of the third argument depends on
-whether we are building a 32 bits or 64 bits kernel.
+That is implemented with jump_label hence adds a 'nop' in front
+of each open/close of userspace access.
 
-Therefore JUMP_ENTRY_SIZE must depend on elf_class_addrsize(elf).
+From a security point of view it makes sence to disallow disabling
+KUAP. And on processors like the 8xx where 'nop' is not seamless,
+it saves a few cycles.
 
-To allow that, entries[] table must be initialised at runtime. This is
-easily done by moving it into its only user which is special_get_alts().
+In addition, objtool UACCESS validation cannot cope with that
+feature because it visits every static branches independentely and
+is not able to see that when a UACCESS enable is skipped, the
+matching UACCESS disable is skipped as well.
+
+So make KUAP always active when selected in kernel config.
+
+In the future it may be re-implemented by noping the instructions
+instead of using static branches.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- .../arch/powerpc/include/arch/special.h       |  2 +-
- tools/objtool/special.c                       | 55 +++++++++----------
- 2 files changed, 28 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/kup.h  |  4 +---
+ arch/powerpc/mm/book3s32/kuap.c | 15 ++++++---------
+ arch/powerpc/mm/init-common.c   |  6 +++---
+ arch/powerpc/mm/nohash/kup.c    |  8 +-------
+ 4 files changed, 11 insertions(+), 22 deletions(-)
 
-diff --git a/tools/objtool/arch/powerpc/include/arch/special.h b/tools/objtool/arch/powerpc/include/arch/special.h
-index ffef9ada7133..ede05633c2e4 100644
---- a/tools/objtool/arch/powerpc/include/arch/special.h
-+++ b/tools/objtool/arch/powerpc/include/arch/special.h
-@@ -6,7 +6,7 @@
- #define EX_ORIG_OFFSET 0
- #define EX_NEW_OFFSET 4
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 74b7f4cee2ed..a02340535efa 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -49,11 +49,9 @@ void setup_kuep(bool disabled);
+ void setup_kuap(bool disabled);
  
--#define JUMP_ENTRY_SIZE 16
-+#define JUMP_ENTRY_SIZE (8 + elf_class_addrsize(elf)) /* 12 on PPC32, 16 on PPC64 */
- #define JUMP_ORIG_OFFSET 0
- #define JUMP_NEW_OFFSET 4
- #define JUMP_KEY_OFFSET 8
-diff --git a/tools/objtool/special.c b/tools/objtool/special.c
-index baa85c31526b..4015c1cd0fe1 100644
---- a/tools/objtool/special.c
-+++ b/tools/objtool/special.c
-@@ -26,34 +26,6 @@ struct special_entry {
- 	unsigned char key; /* jump_label key */
- };
- 
--static const struct special_entry entries[] = {
--	{
--		.sec = ".altinstructions",
--		.group = true,
--		.size = ALT_ENTRY_SIZE,
--		.orig = ALT_ORIG_OFFSET,
--		.orig_len = ALT_ORIG_LEN_OFFSET,
--		.new = ALT_NEW_OFFSET,
--		.new_len = ALT_NEW_LEN_OFFSET,
--		.feature = ALT_FEATURE_OFFSET,
--	},
--	{
--		.sec = "__jump_table",
--		.jump_or_nop = true,
--		.size = JUMP_ENTRY_SIZE,
--		.orig = JUMP_ORIG_OFFSET,
--		.new = JUMP_NEW_OFFSET,
--		.key = JUMP_KEY_OFFSET,
--	},
--	{
--		.sec = "__ex_table",
--		.size = EX_ENTRY_SIZE,
--		.orig = EX_ORIG_OFFSET,
--		.new = EX_NEW_OFFSET,
--	},
--	{},
--};
+ #ifndef kuap_is_disabled
+-extern struct static_key_false disable_kuap_key;
 -
- void __weak arch_handle_alternative(unsigned short feature, struct special_alt *alt)
+ static __always_inline bool kuap_is_disabled(void)
  {
+-	return static_branch_unlikely(&disable_kuap_key);
++	return false;
  }
-@@ -144,6 +116,33 @@ int special_get_alts(struct elf *elf, struct list_head *alts)
- 	unsigned int nr_entries;
- 	struct special_alt *alt;
- 	int idx, ret;
-+	const struct special_entry entries[] = {
-+		{
-+			.sec = ".altinstructions",
-+			.group = true,
-+			.size = ALT_ENTRY_SIZE,
-+			.orig = ALT_ORIG_OFFSET,
-+			.orig_len = ALT_ORIG_LEN_OFFSET,
-+			.new = ALT_NEW_OFFSET,
-+			.new_len = ALT_NEW_LEN_OFFSET,
-+			.feature = ALT_FEATURE_OFFSET,
-+		},
-+		{
-+			.sec = "__jump_table",
-+			.jump_or_nop = true,
-+			.size = JUMP_ENTRY_SIZE,
-+			.orig = JUMP_ORIG_OFFSET,
-+			.new = JUMP_NEW_OFFSET,
-+			.key = JUMP_KEY_OFFSET,
-+		},
-+		{
-+			.sec = "__ex_table",
-+			.size = EX_ENTRY_SIZE,
-+			.orig = EX_ORIG_OFFSET,
-+			.new = EX_NEW_OFFSET,
-+		},
-+		{},
-+	};
+ #endif
+ #else
+diff --git a/arch/powerpc/mm/book3s32/kuap.c b/arch/powerpc/mm/book3s32/kuap.c
+index c5484729b595..639219d0a821 100644
+--- a/arch/powerpc/mm/book3s32/kuap.c
++++ b/arch/powerpc/mm/book3s32/kuap.c
+@@ -17,17 +17,14 @@ EXPORT_SYMBOL(kuap_unlock_all_ool);
  
- 	INIT_LIST_HEAD(alts);
+ void setup_kuap(bool disabled)
+ {
+-	if (!disabled) {
+-		kuap_lock_all_ool();
+-		init_mm.context.sr0 |= SR_KS;
+-		current->thread.sr0 |= SR_KS;
+-	}
++	WARN_ON(disabled);
++
++	kuap_lock_all_ool();
++	init_mm.context.sr0 |= SR_KS;
++	current->thread.sr0 |= SR_KS;
+ 
+ 	if (smp_processor_id() != boot_cpuid)
+ 		return;
+ 
+-	if (disabled)
+-		static_branch_enable(&disable_kuap_key);
+-	else
+-		pr_info("Activating Kernel Userspace Access Protection\n");
++	pr_info("Activating Kernel Userspace Access Protection\n");
+ }
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 74e140b1efef..237086742ec7 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -32,9 +32,6 @@ EXPORT_SYMBOL_GPL(kernstart_virt_addr);
+ bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
+ bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
+ 
+-struct static_key_false disable_kuap_key;
+-EXPORT_SYMBOL(disable_kuap_key);
+-
+ static int __init parse_nosmep(char *p)
+ {
+ 	if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64))
+@@ -48,6 +45,9 @@ early_param("nosmep", parse_nosmep);
+ 
+ static int __init parse_nosmap(char *p)
+ {
++	if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		return 0;
++
+ 	disable_kuap = true;
+ 	pr_warn("Disabling Kernel Userspace Access Protection\n");
+ 	return 0;
+diff --git a/arch/powerpc/mm/nohash/kup.c b/arch/powerpc/mm/nohash/kup.c
+index 4e22adfa2aa8..3bb79f89de06 100644
+--- a/arch/powerpc/mm/nohash/kup.c
++++ b/arch/powerpc/mm/nohash/kup.c
+@@ -15,13 +15,7 @@
+ #ifdef CONFIG_PPC_KUAP
+ void setup_kuap(bool disabled)
+ {
+-	if (disabled) {
+-		if (IS_ENABLED(CONFIG_40x))
+-			disable_kuep = true;
+-		if (smp_processor_id() == boot_cpuid)
+-			static_branch_enable(&disable_kuap_key);
+-		return;
+-	}
++	WARN_ON(disabled);
+ 
+ 	pr_info("Activating Kernel Userspace Access Protection\n");
  
 -- 
 2.40.1
