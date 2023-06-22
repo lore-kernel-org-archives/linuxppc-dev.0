@@ -4,47 +4,171 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55ACCEB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 11:25:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7C4DEB64D8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 11:38:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hRFLCN8t;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bash4qEo;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QmyjT5V9Vz3bY2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 21:25:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qmz0H0qyFz30MN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 21:38:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hRFLCN8t;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bash4qEo;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jlayton@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QmyhT1478z303p
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 21:24:57 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmx7b5XFrz2ynx;
+	Thu, 22 Jun 2023 20:14:51 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QmyhS71tQz4x1R;
-	Thu, 22 Jun 2023 21:24:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1687433097;
-	bh=MFqu0Fxui8E4yy7bVHaZ0S97NFeHBxBXuHtsJkq2cxE=;
-	h=From:To:Subject:Date:From;
-	b=hRFLCN8tB82awjjyeq82BYHoDN1WPLAthKMWAoaUcqsV4H38edUYcRjUOWN9mxYtG
-	 CFZKQEmlG/8ep7Zumgue+fJOvj+qcVLW7rfeSrgVAepM5aWsXHatXxHgwpiIoLdgwa
-	 8zFm4YRXuGyAAv9xA+STPq8VQ1jrPQLsuIISdlg3VPMog4etfvqm09ziI96lITcfEU
-	 uW3z9zqWkHULQIDI2r4fG9tCGQcBPq7NqV3AIZWzlJmXxkzuAgl7fWsU1jLXBurHqW
-	 8OrHvNMhTuEZW8Q+P2FkUlyeSVMC7IG35C4UTiQuJTWQ0AceqO+A1jOalSt9yQ+c7B
-	 8hyLje+UwozPw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/64e: Fix obtool warnings in exceptions-64e.S
-Date: Thu, 22 Jun 2023 21:24:51 +1000
-Message-ID: <20230622112451.735268-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.41.0
+	by dfw.source.kernel.org (Postfix) with ESMTPS id E4277617BB;
+	Thu, 22 Jun 2023 10:14:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2888C433C9;
+	Thu, 22 Jun 2023 10:14:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1687428888;
+	bh=7+cabg86v1cYpPv8vDJOW5RfunjhlSEWXfJLwIkmtqs=;
+	h=Subject:From:To:Date:In-Reply-To:References:From;
+	b=bash4qEoN8ysoF4HTnLUBoIb4R/VvEf+WW/D9VIwZ7IkIbfsRZHAuo5DrHgU3mESQ
+	 YV3L6vJlJ5RLoTi5/71VkN5rQAydrP7yy38zcSGGfwasNdQxjqfQEDJO2KhRfaS72P
+	 L3pOkZCMNStmacczTh8Bxts4KstAt3iUVQoAzfNq5O0qEkTp/AQ/ZxnvFiOtuM8Rrh
+	 hGFigQvIDdzAyY8j4H2gTF58blmQ8XCJxFBrtJ8bp21DHjiO/HINP7f4QOOgCaaZnm
+	 wPOh/3PFD9MITyv48Pm3mcErp57QuFgfhsUJhmJROqlUtadgwIZDzlw31/avwVXFpE
+	 VwFt0TPP5toFA==
+Message-ID: <ad4bfb630128709588164db6f1fd2ef39c31d2a5.camel@kernel.org>
+Subject: Re: [PATCH 01/79] fs: add ctime accessors infrastructure
+From: Jeff Layton <jlayton@kernel.org>
+To: Damien Le Moal <dlemoal@kernel.org>, Jeremy Kerr <jk@ozlabs.org>, Arnd
+ Bergmann <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
+ Piggin <npiggin@gmail.com>,  Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Heiko Carstens <hca@linux.ibm.com>, Vasily
+ Gorbik <gor@linux.ibm.com>,  Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+ <svens@linux.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>, Todd Kjos
+ <tkjos@android.com>, Martijn Coenen <maco@android.com>, Joel Fernandes
+ <joel@joelfernandes.org>, Christian Brauner <brauner@kernel.org>, Carlos
+ Llamas <cmllamas@google.com>, Suren Baghdasaryan <surenb@google.com>,
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason
+ Gunthorpe <jgg@ziepe.ca>,  Leon Romanovsky <leon@kernel.org>, Brad Warrum
+ <bwarrum@linux.ibm.com>, Ritu Agarwal <rituagar@linux.ibm.com>, Eric Van
+ Hensbergen <ericvh@kernel.org>, Latchesar Ionkov <lucho@ionkov.net>,
+ Dominique Martinet <asmadeus@codewreck.org>, Christian Schoenebeck
+ <linux_oss@crudebyte.com>, David Sterba <dsterba@suse.com>, David Howells
+ <dhowells@redhat.com>, Marc Dionne <marc.dionne@auristor.com>, Alexander
+ Viro <viro@zeniv.linux.org.uk>, Ian Kent <raven@themaw.net>, Luis de
+ Bethencourt <luisbg@kernel.org>, Salah Triki <salah.triki@gmail.com>,
+ "Tigran A. Aivazian" <aivazian.tigran@gmail.com>, Eric Biederman
+ <ebiederm@xmission.com>, Kees Cook <keescook@chromium.org>, Chris Mason
+ <clm@fb.com>, Josef Bacik <josef@toxicpanda.com>, Xiubo Li
+ <xiubli@redhat.com>, Ilya Dryomov <idryomov@gmail.com>, Jan Harkes
+ <jaharkes@cs.cmu.edu>, coda@cs.cmu.edu, Joel Becker <jlbec@evilplan.org>,
+ Christoph Hellwig <hch@lst.de>, Nicolas Pitre <nico@fluxnic.net>,  "Rafael
+ J. Wysocki" <rafael@kernel.org>, Tyler Hicks <code@tyhicks.com>, Ard
+ Biesheuvel <ardb@kernel.org>, Gao Xiang <xiang@kernel.org>, Chao Yu
+ <chao@kernel.org>,  Yue Hu <huyue2@coolpad.com>, Jeffle Xu
+ <jefflexu@linux.alibaba.com>, Namjae Jeon <linkinjeon@kernel.org>, Sungjong
+ Seo <sj1557.seo@samsung.com>, Jan Kara <jack@suse.com>, Theodore Ts'o
+ <tytso@mit.edu>, Andreas Dilger <adilger.kernel@dilger.ca>, Jaegeuk Kim
+ <jaegeuk@kernel.org>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Miklos
+ Szeredi <miklos@szeredi.hu>, Bob Peterson <rpeterso@redhat.com>, Andreas
+ Gruenbacher <agruenba@redhat.com>, Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, Mikulas Patocka
+ <mikulas@artax.karlin.mff.cuni.cz>,  Mike Kravetz
+ <mike.kravetz@oracle.com>, Muchun Song <muchun.song@linux.dev>, David
+ Woodhouse <dwmw2@infradead.org>, Dave Kleikamp <shaggy@kernel.org>, Tejun
+ Heo <tj@kernel.org>, Trond Myklebust <trond.myklebust@hammerspace.com>,
+ Anna Schumaker <anna@kernel.org>, Chuck Lever <chuck.lever@oracle.com>,
+ Ryusuke Konishi <konishi.ryusuke@gmail.com>, Anton Altaparmakov
+ <anton@tuxera.com>,  Konstantin Komarov
+ <almaz.alexandrovich@paragon-software.com>, Mark Fasheh <mark@fasheh.com>,
+ Joseph Qi <joseph.qi@linux.alibaba.com>, Bob Copeland <me@bobcopeland.com>,
+ Mike Marshall <hubcap@omnibond.com>, Martin Brandenburg
+ <martin@omnibond.com>, Luis Chamberlain <mcgrof@kernel.org>, Iurii Zaikin
+ <yzaikin@google.com>, Tony Luck <tony.luck@intel.com>,  "Guilherme G.
+ Piccoli" <gpiccoli@igalia.com>, Anders Larsen <al@alarsen.net>, Steve
+ French <sfrench@samba.org>, Paulo Alcantara <pc@manguebit.com>, Ronnie
+ Sahlberg <lsahlber@redhat.com>, Shyam Prasad N <sprasad@microsoft.com>, Tom
+ Talpey <tom@talpey.com>, Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Phillip Lougher <phillip@squashfs.org.uk>, Steven Rostedt
+ <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, Evgeniy
+ Dushistov <dushistov@mail.ru>, Hans de Goede <hdegoede@redhat.com>,
+ "Darrick J. Wong" <djwong@kernel.org>, Naohiro Aota <naohiro.aota@wdc.com>,
+ Johannes Thumshirn <jth@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko
+ <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Song Liu
+ <song@kernel.org>, Yonghong Song <yhs@fb.com>, John Fastabend
+ <john.fastabend@gmail.com>, KP Singh <kpsingh@kernel.org>, Stanislav
+ Fomichev <sdf@google.com>, Hao Luo <haoluo@google.com>, Jiri Olsa
+ <jolsa@kernel.org>,  Hugh Dickins <hughd@google.com>, Andrew Morton
+ <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>, John Johansen <john.johansen@canonical.com>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge
+ E. Hallyn" <serge@hallyn.com>, Stephen Smalley
+ <stephen.smalley.work@gmail.com>, Eric Paris <eparis@parisplace.org>, 
+ Juergen Gross <jgross@suse.com>, Ruihan Li <lrh2000@pku.edu.cn>, Laurent
+ Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, Udipto Goswami
+ <quic_ugoswami@quicinc.com>,  Linyu Yuan <quic_linyyuan@quicinc.com>, John
+ Keeping <john@keeping.me.uk>, Andrzej Pietrasiewicz
+ <andrzej.p@collabora.com>, Dan Carpenter <error27@gmail.com>, Yuta Hayama
+ <hayama@lineo.co.jp>, Jozef Martiniak <jomajm@gmail.com>, Jens Axboe
+ <axboe@kernel.dk>, Alan Stern <stern@rowland.harvard.edu>, Sandeep Dhavale
+ <dhavale@google.com>, Dave Chinner <dchinner@redhat.com>, Johannes Weiner
+ <hannes@cmpxchg.org>, ZhangPeng <zhangpeng362@huawei.com>, Viacheslav
+ Dubeyko <slava@dubeyko.com>, Tetsuo Handa
+ <penguin-kernel@I-love.SAKURA.ne.jp>,  Aditya Garg <gargaditya08@live.com>,
+ Erez Zadok <ezk@cs.stonybrook.edu>, Yifei Liu <yifeliu@cs.stonybrook.edu>,
+ Yu Zhe <yuzhe@nfschina.com>, "Matthew Wilcox (Oracle)"
+ <willy@infradead.org>, Oleg Kanatov <okanatov@gmail.com>, "Dr. David Alan
+ Gilbert" <linux@treblig.org>, Jiangshan Yi <yijiangshan@kylinos.cn>, xu xin
+ <cgel.zte@gmail.com>, Stefan Roesch <shr@devkernel.io>, Zhihao Cheng
+ <chengzhihao1@huawei.com>, "Liam R. Howlett" <Liam.Howlett@Oracle.com>, 
+ Alexey Dobriyan <adobriyan@gmail.com>, Minghao Chi
+ <chi.minghao@zte.com.cn>, Seth Forshee <sforshee@digitalocean.com>, Zeng
+ Jingxiang <linuszeng@tencent.com>, Bart Van Assche <bvanassche@acm.org>,
+ Mimi Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>,
+ Zhang Yi <yi.zhang@huawei.com>, Tom Rix <trix@redhat.com>, "Fabio M. De
+ Francesco" <fmdefrancesco@gmail.com>, Chen Zhongjin
+ <chenzhongjin@huawei.com>, Zhengchao Shao <shaozhengchao@huawei.com>, Rik
+ van Riel <riel@surriel.com>, Jingyu Wang <jingyuwang_vip@163.com>, Hangyu
+ Hua <hbh25y@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,  linux-s390@vger.kernel.org,
+ linux-rdma@vger.kernel.org,  linux-usb@vger.kernel.org,
+ v9fs@lists.linux.dev, linux-fsdevel@vger.kernel.org, 
+ linux-afs@lists.infradead.org, autofs@vger.kernel.org, linux-mm@kvack.org, 
+ linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org, 
+ codalist@coda.cs.cmu.edu, ecryptfs@vger.kernel.org,
+ linux-efi@vger.kernel.org,  linux-erofs@lists.ozlabs.org,
+ linux-ext4@vger.kernel.org,  linux-f2fs-devel@lists.sourceforge.net,
+ cluster-devel@redhat.com,  linux-um@lists.infradead.org,
+ linux-mtd@lists.infradead.org,  jfs-discussion@lists.sourceforge.net,
+ linux-nfs@vger.kernel.org,  linux-nilfs@vger.kernel.org,
+ linux-ntfs-dev@lists.sourceforge.net,  ntfs3@lists.linux.dev,
+ ocfs2-devel@oss.oracle.com,  linux-karma-devel@lists.sourceforge.net,
+ devel@lists.orangefs.org,  linux-unionfs@vger.kernel.org,
+ linux-hardening@vger.kernel.org,  reiserfs-devel@vger.kernel.org,
+ linux-cifs@vger.kernel.org,  samba-technical@lists.samba.org,
+ linux-trace-kernel@vger.kernel.org,  linux-xfs@vger.kernel.org,
+ bpf@vger.kernel.org, netdev@vger.kernel.org,  apparmor@lists.ubuntu.com,
+ linux-security-module@vger.kernel.org,  selinux@vger.kernel.org
+Date: Thu, 22 Jun 2023 06:14:30 -0400
+In-Reply-To: <99b3c749-23d9-6f09-fb75-6a84f3d1b066@kernel.org>
+References: <20230621144507.55591-1-jlayton@kernel.org>
+	 <20230621144507.55591-2-jlayton@kernel.org>
+	 <99b3c749-23d9-6f09-fb75-6a84f3d1b066@kernel.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.48.3 (3.48.3-1.fc38) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 22 Jun 2023 21:37:49 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,148 +183,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit aec0ba7472a7 ("powerpc/64: Use -mprofile-kernel for big
-endian ELFv2 kernels"), this file is checked by objtool. Fix warnings
-such as:
+On Thu, 2023-06-22 at 09:46 +0900, Damien Le Moal wrote:
+> On 6/21/23 23:45, Jeff Layton wrote:
+> > struct timespec64 has unused bits in the tv_nsec field that can be used
+> > for other purposes. In future patches, we're going to change how the
+> > inode->i_ctime is accessed in certain inodes in order to make use of
+> > them. In order to do that safely though, we'll need to eradicate raw
+> > accesses of the inode->i_ctime field from the kernel.
+> >=20
+> > Add new accessor functions for the ctime that we can use to replace the=
+m.
+> >=20
+> > Signed-off-by: Jeff Layton <jlayton@kernel.org>
+>=20
+> [...]
+>=20
+> > +/**
+> > + * inode_ctime_peek - fetch the current ctime from the inode
+> > + * @inode: inode from which to fetch ctime
+> > + *
+> > + * Grab the current ctime from the inode and return it.
+> > + */
+> > +static inline struct timespec64 inode_ctime_peek(const struct inode *i=
+node)
+>=20
+> To be consistent with inode_ctime_set(), why not call this one inode_ctim=
+e_get()
 
-  arch/powerpc/kernel/idle_64e.o: warning: objtool: .text+0x20: unannotated intra-function call
-  arch/powerpc/kernel/exceptions-64e.o: warning: objtool: .text+0x218: unannotated intra-function call
+In later patches fetching the ctime for presentation may have side
+effects on certain filesystems. Using "peek" here is a hint that we want
+to avoid those side effects in these calls.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/exceptions-64e.S | 31 ++++++++++++++++------------
- 1 file changed, 18 insertions(+), 13 deletions(-)
+> ? Also, inode_set_ctime() & inode_get_ctime() may be a little more natura=
+l. But
+> no strong opinion about that though.
+>=20
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 3f86091e68b3..7ab4c8c0f1ab 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -5,6 +5,7 @@
-  *  Copyright (C) 2007 Ben. Herrenschmidt (benh@kernel.crashing.org), IBM Corp.
-  */
- 
-+#include <linux/linkage.h>
- #include <linux/threads.h>
- #include <asm/reg.h>
- #include <asm/page.h>
-@@ -66,7 +67,7 @@
- #define SPECIAL_EXC_LOAD(reg, name) \
- 	ld	reg, (SPECIAL_EXC_##name * 8 + SPECIAL_EXC_FRAME_OFFS)(r1)
- 
--special_reg_save:
-+SYM_CODE_START_LOCAL(special_reg_save)
- 	/*
- 	 * We only need (or have stack space) to save this stuff if
- 	 * we interrupted the kernel.
-@@ -131,8 +132,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	SPECIAL_EXC_STORE(r10,CSRR1)
- 
- 	blr
-+SYM_CODE_END(special_reg_save)
- 
--ret_from_level_except:
-+SYM_CODE_START_LOCAL(ret_from_level_except)
- 	ld	r3,_MSR(r1)
- 	andi.	r3,r3,MSR_PR
- 	beq	1f
-@@ -206,6 +208,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	mtxer	r11
- 
- 	blr
-+SYM_CODE_END(ret_from_level_except)
- 
- .macro ret_from_level srr0 srr1 paca_ex scratch
- 	bl	ret_from_level_except
-@@ -232,13 +235,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	mfspr	r13,\scratch
- .endm
- 
--ret_from_crit_except:
-+SYM_CODE_START_LOCAL(ret_from_crit_except)
- 	ret_from_level SPRN_CSRR0 SPRN_CSRR1 PACA_EXCRIT SPRN_SPRG_CRIT_SCRATCH
- 	rfci
-+SYM_CODE_END(ret_from_crit_except)
- 
--ret_from_mc_except:
-+SYM_CODE_START_LOCAL(ret_from_mc_except)
- 	ret_from_level SPRN_MCSRR0 SPRN_MCSRR1 PACA_EXMC SPRN_SPRG_MC_SCRATCH
- 	rfmci
-+SYM_CODE_END(ret_from_mc_except)
- 
- /* Exception prolog code for all exceptions */
- #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
-@@ -978,20 +983,22 @@ masked_interrupt_book3e_0x2c0:
-  * r14 and r15 containing the fault address and error code, with the
-  * original values stashed away in the PACA
-  */
--storage_fault_common:
-+SYM_CODE_START_LOCAL(storage_fault_common)
- 	addi	r3,r1,STACK_INT_FRAME_REGS
- 	bl	do_page_fault
- 	b	interrupt_return
-+SYM_CODE_END(storage_fault_common)
- 
- /*
-  * Alignment exception doesn't fit entirely in the 0x100 bytes so it
-  * continues here.
-  */
--alignment_more:
-+SYM_CODE_START_LOCAL(alignment_more)
- 	addi	r3,r1,STACK_INT_FRAME_REGS
- 	bl	alignment_exception
- 	REST_NVGPRS(r1)
- 	b	interrupt_return
-+SYM_CODE_END(alignment_more)
- 
- /*
-  * Trampolines used when spotting a bad kernel stack pointer in
-@@ -1030,8 +1037,7 @@ BAD_STACK_TRAMPOLINE(0xe00)
- BAD_STACK_TRAMPOLINE(0xf00)
- BAD_STACK_TRAMPOLINE(0xf20)
- 
--	.globl	bad_stack_book3e
--bad_stack_book3e:
-+_GLOBAL(bad_stack_book3e)
- 	/* XXX: Needs to make SPRN_SPRG_GEN depend on exception type */
- 	mfspr	r10,SPRN_SRR0;		  /* read SRR0 before touching stack */
- 	ld	r1,PACAEMERGSP(r13)
-@@ -1285,8 +1291,7 @@ have_hes:
- 	 * ever takes any parameters, the SCOM code must also be updated to
- 	 * provide them.
- 	 */
--	.globl a2_tlbinit_code_start
--a2_tlbinit_code_start:
-+_GLOBAL(a2_tlbinit_code_start)
- 
- 	ori	r11,r3,MAS0_WQ_ALLWAYS
- 	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 erratum 376 */
-@@ -1479,8 +1484,7 @@ _GLOBAL(book3e_secondary_thread_init)
- 	mflr	r28
- 	b	3b
- 
--	.globl init_core_book3e
--init_core_book3e:
-+_GLOBAL(init_core_book3e)
- 	/* Establish the interrupt vector base */
- 	tovirt(r2,r2)
- 	LOAD_REG_ADDR(r3, interrupt_base_book3e)
-@@ -1488,7 +1492,7 @@ init_core_book3e:
- 	sync
- 	blr
- 
--init_thread_book3e:
-+SYM_CODE_START_LOCAL(init_thread_book3e)
- 	lis	r3,(SPRN_EPCR_ICM | SPRN_EPCR_GICM)@h
- 	mtspr	SPRN_EPCR,r3
- 
-@@ -1502,6 +1506,7 @@ init_thread_book3e:
- 	mtspr	SPRN_TSR,r3
- 
- 	blr
-+SYM_CODE_END(init_thread_book3e)
- 
- _GLOBAL(__setup_base_ivors)
- 	SET_IVOR(0, 0x020) /* Critical Input */
--- 
-2.41.0
+I like the consistency of the inode_ctime_* prefix. It makes it simpler
+to find these calls when grepping, etc.
 
+That said, my opinions on naming are pretty loosely-held, so if the
+consensus is that the names should as you suggest, I'll go along with
+it.
+--=20
+Jeff Layton <jlayton@kernel.org>
