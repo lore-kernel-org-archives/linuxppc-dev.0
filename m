@@ -4,61 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 096DFEB64D8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 11:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55ACCEB64D8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 11:25:51 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hRFLCN8t;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QmyBy4DPCz3dnv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 21:02:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QmyjT5V9Vz3bY2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jun 2023 21:25:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hRFLCN8t;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qmy2z4TWbz3c2t
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 20:55:55 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Qmy2B19JFz9sRy;
-	Thu, 22 Jun 2023 12:55:14 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1i7GCOvs_3fi; Thu, 22 Jun 2023 12:55:14 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Qmy1z466Dz9sS2;
-	Thu, 22 Jun 2023 12:55:03 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 886E78B77D;
-	Thu, 22 Jun 2023 12:55:03 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Qx6bjsuqdINP; Thu, 22 Jun 2023 12:55:03 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.14])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1349F8B77B;
-	Thu, 22 Jun 2023 12:55:03 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35MAst7U2382603
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 22 Jun 2023 12:54:55 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35MAstrf2382602;
-	Thu, 22 Jun 2023 12:54:55 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Sathvika Vasireddy <sv@linux.ibm.com>,
-        Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH v2 13/14] powerpc/bug: Annotate reachable after warning trap
-Date: Thu, 22 Jun 2023 12:54:35 +0200
-Message-Id: <c5df2e21e585078677c7444cb6aee3e4404047ce.1687430631.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <cover.1687430631.git.christophe.leroy@csgroup.eu>
-References: <cover.1687430631.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QmyhT1478z303p
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2023 21:24:57 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QmyhS71tQz4x1R;
+	Thu, 22 Jun 2023 21:24:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1687433097;
+	bh=MFqu0Fxui8E4yy7bVHaZ0S97NFeHBxBXuHtsJkq2cxE=;
+	h=From:To:Subject:Date:From;
+	b=hRFLCN8tB82awjjyeq82BYHoDN1WPLAthKMWAoaUcqsV4H38edUYcRjUOWN9mxYtG
+	 CFZKQEmlG/8ep7Zumgue+fJOvj+qcVLW7rfeSrgVAepM5aWsXHatXxHgwpiIoLdgwa
+	 8zFm4YRXuGyAAv9xA+STPq8VQ1jrPQLsuIISdlg3VPMog4etfvqm09ziI96lITcfEU
+	 uW3z9zqWkHULQIDI2r4fG9tCGQcBPq7NqV3AIZWzlJmXxkzuAgl7fWsU1jLXBurHqW
+	 8OrHvNMhTuEZW8Q+P2FkUlyeSVMC7IG35C4UTiQuJTWQ0AceqO+A1jOalSt9yQ+c7B
+	 8hyLje+UwozPw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/64e: Fix obtool warnings in exceptions-64e.S
+Date: Thu, 22 Jun 2023 21:24:51 +1000
+Message-ID: <20230622112451.735268-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1687431272; l=2316; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=/W4+xqj0r7zNXbQJn/jQRk2PTNbpBc+Jr6goIjqzvwg=; b=TD/95uGV7fn5nikSzDwHKl57kO2RzzOio+Nwz/LkTCP1Fxdc8R+C0cbguVoXQ5QbZiUb8zuGX zheE5iP1J/VDgT5KzUTfR68jop11OJpuAMK+g2h8TRdQTRpfDK+OwLA
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,86 +56,151 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This commit is copied from commit bfb1a7c91fb7 ("x86/bug: Merge
-annotate_reachable() into _BUG_FLAGS() asm")
+Since commit aec0ba7472a7 ("powerpc/64: Use -mprofile-kernel for big
+endian ELFv2 kernels"), this file is checked by objtool. Fix warnings
+such as:
 
-'twi 31,0,0' is a BUG instruction, which is by default a dead end.
+  arch/powerpc/kernel/idle_64e.o: warning: objtool: .text+0x20: unannotated intra-function call
+  arch/powerpc/kernel/exceptions-64e.o: warning: objtool: .text+0x218: unannotated intra-function call
 
-But the same instruction is used for WARNINGs and the execution
-resumes with the following instruction. Mark it reachable so
-that objtool knows that it is not a dead end in that case.
-
-Also change the unreachable() annotation by __builtin_unreachable()
-since objtool already knows that a BUG instruction is a dead end.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/bug.h | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S | 31 ++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index a565995fb742..5550ebffb146 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -4,6 +4,7 @@
- #ifdef __KERNEL__
- 
- #include <asm/asm-compat.h>
-+#include <linux/objtool.h>
- 
- #ifdef CONFIG_BUG
- 
-@@ -51,10 +52,11 @@
- 	".previous\n"
- #endif
- 
--#define BUG_ENTRY(insn, flags, ...)			\
-+#define BUG_ENTRY(insn, flags, extra, ...)		\
- 	__asm__ __volatile__(				\
- 		"1:	" insn "\n"			\
- 		_EMIT_BUG_ENTRY				\
-+		extra					\
- 		: : "i" (__FILE__), "i" (__LINE__),	\
- 		  "i" (flags),				\
- 		  "i" (sizeof(struct bug_entry)),	\
-@@ -67,12 +69,12 @@
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 3f86091e68b3..7ab4c8c0f1ab 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -5,6 +5,7 @@
+  *  Copyright (C) 2007 Ben. Herrenschmidt (benh@kernel.crashing.org), IBM Corp.
   */
  
- #define BUG() do {						\
--	BUG_ENTRY("twi 31, 0, 0", 0);				\
--	unreachable();						\
-+	BUG_ENTRY("twi 31, 0, 0", 0, "");			\
-+	__builtin_unreachable();				\
- } while (0)
- #define HAVE_ARCH_BUG
++#include <linux/linkage.h>
+ #include <linux/threads.h>
+ #include <asm/reg.h>
+ #include <asm/page.h>
+@@ -66,7 +67,7 @@
+ #define SPECIAL_EXC_LOAD(reg, name) \
+ 	ld	reg, (SPECIAL_EXC_##name * 8 + SPECIAL_EXC_FRAME_OFFS)(r1)
  
--#define __WARN_FLAGS(flags) BUG_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags))
-+#define __WARN_FLAGS(flags) BUG_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags), ASM_REACHABLE)
+-special_reg_save:
++SYM_CODE_START_LOCAL(special_reg_save)
+ 	/*
+ 	 * We only need (or have stack space) to save this stuff if
+ 	 * we interrupted the kernel.
+@@ -131,8 +132,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	SPECIAL_EXC_STORE(r10,CSRR1)
  
- #ifdef CONFIG_PPC64
- #define BUG_ON(x) do {						\
-@@ -80,7 +82,7 @@
- 		if (x)						\
- 			BUG();					\
- 	} else {						\
--		BUG_ENTRY(PPC_TLNEI " %4, 0", 0, "r" ((__force long)(x)));	\
-+		BUG_ENTRY(PPC_TLNEI " %4, 0", 0, "", "r" ((__force long)(x)));	\
- 	}							\
- } while (0)
+ 	blr
++SYM_CODE_END(special_reg_save)
  
-@@ -92,7 +94,7 @@
- 	} else {						\
- 		BUG_ENTRY(PPC_TLNEI " %4, 0",			\
- 			  BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
--			  "r" (__ret_warn_on));	\
-+			  "", "r" (__ret_warn_on));	\
- 	}							\
- 	unlikely(__ret_warn_on);				\
- })
+-ret_from_level_except:
++SYM_CODE_START_LOCAL(ret_from_level_except)
+ 	ld	r3,_MSR(r1)
+ 	andi.	r3,r3,MSR_PR
+ 	beq	1f
+@@ -206,6 +208,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mtxer	r11
+ 
+ 	blr
++SYM_CODE_END(ret_from_level_except)
+ 
+ .macro ret_from_level srr0 srr1 paca_ex scratch
+ 	bl	ret_from_level_except
+@@ -232,13 +235,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mfspr	r13,\scratch
+ .endm
+ 
+-ret_from_crit_except:
++SYM_CODE_START_LOCAL(ret_from_crit_except)
+ 	ret_from_level SPRN_CSRR0 SPRN_CSRR1 PACA_EXCRIT SPRN_SPRG_CRIT_SCRATCH
+ 	rfci
++SYM_CODE_END(ret_from_crit_except)
+ 
+-ret_from_mc_except:
++SYM_CODE_START_LOCAL(ret_from_mc_except)
+ 	ret_from_level SPRN_MCSRR0 SPRN_MCSRR1 PACA_EXMC SPRN_SPRG_MC_SCRATCH
+ 	rfmci
++SYM_CODE_END(ret_from_mc_except)
+ 
+ /* Exception prolog code for all exceptions */
+ #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
+@@ -978,20 +983,22 @@ masked_interrupt_book3e_0x2c0:
+  * r14 and r15 containing the fault address and error code, with the
+  * original values stashed away in the PACA
+  */
+-storage_fault_common:
++SYM_CODE_START_LOCAL(storage_fault_common)
+ 	addi	r3,r1,STACK_INT_FRAME_REGS
+ 	bl	do_page_fault
+ 	b	interrupt_return
++SYM_CODE_END(storage_fault_common)
+ 
+ /*
+  * Alignment exception doesn't fit entirely in the 0x100 bytes so it
+  * continues here.
+  */
+-alignment_more:
++SYM_CODE_START_LOCAL(alignment_more)
+ 	addi	r3,r1,STACK_INT_FRAME_REGS
+ 	bl	alignment_exception
+ 	REST_NVGPRS(r1)
+ 	b	interrupt_return
++SYM_CODE_END(alignment_more)
+ 
+ /*
+  * Trampolines used when spotting a bad kernel stack pointer in
+@@ -1030,8 +1037,7 @@ BAD_STACK_TRAMPOLINE(0xe00)
+ BAD_STACK_TRAMPOLINE(0xf00)
+ BAD_STACK_TRAMPOLINE(0xf20)
+ 
+-	.globl	bad_stack_book3e
+-bad_stack_book3e:
++_GLOBAL(bad_stack_book3e)
+ 	/* XXX: Needs to make SPRN_SPRG_GEN depend on exception type */
+ 	mfspr	r10,SPRN_SRR0;		  /* read SRR0 before touching stack */
+ 	ld	r1,PACAEMERGSP(r13)
+@@ -1285,8 +1291,7 @@ have_hes:
+ 	 * ever takes any parameters, the SCOM code must also be updated to
+ 	 * provide them.
+ 	 */
+-	.globl a2_tlbinit_code_start
+-a2_tlbinit_code_start:
++_GLOBAL(a2_tlbinit_code_start)
+ 
+ 	ori	r11,r3,MAS0_WQ_ALLWAYS
+ 	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 erratum 376 */
+@@ -1479,8 +1484,7 @@ _GLOBAL(book3e_secondary_thread_init)
+ 	mflr	r28
+ 	b	3b
+ 
+-	.globl init_core_book3e
+-init_core_book3e:
++_GLOBAL(init_core_book3e)
+ 	/* Establish the interrupt vector base */
+ 	tovirt(r2,r2)
+ 	LOAD_REG_ADDR(r3, interrupt_base_book3e)
+@@ -1488,7 +1492,7 @@ init_core_book3e:
+ 	sync
+ 	blr
+ 
+-init_thread_book3e:
++SYM_CODE_START_LOCAL(init_thread_book3e)
+ 	lis	r3,(SPRN_EPCR_ICM | SPRN_EPCR_GICM)@h
+ 	mtspr	SPRN_EPCR,r3
+ 
+@@ -1502,6 +1506,7 @@ init_thread_book3e:
+ 	mtspr	SPRN_TSR,r3
+ 
+ 	blr
++SYM_CODE_END(init_thread_book3e)
+ 
+ _GLOBAL(__setup_base_ivors)
+ 	SET_IVOR(0, 0x020) /* Critical Input */
 -- 
-2.40.1
+2.41.0
 
