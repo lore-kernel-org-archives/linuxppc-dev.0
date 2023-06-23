@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32547EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jun 2023 17:11:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA309EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jun 2023 17:11:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QnkKs5CqVz3dn0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jun 2023 03:11:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QnkLQ2kJ1z3dxx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jun 2023 03:11:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QnkD838VJz3bn3
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2023 03:06:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QnkDD0080z3c4P
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2023 03:06:35 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4QnkCZ2nc3z9sgT;
-	Fri, 23 Jun 2023 19:06:02 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4QnkCb2395z9sgg;
+	Fri, 23 Jun 2023 19:06:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7atZwVmcg_uh; Fri, 23 Jun 2023 19:06:02 +0200 (CEST)
+	with ESMTP id OKls7nucr-iX; Fri, 23 Jun 2023 19:06:03 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4QnkCR5ZKmz9sgl;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4QnkCR5ZcKz9sgm;
 	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B8CAF8B77C;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B8DAA8B780;
 	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 4zNeC80wof8H; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
+	with ESMTP id EshnoQYxQ1WZ; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.71])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9169A8B78B;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 75FA08B77E;
 	Fri, 23 Jun 2023 19:05:54 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35NH5lRT2645759
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35NH5kqf2645735
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Fri, 23 Jun 2023 19:05:47 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35NH5lrT2645758;
-	Fri, 23 Jun 2023 19:05:47 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35NH5kCW2645727;
+	Fri, 23 Jun 2023 19:05:46 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -50,14 +50,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Sathvika Vasireddy <sv@linux.ibm.com>,
         Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH v3 07/15] objtool: Allow an architecture to disable objtool on ASM files
-Date: Fri, 23 Jun 2023 19:05:18 +0200
-Message-Id: <2f3d565c93506ce4ea60258bbebd5150b6d7510e.1687539638.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 03/15] powerpc/kuap: Refactor static branch for disabling kuap
+Date: Fri, 23 Jun 2023 19:05:14 +0200
+Message-Id: <3622fbb28e49b4abea06ccf93928ad5ff76e3be2.1687539638.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1687539638.git.christophe.leroy@csgroup.eu>
 References: <cover.1687539638.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1687539922; l=1429; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=JMHcrTE+ZNL5DPWKb6wzfxgfrGY7fEc11+Jar29nty8=; b=kAgndCB+bxr9mOcuZWrUAs+0mmk8uPRIK3voSvKutxDubcGiAdpRdGptC/Q7NZXt05GlH+dHu swhNEhZxuRCAQie8r17zOs5E0YwvVvAkXttzZlQlp5gUJ+EOp68bCcc
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1687539921; l=5299; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=AZfoSgZiCwjPgSsKITfozUnMBvKmLZuCyUS8gnNY6TE=; b=xhMTnwdRDxs7bUXLyJqHLENB6dSaGlqjl/y93goxXU5G1Hnb4VwM4ihtdWvK57z90GbAIuTWv dgbu4yJDyznDo2qCryRSxOzEp1XHd2dBUT/a8+iK6nhqqsXT82eY+ML
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,53 +75,171 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Supporting objtool on ASM files requires quite an effort.
+All but book3s/64 use a static branch key for disabling kuap.
+book3s/64 uses a memory feature.
 
-Features like UACCESS validation don't require ASM files validation.
+Refactor all targets except book3s/64.
 
-In order to allow architectures to enable objtool validation
-without spending unnecessary effort on cleaning up ASM files,
-provide an option to disable objtool validation on ASM files.
-
-Suggested-by: Naveen N Rao <naveen@kernel.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/Kconfig           | 5 +++++
- scripts/Makefile.build | 4 ++++
- 2 files changed, 9 insertions(+)
+ arch/powerpc/include/asm/book3s/32/kup.h     |  7 -------
+ arch/powerpc/include/asm/book3s/64/kup.h     |  1 +
+ arch/powerpc/include/asm/kup.h               | 15 +++++++++++++++
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h |  7 -------
+ arch/powerpc/include/asm/nohash/kup-booke.h  |  7 -------
+ arch/powerpc/mm/book3s32/kuap.c              |  3 ---
+ arch/powerpc/mm/init-common.c                |  3 +++
+ arch/powerpc/mm/nohash/kup.c                 |  3 ---
+ 8 files changed, 19 insertions(+), 27 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 205fd23e0cad..dd66b884bcfb 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -1091,6 +1091,11 @@ config ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
- config HAVE_OBJTOOL
- 	bool
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 466a19cfb4df..8da9997a67ba 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -11,8 +11,6 @@
  
-+config ARCH_OBJTOOL_SKIP_ASM
-+	bool
-+	help
-+	  Architecture doesn't support objtool on ASM files
+ #include <linux/jump_label.h>
+ 
+-extern struct static_key_false disable_kuap_key;
+-
+ static __always_inline bool kuep_is_disabled(void)
+ {
+ 	return !IS_ENABLED(CONFIG_PPC_KUEP);
+@@ -25,11 +23,6 @@ static __always_inline bool kuep_is_disabled(void)
+ #define KUAP_NONE	(~0UL)
+ #define KUAP_ALL	(~1UL)
+ 
+-static __always_inline bool kuap_is_disabled(void)
+-{
+-	return static_branch_unlikely(&disable_kuap_key);
+-}
+-
+ static inline void kuap_lock_one(unsigned long addr)
+ {
+ 	mtsr(mfsr(addr) | SR_KS, addr);
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 2a7bd3ecc556..d44c4ee2e8c3 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -234,6 +234,7 @@ static __always_inline bool kuap_is_disabled(void)
+ {
+ 	return !mmu_has_feature(MMU_FTR_BOOK3S_KUAP);
+ }
++#define kuap_is_disabled kuap_is_disabled
+ 
+ static inline void kuap_user_restore(struct pt_regs *regs)
+ {
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 0a4e07175612..74b7f4cee2ed 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -6,6 +6,12 @@
+ #define KUAP_WRITE	2
+ #define KUAP_READ_WRITE	(KUAP_READ | KUAP_WRITE)
+ 
++#ifndef __ASSEMBLY__
++#include <linux/types.h>
 +
- config HAVE_JUMP_LABEL_HACK
- 	bool
++static __always_inline bool kuap_is_disabled(void);
++#endif
++
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #include <asm/book3s/64/kup.h>
+ #endif
+@@ -41,6 +47,15 @@ void setup_kuep(bool disabled);
  
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 9f94fc83f086..878027cf4faf 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -359,7 +359,11 @@ $(obj)/%.s: $(src)/%.S FORCE
- 	$(call if_changed_dep,cpp_s_S)
+ #ifdef CONFIG_PPC_KUAP
+ void setup_kuap(bool disabled);
++
++#ifndef kuap_is_disabled
++extern struct static_key_false disable_kuap_key;
++
++static __always_inline bool kuap_is_disabled(void)
++{
++	return static_branch_unlikely(&disable_kuap_key);
++}
++#endif
+ #else
+ static inline void setup_kuap(bool disabled) { }
  
- quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
-+ifndef CONFIG_ARCH_OBJTOOL_SKIP_ASM
-       cmd_as_o_S = $(CC) $(a_flags) -c -o $@ $< $(cmd_objtool)
-+else
-+      cmd_as_o_S = $(CC) $(a_flags) -c -o $@ $<
-+endif
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index a372cd822887..1d53f38c5cd5 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -13,13 +13,6 @@
  
- ifdef CONFIG_ASM_MODVERSIONS
+ #include <asm/reg.h>
  
+-extern struct static_key_false disable_kuap_key;
+-
+-static __always_inline bool kuap_is_disabled(void)
+-{
+-	return static_branch_unlikely(&disable_kuap_key);
+-}
+-
+ static inline void __kuap_save_and_lock(struct pt_regs *regs)
+ {
+ 	regs->kuap = mfspr(SPRN_MD_AP);
+diff --git a/arch/powerpc/include/asm/nohash/kup-booke.h b/arch/powerpc/include/asm/nohash/kup-booke.h
+index 71182cbe20c3..07759ae9117b 100644
+--- a/arch/powerpc/include/asm/nohash/kup-booke.h
++++ b/arch/powerpc/include/asm/nohash/kup-booke.h
+@@ -18,13 +18,6 @@
+ 
+ #include <asm/reg.h>
+ 
+-extern struct static_key_false disable_kuap_key;
+-
+-static __always_inline bool kuap_is_disabled(void)
+-{
+-	return static_branch_unlikely(&disable_kuap_key);
+-}
+-
+ static inline void __kuap_lock(void)
+ {
+ 	mtspr(SPRN_PID, 0);
+diff --git a/arch/powerpc/mm/book3s32/kuap.c b/arch/powerpc/mm/book3s32/kuap.c
+index 28676cabb005..c5484729b595 100644
+--- a/arch/powerpc/mm/book3s32/kuap.c
++++ b/arch/powerpc/mm/book3s32/kuap.c
+@@ -3,9 +3,6 @@
+ #include <asm/kup.h>
+ #include <asm/smp.h>
+ 
+-struct static_key_false disable_kuap_key;
+-EXPORT_SYMBOL(disable_kuap_key);
+-
+ void kuap_lock_all_ool(void)
+ {
+ 	kuap_lock_all();
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 119ef491f797..74e140b1efef 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -32,6 +32,9 @@ EXPORT_SYMBOL_GPL(kernstart_virt_addr);
+ bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
+ bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
+ 
++struct static_key_false disable_kuap_key;
++EXPORT_SYMBOL(disable_kuap_key);
++
+ static int __init parse_nosmep(char *p)
+ {
+ 	if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64))
+diff --git a/arch/powerpc/mm/nohash/kup.c b/arch/powerpc/mm/nohash/kup.c
+index 552becf90e97..4e22adfa2aa8 100644
+--- a/arch/powerpc/mm/nohash/kup.c
++++ b/arch/powerpc/mm/nohash/kup.c
+@@ -13,9 +13,6 @@
+ #include <asm/smp.h>
+ 
+ #ifdef CONFIG_PPC_KUAP
+-struct static_key_false disable_kuap_key;
+-EXPORT_SYMBOL(disable_kuap_key);
+-
+ void setup_kuap(bool disabled)
+ {
+ 	if (disabled) {
 -- 
 2.40.1
 
