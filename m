@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97271EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jun 2023 17:07:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D86FEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jun 2023 17:07:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QnkF76ntFz3cSS
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jun 2023 03:07:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QnkFh49Bhz3cYp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jun 2023 03:07:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QnkCc3DCgz3bT2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2023 03:06:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QnkCg4MMRz3btJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2023 03:06:07 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4QnkCK2GKcz9sgW;
-	Fri, 23 Jun 2023 19:05:49 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4QnkCR4X8Nz9sgd;
+	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id mi-znP3KRdZb; Fri, 23 Jun 2023 19:05:49 +0200 (CEST)
+	with ESMTP id tD0z1NsvVFmv; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4QnkCH4JZ2z9sgV;
-	Fri, 23 Jun 2023 19:05:47 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4QnkCR3mH4z9sgV;
+	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8DA3B8B763;
-	Fri, 23 Jun 2023 19:05:47 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7BA358B78D;
+	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id GZNX2Lzm-f99; Fri, 23 Jun 2023 19:05:47 +0200 (CEST)
+	with ESMTP id yT0OOiZFPGwN; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.71])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 334298B76C;
-	Fri, 23 Jun 2023 19:05:47 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 777218B780;
+	Fri, 23 Jun 2023 19:05:54 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35NH5exM2645714
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35NH5m9Y2645803
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 23 Jun 2023 19:05:40 +0200
+	Fri, 23 Jun 2023 19:05:48 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35NH5cgh2645709;
-	Fri, 23 Jun 2023 19:05:38 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35NH5mB82645802;
+	Fri, 23 Jun 2023 19:05:48 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -50,12 +50,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Sathvika Vasireddy <sv@linux.ibm.com>,
         Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH v3 00/15] powerpc/objtool: uaccess validation for PPC32 (v3)
-Date: Fri, 23 Jun 2023 19:05:11 +0200
-Message-Id: <cover.1687539638.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 13/15] objtool: Prepare noreturns.h for more architectures
+Date: Fri, 23 Jun 2023 19:05:24 +0200
+Message-Id: <4929283b879a2343e92e6121443e737af0b06cd6.1687539638.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <cover.1687539638.git.christophe.leroy@csgroup.eu>
+References: <cover.1687539638.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1687539921; l=3460; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=4v2a3/oO/g7ZFbmfTr33UaW+Rjy5tAi53mJem5kaFfQ=; b=S+qOs6UhSOAnEJpFYJEvv83FF68NuzAnX0y/Lj9mVTgjd/e5Id/sdeoJtCAAUDYXZ9ahrBe1X fOnW4Q0OaiZAu+wG2FVNmQQ73PAGlgrNQMGz3rZl092UH8084EXWJEd
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1687539922; l=2884; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=7WePi73pf2EfW9nl1J8Z4+G4wAbQIQr9uJ9OnVTf/pE=; b=CZu0Zh1luNhb+1QZ0Dt+UIv6cFJvvy51vA7c/k4jFV5QlpwN5TtNm9WXtBwU5BZYsMRTw5zgP Q6mGfbpjJh9AzZDbQM/kk/RsbprwlZ4tCy2/ygF4S7TniezdFIJaGHt
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,76 +75,90 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series adds UACCESS validation for PPC32. It includes half
-a dozen of changes to objtool core.
+noreturns.h is a mix of x86 specific functions and more generic
+core functions.
 
-It is almost mature, performs code analysis for all PPC32, only
-missing marking of UACCESS enable/disable for book3s/32.
+In preparation of inclusion of powerpc, split x86 functions out of
+noreturns.h into arch/noreturns.h
 
-Most object files are correctly decoded, only a few
-'unreachable instruction' warnings remain due to more complex
-switch table cases:
-- Loading of table address after the dynamic jump
-- Nested switches
-
-It allowed to detect some UACCESS mess in a few files. They've been
-fixed through other patches.
-
-Changes in v3:
-- Rebased on top of a merge of powerpc tree and tip/objtool/core tree
-- Simplified support for relative switch tables based on relocation type
-- Taken comments from Peter
-
-Christophe Leroy (15):
-  powerpc/kuap: Avoid unnecessary reads of MD_AP
-  powerpc/kuap: Avoid useless jump_label on empty function
-  powerpc/kuap: Refactor static branch for disabling kuap
-  powerpc/kuap: Make disabling KUAP at boottime impossible except on
-    book3s/64
-  powerpc/kuap: KUAP enabling/disabling functions must be
-    __always_inline
-  Revert "powerpc/bug: Provide better flexibility to
-    WARN_ON/__WARN_FLAGS() with asm goto"
-  objtool: Allow an architecture to disable objtool on ASM files
-  objtool: Fix JUMP_ENTRY_SIZE for bi-arch like powerpc
-  objtool: Add INSN_RETURN_CONDITIONAL
-  objtool: Add support for relative switch tables
-  objtool: Remove too strict constraint in jump table search
-  objtool: Add support for more complex UACCESS control
-  objtool: Prepare noreturns.h for more architectures
-  powerpc/bug: Annotate reachable after warning trap
-  powerpc: Implement UACCESS validation on PPC32
-
- arch/Kconfig                                  |  5 ++
- arch/powerpc/Kconfig                          |  2 +
- arch/powerpc/include/asm/book3s/32/kup.h      | 39 ++++-----
- arch/powerpc/include/asm/book3s/64/kup.h      | 36 ++++----
- arch/powerpc/include/asm/bug.h                | 77 ++++-------------
- arch/powerpc/include/asm/kup.h                | 66 ++++++++++-----
- arch/powerpc/include/asm/nohash/32/kup-8xx.h  | 52 +++++-------
- arch/powerpc/include/asm/nohash/kup-booke.h   | 49 +++++------
- arch/powerpc/include/asm/uaccess.h            |  6 +-
- arch/powerpc/kernel/misc_32.S                 |  2 +-
- arch/powerpc/kernel/traps.c                   |  9 +-
- arch/powerpc/kexec/core_32.c                  |  4 +-
- arch/powerpc/mm/book3s32/kuap.c               | 18 ++--
- arch/powerpc/mm/init-common.c                 |  3 +
- arch/powerpc/mm/nohash/kup.c                  | 11 +--
- include/linux/objtool.h                       | 14 ++++
- scripts/Makefile.build                        |  4 +
- tools/objtool/arch/powerpc/decode.c           | 83 +++++++++++++++++--
- .../arch/powerpc/include/arch/noreturns.h     | 11 +++
- .../arch/powerpc/include/arch/special.h       |  2 +-
- tools/objtool/arch/powerpc/special.c          | 34 +++++++-
- .../objtool/arch/x86/include/arch/noreturns.h | 20 +++++
- tools/objtool/check.c                         | 59 ++++++++++---
- tools/objtool/include/objtool/arch.h          |  1 +
- tools/objtool/noreturns.h                     | 14 +---
- tools/objtool/special.c                       | 55 ++++++------
- 26 files changed, 399 insertions(+), 277 deletions(-)
- create mode 100644 tools/objtool/arch/powerpc/include/arch/noreturns.h
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ .../objtool/arch/x86/include/arch/noreturns.h | 20 +++++++++++++++++++
+ tools/objtool/noreturns.h                     | 14 ++-----------
+ 2 files changed, 22 insertions(+), 12 deletions(-)
  create mode 100644 tools/objtool/arch/x86/include/arch/noreturns.h
 
+diff --git a/tools/objtool/arch/x86/include/arch/noreturns.h b/tools/objtool/arch/x86/include/arch/noreturns.h
+new file mode 100644
+index 000000000000..a4262aff3917
+--- /dev/null
++++ b/tools/objtool/arch/x86/include/arch/noreturns.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++/*
++ * This is a (sorted!) list of all known __noreturn functions in arch/x86.
++ * It's needed for objtool to properly reverse-engineer the control flow graph.
++ *
++ * Yes, this is unfortunate.  A better solution is in the works.
++ */
++NORETURN(cpu_bringup_and_idle)
++NORETURN(ex_handler_msr_mce)
++NORETURN(hlt_play_dead)
++NORETURN(hv_ghcb_terminate)
++NORETURN(machine_real_restart)
++NORETURN(rewind_stack_and_make_dead)
++NORETURN(sev_es_terminate)
++NORETURN(snp_abort)
++NORETURN(x86_64_start_kernel)
++NORETURN(x86_64_start_reservations)
++NORETURN(xen_cpu_bringup_again)
++NORETURN(xen_start_kernel)
+diff --git a/tools/objtool/noreturns.h b/tools/objtool/noreturns.h
+index 1514e84d5cc4..2df20addd746 100644
+--- a/tools/objtool/noreturns.h
++++ b/tools/objtool/noreturns.h
+@@ -1,5 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ 
++#include <arch/noreturns.h>
++
+ /*
+  * This is a (sorted!) list of all known __noreturn functions in the kernel.
+  * It's needed for objtool to properly reverse-engineer the control flow graph.
+@@ -15,32 +17,20 @@ NORETURN(__ubsan_handle_builtin_unreachable)
+ NORETURN(arch_call_rest_init)
+ NORETURN(arch_cpu_idle_dead)
+ NORETURN(btrfs_assertfail)
+-NORETURN(cpu_bringup_and_idle)
+ NORETURN(cpu_startup_entry)
+ NORETURN(do_exit)
+ NORETURN(do_group_exit)
+ NORETURN(do_task_dead)
+-NORETURN(ex_handler_msr_mce)
+ NORETURN(fortify_panic)
+-NORETURN(hlt_play_dead)
+-NORETURN(hv_ghcb_terminate)
+ NORETURN(kthread_complete_and_exit)
+ NORETURN(kthread_exit)
+ NORETURN(kunit_try_catch_throw)
+-NORETURN(machine_real_restart)
+ NORETURN(make_task_dead)
+ NORETURN(mpt_halt_firmware)
+ NORETURN(nmi_panic_self_stop)
+ NORETURN(panic)
+ NORETURN(panic_smp_self_stop)
+ NORETURN(rest_init)
+-NORETURN(rewind_stack_and_make_dead)
+-NORETURN(sev_es_terminate)
+-NORETURN(snp_abort)
+ NORETURN(start_kernel)
+ NORETURN(stop_this_cpu)
+ NORETURN(usercopy_abort)
+-NORETURN(x86_64_start_kernel)
+-NORETURN(x86_64_start_reservations)
+-NORETURN(xen_cpu_bringup_again)
+-NORETURN(xen_start_kernel)
 -- 
 2.40.1
 
