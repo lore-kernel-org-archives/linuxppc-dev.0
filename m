@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D86FEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jun 2023 17:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6967C001B0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jun 2023 17:08:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QnkFh49Bhz3cYp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jun 2023 03:07:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QnkGN3Y3rz3c2B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jun 2023 03:08:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QnkCg4MMRz3btJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2023 03:06:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QnkCl251gz3bnf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2023 03:06:11 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4QnkCR4X8Nz9sgd;
-	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4QnkCS16wVz9sgr;
+	Fri, 23 Jun 2023 19:05:56 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tD0z1NsvVFmv; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
+	with ESMTP id CycYx2WvClUZ; Fri, 23 Jun 2023 19:05:56 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4QnkCR3mH4z9sgV;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4QnkCR3mVRz9sgZ;
 	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7BA358B78D;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B5B68B78C;
 	Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id yT0OOiZFPGwN; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
+	with ESMTP id 9NLtuBnbI3pf; Fri, 23 Jun 2023 19:05:55 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.71])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 777218B780;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8D9998B788;
 	Fri, 23 Jun 2023 19:05:54 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35NH5m9Y2645803
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 35NH5leM2645739
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 23 Jun 2023 19:05:48 +0200
+	Fri, 23 Jun 2023 19:05:47 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35NH5mB82645802;
-	Fri, 23 Jun 2023 19:05:48 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 35NH5lbB2645738;
+	Fri, 23 Jun 2023 19:05:47 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -50,14 +50,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Sathvika Vasireddy <sv@linux.ibm.com>,
         Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH v3 13/15] objtool: Prepare noreturns.h for more architectures
-Date: Fri, 23 Jun 2023 19:05:24 +0200
-Message-Id: <4929283b879a2343e92e6121443e737af0b06cd6.1687539638.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 04/15] powerpc/kuap: Make disabling KUAP at boottime impossible except on book3s/64
+Date: Fri, 23 Jun 2023 19:05:15 +0200
+Message-Id: <c937a279399e0887caa93b935bd1593bf6c3466a.1687539638.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1687539638.git.christophe.leroy@csgroup.eu>
 References: <cover.1687539638.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1687539922; l=2884; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=7WePi73pf2EfW9nl1J8Z4+G4wAbQIQr9uJ9OnVTf/pE=; b=CZu0Zh1luNhb+1QZ0Dt+UIv6cFJvvy51vA7c/k4jFV5QlpwN5TtNm9WXtBwU5BZYsMRTw5zgP Q6mGfbpjJh9AzZDbQM/kk/RsbprwlZ4tCy2/ygF4S7TniezdFIJaGHt
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1687539921; l=3711; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=qpT8lcamvy7dK8UQJBZ5uk7RcXiHWOqfTZFEErmAGRw=; b=tjFQIZmIS0NllWzUfNBBD6R2IIRkB5GSQ4yOIoZ1WUODlwkh70yBr+E6Jo+HvZipGrlS54vo/ RbUISPjvJFUBbsd96cpcHGwdLCIJlC48LpXhIV11QeKersGwTtozb+6
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,90 +75,121 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-noreturns.h is a mix of x86 specific functions and more generic
-core functions.
+It is possible to disable KUAP at boottime with 'nosmap' parameter.
 
-In preparation of inclusion of powerpc, split x86 functions out of
-noreturns.h into arch/noreturns.h
+That is implemented with jump_label hence adds a 'nop' in front
+of each open/close of userspace access.
+
+From a security point of view it makes sence to disallow disabling
+KUAP. And on processors like the 8xx where 'nop' is not seamless,
+it saves a few cycles.
+
+In addition, objtool UACCESS validation cannot cope with that
+feature because it visits every static branches independentely and
+is not able to see that when a UACCESS enable is skipped, the
+matching UACCESS disable is skipped as well.
+
+So make KUAP always active when selected in kernel config.
+
+In the future it may be re-implemented by noping the instructions
+instead of using static branches.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- .../objtool/arch/x86/include/arch/noreturns.h | 20 +++++++++++++++++++
- tools/objtool/noreturns.h                     | 14 ++-----------
- 2 files changed, 22 insertions(+), 12 deletions(-)
- create mode 100644 tools/objtool/arch/x86/include/arch/noreturns.h
+ arch/powerpc/include/asm/kup.h  |  4 +---
+ arch/powerpc/mm/book3s32/kuap.c | 15 ++++++---------
+ arch/powerpc/mm/init-common.c   |  6 +++---
+ arch/powerpc/mm/nohash/kup.c    |  8 +-------
+ 4 files changed, 11 insertions(+), 22 deletions(-)
 
-diff --git a/tools/objtool/arch/x86/include/arch/noreturns.h b/tools/objtool/arch/x86/include/arch/noreturns.h
-new file mode 100644
-index 000000000000..a4262aff3917
---- /dev/null
-+++ b/tools/objtool/arch/x86/include/arch/noreturns.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+/*
-+ * This is a (sorted!) list of all known __noreturn functions in arch/x86.
-+ * It's needed for objtool to properly reverse-engineer the control flow graph.
-+ *
-+ * Yes, this is unfortunate.  A better solution is in the works.
-+ */
-+NORETURN(cpu_bringup_and_idle)
-+NORETURN(ex_handler_msr_mce)
-+NORETURN(hlt_play_dead)
-+NORETURN(hv_ghcb_terminate)
-+NORETURN(machine_real_restart)
-+NORETURN(rewind_stack_and_make_dead)
-+NORETURN(sev_es_terminate)
-+NORETURN(snp_abort)
-+NORETURN(x86_64_start_kernel)
-+NORETURN(x86_64_start_reservations)
-+NORETURN(xen_cpu_bringup_again)
-+NORETURN(xen_start_kernel)
-diff --git a/tools/objtool/noreturns.h b/tools/objtool/noreturns.h
-index 1514e84d5cc4..2df20addd746 100644
---- a/tools/objtool/noreturns.h
-+++ b/tools/objtool/noreturns.h
-@@ -1,5 +1,7 @@
- /* SPDX-License-Identifier: GPL-2.0 */
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 74b7f4cee2ed..a02340535efa 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -49,11 +49,9 @@ void setup_kuep(bool disabled);
+ void setup_kuap(bool disabled);
  
-+#include <arch/noreturns.h>
+ #ifndef kuap_is_disabled
+-extern struct static_key_false disable_kuap_key;
+-
+ static __always_inline bool kuap_is_disabled(void)
+ {
+-	return static_branch_unlikely(&disable_kuap_key);
++	return false;
+ }
+ #endif
+ #else
+diff --git a/arch/powerpc/mm/book3s32/kuap.c b/arch/powerpc/mm/book3s32/kuap.c
+index c5484729b595..639219d0a821 100644
+--- a/arch/powerpc/mm/book3s32/kuap.c
++++ b/arch/powerpc/mm/book3s32/kuap.c
+@@ -17,17 +17,14 @@ EXPORT_SYMBOL(kuap_unlock_all_ool);
+ 
+ void setup_kuap(bool disabled)
+ {
+-	if (!disabled) {
+-		kuap_lock_all_ool();
+-		init_mm.context.sr0 |= SR_KS;
+-		current->thread.sr0 |= SR_KS;
+-	}
++	WARN_ON(disabled);
 +
- /*
-  * This is a (sorted!) list of all known __noreturn functions in the kernel.
-  * It's needed for objtool to properly reverse-engineer the control flow graph.
-@@ -15,32 +17,20 @@ NORETURN(__ubsan_handle_builtin_unreachable)
- NORETURN(arch_call_rest_init)
- NORETURN(arch_cpu_idle_dead)
- NORETURN(btrfs_assertfail)
--NORETURN(cpu_bringup_and_idle)
- NORETURN(cpu_startup_entry)
- NORETURN(do_exit)
- NORETURN(do_group_exit)
- NORETURN(do_task_dead)
--NORETURN(ex_handler_msr_mce)
- NORETURN(fortify_panic)
--NORETURN(hlt_play_dead)
--NORETURN(hv_ghcb_terminate)
- NORETURN(kthread_complete_and_exit)
- NORETURN(kthread_exit)
- NORETURN(kunit_try_catch_throw)
--NORETURN(machine_real_restart)
- NORETURN(make_task_dead)
- NORETURN(mpt_halt_firmware)
- NORETURN(nmi_panic_self_stop)
- NORETURN(panic)
- NORETURN(panic_smp_self_stop)
- NORETURN(rest_init)
--NORETURN(rewind_stack_and_make_dead)
--NORETURN(sev_es_terminate)
--NORETURN(snp_abort)
- NORETURN(start_kernel)
- NORETURN(stop_this_cpu)
- NORETURN(usercopy_abort)
--NORETURN(x86_64_start_kernel)
--NORETURN(x86_64_start_reservations)
--NORETURN(xen_cpu_bringup_again)
--NORETURN(xen_start_kernel)
++	kuap_lock_all_ool();
++	init_mm.context.sr0 |= SR_KS;
++	current->thread.sr0 |= SR_KS;
+ 
+ 	if (smp_processor_id() != boot_cpuid)
+ 		return;
+ 
+-	if (disabled)
+-		static_branch_enable(&disable_kuap_key);
+-	else
+-		pr_info("Activating Kernel Userspace Access Protection\n");
++	pr_info("Activating Kernel Userspace Access Protection\n");
+ }
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 74e140b1efef..237086742ec7 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -32,9 +32,6 @@ EXPORT_SYMBOL_GPL(kernstart_virt_addr);
+ bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
+ bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
+ 
+-struct static_key_false disable_kuap_key;
+-EXPORT_SYMBOL(disable_kuap_key);
+-
+ static int __init parse_nosmep(char *p)
+ {
+ 	if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64))
+@@ -48,6 +45,9 @@ early_param("nosmep", parse_nosmep);
+ 
+ static int __init parse_nosmap(char *p)
+ {
++	if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		return 0;
++
+ 	disable_kuap = true;
+ 	pr_warn("Disabling Kernel Userspace Access Protection\n");
+ 	return 0;
+diff --git a/arch/powerpc/mm/nohash/kup.c b/arch/powerpc/mm/nohash/kup.c
+index 4e22adfa2aa8..3bb79f89de06 100644
+--- a/arch/powerpc/mm/nohash/kup.c
++++ b/arch/powerpc/mm/nohash/kup.c
+@@ -15,13 +15,7 @@
+ #ifdef CONFIG_PPC_KUAP
+ void setup_kuap(bool disabled)
+ {
+-	if (disabled) {
+-		if (IS_ENABLED(CONFIG_40x))
+-			disable_kuep = true;
+-		if (smp_processor_id() == boot_cpuid)
+-			static_branch_enable(&disable_kuap_key);
+-		return;
+-	}
++	WARN_ON(disabled);
+ 
+ 	pr_info("Activating Kernel Userspace Access Protection\n");
+ 
 -- 
 2.40.1
 
