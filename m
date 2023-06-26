@@ -4,65 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5367AEB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 06:14:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25F91EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 07:05:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qNNMb3Ck;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r/Wd2cYe;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QqHcq4Zdzz2x9C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 16:14:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QqJlY3Cqyz3bZM
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 17:05:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qNNMb3Ck;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r/Wd2cYe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QqHbk3HzGz30Ln
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 16:13:54 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QqJkT1rBqz2xLW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 17:04:49 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4QqJkS21jzz4wb1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 17:04:48 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4QqJkS1ylgz4wb3; Mon, 26 Jun 2023 17:04:48 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=ozlabs.org)
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r/Wd2cYe;
+	dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id AD34D60C89
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 06:13:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 211E4C433CA
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 06:13:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687760031;
-	bh=tIDPiX4oZCQnSjoJrRmXYm4/HW+kneyQ9COWSK2/0ZY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=qNNMb3Ckj8gq1/QInski5wG5ArtOatt87cA047HzRtNFHppOc4It0+VWaIsfzHFsB
-	 WrN6jVIMHi0yRI04fG3OD7jssfPGtprz/v9IYEgH6gp9MEZgvhvc5Pm8AbW408S8Jb
-	 jBqQ+VH0JZbJ65jkY6m7XFQN7sFo3emIBDMTBuTMfAZt3UCk0Nk1/8DByLbh+o20x+
-	 vSROUMnPAlxNdKTNbMxF4h9KnaTKmh7iRYJddPjAUTkQ+m6E6ExTuuNs+cFmMEMFWI
-	 27i1QApMD/eATfQHzHsZWM5hBexPtkxEcZpNrWbWUCiWrnTcNpgcd+hZVkdhTHUN5k
-	 kva9bmksiqB6g==
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-313e714342cso1834012f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2023 23:13:51 -0700 (PDT)
-X-Gm-Message-State: AC+VfDwvqvKZP284V0dCpNWHgQ4Ovp/SuR5BvF6RTgoqN0YRhcurWacj
-	Msu6LmeLgHj+Yed2ixZ+tVOG7fW8iuJ+EKE8Giw=
-X-Google-Smtp-Source: ACHHUZ7Z1BsryLRBJgwSdFpXVYEgN5RfTaOqmCtmT2+wVlbf2QTe+Yf05nZb1BtwYAaKvRHJWuEELQy+6WhHrJTYCe0=
-X-Received: by 2002:a05:6512:705:b0:4f9:ec5e:d624 with SMTP id
- b5-20020a056512070500b004f9ec5ed624mr1614382lfs.38.1687760008514; Sun, 25 Jun
- 2023 23:13:28 -0700 (PDT)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4QqJkR5l05z4wb1
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2023 17:04:47 +1000 (AEST)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35Q6mtZn023970
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2023 07:04:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=subject : from : to : cc
+ : date : message-id : mime-version : content-type :
+ content-transfer-encoding; s=pp1;
+ bh=XZmtChquXg4FGiS2zoLVe9dmWVjXJ/9dcHeaMGX0Ugc=;
+ b=r/Wd2cYe8vXwPpqGSFfePZ61NAsqMSLpTr0elDQAuxAYFpsQnzqKj3k9PToZzgrmRFNM
+ Y/sPq4kgOYfG5lTQi2wiz4nhxAych5l+YX2DZj/uYszQsy4hPbG55YcMETsFHb8XYaac
+ giuREZHNzyO+onKVzqxTWs80O3uFdlOXP8zmJUc0SEGftnZmn9jc7HohDS5YOeAumxCP
+ Ny74787larBR1GmhpYAynrMqWSW9A40SCcT7y1s3YwqZfwWzNNuLEp+Cq0owSHKhpgn6
+ i7ffc0wmrhOMjHFOdwzyAmgtaWWWPlQw7t5d2gAqgg1AbLd42BE73EBA8ePnz8XhkZ/B YA== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rf5r38cw9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2023 07:04:43 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35Q30EJQ000686
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2023 07:04:23 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3rdr450rym-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2023 07:04:23 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35Q74K3V393888
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 26 Jun 2023 07:04:20 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E630F2004B;
+	Mon, 26 Jun 2023 07:04:19 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 60F6220043;
+	Mon, 26 Jun 2023 07:04:19 +0000 (GMT)
+Received: from [9.109.248.226] (unknown [9.109.248.226])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 26 Jun 2023 07:04:19 +0000 (GMT)
+Subject: [PATCH] powernv/opal-prd: Silence memcpy() run-time false positive
+ warnings
+From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Mon, 26 Jun 2023 12:34:18 +0530
+Message-ID: <168776304370.89193.185568680784294524.stgit@jupiter>
+User-Agent: StGit/1.5
 MIME-Version: 1.0
-References: <20230616085038.4121892-1-rppt@kernel.org> <20230616085038.4121892-3-rppt@kernel.org>
- <f9a7eebe-d36e-4587-b99d-35d4edefdd14@app.fastmail.com> <20230618080027.GA52412@kernel.org>
- <a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com> <20230625161417.GK52412@kernel.org>
- <90161ac9-3ca0-4c72-b1c4-ab1293e55445@app.fastmail.com> <20230625174257.GL52412@kernel.org>
- <20230625180741.jrrtkq55c4jrqh3t@moria.home.lan>
-In-Reply-To: <20230625180741.jrrtkq55c4jrqh3t@moria.home.lan>
-From: Song Liu <song@kernel.org>
-Date: Sun, 25 Jun 2023 23:13:15 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW45gmtCVgA0mg6X87x5EOzSmVqq3SCMSR6agyiukiJvEQ@mail.gmail.com>
-Message-ID: <CAPhsuW45gmtCVgA0mg6X87x5EOzSmVqq3SCMSR6agyiukiJvEQ@mail.gmail.com>
-Subject: Re: [PATCH v2 02/12] mm: introduce execmem_text_alloc() and jit_text_alloc()
-To: Kent Overstreet <kent.overstreet@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: B3BmnfdGk4Vp6SgT8JpwR55ovwjwW-j9
+X-Proofpoint-ORIG-GUID: B3BmnfdGk4Vp6SgT8JpwR55ovwjwW-j9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-06-26_04,2023-06-22_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=840 mlxscore=0
+ clxscore=1011 impostorscore=0 phishscore=0 adultscore=0 suspectscore=0
+ lowpriorityscore=0 priorityscore=1501 spamscore=0 bulkscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2306260063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,242 +104,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, the arch/x86 maintainers <x86@kernel.org>, loongarch@lists.linux.dev, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, torvalds@linux-foundation.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, pjt@google.com, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Linux Kerne
- l Mailing List <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Jun 25, 2023 at 11:07=E2=80=AFAM Kent Overstreet
-<kent.overstreet@linux.dev> wrote:
->
-> On Sun, Jun 25, 2023 at 08:42:57PM +0300, Mike Rapoport wrote:
-> > On Sun, Jun 25, 2023 at 09:59:34AM -0700, Andy Lutomirski wrote:
-> > >
-> > >
-> > > On Sun, Jun 25, 2023, at 9:14 AM, Mike Rapoport wrote:
-> > > > On Mon, Jun 19, 2023 at 10:09:02AM -0700, Andy Lutomirski wrote:
-> > > >>
-> > > >> On Sun, Jun 18, 2023, at 1:00 AM, Mike Rapoport wrote:
-> > > >> > On Sat, Jun 17, 2023 at 01:38:29PM -0700, Andy Lutomirski wrote:
-> > > >> >> On Fri, Jun 16, 2023, at 1:50 AM, Mike Rapoport wrote:
-> > > >> >> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> > > >> >> >
-> > > >> >> > module_alloc() is used everywhere as a mean to allocate memor=
-y for code.
-> > > >> >> >
-> > > >> >> > Beside being semantically wrong, this unnecessarily ties all =
-subsystems
-> > > >> >> > that need to allocate code, such as ftrace, kprobes and BPF t=
-o modules
-> > > >> >> > and puts the burden of code allocation to the modules code.
-> > > >> >> >
-> > > >> >> > Several architectures override module_alloc() because of vari=
-ous
-> > > >> >> > constraints where the executable memory can be located and th=
-is causes
-> > > >> >> > additional obstacles for improvements of code allocation.
-> > > >> >> >
-> > > >> >> > Start splitting code allocation from modules by introducing
-> > > >> >> > execmem_text_alloc(), execmem_free(), jit_text_alloc(), jit_f=
-ree() APIs.
-> > > >> >> >
-> > > >> >> > Initially, execmem_text_alloc() and jit_text_alloc() are wrap=
-pers for
-> > > >> >> > module_alloc() and execmem_free() and jit_free() are replacem=
-ents of
-> > > >> >> > module_memfree() to allow updating all call sites to use the =
-new APIs.
-> > > >> >> >
-> > > >> >> > The intention semantics for new allocation APIs:
-> > > >> >> >
-> > > >> >> > * execmem_text_alloc() should be used to allocate memory that=
- must reside
-> > > >> >> >   close to the kernel image, like loadable kernel modules and=
- generated
-> > > >> >> >   code that is restricted by relative addressing.
-> > > >> >> >
-> > > >> >> > * jit_text_alloc() should be used to allocate memory for gene=
-rated code
-> > > >> >> >   when there are no restrictions for the code placement. For
-> > > >> >> >   architectures that require that any code is within certain =
-distance
-> > > >> >> >   from the kernel image, jit_text_alloc() will be essentially=
- aliased to
-> > > >> >> >   execmem_text_alloc().
-> > > >> >> >
-> > > >> >>
-> > > >> >> Is there anything in this series to help users do the appropria=
-te
-> > > >> >> synchronization when the actually populate the allocated memory=
- with
-> > > >> >> code?  See here, for example:
-> > > >> >
-> > > >> > This series only factors out the executable allocations from mod=
-ules and
-> > > >> > puts them in a central place.
-> > > >> > Anything else would go on top after this lands.
-> > > >>
-> > > >> Hmm.
-> > > >>
-> > > >> On the one hand, there's nothing wrong with factoring out common c=
-ode. On
-> > > >> the other hand, this is probably the right time to at least start
-> > > >> thinking about synchronization, at least to the extent that it mig=
-ht make
-> > > >> us want to change this API.  (I'm not at all saying that this seri=
-es
-> > > >> should require changes -- I'm just saying that this is a good time=
- to
-> > > >> think about how this should work.)
-> > > >>
-> > > >> The current APIs, *and* the proposed jit_text_alloc() API, don't a=
-ctually
-> > > >> look like the one think in the Linux ecosystem that actually
-> > > >> intelligently and efficiently maps new text into an address space:
-> > > >> mmap().
-> > > >>
-> > > >> On x86, you can mmap() an existing file full of executable code PR=
-OT_EXEC
-> > > >> and jump to it with minimal synchronization (just the standard imp=
-licit
-> > > >> ordering in the kernel that populates the pages before setting up =
-the
-> > > >> PTEs and whatever user synchronization is needed to avoid jumping =
-into
-> > > >> the mapping before mmap() finishes).  It works across CPUs, and th=
-e only
-> > > >> possible way userspace can screw it up (for a read-only mapping of
-> > > >> read-only text, anyway) is to jump to the mapping too early, in wh=
-ich
-> > > >> case userspace gets a page fault.  Incoherence is impossible, and =
-no one
-> > > >> needs to "serialize" (in the SDM sense).
-> > > >>
-> > > >> I think the same sequence (from userspace's perspective) works on =
-other
-> > > >> architectures, too, although I think more cache management is need=
-ed on
-> > > >> the kernel's end.  As far as I know, no Linux SMP architecture nee=
-ds an
-> > > >> IPI to map executable text into usermode, but I could easily be wr=
-ong.
-> > > >> (IIRC RISC-V has very developer-unfriendly icache management, but =
-I don't
-> > > >> remember the details.)
-> > > >>
-> > > >> Of course, using ptrace or any other FOLL_FORCE to modify text on =
-x86 is
-> > > >> rather fraught, and I bet many things do it wrong when userspace i=
-s
-> > > >> multithreaded.  But not in production because it's mostly not used=
- in
-> > > >> production.)
-> > > >>
-> > > >> But jit_text_alloc() can't do this, because the order of operation=
-s
-> > > >> doesn't match.  With jit_text_alloc(), the executable mapping show=
-s up
-> > > >> before the text is populated, so there is no atomic change from no=
-t-there
-> > > >> to populated-and-executable.  Which means that there is an opportu=
-nity
-> > > >> for CPUs, speculatively or otherwise, to start filling various cac=
-hes
-> > > >> with intermediate states of the text, which means that various
-> > > >> architectures (even x86!) may need serialization.
-> > > >>
-> > > >> For eBPF- and module- like use cases, where JITting/code gen is qu=
-ite
-> > > >> coarse-grained, perhaps something vaguely like:
-> > > >>
-> > > >> jit_text_alloc() -> returns a handle and an executable virtual add=
-ress,
-> > > >> but does *not* map it there
-> > > >> jit_text_write() -> write to that handle
-> > > >> jit_text_map() -> map it and synchronize if needed (no sync needed=
- on
-> > > >> x86, I think)
-> > > >>
-> > > >> could be more efficient and/or safer.
-> > > >>
-> > > >> (Modules could use this too.  Getting alternatives right might tak=
-e some
-> > > >> fiddling, because off the top of my head, this doesn't match how i=
-t works
-> > > >> now.)
-> > > >>
-> > > >> To make alternatives easier, this could work, maybe (haven't fully
-> > > >> thought it through):
-> > > >>
-> > > >> jit_text_alloc()
-> > > >> jit_text_map_rw_inplace() -> map at the target address, but RW, !X
-> > > >>
-> > > >> write the text and apply alternatives
-> > > >>
-> > > >> jit_text_finalize() -> change from RW to RX *and synchronize*
-> > > >>
-> > > >> jit_text_finalize() would either need to wait for RCU (possibly ex=
-tra
-> > > >> heavy weight RCU to get "serialization") or send an IPI.
-> > > >
-> > > > This essentially how modules work now. The memory is allocated RW, =
-written
-> > > > and updated with alternatives and then made ROX in the end with set=
-_memory
-> > > > APIs.
-> > > >
-> > > > The issue with not having the memory mapped X when it's written is =
-that we
-> > > > cannot use large pages to map it. One of the goals is to have execu=
-table
-> > > > memory mapped with large pages and make code allocator able to divi=
-de that
-> > > > page among several callers.
-> > > >
-> > > > So the idea was that jit_text_alloc() will have a cache of large pa=
-ges
-> > > > mapped ROX, will allocate memory from those caches and there will b=
-e
-> > > > jit_update() that uses text poking for writing to that memory.
-> > > >
-> > > > Upon allocation of a large page to increase the cache, that large p=
-age will
-> > > > be "invalidated" by filling it with breakpoint instructions (e.g in=
-t3 on
-> > > > x86)
-> > >
-> > > Is this actually valid?  In between int3 and real code, there=E2=80=
-=99s a
-> > > potential torn read of real code mixed up with 0xcc.
-> >
-> > You mean while doing text poking?
->
-> I think we've been getting distracted by text_poke(). text_poke() does
-> updates via a different virtual address which introduce new
-> synchroniation wrinkles, but it's not the main issue.
->
-> As _think_ I understand it, the root of the issue is that speculative
-> execution - and that per Andy, speculative execution doesn't obey memory
-> barriers.
->
-> I have _not_ dug into the details of how retpolines work and all the
-> spectre stuff that was going on, but - retpoline uses lfence, doesn't
-> it? And if speculative execution is the issue here, isn't retpoline what
-> we need?
->
-> For this particular issue, I'm not sure "invalidate by filling with
-> illegal instructions" makes sense. For that to work, would the processor
-> have to execute a serialize operation and a retry on hitting an illegal
-> instruction - or perhaps we do in the interrupt handler?
->
-> But if filling with illegal instructions does act as a speculation
-> barrier, then the issue is that a torn read could generate a legal but
-> incorrect instruction.
+opal_prd_msg_notifier extracts the opal prd message size from the message
+header and uses it for allocating opal_prd_msg_queue_item that includes
+the correct message size to be copied. However, while running under
+CONFIG_FORTIFY_SOURCE=y, it triggers following run-time warning:
 
-What is a "torn read" here? I assume it is an instruction read that
-goes at the wrong instruction boundary (CISC). If this is correct, do
-we need to handle torn read caused by software bug, or hardware
-bit flip, or both?
+[ 6458.234352] memcpy: detected field-spanning write (size 32) of single field "&item->msg" at arch/powerpc/platforms/powernv/opal-prd.c:355 (size 4)
+[ 6458.234390] WARNING: CPU: 9 PID: 660 at arch/powerpc/platforms/powernv/opal-prd.c:355 opal_prd_msg_notifier+0x174/0x188 [opal_prd]
+[...]
+[ 6458.234709] NIP [c00800000e0c0e6c] opal_prd_msg_notifier+0x174/0x188 [opal_prd]
+[ 6458.234723] LR [c00800000e0c0e68] opal_prd_msg_notifier+0x170/0x188 [opal_prd]
+[ 6458.234736] Call Trace:
+[ 6458.234742] [c0000002acb23c10] [c00800000e0c0e68] opal_prd_msg_notifier+0x170/0x188 [opal_prd] (unreliable)
+[ 6458.234759] [c0000002acb23ca0] [c00000000019ccc0] notifier_call_chain+0xc0/0x1b0
+[ 6458.234774] [c0000002acb23d00] [c00000000019ceac] atomic_notifier_call_chain+0x2c/0x40
+[ 6458.234788] [c0000002acb23d20] [c0000000000d69b4] opal_message_notify+0xf4/0x2c0
+[...]
 
-Thanks,
-Song
+Add a flexible array member to avoid false positive run-time warning.
+
+Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal-prd.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
+index 113bdb151f687..9e2c4775f75f5 100644
+--- a/arch/powerpc/platforms/powernv/opal-prd.c
++++ b/arch/powerpc/platforms/powernv/opal-prd.c
+@@ -30,7 +30,10 @@
+  */
+ struct opal_prd_msg_queue_item {
+ 	struct list_head		list;
+-	struct opal_prd_msg_header	msg;
++	union {
++		struct opal_prd_msg_header	msg;
++		DECLARE_FLEX_ARRAY(__u8, msg_flex);
++	};
+ };
+ 
+ static struct device_node *prd_node;
+@@ -352,7 +355,7 @@ static int opal_prd_msg_notifier(struct notifier_block *nb,
+ 	if (!item)
+ 		return -ENOMEM;
+ 
+-	memcpy(&item->msg, msg->params, msg_size);
++	memcpy(&item->msg_flex, msg->params, msg_size);
+ 
+ 	spin_lock_irqsave(&opal_prd_msg_queue_lock, flags);
+ 	list_add_tail(&item->list, &opal_prd_msg_queue);
+
+
