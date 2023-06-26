@@ -4,53 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5136DEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 07:00:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0362EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 17:50:10 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gsu5wtN5;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QqJdS3Xzfz3bv6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 17:00:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.214.175; helo=mail-pl1-f175.google.com; envelope-from=kswilczynski@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qqb3508cjz2xjR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 03:50:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gsu5wtN5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QqJY95sxhz2ygG
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 16:56:43 +1000 (AEST)
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-1b80b343178so1892425ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2023 23:56:43 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687762601; x=1690354601;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=u58j1CoFhNAAP0kPknc/GhPhE9N5OmJCD1ZWCCtRRgc=;
-        b=XZz9LAKbBZjOyb6Pke2ydJYuTHGecSm1sY8secN78bFZfzNky1xRRSAccRI0oNk7/q
-         CvotFLfpg6M6kBORL0XKaK32s5wSeU/REidFSTf0IfZR3dSsTsOzcKQcTuC3fAVm5RuC
-         b9gIQeKkiMLkge0a4VHcHZZKm7BmOS8fPc4uiy7JsT73LZ+WfZp6k5sZ///ilmJGgnti
-         PynfgmwU9kFApNIUH3qs/bd3scKPB+fzR2V9fNL4Eo0/5TI8hdJVCm2DzEUPOw9rzR9W
-         6Thk0mrcX2Lcbel8XpnQ4sld9qdzV1x1oVVyDO0hXpDk5oH80ZMgddYo2KfeUTAajRx9
-         Euww==
-X-Gm-Message-State: AC+VfDwuW05HWXAe8msnh7c/ESB4lUjSg18CubUxVfMYDMn/+vUnQU2/
-	0TN9/ic2fmVUcLKraVrOQig=
-X-Google-Smtp-Source: ACHHUZ6OtbsuuY2aXoeHYGi4XSA3mdaoGOU6p/4pXML9TF8F1ADk58bPj18ptJOfaGu5YjoBFEMRig==
-X-Received: by 2002:a17:903:1250:b0:1b5:3c7f:1b3b with SMTP id u16-20020a170903125000b001b53c7f1b3bmr5150508plh.35.1687762601317;
-        Sun, 25 Jun 2023 23:56:41 -0700 (PDT)
-Received: from localhost (fpd11144dd.ap.nuro.jp. [209.17.68.221])
-        by smtp.gmail.com with ESMTPSA id jg3-20020a17090326c300b001a2104d706fsm2559571plb.225.2023.06.25.23.56.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Jun 2023 23:56:40 -0700 (PDT)
-Date: Mon, 26 Jun 2023 15:56:39 +0900
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH 00/24 v2] Documentation: correct lots of spelling errors
- (series 1)
-Message-ID: <20230626065639.GA3403711@rocinante>
-References: <20230209071400.31476-1-rdunlap@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qqb260KJkz305N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 03:49:18 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 1194860E8D
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 17:49:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 757F8C433C0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 17:49:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1687801751;
+	bh=fFWuzhLLiGkinhaWeToFLkDX/dcx5OWER83aW8VgRow=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=gsu5wtN50LZdJATM3ZjDYRwk1wnL4zKmLVdDqqUpcLtSNYlPt2g8EOd2+LHOYG0G5
+	 HJb6UdQ1uCsnI8e7N++rgev5m4nSa6GuRAJ1KqvHYFOZQchtOemxBOGvfMG1j5Osdd
+	 gV8aBmKXzrC6Q+VYPFHx1qXffUm36IuFITg1YCCjupG+JYtQ7Ki6FGlI1JCtnPafXG
+	 BflN3PH1aFSJcZb5/HVOZxfkzz3hTosSHdnVSJwFszzWNxojXWnuwt26Kb9cys6I2L
+	 Z/dJc0eQyaMVi232VXzASC5AOFcr+LZ8Z/R0k5jXoEQbxTh4I/aMaqIE8NWBVDE9Ir
+	 WJbgxGOvJGyQg==
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-51cff235226so4906358a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 10:49:11 -0700 (PDT)
+X-Gm-Message-State: AC+VfDxnWEQgDieZA/1CbbEQXl7C/3w8htSbHg3fc+ZhuXEidrvStjkS
+	lRlQKE085OVi07mOrG6h0rHvVo2d4jkkl1OTwqM=
+X-Google-Smtp-Source: ACHHUZ6w6e1OYy7QM9S+YTdK71Dx4cd9s642AcRaJSfPZb8UXF8n/hvi2zuHhdV8C7DcTgUpaxVtcUwpuH0YchvBFOg=
+X-Received: by 2002:a19:5f5d:0:b0:4f8:5e62:b94b with SMTP id
+ a29-20020a195f5d000000b004f85e62b94bmr8655403lfj.9.1687801729333; Mon, 26 Jun
+ 2023 10:48:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230209071400.31476-1-rdunlap@infradead.org>
-X-Mailman-Approved-At: Mon, 26 Jun 2023 16:59:59 +1000
+References: <20230616085038.4121892-1-rppt@kernel.org> <20230616085038.4121892-3-rppt@kernel.org>
+ <f9a7eebe-d36e-4587-b99d-35d4edefdd14@app.fastmail.com> <20230618080027.GA52412@kernel.org>
+ <a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com> <20230625161417.GK52412@kernel.org>
+ <ZJmFFmexl_1GUhIL@FVFF77S0Q05N>
+In-Reply-To: <ZJmFFmexl_1GUhIL@FVFF77S0Q05N>
+From: Song Liu <song@kernel.org>
+Date: Mon, 26 Jun 2023 10:48:37 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW4pDkd7rCWRM6938ve36rfhGxyu=8t1-GjcKnNajofpQA@mail.gmail.com>
+Message-ID: <CAPhsuW4pDkd7rCWRM6938ve36rfhGxyu=8t1-GjcKnNajofpQA@mail.gmail.com>
+Subject: Re: [PATCH v2 02/12] mm: introduce execmem_text_alloc() and jit_text_alloc()
+To: Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,28 +73,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-doc@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, linux-security-module@vger.kernel.org, linux-trace-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, keyrings@vger.kernel.org, live-patching@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>, Alexander Gordeev <agordeev@linux.ibm.com>, Miroslav Benes <mbenes@suse.cz>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Steffen Klassert <steffen.klassert@secunet.com>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Paul Moore <paul@paul-moore.com>, linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-xtensa@linux-xtens
- a.org, Marc Zyngier <maz@kernel.org>, Helge Deller <deller@gmx.de>, Henrik Rydberg <rydberg@bitmath.org>, Russell King <linux@armlinux.org.uk>, Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, coresight@lists.linaro.org, "Serge E. Hallyn" <serge@hallyn.com>, Petr Mladek <pmladek@suse.com>, Vasily Gorbik <gor@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-block@vger.kernel.org, =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Bjorn Helgaas <bhelgaas@google.com>, Stafford Horne <shorne@gmail.com>, Reinette Chatre <reinette.chatre@intel.com>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-sgx@vger.kernel.org, Jens
-  Axboe <axboe@kernel.dk>, Chris Zankel <chris@zankel.net>, Karsten Keil <isdn@linux-pingi.de>, Jonas Bonn <jonas@southpole.se>, Mathieu Poirier <mathieu.poirier@linaro.org>, linux-mm@kvack.org, netdev@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Naoya Horiguchi <naoya.horiguchi@nec.com>, linux-kernel@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, linux-trace-devel@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Daniel Bristot de Oliveira <bristot@kernel.org>, linux-crypto@vger.kernel.org, Vladimir Oltean <olteanv@gmail.com>, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Cc: the arch/x86 maintainers <x86@kernel.org>, loongarch@lists.linux.dev, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, Linux Kernel Mailing List <linux-kernel@vger.kerne
+ l.org>, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
-
-> Correct many spelling errors in Documentation/ as reported by codespell.
-> 
-> Maintainers of specific kernel subsystems are only Cc-ed on their
-> respective patches, not the entire series.
-> 
-> These patches are based on linux-next-20230209.
-> 
+On Mon, Jun 26, 2023 at 5:31=E2=80=AFAM Mark Rutland <mark.rutland@arm.com>=
+ wrote:
+>
 [...]
->  [PATCH 13/24] Documentation: PCI: correct spelling
-[...]
+> >
+> > So the idea was that jit_text_alloc() will have a cache of large pages
+> > mapped ROX, will allocate memory from those caches and there will be
+> > jit_update() that uses text poking for writing to that memory.
+> >
+> > Upon allocation of a large page to increase the cache, that large page =
+will
+> > be "invalidated" by filling it with breakpoint instructions (e.g int3 o=
+n
+> > x86)
+>
+> Does that work on x86?
+>
+> That is in no way gauranteed for other architectures; on arm64 you need
+> explicit cache maintenance (with I-cache maintenance at the VA to be exec=
+uted
+> from) followed by context-synchronization-events (e.g. via ISB instructio=
+ns, or
+> IPIs).
 
-Applied to misc, thank you!
+I guess we need:
+1) Invalidate unused part of the huge ROX pages;
+2) Do not put two jit users (including module text, bpf, etc.) in the
+same cache line;
+3) Explicit cache maintenance;
+4) context-synchronization-events.
 
-[1/1] Documentation: PCI: correct spelling
-      https://git.kernel.org/pci/pci/c/b58d6d89ae02
+Would these (or a subset of them) be sufficient to protect us from torn rea=
+d?
 
-	Krzysztof
+Thanks,
+Song
