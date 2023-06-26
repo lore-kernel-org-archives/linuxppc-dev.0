@@ -4,81 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 934D4EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 15:24:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1768CEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 22:35:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jtaWgcjN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=ShSUUeWM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QqWqR5P6Jz3bZ4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 01:24:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QqjN41ZZ4z3bb4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 08:35:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jtaWgcjN;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=ShSUUeWM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3yxkazaykdbwk62fb48gg8d6.4gedafmphh4-56ndaklk.grd23k.gj8@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QqWpN5tKbz305g
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 01:23:50 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1687793037; x=1719329037;
-  h=message-id:date:mime-version:subject:to:references:from:
-   in-reply-to:content-transfer-encoding;
-  bh=h8sLHtBTnVZJQ+VK9Mju0L08CrA3iMKmjHrpKD0aiOc=;
-  b=jtaWgcjNbbybyHnrBMqrvyMPHFaAd20IsoGmNh0LLyeVbPZuE8A+53wL
-   ajYBI9VAlw3VdcSe3VJeQRi7Yvxhn1MbYIqv7RDX+1F5MyK6Vollum0og
-   j4pTU792+1f2dk4wQJnJhoWGHLE9TOMQroSHsckv2+DAMggf+Ehv1XcW5
-   yvBCbwfJx3fTI2ImpviZ/Jl/hNBMinL0wxBOCHkbheV3YZQDSmfAEL7dK
-   hV/G2q4PnNy+Ix16/LFDeaNaYu6HOA5XaqC/JtReRJEm51yqusqXoJqUK
-   +Ef+eG+lBYkxFaiLcA33XLpkJJ+3hfTwjfWGXEkdpPmcM9NT+J2DBpM8E
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10753"; a="358796835"
-X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; 
-   d="scan'208";a="358796835"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jun 2023 08:23:22 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10753"; a="781476701"
-X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; 
-   d="scan'208";a="781476701"
-Received: from mshindo-mobl5.amr.corp.intel.com (HELO [10.212.198.145]) ([10.212.198.145])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jun 2023 08:23:19 -0700
-Message-ID: <14f91337-ac7d-52f7-bc86-4091bec4d099@intel.com>
-Date: Mon, 26 Jun 2023 08:23:19 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v2 2/2] mm/mmu_gather: send tlb_remove_table_smp_sync IPI
- only to MM CPUs
-Content-Language: en-US
-To: ypodemsk@redhat.com, mtosatti@redhat.com, ppandit@redhat.com,
- david@redhat.com, linux@armlinux.org.uk, mpe@ellerman.id.au,
- npiggin@gmail.com, christophe.leroy@csgroup.eu, hca@linux.ibm.com,
- gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
- svens@linux.ibm.com, davem@davemloft.net, tglx@linutronix.de,
- mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com,
- keescook@chromium.org, paulmck@kernel.org, frederic@kernel.org,
- will@kernel.org, peterz@infradead.org, ardb@kernel.org,
- samitolvanen@google.com, juerg.haefliger@canonical.com, arnd@arndb.de,
- rmk+kernel@armlinux.org.uk, geert+renesas@glider.be,
- linus.walleij@linaro.org, akpm@linux-foundation.org,
- sebastian.reichel@collabora.com, rppt@kernel.org,
- aneesh.kumar@linux.ibm.com, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <20230620144618.125703-1-ypodemsk@redhat.com>
- <20230620144618.125703-3-ypodemsk@redhat.com>
- <680fadba-9104-3914-5175-e207fd3d9246@intel.com>
- <79f29f99fa07c46dbaee7b802cdd7b477b2d8dd1.camel@redhat.com>
- <d0ef9148-3c95-87bb-26f9-ea0920a4faa4@intel.com>
- <cccb5351e48b11e6c657bcfa28632f49cb9cc800.camel@redhat.com>
-From: Dave Hansen <dave.hansen@intel.com>
-In-Reply-To: <cccb5351e48b11e6c657bcfa28632f49cb9cc800.camel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QqjLy4SNNz2yD6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 08:34:16 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-c11d081de8dso3588574276.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 15:34:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1687818852; x=1690410852;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=2Vg4hZm9fpFWiBqixG4Q+f/nHkPQNxqem1yZABI6YEs=;
+        b=ShSUUeWMwkrdEa66IXZbjWWZ4aBDFom9NA6fJIsGwYfKgB45x9toU7dW2ozN0p9+mU
+         IqKGlPdo+TPDCHZuFfprIkuUgPJM2qLKKczAbAinwB/qUhPnNyXB1JUqXYZZ76s7rP3h
+         s/Hh/OIAgzxJ0ON9PYiC7h3wb7MoqxO4DcAXYvahDQP0Xg/gAJhAV7v2VD0ioLy5eY5Q
+         BxUwnE1GBKPXWY2wl+xxDYIBhbtQkIvXx8DleLSDKv1ez3DtpFpHZKPdxALD7yk67AqF
+         JOhtxXvnDZ9kSnyYcddKliUend4yaF+MiUCL9VirPX3nTpK09PhK5cCBkPx3kpBnsz/T
+         9Rgg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1687818852; x=1690410852;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=2Vg4hZm9fpFWiBqixG4Q+f/nHkPQNxqem1yZABI6YEs=;
+        b=QsHHCfjfFdAmcHdUFapNfqLn7X+TtAGZwLhA/ujR/H3V5WGZOm9QYVko88/rpvo4uZ
+         de5iL6a6P45gUwiPdxTfjXKfwuOnGF5skSqEtSIbrN/k28OKWHnTEp1zOlcsqP+xms4C
+         PkTGVYD7qTm+5zQxXIj4edI/3mRfExQePlIY7FYlbXeV+Xz2LVxaIGUcQq4IwoutGqHV
+         zLkkmL/vzjrzGdoIKxeyrJTkTc9gHA+cuaw8Xqivkz4fa87kpe3u76TDlVbzuOAStC0c
+         bqplibLsbAUomeWtXDefVBzH6JMytNHRUGT3Zc5ZK2eHbbmTMc4Hyny1SxZ6emQdvJ4w
+         XzwQ==
+X-Gm-Message-State: AC+VfDymaWJwhju9e53oB1ogv/OtB87OonbxqRLdFpsvp8WPQaZhS4KN
+	586BNOApuRPxtcHyebxAD6MVxOPJlx4=
+X-Google-Smtp-Source: ACHHUZ6By2nwy1N4OsGA0iP40C8/7BpgMrb+W8CG/njrH1qS7qUc13yLXXj+AhZqSxHnuO5I0vzWbc1VeaQ=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a25:e701:0:b0:c00:3434:f639 with SMTP id
+ e1-20020a25e701000000b00c003434f639mr4728541ybh.1.1687818851762; Mon, 26 Jun
+ 2023 15:34:11 -0700 (PDT)
+Date: Mon, 26 Jun 2023 15:34:10 -0700
+In-Reply-To: <fc70263c-b7af-d8e0-14f4-4ffcde67aa3e@redhat.com>
+Mime-Version: 1.0
+References: <20230623125416.481755-1-thuth@redhat.com> <20230623125416.481755-3-thuth@redhat.com>
+ <ZJWrKtnflTrskPkX@google.com> <fc70263c-b7af-d8e0-14f4-4ffcde67aa3e@redhat.com>
+Message-ID: <ZJoSYnZGYrAj11RN@google.com>
+Subject: Re: [kvm-unit-tests PATCH 2/2] Link with "-z noexecstack" to avoid
+ warning from newer versions of ld
+From: Sean Christopherson <seanjc@google.com>
+To: Thomas Huth <thuth@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,52 +75,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Laurent Vivier <lvivier@redhat.com>, linux-s390@vger.kernel.org, Nico =?iso-8859-1?Q?B=F6hr?= <nrb@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Andrew Jones <andrew.jones@linux.dev>, kvmarm@lists.linux.dev, Paolo Bonzini <pbonzini@redhat.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/26/23 07:36, ypodemsk@redhat.com wrote:
-> On Thu, 2023-06-22 at 06:37 -0700, Dave Hansen wrote:
->> On 6/22/23 06:14, ypodemsk@redhat.com wrote:
->>> I will send a new version with the local variable as you suggested
->>> soon.
->>> As for the config name, what about CONFIG_ARCH_HAS_MM_CPUMASK?
->>
->> The confusing part about that name is that mm_cpumask() and
->> mm->cpu_bitmap[] are defined unconditionally.  So, they're *around*
->> unconditionally but just aren't updated.
->>
-> I think your right about the config name,
-> How about the
-> CONFIG_ARCH_USE_MM_CPUMASK?
-> This has the right semantic as these archs use the cpumask field of the
-> mm struct.
-
-"USE" is still a command.  It should, at worst, be "USES".  But that's
-still kinda generic.  How about:
-
-	CONFIG_ARCH_UPDATES_MM_CPUMASK
-
-?
-
->> BTW, it would also be nice to have _some_ kind of data behind this
->> patch.
->>
->> Fewer IPIs are better I guess, but it would still be nice if you
->> could say:
->>
->> 	Before this patch, /proc/interrupts showed 123 IPIs/hour for an
->> 	isolated CPU.  After the approach here, it was 0.
->>
->> ... or something.
+On Fri, Jun 23, 2023, Thomas Huth wrote:
+> On 23/06/2023 16.24, Sean Christopherson wrote:
+> > On Fri, Jun 23, 2023, Thomas Huth wrote:
+> > > Newer versions of ld (from binutils 2.40) complain on s390x and x86:
+> > > 
+> > >   ld: warning: s390x/cpu.o: missing .note.GNU-stack section implies
+> > >                executable stack
+> > >   ld: NOTE: This behaviour is deprecated and will be removed in a
+> > >             future version of the linker
+> > > 
+> > > We can silence these warnings by using "-z noexecstack" for linking
+> > > (which should not have any real influence on the kvm-unit-tests since
+> > > the information from the ELF header is not used here anyway, so it's
+> > > just cosmetics).
+> > > 
+> > > Signed-off-by: Thomas Huth <thuth@redhat.com>
+> > > ---
+> > >   Makefile | 2 +-
+> > >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/Makefile b/Makefile
+> > > index 0e5d85a1..20f7137c 100644
+> > > --- a/Makefile
+> > > +++ b/Makefile
+> > > @@ -96,7 +96,7 @@ CFLAGS += -Woverride-init -Wmissing-prototypes -Wstrict-prototypes
+> > >   autodepend-flags = -MMD -MF $(dir $*).$(notdir $*).d
+> > > -LDFLAGS += -nostdlib
+> > > +LDFLAGS += -nostdlib -z noexecstack
+> > 
+> > Drat, the pull request[1] I sent to Paolo yesterday only fixes x86[2].
 > 
-> This is part of an ongoing effort to remove IPIs and this one was found
-> via code inspection.
+> Oops, sorry, I did not notice that patch in my overcrowded mailboxes (or
+> forgot about it during KVM forum...) :-/
 
-OK, so it should be something more like:
+Heh, you gave a Reviewed-by[*], so either its the latter, or you've got a clone
+running around :-)
 
-	This was found via code inspection, but fixing it isn't very
-	important so we didn't bother to test it any more than just
-	making sure the thing still boots when it is applied.
+[*] https://lore.kernel.org/all/916aac4f-97b8-70c2-de39-87438eb4aea4@redhat.com
 
-Does that cover it?
+> > Paolo, want me to redo the pull request to drop the x86-specific patch?
+> 
+> I can also respin my patch on top of your series later ... the problem
+> currently also only seems to happen on x86 and s390x, on ppc64 and aarch64,
+> the linker does not complain ... so maybe it's even better to do it
+> per-architecture only anyway? Opinions?
 
+I don't think it makes sense to do this per-arch, other architectures likely aren't
+problematic purely because of linker specific behavior, e.g. see
+
+https://patches.linaro.org/project/binutils/patch/1506025575-1559-1-git-send-email-jim.wilson@linaro.org
