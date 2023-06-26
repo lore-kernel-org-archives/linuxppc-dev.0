@@ -4,64 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0362EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 17:50:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB0A5EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jun 2023 23:51:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gsu5wtN5;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=aahUR+KL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qqb3508cjz2xjR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 03:50:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qql4P4Bgyz3dDb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 09:51:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gsu5wtN5;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=aahUR+KL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org)
+X-Greylist: delayed 647 seconds by postgrey-1.37 at boromir; Tue, 27 Jun 2023 02:31:48 AEST
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qqb260KJkz305N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 03:49:18 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 1194860E8D
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 17:49:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 757F8C433C0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 17:49:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687801751;
-	bh=fFWuzhLLiGkinhaWeToFLkDX/dcx5OWER83aW8VgRow=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=gsu5wtN50LZdJATM3ZjDYRwk1wnL4zKmLVdDqqUpcLtSNYlPt2g8EOd2+LHOYG0G5
-	 HJb6UdQ1uCsnI8e7N++rgev5m4nSa6GuRAJ1KqvHYFOZQchtOemxBOGvfMG1j5Osdd
-	 gV8aBmKXzrC6Q+VYPFHx1qXffUm36IuFITg1YCCjupG+JYtQ7Ki6FGlI1JCtnPafXG
-	 BflN3PH1aFSJcZb5/HVOZxfkzz3hTosSHdnVSJwFszzWNxojXWnuwt26Kb9cys6I2L
-	 Z/dJc0eQyaMVi232VXzASC5AOFcr+LZ8Z/R0k5jXoEQbxTh4I/aMaqIE8NWBVDE9Ir
-	 WJbgxGOvJGyQg==
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-51cff235226so4906358a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 10:49:11 -0700 (PDT)
-X-Gm-Message-State: AC+VfDxnWEQgDieZA/1CbbEQXl7C/3w8htSbHg3fc+ZhuXEidrvStjkS
-	lRlQKE085OVi07mOrG6h0rHvVo2d4jkkl1OTwqM=
-X-Google-Smtp-Source: ACHHUZ6w6e1OYy7QM9S+YTdK71Dx4cd9s642AcRaJSfPZb8UXF8n/hvi2zuHhdV8C7DcTgUpaxVtcUwpuH0YchvBFOg=
-X-Received: by 2002:a19:5f5d:0:b0:4f8:5e62:b94b with SMTP id
- a29-20020a195f5d000000b004f85e62b94bmr8655403lfj.9.1687801729333; Mon, 26 Jun
- 2023 10:48:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QqYJh6PhFz30fj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 02:31:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=6LUH4ra8Yl1TDl+4XlqQ5U8p0CDLO89uve3Fr0Kil4w=; b=aahUR+KLg6KR/ffBfCW3f0faE4
+	VhUU2i+bfpTo53kVwnECUFjwpF1EGV+Gx9CskK7sGzgmpCGABJvbXoa+RkeEc4un1fvySa27Y40qi
+	fjXCivPyV9Mcyx+rc7jA3Oyjl9f+aiUZoiZIE3/oGx1urWhrCUUZDGaqZcQu/BYegttXt8r+Pk2P7
+	fyOyanSohw66Bp92VtuMcFMdWp1kW4PoqsDzIWleylfE2wsWFAS+fUZFEJrLRAhWYz9lDFUDY5P9X
+	RALSI8H3FOncO+4t4XcD2SzaVKfw24qCDZneUGP5tZpnJqY6swVzkk+VlcLeWsHchgPLv31AgsG1o
+	EoMKBeww==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:56504)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1qDovx-0003A4-10;
+	Mon, 26 Jun 2023 17:19:21 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1qDovh-0004oC-LQ; Mon, 26 Jun 2023 17:19:05 +0100
+Date: Mon, 26 Jun 2023 17:19:05 +0100
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: Eric DeVolder <eric.devolder@oracle.com>
+Subject: Re: [PATCH v3 01/13] kexec: consolidate kexec and crash options into
+ kernel/Kconfig.kexec
+Message-ID: <ZJm6eS6LiSApYVTC@shell.armlinux.org.uk>
+References: <20230626161332.183214-1-eric.devolder@oracle.com>
+ <20230626161332.183214-2-eric.devolder@oracle.com>
 MIME-Version: 1.0
-References: <20230616085038.4121892-1-rppt@kernel.org> <20230616085038.4121892-3-rppt@kernel.org>
- <f9a7eebe-d36e-4587-b99d-35d4edefdd14@app.fastmail.com> <20230618080027.GA52412@kernel.org>
- <a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com> <20230625161417.GK52412@kernel.org>
- <ZJmFFmexl_1GUhIL@FVFF77S0Q05N>
-In-Reply-To: <ZJmFFmexl_1GUhIL@FVFF77S0Q05N>
-From: Song Liu <song@kernel.org>
-Date: Mon, 26 Jun 2023 10:48:37 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW4pDkd7rCWRM6938ve36rfhGxyu=8t1-GjcKnNajofpQA@mail.gmail.com>
-Message-ID: <CAPhsuW4pDkd7rCWRM6938ve36rfhGxyu=8t1-GjcKnNajofpQA@mail.gmail.com>
-Subject: Re: [PATCH v2 02/12] mm: introduce execmem_text_alloc() and jit_text_alloc()
-To: Mark Rutland <mark.rutland@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230626161332.183214-2-eric.devolder@oracle.com>
+X-Mailman-Approved-At: Tue, 27 Jun 2023 09:38:37 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,44 +68,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: the arch/x86 maintainers <x86@kernel.org>, loongarch@lists.linux.dev, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, Linux Kernel Mailing List <linux-kernel@vger.kerne
- l.org>, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, dalias@libc.org, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, paulmck@kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, chenhuacai@kernel.org, sebastian.reichel@collabora.com, paul.walmsley@sifive.com, mingo@redhat.com, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, ardb@kernel.org, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, l
+ inux-m68k@lists.linux-m68k.org, bp@alien8.de, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, tglx@linutronix.de, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, bhe@redhat.com, linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel@vger.kernel.org, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 26, 2023 at 5:31=E2=80=AFAM Mark Rutland <mark.rutland@arm.com>=
- wrote:
->
-[...]
-> >
-> > So the idea was that jit_text_alloc() will have a cache of large pages
-> > mapped ROX, will allocate memory from those caches and there will be
-> > jit_update() that uses text poking for writing to that memory.
-> >
-> > Upon allocation of a large page to increase the cache, that large page =
-will
-> > be "invalidated" by filling it with breakpoint instructions (e.g int3 o=
-n
-> > x86)
->
-> Does that work on x86?
->
-> That is in no way gauranteed for other architectures; on arm64 you need
-> explicit cache maintenance (with I-cache maintenance at the VA to be exec=
-uted
-> from) followed by context-synchronization-events (e.g. via ISB instructio=
-ns, or
-> IPIs).
+On Mon, Jun 26, 2023 at 12:13:20PM -0400, Eric DeVolder wrote:
+> +config KEXEC
+> +	bool "Enable kexec system call"
+> +	default ARCH_DEFAULT_KEXEC
+> +	depends on ARCH_SUPPORTS_KEXEC
+> +	select KEXEC_CORE
+> +	help
+> +	  kexec is a system call that implements the ability to shutdown your
+> +	  current kernel, and to start another kernel. It is like a reboot
+> +	  but it is independent of the system firmware. And like a reboot
+> +	  you can start any kernel with it, not just Linux.
+> +
+> +	  The name comes from the similarity to the exec system call.
+> +
+> +	  It is an ongoing process to be certain the hardware in a machine
+> +	  is properly shutdown, so do not be surprised if this code does not
+> +	  initially work for you. As of this writing the exact hardware
+> +	  interface is strongly in flux, so no good recommendation can be
+> +	  made.
 
-I guess we need:
-1) Invalidate unused part of the huge ROX pages;
-2) Do not put two jit users (including module text, bpf, etc.) in the
-same cache line;
-3) Explicit cache maintenance;
-4) context-synchronization-events.
+Is this last paragraph still true? Is the hardware interface still
+"strongly in flux" ?
 
-Would these (or a subset of them) be sufficient to protect us from torn rea=
-d?
-
-Thanks,
-Song
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
