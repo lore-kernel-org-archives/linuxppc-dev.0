@@ -4,58 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D70CBEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 16:53:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40EC3EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 17:43:15 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=HvOjTHjC;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qr9lG0Njvz30gm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 02:53:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.182; helo=mail-vk1-f182.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com [209.85.221.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QrBrd1z3gz30g2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 03:43:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=HvOjTHjC;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b29; helo=mail-yb1-xb29.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qr9kh61Zqz2y1d
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2023 02:52:59 +1000 (AEST)
-Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-460eb67244eso1590327e0c.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 09:52:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QrBqg3Rygz2ynx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2023 03:42:22 +1000 (AEST)
+Received: by mail-yb1-xb29.google.com with SMTP id 3f1490d57ef6-bd744ffc263so4718378276.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 10:42:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1687887739; x=1690479739;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=i618d6TBDc9eRPjFDJkpeqKfOfbO3uM7uCEV9XLltFk=;
+        b=HvOjTHjCD8itMm1xp5AnK/TmYH5tQiF1El2gyMO5zpqTY4wM1G2ir3ku6089UY1inQ
+         ilXwuLjIDRYIMPHiQPHPbFQRy/hIa9oVwH0QYqAm53mZsyIpL6HgYzNNL/NNLIh2SC53
+         /Joi55NqQPacIQIaSPLnjCH7o6qvV31ICWbCQ8IiY+RsTUhqfYiVoVRzcNBSzvMpURs/
+         f/RKmZePqghHrHdV5n1so0lsBS2EaZX77ICe7eDI+jllhbMiPBHJhxnD9h+Hh+PnGjAo
+         7epexu03a+N5aJGPnt128CQw+E8IVZS3OeUo6R0hlPLkskRaMfOu6WUJJOIpsapTfYI9
+         tHRw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687884775; x=1690476775;
+        d=1e100.net; s=20221208; t=1687887739; x=1690479739;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3lIZI96K9vdLoSwUwpQZZH+ZWrx3VsFWqYpi3+69yqU=;
-        b=U2Oe6CGjeu4D62Xq745bapg6QbPEiWTzWMJ6DylSkSGKmmRpKtm48fyxfco0T/fCBK
-         CteS7sNJcGWkf0CMuNNCaPEFIC1NBeXB8vjSIwgjsarlfFv5gSgiuGhKQQwQipFw8Rij
-         7kgKVqVeEr7KtIIliM7kMkbhVEPRWJjAqIgho43r3kd/DTeblC7K4LqcDctlJopAEnSo
-         gMoEkzZZ4cnhubmw3kI0oJkMFpD4Jzs1mykpOKvxACXueBjXjqRBSm+JsU2S8vq8mV6+
-         A+4xXTPvEKI/+rjjIh0gfWmmaUfz8q7Qnc/Rho6LZQ4TwjiWOd+kxxtweXyA/Yq680wZ
-         jttg==
-X-Gm-Message-State: AC+VfDxEmdNLAL2j8tcQqW9RVjKkPlO6eJIE5m3krMHwxUyXG1qPEjVz
-	V0i/C2MAxZIB8dhzU2eAbiqdYNZN89wU5D3r
-X-Google-Smtp-Source: ACHHUZ7tXEZ+9xso6ZcRhFtLDXuEkTGfeF4DWTU+0t2X6buanho6xJyqF+s2CftRYsgdgoqzYEAo0Q==
-X-Received: by 2002:a1f:5cd8:0:b0:470:5862:90c0 with SMTP id q207-20020a1f5cd8000000b00470586290c0mr15963274vkb.5.1687884774948;
-        Tue, 27 Jun 2023 09:52:54 -0700 (PDT)
-Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com. [209.85.217.47])
-        by smtp.gmail.com with ESMTPSA id j81-20020a1fa054000000b0047720d2aba1sm1529704vke.36.2023.06.27.09.52.54
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 27 Jun 2023 09:52:54 -0700 (PDT)
-Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-440c14d6a5eso1536041137.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 09:52:54 -0700 (PDT)
-X-Received: by 2002:a05:6358:f55:b0:132:d3b1:c34a with SMTP id
- c21-20020a0563580f5500b00132d3b1c34amr12105551rwj.7.1687884753801; Tue, 27
- Jun 2023 09:52:33 -0700 (PDT)
+        bh=i618d6TBDc9eRPjFDJkpeqKfOfbO3uM7uCEV9XLltFk=;
+        b=bvCQUr8SS/5RUEZUpSOv3ms9Nu1fKN4RYHQQn6xgh+yh2cYjIr61lWspJKLMJrt/bB
+         EPsV+9NNNszca5DmdolmrdwQjuL8feplHrw0dbyuukFTUQbiSkG4N/FQ4oB6M2FVRL5t
+         lSbULtQ35sMFvMZCOYWFp1YnW1fCYdXpnmD+zW8mSf1yQrk0L+14zm0ig69B+i99aZcx
+         aTk0bW0ynSXpnwNQu4OPKpqlikLtKSDypIO2FjUc1M8yzIHwDlUIjRVHLDZLJHF0u4qW
+         RKj7JwYBqdcuO+4w8XU6gsLZRNkSlE5tr7N7C112gC44nkZkvK4nWWrAOUvHUtKyJWhN
+         XR8g==
+X-Gm-Message-State: AC+VfDykMrznyIT7ltb/D4cbQ1mMvMeB/COmUIxVimcbyTbkyVWgkCsw
+	WpB80ARn2WUZnW/ouuSqHXzNhTnBvB7xFU/h73M=
+X-Google-Smtp-Source: ACHHUZ5ixDfcfZvsP+Sk9Q2uIR96dLCuXZPewVmRsckC25R1Wt8J/1BC8EjmOgQOvqL4+PjmfxQNP2ok9/vuUSXcV8M=
+X-Received: by 2002:a25:86c8:0:b0:c16:ba32:1b1c with SMTP id
+ y8-20020a2586c8000000b00c16ba321b1cmr8446597ybm.58.1687887738923; Tue, 27 Jun
+ 2023 10:42:18 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230327121317.4081816-1-arnd@kernel.org> <20230327121317.4081816-22-arnd@kernel.org>
- <OS0PR01MB5922EDAFCD6DA0313DB99C5E86989@OS0PR01MB5922.jpnprd01.prod.outlook.com>
- <66899d69-1339-4a61-8612-6f8e452b0b26@app.fastmail.com>
-In-Reply-To: <66899d69-1339-4a61-8612-6f8e452b0b26@app.fastmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 27 Jun 2023 18:52:22 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdV5gT1GDLODsUe0XibPRsRHazF4K-UhxTOQCjtC9Ba4mQ@mail.gmail.com>
-Message-ID: <CAMuHMdV5gT1GDLODsUe0XibPRsRHazF4K-UhxTOQCjtC9Ba4mQ@mail.gmail.com>
-Subject: Re: [PATCH 21/21] dma-mapping: replace custom code with generic implementation
-To: Arnd Bergmann <arnd@arndb.de>
+References: <20230622205745.79707-1-vishal.moola@gmail.com>
+ <20230622205745.79707-27-vishal.moola@gmail.com> <13bab37c-0f0a-431a-8b67-4379bf4dc541@roeck-us.net>
+In-Reply-To: <13bab37c-0f0a-431a-8b67-4379bf4dc541@roeck-us.net>
+From: Vishal Moola <vishal.moola@gmail.com>
+Date: Tue, 27 Jun 2023 10:42:07 -0700
+Message-ID: <CAOzc2px6VutRkMUTn+M5LFLf1YbRVZFgJ=q7StaApwYRxUWqQA@mail.gmail.com>
+Subject: Re: [PATCH v5 26/33] nios2: Convert __pte_free_tlb() to use ptdescs
+To: Guenter Roeck <linux@roeck-us.net>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,75 +76,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Max Filippov <jcmvbkbc@gmail.com>, "Conor.Dooley" <conor.dooley@microchip.com>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, Neil Armstrong <neil.armstrong@linaro.org>, "Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>, "l
- inux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, Emil Renner Berthing <emil.renner.berthing@canonical.com>, Paul Walmsley <paul.walmsley@sifive.com>, Biju Das <biju.das.jz@bp.renesas.com>, Stafford Horne <shorne@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Brian Cain <bcain@quicinc.com>, Arnd Bergmann <arnd@kernel.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "linux-oxnas@groups.io" <linux-oxnas@groups.io>, Robin Murphy <robin.murphy@arm.com>, "David S . Miller" <davem@davemloft.net>
+Cc: kvm@vger.kernel.org, linux-sh@vger.kernel.org, linux-openrisc@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, Hugh Dickins <hughd@google.com>, linux-csky@vger.kernel.org, xen-devel@lists.xenproject.org, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 13, 2023 at 2:52=E2=80=AFPM Arnd Bergmann <arnd@arndb.de> wrote=
-:
-> On Thu, Apr 13, 2023, at 14:13, Biju Das wrote:
-> > FYI, this patch breaks on RZ/G2L SMARC EVK board and Arnd will send V2
-> > for fixing this issue.
-> >
-> > [10:53] <biju> [    3.384408] Unable to handle kernel paging request at
-> > virtual address 000000004afb0080
+On Mon, Jun 26, 2023 at 10:47=E2=80=AFPM Guenter Roeck <linux@roeck-us.net>=
+ wrote:
 >
-> Right, sorry about this, I accidentally removed the 'phys_to_virt()'
-> conversion on arm64.
+> On Thu, Jun 22, 2023 at 01:57:38PM -0700, Vishal Moola (Oracle) wrote:
+> > Part of the conversions to replace pgtable constructor/destructors with
+> > ptdesc equivalents.
+> >
+> > Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
+> > Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
+>
+> This patch causes all nios2 builds to fail.
 
-Meh, I missed that, so I ended up bisecting this same failure...
-
-This patch is now commit 801f1883c4bb70cc ("dma-mapping: replace
-custom code with generic implementation") in esmil/jh7100-dmapool,
-and broke booting on R-Car Gen3.
-
-The following gmail-whitespace-damaged patch fixes that:
-
-diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
-index 97b7cea5eb23aedd..77e0b68b43e5849a 100644
---- a/arch/arm64/mm/dma-mapping.c
-+++ b/arch/arm64/mm/dma-mapping.c
-@@ -15,17 +15,23 @@
-
- static inline void arch_dma_cache_wback(phys_addr_t paddr, size_t size)
- {
--       dcache_clean_poc(paddr, paddr + size);
-+       unsigned long start =3D (unsigned long)phys_to_virt(paddr);
-+
-+       dcache_clean_poc(start, start + size);
- }
-
- static inline void arch_dma_cache_inv(phys_addr_t paddr, size_t size)
- {
--       dcache_inval_poc(paddr, paddr + size);
-+       unsigned long start =3D (unsigned long)phys_to_virt(paddr);
-+
-+       dcache_inval_poc(start, start + size);
- }
-
- static inline void arch_dma_cache_wback_inv(phys_addr_t paddr, size_t size=
-)
- {
--       dcache_clean_inval_poc(paddr, paddr + size);
-+       unsigned long start =3D (unsigned long)phys_to_virt(paddr);
-+
-+       dcache_clean_inval_poc(start, start + size);
- }
-
- static inline bool arch_sync_dma_clean_before_fromdevice(void)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+It looks like you tried to apply this patch on its own. This patch depends
+on patches 01-12 of this patchset to compile properly. I've cross-compiled
+this architecture and it worked, but let me know if something fails
+when its applied on top of those patches (or the rest of the patchset).
