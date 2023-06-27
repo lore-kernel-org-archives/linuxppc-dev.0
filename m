@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 066BCC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 03:17:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF783EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 03:18:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Y5YNwg/Q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=YbS6It5/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qqqf73lrbz3bT1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 13:17:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qqqg51CBTz3c67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jun 2023 13:18:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Y5YNwg/Q;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=YbS6It5/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112f; helo=mail-yw1-x112f.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112f.google.com (mail-yw1-x112f.google.com [IPv6:2607:f8b0:4864:20::112f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qqqb76pqtz2yJT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 13:15:13 +1000 (AEST)
-Received: by mail-yw1-x112f.google.com with SMTP id 00721157ae682-57338656a8aso30873087b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 20:15:13 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qqqb95zRgz2yx0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2023 13:15:17 +1000 (AEST)
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-5703cb4bcb4so32844767b3.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2023 20:15:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1687835710; x=1690427710;
+        d=gmail.com; s=20221208; t=1687835714; x=1690427714;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=DXYENedStYVsFXpaqy8X3+wmlabVR1q8JHyD5+dxFj0=;
-        b=Y5YNwg/QZrK+aHp3q3F/s+zHvk1fnDqd1/MV2/FtyEws8x/EU1okIb5gZ0g0bwjJIl
-         5VUUqN9Wuh0HLMtWdAEYbmMx90i6AJPptQg4hAlIbSGwOvljd5Q6n3O/2f8tA77gBCdK
-         YDhNGdvPzlezHyk8L+H+QUfnc3k/4+57L174UxCkkys5LGiYJFRoujM3bGB1Ibcn91ui
-         mqfwiux2PkGJoz2g2vjn5ccwHyr655voiBf0XjjuTxpjhEe8LJcN7Q6CvIBEB03riKFC
-         EsDpQXncNNWQyJs9hFhiDQn510NXqp1Pgv3vGtCcL2I6tmdj8XTW1jmQN/FUgbsQGPmI
-         XxjQ==
+        bh=g10wkISUfh+NWh/zmhT9FX+m3ZttfvdTUqPKBonJP24=;
+        b=YbS6It5/jG4gj9GV1WnqlWfE48J9CdnxNvOxOEYb2jkpFBwkcijgogv5/2FTyBYSJu
+         izIlhC4BKNDwS5s1e4kK9kflroiGbN+V3CM6t7L2EFgtcSkg+ReKLemBNYF5Y3oVXg4d
+         FUK6TJROlYVwfl34r2gL5piZl88lZtnh5mJi4W6rFRki4guA/8D+KKFrkkfHcSu1EJOJ
+         fncA5E4mKOaGZV6UHnLSf+mughQQ2/sG6vdU9OT//BnRvDPbrV7dVSZuLKiGxg9g4JB4
+         L4rqAG2yhTX1HWLW8k7KKi4wHWH5luhyXPrJQJ+E2hOyRozoqBZDlMJstEk3Y4X/0/Xj
+         8nVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687835710; x=1690427710;
+        d=1e100.net; s=20221208; t=1687835714; x=1690427714;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=DXYENedStYVsFXpaqy8X3+wmlabVR1q8JHyD5+dxFj0=;
-        b=jQ8SKxKAxWeXhDmu2vBatV369tBfVXujSJHuXdjaWL5SIvJD/X8HXPqYD41jDjfj99
-         yY2ngmVNoQYJDqK2bge/ZSWJz+xZXgq76MlXjwFJbfVBUM6/TinGEVpooXkEiX9YRk7x
-         BR20zMZNOd27qzUOKAl94PQWF4MrOa3yMyoD3URqbNPc2HG9KnyK/AqDvJpuCt99xo7P
-         evj3x2jlJ36R6wT0H7wuBeL8inRC9Vi2HfWhZhwh2A2yfzSkKHt9UuIpsb6Aei0Zp5ME
-         2zuU3e+51cVRdhfqzPpvES2KSNKCCb3oeg4IXRgZB425+HKhXuYSHIvhzfjRULPuyrNW
-         YvFA==
-X-Gm-Message-State: AC+VfDyNdZDLT3Qm4G6WHdElX60JJ1Ik3qtrXQ1Hqju/kDh7+N/OwqPn
-	QenOsovPd5sHw5FVPeDYrUE=
-X-Google-Smtp-Source: ACHHUZ6evDL0HWuUOw/E7eS1sxmpRauJbQh+5KyxG9iaYPnpfZgG5Wrtu7krHuwGR/MT62H3t8vWEA==
-X-Received: by 2002:a0d:d681:0:b0:561:81b:7319 with SMTP id y123-20020a0dd681000000b00561081b7319mr25124050ywd.32.1687835709872;
-        Mon, 26 Jun 2023 20:15:09 -0700 (PDT)
+        bh=g10wkISUfh+NWh/zmhT9FX+m3ZttfvdTUqPKBonJP24=;
+        b=V2rNlxGi7CvK4SKPXSGwzDkoGc0/I95Uly6J66NOYYVC1aYAaP8AyOUaAf/6VdLZw0
+         SrtGe36srS/bsjq54l1rn4evKioBxBXUra2tknU2MO0TcrozZF3m2qieg0JAUUdUpU3P
+         j34U4l0+x3NgVna3z5A2TRhz5rRIqX0sHdXSlBBMh8/mAqccw1U7RlPFasDcCMBxm99v
+         6hqfmNW8kpmNtOSeQyEjVkLkkpjLt5mxKOioQyMCjw9RTTSpXi/SJahSI58zoI57qy9+
+         JYv1EcXTmMMeDLW9WKKwCm750+bb1HNmCwSlkXgIgrR0r/pkaZ8dRBh+TBL+XIS0Cixz
+         4q7w==
+X-Gm-Message-State: AC+VfDzKVyYz1Aj4zQbz/3gE6OfwRU5yQGkOQIS+gaujAgjnSb+rMI5h
+	S+Ee/JPSIMtb0TodDoCGETE=
+X-Google-Smtp-Source: ACHHUZ4trddfgXzjmNYnvfIX3UyOWVfVwt64/0k1X+1Ib62f54dPN/U9UUyskS0pcHiYwtqCWDYcTQ==
+X-Received: by 2002:a81:4e44:0:b0:56f:ff55:2b74 with SMTP id c65-20020a814e44000000b0056fff552b74mr21585770ywb.37.1687835714203;
+        Mon, 26 Jun 2023 20:15:14 -0700 (PDT)
 Received: from unknowna0e70b2ca394.attlocal.net ([2600:1700:2f7d:1800::16])
-        by smtp.googlemail.com with ESMTPSA id s4-20020a0dd004000000b0057399b3bd26sm1614798ywd.33.2023.06.26.20.15.07
+        by smtp.googlemail.com with ESMTPSA id s4-20020a0dd004000000b0057399b3bd26sm1614798ywd.33.2023.06.26.20.15.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Jun 2023 20:15:09 -0700 (PDT)
+        Mon, 26 Jun 2023 20:15:13 -0700 (PDT)
 From: "Vishal Moola (Oracle)" <vishal.moola@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Matthew Wilcox <willy@infradead.org>
-Subject: [PATCH v6 01/33] mm: Add PAGE_TYPE_OP folio functions
-Date: Mon, 26 Jun 2023 20:13:59 -0700
-Message-Id: <20230627031431.29653-2-vishal.moola@gmail.com>
+Subject: [PATCH v6 03/33] pgtable: Create struct ptdesc
+Date: Mon, 26 Jun 2023 20:14:01 -0700
+Message-Id: <20230627031431.29653-4-vishal.moola@gmail.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230627031431.29653-1-vishal.moola@gmail.com>
 References: <20230627031431.29653-1-vishal.moola@gmail.com>
@@ -83,101 +83,95 @@ Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No folio equivalents for page type operations have been defined, so
-define them for later folio conversions.
-
-Also changes the Page##uname macros to take in const struct page* since
-we only read the memory here.
+Currently, page table information is stored within struct page. As part
+of simplifying struct page, create struct ptdesc for page table
+information.
 
 Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
 Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
 ---
- include/linux/page-flags.h | 30 +++++++++++++++++++++++-------
- 1 file changed, 23 insertions(+), 7 deletions(-)
+ include/linux/pgtable.h | 68 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 92a2063a0a23..9218028caf33 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -908,6 +908,8 @@ static inline bool is_page_hwpoison(struct page *page)
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 5063b482e34f..d46cb709ce08 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -987,6 +987,74 @@ static inline void ptep_modify_prot_commit(struct vm_area_struct *vma,
+ #endif /* __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION */
+ #endif /* CONFIG_MMU */
  
- #define PageType(page, flag)						\
- 	((page->page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
-+#define folio_test_type(folio, flag)					\
-+	((folio->page.page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
- 
- static inline int page_type_has_type(unsigned int page_type)
- {
-@@ -919,27 +921,41 @@ static inline int page_has_type(struct page *page)
- 	return page_type_has_type(page->page_type);
- }
- 
--#define PAGE_TYPE_OPS(uname, lname)					\
--static __always_inline int Page##uname(struct page *page)		\
-+#define PAGE_TYPE_OPS(uname, lname, fname)				\
-+static __always_inline int Page##uname(const struct page *page)		\
- {									\
- 	return PageType(page, PG_##lname);				\
- }									\
-+static __always_inline int folio_test_##fname(const struct folio *folio)\
-+{									\
-+	return folio_test_type(folio, PG_##lname);			\
-+}									\
- static __always_inline void __SetPage##uname(struct page *page)		\
- {									\
- 	VM_BUG_ON_PAGE(!PageType(page, 0), page);			\
- 	page->page_type &= ~PG_##lname;					\
- }									\
-+static __always_inline void __folio_set_##fname(struct folio *folio)	\
-+{									\
-+	VM_BUG_ON_FOLIO(!folio_test_type(folio, 0), folio);		\
-+	folio->page.page_type &= ~PG_##lname;				\
-+}									\
- static __always_inline void __ClearPage##uname(struct page *page)	\
- {									\
- 	VM_BUG_ON_PAGE(!Page##uname(page), page);			\
- 	page->page_type |= PG_##lname;					\
--}
-+}									\
-+static __always_inline void __folio_clear_##fname(struct folio *folio)	\
-+{									\
-+	VM_BUG_ON_FOLIO(!folio_test_##fname(folio), folio);		\
-+	folio->page.page_type |= PG_##lname;				\
-+}									\
- 
++
++/**
++ * struct ptdesc -    Memory descriptor for page tables.
++ * @__page_flags:     Same as page flags. Unused for page tables.
++ * @pt_rcu_head:      For freeing page table pages.
++ * @pt_list:          List of used page tables. Used for s390 and x86.
++ * @_pt_pad_1:        Padding that aliases with page's compound head.
++ * @pmd_huge_pte:     Protected by ptdesc->ptl, used for THPs.
++ * @_pt_s390_gaddr:   Aliases with page's mapping. Used for s390 gmap only.
++ * @pt_mm:            Used for x86 pgds.
++ * @pt_frag_refcount: For fragmented page table tracking. Powerpc and s390 only.
++ * @ptl:              Lock for the page table.
++ * @__page_type:      Same as page->page_type. Unused for page tables.
++ * @_refcount:        Same as page refcount. Used for s390 page tables.
++ * @pt_memcg_data:    Memcg data. Tracked for page tables here.
++ *
++ * This struct overlays struct page for now. Do not modify without a good
++ * understanding of the issues.
++ */
++struct ptdesc {
++	unsigned long __page_flags;
++
++	union {
++		struct rcu_head pt_rcu_head;
++		struct list_head pt_list;
++		struct {
++			unsigned long _pt_pad_1;
++			pgtable_t pmd_huge_pte;
++		};
++	};
++	unsigned long _pt_s390_gaddr;
++
++	union {
++		struct mm_struct *pt_mm;
++		atomic_t pt_frag_refcount;
++	};
++
++	union {
++		unsigned long _pt_pad_2;
++#if ALLOC_SPLIT_PTLOCKS
++		spinlock_t *ptl;
++#else
++		spinlock_t ptl;
++#endif
++	};
++	unsigned int __page_type;
++	atomic_t _refcount;
++#ifdef CONFIG_MEMCG
++	unsigned long pt_memcg_data;
++#endif
++};
++
++#define TABLE_MATCH(pg, pt)						\
++	static_assert(offsetof(struct page, pg) == offsetof(struct ptdesc, pt))
++TABLE_MATCH(flags, __page_flags);
++TABLE_MATCH(compound_head, pt_list);
++TABLE_MATCH(compound_head, _pt_pad_1);
++TABLE_MATCH(pmd_huge_pte, pmd_huge_pte);
++TABLE_MATCH(mapping, _pt_s390_gaddr);
++TABLE_MATCH(pt_mm, pt_mm);
++TABLE_MATCH(ptl, ptl);
++TABLE_MATCH(rcu_head, pt_rcu_head);
++#ifdef CONFIG_MEMCG
++TABLE_MATCH(memcg_data, pt_memcg_data);
++#endif
++#undef TABLE_MATCH
++static_assert(sizeof(struct ptdesc) <= sizeof(struct page));
++
  /*
-  * PageBuddy() indicates that the page is free and in the buddy system
-  * (see mm/page_alloc.c).
-  */
--PAGE_TYPE_OPS(Buddy, buddy)
-+PAGE_TYPE_OPS(Buddy, buddy, buddy)
- 
- /*
-  * PageOffline() indicates that the page is logically offline although the
-@@ -963,7 +979,7 @@ PAGE_TYPE_OPS(Buddy, buddy)
-  * pages should check PageOffline() and synchronize with such drivers using
-  * page_offline_freeze()/page_offline_thaw().
-  */
--PAGE_TYPE_OPS(Offline, offline)
-+PAGE_TYPE_OPS(Offline, offline, offline)
- 
- extern void page_offline_freeze(void);
- extern void page_offline_thaw(void);
-@@ -973,12 +989,12 @@ extern void page_offline_end(void);
- /*
-  * Marks pages in use as page tables.
-  */
--PAGE_TYPE_OPS(Table, table)
-+PAGE_TYPE_OPS(Table, table, pgtable)
- 
- /*
-  * Marks guardpages used with debug_pagealloc.
-  */
--PAGE_TYPE_OPS(Guard, guard)
-+PAGE_TYPE_OPS(Guard, guard, guard)
- 
- extern bool is_free_buddy_page(struct page *page);
- 
+  * No-op macros that just return the current protection value. Defined here
+  * because these macros can be used even if CONFIG_MMU is not defined.
 -- 
 2.40.1
 
