@@ -4,47 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5998EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 12:07:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D21EBEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 14:41:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=PCaFIRrN;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=U1WferOl;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QrgLX1zLyz3cH4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 22:07:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qrkm612LYz3bTb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 00:41:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=PCaFIRrN;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=U1WferOl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.181.12.198; helo=m12.mail.163.com; envelope-from=make_ruc2021@163.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 967 seconds by postgrey-1.37 at boromir; Wed, 28 Jun 2023 18:31:47 AEST
-Received: from m12.mail.163.com (m12.mail.163.com [220.181.12.198])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QrZYv16B5z306B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2023 18:31:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=TZ63D
-	hoeDCYyBIbyvSorhwvX2zStbpYvqashuoDCgeQ=; b=PCaFIRrNDL2QDhpv5cWAJ
-	by/lH8bxQpMCrCbUpNXBwCr66VEGPn4PoHvA3G+XOaQgpfjFDNIbzieBYPibZpl8
-	lMA+28ZcPCOvGFe7jhar7j3n+5KuMn5hHimQH3AkHCzIIUFtprEbKXprSphB5GR3
-	eMbYipNr3P8JlL2jNnUhqk=
-Received: from icess-ProLiant-DL380-Gen10.. (unknown [183.174.60.14])
-	by zwqz-smtp-mta-g3-2 (Coremail) with SMTP id _____wCntAEV7JtkwE1oBA--.64150S4;
-	Wed, 28 Jun 2023 16:15:27 +0800 (CST)
-From: Ma Ke <make_ruc2021@163.com>
-To: leoyang.li@nxp.com
-Subject: [PATCH] usb: gadget: fsl_qe_udc: validate endpoint index for ch9 udc
-Date: Wed, 28 Jun 2023 16:15:11 +0800
-Message-Id: <20230628081511.186850-1-make_ruc2021@163.com>
-X-Mailer: git-send-email 2.37.2
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+X-Greylist: delayed 95 seconds by postgrey-1.37 at boromir; Thu, 29 Jun 2023 00:40:15 AEST
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qrkl30L0tz2xGq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 00:40:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=cW+45nW3hJrB+ORXPsF9u401T/nSilM4vjgp2/JRVK8=; b=U1WferOlqrpgddhvvlvTWes0zc
+	gz9sFpyiKouuyXJTUYNzdFHYS6e6yVbKtT8Fkilt/42PZXz2BDJyjoEp+Q596vjZztfSB1KA5oUT3
+	w0vosHmfbAFtJLPTH97RuCn3S9Mc5r/aU/LSSbblgfHMV0vEIB88AAaMTA20vfI+hZ7c=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1qEWKW-0007sj-0E; Wed, 28 Jun 2023 16:39:36 +0200
+Date: Wed, 28 Jun 2023 16:39:35 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: yunchuan <yunchuan@nfschina.com>
+Subject: Re: [PATCH net-next 00/10] Remove unnecessary (void*) conversions
+Message-ID: <ecd70c28-1629-4b6c-96fc-a0b8f8713a04@lunn.ch>
+References: <1f5652f7-7eb2-11f0-4a07-c87f2992e509@huawei.com>
+ <734b846f-3235-f2e3-db06-6e852803cd7f@nfschina.com>
+ <badb3550-e157-4a31-9e49-ad184990c06d@lunn.ch>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: _____wCntAEV7JtkwE1oBA--.64150S4
-X-Coremail-Antispam: 1Uf129KBjvdXoWrur1rtFyrCw43Kw4DGryUKFg_yoWfJrb_u3
-	WUWrs7Wr17Ww129r17Za1Svr9293WkZ3Wkua4vqr9rAa45G3WfJryDXFs5Ca17uF43WFn5
-	A3yDJ3sIkw1SqjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU822MUUUUUU==
-X-Originating-IP: [183.174.60.14]
-X-CM-SenderInfo: 5pdnvshuxfjiisr6il2tof0z/xtbBFR+cC2B9nNSTkQAAsK
-X-Mailman-Approved-At: Wed, 28 Jun 2023 22:05:10 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <badb3550-e157-4a31-9e49-ad184990c06d@lunn.ch>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,31 +57,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Ma Ke <make_ruc2021@163.com>
+Cc: irusskikh@marvell.com, kernel-janitors@vger.kernel.org, linux@armlinux.org.uk, edumazet@google.com, iyappan@os.amperecomputing.com, anthony.l.nguyen@intel.com, quan@os.amperecomputing.com, Hao Lan <lanhao@huawei.com>, qiang.zhao@nxp.com, f.fainelli@gmail.com, jesse.brandeburg@intel.com, xeb@mail.ru, intel-wired-lan@lists.osuosl.org, yangyingliang@huawei.com, kuba@kernel.org, pabeni@redhat.com, yisen.zhuang@huawei.com, ansuelsmth@gmail.com, steve.glendinning@shawell.net, keyur@os.amperecomputing.com, mostrows@earthlink.net, salil.mehta@huawei.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rempel-privat.de, olteanv@gmail.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, hkallweit1@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We should verify the bound of the array to assure that host
-may not manipulate the index to point past endpoint array.
+On Wed, Jun 28, 2023 at 04:37:43PM +0200, Andrew Lunn wrote:
+> > Hi, Hao Lan,
+> > 
+> > Sorry for that, I just compiled these patches in the mainline branch.
+> > I know now, it's also necessary to compile patches in net and net-next
+> > branch.
+> > Thanks for your reply!
+> 
+> net-next is also closed at the moment due to the merge window. Please
+> wait two weeks before reposting, by which time net-next will be open
+> again.
 
-Signed-off-by: Ma Ke <make_ruc2021@163.com>
----
- drivers/usb/gadget/udc/fsl_qe_udc.c | 2 ++
- 1 file changed, 2 insertions(+)
+Your email threading also seems to be broken, there is no
+threading. That might cause pathworks an issue.
 
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index 3b1cc8fa30c8..f4e5cbd193b7 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -1959,6 +1959,8 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
- 	} else if ((request_type & USB_RECIP_MASK) == USB_RECIP_ENDPOINT) {
- 		/* Get endpoint status */
- 		int pipe = index & USB_ENDPOINT_NUMBER_MASK;
-+		if (pipe >= USB_MAX_ENDPOINTS)
-+			goto stall;
- 		struct qe_ep *target_ep = &udc->eps[pipe];
- 		u16 usep;
- 
--- 
-2.37.2
-
+	Andrew
