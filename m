@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB4EDEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 10:12:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D43DBEB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 10:13:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NQNl5MAj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HWRJg2u1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QrcpJ4FjXz3cXQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 20:12:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QrcqS2ZTDz3cbW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 20:13:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NQNl5MAj;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HWRJg2u1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QrcgN2ZjDz30Px
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2023 20:06:40 +1000 (AEST)
-Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35SA3jP7026047;
-	Wed, 28 Jun 2023 10:06:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QrcgY0QZSz30Pc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2023 20:06:48 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35SA340d000680;
+	Wed, 28 Jun 2023 10:06:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=Z3BXx87NONENKyRCVCG4NKF1gcn0Sn0umYhm4oYj4BE=;
- b=NQNl5MAjG8hgzXhNR8F2xWnyWXKD7e1cElKoWaar3u6iSNw2DT5q8tS/OeeOuUlpFmIk
- DgP8KTOClusIHrM+ruW78dyWE5I2elZYRCb9hTOnsLS7rwKOM3VdSiIQbHR9O60oJDig
- oqJ7nQgAo/TSF9mvxSPYAqB3scnc15d9F1kyF0Hc5zmRSiazyTTVnSP6Gxmau5wEwaNA
- PaRHKqvYSO2qENBEEHA/Ez8YKRFF/pFNV1oUZwsd5vPKP6A0G4YbgYZjeqR3TH4BXzYq
- VzUGAVjfYEdlC6eMWk+4coVppnB996DIuVQe15ylSp5Ak/SJyCf95vvPLgrzKUC5Q0oj Dw== 
+ bh=tBJniILrv67rMmqL7C9oGbfvlECwbA5Rr3vj+TgxJL4=;
+ b=HWRJg2u1lwxVdlG6NU5q/mBljBJTGNCZEQJJJakJg9JxWy3KBzrScNXcxfWzk+0kAtzk
+ LbhlNO3LnBtjUZtxIP+BHd1QeL8wYGRDt7EzVulZMZ2R4ZHccQgVh2V1p+41SiSaQM5l
+ NQakTyYiaeEJ+7W+OJQiF5mkayoGWHW6HufDPWTm19hIaW6hSA0nOtDSG+sp6IWGQB3y
+ OVCKXL/ygYPe7eDt/Vsdhl4f0il0mmU4oaB9Rb6ahPC7FgtsuwaUH87V7JpCD6Xv681i
+ ygTJ4gMT5fPkhueORzoA7mKZScV58RpYVFlUqMiatwAbL/Tsag9SSGrrtQ23n7iA5EM6 hg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rgjs783xc-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rgjs0r4kt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Jun 2023 10:06:15 +0000
-Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35SA3e9a025757;
-	Wed, 28 Jun 2023 10:06:11 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rgjs783t2-1
+	Wed, 28 Jun 2023 10:06:35 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35SA3HJg001801;
+	Wed, 28 Jun 2023 10:06:24 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rgjs0r4b3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Jun 2023 10:06:11 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35S9fpja031089;
-	Wed, 28 Jun 2023 10:06:04 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3rdr451w61-1
+	Wed, 28 Jun 2023 10:06:24 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35RNvb77026359;
+	Wed, 28 Jun 2023 10:06:06 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3rdqre2faf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Jun 2023 10:06:04 +0000
+	Wed, 28 Jun 2023 10:06:06 +0000
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35SA62pD61931984
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35SA64nx20447786
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 28 Jun 2023 10:06:02 GMT
+	Wed, 28 Jun 2023 10:06:04 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0A8822004F;
-	Wed, 28 Jun 2023 10:06:02 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id F17302005A;
+	Wed, 28 Jun 2023 10:06:03 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 353FB20043;
-	Wed, 28 Jun 2023 10:06:01 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2608720067;
+	Wed, 28 Jun 2023 10:06:03 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.171.41.43])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 28 Jun 2023 10:06:01 +0000 (GMT)
+	Wed, 28 Jun 2023 10:06:03 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/9] cpu/SMT: Move smt/control simple exit cases earlier
-Date: Wed, 28 Jun 2023 12:05:51 +0200
-Message-ID: <20230628100558.43482-3-ldufour@linux.ibm.com>
+Subject: [PATCH v2 4/9] cpu/SMT: Remove topology_smt_supported()
+Date: Wed, 28 Jun 2023 12:05:53 +0200
+Message-ID: <20230628100558.43482-5-ldufour@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230628100558.43482-1-ldufour@linux.ibm.com>
 References: <20230628100558.43482-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: _w-Ak6pZWzSTbHGDTOjPLaJ5HY9Lyv-C
-X-Proofpoint-GUID: lCKXhyr9JqS8nNIGJlwKk66FW8lOmkhh
+X-Proofpoint-ORIG-GUID: hYi_HeAVfqzMW4iPjLnc1a-Hrswq_G9v
+X-Proofpoint-GUID: O6HFOq1oVYm6U4lM_DruPdAMcNVeWxvm
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-06-28_06,2023-06-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
- priorityscore=1501 impostorscore=0 clxscore=1015 mlxlogscore=999
- suspectscore=0 bulkscore=0 spamscore=0 adultscore=0 phishscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306280088
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ impostorscore=0 suspectscore=0 priorityscore=1501 malwarescore=0
+ adultscore=0 spamscore=0 clxscore=1015 bulkscore=0 mlxscore=0
+ mlxlogscore=999 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2305260000 definitions=main-2306280088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,52 +100,71 @@ Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+Since the maximum number of threads is now passed to
+cpu_smt_set_num_threads(), checking that value is enough to know if SMT is
+supported.
 
-Move the simple exit cases, ie. which don't depend on the value written,
-earlier in the function. That makes it clearer that regardless of the
-input those states can not be transitioned out of.
-
-That does have a user-visible effect, in that the error returned will
-now always be EPERM/ENODEV for those states, regardless of the value
-written. Previously writing an invalid value would return EINVAL even
-when in those states.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 ---
- kernel/cpu.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/topology.h | 2 --
+ arch/x86/kernel/smpboot.c       | 8 --------
+ kernel/cpu.c                    | 2 +-
+ 3 files changed, 1 insertion(+), 11 deletions(-)
 
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 66927a59e822..87358a8fe843 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -143,7 +143,6 @@ int topology_update_die_map(unsigned int dieid, unsigned int cpu);
+ int topology_phys_to_logical_pkg(unsigned int pkg);
+ int topology_phys_to_logical_die(unsigned int die, unsigned int cpu);
+ bool topology_is_primary_thread(unsigned int cpu);
+-bool topology_smt_supported(void);
+ #else
+ #define topology_max_packages()			(1)
+ static inline int
+@@ -156,7 +155,6 @@ static inline int topology_phys_to_logical_die(unsigned int die,
+ static inline int topology_max_die_per_package(void) { return 1; }
+ static inline int topology_max_smt_threads(void) { return 1; }
+ static inline bool topology_is_primary_thread(unsigned int cpu) { return true; }
+-static inline bool topology_smt_supported(void) { return false; }
+ #endif
+ 
+ static inline void arch_fix_phys_package_id(int num, u32 slot)
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 352f0ce1ece4..3052c171668d 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -278,14 +278,6 @@ bool topology_is_primary_thread(unsigned int cpu)
+ 	return apic_id_is_primary_thread(per_cpu(x86_cpu_to_apicid, cpu));
+ }
+ 
+-/**
+- * topology_smt_supported - Check whether SMT is supported by the CPUs
+- */
+-bool topology_smt_supported(void)
+-{
+-	return smp_num_siblings > 1;
+-}
+-
+ /**
+  * topology_phys_to_logical_pkg - Map a physical package id to a logical
+  *
 diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 237394e0574a..c67049bb3fc8 100644
+index edca8b7bd400..e354af92b2b8 100644
 --- a/kernel/cpu.c
 +++ b/kernel/cpu.c
-@@ -2482,6 +2482,12 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
+@@ -442,7 +442,7 @@ void __init cpu_smt_set_num_threads(unsigned int num_threads,
  {
- 	int ctrlval, ret;
+ 	WARN_ON(!num_threads || (num_threads > max_threads));
  
-+	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
-+		return -EPERM;
-+
-+	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
-+		return -ENODEV;
-+
- 	if (sysfs_streq(buf, "on"))
- 		ctrlval = CPU_SMT_ENABLED;
- 	else if (sysfs_streq(buf, "off"))
-@@ -2491,12 +2497,6 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
- 	else
- 		return -EINVAL;
+-	if (!topology_smt_supported())
++	if (max_threads == 1)
+ 		cpu_smt_control = CPU_SMT_NOT_SUPPORTED;
  
--	if (cpu_smt_control == CPU_SMT_FORCE_DISABLED)
--		return -EPERM;
--
--	if (cpu_smt_control == CPU_SMT_NOT_SUPPORTED)
--		return -ENODEV;
--
- 	ret = lock_device_hotplug_sysfs();
- 	if (ret)
- 		return ret;
+ 	cpu_smt_max_threads = max_threads;
 -- 
 2.41.0
 
