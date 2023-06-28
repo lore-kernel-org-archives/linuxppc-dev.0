@@ -4,59 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB9D8EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jun 2023 23:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D796BEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 00:51:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PkZZrge8;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=eVGM60hx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qry1W1k4Cz30Bs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 09:08:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qs0Jp3k42z3br3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 10:51:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PkZZrge8;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=eVGM60hx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qry0V6QHmz304b
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 09:07:38 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id BF3A0613E2;
-	Wed, 28 Jun 2023 23:07:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 822A4C433C0;
-	Wed, 28 Jun 2023 23:07:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1687993654;
-	bh=53C7MomxKIvUQ7nkSMtiS9K6tPKxxxmP21jcwV8lafA=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=PkZZrge8omk9ElyRJAkXPrd/dypCeIzKxA35G30+61WGI9WVNc4FTVep4b8rQfzzq
-	 9/cYXfw1Aocj8jVoerhoXrfUPXCMQ5Pt9UAvBkD3i+3HUGDULirVleHh4rENXZlKMH
-	 jwwXhbx663yjqLHg5heXfoEwkfIzpttTKiIX9iv1n9qjyNrcASMI4a72PhaghYkJxg
-	 FYKhMZvsYNVKb25SbdX9fVU8LxQnOqYCJMxzByZsl305jkBtS6UPOC2k51oESJ7Mbx
-	 cWHAcnmJdrxI4345xN/1hr7K5lweU6C835Wnmdk0WBAQzO4aY6QDEHvLq+dXKhebGH
-	 m3twOSh7qZzKQ==
-Message-ID: <b08bca2f9e7887cc4046b66bf2d8acb72c0e97e5.camel@kernel.org>
-Subject: Re: [PATCH v9 2/4] tpm: of: Make of-tree specific function commonly
- available
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Stefan Berger <stefanb@linux.ibm.com>, Jerry Snitselaar
-	 <jsnitsel@redhat.com>
-Date: Thu, 29 Jun 2023 02:07:29 +0300
-In-Reply-To: <4afde78d-e138-9eee-50e0-dbd32f4dcfe0@linux.ibm.com>
-References: <20230418134409.177485-1-stefanb@linux.ibm.com>
-	 <20230418134409.177485-3-stefanb@linux.ibm.com>
-	 <e4dcxwp63uisirxwanjwrhzrnve45wqnxhijfp4oq274r4neco@v2btoy43ue5h>
-	 <CT8BRJZS8RQU.9ICEA2UAFC7G@suppilovahvero>
-	 <4afde78d-e138-9eee-50e0-dbd32f4dcfe0@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.1-0ubuntu1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QryqP6XjGz2xwG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 09:44:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=mkpKticynoUGDZ1Tdpq3P9FZu5kxXQf0JefJvMLgJuA=; b=eVGM60hxW/1oCROBhJRKbbF9pd
+	/WHGc+o+pb+fkeVze6GKs3Hcu2mjtmWM/4oUGYCU0t+UbFMtrvvcjHSl/cglLWbeBdgmG30OqcMNt
+	S2Pr1+dHNTd4T3qFeiVwQeps/R+LjlmcLTRsuZ8NdhZsmraeYrB2Kel7p0VxJ6+7q7EgMQ6Wx6ank
+	P+yHcdGkzLdLPcfc5husZ1HslNubmokchQy4wGscGAVnBMae971Q/C5VLDp5JrfEWC1X5YToHzDHK
+	+ikxlG8dV0EOrjRrjMKr08rEq8iFClaMjdpXxuLncvJrq9YBnHim1BxRohfVxP5cT8JFsbmDDx9YM
+	9l9IY3yQ==;
+Received: from [2601:1c2:980:9ec0::2764]
+	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1qEeow-00H298-0w;
+	Wed, 28 Jun 2023 23:43:34 +0000
+Message-ID: <08e273fc-49c5-dd09-1c9e-d85a080767f9@infradead.org>
+Date: Wed, 28 Jun 2023 16:43:27 -0700
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.2
+Subject: Re: [PATCH] syscalls: Cleanup references to sys_lookup_dcookie()
+Content-Language: en-US
+To: Sohil Mehta <sohil.mehta@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-api@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20230628230935.1196180-1-sohil.mehta@intel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20230628230935.1196180-1-sohil.mehta@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Thu, 29 Jun 2023 10:50:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,46 +62,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Coiby Xu <coxu@redhat.com>, Frank Rowand <frowand.list@gmail.com>, Nageswara R Sastry <rnsastry@linux.ibm.com>, nayna@linux.ibm.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.
+ com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Bo
+ rislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2023-06-09 at 14:49 -0400, Stefan Berger wrote:
->=20
-> On 6/9/23 14:18, Jarkko Sakkinen wrote:
-> > On Thu May 25, 2023 at 1:56 AM EEST, Jerry Snitselaar wrote:
-> > > On Tue, Apr 18, 2023 at 09:44:07AM -0400, Stefan Berger wrote:
-> > > > Simplify tpm_read_log_of() by moving reusable parts of the code int=
-o
-> > > > an inline function that makes it commonly available so it can be
-> > > > used also for kexec support. Call the new of_tpm_get_sml_parameters=
-()
-> > > > function from the TPM Open Firmware driver.
-> > > >=20
-> > > > Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
-> > > > Cc: Jarkko Sakkinen <jarkko@kernel.org>
-> > > > Cc: Jason Gunthorpe <jgg@ziepe.ca>
-> > > > Cc: Rob Herring <robh+dt@kernel.org>
-> > > > Cc: Frank Rowand <frowand.list@gmail.com>
-> > > > Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
-> > > > Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
-> > > > Tested-by: Coiby Xu <coxu@redhat.com>
-> > > > Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
-> > > >=20
-> > >=20
-> > > Reviewed-by: Jerry Snitselaar <jsnitsel@redhat.com>
-> >=20
-> > If I just pick tpm only patches they won't apply so maybe TPM changes
-> > should be better separated if that is by any means possible.
->=20
-> Per the comment here I am putting this series here on hold.
-> https://lore.kernel.org/linux-integrity/20230418134409.177485-1-stefanb@l=
-inux.ibm.com/T/#m03745c2af2c46f19f329522fcb6ccb2bf2eaedc7
 
-Hi, sorry for late response. The Midsummer weekend really
-messed my schedules (it is a big thing Finland). This year
-the timing with the kernel cycle has been conflicting.
 
-OK cool.
+On 6/28/23 16:09, Sohil Mehta wrote:
+> commit 'be65de6b03aa ("fs: Remove dcookies support")' removed the
+> syscall definition for lookup_dcookie.  However, syscall tables still
+> point to the old sys_lookup_dcookie() definition. Update syscall tables
+> of all architectures to directly point to sys_ni_syscall() instead.
+> 
+> Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
 
-BR, Jarkko
+Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+
+Thanks.
+
+> ---
+> This patch has a dependency on another patch that has been applied to the
+> asm-generic tree:
+> https://lore.kernel.org/lkml/20230621223600.1348693-1-sohil.mehta@intel.com/
+> ---
+>  arch/alpha/kernel/syscalls/syscall.tbl              | 2 +-
+>  arch/arm/tools/syscall.tbl                          | 2 +-
+>  arch/arm64/include/asm/unistd32.h                   | 4 ++--
+>  arch/ia64/kernel/syscalls/syscall.tbl               | 2 +-
+>  arch/m68k/kernel/syscalls/syscall.tbl               | 2 +-
+>  arch/microblaze/kernel/syscalls/syscall.tbl         | 2 +-
+>  arch/mips/kernel/syscalls/syscall_n32.tbl           | 2 +-
+>  arch/mips/kernel/syscalls/syscall_n64.tbl           | 2 +-
+>  arch/mips/kernel/syscalls/syscall_o32.tbl           | 2 +-
+>  arch/parisc/kernel/syscalls/syscall.tbl             | 2 +-
+>  arch/powerpc/kernel/syscalls/syscall.tbl            | 2 +-
+>  arch/s390/kernel/syscalls/syscall.tbl               | 2 +-
+>  arch/sh/kernel/syscalls/syscall.tbl                 | 2 +-
+>  arch/sparc/kernel/syscalls/syscall.tbl              | 2 +-
+>  arch/x86/entry/syscalls/syscall_32.tbl              | 2 +-
+>  arch/x86/entry/syscalls/syscall_64.tbl              | 2 +-
+>  arch/xtensa/kernel/syscalls/syscall.tbl             | 2 +-
+>  include/linux/compat.h                              | 1 -
+>  include/linux/syscalls.h                            | 1 -
+>  include/uapi/asm-generic/unistd.h                   | 2 +-
+>  kernel/sys_ni.c                                     | 2 --
+>  tools/include/uapi/asm-generic/unistd.h             | 2 +-
+>  tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl | 2 +-
+>  tools/perf/arch/powerpc/entry/syscalls/syscall.tbl  | 2 +-
+>  tools/perf/arch/s390/entry/syscalls/syscall.tbl     | 2 +-
+>  tools/perf/arch/x86/entry/syscalls/syscall_64.tbl   | 2 +-
+>  26 files changed, 24 insertions(+), 28 deletions(-)
+> 
+
+
+-- 
+~Randy
