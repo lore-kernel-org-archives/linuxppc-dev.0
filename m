@@ -4,84 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8159EEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 13:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FB31EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 14:01:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=LcvTxzhq;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=fyh1ajjE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qV8F6si/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsKDB0n0Tz3bl6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 23:34:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsKqb59mBz3bsW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 00:01:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=LcvTxzhq;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=fyh1ajjE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qV8F6si/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.17; helo=wnew3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from wnew3-smtp.messagingengine.com (wnew3-smtp.messagingengine.com [64.147.123.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsKCD0PYNz30fZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 23:33:12 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-	by mailnew.west.internal (Postfix) with ESMTP id B1FAF2B00152;
-	Thu, 29 Jun 2023 09:33:08 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Thu, 29 Jun 2023 09:33:10 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm1; t=1688045588; x=1688052788; bh=fz
-	Ep5wc1N4xfnU7pMFQwstMWnCUW1KpffY9nt8n1q0E=; b=LcvTxzhqR3NoPlUVvK
-	OSmh2HXq0TKY72TPC0mGFyZL0KXvjsqnUtwwDauvmZMJLb5NJHO5zC7uiIPaXimT
-	gzsidicsFWLRov6t4tFnhjdpszLK6hNyyqPfbDn62gWWs0Kof8U6fw258RVzajax
-	TvEI9fr4nmLUhZ9eWf5cl+Gznh5JCGNWo9vfb9WqVUcXA4M4zI8VmRSOc4Rpqa2j
-	5ha9dObpeYiBRXh4uBF8Bo02V+0ZfPpN2oP/dF7iFMYdXyANDgvRcnqLaw0UQ7TO
-	r1HYR4swvYxxa9cMKtxPWwjmkzaxBCii0Km30Ly6pgOJfleJm4wepJ/1GiUa/suS
-	Y7xQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:sender:subject
-	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm2; t=1688045588; x=1688052788; bh=fzEp5wc1N4xfn
-	U7pMFQwstMWnCUW1KpffY9nt8n1q0E=; b=fyh1ajjE7le9b8SLHXPaGdLDEYcOx
-	QNrQVUJ3xaaQqLGBpnORFKOR91qIZo0pC/rbPTctQCecVgWTu8aWuxe/ayiMwhSL
-	eDIob7sa1BmbCpUowwbQwkuGz16jQSanIvdHA2EF8BgyO4NL3hh0u77vR4TeuGFE
-	rEtOhAHeEVwheX+0G+0z5POYm6ret69YXQ+gaXS7thrMG3c0vVj9IaYGsJsEflu+
-	T4OjKxK0ew2/nKXrZblbKAcre4LFmDxtHNMO5w/ZzKHZCdES6wCDDurx5azbCNGj
-	6s0XP9I64f1KhHJXsIN9/c95TfKYzHJGQZmAuCAxQNaTiAIrzIxu8sIYA==
-X-ME-Sender: <xms:E4idZMV1TZ_T3L1OGgGxaQRXCeYkusfJugarzOR0X6ER7zo3j4U1ig>
-    <xme:E4idZAk_XBsf0yPJLS4HpxcfDS_SBW2sZXTpRIz4s9V7CixPu3dvFPi20dtIgIIa2
-    EHaTmwg_vHZ_84GcAE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrtdeggdeiiecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
-    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
-    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
-    hnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:FIidZAZFlWj2vEUzG_yB4LQnW0oUG11rZN2F6kzw5SfbSjBKBBEZoA>
-    <xmx:FIidZLUz_b3eHtwof1uextcVJM0xyoPgF2i-WcMz6_OXQ7y-P6HUTw>
-    <xmx:FIidZGlmYz7ER4kw5lF5QmjaRS8oj89uk5aCJueQwjKRM0mTbynAxA>
-    <xmx:FIidZMqKRdv8aLoKEdCQCimSiWgxSqTvj2Xx6DnlK7ipqUPmlhTCgMzDnO4>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id DA5E4B60086; Thu, 29 Jun 2023 09:33:07 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-499-gf27bbf33e2-fm-20230619.001-gf27bbf33
-Mime-Version: 1.0
-Message-Id: <4d711508-c299-49f2-8691-e75d68f2485e@app.fastmail.com>
-In-Reply-To: <20230629121952.10559-1-tzimmermann@suse.de>
-References: <20230629121952.10559-1-tzimmermann@suse.de>
-Date: Thu, 29 Jun 2023 15:31:28 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Thomas Zimmermann" <tzimmermann@suse.de>, "Helge Deller" <deller@gmx.de>,
- "Daniel Vetter" <daniel@ffwll.ch>, "Dave Airlie" <airlied@gmail.com>
-Subject: Re: [PATCH 00/12] arch,fbdev: Move screen_info into arch/
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsKpY4W4sz2xpx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 00:00:21 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35TDvSCY018330;
+	Thu, 29 Jun 2023 13:59:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=LrYbdcM0evC7Xy9CDimNEkxtdbpvB/BFhHVZyMGsjWc=;
+ b=qV8F6si/hA4BMAclDXBQy7EBDubLFaV1IUaBMl1NIzccoj5zCV2u77w6NVMJFtkznkr7
+ ln1Oo/k2hNHfVuzudYvAvWMvXEoTFkxnXEBzShSU0D6WY/Cz2rBjy0HfxEbpc2zr6fmP
+ eyeTGi/rLL1r1v/YRHvRsaWNFz6ptKjc1e2SbKrtxoqecgrANt4d9MN3C6N2f40/G59v
+ 8s53SGXTAAegChcxiBTp/H1hMkYuiyIemVNXovvrZxVX9xW/puzk/H9OmrdYihtTMFXI
+ BxoprZF/nsWn8XGRF24lWPl4TyTd2X1b9IT+NYD+e9N4ZAskKqxAzZbLBGlbHonfl8li /A== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhba183ms-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Jun 2023 13:59:20 +0000
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35TDvdpg018759;
+	Thu, 29 Jun 2023 13:59:19 GMT
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhba183gk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Jun 2023 13:59:18 +0000
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35T5nCVI014922;
+	Thu, 29 Jun 2023 13:59:16 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3rdr452hpd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Jun 2023 13:59:16 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35TDxCmc56885746
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 29 Jun 2023 13:59:12 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9F48C20043;
+	Thu, 29 Jun 2023 13:59:12 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4EA7020040;
+	Thu, 29 Jun 2023 13:59:09 +0000 (GMT)
+Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.171.2.247])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 29 Jun 2023 13:59:09 +0000 (GMT)
+Date: Thu, 29 Jun 2023 15:59:07 +0200
+From: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Subject: Re: [PATCH v2 07/12] s390: add pte_free_defer() for pgtables sharing
+ page
+Message-ID: <ZJ2OK29zPB76i0Ga@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+References: <54cb04f-3762-987f-8294-91dafd8ebfb0@google.com>
+ <a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com>
+ <20230628211624.531cdc58@thinkpad-T15>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230628211624.531cdc58@thinkpad-T15>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: YMCVI8WX38wPGVoSaafWaumxPTpPmIfa
+X-Proofpoint-ORIG-GUID: BptJCD1qhVG-ySwo39DLjqgVEpX_NEnC
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-06-29_03,2023-06-27_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ adultscore=0 lowpriorityscore=0 bulkscore=0 impostorscore=0
+ mlxlogscore=999 suspectscore=0 malwarescore=0 clxscore=1011 mlxscore=0
+ spamscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2306290122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,53 +98,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, linux-mips@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, V
+ asily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 29, 2023, at 13:45, Thomas Zimmermann wrote:
-> The variables screen_info and edid_info provide information about
-> the system's screen, and possibly EDID data of the connected display.
-> Both are defined and set by architecture code. But both variables are
-> declared in non-arch header files. Dependencies are at bease loosely
-> tracked. To resolve this, move the global state screen_info and its
-> companion edid_info into arch/. Only declare them on architectures
-> that define them. List dependencies on the variables in the Kconfig
-> files. Also clean up the callers.
->
-> Patch 1 to 4 resolve a number of unnecessary include statements of
-> <linux/screen_info.h>. The header should only be included in source
-> files that access struct screen_info.
->
-> Patches 5 to 7 move the declaration of screen_info and edid_info to
-> <asm-generic/screen_info.h>. Architectures that provide either set
-> a Kconfig token to enable them.
->
-> Patches 8 to 9 make users of screen_info depend on the architecture's
-> feature.
->
-> Finally, patches 10 to 12 rework fbdev's handling of firmware EDID
-> data to make use of existing helpers and the refactored edid_info.
->
-> Tested on x86-64. Built for a variety of platforms.
+On Wed, Jun 28, 2023 at 09:16:24PM +0200, Gerald Schaefer wrote:
+> On Tue, 20 Jun 2023 00:51:19 -0700 (PDT)
+> Hugh Dickins <hughd@google.com> wrote:
 
-This all looks like a nice cleanup!
+Hi Gerald, Hugh!
 
-> Future directions: with the patchset in place, it will become possible
-> to provide screen_info and edid_info only if there are users. Some
-> architectures do this by testing for CONFIG_VT, CONFIG_DUMMY_CONSOLE,
-> etc. A more uniform approach would be nice. We should also attempt
-> to minimize access to the global screen_info as much as possible. To
-> do so, some drivers, such as efifb and vesafb, would require an update.
-> The firmware's EDID data could possibly made available outside of fbdev.
-> For example, the simpledrm and ofdrm drivers could provide such data
-> to userspace compositors.
+...
+> @@ -407,6 +445,88 @@ void __tlb_remove_table(void *_table)
+>  	__free_page(page);
+>  }
+>  
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +static void pte_free_now0(struct rcu_head *head);
+> +static void pte_free_now1(struct rcu_head *head);
 
-I suspect that most architectures that provide a screen_info only
-have this in order to compile the framebuffer drivers, and provide
-hardcoded data that does not even reflect any real hardware.
+What about pte_free_lower() / pte_free_upper()?
 
-We can probably reduce the number of architectures that do this
-a lot, especially if we get EFI out of the picture.
+...
+> +void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
+> +{
+> +	unsigned int bit, mask;
+> +	struct page *page;
+> +
+> +	page = virt_to_page(pgtable);
+> +	if (mm_alloc_pgste(mm)) {
+> +		/*
+> +		 * TODO: Do we need gmap_unlink(mm, pgtable, addr), like in
+> +		 * page_table_free_rcu()?
+> +		 * If yes -> need addr parameter here, like in pte_free_tlb().
+> +		 */
+> +		call_rcu(&page->rcu_head, pte_free_pgste);
+> +		return;
+> +}
+> +	bit = ((unsigned long)pgtable & ~PAGE_MASK) / (PTRS_PER_PTE * sizeof(pte_t));
+> +
+> +	spin_lock_bh(&mm->context.lock);
+> +	mask = atomic_xor_bits(&page->_refcount, 0x15U << (bit + 24));
 
-      Arnd
+This  makes the bit logic increasingly complicated to me.
+
+What if instead we set the rule "one bit at a time only"?
+That means an atomic group bit flip is only allowed between
+pairs of bits, namely:
+
+bit flip	initiated from
+-----------	----------------------------------------
+P      <- A	page_table_free(), page_table_free_rcu()
+     H <- A	pte_free_defer()
+P <- H		pte_free_half()
+
+In the current model P bit could be on together with H
+bit simultaneously. That actually brings in equation
+nothing.
+
+Besides, this check in page_table_alloc() (while still
+correct) makes one (well, me) wonder "what about HH bits?":
+
+	mask = (mask | (mask >> 4)) & 0x03U;
+	if (mask != 0x03U) {
+		...
+	}
+
+By contrast, with "one bit at a time only" policy every
+of three bits effectevely indicates which state a page
+half is currently in.
+
+Thanks!
