@@ -4,59 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A44EEEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 00:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7804EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:30:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=axY2Jpnp;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=UPfSiLPg;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=L3PyCj5j;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qs0Hp068gz30PX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 10:51:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsHpz1gWZz3c54
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 22:30:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=axY2Jpnp;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=UPfSiLPg;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=L3PyCj5j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=sohil.mehta@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Thu, 29 Jun 2023 09:11:56 AEST
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qry5S1B6Bz303d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 09:11:55 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1687993916; x=1719529916;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=lLpKBmAZR/lK6S9SB5nAtp44osjKMlgKn80ydUPtNxs=;
-  b=axY2Jpnp25qVggggpzVNu97AKiJvkaROdHKu3nRntqG9YF1nMHwPJCW+
-   skn8ex8AlXIUA1c+txIn6C5ZL1UhTyozgOuhoRXS48TcGixHYdKu0A17E
-   JkzTlAva0ReyDv4hWS/LvLqyL0XvrKhPiUXzxBN0VimoNB/RF7zVg+gFG
-   cEpaUnseQw4xnLn8byexLHA/4HfLzi471eHBgVTrcXWPTn2tKVwapN874
-   C6IujcHJqO4hQir5jG0N2wm7v1NfbQLIEVSS+WEv9pQeqlu5QiukqITlR
-   mDk37MXXCT4VTwVU1Rn4AKKjkZ7YlxKw8KPtuH1ru9rh904Dvh/QR2Z+e
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10755"; a="341564393"
-X-IronPort-AV: E=Sophos;i="6.01,166,1684825200"; 
-   d="scan'208";a="341564393"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jun 2023 16:10:48 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10755"; a="841256845"
-X-IronPort-AV: E=Sophos;i="6.01,166,1684825200"; 
-   d="scan'208";a="841256845"
-Received: from sohilmeh.sc.intel.com ([172.25.103.65])
-  by orsmga004.jf.intel.com with ESMTP; 28 Jun 2023 16:10:45 -0700
-From: Sohil Mehta <sohil.mehta@intel.com>
-To: Arnd Bergmann <arnd@arndb.de>,
-	linux-api@vger.kernel.org,
-	linux-arch@vger.kernel.org
-Subject: [PATCH] syscalls: Cleanup references to sys_lookup_dcookie()
-Date: Wed, 28 Jun 2023 23:09:35 +0000
-Message-Id: <20230628230935.1196180-1-sohil.mehta@intel.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsHjG0nSPz30K1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 22:25:38 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 50F121FD67;
+	Thu, 29 Jun 2023 12:20:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1688041201; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q8/hObzYgPS0TDvHlNkxQWLSeXSJyMjTeBMLqYqFK4w=;
+	b=UPfSiLPg0fPgXj6DVWbIwAx8SsBG5GL3OD/7mLd65j8fwmU+DvPt3QzSfJKiRMSESoepX9
+	eM5NP2Jl7avazGdPsovrA89jdGZnFXHxxT3O/UdtnP6AQBQmMmB0fb0hdUmBE/YVBR8zBv
+	CQYBtniEcZ5wJ20vfbvuSi9ax+7JLg4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1688041201;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q8/hObzYgPS0TDvHlNkxQWLSeXSJyMjTeBMLqYqFK4w=;
+	b=L3PyCj5jKQ5vE7MYne4nWCsAiDM0bCWXnp9ECQ/thRxLRW/+klbPAr42RqiLHE8RIsU2gZ
+	akbya49XJu79VVCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A0F3313905;
+	Thu, 29 Jun 2023 12:20:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id uIppJvB2nWRlVAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 29 Jun 2023 12:20:00 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: arnd@arndb.de,
+	deller@gmx.de,
+	daniel@ffwll.ch,
+	airlied@gmail.com
+Subject: [PATCH 09/12] drivers: Add dependencies on CONFIG_ARCH_HAS_SCREEN_INFO
+Date: Thu, 29 Jun 2023 13:45:48 +0200
+Message-ID: <20230629121952.10559-10-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230629121952.10559-1-tzimmermann@suse.de>
+References: <20230629121952.10559-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 29 Jun 2023 10:50:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,389 +82,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.
- com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Sohil Mehta <sohil.mehta@intel.com>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@li
- nux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, "K. Y. Srinivasan" <kys@microsoft.com>, Ard Biesheuvel <ardb@kernel.org>, linux-arch@vger.kernel.org, Wei Liu <wei.liu@kernel.org>, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, Dexuan Cui <decui@microsoft.com>, Javier Martinez Canillas <javierm@redhat.com>, linux-csky@vger.kernel.org, Haiyang Zhang <haiyangz@microsoft.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, loongarch@lists.linux.dev, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-alpha@vger.kerne
+ l.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 'be65de6b03aa ("fs: Remove dcookies support")' removed the
-syscall definition for lookup_dcookie.  However, syscall tables still
-point to the old sys_lookup_dcookie() definition. Update syscall tables
-of all architectures to directly point to sys_ni_syscall() instead.
+Various files within drivers/ depend on the declaration of the
+screen_info variable. Add this information to Kconfig.
 
-Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
----
-This patch has a dependency on another patch that has been applied to the
-asm-generic tree:
-https://lore.kernel.org/lkml/20230621223600.1348693-1-sohil.mehta@intel.com/
----
- arch/alpha/kernel/syscalls/syscall.tbl              | 2 +-
- arch/arm/tools/syscall.tbl                          | 2 +-
- arch/arm64/include/asm/unistd32.h                   | 4 ++--
- arch/ia64/kernel/syscalls/syscall.tbl               | 2 +-
- arch/m68k/kernel/syscalls/syscall.tbl               | 2 +-
- arch/microblaze/kernel/syscalls/syscall.tbl         | 2 +-
- arch/mips/kernel/syscalls/syscall_n32.tbl           | 2 +-
- arch/mips/kernel/syscalls/syscall_n64.tbl           | 2 +-
- arch/mips/kernel/syscalls/syscall_o32.tbl           | 2 +-
- arch/parisc/kernel/syscalls/syscall.tbl             | 2 +-
- arch/powerpc/kernel/syscalls/syscall.tbl            | 2 +-
- arch/s390/kernel/syscalls/syscall.tbl               | 2 +-
- arch/sh/kernel/syscalls/syscall.tbl                 | 2 +-
- arch/sparc/kernel/syscalls/syscall.tbl              | 2 +-
- arch/x86/entry/syscalls/syscall_32.tbl              | 2 +-
- arch/x86/entry/syscalls/syscall_64.tbl              | 2 +-
- arch/xtensa/kernel/syscalls/syscall.tbl             | 2 +-
- include/linux/compat.h                              | 1 -
- include/linux/syscalls.h                            | 1 -
- include/uapi/asm-generic/unistd.h                   | 2 +-
- kernel/sys_ni.c                                     | 2 --
- tools/include/uapi/asm-generic/unistd.h             | 2 +-
- tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl | 2 +-
- tools/perf/arch/powerpc/entry/syscalls/syscall.tbl  | 2 +-
- tools/perf/arch/s390/entry/syscalls/syscall.tbl     | 2 +-
- tools/perf/arch/x86/entry/syscalls/syscall_64.tbl   | 2 +-
- 26 files changed, 24 insertions(+), 28 deletions(-)
+In the case of the dummy console, the dependency exists only
+on ARM. Ignore it on !ARM platforms.
 
-diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
-index 8ebacf37a8cf..b299f877034e 100644
---- a/arch/alpha/kernel/syscalls/syscall.tbl
-+++ b/arch/alpha/kernel/syscalls/syscall.tbl
-@@ -334,7 +334,7 @@
- 401	common	io_submit			sys_io_submit
- 402	common	io_cancel			sys_io_cancel
- 405	common	exit_group			sys_exit_group
--406	common	lookup_dcookie			sys_lookup_dcookie
-+406	common	lookup_dcookie			sys_ni_syscall
- 407	common	epoll_create			sys_epoll_create
- 408	common	epoll_ctl			sys_epoll_ctl
- 409	common	epoll_wait			sys_epoll_wait
-diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
-index ac964612d8b0..ef9424cebe79 100644
---- a/arch/arm/tools/syscall.tbl
-+++ b/arch/arm/tools/syscall.tbl
-@@ -263,7 +263,7 @@
- 246	common	io_submit		sys_io_submit
- 247	common	io_cancel		sys_io_cancel
- 248	common	exit_group		sys_exit_group
--249	common	lookup_dcookie		sys_lookup_dcookie
-+249	common	lookup_dcookie		sys_ni_syscall
- 250	common	epoll_create		sys_epoll_create
- 251	common	epoll_ctl		sys_epoll_ctl		sys_oabi_epoll_ctl
- 252	common	epoll_wait		sys_epoll_wait
-diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
-index 604a2053d006..c2e37f6b7d86 100644
---- a/arch/arm64/include/asm/unistd32.h
-+++ b/arch/arm64/include/asm/unistd32.h
-@@ -508,8 +508,8 @@ __SYSCALL(__NR_io_submit, compat_sys_io_submit)
- __SYSCALL(__NR_io_cancel, sys_io_cancel)
- #define __NR_exit_group 248
- __SYSCALL(__NR_exit_group, sys_exit_group)
--#define __NR_lookup_dcookie 249
--__SYSCALL(__NR_lookup_dcookie, compat_sys_lookup_dcookie)
-+			/* 249 was lookup_dcookie */
-+__SYSCALL(249, sys_ni_syscall)
- #define __NR_epoll_create 250
- __SYSCALL(__NR_epoll_create, sys_epoll_create)
- #define __NR_epoll_ctl 251
-diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
-index 72c929d9902b..e76e2dcd2f5a 100644
---- a/arch/ia64/kernel/syscalls/syscall.tbl
-+++ b/arch/ia64/kernel/syscalls/syscall.tbl
-@@ -222,7 +222,7 @@
- 210	common	fadvise64			sys_fadvise64_64
- 211	common	tgkill				sys_tgkill
- 212	common	exit_group			sys_exit_group
--213	common	lookup_dcookie			sys_lookup_dcookie
-+213	common	lookup_dcookie			sys_ni_syscall
- 214	common	io_setup			sys_io_setup
- 215	common	io_destroy			sys_io_destroy
- 216	common	io_getevents			sys_io_getevents
-diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-index b1f3940bc298..3b6070b664ea 100644
---- a/arch/m68k/kernel/syscalls/syscall.tbl
-+++ b/arch/m68k/kernel/syscalls/syscall.tbl
-@@ -255,7 +255,7 @@
- 245	common	io_cancel			sys_io_cancel
- 246	common	fadvise64			sys_fadvise64
- 247	common	exit_group			sys_exit_group
--248	common	lookup_dcookie			sys_lookup_dcookie
-+248	common	lookup_dcookie			sys_ni_syscall
- 249	common	epoll_create			sys_epoll_create
- 250	common	epoll_ctl			sys_epoll_ctl
- 251	common	epoll_wait			sys_epoll_wait
-diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
-index 820145e47350..935f71c56f2f 100644
---- a/arch/microblaze/kernel/syscalls/syscall.tbl
-+++ b/arch/microblaze/kernel/syscalls/syscall.tbl
-@@ -260,7 +260,7 @@
- 250	common	fadvise64			sys_fadvise64
- # 251 is available for reuse (was briefly sys_set_zone_reclaim)
- 252	common	exit_group			sys_exit_group
--253	common	lookup_dcookie			sys_lookup_dcookie
-+253	common	lookup_dcookie			sys_ni_syscall
- 254	common	epoll_create			sys_epoll_create
- 255	common	epoll_ctl			sys_epoll_ctl
- 256	common	epoll_wait			sys_epoll_wait
-diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
-index 253ff994ed2e..02d71b4726fe 100644
---- a/arch/mips/kernel/syscalls/syscall_n32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
-@@ -214,7 +214,7 @@
- 203	n32	io_submit			compat_sys_io_submit
- 204	n32	io_cancel			sys_io_cancel
- 205	n32	exit_group			sys_exit_group
--206	n32	lookup_dcookie			sys_lookup_dcookie
-+206	n32	lookup_dcookie			sys_ni_syscall
- 207	n32	epoll_create			sys_epoll_create
- 208	n32	epoll_ctl			sys_epoll_ctl
- 209	n32	epoll_wait			sys_epoll_wait
-diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
-index 3f1886ad9d80..23a72075987d 100644
---- a/arch/mips/kernel/syscalls/syscall_n64.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
-@@ -214,7 +214,7 @@
- 203	n64	io_submit			sys_io_submit
- 204	n64	io_cancel			sys_io_cancel
- 205	n64	exit_group			sys_exit_group
--206	n64	lookup_dcookie			sys_lookup_dcookie
-+206	n64	lookup_dcookie			sys_ni_syscall
- 207	n64	epoll_create			sys_epoll_create
- 208	n64	epoll_ctl			sys_epoll_ctl
- 209	n64	epoll_wait			sys_epoll_wait
-diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-index 8f243e35a7b2..588ccfcfa1ea 100644
---- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-@@ -258,7 +258,7 @@
- 244	o32	io_submit			sys_io_submit			compat_sys_io_submit
- 245	o32	io_cancel			sys_io_cancel
- 246	o32	exit_group			sys_exit_group
--247	o32	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
-+247	o32	lookup_dcookie			sys_ni_syscall
- 248	o32	epoll_create			sys_epoll_create
- 249	o32	epoll_ctl			sys_epoll_ctl
- 250	o32	epoll_wait			sys_epoll_wait
-diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
-index 0e42fceb2d5e..444328e937e7 100644
---- a/arch/parisc/kernel/syscalls/syscall.tbl
-+++ b/arch/parisc/kernel/syscalls/syscall.tbl
-@@ -245,7 +245,7 @@
- # 220 was alloc_hugepages
- # 221 was free_hugepages
- 222	common	exit_group		sys_exit_group
--223	common	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
-+223	common	lookup_dcookie		sys_ni_syscall
- 224	common	epoll_create		sys_epoll_create
- 225	common	epoll_ctl		sys_epoll_ctl
- 226	common	epoll_wait		sys_epoll_wait
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index a0be127475b1..2c8db9708ec8 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -294,7 +294,7 @@
- 233	32	fadvise64			sys_ppc32_fadvise64		compat_sys_ppc32_fadvise64
- 233	64	fadvise64			sys_fadvise64
- 234	nospu	exit_group			sys_exit_group
--235	nospu	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
-+235	nospu	lookup_dcookie			sys_ni_syscall
- 236	common	epoll_create			sys_epoll_create
- 237	common	epoll_ctl			sys_epoll_ctl
- 238	common	epoll_wait			sys_epoll_wait
-diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-index b68f47541169..85b45b49756e 100644
---- a/arch/s390/kernel/syscalls/syscall.tbl
-+++ b/arch/s390/kernel/syscalls/syscall.tbl
-@@ -100,7 +100,7 @@
- 106  common	stat			sys_newstat			compat_sys_newstat
- 107  common	lstat			sys_newlstat			compat_sys_newlstat
- 108  common	fstat			sys_newfstat			compat_sys_newfstat
--110  common	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
-+110  common	lookup_dcookie		-				-
- 111  common	vhangup			sys_vhangup			sys_vhangup
- 112  common	idle			-				-
- 114  common	wait4			sys_wait4			compat_sys_wait4
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index 2de85c977f54..7e284e718325 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -260,7 +260,7 @@
- 250	common	fadvise64			sys_fadvise64
- # 251 is unused
- 252	common	exit_group			sys_exit_group
--253	common	lookup_dcookie			sys_lookup_dcookie
-+253	common	lookup_dcookie			sys_ni_syscall
- 254	common	epoll_create			sys_epoll_create
- 255	common	epoll_ctl			sys_epoll_ctl
- 256	common	epoll_wait			sys_epoll_wait
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index 4398cc6fb68d..0b8dd4728f82 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -249,7 +249,7 @@
- 205	common	readahead		sys_readahead			compat_sys_readahead
- 206	common	socketcall		sys_socketcall			sys32_socketcall
- 207	common	syslog			sys_syslog
--208	common	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
-+208	common	lookup_dcookie		sys_ni_syscall
- 209	common	fadvise64		sys_fadvise64			compat_sys_fadvise64
- 210	common	fadvise64_64		sys_fadvise64_64		compat_sys_fadvise64_64
- 211	common	tgkill			sys_tgkill
-diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-index 320480a8db4f..2b9c86445c57 100644
---- a/arch/x86/entry/syscalls/syscall_32.tbl
-+++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -264,7 +264,7 @@
- 250	i386	fadvise64		sys_ia32_fadvise64
- # 251 is available for reuse (was briefly sys_set_zone_reclaim)
- 252	i386	exit_group		sys_exit_group
--253	i386	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
-+253	i386	lookup_dcookie
- 254	i386	epoll_create		sys_epoll_create
- 255	i386	epoll_ctl		sys_epoll_ctl
- 256	i386	epoll_wait		sys_epoll_wait
-diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
-index c84d12608cd2..da2643738262 100644
---- a/arch/x86/entry/syscalls/syscall_64.tbl
-+++ b/arch/x86/entry/syscalls/syscall_64.tbl
-@@ -220,7 +220,7 @@
- 209	64	io_submit		sys_io_submit
- 210	common	io_cancel		sys_io_cancel
- 211	64	get_thread_area
--212	common	lookup_dcookie		sys_lookup_dcookie
-+212	common	lookup_dcookie
- 213	common	epoll_create		sys_epoll_create
- 214	64	epoll_ctl_old
- 215	64	epoll_wait_old
-diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
-index 52c94ab5c205..c969734e9b53 100644
---- a/arch/xtensa/kernel/syscalls/syscall.tbl
-+++ b/arch/xtensa/kernel/syscalls/syscall.tbl
-@@ -273,7 +273,7 @@
- 252	common	timer_getoverrun		sys_timer_getoverrun
- # System
- 253	common	reserved253			sys_ni_syscall
--254	common	lookup_dcookie			sys_lookup_dcookie
-+254	common	lookup_dcookie			sys_ni_syscall
- 255	common	available255			sys_ni_syscall
- 256	common	add_key				sys_add_key
- 257	common	request_key			sys_request_key
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 1cfa4f0f490a..233f61ec8afc 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -581,7 +581,6 @@ asmlinkage long compat_sys_io_pgetevents_time64(compat_aio_context_t ctx_id,
- 					struct io_event __user *events,
- 					struct __kernel_timespec __user *timeout,
- 					const struct __compat_aio_sigset __user *usig);
--asmlinkage long compat_sys_lookup_dcookie(u32, u32, char __user *, compat_size_t);
- asmlinkage long compat_sys_epoll_pwait(int epfd,
- 			struct epoll_event __user *events,
- 			int maxevents, int timeout,
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 8c37cf91c12d..f5ca303c9f53 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -369,7 +369,6 @@ asmlinkage long sys_lremovexattr(const char __user *path,
- 				 const char __user *name);
- asmlinkage long sys_fremovexattr(int fd, const char __user *name);
- asmlinkage long sys_getcwd(char __user *buf, unsigned long size);
--asmlinkage long sys_lookup_dcookie(u64 cookie64, char __user *buf, size_t len);
- asmlinkage long sys_eventfd2(unsigned int count, int flags);
- asmlinkage long sys_epoll_create1(int flags);
- asmlinkage long sys_epoll_ctl(int epfd, int op, int fd,
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index dd7d8e10f16d..652537342a47 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -71,7 +71,7 @@ __SYSCALL(__NR_fremovexattr, sys_fremovexattr)
- #define __NR_getcwd 17
- __SYSCALL(__NR_getcwd, sys_getcwd)
- #define __NR_lookup_dcookie 18
--__SC_COMP(__NR_lookup_dcookie, sys_lookup_dcookie, compat_sys_lookup_dcookie)
-+__SYSCALL(__NR_lookup_dcookie, sys_ni_syscall)
- #define __NR_eventfd2 19
- __SYSCALL(__NR_eventfd2, sys_eventfd2)
- #define __NR_epoll_create1 20
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index f207236002e9..31431f139208 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -51,8 +51,6 @@ COND_SYSCALL_COMPAT(io_pgetevents);
- COND_SYSCALL(io_uring_setup);
- COND_SYSCALL(io_uring_enter);
- COND_SYSCALL(io_uring_register);
--COND_SYSCALL(lookup_dcookie);
--COND_SYSCALL_COMPAT(lookup_dcookie);
- COND_SYSCALL(eventfd2);
- COND_SYSCALL(epoll_create1);
- COND_SYSCALL(epoll_ctl);
-diff --git a/tools/include/uapi/asm-generic/unistd.h b/tools/include/uapi/asm-generic/unistd.h
-index dd7d8e10f16d..652537342a47 100644
---- a/tools/include/uapi/asm-generic/unistd.h
-+++ b/tools/include/uapi/asm-generic/unistd.h
-@@ -71,7 +71,7 @@ __SYSCALL(__NR_fremovexattr, sys_fremovexattr)
- #define __NR_getcwd 17
- __SYSCALL(__NR_getcwd, sys_getcwd)
- #define __NR_lookup_dcookie 18
--__SC_COMP(__NR_lookup_dcookie, sys_lookup_dcookie, compat_sys_lookup_dcookie)
-+__SYSCALL(__NR_lookup_dcookie, sys_ni_syscall)
- #define __NR_eventfd2 19
- __SYSCALL(__NR_eventfd2, sys_eventfd2)
- #define __NR_epoll_create1 20
-diff --git a/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl b/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl
-index 3f1886ad9d80..23a72075987d 100644
---- a/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl
-+++ b/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl
-@@ -214,7 +214,7 @@
- 203	n64	io_submit			sys_io_submit
- 204	n64	io_cancel			sys_io_cancel
- 205	n64	exit_group			sys_exit_group
--206	n64	lookup_dcookie			sys_lookup_dcookie
-+206	n64	lookup_dcookie			sys_ni_syscall
- 207	n64	epoll_create			sys_epoll_create
- 208	n64	epoll_ctl			sys_epoll_ctl
- 209	n64	epoll_wait			sys_epoll_wait
-diff --git a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-index a0be127475b1..2c8db9708ec8 100644
---- a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-+++ b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-@@ -294,7 +294,7 @@
- 233	32	fadvise64			sys_ppc32_fadvise64		compat_sys_ppc32_fadvise64
- 233	64	fadvise64			sys_fadvise64
- 234	nospu	exit_group			sys_exit_group
--235	nospu	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
-+235	nospu	lookup_dcookie			sys_ni_syscall
- 236	common	epoll_create			sys_epoll_create
- 237	common	epoll_ctl			sys_epoll_ctl
- 238	common	epoll_wait			sys_epoll_wait
-diff --git a/tools/perf/arch/s390/entry/syscalls/syscall.tbl b/tools/perf/arch/s390/entry/syscalls/syscall.tbl
-index b68f47541169..85b45b49756e 100644
---- a/tools/perf/arch/s390/entry/syscalls/syscall.tbl
-+++ b/tools/perf/arch/s390/entry/syscalls/syscall.tbl
-@@ -100,7 +100,7 @@
- 106  common	stat			sys_newstat			compat_sys_newstat
- 107  common	lstat			sys_newlstat			compat_sys_newlstat
- 108  common	fstat			sys_newfstat			compat_sys_newfstat
--110  common	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
-+110  common	lookup_dcookie		-				-
- 111  common	vhangup			sys_vhangup			sys_vhangup
- 112  common	idle			-				-
- 114  common	wait4			sys_wait4			compat_sys_wait4
-diff --git a/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl b/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
-index c84d12608cd2..da2643738262 100644
---- a/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
-+++ b/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
-@@ -220,7 +220,7 @@
- 209	64	io_submit		sys_io_submit
- 210	common	io_cancel		sys_io_cancel
- 211	64	get_thread_area
--212	common	lookup_dcookie		sys_lookup_dcookie
-+212	common	lookup_dcookie
- 213	common	epoll_create		sys_epoll_create
- 214	64	epoll_ctl_old
- 215	64	epoll_wait_old
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Ard Biesheuvel <ardb@kernel.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: "K. Y. Srinivasan" <kys@microsoft.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Wei Liu <wei.liu@kernel.org>
+Cc: Dexuan Cui <decui@microsoft.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/firmware/Kconfig      | 1 +
+ drivers/firmware/efi/Kconfig  | 1 +
+ drivers/gpu/drm/Kconfig       | 1 +
+ drivers/hv/Kconfig            | 1 +
+ drivers/video/console/Kconfig | 2 ++
+ drivers/video/fbdev/Kconfig   | 4 ++++
+ 6 files changed, 10 insertions(+)
+
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index 0432737bbb8b4..65bbf7422f1db 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -228,6 +228,7 @@ config QCOM_SCM_DOWNLOAD_MODE_DEFAULT
+ 
+ config SYSFB
+ 	bool
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select BOOT_VESA_SUPPORT
+ 
+ config SYSFB_SIMPLEFB
+diff --git a/drivers/firmware/efi/Kconfig b/drivers/firmware/efi/Kconfig
+index 043ca31c114eb..963d305421e50 100644
+--- a/drivers/firmware/efi/Kconfig
++++ b/drivers/firmware/efi/Kconfig
+@@ -225,6 +225,7 @@ config EFI_DISABLE_PCI_DMA
+ config EFI_EARLYCON
+ 	def_bool y
+ 	depends on SERIAL_EARLYCON && !ARM && !IA64
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select FONT_SUPPORT
+ 	select ARCH_USE_MEMREMAP_PROT
+ 
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index afb3b2f5f4253..63dfc3391d2ff 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -366,6 +366,7 @@ source "drivers/gpu/drm/sprd/Kconfig"
+ config DRM_HYPERV
+ 	tristate "DRM Support for Hyper-V synthetic video device"
+ 	depends on DRM && PCI && MMU && HYPERV
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select DRM_KMS_HELPER
+ 	select DRM_GEM_SHMEM_HELPER
+ 	help
+diff --git a/drivers/hv/Kconfig b/drivers/hv/Kconfig
+index 00242107d62e0..3730c9b42a9bd 100644
+--- a/drivers/hv/Kconfig
++++ b/drivers/hv/Kconfig
+@@ -6,6 +6,7 @@ config HYPERV
+ 	tristate "Microsoft Hyper-V client drivers"
+ 	depends on (X86 && X86_LOCAL_APIC && HYPERVISOR_GUEST) \
+ 		|| (ACPI && ARM64 && !CPU_BIG_ENDIAN)
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select PARAVIRT
+ 	select X86_HV_CALLBACK_VECTOR if X86
+ 	select OF_EARLY_FLATTREE if OF
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index a2a88d42edf0c..b39e2ae039783 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -10,6 +10,7 @@ config VGA_CONSOLE
+ 	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC &&  !SUPERH && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+ 		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC && !S390 && !UML
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select APERTURE_HELPERS if (DRM || FB || VFIO_PCI_CORE)
+ 	default y
+ 	help
+@@ -48,6 +49,7 @@ config SGI_NEWPORT_CONSOLE
+ 
+ config DUMMY_CONSOLE
+ 	bool
++	depends on ARCH_HAS_SCREEN_INFO || !ARM
+ 	default y
+ 
+ config DUMMY_CONSOLE_COLUMNS
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index cecf15418632d..e11d85e802bc7 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -655,6 +655,7 @@ config FB_UVESA
+ config FB_VESA
+ 	bool "VESA VGA graphics support"
+ 	depends on (FB = y) && X86
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select APERTURE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -669,6 +670,7 @@ config FB_VESA
+ config FB_EFI
+ 	bool "EFI-based Framebuffer Support"
+ 	depends on (FB = y) && !IA64 && EFI
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select APERTURE_HELPERS
+ 	select DRM_PANEL_ORIENTATION_QUIRKS
+ 	select FB_CFB_FILLRECT
+@@ -1089,6 +1091,7 @@ config FB_CARILLO_RANCH
+ config FB_INTEL
+ 	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support"
+ 	depends on FB && PCI && X86 && AGP_INTEL && EXPERT
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -2185,6 +2188,7 @@ config FB_BROADSHEET
+ config FB_HYPERV
+ 	tristate "Microsoft Hyper-V Synthetic Video support"
+ 	depends on FB && HYPERV
++	depends on ARCH_HAS_SCREEN_INFO
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-2.34.1
+2.41.0
 
