@@ -4,37 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42973EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 10:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58419EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 11:01:03 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=IJJG70VR;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsFjm3RWJz3bv3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 20:55:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsFqd74GCz3bjy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 21:01:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=IJJG70VR;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=festevam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsFj80lT2z2xq5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 20:55:23 +1000 (AEST)
-Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.56])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4QsF736dJkz1HCTM;
-	Thu, 29 Jun 2023 18:29:19 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Thu, 29 Jun 2023 18:29:37 +0800
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] mm: remove arguments of show_mem()
-Date: Thu, 29 Jun 2023 18:43:56 +0800
-Message-ID: <20230629104357.35455-1-wangkefeng.wang@huawei.com>
-X-Mailer: git-send-email 2.41.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsFpf5dJPz307V
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 21:00:09 +1000 (AEST)
+Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-66d6a9851f3so144182b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 04:00:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1688036403; x=1690628403;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SNuvCv0VFWJ1T/BA1jgFsWK/sbewukgBLN8NThITlGY=;
+        b=IJJG70VRTfv6SzZDiw5KgcGaeym0vz6jCVdSX8aL1AtgKYxIKxEz+FbieZyrRKMKt6
+         XCNCfb6e0kP4qrLVYCOdleUjQ0iPjzq7WtSDVVd1E/SnYE0lqHji5iXyEH54McdjI3Q6
+         aGP09g3gRxxOG3bTuanQqLSGUYvKcsHm5AbgJBGY2+BeZSDjm6FHWKrH5NokTFFFcK4n
+         5M0DelgYVruwm87q4YsvLXl0PCpvA7mJRxPfLrw0EJJgh1S2hE6eMETfer+m2znDNGz+
+         rx7t9Pn79B0zCEhWoBBcJnDez2ncEfQAzyDnYf6kYmZsBkPiLUqjN+/nFgPhNsy3lsLQ
+         N82w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688036403; x=1690628403;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=SNuvCv0VFWJ1T/BA1jgFsWK/sbewukgBLN8NThITlGY=;
+        b=YR4ZPOtdwqimwvq5hHdoNzXEhuu5bF2E7FhNbuekEQzXPPTgOWJ938nIephra+I4o7
+         OVdltWvCQlHmxZNFeeCUeRTdT7oQcdWz/imMdphnQ6MwVcPDUHNrBcCOmoDvPc1rCQVw
+         FlGrKKZ2KvcmUDUoulBV9CvhTtsGcveQ4UqMnk66GwQfBwPHWOBBo09iJyNuCbmREnJd
+         eVjPAXa8g7WZIf00aFihS/9Iv/m2AS1T5ADxN7B6Hp9cwyStPIt3Ov4RSJnQszPoLfjC
+         zxrpRqtLgFQ56APNMc2b2EeMOOyEl2q4UCK1rGE3r7K4enkJcIEP68OadfvMNWEVacPj
+         Ft4w==
+X-Gm-Message-State: AC+VfDxOa9ZvTajnR8sewX+PCckmjUgM669C45wjWzdST97aPlluXmWe
+	5ixZ+04eOiEcymhRBm5IMMR08uFYWh9sB0zG7qQ=
+X-Google-Smtp-Source: ACHHUZ4241Q0Xok00mtSesZ0ScAf8EpY8gqClpDPFmqvjMGqm+Sl0vzMI5IyImuqQIvVL0JNHSy7d4g+Mx22zwDE2r4=
+X-Received: by 2002:a05:6a20:7295:b0:111:fba0:bd3b with SMTP id
+ o21-20020a056a20729500b00111fba0bd3bmr45440823pzk.1.1688036403198; Thu, 29
+ Jun 2023 04:00:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm100001.china.huawei.com (7.185.36.93)
-X-CFilter-Loop: Reflected
+References: <1688002673-28493-1-git-send-email-shengjiu.wang@nxp.com> <1688002673-28493-4-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <1688002673-28493-4-git-send-email-shengjiu.wang@nxp.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Thu, 29 Jun 2023 07:59:53 -0300
+Message-ID: <CAOMZO5DPHmm7YuHBfYHpx2-g4R6t1BQ93GBAZvyyb_rBz7+hFg@mail.gmail.com>
+Subject: Re: [PATCH 3/6] ASoC: fsl_easrc: define functions for memory to
+ memory usage
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,104 +76,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org, Xiubo.Lee@gmail.com, lgirdwood@gmail.com, tiwai@suse.com, linux-kernel@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, broonie@kernel.org, perex@perex.cz, mchehab@kernel.org, shengjiu.wang@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Directly call __show_mem(0, NULL, MAX_NR_ZONES - 1) in show_mem()
-to remove the arguments of show_mem().
+Hi Shengjiu,
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- arch/powerpc/xmon/xmon.c  | 2 +-
- drivers/tty/sysrq.c       | 2 +-
- drivers/tty/vt/keyboard.c | 2 +-
- include/linux/mm.h        | 4 ++--
- init/initramfs.c          | 2 +-
- kernel/panic.c            | 2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
+On Wed, Jun 28, 2023 at 11:10=E2=80=AFPM Shengjiu Wang <shengjiu.wang@nxp.c=
+om> wrote:
+>
+> ASRC can be used on memory to memory case, define several
+> functions for m2m usage and export them as function pointer.
+>
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index fae747cc57d2..ee17270d35d0 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1084,7 +1084,7 @@ cmds(struct pt_regs *excp)
- 				memzcan();
- 				break;
- 			case 'i':
--				show_mem(0, NULL);
-+				show_mem();
- 				break;
- 			default:
- 				termch = cmd;
-diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
-index b6e70c5cfa17..e1df63a88aac 100644
---- a/drivers/tty/sysrq.c
-+++ b/drivers/tty/sysrq.c
-@@ -342,7 +342,7 @@ static const struct sysrq_key_op sysrq_ftrace_dump_op = {
- 
- static void sysrq_handle_showmem(int key)
- {
--	show_mem(0, NULL);
-+	show_mem();
- }
- static const struct sysrq_key_op sysrq_showmem_op = {
- 	.handler	= sysrq_handle_showmem,
-diff --git a/drivers/tty/vt/keyboard.c b/drivers/tty/vt/keyboard.c
-index be8313cdbac3..358f216c6cd6 100644
---- a/drivers/tty/vt/keyboard.c
-+++ b/drivers/tty/vt/keyboard.c
-@@ -606,7 +606,7 @@ static void fn_scroll_back(struct vc_data *vc)
- 
- static void fn_show_mem(struct vc_data *vc)
- {
--	show_mem(0, NULL);
-+	show_mem();
- }
- 
- static void fn_show_state(struct vc_data *vc)
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index eef34f6a0351..ddb140e14f3a 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -3047,9 +3047,9 @@ extern void mem_init(void);
- extern void __init mmap_init(void);
- 
- extern void __show_mem(unsigned int flags, nodemask_t *nodemask, int max_zone_idx);
--static inline void show_mem(unsigned int flags, nodemask_t *nodemask)
-+static inline void show_mem(void)
- {
--	__show_mem(flags, nodemask, MAX_NR_ZONES - 1);
-+	__show_mem(0, NULL, MAX_NR_ZONES - 1);
- }
- extern long si_mem_available(void);
- extern void si_meminfo(struct sysinfo * val);
-diff --git a/init/initramfs.c b/init/initramfs.c
-index e7a01c2ccd1b..8d0fd946cdd2 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -61,7 +61,7 @@ static void __init error(char *x)
- }
- 
- #define panic_show_mem(fmt, ...) \
--	({ show_mem(0, NULL); panic(fmt, ##__VA_ARGS__); })
-+	({ show_mem(); panic(fmt, ##__VA_ARGS__); })
- 
- /* link hash */
- 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 10effe40a3fa..07239d4ad81e 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -216,7 +216,7 @@ static void panic_print_sys_info(bool console_flush)
- 		show_state();
- 
- 	if (panic_print & PANIC_PRINT_MEM_INFO)
--		show_mem(0, NULL);
-+		show_mem();
- 
- 	if (panic_print & PANIC_PRINT_TIMER_INFO)
- 		sysrq_timer_list_show();
--- 
-2.41.0
+Could you please explain what is the benefit of using M2M in the EASRC driv=
+er?
 
+A few weeks ago, an imx8mn user reported that the EASRC with the
+mainline kernel introduces huge delays.
+
+Does M2M help with this aspect?
+
+Thanks
