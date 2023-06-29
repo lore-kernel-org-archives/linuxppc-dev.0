@@ -4,46 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73841EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 10:18:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CD8EEB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 10:49:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsDtk4wsYz3btk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 20:18:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsFZh5cMhz3btQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 20:49:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1174 seconds by postgrey-1.37 at boromir; Thu, 29 Jun 2023 20:49:19 AEST
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsDt714HGz2yyw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 20:18:05 +1000 (AEST)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.95)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1qEoiq-000SNC-7D; Thu, 29 Jun 2023 12:17:56 +0200
-Received: from p57bd9486.dip0.t-ipconnect.de ([87.189.148.134] helo=[192.168.178.81])
-          by inpost2.zedat.fu-berlin.de (Exim 4.95)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1qEoip-001qhD-Vp; Thu, 29 Jun 2023 12:17:56 +0200
-Message-ID: <f1a0f2252cc38721e222530dc4026ed3834e3eb8.camel@physik.fu-berlin.de>
-Subject: Re: [FSL P50x0] [PASEMI] The Access to partitions on disks with an
- Amiga partition table doesn't work anymore after the block updates
- 2023-06-23
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, schmitzmic@gmail.com
-Date: Thu, 29 Jun 2023 12:17:55 +0200
-In-Reply-To: <024ce4fa-cc6d-50a2-9aae-3701d0ebf668@xenosoft.de>
-References: <024ce4fa-cc6d-50a2-9aae-3701d0ebf668@xenosoft.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.3 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsFZ71k9Lz30K1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 20:49:16 +1000 (AEST)
+Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.55])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4QsF4D3ZqWzqVBq;
+	Thu, 29 Jun 2023 18:26:52 +0800 (CST)
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Thu, 29 Jun 2023 18:29:37 +0800
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 2/2] mm: make show_free_areas() static
+Date: Thu, 29 Jun 2023 18:43:57 +0800
+Message-ID: <20230629104357.35455-2-wangkefeng.wang@huawei.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230629104357.35455-1-wangkefeng.wang@huawei.com>
+References: <20230629104357.35455-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 87.189.148.134
-X-ZEDAT-Hint: PO
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.113.25]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpemm100001.china.huawei.com (7.185.36.93)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,117 +49,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, linux-m68k@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>, mad skateman <madskateman@gmail.com>, linux-block@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, "R.T.Dickinson" <rtd2@xtra.co.nz>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Christian!
+Directly use show_mem() instead of show_free_areas(0, NULL), then
+make show_free_areas() a static function.
 
-On Thu, 2023-06-29 at 06:59 +0200, Christian Zigotzky wrote:
-> The access=C2=A0 to partitions on disks with an Amiga partition table (vi=
-a=20
-> the Rigid Disk Block RDB) doesn't work anymore on my Cyrus+ board with a=
-=20
-> FSL P50x0 PowerPC SoC [1] and on my P.A. Semi Nemo board [2] after the=
-=20
-> block updates 2023-06-23 [3].
->=20
-> parted -l
->=20
-> Model: ATA ST2000DM001-9YN1 (scsi)
-> Disk /dev/sda: 2000GB
-> Sector size (logical/physical): 512B/4096B
-> Partition Table: amiga
-> Disk Flags:
->=20
-> Number=C2=A0 Start=C2=A0=C2=A0 End=C2=A0=C2=A0=C2=A0=C2=A0 Size=C2=A0=C2=
-=A0=C2=A0 File system=C2=A0 Name=C2=A0 Flags
->  =C2=A01=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1057kB=C2=A0 123MB=C2=A0=C2=A0 122=
-MB=C2=A0=C2=A0 affs7=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 BDH0=C2=A0 h=
-idden
->  =C2=A02=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 123MB=C2=A0=C2=A0 2274MB=C2=A0 215=
-0MB=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 DH0=C2=A0=C2=A0 boot
->  =C2=A03=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 2274MB=C2=A0 691GB=C2=A0=C2=A0 689=
-GB=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 DH2
->  =C2=A04=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 691GB=C2=A0=C2=A0 1992GB=C2=A0 130=
-1GB=C2=A0 ext4=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 dhx=C2=A0=C2=
-=A0 boot
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+ arch/sparc/kernel/setup_32.c |  2 +-
+ include/linux/mm.h           | 12 ------------
+ mm/internal.h                |  6 ++++++
+ mm/nommu.c                   |  6 +++---
+ mm/show_mem.c                |  4 ++--
+ 5 files changed, 12 insertions(+), 18 deletions(-)
 
-What version of AmigaOS is that?
+diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
+index 1adf5c1c16b8..34ef7febf0d5 100644
+--- a/arch/sparc/kernel/setup_32.c
++++ b/arch/sparc/kernel/setup_32.c
+@@ -83,7 +83,7 @@ static void prom_sync_me(void)
+ 			     "nop\n\t" : : "r" (&trapbase));
+ 
+ 	prom_printf("PROM SYNC COMMAND...\n");
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	if (!is_idle_task(current)) {
+ 		local_irq_enable();
+ 		ksys_sync();
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index ddb140e14f3a..0a1314a3ffae 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2218,18 +2218,6 @@ extern void pagefault_out_of_memory(void);
+ #define offset_in_thp(page, p)	((unsigned long)(p) & (thp_size(page) - 1))
+ #define offset_in_folio(folio, p) ((unsigned long)(p) & (folio_size(folio) - 1))
+ 
+-/*
+- * Flags passed to show_mem() and show_free_areas() to suppress output in
+- * various contexts.
+- */
+-#define SHOW_MEM_FILTER_NODES		(0x0001u)	/* disallowed nodes */
+-
+-extern void __show_free_areas(unsigned int flags, nodemask_t *nodemask, int max_zone_idx);
+-static void __maybe_unused show_free_areas(unsigned int flags, nodemask_t *nodemask)
+-{
+-	__show_free_areas(flags, nodemask, MAX_NR_ZONES - 1);
+-}
+-
+ /*
+  * Parameter block passed down to zap_pte_range in exceptional cases.
+  */
+diff --git a/mm/internal.h b/mm/internal.h
+index a7d9e980429a..721ed07d7fd6 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -61,6 +61,12 @@ void page_writeback_init(void);
+ #define COMPOUND_MAPPED		0x800000
+ #define FOLIO_PAGES_MAPPED	(COMPOUND_MAPPED - 1)
+ 
++/*
++ * Flags passed to __show_mem() and show_free_areas() to suppress output in
++ * various contexts.
++ */
++#define SHOW_MEM_FILTER_NODES		(0x0001u)	/* disallowed nodes */
++
+ /*
+  * How many individual pages have an elevated _mapcount.  Excludes
+  * the folio's entire_mapcount.
+diff --git a/mm/nommu.c b/mm/nommu.c
+index f670d9979a26..5b179234ce89 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -990,7 +990,7 @@ static int do_mmap_private(struct vm_area_struct *vma,
+ enomem:
+ 	pr_err("Allocation of length %lu from process %d (%s) failed\n",
+ 	       len, current->pid, current->comm);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ }
+ 
+@@ -1223,13 +1223,13 @@ unsigned long do_mmap(struct file *file,
+ 	kmem_cache_free(vm_region_jar, region);
+ 	pr_warn("Allocation of vma for %lu byte allocation from process %d failed\n",
+ 			len, current->pid);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ 
+ error_getting_region:
+ 	pr_warn("Allocation of vm region for %lu byte allocation from process %d failed\n",
+ 			len, current->pid);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ 
+ error_vma_iter_prealloc:
+diff --git a/mm/show_mem.c b/mm/show_mem.c
+index 01f8e9905817..09c7d036d49e 100644
+--- a/mm/show_mem.c
++++ b/mm/show_mem.c
+@@ -186,7 +186,7 @@ static bool node_has_managed_zones(pg_data_t *pgdat, int max_zone_idx)
+  * SHOW_MEM_FILTER_NODES: suppress nodes that are not allowed by current's
+  *   cpuset.
+  */
+-void __show_free_areas(unsigned int filter, nodemask_t *nodemask, int max_zone_idx)
++static void show_free_areas(unsigned int filter, nodemask_t *nodemask, int max_zone_idx)
+ {
+ 	unsigned long free_pcp = 0;
+ 	int cpu, nid;
+@@ -406,7 +406,7 @@ void __show_mem(unsigned int filter, nodemask_t *nodemask, int max_zone_idx)
+ 	struct zone *zone;
+ 
+ 	printk("Mem-Info:\n");
+-	__show_free_areas(filter, nodemask, max_zone_idx);
++	show_free_areas(filter, nodemask, max_zone_idx);
+ 
+ 	for_each_populated_zone(zone) {
+ 
+-- 
+2.41.0
 
-> dmesg | grep -i sda
->=20
-> [=C2=A0=C2=A0=C2=A0 4.208905] sd 0:0:0:0: [sda] 3907029168 512-byte logic=
-al blocks:=20
-> (2.00 TB/1.82 TiB)
-> [=C2=A0=C2=A0=C2=A0 4.253995] sd 0:0:0:0: [sda] 4096-byte physical blocks
-> [=C2=A0=C2=A0=C2=A0 4.254826] sd 0:0:0:0: [sda] Write Protect is off
-> [=C2=A0=C2=A0=C2=A0 4.300069] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> [=C2=A0=C2=A0=C2=A0 4.486476] sd 0:0:0:0: [sda] Write cache: enabled, rea=
-d cache:=20
-> enabled, doesn't support DPO or FUA
-> [=C2=A0=C2=A0=C2=A0 4.580507] sd 0:0:0:0: [sda] Preferred minimum I/O siz=
-e 4096 bytes
-> [=C2=A0=C2=A0=C2=A0 4.712624] Dev sda: unable to read partition block 429=
-4967295
-> [=C2=A0=C2=A0=C2=A0 4.761532]=C2=A0 sda: RDSK (512) sda1 (DOS^G)(res 2 sp=
-b 2) sda2=20
-> (SFS^B)(res 2 spb 1) sda3 (SFS^B)(res 2 spb 2) sda4 ((res 2 spb 1)=20
-> unable to read partition table
-> [=C2=A0=C2=A0=C2=A0 4.761892] sda: partition table beyond EOD,
-> [=C2=A0=C2=A0=C2=A0 4.861681] Dev sda: unable to read partition block 429=
-4967295
-> [=C2=A0=C2=A0=C2=A0 4.912094]=C2=A0 sda: RDSK (512) sda1 (DOS^G)(res 2 sp=
-b 2) sda2=20
-> (SFS^B)(res 2 spb 1) sda3 (SFS^B)(res 2 spb 2) sda4 ((res 2 spb 1)=20
-> unable to read partition table
-> [=C2=A0=C2=A0=C2=A0 4.963387] sda: partition table beyond EOD,
-> [=C2=A0=C2=A0=C2=A0 5.014769] sd 0:0:0:0: [sda] Attached SCSI disk
-
-Maybe the RDB is corrupted? Did you try on a freshly created RDB?
-
-> I created a patch for reverting the commit. [4]
-
-That can be done with just "git revert <commit hash>".
-
-> The access works again with this patch:
->=20
-> [=C2=A0=C2=A0=C2=A0 0.000000] Kernel command line: root=3D/dev/sda4
-> [=C2=A0=C2=A0=C2=A0 3.987717] sd 0:0:0:0: [sda] 3907029168 512-byte logic=
-al blocks:=20
-> (2.00 TB/1.82 TiB)
-> [=C2=A0=C2=A0=C2=A0 4.031349] sd 0:0:0:0: [sda] 4096-byte physical blocks
-> [=C2=A0=C2=A0=C2=A0 4.123773] sd 0:0:0:0: [sda] Write Protect is off
-> [=C2=A0=C2=A0=C2=A0 4.168682] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> [=C2=A0=C2=A0=C2=A0 4.279304] sd 0:0:0:0: [sda] Write cache: enabled, rea=
-d cache:=20
-> enabled, doesn't support DPO or FUA
-> [=C2=A0=C2=A0=C2=A0 4.463508] sd 0:0:0:0: [sda] Preferred minimum I/O siz=
-e 4096 bytes
-> [=C2=A0=C2=A0=C2=A0 4.519477]=C2=A0 sda: RDSK (512) sda1 (DOS^G)(res 2 sp=
-b 2) sda2=20
-> (SFS^B)(res 2 spb 1) sda3 (SFS^B)(res 2 spb 2) sda4 ((res 2 spb 1)
-> [=C2=A0=C2=A0=C2=A0 4.720896] sda: p4 size 18446744071956107760 extends b=
-eyond EOD,
-> [=C2=A0=C2=A0=C2=A0 4.922550]=C2=A0 sda: RDSK (512) sda1 (DOS^G)(res 2 sp=
-b 2) sda2=20
-> (SFS^B)(res 2 spb 1) sda3 (SFS^B)(res 2 spb 2) sda4 ((res 2 spb 1)
-> [=C2=A0=C2=A0=C2=A0 4.948655] sda: p4 size 18446744071956107760 extends b=
-eyond EOD,=20
-> truncated
-
-Looks like the old code is complaining about your partition table as well.
-
-> Could you please check your commit?
-
-Please also make sure that your RDB is not corrupted.
-
-Adrian
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
