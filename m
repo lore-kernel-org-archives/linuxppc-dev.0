@@ -4,69 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F02FFEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B45C4EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:31:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Dub84nZm;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=3Y1jfeE0;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JGOebDL4;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PW/o667y;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsHnz4Pk4z3bwb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 22:29:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsHqx1qpyz3cJN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 22:31:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Dub84nZm;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=3Y1jfeE0;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JGOebDL4;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PW/o667y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 326 seconds by postgrey-1.37 at boromir; Thu, 29 Jun 2023 22:25:32 AEST
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsHj83p1fz30hJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 22:25:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsHjG175fz30hL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 22:25:38 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id CC89C2189A;
-	Thu, 29 Jun 2023 12:20:02 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 52FDB1FD68;
+	Thu, 29 Jun 2023 12:19:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1688041202; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1688041197; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=q1EPhwvEq31eQQzrYtIsQXTt/XpY0djP9Otjk0JmQCc=;
-	b=Dub84nZmbr1BGiuBX3aLZCTa/8FoWtNS4BzLIrTk5qvczeKCFX53em1kSbWeLcAyIspbMx
-	j6KHULUkYWyNqKDLvuCO97srdnBXPf6V9M5RJtPm/H/f0wvATtksA3VMvLECaNAMn8RMxS
-	gxDb1nO4bNmBncRGAjcZ0s/8rYkvx4Y=
+	bh=VSCnNOTIHcBHYP1H47mhSWWMU/cUgjzIXzIZqp//59s=;
+	b=JGOebDL4XjP7zTfKng4P+h6jtTTgakd2fjixPEvmz/HdvzbYOg1LD8peXmLP0KwXI3FUzx
+	9ccjQzWoVuNCFHnkDDDbq3+AKuSJLX39AmuIZpfRBb96CPOqEJ5FQ7RbtqMNbiFXZeA/wl
+	pCwVkAFVOTNLvMhnEKrzdAem0Ahs6hE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1688041202;
+	s=susede2_ed25519; t=1688041197;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=q1EPhwvEq31eQQzrYtIsQXTt/XpY0djP9Otjk0JmQCc=;
-	b=3Y1jfeE0PeJBr+WAivUH1Npe9jamuIgzZi4hsiB1oUlsIjSgHaYMy5c5OmGy6U7+S8zHKp
-	tX1gbKFXmHiTluBA==
+	bh=VSCnNOTIHcBHYP1H47mhSWWMU/cUgjzIXzIZqp//59s=;
+	b=PW/o667y7EHsEjtoqDiPRKJQ3VACKqdZligZ3HBaVCmmMwC0zrBZm6NldMzu/wXTM544nR
+	IeOPLeAMnpTux8Bg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 59C8213905;
-	Thu, 29 Jun 2023 12:20:02 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D192513905;
+	Thu, 29 Jun 2023 12:19:56 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id EFS5FPJ2nWRlVAAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 29 Jun 2023 12:20:02 +0000
+	id wNs2Mux2nWRlVAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 29 Jun 2023 12:19:56 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: arnd@arndb.de,
 	deller@gmx.de,
 	daniel@ffwll.ch,
 	airlied@gmail.com
-Subject: [PATCH 12/12] fbdev/core: Define empty fb_firmware_edid() in <linux/fb.h>
-Date: Thu, 29 Jun 2023 13:45:51 +0200
-Message-ID: <20230629121952.10559-13-tzimmermann@suse.de>
+Subject: [PATCH 04/12] staging/sm750fb: Do not include <linux/screen_info.h>
+Date: Thu, 29 Jun 2023 13:45:43 +0200
+Message-ID: <20230629121952.10559-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230629121952.10559-1-tzimmermann@suse.de>
 References: <20230629121952.10559-1-tzimmermann@suse.de>
@@ -83,70 +82,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-arm-kernel@lists.infradead.org, Teddy Wang <teddy.wang@siliconmotion.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move the empty declaration of fb_firmware_edid() to <linux/fb.h>.
-Follow common style and avoid the overhead of exporting the symbol.
-No functional changes.
+The sm750fb driver does not need anything from <linux/screen_info.h>.
+Remove the include statements.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
 ---
- drivers/video/fbdev/core/fbmon.c |  7 +------
- include/linux/fb.h               | 10 +++++++++-
- 2 files changed, 10 insertions(+), 7 deletions(-)
+ drivers/staging/sm750fb/sm750.c        | 1 -
+ drivers/staging/sm750fb/sm750_accel.c  | 1 -
+ drivers/staging/sm750fb/sm750_cursor.c | 1 -
+ drivers/staging/sm750fb/sm750_hw.c     | 1 -
+ 4 files changed, 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 9ae063021e431..d45bd8a18c2f2 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1496,13 +1496,8 @@ const unsigned char *fb_firmware_edid(struct fb_info *info)
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 55e302a27847d..c260f73cf570a 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -14,7 +14,6 @@
+ #include <linux/mm_types.h>
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+-#include <linux/screen_info.h>
+ #include <linux/console.h>
  
- 	return edid;
- }
--#else
--const unsigned char *fb_firmware_edid(struct fb_info *info)
--{
--	return NULL;
--}
--#endif
- EXPORT_SYMBOL(fb_firmware_edid);
-+#endif
+ #include "sm750.h"
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 24b9077a634a6..44b9e3fe3a41d 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -14,7 +14,6 @@
+ #include <linux/pagemap.h>
+ #include <linux/console.h>
+ #include <linux/platform_device.h>
+-#include <linux/screen_info.h>
  
- EXPORT_SYMBOL(fb_parse_edid);
- EXPORT_SYMBOL(fb_edid_to_monspecs);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 5ffd2223326bf..e949532ffc109 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -761,7 +761,6 @@ extern int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var,
- extern int fb_validate_mode(const struct fb_var_screeninfo *var,
- 			    struct fb_info *info);
- extern int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var);
--extern const unsigned char *fb_firmware_edid(struct fb_info *info);
- extern void fb_edid_to_monspecs(unsigned char *edid,
- 				struct fb_monspecs *specs);
- extern void fb_destroy_modedb(struct fb_videomode *modedb);
-@@ -774,6 +773,15 @@ extern int of_get_fb_videomode(struct device_node *np,
- extern int fb_videomode_from_videomode(const struct videomode *vm,
- 				       struct fb_videomode *fbmode);
+ #include "sm750.h"
+ #include "sm750_accel.h"
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 43e6f52c2551f..eea4d1bd36ce7 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -14,7 +14,6 @@
+ #include <linux/pagemap.h>
+ #include <linux/console.h>
+ #include <linux/platform_device.h>
+-#include <linux/screen_info.h>
  
-+#if defined(CONFIG_FIRMWARE_EDID)
-+const unsigned char *fb_firmware_edid(struct fb_info *info);
-+#else
-+static inline const unsigned char *fb_firmware_edid(struct fb_info *info)
-+{
-+	return NULL;
-+}
-+#endif
-+
- /* drivers/video/modedb.c */
- #define VESA_MODEDB_SIZE 43
- #define DMT_SIZE 0x50
+ #include "sm750.h"
+ #include "sm750_cursor.h"
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 55cb00e8b0d1c..71247eaf26eef 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -17,7 +17,6 @@
+ #include <asm/mtrr.h>
+ #endif
+ #include <linux/platform_device.h>
+-#include <linux/screen_info.h>
+ #include <linux/sizes.h>
+ 
+ #include "sm750.h"
 -- 
 2.41.0
 
