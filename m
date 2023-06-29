@@ -4,32 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D634BEB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 02:11:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9E1DEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 02:17:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qs24Z15sMz3byl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:11:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nfschina.com (client-ip=42.101.60.195; helo=mail.nfschina.com; envelope-from=yunchuan@nfschina.com; receiver=lists.ozlabs.org)
-Received: from mail.nfschina.com (unknown [42.101.60.195])
-	by lists.ozlabs.org (Postfix) with SMTP id 4Qs2406y6fz3bWH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 12:10:53 +1000 (AEST)
-Received: from [172.30.11.106] (unknown [180.167.10.98])
-	by mail.nfschina.com (Maildata Gateway V2.8.8) with ESMTPSA id 23C4C604D34EE;
-	Thu, 29 Jun 2023 10:10:39 +0800 (CST)
-Message-ID: <72784932-8390-4f82-fbaa-5086804025df@nfschina.com>
-Date: Thu, 29 Jun 2023 10:10:38 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH net-next 00/10] Remove unnecessary (void*) conversions
-Content-Language: en-US
-To: Andrew Lunn <andrew@lunn.ch>
-X-MD-Sfrom: yunchuan@nfschina.com
-X-MD-SrcIP: 180.167.10.98
-From: yunchuan <yunchuan@nfschina.com>
-In-Reply-To: <ecd70c28-1629-4b6c-96fc-a0b8f8713a04@lunn.ch>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qs2CM1lD1z3bsP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:17:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qs2Bm568cz2xgp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 12:16:47 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 75EE61A0D8D;
+	Thu, 29 Jun 2023 04:10:32 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 3E24D1A0D8C;
+	Thu, 29 Jun 2023 04:10:32 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 7BE20181D0E5;
+	Thu, 29 Jun 2023 10:10:30 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: tfiga@chromium.org,
+	m.szyprowski@samsung.com,
+	mchehab@kernel.org,
+	linux-media@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/6] Add audio support in v4l2 framework
+Date: Thu, 29 Jun 2023 09:37:47 +0800
+Message-Id: <1688002673-28493-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -41,33 +56,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irusskikh@marvell.com, kernel-janitors@vger.kernel.org, linux@armlinux.org.uk, edumazet@google.com, iyappan@os.amperecomputing.com, anthony.l.nguyen@intel.com, quan@os.amperecomputing.com, Hao Lan <lanhao@huawei.com>, qiang.zhao@nxp.com, f.fainelli@gmail.com, jesse.brandeburg@intel.com, xeb@mail.ru, intel-wired-lan@lists.osuosl.org, yangyingliang@huawei.com, kuba@kernel.org, pabeni@redhat.com, yisen.zhuang@huawei.com, ansuelsmth@gmail.com, steve.glendinning@shawell.net, keyur@os.amperecomputing.com, mostrows@earthlink.net, salil.mehta@huawei.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rempel-privat.de, olteanv@gmail.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, hkallweit1@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2023/6/28 22:39, Andrew Lunn wrote:
-> On Wed, Jun 28, 2023 at 04:37:43PM +0200, Andrew Lunn wrote:
->>> Hi, Hao Lan,
->>>
->>> Sorry for that, I just compiled these patches in the mainline branch.
->>> I know now, it's also necessary to compile patches in net and net-next
->>> branch.
->>> Thanks for your reply!
->> net-next is also closed at the moment due to the merge window. Please
->> wait two weeks before reposting, by which time net-next will be open
->> again.
+Audio signal processing has the requirement for memory to
+memory similar as Video.
 
-Hi, Andrew Lunn,
+This patch is to add this support in v4l2 framework, defined
+new buffer type V4L2_BUF_TYPE_AUDIO_CAPTURE and
+V4L2_BUF_TYPE_AUDIO_OUTPUT, defined new format v4l2_audio_format
+for audio case usage.
 
-Understand, and thanks for your reminding!
+The created audio device is named "/dev/audioX".
 
-> Your email threading also seems to be broken, there is no
-> threading. That might cause pathworks an issue.
-Sometimes it doesn't work, but I also receive email from email list.
-So I can read your email from email list although something is broken.
-Thanks again！
+And add memory to memory support for two kinds of i.MX ASRC
+module
 
-wuych
 
->
-> 	Andrew
+Shengjiu Wang (6):
+  media: v4l2: Add audio capture and output support
+  ASoC: fsl_asrc: define functions for memory to memory usage
+  ASoC: fsl_easrc: define functions for memory to memory usage
+  ASoC: fsl_asrc: Add memory to memory driver
+  ASoC: fsl_asrc: enable memory to memory function
+  ASoC: fsl_easrc: enable memory to memory function
+
+ .../media/common/videobuf2/videobuf2-v4l2.c   |   4 +
+ drivers/media/v4l2-core/v4l2-dev.c            |  17 +
+ drivers/media/v4l2-core/v4l2-ioctl.c          |  52 ++
+ include/media/v4l2-dev.h                      |   2 +
+ include/media/v4l2-ioctl.h                    |  34 +
+ include/uapi/linux/videodev2.h                |  19 +
+ sound/soc/fsl/Kconfig                         |  13 +
+ sound/soc/fsl/Makefile                        |   2 +
+ sound/soc/fsl/fsl_asrc.c                      | 175 +++-
+ sound/soc/fsl/fsl_asrc.h                      |   2 +
+ sound/soc/fsl/fsl_asrc_common.h               |  54 ++
+ sound/soc/fsl/fsl_asrc_m2m.c                  | 878 ++++++++++++++++++
+ sound/soc/fsl/fsl_asrc_m2m.h                  |  48 +
+ sound/soc/fsl/fsl_easrc.c                     | 255 ++++-
+ sound/soc/fsl/fsl_easrc.h                     |   6 +
+ 15 files changed, 1557 insertions(+), 4 deletions(-)
+ create mode 100644 sound/soc/fsl/fsl_asrc_m2m.c
+ create mode 100644 sound/soc/fsl/fsl_asrc_m2m.h
+
+-- 
+2.34.1
+
