@@ -4,85 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E36F4EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 14:30:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1A0DEB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 14:33:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=2EcylAr+;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=qcZu2F7J;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R714lsXm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsLTX01t3z3bc0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 00:30:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsLXK0VVCz3bX5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 00:33:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=2EcylAr+;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=qcZu2F7J;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R714lsXm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.18; helo=wnew4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com [64.147.123.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsLST5tlQz305g
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 00:29:45 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-	by mailnew.west.internal (Postfix) with ESMTP id 9B6A02B000A4;
-	Thu, 29 Jun 2023 10:29:38 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Thu, 29 Jun 2023 10:29:40 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm1; t=1688048978; x=1688056178; bh=nG
-	nJsyAJyrvJkwnkSe1+RvyafOFNiNiqyHMsPO1u6Xk=; b=2EcylAr+2IQK5P7b6p
-	/vjLbGIHf8i+8rzMt8chAuFq+c5T2nXA6rNsTNzOdtksQ6e0sAw9/eRHtOar+WHl
-	hAsaWivSScicHRc+IOwIVIkXzMKCHS/A9Ffztx8GB0RJptxk+yUbu3OXBw/f3KTQ
-	oPUWqOApNqupZeOxA1+KamV7Y1R9j5wdLjjMttKjfSUmTUPTzRkr/PbCf7BFCJf4
-	mDKkwIwEguDSpZs+nb5nQ5ZSuOg9qrQBVpn/A0WtJOxqM4NA4/h3SXbcRbNONYzA
-	I5y/p+xe7tbFRUhSHoYPvHtNe3/fi0gTCERIIZJ9/fLQnFzpbVcymrZbyXkaYBBK
-	ODIg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:sender:subject
-	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm2; t=1688048978; x=1688056178; bh=nGnJsyAJyrvJk
-	wnkSe1+RvyafOFNiNiqyHMsPO1u6Xk=; b=qcZu2F7J3I03fwrcSPg8dsLuhFIrS
-	ucycm657dud2E6uYWskFVqcIfgSe/dBt8fFB6+XQTy/fANN6a1BuztN45oTSanNT
-	XxVMQih8LW415rbF6tRZPCXSpwn+ekET+YIRIH1036pYAwUd1Fb1ijQRv3N+j2GN
-	AxU6byz7HLauD8dLGeOrAT3BJrYb8oPjklQK9FEAS/EPJOPUSZb+pzy/zrsduOA2
-	IVQQiY6wMEEkf+oC5juPiNw0sDEEHj+C7FUzhU16m7yof5koi7/AUsQnx7vi7hIE
-	YvfD9R33aPOCag5rTXjki4uvznKy226FqetZdturkKSXU4rXB99QQtsyg==
-X-ME-Sender: <xms:UZWdZPQFtBYsPdlXlUSdNixOakdgSk0rQ0sJEW2WMk3NI57JBkFXZA>
-    <xme:UZWdZAzd5cSzTnb4-3WR64AVGeqojUQ8_r8RCWCNfeGwQuSKyph38WHIvHfKtGQ9D
-    iuBERCaWpz0v8yUOfI>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrtdeggdejjecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
-    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
-    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
-    hnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:UZWdZE0-6IC7fBNDeGBvpnGm2Zr-dhEGRLTF93khPbJEJ5EkVp6Jfw>
-    <xmx:UZWdZPAguwQt8yn2qe__L5Yzs-USfTNjeEYazXWLDNvlZmzvvwKQYg>
-    <xmx:UZWdZIhqyNx_om12J_mIvSUHmK-q2dXchnc5mILhG3AL8P9Et1GMBA>
-    <xmx:UpWdZB0EDG72hkx-t3BFD4YV93ZdrsN0Q1V64IlAbDxvxvOYULKpsP-j2j8>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id C13A1B60089; Thu, 29 Jun 2023 10:29:37 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-499-gf27bbf33e2-fm-20230619.001-gf27bbf33
-Mime-Version: 1.0
-Message-Id: <0783a7ec-b779-4033-9877-f6eacc65c575@app.fastmail.com>
-In-Reply-To: <4d711508-c299-49f2-8691-e75d68f2485e@app.fastmail.com>
-References: <20230629121952.10559-1-tzimmermann@suse.de>
- <4d711508-c299-49f2-8691-e75d68f2485e@app.fastmail.com>
-Date: Thu, 29 Jun 2023 16:29:17 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Thomas Zimmermann" <tzimmermann@suse.de>, "Helge Deller" <deller@gmx.de>,
- "Daniel Vetter" <daniel@ffwll.ch>, "Dave Airlie" <airlied@gmail.com>
-Subject: Re: [PATCH 00/12] arch,fbdev: Move screen_info into arch/
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsLWM1y9sz2xgp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 00:32:15 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35TERpoM012296;
+	Thu, 29 Jun 2023 14:31:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=41nfk7hVKk/WvuSxvNTVdQGB0w7rWokALwy7vmRvjrs=;
+ b=R714lsXmp0Hyb9p2ypbY+7/AD7Qnn2bHTPWr7LiHcFJXiCz/UaqyiPdFbzBcym1TxHZt
+ jZgjIHTv2LFn3LXPOOs7bLqkqk8KJEENe6fY55ETNJm4eU9AkU+USfs/n8iFwijj+Hoh
+ 5h7LwylVvTeIGaNYxNpvHjiCub/9owljzbFGWPYXHfRVnhPtYbGVIrNQE+BzWBqcrO8W
+ Z6rcQ21LkqWWyBeUe7XF/efcs2HCjO2dvlL0X8HOryeR2t7qe+RQzZACBZ8wQvOnJFzt
+ 2oggH+nmAZVhTUK9QQf30TzXoN9jL+i1XXYDGLDGs2qMv5kEFrvMLLv0HZjsY0/n28YK Ig== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhbr802sm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Jun 2023 14:31:57 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35TESZSY014916;
+	Thu, 29 Jun 2023 14:31:57 GMT
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhbr802qy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Jun 2023 14:31:57 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35TCijaW019529;
+	Thu, 29 Jun 2023 14:31:54 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3rdr452hcs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Jun 2023 14:31:54 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35TEVq5W57344464
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 29 Jun 2023 14:31:52 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0B19420040;
+	Thu, 29 Jun 2023 14:31:52 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 907082004B;
+	Thu, 29 Jun 2023 14:31:51 +0000 (GMT)
+Received: from pomme.tlslab.ibm.com (unknown [9.101.4.33])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 29 Jun 2023 14:31:51 +0000 (GMT)
+From: Laurent Dufour <ldufour@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/9] cpu/SMT: Move SMT prototypes into cpu_smt.h
+Date: Thu, 29 Jun 2023 16:31:41 +0200
+Message-ID: <20230629143149.79073-2-ldufour@linux.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230629143149.79073-1-ldufour@linux.ibm.com>
+References: <20230629143149.79073-1-ldufour@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: qok6Iwls5hMQVnLlIb9in4W0qHiQy2Cz
+X-Proofpoint-ORIG-GUID: 3Rw_No3n5AygzyJQ4aUyH0Jzi8w-aASt
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-06-29_03,2023-06-27_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ priorityscore=1501 lowpriorityscore=0 phishscore=0 impostorscore=0
+ spamscore=0 adultscore=0 mlxlogscore=811 clxscore=1015 mlxscore=0
+ bulkscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2306290131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,63 +96,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, linux-mips@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, mingo@redhat.com, bp@alien8.de, npiggin@gmail.com, tglx@linutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 29, 2023, at 15:31, Arnd Bergmann wrote:
-> On Thu, Jun 29, 2023, at 13:45, Thomas Zimmermann wrote:
->>
->> Future directions: with the patchset in place, it will become possible
->> to provide screen_info and edid_info only if there are users. Some
->> architectures do this by testing for CONFIG_VT, CONFIG_DUMMY_CONSOLE,
->> etc. A more uniform approach would be nice. We should also attempt
->> to minimize access to the global screen_info as much as possible. To
->> do so, some drivers, such as efifb and vesafb, would require an update.
->> The firmware's EDID data could possibly made available outside of fbdev.
->> For example, the simpledrm and ofdrm drivers could provide such data
->> to userspace compositors.
->
-> I suspect that most architectures that provide a screen_info only
-> have this in order to compile the framebuffer drivers, and provide
-> hardcoded data that does not even reflect any real hardware.
->
-> We can probably reduce the number of architectures that do this
-> a lot, especially if we get EFI out of the picture.
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-I tried to have another look at who uses what, and here are
-some observations:
+In order to export the cpuhp_smt_control enum as part of the interface
+between generic and architecture code, the architecture code needs to
+include asm/topology.h.
 
-- EFIFB and hyperv are the only ones that are relevant on modern
-  systmes, and they are only used on systems using EFI, so they
-  could use a separate data structure that is defined as part of
-  drivers/firmware/efi. This would likely mean we don't have to
-  define a separate screen_info for arm64, loongarch, ia64 and
-  riscv, and could separate the legacy vgacon/vesafb stuff on
-  arm32 from the efi side.
+But that leads to circular header dependencies. So split the enum and
+related declarations into a separate header.
 
-- FB_SIS can likely be marked 'depends on X86' like FB_INTEL,
-  it seems to depend on x86 BOOT_VESA_SUPPORT.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+[ldufour: rewording the commit's description]
+Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+---
+ arch/x86/include/asm/topology.h |  2 ++
+ include/linux/cpu.h             | 25 +------------------------
+ include/linux/cpu_smt.h         | 29 +++++++++++++++++++++++++++++
+ kernel/cpu.c                    |  1 +
+ 4 files changed, 33 insertions(+), 24 deletions(-)
+ create mode 100644 include/linux/cpu_smt.h
 
-- FB_VGA16 is currently support on powerpc and enabled on
-  one defconfig (pasemi), which I'm fairly sure is a mistake,
-  so this could be made x86 specific as well.
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 458c891a8273..66927a59e822 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -136,6 +136,8 @@ static inline int topology_max_smt_threads(void)
+ 	return __max_smt_threads;
+ }
+ 
++#include <linux/cpu_smt.h>
++
+ int topology_update_package_map(unsigned int apicid, unsigned int cpu);
+ int topology_update_die_map(unsigned int dieid, unsigned int cpu);
+ int topology_phys_to_logical_pkg(unsigned int pkg);
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 8582a7142623..40548f3c201c 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -18,6 +18,7 @@
+ #include <linux/compiler.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/cpu_smt.h>
+ 
+ struct device;
+ struct device_node;
+@@ -202,30 +203,6 @@ void cpuhp_report_idle_dead(void);
+ static inline void cpuhp_report_idle_dead(void) { }
+ #endif /* #ifdef CONFIG_HOTPLUG_CPU */
+ 
+-enum cpuhp_smt_control {
+-	CPU_SMT_ENABLED,
+-	CPU_SMT_DISABLED,
+-	CPU_SMT_FORCE_DISABLED,
+-	CPU_SMT_NOT_SUPPORTED,
+-	CPU_SMT_NOT_IMPLEMENTED,
+-};
+-
+-#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
+-extern enum cpuhp_smt_control cpu_smt_control;
+-extern void cpu_smt_disable(bool force);
+-extern void cpu_smt_check_topology(void);
+-extern bool cpu_smt_possible(void);
+-extern int cpuhp_smt_enable(void);
+-extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
+-#else
+-# define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
+-static inline void cpu_smt_disable(bool force) { }
+-static inline void cpu_smt_check_topology(void) { }
+-static inline bool cpu_smt_possible(void) { return false; }
+-static inline int cpuhp_smt_enable(void) { return 0; }
+-static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
+-#endif
+-
+ extern bool cpu_mitigations_off(void);
+ extern bool cpu_mitigations_auto_nosmt(void);
+ 
+diff --git a/include/linux/cpu_smt.h b/include/linux/cpu_smt.h
+new file mode 100644
+index 000000000000..722c2e306fef
+--- /dev/null
++++ b/include/linux/cpu_smt.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _LINUX_CPU_SMT_H_
++#define _LINUX_CPU_SMT_H_
++
++enum cpuhp_smt_control {
++	CPU_SMT_ENABLED,
++	CPU_SMT_DISABLED,
++	CPU_SMT_FORCE_DISABLED,
++	CPU_SMT_NOT_SUPPORTED,
++	CPU_SMT_NOT_IMPLEMENTED,
++};
++
++#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
++extern enum cpuhp_smt_control cpu_smt_control;
++extern void cpu_smt_disable(bool force);
++extern void cpu_smt_check_topology(void);
++extern bool cpu_smt_possible(void);
++extern int cpuhp_smt_enable(void);
++extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
++#else
++# define cpu_smt_control               (CPU_SMT_NOT_IMPLEMENTED)
++static inline void cpu_smt_disable(bool force) { }
++static inline void cpu_smt_check_topology(void) { }
++static inline bool cpu_smt_possible(void) { return false; }
++static inline int cpuhp_smt_enable(void) { return 0; }
++static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
++#endif
++
++#endif /* _LINUX_CPU_SMT_H_ */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index f4a2c5845bcb..237394e0574a 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -413,6 +413,7 @@ static void lockdep_release_cpus_lock(void)
+ void __weak arch_smt_update(void) { }
+ 
+ #ifdef CONFIG_HOTPLUG_SMT
++
+ enum cpuhp_smt_control cpu_smt_control __read_mostly = CPU_SMT_ENABLED;
+ 
+ void __init cpu_smt_disable(bool force)
+-- 
+2.41.0
 
-- VGA_CONSOLE has a complicated Kconfig dependency list that
-  lists platforms without VGA support but I think this is better
-  expressed with a positive list. It looks like csky, hexagon,
-  nios2 and xtensa should be excluded here and not provide
-  screen_info.
-
-- arm and mips only need to provide screen_info on machines
-  with VGA_CONSOLE. On Arm we have a dependency on
-  footbridge/integrator/netwinder, while on mips the
-  dependency can be added to the platforms that fill
-  the info (mips, malta, sibyte, sni).
-
-- DUMMY_CONSOLE only uses screen_info on arm, and this should
-  likely be limited to the three obsolete machines that
-  support VGACON. Almost all Arm machines use DT these days
-  and won't ever fill the screen info dynamically.
-
-      Arnd
