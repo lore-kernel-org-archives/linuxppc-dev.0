@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0220AEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C994EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 12:28:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=d/ONtzMH;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=f3OsHAg+;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=LkHGO7ba;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=5mRgVk1/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsHl819pMz3bw3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 22:27:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsHm517FQz3bw9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jun 2023 22:28:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=d/ONtzMH;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=f3OsHAg+;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=LkHGO7ba;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=5mRgVk1/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsHj83h5zz30hD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsHj83t8Kz30hK
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 22:25:32 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 1C0E72186B;
-	Thu, 29 Jun 2023 12:20:00 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4BAC6216DC;
+	Thu, 29 Jun 2023 12:19:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1688041200; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1688041196; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=cQ3EDeCSnwNHCvqI9o+8mLXg+vNxeu9dqjNgbn6vW64=;
-	b=d/ONtzMHBHfhPFGJZXFbwxLHKekEj3Ck140ZBA9jozx6NZ9IQncD0ogM4FlYnbVbwD45G1
-	SJ8ei5BmHWMBBnBkm9jXuvlD6yHYAuy3e3PYj4Jw61gdgEKEw5UzbK+mo0r3LVmeUysWir
-	EVI14bZZuCFygATwSv7zxT0YU4yItG4=
+	bh=IXGU5X8lHgcy0xSrc3ZVVAstecW58Mhx3eVBaUQt3EA=;
+	b=LkHGO7baJX3zJX0cf+a+c/FoUp4pImvT9g1shyK677YQqnqHTwkq2/nbPfpIMVxGT5xDkj
+	aT1pTu4l3b7vpn/6c2VUCblTNZr1fAjD/lJ0StGaPRg75StQdS4Z+R+XnN2JzWnH/E34VU
+	zK/QygQuma782ceDLn96pVDkn5oZtOU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1688041200;
+	s=susede2_ed25519; t=1688041196;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=cQ3EDeCSnwNHCvqI9o+8mLXg+vNxeu9dqjNgbn6vW64=;
-	b=f3OsHAg+MvgJYkBzRW/rb3tMUgPoqd73LlNMm0j7gkGvTcrmNDsm3dmRC0NYT1egdnRYUJ
-	PNHfPSmv46ciy1AA==
+	bh=IXGU5X8lHgcy0xSrc3ZVVAstecW58Mhx3eVBaUQt3EA=;
+	b=5mRgVk1/pVfSDoygZItWVKC6R0IzmCwK6ZL98BBiHU3NrlL4mP9k6A6PayShKVnBSPBC2x
+	88su8LwJ20TmyWBQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 61E3213A43;
-	Thu, 29 Jun 2023 12:19:59 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CD9EE13905;
+	Thu, 29 Jun 2023 12:19:55 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id wFf0Fu92nWRlVAAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 29 Jun 2023 12:19:59 +0000
+	id CAVJMet2nWRlVAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 29 Jun 2023 12:19:55 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: arnd@arndb.de,
 	deller@gmx.de,
 	daniel@ffwll.ch,
 	airlied@gmail.com
-Subject: [PATCH 07/12] arch/x86: Declare edid_info in <asm/screen_info.h>
-Date: Thu, 29 Jun 2023 13:45:46 +0200
-Message-ID: <20230629121952.10559-8-tzimmermann@suse.de>
+Subject: [PATCH 02/12] fbdev/sm712fb: Do not include <linux/screen_info.h>
+Date: Thu, 29 Jun 2023 13:45:41 +0200
+Message-ID: <20230629121952.10559-3-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230629121952.10559-1-tzimmermann@suse.de>
 References: <20230629121952.10559-1-tzimmermann@suse.de>
@@ -82,116 +82,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Ard Biesheuvel <ardb@kernel.org>, linux-arch@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Sami Tolvanen <samitolvanen@google.com>, Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org, Juerg Haefliger <juerg.haefliger@canonical.com>, Thoma
- s Zimmermann <tzimmermann@suse.de>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-arm-kernel@lists.infradead.org, Teddy Wang <teddy.wang@siliconmotion.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The global variable edid_info contains the firmware's EDID information
-as an extension to the regular screen_info on x86. Therefore move it to
-<asm/screen_info.h>.
-
-Add the Kconfig token ARCH_HAS_EDID_INFO to guard against access on
-architectures that don't provide edid_info. Select it on x86.
+Sm712fb's dependency on <linux/screen_info.h> is artificial in that
+it only uses struct screen_info for its internals. Replace the use of
+struct screen_info with a custom data structure and remove the include
+of <linux/screen_info.h>.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
 Cc: Helge Deller <deller@gmx.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: "Paul E. McKenney" <paulmck@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Frederic Weisbecker <frederic@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Ard Biesheuvel <ardb@kernel.org>
-Cc: Sami Tolvanen <samitolvanen@google.com>
-Cc: Juerg Haefliger <juerg.haefliger@canonical.com>
 ---
- arch/Kconfig                      | 6 ++++++
- arch/x86/Kconfig                  | 1 +
- drivers/video/Kconfig             | 3 ---
- include/asm-generic/screen_info.h | 6 ++++++
- include/video/edid.h              | 3 ---
- 5 files changed, 13 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 2f58293fd7bcb..ee9866e4df2b0 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -1466,6 +1466,12 @@ config ARCH_HAS_NONLEAF_PMD_YOUNG
- 	  address translations. Page table walkers that clear the accessed bit
- 	  may use this capability to reduce their search space.
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index b7ad3c644e138..f929091da4e77 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -27,12 +27,17 @@
+ #include <linux/uaccess.h>
+ #include <linux/module.h>
+ #include <linux/console.h>
+-#include <linux/screen_info.h>
  
-+config ARCH_HAS_EDID_INFO
-+	bool
-+	help
-+	  Selected by architectures that provide a global instance of
-+	  edid_info.
+ #include <linux/pm.h>
+ 
+ #include "sm712.h"
+ 
++struct smtcfb_screen_info {
++	u16 lfb_width;
++	u16 lfb_height;
++	u16 lfb_depth;
++};
 +
- config ARCH_HAS_SCREEN_INFO
- 	bool
- 	help
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index d7c2bf4ee403d..ee81855116be7 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -76,6 +76,7 @@ config X86
- 	select ARCH_HAS_DEBUG_VM_PGTABLE	if !X86_PAE
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select ARCH_HAS_EARLY_DEBUG		if KGDB
-+	select ARCH_HAS_EDID_INFO
- 	select ARCH_HAS_ELF_RANDOMIZE
- 	select ARCH_HAS_FAST_MULTIPLIER
- 	select ARCH_HAS_FORTIFY_SOURCE
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index d4a72bea56be0..8b2b9ac37c3df 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -21,9 +21,6 @@ config STI_CORE
- config VIDEO_CMDLINE
- 	bool
+ /*
+  * Private structure
+  */
+@@ -829,7 +834,7 @@ static const struct modeinit vgamode[] = {
+ 	},
+ };
  
--config ARCH_HAS_SCREEN_INFO
--	bool
--
- config VIDEO_NOMODESET
- 	bool
- 	default n
-diff --git a/include/asm-generic/screen_info.h b/include/asm-generic/screen_info.h
-index 6fd0e50fabfcd..5efc99c296b40 100644
---- a/include/asm-generic/screen_info.h
-+++ b/include/asm-generic/screen_info.h
-@@ -5,6 +5,12 @@
+-static struct screen_info smtc_scr_info;
++static struct smtcfb_screen_info smtc_scr_info;
  
- #include <uapi/linux/screen_info.h>
+ static char *mode_option;
  
-+#include <video/edid.h>
-+
-+#if defined(CONFIG_ARCH_HAS_EDID_INFO)
-+extern struct edid_info edid_info;
-+#endif
-+
- #if defined(CONFIG_ARCH_HAS_SCREEN_INFO)
- extern struct screen_info screen_info;
- #endif
-diff --git a/include/video/edid.h b/include/video/edid.h
-index f614371e9116a..52aabb7060321 100644
---- a/include/video/edid.h
-+++ b/include/video/edid.h
-@@ -4,7 +4,4 @@
- 
- #include <uapi/video/edid.h>
- 
--#ifdef CONFIG_X86
--extern struct edid_info edid_info;
--#endif
- #endif /* __linux_video_edid_h__ */
 -- 
 2.41.0
 
