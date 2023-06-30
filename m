@@ -4,37 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9699DEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 06:10:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AA59EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 06:14:44 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZEhDKgB2;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QslKj16Tzz3byW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 16:10:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QslQp5gszz3btZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 16:14:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZEhDKgB2;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QslJc49Q7z305Q
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 16:09:17 +1000 (AEST)
-Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.57])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4QslDf5ZPszqVmj;
-	Fri, 30 Jun 2023 14:05:54 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Fri, 30 Jun 2023 14:08:40 +0800
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 1/2] mm: remove arguments of show_mem()
-Date: Fri, 30 Jun 2023 14:22:52 +0800
-Message-ID: <20230630062253.189440-1-wangkefeng.wang@huawei.com>
-X-Mailer: git-send-email 2.41.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QslPm5ZmSz303Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 16:13:48 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35U5xr7v025996;
+	Fri, 30 Jun 2023 06:13:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=Tf6cj+h9jeHfj+a/aY3L5KYxzE7xOSns3FleMysM8bg=;
+ b=ZEhDKgB2bbeYM4WUp8ZKsZ6FO8gQaJ1WCa+w0cUZ5RTWH5rixd8kyHpt+0PcGTSpDPWW
+ d47yZjj/ToxHyB8qWYFQn3efVetEMcx2znN0v3JXgkzuWNs79k8nSCbi8R+ymLPEyLu6
+ Q62LHPK9c8ATlny5fi7Hzj3/3vT6fgYpUcbJJJa3tSb/8hmKhOlZyVT/dWbPY0VrbiZ4
+ Vl3vMfMF60xyVJQ53aVGHZRo5+/Wn9Dsy3AJbFzTbubyTVRnYiOsx9wNgYUKmQPeME+j
+ 3MchwRferUSI/4Kc+lvzjaHf3yBt+rFoV5X/C0PVfzi9yvS2IQbyIGcEsyDlwCdHVChq WA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhsd58bay-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Jun 2023 06:13:40 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35U62vKm002833;
+	Fri, 30 Jun 2023 06:13:39 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhsd58b9d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Jun 2023 06:13:39 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35U4seK8027107;
+	Fri, 30 Jun 2023 06:13:34 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3rdr452wnq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Jun 2023 06:13:34 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35U6DUxx20447866
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 30 Jun 2023 06:13:31 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E376020043;
+	Fri, 30 Jun 2023 06:13:30 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4715020040;
+	Fri, 30 Jun 2023 06:13:29 +0000 (GMT)
+Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.in.ibm.com (unknown [9.204.206.66])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 30 Jun 2023 06:13:29 +0000 (GMT)
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
+Subject: [PATCH] arch/powerpc: Remove unnecessary endian conversion code in XICS
+Date: Fri, 30 Jun 2023 11:43:26 +0530
+Message-Id: <20230630061326.19288-1-gautam@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
- dggpemm100001.china.huawei.com (7.185.36.93)
-X-CFilter-Loop: Reflected
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: t2-0Bs-J1YoWx1cTsuh3DUMmh1sO6fE4
+X-Proofpoint-GUID: RJx2A3xX3zIC-07HRQYcS02uAFMg_P7c
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-06-30_02,2023-06-27_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
+ mlxlogscore=999 clxscore=1015 malwarescore=0 spamscore=0 suspectscore=0
+ priorityscore=1501 adultscore=0 impostorscore=0 lowpriorityscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2306300052
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,106 +93,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, willy@infradead.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All callers of show_mem() pass 0 and NULL, so we can remove the two
-arguments by directly calling __show_mem(0, NULL, MAX_NR_ZONES - 1)
-in show_mem().
+Remove an unnecessary piece of code that does an endianness conversion but
+does not use the result. The following warning was reported by Clang's
+static analyzer:
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+arch/powerpc/sysdev/xics/ics-opal.c:114:2: warning: Value stored to
+'server' is never read [deadcode.DeadStores]
+        server = be16_to_cpu(oserver);
+
+As the result of endianness conversion is never used, delete the line
+and fix the warning.
+
+Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
 ---
-v2: update commit log
- arch/powerpc/xmon/xmon.c  | 2 +-
- drivers/tty/sysrq.c       | 2 +-
- drivers/tty/vt/keyboard.c | 2 +-
- include/linux/mm.h        | 4 ++--
- init/initramfs.c          | 2 +-
- kernel/panic.c            | 2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/sysdev/xics/ics-opal.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index fae747cc57d2..ee17270d35d0 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1084,7 +1084,7 @@ cmds(struct pt_regs *excp)
- 				memzcan();
- 				break;
- 			case 'i':
--				show_mem(0, NULL);
-+				show_mem();
- 				break;
- 			default:
- 				termch = cmd;
-diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
-index b6e70c5cfa17..e1df63a88aac 100644
---- a/drivers/tty/sysrq.c
-+++ b/drivers/tty/sysrq.c
-@@ -342,7 +342,7 @@ static const struct sysrq_key_op sysrq_ftrace_dump_op = {
+diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
+index 6cfbb4fac7fb..5fe73dabab79 100644
+--- a/arch/powerpc/sysdev/xics/ics-opal.c
++++ b/arch/powerpc/sysdev/xics/ics-opal.c
+@@ -111,7 +111,6 @@ static int ics_opal_set_affinity(struct irq_data *d,
+ 		       __func__, d->irq, hw_irq, rc);
+ 		return -1;
+ 	}
+-	server = be16_to_cpu(oserver);
  
- static void sysrq_handle_showmem(int key)
- {
--	show_mem(0, NULL);
-+	show_mem();
- }
- static const struct sysrq_key_op sysrq_showmem_op = {
- 	.handler	= sysrq_handle_showmem,
-diff --git a/drivers/tty/vt/keyboard.c b/drivers/tty/vt/keyboard.c
-index be8313cdbac3..358f216c6cd6 100644
---- a/drivers/tty/vt/keyboard.c
-+++ b/drivers/tty/vt/keyboard.c
-@@ -606,7 +606,7 @@ static void fn_scroll_back(struct vc_data *vc)
- 
- static void fn_show_mem(struct vc_data *vc)
- {
--	show_mem(0, NULL);
-+	show_mem();
- }
- 
- static void fn_show_state(struct vc_data *vc)
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index eef34f6a0351..ddb140e14f3a 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -3047,9 +3047,9 @@ extern void mem_init(void);
- extern void __init mmap_init(void);
- 
- extern void __show_mem(unsigned int flags, nodemask_t *nodemask, int max_zone_idx);
--static inline void show_mem(unsigned int flags, nodemask_t *nodemask)
-+static inline void show_mem(void)
- {
--	__show_mem(flags, nodemask, MAX_NR_ZONES - 1);
-+	__show_mem(0, NULL, MAX_NR_ZONES - 1);
- }
- extern long si_mem_available(void);
- extern void si_meminfo(struct sysinfo * val);
-diff --git a/init/initramfs.c b/init/initramfs.c
-index e7a01c2ccd1b..8d0fd946cdd2 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -61,7 +61,7 @@ static void __init error(char *x)
- }
- 
- #define panic_show_mem(fmt, ...) \
--	({ show_mem(0, NULL); panic(fmt, ##__VA_ARGS__); })
-+	({ show_mem(); panic(fmt, ##__VA_ARGS__); })
- 
- /* link hash */
- 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 10effe40a3fa..07239d4ad81e 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -216,7 +216,7 @@ static void panic_print_sys_info(bool console_flush)
- 		show_state();
- 
- 	if (panic_print & PANIC_PRINT_MEM_INFO)
--		show_mem(0, NULL);
-+		show_mem();
- 
- 	if (panic_print & PANIC_PRINT_TIMER_INFO)
- 		sysrq_timer_list_show();
+ 	wanted_server = xics_get_irq_server(d->irq, cpumask, 1);
+ 	if (wanted_server < 0) {
 -- 
-2.41.0
+2.39.3
 
