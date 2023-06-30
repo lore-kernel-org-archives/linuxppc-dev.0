@@ -4,87 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 424F5EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 06:17:16 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s7TeTB9T;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25E11EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 06:36:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QslTk5Gfsz3bsZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 16:17:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s7TeTB9T;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QslvQ3gP7z3c5H
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 16:36:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.47; helo=mail-ej1-f47.google.com; envelope-from=jirislaby@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QslSm6ft0z306t
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 16:16:24 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35U68YJs022599;
-	Fri, 30 Jun 2023 06:16:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=88ZGGlb0nyAMUwqUkBwLgZcO3xXWxAPRD3Uppr7tWmQ=;
- b=s7TeTB9TbLqyzH39d6MLBB4WPUAoDFZ2ZQXmXFjg6k+ZVDB2elSw2fo8IgcYNwVcMILA
- sHs7GnoOPBjeqrB5an0xqNnd2XIxYREZdnyHGCD5w5Wdj2zaNe9C8E8VV8xGUmXPzTBf
- +7UV5ZAFmikMzR3ROupl/maDddmsh3luOemtGgnaH4vkWADg3ULN54IrPVy8+xlF6r76
- zOCQKDH3GkYatjT87Dy3Kye/kAc0laCqc6xwhKsVF8NkpPuYun9VzAh91L8CCQAeK78z
- MtOL/a3wICelihtmZuIsf356FnQ294Z7YsC5jxDeQQmVVzkImF8Orncwik8hTpZS3/l4 4Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhs8u0es1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 06:16:17 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35U68cwi023055;
-	Fri, 30 Jun 2023 06:16:16 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhs8u0er0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 06:16:16 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35U4nHkr022868;
-	Fri, 30 Jun 2023 06:16:14 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3rdr452wpb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 06:16:14 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35U6GCXt39518530
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 30 Jun 2023 06:16:12 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1A5B520043;
-	Fri, 30 Jun 2023 06:16:12 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A458F20040;
-	Fri, 30 Jun 2023 06:16:10 +0000 (GMT)
-Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.ibm.com (unknown [9.204.206.66])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 30 Jun 2023 06:16:10 +0000 (GMT)
-Date: Fri, 30 Jun 2023 11:46:08 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
-Subject: Re: [PATCH] arch/powerpc: Remove unnecessary endian conversion code
- in XICS
-Message-ID: <ZJ5zKJ2ZjHx6fsZk@li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.ibm.com>
-References: <20230630061326.19288-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qsltt0Nwvz30GP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 16:35:33 +1000 (AEST)
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-991c786369cso179515366b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 23:35:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688106929; x=1690698929;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=20rBaj2Y5A8WawnZ5IpIpG7vFTWBtQPIoAz1oe/gFqA=;
+        b=ici64DU3hXuvxwdtSB44oulWEag+eZ3JB9FQOJ13PZZ5GbSqK4hDjn48YXZuUKXUX9
+         wRWPbx83dgAdeZTWca/uzecOgbRX1TDvmw0xw1W61E39ZJLEFcEpJRq/KTWAU52imvVd
+         5sQZribLvJtphbbo/CMPa+QyPAkuT6jr9y/dwEJc8A4ICAGvoJP/iGSNgZ6Mk/t/PEfa
+         7SK02hEI7HJAIsFQOT25LD+2p8jhT49oZya4gIVM18nMei1A/tpxzAwMuOsCcvbvJTgX
+         cCaupixMAywELXZU28U9IxmtM0O8a7PWe7qJbbr/yl1GTMqPb6TERwDWBYHXCDifu1da
+         7P+Q==
+X-Gm-Message-State: ABy/qLZqXQBLVZPlPdjwDcsKGDjhOAQlW6AIzr3YfMIKf2FRs64nuqtd
+	m7+fipKdVf1nEm213C4oY2k=
+X-Google-Smtp-Source: APBJJlFfYhTxC8ahwzU+JKDiJhjiAHDdaDYcw6muBSFSxnAn39XJR+dtpGgU7WNpRhVqsWEErFSBog==
+X-Received: by 2002:a17:906:5593:b0:982:6bba:79c9 with SMTP id y19-20020a170906559300b009826bba79c9mr1180362ejp.20.1688106928988;
+        Thu, 29 Jun 2023 23:35:28 -0700 (PDT)
+Received: from ?IPV6:2a0b:e7c0:0:107::aaaa:59? ([2a0b:e7c0:0:107::aaaa:59])
+        by smtp.gmail.com with ESMTPSA id l8-20020a170906414800b0098e2969ed44sm6614566ejk.45.2023.06.29.23.35.26
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 29 Jun 2023 23:35:28 -0700 (PDT)
+Message-ID: <9a8d788c-b8ba-1b8a-fd79-0e25b1b60bed@kernel.org>
+Date: Fri, 30 Jun 2023 08:35:26 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230630061326.19288-1-gautam@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: MEZJ3uFg3kLbaRJ8sqQGeh3soOd7FzwO
-X-Proofpoint-ORIG-GUID: R_uv58tJswbed1RNJI6h2-Xeh1q5hc3E
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-06-30_02,2023-06-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
- priorityscore=1501 impostorscore=0 mlxscore=0 adultscore=0 bulkscore=0
- clxscore=1015 mlxlogscore=999 malwarescore=0 spamscore=0 suspectscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306300052
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v4 29/33] x86/mm: try VMA lock-based page fault handling
+ first
+Content-Language: en-US
+To: Suren Baghdasaryan <surenb@google.com>
+References: <20230227173632.3292573-1-surenb@google.com>
+ <20230227173632.3292573-30-surenb@google.com>
+ <dbdef34c-3a07-5951-e1ae-e9c6e3cdf51b@kernel.org>
+ <CAJuCfpF7LweMwpvXavjJZhAciK7wK-bdLz2aFhOZGSHeK5tA9A@mail.gmail.com>
+From: Jiri Slaby <jirislaby@kernel.org>
+In-Reply-To: <CAJuCfpF7LweMwpvXavjJZhAciK7wK-bdLz2aFhOZGSHeK5tA9A@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,42 +67,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundati
+ on.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 30, 2023 at 11:43:26AM +0530, Gautam Menghani wrote:
-> Remove an unnecessary piece of code that does an endianness conversion but
-> does not use the result. The following warning was reported by Clang's
-> static analyzer:
+On 29. 06. 23, 17:30, Suren Baghdasaryan wrote:
+> On Thu, Jun 29, 2023 at 7:40 AM Jiri Slaby <jirislaby@kernel.org> wrote:
+>>
+>> Hi,
+>>
+>> On 27. 02. 23, 18:36, Suren Baghdasaryan wrote:
+>>> Attempt VMA lock-based page fault handling first, and fall back to the
+>>> existing mmap_lock-based handling if that fails.
+>>>
+>>> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+>>> ---
+>>>    arch/x86/Kconfig    |  1 +
+>>>    arch/x86/mm/fault.c | 36 ++++++++++++++++++++++++++++++++++++
+>>>    2 files changed, 37 insertions(+)
+>>>
+>>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>>> index a825bf031f49..df21fba77db1 100644
+>>> --- a/arch/x86/Kconfig
+>>> +++ b/arch/x86/Kconfig
+>>> @@ -27,6 +27,7 @@ config X86_64
+>>>        # Options that are inherently 64-bit kernel only:
+>>>        select ARCH_HAS_GIGANTIC_PAGE
+>>>        select ARCH_SUPPORTS_INT128 if CC_HAS_INT128
+>>> +     select ARCH_SUPPORTS_PER_VMA_LOCK
+>>>        select ARCH_USE_CMPXCHG_LOCKREF
+>>>        select HAVE_ARCH_SOFT_DIRTY
+>>>        select MODULES_USE_ELF_RELA
+>>> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+>>> index a498ae1fbe66..e4399983c50c 100644
+>>> --- a/arch/x86/mm/fault.c
+>>> +++ b/arch/x86/mm/fault.c
+>>> @@ -19,6 +19,7 @@
+>>>    #include <linux/uaccess.h>          /* faulthandler_disabled()      */
+>>>    #include <linux/efi.h>                      /* efi_crash_gracefully_on_page_fault()*/
+>>>    #include <linux/mm_types.h>
+>>> +#include <linux/mm.h>                        /* find_and_lock_vma() */
+>>>
+>>>    #include <asm/cpufeature.h>         /* boot_cpu_has, ...            */
+>>>    #include <asm/traps.h>                      /* dotraplinkage, ...           */
+>>> @@ -1333,6 +1334,38 @@ void do_user_addr_fault(struct pt_regs *regs,
+>>>        }
+>>>    #endif
+>>>
+>>> +#ifdef CONFIG_PER_VMA_LOCK
+>>> +     if (!(flags & FAULT_FLAG_USER))
+>>> +             goto lock_mmap;
+>>> +
+>>> +     vma = lock_vma_under_rcu(mm, address);
+>>> +     if (!vma)
+>>> +             goto lock_mmap;
+>>> +
+>>> +     if (unlikely(access_error(error_code, vma))) {
+>>> +             vma_end_read(vma);
+>>> +             goto lock_mmap;
+>>> +     }
+>>> +     fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
+>>> +     vma_end_read(vma);
+>>> +
+>>> +     if (!(fault & VM_FAULT_RETRY)) {
+>>> +             count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
+>>> +             goto done;
+>>> +     }
+>>> +     count_vm_vma_lock_event(VMA_LOCK_RETRY);
+>>
+>> This is apparently not strong enough as it causes go build failures like:
+>>
+>> [  409s] strconv
+>> [  409s] releasep: m=0x579e2000 m->p=0x5781c600 p->m=0x0 p->status=2
+>> [  409s] fatal error: releasep: invalid p state
+>> [  409s]
+>>
+>> [  325s] hash/adler32
+>> [  325s] hash/crc32
+>> [  325s] cmd/internal/codesign
+>> [  336s] fatal error: runtime: out of memory
 > 
-> arch/powerpc/sysdev/xics/ics-opal.c:114:2: warning: Value stored to
-> 'server' is never read [deadcode.DeadStores]
->         server = be16_to_cpu(oserver);
-> 
-> As the result of endianness conversion is never used, delete the line
-> and fix the warning.
-> 
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
->  arch/powerpc/sysdev/xics/ics-opal.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
-> index 6cfbb4fac7fb..5fe73dabab79 100644
-> --- a/arch/powerpc/sysdev/xics/ics-opal.c
-> +++ b/arch/powerpc/sysdev/xics/ics-opal.c
-> @@ -111,7 +111,6 @@ static int ics_opal_set_affinity(struct irq_data *d,
->  		       __func__, d->irq, hw_irq, rc);
->  		return -1;
->  	}
-> -	server = be16_to_cpu(oserver);
->  
->  	wanted_server = xics_get_irq_server(d->irq, cpumask, 1);
->  	if (wanted_server < 0) {
-> -- 
-> 2.39.3
-> 
+> Hi Jiri,
+> Thanks for reporting! I'm not familiar with go builds. Could you
+> please explain the error to me or point me to some documentation to
+> decipher that error?
 
-I resent this patch by mistake, please ignore this. Apologies for the
-trouble.
+Sorry, we are on the same boat -- me neither. It only popped up in our 
+(openSUSE) build system and I only tracked it down by bisection. Let me 
+know if I can try something (like a patch or gathering some debug info).
+
+thanks,
+-- 
+js
+suse labs
+
