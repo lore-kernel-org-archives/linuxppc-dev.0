@@ -4,89 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21889EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 13:23:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F43BEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 13:40:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UJNJ5HvO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WWpOuUBl;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qswxh3Cp2z3bnv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 23:23:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QsxKW6mxfz3byW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 23:40:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UJNJ5HvO;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WWpOuUBl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=imbrenda@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qswcx40Bmz30h7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 23:09:04 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35UCvYeb016458;
-	Fri, 30 Jun 2023 13:08:14 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsxJW3j32z3bjd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 23:39:55 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35UDXtkF024475;
+	Fri, 30 Jun 2023 13:39:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : content-type : in-reply-to :
- mime-version; s=pp1; bh=FN5rqn/S21W/5bITOEzjFOkTwNe8qQWXAAfpvfDkQwg=;
- b=UJNJ5HvOCH3ioidpoyHaAYNX6R7hWNSBpLoG0wUffy5RnAhXHl86PbBvjDO6nKQ8USPi
- 7sEXar1TkaNkmcJFphUybz6q6Tb4yxl6SQ/ZqNRH66WVQInysN81SF7fQAQUxOBDszhV
- 3b8fRe2gCQIaza7qcDM7mCKwuC6Ilk9aNPGUJxMUw2n8gCQMYiSIO+tnObSPGBU121h5
- ObdAJVNEwAu8GE+11sjrvnwTnAQvi/lRj6vqNWPq1mVeKVoGfrKDv0hlj8okmsgyo6sj
- CZCipRtOJftBTKfcr2t7oYyiWPzb0tjUBJtcpOmD7Kcx/2Zrl+GVqvSu1uoCgmOa264S bw== 
+ subject : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=MILFYyEh0bzy33IA0yZToAfVYRzb2Mhl3gp0isRO4pM=;
+ b=WWpOuUBll0GcMgF6UkEAPv1U/0AELyMv08YfNFH5QWoGlgD30nDBbxmr3vbfSbir1zDF
+ v1n3VFiHTI2iKdl0ajnyVN8bMun8YmP3twJ0zeA20CJqamSbFHDi0WTEGFk62XbzPkt+
+ 3sQv6xziupU8flvhfEio8DJeUkwPyzL/3LA2kAIq72vI2CbDVcUIXbqzP5IohDPsH4/K
+ nxBzmnoEp2WjhyoNKxCZ0dgzhxUGvSu0SNRrFBSAmnnreNuicuHYPiLqqUjRWB61jY4q
+ YJ78SFBrwbAkYFxbT96VF4dSAcOaIN/gb7fOJsJGxvv6qHAnXFv+w90Oi5zo4zs12bA4 wA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhygwgdcx-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rj01vr5v8-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 13:08:13 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35UCwN5D019695;
-	Fri, 30 Jun 2023 13:08:03 GMT
+	Fri, 30 Jun 2023 13:39:02 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35UDXvp4024557;
+	Fri, 30 Jun 2023 13:39:01 GMT
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rhygwgcwe-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rj01vr5rt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 13:08:02 +0000
+	Fri, 30 Jun 2023 13:39:01 +0000
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35U3RosU004120;
-	Fri, 30 Jun 2023 13:07:52 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3rdr4545n4-1
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35U4eiGQ004048;
+	Fri, 30 Jun 2023 13:38:59 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3rdr45463d-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 13:07:51 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35UD7mYr35848862
+	Fri, 30 Jun 2023 13:38:59 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35UDctix16253646
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 30 Jun 2023 13:07:48 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2D1C420040;
-	Fri, 30 Jun 2023 13:07:48 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 20F4620049;
-	Fri, 30 Jun 2023 13:07:46 +0000 (GMT)
-Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.155.204.135])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 30 Jun 2023 13:07:46 +0000 (GMT)
-Date: Fri, 30 Jun 2023 15:07:44 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Eric DeVolder <eric.devolder@oracle.com>
-Subject: Re: [PATCH v3 12/13] s390/kexec: refactor for kernel/Kconfig.kexec
-Message-ID: <ZJ7ToGgYAq33bwYI@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
-References: <20230626161332.183214-1-eric.devolder@oracle.com>
- <20230626161332.183214-13-eric.devolder@oracle.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230626161332.183214-13-eric.devolder@oracle.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: SRv3tQadK_BLStPKVFehsvtKgdD5bfpY
-X-Proofpoint-ORIG-GUID: SMYiBxc5troNBtSiC2kzVXEEuROkenwR
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	Fri, 30 Jun 2023 13:38:55 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6250B2004F;
+	Fri, 30 Jun 2023 13:38:55 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C36332004E;
+	Fri, 30 Jun 2023 13:38:53 +0000 (GMT)
+Received: from p-imbrenda (unknown [9.152.224.66])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 30 Jun 2023 13:38:53 +0000 (GMT)
+Date: Fri, 30 Jun 2023 15:38:52 +0200
+From: Claudio Imbrenda <imbrenda@linux.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Subject: Re: [PATCH v2 07/12] s390: add pte_free_defer() for pgtables
+ sharing page
+Message-ID: <20230630153852.31163592@p-imbrenda>
+In-Reply-To: <a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com>
+References: <54cb04f-3762-987f-8294-91dafd8ebfb0@google.com>
+	<a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com>
+Organization: IBM
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: EBLZMsFsdvv19REZEqy1DFVn4Lc2XsWt
+X-Proofpoint-GUID: t0PdQmyDLcbJVGOB3mJ29fow46RM-DV8
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-06-30_05,2023-06-30_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 malwarescore=0
- mlxlogscore=999 priorityscore=1501 phishscore=0 impostorscore=0
- spamscore=0 bulkscore=0 lowpriorityscore=0 mlxscore=0 clxscore=1015
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306300111
-X-Mailman-Approved-At: Fri, 30 Jun 2023 23:22:47 +1000
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 clxscore=1011
+ phishscore=0 lowpriorityscore=0 malwarescore=0 impostorscore=0 spamscore=0
+ mlxscore=0 adultscore=0 mlxlogscore=999 suspectscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2305260000
+ definitions=main-2306300116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,129 +100,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, dalias@libc.org, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, rmk+kernel@armlinux.org.uk, paulmck@kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, mingo@redhat.com, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, ardb@kernel.org, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-m
- 68k@lists.linux-m68k.org, bp@alien8.de, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, tglx@linutronix.de, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, bhe@redhat.com, linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel@vger.kernel.org, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatash
+ in@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill
+ A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 26, 2023 at 12:13:31PM -0400, Eric DeVolder wrote:
-> The kexec and crash kernel options are provided in the common
-> kernel/Kconfig.kexec. Utilize the common options and provide
-> the ARCH_SUPPORTS_ and ARCH_SELECTS_ entries to recreate the
-> equivalent set of KEXEC and CRASH options.
-> 
-> NOTE: The original Kconfig has a KEXEC_SIG which depends on
-> MODULE_SIG_FORMAT. However, attempts to keep the MODULE_SIG_FORMAT
-> dependency (using the strategy outlined in this series, and other
-> techniques) results in 'error: recursive dependency detected'
-> on CRYPTO.
-> 
-> Per Alexander Gordeev <agordeev@linux.ibm.com>: "the MODULE_SIG_FORMAT
-> dependency was introduced with [git commit below] and in fact was not
-> necessary, since s390 did/does not use mod_check_sig() anyway.
-> 
->  commit c8424e776b09 ("MODSIGN: Export module signature definitions")
-> 
-> MODULE_SIG_FORMAT is needed to select SYSTEM_DATA_VERIFICATION. But
-> SYSTEM_DATA_VERIFICATION is also selected by FS_VERITY*, so dropping
-> MODULE_SIG_FORMAT does not hurt."
-> 
-> Therefore, the solution is to drop the MODULE_SIG_FORMAT dependency
-> from KEXEC_SIG. Still results in equivalent .config files for s390.
-> 
-> Signed-off-by: Eric DeVolder <eric.devolder@oracle.com>
-> ---
->  arch/s390/Kconfig | 65 ++++++++++++++---------------------------------
->  1 file changed, 19 insertions(+), 46 deletions(-)
-> 
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index 6dab9c1be508..58dc124433ca 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -243,6 +243,25 @@ config PGTABLE_LEVELS
->  
->  source "kernel/livepatch/Kconfig"
->  
-> +config ARCH_DEFAULT_KEXEC
-> +	def_bool y
-> +
-> +config ARCH_SUPPORTS_KEXEC
-> +	def_bool y
-> +
-> +config ARCH_SUPPORTS_KEXEC_FILE
-> +	def_bool CRYPTO && CRYPTO_SHA256 && CRYPTO_SHA256_S390
-> +
-> +config ARCH_HAS_KEXEC_PURGATORY
-> +	def_bool KEXEC_FILE
-> +
-> +config ARCH_SUPPORTS_CRASH_DUMP
-> +	def_bool y
-> +	help
-> +	  Refer to <file:Documentation/s390/zfcpdump.rst> for more details on this.
-> +	  This option also enables s390 zfcpdump.
-> +	  See also <file:Documentation/s390/zfcpdump.rst>
-> +
->  menu "Processor type and features"
->  
->  config HAVE_MARCH_Z10_FEATURES
-> @@ -481,36 +500,6 @@ config SCHED_TOPOLOGY
->  
->  source "kernel/Kconfig.hz"
->  
-> -config KEXEC
-> -	def_bool y
-> -	select KEXEC_CORE
-> -
-> -config KEXEC_FILE
-> -	bool "kexec file based system call"
-> -	select KEXEC_CORE
-> -	depends on CRYPTO
-> -	depends on CRYPTO_SHA256
-> -	depends on CRYPTO_SHA256_S390
-> -	help
-> -	  Enable the kexec file based system call. In contrast to the normal
-> -	  kexec system call this system call takes file descriptors for the
-> -	  kernel and initramfs as arguments.
-> -
-> -config ARCH_HAS_KEXEC_PURGATORY
-> -	def_bool y
-> -	depends on KEXEC_FILE
-> -
-> -config KEXEC_SIG
-> -	bool "Verify kernel signature during kexec_file_load() syscall"
-> -	depends on KEXEC_FILE && MODULE_SIG_FORMAT
-> -	help
-> -	  This option makes kernel signature verification mandatory for
-> -	  the kexec_file_load() syscall.
-> -
-> -	  In addition to that option, you need to enable signature
-> -	  verification for the corresponding kernel image type being
-> -	  loaded in order for this to work.
-> -
->  config KERNEL_NOBP
->  	def_bool n
->  	prompt "Enable modified branch prediction for the kernel by default"
-> @@ -732,22 +721,6 @@ config VFIO_AP
->  
->  endmenu
->  
-> -menu "Dump support"
-> -
-> -config CRASH_DUMP
-> -	bool "kernel crash dumps"
-> -	select KEXEC
-> -	help
-> -	  Generate crash dump after being started by kexec.
-> -	  Crash dump kernels are loaded in the main kernel with kexec-tools
-> -	  into a specially reserved region and then later executed after
-> -	  a crash by kdump/kexec.
-> -	  Refer to <file:Documentation/s390/zfcpdump.rst> for more details on this.
-> -	  This option also enables s390 zfcpdump.
-> -	  See also <file:Documentation/s390/zfcpdump.rst>
-> -
-> -endmenu
-> -
->  config CCW
->  	def_bool y
+On Tue, 20 Jun 2023 00:51:19 -0700 (PDT)
+Hugh Dickins <hughd@google.com> wrote:
 
-Acked-by: Alexander Gordeev <agordeev@linux.ibm.com>
+[...]
+
+> @@ -407,6 +429,77 @@ void __tlb_remove_table(void *_table)
+>  	__free_page(page);
+>  }
+>  
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +static void pte_free_now0(struct rcu_head *head);
+> +static void pte_free_now1(struct rcu_head *head);
+> +
+> +static void pte_free_pgste(struct rcu_head *head)
+> +{
+> +	unsigned long *table;
+> +	struct page *page;
+> +
+> +	page = container_of(head, struct page, rcu_head);
+> +	table = (unsigned long *)page_to_virt(page);
+> +	table = (unsigned long *)((unsigned long)table | 0x03U);
+> +	__tlb_remove_table(table);
+> +}
+> +
+> +static void pte_free_half(struct rcu_head *head, unsigned int bit)
+> +{
+> +	unsigned long *table;
+> +	struct page *page;
+> +	unsigned int mask;
+> +
+> +	page = container_of(head, struct page, rcu_head);
+> +	mask = atomic_xor_bits(&page->_refcount, 0x04U << (bit + 24));
+> +
+> +	table = (unsigned long *)page_to_virt(page);
+> +	table += bit * PTRS_PER_PTE;
+> +	table = (unsigned long *)((unsigned long)table | (0x01U << bit));
+> +	__tlb_remove_table(table);
+> +
+> +	/* If pte_free_defer() of the other half came in, queue it now */
+> +	if (mask & 0x0CU)
+> +		call_rcu(&page->rcu_head, bit ? pte_free_now0 : pte_free_now1);
+> +}
+> +
+> +static void pte_free_now0(struct rcu_head *head)
+> +{
+> +	pte_free_half(head, 0);
+> +}
+> +
+> +static void pte_free_now1(struct rcu_head *head)
+> +{
+> +	pte_free_half(head, 1);
+> +}
+> +
+> +void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
+> +{
+> +	unsigned int bit, mask;
+> +	struct page *page;
+> +
+> +	page = virt_to_page(pgtable);
+> +	if (mm_alloc_pgste(mm)) {
+> +		call_rcu(&page->rcu_head, pte_free_pgste);
+
+so is this now going to be used to free page tables
+instead of page_table_free_rcu?
+
+or will it be used instead of page_table_free?
+
+this is actually quite important for KVM on s390
+
+> +		return;
+> +	}
+> +	bit = ((unsigned long)pgtable & ~PAGE_MASK) /
+> +			(PTRS_PER_PTE * sizeof(pte_t));
+> +
+> +	spin_lock_bh(&mm_pgtable_list_lock);
+> +	mask = atomic_xor_bits(&page->_refcount, 0x15U << (bit + 24));
+> +	mask >>= 24;
+> +	/* Other half not allocated? Other half not already pending free? */
+> +	if ((mask & 0x03U) == 0x00U && (mask & 0x30U) != 0x30U)
+> +		list_del(&page->lru);
+> +	spin_unlock_bh(&mm_pgtable_list_lock);
+> +
+> +	/* Do not relink on rcu_head if other half already linked on rcu_head */
+> +	if ((mask & 0x0CU) != 0x0CU)
+> +		call_rcu(&page->rcu_head, bit ? pte_free_now1 : pte_free_now0);
+> +}
+> +#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+> +
+>  /*
+>   * Base infrastructure required to generate basic asces, region, segment,
+>   * and page tables that do not make use of enhanced features like EDAT1.
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index 306a3d1a0fa6..1667a1bdb8a8 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -146,7 +146,7 @@ struct page {
+>  			pgtable_t pmd_huge_pte; /* protected by page->ptl */
+>  			unsigned long _pt_pad_2;	/* mapping */
+>  			union {
+> -				struct mm_struct *pt_mm; /* x86 pgds only */
+> +				struct mm_struct *pt_mm; /* x86 pgd, s390 */
+>  				atomic_t pt_frag_refcount; /* powerpc */
+>  			};
+>  #if ALLOC_SPLIT_PTLOCKS
+
