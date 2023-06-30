@@ -4,41 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45563EB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 09:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B199EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 10:16:31 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=iki.fi header.i=@iki.fi header.a=rsa-sha256 header.s=lahtoruutu header.b=OQNlOj2i;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsrDd4knCz3cQf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 19:51:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lichtvoll.de (client-ip=2001:67c:14c:12f::11:100; helo=mail.lichtvoll.de; envelope-from=martin@lichtvoll.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 311 seconds by postgrey-1.37 at boromir; Fri, 30 Jun 2023 18:40:48 AEST
-Received: from mail.lichtvoll.de (lichtvoll.de [IPv6:2001:67c:14c:12f::11:100])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qsrnn5qTBz3brd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 20:16:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=iki.fi header.i=@iki.fi header.a=rsa-sha256 header.s=lahtoruutu header.b=OQNlOj2i;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iki.fi (client-ip=2a0b:5c81:1c1::37; helo=lahtoruutu.iki.fi; envelope-from=sakari.ailus@iki.fi; receiver=lists.ozlabs.org)
+X-Greylist: delayed 595 seconds by postgrey-1.37 at boromir; Fri, 30 Jun 2023 20:15:36 AEST
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [IPv6:2a0b:5c81:1c1::37])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qsrmm1Clyz307V
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 20:15:36 +1000 (AEST)
+Received: from hillosipuli.retiisi.eu (dkzdf0gkyyyyyyyyyyyyt-3.rev.dnainternet.fi [IPv6:2001:14ba:4506:4f15::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QspgN1fGRz3bYj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 18:40:48 +1000 (AEST)
-Received: from 127.0.0.1 (localhost [127.0.0.1])
+	(Authenticated sender: sailus)
+	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4QsrY16f6sz49Q3M;
+	Fri, 30 Jun 2023 13:05:25 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+	t=1688119527;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6qcAL44V2VQPq8nW4DQ+CM8zwpG0FjZ9MKM6NQq5bKo=;
+	b=OQNlOj2ifgFuY5Z58PueDGVtRMoGfQlMq/fhl/MMqHhgiId3zuEN5DGn+einZotd6rnAtI
+	mfDnDJ96+VBbt7I1L1OaR735WNT2qhDmmUzQrwqVupu6t8mYW/QESNpEQn6GRmfybYkbUt
+	2e5IVRDVEAjn20ywuT+qt1eoXJ2lgprEsJXQ+N5x+wc3rFbseYeilalJB9m6wfR0La84u+
+	0JhelEg5hDR5iO7jAq4Kv3z0tK14NCYIy255H2HV3hTBmCJm9WStWj7yGSzFfjYphlsVie
+	NKV7yXiYsJAgXTX6sTPE0wtpMGT6/08LQrwj5DIqbrDd/QIvWT7kSAo5Jp7Sbg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+	s=lahtoruutu; t=1688119527;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6qcAL44V2VQPq8nW4DQ+CM8zwpG0FjZ9MKM6NQq5bKo=;
+	b=f69EeWpqh1bUOkWZMFZvrfBmqAFqZS5lHnhS1v/eVBcWO217U6rYNMFhVxLUe3ydapV4ak
+	rMtxj7mN65e/XUkM4d3YNDK72JILhSfadpI3dfjRun7beAI9EQxMcEmgx0hUGd94TOo5Ke
+	d5ha3Rf1eHIdljIHFOp6xhqcJVhm1lE8LJLIAMrdiXjlCn8lMKv29tqDxHhPtwcXH2QJEa
+	vQYis0d0lbZWJByzbhlW9jakuJc3E9+CW/YySmL2VruAvKtuJSMDJCR4f0sY3490d6Lj0Y
+	xYwJlNJ7BITQq8iHu/6yGWZfYTONZ8/ELEpinz1O6N63Y1Ok2RdhCbhkCU9/uA==
+ARC-Authentication-Results: i=1;
+	ORIGINATING;
+	auth=pass smtp.auth=sailus smtp.mailfrom=sakari.ailus@iki.fi
+ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1688119527; a=rsa-sha256;
+	cv=none;
+	b=Iirl49YpCiFZUxiJjAhpe6vncipdoxx9m9KqBYKIODu9XDLSiVotLHm00FJ6MWCLVr8Z4X
+	EUbA22GdsoUWpHoVSBogmt+kCDRfPiyt3EaRKViZuzmBk1mQtgJtERF8Qi+HEH7rzBiM5T
+	/5Fc8KpS6Kr3Jdnf/p50l9ZGcwbBDC1Qzeqnta2VA+HReSBw42ge/TpkM7Z2PwOq/tmMKJ
+	wU6bBbdBmkrnHiCaWrhHUAZTy5uY+oa/7MG2wgpW8UYzptxaZM+jG+IJYhg4YR/q0qtUCU
+	VyfcMq5LXgdmw/3lVR9bGhMuakwFND5NWZ+TiVrHjSjsfqykv/3ZBEoJXwaexg==
+Received: from valkosipuli.retiisi.eu (valkosipuli.localdomain [192.168.4.2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (secp384r1) server-digest SHA384)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.lichtvoll.de (Postfix) with ESMTPSA id 85B3972727C;
-	Fri, 30 Jun 2023 10:35:17 +0200 (CEST)
-Authentication-Results: mail.lichtvoll.de;
-	auth=pass smtp.auth=martin smtp.mailfrom=martin@lichtvoll.de
-From: Martin Steigerwald <martin@lichtvoll.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Michael Schmitz <schmitzmic@gmail.com>
-Subject:  Re: [FSL P50x0] [PASEMI] The Access to partitions on disks with an Amiga
- partition table doesn't work anymore after the block updates 2023-06-23
-Date: Fri, 30 Jun 2023 10:35:16 +0200
-Message-ID: <5866778.MhkbZ0Pkbq@lichtvoll.de>
-In-Reply-To: <a113cb83-9f82-fd39-f132-41ba4c259265@gmail.com>
-References:  <024ce4fa-cc6d-50a2-9aae-3701d0ebf668@xenosoft.de>
- <a113cb83-9f82-fd39-f132-41ba4c259265@gmail.com>
+	by hillosipuli.retiisi.eu (Postfix) with ESMTPS id 34A37634C91;
+	Fri, 30 Jun 2023 13:05:25 +0300 (EEST)
+Date: Fri, 30 Jun 2023 10:05:25 +0000
+From: Sakari Ailus <sakari.ailus@iki.fi>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH 1/6] media: v4l2: Add audio capture and output support
+Message-ID: <ZJ6o5fT4V4HXivFa@valkosipuli.retiisi.eu>
+References: <1688002673-28493-1-git-send-email-shengjiu.wang@nxp.com>
+ <1688002673-28493-2-git-send-email-shengjiu.wang@nxp.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Fri, 30 Jun 2023 19:48:38 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1688002673-28493-2-git-send-email-shengjiu.wang@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,177 +90,390 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, linux-m68k@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>, mad skateman <madskateman@gmail.com>, linux-block@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, "R.T.Dickinson" <rtd2@xtra.co.nz>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>
+Cc: hverkuil@xs4all.nl, alsa-devel@alsa-project.org, lgirdwood@gmail.com, linux-media@vger.kernel.org, Xiubo.Lee@gmail.com, festevam@gmail.com, tiwai@suse.com, Jacopo Mondi <jacopo@jmondi.org>, linux-kernel@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, broonie@kernel.org, perex@perex.cz, mchehab@kernel.org, shengjiu.wang@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael, hi Christian.
+Hi Shengjiu,
 
-Michael Schmitz - 29.06.23, 22:27:59 CEST:
-[=E2=80=A6]
-> On 29/06/23 16:59, Christian Zigotzky wrote:
-> > Hello,
-> >=20
-> > The access  to partitions on disks with an Amiga partition table
-> > (via the Rigid Disk Block RDB) doesn't work anymore on my Cyrus+=20
-> > board with a FSL P50x0 PowerPC SoC [1] and on my P.A. Semi Nemo=20
-> > board [2] after the block updates 2023-06-23 [3].
-> >=20
-> > parted -l
-[=E2=80=A6]
-> > dmesg | grep -i sda
-> >=20
-> > [    4.208905] sd 0:0:0:0: [sda] 3907029168 512-byte logical blocks:
-> > (2.00 TB/1.82 TiB)
+On Thu, Jun 29, 2023 at 09:37:48AM +0800, Shengjiu Wang wrote:
+> Audio signal processing has the requirement for memory to
+> memory similar as Video.
+> 
+> This patch is to add this support in v4l2 framework, defined
+> new buffer type V4L2_BUF_TYPE_AUDIO_CAPTURE and
+> V4L2_BUF_TYPE_AUDIO_OUTPUT, defined new format v4l2_audio_format
+> for audio case usage.
 
-That is roughly the size of the disk that triggered my bug report from=20
-2012.
+Why are you proposing to add this to V4L2 framework instead of doing this
+within ALSA?
 
-Jun 19 21:19:09 merkaba kernel: [ 7891.821315] ata8.00: 3907029168=20
-sectors, multi 0: LBA48 NCQ (depth 31/32)
+Also cc Hans and Jacopo.
 
-Bug 43511 - Partitions: Amiga RDB partition on 2 TB disk way too big,=20
-while OK in AmigaOS 4.1
+> 
+> The created audio device is named "/dev/audioX".
+> 
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> ---
+>  .../media/common/videobuf2/videobuf2-v4l2.c   |  4 ++
+>  drivers/media/v4l2-core/v4l2-dev.c            | 17 ++++++
+>  drivers/media/v4l2-core/v4l2-ioctl.c          | 52 +++++++++++++++++++
+>  include/media/v4l2-dev.h                      |  2 +
+>  include/media/v4l2-ioctl.h                    | 34 ++++++++++++
+>  include/uapi/linux/videodev2.h                | 19 +++++++
+>  6 files changed, 128 insertions(+)
+> 
+> diff --git a/drivers/media/common/videobuf2/videobuf2-v4l2.c b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+> index c7a54d82a55e..12f2be2773a2 100644
+> --- a/drivers/media/common/videobuf2/videobuf2-v4l2.c
+> +++ b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+> @@ -785,6 +785,10 @@ int vb2_create_bufs(struct vb2_queue *q, struct v4l2_create_buffers *create)
+>  	case V4L2_BUF_TYPE_META_OUTPUT:
+>  		requested_sizes[0] = f->fmt.meta.buffersize;
+>  		break;
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		requested_sizes[0] = f->fmt.audio.buffersize;
+> +		break;
+>  	default:
+>  		return -EINVAL;
+>  	}
+> diff --git a/drivers/media/v4l2-core/v4l2-dev.c b/drivers/media/v4l2-core/v4l2-dev.c
+> index f81279492682..67484f4c6eaf 100644
+> --- a/drivers/media/v4l2-core/v4l2-dev.c
+> +++ b/drivers/media/v4l2-core/v4l2-dev.c
+> @@ -553,6 +553,7 @@ static void determine_valid_ioctls(struct video_device *vdev)
+>  	bool is_tch = vdev->vfl_type == VFL_TYPE_TOUCH;
+>  	bool is_meta = vdev->vfl_type == VFL_TYPE_VIDEO &&
+>  		       (vdev->device_caps & meta_caps);
+> +	bool is_audio = vdev->vfl_type == VFL_TYPE_AUDIO;
+>  	bool is_rx = vdev->vfl_dir != VFL_DIR_TX;
+>  	bool is_tx = vdev->vfl_dir != VFL_DIR_RX;
+>  	bool is_io_mc = vdev->device_caps & V4L2_CAP_IO_MC;
+> @@ -664,6 +665,19 @@ static void determine_valid_ioctls(struct video_device *vdev)
+>  		SET_VALID_IOCTL(ops, VIDIOC_S_FMT, vidioc_s_fmt_meta_out);
+>  		SET_VALID_IOCTL(ops, VIDIOC_TRY_FMT, vidioc_try_fmt_meta_out);
+>  	}
+> +	if (is_audio && is_rx) {
+> +		/* audio capture specific ioctls */
+> +		SET_VALID_IOCTL(ops, VIDIOC_ENUM_FMT, vidioc_enum_fmt_audio_cap);
+> +		SET_VALID_IOCTL(ops, VIDIOC_G_FMT, vidioc_g_fmt_audio_cap);
+> +		SET_VALID_IOCTL(ops, VIDIOC_S_FMT, vidioc_s_fmt_audio_cap);
+> +		SET_VALID_IOCTL(ops, VIDIOC_TRY_FMT, vidioc_try_fmt_audio_cap);
+> +	} else if (is_audio && is_tx) {
+> +		/* audio output specific ioctls */
+> +		SET_VALID_IOCTL(ops, VIDIOC_ENUM_FMT, vidioc_enum_fmt_audio_out);
+> +		SET_VALID_IOCTL(ops, VIDIOC_G_FMT, vidioc_g_fmt_audio_out);
+> +		SET_VALID_IOCTL(ops, VIDIOC_S_FMT, vidioc_s_fmt_audio_out);
+> +		SET_VALID_IOCTL(ops, VIDIOC_TRY_FMT, vidioc_try_fmt_audio_out);
+> +	}
+>  	if (is_vbi) {
+>  		/* vbi specific ioctls */
+>  		if ((is_rx && (ops->vidioc_g_fmt_vbi_cap ||
+> @@ -927,6 +941,9 @@ int __video_register_device(struct video_device *vdev,
+>  	case VFL_TYPE_TOUCH:
+>  		name_base = "v4l-touch";
+>  		break;
+> +	case VFL_TYPE_AUDIO:
+> +		name_base = "audio";
+> +		break;
+>  	default:
+>  		pr_err("%s called with unknown type: %d\n",
+>  		       __func__, type);
+> diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
+> index a858acea6547..26bc4b0d8ef0 100644
+> --- a/drivers/media/v4l2-core/v4l2-ioctl.c
+> +++ b/drivers/media/v4l2-core/v4l2-ioctl.c
+> @@ -188,6 +188,8 @@ const char *v4l2_type_names[] = {
+>  	[V4L2_BUF_TYPE_SDR_OUTPUT]         = "sdr-out",
+>  	[V4L2_BUF_TYPE_META_CAPTURE]       = "meta-cap",
+>  	[V4L2_BUF_TYPE_META_OUTPUT]	   = "meta-out",
+> +	[V4L2_BUF_TYPE_AUDIO_CAPTURE]      = "audio-cap",
+> +	[V4L2_BUF_TYPE_AUDIO_OUTPUT]	   = "audio-out",
+>  };
+>  EXPORT_SYMBOL(v4l2_type_names);
+>  
+> @@ -276,6 +278,7 @@ static void v4l_print_format(const void *arg, bool write_only)
+>  	const struct v4l2_sliced_vbi_format *sliced;
+>  	const struct v4l2_window *win;
+>  	const struct v4l2_meta_format *meta;
+> +	const struct v4l2_audio_format *audio;
+>  	u32 pixelformat;
+>  	u32 planes;
+>  	unsigned i;
+> @@ -346,6 +349,12 @@ static void v4l_print_format(const void *arg, bool write_only)
+>  		pr_cont(", dataformat=%p4cc, buffersize=%u\n",
+>  			&pixelformat, meta->buffersize);
+>  		break;
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		audio = &p->fmt.audio;
+> +		pr_cont(", rate=%u, format=%u, channels=%u, buffersize=%u\n",
+> +			audio->rate, audio->format, audio->channels, audio->buffersize);
+> +		break;
+>  	}
+>  }
+>  
+> @@ -927,6 +936,7 @@ static int check_fmt(struct file *file, enum v4l2_buf_type type)
+>  	bool is_tch = vfd->vfl_type == VFL_TYPE_TOUCH;
+>  	bool is_meta = vfd->vfl_type == VFL_TYPE_VIDEO &&
+>  		       (vfd->device_caps & meta_caps);
+> +	bool is_audio = vfd->vfl_type == VFL_TYPE_AUDIO;
+>  	bool is_rx = vfd->vfl_dir != VFL_DIR_TX;
+>  	bool is_tx = vfd->vfl_dir != VFL_DIR_RX;
+>  
+> @@ -992,6 +1002,14 @@ static int check_fmt(struct file *file, enum v4l2_buf_type type)
+>  		if (is_meta && is_tx && ops->vidioc_g_fmt_meta_out)
+>  			return 0;
+>  		break;
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +		if (is_audio && is_rx && ops->vidioc_g_fmt_audio_cap)
+> +			return 0;
+> +		break;
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		if (is_audio && is_tx && ops->vidioc_g_fmt_audio_out)
+> +			return 0;
+> +		break;
+>  	default:
+>  		break;
+>  	}
+> @@ -1592,6 +1610,16 @@ static int v4l_enum_fmt(const struct v4l2_ioctl_ops *ops,
+>  			break;
+>  		ret = ops->vidioc_enum_fmt_meta_out(file, fh, arg);
+>  		break;
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +		if (unlikely(!ops->vidioc_enum_fmt_audio_cap))
+> +			break;
+> +		ret = ops->vidioc_enum_fmt_audio_cap(file, fh, arg);
+> +		break;
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		if (unlikely(!ops->vidioc_enum_fmt_audio_out))
+> +			break;
+> +		ret = ops->vidioc_enum_fmt_audio_out(file, fh, arg);
+> +		break;
+>  	}
+>  	if (ret == 0)
+>  		v4l_fill_fmtdesc(p);
+> @@ -1668,6 +1696,10 @@ static int v4l_g_fmt(const struct v4l2_ioctl_ops *ops,
+>  		return ops->vidioc_g_fmt_meta_cap(file, fh, arg);
+>  	case V4L2_BUF_TYPE_META_OUTPUT:
+>  		return ops->vidioc_g_fmt_meta_out(file, fh, arg);
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +		return ops->vidioc_g_fmt_audio_cap(file, fh, arg);
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		return ops->vidioc_g_fmt_audio_out(file, fh, arg);
+>  	}
+>  	return -EINVAL;
+>  }
+> @@ -1779,6 +1811,16 @@ static int v4l_s_fmt(const struct v4l2_ioctl_ops *ops,
+>  			break;
+>  		memset_after(p, 0, fmt.meta);
+>  		return ops->vidioc_s_fmt_meta_out(file, fh, arg);
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +		if (unlikely(!ops->vidioc_s_fmt_audio_cap))
+> +			break;
+> +		memset_after(p, 0, fmt.audio);
+> +		return ops->vidioc_s_fmt_audio_cap(file, fh, arg);
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		if (unlikely(!ops->vidioc_s_fmt_audio_out))
+> +			break;
+> +		memset_after(p, 0, fmt.audio);
+> +		return ops->vidioc_s_fmt_audio_out(file, fh, arg);
+>  	}
+>  	return -EINVAL;
+>  }
+> @@ -1887,6 +1929,16 @@ static int v4l_try_fmt(const struct v4l2_ioctl_ops *ops,
+>  			break;
+>  		memset_after(p, 0, fmt.meta);
+>  		return ops->vidioc_try_fmt_meta_out(file, fh, arg);
+> +	case V4L2_BUF_TYPE_AUDIO_CAPTURE:
+> +		if (unlikely(!ops->vidioc_try_fmt_audio_cap))
+> +			break;
+> +		memset_after(p, 0, fmt.audio);
+> +		return ops->vidioc_try_fmt_audio_cap(file, fh, arg);
+> +	case V4L2_BUF_TYPE_AUDIO_OUTPUT:
+> +		if (unlikely(!ops->vidioc_try_fmt_audio_out))
+> +			break;
+> +		memset_after(p, 0, fmt.audio);
+> +		return ops->vidioc_try_fmt_audio_out(file, fh, arg);
+>  	}
+>  	return -EINVAL;
+>  }
+> diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
+> index e0a13505f88d..0924e6d1dab1 100644
+> --- a/include/media/v4l2-dev.h
+> +++ b/include/media/v4l2-dev.h
+> @@ -30,6 +30,7 @@
+>   * @VFL_TYPE_SUBDEV:	for V4L2 subdevices
+>   * @VFL_TYPE_SDR:	for Software Defined Radio tuners
+>   * @VFL_TYPE_TOUCH:	for touch sensors
+> + * @VFL_TYPE_AUDIO:	for audio input/output devices
+>   * @VFL_TYPE_MAX:	number of VFL types, must always be last in the enum
+>   */
+>  enum vfl_devnode_type {
+> @@ -39,6 +40,7 @@ enum vfl_devnode_type {
+>  	VFL_TYPE_SUBDEV,
+>  	VFL_TYPE_SDR,
+>  	VFL_TYPE_TOUCH,
+> +	VFL_TYPE_AUDIO,
+>  	VFL_TYPE_MAX /* Shall be the last one */
+>  };
+>  
+> diff --git a/include/media/v4l2-ioctl.h b/include/media/v4l2-ioctl.h
+> index edb733f21604..f840cf740ce1 100644
+> --- a/include/media/v4l2-ioctl.h
+> +++ b/include/media/v4l2-ioctl.h
+> @@ -45,6 +45,12 @@ struct v4l2_fh;
+>   * @vidioc_enum_fmt_meta_out: pointer to the function that implements
+>   *	:ref:`VIDIOC_ENUM_FMT <vidioc_enum_fmt>` ioctl logic
+>   *	for metadata output
+> + * @vidioc_enum_fmt_audio_cap: pointer to the function that implements
+> + *	:ref:`VIDIOC_ENUM_FMT <vidioc_enum_fmt>` ioctl logic
+> + *	for audio capture
+> + * @vidioc_enum_fmt_audio_out: pointer to the function that implements
+> + *	:ref:`VIDIOC_ENUM_FMT <vidioc_enum_fmt>` ioctl logic
+> + *	for audio output
+>   * @vidioc_g_fmt_vid_cap: pointer to the function that implements
+>   *	:ref:`VIDIOC_G_FMT <vidioc_g_fmt>` ioctl logic for video capture
+>   *	in single plane mode
+> @@ -79,6 +85,10 @@ struct v4l2_fh;
+>   *	:ref:`VIDIOC_G_FMT <vidioc_g_fmt>` ioctl logic for metadata capture
+>   * @vidioc_g_fmt_meta_out: pointer to the function that implements
+>   *	:ref:`VIDIOC_G_FMT <vidioc_g_fmt>` ioctl logic for metadata output
+> + * @vidioc_g_fmt_audio_cap: pointer to the function that implements
+> + *	:ref:`VIDIOC_G_FMT <vidioc_g_fmt>` ioctl logic for audio capture
+> + * @vidioc_g_fmt_audio_out: pointer to the function that implements
+> + *	:ref:`VIDIOC_G_FMT <vidioc_g_fmt>` ioctl logic for audio output
+>   * @vidioc_s_fmt_vid_cap: pointer to the function that implements
+>   *	:ref:`VIDIOC_S_FMT <vidioc_g_fmt>` ioctl logic for video capture
+>   *	in single plane mode
+> @@ -113,6 +123,10 @@ struct v4l2_fh;
+>   *	:ref:`VIDIOC_S_FMT <vidioc_g_fmt>` ioctl logic for metadata capture
+>   * @vidioc_s_fmt_meta_out: pointer to the function that implements
+>   *	:ref:`VIDIOC_S_FMT <vidioc_g_fmt>` ioctl logic for metadata output
+> + * @vidioc_s_fmt_audio_cap: pointer to the function that implements
+> + *	:ref:`VIDIOC_S_FMT <vidioc_g_fmt>` ioctl logic for audio capture
+> + * @vidioc_s_fmt_audio_out: pointer to the function that implements
+> + *	:ref:`VIDIOC_S_FMT <vidioc_g_fmt>` ioctl logic for audio output
+>   * @vidioc_try_fmt_vid_cap: pointer to the function that implements
+>   *	:ref:`VIDIOC_TRY_FMT <vidioc_g_fmt>` ioctl logic for video capture
+>   *	in single plane mode
+> @@ -149,6 +163,10 @@ struct v4l2_fh;
+>   *	:ref:`VIDIOC_TRY_FMT <vidioc_g_fmt>` ioctl logic for metadata capture
+>   * @vidioc_try_fmt_meta_out: pointer to the function that implements
+>   *	:ref:`VIDIOC_TRY_FMT <vidioc_g_fmt>` ioctl logic for metadata output
+> + * @vidioc_try_fmt_audio_cap: pointer to the function that implements
+> + *	:ref:`VIDIOC_TRY_FMT <vidioc_g_fmt>` ioctl logic for audio capture
+> + * @vidioc_try_fmt_audio_out: pointer to the function that implements
+> + *	:ref:`VIDIOC_TRY_FMT <vidioc_g_fmt>` ioctl logic for audio output
+>   * @vidioc_reqbufs: pointer to the function that implements
+>   *	:ref:`VIDIOC_REQBUFS <vidioc_reqbufs>` ioctl
+>   * @vidioc_querybuf: pointer to the function that implements
+> @@ -315,6 +333,10 @@ struct v4l2_ioctl_ops {
+>  					struct v4l2_fmtdesc *f);
+>  	int (*vidioc_enum_fmt_meta_out)(struct file *file, void *fh,
+>  					struct v4l2_fmtdesc *f);
+> +	int (*vidioc_enum_fmt_audio_cap)(struct file *file, void *fh,
+> +					 struct v4l2_fmtdesc *f);
+> +	int (*vidioc_enum_fmt_audio_out)(struct file *file, void *fh,
+> +					 struct v4l2_fmtdesc *f);
+>  
+>  	/* VIDIOC_G_FMT handlers */
+>  	int (*vidioc_g_fmt_vid_cap)(struct file *file, void *fh,
+> @@ -345,6 +367,10 @@ struct v4l2_ioctl_ops {
+>  				     struct v4l2_format *f);
+>  	int (*vidioc_g_fmt_meta_out)(struct file *file, void *fh,
+>  				     struct v4l2_format *f);
+> +	int (*vidioc_g_fmt_audio_cap)(struct file *file, void *fh,
+> +				      struct v4l2_format *f);
+> +	int (*vidioc_g_fmt_audio_out)(struct file *file, void *fh,
+> +				      struct v4l2_format *f);
+>  
+>  	/* VIDIOC_S_FMT handlers */
+>  	int (*vidioc_s_fmt_vid_cap)(struct file *file, void *fh,
+> @@ -375,6 +401,10 @@ struct v4l2_ioctl_ops {
+>  				     struct v4l2_format *f);
+>  	int (*vidioc_s_fmt_meta_out)(struct file *file, void *fh,
+>  				     struct v4l2_format *f);
+> +	int (*vidioc_s_fmt_audio_cap)(struct file *file, void *fh,
+> +				      struct v4l2_format *f);
+> +	int (*vidioc_s_fmt_audio_out)(struct file *file, void *fh,
+> +				      struct v4l2_format *f);
+>  
+>  	/* VIDIOC_TRY_FMT handlers */
+>  	int (*vidioc_try_fmt_vid_cap)(struct file *file, void *fh,
+> @@ -405,6 +435,10 @@ struct v4l2_ioctl_ops {
+>  				       struct v4l2_format *f);
+>  	int (*vidioc_try_fmt_meta_out)(struct file *file, void *fh,
+>  				       struct v4l2_format *f);
+> +	int (*vidioc_try_fmt_audio_cap)(struct file *file, void *fh,
+> +					struct v4l2_format *f);
+> +	int (*vidioc_try_fmt_audio_out)(struct file *file, void *fh,
+> +					struct v4l2_format *f);
+>  
+>  	/* Buffer handlers */
+>  	int (*vidioc_reqbufs)(struct file *file, void *fh,
+> diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+> index aee75eb9e686..a7af28f4c8c3 100644
+> --- a/include/uapi/linux/videodev2.h
+> +++ b/include/uapi/linux/videodev2.h
+> @@ -153,6 +153,8 @@ enum v4l2_buf_type {
+>  	V4L2_BUF_TYPE_SDR_OUTPUT           = 12,
+>  	V4L2_BUF_TYPE_META_CAPTURE         = 13,
+>  	V4L2_BUF_TYPE_META_OUTPUT	   = 14,
+> +	V4L2_BUF_TYPE_AUDIO_CAPTURE        = 15,
+> +	V4L2_BUF_TYPE_AUDIO_OUTPUT         = 16,
+>  	/* Deprecated, do not use */
+>  	V4L2_BUF_TYPE_PRIVATE              = 0x80,
+>  };
+> @@ -169,6 +171,7 @@ enum v4l2_buf_type {
+>  	 || (type) == V4L2_BUF_TYPE_VBI_OUTPUT			\
+>  	 || (type) == V4L2_BUF_TYPE_SLICED_VBI_OUTPUT		\
+>  	 || (type) == V4L2_BUF_TYPE_SDR_OUTPUT			\
+> +	 || (type) == V4L2_BUF_TYPE_AUDIO_OUTPUT		\
+>  	 || (type) == V4L2_BUF_TYPE_META_OUTPUT)
+>  
+>  #define V4L2_TYPE_IS_CAPTURE(type) (!V4L2_TYPE_IS_OUTPUT(type))
+> @@ -2404,6 +2407,20 @@ struct v4l2_meta_format {
+>  	__u32				buffersize;
+>  } __attribute__ ((packed));
+>  
+> +/**
+> + * struct v4l2_audio_format - audio data format definition
+> + * @rate:		sample rate
+> + * @format:		sample format
+> + * @channels:		channel numbers
+> + * @buffersize:		maximum size in bytes required for data
+> + */
+> +struct v4l2_audio_format {
+> +	__u32				rate;
+> +	__u32				format;
+> +	__u32				channels;
+> +	__u32				buffersize;
+> +} __attribute__ ((packed));
+> +
+>  /**
+>   * struct v4l2_format - stream data format
+>   * @type:	enum v4l2_buf_type; type of the data stream
+> @@ -2412,6 +2429,7 @@ struct v4l2_meta_format {
+>   * @win:	definition of an overlaid image
+>   * @vbi:	raw VBI capture or output parameters
+>   * @sliced:	sliced VBI capture or output parameters
+> + * @audio:	definition of an audio format
+>   * @raw_data:	placeholder for future extensions and custom formats
+>   * @fmt:	union of @pix, @pix_mp, @win, @vbi, @sliced, @sdr, @meta
+>   *		and @raw_data
+> @@ -2426,6 +2444,7 @@ struct v4l2_format {
+>  		struct v4l2_sliced_vbi_format	sliced;  /* V4L2_BUF_TYPE_SLICED_VBI_CAPTURE */
+>  		struct v4l2_sdr_format		sdr;     /* V4L2_BUF_TYPE_SDR_CAPTURE */
+>  		struct v4l2_meta_format		meta;    /* V4L2_BUF_TYPE_META_CAPTURE */
+> +		struct v4l2_audio_format	audio;   /* V4L2_BUF_TYPE_AUDIO_CAPTURE */
+>  		__u8	raw_data[200];                   /* user-defined */
+>  	} fmt;
+>  };
+> -- 
+> 2.34.1
+> 
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D43511
-
-> > [    4.963387] sda: partition table beyond EOD,
->=20
-> Haven't see this one in any of my tests. I wonder whether your
-> partitioning software used that value of 4294967295 (32 bit unsigned
-> int max.) as marker for the end of the partition list, instead of
-> NULL? It's clearly beyond the end of your disk, so cannot be a
-> legitimate partition block address. (The parted dump above (showing
-> only four partitions) appears to support that notion.)
-
-I don't know about "-1" for end of partition list. However, on reviewing=20
-my bug report I think I used Media Toolbox myself to create the=20
-partition table. However I am not completely sure about that. It has=20
-been a long time. I used Media Toolbox on AmigaOS 4.1 to extract the=20
-binary copy of the RDB, but I do not recall what I used to partition it.=20
-I bet it was Media Toolbox as well, likely on some development version=20
-of AmigaOS 4. I was member of the AmigaOS 4 team back then. The disk is=20
-repartitioned as GPT and I do not even know at the moment where it is.=20
-So that is all I can say.
-
-I could ask someone from the AmigaOS 4 team, however I am not a member=20
-of it anymore. And in any case, whether Media Toolbox or another tool=20
-writes a "-1" to end partition list or not, I'd not treat a signed value=20
-"-1" as valid partition size. We could also ask Joanne again, however=20
-she was not involved in AmigaOS 4 development and does not know about=20
-Media Toolbox. She created the "hdwrench.library" for AmigaOS 3.5/3.9=20
-HDToolBox. So maybe it is just good to assume "-1" as end of partition=20
-table, at least after confirming from the binary of the affected RDB that=20
-the "-1" is indeed at the end of the partition block list. Maybe also in=20
-the RDB from my bug report there is this "-1" again=E2=80=A6 however, the d=
-isk=20
-worked okay in Linux after testing with Joanne's initial patch from
-
-https://bugzilla.kernel.org/show_bug.cgi?id=3D43511#c7
-
-Subject: Re: Partitions: Amiga RDB partition on 2 TB disk way too big,=20
-while OK in AmigaOS 4.1
-
-https://lore.kernel.org/linux-m68k/
-201206192146.09327.Martin@lichtvoll.de/
-
-
-This comment from an AmigaOS developer is only about the maximum sizes=20
-and does not detail a "-1" as partition size =E2=80=93 however I did not as=
-k=20
-about it back then:
-
-https://lore.kernel.org/linux-m68k/
-201206182239.26647.Martin@lichtvoll.de/
-
-> > [ 5.014769] sd 0:0:0:0: [sda] Attached SCSI disk
-> >=20
-> > I created a patch for reverting the commit. [4]
-> >=20
-> > The access works again with this patch:
-[=E2=80=A6]
-> > bytes [    4.519477]  sda: RDSK (512) sda1 (DOS^G)(res 2 spb 2)
-> > sda2 (SFS^B)(res 2 spb 1) sda3 (SFS^B)(res 2 spb 2) sda4 ((res 2
-> > spb 1) [    4.720896] sda: p4 size 18446744071956107760 extends
-> > beyond EOD,
->
-> That's the 32 bit overflow that the patch series was meant to correct.
-> Parsing the partition table ends before looking at the next partition
-> block in the list, so we never hit the bug you've seen above.
->=20
-> By reverting my patch, you just reintroduce the old bug, which could
-> result in mis-parsing the partition table in a way that is not
-> detected by inane values of partition sizes as above, and as far as I
-> recall this bug was reported because it did cause data corruption. Do
-> I have that correct, Martin? Do you still have a copy of the
-> problematic RDB from the old bug report around?
-
-It is in the first attachment of the bug report I mentioned above. The=20
-bug the patch fixed.
-
-In the bug report I wrote:
-
-"I had a BTRFS filesystem that had some checksum errors. Maybe thats=20
-somehow related to this issue and AmigaOS and/or Linux overwrote=20
-something it shouldn=C2=B4t have touched."
-
-(Meanwhile I bet it is safe to assume that in case the checksum error=20
-was from overwriting something it was not AmigaOS 4.)
-
-This is no proof, but as I re-read my bug report: It is clearly an=20
-overflow issue worsened by Linux back then truncating the too high=20
-partition sizes larger than the disk to the disk size instead of bailing=20
-out. So the partition I created for the Linux LVM in front of the Amiga=20
-partitions overflowed into the Amiga partitions. Had I used that place=20
-inside the PV for any LV and written to it=E2=80=A6 I bet it would have bee=
-n=20
-goodbye to the Amiga data.
-
-> > Could you please check your commit?
->=20
-> The patch series has undergone the usual thirteen versions in review,
-> but the reviewers as well as myself may well have missed this point of
-> detail...
-
-I think the patch series has been very well reviewed, but I would not=20
-have spotted such an issue as I am not really an RDB expert and even=20
-then, with all the big endian conversions and what not inside of there=E2=
-=80=A6=20
-In my understanding the RDB format is not really as Rigid as the name=20
-implies. It is quite flexible, especially when compared to what had been=20
-used on PC back then and sometimes even now. So there is a chance for a=20
-RDB partitioning that triggers an oversight in the patch series.
-
-> Could you please check this (whitespace-damaged) patch?
->=20
->      block/partitions - Amiga partition overflow fix bugfix
->=20
->      Making 'blk' sector_t (i.e. 64 bit if LBD support is active)
->      fails the 'blk>0' test in the partition block loop if a
->      value of (signed int) -1 is used to mark the end of the
->      partition block list.
->=20
->      Explicitly cast 'blk' to signed int to catch this.
->=20
->      Signed-off-by: Michael Schmitz <schmitzmic@gmail.com>
->=20
-> diff --git a/block/partitions/amiga.c b/block/partitions/amiga.c
-> index ed222b9c901b..506921095412 100644
-> --- a/block/partitions/amiga.c
-> +++ b/block/partitions/amiga.c
-> @@ -90,7 +90,7 @@ int amiga_partition(struct parsed_partitions *state)
-> }
->          blk =3D be32_to_cpu(rdb->rdb_PartitionList);
->          put_dev_sector(sect);
-> -       for (part =3D 1; blk>0 && part<=3D16; part++,=20
-> put_dev_sector(sect)) {=20
-> +       for (part =3D 1; (s32) blk>0 && part<=3D16; part++,
-> put_dev_sector(sect)) {
-
-Makes sense to me.
-
-Best,
-=2D-=20
-Martin
-
-
+-- 
+Sakari Ailus
