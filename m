@@ -4,77 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87963EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 07:47:13 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=U5S0JZy6;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=X8HFoQg8;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6F6FEB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 08:28:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QsnTW5lvQz3bpd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 17:47:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=U5S0JZy6;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=X8HFoQg8;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QspPT03R7z3c3K
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 18:28:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.54; helo=mail-wm1-f54.google.com; envelope-from=jirislaby@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QsnSV3MjDz30BZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 17:46:17 +1000 (AEST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 4BFC21FD5E;
-	Fri, 30 Jun 2023 07:46:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1688111173; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=s+v7TzEsD6peXuEp+SUxn6T7G+IGk1te1iZtcpAk67w=;
-	b=U5S0JZy6WbjyJY0i+chUuJjKDtyzvNR562iDu4mAoeIRYiMaQH05DYn3oC2IDHuCJ3la0d
-	6efMYRbFWwT6WipW7DuzCUm5fOh+iBRlRjda9BeHpkLO1xMw6kBvbeEfXf4OoC4HGF0uY4
-	zaQwtseSPMY8DGPVwfpIGEUiwJgpXQc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1688111173;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=s+v7TzEsD6peXuEp+SUxn6T7G+IGk1te1iZtcpAk67w=;
-	b=X8HFoQg8L0Cu/1xVytv0JrQeNcv7odrUfIRvQXZWtOmDKktKfLxyOGVAR3qIcYAPoHvLdQ
-	4fb9jtJZixVDtrAw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 899A313915;
-	Fri, 30 Jun 2023 07:46:12 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-	by imap2.suse-dmz.suse.de with ESMTPSA
-	id ZRQNIESInmT0OQAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Fri, 30 Jun 2023 07:46:12 +0000
-Message-ID: <ef7b3899-7d18-8018-47fa-aac0efaa61f4@suse.de>
-Date: Fri, 30 Jun 2023 09:46:11 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QspNs1CpBz30Ct
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 18:28:12 +1000 (AEST)
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-3fbc244d386so10538665e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 01:28:12 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688113689; x=1690705689;
+        h=content-transfer-encoding:in-reply-to:subject:references:cc:to:from
+         :content-language:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=cRYyHPJ0l3JptHpg3mFpGfjchjllb0zu8LBlb7XT5hw=;
+        b=Fu560hvQv5TrbMaETdqygHXT8VmqyDCl9N3aE0Mj6YtFtco2C5qeGOR3V1AB7bkaSl
+         AZaPk4OKyUmKcAgNfFmOmG3UzBvQ0CTqxqYcEgkoU8O5qUpdUjpjJd4bbiyDO3yWSLs7
+         uBoMPDAThqr2vQ9Hw1flalXD5KNRMEp1eyVG1BSYU2rSV2FnLISCetumxIjvQ8icAHUm
+         DmPC1mgdKz6iu/Bqq2nLgnjKk0eOcYuCR3NkxN8h8NGGkUYXip/Dih7oZbkgGu8KMCwg
+         3uhvKmdfOSFk+n3PqO15Q3/1TwwewOH7rCvaac5mw+yAH/utokj9vpUSN1hAkm6fB68n
+         WhXA==
+X-Gm-Message-State: AC+VfDw3pn3OYOzFdtjOJSLj34xblcup7jRZWEVeLwRXCesVHL9mymyH
+	YJpTYnRmXcRTLOLD5BXjgB8=
+X-Google-Smtp-Source: ACHHUZ4ThngeqilmApKJMZhIhCcwEYSoxdwUR+ukZaaoc8YnAj64SIh0BEAZ3duaqDYdxup994pnqw==
+X-Received: by 2002:a7b:cb88:0:b0:3fb:b890:128e with SMTP id m8-20020a7bcb88000000b003fbb890128emr1255564wmi.33.1688113688346;
+        Fri, 30 Jun 2023 01:28:08 -0700 (PDT)
+Received: from ?IPV6:2a0b:e7c0:0:107::aaaa:59? ([2a0b:e7c0:0:107::aaaa:59])
+        by smtp.gmail.com with ESMTPSA id o23-20020a05600c379700b003fae92e7a8dsm12201517wmr.27.2023.06.30.01.28.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 30 Jun 2023 01:28:07 -0700 (PDT)
+Message-ID: <f7ad7a42-13c8-a486-d0b7-01d5acf01e13@kernel.org>
+Date: Fri, 30 Jun 2023 10:28:05 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.12.0
-Subject: Re: [PATCH 07/12] arch/x86: Declare edid_info in <asm/screen_info.h>
 Content-Language: en-US
-To: Arnd Bergmann <arnd@arndb.de>, Helge Deller <deller@gmx.de>,
- Daniel Vetter <daniel@ffwll.ch>, Dave Airlie <airlied@gmail.com>
-References: <20230629121952.10559-1-tzimmermann@suse.de>
- <20230629121952.10559-8-tzimmermann@suse.de>
- <80e3a583-805e-4e8f-a67b-ebe2e4b9a7e5@app.fastmail.com>
- <d3de124c-6aa8-e930-e238-7bd6dd7929a6@suse.de>
- <0dbbdfc4-0e91-4be4-9ca0-d8ba6f18453d@app.fastmail.com>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <0dbbdfc4-0e91-4be4-9ca0-d8ba6f18453d@app.fastmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------2PcBvNvj4NxOJT00dP00OAEN"
+From: Jiri Slaby <jirislaby@kernel.org>
+To: Suren Baghdasaryan <surenb@google.com>
+References: <20230227173632.3292573-1-surenb@google.com>
+ <20230227173632.3292573-30-surenb@google.com>
+ <dbdef34c-3a07-5951-e1ae-e9c6e3cdf51b@kernel.org>
+ <CAJuCfpF7LweMwpvXavjJZhAciK7wK-bdLz2aFhOZGSHeK5tA9A@mail.gmail.com>
+ <9a8d788c-b8ba-1b8a-fd79-0e25b1b60bed@kernel.org>
+Subject: Re: [PATCH v4 29/33] x86/mm: try VMA lock-based page fault handling
+ first
+In-Reply-To: <9a8d788c-b8ba-1b8a-fd79-0e25b1b60bed@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,129 +68,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Ard Biesheuvel <ardb@kernel.org>, Linux-Arch <linux-arch@vger.kernel.org>, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Sami Tolvanen <samitolvanen@google.com>, Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org, Juerg Haef
- liger <juerg.haefliger@canonical.com>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundati
+ on.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------2PcBvNvj4NxOJT00dP00OAEN
-Content-Type: multipart/mixed; boundary="------------mO7mj780JaYWOEkXFpUrFA6g";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>, Helge Deller <deller@gmx.de>,
- Daniel Vetter <daniel@ffwll.ch>, Dave Airlie <airlied@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org,
- "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- Linux-Arch <linux-arch@vger.kernel.org>, Thomas Gleixner
- <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Frederic Weisbecker <frederic@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Ard Biesheuvel <ardb@kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>,
- Juerg Haefliger <juerg.haefliger@canonical.com>
-Message-ID: <ef7b3899-7d18-8018-47fa-aac0efaa61f4@suse.de>
-Subject: Re: [PATCH 07/12] arch/x86: Declare edid_info in <asm/screen_info.h>
-References: <20230629121952.10559-1-tzimmermann@suse.de>
- <20230629121952.10559-8-tzimmermann@suse.de>
- <80e3a583-805e-4e8f-a67b-ebe2e4b9a7e5@app.fastmail.com>
- <d3de124c-6aa8-e930-e238-7bd6dd7929a6@suse.de>
- <0dbbdfc4-0e91-4be4-9ca0-d8ba6f18453d@app.fastmail.com>
-In-Reply-To: <0dbbdfc4-0e91-4be4-9ca0-d8ba6f18453d@app.fastmail.com>
+On 30. 06. 23, 8:35, Jiri Slaby wrote:
+> On 29. 06. 23, 17:30, Suren Baghdasaryan wrote:
+>> On Thu, Jun 29, 2023 at 7:40 AM Jiri Slaby <jirislaby@kernel.org> wrote:
+>>>
+>>> Hi,
+>>>
+>>> On 27. 02. 23, 18:36, Suren Baghdasaryan wrote:
+>>>> Attempt VMA lock-based page fault handling first, and fall back to the
+>>>> existing mmap_lock-based handling if that fails.
+>>>>
+>>>> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+>>>> ---
+>>>>    arch/x86/Kconfig    |  1 +
+>>>>    arch/x86/mm/fault.c | 36 ++++++++++++++++++++++++++++++++++++
+>>>>    2 files changed, 37 insertions(+)
+>>>>
+>>>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>>>> index a825bf031f49..df21fba77db1 100644
+>>>> --- a/arch/x86/Kconfig
+>>>> +++ b/arch/x86/Kconfig
+>>>> @@ -27,6 +27,7 @@ config X86_64
+>>>>        # Options that are inherently 64-bit kernel only:
+>>>>        select ARCH_HAS_GIGANTIC_PAGE
+>>>>        select ARCH_SUPPORTS_INT128 if CC_HAS_INT128
+>>>> +     select ARCH_SUPPORTS_PER_VMA_LOCK
+>>>>        select ARCH_USE_CMPXCHG_LOCKREF
+>>>>        select HAVE_ARCH_SOFT_DIRTY
+>>>>        select MODULES_USE_ELF_RELA
+>>>> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+>>>> index a498ae1fbe66..e4399983c50c 100644
+>>>> --- a/arch/x86/mm/fault.c
+>>>> +++ b/arch/x86/mm/fault.c
+>>>> @@ -19,6 +19,7 @@
+>>>>    #include <linux/uaccess.h>          /* 
+>>>> faulthandler_disabled()      */
+>>>>    #include <linux/efi.h>                      /* 
+>>>> efi_crash_gracefully_on_page_fault()*/
+>>>>    #include <linux/mm_types.h>
+>>>> +#include <linux/mm.h>                        /* find_and_lock_vma() */
+>>>>
+>>>>    #include <asm/cpufeature.h>         /* boot_cpu_has, 
+>>>> ...            */
+>>>>    #include <asm/traps.h>                      /* dotraplinkage, 
+>>>> ...           */
+>>>> @@ -1333,6 +1334,38 @@ void do_user_addr_fault(struct pt_regs *regs,
+>>>>        }
+>>>>    #endif
+>>>>
+>>>> +#ifdef CONFIG_PER_VMA_LOCK
+>>>> +     if (!(flags & FAULT_FLAG_USER))
+>>>> +             goto lock_mmap;
+>>>> +
+>>>> +     vma = lock_vma_under_rcu(mm, address);
+>>>> +     if (!vma)
+>>>> +             goto lock_mmap;
+>>>> +
+>>>> +     if (unlikely(access_error(error_code, vma))) {
+>>>> +             vma_end_read(vma);
+>>>> +             goto lock_mmap;
+>>>> +     }
+>>>> +     fault = handle_mm_fault(vma, address, flags | 
+>>>> FAULT_FLAG_VMA_LOCK, regs);
+>>>> +     vma_end_read(vma);
+>>>> +
+>>>> +     if (!(fault & VM_FAULT_RETRY)) {
+>>>> +             count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
+>>>> +             goto done;
+>>>> +     }
+>>>> +     count_vm_vma_lock_event(VMA_LOCK_RETRY);
+>>>
+>>> This is apparently not strong enough as it causes go build failures 
+>>> like:
+>>>
+>>> [  409s] strconv
+>>> [  409s] releasep: m=0x579e2000 m->p=0x5781c600 p->m=0x0 p->status=2
+>>> [  409s] fatal error: releasep: invalid p state
+>>> [  409s]
+>>>
+>>> [  325s] hash/adler32
+>>> [  325s] hash/crc32
+>>> [  325s] cmd/internal/codesign
+>>> [  336s] fatal error: runtime: out of memory
+>>
+>> Hi Jiri,
+>> Thanks for reporting! I'm not familiar with go builds. Could you
+>> please explain the error to me or point me to some documentation to
+>> decipher that error?
+> 
+> Sorry, we are on the same boat -- me neither. It only popped up in our 
+> (openSUSE) build system and I only tracked it down by bisection. Let me 
+> know if I can try something (like a patch or gathering some debug info).
 
---------------mO7mj780JaYWOEkXFpUrFA6g
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+FWIW, a failed build log:
+https://decibel.fi.muni.cz/~xslaby/n/vma/log.txt
 
-SGkNCg0KQW0gMjkuMDYuMjMgdW0gMTU6MjEgc2NocmllYiBBcm5kIEJlcmdtYW5uOg0KPiBP
-biBUaHUsIEp1biAyOSwgMjAyMywgYXQgMTU6MDEsIFRob21hcyBaaW1tZXJtYW5uIHdyb3Rl
-Og0KPj4gQW0gMjkuMDYuMjMgdW0gMTQ6MzUgc2NocmllYiBBcm5kIEJlcmdtYW5uOg0KPj4+
-IE9uIFRodSwgSnVuIDI5LCAyMDIzLCBhdCAxMzo0NSwgVGhvbWFzIFppbW1lcm1hbm4gd3Jv
-dGU6DQo+Pj4+IFRoZSBnbG9iYWwgdmFyaWFibGUgZWRpZF9pbmZvIGNvbnRhaW5zIHRoZSBm
-aXJtd2FyZSdzIEVESUQgaW5mb3JtYXRpb24NCj4+Pj4gYXMgYW4gZXh0ZW5zaW9uIHRvIHRo
-ZSByZWd1bGFyIHNjcmVlbl9pbmZvIG9uIHg4Ni4gVGhlcmVmb3JlIG1vdmUgaXQgdG8NCj4+
-Pj4gPGFzbS9zY3JlZW5faW5mby5oPi4NCj4+Pj4NCj4+Pj4gQWRkIHRoZSBLY29uZmlnIHRv
-a2VuIEFSQ0hfSEFTX0VESURfSU5GTyB0byBndWFyZCBhZ2FpbnN0IGFjY2VzcyBvbg0KPj4+
-PiBhcmNoaXRlY3R1cmVzIHRoYXQgZG9uJ3QgcHJvdmlkZSBlZGlkX2luZm8uIFNlbGVjdCBp
-dCBvbiB4ODYuDQo+Pj4NCj4+PiBJJ20gbm90IHN1cmUgd2UgbmVlZCBhbm90aGVyIHN5bWJv
-bCBpbiBhZGRpdGlvbiB0bw0KPj4+IENPTkZJR19GSVJNV0FSRV9FRElELiBTaW5jZSBhbGwg
-dGhlIGNvZGUgYmVoaW5kIHRoYXQNCj4+PiBleGlzdGluZyBzeW1ib2wgaXMgYWxzbyB4ODYg
-c3BlY2lmaWMsIHdvdWxkIGl0IGJlIGVub3VnaA0KPj4+IHRvIGp1c3QgYWRkIGVpdGhlciAn
-ZGVwZW5kcyBvbiBYODYnIG9yICdkZXBlbmRzIG9uIFg4NiB8fA0KPj4+IENPTVBJTEVfVEVT
-VCcgdGhlcmU/DQo+Pg0KPj4gRklSTVdBUkVfRURJRCBpcyBhIHVzZXItc2VsZWN0YWJsZSBm
-ZWF0dXJlLCB3aGlsZSBBUkNIX0hBU19FRElEX0lORk8NCj4+IGFubm91bmNlcyBhbiBhcmNo
-aXRlY3R1cmUgZmVhdHVyZS4gVGhleSBkbyBkaWZmZXJlbnQgdGhpbmdzLg0KPiANCj4gSSBz
-dGlsbCBoYXZlIHRyb3VibGUgc2VlaW5nIHRoZSBkaWZmZXJlbmNlLg0KDQpUaGUgaWRlYSBo
-ZXJlIGlzIHRoYXQgQVJDSF9IQVNfIHNpZ25hbHMgdGhlIGFyY2hpdGVjdHVyZSdzIHN1cHBv
-cnQgZm9yIA0KdGhlIGZlYXR1cmUuICBEcml2ZXJzIHNldCAnZGVwZW5kcyBvbicgaW4gdGhl
-aXIgS2NvbmZpZy4NCg0KQW5vdGhlciBLY29uZmlnIHRva2VuLCBWSURFT19TQ1JFRU5fSU5G
-TyBvciBGSVJNV0FSRV9FRElELCB3b3VsZCB0aGVuIA0KYWN0dWFsbHkgZW5hYmxlIHRoZSBm
-ZWF0dXJlLiAgRHJpdmVycyBzZWxlY3QgVklERU9fU0NSRUVOX0lORk8gb3IgDQpGSVJNV0FS
-RV9FRElEIGFuZCB0aGUgYXJjaGl0ZWN0dXJlcyBjb250YWlucyBjb2RlIGxpa2UNCg0KI2lm
-ZGVmIFZJREVPX1NDUkVFTl9JTkZPDQpzdHJ1Y3Qgc2NyZWVuX2luZm8gc2NyZWVuX2luZm8g
-PSB7DQoJLyogc2V0IHZhbHVlcyBoZXJlICovDQp9DQojZW5kaWYNCg0KVGhpcyBhbGxvd3Mg
-dXMgdG8gZGlzYWJsZSBjb2RlIHRoYXQgcmVxdWlyZXMgc2NyZWVuX2luZm8vZWRpZF9pbmZv
-LCBidXQgDQphbHNvIGRpc2FibGUgc2NyZWVuX2luZm8vZWRpZF9pbmZvIHVubGVzcyBzdWNo
-IGNvZGUgaGFzIGJlZW4gZW5hYmxlZCBpbiANCnRoZSBrZXJuZWwgY29uZmlnLg0KDQpTb21l
-IGFyY2hpdGVjdHVyZXMgY3VycmVudGx5IG1pbWljIHRoaXMgYnkgZ3VhcmRpbmcgc2NyZWVu
-X2luZm8gd2l0aCANCmlmZGVmIENPTkZJR19WVCBvciBzaW1pbGFyLiBJJ2QgbGlrZSB0byBt
-YWtlIHRoaXMgbW9yZSBmbGV4aWJsZS4gVGhlIA0KY29zdCBvZiBhIGZldyBtb3JlIGludGVy
-bmFsIEtjb25maWcgdG9rZW5zIHNlZW1zIG5lZ2xpZ2libGUuDQoNCj4gDQo+PiBSaWdodCBu
-b3csIEFSQ0hfSEFTX0VESURfSU5GTyBvbmx5IHdvcmtzIG9uIHRoZSBvbGQgQklPUy1iYXNl
-ZCBWRVNBDQo+PiBzeXN0ZW1zLiBJbiB0aGUgZnV0dXJlLCBJIHdhbnQgdG8gYWRkIHN1cHBv
-cnQgZm9yIEVESUQgZGF0YSBmcm9tIEVGSSBhbmQNCj4+IE9GIGFzIHdlbGwuIEl0IHdvdWxk
-IGJlIHN0b3JlZCBpbiBlZGlkX2luZm8uIEkgYXNzdW1lIHRoYXQgdGhlIG5ldw0KPj4gc3lt
-Ym9sIHdpbGwgYmVjb21lIHVzZWZ1bCB0aGVuLg0KPiANCj4gSSBkb24ndCBzZWUgd2h5IGFu
-IE9GIGJhc2VkIHN5c3RlbSB3b3VsZCBoYXZlIHRoZSBzYW1lIGxpbWl0YXRpb24NCj4gYXMg
-bGVnYWN5IEJJT1Mgd2l0aCBzdXBwb3J0aW5nIG9ubHkgYSBzaW5nbGUgbW9uaXRvciwgaWYg
-d2UgbmVlZA0KPiB0byBoYXZlIGEgZ2VuZXJpYyByZXByZXNlbnRhdGlvbiBvZiBFRElEIGRh
-dGEgaW4gRFQsIHRoYXQgd291bGQNCj4gcHJvYmFibHkgYmUgaW4gYSBwZXIgZGV2aWNlIHBy
-b3BlcnR5IGFueXdheS4NCg0KU29ycnkgdGhhdCB3YXMgbXkgbWlzdGFrZS4gT0YgaGFzIG5v
-dGhpbmcgdG8gZG8gd2l0aCB0aGlzLg0KDQo+IA0KPiBJIHN1cHBvc2UgeW91IGNvdWxkIHVz
-ZSBGSVJNV0FSRV9FRElEIG9uIEVGSSBvciBPRiBzeXN0ZW1zIHdpdGhvdXQNCj4gdGhlIG5l
-ZWQgZm9yIGEgZ2xvYmFsIGVkaWRfaW5mbyBzdHJ1Y3R1cmUsIGJ1dCB0aGF0IHdvdWxkIG5v
-dA0KPiBzaGFyZSBhbnkgY29kZSB3aXRoIHRoZSBjdXJyZW50IGZiX2Zpcm13YXJlX2VkaWQo
-KSBmdW5jdGlvbi4NCg0KVGhlIGN1cnJlbnQgY29kZSBpcyBidWlsZCBvbiB0b3Agb2Ygc2Ny
-ZWVuX2luZm8gYW5kIGVkaWRfaW5mby4gSSdkIA0KcHJlZmVyYWJseSBub3QgcmVwbGFjZSB0
-aGF0LCBpZiBwb3NzaWJsZS4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gICAg
-ICAgQXJuZA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2
-ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCkZyYW5rZW5z
-dHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55DQpHRjogSXZvIFRvdGV2LCBB
-bmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGllbiBNb2VybWFuDQpIUkIgMzY4
-MDkgKEFHIE51ZXJuYmVyZykNCg==
+and a strace for it:
+https://decibel.fi.muni.cz/~xslaby/n/vma/strace.txt
 
---------------mO7mj780JaYWOEkXFpUrFA6g--
+An excerpt from the log:
 
---------------2PcBvNvj4NxOJT00dP00OAEN
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+[   55s] runtime: marked free object in span 0x7fca6824bec8, 
+elemsize=192 freeindex=0 (bad use of unsafe.Pointer? try -d=checkptr)
+[   55s] 0xc0002f2000 alloc marked
+[   55s] 0xc0002f20c0 alloc marked
+[   55s] 0xc0002f2180 alloc marked
+[   55s] 0xc0002f2240 free  unmarked
+[   55s] 0xc0002f2300 alloc marked
+[   55s] 0xc0002f23c0 alloc marked
+[   55s] 0xc0002f2480 alloc marked
+[   55s] 0xc0002f2540 alloc marked
+[   55s] 0xc0002f2600 alloc marked
+[   55s] 0xc0002f26c0 alloc marked
+[   55s] 0xc0002f2780 alloc marked
+[   55s] 0xc0002f2840 alloc marked
+[   55s] 0xc0002f2900 alloc marked
+[   55s] 0xc0002f29c0 free  unmarked
+[   55s] 0xc0002f2a80 alloc marked
+[   55s] 0xc0002f2b40 alloc marked
+[   55s] 0xc0002f2c00 alloc marked
+[   55s] 0xc0002f2cc0 alloc marked
+[   55s] 0xc0002f2d80 alloc marked
+[   55s] 0xc0002f2e40 alloc marked
+[   55s] 0xc0002f2f00 alloc marked
+[   55s] 0xc0002f2fc0 alloc marked
+[   55s] 0xc0002f3080 alloc marked
+[   55s] 0xc0002f3140 alloc marked
+[   55s] 0xc0002f3200 alloc marked
+[   55s] 0xc0002f32c0 alloc marked
+[   55s] 0xc0002f3380 free  unmarked
+[   55s] 0xc0002f3440 free  marked   zombie
 
------BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSeiEMFAwAAAAAACgkQlh/E3EQov+As
-5Q/9H55ggR4DmBaaIorbgBWGfEk+cZYwIsKGIz88GTA+c5VuSIo6Mc6nMauV6sDZwQuqK4aWIzzR
-jVTZ+JGcp3h1o6Cb0aTHu4wIa0XkYCuT1Lo7p8q02mhS2T/EtbkiMAktmfNBBOCQ2Fp1RYjL5Fnx
-D8F1O/+gATcQgYGWJ4V3Y0khLBjCIhqZLpoDUZgvIznRExZlWP+eZ/NIuYR/PiM7/z0Gu/p+FZEo
-XIZrcJeJGET5ciMIAmV2d8zLT2YAwSz0bsLLYt5xyeZkVZBUKuQ93wUicuYaqXHIqpUz760GPe3M
-uITt6uKCQQHv2MOawwpy/YMei3eFhbCAixdayLHfhcyo1u3fnGsQWaLYStVYNnkfTEEb3abRZrUz
-gR90CVdui0m94ExphiWAzSjj/SbKYkUc0haYzE/CHronlSSiqHhTDghKfjEli6yS8cAAxSDZVcgw
-pggFLw7Xz3f+ITbu/zV1QzMHX5bOV+3ThWxpDGXmeQ4k60lx80NaI3unnFQqi4KN0Gyu2i2ptFNU
-KRuLox9gnQf9J50AkJOShkapFUjTVNDwxJ0Ftikb/pv/UXdsLrnWzrPgi4Qn6Y49jqHRb2wNFcIF
-erX2SS+S6zYk36Pg6L77ceHnxC0rIaZBtZ81YxFtMiZ9l8YV2rJS8orASwSIzF/yPiZXZgFY3ZQm
-S2Y=
-=pDNZ
------END PGP SIGNATURE-----
+An excerpt from strace:
+ > 2348 
+clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, 
+child_tid=0x7fcaa6a1b990, parent_tid=0x7fcaa6a1b990, exit_signal=0, 
+stack=0x7fcaa621b000, stack_size=0x7ffe00, tls=0x7fcaa6a1b6c0} => 
+{parent_tid=[2350]}, 88) = 2350
 
---------------2PcBvNvj4NxOJT00dP00OAEN--
+ > 2348 
+clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, 
+child_tid=0x7fcaa5882990, parent_tid=0x7fcaa5882990, exit_signal=0, 
+stack=0x7fcaa5082000, stack_size=0x7ffe00, tls=0x7fcaa58826c0} => 
+{parent_tid=[2351]}, 88) = 2351
+ > 2350  <... clone3 resumed> => {parent_tid=[2372]}, 88) = 2372
+ > 2351  <... clone3 resumed> => {parent_tid=[2354]}, 88) = 2354
+ > 2351  <... clone3 resumed> => {parent_tid=[2357]}, 88) = 2357
+ > 2354  <... clone3 resumed> => {parent_tid=[2355]}, 88) = 2355
+ > 2355  <... clone3 resumed> => {parent_tid=[2370]}, 88) = 2370
+ > 2370  mmap(NULL, 262144, PROT_READ|PROT_WRITE, 
+MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+ > 2370  <... mmap resumed>)               = 0x7fca68249000
+ > 2372  <... clone3 resumed> => {parent_tid=[2384]}, 88) = 2384
+ > 2384  <... clone3 resumed> => {parent_tid=[2388]}, 88) = 2388
+ > 2388  <... clone3 resumed> => {parent_tid=[2392]}, 88) = 2392
+ > 2392  <... clone3 resumed> => {parent_tid=[2395]}, 88) = 2395
+ > 2395  write(2, "runtime: marked free object in s"..., 36 <unfinished ...>
+
+I.e. IIUC, all are threads (CLONE_VM) and thread 2370 mapped ANON 
+0x7fca68249000 - 0x7fca6827ffff and go in thread 2395 thinks for some 
+reason 0x7fca6824bec8 in that region is "bad".
+
+> thanks,-- 
+-- 
+js
+suse labs
+
