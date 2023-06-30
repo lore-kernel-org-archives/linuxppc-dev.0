@@ -4,69 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C30AAEB64D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 06:01:18 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Ov/WA9FI;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D11E0EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 06:09:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qsl7K1Lsnz305R
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 16:01:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Ov/WA9FI;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112f; helo=mail-yw1-x112f.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112f.google.com (mail-yw1-x112f.google.com [IPv6:2607:f8b0:4864:20::112f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QslK91gFSz3c2t
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 16:09:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qsl6J1Pdzz2xvh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 16:00:22 +1000 (AEST)
-Received: by mail-yw1-x112f.google.com with SMTP id 00721157ae682-5728df0a7d9so15806047b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2023 23:00:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1688104819; x=1690696819;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=+0nTG/kHTQnVMhxohP5MHsuqRdzFEHicjq/sQ6iCKf4=;
-        b=Ov/WA9FIpcLbO5CWiZUETBfpY3/i28SEAzmOAtKKfVPcjC2oiPdl88c3NEOwzb8cD+
-         6WzK7yaRwizLNaiSK+XsCbeueaZWtb1w0nxmwBno9xEic/fO7Z4szDyPbW8HYyXhAvZ7
-         YV3jFnWqdMrYUC5skCnnCQvrYAyK6TUTJpnLrxix2anE3XJz7ZmlaiODH4pHDYJGT4Q6
-         giQoUvXCxUzI+Kk2H80FyTpsBZKpuQSjgZKIWyFp5elg9xREP/alCVI73Tg8EO5xvOTl
-         AJIs6DUayxlLux2wbVvwTJNJxrms7uSk68djZvXan8LY41dV6vRsyGpCGRqDLR35B8w7
-         0tJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688104819; x=1690696819;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+0nTG/kHTQnVMhxohP5MHsuqRdzFEHicjq/sQ6iCKf4=;
-        b=I+s3x36uQgTGjwflKtEwhPWDjQvpOxUnf+H8XO+yAg8M6gPEMlc05yFcEcLN1buo6y
-         HY80lJ0qIBI4uJst0ASLMxkX6yh4LtOwFMoMlCxBpsqmWEXQZERp/S8J1cTxo11UB+WB
-         HKqn/xZKWJjEWmQ3wxKodiG3DRpy/UtM2kTuEN/MmWh1KkRwpUcy/CmikA0dDwne+hPc
-         xSfmFS8WAnoFptTzHIpL1vAVaM9CE08X649naFS7X4ahg27dGOkSHng9gTK2jRDRg7HD
-         sSVMP3HEvHUvfJhVEtbYn3XFLKlAITUXOl/g+1RG/087ZjuNGkfEKdTrlAKTPJ2NaLUx
-         iTrQ==
-X-Gm-Message-State: ABy/qLauKmLHOAalpvpqisi16Zf7nNQ8uf3XMRZWTLynxXbPmQ0XKzDF
-	TyIxUK2uPHxMOscZpvMz7wMZ0A==
-X-Google-Smtp-Source: APBJJlHFE9Bxkgb6xQI8G8hQpu1DsdB6JNYk+x45ihxlo4iT7BDx6YBh1zc44ElJh614CQjrX+ONmg==
-X-Received: by 2002:a81:5302:0:b0:56d:31a1:bd9b with SMTP id h2-20020a815302000000b0056d31a1bd9bmr1566007ywb.41.1688104819415;
-        Thu, 29 Jun 2023 23:00:19 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id n197-20020a0dcbce000000b0056d3d7a59cesm3278770ywd.12.2023.06.29.23.00.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Jun 2023 23:00:19 -0700 (PDT)
-Date: Thu, 29 Jun 2023 23:00:07 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-Subject: Re: [PATCH v2 07/12] s390: add pte_free_defer() for pgtables sharing
- page
-In-Reply-To: <20230629175645.7654d0a8@thinkpad-T15>
-Message-ID: <edaa96f-80c1-1252-acbb-71c4f045b035@google.com>
-References: <54cb04f-3762-987f-8294-91dafd8ebfb0@google.com> <a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com> <20230628211624.531cdc58@thinkpad-T15> <cd7c2851-1440-7220-6c53-16b343b1474@google.com> <ZJ2hsM5Tn+yUZ5ZV@ziepe.ca>
- <20230629175645.7654d0a8@thinkpad-T15>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QslJc0DRsz303Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2023 16:09:17 +1000 (AEST)
+Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.53])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4QslDg1z02zqVB2;
+	Fri, 30 Jun 2023 14:05:55 +0800 (CST)
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Fri, 30 Jun 2023 14:08:41 +0800
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 2/2] mm: make show_free_areas() static
+Date: Fri, 30 Jun 2023 14:22:53 +0800
+Message-ID: <20230630062253.189440-2-wangkefeng.wang@huawei.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230630062253.189440-1-wangkefeng.wang@huawei.com>
+References: <20230630062253.189440-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.113.25]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpemm100001.china.huawei.com (7.185.36.93)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,85 +48,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, P
- asha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, willy@infradead.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 29 Jun 2023, Gerald Schaefer wrote:
-> On Thu, 29 Jun 2023 12:22:24 -0300
-> Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> > On Wed, Jun 28, 2023 at 10:08:08PM -0700, Hugh Dickins wrote:
-> > > On Wed, 28 Jun 2023, Gerald Schaefer wrote:  
-> > > > 
-> > > > As discussed in the other thread, we would rather go with less complexity,
-> > > > possibly switching to an approach w/o the list and fragment re-use in the
-> > > > future. For now, as a first step in that direction, we can try with not
-> > > > adding fragments back only for pte_free_defer(). Here is an adjusted
-> > > > version of your patch, copying most of your pte_free_defer() logic and
-> > > > also description, tested with LTP and all three of your patch series applied:  
-> > > 
-> > > Thanks, Gerald: I don't mind abandoning my 13/12 SLAB_TYPESAFE_BY_RCU
-> > > patch (posted with fewer Cc's to the s390 list last week), and switching
-> > > to your simpler who-cares-if-we-sometimes-don't-make-maximal-use-of-page
-> > > patch.
-> > > 
-> > > But I didn't get deep enough into it today to confirm it - and disappointed
-> > > that you've found it necessary to play with pt_frag_refcount in addition to
-> > > _refcount and HH bits.  No real problem with that, but my instinct says it
-> > > should be simpler.  
-> 
-> Yes, I also found it a bit awkward, but it seemed "good and simple enough",
-> to have something to go forward with, while my instinct was in line with yours.
-> 
-> > 
-> > Is there any reason it should be any different at all from what PPC is
-> > doing?
-> > 
-> > I still think the right thing to do here is make the PPC code common
-> > (with Hugh's proposed RCU modification) and just use it in both
-> > arches....
-> 
-> With the current approach, we would not add back fragments _only_ for
-> the new pte_free_defer() path, while keeping our cleverness for the other
-> paths. Not having a good overview of the negative impact wrt potential
-> memory waste, I would rather take small steps, if possible.
-> 
-> If we later switch to never adding back fragments, of course we should
-> try to be in line with PPC implementation.
+All callers of show_free_areas() pass 0 and NULL, so we can directly
+use show_mem() instead of show_free_areas(0, NULL), which could make
+show_free_areas() a static function.
 
-I find myself half-agreeing with everyone.
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+v2: update commit log and fix a missing show_free_areas() conversion
 
-I agree with Gerald that s390 should keep close to what it is already
-doing (except for adding pte_free_defer()): that changing its strategy
-and implementation to be much more like powerpc, is a job for some other
-occasion (and would depend on gathering data about how well each does).
+ arch/sparc/kernel/setup_32.c |  2 +-
+ include/linux/mm.h           | 12 ------------
+ mm/internal.h                |  6 ++++++
+ mm/nommu.c                   |  8 ++++----
+ mm/show_mem.c                |  4 ++--
+ 5 files changed, 13 insertions(+), 19 deletions(-)
 
-But I agree with Jason that the powerpc solution we ended up with cut
-out a lot of unnecessary complication: it shifts the RCU delay from
-when pte_free_defer() is called, to when the shared page comes to be
-freed; which may be a lot later, and might not be welcome in a common
-path, but is quite okay for the uncommon pte_free_defer().
+diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
+index 1adf5c1c16b8..34ef7febf0d5 100644
+--- a/arch/sparc/kernel/setup_32.c
++++ b/arch/sparc/kernel/setup_32.c
+@@ -83,7 +83,7 @@ static void prom_sync_me(void)
+ 			     "nop\n\t" : : "r" (&trapbase));
+ 
+ 	prom_printf("PROM SYNC COMMAND...\n");
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	if (!is_idle_task(current)) {
+ 		local_irq_enable();
+ 		ksys_sync();
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index ddb140e14f3a..0a1314a3ffae 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2218,18 +2218,6 @@ extern void pagefault_out_of_memory(void);
+ #define offset_in_thp(page, p)	((unsigned long)(p) & (thp_size(page) - 1))
+ #define offset_in_folio(folio, p) ((unsigned long)(p) & (folio_size(folio) - 1))
+ 
+-/*
+- * Flags passed to show_mem() and show_free_areas() to suppress output in
+- * various contexts.
+- */
+-#define SHOW_MEM_FILTER_NODES		(0x0001u)	/* disallowed nodes */
+-
+-extern void __show_free_areas(unsigned int flags, nodemask_t *nodemask, int max_zone_idx);
+-static void __maybe_unused show_free_areas(unsigned int flags, nodemask_t *nodemask)
+-{
+-	__show_free_areas(flags, nodemask, MAX_NR_ZONES - 1);
+-}
+-
+ /*
+  * Parameter block passed down to zap_pte_range in exceptional cases.
+  */
+diff --git a/mm/internal.h b/mm/internal.h
+index a7d9e980429a..721ed07d7fd6 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -61,6 +61,12 @@ void page_writeback_init(void);
+ #define COMPOUND_MAPPED		0x800000
+ #define FOLIO_PAGES_MAPPED	(COMPOUND_MAPPED - 1)
+ 
++/*
++ * Flags passed to __show_mem() and show_free_areas() to suppress output in
++ * various contexts.
++ */
++#define SHOW_MEM_FILTER_NODES		(0x0001u)	/* disallowed nodes */
++
+ /*
+  * How many individual pages have an elevated _mapcount.  Excludes
+  * the folio's entire_mapcount.
+diff --git a/mm/nommu.c b/mm/nommu.c
+index f670d9979a26..bff51d8ec66e 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -990,7 +990,7 @@ static int do_mmap_private(struct vm_area_struct *vma,
+ enomem:
+ 	pr_err("Allocation of length %lu from process %d (%s) failed\n",
+ 	       len, current->pid, current->comm);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ }
+ 
+@@ -1223,20 +1223,20 @@ unsigned long do_mmap(struct file *file,
+ 	kmem_cache_free(vm_region_jar, region);
+ 	pr_warn("Allocation of vma for %lu byte allocation from process %d failed\n",
+ 			len, current->pid);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ 
+ error_getting_region:
+ 	pr_warn("Allocation of vm region for %lu byte allocation from process %d failed\n",
+ 			len, current->pid);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ 
+ error_vma_iter_prealloc:
+ 	kmem_cache_free(vm_region_jar, region);
+ 	vm_area_free(vma);
+ 	pr_warn("Allocation of vma tree for process %d failed\n", current->pid);
+-	show_free_areas(0, NULL);
++	show_mem();
+ 	return -ENOMEM;
+ 
+ }
+diff --git a/mm/show_mem.c b/mm/show_mem.c
+index 01f8e9905817..09c7d036d49e 100644
+--- a/mm/show_mem.c
++++ b/mm/show_mem.c
+@@ -186,7 +186,7 @@ static bool node_has_managed_zones(pg_data_t *pgdat, int max_zone_idx)
+  * SHOW_MEM_FILTER_NODES: suppress nodes that are not allowed by current's
+  *   cpuset.
+  */
+-void __show_free_areas(unsigned int filter, nodemask_t *nodemask, int max_zone_idx)
++static void show_free_areas(unsigned int filter, nodemask_t *nodemask, int max_zone_idx)
+ {
+ 	unsigned long free_pcp = 0;
+ 	int cpu, nid;
+@@ -406,7 +406,7 @@ void __show_mem(unsigned int filter, nodemask_t *nodemask, int max_zone_idx)
+ 	struct zone *zone;
+ 
+ 	printk("Mem-Info:\n");
+-	__show_free_areas(filter, nodemask, max_zone_idx);
++	show_free_areas(filter, nodemask, max_zone_idx);
+ 
+ 	for_each_populated_zone(zone) {
+ 
+-- 
+2.41.0
 
-And I agree with Alexander that pte_free_lower() and pte_free_upper()
-are better names than pte_free_now0() and pte_free_now1(): I was going
-to make that change, except all those functions disappear if we follow
-Jason's advice and switch the call_rcu() to when freeing the page.
-
-(Lower and upper seem unambiguous to me: Gerald, does your confusion
-come just from the way they are shown the wrong way round in the PP AA
-diagram?  I corrected that in my patch, but you reverted it in yours.)
-
-I've grown to dislike the (ab)use of pt_frag_refcount even more, to the
-extent that I've not even tried to verify it; but I think I do get the
-point now, that we need further info than just PPHHAA to know whether
-the page is on the list or not.  But I think that if we move where the
-call_rcu() is done, then the page can stay on or off the list by same
-rules as before (but need to check HH bits along with PP when deciding
-whether to allocate, and whether to list_add_tail() when freeing).
-
-So, starting from Gerald's but cutting it down, I was working on the
-patch which follows those ideas.  But have run out of puff for tonight,
-and would just waste all our time (again) if I sent anything out now.
-
-Hugh
