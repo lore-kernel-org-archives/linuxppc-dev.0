@@ -4,91 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1687EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 15:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D942EB64D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jun 2023 17:13:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DpPNbNxV;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CeKkK0vM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QszXT5Rccz3c1T
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jul 2023 01:20:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qt23B0BrDz3c2L
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jul 2023 03:13:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DpPNbNxV;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CeKkK0vM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QszWV09D4z2ydR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2023 01:19:33 +1000 (AEST)
-Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35UFH8pY020880;
-	Fri, 30 Jun 2023 15:19:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : from : to : cc : references : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Lycu8WDBwobi6T7/8g4368xPmrlcfRa0eBuPZnpI8Lc=;
- b=DpPNbNxVw0IHVufCOsCONzAILjxWSfiKsGs3wcXObsxPxZDO9Hzv4iMgsELKqSmlYlyV
- wGicDg/BK88qdVIFEasZPM7LHrF9bwFs/GciaVWD8sa+yQ8vqNGLNNl47hkCEwfLBFV5
- m0xX8NQsutw2QN3kneXublAQBJdwPeL0z1HrTJUIbR9PM/gPJyQUglGFX5Kv87c+B5xb
- hhQswlbGYOo5H2OXRMois8tALSZL5TZhkK+pH7aGQJyAEptBdwAKp6jmk5AgvqBsLOlI
- EIu4JWwS/n3s1r9ZFP8os/9BUH41MhxloHQHB+N1uwiSrT9me30Z4rOYQsklwNEkADKI 6Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rj1j801he-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 15:19:18 +0000
-Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 35UFIxvx027941;
-	Fri, 30 Jun 2023 15:19:18 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rj1j801gh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 15:19:18 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 35U685W0029434;
-	Fri, 30 Jun 2023 15:19:15 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3rdqre47h7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Jun 2023 15:19:15 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 35UFJDQb4129508
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 30 Jun 2023 15:19:13 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 667932004B;
-	Fri, 30 Jun 2023 15:19:13 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B145920040;
-	Fri, 30 Jun 2023 15:19:12 +0000 (GMT)
-Received: from [9.171.36.134] (unknown [9.171.36.134])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 30 Jun 2023 15:19:12 +0000 (GMT)
-Message-ID: <b62c80ba-e4eb-b694-7e45-082bc8ef7f2c@linux.ibm.com>
-Date: Fri, 30 Jun 2023 17:19:12 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.12.0
-Subject: Re: [PATCH v3 8/9] powerpc: Add HOTPLUG_SMT support
-Content-Language: en-US
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: mpe@ellerman.id.au
-References: <20230629143149.79073-1-ldufour@linux.ibm.com>
- <20230629143149.79073-9-ldufour@linux.ibm.com>
-In-Reply-To: <20230629143149.79073-9-ldufour@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Zjd6rE1HF1V40UiYmn1CrHGHg_OBorTP
-X-Proofpoint-GUID: aFy_dg3U8mDXHnQe-tuAt7RuMPC3aWUd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-06-30_05,2023-06-30_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 malwarescore=0 spamscore=0 bulkscore=0 clxscore=1015
- adultscore=0 mlxscore=0 lowpriorityscore=0 mlxlogscore=999 phishscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306300127
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qt2283Ss9z3bmj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2023 03:12:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1688145168; x=1719681168;
+  h=date:from:to:cc:subject:message-id;
+  bh=4kIcLAKepbqKLwgVyVX9CVPtR2+nxG7NYqqcDXaH4AQ=;
+  b=CeKkK0vMsFvzaJoSgeKFXo7T/ekuYrDyx0BWewECSFl7tIo0Tr4ieOSa
+   gmLPI3Yafhz3jALYdv+xxPC6Ae1f2lemNElgCidSwGNuxvhq6Gz2mrtkI
+   tpg34HUt289PFH0AfoNjca3tDRF7WtskgCCKmmpTW4zt1ojTGO1C1yOQS
+   eE5bjo4peCShCKqFhR8FFinZXmHf8W0VR44UMfqDlj+WsKF5pOxTdOfx0
+   viM3hyT1J0UkpbZriP660bghJB/j2EKCS0e5C8/UpCaec/tURT1TC8c2I
+   oklBf50ujVCwVia7j5PQasU5jNGc7isuaU8BhoOdrRwkHwwm1JrajbBzB
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="362487888"
+X-IronPort-AV: E=Sophos;i="6.01,171,1684825200"; 
+   d="scan'208";a="362487888"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2023 10:12:38 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="862357496"
+X-IronPort-AV: E=Sophos;i="6.01,171,1684825200"; 
+   d="scan'208";a="862357496"
+Received: from lkp-server01.sh.intel.com (HELO 783282924a45) ([10.239.97.150])
+  by fmsmga001.fm.intel.com with ESMTP; 30 Jun 2023 10:12:37 -0700
+Received: from kbuild by 783282924a45 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1qFHfg-000FBf-28;
+	Fri, 30 Jun 2023 17:12:36 +0000
+Date: Sat, 01 Jul 2023 01:12:23 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:topic/cpu-smt] BUILD SUCCESS
+ 0d882f835c76e5b4e1c7a22443ce85e096cf2be8
+Message-ID: <202307010121.p8vdhnNO-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,126 +66,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, mingo@redhat.com, bp@alien8.de, npiggin@gmail.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/cpu-smt
+branch HEAD: 0d882f835c76e5b4e1c7a22443ce85e096cf2be8  powerpc/pseries: Honour current SMT state when DLPAR onlining CPUs
 
-Le 29/06/2023 à 16:31, Laurent Dufour a écrit :
-> From: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> Add support for HOTPLUG_SMT, which enables the generic sysfs SMT support
-> files in /sys/devices/system/cpu/smt, as well as the "nosmt" boot
-> parameter.
-> 
-> Implement the recently added hooks to allow partial SMT states, allow
-> any number of threads per core.
-> 
-> Tie the config symbol to HOTPLUG_CPU, which enables it on the major
-> platforms that support SMT. If there are other platforms that want the
-> SMT support that can be tweaked in future.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> [ldufour: pass current SMT level to cpu_smt_set_num_threads]
-> [ldufour: remove topology_smt_supported]
-> [ldufour: remove topology_smt_threads_supported]
-> [ldufour: select CONFIG_SMT_NUM_THREADS_DYNAMIC]
-> [ldufour: update kernel-parameters.txt]
-> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-> ---
->   Documentation/admin-guide/kernel-parameters.txt |  4 ++--
->   arch/powerpc/Kconfig                            |  2 ++
->   arch/powerpc/include/asm/topology.h             | 15 +++++++++++++++
->   arch/powerpc/kernel/smp.c                       |  8 +++++++-
->   4 files changed, 26 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index 9e5bab29685f..5efb6c73a928 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -3838,10 +3838,10 @@
->   	nosmp		[SMP] Tells an SMP kernel to act as a UP kernel,
->   			and disable the IO APIC.  legacy for "maxcpus=0".
->   
-> -	nosmt		[KNL,S390] Disable symmetric multithreading (SMT).
-> +	nosmt		[KNL,S390,PPC] Disable symmetric multithreading (SMT).
->   			Equivalent to smt=1.
->   
-> -			[KNL,X86] Disable symmetric multithreading (SMT).
-> +			[KNL,X86,PPC] Disable symmetric multithreading (SMT).
->   			nosmt=force: Force disable SMT, cannot be undone
->   				     via the sysfs control file.
->   
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 8b955bc7b59f..bacabc3d7f0c 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -273,6 +273,8 @@ config PPC
->   	select HAVE_SYSCALL_TRACEPOINTS
->   	select HAVE_VIRT_CPU_ACCOUNTING
->   	select HAVE_VIRT_CPU_ACCOUNTING_GEN
-> +	select HOTPLUG_SMT			if HOTPLUG_CPU
-> +	select SMT_NUM_THREADS_DYNAMIC
+elapsed time: 721m
 
-I missed that this list should be kept sorted alphabetically.
-Could you fix that when applying the series, or should I send a new 
-version ?
+configs tested: 106
+configs skipped: 5
 
-Thanks,
-Laurent.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
->   	select HUGETLB_PAGE_SIZE_VARIABLE	if PPC_BOOK3S_64 && HUGETLB_PAGE
->   	select IOMMU_HELPER			if PPC64
->   	select IRQ_DOMAIN
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> index 8a4d4f4d9749..f4e6f2dd04b7 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -143,5 +143,20 @@ static inline int cpu_to_coregroup_id(int cpu)
->   #endif
->   #endif
->   
-> +#ifdef CONFIG_HOTPLUG_SMT
-> +#include <linux/cpu_smt.h>
-> +#include <asm/cputhreads.h>
-> +
-> +static inline bool topology_is_primary_thread(unsigned int cpu)
-> +{
-> +	return cpu == cpu_first_thread_sibling(cpu);
-> +}
-> +
-> +static inline bool topology_smt_thread_allowed(unsigned int cpu)
-> +{
-> +	return cpu_thread_in_core(cpu) < cpu_smt_num_threads;
-> +}
-> +#endif
-> +
->   #endif /* __KERNEL__ */
->   #endif	/* _ASM_POWERPC_TOPOLOGY_H */
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 406e6d0ffae3..eb539325dff8 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1087,7 +1087,7 @@ static int __init init_big_cores(void)
->   
->   void __init smp_prepare_cpus(unsigned int max_cpus)
->   {
-> -	unsigned int cpu;
-> +	unsigned int cpu, num_threads;
->   
->   	DBG("smp_prepare_cpus\n");
->   
-> @@ -1154,6 +1154,12 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
->   
->   	if (smp_ops && smp_ops->probe)
->   		smp_ops->probe();
-> +
-> +	// Initalise the generic SMT topology support
-> +	num_threads = 1;
-> +	if (smt_enabled_at_boot)
-> +		num_threads = smt_enabled_at_boot;
-> +	cpu_smt_set_num_threads(num_threads, threads_per_core);
->   }
->   
->   void smp_prepare_boot_cpu(void)
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r024-20230630   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r043-20230630   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r004-20230629   clang
+arm                  randconfig-r046-20230630   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+csky                                defconfig   gcc  
+hexagon              randconfig-r041-20230630   clang
+hexagon              randconfig-r045-20230630   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r004-20230629   gcc  
+i386         buildonly-randconfig-r005-20230629   gcc  
+i386         buildonly-randconfig-r006-20230629   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-i001-20230629   gcc  
+i386                 randconfig-i002-20230629   gcc  
+i386                 randconfig-i003-20230629   gcc  
+i386                 randconfig-i004-20230629   gcc  
+i386                 randconfig-i005-20230629   gcc  
+i386                 randconfig-i006-20230629   gcc  
+i386                 randconfig-i011-20230629   clang
+i386                 randconfig-i012-20230629   clang
+i386                 randconfig-i013-20230629   clang
+i386                 randconfig-i014-20230629   clang
+i386                 randconfig-i015-20230629   clang
+i386                 randconfig-i016-20230629   clang
+i386                 randconfig-r025-20230630   clang
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+m68k                             allmodconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r026-20230630   gcc  
+m68k                 randconfig-r035-20230629   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r001-20230629   clang
+mips                 randconfig-r014-20230630   gcc  
+nios2                               defconfig   gcc  
+openrisc             randconfig-r015-20230630   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc              randconfig-r006-20230629   gcc  
+powerpc              randconfig-r032-20230629   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r042-20230630   clang
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r005-20230629   gcc  
+s390                 randconfig-r011-20230630   clang
+s390                 randconfig-r044-20230630   clang
+sh                               allmodconfig   gcc  
+sh                   randconfig-r033-20230629   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r013-20230630   gcc  
+sparc                randconfig-r031-20230629   gcc  
+sparc64              randconfig-r002-20230629   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                   randconfig-r016-20230630   gcc  
+um                   randconfig-r034-20230629   clang
+um                   randconfig-r036-20230629   clang
+um                           x86_64_defconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r001-20230629   gcc  
+x86_64       buildonly-randconfig-r002-20230629   gcc  
+x86_64       buildonly-randconfig-r003-20230629   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-x001-20230629   clang
+x86_64               randconfig-x002-20230629   clang
+x86_64               randconfig-x003-20230629   clang
+x86_64               randconfig-x004-20230629   clang
+x86_64               randconfig-x005-20230629   clang
+x86_64               randconfig-x006-20230629   clang
+x86_64               randconfig-x011-20230629   gcc  
+x86_64               randconfig-x012-20230629   gcc  
+x86_64               randconfig-x013-20230629   gcc  
+x86_64               randconfig-x014-20230629   gcc  
+x86_64               randconfig-x015-20230629   gcc  
+x86_64               randconfig-x016-20230629   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa               randconfig-r003-20230629   gcc  
+xtensa               randconfig-r022-20230630   gcc  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
