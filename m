@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5FB5EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:24:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A0C0EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:24:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZ990slRz3c0X
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:24:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZ9g6C1Tz3cGM
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:24:39 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8723Dhz2yHs
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8928wQz30fp
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:21 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ870q3Lz4wqZ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ874DWqz4wxS;
 	Mon,  3 Jul 2023 15:23:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Gaurav Batra <gbatra@linux.vnet.ibm.com>
-In-Reply-To: <20230504175913.83844-1-gbatra@linux.vnet.ibm.com>
-References: <20230504175913.83844-1-gbatra@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] powerpc/iommu: DMA address offset is incorrectly calculated with 2MB TCEs
-Message-Id: <168836167609.46386.4988989425263088348.b4-ty@ellerman.id.au>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20230425065829.18189-1-hbathini@linux.ibm.com>
+References: <20230425065829.18189-1-hbathini@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/bpf: populate extable entries only during the last pass
+Message-Id: <168836167606.46386.1266997701169825170.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:21:16 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, gjoyce@linux.vnet.ibm.com
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, stable@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 04 May 2023 12:59:13 -0500, Gaurav Batra wrote:
-> When DMA window is backed by 2MB TCEs, the DMA address for the mapped
-> page should be the offset of the page relative to the 2MB TCE. The code
-> was incorrectly setting the DMA address to the beginning of the TCE
-> range.
-> 
-> Mellanox driver is reporting timeout trying to ENABLE_HCA for an SR-IOV
-> ethernet port, when DMA window is backed by 2MB TCEs.
+On Tue, 25 Apr 2023 12:28:29 +0530, Hari Bathini wrote:
+> Since commit 85e031154c7c ("powerpc/bpf: Perform complete extra passes
+> to update addresses"), two additional passes are performed to avoid
+> space and CPU time wastage on powerpc. But these extra passes led to
+> WARN_ON_ONCE() hits in bpf_add_extable_entry() as extable entries are
+> populated again, during the extra pass, without resetting the index.
+> Fix it by resetting entry index before repopulating extable entries,
+> if and when there is an additional pass.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/iommu: DMA address offset is incorrectly calculated with 2MB TCEs
-      https://git.kernel.org/powerpc/c/096339ab84f36beae0b1db25e0ce63fb3873e8b2
+[1/1] powerpc/bpf: populate extable entries only during the last pass
+      https://git.kernel.org/powerpc/c/35a4b8ce4ac00e940b46b1034916ccb22ce9bdef
 
 cheers
