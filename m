@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B969BEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:55:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18785EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:56:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZsm0rjLz3clT
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:55:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZtH4QtXz3d8y
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:56:23 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp166cnz2ywt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp221QSz30hG
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:42 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp14dq4z4wxn;
-	Mon,  3 Jul 2023 15:52:41 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp20trdz4wxp;
+	Mon,  3 Jul 2023 15:52:42 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20230606064657.183969-1-npiggin@gmail.com>
-References: <20230606064657.183969-1-npiggin@gmail.com>
-Subject: Re: [PATCH v2 0/4] powerpc/boot: build flags refactoring
-Message-Id: <168836201884.50010.17180570432347803482.b4-ty@ellerman.id.au>
+In-Reply-To: <20230606064830.184083-1-npiggin@gmail.com>
+References: <20230606064830.184083-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/build: Remove -pipe from compilation flags
+Message-Id: <168836201884.50010.3863878974276690202.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -45,27 +45,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 06 Jun 2023 16:46:53 +1000, Nicholas Piggin wrote:
-> This is a rebase of the series here. It's no longer a fix because
-> the clang build issue got a minimal fix. A couple were merged, and
-> I pulled the rest of the boot specific ones into this series.
+On Tue, 06 Jun 2023 16:48:30 +1000, Nicholas Piggin wrote:
+> x86 removed -pipe in commit 437e88ab8f9e2 ("x86/build: Remove -pipe from
+> KBUILD_CFLAGS") and the newer arm64 and riscv seem to have never used it,
+> so that seems to be the way the world's going.
 > 
-> https://lore.kernel.org/linuxppc-dev/20230426055848.402993-1-npiggin@gmail.com/
-> 
-> Thanks,
-> Nick
+> Compile performance building defconfig on a POWER10 PowerNV system
+> was in the noise after 10 builds each. No point in adding options unless
+> they help something, so remove it.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/4] powerpc/boot: Separate target flags from BOOTCFLAGS
-      https://git.kernel.org/powerpc/c/689d592e406983debe919acb87855cab0f25b7bc
-[2/4] powerpc/boot: Separate CPP flags from BOOTCFLAGS
-      https://git.kernel.org/powerpc/c/d1b7d40d4ffa02d59e72abf31ee2119778c6673e
-[3/4] powerpc/boot: Separate BOOTCFLAGS from BOOTASFLAGS
-      https://git.kernel.org/powerpc/c/54194a2fab4f78b96347882cf27894f76833c631
-[4/4] powerpc/boot: Clean up Makefile after cflags and asflags separation
-      https://git.kernel.org/powerpc/c/8bce81dbce4f3563fffca48ebfce208b1112ab09
+[1/1] powerpc/build: Remove -pipe from compilation flags
+      https://git.kernel.org/powerpc/c/f5df87b855fd835ff0f4928575adbf4f5302bb40
 
 cheers
