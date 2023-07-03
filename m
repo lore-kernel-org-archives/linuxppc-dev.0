@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90C53EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69D32EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:57:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZvJ21N1z3dJB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:57:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZvq03Y5z3dSF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:57:43 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp35btXz3bYt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp41vchz3bcc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:44 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp315s2z4wb5;
-	Mon,  3 Jul 2023 15:52:43 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp40mcnz4wxr;
+	Mon,  3 Jul 2023 15:52:44 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <20230620043300.197546-1-paul.gortmaker@windriver.com>
-References: <20230620043300.197546-1-paul.gortmaker@windriver.com>
-Subject: Re: [PATCH v2 0/2] Remove some e500/MPC85xx evaluation platforms
-Message-Id: <168836201901.50010.13037565611998441767.b4-ty@ellerman.id.au>
-Date: Mon, 03 Jul 2023 15:26:59 +1000
+To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20230429043503.19385-1-rdunlap@infradead.org>
+References: <20230429043503.19385-1-rdunlap@infradead.org>
+Subject: Re: [PATCH] powerpc: delete empty config entry for PPC_86xx
+Message-Id: <168836201879.50010.14712830432114866109.b4-ty@ellerman.id.au>
+Date: Mon, 03 Jul 2023 15:26:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -42,25 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Pali Rohár <pali@kernel.org>, Li Yang <leoyang.li@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Kumar Gala <galak@kernel.crashing.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 20 Jun 2023 00:32:58 -0400, Paul Gortmaker wrote:
-> v1: https://lore.kernel.org/all/20230221194637.28436-1-paul.gortmaker@windriver.com/
+On Fri, 28 Apr 2023 21:35:03 -0700, Randy Dunlap wrote:
+> Drop an unused and empty "config" entry for PPC_86xx.
+> It has no keyword entries under it and the following line's
+> "menuconfig" for the same Kconfig symbol is what kconfig uses.
 > 
-> v1 --> v2:
->    -don't remove MPC8568MDS or P1021 or P1012 platforms as per discussion
->    -drop commit #4 that removed kernel fragments still in use elsewhere.
->    -trivial refresh for the updated baseline of linux-next
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: drop MPC8540_ADS and MPC8560_ADS platform support
-      https://git.kernel.org/powerpc/c/384e338a9187e479349c97c9cfb36f6060708db8
-[2/2] powerpc: drop MPC85xx_CDS platform support
-      https://git.kernel.org/powerpc/c/b751ed04bc5e1b76f2885b846ea8289792a37166
+[1/1] powerpc: delete empty config entry for PPC_86xx
+      https://git.kernel.org/powerpc/c/9d87ab41743fa3658d568859d64936b37f058b60
 
 cheers
