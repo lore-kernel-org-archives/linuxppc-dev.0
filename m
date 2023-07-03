@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 621C2EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F3E8EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:26:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZCm0VDcz3cgL
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:26:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZDH6Cx4z3cLk
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:26:55 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8J6YFwz30N3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8K3shwz3bnv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:29 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ8J4CWDz4wxp;
-	Mon,  3 Jul 2023 15:23:28 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ8K0sqjz4wxs;
+	Mon,  3 Jul 2023 15:23:29 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nathan Chancellor <nathan@kernel.org>
-In-Reply-To: <20230427-remove-power10-args-from-boot-aflags-clang-v1-1-9107f7c943bc@kernel.org>
-References: <20230427-remove-power10-args-from-boot-aflags-clang-v1-1-9107f7c943bc@kernel.org>
-Subject: Re: [PATCH] powerpc/boot: Disable power10 features after BOOTAFLAGS assignment
-Message-Id: <168836167604.46386.2142822866200803568.b4-ty@ellerman.id.au>
+To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20230429043519.19807-1-rdunlap@infradead.org>
+References: <20230429043519.19807-1-rdunlap@infradead.org>
+Subject: Re: [PATCH -next?] powerpc/fsl_uli1575: fix kconfig warnings and build errors
+Message-Id: <168836167602.46386.8676370805240148519.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:21:16 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: trix@redhat.com, llvm@lists.linux.dev, ndesaulniers@google.com, patches@lists.linux.dev, npiggin@gmail.com, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Pali Rohár <pali@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 27 Apr 2023 12:34:53 -0700, Nathan Chancellor wrote:
-> When building the boot wrapper assembly files with clang after
-> commit 648a1783fe25 ("powerpc/boot: Fix boot wrapper code generation
-> with CONFIG_POWER10_CPU"), the following warnings appear for each file
-> built:
+On Fri, 28 Apr 2023 21:35:19 -0700, Randy Dunlap wrote:
+> Neither FSL_SOC_BOOKE nor PPC_86xx enables CONFIG_PCI by
+> default, so it may be unset in some randconfigs.
+> When that happens, FSL_ULI1575 may be set when it should not be
+> since it is a PCI driver. When it is set, there are 3 kconfig
+> warnings and a slew of build errors
 > 
->   '-prefixed' is not a recognized feature for this target (ignoring feature)
->   '-pcrel' is not a recognized feature for this target (ignoring feature)
+> WARNING: unmet direct dependencies detected for PCI_QUIRKS
+>   Depends on [n]: PCI [=n]
+>   Selected by [y]:
+>   - FSL_PCI [=y]
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/boot: Disable power10 features after BOOTAFLAGS assignment
-      https://git.kernel.org/powerpc/c/2b694fc96fe33a7c042e3a142d27d945c8c668b0
+[1/1] powerpc/fsl_uli1575: fix kconfig warnings and build errors
+      https://git.kernel.org/powerpc/c/536d948a8dee21166d9c5b5a4189af56beba16e3
 
 cheers
