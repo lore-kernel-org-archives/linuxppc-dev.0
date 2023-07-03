@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05A41EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 06:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29D95EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 06:04:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qvb3F50yXz3gqD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 16:04:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qvb3m4sNWz3dJZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 16:04:36 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZpL1Nljz3c2m
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZpL4fvnz3bwY
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:58 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZpL09gZz4wxS;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZpL3Z1mz4wxW;
 	Mon,  3 Jul 2023 15:52:58 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20230413061642.kqkor4wkt7lp2mhp@pengutronix.de>
-References: <20221228145129.31700-1-u.kleine-koenig@pengutronix.de> <20230412150524.ojsvukh47hing6db@pengutronix.de> <87zg7cabf6.fsf@mpe.ellerman.id.au> <20230413061642.kqkor4wkt7lp2mhp@pengutronix.de>
-Subject: Re: [PATCH] powerpc: Drop MPC5200 LocalPlus bus FIFO driver
-Message-Id: <168836201881.50010.11228113359819926077.b4-ty@ellerman.id.au>
+To: Scott Wood <oss@buserror.net>, Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20230525205622.734093-1-u.kleine-koenig@pengutronix.de>
+References: <20230525205622.734093-1-u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] powerpc: Switch i2c drivers back to use .probe()
+Message-Id: <168836201890.50010.14888301181182861501.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Marek Behún <kabel@kernel.org>, Rob Herring <robh@kernel.org>, Crt Mori <cmo@melexis.com>, Liang He <windhl@126.com>, Nicholas Piggin <npiggin@gmail.com>, kernel@pengutronix.de, Hans Verkuil <hverkuil-cisco@xs4all.nl>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 13 Apr 2023 08:16:42 +0200, Uwe Kleine-König wrote:
-> While mpc5200b.dtsi contains a device that this driver can bind to, the
-> only purpose of a bound device is to be used by the four exported functions
-> mpc52xx_lpbfifo_submit(), mpc52xx_lpbfifo_abort(), mpc52xx_lpbfifo_poll()
-> and mpc52xx_lpbfifo_start_xfer(). However there are no callers to this
-> function and so the driver is effectively superfluous and can be deleted.
-> Also drop some defines and a struct from <asm/mpc52xx.h> that are unused
-> now together with the declarations of the four mentioned functions.
+On Thu, 25 May 2023 22:56:22 +0200, Uwe Kleine-König wrote:
+> After commit b8a1a4cd5a98 ("i2c: Provide a temporary .probe_new()
+> call-back type"), all drivers being converted to .probe_new() and then
+> 03c835f498b5 ("i2c: Switch .probe() to not take an id parameter")
+> convert back to (the new) .probe() to be able to eventually drop
+> .probe_new() from struct i2c_driver.
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Drop MPC5200 LocalPlus bus FIFO driver
-      https://git.kernel.org/powerpc/c/7d3ee229ea51a17afc1e53272e2a8f377cc82ba2
+[1/1] powerpc: Switch i2c drivers back to use .probe()
+      https://git.kernel.org/powerpc/c/48f2444eb4dc0f3de9146f7278e859fa6b5e568b
 
 cheers
