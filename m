@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F3E8EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:26:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47D8AC0015E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:27:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZDH6Cx4z3cLk
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:26:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZDy5vTPz3d8p
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:27:30 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8K3shwz3bnv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8M1wbRz3bdV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:31 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ8K0sqjz4wxs;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ8K5xWTz4wxv;
 	Mon,  3 Jul 2023 15:23:29 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20230429043519.19807-1-rdunlap@infradead.org>
-References: <20230429043519.19807-1-rdunlap@infradead.org>
-Subject: Re: [PATCH -next?] powerpc/fsl_uli1575: fix kconfig warnings and build errors
-Message-Id: <168836167602.46386.8676370805240148519.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Rob Herring <robh@kernel.org>
+In-Reply-To: <20230505171816.3175865-1-robh@kernel.org>
+References: <20230505171816.3175865-1-robh@kernel.org>
+Subject: Re: [PATCH] powerpc: isa-bridge: Fix ISA mmapping when "ranges" is not present
+Message-Id: <168836167601.46386.17041701491443802315.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:21:16 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,27 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Pali Rohár <pali@kernel.org>
+Cc: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "R.T.Dickinson" <rtd2@xtra.co.nz>, Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 28 Apr 2023 21:35:19 -0700, Randy Dunlap wrote:
-> Neither FSL_SOC_BOOKE nor PPC_86xx enables CONFIG_PCI by
-> default, so it may be unset in some randconfigs.
-> When that happens, FSL_ULI1575 may be set when it should not be
-> since it is a PCI driver. When it is set, there are 3 kconfig
-> warnings and a slew of build errors
-> 
-> WARNING: unmet direct dependencies detected for PCI_QUIRKS
->   Depends on [n]: PCI [=n]
->   Selected by [y]:
->   - FSL_PCI [=y]
+On Fri, 05 May 2023 12:18:17 -0500, Rob Herring wrote:
+> Commit e4ab08be5b49 ("powerpc/isa-bridge: Remove open coded "ranges"
+> parsing") broke PASemi Nemo board booting. The issue is the ISA I/O
+> range was not getting mapped as the logic to handle no "ranges" was
+> inverted. If phb_io_base_phys is non-zero, then the ISA range defaults
+> to the first 64K of the PCI I/O space. phb_io_base_phys should only be 0
+> when looking for a non-PCI ISA region.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/fsl_uli1575: fix kconfig warnings and build errors
-      https://git.kernel.org/powerpc/c/536d948a8dee21166d9c5b5a4189af56beba16e3
+[1/1] powerpc: isa-bridge: Fix ISA mmapping when "ranges" is not present
+      https://git.kernel.org/powerpc/c/79de36042eecb684e0f748d17ba52f365fde0d65
 
 cheers
