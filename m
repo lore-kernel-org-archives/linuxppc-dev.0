@@ -4,60 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C688C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 18:00:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1FFBC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 18:09:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FhW9voFl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=35oM3+4s;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvtxD3pG5z3bsf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 04:00:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qvv8Q6h8cz3bcJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 04:09:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FhW9voFl;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=35oM3+4s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1136; helo=mail-yw1-x1136.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1136.google.com (mail-yw1-x1136.google.com [IPv6:2607:f8b0:4864:20::1136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvtwC6HPtz30g2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2023 03:59:07 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E70C960FE2;
-	Mon,  3 Jul 2023 17:59:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A2F4C433C8;
-	Mon,  3 Jul 2023 17:58:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1688407142;
-	bh=XiKFb7V3OWMEwZYvzGXbVzuxPSM8FbOxPhs9OT74TMw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FhW9voFlWsg2QeJzEydQBhtOwjlMm8fZzCdy3Jg6bgRw3Esqh+f8rsZBYIA3SCaPx
-	 AQz+Oc9EBN6nn93BEoFFPSg+57WrZmANomGNefAIrNciFIsppxAehBRnMqXAt/ywjm
-	 z7iqgzyrENrfpeSnG308kL3EU9gR+y4v6L3MlpiOyNoivVjA3mh4bTEnyioySkQzgM
-	 GxeHgvOxN6ShRkFj3TRimrwaeLvgUIl10cAmpoOAJRCAw3PSjPMnrlQB4GB7fHJBUf
-	 S3+AIOJVoJNcN8mVzU6/cDqq2x4yEOq0egDriSpyLBXZ5+3puLj3beKYTz+4YpegCI
-	 Yid4vMQ3ucBZQ==
-Date: Mon, 3 Jul 2023 18:58:55 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PATCH 1/6] media: v4l2: Add audio capture and output support
-Message-ID: <090cc065-b078-4f2c-9b2d-3b0b7418461d@sirena.org.uk>
-References: <1688002673-28493-1-git-send-email-shengjiu.wang@nxp.com>
- <1688002673-28493-2-git-send-email-shengjiu.wang@nxp.com>
- <ZJ6o5fT4V4HXivFa@valkosipuli.retiisi.eu>
- <CAA+D8AND1yZ7eZLjBGxVF=i3hLMecUm-j7AVHN9npJi-4=3VrA@mail.gmail.com>
- <87h6ql5hch.wl-tiwai@suse.de>
- <43f0ecdf-7454-49ae-96b3-2eae5487e9a5@sirena.org.uk>
- <d78e6ec3-a531-8fd4-a785-29b6712f83ae@xs4all.nl>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qvv7R2VHXz3bPZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2023 04:08:50 +1000 (AEST)
+Received: by mail-yw1-x1136.google.com with SMTP id 00721157ae682-576a9507a9bso67768877b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2023 11:08:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1688407725; x=1690999725;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=TjP+t63cmXLZ73zOjZVRIKi8PaFjf6acXyVJzs/mz5o=;
+        b=35oM3+4s76Gmu0eP07vWHgS6Rk1tmz7OxtUeUPJT2hC5YGbhWy3+elQhg6NwyPjOgC
+         M5zGqi2lKBWN4PdxjaMCXIIyyVAmd+jOB8Cyi2Ra59jlhyS1r2WxTzJaGA+WlAFGKg7x
+         UAN6LJSmzeDRQvjEALRuAl699XjFjFLbfZ4vVLR5K+3GGUenIRNYaJhyQ0g/oQuHu6jN
+         7b7Io6rtkhGFBOyeFVv0UpwjuK3CM3KJZFW5M0FVXmWcD6eRcW0JbeDlDssgckP6Ht3O
+         ygvptCGOnz2qiBH7Wb7KL+uCmr3fzfEIK0VI707ZQLPwzcjlupIU/DlzVVNDLPHuwFkt
+         z/Dg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688407725; x=1690999725;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=TjP+t63cmXLZ73zOjZVRIKi8PaFjf6acXyVJzs/mz5o=;
+        b=k9bvdUUm5deWmo3akbP44rI60n1V+cB+DdXO5IVMzgnJLGlKPrkdr9DcOt1JwZDovP
+         ej6tgj38IFD1pxs3GhWj+J2q/wZMNk9dqG0jUkRfZy4COhoOf5c947UbjgxTm3McsZtH
+         9j1ONi0dX0W5ZVyjLnpqklWQJcnneMnL7oRNYIInonPzeNvPMi4qOrzB2UrofvRLpx8t
+         uQYa/DEmrFi6Kw1sb0ROpdebvXWR6vuHBnhW5KDbI0YPQIpRha4Uih/KDIARUoIZwLG3
+         fwxzU/D/F4CHpCSOm6GeUjm+SEcETqXY+2OMFZaQ6hTqNvo6tqXruD8aHD1ZKpCQg9nG
+         eh6Q==
+X-Gm-Message-State: ABy/qLYEy7Pki5KQXaLom4oQOobFK4MuUjav0/hVGnnu4/OpuCK6c/cL
+	W8CXUvcH+CF9GxJb6s+an1esiiUbHNe2dWxVYCBzDA==
+X-Google-Smtp-Source: APBJJlHqFAXrJx6IysDJ2T6WOUSv+vPO3CrUXTDQ+klQimcwHP1PCpSvjaq7m7khAiRcDXbb9/iNwUyOESsL1qgRn9o=
+X-Received: by 2002:a25:1003:0:b0:c3a:8530:c8a9 with SMTP id
+ 3-20020a251003000000b00c3a8530c8a9mr12592615ybq.11.1688407724626; Mon, 03 Jul
+ 2023 11:08:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="lxJuGwNgfQ7aT3CA"
-Content-Disposition: inline
-In-Reply-To: <d78e6ec3-a531-8fd4-a785-29b6712f83ae@xs4all.nl>
-X-Cookie: Please go away.
+References: <facbfec3-837a-51ed-85fa-31021c17d6ef@gmail.com> <5c7455db-4ed8-b54f-e2d5-d2811908123d@leemhuis.info>
+In-Reply-To: <5c7455db-4ed8-b54f-e2d5-d2811908123d@leemhuis.info>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Mon, 3 Jul 2023 11:08:33 -0700
+Message-ID: <CAJuCfpH7BOBYGEG=op09bZrh1x3WA8HMcGBXXRhe6M5RJaen5A@mail.gmail.com>
+Subject: Re: Fwd: Memory corruption in multithreaded user space program while
+ calling fork
+To: Linux regressions mailing list <regressions@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,49 +76,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, Jacopo Mondi <jacopo@jmondi.org>, Xiubo.Lee@gmail.com, Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, Sakari Ailus <sakari.ailus@iki.fi>, festevam@gmail.com, perex@perex.cz, mchehab@kernel.org, Shengjiu Wang <shengjiu.wang@gmail.com>, m.szyprowski@samsung.com
+Cc: Jacob Young <jacobly.alt@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Memory Management <linux-mm@kvack.org>, Bagas Sanjaya <bagasdotme@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Laurent Dufour <ldufour@linux.ibm.com>, Linux PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Jul 3, 2023 at 2:53=E2=80=AFAM Linux regression tracking (Thorsten
+Leemhuis) <regressions@leemhuis.info> wrote:
+>
+> On 02.07.23 14:27, Bagas Sanjaya wrote:
+> > I notice a regression report on Bugzilla [1]. Quoting from it:
+> >
+> >> After upgrading to kernel version 6.4.0 from 6.3.9, I noticed frequent=
+ but random crashes in a user space program.  After a lot of reduction, I h=
+ave come up with the following reproducer program:
+> > [...]
+> >> After tuning the various parameters for my computer, exit code 2, whic=
+h indicates that memory corruption was detected, occurs approximately 99% o=
+f the time.  Exit code 1, which occurs approximately 1% of the time, means =
+it ran out of statically-allocated memory before reproducing the issue, and=
+ increasing the memory usage any more only leads to diminishing returns.  T=
+here is also something like a 0.1% chance that it segfaults due to memory c=
+orruption elsewhere than in the statically-allocated buffer.
+> >>
+> >> With this reproducer in hand, I was able to perform the following bise=
+ction:
+> > [...]
+> >
+> > See Bugzilla for the full thread.
+>
+> Additional details from
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D217624#c5 :
+>
+> ```
+> I can confirm that v6.4 with 0bff0aaea03e2a3ed6bfa302155cca8a432a1829
+> reverted no longer causes any memory corruption with either my
+> reproducer or the original program.
+> ```
+>
+> FWIW: 0bff0aaea03 ("x86/mm: try VMA lock-based page fault handling
+> first") [merged for v6.4-rc1, authored by Suren Baghdasaryan [already CCe=
+d]]
+>
+> That's the same commit that causes build problems with go:
+>
+> https://lore.kernel.org/all/dbdef34c-3a07-5951-e1ae-e9c6e3cdf51b@kernel.o=
+rg/
 
---lxJuGwNgfQ7aT3CA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks! I'll investigate this later today. After discussing with
+Andrew, we would like to disable CONFIG_PER_VMA_LOCK by default until
+the issue is fixed. I'll post a patch shortly.
 
-On Mon, Jul 03, 2023 at 03:12:55PM +0200, Hans Verkuil wrote:
-
-> My main concern is that these cross-subsystem drivers are a pain to
-> maintain. So there have to be good reasons to do this.
-
-> Also it is kind of weird to have to use the V4L2 API in userspace to
-> deal with a specific audio conversion. Quite unexpected.
-
-> But in the end, that's a decision I can't make.
-
-> So I wait for that feedback. Note that if the decision is made that this
-> can use V4L2, then there is quite a lot more that needs to be done:
-> documentation, new compliance tests, etc. It's adding a new API, and that
-> comes with additional work...
-
-Absolutely, I agree with all of this - my impression was that the target
-here would be bypass of audio streams to/from a v4l2 device, without
-bouncing through an application layer.  If it's purely for audio usage
-with no other tie to v4l2 then involving v4l2 does just seem like
-complication.
-
---lxJuGwNgfQ7aT3CA
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmSjDF4ACgkQJNaLcl1U
-h9C2qQf/T1bo/x5kzUxZUiZwHmeGiBJp44klM7V/tJxivlJLnJasmtd1XuabJOck
-svgGpJOHeeAAIAQIleix37Lwq5hMLYgRdPPAHw3+uw4mYtDzqo5dx8t7Wb8d7+px
-152zx6Cv8YdJ1mK/UOKXC/+knHpkW0r9PtzwItAAnCTPpAIPjB0FAjSkhRuQr2bl
-tlzLcAepTA/uPQYuK1FbwUZEcm0i/qo/aFpE5T7hYpY3IlFYrtMz8uNyqhXMsuM2
-SMREMMIMF84hMJkJ3sRrf6609xv86w+Rkh6illa8jX/GCKDHQRNR0xa+0Gky5cah
-eOW+Q5lSP6NtzVnkBdM3DUDl/+IaRg==
-=ImD6
------END PGP SIGNATURE-----
-
---lxJuGwNgfQ7aT3CA--
+>
+> Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+> --
+> Everything you wanna know about Linux kernel regression tracking:
+> https://linux-regtracking.leemhuis.info/about/#tldr
+> If I did something stupid, please tell me, as explained on that page.
+>
+> #regzbot introduced: 0bff0aaea03e2a3
