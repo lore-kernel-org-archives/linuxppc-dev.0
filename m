@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39683EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 621C2EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:26:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZCD6cvnz3cZl
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:26:00 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZCm0VDcz3cgL
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:26:28 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8J2CnNz30gm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZ8J6YFwz30N3
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:23:28 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ8H6kJSz4wxn;
-	Mon,  3 Jul 2023 15:23:27 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZ8J4CWDz4wxp;
+	Mon,  3 Jul 2023 15:23:28 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230519113806.370635-1-mpe@ellerman.id.au>
-References: <20230519113806.370635-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mm: Reinstate ARCH_FORCE_MAX_ORDER ranges
-Message-Id: <168836167610.46386.17455877483324713616.b4-ty@ellerman.id.au>
+To: Nathan Chancellor <nathan@kernel.org>
+In-Reply-To: <20230427-remove-power10-args-from-boot-aflags-clang-v1-1-9107f7c943bc@kernel.org>
+References: <20230427-remove-power10-args-from-boot-aflags-clang-v1-1-9107f7c943bc@kernel.org>
+Subject: Re: [PATCH] powerpc/boot: Disable power10 features after BOOTAFLAGS assignment
+Message-Id: <168836167604.46386.2142822866200803568.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:21:16 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,25 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org, rppt@kernel.org
+Cc: trix@redhat.com, llvm@lists.linux.dev, ndesaulniers@google.com, patches@lists.linux.dev, npiggin@gmail.com, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 19 May 2023 21:38:06 +1000, Michael Ellerman wrote:
-> Commit 1e8fed873e74 ("powerpc: drop ranges for definition of
-> ARCH_FORCE_MAX_ORDER") removed the limits on the possible values for
-> ARCH_FORCE_MAX_ORDER.
+On Thu, 27 Apr 2023 12:34:53 -0700, Nathan Chancellor wrote:
+> When building the boot wrapper assembly files with clang after
+> commit 648a1783fe25 ("powerpc/boot: Fix boot wrapper code generation
+> with CONFIG_POWER10_CPU"), the following warnings appear for each file
+> built:
 > 
-> However removing the ranges entirely causes some common work flows to
-> break. For example building a defconfig (which uses 64K pages), changing
-> the page size to 4K, and rebuilding used to work, because
-> ARCH_FORCE_MAX_ORDER would be clamped to 12 by the ranges.
+>   '-prefixed' is not a recognized feature for this target (ignoring feature)
+>   '-pcrel' is not a recognized feature for this target (ignoring feature)
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/mm: Reinstate ARCH_FORCE_MAX_ORDER ranges
-      https://git.kernel.org/powerpc/c/358e526a1648cdd773ba169da5867874ae2408e3
+[1/1] powerpc/boot: Disable power10 features after BOOTAFLAGS assignment
+      https://git.kernel.org/powerpc/c/2b694fc96fe33a7c042e3a142d27d945c8c668b0
 
 cheers
