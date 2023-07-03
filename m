@@ -4,67 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16A57EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 14:25:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CE25C001B0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 21:30:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=QzKFYEuE;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ciMHCgEy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R05rL3hZ6z3bwd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 00:25:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvzcG4NCgz3c1n
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 07:30:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=QzKFYEuE;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ciMHCgEy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b36; helo=mail-yb1-xb36.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R05qM2lHLz3bVG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 00:24:29 +1000 (AEST)
-Received: by mail-yb1-xb36.google.com with SMTP id 3f1490d57ef6-bd77424c886so5798659276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 07:24:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvzbF6FMFz30dw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2023 07:29:43 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-26304be177fso2343795a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2023 14:29:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1688999063; x=1691591063;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xfaw5NXpBN+ToDeNW38gue7dW1/lsMjnYJ8JVvMgX/M=;
-        b=QzKFYEuEyJBmyVNrCTuM3xu2kiOzdJ733dpATnK2KIsTftxaxQrkFSHDoRvXkS62Q1
-         ZzwxUIDQFUGUncjgMsGBUdc5tMOXaMH7dl8GnPzoL/6n9pZw09b0ZmaNjHrbLutDuZJh
-         a/IGw3N3kW+LesbGXy/lgYCtStCtLi8WbADaDxdcgg/i72vh0e80Elo65bRMQQIf0Aii
-         gN8CYJcj/oLYPQitrqhEbeCC8Dqly+59rFrVMMzcHkBCY8kPruGJfjOthtbaTFipQd0Y
-         imjIM+aDF60N/+bSFzJQShrBYNXK2Y2WrWcLMYmFYY7kegF/rtNVJpKE8Vnnw/jKXqh9
-         IERA==
+        d=ziepe.ca; s=google; t=1688419778; x=1691011778;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=5dg0Gj8viEWfIWcxIZc6iyfyM+TCYwvws/9N3ezb+Z4=;
+        b=ciMHCgEytyQpXiLlKqi3gz/v7Q2CHhYlXp9swK68CxESaRga14VO+v3ioFdBXsYDLs
+         rcJstbloCFNhdyL8erhHWR7+k/2G2ZmekQkHOlLD+CHVeKnxlVQEAYi4thVU88jUmlqP
+         j3AGFkPfvugYcv6dCmSAzMJAAyhg1ABHOGQ6MaLAdsnWWMIo4JB8NFzrMsH4cg3S6MEo
+         u2Zcz5D9ARgll/H+oBV/djEHlDDqEHh/6LiwiUjnMih7ZCbaZjvFAg4+P4L6MdepK6me
+         Bll7SIw/4ovRaQDEUVlzPsNcEFS/MXpYuVmlTSmCre5BrbjEKllFu+L2hZxsC8HgQV9B
+         IGig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688999063; x=1691591063;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xfaw5NXpBN+ToDeNW38gue7dW1/lsMjnYJ8JVvMgX/M=;
-        b=S4cG1sIOCFI3YRGIV26iSUC8T+jy+5JLzuKi+lGT2AJaNepDV//tUcqCYpTsuF9xQG
-         ROYKhcEKIiE9GQLh3ijLxZ+AEqtRenwi5iGS6qv4O1jrcssahBSta3kv7xEPYDIiW+Rv
-         u/d8GvK3lee088ZOuZUu3poYLGuxCn+esFAwRnLR68ptEfm4IXxmsZ7JF8Fg/7dJxr5w
-         ygqtEWhnSM55zjT73ynzAGX6y/TZFqTG/1mgOFUtMhm691L8bsKyf+y9ziY81Ouwi/5v
-         lV4V6LXCVBF7rpi/6OKCfUb39vIeioczRg440rAI1Yi+e3UsFXI1H49GGkYIiLIXmHnw
-         mP5w==
-X-Gm-Message-State: ABy/qLaNyy7zXkMqFMprXOnTF7jDQgRMxMRIDnP3QF5m42NzQJ5KhgEl
-	6gqUIoCd4S73fgATt3HMo3nWUVLPnSwo4GMDn1o=
-X-Google-Smtp-Source: APBJJlFF/ZPZBeFTUlJJsVw6gvqSC+NnftxoKLaqOH3sDOKdvIyhB4DTRi4Sp3yg5NFbGfCt55R+jTwkG5L/EeefwtY=
-X-Received: by 2002:a25:842:0:b0:bd7:6810:6646 with SMTP id
- 63-20020a250842000000b00bd768106646mr12374371ybi.44.1688999063346; Mon, 10
- Jul 2023 07:24:23 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1688419778; x=1691011778;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5dg0Gj8viEWfIWcxIZc6iyfyM+TCYwvws/9N3ezb+Z4=;
+        b=lmDAsP8Bnlg4PDVJL7bnHnId79v+ATyshCLIgcec1T1C7Uk2iwQobWepM9w4HHgwV3
+         SBtqAHAX6ToOZtQ9zIFETf4gy/TC2upsGRq9RL1AI72wwQTxx/LJz7LH/hQYHm/gAx44
+         Yt5U4yHfkH+vcR83FWrjyp6v6EKEAMbvltirsYYnSxKRMErmGI9Gnnga6J9hVJOr4dCC
+         I62JAOutmY+dJmuQi6TWmAdmFFB81Fxlj25UICYmkfPby7F1JC+T1dxXxVilLRsDqug0
+         YcokaQKTMxsBpDW8Iz61cT4OO2VdUyNOJYOt3Dr/rS0K63x1FMGn7bDFCpzKJLTlfboM
+         /NxA==
+X-Gm-Message-State: ABy/qLZniLQjca/Ino+zNnAQQ0aqp7+dZgOEvA0SzOjae17T0cRMAIC0
+	KY+rFAAvkz/WntQVk3q2DGhbMg==
+X-Google-Smtp-Source: APBJJlE0dK/ixgJCjZM8BVxtoBqxR3hYidUzDYcxy89uMsoxRbB7avUM4k+kl/Tzd5k23OlP0AX/hg==
+X-Received: by 2002:a17:90a:1b02:b0:263:7d55:de2e with SMTP id q2-20020a17090a1b0200b002637d55de2emr9149088pjq.9.1688419778192;
+        Mon, 03 Jul 2023 14:29:38 -0700 (PDT)
+Received: from ziepe.ca (ip-216-194-73-131.syban.net. [216.194.73.131])
+        by smtp.gmail.com with ESMTPSA id gz24-20020a17090b0ed800b00263c8b33bcfsm2234333pjb.14.2023.07.03.14.29.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Jul 2023 14:29:37 -0700 (PDT)
+Received: from jgg by jggl with local (Exim 4.95)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1qGR72-000BQ9-Bm;
+	Mon, 03 Jul 2023 18:29:36 -0300
+Date: Mon, 3 Jul 2023 18:29:36 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Subject: Re: [PATCH v2 07/12] s390: add pte_free_defer() for pgtables sharing
+ page
+Message-ID: <ZKM9wEKZZes4n4u0@ziepe.ca>
+References: <54cb04f-3762-987f-8294-91dafd8ebfb0@google.com>
+ <a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com>
+ <20230630153852.31163592@p-imbrenda>
+ <062b19-4cf1-261-a9bf-9cefd32382fc@google.com>
+ <20230630182556.7727ef50@p-imbrenda>
+ <7f6d399b-c47-1faa-f7f6-9932b9811f8c@google.com>
+ <20230703130013.559217c9@p-imbrenda>
 MIME-Version: 1.0
-References: <20230710130113.14563-1-tzimmermann@suse.de> <20230710130113.14563-10-tzimmermann@suse.de>
-In-Reply-To: <20230710130113.14563-10-tzimmermann@suse.de>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Mon, 10 Jul 2023 16:24:12 +0200
-Message-ID: <CANiq72=9PoV3FOcXx9FdiSLePKXDG4BSY_5-jddBkqDL=ua3FA@mail.gmail.com>
-Subject: Re: [PATCH 09/17] auxdisplay: Remove flag FBINFO_FLAG_DEFAULT from
- fbdev drivers
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230703130013.559217c9@p-imbrenda>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,29 +88,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Robin van der Gracht <robin@protonic.nl>, deller@gmx.de, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, javierm@redhat.com, dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>, linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-geode@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatas
+ hin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 10, 2023 at 3:01=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
-.de> wrote:
->
-> The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
-> fbinfo.flags has been allocated to zero by framebuffer_alloc(). So do
-> not set it.
+On Mon, Jul 03, 2023 at 01:00:13PM +0200, Claudio Imbrenda wrote:
+> On Fri, 30 Jun 2023 12:22:43 -0700 (PDT)
+> Hugh Dickins <hughd@google.com> wrote:
+> 
+> [...]
+> 
+> > That's something I would have expected to be handled already via
+> > mmu_notifiers, rather than buried inside the page table freeing.
+> > 
+> > If s390 is the only architecture to go that way, and could instead do
+> > it via mmu_notifiers, then I think that will be more easily supported
+> > in the long term.
+> 
+> I am very well aware of that, and in fact I've been working on
+> exactly that for some time already. But it's a very complex minefield
+> and therefore I'm proceeding *very* carefully. It will take quite some
+> time before anything comes out.
 
-`framebuffer_alloc()` does indeed use `kzalloc()`, but the docs do not
-mention the zeroing. Should that guarantee be documented?
+Yes +1 on this please, creating your own arch cross connect with kvm
+in the page table freers is really horrible..
 
-> Flags should signal differences from the default values. After cleaning
-> up all occurences of FBINFO_FLAG_DEFAULT, the token can be removed.
-
-occurences -> occurrences
-
-can -> will maybe? Since the intention of the patch series is to
-remove it (them) altogether).
-
-Thanks!
-
-Cheers,
-Miguel
+Jason
