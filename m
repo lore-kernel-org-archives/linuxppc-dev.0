@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B41E3EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 06:00:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4FEBEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 06:01:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZzX2365z3clD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 16:00:56 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qvb032M6Wz3clv
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 16:01:23 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp84wL1z2ynx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp86l1jz3bst
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:48 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp847fGz4wy4;
-	Mon,  3 Jul 2023 15:52:48 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp55Fpwz4wxv;
+	Mon,  3 Jul 2023 15:52:45 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Rob Herring <robh@kernel.org>
-In-Reply-To: <20230609183151.1766261-1-robh@kernel.org>
-References: <20230609183151.1766261-1-robh@kernel.org>
-Subject: Re: [PATCH] powerpc: fsl: Use of_property_read_reg() to parse "reg"
-Message-Id: <168836201903.50010.7612836534260235481.b4-ty@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Rob Herring <robh@kernel.org>
+In-Reply-To: <20230319163226.226583-1-robh@kernel.org>
+References: <20230319163226.226583-1-robh@kernel.org>
+Subject: Re: [PATCH] macintosh: Use of_address_to_resource()
+Message-Id: <168836201902.50010.1024953772388500951.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,15 +46,15 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 09 Jun 2023 12:31:50 -0600, Rob Herring wrote:
-> Use the recently added of_property_read_reg() helper to get the
-> untranslated "reg" address value.
+On Sun, 19 Mar 2023 11:32:26 -0500, Rob Herring wrote:
+> Replace open coded reading of "reg" and of_translate_address() calls with
+> single call to of_address_to_resource().
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: fsl: Use of_property_read_reg() to parse "reg"
-      https://git.kernel.org/powerpc/c/f892ac774b34a769318030f5febe5ce41d6e122e
+[1/1] macintosh: Use of_address_to_resource()
+      https://git.kernel.org/powerpc/c/93cfa6fb9f78f472862240208ef6e5a65f58f775
 
 cheers
