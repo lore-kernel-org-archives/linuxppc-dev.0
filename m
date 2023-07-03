@@ -4,31 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E35D1EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A77E0EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:35:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZPV4RStz3c5V
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:34:54 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZQ21nGYz3cQm
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:35:22 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZNz2w5xz2xjw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:34:27 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4QvZNz1zszz4wqX; Mon,  3 Jul 2023 15:34:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZP066X6z2xjw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:34:28 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZNz19ZPz4wbP;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZNz4djHz4wqX;
 	Mon,  3 Jul 2023 15:34:27 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>
-In-Reply-To: <20230615091047.90433-1-adityag@linux.ibm.com>
-References: <20230615091047.90433-1-adityag@linux.ibm.com>
-Subject: Re: [RFC PATCH v2 1/1] powerpc: update ppc_save_regs to save current r1 in pt_regs
-Message-Id: <168836201893.50010.8702790714495746472.b4-ty@ellerman.id.au>
+To: linux-mm@kvack.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20230616110826.344417-1-aneesh.kumar@linux.ibm.com>
+References: <20230616110826.344417-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: (subset) [PATCH v2 00/16] Add support for DAX vmemmap optimization for ppc64
+Message-Id: <168836201897.50010.5431020303397847542.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -44,24 +42,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Hari Bathini <hbathini@linux.ibm.com>, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Muchun Song <muchun.song@linux.dev>, Dan Williams <dan.j.williams@intel.com>, Mike Kravetz <mike.kravetz@oracle.com>, Will Deacon <will@kernel.org>, Joao Martins <joao.m.martins@oracle.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 15 Jun 2023 14:40:47 +0530, Aditya Gupta wrote:
-> ppc_save_regs() skips one stack frame while saving the CPU register states.
-> Instead of saving current R1, it pulls the previous stack frame pointer.
-> 
-> When vmcores caused by direct panic call (such as `echo c >
-> /proc/sysrq-trigger`), are debugged with gdb, gdb fails to show the
-> backtrace correctly. On further analysis, it was found that it was because
-> of mismatch between r1 and NIP.
+On Fri, 16 Jun 2023 16:38:10 +0530, Aneesh Kumar K.V wrote:
+> This patch series implements changes required to support DAX vmemmap
+> optimization for ppc64. The vmemmap optimization is only enabled with radix MMU
+> translation and 1GB PUD mapping with 64K page size. The patch series also split
+> hugetlb vmemmap optimization as a separate Kconfig variable so that
+> architectures can enable DAX vmemmap optimization without enabling hugetlb
+> vmemmap optimization. This should enable architectures like arm64 to enable DAX
+> vmemmap optimization while they can't enable hugetlb vmemmap optimization. More
+> details of the same are in patch "mm/vmemmap optimization: Split hugetlb and
+> devdax vmemmap optimization"
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 1, 3, 4 and 5 applied to powerpc/next.
 
-[1/1] powerpc: update ppc_save_regs to save current r1 in pt_regs
-      https://git.kernel.org/powerpc/c/b684c09f09e7a6af3794d4233ef785819e72db79
+[01/16] powerpc/mm/book3s64: Use pmdp_ptep helper instead of typecasting.
+        https://git.kernel.org/powerpc/c/040ec6202bb89d51e2d8d4c848d8160c0e5e3fe8
+[03/16] powerpc/book3s64/mm: Fix DirectMap stats in /proc/meminfo
+        https://git.kernel.org/powerpc/c/0da90af431abc3f497a38ec9ef6e43b0d0dabe80
+[04/16] powerpc/book3s64/mm: Use PAGE_KERNEL instead of opencoding
+        https://git.kernel.org/powerpc/c/d933557b858f78d7b702e70614b469a84b72e56c
+[05/16] powerpc/mm/dax: Fix the condition when checking if altmap vmemap can cross-boundary
+        https://git.kernel.org/powerpc/c/c8eebc4a99f15280654f23e914e746c40a516e50
 
 cheers
