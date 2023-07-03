@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA3E4EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:39:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFFC2EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:39:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZVK2tGxz3dTW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:39:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZVr4Bsjz3c9r
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:39:32 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZP61gm7z3bsZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:34:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZP70ynTz3bvd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:34:35 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZP60Wykz4wxs;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZP63ptwz4wxv;
 	Mon,  3 Jul 2023 15:34:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>
-In-Reply-To: <20230613045202.294451-1-joel@jms.id.au>
-References: <20230613045202.294451-1-joel@jms.id.au>
-Subject: Re: [RFC PATCH 0/3] powernv/pci: Remove unused IODA1 support
-Message-Id: <168836201905.50010.5386797299773999122.b4-ty@ellerman.id.au>
+To: linux-kbuild@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, Masahiro Yamada <masahiroy@kernel.org>
+In-Reply-To: <20230119082250.151485-1-masahiroy@kernel.org>
+References: <20230119082250.151485-1-masahiroy@kernel.org>
+Subject: Re: [PATCH] powerpc: remove checks for binutils older than 2.25
+Message-Id: <168836201908.50010.5927989610628037960.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,30 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, oohall@gmail.com
+Cc: Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Nicolas Schier <nicolas@fjasle.eu>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 13 Jun 2023 14:21:59 +0930, Joel Stanley wrote:
-> Oliver mentioned this code was only kept around to support the VPL
-> Power7 boxes. Now that they are all gone, remove the code.
+On Thu, 19 Jan 2023 17:22:50 +0900, Masahiro Yamada wrote:
+> Commit e4412739472b ("Documentation: raise minimum supported version of
+> binutils to 2.25") allows us to remove the checks for old binutils.
 > 
-> Build and boot tested in qemu only.
+> There is no more user for ld-ifversion. Remove it as well.
 > 
-> Joel Stanley (3):
->   powernv/pci: Remove ioda1 support
->   powerpc/pci: Remove MVE code
->   powernv/pci: Remove last IODA1 defines
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/3] powernv/pci: Remove ioda1 support
-      https://git.kernel.org/powerpc/c/5ac129cdb50b4efda59ee5ea7c711996a3637b34
-[2/3] powerpc/pci: Remove MVE code
-      https://git.kernel.org/powerpc/c/326b3f8c6efca7ddc95f164bc0c8fa1c57d7a84f
-[3/3] powernv/pci: Remove last IODA1 defines
-      https://git.kernel.org/powerpc/c/98e61df570f06e8a2a2152bb3485c60fe1b148cb
+[1/1] powerpc: remove checks for binutils older than 2.25
+      https://git.kernel.org/powerpc/c/54a11654de163994e32b24e3aa90ef81f4a3184d
 
 cheers
