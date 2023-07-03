@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 161EEEB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA3E4EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:39:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZTp4kkPz3cJW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:38:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZVK2tGxz3dTW
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:39:05 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZP55PNwz3bpp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:34:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZP61gm7z3bsZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:34:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZP54J47z4wxr;
-	Mon,  3 Jul 2023 15:34:33 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZP60Wykz4wxs;
+	Mon,  3 Jul 2023 15:34:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Gaurav Batra <gbatra@linux.vnet.ibm.com>
-In-Reply-To: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
-References: <20230613171641.15641-1-gbatra@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/iommu: TCEs are incorrectly manipulated with DLPAR add/remove of memory
-Message-Id: <168836201906.50010.7258437923476859444.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>
+In-Reply-To: <20230613045202.294451-1-joel@jms.id.au>
+References: <20230613045202.294451-1-joel@jms.id.au>
+Subject: Re: [RFC PATCH 0/3] powernv/pci: Remove unused IODA1 support
+Message-Id: <168836201905.50010.5386797299773999122.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, oohall@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 13 Jun 2023 12:16:41 -0500, Gaurav Batra wrote:
-> When memory is dynamically added/removed, iommu_mem_notifier() is invoked. This
-> routine traverses through all the DMA windows (DDW only, not default windows)
-> to add/remove "direct" TCE mappings. The routines for this purpose are
-> tce_clearrange_multi_pSeriesLP() and tce_clearrange_multi_pSeriesLP().
+On Tue, 13 Jun 2023 14:21:59 +0930, Joel Stanley wrote:
+> Oliver mentioned this code was only kept around to support the VPL
+> Power7 boxes. Now that they are all gone, remove the code.
 > 
-> Both these routines are designed for Direct mapped DMA windows only.
+> Build and boot tested in qemu only.
+> 
+> Joel Stanley (3):
+>   powernv/pci: Remove ioda1 support
+>   powerpc/pci: Remove MVE code
+>   powernv/pci: Remove last IODA1 defines
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/iommu: TCEs are incorrectly manipulated with DLPAR add/remove of memory
-      https://git.kernel.org/powerpc/c/d61cd13e732c0eaa7d66b45edb2d0de8eab65a1e
+[1/3] powernv/pci: Remove ioda1 support
+      https://git.kernel.org/powerpc/c/5ac129cdb50b4efda59ee5ea7c711996a3637b34
+[2/3] powerpc/pci: Remove MVE code
+      https://git.kernel.org/powerpc/c/326b3f8c6efca7ddc95f164bc0c8fa1c57d7a84f
+[3/3] powernv/pci: Remove last IODA1 defines
+      https://git.kernel.org/powerpc/c/98e61df570f06e8a2a2152bb3485c60fe1b148cb
 
 cheers
