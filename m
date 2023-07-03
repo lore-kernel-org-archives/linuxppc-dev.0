@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58E41EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F35FEB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 05:54:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZqX5Dbtz3cN6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:54:00 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QvZr36V7Xz3c09
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jul 2023 15:54:27 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZnz5k0gz2xjw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QvZp02TJVz2xjw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2023 15:52:40 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZnz48ZSz4wxR;
-	Mon,  3 Jul 2023 15:52:39 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4QvZp00mDMz4wxS;
+	Mon,  3 Jul 2023 15:52:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20230606131828.315427-1-npiggin@gmail.com>
-References: <20230606131828.315427-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/32s: Fix LLVM SMP build
-Message-Id: <168836201885.50010.1837040159873287984.b4-ty@ellerman.id.au>
+In-Reply-To: <20230607101024.14559-1-npiggin@gmail.com>
+References: <20230607101024.14559-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Fix VAS mm use after free
+Message-Id: <168836201885.50010.16909154229594005770.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jul 2023 15:26:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,17 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Haren Myneni <haren@linux.ibm.com>, Sachin Sant <sachinp@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 06 Jun 2023 23:18:28 +1000, Nicholas Piggin wrote:
-> LLVM assembler does not recognise 3-operand cmpi, use cmpwi.
+On Wed, 07 Jun 2023 20:10:24 +1000, Nicholas Piggin wrote:
+> The refcount on mm is dropped before the coprocessor is detached.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/32s: Fix LLVM SMP build
-      https://git.kernel.org/powerpc/c/31b4f69dbae810b13237a7e8c89a52a72fd492e2
+[1/1] powerpc/64s: Fix VAS mm use after free
+      https://git.kernel.org/powerpc/c/b4bda59b47879cce38a6ec5a01cd3cac702b5331
 
 cheers
