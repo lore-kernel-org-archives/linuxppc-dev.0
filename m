@@ -4,69 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23A05EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 16:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0260EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 16:29:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1G5ZKRpQ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=astV7l2Q;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=astV7l2Q;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QwSKl36pVz3bpk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 02:04:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QwSt40stJz3c4T
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 02:29:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1G5ZKRpQ;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=astV7l2Q;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=astV7l2Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=fmartine@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QwSJj0175z307y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 02:03:47 +1000 (AEST)
-Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-57712d00cc1so71020087b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2023 09:03:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1688486622; x=1691078622;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ThWaRfiQI9Y2zPB0jOGll+3lvvzwKEYuVB5/fEadW24=;
-        b=1G5ZKRpQvMi6W+jmE8ub5dJeJlxbYBL30Dld2sGE0jGIh4pBJkparpgbY6X3koq/jZ
-         9g+w0TuaYGHZl27XCXZmG+7CPzvq555V/M1u4Q1o6K8x8Ny1PLqYZEoRKCUHyb+Y70dI
-         uBRHmI/rt4y3gkCQlfmPG1mrv6Vp0NRaNPnW3xuq6LBs3vpTAK9mFbzVtQjSJdhDF3gn
-         OJOlc2lgtywf5qtUGf5eClnJ/DlUSgDiVgxe4+xMH66lLR9gKhagSbS7FM4N2TW1Ak9a
-         q7fzTwEYYTKo4YcVc/r5tuNaJO9KBQwhVG9584Mvf2RQ2kUyvk+4ApeeGd9aS7kq6QuH
-         tlGw==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QwSrR2SzFz3bfH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 02:27:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1688488068;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gHdgPj1Wm2IgY2fHBO70NHanGv82Rz5Bml4kSaFfUEk=;
+	b=astV7l2QgNLQx7G0QGsEUuVzyHWhqmO6uW61aOeryrxeSBHbThdQQK9eTbzTtxdNz3OUoB
+	vCIX8peWu/rT+he/UJP8MKQmW8WoD5lhj9Y+IZ7Vjyjo3tdFBO/0JTZiZNaRmqTwJy95wM
+	gP6FgqhCw1ULKrlRXs0D2HipJszaGWU=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1688488068;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gHdgPj1Wm2IgY2fHBO70NHanGv82Rz5Bml4kSaFfUEk=;
+	b=astV7l2QgNLQx7G0QGsEUuVzyHWhqmO6uW61aOeryrxeSBHbThdQQK9eTbzTtxdNz3OUoB
+	vCIX8peWu/rT+he/UJP8MKQmW8WoD5lhj9Y+IZ7Vjyjo3tdFBO/0JTZiZNaRmqTwJy95wM
+	gP6FgqhCw1ULKrlRXs0D2HipJszaGWU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-182-AVF0-5RGOKiT232dg9RE9g-1; Tue, 04 Jul 2023 12:27:46 -0400
+X-MC-Unique: AVF0-5RGOKiT232dg9RE9g-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3fbab56aac7so36511135e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2023 09:27:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688486622; x=1691078622;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ThWaRfiQI9Y2zPB0jOGll+3lvvzwKEYuVB5/fEadW24=;
-        b=RiGRt364rAjDKim47o/GrIbtWHyiVTKQbM9RieeA6gSafz/7VudkdnmcuZS0Ay2nLn
-         RuG5QBgXSDzmsP1pv9IXBCH/ZU7XsegrKnF11l/zuyUGQHUjj/Nwp7JPdUQyjqzjShU8
-         CFeHyrtKInGkRBAuq0qu3gQs0eLqR6N69FAMbnBv1Q3TGOjm3Wye0xBnjvk5cP3RTJL5
-         kybc8xqKLhmBpCXf0e2Y/TykmHt3rvaCmN1xn03AMt66vVPCFdLcdWbLhH3EmzayN+ym
-         ehcLoBY2vWvNC5nsVUFYvDHjpPfyoAZj/TE6xKTbqMbPrhN3oE1NoTHT/mwjbUSwP6tC
-         1sTw==
-X-Gm-Message-State: ABy/qLaE/OOldedIMsjxqB69HEjEzTPqrbulcFpTH8p88CVgoqcKprN1
-	VqiwisycS0TM96e7YiwRsH9sGw==
-X-Google-Smtp-Source: APBJJlFQKEt+GJy0q7ZaawYolC37LR4/HdrndIBCrzGqd8RmTfZQfh9o4zEhy6GGc4uBo5NvU6StNw==
-X-Received: by 2002:a25:2307:0:b0:c16:8d80:227d with SMTP id j7-20020a252307000000b00c168d80227dmr13176783ybj.65.1688486622226;
-        Tue, 04 Jul 2023 09:03:42 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id v11-20020a25848b000000b00bf3438d6301sm4519026ybk.0.2023.07.04.09.03.38
+        d=1e100.net; s=20221208; t=1688488065; x=1691080065;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=gHdgPj1Wm2IgY2fHBO70NHanGv82Rz5Bml4kSaFfUEk=;
+        b=dLU1wKRnJb4Ujz6Du+Kb02vc0TT+QwvP8CmoVL9Zi4Ux4jZ8+rED0uGZhxwF02tZdT
+         qQnFGAnThNy5gjKRJ9gmmV6LrBEpi7hWHxGPPbGgc4K45eGFHugtAPXSsvDgRmSKFt/c
+         XwukoQhiMqcYkeNkFKw78jecwSn5MdqPlV4F6mo1d+1uodtYKNwiWexfVnvCLr4QMXZQ
+         QXpph4vn1Yta9eL2cxKUEnzhCsCxb6aNLPjebTzzfgKSBLdrpHAVMsTdFjIzQNrZ+3Ey
+         lkvEsbCKJcW+quAyRj5I8oJq+JeQyLpCCPBaZdLxNbXFx0+sxINoep4Hkq6RyrPcVjWe
+         qFgQ==
+X-Gm-Message-State: AC+VfDzVjAjI5RPIpQBtcS0M4giQ49zBUXfMQmccdr7ujsLhafXfgENQ
+	hqu9kXiGwOGnZWwH3sRLOWWsgDBcVeejTez3MeLd+CBH9Iy4AZdxD6YSmy9rSdRQ/uqYjTOPeHz
+	3b6bxTDiyvXdMftG6BgHTU/gk/A==
+X-Received: by 2002:a05:600c:2181:b0:3fa:96ae:fd78 with SMTP id e1-20020a05600c218100b003fa96aefd78mr12439034wme.29.1688488065020;
+        Tue, 04 Jul 2023 09:27:45 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ76jB5JrX6TXp/j+SpnZTGNMceWk0U9GUm8msLFZPg0J8xzTJ2Ph/XYxtIjAMzvUbO/YmFVwQ==
+X-Received: by 2002:a05:600c:2181:b0:3fa:96ae:fd78 with SMTP id e1-20020a05600c218100b003fa96aefd78mr12439000wme.29.1688488064598;
+        Tue, 04 Jul 2023 09:27:44 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id s24-20020a7bc398000000b003fb9ebb6b88sm22214385wmj.39.2023.07.04.09.27.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Jul 2023 09:03:41 -0700 (PDT)
-Date: Tue, 4 Jul 2023 09:03:29 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Alexander Gordeev <agordeev@linux.ibm.com>
-Subject: Re: [PATCH v2 07/12] s390: add pte_free_defer() for pgtables sharing
- page
-In-Reply-To: <ZKQhW2aHJHsnkJhv@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
-Message-ID: <c8aeb847-3d91-b5e5-48d1-20d411b58574@google.com>
-References: <54cb04f-3762-987f-8294-91dafd8ebfb0@google.com> <a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com> <20230628211624.531cdc58@thinkpad-T15> <cd7c2851-1440-7220-6c53-16b343b1474@google.com> <ZJ2hsM5Tn+yUZ5ZV@ziepe.ca> <20230629175645.7654d0a8@thinkpad-T15>
- <edaa96f-80c1-1252-acbb-71c4f045b035@google.com> <7bef5695-fa4a-7215-7e9d-d4a83161c7ab@google.com> <ZKQhW2aHJHsnkJhv@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+        Tue, 04 Jul 2023 09:27:44 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de, deller@gmx.de,
+ daniel@ffwll.ch, airlied@gmail.com
+Subject: Re: [PATCH 05/12] arch: Remove trailing whitespaces
+In-Reply-To: <20230629121952.10559-6-tzimmermann@suse.de>
+References: <20230629121952.10559-1-tzimmermann@suse.de>
+ <20230629121952.10559-6-tzimmermann@suse.de>
+Date: Tue, 04 Jul 2023 18:27:43 +0200
+Message-ID: <877crflk00.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,37 +96,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.co
- m>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Rich Felker <dalias@libc.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-csky@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Zi Yan <ziy@nvidia.com>, Niklas Schnelle <schnelle@linux.ibm.com>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@kernel.org>, linux-mips@vger.kernel.org, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foun
+ dation.org>, linuxppc-dev@lists.ozlabs.org, "Mike Rapoport \(IBM\)" <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 4 Jul 2023, Alexander Gordeev wrote:
-> On Sat, Jul 01, 2023 at 09:32:38PM -0700, Hugh Dickins wrote:
-> > On Thu, 29 Jun 2023, Hugh Dickins wrote:
-> 
-> Hi Hugh,
-> 
-> ...
-> > No, not quite the same rules as before: I came to realize that using
-> > list_add_tail() for the HH pages would be liable to put a page on the
-> > list which forever blocked reuse of PP list_add_tail() pages after it
-> > (could be solved by a list_move() somewhere, but we have agreed to
-> > prefer simplicity).
-> 
-> Just to make things more clear for me: do I understand correctly that this
-> was an attempt to add HH fragments to pgtable_list from pte_free_defer()?
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-Yes, from page_table_free() called from pte_free_defer(): I had claimed
-they could be put on the list (or not) without needing to consider their
-HH-ness, apart from wanting to list_add_tail() rather than list_add() them.
+> Fix coding style. No functional changes.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Arnd Bergmann <arnd@kernel.org>
+> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+> Cc: Anshuman Khandual <anshuman.khandual@arm.com>
+> Cc: Niklas Schnelle <schnelle@linux.ibm.com>
+> Cc: Zi Yan <ziy@nvidia.com>
+> Cc: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> ---
 
-But then realized that this category of list_add_tail() pages would block
-access to the others.
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-But I think I was mistaken then to say "could be solved by a list_move()
-somewhere"; because "somewhere" would have had to be __tlb_remove_table()
-when it removes PP-bits, which would bring us back to the issues of
-getting a spinlock from an mm which might already be freed.
+-- 
+Best regards,
 
-Hugh
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+
