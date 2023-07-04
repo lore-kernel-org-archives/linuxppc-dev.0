@@ -4,83 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CF66EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 16:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44F06C001E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 16:27:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=F4pduoL8;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=F4pduoL8;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L4PRFPEX;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L4PRFPEX;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QwSq05LLCz3bmj
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 02:26:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QwSr048Rgz3c05
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 02:27:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=F4pduoL8;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=F4pduoL8;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L4PRFPEX;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L4PRFPEX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=fmartine@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QwSp235Vqz2y1V
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 02:25:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QwSq203ssz3bNm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 02:26:37 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1688487943;
+	s=mimecast20190719; t=1688487995;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=M8/mkORscNjCU/dvtXt+o+8I4w7Qa8785g4rCe6dq88=;
-	b=F4pduoL8zNsuS+Fr9y607GmkHm2CPtEnaITAcZQ8kvPr4RY0qJ/+12cWQ+bbjWCtyDqQ9k
-	mNBJk0MPWR+1rtrrkrVOMqRY9rLTys9siuPAWlXaBo/nR36KVw01YzaGRpFHLZVe33YKbY
-	dMyv5+R2y1xZz/CrbK92rORrpEO87Y4=
+	bh=3N/Gyf3beclIUSfPsZhAnE2wLloPptbf+HqX/lLqDWc=;
+	b=L4PRFPEXE9FaoZxdmr78ejtRcYtHg1xWmMcHZE/5eeSj9u7kI/PJoCp0M67KuYrhcXb68b
+	uU61kejfFF8VLVkJsZtBn4lNp9ObCkPazHBC90lc9o559bw5EiRaOxIsgkvyok9lYWnAl5
+	dcZqDAH1NNaAZu+q54mamEU8H5QaUfQ=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1688487943;
+	s=mimecast20190719; t=1688487995;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=M8/mkORscNjCU/dvtXt+o+8I4w7Qa8785g4rCe6dq88=;
-	b=F4pduoL8zNsuS+Fr9y607GmkHm2CPtEnaITAcZQ8kvPr4RY0qJ/+12cWQ+bbjWCtyDqQ9k
-	mNBJk0MPWR+1rtrrkrVOMqRY9rLTys9siuPAWlXaBo/nR36KVw01YzaGRpFHLZVe33YKbY
-	dMyv5+R2y1xZz/CrbK92rORrpEO87Y4=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=3N/Gyf3beclIUSfPsZhAnE2wLloPptbf+HqX/lLqDWc=;
+	b=L4PRFPEXE9FaoZxdmr78ejtRcYtHg1xWmMcHZE/5eeSj9u7kI/PJoCp0M67KuYrhcXb68b
+	uU61kejfFF8VLVkJsZtBn4lNp9ObCkPazHBC90lc9o559bw5EiRaOxIsgkvyok9lYWnAl5
+	dcZqDAH1NNaAZu+q54mamEU8H5QaUfQ=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-20-gjJthZ-jPjOUuI9A3me7jw-1; Tue, 04 Jul 2023 12:25:41 -0400
-X-MC-Unique: gjJthZ-jPjOUuI9A3me7jw-1
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3fbab56aac7so36502765e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2023 09:25:41 -0700 (PDT)
+ us-mta-592-JF2aVjf1NlynOJhvWszfpA-1; Tue, 04 Jul 2023 12:26:32 -0400
+X-MC-Unique: JF2aVjf1NlynOJhvWszfpA-1
+Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-3fb40d0623bso27146585e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2023 09:26:31 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688487940; x=1691079940;
+        d=1e100.net; s=20221208; t=1688487991; x=1691079991;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=M8/mkORscNjCU/dvtXt+o+8I4w7Qa8785g4rCe6dq88=;
-        b=MDO1U85sB2jsFVR8IfFju8LaEBPvqm0sz6bZZbFehveKhCqLONkO4cDoxeBnDBfAc4
-         rqmktShYRYa2vqQnvrTGcOTSWQN4uzYohk/+Flpf/UtSIRHz6+VsR/8pBpcx33oqiE+4
-         BCnn4MfD/ZCh/VOihJSOa3j3xfTUex00Fz8ZKVi52ZJVwhRKJHrXCqs9A2wCRsGMhP7j
-         fuL4OqloQWrKtkegySvSiQQwk1n8Vb9MupxRXPV/RZ6bNQDACZ1CJlQyj5k/fRlykobS
-         jLWAhPTcL/GwXD9pUj82BWwICT8PTdI2C+eoKwklAXMGVgpQ0yR7ZagrQdQPSEQeLS7x
-         r8Ag==
-X-Gm-Message-State: AC+VfDywM+XgHeB5VCskY91yRI4catPw1AbVTGCeZqZNsNIyee5MMpjG
-	Y8RGbQSeFw7v5gNzKYsRlb29m/QAiJy+xTJ7J0axgNOHzuRnp0ym72auMzqawJapYzUbvXOpWRX
-	FWyZHKKfkuKX9gTLsl0dJ44c1U3UkVTH6vQ==
-X-Received: by 2002:a05:600c:c1:b0:3fa:8cd8:9743 with SMTP id u1-20020a05600c00c100b003fa8cd89743mr12082788wmm.19.1688487940449;
-        Tue, 04 Jul 2023 09:25:40 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ5IB6++c8U11SK9oMV+tMdqHs9QUr8ub/i7nSM7HKLee5NlCRabAo+D01Z67Wv3BYjVWg90GQ==
-X-Received: by 2002:a05:600c:c1:b0:3fa:8cd8:9743 with SMTP id u1-20020a05600c00c100b003fa8cd89743mr12082767wmm.19.1688487940180;
-        Tue, 04 Jul 2023 09:25:40 -0700 (PDT)
+        bh=3N/Gyf3beclIUSfPsZhAnE2wLloPptbf+HqX/lLqDWc=;
+        b=QbFXqvZKJ/HPyFXJiXaf3pyKkeJ3c8VPA2oosFXXOXLPgN33edKgaw3ok8P1vnQ/FC
+         x5vJ/x1iCbhaxLWJsUQowj1udIx4eL+2Sdlisg6oTNo4suFXWKuMuGnrGFIzDT7uZhJ6
+         7UixIYa3f7WoIOevvamO6/Aa8xWGZUHIM2l1CSo5BQfrvGNJeSW5lMRCZkfXJ4NQ2zKS
+         9rrzJOZvWzajbyEft92Lh+a4jw/46UDhzVSGJYxPGxu2LIiNUPOOUi3GCg2GigJoRs9T
+         vRaiJ+L4X/jO3H6hkmJw+gzqSW1ILgzmSFsl8cleqNK2K4v+gU2wr0dh60f33jyyQfON
+         lh3A==
+X-Gm-Message-State: AC+VfDz8NAcwFkaBd0MwIoSpJbbyGgR5v8ABhDjZvuD46eD0uk28KiHM
+	yi/yqHuOgk3j6tZd7XPBbOr9fPZy1+ChKoKNsYf3xqhqq+kEydn6dMRzVjVGCfkUMwmbHtWZ3Pc
+	p9j+ZIqcW4Oa0NjVMKD2swvUPhQ==
+X-Received: by 2002:a7b:ca57:0:b0:3fb:af9a:bf30 with SMTP id m23-20020a7bca57000000b003fbaf9abf30mr12688275wml.2.1688487991011;
+        Tue, 04 Jul 2023 09:26:31 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ71ufTEe/wWv7h1ExOsJanD4siZOoua0ql6zTBm+MH4Z3jUb1+lMMqlPgaWI376xU4gg3rSqQ==
+X-Received: by 2002:a7b:ca57:0:b0:3fb:af9a:bf30 with SMTP id m23-20020a7bca57000000b003fbaf9abf30mr12688259wml.2.1688487990852;
+        Tue, 04 Jul 2023 09:26:30 -0700 (PDT)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id r8-20020a056000014800b003143b032b7asm4333122wrx.116.2023.07.04.09.25.39
+        by smtp.gmail.com with ESMTPSA id s25-20020a7bc399000000b003fa96fe2bebsm25398819wmj.41.2023.07.04.09.26.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Jul 2023 09:25:39 -0700 (PDT)
+        Tue, 04 Jul 2023 09:26:30 -0700 (PDT)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de, deller@gmx.de,
  daniel@ffwll.ch, airlied@gmail.com
-Subject: Re: [PATCH 02/12] fbdev/sm712fb: Do not include <linux/screen_info.h>
-In-Reply-To: <20230629121952.10559-3-tzimmermann@suse.de>
+Subject: Re: [PATCH 03/12] sysfb: Do not include <linux/screen_info.h> from
+ sysfb header
+In-Reply-To: <20230629121952.10559-4-tzimmermann@suse.de>
 References: <20230629121952.10559-1-tzimmermann@suse.de>
- <20230629121952.10559-3-tzimmermann@suse.de>
-Date: Tue, 04 Jul 2023 18:25:39 +0200
-Message-ID: <87fs63lk3g.fsf@minerva.mail-host-address-is-not-set>
+ <20230629121952.10559-4-tzimmermann@suse.de>
+Date: Tue, 04 Jul 2023 18:26:29 +0200
+Message-ID: <87cz17lk22.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
@@ -96,21 +97,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-arm-kernel@lists.infradead.org, Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-mips@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> Sm712fb's dependency on <linux/screen_info.h> is artificial in that
-> it only uses struct screen_info for its internals. Replace the use of
-> struct screen_info with a custom data structure and remove the include
-> of <linux/screen_info.h>.
+> The header file <linux/sysfb.h> does not need anything from
+> <linux/screen_info.h>. Declare struct screen_info and remove
+> the include statements.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-> Cc: Helge Deller <deller@gmx.de>
+> Cc: Ard Biesheuvel <ardb@kernel.org>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Cc: Javier Martinez Canillas <javierm@redhat.com>
 > ---
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
