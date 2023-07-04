@@ -4,58 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35350EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 13:41:37 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ox7WX9yA;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D2D2EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 14:56:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QwP8b2xDLz3brC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jul 2023 23:41:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ox7WX9yA;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QwQqF2mVfz3c3l
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 00:56:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1140 seconds by postgrey-1.37 at boromir; Wed, 05 Jul 2023 00:56:09 AEST
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QwP7Y36xTz2yKy
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2023 23:40:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=RsWQRKx/OeoTvY5pK5rxepY6U2b9R4mbMkfTJjNifSQ=; b=ox7WX9yAj0+KCrkHFWSZls1lw9
-	5lO8dOaMK8RFQVwX0rg6uyhtB0ar8HB/GXCZPoKD/XWiUp8PetmGlgb+ru6qImq81dOFAO1vxUcyn
-	niUt1MKSeWx5GV9NjTC0hsfbFwb/uNcCM0BU3lPHuMwio93tNfUSHyYW088OtobYwzxrGSqtn5Qf8
-	Wc12zi9UEZlMnrbVjY+td3Nt0dKQbTRMaGlz1T6+SsKsCnTtWGo0v2QNsTDJAnBFXduHFUPAc5RRH
-	dDp5E3i8sTNmdBN2Fjz99Ez0sYLoDsuNtn+R0dQgx+0zt7uW8M9/GAYoxKMU6VqiyDCtYCWogedF4
-	LUEkSGiw==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1qGgGX-00AvzF-2N;
-	Tue, 04 Jul 2023 13:40:26 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 148373001CD;
-	Tue,  4 Jul 2023 15:40:25 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-	id E92912028FBD7; Tue,  4 Jul 2023 15:40:24 +0200 (CEST)
-Date: Tue, 4 Jul 2023 15:40:24 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tobias Huschle <huschle@linux.ibm.com>
-Subject: Re: [RFC 1/1] sched/fair: Consider asymmetric scheduler groups in
- load balancer
-Message-ID: <20230704134024.GV4253@hirez.programming.kicks-ass.net>
-References: <20230515114601.12737-1-huschle@linux.ibm.com>
- <20230515114601.12737-2-huschle@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QwQpd0GFKz2xwG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 00:56:05 +1000 (AEST)
+Received: from canpemm500009.china.huawei.com (unknown [172.30.72.56])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4QwQMS40rSzqVXh;
+	Tue,  4 Jul 2023 22:36:04 +0800 (CST)
+Received: from [10.67.102.169] (10.67.102.169) by
+ canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Tue, 4 Jul 2023 22:36:29 +0800
+Subject: Re: [RESEND PATCH v9 2/2] arm64: support batched/deferred tlb
+ shootdown during page reclamation/migration
+To: Catalin Marinas <catalin.marinas@arm.com>
+References: <20230518065934.12877-1-yangyicong@huawei.com>
+ <20230518065934.12877-3-yangyicong@huawei.com> <ZJ2x6DlmyA3kVh1n@arm.com>
+ <ZJ2+37Q7v4odMmEd@arm.com>
+From: Yicong Yang <yangyicong@huawei.com>
+Message-ID: <2f593850-797c-5422-2c80-ce214fac02bb@huawei.com>
+Date: Tue, 4 Jul 2023 22:36:28 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230515114601.12737-2-huschle@linux.ibm.com>
+In-Reply-To: <ZJ2+37Q7v4odMmEd@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.102.169]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ canpemm500009.china.huawei.com (7.192.105.203)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,55 +53,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, vschneid@redhat.com, vincent.guittot@linaro.org, srikar@linux.vnet.ibm.com, sshegde@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com, mingo@redhat.com, mgorman@suse.de, bristot@redhat.com, dietmar.eggemann@arm.com
+Cc: mark.rutland@arm.com, wangkefeng.wang@huawei.com, prime.zeng@hisilicon.com, realmz6@gmail.com, linux-doc@vger.kernel.org, peterz@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, punit.agrawal@bytedance.com, linux-riscv@lists.infradead.org, will@kernel.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, x86@kernel.org, Barry Song <21cnbao@gmail.com>, Mel Gorman <mgorman@suse.de>, ryan.roberts@arm.com, arnd@arndb.de, anshuman.khandual@arm.com, Barry Song <v-songbaohua@oppo.com>, openrisc@lists.librecores.org, darren@os.amperecomputing.com, Jonathan.Cameron@huawei.com, yangyicong@hisilicon.com, linux-arm-kernel@lists.infradead.org, guojian@oppo.com, xhao@linux.alibaba.com, linux-mips@vger.kernel.org, huzhanyuan@oppo.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 15, 2023 at 01:46:01PM +0200, Tobias Huschle wrote:
-> The current load balancer implementation implies that scheduler groups,
-> within the same domain, all host the same number of CPUs. This is
-> reflected in the condition, that a scheduler group, which is load
-> balancing and classified as having spare capacity, should pull work
-> from the busiest group, if the local group runs less processes than
-> the busiest one. This implies that these two groups should run the
-> same number of processes, which is problematic if the groups are not 
-> of the same size.
+On 2023/6/30 1:26, Catalin Marinas wrote:
+> On Thu, Jun 29, 2023 at 05:31:36PM +0100, Catalin Marinas wrote:
+>> On Thu, May 18, 2023 at 02:59:34PM +0800, Yicong Yang wrote:
+>>> From: Barry Song <v-songbaohua@oppo.com>
+>>>
+>>> on x86, batched and deferred tlb shootdown has lead to 90%
+>>> performance increase on tlb shootdown. on arm64, HW can do
+>>> tlb shootdown without software IPI. But sync tlbi is still
+>>> quite expensive.
+>> [...]
+>>>  .../features/vm/TLB/arch-support.txt          |  2 +-
+>>>  arch/arm64/Kconfig                            |  1 +
+>>>  arch/arm64/include/asm/tlbbatch.h             | 12 ++++
+>>>  arch/arm64/include/asm/tlbflush.h             | 33 ++++++++-
+>>>  arch/arm64/mm/flush.c                         | 69 +++++++++++++++++++
+>>>  arch/x86/include/asm/tlbflush.h               |  5 +-
+>>>  include/linux/mm_types_task.h                 |  4 +-
+>>>  mm/rmap.c                                     | 12 ++--
+>>
+>> First of all, this patch needs to be split in some preparatory patches
+>> introducing/renaming functions with no functional change for x86. Once
+>> done, you can add the arm64-only changes.
+>>
+
+got it. will try to split this patch as suggested.
+
+>> Now, on the implementation, I had some comments on v7 but we didn't get
+>> to a conclusion and the thread eventually died:
+>>
+>> https://lore.kernel.org/linux-mm/Y7cToj5mWd1ZbMyQ@arm.com/
+>>
+>> I know I said a command line argument is better than Kconfig or some
+>> random number of CPUs heuristics but it would be even better if we don't
+>> bother with any, just make this always on.
+
+ok, will make this always on.
+
+>> Barry had some comments
+>> around mprotect() being racy and that's why we have
+>> flush_tlb_batched_pending() but I don't think it's needed (or, for
+>> arm64, it can be a DSB since this patch issues the TLBIs but without the
+>> DVM Sync). So we need to clarify this (see Barry's last email on the
+>> above thread) and before attempting new versions of this patchset. With
+>> flush_tlb_batched_pending() removed (or DSB), I have a suspicion such
+>> implementation would be faster on any SoC irrespective of the number of
+>> CPUs.
 > 
-> The assumption that scheduler groups within the same scheduler domain
-> host the same number of CPUs appears to be true for non-s390 
-> architectures.
-
-Mostly; there's historically the cpuset case where we can create
-lopsided groups like that. And today we're growing all these hybrid
-things that will also tickle this, except they're looking towards
-different balancer extentions to deal with the IPC difference so might
-not be immediately caring about this here issue.
-
-
-> Signed-off-by: Tobias Huschle <huschle@linux.ibm.com>
-> ---
->  kernel/sched/fair.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> I think I got the need for flush_tlb_batched_pending(). If
+> try_to_unmap() marks the pte !present and we have a pending TLBI,
+> change_pte_range() will skip the TLB maintenance altogether since it did
+> not change the pte. So we could be left with stale TLB entries after
+> mprotect() before TTU does the batch flushing.
 > 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 48b6f0ca13ac..b1307d7e4065 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -10426,7 +10426,8 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
->  	 * group's child domain.
->  	 */
->  	if (sds.prefer_sibling && local->group_type == group_has_spare &&
-> -	    busiest->sum_nr_running > local->sum_nr_running + 1)
-> +	    busiest->sum_nr_running * local->group_weight >
-> +			local->sum_nr_running * busiest->group_weight + 1)
-
-Should that not be: busiest->group_weight * (local->sum_nr_running + 1) ?
-
-I'm not opposed to this -- it seems fairly straight forward.
-
->  		goto force_balance;
->  
->  	if (busiest->group_type != group_overloaded) {
-> -- 
-> 2.34.1
+> We can have an arch-specific flush_tlb_batched_pending() that can be a
+> DSB only on arm64 and a full mm flush on x86.
 > 
+
+We need to do a flush/dsb in flush_tlb_batched_pending() only in a race
+condition so we first check whether there's a pended batched flush and
+if so do the tlb flush. The pending checking is common and the differences
+among the archs is how to flush the TLB here within the flush_tlb_batched_pending(),
+on arm64 it should only be a dsb.
+
+As we only needs to maintain the TLBs already pended in batched flush,
+does it make sense to only handle those TLBs in flush_tlb_batched_pending()?
+Then we can use the arch_tlbbatch_flush() rather than flush_tlb_mm() in
+flush_tlb_batched_pending() and no arch specific function needed.
+
+Thanks.
+
