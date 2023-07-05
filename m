@@ -4,61 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1D37EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 14:18:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80C1DEB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 14:53:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lW9d+1HM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fUP2f6sD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qx1wm2FkVz3bTG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 00:18:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qx2hZ5npCz3bkM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 00:53:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lW9d+1HM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fUP2f6sD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.120; helo=mga04.intel.com; envelope-from=yu.c.zhang@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qx1vk14hNz30K6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 00:17:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1688566659; x=1720102659;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=dxaLcFyIX6B15hyemUTtg4E+16m6duFMnhi44AUxrxk=;
-  b=lW9d+1HMoEgSiZGQUGLt0hv5bqTlbIpXJRD1qgn25KX7ROhAod7igBwc
-   w0vXhVjSD/afcXCrR6OgM2hTj+m/ZQg6oUOZaJdViICNjvrY4McrkXuKA
-   enVZJp4t1rYulMSIotuQdDr1Mrom74LFKOF4DtIRkzDawlAuE/jo/NF4f
-   iomcqLdjxdakao+QMcKh7YvKX2zaGib/jI8V3j2kGi5oAm/WOrw98elRh
-   qPcTLQZIdEElnGjlYbCR5miOj3DNFaR+beiXdGdFE8JXJKbcnIunBhNTu
-   yDpVU2e1haUzV8cMnOovbFb4NSTQ4nF1NAj90qb9poG4QGWLMeIECkyP+
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10762"; a="362218771"
-X-IronPort-AV: E=Sophos;i="6.01,183,1684825200"; 
-   d="scan'208";a="362218771"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jul 2023 07:17:31 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10762"; a="965848045"
-X-IronPort-AV: E=Sophos;i="6.01,183,1684825200"; 
-   d="scan'208";a="965848045"
-Received: from jialinji-mobl4.ccr.corp.intel.com (HELO localhost) ([10.255.30.200])
-  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jul 2023 07:17:27 -0700
-Date: Wed, 5 Jul 2023 22:17:42 +0800
-From: Yu Zhang <yu.c.zhang@linux.intel.com>
-To: David Stevens <stevensd@chromium.org>
-Subject: Re: [PATCH v7 5/8] KVM: x86/mmu: Don't pass FOLL_GET to
- __kvm_follow_pfn
-Message-ID: <20230705141741.xqvjddsoo5qgax63@linux.intel.com>
-References: <20230704075054.3344915-1-stevensd@google.com>
- <20230704075054.3344915-6-stevensd@google.com>
- <20230705101800.ut4c6topn6ylwczs@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qx2gX54Tlz30F5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 00:52:07 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 365ElGWS003026;
+	Wed, 5 Jul 2023 14:51:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=WfdHG/IFibjPqDV5js/ljbtxgQ4mhrxtxUvpA1+ay/Y=;
+ b=fUP2f6sD37eNq1w+y3JOd1a3RjqxE4EKI0Eav2kVx5OKFRqYY18wnMFWBBNL0Jaaq+rW
+ 3MyHw6EynkrbYUixtyYZtRsJgYRqQMvLKmjnjyOiMIIbmp9Gx9tUUPAFy7AmphpMwlIB
+ 2jit9HoaCpDbPTA0wWDBv5XIDdRvqvbt3Tn4z9eZ6L2Z9tmcaUyFGKKBdb0pqNuQCsR9
+ 6E5Npuai7ojWhrUycGZCh7J+GMqXhaXhibwh3v7h4XL1gzNcM1thZ0AbLd/zqlhoPnhF
+ IzBZU4ui6ueVnxK6PxP8kZvBHPTgxBDoI7wRiRol/pno89hOM0+Vs8XhlzWMziBIZwM4 3Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rnak5g37s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 14:51:52 +0000
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 365ElwrU005006;
+	Wed, 5 Jul 2023 14:51:52 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rnak5g36d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 14:51:51 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3650sFUn032566;
+	Wed, 5 Jul 2023 14:51:49 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3rjbs4tn97-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 14:51:49 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 365Eplgc19268256
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 5 Jul 2023 14:51:47 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3CC3B20040;
+	Wed,  5 Jul 2023 14:51:47 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2F6092004D;
+	Wed,  5 Jul 2023 14:51:46 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.171.79.178])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  5 Jul 2023 14:51:46 +0000 (GMT)
+From: Laurent Dufour <ldufour@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 01/10] cpu/hotplug: remove dependancy against cpu_primary_thread_mask
+Date: Wed,  5 Jul 2023 16:51:34 +0200
+Message-ID: <20230705145143.40545-2-ldufour@linux.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230705145143.40545-1-ldufour@linux.ibm.com>
+References: <20230705145143.40545-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230705101800.ut4c6topn6ylwczs@linux.intel.com>
-User-Agent: NeoMutt/20171215
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: h5_Kjgx80_GIwbjYFqO2hSx4w1lecSek
+X-Proofpoint-ORIG-GUID: ho0Gpv-QUkWpRbe_O5ZDGgt5gyT2EbpG
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-05_06,2023-07-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 phishscore=0
+ lowpriorityscore=0 suspectscore=0 adultscore=0 malwarescore=0
+ priorityscore=1501 spamscore=0 mlxlogscore=999 mlxscore=0 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307050131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,35 +96,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marc Zyngier <maz@kernel.org>, kvm@vger.kernel.org, Sean Christopherson <seanjc@google.com>, linux-kernel@vger.kernel.org, Peter Xu <peterx@redhat.com>, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, mingo@redhat.com, bp@alien8.de, npiggin@gmail.com, tglx@linutronix.de, rui.zhang@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> > @@ -883,7 +884,7 @@ static gpa_t FNAME(gva_to_gpa)(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-> >   */
-> >  static int FNAME(sync_spte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp, int i)
-> >  {
-> > -	bool host_writable;
-> > +	bool host_writable, is_refcounted;
-> >  	gpa_t first_pte_gpa;
-> >  	u64 *sptep, spte;
-> >  	struct kvm_memory_slot *slot;
-> > @@ -940,10 +941,12 @@ static int FNAME(sync_spte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp, int
-> >  	sptep = &sp->spt[i];
-> >  	spte = *sptep;
-> >  	host_writable = spte & shadow_host_writable_mask;
-> > +	// TODO: is this correct?
-> > +	is_refcounted = spte & SPTE_MMU_PAGE_REFCOUNTED;
-> >  	slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
-> >  	make_spte(vcpu, sp, slot, pte_access, gfn,
-> >  		  spte_to_pfn(spte), spte, true, false,
-> > -		  host_writable, &spte);
-> > +		  host_writable, is_refcounted, &spte);
-> 
-> Could we restrict that a non-refcounted page shall not be used as shadow page?
+The commit 18415f33e2ac ("cpu/hotplug: Allow "parallel" bringup up to
+CPUHP_BP_KICK_AP_STATE") introduce a dependancy against a global variable
+cpu_primary_thread_mask exported by the X86 code. This variable is only
+used when CONFIG_HOTPLUG_PARALLEL is set.
 
-Oh, sorry. It's not about shadow page. It's about guest page being
-mapped as not refcounted. Silly me...
+Since cpuhp_get_primary_thread_mask() and cpuhp_smt_aware() are only used
+when CONFIG_HOTPLUG_PARALLEL is set, don't define them when it is not set.
 
-B.R.
-Yu
+There is no functional change introduce by that patch.
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+---
+ kernel/cpu.c | 24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
+
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 88a7ede322bd..03309f2f35a4 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -650,22 +650,8 @@ bool cpu_smt_possible(void)
+ }
+ EXPORT_SYMBOL_GPL(cpu_smt_possible);
+ 
+-static inline bool cpuhp_smt_aware(void)
+-{
+-	return topology_smt_supported();
+-}
+-
+-static inline const struct cpumask *cpuhp_get_primary_thread_mask(void)
+-{
+-	return cpu_primary_thread_mask;
+-}
+ #else
+ static inline bool cpu_smt_allowed(unsigned int cpu) { return true; }
+-static inline bool cpuhp_smt_aware(void) { return false; }
+-static inline const struct cpumask *cpuhp_get_primary_thread_mask(void)
+-{
+-	return cpu_present_mask;
+-}
+ #endif
+ 
+ static inline enum cpuhp_state
+@@ -1793,6 +1779,16 @@ static int __init parallel_bringup_parse_param(char *arg)
+ }
+ early_param("cpuhp.parallel", parallel_bringup_parse_param);
+ 
++static inline bool cpuhp_smt_aware(void)
++{
++	return topology_smt_supported();
++}
++
++static inline const struct cpumask *cpuhp_get_primary_thread_mask(void)
++{
++	return cpu_primary_thread_mask;
++}
++
+ /*
+  * On architectures which have enabled parallel bringup this invokes all BP
+  * prepare states for each of the to be onlined APs first. The last state
+-- 
+2.41.0
+
