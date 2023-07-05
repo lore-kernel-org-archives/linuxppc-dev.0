@@ -4,74 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87B04C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 15:01:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57AD5C001E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 15:05:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=URubkmlE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bjIuNrg5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qx2tV04gTz3cgv
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 01:01:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qx2zJ3t9Bz3cLN
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 01:05:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=URubkmlE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bjIuNrg5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::529; helo=mail-ed1-x529.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qx2pD5sgsz3cQN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 00:57:55 +1000 (AEST)
-Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-51d8fa4dbf9so7790064a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2023 07:57:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688569068; x=1691161068;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=VEPj9MNRtJknVYwMtm8K9KHPmosJrfBiNj5dYN7jj4s=;
-        b=URubkmlEbTg6P1Fe1S7d1HFf5IG1PybcKWIV8h3wl4VtsD1CWKW583PCB1F8rNlpNA
-         iU54+0BJau+XNqARNBdeCBUSOvVcucL0cSoUH3/gGx8rriYjhx8PwaBtVOZWTrdvMd8M
-         uPXXJ/jKbn2hN5GXAUXCpW8elYP5P6eiiO16JMqj4o5dHPcDe00RQJuY6jjUByOyO/57
-         +dfI25XfOQtjYFwxIY+hExf2EquYbVdvKvAz0UK2Wzp8IWqUqqjugI1IvZEQl3EOVrVn
-         Nne/Mha8kE+8GkwlP66Li93rldqBSFVbRJZA5DXL08jlR2XkYnA31C724agOC23RFmtL
-         AivA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688569068; x=1691161068;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=VEPj9MNRtJknVYwMtm8K9KHPmosJrfBiNj5dYN7jj4s=;
-        b=RMQcpKHC5LE1mhybT36Q+bnFvhdpRtGxtHmtHLkfiJkrk6TC5e9VygYJkdeC95nw4M
-         GvxHKYyY/1+wtaZ9Immz/i7lXmwrrw8bupKDys5/zgR1cpVIwKaXXNIS+lzMIFX4ICRZ
-         5mFWVFPtvHiEe2wW42VP3JTepuGpRBNaq5qAWnLael21xBDenpzcGrLi2fgQ8b0V1nKk
-         zmFrFw6zAy4Ui8gnIjYMMwXqgPDkAKXwzmBrJJMSzY2nU207nx+h6zVkl7c2bREqNorA
-         SgZdY5ucseKxt4wEypkmmSbdjpbAUODKZ/RI/bWprTexMI3mhVzwjC8+AtJxF46tagjT
-         HwsA==
-X-Gm-Message-State: ABy/qLbahi89o+LIo9mKXyQMhHRWIu34THlS3VhoBHdFxSc3ptdRbyii
-	8yWTbDJ5hfW3+pEJFNADB0oJMQ==
-X-Google-Smtp-Source: APBJJlG6vsOX8k1cNJ3Gt/TYjk/rLFTMAwz7DghyTLEbVq4DCsOgN3iLG2kBiKyjXRn8cJ67PK8zBA==
-X-Received: by 2002:aa7:de1a:0:b0:51d:ec25:ce38 with SMTP id h26-20020aa7de1a000000b0051dec25ce38mr12241724edv.10.1688569068018;
-        Wed, 05 Jul 2023 07:57:48 -0700 (PDT)
-Received: from krzk-bin.. ([178.197.219.26])
-        by smtp.gmail.com with ESMTPSA id g25-20020aa7c859000000b0050cc4461fc5sm13044558edt.92.2023.07.05.07.57.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Jul 2023 07:57:47 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To: Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: dts: add missing space before {
-Date: Wed,  5 Jul 2023 16:57:43 +0200
-Message-Id: <20230705145743.292855-1-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qx2yK6PwNz2ygr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 01:04:57 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 365ElG3M025128;
+	Wed, 5 Jul 2023 15:04:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=I5NJo0VWHfd/AtjXszRvWrnq5hPYTYi77kf9Y39lCDM=;
+ b=bjIuNrg5fjJ8M1iURG2wXAKZXN6jMdpY191a97UK18Uq0bCo2CJtvV0e5bDzIv79P6hN
+ bliXo1uRaQbZJcQqrK4Hhn0ymrdaNUSZKFZqxLcZFFfnOzLRG+qNsXq6io0amnLq3Y8f
+ GFyAZCg/UTfARlsw1S68owchnrN4DVrt+5CG80XBFseGmyEiDExxX2lnDJjHuhjIOMc2
+ Ckf0FYFLm1wct+FGkZIG15vzILAZPdH1DBaJr2Hz/uEbZfNZXhFd5P9eMrYT+x78mxvY
+ cjX/GAvXKbjetvs8MfZgrk98IWxh1nTclJ+YKb/A1/qwWfEjtu2tbqa/JV2FNniVMKiu bQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rnak40kvf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 15:04:42 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 365EmEQW027796;
+	Wed, 5 Jul 2023 15:04:42 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rnak40kua-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 15:04:42 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3650sFUo032566;
+	Wed, 5 Jul 2023 14:51:50 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3rjbs4tn98-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 14:51:50 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 365EpmCG15991500
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 5 Jul 2023 14:51:48 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7D3772004B;
+	Wed,  5 Jul 2023 14:51:48 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 61E1E20043;
+	Wed,  5 Jul 2023 14:51:47 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.171.79.178])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  5 Jul 2023 14:51:47 +0000 (GMT)
+From: Laurent Dufour <ldufour@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 02/10] cpu/SMT: Move SMT prototypes into cpu_smt.h
+Date: Wed,  5 Jul 2023 16:51:35 +0200
+Message-ID: <20230705145143.40545-3-ldufour@linux.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230705145143.40545-1-ldufour@linux.ibm.com>
+References: <20230705145143.40545-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 8w4OFb0D3RTobjUnLAGpaCHu8uF0bnKB
+X-Proofpoint-GUID: aR52Uirc87Gq9s9ZAQWXvtp3Vif_bUIy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-05_06,2023-07-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
+ lowpriorityscore=0 impostorscore=0 clxscore=1015 suspectscore=0 mlxscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 mlxlogscore=833 bulkscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307050131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,187 +96,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, mingo@redhat.com, bp@alien8.de, npiggin@gmail.com, tglx@linutronix.de, rui.zhang@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add missing whitespace between node name/label and opening {.
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In order to export the cpuhp_smt_control enum as part of the interface
+between generic and architecture code, the architecture code needs to
+include asm/topology.h.
+
+But that leads to circular header dependencies. So split the enum and
+related declarations into a separate header.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+[ldufour: rewording the commit's description]
+Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 ---
- arch/powerpc/boot/dts/fsl/c293si-post.dtsi  | 12 ++++++------
- arch/powerpc/boot/dts/fsl/p1022rdk.dts      | 10 +++++-----
- arch/powerpc/boot/dts/fsl/p1022si-post.dtsi |  2 +-
- arch/powerpc/boot/dts/fsl/p3041ds.dts       |  4 ++--
- arch/powerpc/boot/dts/fsl/p5040ds.dts       |  2 +-
- arch/powerpc/boot/dts/fsl/t4240qds.dts      |  2 +-
- arch/powerpc/boot/dts/mpc5121.dtsi          |  2 +-
- arch/powerpc/boot/dts/mpc5125twr.dts        |  2 +-
- 8 files changed, 18 insertions(+), 18 deletions(-)
+ arch/x86/include/asm/topology.h |  2 ++
+ include/linux/cpu.h             | 25 +------------------------
+ include/linux/cpu_smt.h         | 29 +++++++++++++++++++++++++++++
+ kernel/cpu.c                    |  1 +
+ 4 files changed, 33 insertions(+), 24 deletions(-)
+ create mode 100644 include/linux/cpu_smt.h
 
-diff --git a/arch/powerpc/boot/dts/fsl/c293si-post.dtsi b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-index bec0fc36849d..f208fb8f64b3 100644
---- a/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-@@ -124,10 +124,10 @@ crypto@80000 {
- 		reg = <0x80000 0x20000>;
- 		ranges = <0x0 0x80000 0x20000>;
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index caf41c4869a0..ae49ed4417d0 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -136,6 +136,8 @@ static inline int topology_max_smt_threads(void)
+ 	return __max_smt_threads;
+ }
  
--		jr@1000{
-+		jr@1000 {
- 			interrupts = <45 2 0 0>;
- 		};
--		jr@2000{
-+		jr@2000 {
- 			interrupts = <57 2 0 0>;
- 		};
- 	};
-@@ -140,10 +140,10 @@ crypto@a0000 {
- 		reg = <0xa0000 0x20000>;
- 		ranges = <0x0 0xa0000 0x20000>;
++#include <linux/cpu_smt.h>
++
+ int topology_update_package_map(unsigned int apicid, unsigned int cpu);
+ int topology_update_die_map(unsigned int dieid, unsigned int cpu);
+ int topology_phys_to_logical_pkg(unsigned int pkg);
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 6e6e57ec69e8..6b326a9e8191 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -18,6 +18,7 @@
+ #include <linux/compiler.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/cpu_smt.h>
  
--		jr@1000{
-+		jr@1000 {
- 			interrupts = <49 2 0 0>;
- 		};
--		jr@2000{
-+		jr@2000 {
- 			interrupts = <50 2 0 0>;
- 		};
- 	};
-@@ -156,10 +156,10 @@ crypto@c0000 {
- 		reg = <0xc0000 0x20000>;
- 		ranges = <0x0 0xc0000 0x20000>;
+ struct device;
+ struct device_node;
+@@ -204,30 +205,6 @@ void cpuhp_report_idle_dead(void);
+ static inline void cpuhp_report_idle_dead(void) { }
+ #endif /* #ifdef CONFIG_HOTPLUG_CPU */
  
--		jr@1000{
-+		jr@1000 {
- 			interrupts = <55 2 0 0>;
- 		};
--		jr@2000{
-+		jr@2000 {
- 			interrupts = <56 2 0 0>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/p1022rdk.dts b/arch/powerpc/boot/dts/fsl/p1022rdk.dts
-index 29e8af1e3711..4261c2f7e4b3 100644
---- a/arch/powerpc/boot/dts/fsl/p1022rdk.dts
-+++ b/arch/powerpc/boot/dts/fsl/p1022rdk.dts
-@@ -60,23 +60,23 @@ rtc@68 {
- 				compatible = "st,m41t62";
- 				reg = <0x68>;
- 			};
--			adt7461@4c{
-+			adt7461@4c {
- 				compatible = "adi,adt7461";
- 				reg = <0x4c>;
- 			};
--			zl6100@21{
-+			zl6100@21 {
- 				compatible = "isil,zl6100";
- 				reg = <0x21>;
- 			};
--			zl6100@24{
-+			zl6100@24 {
- 				compatible = "isil,zl6100";
- 				reg = <0x24>;
- 			};
--			zl6100@26{
-+			zl6100@26 {
- 				compatible = "isil,zl6100";
- 				reg = <0x26>;
- 			};
--			zl6100@29{
-+			zl6100@29 {
- 				compatible = "isil,zl6100";
- 				reg = <0x29>;
- 			};
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-index 5f51b7bfc064..093e4e3ed368 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-@@ -238,7 +238,7 @@ global-utilities@e0000 {
- 		fsl,has-rstcr;
- 	};
+-enum cpuhp_smt_control {
+-	CPU_SMT_ENABLED,
+-	CPU_SMT_DISABLED,
+-	CPU_SMT_FORCE_DISABLED,
+-	CPU_SMT_NOT_SUPPORTED,
+-	CPU_SMT_NOT_IMPLEMENTED,
+-};
+-
+-#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
+-extern enum cpuhp_smt_control cpu_smt_control;
+-extern void cpu_smt_disable(bool force);
+-extern void cpu_smt_check_topology(void);
+-extern bool cpu_smt_possible(void);
+-extern int cpuhp_smt_enable(void);
+-extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
+-#else
+-# define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
+-static inline void cpu_smt_disable(bool force) { }
+-static inline void cpu_smt_check_topology(void) { }
+-static inline bool cpu_smt_possible(void) { return false; }
+-static inline int cpuhp_smt_enable(void) { return 0; }
+-static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
+-#endif
+-
+ extern bool cpu_mitigations_off(void);
+ extern bool cpu_mitigations_auto_nosmt(void);
  
--	power@e0070{
-+	power@e0070 {
- 		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
- 		reg = <0xe0070 0x20>;
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/p3041ds.dts b/arch/powerpc/boot/dts/fsl/p3041ds.dts
-index 6f5f7283c533..ca0e0272ac62 100644
---- a/arch/powerpc/boot/dts/fsl/p3041ds.dts
-+++ b/arch/powerpc/boot/dts/fsl/p3041ds.dts
-@@ -41,7 +41,7 @@ / {
- 	#size-cells = <2>;
- 	interrupt-parent = <&mpic>;
+diff --git a/include/linux/cpu_smt.h b/include/linux/cpu_smt.h
+new file mode 100644
+index 000000000000..722c2e306fef
+--- /dev/null
++++ b/include/linux/cpu_smt.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _LINUX_CPU_SMT_H_
++#define _LINUX_CPU_SMT_H_
++
++enum cpuhp_smt_control {
++	CPU_SMT_ENABLED,
++	CPU_SMT_DISABLED,
++	CPU_SMT_FORCE_DISABLED,
++	CPU_SMT_NOT_SUPPORTED,
++	CPU_SMT_NOT_IMPLEMENTED,
++};
++
++#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
++extern enum cpuhp_smt_control cpu_smt_control;
++extern void cpu_smt_disable(bool force);
++extern void cpu_smt_check_topology(void);
++extern bool cpu_smt_possible(void);
++extern int cpuhp_smt_enable(void);
++extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
++#else
++# define cpu_smt_control               (CPU_SMT_NOT_IMPLEMENTED)
++static inline void cpu_smt_disable(bool force) { }
++static inline void cpu_smt_check_topology(void) { }
++static inline bool cpu_smt_possible(void) { return false; }
++static inline int cpuhp_smt_enable(void) { return 0; }
++static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
++#endif
++
++#endif /* _LINUX_CPU_SMT_H_ */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 03309f2f35a4..e02204c4675a 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -592,6 +592,7 @@ static void lockdep_release_cpus_lock(void)
+ void __weak arch_smt_update(void) { }
  
--	aliases{
-+	aliases {
- 		phy_rgmii_0 = &phy_rgmii_0;
- 		phy_rgmii_1 = &phy_rgmii_1;
- 		phy_sgmii_1c = &phy_sgmii_1c;
-@@ -165,7 +165,7 @@ adt7461@4c {
- 			};
- 		};
+ #ifdef CONFIG_HOTPLUG_SMT
++
+ enum cpuhp_smt_control cpu_smt_control __read_mostly = CPU_SMT_ENABLED;
  
--		fman@400000{
-+		fman@400000 {
- 			ethernet@e0000 {
- 				phy-handle = <&phy_sgmii_1c>;
- 				phy-connection-type = "sgmii";
-diff --git a/arch/powerpc/boot/dts/fsl/p5040ds.dts b/arch/powerpc/boot/dts/fsl/p5040ds.dts
-index 30850b3228e0..5cfc689ee474 100644
---- a/arch/powerpc/boot/dts/fsl/p5040ds.dts
-+++ b/arch/powerpc/boot/dts/fsl/p5040ds.dts
-@@ -41,7 +41,7 @@ / {
- 	#size-cells = <2>;
- 	interrupt-parent = <&mpic>;
- 
--	aliases{
-+	aliases {
- 		phy_sgmii_slot2_1c = &phy_sgmii_slot2_1c;
- 		phy_sgmii_slot2_1d = &phy_sgmii_slot2_1d;
- 		phy_sgmii_slot2_1e = &phy_sgmii_slot2_1e;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240qds.dts b/arch/powerpc/boot/dts/fsl/t4240qds.dts
-index c0913ac5aaad..128b5798bb97 100644
---- a/arch/powerpc/boot/dts/fsl/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/fsl/t4240qds.dts
-@@ -41,7 +41,7 @@ / {
- 	#size-cells = <2>;
- 	interrupt-parent = <&mpic>;
- 
--	aliases{
-+	aliases {
- 		phy_rgmii1 = &phyrgmii1;
- 		phy_rgmii2 = &phyrgmii2;
- 		phy_sgmii3 = &phy3;
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 3f66b91a8e3c..d3fc8062fbcd 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -140,7 +140,7 @@ clks: clock@f00 {
- 		};
- 
- 		/* Power Management Controller */
--		pmc@1000{
-+		pmc@1000 {
- 			compatible = "fsl,mpc5121-pmc";
- 			reg = <0x1000 0x100>;
- 			interrupts = <83 0x8>;
-diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
-index 0bd2acc0401d..ee090709aa3a 100644
---- a/arch/powerpc/boot/dts/mpc5125twr.dts
-+++ b/arch/powerpc/boot/dts/mpc5125twr.dts
-@@ -104,7 +104,7 @@ clks: clock@f00 {	// Clock control
- 			clock-names = "osc";
- 		};
- 
--		pmc@1000{  // Power Management Controller
-+		pmc@1000 {  // Power Management Controller
- 			compatible = "fsl,mpc5121-pmc";
- 			reg = <0x1000 0x100>;
- 			interrupts = <83 0x2>;
+ void __init cpu_smt_disable(bool force)
 -- 
-2.34.1
+2.41.0
 
