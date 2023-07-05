@@ -4,56 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76063EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 01:47:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BA2BEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 06:48:59 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aRu+YCjg;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QwjGD5nkbz3c9s
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 11:47:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=suijingfeng@loongson.cn; receiver=lists.ozlabs.org)
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QwhmQ2x37z2xgw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 11:25:10 +1000 (AEST)
-Received: from loongson.cn (unknown [10.20.42.43])
-	by gateway (Coremail) with SMTP id _____8Bx5fB0xqRkly0AAA--.945S3;
-	Wed, 05 Jul 2023 09:25:08 +0800 (CST)
-Received: from [10.20.42.43] (unknown [10.20.42.43])
-	by localhost.localdomain (Coremail) with SMTP id AQAAf8BxniNtxqRki8kbAA--.44387S3;
-	Wed, 05 Jul 2023 09:25:01 +0800 (CST)
-Message-ID: <d1c0702f-e16d-1edd-19a4-1bdc2def14ab@loongson.cn>
-Date: Wed, 5 Jul 2023 09:25:01 +0800
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qwqy160R4z3bn7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jul 2023 16:48:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aRu+YCjg;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qwqx36R9Cz2yyT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2023 16:48:07 +1000 (AEST)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3656f1xm028694;
+	Wed, 5 Jul 2023 06:47:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=yv/FrLpT08L3Apc6b/gXrDeCk9yGnPzfjdRohkIs4Xg=;
+ b=aRu+YCjguXlaQs3KW57NglPu5FkypAP2AchYFw5pBdBy9y7U8L1iFj9tqPw43Wp9KWUM
+ h1uJfl0AS3xvPJmY5nt2yNJf2XbEWf4a6URxjTtmnCbK+1a7lkOxV3KwP6MYk9+LfPHM
+ dEvE0YrFYGaoWymxsQikjBSOSnCwMulfTGGJ6VoZuzrRVHvvDlj443Pi86yjGsxVawpf
+ JZFRMi3/b+p+TPgOyIXphdvtaT1LwTCNDRyg593RYD/6iVgKmhyBW4Vw7nKLNpy5uiE+
+ AkC7aaoVdUP10eZw3L8f2jMd3L+W/0xKo/3SiiYgaAVYB7OfQuvx8Cqe+BKGj0K+T7k5 6w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rn34arebt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 06:47:02 +0000
+Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3656gT3K032743;
+	Wed, 5 Jul 2023 06:46:56 GMT
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rn34are2f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 06:46:56 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3652HG3Z002094;
+	Wed, 5 Jul 2023 06:46:48 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3rjbs4tef2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Jul 2023 06:46:48 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3656kiFM38142352
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 5 Jul 2023 06:46:44 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B4E8E20040;
+	Wed,  5 Jul 2023 06:46:44 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DA85B20043;
+	Wed,  5 Jul 2023 06:46:41 +0000 (GMT)
+Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.171.53.49])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed,  5 Jul 2023 06:46:41 +0000 (GMT)
+Date: Wed, 5 Jul 2023 08:46:40 +0200
+From: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Subject: Re: [PATCH v2 07/12] s390: add pte_free_defer() for pgtables sharing
+ page
+Message-ID: <ZKUR0HItN2Va8J1D@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+References: <54cb04f-3762-987f-8294-91dafd8ebfb0@google.com>
+ <a722dbec-bd9e-1213-1edd-53cd547aa4f@google.com>
+ <20230628211624.531cdc58@thinkpad-T15>
+ <cd7c2851-1440-7220-6c53-16b343b1474@google.com>
+ <ZJ2hsM5Tn+yUZ5ZV@ziepe.ca>
+ <20230629175645.7654d0a8@thinkpad-T15>
+ <edaa96f-80c1-1252-acbb-71c4f045b035@google.com>
+ <7bef5695-fa4a-7215-7e9d-d4a83161c7ab@google.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [05/12] arch: Remove trailing whitespaces
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de, deller@gmx.de,
- daniel@ffwll.ch, airlied@gmail.com
-References: <20230629121952.10559-6-tzimmermann@suse.de>
-From: Sui Jingfeng <suijingfeng@loongson.cn>
-In-Reply-To: <20230629121952.10559-6-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID: AQAAf8BxniNtxqRki8kbAA--.44387S3
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBj93XoWxWryxAr17Ww18uw15tw15WrX_yoW5Wr1UpF
-	WDCw1kGryDWFsYyF1xJ348uFWSgws7tFW3uryDK34UAr90vryjvrykt3Z3A34DGrnrCFW0
-	g3yrWF4jg3WrAFXCm3ZEXasCq-sJn29KB7ZKAUJUUUUt529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUPlb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVCY1x0267AK
-	xVW8Jr0_Cr1UM2kKe7AKxVWUtVW8ZwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
-	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWr
-	XVW3AwAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwI
-	xGrwCYjI0SjxkI62AI1cAE67vIY487MxkF7I0En4kS14v26r4a6rW5MxAIw28IcxkI7VAK
-	I48JMxC20s026xCaFVCjc4AY6r1j6r4UMxCIbckI1I0E14v26r1q6r43MI8I3I0E5I8CrV
-	AFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWrXVW8Jr1l
-	IxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVW7JVWDJwCI42IY6xIIjxv20xvEc7CjxV
-	AFwI0_Cr0_Gr1UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWx
-	JVW8Jr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x07
-	jMeHDUUUUU=
-X-Mailman-Approved-At: Wed, 05 Jul 2023 11:46:39 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7bef5695-fa4a-7215-7e9d-d4a83161c7ab@google.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: hruV8AkSHZl3ANlxXk4XPZerf2HqhW4w
+X-Proofpoint-GUID: qjKoYY9T1h-a6Vm3seAHuVTkQEuDrdL1
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-04_16,2023-07-04_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
+ suspectscore=0 adultscore=0 impostorscore=0 priorityscore=1501 bulkscore=0
+ malwarescore=0 clxscore=1015 lowpriorityscore=0 mlxscore=0 spamscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307050058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,88 +103,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Rich Felker <dalias@libc.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev, linux-csky@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Zi Yan <ziy@nvidia.com>, Niklas Schnelle <schnelle@linux.ibm.com>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@kernel.org>, linux-mips@vger.kernel.org, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.or
- g, "Mike Rapoport \(IBM\)" <rppt@kernel.org>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashi
+ n@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sat, Jul 01, 2023 at 09:32:38PM -0700, Hugh Dickins wrote:
+> On Thu, 29 Jun 2023, Hugh Dickins wrote:
 
-On 2023/6/29 19:45, Thomas Zimmermann wrote:
-> Fix coding style. No functional changes.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Arnd Bergmann <arnd@kernel.org>
-> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-> Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-> Cc: Niklas Schnelle <schnelle@linux.ibm.com>
-> Cc: Zi Yan <ziy@nvidia.com>
-> Cc: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Hi Hugh,
 
-Reviewed-by: Sui Jingfeng <suijingfeng@loongson.cn>
+...
 
-> ---
->   arch/ia64/Kconfig | 4 ++--
->   arch/sh/Kconfig   | 6 +++---
->   2 files changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index 21fa63ce5ffc0..e79f15e32a451 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -260,7 +260,7 @@ config PERMIT_BSP_REMOVE
->   	default n
->   	help
->   	Say Y here if your platform SAL will support removal of BSP with HOTPLUG_CPU
-> -	support.
-> +	support.
->   
->   config FORCE_CPEI_RETARGET
->   	bool "Force assumption that CPEI can be re-targeted"
-> @@ -335,7 +335,7 @@ config IA64_PALINFO
->   config IA64_MC_ERR_INJECT
->   	tristate "MC error injection support"
->   	help
-> -	  Adds support for MC error injection. If enabled, the kernel
-> +	  Adds support for MC error injection. If enabled, the kernel
->   	  will provide a sysfs interface for user applications to
->   	  call MC error injection PAL procedures to inject various errors.
->   	  This is a useful tool for MCA testing.
-> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-> index 9652d367fc377..04b9550cf0070 100644
-> --- a/arch/sh/Kconfig
-> +++ b/arch/sh/Kconfig
-> @@ -234,7 +234,7 @@ config CPU_SUBTYPE_SH7201
->   	select CPU_SH2A
->   	select CPU_HAS_FPU
->   	select SYS_SUPPORTS_SH_MTU2
-> -
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
+> +{
+> +	struct page *page;
+
+If I got your and Claudio conversation right, you were going to add
+here WARN_ON_ONCE() in case of mm_alloc_pgste(mm)?
+
+> +	page = virt_to_page(pgtable);
+> +	SetPageActive(page);
+> +	page_table_free(mm, (unsigned long *)pgtable);
+> +}
+> +#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 > +
->   config CPU_SUBTYPE_SH7203
->   	bool "Support SH7203 processor"
->   	select CPU_SH2A
-> @@ -496,7 +496,7 @@ config CPU_SUBTYPE_SH7366
->   endchoice
->   
->   source "arch/sh/mm/Kconfig"
-> -
-> +
->   source "arch/sh/Kconfig.cpu"
->   
->   source "arch/sh/boards/Kconfig"
-> @@ -647,7 +647,7 @@ config GUSA
->   	  This is the default implementation for both UP and non-ll/sc
->   	  CPUs, and is used by the libc, amongst others.
->   
-> -	  For additional information, design information can be found
-> +	  For additional information, design information can be found
->   	  in <http://lc.linux.or.jp/lc2002/papers/niibe0919p.pdf>.
->   
->   	  This should only be disabled for special cases where alternate
+>  /*
+>   * Base infrastructure required to generate basic asces, region, segment,
+>   * and page tables that do not make use of enhanced features like EDAT1.
 
+Thanks!
