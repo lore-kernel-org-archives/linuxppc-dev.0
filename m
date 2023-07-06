@@ -4,136 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6080DEB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 00:56:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 497C5EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 01:09:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nET3i8K9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DnstPRiH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QxJ4K5BrGz3bvY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 10:56:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QxJN530jmz3bx1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 11:09:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nET3i8K9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DnstPRiH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jlayton@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QxGxW6c1lz2yDL;
-	Thu,  6 Jul 2023 10:05:03 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QxJM4332Tz2ywt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 11:08:48 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3660on1B024966;
+	Thu, 6 Jul 2023 01:08:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=edQ8vgcM9tLrKdOXS2pWJ7NAC770/4d60hdzot4KJUM=;
+ b=DnstPRiHiVbzsAMrc6E6i+pa8dYp5ZSeE8yEWcQBkmt6WNdddjAPIp/95HbmfhgwzhCT
+ TOV4qW4gdkna/GaShJF+GC9h+XgayLhCdEPtmXRyx0qrcCcUw4QVzeYiEqePPhAK6whg
+ tHnYAjRZnjqzLC2IVTQVA/5FCgv8xSYVeRDjpXu1F4gSh56zkdSom2vZsRY51R9AeLqq
+ YW62DW+1zt7it6pAqKk+lg1zLUoo9gKTAQ9JXP/d6Gos9prQ5ZdLl7lfGo0qsbG8/U8M
+ O9Cf4KvPrl7qnXkw4XKpfWnVoDuHa/Sh0mQ237GdM1s1BXCKAMOdA4nMSs5vOCk40l7N Cw== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rnke98eej-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 06 Jul 2023 01:08:42 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 365NGrJ8007412;
+	Thu, 6 Jul 2023 01:08:39 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3rjbs4u2a1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 06 Jul 2023 01:08:39 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36618bKx58720716
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 6 Jul 2023 01:08:37 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5D1D120043;
+	Thu,  6 Jul 2023 01:08:37 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D8FBF20040;
+	Thu,  6 Jul 2023 01:08:36 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  6 Jul 2023 01:08:36 +0000 (GMT)
+Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E16B9617A4;
-	Thu,  6 Jul 2023 00:05:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77F7BC433C8;
-	Thu,  6 Jul 2023 00:04:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1688601900;
-	bh=GKAf3Connag2H1A96+MWJO2m2+AGoi4e2L0TCmV0twI=;
-	h=Subject:From:To:Date:In-Reply-To:References:From;
-	b=nET3i8K9cAN9JzAYu5D5DtIfnZyBNqxFT5kCHd94dYOZfZeH8zavR0WF9u4ITY0NE
-	 D66ZLzqp4+stDYQ/wxgM6SsxM/mS2+y3IUBNv7xe18KIH1uVzQrdLce3r3dWIKwzol
-	 tzsq2RPKrA+bg24p5zLD3xKS/7A/1zvUDDnXMEpHEaKwvlUXOn9bI/FS6RRj0UTu+c
-	 vTGpq6dtXG1Xauh+ol1hFuB35FDh/rjrnsJWBkr2MVf6wx5gZoGZefJEl0qBVioA6j
-	 WnKwlad8ofPwwEPXaYXs/neOdGw/YH9YOfEVdEl8lvP9rCQ6lvqx2NeiiLr9bjccc4
-	 eOxUKsWaspoTQ==
-Message-ID: <7c783969641b67d6ffdfb10e509f382d083c5291.camel@kernel.org>
-Subject: Re: [PATCH v2 08/92] fs: new helper: simple_rename_timestamp
-From: Jeff Layton <jlayton@kernel.org>
-To: Damien Le Moal <dlemoal@kernel.org>, jk@ozlabs.org, arnd@arndb.de, 
- mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, 
- hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
- borntraeger@linux.ibm.com, svens@linux.ibm.com, gregkh@linuxfoundation.org,
-  arve@android.com, tkjos@android.com, maco@android.com,
- joel@joelfernandes.org,  brauner@kernel.org, cmllamas@google.com,
- surenb@google.com,  dennis.dalessandro@cornelisnetworks.com, jgg@ziepe.ca,
- leon@kernel.org,  bwarrum@linux.ibm.com, rituagar@linux.ibm.com,
- ericvh@kernel.org, lucho@ionkov.net,  asmadeus@codewreck.org,
- linux_oss@crudebyte.com, dsterba@suse.com,  dhowells@redhat.com,
- marc.dionne@auristor.com, viro@zeniv.linux.org.uk,  raven@themaw.net,
- luisbg@kernel.org, salah.triki@gmail.com,  aivazian.tigran@gmail.com,
- ebiederm@xmission.com, keescook@chromium.org,  clm@fb.com,
- josef@toxicpanda.com, xiubli@redhat.com, idryomov@gmail.com, 
- jaharkes@cs.cmu.edu, coda@cs.cmu.edu, jlbec@evilplan.org, hch@lst.de, 
- nico@fluxnic.net, rafael@kernel.org, code@tyhicks.com, ardb@kernel.org, 
- xiang@kernel.org, chao@kernel.org, huyue2@coolpad.com,
- jefflexu@linux.alibaba.com,  linkinjeon@kernel.org, sj1557.seo@samsung.com,
- jack@suse.com, tytso@mit.edu,  adilger.kernel@dilger.ca,
- jaegeuk@kernel.org, hirofumi@mail.parknet.co.jp,  miklos@szeredi.hu,
- rpeterso@redhat.com, agruenba@redhat.com, richard@nod.at, 
- anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net, 
- mikulas@artax.karlin.mff.cuni.cz, mike.kravetz@oracle.com,
- muchun.song@linux.dev,  dwmw2@infradead.org, shaggy@kernel.org,
- tj@kernel.org,  trond.myklebust@hammerspace.com, anna@kernel.org,
- chuck.lever@oracle.com,  neilb@suse.de, kolga@netapp.com,
- Dai.Ngo@oracle.com, tom@talpey.com,  konishi.ryusuke@gmail.com,
- anton@tuxera.com,  almaz.alexandrovich@paragon-software.com,
- mark@fasheh.com,  joseph.qi@linux.alibaba.com, me@bobcopeland.com,
- hubcap@omnibond.com,  martin@omnibond.com, amir73il@gmail.com,
- mcgrof@kernel.org, yzaikin@google.com,  tony.luck@intel.com,
- gpiccoli@igalia.com, al@alarsen.net, sfrench@samba.org,  pc@manguebit.com,
- lsahlber@redhat.com, sprasad@microsoft.com,  senozhatsky@chromium.org,
- phillip@squashfs.org.uk, rostedt@goodmis.org,  mhiramat@kernel.org,
- dushistov@mail.ru, hdegoede@redhat.com, djwong@kernel.org, 
- naohiro.aota@wdc.com, jth@kernel.org, ast@kernel.org, daniel@iogearbox.net,
-  andrii@kernel.org, martin.lau@linux.dev, song@kernel.org, yhs@fb.com, 
- john.fastabend@gmail.com, kpsingh@kernel.org, sdf@google.com,
- haoluo@google.com,  jolsa@kernel.org, hughd@google.com,
- akpm@linux-foundation.org, davem@davemloft.net,  edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com,  john.johansen@canonical.com,
- paul@paul-moore.com, jmorris@namei.org,  serge@hallyn.com,
- stephen.smalley.work@gmail.com, eparis@parisplace.org,  jgross@suse.com,
- stern@rowland.harvard.edu, lrh2000@pku.edu.cn, 
- sebastian.reichel@collabora.com, wsa+renesas@sang-engineering.com, 
- quic_ugoswami@quicinc.com, quic_linyyuan@quicinc.com, john@keeping.me.uk, 
- error27@gmail.com, quic_uaggarwa@quicinc.com, hayama@lineo.co.jp,
- jomajm@gmail.com,  axboe@kernel.dk, dhavale@google.com,
- dchinner@redhat.com, hannes@cmpxchg.org,  zhangpeng362@huawei.com,
- slava@dubeyko.com, gargaditya08@live.com, 
- penguin-kernel@I-love.SAKURA.ne.jp, yifeliu@cs.stonybrook.edu, 
- madkar@cs.stonybrook.edu, ezk@cs.stonybrook.edu, yuzhe@nfschina.com, 
- willy@infradead.org, okanatov@gmail.com, jeffxu@chromium.org,
- linux@treblig.org,  mirimmad17@gmail.com, yijiangshan@kylinos.cn,
- yang.yang29@zte.com.cn,  xu.xin16@zte.com.cn, chengzhihao1@huawei.com,
- shr@devkernel.io,  Liam.Howlett@Oracle.com, adobriyan@gmail.com,
- chi.minghao@zte.com.cn,  roberto.sassu@huawei.com, linuszeng@tencent.com,
- bvanassche@acm.org,  zohar@linux.ibm.com, yi.zhang@huawei.com,
- trix@redhat.com, fmdefrancesco@gmail.com,  ebiggers@google.com,
- princekumarmaurya06@gmail.com, chenzhongjin@huawei.com,  riel@surriel.com,
- shaozhengchao@huawei.com, jingyuwang_vip@163.com, 
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- linux-s390@vger.kernel.org, linux-rdma@vger.kernel.org, 
- linux-usb@vger.kernel.org, v9fs@lists.linux.dev,
- linux-fsdevel@vger.kernel.org,  linux-afs@lists.infradead.org,
- autofs@vger.kernel.org, linux-mm@kvack.org,  linux-btrfs@vger.kernel.org,
- ceph-devel@vger.kernel.org,  codalist@coda.cs.cmu.edu,
- ecryptfs@vger.kernel.org, linux-efi@vger.kernel.org, 
- linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org, 
- linux-f2fs-devel@lists.sourceforge.net, cluster-devel@redhat.com, 
- linux-um@lists.infradead.org, linux-mtd@lists.infradead.org, 
- jfs-discussion@lists.sourceforge.net, linux-nfs@vger.kernel.org, 
- linux-nilfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, 
- ntfs3@lists.linux.dev, ocfs2-devel@lists.linux.dev, 
- linux-karma-devel@lists.sourceforge.net, devel@lists.orangefs.org, 
- linux-unionfs@vger.kernel.org, linux-hardening@vger.kernel.org, 
- reiserfs-devel@vger.kernel.org, linux-cifs@vger.kernel.org, 
- samba-technical@lists.samba.org, linux-trace-kernel@vger.kernel.org, 
- linux-xfs@vger.kernel.org, bpf@vger.kernel.org, netdev@vger.kernel.org, 
- apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
- selinux@vger.kernel.org
-Date: Wed, 05 Jul 2023 20:04:41 -0400
-In-Reply-To: <3b403ef1-22e6-0220-6c9c-435e3444b4d3@kernel.org>
-References: <20230705185812.579118-1-jlayton@kernel.org>
-	 <20230705185812.579118-3-jlayton@kernel.org>
-	 <3b403ef1-22e6-0220-6c9c-435e3444b4d3@kernel.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 48291600D2;
+	Thu,  6 Jul 2023 11:08:35 +1000 (AEST)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powermac: Use early_* IO variants in via_calibrate_decr
+Date: Thu,  6 Jul 2023 11:08:16 +1000
+Message-ID: <20230706010816.72682-1-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-X-Mailman-Approved-At: Thu, 06 Jul 2023 10:55:13 +1000
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: bbpt1WbuTp2Y0uvCa-ieCLKILOvnySSy
+X-Proofpoint-ORIG-GUID: bbpt1WbuTp2Y0uvCa-ieCLKILOvnySSy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-05_11,2023-07-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
+ spamscore=0 impostorscore=0 lowpriorityscore=0 malwarescore=0
+ mlxlogscore=600 bulkscore=0 suspectscore=0 priorityscore=1501 mlxscore=0
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307060007
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -145,158 +91,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2023-07-06 at 08:19 +0900, Damien Le Moal wrote:
-> On 7/6/23 03:58, Jeff Layton wrote:
-> > A rename potentially involves updating 4 different inode timestamps. Ad=
-d
-> > a function that handles the details sanely, and convert the libfs.c
-> > callers to use it.
-> >=20
-> > Signed-off-by: Jeff Layton <jlayton@kernel.org>
-> > ---
-> >  fs/libfs.c         | 36 +++++++++++++++++++++++++++---------
-> >  include/linux/fs.h |  2 ++
-> >  2 files changed, 29 insertions(+), 9 deletions(-)
-> >=20
-> > diff --git a/fs/libfs.c b/fs/libfs.c
-> > index a7e56baf8bbd..9ee79668c909 100644
-> > --- a/fs/libfs.c
-> > +++ b/fs/libfs.c
-> > @@ -692,6 +692,31 @@ int simple_rmdir(struct inode *dir, struct dentry =
-*dentry)
-> >  }
-> >  EXPORT_SYMBOL(simple_rmdir);
-> > =20
-> > +/**
-> > + * simple_rename_timestamp - update the various inode timestamps for r=
-ename
-> > + * @old_dir: old parent directory
-> > + * @old_dentry: dentry that is being renamed
-> > + * @new_dir: new parent directory
-> > + * @new_dentry: target for rename
-> > + *
-> > + * POSIX mandates that the old and new parent directories have their c=
-time and
-> > + * mtime updated, and that inodes of @old_dentry and @new_dentry (if a=
-ny), have
-> > + * their ctime updated.
-> > + */
-> > +void simple_rename_timestamp(struct inode *old_dir, struct dentry *old=
-_dentry,
-> > +			     struct inode *new_dir, struct dentry *new_dentry)
-> > +{
-> > +	struct inode *newino =3D d_inode(new_dentry);
-> > +
-> > +	old_dir->i_mtime =3D inode_set_ctime_current(old_dir);
-> > +	if (new_dir !=3D old_dir)
-> > +		new_dir->i_mtime =3D inode_set_ctime_current(new_dir);
-> > +	inode_set_ctime_current(d_inode(old_dentry));
-> > +	if (newino)
-> > +		inode_set_ctime_current(newino);
-> > +}
-> > +EXPORT_SYMBOL_GPL(simple_rename_timestamp);
-> > +
-> >  int simple_rename_exchange(struct inode *old_dir, struct dentry *old_d=
-entry,
-> >  			   struct inode *new_dir, struct dentry *new_dentry)
-> >  {
-> > @@ -707,11 +732,7 @@ int simple_rename_exchange(struct inode *old_dir, =
-struct dentry *old_dentry,
-> >  			inc_nlink(old_dir);
-> >  		}
-> >  	}
-> > -	old_dir->i_ctime =3D old_dir->i_mtime =3D
-> > -	new_dir->i_ctime =3D new_dir->i_mtime =3D
-> > -	d_inode(old_dentry)->i_ctime =3D
-> > -	d_inode(new_dentry)->i_ctime =3D current_time(old_dir);
-> > -
-> > +	simple_rename_timestamp(old_dir, old_dentry, new_dir, new_dentry);
->=20
-> This is somewhat changing the current behavior: before the patch, the mti=
-me and
-> ctime of old_dir, new_dir and the inodes associated with the dentries are=
- always
-> equal. But given that simple_rename_timestamp() calls inode_set_ctime_cur=
-rent()
-> 4 times, the times could potentially be different.
->=20
-> I am not sure if that is an issue, but it seems that calling
-> inode_set_ctime_current() once, recording the "now" time it sets and usin=
-g that
-> value to set all times may be more efficient and preserve the existing be=
-havior.
->=20
+On a powermac platform, under the call path
 
-I don't believe it's an issue. I've seen nothing in the POSIX spec that
-mandates that timestamp updates to different inodes involved in an
-operation be set to the _same_ value. It just says they must be updated.
+  start_kernel
+   time_init
+    ppc_md.calibrate_decr (pmac_calibrate_decr)
+     via_calibrate_decr
 
-It's also hard to believe that any software would depend on this either,
-given that it's very inconsistent across filesystems today. AFAICT, this
-was mostly done in the past just as a matter of convenience.
+we run ioremap and iounmap. The unmap can enable interrupts
+unexpectedly (cond_resched in vunmap_pmd_range), which is warned about
+later in the boot sequence in start_kernel.
 
-The other problem with doing it that way is that it assumes that
-current_time(inode) should always return the same value when given
-different inodes. Is it really correct to do this?
+Use the early_* variants of these IO functions to prevent this.
 
-	inode_set_ctime(dir, inode_set_ctime_current(inode));
+The issue is pre-existing, but is surfaced by commit 721255b9826b
+("genirq: Use a maple tree for interrupt descriptor management").
+It's not clear to me why this causes it to surface.
 
-"dir" and "inode" are different inodes, after all, and you're setting
-dir's timestamp to "inode"'s value. It's not a big deal today since
-they're always on the same sb, but the ultimate goal of these changes is
-to implement multigrain timestamps. That will mean that fetching a fine-
-grained timestamp for an update when the existing mtime or ctime value
-has been queried via getattr.
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+---
+ arch/powerpc/platforms/powermac/time.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-With that change, I think it's best that we treat updates to different
-inodes individually, as some of them may require updating with a fine-
-grained timestamp and some may not.
+diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
+index 4c5790aff1b5..8633891b7aa5 100644
+--- a/arch/powerpc/platforms/powermac/time.c
++++ b/arch/powerpc/platforms/powermac/time.c
+@@ -26,8 +26,8 @@
+ #include <linux/rtc.h>
+ #include <linux/of_address.h>
+ 
++#include <asm/early_ioremap.h>
+ #include <asm/sections.h>
+-#include <asm/io.h>
+ #include <asm/machdep.h>
+ #include <asm/time.h>
+ #include <asm/nvram.h>
+@@ -182,7 +182,7 @@ static int __init via_calibrate_decr(void)
+ 		return 0;
+ 	}
+ 	of_node_put(vias);
+-	via = ioremap(rsrc.start, resource_size(&rsrc));
++	via = early_ioremap(rsrc.start, resource_size(&rsrc));
+ 	if (via == NULL) {
+ 		printk(KERN_ERR "Failed to map VIA for timer calibration !\n");
+ 		return 0;
+@@ -207,7 +207,7 @@ static int __init via_calibrate_decr(void)
+ 
+ 	ppc_tb_freq = (dstart - dend) * 100 / 6;
+ 
+-	iounmap(via);
++	early_iounmap((void *)via, resource_size(&rsrc));
+ 
+ 	return 1;
+ }
+-- 
+2.41.0
 
-> >  	return 0;
-> >  }
-> >  EXPORT_SYMBOL_GPL(simple_rename_exchange);
-> > @@ -720,7 +741,6 @@ int simple_rename(struct mnt_idmap *idmap, struct i=
-node *old_dir,
-> >  		  struct dentry *old_dentry, struct inode *new_dir,
-> >  		  struct dentry *new_dentry, unsigned int flags)
-> >  {
-> > -	struct inode *inode =3D d_inode(old_dentry);
-> >  	int they_are_dirs =3D d_is_dir(old_dentry);
-> > =20
-> >  	if (flags & ~(RENAME_NOREPLACE | RENAME_EXCHANGE))
-> > @@ -743,9 +763,7 @@ int simple_rename(struct mnt_idmap *idmap, struct i=
-node *old_dir,
-> >  		inc_nlink(new_dir);
-> >  	}
-> > =20
-> > -	old_dir->i_ctime =3D old_dir->i_mtime =3D new_dir->i_ctime =3D
-> > -		new_dir->i_mtime =3D inode->i_ctime =3D current_time(old_dir);
-> > -
-> > +	simple_rename_timestamp(old_dir, old_dentry, new_dir, new_dentry);
-> >  	return 0;
-> >  }
-> >  EXPORT_SYMBOL(simple_rename);
-> > diff --git a/include/linux/fs.h b/include/linux/fs.h
-> > index bdfbd11a5811..14e38bd900f1 100644
-> > --- a/include/linux/fs.h
-> > +++ b/include/linux/fs.h
-> > @@ -2979,6 +2979,8 @@ extern int simple_open(struct inode *inode, struc=
-t file *file);
-> >  extern int simple_link(struct dentry *, struct inode *, struct dentry =
-*);
-> >  extern int simple_unlink(struct inode *, struct dentry *);
-> >  extern int simple_rmdir(struct inode *, struct dentry *);
-> > +void simple_rename_timestamp(struct inode *old_dir, struct dentry *old=
-_dentry,
-> > +			     struct inode *new_dir, struct dentry *new_dentry);
-> >  extern int simple_rename_exchange(struct inode *old_dir, struct dentry=
- *old_dentry,
-> >  				  struct inode *new_dir, struct dentry *new_dentry);
-> >  extern int simple_rename(struct mnt_idmap *, struct inode *,
->=20
-
---=20
-Jeff Layton <jlayton@kernel.org>
