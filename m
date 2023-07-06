@@ -4,36 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBD33EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 13:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51BD3EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 13:24:38 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=E7s/Y1ty;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qxcfs3jsWz3cc6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 23:23:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fatal.se (client-ip=2001:470:1f04:f16::2; helo=pi.fatal.se; envelope-from=ah@fatal.se; receiver=lists.ozlabs.org)
-X-Greylist: delayed 13597 seconds by postgrey-1.37 at boromir; Thu, 06 Jul 2023 22:34:07 AEST
-Received: from pi.fatal.se (andreasfatal-1-pt.tunnel.tserv3.fmt2.ipv6.he.net [IPv6:2001:470:1f04:f16::2])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QxbYq3ccRz3bqh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 22:34:05 +1000 (AEST)
-Received: by pi.fatal.se (Postfix, from userid 1000)
-	id E76412A8E0; Thu,  6 Jul 2023 14:34:01 +0200 (CEST)
-Date: Thu, 6 Jul 2023 14:34:01 +0200
-From: Andreas Henriksson <andreas@fatal.se>
-To: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Enable MCTL_MCLK_EN bit for master mode
-Message-ID: <20230706123401.kctossjho26bry7e@fatal.se>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qxch44sMnz3cgF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 23:24:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=E7s/Y1ty;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=festevam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qxcdc0qdSz3cM4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 23:22:27 +1000 (AEST)
+Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-682ae5d4184so146482b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2023 06:22:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1688649744; x=1691241744;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=U+D+QKK+V9y/nBwFyOGwDPW6/JU+V8a2ffx9sQ1ifyI=;
+        b=E7s/Y1ty/VDpvP5mnN9k487LRb7Hk9ZnjhLCuopgu77+FR0Sj7RjoF7VVwK9F+XhtU
+         luETDyvizGQdrKnIui4DnmxetSyME8aO+UybjP2VJFOB0mC2dlMr/x0MKPHBmG7R2Hwe
+         fFH9oBBOAoSdOHSLNgqzwwTVGY3xOl+8JaoIn0Cr+kWvmOa2hMDYqLsUJLw3hq0QNTAN
+         ZkkzgIzRrqSBmfEOaKIXoWwNEUBUI9nfmW8XyY7rsELySVd5pkoIDYQWxrjWRdMnhZoS
+         isob8hZQSGU91B30eC/raUtaaKbMlCBwT5LXLzhQto/gVkqrsWS2xiPGlsF33Psqtf4u
+         pRJw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688649744; x=1691241744;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=U+D+QKK+V9y/nBwFyOGwDPW6/JU+V8a2ffx9sQ1ifyI=;
+        b=F9d6dRPLKc4D8x2I2N/BKEVxcPj8J/qAgojMzDnnKdDClq/oPb5W4fyrOy6m6i20TO
+         Oiec34CIknrvs60JxX885hbqZ31JGbIazPAkALC6ssTzKguV/MgMwZPeCQdtZQyjv8x+
+         iiIELfs2c8ar5ZC/goiMBF8R3gkZYrcais0oLa9baaDcIKaS9a1KOHl2+AUM9/gHxefo
+         2xAieD191ro7jZIozOB6Ohk9xPTRSsGeQ5huTc/jfpkrOP7HMDkL6wIP+Vx4XL2qVrF9
+         9uDqfUKKHh0Sk3zY0VbGBzu+bwhmNzGg3IxwbnHqR94y+E75ngGrvPoFnOXwpltrpNND
+         qhVQ==
+X-Gm-Message-State: ABy/qLb/ByVWaG637r91s2vV+DEwTNIytrSv6Dg58qS3rRX2cw0+22Sr
+	wWZQEgE6pgxM5vZ8j4/IGXVWsyLxpzAHKX7FaSA=
+X-Google-Smtp-Source: APBJJlFCKu7vaNfYYwvzzuc2kPB8Td6VMbpcT9KZ8a0UyW1X9PGMU8ri8DNniH1sa/11VCC1WLJc0mpnsXXsJuT0Id8=
+X-Received: by 2002:aa7:8815:0:b0:67f:7403:1fe8 with SMTP id
+ c21-20020aa78815000000b0067f74031fe8mr2110292pfo.3.1688649743851; Thu, 06 Jul
+ 2023 06:22:23 -0700 (PDT)
+MIME-Version: 1.0
 References: <1652963808-14515-1-git-send-email-shengjiu.wang@nxp.com>
  <CAOMZO5DtpoH0dLDX3=Sv4UUpX_=66VEZPsJUWQNnYviApfMLKQ@mail.gmail.com>
- <20230706084706.bzwsbi3zisx5m5rl@fatal.se>
- <CAOMZO5CCdaodWQrHUQgMizoES=jfEtw-sNJZG-DJMpRD8tZW9g@mail.gmail.com>
+ <20230706084706.bzwsbi3zisx5m5rl@fatal.se> <CAOMZO5CCdaodWQrHUQgMizoES=jfEtw-sNJZG-DJMpRD8tZW9g@mail.gmail.com>
  <CAA+D8ANAg7bs0A35c7Af3_-5sLaqvT1RoKfCbzYi=z=t_q9LUw@mail.gmail.com>
- <CAOMZO5BtrKwrMwrjVDbYn3ivt2uV9rzbSDxd8qfiYjOBMvKBgg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAOMZO5BtrKwrMwrjVDbYn3ivt2uV9rzbSDxd8qfiYjOBMvKBgg@mail.gmail.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
-X-Mailman-Approved-At: Thu, 06 Jul 2023 23:17:34 +1000
+ <CAOMZO5BtrKwrMwrjVDbYn3ivt2uV9rzbSDxd8qfiYjOBMvKBgg@mail.gmail.com> <20230706123401.kctossjho26bry7e@fatal.se>
+In-Reply-To: <20230706123401.kctossjho26bry7e@fatal.se>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Thu, 6 Jul 2023 10:22:12 -0300
+Message-ID: <CAOMZO5AFjS+aGjHTYCvPO86ypXfcFnuKmU2qHZNTyDSQPxRHjQ@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Enable MCTL_MCLK_EN bit for master mode
+To: Andreas Henriksson <andreas@fatal.se>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,66 +79,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Hans =?iso-8859-1?Q?S=F6derlund?= <hans.soderlund@realbit.se>, Shengjiu Wang <shengjiu.wang@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, =?UTF-8?Q?Hans_S=C3=B6derlund?= <hans.soderlund@realbit.se>, Shengjiu Wang <shengjiu.wang@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Fabio,
+Hi Andreas,
 
-Maybe I shouldn't comment as I'm already on deep water, but...
+On Thu, Jul 6, 2023 at 9:34=E2=80=AFAM Andreas Henriksson <andreas@fatal.se=
+> wrote:
 
-On Thu, Jul 06, 2023 at 08:32:57AM -0300, Fabio Estevam wrote:
-> On Thu, Jul 6, 2023 at 8:19 AM Shengjiu Wang <shengjiu.wang@gmail.com> wrote:
-> 
-> > No, this is the code in probe().
-> > The code with the issue is in fsl_sai_set_bclk().
-> 
-> Yes, I put it in the wrong place.
-> 
-> > The clean way for fixing is to remove the code in fsl_sai_set_bclk()
-> > and add "fsl,sai-mclk-direction-output;" property in dts for some
-> > node.
-> 
-> Yes, what about this?
-> 
-> --- a/sound/soc/fsl/fsl_sai.c
-> +++ b/sound/soc/fsl/fsl_sai.c
-> @@ -507,7 +507,7 @@ static int fsl_sai_set_bclk(struct snd_soc_dai
-> *dai, bool tx, u32 freq)
->                                    savediv / 2 - 1);
->         }
-> 
-> -       if (sai->soc_data->max_register >= FSL_SAI_MCTL) {
-> +       if (sai->soc_data->max_register >= FSL_SAI_MCTL  &&
-> sai->mclk_direction_output) {
->                 /* SAI is in master mode at this point, so enable MCLK */
->                 regmap_update_bits(sai->regmap, FSL_SAI_MCTL,
->                                    FSL_SAI_MCTL_MCLK_EN, FSL_SAI_MCTL_MCLK_EN);
+> I think your initial review comment was spot on Fabio. There probably
+> needs to be a(n imx8mm) specific flag that says when this workaround
+> should be applied and gate the code in bclk function on that.
+> Atleast that's the only thing I can think of if my interpretation of the
+> problem for imx8mm is correct.
 
-This is exactly the same as and thus redundant to the code already in
-the probe function?!
+Yes, deciding whether MCLK_EN should act as a clock gate based on
+the number of SAI registers seems fragile to me.
 
-If I understood it correctly, the problem Shengjiu was trying to adress
-was that apparently on i.MX8MM (and only imx8mm?!), even when using MCLK
-in *input*, you still need to enable it because otherwise BCLK will not
-be generated. (I personally don't know anything about this or the imx8mm
-variant though.)
+I have sent a proposal as RFC. Please give it a try if you have a chance.
 
-The problem could probably equally well be worked around by always setting the
-fsl,sai-mclk-direction-output; devicetree property on imx8mm, even when
-using MCLK in input..... But I'm just guessing here to be honest. This
-is just as I understood what purpose the initial patch that was merged
-had.
+I would like Shengjiu to confirm if imx8mn and imx93 should also
+behave like imx8mm in this aspect.
 
-The current state affects more devices than imx8mm though, making MCLK
-in input mode not possible.
-
-I think your initial review comment was spot on Fabio. There probably
-needs to be a(n imx8mm) specific flag that says when this workaround
-should be applied and gate the code in bclk function on that.
-Atleast that's the only thing I can think of if my interpretation of the
-problem for imx8mm is correct.
-
-Regards,
-Andreas Henriksson
-
+Cheers
