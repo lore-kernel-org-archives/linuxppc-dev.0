@@ -4,102 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DC5FEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 13:00:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88846EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 13:18:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A2jNE7QT;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nilc+KBP;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=t-8ch.de header.i=@t-8ch.de header.a=rsa-sha256 header.s=mail header.b=YPx73hGj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qxc831H98z2yyT
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 23:00:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QxcXt3cl0z3c44
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jul 2023 23:18:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A2jNE7QT;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nilc+KBP;
+	dkim=pass (1024-bit key; unprotected) header.d=t-8ch.de header.i=@t-8ch.de header.a=rsa-sha256 header.s=mail header.b=YPx73hGj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=t-8ch.de (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=thomas@t-8ch.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 432 seconds by postgrey-1.37 at boromir; Thu, 06 Jul 2023 16:41:37 AEST
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qxc716hCMz3bpK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 22:59:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1688648361;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=wlvbOLsD2Ke5G2QGVtKNYNTugeQY+Twg0zjBwi69P3g=;
-	b=A2jNE7QTOajGuBelvC9P/ZoFdKrewNpSXYWGYZ2a1+lXuIR1wlWk10CYoHMaa0E9x7V5OI
-	vGpQDDFqn9CQGDbVQrZ9v761kDIyAOr2A5ga+RPlLZkMoXr5sHOCYhA/i65Vu+aeH7VIJS
-	4MgS2d7qzAvhtZHyMdGZujJquevBNJo=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1688648362;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=wlvbOLsD2Ke5G2QGVtKNYNTugeQY+Twg0zjBwi69P3g=;
-	b=Nilc+KBP76ahEG4+MDUHEpCOlC9+7pu8EeipRx3LvG2ymJ9+6EWZootnAYiWqhS8+zOTjz
-	0MmqCOcc7dbY/0fKAYQjljvsXr64qLZGcxabsIR3VK4P5f/fl+PH2ecUaB+uH3Yecn7eZB
-	aCeuvazZkjP/jm0M02qXoxSPejCiK/0=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-562-Gd6wSTHoNPu_2MulNtmvyg-1; Thu, 06 Jul 2023 08:59:18 -0400
-X-MC-Unique: Gd6wSTHoNPu_2MulNtmvyg-1
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-3fbdf34184eso4135735e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2023 05:59:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688648357; x=1691240357;
-        h=content-transfer-encoding:in-reply-to:subject:organization:from
-         :references:cc:to:content-language:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=wlvbOLsD2Ke5G2QGVtKNYNTugeQY+Twg0zjBwi69P3g=;
-        b=Mm67Y9657i8n0AXkXlV3Si5XoXWSQycXIOh3pMY3hoAAjMPQSFdn4iRMUrnIi1kAk1
-         Nk2N9cNLR9Yj2knhsJUKF5XBTZKw6LJMvKPZQ6KwIa/Djq7Upo663oL42MEj3QzqWjm9
-         3BlfP4w2I+RTt8yMdFNV+6K8nEIqdEyMj/U+2KEoVbndZmz70ZV9kc06TRc0D8ySvt2H
-         QHoBRRWRCxnRD/KxfGuBoM0/dwZlXcDcOHeQAneULcO5ppC2qUnMzYZS5iZUaw2z/B9X
-         xDP1o3TjqHGeeVZOBPpdokJ6YyWVH06WOs1x5VfH7pLCxkppr9C7lzP8b4UBl27ChMt9
-         PUbQ==
-X-Gm-Message-State: ABy/qLY4KfPaKIBNP7Ye/+oOoWrNRbCEhTs3FJIp//adWOOFo0FWdmrW
-	LuhuMKVseQG2QobGx3LcNHZYo/p05EkK2ez+Jp8pzkUEc06yqtoN8VDktUTnZA4TefsyIap3bIQ
-	c6ORN8+wojTIjK3rmNDCTokgJTg==
-X-Received: by 2002:a1c:7410:0:b0:3f7:3699:c294 with SMTP id p16-20020a1c7410000000b003f73699c294mr1356194wmc.29.1688648357428;
-        Thu, 06 Jul 2023 05:59:17 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlEyKu727UsEqrmzpqu0iRg6TTkG6pBIpaeV4FZ5WWoAR+u1BpyUeV3Y7MLcJrozliOYt23XfA==
-X-Received: by 2002:a1c:7410:0:b0:3f7:3699:c294 with SMTP id p16-20020a1c7410000000b003f73699c294mr1356179wmc.29.1688648356999;
-        Thu, 06 Jul 2023 05:59:16 -0700 (PDT)
-Received: from ?IPV6:2a09:80c0:192:0:5dac:bf3d:c41:c3e7? ([2a09:80c0:192:0:5dac:bf3d:c41:c3e7])
-        by smtp.gmail.com with ESMTPSA id v19-20020a1cf713000000b003fbb00599e4sm5114363wmh.2.2023.07.06.05.59.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 06 Jul 2023 05:59:16 -0700 (PDT)
-Message-ID: <256bd2f0-1b77-26dc-6393-b26dd363912f@redhat.com>
-Date: Thu, 6 Jul 2023 14:59:15 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QxRl55smbz308W
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2023 16:41:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=t-8ch.de; s=mail;
+	t=1688625246; bh=wGh8sC6IYBYdKxlAz7SbNdKF40ye/5pg3jNi0szIZdE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YPx73hGjeInNwO8XW9YDw/0029Hl2CRVsf3+EbiYq9NJKba3B0wDjph7Wb4wbkhvx
+	 HSd+Wbs2wcVsfrDiBrP4zGaNOJkMyDayMjNbnCLhuPBB4LH6gEB9CnO/W99Oq4gzmr
+	 R/QxSRHb9Fy7oWFhaPvScKavywLnmvlrZ6TsMVW0=
+Date: Thu, 6 Jul 2023 08:34:05 +0200
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas@t-8ch.de>
+To: Sachin Sant <sachinp@linux.ibm.com>
+Subject: Re: [next-20230705] kernel BUG mm/memcontrol.c:3715! (ltp/madvise06)
+Message-ID: <24c0f417-6577-48e6-8eb4-c37be11c5fbb@t-8ch.de>
+References: <7DF50AC5-83AC-4EE1-9422-62D1EA378EE9@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
-References: <20230706085041.826340-1-aneesh.kumar@linux.ibm.com>
- <20230706085041.826340-2-aneesh.kumar@linux.ibm.com>
- <72488b8a-8f1e-c652-ab48-47e38290441f@redhat.com>
- <996e226a-2835-5b53-2255-2005c6335f98@linux.ibm.com>
- <e975f02b-1d35-8f22-9f3a-dfe0209306a1@redhat.com>
- <9ca978e7-5c09-6d92-7983-03a731549b25@linux.ibm.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-Subject: Re: [PATCH v2 1/5] mm/hotplug: Embed vmem_altmap details in memory
- block
-In-Reply-To: <9ca978e7-5c09-6d92-7983-03a731549b25@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <7DF50AC5-83AC-4EE1-9422-62D1EA378EE9@linux.ibm.com>
+X-Mailman-Approved-At: Thu, 06 Jul 2023 23:17:34 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,68 +52,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
+Cc: linux-next@vger.kernel.org, mhocko@suse.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06.07.23 14:32, Aneesh Kumar K V wrote:
-> On 7/6/23 4:44 PM, David Hildenbrand wrote:
->> On 06.07.23 11:36, Aneesh Kumar K V wrote:
->>> On 7/6/23 2:48 PM, David Hildenbrand wrote:
->>>> On 06.07.23 10:50, Aneesh Kumar K.V wrote:
->>>>> With memmap on memory, some architecture needs more details w.r.t altmap
->>>>> such as base_pfn, end_pfn, etc to unmap vmemmap memory.
->>>>
->>>> Can you elaborate why ppc64 needs that and x86-64 + aarch64 don't?
->>>>
->>>> IOW, why can't ppc64 simply allocate the vmemmap from the start of the memblock (-> base_pfn) and use the stored number of vmemmap pages to calculate the end_pfn?
->>>>
->>>> To rephrase: if the vmemmap is not at the beginning and doesn't cover full apgeblocks, memory onlining/offlining would be broken.
->>>>
->>>> [...]
->>>
->>>
->>> With ppc64 and 64K pagesize and different memory block sizes, we can end up allocating vmemmap backing memory from outside altmap because
->>> a single page vmemmap can cover 1024 pages (64 *1024/sizeof(struct page)). and that can point to pages outside the dev_pagemap range.
->>> So on free we  check
->>
->> So you end up with a mixture of altmap and ordinarily-allocated vmemmap pages? That sound wrong (and is counter-intuitive to the feature in general, where we *don't* want to allocate the vmemmap from outside the altmap).
->>
->> (64 * 1024) / sizeof(struct page) -> 1024 pages
->>
->> 1024 pages * 64k = 64 MiB.
->>
->> What's the memory block size on these systems? If it's >= 64 MiB the vmemmap of a single memory block fits into a single page and we should be fine.
->>
->> Smells like you want to disable the feature on a 64k system.
->>
+On 2023-07-06 11:41:38+0530, Sachin Sant wrote:
+> While running LTP tests (madvise06) on IBM Power9 LPAR booted with
+> 6.4.0-next-20230705 following crash is seen
 > 
-> But that part of vmemmap_free is common for both dax,dax kmem and the new memmap on memory feature. ie, ppc64 vmemmap_free have checks which require
-> a full altmap structure with all the details in. So for memmap on memmory to work on ppc64 we do require similar altmap struct. Hence the idea
-> of adding vmemmap_altmap to  struct memory_block
+> Injecting memory failure for pfn 0x3f79 at process virtual address 0x7fff9b740000
+> Memory failure: 0x3f79: recovery action for clean LRU page: Recovered
+> madvise06 (133636): drop_caches: 3
+> ------------[ cut here ]------------
+> kernel BUG at mm/memcontrol.c:3715!
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=8192 NUMA pSeries
+> Modules linked in: brd overlay exfat vfat fat xfs loop sctp ip6_udp_tunnel udp_tunnel dm_mod nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 nft_fib nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 bonding ip_set tls rfkill nf_tables libcrc32c nfnetlink sunrpc pseries_rng vmx_crypto ext4 mbcache jbd2 sd_mod t10_pi crc64_rocksoft crc64 sg ibmvscsi scsi_transport_srp ibmveth fuse [last unloaded: init_module(O)]
+> CPU: 10 PID: 133636 Comm: madvise06 Tainted: G O 6.4.0-next-20230705 #1
+> Hardware name: IBM,8375-42A POWER9 (raw) 0x4e0202 0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
+> NIP: c00000000054ea88 LR: c00000000028b2a8 CTR: c00000000054e8d0
+> REGS: c00000029dd7b890 TRAP: 0700 Tainted: G O (6.4.0-next-20230705)
+> MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE> CR: 28008288 XER: 00000000
+> CFAR: c00000000054e904 IRQMASK: 0 
+> GPR00: c00000000028b2a8 c00000029dd7bb30 c000000001431600 c0000002bc978000 
+> GPR04: c000000002b3b288 0000000000010192 0000000000000000 0000000000000001 
+> GPR08: c0000000f9abb180 0000000000020000 c0000002bc978580 0000000000000000 
+> GPR12: c00000000054e8d0 c00000001ec53f00 0000000000000000 0000000000000000 
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> GPR20: c00000001b2e6578 0000000000400cc0 000000007fff0000 fffffffffffff000 
+> GPR24: c00000029dd7bd30 0000000000000000 c00000029dd7bd58 c00000001b2e6568 
+> GPR28: c00000029dd7bde0 0000000000000001 0000000000000001 c00000001b2e6540 
+> NIP [c00000000054ea88] mem_cgroup_read_u64+0x1b8/0x1d0
+> LR [c00000000028b2a8] cgroup_seqfile_show+0xb8/0x160
+> Call Trace:
+> [c00000029dd7bb50] [c00000000028b2a8] cgroup_seqfile_show+0xb8/0x160
+> [c00000029dd7bbc0] [c000000000673ba4] kernfs_seq_show+0x44/0x60
+> [c00000029dd7bbe0] [c0000000005c4238] seq_read_iter+0x238/0x620
+> [c00000029dd7bcb0] [c000000000675064] kernfs_fop_read_iter+0x1d4/0x2c0
+> [c00000029dd7bd00] [c00000000057fbac] vfs_read+0x26c/0x350
+> [c00000029dd7bdc0] [c00000000058077c] ksys_read+0x7c/0x140
+> [c00000029dd7be10] [c000000000036900] system_call_exception+0x140/0x350
+> [c00000029dd7be50] [c00000000000d6a0] system_call_common+0x160/0x2e4
+> --- interrupt: c00 at 0x7fff9eb41484
+> NIP: 00007fff9eb41484 LR: 0000000010008540 CTR: 0000000000000000
+> REGS: c00000029dd7be80 TRAP: 0c00 Tainted: G O (6.4.0-next-20230705)
+> MSR: 800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE> CR: 28002282 XER: 00000000
+> IRQMASK: 0 
+> GPR00: 0000000000000003 00007fffc33de7d0 00007fff9ec27300 0000000000000013 
+> GPR04: 00007fffc33e0aa0 0000000000001fff 0000000000000000 0000000000000013 
+> GPR08: 00007fffc33e0aa0 0000000000000000 0000000000000000 0000000000000000 
+> GPR12: 0000000000000000 00007fff9ecca3a0 0000000000000000 0000000000000000 
+> GPR16: ffffffffffffffff 0000000010035520 0000000010035b90 00000000100347a8 
+> GPR20: 000000001002fb68 0000000010063900 0000000000002000 000000001002fb68 
+> GPR24: 0000000000000000 000000000000004c 000000001002fa78 00007fffc33e0aa0 
+> GPR28: 0000000000000013 0000000000000000 0000000000001fff 0000000000001fff 
+> NIP [00007fff9eb41484] 0x7fff9eb41484
+> LR [0000000010008540] 0x10008540
+> --- interrupt: c00
+> Code: 7fa34800 409effc4 7c0802a6 38600001 f8010030 4bfffdfd e8010030 786383e4 7c0803a6 4bffff6c 7c0802a6 f8010030 <0fe00000> 7c0802a6 f8010030 0fe00000 
+> ---[ end trace 0000000000000000 ]---
+> pstore: backend (nvram) writing error (-1)
+> 
+> Kernel panic - not syncing: Fatal exception
+> Rebooting in 10 seconds..
+> 
+> Git bisect points to following patch:
+> 
+> commit 29bf1eb7d2abbdfc24c4ef7acf7a51b72dc43d2b
+>     memcg: drop kmem.limit_in_bytes
+> 
+> Does the testcase madvise06 need an update?
+> 
+> 90         tst_res(TINFO, "\tCached: %ld Kb",
+> 91                 SAFE_READ_MEMINFO("Cached:") - init_cached);
+> 92       
+> 93         print_cgmem("memory.current");
+> 94         print_cgmem("memory.swap.current");
+> 95         print_cgmem("memory.kmem.usage_in_bytes”);  <<== this line. 
+> 96 }
+> 
+> If I comment line 95 from the testcase, it completes successfully.
 
-I'd suggest making sure that for the memmap_on_memory case your really 
-*always* allocate from the altmap (that's what the feature is about 
-after all), and otherwise block the feature (i.e., arch_mhp_supports_... 
-should reject it).
+The handling for _KMEM was removed from mem_cgroup_read_u64()
+incorrectly.
+It is used by the still existing kmem.*usage*_in_bytes in addition to
+the now removed kmem.*limit*_in_bytes.
+(And kmem.max_usage_in_bytes, kmem.failcnt)
 
-Then, you can reconstruct the altmap layout trivially
-
-base_pfn: start of the range to unplug
-end_pfn: base_pfn + nr_vmemmap_pages
-
-and pass that to the removal code, which will do the right thing, no?
-
-
-Sure, remembering the altmap might be a potential cleanup (eventually?), 
-but the basic reasoning why this is required as patch #1 IMHO is wrong: 
-if you say you support memmap_on_memory for a configuration, then you 
-should also properly support it (allocate from the hotplugged memory), 
-not silently fall back to something else.
-
-
--- 
-Cheers,
-
-David / dhildenb
-
+The testcase seems to be fine, it actually did its job.
