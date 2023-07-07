@@ -4,52 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E96E1EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jul 2023 09:56:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9D43C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jul 2023 11:46:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Bx40Rryc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=bWs9TF9t;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qy81K40GBz3cJg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jul 2023 19:56:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QyBSB6Xb8z3cBZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jul 2023 21:46:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Bx40Rryc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=bWs9TF9t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::331; helo=mail-ot1-x331.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qy80D4Zkcz3c49
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2023 19:55:24 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id AB765612AE;
-	Fri,  7 Jul 2023 09:55:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8166EC433C8;
-	Fri,  7 Jul 2023 09:55:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1688723722;
-	bh=yMWBZi7OWijpDNbPPVU11zT7Ofk6CC1w0krvsGmTO/Q=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Bx40Rryc7emWROVA1OI+Fp/RxUN6o7E4nHT9VT58WXacXf2ozSjk5VBIyhlsgZAkr
-	 u2TwwPGKbwSH1Jn686GPOGDYyzRhNSXdfDbh0GX7fiSd/Q8SoLRWm81bbNGpy2LvUJ
-	 PhRsNMOwag/zbLeNtjsqSzeLonM1K0hAqZM1i3o1LWrschS5ccK6ArPWK+mDI+V+Cg
-	 r66yYBAJk5so9iN518mwMOg4/lTZpFgPvXcJ4Lf5e5MhMX/jyTnwECbxcWs7hobvgk
-	 c3viAIB8beT+3liXAVktBBRA7/rqn7zOv0uUvmp3KfvN6KOM6o747qiFkc1T1A7sWK
-	 NKZl3mjfiXXJw==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 2/4] vgacon: rework screen_info #ifdef checks
-Date: Fri,  7 Jul 2023 11:52:24 +0200
-Message-Id: <20230707095415.1449376-2-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230707095415.1449376-1-arnd@kernel.org>
-References: <20230707095415.1449376-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qxz540481z3bn6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2023 13:13:57 +1000 (AEST)
+Received: by mail-ot1-x331.google.com with SMTP id 46e09a7af769-6b73b839025so1328053a34.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2023 20:13:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1688699635; x=1691291635;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=vbUuEtz05KYPq1z68ACCZieX8e+bUUC/V8Wy/+io9Sc=;
+        b=bWs9TF9tGzCgPVnQlfZKG5+EQThQcym+kBtel/911hr42FeYBtw0WqkCivHvi/rkmX
+         uQfoL5By9H726ARLj+02Xjc45ztGEQPz6J2tjSp7fl89oUQIin6rVPo0u4/Q1IVgMMaM
+         lIOtS+FjpZC1FpATJwJWJ3uj/U7gsUvg+xTaJkYopnseiszEFoVYvW7NRxxCMIFpbofz
+         dxDWkV95JGFF2mvtWw6xCqDKiHL9ggFjiCNzHER8ESLMygAAxCQZUPqJMqSd+9cO1YQ/
+         CNkidGWopPbKcbnpnKjmwHHMa91ZLmltk0aUdX0pddkSDD2WAfxpzxt5azNVf/WoHupX
+         OaMA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688699635; x=1691291635;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vbUuEtz05KYPq1z68ACCZieX8e+bUUC/V8Wy/+io9Sc=;
+        b=S8aggkRnL5RDAdIHdj9wWYersb1phdUQDTFYvfqxZ4emJeymgQAurmFZaxQBEUhAJH
+         grCAdXvQ5iqrnLcRaBOb9cV2FXmx/nxom+LM8Vj6duqr1vwiQRUvWBXEZPzzMx9/b2J6
+         y9ajIkiL/m3SlnPxmK8OImqGa6VpUprOh/8Ty0hgUbVUV49GDIetBcZb9oXA/SM1JpsT
+         NTY63tberwY4wNbOwsn5hbn4UhUjagMddkaEDHACiaxnXLvrxfwJgXP5e+gbGfDDgHNU
+         7pEetlfJED9o1oqNTDA+vzyRHbJDQVTcntS8S29qw9nFRys9KfgKNVphhP0Q1AqqtJjO
+         9vBQ==
+X-Gm-Message-State: ABy/qLaiWjwUJUifTPhUgNXOSIX3lPNbHTiXlKqpSttnLlatgSQFp8wo
+	8lTf9sB+yQ40Es2eND6CTX2Xp5OjoM9lSkiwms4=
+X-Google-Smtp-Source: APBJJlFZL/u1LRgkGKUjOubHv+g9HRYJ60+hFKy09JpWIkuoWWHwXlqwj33lY/1BVuOvTHcGg+rHRtVP3qSu9O2Wq8g=
+X-Received: by 2002:a05:6358:52c3:b0:131:ce9c:9971 with SMTP id
+ z3-20020a05635852c300b00131ce9c9971mr5502548rwz.29.1688699634680; Thu, 06 Jul
+ 2023 20:13:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1688002673-28493-1-git-send-email-shengjiu.wang@nxp.com>
+ <1688002673-28493-2-git-send-email-shengjiu.wang@nxp.com> <ZJ6o5fT4V4HXivFa@valkosipuli.retiisi.eu>
+ <CAA+D8AND1yZ7eZLjBGxVF=i3hLMecUm-j7AVHN9npJi-4=3VrA@mail.gmail.com>
+ <87h6ql5hch.wl-tiwai@suse.de> <43f0ecdf-7454-49ae-96b3-2eae5487e9a5@sirena.org.uk>
+ <d78e6ec3-a531-8fd4-a785-29b6712f83ae@xs4all.nl> <090cc065-b078-4f2c-9b2d-3b0b7418461d@sirena.org.uk>
+ <CAA+D8AMTnZb-Sm9gh_jDDSz3y9jXY-mD9S6vXPekAbdfCJaKHA@mail.gmail.com>
+In-Reply-To: <CAA+D8AMTnZb-Sm9gh_jDDSz3y9jXY-mD9S6vXPekAbdfCJaKHA@mail.gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 7 Jul 2023 11:13:43 +0800
+Message-ID: <CAA+D8AMNqU0J1EC--BBVYbXMf1dRGdS-ez5hs2E8M_hYtwq60w@mail.gmail.com>
+Subject: Re: [PATCH 1/6] media: v4l2: Add audio capture and output support
+To: Mark Brown <broonie@kernel.org>
+Content-Type: multipart/alternative; boundary="000000000000db898b05ffdd05d0"
+X-Mailman-Approved-At: Fri, 07 Jul 2023 21:45:28 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,218 +79,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, dri-devel@lists.freedesktop.org, javierm@redhat.com, WANG Xuerui <kernel@xen0n.name>, Ard Biesheuvel <ardb@kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: nicoleotsuka@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com, Jacopo Mondi <jacopo@jmondi.org>, Xiubo.Lee@gmail.com, Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, Hans Verkuil <hverkuil@xs4all.nl>, linuxppc-dev@lists.ozlabs.org, Sakari Ailus <sakari.ailus@iki.fi>, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+--000000000000db898b05ffdd05d0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On non-x86 architectures, the screen_info variable is generally only
-used for the VGA console where supported, and in some cases the EFI
-framebuffer or vga16fb.
+Hi Mark
 
-Now that we have a definite list of which architectures actually use it
-for what, use consistent #ifdef checks so the global variable is only
-defined when it is actually used on those architectures.
+On Tue, Jul 4, 2023 at 12:03=E2=80=AFPM Shengjiu Wang <shengjiu.wang@gmail.=
+com>
+wrote:
 
-On powerpc, there is no support for vgacon, but there is support for
-vga16fb. Loongarch and riscv have no support for vgacon or vga16fb, but
-they support EFI firmware, so only that needs to be checked, and the
-initialization can be removed because that is handled by EFI.
-IA64 has both vgacon and EFI.
+>
+>
+> On Tue, Jul 4, 2023 at 1:59=E2=80=AFAM Mark Brown <broonie@kernel.org> wr=
+ote:
+>
+>> On Mon, Jul 03, 2023 at 03:12:55PM +0200, Hans Verkuil wrote:
+>>
+>> > My main concern is that these cross-subsystem drivers are a pain to
+>> > maintain. So there have to be good reasons to do this.
+>>
+>> > Also it is kind of weird to have to use the V4L2 API in userspace to
+>> > deal with a specific audio conversion. Quite unexpected.
+>>
+>> > But in the end, that's a decision I can't make.
+>>
+>> > So I wait for that feedback. Note that if the decision is made that th=
+is
+>> > can use V4L2, then there is quite a lot more that needs to be done:
+>> > documentation, new compliance tests, etc. It's adding a new API, and
+>> that
+>> > comes with additional work...
+>>
+>> Absolutely, I agree with all of this - my impression was that the target
+>> here would be bypass of audio streams to/from a v4l2 device, without
+>> bouncing through an application layer.  If it's purely for audio usage
+>> with no other tie to v4l2 then involving v4l2 does just seem like
+>> complication.
+>>
+>
+> This audio use case is using the v4l2 application layer. in the user spac=
+e
+> I need to call below v4l2 ioctls to implement the feature:
+> VIDIOC_QUERYCAP
+> VIDIOC_TRY_FMT
+> VIDIOC_S_FMT
+> VIDIOC_REQBUFS
+> VIDIOC_QUERYBUF
+> VIDIOC_STREAMON
+> VIDIOC_QBUF
+> VIDIOC_DQBUF
+> VIDIOC_STREAMOFF
+>
+> why the driver was put in the ALSA, because previously we implemented
+> the ASRC M2P (memory to peripheral) in ALSA,  so I think it is better to
+> add M2M driver in ALSA.  The hardware IP is the same. The compatible
+> string is the same.
+>
+>
+> Could you please share more of your ideas about this patch? and could
+you please check further about this implementation.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/alpha/kernel/setup.c          |  2 ++
- arch/alpha/kernel/sys_sio.c        |  2 ++
- arch/ia64/kernel/setup.c           |  4 ++++
- arch/loongarch/kernel/setup.c      |  2 ++
- arch/mips/jazz/setup.c             |  2 +-
- arch/mips/kernel/setup.c           |  2 +-
- arch/mips/sibyte/swarm/setup.c     |  2 +-
- arch/mips/sni/setup.c              |  2 +-
- arch/powerpc/kernel/setup-common.c |  2 +-
- arch/riscv/kernel/setup.c          | 11 ++---------
- 10 files changed, 17 insertions(+), 14 deletions(-)
+I tried to find a good interface in ALSA for this m2m request, but didn't
+find one,  then I try the V4L2, find it is good this audio case.
 
-diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
-index b650ff1cb022e..b4d2297765c02 100644
---- a/arch/alpha/kernel/setup.c
-+++ b/arch/alpha/kernel/setup.c
-@@ -131,6 +131,7 @@ static void determine_cpu_caches (unsigned int);
- 
- static char __initdata command_line[COMMAND_LINE_SIZE];
- 
-+#ifdef CONFIG_VGA_CONSOLE
- /*
-  * The format of "screen_info" is strange, and due to early
-  * i386-setup code. This is just enough to make the console
-@@ -147,6 +148,7 @@ struct screen_info screen_info = {
- };
- 
- EXPORT_SYMBOL(screen_info);
-+#endif
- 
- /*
-  * The direct map I/O window, if any.  This should be the same
-diff --git a/arch/alpha/kernel/sys_sio.c b/arch/alpha/kernel/sys_sio.c
-index 7c420d8dac53d..7de8a5d2d2066 100644
---- a/arch/alpha/kernel/sys_sio.c
-+++ b/arch/alpha/kernel/sys_sio.c
-@@ -57,11 +57,13 @@ sio_init_irq(void)
- static inline void __init
- alphabook1_init_arch(void)
- {
-+#ifdef CONFIG_VGA_CONSOLE
- 	/* The AlphaBook1 has LCD video fixed at 800x600,
- 	   37 rows and 100 cols. */
- 	screen_info.orig_y = 37;
- 	screen_info.orig_video_cols = 100;
- 	screen_info.orig_video_lines = 37;
-+#endif
- 
- 	lca_init_arch();
- }
-diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-index 5a55ac82c13a4..0c09ff7fde46b 100644
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -86,9 +86,11 @@ EXPORT_SYMBOL(local_per_cpu_offset);
- #endif
- unsigned long ia64_cycles_per_usec;
- struct ia64_boot_param *ia64_boot_param;
-+#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_EFI)
- struct screen_info screen_info;
- unsigned long vga_console_iobase;
- unsigned long vga_console_membase;
-+#endif
- 
- static struct resource data_resource = {
- 	.name	= "Kernel data",
-@@ -497,6 +499,7 @@ early_console_setup (char *cmdline)
- static void __init
- screen_info_setup(void)
- {
-+#ifdef CONFIG_VGA_CONSOLE
- 	unsigned int orig_x, orig_y, num_cols, num_rows, font_height;
- 
- 	memset(&screen_info, 0, sizeof(screen_info));
-@@ -525,6 +528,7 @@ screen_info_setup(void)
- 	screen_info.orig_video_mode = 3;	/* XXX fake */
- 	screen_info.orig_video_isVGA = 1;	/* XXX fake */
- 	screen_info.orig_video_ega_bx = 3;	/* XXX fake */
-+#endif
- }
- 
- static inline void
-diff --git a/arch/loongarch/kernel/setup.c b/arch/loongarch/kernel/setup.c
-index 78a00359bde3c..6b3932677f5de 100644
---- a/arch/loongarch/kernel/setup.c
-+++ b/arch/loongarch/kernel/setup.c
-@@ -57,7 +57,9 @@
- #define SMBIOS_CORE_PACKAGE_OFFSET	0x23
- #define LOONGSON_EFI_ENABLE		(1 << 3)
- 
-+#ifdef CONFIG_EFI
- struct screen_info screen_info __section(".data");
-+#endif
- 
- unsigned long fw_arg0, fw_arg1, fw_arg2;
- DEFINE_PER_CPU(unsigned long, kernelsp);
-diff --git a/arch/mips/jazz/setup.c b/arch/mips/jazz/setup.c
-index ee044261eb223..3c14548353e47 100644
---- a/arch/mips/jazz/setup.c
-+++ b/arch/mips/jazz/setup.c
-@@ -76,7 +76,7 @@ void __init plat_mem_setup(void)
- 
- 	_machine_restart = jazz_machine_restart;
- 
--#ifdef CONFIG_VT
-+#ifdef CONFIG_VGA_CONSOLE
- 	screen_info = (struct screen_info) {
- 		.orig_video_cols	= 160,
- 		.orig_video_lines	= 64,
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-index cb871eb784a7c..1aba7dc95132c 100644
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -54,7 +54,7 @@ struct cpuinfo_mips cpu_data[NR_CPUS] __read_mostly;
- 
- EXPORT_SYMBOL(cpu_data);
- 
--#ifdef CONFIG_VT
-+#ifdef CONFIG_VGA_CONSOLE
- struct screen_info screen_info;
- #endif
- 
-diff --git a/arch/mips/sibyte/swarm/setup.c b/arch/mips/sibyte/swarm/setup.c
-index 76683993cdd3a..37df504d3ecbb 100644
---- a/arch/mips/sibyte/swarm/setup.c
-+++ b/arch/mips/sibyte/swarm/setup.c
-@@ -129,7 +129,7 @@ void __init plat_mem_setup(void)
- 	if (m41t81_probe())
- 		swarm_rtc_type = RTC_M41T81;
- 
--#ifdef CONFIG_VT
-+#ifdef CONFIG_VGA_CONSOLE
- 	screen_info = (struct screen_info) {
- 		.orig_video_page	= 52,
- 		.orig_video_mode	= 3,
-diff --git a/arch/mips/sni/setup.c b/arch/mips/sni/setup.c
-index efad85c8c823b..9984cf91be7d0 100644
---- a/arch/mips/sni/setup.c
-+++ b/arch/mips/sni/setup.c
-@@ -38,7 +38,7 @@ extern void sni_machine_power_off(void);
- 
- static void __init sni_display_setup(void)
- {
--#if defined(CONFIG_VT) && defined(CONFIG_VGA_CONSOLE) && defined(CONFIG_FW_ARC)
-+#if defined(CONFIG_VGA_CONSOLE) && defined(CONFIG_FW_ARC)
- 	struct screen_info *si = &screen_info;
- 	DISPLAY_STATUS *di;
- 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index d2a446216444f..b717875a12a9a 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -98,6 +98,7 @@ int boot_cpu_hwid = -1;
- int dcache_bsize;
- int icache_bsize;
- 
-+#if IS_ENABLED(CONFIG_FB_VGA16)
- /*
-  * This still seems to be needed... -- paulus
-  */ 
-@@ -109,7 +110,6 @@ struct screen_info screen_info = {
- 	.orig_video_isVGA = 1,
- 	.orig_video_points = 16
- };
--#if defined(CONFIG_FB_VGA16_MODULE)
- EXPORT_SYMBOL(screen_info);
- #endif
- 
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index 971fe776e2f8b..a3dbe13f45fb3 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -39,15 +39,8 @@
- 
- #include "head.h"
- 
--#if defined(CONFIG_DUMMY_CONSOLE) || defined(CONFIG_EFI)
--struct screen_info screen_info __section(".data") = {
--	.orig_video_lines	= 30,
--	.orig_video_cols	= 80,
--	.orig_video_mode	= 0,
--	.orig_video_ega_bx	= 0,
--	.orig_video_isVGA	= 1,
--	.orig_video_points	= 8
--};
-+#if defined(CONFIG_EFI)
-+struct screen_info screen_info __section(".data");
- #endif
- 
- /*
--- 
-2.39.2
+but it needs to extend the V4L2 API.
 
+I have no idea how to go on, could you please recommend?
+
+best regards
+wang shengjiu
+
+>
+>
+
+--000000000000db898b05ffdd05d0
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div>Hi Mark</div><br><div class=3D"gmail_quote"><div dir=
+=3D"ltr" class=3D"gmail_attr">On Tue, Jul 4, 2023 at 12:03=E2=80=AFPM Sheng=
+jiu Wang &lt;<a href=3D"mailto:shengjiu.wang@gmail.com">shengjiu.wang@gmail=
+.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"mar=
+gin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1=
+ex"><div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quo=
+te"><div dir=3D"ltr" class=3D"gmail_attr">On Tue, Jul 4, 2023 at 1:59=E2=80=
+=AFAM Mark Brown &lt;<a href=3D"mailto:broonie@kernel.org" target=3D"_blank=
+">broonie@kernel.org</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quo=
+te" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204=
+);padding-left:1ex">On Mon, Jul 03, 2023 at 03:12:55PM +0200, Hans Verkuil =
+wrote:<br>
+<br>
+&gt; My main concern is that these cross-subsystem drivers are a pain to<br=
+>
+&gt; maintain. So there have to be good reasons to do this.<br>
+<br>
+&gt; Also it is kind of weird to have to use the V4L2 API in userspace to<b=
+r>
+&gt; deal with a specific audio conversion. Quite unexpected.<br>
+<br>
+&gt; But in the end, that&#39;s a decision I can&#39;t make.<br>
+<br>
+&gt; So I wait for that feedback. Note that if the decision is made that th=
+is<br>
+&gt; can use V4L2, then there is quite a lot more that needs to be done:<br=
+>
+&gt; documentation, new compliance tests, etc. It&#39;s adding a new API, a=
+nd that<br>
+&gt; comes with additional work...<br>
+<br>
+Absolutely, I agree with all of this - my impression was that the target<br=
+>
+here would be bypass of audio streams to/from a v4l2 device, without<br>
+bouncing through an application layer.=C2=A0 If it&#39;s purely for audio u=
+sage<br>
+with no other tie to v4l2 then involving v4l2 does just seem like<br>
+complication.<br></blockquote><div><br></div><div>This audio use case is us=
+ing the v4l2 application layer. in the user space</div><div>I need to call =
+below v4l2 ioctls to implement the feature:=C2=A0</div><div>VIDIOC_QUERYCAP=
+<br></div><div>VIDIOC_TRY_FMT<br></div><div>VIDIOC_S_FMT<br></div><div>VIDI=
+OC_REQBUFS<br></div><div>VIDIOC_QUERYBUF<br></div><div>VIDIOC_STREAMON<br><=
+/div><div>VIDIOC_QBUF<br></div><div>VIDIOC_DQBUF<br></div><div>VIDIOC_STREA=
+MOFF<br></div><div><br></div><div>why the driver was put in the ALSA, becau=
+se previously we implemented</div><div>the ASRC M2P (memory to peripheral) =
+in ALSA,=C2=A0 so I think it is better to</div><div>add M2M driver in ALSA.=
+=C2=A0 The hardware IP is the same. The compatible</div><div>string is the =
+same.=C2=A0</div><div><br></div><div><br></div></div></div></blockquote><di=
+v>Could you please share more of your=C2=A0ideas about this patch? and coul=
+d</div><div>you please check further about this implementation.</div><div><=
+br></div><div>I tried to find a good interface in ALSA for this m2m request=
+, but didn&#39;t</div><div>find one,=C2=A0 then I try the V4L2, find it is =
+good this audio case.</div><div><br></div><div>but it needs to extend the V=
+4L2 API.=C2=A0</div><div><br></div><div>I have no idea how to go on, could =
+you please recommend?=C2=A0=C2=A0</div><div><br></div><div>best regards</di=
+v><div>wang shengjiu</div><blockquote class=3D"gmail_quote" style=3D"margin=
+:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"=
+><div dir=3D"ltr"><div class=3D"gmail_quote"><div></div><div>=C2=A0</div></=
+div></div>
+</blockquote></div></div>
+
+--000000000000db898b05ffdd05d0--
