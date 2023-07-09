@@ -4,84 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C1F2EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jul 2023 18:31:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D34E6EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jul 2023 18:31:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i/jfzfOw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hT7KIEmD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QzbLF6Mmqz3cHr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 04:31:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QzbMD1y88z3cBV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 04:31:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i/jfzfOw;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hT7KIEmD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QzbHG3dX6z30dp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 04:28:26 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 369IHODo003462;
-	Sun, 9 Jul 2023 18:28:13 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QzbHJ33fgz30dp
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 04:28:28 +1000 (AEST)
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 369IM9G8030847;
+	Sun, 9 Jul 2023 18:28:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=RT7wtVMWrCf4n9QG8OOQIvHbsnUjTUr1CnbadvSDrBw=;
- b=i/jfzfOwZwqXvxFhrS6mZdjh1p9LSCGilxFmOuB+nFZKDacQoOsw3Ba26H5916/8kriJ
- WPRO0EYqn6h1Ifz+r9DClPbOFusfMQZd6fCutk4x2huRQ9RgknUmqkvr6bgrvgcmq6Xy
- 6BuFsWfdzDp+abH1bVxMMbqnSU7bhATbWxlccN281IesJinmJYhk265UVYmyrmX/msEw
- XdYU3JdoP7MnpAoSJHzDXs2SZu5xmPYFn86RNtqXpjm0G9hrjlXXml6LrdGWde1ypCKu
- 0edAYmF8AnCH5EOI5PbqviUMwOSFJx6j8rbsXssszHNwvqN3EYCVQdraFkafEQA3zh++ ZQ== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=g4a83SV60DqfeeQBzooYV0XTJN3xFqELgVabFoYRJqk=;
+ b=hT7KIEmDLOo8uxoRmM4P+kBteFQ3VEamjsBo48rd2cdyWIfeeAbwb6TjgZmTl5dHI3wv
+ U7hwCqZWtk6sIbPpTch44kv6Dyr0yACg6KPMcxVzu/lwpCdrEPiTXyGp6GMbTlVQ4JQ5
+ fIGLvUKbhN8RL4rZoPrv/YXtgu3Li0+c7GLw/gq02b6inEcv+zE5ct630hBdY9AJFdHI
+ MwQA1qm3fcKc06eJWZLN/MuZBSlU9OGY3DNt6IKvdboCxBqG8xjflvqutNOmY7vNkW3r
+ M98b22naJPOgNFSOuvcqtijQ/e9loOtoMJPumS9k6ehbSytlrYb395L0Dkd+byZm7UP3 AA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rr21nr3n4-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rr24381ga-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 09 Jul 2023 18:28:12 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 369IHblF004214;
-	Sun, 9 Jul 2023 18:28:12 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rr21nr3mx-1
+	Sun, 09 Jul 2023 18:28:23 +0000
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 369ISMrD011307;
+	Sun, 9 Jul 2023 18:28:22 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rr24381g7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 09 Jul 2023 18:28:12 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 369CmpvO012478;
-	Sun, 9 Jul 2023 18:28:10 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3rpye58mqt-1
+	Sun, 09 Jul 2023 18:28:22 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3699nUq3022939;
+	Sun, 9 Jul 2023 18:28:20 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3rpy2e0v9e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 09 Jul 2023 18:28:10 +0000
+	Sun, 09 Jul 2023 18:28:20 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 369IS6sx22020694
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 369ISHL017957558
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 9 Jul 2023 18:28:07 GMT
+	Sun, 9 Jul 2023 18:28:17 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C4DDE2005A;
-	Sun,  9 Jul 2023 18:28:06 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 395D82004F;
+	Sun,  9 Jul 2023 18:28:17 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 93B8A2004B;
-	Sun,  9 Jul 2023 18:28:04 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id F3AA920043;
+	Sun,  9 Jul 2023 18:28:14 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.24.202])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun,  9 Jul 2023 18:28:04 +0000 (GMT)
+	Sun,  9 Jul 2023 18:28:14 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org
-Subject: [PATCH V2 00/26] tools/perf: Fix shellcheck coding/formatting issues of perf tool shell scripts
-Date: Sun,  9 Jul 2023 23:57:34 +0530
-Message-Id: <20230709182800.53002-1-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V2 04/26] tools/perf/tests: Fix shellcheck issue for lock_contention.sh testcase
+Date: Sun,  9 Jul 2023 23:57:38 +0530
+Message-Id: <20230709182800.53002-5-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: fb6vIpj1__yR6buMCDvno-hwHkRTzZXi
-X-Proofpoint-GUID: ZJqTWcx6Lx62E2UwKrzMTz0MfcsoIcfT
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20230709182800.53002-1-atrajeev@linux.vnet.ibm.com>
+References: <20230709182800.53002-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Ss3kuSKg1_vBnDXQb-GXe8WeqOqW3cs9
+X-Proofpoint-GUID: 5r86e7Sh3GRrQLvnnFw8ANzzeTRaujkN
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-07-09_12,2023-07-06_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
- adultscore=0 priorityscore=1501 bulkscore=0 phishscore=0
- lowpriorityscore=0 clxscore=1015 spamscore=0 suspectscore=0
- impostorscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
+ lowpriorityscore=0 suspectscore=0 spamscore=0 clxscore=1015
+ priorityscore=1501 mlxlogscore=999 malwarescore=0 impostorscore=0
+ mlxscore=0 adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2305260000 definitions=main-2307090169
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,114 +100,69 @@ Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kern
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Patchset covers a set of fixes for coding/formatting issues observed while
-running shellcheck tool on the perf shell scripts.
+From: Kajol Jain <kjain@linux.ibm.com>
 
-This cleanup is a pre-requisite to include a build option for shellcheck
-discussed here: https://www.spinics.net/lists/linux-perf-users/msg25553.html
-First set of patches were posted here:
-https://lore.kernel.org/linux-perf-users/53B7D823-1570-4289-A632-2205EE2B522C@linux.vnet.ibm.com/T/#t
+Running shellcheck on lock_contention.sh generates below warning:
 
-This patchset covers remaining set of shell scripts which needs
-fix. Patch 1 is resubmission of patch 6 from the initial series.
-Patch 15, 16 and 22 touches code from tools/perf/trace/beauty.
-Other patches are fixes for scripts from tools/perf/tests.
+In tests/shell/lock_contention.sh line 24:
+	if [ `id -u` != 0 ]; then
+             ^-----^ SC2046 (warning): Quote this to prevent word splitting.
 
-The shellcheck is run for severity level for errors and warnings.
-Command used:
+In tests/shell/lock_contention.sh line 160:
+	local type=$(head -1 "${result}" | awk '{ print $8 }' | sed -e 's/:.*//')
+        ^--------^ SC3043 (warning): In POSIX sh, 'local' is undefined.
+              ^--^ SC2155 (warning): Declare and assign separately to avoid masking return values.
+                   ^-- SC2046 (warning): Quote this to prevent word splitting.
 
-# for F in $(find tests/shell/ -perm -o=x -name '*.sh'); do shellcheck -S warning $F; done
-# echo $?
-0
+Fixed above warnings by:
+- Adding quotes to avoid word splitting.
+- Fixing shellcheck warnings for local usage, by prefixing
+  function name to the variable.
 
-Changelog:
-v1 -> v2:
-  - Rebased on top of perf-tools-next from:
-  https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/log/?h=perf-tools-next
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+---
+ tools/perf/tests/shell/lock_contention.sh | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-  - Fixed shellcheck errors and warnings reported for newly
-    added changes from perf-tools-next branch
-
-  - Addressed review comment from James clark for patch 
-    number 13 from V1. The changes in patch 13 were not necessary
-    since the file "tests/shell/lib/coresight.sh" is sourced from
-    other test files.
-
-Akanksha J N (1):
-  tools/perf/tests: Fix shellcheck warnings for
-    trace+probe_vfs_getname.sh
-
-Athira Rajeev (14):
-  tools/perf/tests: fix test_arm_spe_fork.sh signal case issues
-  tools/perf/tests: Fix unused variable references in
-    stat+csv_summary.sh testcase
-  tools/perf/tests: fix shellcheck warning for
-    test_perf_data_converter_json.sh testcase
-  tools/perf/tests: Fix shellcheck issue for stat_bpf_counters.sh
-    testcase
-  tools/perf/tests: Fix shellcheck issues in
-    tests/shell/stat+shadow_stat.sh tetscase
-  tools/perf/tests: Fix shellcheck warnings for
-    thread_loop_check_tid_10.sh
-  tools/perf/tests: Fix shellcheck warnings for unroll_loop_thread_10.sh
-  tools/perf/tests: Fix shellcheck warnings for lib/probe_vfs_getname.sh
-  tools/perf/tests: Fix the shellcheck warnings in lib/waiting.sh
-  tools/perf/trace: Fix x86_arch_prctl.sh to address shellcheck warnings
-  tools/perf/arch/x86: Fix syscalltbl.sh to address shellcheck warnings
-  tools/perf/tests/shell: Fix the shellcheck warnings in
-    record+zstd_comp_decomp.sh
-  tools/perf/tests/shell: Fix shellcheck warning for stat+std_output.sh
-    testcase
-  tools/perf/tests: Fix shellcheck warning for stat+std_output.sh
-    testcase
-
-Kajol Jain (11):
-  tools/perf/tests: Fix shellcheck warning for probe_vfs_getname.sh
-    testcase
-  tools/perf/tests: Fix shellcheck warning for record_offcpu.sh testcase
-  tools/perf/tests: Fix shellcheck issue for lock_contention.sh testcase
-  tools/perf/tests: Fix shellcheck issue for stat_bpf_counters_cgrp.sh
-    testcase
-  tools/perf/tests: Fix shellcheck warning for asm_pure_loop.sh shell
-    script
-  tools/perf/tests: Fix shellcheck warning for memcpy_thread_16k_10.sh
-    shell script
-  tools/perf/tests: Fix shellcheck warning for probe.sh shell script
-  tools/perf/trace: Fix shellcheck issue for arch_errno_names.sh script
-  tools/perf: Fix shellcheck issue for check-headers.sh script
-  tools/shell/coresight: Fix shellcheck warning for
-    thread_loop_check_tid_2.sh shell script
-  tools/perf/tests/shell/lib: Fix shellcheck warning for stat_output.sh
-    shell script
-
- .../arch/x86/entry/syscalls/syscalltbl.sh     |  2 +-
- tools/perf/check-headers.sh                   |  6 ++--
- .../tests/shell/coresight/asm_pure_loop.sh    |  2 +-
- .../shell/coresight/memcpy_thread_16k_10.sh   |  2 +-
- .../coresight/thread_loop_check_tid_10.sh     |  2 +-
- .../coresight/thread_loop_check_tid_2.sh      |  2 +-
- .../shell/coresight/unroll_loop_thread_10.sh  |  2 +-
- tools/perf/tests/shell/lib/probe.sh           |  1 +
- .../perf/tests/shell/lib/probe_vfs_getname.sh |  5 ++--
- tools/perf/tests/shell/lib/stat_output.sh     |  1 +
- tools/perf/tests/shell/lib/waiting.sh         |  1 +
- tools/perf/tests/shell/lock_contention.sh     | 12 ++++----
- tools/perf/tests/shell/probe_vfs_getname.sh   |  4 +--
- .../tests/shell/record+zstd_comp_decomp.sh    | 14 +++++-----
- tools/perf/tests/shell/record_offcpu.sh       |  6 ++--
- tools/perf/tests/shell/stat+csv_output.sh     |  2 +-
- tools/perf/tests/shell/stat+csv_summary.sh    |  4 +--
- tools/perf/tests/shell/stat+shadow_stat.sh    |  4 +--
- tools/perf/tests/shell/stat+std_output.sh     |  3 +-
- tools/perf/tests/shell/stat_bpf_counters.sh   |  4 +--
- .../tests/shell/stat_bpf_counters_cgrp.sh     | 28 ++++++++-----------
- tools/perf/tests/shell/test_arm_spe_fork.sh   |  2 +-
- .../shell/test_perf_data_converter_json.sh    |  2 +-
- .../tests/shell/trace+probe_vfs_getname.sh    |  6 ++--
- tools/perf/trace/beauty/arch_errno_names.sh   | 15 ++++------
- tools/perf/trace/beauty/x86_arch_prctl.sh     |  6 ++--
- 26 files changed, 67 insertions(+), 71 deletions(-)
-
+diff --git a/tools/perf/tests/shell/lock_contention.sh b/tools/perf/tests/shell/lock_contention.sh
+index f2cc187b6186..51421f02fb02 100755
+--- a/tools/perf/tests/shell/lock_contention.sh
++++ b/tools/perf/tests/shell/lock_contention.sh
+@@ -21,7 +21,7 @@ trap_cleanup() {
+ trap trap_cleanup EXIT TERM INT
+ 
+ check() {
+-	if [ `id -u` != 0 ]; then
++	if [ "$(id -u)" != 0 ]; then
+ 		echo "[Skip] No root permission"
+ 		err=2
+ 		exit
+@@ -157,10 +157,10 @@ test_lock_filter()
+ 	perf lock contention -i ${perfdata} -L tasklist_lock -q 2> ${result}
+ 
+ 	# find out the type of tasklist_lock
+-	local type=$(head -1 "${result}" | awk '{ print $8 }' | sed -e 's/:.*//')
++	test_lock_filter_type=$(head -1 "${result}" | awk '{ print $8 }' | sed -e 's/:.*//')
+ 
+-	if [ "$(grep -c -v "${type}" "${result}")" != "0" ]; then
+-		echo "[Fail] Recorded result should not have non-${type} locks:" "$(cat "${result}")"
++	if [ "$(grep -c -v "${test_lock_filter_type}" "${result}")" != "0" ]; then
++		echo "[Fail] Recorded result should not have non-${test_lock_filter_type} locks:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
+@@ -170,8 +170,8 @@ test_lock_filter()
+ 	fi
+ 
+ 	perf lock con -a -b -L tasklist_lock -q -- perf bench sched messaging > /dev/null 2> ${result}
+-	if [ "$(grep -c -v "${type}" "${result}")" != "0" ]; then
+-		echo "[Fail] BPF result should not have non-${type} locks:" "$(cat "${result}")"
++	if [ "$(grep -c -v "${test_lock_filter_type}" "${result}")" != "0" ]; then
++		echo "[Fail] BPF result should not have non-${test_lock_filter_type} locks:" "$(cat "${result}")"
+ 		err=1
+ 		exit
+ 	fi
 -- 
 2.39.1
 
