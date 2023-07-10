@@ -4,80 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E3B3EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 09:37:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BB8CC04A6A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 13:02:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=osQyxuiy;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XOuadsPf;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=grGc3342;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QzzRx45Jdz3dFd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 19:37:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R040Q2vDBz3c9s
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 23:02:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=osQyxuiy;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XOuadsPf;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=grGc3342;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QzzFR0nGlz3bh5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 19:28:10 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36A9Ge90022472;
-	Mon, 10 Jul 2023 09:28:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=i5x9hN7ANbiNLDt7+OOrTkB2vSMbC0zBUseJtYa7g4Y=;
- b=osQyxuiyykVZ8Bajv8fgu3Fl8GIGma1Hf1GvVQJV6sqIUOiwmUKm6b1I7rdEdGcaJJZt
- FCCJOEB5Jt4pajHDd9mAL1mRnA2FptPsRU13Dv0lWQ7040DZ2D9A4Wp+gluDFhYS4T7d
- W/09mK++zjfCiy331PO1+Tqj9JgERgTMFw+YyBAz47PU5ZNWlOj8ZHyrkDlL/118gE79
- txk1Ru9k4lt7Q7PCMlHa5aJ7tncfC4LvOD8NnQtv4D+XhO8r5mPnqkBYU1c1go8UFi2J
- NPrFJb0y3UsY9M4S87mTAXdOCbADsCuRMoi3NAd90sQ3wIPI31cGCOz7+UUtB0vE+Xus gQ== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rrf7dg7vx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Jul 2023 09:28:06 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36A6Imod008473;
-	Mon, 10 Jul 2023 09:28:04 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3rpye5gux1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Jul 2023 09:28:04 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36A9S0dP21824188
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Jul 2023 09:28:01 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C920E20040;
-	Mon, 10 Jul 2023 09:28:00 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B0C0D2004B;
-	Mon, 10 Jul 2023 09:27:58 +0000 (GMT)
-Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown [9.43.85.154])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 10 Jul 2023 09:27:58 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2 10/10] docs: ABI: sysfs-bus-event_source-devices-hv_gpci: Document affinity_domain_via_partition sysfs interface file
-Date: Mon, 10 Jul 2023 14:57:17 +0530
-Message-Id: <20230710092717.55317-11-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230710092717.55317-1-kjain@linux.ibm.com>
-References: <20230710092717.55317-1-kjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R03zN71c8z3bXf
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 23:01:20 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 042211FF7A;
+	Mon, 10 Jul 2023 13:01:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1688994078; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/zUoLo2iOzomOZ9vT6lH81AsiLcKSFTf6r6yeZLXs+I=;
+	b=XOuadsPfz67AOSh7Ed7yHanRtTkDg8+PQa5iqXvtYgoQ13QNaWanlTvotm22780rhMVc5c
+	XMZ5B5u7dGHYW1r6KrvKRtIBSeSQ9zvLvgzbuZZ6PwL5ac+OiNkeICP1qMsOV59reVFZic
+	/4J6NeP1sx0oElFAXxuxXMYooJuJ2rI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1688994078;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/zUoLo2iOzomOZ9vT6lH81AsiLcKSFTf6r6yeZLXs+I=;
+	b=grGc3342L/FzeU0I0LmlEHzF8hTY8FFCaYR9DhKTHgmez1voinzZf/yiixCQrBjCiOz0Fx
+	V4hMFgMLnvYfh2Dg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9C3FA13A05;
+	Mon, 10 Jul 2023 13:01:17 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id 2MfgJB0BrGTTFAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Mon, 10 Jul 2023 13:01:17 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: deller@gmx.de,
+	javierm@redhat.com
+Subject: [PATCH 07/17] vfio-mdev: Remove flag FBINFO_DEFAULT from fbdev sample driver
+Date: Mon, 10 Jul 2023 14:50:11 +0200
+Message-ID: <20230710130113.14563-8-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230710130113.14563-1-tzimmermann@suse.de>
+References: <20230710130113.14563-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: -gS1h5aMeMCCl7aJaaobzrPNW8_yadzj
-X-Proofpoint-ORIG-GUID: -gS1h5aMeMCCl7aJaaobzrPNW8_yadzj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-10_07,2023-07-06_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 spamscore=0
- suspectscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
- clxscore=1015 phishscore=0 malwarescore=0 mlxlogscore=999 adultscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2307100082
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,58 +80,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, Kirti Wankhede <kwankhede@nvidia.com>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add details of the new hv-gpci interface file called
-"affinity_domain_via_partition" in the ABI documentation.
+The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
+has been allocated to zero by framebuffer_alloc(). So do not set it.
 
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+Flags should signal differences from the default values. After cleaning
+up all occurences of FBINFO_DEFAULT, the token can be removed.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Kirti Wankhede <kwankhede@nvidia.com>
 ---
- .../sysfs-bus-event_source-devices-hv_gpci    | 32 +++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ samples/vfio-mdev/mdpy-fb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-index d8e65b93d1f7..b03b2bd4b081 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-@@ -208,3 +208,35 @@ Description:	admin read only
- 			   more information.
+diff --git a/samples/vfio-mdev/mdpy-fb.c b/samples/vfio-mdev/mdpy-fb.c
+index 3c8001b9e407..cda477b28685 100644
+--- a/samples/vfio-mdev/mdpy-fb.c
++++ b/samples/vfio-mdev/mdpy-fb.c
+@@ -162,7 +162,6 @@ static int mdpy_fb_probe(struct pci_dev *pdev,
+ 	}
  
- 		* "-EFBIG" : System information exceeds PAGE_SIZE.
-+
-+What:		/sys/devices/hv_gpci/interface/affinity_domain_via_partition
-+Date:		July 2023
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
-+Description:	admin read only
-+		This sysfs file exposes the system topology information by making HCALL
-+		H_GET_PERF_COUNTER_INFO. The HCALL is made with counter request value
-+		AFFINITY_DOMAIN_INFORMATION_BY_PARTITION(0xB1).
-+
-+		* This sysfs file will be created only for power10 and above platforms.
-+
-+		* User needs root privileges to read data from this sysfs file.
-+
-+		* This sysfs file will be created, only when the HCALL returns "H_SUCESS",
-+		  "H_AUTHORITY" and "H_PARAMETER" as the return type.
-+
-+		  HCALL with return error type "H_AUTHORITY", can be resolved during
-+		  runtime by setting "Enable Performance Information Collection" option.
-+
-+		* The end user reading this sysfs file must decode the content as per
-+		  underlying platform/firmware.
-+
-+		Possible error codes while reading this sysfs file:
-+
-+		* "-EPERM" : Partition is not permitted to retrieve performance information,
-+			    required to set "Enable Performance Information Collection" option.
-+
-+		* "-EIO" : Can't retrieve system information because of invalid buffer length/invalid address
-+			   or because of some hardware error. Refer getPerfCountInfo documentation for
-+			   more information.
-+
-+		* "-EFBIG" : System information exceeds PAGE_SIZE.
+ 	info->fbops = &mdpy_fb_ops;
+-	info->flags = FBINFO_DEFAULT;
+ 	info->pseudo_palette = par->palette;
+ 
+ 	ret = register_framebuffer(info);
 -- 
-2.31.1
+2.41.0
 
