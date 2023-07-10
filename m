@@ -4,33 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00448EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 07:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 504E6EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 08:41:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Qzx2J4gkHz3bY2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 17:48:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nfschina.com (client-ip=42.101.60.195; helo=mail.nfschina.com; envelope-from=yunchuan@nfschina.com; receiver=lists.ozlabs.org)
-Received: from mail.nfschina.com (unknown [42.101.60.195])
-	by lists.ozlabs.org (Postfix) with SMTP id 4Qzx1k0MmBz30M1
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 17:47:52 +1000 (AEST)
-Received: from [172.30.11.106] (unknown [180.167.10.98])
-	by mail.nfschina.com (Maildata Gateway V2.8.8) with ESMTPSA id 211DA602E666D;
-	Mon, 10 Jul 2023 15:47:45 +0800 (CST)
-Message-ID: <27537aa7-8a2d-8b9f-4a74-4b7dd2463cf3@nfschina.com>
-Date: Mon, 10 Jul 2023 15:47:44 +0800
+	by lists.ozlabs.org (Postfix) with ESMTP id 4QzyD14L1wz3c68
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 18:41:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4QzyCP1QSYz30fs
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 18:41:18 +1000 (AEST)
+Received: from canpemm500009.china.huawei.com (unknown [172.30.72.54])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Qzy8Y75pSzPk2S;
+	Mon, 10 Jul 2023 16:38:53 +0800 (CST)
+Received: from localhost.localdomain (10.50.163.32) by
+ canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Mon, 10 Jul 2023 16:41:11 +0800
+From: Yicong Yang <yangyicong@huawei.com>
+To: <akpm@linux-foundation.org>, <catalin.marinas@arm.com>,
+	<linux-mm@kvack.org>, <linux-arm-kernel@lists.infradead.org>,
+	<x86@kernel.org>, <mark.rutland@arm.com>, <ryan.roberts@arm.com>,
+	<will@kernel.org>, <anshuman.khandual@arm.com>, <linux-doc@vger.kernel.org>
+Subject: [PATCH v10 3/4] mm/tlbbatch: Introduce arch_flush_tlb_batched_pending()
+Date: Mon, 10 Jul 2023 16:39:13 +0800
+Message-ID: <20230710083914.18336-4-yangyicong@huawei.com>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20230710083914.18336-1-yangyicong@huawei.com>
+References: <20230710083914.18336-1-yangyicong@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH net-next v2 01/10] net: wan: Remove unnecessary (void*)
- conversions
-Content-Language: en-US
-To: Dan Carpenter <dan.carpenter@linaro.org>
-X-MD-Sfrom: yunchuan@nfschina.com
-X-MD-SrcIP: 180.167.10.98
-From: yunchuan <yunchuan@nfschina.com>
-In-Reply-To: <45519aec-6ec8-49e5-b5b2-1b52d336288c@kadam.mountain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.50.163.32]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ canpemm500009.china.huawei.com (7.192.105.203)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,54 +51,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, qiang.zhao@nxp.com
+Cc: wangkefeng.wang@huawei.com, darren@os.amperecomputing.com, peterz@infradead.org, yangyicong@hisilicon.com, punit.agrawal@bytedance.com, guojian@oppo.com, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, Barry Song <21cnbao@gmail.com>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, openrisc@lists.librecores.org, prime.zeng@hisilicon.com, Jonathan.Cameron@Huawei.com, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2023/7/10 15:29, Dan Carpenter wrote:
-> On Mon, Jul 10, 2023 at 02:39:33PM +0800, Su Hui wrote:
->> From: wuych <yunchuan@nfschina.com>
->          ^^^^^
-> This doesn't look like a real name.
+From: Yicong Yang <yangyicong@hisilicon.com>
 
-Hi, Dan,
+Currently we'll flush the mm in flush_tlb_batched_pending() to
+avoid race between reclaim unmaps pages by batched TLB flush
+and mprotect/munmap/etc. Other architectures like arm64 may
+only need a synchronization barrier(dsb) here rather than
+a full mm flush. So add arch_flush_tlb_batched_pending() to
+allow an arch-specific implementation here. This intends no
+functional changes on x86 since still a full mm flush for
+x86.
 
-My full name is wuyunchan， but that is too long.
-So I use the wuych as simplification.
-I will change it to my full name, thanks for your adivce!
->
->> Pointer variables of void * type do not require type cast.
->>
->> Signed-off-by: wuych <yunchuan@nfschina.com>
->> ---
->>   drivers/net/wan/fsl_ucc_hdlc.c | 6 +++---
->>   1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
->> index 47c2ad7a3e42..73c73d8f4bb2 100644
->> --- a/drivers/net/wan/fsl_ucc_hdlc.c
->> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
->> @@ -350,11 +350,11 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
->>   static netdev_tx_t ucc_hdlc_tx(struct sk_buff *skb, struct net_device *dev)
->>   {
->>   	hdlc_device *hdlc = dev_to_hdlc(dev);
->> -	struct ucc_hdlc_private *priv = (struct ucc_hdlc_private *)hdlc->priv;
->> -	struct qe_bd *bd;
->> -	u16 bd_status;
->> +	struct ucc_hdlc_private *priv = hdlc->priv;
->>   	unsigned long flags;
->>   	__be16 *proto_head;
->> +	struct qe_bd *bd;
->> +	u16 bd_status;
-> Don't move the other variables around.  That's unrelated to the cast.
-> (Same applies to all the other patches).
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+---
+ arch/x86/include/asm/tlbflush.h | 5 +++++
+ mm/rmap.c                       | 2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-I want to move the declarations to be reverse xmas tree.
-Maybe moving them is more better?
+diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
+index 1c7d3a36e16c..837e4a50281a 100644
+--- a/arch/x86/include/asm/tlbflush.h
++++ b/arch/x86/include/asm/tlbflush.h
+@@ -284,6 +284,11 @@ static inline void arch_tlbbatch_add_pending(struct arch_tlbflush_unmap_batch *b
+ 	cpumask_or(&batch->cpumask, &batch->cpumask, mm_cpumask(mm));
+ }
+ 
++static inline void arch_flush_tlb_batched_pending(struct mm_struct *mm)
++{
++	flush_tlb_mm(mm);
++}
++
+ extern void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch);
+ 
+ static inline bool pte_flags_need_flush(unsigned long oldflags,
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 9699c6011b0e..3a16c91be7e2 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -717,7 +717,7 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
+ 	int flushed = batch >> TLB_FLUSH_BATCH_FLUSHED_SHIFT;
+ 
+ 	if (pending != flushed) {
+-		flush_tlb_mm(mm);
++		arch_flush_tlb_batched_pending(mm);
+ 		/*
+ 		 * If the new TLB flushing is pending during flushing, leave
+ 		 * mm->tlb_flush_batched as is, to avoid losing flushing.
+-- 
+2.24.0
 
-wuych
-
->
-> regards,
-> dan carpenter
->
