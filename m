@@ -4,89 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F185EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 16:46:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7C7EEB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 16:47:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DUaNIuXj;
+	dkim=pass (2048-bit key; unprotected) header.d=osandov-com.20221208.gappssmtp.com header.i=@osandov-com.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=W7RF0loq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R08yf4xn2z3bqV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 02:46:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R090j2807z3c4L
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 02:47:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DUaNIuXj;
+	dkim=pass (2048-bit key; unprotected) header.d=osandov-com.20221208.gappssmtp.com header.i=@osandov-com.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=W7RF0loq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=osandov.com (client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com; envelope-from=osandov@osandov.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R08xc3Qvvz30MY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 02:45:08 +1000 (AEST)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36AGHurW010516;
-	Mon, 10 Jul 2023 16:44:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=XCQvO4AMwAl3UVUAgFYIr0Tyqbjq93TFj9IeImIxS/c=;
- b=DUaNIuXjPrGAiW08/9O5WqZ2YaewIiMP/qiGskSPK7RG0ORefyt6HgdTiE3dSMgFhPBG
- xlYhxs+iW9uF5yKJ97lyH0Ev1WTLZ4qjPM2SdRSIPejtS5zLInQM5fwCrGJomDTC2XqN
- MPelDvTB8c+uRLWwuYs1C+WiRMO112fllJWVDrWN/YpEv9FXyPD9T6AtMl8iV6jc2RnG
- nQ79QDbpYRxvhtS+pG9jWQMNhzpk/E3uGNkbCpPjVGlfajJnmRLNU5djEnhrmI8V3RGB
- 6Q+SI5vod/8mFiyltET+jWxOlR6FlbkW+QLW/urL9n+WTdw6TGg0vpidvsywBJAZc5w8 tQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rrnckrk8t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Jul 2023 16:44:48 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36AGbN0v001960;
-	Mon, 10 Jul 2023 16:44:48 GMT
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com [169.53.41.122])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rrnckrk89-3
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Jul 2023 16:44:48 +0000
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
-	by ppma04dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36AEDLte016682;
-	Mon, 10 Jul 2023 16:10:19 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([9.208.130.100])
-	by ppma04dal.us.ibm.com (PPS) with ESMTPS id 3rpye60kx9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Jul 2023 16:10:19 +0000
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36AGAImU64094606
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Jul 2023 16:10:18 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B0F5D5803F;
-	Mon, 10 Jul 2023 16:10:18 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BF7E058056;
-	Mon, 10 Jul 2023 16:10:12 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.43.9.86])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 10 Jul 2023 16:10:12 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH v4 13/13] powerpc/book3s64/radix: Add debug message to give more details of vmemmap allocation
-Date: Mon, 10 Jul 2023 21:38:42 +0530
-Message-ID: <20230710160842.56300-14-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R08zh56kvz30N3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 02:46:56 +1000 (AEST)
+Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-262ef07be72so2205302a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 09:46:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=osandov-com.20221208.gappssmtp.com; s=20221208; t=1689007614; x=1691599614;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=a8oejiBn24nsImiUBzXJJgIV0SyvtPcohAcYwp8oH8Y=;
+        b=W7RF0loqZPQ8hOG/Ubw68wnRb17UCsNyHtSGd39NfX83uxeE9ObR+gZXBzNV5yXMHZ
+         9dNW8LXv84GZhOdBM03MX62tz37PKR49XQ/1+mLZqqL1JSO4CVTT8uXcKA6DMu3kNX16
+         13DWyplnk7IDKrVPwrDpCHF6oRaHPfmPBBlL6tDdKL39VnffJ2olpQM5SYrN3SPchgw/
+         dGFCqhuBL6TVRDaWMF/lGHAE0q/9B8Q/FuLrl0ulYNQC6FipZxWzf/oYa53/9S+1Vsna
+         444COZeLvH8mUnKxFekiuER5k0sVCrWLUwETPl1v3nS0qFFoGoEoNmqxOCx6z04kjd+n
+         I3fg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689007614; x=1691599614;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=a8oejiBn24nsImiUBzXJJgIV0SyvtPcohAcYwp8oH8Y=;
+        b=Zal0z1RVyU1BE8wtVh2kHuuQfHOAXgY+tvaR9ptqUwmc+TUoxqsyA4aacwYP7jbi4O
+         OwZtqHHz8/iH2BX1ps4VVKz2Xnksn0+88YbOkBqNkJKgQ6W4IAyELd1Z/wmL5H/4N/aM
+         CKtJBkssj91m5mJgK079qrE+2TkaOilLj1RDpT9dJSexGUru3CFwhKIO9tx0acoHVJid
+         Aq6fy9M3Bur71OMg8cTpejmcdr8DB00J7kY+GI6tpIUxKhij0o5A6cDmfSmNv9JUjovc
+         NoE3WumdixWaPy+gUihEPDUwzRFC4asjwdkPyQjC8wepiamv+ABenXKxmBgyLwQIKyzh
+         V91A==
+X-Gm-Message-State: ABy/qLb9MqWT7i0okbqGjme0gD5px+MrZ3U1YOuM8S44QjjunzliqpHC
+	C4LBYCukiNVQ09lq2GnCSwK0fYliPKq8Wp15oLk=
+X-Google-Smtp-Source: APBJJlHxV2VaI+4KlKIdhJFoJdxnPIPkX+6dSFWtIsS6zSaAZ+6dMorgWu91AsapzGJzh4sSeNMaJg==
+X-Received: by 2002:a17:90a:2a87:b0:262:d029:69fc with SMTP id j7-20020a17090a2a8700b00262d02969fcmr10311106pjd.34.1689007614196;
+        Mon, 10 Jul 2023 09:46:54 -0700 (PDT)
+Received: from telecaster.hsd1.wa.comcast.net ([2601:602:a300:3bc0::77bb])
+        by smtp.gmail.com with ESMTPSA id fh22-20020a17090b035600b00262eb0d141esm171208pjb.28.2023.07.10.09.46.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Jul 2023 09:46:53 -0700 (PDT)
+From: Omar Sandoval <osandov@osandov.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc/crypto: fix missing skcipher dependency for aes-gcm-p10
+Date: Mon, 10 Jul 2023 09:46:46 -0700
+Message-ID: <c55ad70799e027a3d2756b85ccadc0af52ae8915.1689007370.git.osandov@osandov.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230710160842.56300-1-aneesh.kumar@linux.ibm.com>
-References: <20230710160842.56300-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: UKYBQNzylw66poHeRX3bseGikd3W8RyS
-X-Proofpoint-ORIG-GUID: GCRqle8WNpa5R1TL9XzHcq0-XjHrQdOb
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-10_12,2023-07-06_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
- lowpriorityscore=0 phishscore=0 bulkscore=0 mlxlogscore=999 clxscore=1015
- malwarescore=0 mlxscore=0 adultscore=0 priorityscore=1501 impostorscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2307100149
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,71 +76,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Muchun Song <muchun.song@linux.dev>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>, Will Deacon <will@kernel.org>, Joao Martins <joao.m.martins@oracle.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Danny Tsen <dtsen@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add some extra vmemmap pr_debug message that will indicate the type of
-vmemmap allocations.
+From: Omar Sandoval <osandov@fb.com>
 
-For ex: with DAX vmemmap optimization we can find the below details:
-[  187.166580] radix-mmu: PAGE_SIZE vmemmap mapping
-[  187.166587] radix-mmu: PAGE_SIZE vmemmap mapping
-[  187.166591] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166594] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166598] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166601] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166604] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166608] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166611] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166614] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166617] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166620] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166623] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166626] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166629] radix-mmu: Tail page reuse vmemmap mapping
-[  187.166632] radix-mmu: Tail page reuse vmemmap mapping
+My stripped down configuration fails to build with:
 
-And without vmemmap optimization
-[  293.549931] radix-mmu: PMD_SIZE vmemmap mapping
-[  293.549984] radix-mmu: PMD_SIZE vmemmap mapping
-[  293.550032] radix-mmu: PMD_SIZE vmemmap mapping
-[  293.550076] radix-mmu: PMD_SIZE vmemmap mapping
-[  293.550117] radix-mmu: PMD_SIZE vmemmap mapping
+  ERROR: modpost: "skcipher_walk_aead_encrypt" [arch/powerpc/crypto/aes-gcm-p10-crypto.ko] undefined!
+  ERROR: modpost: "skcipher_walk_done" [arch/powerpc/crypto/aes-gcm-p10-crypto.ko] undefined!
+  ERROR: modpost: "skcipher_walk_aead_decrypt" [arch/powerpc/crypto/aes-gcm-p10-crypto.ko] undefined!
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Fix it by selecting CRYPTO_SKCIPHER.
+
+Signed-off-by: Omar Sandoval <osandov@fb.com>
 ---
- arch/powerpc/mm/book3s64/radix_pgtable.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/crypto/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 73d0987369ff..2828e7e0802c 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -1034,6 +1034,7 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
- 				p = vmemmap_alloc_block_buf(PAGE_SIZE, node, NULL);
- 			if (!p)
- 				return NULL;
-+			pr_debug("PAGE_SIZE vmemmap mapping\n");
- 		} else {
- 			/*
- 			 * When a PTE/PMD entry is freed from the init_mm
-@@ -1046,6 +1047,7 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
- 			 */
- 			get_page(reuse);
- 			p = page_to_virt(reuse);
-+			pr_debug("Tail page reuse vmemmap mapping\n");
- 		}
- 
- 		VM_BUG_ON(!PAGE_ALIGNED(addr));
-@@ -1155,6 +1157,7 @@ int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end, in
- 			p = vmemmap_alloc_block_buf(PMD_SIZE, node, altmap);
- 			if (p) {
- 				vmemmap_set_pmd(pmd, p, node, addr, next);
-+				pr_debug("PMD_SIZE vmemmap mapping\n");
- 				continue;
- 			} else if (altmap) {
- 				/*
+diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
+index ad1872518992..81ae015861c0 100644
+--- a/arch/powerpc/crypto/Kconfig
++++ b/arch/powerpc/crypto/Kconfig
+@@ -100,6 +100,7 @@ config CRYPTO_AES_GCM_P10
+ 	select CRYPTO_LIB_AES
+ 	select CRYPTO_ALGAPI
+ 	select CRYPTO_AEAD
++	select CRYPTO_SKCIPHER
+ 	default m
+ 	help
+ 	  AEAD cipher: AES cipher algorithms (FIPS-197)
 -- 
 2.41.0
 
