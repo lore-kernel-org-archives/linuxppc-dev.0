@@ -4,59 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67F82EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 07:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FE38EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 07:39:20 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OBAbthM1;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4QzwRY6rHKz3cTn
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 17:21:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Qzwqp5fSRz3bpN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 17:39:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OBAbthM1;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42e; helo=mail-wr1-x42e.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4QzwPv4JMTz3bpN
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 17:20:19 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qIlBY-0008Dp-C1; Mon, 10 Jul 2023 09:19:52 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qIlBV-00DMe9-Ax; Mon, 10 Jul 2023 09:19:49 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qIlBU-003jlu-Km; Mon, 10 Jul 2023 09:19:48 +0200
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Madalin Bucur <madalin.bucur@nxp.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
-	Wei Fang <wei.fang@nxp.com>,
-	Simon Horman <simon.horman@corigine.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Marc Kleine-Budde <mkl@pengutronix.de>,
-	Michal Kubiak <michal.kubiak@intel.com>,
-	Rob Herring <robh@kernel.org>,
-	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	Claudiu Manoil <claudiu.manoil@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>
-Subject: [PATCH net-next v3 0/8] net: freescale: Convert to platform remove callback returning void
-Date: Mon, 10 Jul 2023 09:19:38 +0200
-Message-Id: <20230710071946.3470249-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.39.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Qzwcx4DXQz2yNy
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 17:29:51 +1000 (AEST)
+Received: by mail-wr1-x42e.google.com with SMTP id ffacd0b85a97d-3159d5e409dso200177f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 00:29:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1688974185; x=1691566185;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=2jy5zTnsEjclW0IAo6TI4KH09ecPC4N8l96twGj5N0E=;
+        b=OBAbthM1v1c78/ZzCyTdIpwTdHirp2JVWB3eDHKM3yppE8P3aW7bDozXCSbCfWCGvo
+         aUJhkV9MOOBlgcArpIE7XMWjWnsRdnWwGgRD7j1RpPrD6eiToYHeHf0/kHKrsAl7vs9Q
+         0LVNAuVBm9Ag0wKK7btutonbmGXnR2ZHigLTSRfxBYaD6A3CvlGEsVGLMurOCq3bsgXN
+         kT2XnduE6CYa7eSe9Cm105uUZIE1A28AyWSzVEhqkOhUbrp6kdT/+8dDEGqEYo0mlC0N
+         +p/NmuArdn1E3yfJPZxONsLJNo47TFfmB+uq37uCzOY1HYBrZaypYGD2le0rnusaQ9Wu
+         fGVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688974185; x=1691566185;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2jy5zTnsEjclW0IAo6TI4KH09ecPC4N8l96twGj5N0E=;
+        b=cjcqQitVatwapBty+dafUdoCY/W1xi+9CETXvneyuwOGbqd2CFmLGd8WwJqFuvvBL1
+         w2Lzuz9MuxJURsgtV2xFKRrHfVLRZ/oGZqi562YMNXu2IZrjBGPWIaCsE5EZLDjyZo3/
+         mx5CczUiWlr2ioed0C+giX+a0uyxeQzIToKYAOJempHhMyr/aqJWw894cOSAw4OpPplQ
+         /39AAObTBZGr8F4yatwX0ov0rRBv8cBw/MG/yrt/82Mpak2Tvaz5aToc0hMl4ccbRUnL
+         2D6jqjDlC0LL4vpDXSn/joTeMy0MoJrPWPj4OFRO6b9/fyqUqmvDPMb524jHxpRNuVPv
+         hLQQ==
+X-Gm-Message-State: ABy/qLZjFdJIOl7eZpIUho1fCLdB5GC3oomlwnz21kD0HF8B8fN22Bt6
+	PuLoDPo7KL+7QIuzKfG/R3B8QA==
+X-Google-Smtp-Source: APBJJlHVp1/4Jh3pSjHcnXhiWDH/u3GR3xaCfeHhiOKMO2azzBEjQPQEy5nxXANY+hMDz9a27mSt/A==
+X-Received: by 2002:adf:f592:0:b0:314:1d6:8aa7 with SMTP id f18-20020adff592000000b0031401d68aa7mr10971747wro.29.1688974184893;
+        Mon, 10 Jul 2023 00:29:44 -0700 (PDT)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id v12-20020adfe4cc000000b003143cb109d5sm10790399wrm.14.2023.07.10.00.29.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Jul 2023 00:29:43 -0700 (PDT)
+Date: Mon, 10 Jul 2023 10:29:39 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Su Hui <suhui@nfschina.com>
+Subject: Re: [PATCH net-next v2 01/10] net: wan: Remove unnecessary (void*)
+ conversions
+Message-ID: <45519aec-6ec8-49e5-b5b2-1b52d336288c@kadam.mountain>
+References: <20230710063933.172926-1-suhui@nfschina.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1929; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=TkFJrQ3hly2E7ZLecW5hxiPTXLPviTcuFnxLd6aVHn0=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBkq7EEdv8rROspu6T+WuYeWU9WEhP/nVM3uBaYe RYHuYT2ZpWJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZKuxBAAKCRCPgPtYfRL+ ThtbB/9k+NYqB1wXLRyKEdH6cUwEKSwa0zvI7aKo8QfrxZoUfkWPDVMwq29jCFqAsOYgF/oYjd0 /KZrQ8NylM4XKfwLFf1Uo1+IPsvNZAqcAdYzbWAqjqdwfJllMyz6OH73oCkzwwRm0Kco6GwFU+9 Q2UUxv9GgWQE60hOkRuwT8NuWfhiWiuwRa6azi8SwcfMm/tI9wDqo9KdYdt37wd3uZCczAETU1r sPo8ut/YwRbf/rmF+M+xTDoqTNkoJeXycP0EtP9iERN+UjUiyk2nesow4AFEEG5X5ikJeoGWIXu d5IkfGGektutX6PxltOBS5Q2DBNg/IAOMuVbHu4mHwi7PJhu
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230710063933.172926-1-suhui@nfschina.com>
+X-Mailman-Approved-At: Mon, 10 Jul 2023 17:38:31 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,50 +79,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sean Anderson <sean.anderson@seco.com>, netdev@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Shenwei Wang <shenwei.wang@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>, NXP Linux Team <linux-imx@nxp.com>, kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, edumazet@google.com, wuych <yunchuan@nfschina.com>, kuba@kernel.org, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, qiang.zhao@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+On Mon, Jul 10, 2023 at 02:39:33PM +0800, Su Hui wrote:
+> From: wuych <yunchuan@nfschina.com>
+        ^^^^^
+This doesn't look like a real name.
 
-v2 of this series was sent in June[1], code changes since then only affect
-patch #1 where the dev_err invocation was adapted to emit the error code of
-dpaa_fq_free(). Thanks for feedback by Maciej Fijalkowski and Russell King.
-Other than that I added Reviewed-by tags for Simon Horman and Wei Fang and
-rebased to v6.5-rc1.
+> 
+> Pointer variables of void * type do not require type cast.
+> 
+> Signed-off-by: wuych <yunchuan@nfschina.com>
+> ---
+>  drivers/net/wan/fsl_ucc_hdlc.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+> index 47c2ad7a3e42..73c73d8f4bb2 100644
+> --- a/drivers/net/wan/fsl_ucc_hdlc.c
+> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
+> @@ -350,11 +350,11 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
+>  static netdev_tx_t ucc_hdlc_tx(struct sk_buff *skb, struct net_device *dev)
+>  {
+>  	hdlc_device *hdlc = dev_to_hdlc(dev);
+> -	struct ucc_hdlc_private *priv = (struct ucc_hdlc_private *)hdlc->priv;
+> -	struct qe_bd *bd;
+> -	u16 bd_status;
+> +	struct ucc_hdlc_private *priv = hdlc->priv;
+>  	unsigned long flags;
+>  	__be16 *proto_head;
+> +	struct qe_bd *bd;
+> +	u16 bd_status;
 
-There is only one dependency in this series: Patch #2 depends on patch
-#1.
+Don't move the other variables around.  That's unrelated to the cast.
+(Same applies to all the other patches).
 
-Best regards
-Uwe
-
-[1] https://lore.kernel.org/netdev/20230606162829.166226-1-u.kleine-koenig@pengutronix.de
-
-Uwe Kleine-König (8):
-  net: dpaa: Improve error reporting
-  net: dpaa: Convert to platform remove callback returning void
-  net: fec: Convert to platform remove callback returning void
-  net: fman: Convert to platform remove callback returning void
-  net: fs_enet: Convert to platform remove callback returning void
-  net: fsl_pq_mdio: Convert to platform remove callback returning void
-  net: gianfar: Convert to platform remove callback returning void
-  net: ucc_geth: Convert to platform remove callback returning void
-
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c        | 9 +++++----
- drivers/net/ethernet/freescale/fec_main.c             | 5 ++---
- drivers/net/ethernet/freescale/fec_mpc52xx.c          | 6 ++----
- drivers/net/ethernet/freescale/fec_mpc52xx_phy.c      | 6 ++----
- drivers/net/ethernet/freescale/fman/mac.c             | 5 ++---
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 5 ++---
- drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c  | 6 ++----
- drivers/net/ethernet/freescale/fs_enet/mii-fec.c      | 6 ++----
- drivers/net/ethernet/freescale/fsl_pq_mdio.c          | 6 ++----
- drivers/net/ethernet/freescale/gianfar.c              | 6 ++----
- drivers/net/ethernet/freescale/ucc_geth.c             | 6 ++----
- 11 files changed, 25 insertions(+), 41 deletions(-)
-
-base-commit: 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5
--- 
-2.39.2
+regards,
+dan carpenter
 
