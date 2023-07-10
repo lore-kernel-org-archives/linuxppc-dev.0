@@ -4,74 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 988ABEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 16:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F185EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jul 2023 16:46:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=UuZrn4FN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DUaNIuXj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R08lf1ZgHz3c2C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 02:36:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R08yf4xn2z3bqV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 02:46:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=UuZrn4FN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DUaNIuXj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com; envelope-from=isaku.yamahata@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R08jp6KHkz3bnp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 02:34:53 +1000 (AEST)
-Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-262dc1ced40so3443464a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2023 09:34:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689006891; x=1691598891;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=McmzJB5w4UGeZqusQBhdxfjqigG3UhKtoIfFccLuj2s=;
-        b=UuZrn4FN/UbJwfewh85rKzjLye9uELQEX45+YZjjYTP/BYBPgS+1UF+XIPNG2dESCU
-         W86RtEBWvSwsPMW2x13eLsYhpVucWKpqju+x0agjnUbM9X4mJPFqV5rxvm4kT+xeCHJ2
-         VLT5n9dF1ENtaArZbX2UUhZour8m8LNq5DgukydBxaU2fh8GLhckDOL0rRtQHMK6r9Zy
-         jdOMwsf8im36X5gkixxf9GaLSAwdB6NrArpT95n6SO2ZLoGIlJK/Rxm4qX2jwfk/k1E7
-         Ou/qPcZpE/ua9W+K5ji+Kqm43nFA7KCT2k00BsUZLSUM4S3DFaj6X8Q0tH21tk5YJKRc
-         ar2w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689006891; x=1691598891;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=McmzJB5w4UGeZqusQBhdxfjqigG3UhKtoIfFccLuj2s=;
-        b=NweCBv6euUMdScewwjhaz8RmXBaP2McgvOo20ZZfRjJz/Ex0lJKR/4GHaxdoxLAPQN
-         BzlMCyEtWR5/CfiedD45RGCtYOpkF6xFmwosbxgtzlKfpqBCKln/uFSzC8sln9S5ry1E
-         4lsF0MlzS9RdTxkYPM3QZJXeN3iHFa8RLFW6/n2uR4SQL2IHpqjYfb1nKb5LnHkC9jBm
-         etXkKZLXuLSAChN5KRFR9zCm5QnW5DvR9w3B1T74NTgLyHqgIwdRWd41A5/aBsreE9rz
-         Uv/yWeWjkGLR/3wqV2NHQLPVoqGMZUwgWqgCsnREGtsnh4LdEpo0aPp4pScwRfbPOUOx
-         De1Q==
-X-Gm-Message-State: ABy/qLbZUohojiAKQ2hpDoeadk+K9srbpCo1c+H+m7RwCudaXebtrGkA
-	PGsSLb5ZPSDLWvVCH5NnJ6E=
-X-Google-Smtp-Source: APBJJlFGgItLHZLzX11JZjIS73D9W6Es/hAVqOzRDVW3J19VHlBJaksBcwskjpiGnATOLXIP8QCxUQ==
-X-Received: by 2002:a17:90a:b315:b0:261:113e:50d2 with SMTP id d21-20020a17090ab31500b00261113e50d2mr13856226pjr.31.1689006890824;
-        Mon, 10 Jul 2023 09:34:50 -0700 (PDT)
-Received: from localhost ([192.55.54.50])
-        by smtp.gmail.com with ESMTPSA id t8-20020a17090aae0800b00263f40cf83esm6456783pjq.47.2023.07.10.09.34.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Jul 2023 09:34:50 -0700 (PDT)
-Date: Mon, 10 Jul 2023 09:34:48 -0700
-From: Isaku Yamahata <isaku.yamahata@gmail.com>
-To: David Stevens <stevensd@chromium.org>
-Subject: Re: [PATCH v7 5/8] KVM: x86/mmu: Don't pass FOLL_GET to
- __kvm_follow_pfn
-Message-ID: <20230710163448.GE3894444@ls.amr.corp.intel.com>
-References: <20230704075054.3344915-1-stevensd@google.com>
- <20230704075054.3344915-6-stevensd@google.com>
- <20230705101800.ut4c6topn6ylwczs@linux.intel.com>
- <CAD=HUj41PAKC0x+c3zWAr-aCm59K7hs2zRh1uWs9778_Mai4UA@mail.gmail.com>
- <20230706155805.GD3894444@ls.amr.corp.intel.com>
- <CAD=HUj6GiK3TSSe7UY8C2Jd+3tjZNBa-TLgk-UodyL=E+qKavg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R08xc3Qvvz30MY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 02:45:08 +1000 (AEST)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36AGHurW010516;
+	Mon, 10 Jul 2023 16:44:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=XCQvO4AMwAl3UVUAgFYIr0Tyqbjq93TFj9IeImIxS/c=;
+ b=DUaNIuXjPrGAiW08/9O5WqZ2YaewIiMP/qiGskSPK7RG0ORefyt6HgdTiE3dSMgFhPBG
+ xlYhxs+iW9uF5yKJ97lyH0Ev1WTLZ4qjPM2SdRSIPejtS5zLInQM5fwCrGJomDTC2XqN
+ MPelDvTB8c+uRLWwuYs1C+WiRMO112fllJWVDrWN/YpEv9FXyPD9T6AtMl8iV6jc2RnG
+ nQ79QDbpYRxvhtS+pG9jWQMNhzpk/E3uGNkbCpPjVGlfajJnmRLNU5djEnhrmI8V3RGB
+ 6Q+SI5vod/8mFiyltET+jWxOlR6FlbkW+QLW/urL9n+WTdw6TGg0vpidvsywBJAZc5w8 tQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rrnckrk8t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 10 Jul 2023 16:44:48 +0000
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36AGbN0v001960;
+	Mon, 10 Jul 2023 16:44:48 GMT
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com [169.53.41.122])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rrnckrk89-3
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 10 Jul 2023 16:44:48 +0000
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+	by ppma04dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36AEDLte016682;
+	Mon, 10 Jul 2023 16:10:19 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([9.208.130.100])
+	by ppma04dal.us.ibm.com (PPS) with ESMTPS id 3rpye60kx9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 10 Jul 2023 16:10:19 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36AGAImU64094606
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 10 Jul 2023 16:10:18 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B0F5D5803F;
+	Mon, 10 Jul 2023 16:10:18 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BF7E058056;
+	Mon, 10 Jul 2023 16:10:12 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.43.9.86])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 10 Jul 2023 16:10:12 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+Subject: [PATCH v4 13/13] powerpc/book3s64/radix: Add debug message to give more details of vmemmap allocation
+Date: Mon, 10 Jul 2023 21:38:42 +0530
+Message-ID: <20230710160842.56300-14-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230710160842.56300-1-aneesh.kumar@linux.ibm.com>
+References: <20230710160842.56300-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAD=HUj6GiK3TSSe7UY8C2Jd+3tjZNBa-TLgk-UodyL=E+qKavg@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: UKYBQNzylw66poHeRX3bseGikd3W8RyS
+X-Proofpoint-ORIG-GUID: GCRqle8WNpa5R1TL9XzHcq0-XjHrQdOb
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-10_12,2023-07-06_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
+ lowpriorityscore=0 phishscore=0 bulkscore=0 mlxlogscore=999 clxscore=1015
+ malwarescore=0 mlxscore=0 adultscore=0 priorityscore=1501 impostorscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307100149
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,48 +98,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marc Zyngier <maz@kernel.org>, kvm@vger.kernel.org, Sean Christopherson <seanjc@google.com>, linux-kernel@vger.kernel.org, Peter Xu <peterx@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, Isaku Yamahata <isaku.yamahata@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Muchun Song <muchun.song@linux.dev>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>, Will Deacon <will@kernel.org>, Joao Martins <joao.m.martins@oracle.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 07, 2023 at 10:35:02AM +0900,
-David Stevens <stevensd@chromium.org> wrote:
+Add some extra vmemmap pr_debug message that will indicate the type of
+vmemmap allocations.
 
-> > > > > diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-> > > > > index e44ab512c3a1..b1607e314497 100644
-> > > > > --- a/arch/x86/kvm/mmu/mmu.c
-> > > > > +++ b/arch/x86/kvm/mmu/mmu.c
-> > > >
-> > > > ...
-> > > >
-> > > > > @@ -2937,6 +2943,7 @@ static int mmu_set_spte(struct kvm_vcpu *vcpu, struct kvm_memory_slot *slot,
-> > > > >       bool host_writable = !fault || fault->map_writable;
-> > > > >       bool prefetch = !fault || fault->prefetch;
-> > > > >       bool write_fault = fault && fault->write;
-> > > > > +     bool is_refcounted = !fault || fault->is_refcounted_page;
-> > > >
-> > > > Just wonder, what if a non-refcounted page is prefetched?  Or is it possible in
-> > > > practice?
-> > >
-> > > Prefetching is still done via gfn_to_page_many_atomic, which sets
-> > > FOLL_GET. That's fixable, but it's not something this series currently
-> > > does.
-> >
-> > So if we prefetch a page, REFCOUNTED bit is cleared unconditionally with this
-> > hunk.  kvm_set_page_{dirty, accessed} won't be called as expected for prefetched
-> > spte.  If I read the patch correctly, REFCOUNTED bit in SPTE should represent
-> > whether the corresponding page is ref-countable or not, right?
-> >
-> > Because direct_pte_prefetch_many() is for legacy KVM MMU and FNAME(prefetch_pte)
-> > is shadow paging, we need to test it with legacy KVM MMU or shadow paging to hit
-> > the issue, though.
-> >
-> 
-> direct_pte_prefetch_many and prefetch_gpte both pass NULL for the
-> fault parameter, so is_refcounted will evaluate to true. So the spte's
-> refcounted bit will get set in that case.
+For ex: with DAX vmemmap optimization we can find the below details:
+[  187.166580] radix-mmu: PAGE_SIZE vmemmap mapping
+[  187.166587] radix-mmu: PAGE_SIZE vmemmap mapping
+[  187.166591] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166594] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166598] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166601] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166604] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166608] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166611] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166614] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166617] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166620] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166623] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166626] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166629] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166632] radix-mmu: Tail page reuse vmemmap mapping
 
-Oops, my bad.  My point is "unconditionally".  Is the bit always set for
-non-refcountable pages?  Or non-refcountable pages are not prefeched?
+And without vmemmap optimization
+[  293.549931] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.549984] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.550032] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.550076] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.550117] radix-mmu: PMD_SIZE vmemmap mapping
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 73d0987369ff..2828e7e0802c 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -1034,6 +1034,7 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
+ 				p = vmemmap_alloc_block_buf(PAGE_SIZE, node, NULL);
+ 			if (!p)
+ 				return NULL;
++			pr_debug("PAGE_SIZE vmemmap mapping\n");
+ 		} else {
+ 			/*
+ 			 * When a PTE/PMD entry is freed from the init_mm
+@@ -1046,6 +1047,7 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
+ 			 */
+ 			get_page(reuse);
+ 			p = page_to_virt(reuse);
++			pr_debug("Tail page reuse vmemmap mapping\n");
+ 		}
+ 
+ 		VM_BUG_ON(!PAGE_ALIGNED(addr));
+@@ -1155,6 +1157,7 @@ int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end, in
+ 			p = vmemmap_alloc_block_buf(PMD_SIZE, node, altmap);
+ 			if (p) {
+ 				vmemmap_set_pmd(pmd, p, node, addr, next);
++				pr_debug("PMD_SIZE vmemmap mapping\n");
+ 				continue;
+ 			} else if (altmap) {
+ 				/*
 -- 
-Isaku Yamahata <isaku.yamahata@gmail.com>
+2.41.0
+
