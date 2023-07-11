@@ -4,57 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E987FEB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 17:24:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EED5EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 19:30:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PZNeD789;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cNjPPHJC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0nmk33Z1z3c05
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 03:24:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0rZT118bz3bx8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 05:30:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PZNeD789;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cNjPPHJC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=legion@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0nlm60bVz3bjK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 03:23:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0gh74jw8z30XP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 22:50:15 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id AA9226156D;
-	Tue, 11 Jul 2023 17:23:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75D7BC433C8;
-	Tue, 11 Jul 2023 17:23:29 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 3D44261382;
+	Tue, 11 Jul 2023 12:50:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E36E0C433C8;
+	Tue, 11 Jul 2023 12:49:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1689096226;
-	bh=zRaRZODsK04vezweUZ+H0PPfgi1k3wqQi7324zxQ/28=;
+	s=k20201202; t=1689079809;
+	bh=dNf0h22e3NNw5WnIyQMA79RXwcCjXd4yUaNvlYSmEks=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=PZNeD789rxo/FRL8fguXIaEhIdcb3NoIGN+R9irixNbC8LsCXOFUznWzq9WmhX658
-	 ctLKt4COOixyfu+iv7gv3l9QC8KiJ43LdgPgDcE1w2J7wMHlQWTmN6JkCU9QtffkJi
-	 ofqDiuh+IIRXiX99OJNPoCjVQaYVaBtzcSdXCqRv0PuGoSZCDfIZHVpkMCK9Y2t1GI
-	 vvkbRprIdu8vTrPKKD7IRTCrO4yEdFk+gpmFbTGc26mgSAZvKXM3tPq/RUsz8NXAKQ
-	 Vua2j8OnCVr7Lflg091O7i0d7MqnHEfpV0YZTlcSdv52fPNSg3ivTTA+lEvAAClYgQ
-	 Rul1HsweoxsXQ==
-Date: Tue, 11 Jul 2023 19:23:24 +0200
+	b=cNjPPHJCjkBuTo31uxO23EaD7iBmnxEZwpJnZPbX4Xt0szcj8ZgyO+hFXrziDLnmJ
+	 WJfKsnZYW2NOQL3/ej8bLyiHu3o1cYgHqGtMbPw/xU5DUyrh9wH/uRCTzT6nteqM17
+	 ih0fj7MI3xs3DsWKDpGWHK/svwtx6ndwsmveTHwe5/53fRS3olzp6tBliGqf9sdGX9
+	 kN9/UPhMXhRiCAx1fAJd0t7sk9E2Jrj7YEssyG4k1JXRDx+YpYchn3i5vwcM7u3hPP
+	 uyPhDJtpjTnpxvOXge4E7SaouWn3esU19tKAKmZoLjNyYWqbKP+E5Cdjp80IatCv7m
+	 LrjabKUWygppA==
+Date: Tue, 11 Jul 2023 14:49:50 +0200
 From: Alexey Gladkov <legion@kernel.org>
-To: Namhyung Kim <namhyung@kernel.org>
-Subject: Re: [PATCH v4 4/5] tools headers UAPI: Sync files changed by new
- fchmodat2 syscall
-Message-ID: <ZK2QDCrlB/3dyiDy@example.org>
-References: <cover.1689074739.git.legion@kernel.org>
- <cover.1689092120.git.legion@kernel.org>
- <22294b3b68050a70eaaa962eff46b8672bc2f7e8.1689092120.git.legion@kernel.org>
- <CAM9d7chAqGwy0WmR67TucFjRq+Aa7zQnayvwMCqd5-meVHkP5g@mail.gmail.com>
+To: Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH v3 2/5] fs: Add fchmodat4()
+Message-ID: <ZK1P7kkjTvSU8M++@example.org>
+References: <87o8pscpny.fsf@oldenburg2.str.redhat.com>
+ <cover.1689074739.git.legion@kernel.org>
+ <d11b93ad8e3b669afaff942e25c3fca65c6a983c.1689074739.git.legion@kernel.org>
+ <ZK1K1BOf43JOJWMx@casper.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAM9d7chAqGwy0WmR67TucFjRq+Aa7zQnayvwMCqd5-meVHkP5g@mail.gmail.com>
+In-Reply-To: <ZK1K1BOf43JOJWMx@casper.infradead.org>
+X-Mailman-Approved-At: Wed, 12 Jul 2023 05:30:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,101 +65,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@monstr.eu, tony.luck@i
- ntel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, heiko.carstens@de.ibm.com, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, fweimer@redhat.com, ysato@users.sourceforge.jp, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, firoz.khan@linaro.org, linux-arm-kernel@lists.infradead.org, jhogan@kernel.org, geert@linux-m68k.org, mattst88@gmail.com, linux-mips@vger.kernel.org, gor@linux.ibm.com, fenghua.yu@intel.com, Arnd Bergmann <arnd@arndb.de>, peterz@infradead.org, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, schwidefsky@de.ibm.com, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kerne
+ l.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, rth@twiddle.net, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@monstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, paul.burton@mips.com, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 11, 2023 at 10:19:35AM -0700, Namhyung Kim wrote:
-> Hello,
+On Tue, Jul 11, 2023 at 01:28:04PM +0100, Matthew Wilcox wrote:
+> On Tue, Jul 11, 2023 at 01:25:43PM +0200, Alexey Gladkov wrote:
+> > -static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
+> > +static int do_fchmodat4(int dfd, const char __user *filename, umode_t mode, int lookup_flags)
 > 
-> On Tue, Jul 11, 2023 at 9:18 AM Alexey Gladkov <legion@kernel.org> wrote:
-> >
-> > From: Palmer Dabbelt <palmer@sifive.com>
-> >
-> > That add support for this new syscall in tools such as 'perf trace'.
-> >
-> > Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
-> > Signed-off-by: Alexey Gladkov <legion@kernel.org>
-> > ---
-> >  tools/include/uapi/asm-generic/unistd.h             | 5 ++++-
-> >  tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl | 2 ++
-> >  tools/perf/arch/powerpc/entry/syscalls/syscall.tbl  | 2 ++
-> >  tools/perf/arch/s390/entry/syscalls/syscall.tbl     | 2 ++
-> >  tools/perf/arch/x86/entry/syscalls/syscall_64.tbl   | 2 ++
-> >  5 files changed, 12 insertions(+), 1 deletion(-)
-> 
-> It'd be nice if you route this patch separately through the
-> perf tools tree.  We can add this after the kernel change
-> is accepted.
+> This function can still be called do_fchmodat(); we don't need to
+> version internal functions.
 
-Sure. No problem.
-
-> >
-> > diff --git a/tools/include/uapi/asm-generic/unistd.h b/tools/include/uapi/asm-generic/unistd.h
-> > index dd7d8e10f16d..76b5922b0d39 100644
-> > --- a/tools/include/uapi/asm-generic/unistd.h
-> > +++ b/tools/include/uapi/asm-generic/unistd.h
-> > @@ -817,8 +817,11 @@ __SYSCALL(__NR_futex_waitv, sys_futex_waitv)
-> >  #define __NR_set_mempolicy_home_node 450
-> >  __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
-> >
-> > +#define __NR_fchmodat2 452
-> > +__SYSCALL(__NR_fchmodat2, sys_fchmodat2)
-> > +
-> >  #undef __NR_syscalls
-> > -#define __NR_syscalls 451
-> > +#define __NR_syscalls 453
-> >
-> >  /*
-> >   * 32 bit systems traditionally used different
-> > diff --git a/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl b/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl
-> > index 3f1886ad9d80..434728af4eaa 100644
-> > --- a/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl
-> > +++ b/tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl
-> > @@ -365,3 +365,5 @@
-> >  448    n64     process_mrelease                sys_process_mrelease
-> >  449    n64     futex_waitv                     sys_futex_waitv
-> >  450    common  set_mempolicy_home_node         sys_set_mempolicy_home_node
-> > +# 451 reserved for cachestat
-> > +452    n64     fchmodat2                       sys_fchmodat2
-> > diff --git a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-> > index a0be127475b1..6b70b6705bd7 100644
-> > --- a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-> > +++ b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-> > @@ -537,3 +537,5 @@
-> >  448    common  process_mrelease                sys_process_mrelease
-> >  449    common  futex_waitv                     sys_futex_waitv
-> >  450    nospu   set_mempolicy_home_node         sys_set_mempolicy_home_node
-> > +# 451 reserved for cachestat
-> > +452    common  fchmodat2                       sys_fchmodat2
-> > diff --git a/tools/perf/arch/s390/entry/syscalls/syscall.tbl b/tools/perf/arch/s390/entry/syscalls/syscall.tbl
-> > index b68f47541169..0ed90c9535b0 100644
-> > --- a/tools/perf/arch/s390/entry/syscalls/syscall.tbl
-> > +++ b/tools/perf/arch/s390/entry/syscalls/syscall.tbl
-> > @@ -453,3 +453,5 @@
-> >  448  common    process_mrelease        sys_process_mrelease            sys_process_mrelease
-> >  449  common    futex_waitv             sys_futex_waitv                 sys_futex_waitv
-> >  450  common    set_mempolicy_home_node sys_set_mempolicy_home_node     sys_set_mempolicy_home_node
-> > +# 451 reserved for cachestat
-> > +452  common    fchmodat2               sys_fchmodat2                   sys_fchmodat2
-> > diff --git a/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl b/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
-> > index c84d12608cd2..a008724a1f48 100644
-> > --- a/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
-> > +++ b/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
-> > @@ -372,6 +372,8 @@
-> >  448    common  process_mrelease        sys_process_mrelease
-> >  449    common  futex_waitv             sys_futex_waitv
-> >  450    common  set_mempolicy_home_node sys_set_mempolicy_home_node
-> > +# 451 reserved for cachestat
-> > +452    common  fchmodat2               sys_fchmodat2
-> >
-> >  #
-> >  # Due to a historical design error, certain syscalls are numbered differently
-> > --
-> > 2.33.8
-> >
-> 
+Yes. I tried not to change too much when adopting a patch. In the new
+version, I will return the old name. Thanks.
 
 -- 
 Rgrds, legion
