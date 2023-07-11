@@ -4,74 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 758C0C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 15:31:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1272EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 15:42:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=dt0t1XV1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=X9jrfrYE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0lGD0pVRz3bxB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 01:31:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0lVZ0RKdz3bpq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 01:42:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=dt0t1XV1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=X9jrfrYE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.18; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 344 seconds by postgrey-1.37 at boromir; Wed, 12 Jul 2023 01:30:37 AEST
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0lF91v2Vz2xW7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:30:36 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1689089420; x=1689694220; i=deller@gmx.de;
- bh=X5J8IwR1yeKrwbjkpPsX7TYJjlXNjW6vNyFiaXSONCI=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=dt0t1XV1ayiz/SJL3s2x1nKbHArNjmcF3GE6w9P/u/ZWPuz1bV8wR7nA4XpmNXspFjc9+JY
- 1B5fc8AF1xSoDqggXQO11QwB3WpDU2cJfxsxIsrXubkO5G8Ot6wu19JBtuBD85NmxwHFANdtD
- EH5a91o5CcM14prLpWojqewu34zz6hsjvoXq35UDvrlduK09+PxnxnTw+rNRDH5RayGa5ZtSl
- WgMx6hD2Vit0867ifGOoh2W1MftI1aoTMrRSgSmXkudKeJBiNV9zFuIW0s2+TxMuarKoihPZ1
- 03EhTwRvmtXa5u3ZRqblFFkysEPWzFwk+ZGgONfli3Vm4U0TwKZw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.149.147]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N4hzZ-1ps3V72pTb-011i72; Tue, 11
- Jul 2023 17:24:02 +0200
-Message-ID: <bf439387-6b13-0fd9-f61b-1a5cbf731187@gmx.de>
-Date: Tue, 11 Jul 2023 17:24:01 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0lTW17XTz30g1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:41:18 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36BFd4hj032041;
+	Tue, 11 Jul 2023 15:41:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=5yydZFlElCVG4pegshd1EZfsfCQim0k9/oE/biT7m4g=;
+ b=X9jrfrYEF+SB2Fpkz1JRYwVsRFG2CR45mIv7ZNYmLB8yL8dbdYaMu1rhTA2adYHnmoAm
+ Ep0HdS4uqGVx6+a9CWq3c+wKg15cuw0vi2QP0+wDvlwQpu8tCX2eQIsC345y+8NC9WYJ
+ m1sSubOZMLTtKF0LmQxhVl91WOvWjqObTJfKjgb3sFoPHxgjHzCue93Ha1vfrkCoYuE2
+ p4lv5/D80xHpp9261jBswFDApRRYLsenpztDd/zsEML5trc6I0cvF/fu5TuTCkaXDZHO
+ LI+qPzeacwulLrJ1XxMp22k+zeijoYdRPBtD+9T1j13/DCTSPdRjT5sSJEsOnALfSAdz 1w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rs9nk8c9u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 15:41:04 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36BFd6M3032387;
+	Tue, 11 Jul 2023 15:41:04 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rs9nk8c9m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 15:41:04 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36BEEQJH018476;
+	Tue, 11 Jul 2023 15:41:03 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rqmu0r59r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 15:41:03 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36BFf14Q13501056
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Jul 2023 15:41:01 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9222220040;
+	Tue, 11 Jul 2023 15:41:01 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E40642004B;
+	Tue, 11 Jul 2023 15:40:58 +0000 (GMT)
+Received: from [9.43.86.43] (unknown [9.43.86.43])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 11 Jul 2023 15:40:58 +0000 (GMT)
+Message-ID: <006e24f1-1261-1018-4125-02dd354da519@linux.ibm.com>
+Date: Tue, 11 Jul 2023 21:10:57 +0530
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.12.0
-Subject: Re: [PATCH 00/17] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
+Subject: Re: [PATCH v3 5/7] powerpc/book3s64/memhotplug: Enable memmap on
+ memory for radix
 Content-Language: en-US
-To: Sam Ravnborg <sam@ravnborg.org>, Thomas Zimmermann <tzimmermann@suse.de>
-References: <20230710130113.14563-1-tzimmermann@suse.de>
- <20230710171903.GA14712@ravnborg.org>
- <ab92f8d9-36ab-06bc-b85b-d52b7a1bfe9a@suse.de>
- <20230711144744.GA117276@ravnborg.org>
-From: Helge Deller <deller@gmx.de>
-In-Reply-To: <20230711144744.GA117276@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:6I/u9K9DZKAMaYzMuqb+xXVwXoFF+h72slV7307qnBcsm0Dzs1x
- nG8x0xILsiEhhUVyajytT1uvIrwO9pRmYfPk78Yjls8o/KkVUspWf98tkujsctomDLRF6u0
- UdBWhjkxLyl8NlhxrYI/AySAPNbWQr6NnCxEKWsR0EsTYbybHP0PZ/RgD80PFRH8fmhW/rk
- TAn21cXKojNy9UOEmBO4g==
-UI-OutboundReport: notjunk:1;M01:P0:lW4p1ZJ05Fw=;GxyVIzLC98Kse0BkV0VKZSOEV78
- XeMp7kqQBHVDcHkoFVS4DPGJe2FDd7daPCdRo0CdxTxrUrBuD91qPcVlzb5LGezLQglrLaAv6
- W86fopwiEz7BpxYOwQWOQgmtquiiUa51Lh8oSfY2NlQeMD8nKaviPKKiFCvozYXYvthf64ujQ
- EKyj+yZW/3TsFwy+PsfplTAHchWGUdlYdAEjHww8dR0vUtCi0GVM7BitR/mTA75Q9Rd1+COED
- 9/L0hrISYXCvVFCRQPhYDRC57NFUaDcpnj3e1AvvRhb5srZOko0myPl3O6dMZyAPwY7YELlFF
- QhKRCIBKMDtEGg+/vRniKsfuAJup3pzEr2qibwWXh/XLMYiZI2+TE+1DPUWtxa7iM7JumDN/i
- QinKWUGG2cF5dWpQIpWMpZAH7NnWAO85p9qhzjVSyeZtW6PbOqag4ulMGoRVZTA5978rMMEk4
- QXuefBnCDK3d8gXU7t4RTNPhUJ+W+x7WboPSqfcRVu+CClmXOs+DLEt4uvKDZs2ZZDkN+hMs4
- J4Txco/JAKnFjMT9PNjCdp9CUaYxq63USwMNRAgtHpi82uOfg54IJRUy9TCygPDVzTpVL1NJd
- dZ4vq0eiXgK8Y2efSKhSJThvXMBtF6a0mWCTJEZbCp9fiMQMLvK10gHLy1VJQAV5WeuJiLNIj
- SSmB8VwQHEJ7qkj6v9cCdfn3o5ULoc67f5X8dYJ7lxu797Vnz3LSDv6T0CcgAVUTjHyvT9Opn
- taog0/LWl1oCDUhcMn60srOqciY/OR1PjcXuNPUboMjPJSYTM1X9RUhVfIIXshgtBYRBEatc2
- bcNOqjxMw9QAyo3RJt1ZEnz10J2qXmbx74JReuMZ1cYvwHBh/b+izCQbraHM9IZynoLhL/ax3
- 03k/atFQiAXoEoXaN2WbCMT6RmU2GDNKLUqIklwOijYC8RIu43ivmwZtsrD09DNYUHNY1Wrx6
- sbwroaHH9gOuoGxUy2cns2gUXkE=
+To: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org,
+        akpm@linux-foundation.org, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+References: <20230711044834.72809-1-aneesh.kumar@linux.ibm.com>
+ <20230711044834.72809-6-aneesh.kumar@linux.ibm.com>
+ <98285185-170f-10fb-67a7-09e35ab47650@redhat.com>
+From: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
+In-Reply-To: <98285185-170f-10fb-67a7-09e35ab47650@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: fSg6mmAw1MeUYfKyZxcvArf24p_UuVTa
+X-Proofpoint-GUID: Y2wf3quj-g9xFrS6D1RiD9385B4zgS1h
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-11_08,2023-07-11_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 spamscore=0
+ adultscore=0 impostorscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
+ phishscore=0 suspectscore=0 clxscore=1015 mlxscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2305260000
+ definitions=main-2307110139
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,77 +105,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-staging@lists.linux.dev, linux-hyperv@vger.kernel.org, amd-gfx@lists.freedesktop.org, javierm@redhat.com, dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-geode@lists.infradead.org, linux-media@vger.kernel.org
+Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/11/23 16:47, Sam Ravnborg wrote:
-> Hi Thomas,
->
-> On Tue, Jul 11, 2023 at 08:24:40AM +0200, Thomas Zimmermann wrote:
->> Hi Sam
+On 7/11/23 8:56 PM, David Hildenbrand wrote:
+> On 11.07.23 06:48, Aneesh Kumar K.V wrote:
+>> Radix vmemmap mapping can map things correctly at the PMD level or PTE
+>> level based on different device boundary checks. Hence we skip the
+>> restrictions w.r.t vmemmap size to be multiple of PMD_SIZE. This also
+>> makes the feature widely useful because to use PMD_SIZE vmemmap area we
+>> require a memory block size of 2GiB
 >>
->> Am 10.07.23 um 19:19 schrieb Sam Ravnborg:
->>> Hi Thomas,
->>>
->>> On Mon, Jul 10, 2023 at 02:50:04PM +0200, Thomas Zimmermann wrote:
->>>> Remove the unused flags FBINFO_DEFAULT and FBINFO_FLAG_DEFAULT from
->>>> fbdev and drivers, as briefly discussed at [1]. Both flags were maybe
->>>> useful when fbdev had special handling for driver modules. With
->>>> commit 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE"), they are both 0
->>>> and have no further effect.
->>>>
->>>> Patches 1 to 7 remove FBINFO_DEFAULT from drivers. Patches 2 to 5
->>>> split this by the way the fb_info struct is being allocated. All flag=
-s
->>>> are cleared to zero during the allocation.
->>>>
->>>> Patches 8 to 16 do the same for FBINFO_FLAG_DEFAULT. Patch 8 fixes
->>>> an actual bug in how arch/sh uses the tokne for struct fb_videomode,
->>>> which is unrelated.
->>>>
->>>> Patch 17 removes both flag constants from <linux/fb.h>
->>>
->>> We have a few more flags that are unused - should they be nuked too?
->>> FBINFO_HWACCEL_FILLRECT
->>> FBINFO_HWACCEL_ROTATE
->>> FBINFO_HWACCEL_XPAN
+>> We can also use MHP_RESERVE_PAGES_MEMMAP_ON_MEMORY to that the feature
+>> can work with a memory block size of 256MB. Using altmap.reserve feature
+>> to align things correctly at pageblock granularity. We can end up
+>> losing some pages in memory with this. For ex: with a 256MiB memory block
+>> size, we require 4 pages to map vmemmap pages, In order to align things
+>> correctly we end up adding a reserve of 28 pages. ie, for every 4096
+>> pages 28 pages get reserved.
 >>
->> It seems those are there for completeness. Nothing sets _ROTATE,
-
-I think some fbdev drivers had hardware acceleration for ROTATE in the
-past. HWACCEL_XPAN is still in some drivers.
-
->> the others are simply never checked. According to the comments,
->> some are required, some are optional. I don't know what that
->> means.
-
-I think it's OK if you remove those flags which aren't used anywhere,
-e.g. FBINFO_HWACCEL_ROTATE.
-
->> IIRC there were complains about performance when Daniel tried to remove
->> fbcon acceleration, so not all _HWACCEL_ flags are unneeded.
-
-Correct. I think COPYAREA and FILLRECT are the bare minimum to accelerate
-fbcon, IMAGEBLIT is for showing the tux penguin (?),
-XPAN/YPAN and YWRAP for some hardware screen panning needed by some driver=
-s
-(not sure if this is still used as I don't have such hardware, Geert?).
-
->> Leaving them in for reference/completeness might be an option; or not. =
-I
->> have no strong feelings about those flags.
-
-I'd say drop FBINFO_HWACCEL_ROTATE at least ?
-
->>> Unused as in no references from fbdev/core/*
->>>
->>> I would rather see one series nuke all unused FBINFO flags in one go.
->>> Assuming my quick grep are right and the above can be dropped.
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> ---
+>>   arch/powerpc/Kconfig                          |  1 +
+>>   arch/powerpc/include/asm/pgtable.h            | 28 +++++++++++++++++++
+>>   .../platforms/pseries/hotplug-memory.c        |  3 +-
+>>   mm/memory_hotplug.c                           |  2 ++
+>>   4 files changed, 33 insertions(+), 1 deletion(-)
 >>
->> I would not want to extend this series. I'm removing _DEFAULT as it's
->> absolutely pointless and confusing.
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 116d6add0bb0..f890907e5bbf 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -157,6 +157,7 @@ config PPC
+>>       select ARCH_HAS_UBSAN_SANITIZE_ALL
+>>       select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>>       select ARCH_KEEP_MEMBLOCK
+>> +    select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE    if PPC_RADIX_MMU
+>>       select ARCH_MIGHT_HAVE_PC_PARPORT
+>>       select ARCH_MIGHT_HAVE_PC_SERIO
+>>       select ARCH_OPTIONAL_KERNEL_RWX        if ARCH_HAS_STRICT_KERNEL_RWX
+>> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+>> index 68817ea7f994..8e6c92dde6ad 100644
+>> --- a/arch/powerpc/include/asm/pgtable.h
+>> +++ b/arch/powerpc/include/asm/pgtable.h
+>> @@ -169,6 +169,34 @@ static inline bool is_ioremap_addr(const void *x)
+>>   int __meminit vmemmap_populated(unsigned long vmemmap_addr, int vmemmap_map_size);
+>>   bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long start,
+>>                  unsigned long page_size);
+>> +/*
+>> + * mm/memory_hotplug.c:mhp_supports_memmap_on_memory goes into details
+>> + * some of the restrictions. We don't check for PMD_SIZE because our
+>> + * vmemmap allocation code can fallback correctly. The pageblock
+>> + * alignment requirement is met using altmap->reserve blocks.
+>> + */
+>> +#define arch_supports_memmap_on_memory arch_supports_memmap_on_memory
+>> +static inline bool arch_supports_memmap_on_memory(unsigned long size)
+>> +{
+>> +    unsigned long nr_pages = size >> PAGE_SHIFT;
+>> +    unsigned long vmemmap_size = nr_pages * sizeof(struct page);
+>> +
+>> +    if (!radix_enabled())
+>> +        return false;
+>> +
+>> +#ifdef CONFIG_PPC_4K_PAGES
+>> +    return IS_ALIGNED(vmemmap_size, PMD_SIZE);
+>> +#else
+>> +    /*
+>> +     * Make sure the vmemmap allocation is fully contianed
+>> +     * so that we always allocate vmemmap memory from altmap area.
+>> +     * The pageblock alignment requirement is met by using
+>> +     * reserve blocks in altmap.
+>> +     */
+>> +    return IS_ALIGNED(vmemmap_size,  PAGE_SIZE);
+> 
+> Can we move that check into common code as well?
+> 
+> If our (original) vmemmap size would not fit into a single page, we would be in trouble on any architecture. Did not check if it would be an issue for arm64 as well in case we would allow eventually wasting memory.
+> 
 
-Yes, Ok.
 
-Helge
+For x86 and arm we already do IS_ALIGNED(vmemmap_size, PMD_SIZE); in arch_supports_memmap_on_memory(). That should imply PAGE_SIZE alignment.
+If arm64 allow the usage of altmap.reserve, I would expect the arch_supports_memmap_on_memory to have the PAGE_SIZE check.  
+
+Adding the PAGE_SIZE check in  mhp_supports_memmap_on_memory() makes it redundant check for x86 and arm currently? 
+
+modified   mm/memory_hotplug.c
+@@ -1293,6 +1293,13 @@ static bool mhp_supports_memmap_on_memory(unsigned long size)
+ 	 */
+ 	if (!mhp_memmap_on_memory() || size != memory_block_size_bytes())
+ 		return false;
++
++	/*
++	 * Make sure the vmemmap allocation is fully contianed
++	 * so that we always allocate vmemmap memory from altmap area.
++	 */
++	if (!IS_ALIGNED(vmemmap_size,  PAGE_SIZE))
++		return false;
+ 	 /*
+ 	  * Without page reservation remaining pages should be pageblock aligned.
+ 	  */
+
+
