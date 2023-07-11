@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3C4AC001DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:14:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83F10EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:15:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0mDD1Rv7z3gmt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:14:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0mDv09qwz3gs4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:15:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0m6L2sXQz3dJ9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 02:09:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0m6Q1TZWz3dH1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 02:09:50 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4R0m5P4Z6Hz9sFM;
-	Tue, 11 Jul 2023 18:08:57 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4R0m5Q1mhjz9sFK;
+	Tue, 11 Jul 2023 18:08:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7h6PuQNjCwxH; Tue, 11 Jul 2023 18:08:57 +0200 (CEST)
+	with ESMTP id 0Vf2evsGuJpJ; Tue, 11 Jul 2023 18:08:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0m5C4m0pz9sFK;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0m5C5XXqz9sFN;
 	Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9D2608B77A;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B9C548B763;
 	Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id ApjKmr9blWDq; Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
+	with ESMTP id tEvDewORsNz5; Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.233.184])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E75B98B783;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EA7CB8B787;
 	Tue, 11 Jul 2023 18:08:46 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BG8inM3696801
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BG8iGQ3696810
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Tue, 11 Jul 2023 18:08:44 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BG8hr53696798;
-	Tue, 11 Jul 2023 18:08:43 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BG8ia83696809;
+	Tue, 11 Jul 2023 18:08:44 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -50,14 +50,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Sathvika Vasireddy <sv@linux.ibm.com>,
         Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH v4 02/15] objtool: Move back misplaced comment
-Date: Tue, 11 Jul 2023 18:08:28 +0200
-Message-ID: <ef65962348c12705b291a6e06ad63aaa29ae5213.1689091394.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 04/15] objtool: Fix JUMP_ENTRY_SIZE for bi-arch like powerpc
+Date: Tue, 11 Jul 2023 18:08:30 +0200
+Message-ID: <e8c515247196b16c28cda52efebe81c94fa44402.1689091394.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1689091394.git.christophe.leroy@csgroup.eu>
 References: <cover.1689091394.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091705; l=1925; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=4ExwdTByGoB2+8hlDUXdUlnHvdx3p3zBzyXw0Z2vUVg=; b=gIH6fljQ7rT92xPZWkRaTFrAS8KnWZjltM17fd/9Swn12qYCdIetVOAhY6tEGKUvHVjtGQkcQ hWmyJCc3ZZkAj/b4UCCbIIk1jXr/asR3uHbHZElbAm619yeirANyCD0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091705; l=3047; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=qz7jSbzmc5vJWF0AXry/gPcX9XwHu3ADvNPxT3jglx8=; b=IlrArOABRXavVrlSzFNpqiP2MOt1eTZrX6ISJQihx8OOlhBaZLlsr3o0bxLdbCWM9v8pPz7Ki C/JLqGFer/WBOr5c1gjFOk3R4n/W2DhRP8DeA1eY0mOmCdxSQV9GX95
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,52 +75,113 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A comment was introduced by commit 113d4bc90483 ("objtool: Fix
-clang switch table edge case") and wrongly moved by
-commit d871f7b5a6a2 ("objtool: Refactor jump table code to support
-other architectures") without the piece of code added with the
-comment in the original commit.
+	struct jump_entry {
+		s32 code;
+		s32 target;
+		long key;
+	};
 
-Fixes: d871f7b5a6a2 ("objtool: Refactor jump table code to support other architectures")
+It means that the size of the third argument depends on
+whether we are building a 32 bits or 64 bits kernel.
+
+Therefore JUMP_ENTRY_SIZE must depend on elf_class_addrsize(elf).
+
+To allow that, entries[] table must be initialised at runtime. This is
+easily done by moving it into its only user which is special_get_alts().
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- tools/objtool/arch/x86/special.c | 5 -----
- tools/objtool/check.c            | 6 ++++++
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ .../arch/powerpc/include/arch/special.h       |  2 +-
+ tools/objtool/special.c                       | 55 +++++++++----------
+ 2 files changed, 28 insertions(+), 29 deletions(-)
 
-diff --git a/tools/objtool/arch/x86/special.c b/tools/objtool/arch/x86/special.c
-index 29e949579ede..8e8302fe909f 100644
---- a/tools/objtool/arch/x86/special.c
-+++ b/tools/objtool/arch/x86/special.c
-@@ -118,11 +118,6 @@ struct reloc *arch_find_switch_table(struct objtool_file *file,
- 	    strcmp(table_sec->name, C_JUMP_TABLE_SECTION))
- 		return NULL;
+diff --git a/tools/objtool/arch/powerpc/include/arch/special.h b/tools/objtool/arch/powerpc/include/arch/special.h
+index ffef9ada7133..b17802dcf436 100644
+--- a/tools/objtool/arch/powerpc/include/arch/special.h
++++ b/tools/objtool/arch/powerpc/include/arch/special.h
+@@ -6,7 +6,7 @@
+ #define EX_ORIG_OFFSET 0
+ #define EX_NEW_OFFSET 4
  
--	/*
--	 * Each table entry has a rela associated with it.  The rela
--	 * should reference text in the same function as the original
--	 * instruction.
--	 */
- 	rodata_reloc = find_reloc_by_dest(file->elf, table_sec, table_offset);
- 	if (!rodata_reloc)
- 		return NULL;
-diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index 8936a05f0e5a..25f6df4713ed 100644
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -2072,6 +2072,12 @@ static struct reloc *find_jump_table(struct objtool_file *file,
- 		table_reloc = arch_find_switch_table(file, insn);
- 		if (!table_reloc)
- 			continue;
-+
-+		/*
-+		 * Each table entry has a rela associated with it.  The rela
-+		 * should reference text in the same function as the original
-+		 * instruction.
-+		 */
- 		dest_insn = find_insn(file, table_reloc->sym->sec, reloc_addend(table_reloc));
- 		if (!dest_insn || !insn_func(dest_insn) || insn_func(dest_insn)->pfunc != func)
- 			continue;
+-#define JUMP_ENTRY_SIZE 16
++#define JUMP_ENTRY_SIZE (8 + elf_addr_size(elf)) /* 12 on PPC32, 16 on PPC64 */
+ #define JUMP_ORIG_OFFSET 0
+ #define JUMP_NEW_OFFSET 4
+ #define JUMP_KEY_OFFSET 8
+diff --git a/tools/objtool/special.c b/tools/objtool/special.c
+index 91b1950f5bd8..b3f07e8beb85 100644
+--- a/tools/objtool/special.c
++++ b/tools/objtool/special.c
+@@ -26,34 +26,6 @@ struct special_entry {
+ 	unsigned char key; /* jump_label key */
+ };
+ 
+-static const struct special_entry entries[] = {
+-	{
+-		.sec = ".altinstructions",
+-		.group = true,
+-		.size = ALT_ENTRY_SIZE,
+-		.orig = ALT_ORIG_OFFSET,
+-		.orig_len = ALT_ORIG_LEN_OFFSET,
+-		.new = ALT_NEW_OFFSET,
+-		.new_len = ALT_NEW_LEN_OFFSET,
+-		.feature = ALT_FEATURE_OFFSET,
+-	},
+-	{
+-		.sec = "__jump_table",
+-		.jump_or_nop = true,
+-		.size = JUMP_ENTRY_SIZE,
+-		.orig = JUMP_ORIG_OFFSET,
+-		.new = JUMP_NEW_OFFSET,
+-		.key = JUMP_KEY_OFFSET,
+-	},
+-	{
+-		.sec = "__ex_table",
+-		.size = EX_ENTRY_SIZE,
+-		.orig = EX_ORIG_OFFSET,
+-		.new = EX_NEW_OFFSET,
+-	},
+-	{},
+-};
+-
+ void __weak arch_handle_alternative(unsigned short feature, struct special_alt *alt)
+ {
+ }
+@@ -144,6 +116,33 @@ int special_get_alts(struct elf *elf, struct list_head *alts)
+ 	unsigned int nr_entries;
+ 	struct special_alt *alt;
+ 	int idx, ret;
++	const struct special_entry entries[] = {
++		{
++			.sec = ".altinstructions",
++			.group = true,
++			.size = ALT_ENTRY_SIZE,
++			.orig = ALT_ORIG_OFFSET,
++			.orig_len = ALT_ORIG_LEN_OFFSET,
++			.new = ALT_NEW_OFFSET,
++			.new_len = ALT_NEW_LEN_OFFSET,
++			.feature = ALT_FEATURE_OFFSET,
++		},
++		{
++			.sec = "__jump_table",
++			.jump_or_nop = true,
++			.size = JUMP_ENTRY_SIZE,
++			.orig = JUMP_ORIG_OFFSET,
++			.new = JUMP_NEW_OFFSET,
++			.key = JUMP_KEY_OFFSET,
++		},
++		{
++			.sec = "__ex_table",
++			.size = EX_ENTRY_SIZE,
++			.orig = EX_ORIG_OFFSET,
++			.new = EX_NEW_OFFSET,
++		},
++		{},
++	};
+ 
+ 	INIT_LIST_HEAD(alts);
+ 
 -- 
 2.41.0
 
