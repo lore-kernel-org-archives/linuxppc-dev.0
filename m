@@ -4,49 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EB25EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 12:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD1E8EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:27:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Gyep6a1g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=gP63zABR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=m1UezYn4;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0gRj4fYlz3c7n
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 22:39:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0mW31K7qz3cBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:27:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Gyep6a1g;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=gP63zABR;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=m1UezYn4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=66.111.4.230; helo=new4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com [66.111.4.230])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0gDj4MXDz2y3Y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 22:29:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=Hu/F5cIunoMaT6a9kqfbZcMI7NNurFOLxchc3V/T840=; b=Gyep6a1gLgAdGC/Vi+oGeCj6t2
-	IKyL5/1RD8Tt4FNIzAW4j/atfGUaAPjhcTyA3GXH97IiwjxIU7Y/8B0fe9w8Muqivjaw/yL4bo5D4
-	5ZB6Z3jktax9ZhaYYlnpZ/6Oq2ASsc4zeolrABZ2MM6Kdwl61InYH3P9Iq/clR9bEshpkcTPgt83a
-	HcgfknEVHsZHsbDQUQVwhK7+voDCXknT2H10c2k4CU3PIKN/myEz2CoJrRiGA1cFSqntUv8vLlRLZ
-	MsgcNgtIOxR6kAkYIn3W2vzZiImwsqNNg3I5cIwMsUw6LmokGgjjMBQXCL8w1O5cla/0aNYRbdjkx
-	RH8+Ud9g==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1qJCTM-00FiF8-9q; Tue, 11 Jul 2023 12:28:04 +0000
-Date: Tue, 11 Jul 2023 13:28:04 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: Alexey Gladkov <legion@kernel.org>
-Subject: Re: [PATCH v3 2/5] fs: Add fchmodat4()
-Message-ID: <ZK1K1BOf43JOJWMx@casper.infradead.org>
-References: <87o8pscpny.fsf@oldenburg2.str.redhat.com>
- <cover.1689074739.git.legion@kernel.org>
- <d11b93ad8e3b669afaff942e25c3fca65c6a983c.1689074739.git.legion@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d11b93ad8e3b669afaff942e25c3fca65c6a983c.1689074739.git.legion@kernel.org>
-X-Mailman-Approved-At: Tue, 11 Jul 2023 22:37:01 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0mTx137Fz2xgt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 02:26:44 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+	by mailnew.nyi.internal (Postfix) with ESMTP id 84EC758017C;
+	Tue, 11 Jul 2023 12:26:40 -0400 (EDT)
+Received: from imap50 ([10.202.2.100])
+  by compute6.internal (MEProxy); Tue, 11 Jul 2023 12:26:40 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm2; t=1689092800; x=1689100000; bh=W5
+	R3dRJEuDedU4mfmE2aIPLz0te1yZv4ob1QkUmzMKM=; b=gP63zABRkc0l4ZDRzA
+	IcIlubpQx10krBxfi6pSfXeZPbUBJIuA+RSw0J6LLqQ+2BJKh5G/7DRrk5pXnrdx
+	U24FbW5DD/zOqQzMB8CBVZA2kbn+RVRF2Ghncu6DcB/0+3xZfCM2T4ywgpza7I3+
+	yAh05maGr6dkYVBnLow0XIE0FgZBQpVGCgT0T0QncwjOLaL9Oo/e+E5GHZVzPFH1
+	h7ULRPg+yuOEbXndaLZsHHEwYs6WCSXcD8zn3sxf3CZgxcWkqsrD7Zi9tNkSO/ue
+	VP2bgk2R9uCJHeQ+YiRTRj7zHMiib1NX20grN65M+eUZDoW7jczNd8ffT8+c8xw7
+	aY5g==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm2; t=1689092800; x=1689100000; bh=W5R3dRJEuDedU
+	4mfmE2aIPLz0te1yZv4ob1QkUmzMKM=; b=m1UezYn4Zaq5khPovqjd8NiiXmvLm
+	0w9sms25pOrqRNO8M57L+8g0MRTbtp7OR2ei95a1m7lMkyiyDNoalIfc7TfoQY+5
+	bKH9VTWCvc4bmPEjubZEW8asIYrDMpk/DxAAwG4CN3Pxx7GenUUO3U4+7kL7apxS
+	QuXgezcdLRNUtjTqb5d7/IW1b4V+S4tpu6XVOSlkip5tg5XHk5RPrFf2Wc+1lX9i
+	MOWpFLR5qNJz4Inrq4cBaccsRwogrp15/y82ysT8TnBqtzi0q3SFfVoMW31B/aT6
+	ukQWwwWm+0aafmJpWePUj7GlIkNRTZkijalxzd8rrdWmrJ3CCpB5t3CKQ==
+X-ME-Sender: <xms:vYKtZE69711ZzrX1UfDAH_wKoV8StTKa7ojHt5ftztcoR9k9-OGNdg>
+    <xme:vYKtZF7KBdORSzhM4wNvO2XDDmElD90TlyzRX4_570VbiMw-c3clqgQP0TtQxeTfY
+    CotuIX7qGul8wElt5Y>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrfedtgddutddvucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:vYKtZDf2TxeMAGBfVkoV3uAZUtvHIYPcVxEfb6Qcl0msm4N_19_3Tw>
+    <xmx:vYKtZJKr2LWiBxmL9EcO6DcfFSNv43PdZKjfBvnGIO_aJ8RJOMJmzA>
+    <xmx:vYKtZIL9QRrfHKZLVkXaIn76A4_BYMk3sVMAvOaTg-eQl07FtWdz2Q>
+    <xmx:wIKtZOTn3w0yspPsZlSmTu8WcSU0C03X-RbItER0PdanY6sWL9EObg>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id CE2AA1700090; Tue, 11 Jul 2023 12:26:37 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-531-gfdfa13a06d-fm-20230703.001-gfdfa13a0
+Mime-Version: 1.0
+Message-Id: <8d8cef73-1733-4e0b-bede-034895a820bd@app.fastmail.com>
+In-Reply-To:  <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
+References: <cover.1689074739.git.legion@kernel.org>
+ <cover.1689092120.git.legion@kernel.org>
+ <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
+Date: Tue, 11 Jul 2023 18:26:17 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Alexey Gladkov" <legion@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ linux-api@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH v4 3/5] arch: Register fchmodat2, usually as syscall 452
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,15 +96,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, heiko.carstens@de.ibm.com, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, fweimer@redhat.com, ysato@users.sourceforge.jp, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, firoz.khan@linaro.org, linux-arm-kernel@lists.infradead.org, jhogan@kernel.org, geert@linux-m68k.org, mattst88@gmail.com, linux-mips@vger.kernel.org, gor@linux.ibm.com, fenghua.yu@intel.com, Arnd Bergmann <arnd@arndb.de>, peterz@infradead.org, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, schwidefsky@de.ibm.com, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kerne
- l.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, rth@twiddle.net, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@monstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, paul.burton@mips.com, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, David Howells <dhowells@redhat.com>, Kim Phillips <kim.phillips@arm.com>, Paul Mackerras <paulus@samba.org>, Deepa Dinamani <deepa.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>, Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org, hare@suse.com, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, linux-sh@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Catalin Marinas <catalin.marinas@arm.com>, jhogan@kernel.org, Matt Turner <mattst88@gmail.com>, Florian Weimer <fweimer@redhat.com>, gor@linux.ibm.com, glebfm@altlinux.org, tycho@t
+ ycho.ws, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, christian@brauner.io, Jens Axboe <axboe@kernel.dk>, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, ralf@linux-mips.org, Peter Zijlstra <peterz@infradead.org>, linux-alpha@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 11, 2023 at 01:25:43PM +0200, Alexey Gladkov wrote:
-> -static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
-> +static int do_fchmodat4(int dfd, const char __user *filename, umode_t mode, int lookup_flags)
+On Tue, Jul 11, 2023, at 18:16, Alexey Gladkov wrote:
+> From: Palmer Dabbelt <palmer@sifive.com>
+>
+> This registers the new fchmodat2 syscall in most places as nuber 452,
+> with alpha being the exception where it's 562.  I found all these sites
+> by grepping for fspick, which I assume has found me everything.
+>
+> Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
+> Signed-off-by: Alexey Gladkov <legion@kernel.org>
 
-This function can still be called do_fchmodat(); we don't need to
-version internal functions.
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
