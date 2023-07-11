@@ -4,55 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0F98EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 11:10:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E710EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 11:21:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N0ctGuSk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=b1nsnyWJ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0dTG0jRkz3c4Z
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 21:10:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0dk63wb9z30hG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 21:21:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N0ctGuSk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=b1nsnyWJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0dSJ46g4z2y9d
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 21:09:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0cj124xrz303l
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 20:35:49 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 9A51C61477;
-	Tue, 11 Jul 2023 11:09:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4288FC433C7;
-	Tue, 11 Jul 2023 11:09:49 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 9D9A061457;
+	Tue, 11 Jul 2023 10:35:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 400C3C433C8;
+	Tue, 11 Jul 2023 10:35:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1689073790;
-	bh=IHPGTpFNkJxjHd3j16Zp70SLf28Ex3L77RYopTx73vw=;
+	s=k20201202; t=1689071746;
+	bh=RdirUcCE2pA/1z8207uTNCXjhMGAcU2jC5JA2KzMRoY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=N0ctGuSk3DmmruB+WZyZ7fdwiXQcBQy9J5r3j2ak9JiXtDOh5iv1ZbpXz7qM041es
-	 ixEMi9ew/4iNZk5ZpKcOsgOK37mZJsMtBJJkluoFOAi25JuHUA3xOG/L4BoULPlW2Q
-	 7AufnLkjlD+s8RBcLb7tzQBbWNSzqIqcfU3DEK6RnRCtm+XHGMrSQ+QUVQOM4L30mn
-	 Tf3o1tsGiNzd0WP+FErjYIl8UVrOmxU3cA6pf0Pcfoe7jCU4W67tAkUCyQjsg/lY38
-	 091e6SbuNhv7Aps+Az+9f0ciPBFBnGgeFHNJYdbY8kiuVdCFn8AKk7h29xGWhMYFAV
-	 BWid01Yq4G9tg==
-Date: Tue, 11 Jul 2023 14:09:45 +0300
+	b=b1nsnyWJfs1mcjVYHJe+HEUCi0LN15hY99BnaXhtfz0oB3h8EzQMDa9aeEPB4cHsG
+	 m0hzpx+fMmsE8WzKuxURAUSYoPOk1yyNeGjKmk6Oo1T+sxizOWkbUk2lnWZeZJq/OR
+	 t35F+euEtnNr2grYlFD6oJ2MJWvp/QNNOG1DuAJeBI5VAMb7y9WA/nlkd3eUTkr2Lb
+	 BRvBfq7P9mdE+wM/H6F8uotrR4TMskih7C1j7iuXPsrtoxNhX7cAuYqxh5Z1V2YE+p
+	 NfC0fI8jKAJTifgfTIIMFJicOPaZ5ZezvtKLTLYQgP5kZnonqVF+tNhSPdx4zGnzF9
+	 S3WTHtdee7iTg==
+Date: Tue, 11 Jul 2023 13:35:41 +0300
 From: Leon Romanovsky <leon@kernel.org>
-To: Vlastimil Babka <vbabka@suse.cz>
+To: Suren Baghdasaryan <surenb@google.com>,
+	Laurent Dufour <ldufour@linux.ibm.com>,
+	Sachin Sant <sachinp@linux.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH v4 00/33] Per-VMA locks
-Message-ID: <20230711110945.GO41919@unreal>
+Message-ID: <20230711103541.GA190975@unreal>
 References: <20230227173632.3292573-1-surenb@google.com>
- <20230711103541.GA190975@unreal>
- <53676850-539f-2813-d55d-a8bc0ec88092@suse.cz>
- <20230711110141.GN41919@unreal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230711110141.GN41919@unreal>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20230227173632.3292573-1-surenb@google.com>
+X-Mailman-Approved-At: Tue, 11 Jul 2023 21:21:01 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,43 +66,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, Sachin Sant <sachinp@linux.ibm.com>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, sergeyy@nvidia.com, will@kernel.org, arjunroy@google.com, Linux kernel regressions list <regressions@lists.linux.dev>, chriscli@google.com, dave@stgolabs.net, minchan@google.com, gal@nvidia.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, maorg@nvidia.com, ranro@nvidia.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, regressions@leemhuis.info, shakeelb@google.com, drort@nvidia.com, luto@kernel.org, gthelen@google.com, Laurent Dufour <ldufour@linux.ibm.com>, Suren Baghd
- asaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, idok@nvidia.com, hannes@cmpxchg.org, Andrew Morton <akpm@linux-foundation.org>, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, Linux kernel regressions list <regressions@lists.linux.dev>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, sergeyy@nvidia.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, gal@nvidia.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, maorg@nvidia.com, ranro@nvidia.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, regressions@leemhuis.info, shakeelb@google.com, drort@nvidia.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google
+ .com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, idok@nvidia.com, hannes@cmpxchg.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 11, 2023 at 02:01:41PM +0300, Leon Romanovsky wrote:
-> On Tue, Jul 11, 2023 at 12:39:34PM +0200, Vlastimil Babka wrote:
-> > On 7/11/23 12:35, Leon Romanovsky wrote:
-> > > 
-> > > On Mon, Feb 27, 2023 at 09:35:59AM -0800, Suren Baghdasaryan wrote:
-> > > 
-> > > <...>
-> > > 
-> > >> Laurent Dufour (1):
-> > >>   powerc/mm: try VMA lock-based page fault handling first
-> > > 
-> > > Hi,
-> > > 
-> > > This series and specifically the commit above broke docker over PPC.
-> > > It causes to docker service stuck while trying to activate. Revert of
-> > > this commit allows us to use docker again.
-> > 
-> > Hi,
-> > 
-> > there have been follow-up fixes, that are part of 6.4.3 stable (also
-> > 6.5-rc1) Does that version work for you?
-> 
-> I'll recheck it again on clean system, but for the record:
-> 1. We are running 6.5-rc1 kernels.
-> 2. PPC doesn't compile for us on -rc1 without this fix.
-> https://lore.kernel.org/all/20230629124500.1.I55e2f4e7903d686c4484cb23c033c6a9e1a9d4c4@changeid/
 
-Ohh, I see it in -rc1, let's recheck.
+On Mon, Feb 27, 2023 at 09:35:59AM -0800, Suren Baghdasaryan wrote:
 
-> 3. I didn't see anything relevant -rc1 with "git log arch/powerpc/mm/fault.c".
-> 
-> Do you have in mind anything specific to check?
-> 
-> Thanks
-> 
+<...>
+
+> Laurent Dufour (1):
+>   powerc/mm: try VMA lock-based page fault handling first
+
+Hi,
+
+This series and specifically the commit above broke docker over PPC.
+It causes to docker service stuck while trying to activate. Revert of
+this commit allows us to use docker again.
+
+[user@ppc-135-3-200-205 ~]# sudo systemctl status docker
+=E2=97=8F docker.service - Docker Application Container Engine
+     Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; vendo=
+r preset: disabled)
+     Active: activating (start) since Mon 2023-06-26 14:47:07 IDT; 3h 50min=
+ ago
+TriggeredBy: =E2=97=8F docker.socket
+       Docs: https://docs.docker.com
+   Main PID: 276555 (dockerd)
+     Memory: 44.2M
+     CGroup: /system.slice/docker.service
+             =E2=94=94=E2=94=80 276555 /usr/bin/dockerd -H fd:// --containe=
+rd=3D/run/containerd/containerd.sock
+
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129383166+03:00" level=3Dinfo msg=3D"Graph migration to content-address=
+ability took 0.00 se>
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129666160+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
+roup cfs period"
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129684117+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
+roup cfs quotas"
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129697085+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
+roup rt period"
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129711513+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
+roup rt runtime"
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129720656+03:00" level=3Dwarning msg=3D"Unable to find blkio cgroup in =
+mounts"
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.129805617+03:00" level=3Dwarning msg=3D"mountpoint for pids not found"
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.130199070+03:00" level=3Dinfo msg=3D"Loading containers: start."
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.132688568+03:00" level=3Dwarning msg=3D"Running modprobe bridge br_netf=
+ilter failed with me>
+Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
+:07.271014050+03:00" level=3Dinfo msg=3D"Default bridge (docker0) is assign=
+ed with an IP addres>
+
+Python script which we used for bisect:
+
+import subprocess
+import time
+import sys
+
+
+def run_command(cmd):
+    print('running:', cmd)
+
+    p =3D subprocess.Popen(cmd, shell=3DTrue, stdout=3Dsubprocess.PIPE, std=
+err=3Dsubprocess.PIPE)
+
+    try:
+        stdout, stderr =3D p.communicate(timeout=3D30)
+
+    except subprocess.TimeoutExpired:
+        return True
+
+    print(stdout.decode())
+    print(stderr.decode())
+    print('rc:', p.returncode)
+
+    return False
+
+
+def main():
+    commands =3D [
+        'sudo systemctl stop docker',
+        'sudo systemctl status docker',
+        'sudo systemctl is-active docker',
+        'sudo systemctl start docker',
+        'sudo systemctl status docker',
+    ]
+
+    for i in range(1000):
+        title =3D f'Try no. {i + 1}'
+        print('*' * 50, title, '*' * 50)
+
+        for cmd in commands:
+            if run_command(cmd):
+                print(f'Reproduced on try no. {i + 1}!')
+                print(f'"{cmd}" is stuck!')
+
+                return 1
+
+            print('\n')
+        time.sleep(30)
+    return 0
+
+if __name__ =3D=3D '__main__':
+    sys.exit(main())
+
+Thanks
