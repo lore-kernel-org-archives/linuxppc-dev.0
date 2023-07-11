@@ -4,99 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EFF8EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:11:37 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ag+YotPT;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I0y0L4PE;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59999EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:12:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0m8R5KqZz3dhV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:11:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ag+YotPT;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I0y0L4PE;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0m8z5z1hz3fZL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:12:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0m5j327Qz3d7y
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0m5k28tkz3clm
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 02:09:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1689091750;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=umkcJ7EHwt2K7xQH+7rgCPxJb1wTiMjAEmnl2Bw6jVc=;
-	b=ag+YotPTF9YRcFYcm80Gb68vtiCwTa5sI4vPeGZKvedNSO8ieZYhTl2t3FrRRbgA1p8jp4
-	iJtZzvqD+kjKeCP9ElNjBYdvbGhdRIxSSg9dbfpft0sJD/YDH1KlBCL3/sSFuaCprJV96y
-	+yGm7P6B+7vXUpd3L+0KjYLdl+YPGLE=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1689091751;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=umkcJ7EHwt2K7xQH+7rgCPxJb1wTiMjAEmnl2Bw6jVc=;
-	b=I0y0L4PEfhwagDJ6UMsoUOpwbMjvl+NPx2hXcyPmaI6dKiGSQGZ6XE9zscb3FWVYiW0IpN
-	xfTSz6tYIH0beB0DrB/VhXnuJbDh7LNV8gAKbQ9BWtgjz0mO/VedfyBxj59Wo5mAB8/VWY
-	j4vAvvyXcDgL89AQiSxMc4kFBgi/yaQ=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-217-KTYXHD4RMe2P59BuiJKoHQ-1; Tue, 11 Jul 2023 12:09:09 -0400
-X-MC-Unique: KTYXHD4RMe2P59BuiJKoHQ-1
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-31444df0fafso3489359f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 09:09:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689091748; x=1691683748;
-        h=content-transfer-encoding:in-reply-to:organization:from:references
-         :cc:to:content-language:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=umkcJ7EHwt2K7xQH+7rgCPxJb1wTiMjAEmnl2Bw6jVc=;
-        b=RAk78tNs0WWaNMvFbEPcQEReYCt5vrEegpTAnUgSPU6v2V0w5og6DQBmXh+1+thZIJ
-         P8utagyMaxjNrhUrWJFmeS4In4U9YfV7dIi/mO3p79Q7c605EF5PzDt+513bRZNty1FB
-         l7qxWjrt1g9xr/R8yHM8kuaqmZ+9Fq2b1OOfZ1JccyMA00vTj1ZRreY3+bMcDUU5/tzL
-         Mx7VZSWJz0W+a9Ngh53vERd42TihE5LZa7GdAE8vTo7E2SP0kxbvQY9qy/dJWGJv+v3g
-         4ZjijPGPWHdho2KNbp3EgW6e9O2VviPloWCPWeznUz8C9k3DvJ/BuTqPiZqVwASubf4H
-         i+ag==
-X-Gm-Message-State: ABy/qLYFA+6/+V2bmGTciPVZa5yomp9hEGCyZkNiGFK6xwtWQ+tIVB4g
-	0pKKNBKv9M1HBss/STMoqUq6L6ThclXyfvgZ3noG21U4j9JJtYTtOb67Bkv7NXMHgR2CaXg05pw
-	lCLLZgWwVxyNpSXQdG8lIjdOIihgUKc2Zow==
-X-Received: by 2002:adf:d846:0:b0:314:336e:d4d8 with SMTP id k6-20020adfd846000000b00314336ed4d8mr17240925wrl.8.1689091748181;
-        Tue, 11 Jul 2023 09:09:08 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlEdPeVjm53/XCqVXuqmk3mM3+L4O8aFXfW45Ayxu4HjfzUDwyCTqA+mWjFo6tMPf1xCqLyyuw==
-X-Received: by 2002:adf:d846:0:b0:314:336e:d4d8 with SMTP id k6-20020adfd846000000b00314336ed4d8mr17240904wrl.8.1689091747776;
-        Tue, 11 Jul 2023 09:09:07 -0700 (PDT)
-Received: from ?IPV6:2003:cb:c745:4000:13ad:ed64:37e6:115d? (p200300cbc745400013aded6437e6115d.dip0.t-ipconnect.de. [2003:cb:c745:4000:13ad:ed64:37e6:115d])
-        by smtp.gmail.com with ESMTPSA id o4-20020a5d4084000000b003142c85fbcdsm2676065wrp.11.2023.07.11.09.09.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Jul 2023 09:09:07 -0700 (PDT)
-Message-ID: <641a4276-cfb9-bd1b-36a8-cb4bcae408f6@redhat.com>
-Date: Tue, 11 Jul 2023 18:09:06 +0200
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4R0m5F74D4z9sFD;
+	Tue, 11 Jul 2023 18:08:49 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id y-Uvf8up4Fog; Tue, 11 Jul 2023 18:08:49 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0m5C2xzRz9sFC;
+	Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 616888B763;
+	Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id vp_5QqFmxrez; Tue, 11 Jul 2023 18:08:47 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.233.184])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id CBF258B779;
+	Tue, 11 Jul 2023 18:08:46 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BG8kl83696852
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 18:08:46 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BG8kP03696851;
+	Tue, 11 Jul 2023 18:08:46 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Josh Poimboeuf <jpoimboe@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Sathvika Vasireddy <sv@linux.ibm.com>,
+        Naveen N Rao <naveen@kernel.org>
+Subject: [PATCH v4 13/15] objtool: Prepare noreturns.h for more architectures
+Date: Tue, 11 Jul 2023 18:08:39 +0200
+Message-ID: <cfe3ee3caf3467d0ef5c14becc97534376328492.1689091394.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <cover.1689091394.git.christophe.leroy@csgroup.eu>
+References: <cover.1689091394.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v3 3/7] mm/hotplug: Allow architecture to override memmap
- on memory support check
-To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
-References: <20230711044834.72809-1-aneesh.kumar@linux.ibm.com>
- <20230711044834.72809-4-aneesh.kumar@linux.ibm.com>
- <6f6764f6-4b5a-dfa8-c409-ba4f2828891f@redhat.com>
- <176cee16-f926-ab3b-92fe-98bebf79d43d@linux.ibm.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-In-Reply-To: <176cee16-f926-ab3b-92fe-98bebf79d43d@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091706; l=2884; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=VP6S87HnnUqkX0M6jjPWdL69C8RBj2wF1wd8aPIq2Vc=; b=byCCiss6/HehxbWPdM4D62jCIc16bp8efzQXnF+3YAQ/r9qOmO417uSIaMD7StSNPMTNynwMj RXYM24BCDEHBGDv7s4rDb7oinOUcQ0O8VXWPQ2xPBsvC+1v4Zm7vVtl
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -109,57 +71,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11.07.23 18:07, Aneesh Kumar K V wrote:
-> On 7/11/23 4:06 PM, David Hildenbrand wrote:
->> On 11.07.23 06:48, Aneesh Kumar K.V wrote:
->>> Some architectures would want different restrictions. Hence add an
->>> architecture-specific override.
->>>
->>> Both the PMD_SIZE check and pageblock alignment check are moved there.
->>>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->>> ---
->>>    mm/memory_hotplug.c | 17 ++++++++++++-----
->>>    1 file changed, 12 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->>> index 1b19462f4e72..07c99b0cc371 100644
->>> --- a/mm/memory_hotplug.c
->>> +++ b/mm/memory_hotplug.c
->>> @@ -1247,12 +1247,20 @@ static int online_memory_block(struct memory_block *mem, void *arg)
->>>        return device_online(&mem->dev);
->>>    }
->>>    -static bool mhp_supports_memmap_on_memory(unsigned long size)
->>> +#ifndef arch_supports_memmap_on_memory
->>
->> Can we make that a __weak function instead?
-> 
-> 
-> We can. It is confusing because we do have these two patterns within the kernel where we use
-> 
-> #ifndef x
-> #endif
-> 
-> vs
-> 
-> __weak x
-> 
-> What is the recommended way to override ? I have mostly been using #ifndef for most of the arch overrides till now.
-> 
+noreturns.h is a mix of x86 specific functions and more generic
+core functions.
 
-I think when placing the implementation in a C file, it's __weak. But 
-don't ask me :)
+In preparation of inclusion of powerpc, split x86 functions out of
+noreturns.h into arch/noreturns.h
 
-We do this already for arch_get_mappable_range() in mm/memory_hotplug.c 
-and IMHO it looks quite nice.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ .../objtool/arch/x86/include/arch/noreturns.h | 20 +++++++++++++++++++
+ tools/objtool/noreturns.h                     | 14 ++-----------
+ 2 files changed, 22 insertions(+), 12 deletions(-)
+ create mode 100644 tools/objtool/arch/x86/include/arch/noreturns.h
 
-
+diff --git a/tools/objtool/arch/x86/include/arch/noreturns.h b/tools/objtool/arch/x86/include/arch/noreturns.h
+new file mode 100644
+index 000000000000..a4262aff3917
+--- /dev/null
++++ b/tools/objtool/arch/x86/include/arch/noreturns.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++/*
++ * This is a (sorted!) list of all known __noreturn functions in arch/x86.
++ * It's needed for objtool to properly reverse-engineer the control flow graph.
++ *
++ * Yes, this is unfortunate.  A better solution is in the works.
++ */
++NORETURN(cpu_bringup_and_idle)
++NORETURN(ex_handler_msr_mce)
++NORETURN(hlt_play_dead)
++NORETURN(hv_ghcb_terminate)
++NORETURN(machine_real_restart)
++NORETURN(rewind_stack_and_make_dead)
++NORETURN(sev_es_terminate)
++NORETURN(snp_abort)
++NORETURN(x86_64_start_kernel)
++NORETURN(x86_64_start_reservations)
++NORETURN(xen_cpu_bringup_again)
++NORETURN(xen_start_kernel)
+diff --git a/tools/objtool/noreturns.h b/tools/objtool/noreturns.h
+index e45c7cb1d5bc..b5e0f078dbb6 100644
+--- a/tools/objtool/noreturns.h
++++ b/tools/objtool/noreturns.h
+@@ -1,5 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ 
++#include <arch/noreturns.h>
++
+ /*
+  * This is a (sorted!) list of all known __noreturn functions in the kernel.
+  * It's needed for objtool to properly reverse-engineer the control flow graph.
+@@ -14,32 +16,20 @@ NORETURN(__stack_chk_fail)
+ NORETURN(__ubsan_handle_builtin_unreachable)
+ NORETURN(arch_call_rest_init)
+ NORETURN(arch_cpu_idle_dead)
+-NORETURN(cpu_bringup_and_idle)
+ NORETURN(cpu_startup_entry)
+ NORETURN(do_exit)
+ NORETURN(do_group_exit)
+ NORETURN(do_task_dead)
+-NORETURN(ex_handler_msr_mce)
+ NORETURN(fortify_panic)
+-NORETURN(hlt_play_dead)
+-NORETURN(hv_ghcb_terminate)
+ NORETURN(kthread_complete_and_exit)
+ NORETURN(kthread_exit)
+ NORETURN(kunit_try_catch_throw)
+-NORETURN(machine_real_restart)
+ NORETURN(make_task_dead)
+ NORETURN(mpt_halt_firmware)
+ NORETURN(nmi_panic_self_stop)
+ NORETURN(panic)
+ NORETURN(panic_smp_self_stop)
+ NORETURN(rest_init)
+-NORETURN(rewind_stack_and_make_dead)
+-NORETURN(sev_es_terminate)
+-NORETURN(snp_abort)
+ NORETURN(start_kernel)
+ NORETURN(stop_this_cpu)
+ NORETURN(usercopy_abort)
+-NORETURN(x86_64_start_kernel)
+-NORETURN(x86_64_start_reservations)
+-NORETURN(xen_cpu_bringup_again)
+-NORETURN(xen_start_kernel)
 -- 
-Cheers,
-
-David / dhildenb
+2.41.0
 
