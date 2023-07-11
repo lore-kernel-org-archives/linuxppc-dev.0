@@ -4,54 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36AE7EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:00:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 886C7EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:00:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0lvB3SjYz3bxr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:00:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0lvn4bcGz3c3M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:00:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0ltX6btkz3c2n
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:59:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0ltc5PLVz3c3v
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:59:36 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4R0ltP67GTz9sFF;
-	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4R0ltQ5KVLz9sFG;
+	Tue, 11 Jul 2023 17:59:26 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2rhQ6e6KCcfX; Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
+	with ESMTP id cE3bpIlibbsJ; Tue, 11 Jul 2023 17:59:26 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0ltP5RbGz9sFB;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0ltP5RB0z9sF7;
 	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B473F8B77E;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B3BD18B77D;
 	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 1TmYi9Rvc3T6; Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
+	with ESMTP id Pa7miF_0YDAO; Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.233.184])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A5A08B779;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5B3C38B77A;
 	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BFxOF33695831
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BFxPtY3695843
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 11 Jul 2023 17:59:24 +0200
+	Tue, 11 Jul 2023 17:59:25 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BFxMpn3695820;
-	Tue, 11 Jul 2023 17:59:22 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BFxPuj3695842;
+	Tue, 11 Jul 2023 17:59:25 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 0/9] Cleanup/Optimise KUAP (v3)
-Date: Tue, 11 Jul 2023 17:59:12 +0200
-Message-ID: <cover.1689091022.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 3/9] powerpc/kuap: Fold kuep_is_disabled() into its only user
+Date: Tue, 11 Jul 2023 17:59:15 +0200
+Message-ID: <b2247147c0a8c830ac82966451647850df4a64da.1689091022.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
+In-Reply-To: <cover.1689091022.git.christophe.leroy@csgroup.eu>
+References: <cover.1689091022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091151; l=2312; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=adFnaIZiJTeO6Cz2UZ7Q2Z0r73HSP64qXDq2uOoJDHg=; b=cJIwd0NwhGM51zL42j746sWOQgqcbuDCTQiEwCnaLwWrWXmLyT7thaJeWWl3TxvIN5P7kXb3Q rmWY9ebNuuSALHY6muQGk4xHeZgWct7If21U4uyKEWOy4jYxWkbvhKG
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091151; l=1592; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=xPDEUS91RJ+Z0qj6uThAwAk6Rpfb4Lya66JNABcMboc=; b=AxaZLZGfSHpbeGvqoS73MhSQe3bRyX3H9T90vImH5GXu1PMgUSUwwKpw5umHybcgWzGqFNmEz SXHkRp76wygAbLgzSliigdiewsprwA5tmJmKsUhEIHqM1q7FDUPGbyP
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,55 +71,48 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series is cleaning up a bit KUAP in preparation of using objtool
-to validate UACCESS.
+kuep_is_disabled() was introduced by commit 91bb30822a2e ("powerpc/32s:
+Refactor update of user segment registers") but then all users but one
+were removed by commit 526d4a4c77ae ("powerpc/32s: Do kuep_lock() and
+kuep_unlock() in assembly").
 
-There are two main changes in this series:
+Fold kuep_is_disabled() into init_new_context() which is its only user.
 
-1/ Simplification of KUAP on book3s/32
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/book3s/32/kup.h | 5 -----
+ arch/powerpc/mm/book3s32/mmu_context.c   | 2 +-
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
-2/ Using ASM features on 32 bits and booke as suggested by Nic.
-
-Those changes will be required for objtool UACCESS validation, but
-even before they are worth it, especially the simplification on 32s.
-
-Changes in v3:
-- Rearranged book3s/32 simplification in order to ease objtool UACCESS
-check implementation (patches 7 and 9)
-
-Christophe Leroy (9):
-  powerpc/kuap: Avoid unnecessary reads of MD_AP
-  powerpc/kuap: Avoid useless jump_label on empty function
-  powerpc/kuap: Fold kuep_is_disabled() into its only user
-  powerpc/features: Add capability to update mmu features later
-  powerpc/kuap: MMU_FTR_BOOK3S_KUAP becomes MMU_FTR_KUAP
-  powerpc/kuap: Use MMU_FTR_KUAP on all and refactor disabling kuap
-  powerpc/kuap: Simplify KUAP lock/unlock on BOOK3S/32
-  powerpc/kuap: KUAP enabling/disabling functions must be
-    __always_inline
-  powerpc/kuap: Use ASM feature fixups instead of static branches
-
- arch/powerpc/include/asm/book3s/32/kup.h      | 123 ++++++++----------
- .../powerpc/include/asm/book3s/64/hash-pkey.h |   2 +-
- arch/powerpc/include/asm/book3s/64/kup.h      |  54 ++++----
- arch/powerpc/include/asm/bug.h                |   1 +
- arch/powerpc/include/asm/feature-fixups.h     |   1 +
- arch/powerpc/include/asm/kup.h                |  91 +++++--------
- arch/powerpc/include/asm/mmu.h                |   4 +-
- arch/powerpc/include/asm/nohash/32/kup-8xx.h  |  62 +++++----
- arch/powerpc/include/asm/nohash/kup-booke.h   |  68 +++++-----
- arch/powerpc/include/asm/uaccess.h            |   6 +-
- arch/powerpc/kernel/cputable.c                |   4 +
- arch/powerpc/kernel/syscall.c                 |   2 +-
- arch/powerpc/kernel/traps.c                   |   2 +-
- arch/powerpc/lib/feature-fixups.c             |  31 ++++-
- arch/powerpc/mm/book3s32/kuap.c               |  20 +--
- arch/powerpc/mm/book3s32/mmu_context.c        |   2 +-
- arch/powerpc/mm/book3s64/pkeys.c              |   2 +-
- arch/powerpc/mm/init_32.c                     |   2 +
- arch/powerpc/mm/nohash/kup.c                  |   8 +-
- 19 files changed, 222 insertions(+), 263 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 466a19cfb4df..0da0dea76c47 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -13,11 +13,6 @@
+ 
+ extern struct static_key_false disable_kuap_key;
+ 
+-static __always_inline bool kuep_is_disabled(void)
+-{
+-	return !IS_ENABLED(CONFIG_PPC_KUEP);
+-}
+-
+ #ifdef CONFIG_PPC_KUAP
+ 
+ #include <linux/sched.h>
+diff --git a/arch/powerpc/mm/book3s32/mmu_context.c b/arch/powerpc/mm/book3s32/mmu_context.c
+index 269a3eb25a73..1922f9a6b058 100644
+--- a/arch/powerpc/mm/book3s32/mmu_context.c
++++ b/arch/powerpc/mm/book3s32/mmu_context.c
+@@ -71,7 +71,7 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
+ 	mm->context.id = __init_new_context();
+ 	mm->context.sr0 = CTX_TO_VSID(mm->context.id, 0);
+ 
+-	if (!kuep_is_disabled())
++	if (IS_ENABLED(CONFIG_PPC_KUEP))
+ 		mm->context.sr0 |= SR_NX;
+ 	if (!kuap_is_disabled())
+ 		mm->context.sr0 |= SR_KS;
 -- 
 2.41.0
 
