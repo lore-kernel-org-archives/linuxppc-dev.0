@@ -4,61 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E099EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 14:50:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C974EEB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 15:27:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa1 header.b=t1UZoY+O;
-	dkim=fail reason="signature verification failed" header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed1 header.b=KzzqHm8t;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Xt4UuLOI;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Xt4UuLOI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0kLG48BTz3bbW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 00:49:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0l9y2Km6z3bl6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 01:27:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa1 header.b=t1UZoY+O;
-	dkim=pass header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed1 header.b=KzzqHm8t;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Xt4UuLOI;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Xt4UuLOI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mailrelay6-1.pub.mailoutpod2-cph3.one.com (client-ip=2a02:2350:5:405::1; helo=mailrelay6-1.pub.mailoutpod2-cph3.one.com; envelope-from=sam@ravnborg.org; receiver=lists.ozlabs.org)
-Received: from mailrelay6-1.pub.mailoutpod2-cph3.one.com (mailrelay6-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:405::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0kKC2DrJz30Pr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 00:48:58 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=IzJnH7tearuxnA6Z+6SlVNN7/HpdHXO6OvjidkyffDc=;
-	b=t1UZoY+OgZB4qloOKAGoPzdxKiYC17C9++ltdd9VkKKSSJf/R5HyAsdaxr5chXo+LcqtCqMpEj2TA
-	 b8Z7yF6JHKQOlU7blN+narui79FThKq8hj2VwanKmhandBBtpyfKAhsU889SFEdFbXrVkiKx3hcR7H
-	 QKjso83LwxpCtsl1H23jeJIFNxLM2fJZpqpYaWgVJBzgpvhQLjm/hOp65N2Nj7rNyOZMvrxGPI6czh
-	 YS0MtrmIYLsQmwRyf7YF8HR5nxe+n7cXTvsKENehLpNtWPbi2L0wAhskoQ5ZCvD2WrQtbyYxsEJ/AP
-	 CUbin2WAzk67odxeRHKtnqDopCvMHJA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=IzJnH7tearuxnA6Z+6SlVNN7/HpdHXO6OvjidkyffDc=;
-	b=KzzqHm8tLnuEHjgNWidySCjTk6o2+jW4abV9LJjbJcqDWTbuxi74O9whyYkZn2CXMR1EK8Adpr0Tp
-	 1xeW/n7CQ==
-X-HalOne-ID: e4c9d52a-1ff9-11ee-be66-6f01c1d0a443
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay6 (Halon) with ESMTPSA
-	id e4c9d52a-1ff9-11ee-be66-6f01c1d0a443;
-	Tue, 11 Jul 2023 14:47:46 +0000 (UTC)
-Date: Tue, 11 Jul 2023 16:47:44 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 00/17] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
-Message-ID: <20230711144744.GA117276@ravnborg.org>
-References: <20230710130113.14563-1-tzimmermann@suse.de>
- <20230710171903.GA14712@ravnborg.org>
- <ab92f8d9-36ab-06bc-b85b-d52b7a1bfe9a@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0l8z3ws7z30dt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:26:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1689089214;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=vM0w+6+aaAqWTgkd0SnTYMUtAoi91ku0pktKlO+P5ew=;
+	b=Xt4UuLOILn78tjUPihFP8n87tnia/VV3JnhRimIMgN7vKUbIWpt6Dsz0+/9fvsjGLhx7GK
+	+obi+Ym+QOo/daEtkD5qPsUOUt6oUnOAwli5MmjCdH/oXjePeieP3/Y6I//VDQveP/V5Vl
+	3QoB5/BDlyLLdmWrQKhwYBLyDEttaUA=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1689089214;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=vM0w+6+aaAqWTgkd0SnTYMUtAoi91ku0pktKlO+P5ew=;
+	b=Xt4UuLOILn78tjUPihFP8n87tnia/VV3JnhRimIMgN7vKUbIWpt6Dsz0+/9fvsjGLhx7GK
+	+obi+Ym+QOo/daEtkD5qPsUOUt6oUnOAwli5MmjCdH/oXjePeieP3/Y6I//VDQveP/V5Vl
+	3QoB5/BDlyLLdmWrQKhwYBLyDEttaUA=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-472-JgPmfeiFPiyI0G4_3iQ3Ug-1; Tue, 11 Jul 2023 11:26:52 -0400
+X-MC-Unique: JgPmfeiFPiyI0G4_3iQ3Ug-1
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3fbb34f7224so39174215e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 08:26:52 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689089211; x=1691681211;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vM0w+6+aaAqWTgkd0SnTYMUtAoi91ku0pktKlO+P5ew=;
+        b=iflzSp8ZnVZvnBSNUZv4ABsH930LDdbjCMq+cXa9xcbPv79ZM6IZsJjP22OM5GxuOz
+         QrjqLTUpS3/lFEhq4ZVCJsnwZL6SoNJwmfmENfxva8zQgMuvI4d/T+CWeSoLP8oue1Hl
+         6oRMI5539F0IAM93DzLeeC+c72509kfhN0nl9DYH6uFHN3Z5/RET9jN4uuJkQoVCArsH
+         yjNngyNef02hDyPOx73qW3DBUh/KleKa0Bx/BcxW5aJwk/yRXqu0dc6RmZSZBtF75GSj
+         yTiSaH9Ss1zx8TX2SQCQIf5Nxp59aH8jh/Gi4YBUfszk4okq95Ez3isktHBinBOdF/JM
+         Y6ng==
+X-Gm-Message-State: ABy/qLaBf6zbov3gLVvJzByADI1aqUFq5B6TnQaCnv2nB5efaPjtzC3z
+	6X4O+yioUGL7fPPI55PpSvyaxdp6He5cBNgsj5NEqHWAIkAlaDSsfHQNeMMpXl2ndE7KisTeP+w
+	cn/uTYuSfqfF98QngE8abZehFqQ==
+X-Received: by 2002:a1c:4c09:0:b0:3f9:8c3:6805 with SMTP id z9-20020a1c4c09000000b003f908c36805mr16214209wmf.7.1689089211238;
+        Tue, 11 Jul 2023 08:26:51 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlGw2WzDZuCEdYlu7Y0yLMaFqvebMduDgxmhsWsAORZJ56DuewUEdFcqGxFB+DTBd2RIvVW3kA==
+X-Received: by 2002:a1c:4c09:0:b0:3f9:8c3:6805 with SMTP id z9-20020a1c4c09000000b003f908c36805mr16214192wmf.7.1689089210848;
+        Tue, 11 Jul 2023 08:26:50 -0700 (PDT)
+Received: from ?IPV6:2003:cb:c745:4000:13ad:ed64:37e6:115d? (p200300cbc745400013aded6437e6115d.dip0.t-ipconnect.de. [2003:cb:c745:4000:13ad:ed64:37e6:115d])
+        by smtp.gmail.com with ESMTPSA id v2-20020adfe4c2000000b0031434c08bb7sm2515544wrm.105.2023.07.11.08.26.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 11 Jul 2023 08:26:50 -0700 (PDT)
+Message-ID: <98285185-170f-10fb-67a7-09e35ab47650@redhat.com>
+Date: Tue, 11 Jul 2023 17:26:49 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ab92f8d9-36ab-06bc-b85b-d52b7a1bfe9a@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v3 5/7] powerpc/book3s64/memhotplug: Enable memmap on
+ memory for radix
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
+ akpm@linux-foundation.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
+References: <20230711044834.72809-1-aneesh.kumar@linux.ibm.com>
+ <20230711044834.72809-6-aneesh.kumar@linux.ibm.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <20230711044834.72809-6-aneesh.kumar@linux.ibm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,61 +107,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, linux-hyperv@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, deller@gmx.de, linux-staging@lists.linux.dev, javierm@redhat.com, amd-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-geode@lists.infradead.org, linux-media@vger.kernel.org
+Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Thomas,
+On 11.07.23 06:48, Aneesh Kumar K.V wrote:
+> Radix vmemmap mapping can map things correctly at the PMD level or PTE
+> level based on different device boundary checks. Hence we skip the
+> restrictions w.r.t vmemmap size to be multiple of PMD_SIZE. This also
+> makes the feature widely useful because to use PMD_SIZE vmemmap area we
+> require a memory block size of 2GiB
+> 
+> We can also use MHP_RESERVE_PAGES_MEMMAP_ON_MEMORY to that the feature
+> can work with a memory block size of 256MB. Using altmap.reserve feature
+> to align things correctly at pageblock granularity. We can end up
+> losing some pages in memory with this. For ex: with a 256MiB memory block
+> size, we require 4 pages to map vmemmap pages, In order to align things
+> correctly we end up adding a reserve of 28 pages. ie, for every 4096
+> pages 28 pages get reserved.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>   arch/powerpc/Kconfig                          |  1 +
+>   arch/powerpc/include/asm/pgtable.h            | 28 +++++++++++++++++++
+>   .../platforms/pseries/hotplug-memory.c        |  3 +-
+>   mm/memory_hotplug.c                           |  2 ++
+>   4 files changed, 33 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 116d6add0bb0..f890907e5bbf 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -157,6 +157,7 @@ config PPC
+>   	select ARCH_HAS_UBSAN_SANITIZE_ALL
+>   	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>   	select ARCH_KEEP_MEMBLOCK
+> +	select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE	if PPC_RADIX_MMU
+>   	select ARCH_MIGHT_HAVE_PC_PARPORT
+>   	select ARCH_MIGHT_HAVE_PC_SERIO
+>   	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+> index 68817ea7f994..8e6c92dde6ad 100644
+> --- a/arch/powerpc/include/asm/pgtable.h
+> +++ b/arch/powerpc/include/asm/pgtable.h
+> @@ -169,6 +169,34 @@ static inline bool is_ioremap_addr(const void *x)
+>   int __meminit vmemmap_populated(unsigned long vmemmap_addr, int vmemmap_map_size);
+>   bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long start,
+>   			   unsigned long page_size);
+> +/*
+> + * mm/memory_hotplug.c:mhp_supports_memmap_on_memory goes into details
+> + * some of the restrictions. We don't check for PMD_SIZE because our
+> + * vmemmap allocation code can fallback correctly. The pageblock
+> + * alignment requirement is met using altmap->reserve blocks.
+> + */
+> +#define arch_supports_memmap_on_memory arch_supports_memmap_on_memory
+> +static inline bool arch_supports_memmap_on_memory(unsigned long size)
+> +{
+> +	unsigned long nr_pages = size >> PAGE_SHIFT;
+> +	unsigned long vmemmap_size = nr_pages * sizeof(struct page);
+> +
+> +	if (!radix_enabled())
+> +		return false;
+> +
+> +#ifdef CONFIG_PPC_4K_PAGES
+> +	return IS_ALIGNED(vmemmap_size, PMD_SIZE);
+> +#else
+> +	/*
+> +	 * Make sure the vmemmap allocation is fully contianed
+> +	 * so that we always allocate vmemmap memory from altmap area.
+> +	 * The pageblock alignment requirement is met by using
+> +	 * reserve blocks in altmap.
+> +	 */
+> +	return IS_ALIGNED(vmemmap_size,  PAGE_SIZE);
 
-On Tue, Jul 11, 2023 at 08:24:40AM +0200, Thomas Zimmermann wrote:
-> Hi Sam
-> 
-> Am 10.07.23 um 19:19 schrieb Sam Ravnborg:
-> > Hi Thomas,
-> > 
-> > On Mon, Jul 10, 2023 at 02:50:04PM +0200, Thomas Zimmermann wrote:
-> > > Remove the unused flags FBINFO_DEFAULT and FBINFO_FLAG_DEFAULT from
-> > > fbdev and drivers, as briefly discussed at [1]. Both flags were maybe
-> > > useful when fbdev had special handling for driver modules. With
-> > > commit 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE"), they are both 0
-> > > and have no further effect.
-> > > 
-> > > Patches 1 to 7 remove FBINFO_DEFAULT from drivers. Patches 2 to 5
-> > > split this by the way the fb_info struct is being allocated. All flags
-> > > are cleared to zero during the allocation.
-> > > 
-> > > Patches 8 to 16 do the same for FBINFO_FLAG_DEFAULT. Patch 8 fixes
-> > > an actual bug in how arch/sh uses the tokne for struct fb_videomode,
-> > > which is unrelated.
-> > > 
-> > > Patch 17 removes both flag constants from <linux/fb.h>
-> > 
-> > We have a few more flags that are unused - should they be nuked too?
-> > FBINFO_HWACCEL_FILLRECT
-> > FBINFO_HWACCEL_ROTATE
-> > FBINFO_HWACCEL_XPAN
-> 
-> It seems those are there for completeness. Nothing sets _ROTATE, the others
-> are simply never checked. According to the comments, some are required, some
-> are optional. I don't know what that means.
-> 
-> IIRC there were complains about performance when Daniel tried to remove
-> fbcon acceleration, so not all _HWACCEL_ flags are unneeded.
-> 
-> Leaving them in for reference/completeness might be an option; or not. I
-> have no strong feelings about those flags.
-> 
-> > 
-> > Unused as in no references from fbdev/core/*
-> > 
-> > I would rather see one series nuke all unused FBINFO flags in one go.
-> > Assuming my quick grep are right and the above can be dropped.
-> 
-> I would not want to extend this series. I'm removing _DEFAULT as it's
-> absolutely pointless and confusing.
+Can we move that check into common code as well?
 
-OK, makes sense and thanks for the explanation.
+If our (original) vmemmap size would not fit into a single page, we 
+would be in trouble on any architecture. Did not check if it would be an 
+issue for arm64 as well in case we would allow eventually wasting memory.
 
-The series is:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+-- 
+Cheers,
+
+David / dhildenb
 
