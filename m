@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 513EFEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:01:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41E0DEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 16:02:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0lws5lT6z3cg8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:01:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0lxZ5tLCz3d80
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 02:02:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0ltm6q8mz3bdG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:59:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0ltr6jkCz3c4w
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 01:59:48 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4R0ltS35Zcz9sFD;
-	Tue, 11 Jul 2023 17:59:28 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4R0ltT3NCCz9sFC;
+	Tue, 11 Jul 2023 17:59:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DZuap8RFcEqn; Tue, 11 Jul 2023 17:59:28 +0200 (CEST)
+	with ESMTP id fTULE-tCuYb7; Tue, 11 Jul 2023 17:59:29 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0ltP5f2mz9sFC;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4R0ltP6FCGz9sFB;
 	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BD63F8B779;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D2C148B779;
 	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id gqZ4cje9FlEz; Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
+	with ESMTP id U5t_uL3wOByg; Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.233.184])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5E7958B77C;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 580FD8B763;
 	Tue, 11 Jul 2023 17:59:25 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BFxPmh3695847
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 36BFxOGM3695835
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 11 Jul 2023 17:59:25 +0200
+	Tue, 11 Jul 2023 17:59:24 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BFxPik3695846;
-	Tue, 11 Jul 2023 17:59:25 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 36BFxO3H3695834;
+	Tue, 11 Jul 2023 17:59:24 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 4/9] powerpc/features: Add capability to update mmu features later
-Date: Tue, 11 Jul 2023 17:59:16 +0200
-Message-ID: <31b27ee2c9d338f4f82cd8cd69d6bff979495290.1689091022.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 1/9] powerpc/kuap: Avoid unnecessary reads of MD_AP
+Date: Tue, 11 Jul 2023 17:59:13 +0200
+Message-ID: <bcbc84c2dd90bb1021da792b1968cdc22112dad8.1689091022.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1689091022.git.christophe.leroy@csgroup.eu>
 References: <cover.1689091022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091151; l=4060; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=GdD7c2l/Uyecqxws9+sH8Um0e0MhamGooysf3NrpJOA=; b=apcbpvrgNY9hfKbaorzyophs2AAOV8EGShvFrouJzfudh61za4nVtCjVIXRrw0y31OyXOCjOu 6r35QqReEnzDiQU+oJHIZR6prCcwU2OYIw0u9+P6qL/X4DbP1N1EO9a
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689091151; l=2619; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=mZCR5C01Pd3BlOL1lPvQiAD1tIC5U5fSSpbLhzl8Nq4=; b=Cm+OUO1DU3tXOmHWF7SsSZt5/hrk/zM8NVNneDmG+8dxvLAhpTbfyIIorCF1atPPtSWLalk8d x0020sW3qD1A6yfIOyiMEpcLZIZq8JYPl3hrTIrN+LppdA7IkVWlfu1
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,117 +71,74 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On powerpc32, features fixup is performed very early and that's too
-early to read the cmdline and take into account 'nosmap' parameter.
+A disassembly of interrupt_exit_kernel_prepare() shows a useless read
+of MD_AP register. This is shown by r9 being re-used immediately without
+doing anything with the value read.
 
-On the other hand, no userspace access is performed that early and
-KUAP feature fixup can be performed later.
+  c000e0e0:       60 00 00 00     nop
+  c000e0e4: ===>  7d 3a c2 a6     mfmd_ap r9	<====
+  c000e0e8:       7d 20 00 a6     mfmsr   r9
+  c000e0ec:       7c 51 13 a6     mtspr   81,r2
+  c000e0f0:       81 3f 00 84     lwz     r9,132(r31)
+  c000e0f4:       71 29 80 00     andi.   r9,r9,32768
 
-Add a function to update mmu features. The function is passed a
-mask with the features that can be updated.
+kuap_get_and_assert_locked() is paired with kuap_kernel_restore()
+and are only used in interrupt_exit_kernel_prepare(). The value
+returned by kuap_get_and_assert_locked() is only used by
+kuap_kernel_restore().
+
+On 8xx, kuap_kernel_restore() doesn't use the value read by
+kuap_get_and_assert_locked() so modify kuap_get_and_assert_locked()
+to not perform the read of MD_AP and return 0 instead.
+
+The same applies on BOOKE.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/feature-fixups.h |  1 +
- arch/powerpc/lib/feature-fixups.c         | 31 ++++++++++++++++++++---
- 2 files changed, 28 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h | 8 ++------
+ arch/powerpc/include/asm/nohash/kup-booke.h  | 6 ++----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-index ac605fc369c4..77824bd289a3 100644
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -292,6 +292,7 @@ extern long __start___barrier_nospec_fixup, __stop___barrier_nospec_fixup;
- extern long __start__btb_flush_fixup, __stop__btb_flush_fixup;
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index c44d97751723..8579210f2a6a 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -41,14 +41,10 @@ static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kua
  
- void apply_feature_fixups(void);
-+void update_mmu_feature_fixups(unsigned long mask);
- void setup_feature_keys(void);
- #endif
+ static inline unsigned long __kuap_get_and_assert_locked(void)
+ {
+-	unsigned long kuap;
+-
+-	kuap = mfspr(SPRN_MD_AP);
+-
+ 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		WARN_ON_ONCE(kuap >> 16 != MD_APG_KUAP >> 16);
++		WARN_ON_ONCE(mfspr(SPRN_MD_AP) >> 16 != MD_APG_KUAP >> 16);
  
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 80def1c2afcb..4f82581ca203 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -67,7 +67,8 @@ static int patch_alt_instruction(u32 *src, u32 *dest, u32 *alt_start, u32 *alt_e
- 	return 0;
+-	return kuap;
++	return 0;
  }
  
--static int patch_feature_section(unsigned long value, struct fixup_entry *fcur)
-+static int patch_feature_section_mask(unsigned long value, unsigned long mask,
-+				      struct fixup_entry *fcur)
+ static inline void __allow_user_access(void __user *to, const void __user *from,
+diff --git a/arch/powerpc/include/asm/nohash/kup-booke.h b/arch/powerpc/include/asm/nohash/kup-booke.h
+index 49bb41ed0816..823c5a3a96d8 100644
+--- a/arch/powerpc/include/asm/nohash/kup-booke.h
++++ b/arch/powerpc/include/asm/nohash/kup-booke.h
+@@ -58,12 +58,10 @@ static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kua
+ 
+ static inline unsigned long __kuap_get_and_assert_locked(void)
  {
- 	u32 *start, *end, *alt_start, *alt_end, *src, *dest;
+-	unsigned long kuap = mfspr(SPRN_PID);
+-
+ 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		WARN_ON_ONCE(kuap);
++		WARN_ON_ONCE(mfspr(SPRN_PID));
  
-@@ -79,7 +80,7 @@ static int patch_feature_section(unsigned long value, struct fixup_entry *fcur)
- 	if ((alt_end - alt_start) > (end - start))
- 		return 1;
- 
--	if ((value & fcur->mask) == fcur->value)
-+	if ((value & fcur->mask & mask) == (fcur->value & mask))
- 		return 0;
- 
- 	src = alt_start;
-@@ -97,7 +98,8 @@ static int patch_feature_section(unsigned long value, struct fixup_entry *fcur)
- 	return 0;
+-	return kuap;
++	return 0;
  }
  
--void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
-+static void do_feature_fixups_mask(unsigned long value, unsigned long mask,
-+				   void *fixup_start, void *fixup_end)
- {
- 	struct fixup_entry *fcur, *fend;
- 
-@@ -105,7 +107,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 	fend = fixup_end;
- 
- 	for (; fcur < fend; fcur++) {
--		if (patch_feature_section(value, fcur)) {
-+		if (patch_feature_section_mask(value, mask, fcur)) {
- 			WARN_ON(1);
- 			printk("Unable to patch feature section at %p - %p" \
- 				" with %p - %p\n",
-@@ -117,6 +119,11 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 	}
- }
- 
-+void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
-+{
-+	do_feature_fixups_mask(value, ~0, fixup_start, fixup_end);
-+}
-+
- #ifdef CONFIG_PPC_BARRIER_NOSPEC
- static bool is_fixup_addr_valid(void *dest, size_t size)
- {
-@@ -651,6 +658,17 @@ void __init apply_feature_fixups(void)
- 	do_final_fixups();
- }
- 
-+void __init update_mmu_feature_fixups(unsigned long mask)
-+{
-+	saved_mmu_features &= ~mask;
-+	saved_mmu_features |= cur_cpu_spec->mmu_features & mask;
-+
-+	do_feature_fixups_mask(cur_cpu_spec->mmu_features, mask,
-+			       PTRRELOC(&__start___mmu_ftr_fixup),
-+			       PTRRELOC(&__stop___mmu_ftr_fixup));
-+	mmu_feature_keys_init();
-+}
-+
- void __init setup_feature_keys(void)
- {
- 	/*
-@@ -683,6 +701,11 @@ late_initcall(check_features);
- #define check(x)	\
- 	if (!(x)) printk("feature-fixups: test failed at line %d\n", __LINE__);
- 
-+static int patch_feature_section(unsigned long value, struct fixup_entry *fcur)
-+{
-+	return patch_feature_section_mask(value, ~0, fcur);
-+}
-+
- /* This must be after the text it fixes up, vmlinux.lds.S enforces that atm */
- static struct fixup_entry fixup;
- 
+ static inline void __allow_user_access(void __user *to, const void __user *from,
 -- 
 2.41.0
 
