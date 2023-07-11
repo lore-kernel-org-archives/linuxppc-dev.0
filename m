@@ -4,57 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E710EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 11:21:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E160CEB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 12:49:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=b1nsnyWJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h+WxNINb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R0dk63wb9z30hG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 21:21:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R0gfn2dqGz3bx3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jul 2023 22:49:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=b1nsnyWJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h+WxNINb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0cj124xrz303l
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 20:35:49 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 9D9A061457;
-	Tue, 11 Jul 2023 10:35:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 400C3C433C8;
-	Tue, 11 Jul 2023 10:35:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1689071746;
-	bh=RdirUcCE2pA/1z8207uTNCXjhMGAcU2jC5JA2KzMRoY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=b1nsnyWJfs1mcjVYHJe+HEUCi0LN15hY99BnaXhtfz0oB3h8EzQMDa9aeEPB4cHsG
-	 m0hzpx+fMmsE8WzKuxURAUSYoPOk1yyNeGjKmk6Oo1T+sxizOWkbUk2lnWZeZJq/OR
-	 t35F+euEtnNr2grYlFD6oJ2MJWvp/QNNOG1DuAJeBI5VAMb7y9WA/nlkd3eUTkr2Lb
-	 BRvBfq7P9mdE+wM/H6F8uotrR4TMskih7C1j7iuXPsrtoxNhX7cAuYqxh5Z1V2YE+p
-	 NfC0fI8jKAJTifgfTIIMFJicOPaZ5ZezvtKLTLYQgP5kZnonqVF+tNhSPdx4zGnzF9
-	 S3WTHtdee7iTg==
-Date: Tue, 11 Jul 2023 13:35:41 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Suren Baghdasaryan <surenb@google.com>,
-	Laurent Dufour <ldufour@linux.ibm.com>,
-	Sachin Sant <sachinp@linux.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4 00/33] Per-VMA locks
-Message-ID: <20230711103541.GA190975@unreal>
-References: <20230227173632.3292573-1-surenb@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R0gdp1QrZz30XP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 22:48:13 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36BCklLR029718;
+	Tue, 11 Jul 2023 12:47:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=sdv+nX2g0tH7IRWavt/Cl+GR/UDTQqwkCstmk2Kzzf0=;
+ b=h+WxNINbaqDCwY5V9fD17BvemK+ZuYmtj+m8AEFOx+QAwEfBGJh/F3A6bltvwqPuqHBo
+ SclQ5dwZ6g+enTMzPhtNtF5dC63Cb7PUC8orN4CQ9miK0J/K5fhMkRKYPmA3gl7DXrGM
+ 7cHsgCJxzfdAfk1g2yjYdmTRYmiCJJhRcCaV4wO+SHFul0Scx7AwNVB8bllYFFF7wmyI
+ 56aYWPl8torTgwzrmFIn6vZzSsC6vl3P+K5pTIYZxZ0fOVdTvB8jAhHL8PV6sNK2skt0
+ k8MPe3AbmFYjX0ctbYZK2A33rjjX97WCatH5o7lmUmDpLvm0iLqdchuj1ocxjvgfxMdE 6Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rs7ctr0x2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 12:47:54 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36BCllmj000539;
+	Tue, 11 Jul 2023 12:47:53 GMT
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com [169.47.144.26])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rs7ctr0wk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 12:47:53 +0000
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+	by ppma04wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36B9GTo6009352;
+	Tue, 11 Jul 2023 12:47:52 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([9.208.129.113])
+	by ppma04wdc.us.ibm.com (PPS) with ESMTPS id 3rpye5pt4c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Jul 2023 12:47:52 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36BClppM59965842
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Jul 2023 12:47:51 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 76B7D5804B;
+	Tue, 11 Jul 2023 12:47:51 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 49C1258059;
+	Tue, 11 Jul 2023 12:47:50 +0000 (GMT)
+Received: from [9.47.158.152] (unknown [9.47.158.152])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 11 Jul 2023 12:47:50 +0000 (GMT)
+Message-ID: <0fb26243-0d63-118b-2737-05391ba0c69a@linux.ibm.com>
+Date: Tue, 11 Jul 2023 08:47:49 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20230227173632.3292573-1-surenb@google.com>
-X-Mailman-Approved-At: Tue, 11 Jul 2023 21:21:01 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v2 1/2] powerpc/tpm: Create linux,sml-base/size as big
+ endian
+Content-Language: en-US
+To: Jarkko Sakkinen <jarkko@kernel.org>,
+        Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20230615123703.4028156-1-mpe@ellerman.id.au>
+ <4d378d53225fc8b8cdc99dde900388d2eefaad4e.camel@kernel.org>
+From: Stefan Berger <stefanb@linux.ibm.com>
+In-Reply-To: <4d378d53225fc8b8cdc99dde900388d2eefaad4e.camel@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Zl0EHenGq0Rsv_AogZccBYYIiJYXiM5L
+X-Proofpoint-GUID: 8rDio_9ztsvdkrLec7tE1iabzrZbRA_e
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-11_06,2023-07-11_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 adultscore=0
+ clxscore=1011 mlxscore=0 impostorscore=0 malwarescore=0 phishscore=0
+ lowpriorityscore=0 priorityscore=1501 suspectscore=0 mlxlogscore=999
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307110113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,119 +103,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, Linux kernel regressions list <regressions@lists.linux.dev>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, sergeyy@nvidia.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, gal@nvidia.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, maorg@nvidia.com, ranro@nvidia.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, regressions@leemhuis.info, shakeelb@google.com, drort@nvidia.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google
- .com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, idok@nvidia.com, hannes@cmpxchg.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
+Cc: jgg@ziepe.ca, linux-integrity@vger.kernel.org, eajames@linux.ibm.com, peterhuewe@gmx.de, yangyingliang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-On Mon, Feb 27, 2023 at 09:35:59AM -0800, Suren Baghdasaryan wrote:
 
-<...>
+On 7/10/23 17:23, Jarkko Sakkinen wrote:
+> On Thu, 2023-06-15 at 22:37 +1000, Michael Ellerman wrote:
+>> There's code in prom_instantiate_sml() to do a "SML handover" (Stored
+>> Measurement Log) from OF to Linux, before Linux shuts down Open
+>> Firmware.
+>>
+>> This involves creating a buffer to hold the SML, and creating two device
+>> tree properties to record its base address and size. The kernel then
+>> later reads those properties from the device tree to find the SML.
+>>
+>> When the code was initially added in commit 4a727429abec ("PPC64: Add
+>> support for instantiating SML from Open Firmware") the powerpc kernel
+>> was always built big endian, so the properties were created big endian
+>> by default.
+>>
+>> However since then little endian support was added to powerpc, and now
+>> the code lacks conversions to big endian when creating the properties.
+>>
+>> This means on little endian kernels the device tree properties are
+>> little endian, which is contrary to the device tree spec, and in
+>> contrast to all other device tree properties.
+>>
+>> To cope with that a workaround was added in tpm_read_log_of() to skip
+>> the endian conversion if the properties were created via the SML
+>> handover.
+>>
+>> A better solution is to encode the properties as big endian as they
+>> should be, and remove the workaround.
+>>
+>> Typically changing the encoding of a property like this would present
+>> problems for kexec. However the SML is not propagated across kexec, so
+>> changing the encoding of the properties is a non-issue.
+>>
+>> Fixes: e46e22f12b19 ("tpm: enhance read_log_of() to support Physical TPM event log")
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
+>> ---
+>>   arch/powerpc/kernel/prom_init.c |  8 ++++++--
+>>   drivers/char/tpm/eventlog/of.c  | 23 ++++-------------------
+>>   2 files changed, 10 insertions(+), 21 deletions(-)
+> 
+> Split into two patches (producer and consumer).
 
-> Laurent Dufour (1):
->   powerc/mm: try VMA lock-based page fault handling first
+I think this wouldn't be right since it would break the system when only one patch is applied since it would be reading the fields in the wrong endianess.
 
-Hi,
-
-This series and specifically the commit above broke docker over PPC.
-It causes to docker service stuck while trying to activate. Revert of
-this commit allows us to use docker again.
-
-[user@ppc-135-3-200-205 ~]# sudo systemctl status docker
-=E2=97=8F docker.service - Docker Application Container Engine
-     Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; vendo=
-r preset: disabled)
-     Active: activating (start) since Mon 2023-06-26 14:47:07 IDT; 3h 50min=
- ago
-TriggeredBy: =E2=97=8F docker.socket
-       Docs: https://docs.docker.com
-   Main PID: 276555 (dockerd)
-     Memory: 44.2M
-     CGroup: /system.slice/docker.service
-             =E2=94=94=E2=94=80 276555 /usr/bin/dockerd -H fd:// --containe=
-rd=3D/run/containerd/containerd.sock
-
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129383166+03:00" level=3Dinfo msg=3D"Graph migration to content-address=
-ability took 0.00 se>
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129666160+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
-roup cfs period"
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129684117+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
-roup cfs quotas"
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129697085+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
-roup rt period"
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129711513+03:00" level=3Dwarning msg=3D"Your kernel does not support cg=
-roup rt runtime"
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129720656+03:00" level=3Dwarning msg=3D"Unable to find blkio cgroup in =
-mounts"
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.129805617+03:00" level=3Dwarning msg=3D"mountpoint for pids not found"
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.130199070+03:00" level=3Dinfo msg=3D"Loading containers: start."
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.132688568+03:00" level=3Dwarning msg=3D"Running modprobe bridge br_netf=
-ilter failed with me>
-Jun 26 14:47:07 ppc-135-3-200-205 dockerd[276555]: time=3D"2023-06-26T14:47=
-:07.271014050+03:00" level=3Dinfo msg=3D"Default bridge (docker0) is assign=
-ed with an IP addres>
-
-Python script which we used for bisect:
-
-import subprocess
-import time
-import sys
-
-
-def run_command(cmd):
-    print('running:', cmd)
-
-    p =3D subprocess.Popen(cmd, shell=3DTrue, stdout=3Dsubprocess.PIPE, std=
-err=3Dsubprocess.PIPE)
-
-    try:
-        stdout, stderr =3D p.communicate(timeout=3D30)
-
-    except subprocess.TimeoutExpired:
-        return True
-
-    print(stdout.decode())
-    print(stderr.decode())
-    print('rc:', p.returncode)
-
-    return False
-
-
-def main():
-    commands =3D [
-        'sudo systemctl stop docker',
-        'sudo systemctl status docker',
-        'sudo systemctl is-active docker',
-        'sudo systemctl start docker',
-        'sudo systemctl status docker',
-    ]
-
-    for i in range(1000):
-        title =3D f'Try no. {i + 1}'
-        print('*' * 50, title, '*' * 50)
-
-        for cmd in commands:
-            if run_command(cmd):
-                print(f'Reproduced on try no. {i + 1}!')
-                print(f'"{cmd}" is stuck!')
-
-                return 1
-
-            print('\n')
-        time.sleep(30)
-    return 0
-
-if __name__ =3D=3D '__main__':
-    sys.exit(main())
-
-Thanks
+     Stefan
+> 
+> BR, Jarkko
+> 
+>>
+>> v2: Add Stefan's reviewed-by.
+>>
+>> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+>> index d464ba412084..72fe306b6820 100644
+>> --- a/arch/powerpc/kernel/prom_init.c
+>> +++ b/arch/powerpc/kernel/prom_init.c
+>> @@ -1900,6 +1900,7 @@ static void __init prom_instantiate_sml(void)
+>>   	u32 entry = 0, size = 0, succ = 0;
+>>   	u64 base;
+>>   	__be32 val;
+>> +	__be64 val64;
+>>   
+>>   	prom_debug("prom_instantiate_sml: start...\n");
+>>   
+>> @@ -1956,10 +1957,13 @@ static void __init prom_instantiate_sml(void)
+>>   
+>>   	reserve_mem(base, size);
+>>   
+>> +	val64 = cpu_to_be64(base);
+>>   	prom_setprop(ibmvtpm_node, "/vdevice/vtpm", "linux,sml-base",
+>> -		     &base, sizeof(base));
+>> +		     &val64, sizeof(val64));
+>> +
+>> +	val = cpu_to_be32(size);
+>>   	prom_setprop(ibmvtpm_node, "/vdevice/vtpm", "linux,sml-size",
+>> -		     &size, sizeof(size));
+>> +		     &val, sizeof(val));
+>>   
+>>   	prom_debug("sml base     = 0x%llx\n", base);
+>>   	prom_debug("sml size     = 0x%x\n", size);
+>> diff --git a/drivers/char/tpm/eventlog/of.c b/drivers/char/tpm/eventlog/of.c
+>> index 930fe43d5daf..0bc0cb6333c6 100644
+>> --- a/drivers/char/tpm/eventlog/of.c
+>> +++ b/drivers/char/tpm/eventlog/of.c
+>> @@ -51,8 +51,8 @@ static int tpm_read_log_memory_region(struct tpm_chip *chip)
+>>   int tpm_read_log_of(struct tpm_chip *chip)
+>>   {
+>>   	struct device_node *np;
+>> -	const u32 *sizep;
+>> -	const u64 *basep;
+>> +	const __be32 *sizep;
+>> +	const __be64 *basep;
+>>   	struct tpm_bios_log *log;
+>>   	u32 size;
+>>   	u64 base;
+>> @@ -73,23 +73,8 @@ int tpm_read_log_of(struct tpm_chip *chip)
+>>   	if (sizep == NULL || basep == NULL)
+>>   		return -EIO;
+>>   
+>> -	/*
+>> -	 * For both vtpm/tpm, firmware has log addr and log size in big
+>> -	 * endian format. But in case of vtpm, there is a method called
+>> -	 * sml-handover which is run during kernel init even before
+>> -	 * device tree is setup. This sml-handover function takes care
+>> -	 * of endianness and writes to sml-base and sml-size in little
+>> -	 * endian format. For this reason, vtpm doesn't need conversion
+>> -	 * but physical tpm needs the conversion.
+>> -	 */
+>> -	if (of_property_match_string(np, "compatible", "IBM,vtpm") < 0 &&
+>> -	    of_property_match_string(np, "compatible", "IBM,vtpm20") < 0) {
+>> -		size = be32_to_cpup((__force __be32 *)sizep);
+>> -		base = be64_to_cpup((__force __be64 *)basep);
+>> -	} else {
+>> -		size = *sizep;
+>> -		base = *basep;
+>> -	}
+>> +	size = be32_to_cpup(sizep);
+>> +	base = be64_to_cpup(basep);
+>>   
+>>   	if (size == 0) {
+>>   		dev_warn(&chip->dev, "%s: Event log area empty\n", __func__);
+> 
