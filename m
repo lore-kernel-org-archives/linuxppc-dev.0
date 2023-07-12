@@ -4,74 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8894FEB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 13:50:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4743EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 13:51:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=HZPxYS2q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Zu9LAOZj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1JzR0NDkz3cDC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 23:50:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1K0X2SJ9z3c1L
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 23:51:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=HZPxYS2q;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Zu9LAOZj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=matuszpd@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1Hj40lPGz3bnw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 22:53:09 +1000 (AEST)
-Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-98e39784a85so157869666b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 05:53:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689166384; x=1691758384;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ef9ldj54LfSreJO+VbHq1Yil94yCCRtncr0AA0IgxoI=;
-        b=HZPxYS2q0wdP+oUdlVbS0bHA1gduL/QbI3aYqBTAD7g0jrxG3ckLP7O+qlZaCgpYtZ
-         uR4tL/+dPcz2X7WQA7Fx5G0jEmaDPw2Hhj0hWt2d2dgvDINwW3fJ9RFCZgPA9NDBkJb5
-         kZgq4OzAms76DQJFiMj/dA8201Fs9jVy+T1gw9BJIwYxEbnqt9CZPa1Yi9XAcVJYJGtm
-         dTuHFo/YgPTWVnjwjFDJgMYaMbkZMTOHkjl9hN/mRikq8ZEUDstWunwXChiIZQ93QvNf
-         N/sg+1KPo3DQA/CI8eCoAQaMO9n1/x2MW6pBZtB+m1YOE0718F6Wvr9mm4rOJU8SuPhc
-         u1zA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689166384; x=1691758384;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ef9ldj54LfSreJO+VbHq1Yil94yCCRtncr0AA0IgxoI=;
-        b=RlEh5SJQkSAOEoeTtlpPLchuOpvi/gnWgAxR8rFNlPZSfjuQG/mrr0T0cIYDFQo4cC
-         jpzH4ifouatVLwlQyr3LZWQTofhVZSJODl4tZMvVkSy8SBPvasZD3LjR+kOGGMxoyVes
-         8GFtsq0i+lFz/c5dn0QjLq333KMjRdZZTXifMcscHBHHv6t4+DH935r+rdVl4+5QHlyo
-         dJaRO9TAGoYzlkOD62d8YMmELN+ev6x3xhe4Ft2S+RgQCmIQ8FfvlpaghLNZkCjv4xjD
-         28/ezH3y6Hnpn0CiVGB6pAU1JsASIuZv/vck5IM21g5J6VrBI4rqRWYv7OR2ucn+2vDz
-         IUWw==
-X-Gm-Message-State: ABy/qLbtqw07nLaRPeyTCC/3YbGJ71OUUsVtKC9H8AOw94RXtm13QveO
-	TbJznXvQhSJT9ckUGeMUac4=
-X-Google-Smtp-Source: APBJJlEQwzCXnLSG9Db+b/tZpzul5Q8lvD7Ip0hLgkyKGo/6GNq4Xfrpf2kkMy9+NX6RlyZ+hk/4uQ==
-X-Received: by 2002:a17:906:64c2:b0:993:d632:2c3 with SMTP id p2-20020a17090664c200b00993d63202c3mr2421780ejn.21.1689166383605;
-        Wed, 12 Jul 2023 05:53:03 -0700 (PDT)
-Received: from localhost.localdomain ([2a01:c844:242b:b300:215:5dff:fe81:5e96])
-        by smtp.gmail.com with ESMTPSA id l6-20020a170906230600b00991faf3810esm2544506eja.146.2023.07.12.05.53.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Jul 2023 05:53:03 -0700 (PDT)
-From: Matus Gajdos <matuszpd@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Subject: [PATCH] ASoC: fsl_sai: Disable bit clock with transmitter
-Date: Wed, 12 Jul 2023 14:49:33 +0200
-Message-Id: <20230712124934.32232-1-matuszpd@gmail.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1JzN68PJz3cD1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 23:50:40 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36CDlqbx018837;
+	Wed, 12 Jul 2023 13:50:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=jfUnXQjFDiAT2+OsefhLGqBTdHxKFrPm+Ydmt09me38=;
+ b=Zu9LAOZjLg4N03vAxLBLe2ooORZR/X/4OEcjhTfKaa/hrTq4BCM981Hu8aTf7QxaGM8z
+ mw2wHGCOIuLiN34YjRXKjlWYkzO8HmZfgfTcDq/aMgx8xRigo37H6E/BVjX+5wKzyzc5
+ 4q3KhBMbOBoB5x2r531UeSXaZQ0hu7zC0LqtHi5g+zIfeoU0dBRCN1X6HOmqNVAgp7ZK
+ yMZzGcmUCqv6QjKpLiUIVKRjXNLsMdbPYbgzdKBHq5bBQMuOcCNExH+TVE3SsXCBQZRd
+ 9QO1jdDcRB5Y+qu7aWCoYJq57c626bCRrOO3u3bOE2zmkrUmD5WvLs6feKJHpt8rqDyf DQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rswc6r1q1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jul 2023 13:50:25 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36CDlquM018852;
+	Wed, 12 Jul 2023 13:50:24 GMT
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rswc6r1pt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jul 2023 13:50:24 +0000
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+	by ppma02dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36CB2Njr005235;
+	Wed, 12 Jul 2023 13:50:23 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([9.208.130.102])
+	by ppma02dal.us.ibm.com (PPS) with ESMTPS id 3rpye6eup7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jul 2023 13:50:23 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36CDoMxl57737488
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 12 Jul 2023 13:50:22 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 300ED5804B;
+	Wed, 12 Jul 2023 13:50:22 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AED155805B;
+	Wed, 12 Jul 2023 13:50:17 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.43.19.28])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 12 Jul 2023 13:50:17 +0000 (GMT)
+X-Mailer: emacs 29.0.91 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org,
+        akpm@linux-foundation.org, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+Subject: Re: [PATCH v3 4/7] mm/hotplug: Allow pageblock alignment via altmap
+ reservation
+In-Reply-To: <57dd0568-ee56-ff8d-3ba3-a9089a2ab386@redhat.com>
+References: <20230711044834.72809-1-aneesh.kumar@linux.ibm.com>
+ <20230711044834.72809-5-aneesh.kumar@linux.ibm.com>
+ <b44ce7ab-7fcf-3f1b-4bca-3d5d12838812@redhat.com>
+ <ccda3be5-1e44-145e-7b46-2e420935b1d6@linux.ibm.com>
+ <57dd0568-ee56-ff8d-3ba3-a9089a2ab386@redhat.com>
+Date: Wed, 12 Jul 2023 19:20:14 +0530
+Message-ID: <87wmz56xyh.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 12 Jul 2023 23:49:03 +1000
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ijQmLLJPE_Y4O2g7aLj7U1jR6teFhqWc
+X-Proofpoint-ORIG-GUID: 5zOgomSzcCcXAUbd4IJieMmJJQh8Qy6x
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-12_08,2023-07-11_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
+ clxscore=1015 priorityscore=1501 lowpriorityscore=0 bulkscore=0
+ impostorscore=0 mlxlogscore=999 mlxscore=0 adultscore=0 suspectscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2305260000 definitions=main-2307120122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,43 +103,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matus Gajdos <matuszpd@gmail.com>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Otherwise bit clock remains running writing invalid data to the DAC.
+David Hildenbrand <david@redhat.com> writes:
 
-Signed-off-by: Matus Gajdos <matuszpd@gmail.com>
----
- sound/soc/fsl/fsl_sai.c | 2 +-
- sound/soc/fsl/fsl_sai.h | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+> On 12.07.23 05:16, Aneesh Kumar K V wrote:
+>> On 7/11/23 10:49 PM, David Hildenbrand wrote:
+>>> On 11.07.23 06:48, Aneesh Kumar K.V wrote:
+>>>> Add a new kconfig option that can be selected if we want to allow
+>>>> pageblock alignment by reserving pages in the vmemmap altmap area.
+>>>> This implies we will be reserving some pages for every memoryblock
+>>>> This also allows the memmap on memory feature to be widely useful
+>>>> with different memory block size values.
+>>>
+>>> "reserving pages" is a nice way of saying "wasting memory". :) Let's spell that out.
+>>>
+>>> I think we have to find a better name for this, and I think we should have a toggle similar to memory_hotplug.memmap_on_memory. This should be an admin decision, not some kernel config option.
+>>>
+>>>
+>>> memory_hotplug.force_memmap_on_memory
+>>>
+>>> "Enable the memmap on memory feature even if it could result in memory waste due to memmap size limitations. For example, if the memmap for a memory block requires 1 MiB, but the pageblock size is 2 MiB, 1 MiB
+>>> of hotplugged memory will be wasted. Note that there are still cases where the feature cannot be enforced: for example, if the memmap is smaller than a single page, or if the architecture does not support the forced mode in all configurations."
+>>>
+>>> Thoughts?
+>>>
+>> 
+>> With module parameter, do we still need the Kconfig option?
+>
+> No.
+>
+> Sleeping over this, maybe we can convert the existing 
+> memory_hotplug.memmap_on_memory parameter to also accept "force".
+>
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 5e09f634c61b..dcc7fbe7acac 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -719,7 +719,7 @@ static void fsl_sai_config_disable(struct fsl_sai *sai, int dir)
- 	u32 xcsr, count = 100;
+How about this? 
+
+modified   mm/memory_hotplug.c
+@@ -45,13 +45,67 @@
+ /*
+  * memory_hotplug.memmap_on_memory parameter
+  */
+-static bool memmap_on_memory __ro_after_init;
+-module_param(memmap_on_memory, bool, 0444);
+-MODULE_PARM_DESC(memmap_on_memory, "Enable memmap on memory for memory hotplug");
++enum {
++	MEMMAP_ON_MEMORY_DISABLE = 0,
++	MEMMAP_ON_MEMORY_ENABLE,
++	FORCE_MEMMAP_ON_MEMORY,
++};
++static int memmap_mode __read_mostly = MEMMAP_ON_MEMORY_DISABLE;
++static const char *memmap_on_memory_to_str[] = {
++	[MEMMAP_ON_MEMORY_DISABLE]  = "disable",
++	[MEMMAP_ON_MEMORY_ENABLE]   = "enable",
++	[FORCE_MEMMAP_ON_MEMORY]    = "force",
++};
++
++static inline unsigned long memory_block_align_base(unsigned long size)
++{
++	if (memmap_mode == FORCE_MEMMAP_ON_MEMORY) {
++		unsigned long align;
++		unsigned long nr_vmemmap_pages = size >> PAGE_SHIFT;
++		unsigned long vmemmap_size;
++
++		vmemmap_size = DIV_ROUND_UP(nr_vmemmap_pages * sizeof(struct page), PAGE_SIZE);
++		align = pageblock_align(vmemmap_size) - vmemmap_size;
++		return align;
++	} else
++		return 0;
++}
++
++static int set_memmap_mode(const char *val, const struct kernel_param *kp)
++{
++	int ret = sysfs_match_string(memmap_on_memory_to_str, val);
++
++	if (ret < 0)
++		return ret;
++	*((int *)kp->arg) = ret;
++	if (ret == FORCE_MEMMAP_ON_MEMORY) {
++		pr_info("Memory hotplug will reserve %ld pages in each memory block\n",
++			memory_block_align_base(memory_block_size_bytes()));
++	}
++	return 0;
++}
++
++static int get_memmap_mode(char *buffer, const struct kernel_param *kp)
++{
++	return sprintf(buffer, "%s\n", memmap_on_memory_to_str[*((int *)kp->arg)]);
++}
++
++static const struct kernel_param_ops memmap_mode_ops = {
++	.set = set_memmap_mode,
++	.get = get_memmap_mode,
++};
++module_param_cb(memmap_on_memory, &memmap_mode_ops, &memmap_mode, 0644);
++MODULE_PARM_DESC(memmap_on_memory, "Enable memmap on memory for memory hotplug\n"
++	"With value \"force\" it could result in memory waste due to memmap size limitations \n"
++	"For example, if the memmap for a memory block requires 1 MiB, but the pageblock \n"
++	"size is 2 MiB, 1 MiB of hotplugged memory will be wasted. Note that there are \n"
++	"still cases where the feature cannot be enforced: for example, if the memmap is \n"
++	"smaller than a single page, or if the architecture does not support the forced \n"
++	"mode in all configurations. (disable/enable/force)");
  
- 	regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
--			   FSL_SAI_CSR_TERE, 0);
-+			   FSL_SAI_CSR_TERE | FSL_SAI_CSR_BCE, 0);
- 
- 	/* TERE will remain set till the end of current frame */
- 	do {
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index 8254c3547b87..550df87b6a06 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -91,6 +91,7 @@
- /* SAI Transmit/Receive Control Register */
- #define FSL_SAI_CSR_TERE	BIT(31)
- #define FSL_SAI_CSR_SE		BIT(30)
-+#define FSL_SAI_CSR_BCE		BIT(28)
- #define FSL_SAI_CSR_FR		BIT(25)
- #define FSL_SAI_CSR_SR		BIT(24)
- #define FSL_SAI_CSR_xF_SHIFT	16
--- 
-2.25.1
+ static inline bool mhp_memmap_on_memory(void)
+ {
+-	return memmap_on_memory;
++	return !!memmap_mode;
+ }
+ #else
 
+We can also enable runtime enable/disable/force the feature. We just
+need to make sure on try_remove_memory we lookup for altmap correctly. 
