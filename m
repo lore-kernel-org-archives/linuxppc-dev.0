@@ -4,60 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16433EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 13:49:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8894FEB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 13:50:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="unknown key version" header.d=208.org header.i=@208.org header.a=rsa-sha256 header.s=dkim header.b=sKw/kWY/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=HZPxYS2q;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1JyS3sb6z3brg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 23:49:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1JzR0NDkz3cDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 23:50:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="unknown key version" header.d=208.org header.i=@208.org header.a=rsa-sha256 header.s=dkim header.b=sKw/kWY/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=HZPxYS2q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=208suo.com (client-ip=183.242.55.162; helo=mail.208.org; envelope-from=pangzizhen001@208suo.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 419 seconds by postgrey-1.37 at boromir; Wed, 12 Jul 2023 18:31:30 AEST
-Received: from mail.208.org (unknown [183.242.55.162])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=matuszpd@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R19v65rw2z30M1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 18:31:30 +1000 (AEST)
-Received: from mail.208.org (email.208.org [127.0.0.1])
-	by mail.208.org (Postfix) with ESMTP id 4R19kl74bczB77YW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 16:24:15 +0800 (CST)
-Authentication-Results: mail.208.org (amavisd-new); dkim=pass
-	reason="pass (just generated, assumed good)" header.d=208.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=208.org; h=
-	content-type:message-id:user-agent:references:in-reply-to
-	:subject:to:from:date:mime-version; s=dkim; t=1689150255; x=
-	1691742256; bh=B6fIx7ZYVVTgOrUfEyXLpwUKuYl1BQlMPn66PZlfVFc=; b=s
-	Kw/kWY/Wu6q9Izk03hP2xwxxEW82prr5V0V0eioeFUH/c15UCXjrN9UKJWlxMaow
-	40UMc6cwQPxc2R1/tbKhqmmSPcet+Eno2wCgme7m8Qc+ctBa3SnsNCCEDmJSyyTt
-	9CQrBse302n3HHcUovYJxq59gFkIFwYh3KK7/IB9z9szu85Rs71akBQp5wk3z1l3
-	3lZD26hkRCjhaAvH749N8x3DTYuDl6FMqAiHoUp0ff7vH0l410qx/RkpdaZwBB1Y
-	3XZ+H14lDNPyp9immOaTmGbKKDQloPKQ/S6NaE9o5Oi7OQ8/siLDuHVssz1HLWKf
-	AcZkBD1CSe/YcFbEaD2yg==
-X-Virus-Scanned: amavisd-new at mail.208.org
-Received: from mail.208.org ([127.0.0.1])
-	by mail.208.org (mail.208.org [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id sK6TIaM3LGVo for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Jul 2023 16:24:15 +0800 (CST)
-Received: from localhost (email.208.org [127.0.0.1])
-	by mail.208.org (Postfix) with ESMTPSA id 4R19kl5DYWzBR5lP;
-	Wed, 12 Jul 2023 16:24:15 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1Hj40lPGz3bnw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 22:53:09 +1000 (AEST)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-98e39784a85so157869666b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 05:53:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1689166384; x=1691758384;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ef9ldj54LfSreJO+VbHq1Yil94yCCRtncr0AA0IgxoI=;
+        b=HZPxYS2q0wdP+oUdlVbS0bHA1gduL/QbI3aYqBTAD7g0jrxG3ckLP7O+qlZaCgpYtZ
+         uR4tL/+dPcz2X7WQA7Fx5G0jEmaDPw2Hhj0hWt2d2dgvDINwW3fJ9RFCZgPA9NDBkJb5
+         kZgq4OzAms76DQJFiMj/dA8201Fs9jVy+T1gw9BJIwYxEbnqt9CZPa1Yi9XAcVJYJGtm
+         dTuHFo/YgPTWVnjwjFDJgMYaMbkZMTOHkjl9hN/mRikq8ZEUDstWunwXChiIZQ93QvNf
+         N/sg+1KPo3DQA/CI8eCoAQaMO9n1/x2MW6pBZtB+m1YOE0718F6Wvr9mm4rOJU8SuPhc
+         u1zA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689166384; x=1691758384;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ef9ldj54LfSreJO+VbHq1Yil94yCCRtncr0AA0IgxoI=;
+        b=RlEh5SJQkSAOEoeTtlpPLchuOpvi/gnWgAxR8rFNlPZSfjuQG/mrr0T0cIYDFQo4cC
+         jpzH4ifouatVLwlQyr3LZWQTofhVZSJODl4tZMvVkSy8SBPvasZD3LjR+kOGGMxoyVes
+         8GFtsq0i+lFz/c5dn0QjLq333KMjRdZZTXifMcscHBHHv6t4+DH935r+rdVl4+5QHlyo
+         dJaRO9TAGoYzlkOD62d8YMmELN+ev6x3xhe4Ft2S+RgQCmIQ8FfvlpaghLNZkCjv4xjD
+         28/ezH3y6Hnpn0CiVGB6pAU1JsASIuZv/vck5IM21g5J6VrBI4rqRWYv7OR2ucn+2vDz
+         IUWw==
+X-Gm-Message-State: ABy/qLbtqw07nLaRPeyTCC/3YbGJ71OUUsVtKC9H8AOw94RXtm13QveO
+	TbJznXvQhSJT9ckUGeMUac4=
+X-Google-Smtp-Source: APBJJlEQwzCXnLSG9Db+b/tZpzul5Q8lvD7Ip0hLgkyKGo/6GNq4Xfrpf2kkMy9+NX6RlyZ+hk/4uQ==
+X-Received: by 2002:a17:906:64c2:b0:993:d632:2c3 with SMTP id p2-20020a17090664c200b00993d63202c3mr2421780ejn.21.1689166383605;
+        Wed, 12 Jul 2023 05:53:03 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:c844:242b:b300:215:5dff:fe81:5e96])
+        by smtp.gmail.com with ESMTPSA id l6-20020a170906230600b00991faf3810esm2544506eja.146.2023.07.12.05.53.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Jul 2023 05:53:03 -0700 (PDT)
+From: Matus Gajdos <matuszpd@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Subject: [PATCH] ASoC: fsl_sai: Disable bit clock with transmitter
+Date: Wed, 12 Jul 2023 14:49:33 +0200
+Message-Id: <20230712124934.32232-1-matuszpd@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Date: Wed, 12 Jul 2023 16:24:15 +0800
-From: pangzizhen001@208suo.com
-To: mpe@ellerman.id.au, Jason@zx2c4.com
-Subject: Fwd: [PATCH] powerpc/kernel: Fix comment typo
-In-Reply-To: <20230712081541.29077-1-wangjianli@cdjrlc.com>
-References: <20230712081541.29077-1-wangjianli@cdjrlc.com>
-User-Agent: Roundcube Webmail
-Message-ID: <070e7321ca11e0cd57e46fe240812c0e@208suo.com>
-X-Sender: pangzizhen001@208suo.com
-Content-Type: multipart/alternative;
- boundary="=_46ddd140eb1fbacb5104806f35683fed"
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Wed, 12 Jul 2023 23:49:03 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,60 +83,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Matus Gajdos <matuszpd@gmail.com>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---=_46ddd140eb1fbacb5104806f35683fed
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+Otherwise bit clock remains running writing invalid data to the DAC.
 
-
-
-Delete duplicate word "the"
-
-Signed-off-by: Zizhen Pang <pangzizhen001@208suo.com>
+Signed-off-by: Matus Gajdos <matuszpd@gmail.com>
 ---
-  arch/powerpc/kernel/process.c | 2 +-
-  1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/soc/fsl/fsl_sai.c | 2 +-
+ sound/soc/fsl/fsl_sai.h | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/process.c 
-b/arch/powerpc/kernel/process.c
-index b68898ac07e1..6e35037282b6 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -173,7 +173,7 @@ void giveup_fpu(struct task_struct *tsk)
-  EXPORT_SYMBOL(giveup_fpu);
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 5e09f634c61b..dcc7fbe7acac 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -719,7 +719,7 @@ static void fsl_sai_config_disable(struct fsl_sai *sai, int dir)
+ 	u32 xcsr, count = 100;
+ 
+ 	regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
+-			   FSL_SAI_CSR_TERE, 0);
++			   FSL_SAI_CSR_TERE | FSL_SAI_CSR_BCE, 0);
+ 
+ 	/* TERE will remain set till the end of current frame */
+ 	do {
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 8254c3547b87..550df87b6a06 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -91,6 +91,7 @@
+ /* SAI Transmit/Receive Control Register */
+ #define FSL_SAI_CSR_TERE	BIT(31)
+ #define FSL_SAI_CSR_SE		BIT(30)
++#define FSL_SAI_CSR_BCE		BIT(28)
+ #define FSL_SAI_CSR_FR		BIT(25)
+ #define FSL_SAI_CSR_SR		BIT(24)
+ #define FSL_SAI_CSR_xF_SHIFT	16
+-- 
+2.25.1
 
-  /*
-- * Make sure the floating-point register state in the
-+ * Make sure the floating-point register state in
-   * the thread_struct is up to date for task tsk.
-   */
-  void flush_fp_to_thread(struct task_struct *tsk)
---=_46ddd140eb1fbacb5104806f35683fed
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset=UTF-8
-
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; charset=
-=3DUTF-8" /></head><body style=3D'font-size: 12pt; font-family: Verdana,Gen=
-eva,sans-serif'>
-<p><span style=3D"font-family: monospace; font-size: 12pt;">Delete duplicat=
-e word "the"</span></p>
-<div class=3D"pre" style=3D"margin: 0; padding: 0; font-family: monospace">=
-<br />Signed-off-by: Zizhen Pang &lt;pangzizhen001@208suo.com&gt;<br />---<=
-br />&nbsp;arch/powerpc/kernel/process.c | 2 +-<br />&nbsp;1 file changed, =
-1 insertion(+), 1 deletion(-)<br /><br />diff --git a/arch/powerpc/kernel/p=
-rocess.c b/arch/powerpc/kernel/process.c<br />index b68898ac07e1..6e3503728=
-2b6 100644<br />--- a/arch/powerpc/kernel/process.c<br />+++ b/arch/powerpc=
-/kernel/process.c<br />@@ -173,7 +173,7 @@ void giveup_fpu(struct task_stru=
-ct *tsk)<br />&nbsp;EXPORT_SYMBOL(giveup_fpu);<br />&nbsp;<br />&nbsp;/*<br=
- />- * Make sure the floating-point register state in the<br />+ * Make sur=
-e the floating-point register state in<br />&nbsp;&nbsp;* the thread_struct=
- is up to date for task tsk.<br />&nbsp;&nbsp;*/<br />&nbsp;void flush_fp_t=
-o_thread(struct task_struct *tsk)</div>
-
-</body></html>
-
---=_46ddd140eb1fbacb5104806f35683fed--
