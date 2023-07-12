@@ -4,56 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E421EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 03:31:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BDA9EB64D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 04:28:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EbfNDU4K;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=YjT2iggk;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R13Dn52D9z3c4X
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 13:31:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R14VZ3Q2Nz3c4D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 14:28:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EbfNDU4K;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=YjT2iggk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1132; helo=mail-yw1-x1132.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R13Cl5c9pz30fd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 13:30:27 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 117E6616CD;
-	Wed, 12 Jul 2023 03:30:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D277EC43397;
-	Wed, 12 Jul 2023 03:30:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1689132623;
-	bh=KwsKbTt6v0IR4Q8rP+GR6PnPs+ltgKYK5aPH6kmT3mY=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=EbfNDU4Kjq7ad5m+ffHoayiS5wV5Tt4yzHx7J8U9u9LrnpHzDtpjcO563TayU3qgj
-	 Bt3CtuiirPT2wqoaGzea1AKVAvv5SyNdfoS5IXObkaqpdyk4nqVpRH7zyZWbhYoJZn
-	 U3UDojN1IiHA7jgwJ32JriOG62/Hno2e4uCdD4JIUlRscwPD8dSF9aIf5EQ3NwU94A
-	 L2cLabV7YJhExZqlyebqjPs+myKvEm9qcXGwuk41TPSDzZgQNq/aO7YrLFl9ixYdO6
-	 2yC4WLKCaxQ4gQdRUOb7aBguWEsaKHnH6I3kbBLf0J3ynpfS4U+1KWtHkGtUZNCmQp
-	 mOZjyXsDHZoqQ==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id B5B16E52508;
-	Wed, 12 Jul 2023 03:30:23 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R14TY6hY1z304g
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 14:27:28 +1000 (AEST)
+Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-5701eaf0d04so72757487b3.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2023 21:27:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1689136043; x=1691728043;
+        h=mime-version:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=wiHFwa+qInqC9Ufc7qLGqz2T4+XJI6K3K6pkdSvL2BE=;
+        b=YjT2iggkRTiXtZMR1jMLANF/DCx6aBNBHMVDVVl8Gr0GinPbSloyq6adfQMkbwXuDy
+         4LOhxp9lsDQkNYPLAl5k89Ck7UzmU2gS51lf58HBHMNkZxeBrwzXKOfpjPMpHU7Xhn8z
+         K9b44iVOIzPUbQ6ymuTwqdYb3uxH5ZNNlppLByjfI27io4ZaUeNDCqifG61+Enltfq1W
+         Q4VeG3xJt0Bk+AP9vkRr0OjwSSW1svxOnjAGiUGPKap1kin/J6ow8NcPSugD6S/XzNDL
+         Pw7KzGLDDMHF/NqW9CZBI1VUfB0aeFWeRbgCBvTEtczkxjQmMIk8cik2x0kBWOU3eCTM
+         DkUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689136043; x=1691728043;
+        h=mime-version:message-id:subject:cc:to:from:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=wiHFwa+qInqC9Ufc7qLGqz2T4+XJI6K3K6pkdSvL2BE=;
+        b=UcbxnICusMxYC0Fs9GwFbFnP3aQ4N9RNElGR2Nt7WULBFTvakwmKF9OLoPW9ZItobk
+         Gqttq8zj9Rod6Mblqw0B+FaRLmnkG3eodbDReNnruy6/skDTEc2hKaRTY5Pz8yBpSRw+
+         QWhEJMRglIF/vmMZ8LSiX5JlJDz+ta4kzr6/kuAeXfxliu9Pym2tBwZP57KJn02WPGpr
+         zVXG73bMHGVg206eBC/aQkLZ0H6IoH/xFW45jS8wysRd6GWQoM2TYJ/B8yXdCtUl6mQe
+         mAW1kGPoquUxUltx6pPrXKzXLm3IPekK0xP5bX2mg5CpRxDtv+3j2w4hB65FEDWOIUFs
+         lSGA==
+X-Gm-Message-State: ABy/qLZzucMk37ypdYnj7Ctciqur7Zi4HUfvYf99VwiZLQmc/+qu2o0d
+	TD3mick2UH1WrrQaWUNOi01ZoA==
+X-Google-Smtp-Source: APBJJlF5lEOtFts7UwfGvvEUizjbQpUSNw8Id5rb3Vpn8mt/ge/Q6rrPqXyVhuX/GSF3C2Mj1ANz1w==
+X-Received: by 2002:a81:91d2:0:b0:559:deed:f363 with SMTP id i201-20020a8191d2000000b00559deedf363mr16696703ywg.2.1689136042885;
+        Tue, 11 Jul 2023 21:27:22 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id i67-20020a0df846000000b005772f3fc0acsm972965ywf.44.2023.07.11.21.27.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Jul 2023 21:27:22 -0700 (PDT)
+Date: Tue, 11 Jul 2023 21:27:09 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3 00/13] mm: free retracted page table by RCU
+Message-ID: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH net-next v3 0/8] net: freescale: Convert to platform remove
- callback returning void
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id:  <168913262373.27250.8401630436062534160.git-patchwork-notify@kernel.org>
-Date: Wed, 12 Jul 2023 03:30:23 +0000
-References: <20230710071946.3470249-1-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20230710071946.3470249-1-u.kleine-koenig@pengutronix.de>
-To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig_=3Cu=2Ekleine-koenig=40pengutronix=2Ede=3E?=@ci.codeaurora.org
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,47 +74,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: madalin.bucur@nxp.com, simon.horman@corigine.com, edumazet@google.com, robh@kernel.org, sean.anderson@seco.com, linux@armlinux.org.uk, shenwei.wang@nxp.com, xiaoning.wang@nxp.com, linux-imx@nxp.com, kuba@kernel.org, pabeni@redhat.com, maciej.fijalkowski@intel.com, claudiu.manoil@nxp.com, wei.fang@nxp.com, michal.kubiak@intel.com, netdev@vger.kernel.org, nicolas.ferre@microchip.com, leoyang.li@nxp.com, kernel@pengutronix.de, mkl@pengutronix.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
+  Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
+Here is v3 of the series of patches to mm (and a few architectures), based
+on v6.5-rc1 which includes the preceding two series (thank you!): in which
+khugepaged takes advantage of pte_offset_map[_lock]() allowing for pmd
+transitions.  Differences from v1 and v2 are noted patch by patch below.
 
-This series was applied to netdev/net-next.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+This replaces the v2 "mm: free retracted page table by RCU"
+https://lore.kernel.org/linux-mm/54cb04f-3762-987f-8294-91dafd8ebfb0@google.com/
+series of 12 posted on 2023-06-20.
 
-On Mon, 10 Jul 2023 09:19:38 +0200 you wrote:
-> Hello,
-> 
-> v2 of this series was sent in June[1], code changes since then only affect
-> patch #1 where the dev_err invocation was adapted to emit the error code of
-> dpaa_fq_free(). Thanks for feedback by Maciej Fijalkowski and Russell King.
-> Other than that I added Reviewed-by tags for Simon Horman and Wei Fang and
-> rebased to v6.5-rc1.
-> 
-> [...]
+What is it all about?  Some mmap_lock avoidance i.e. latency reduction.
+Initially just for the case of collapsing shmem or file pages to THPs:
+the usefulness of MADV_COLLAPSE on shmem is being limited by that
+mmap_write_lock it currently requires.
 
-Here is the summary with links:
-  - [net-next,v3,1/8] net: dpaa: Improve error reporting
-    https://git.kernel.org/netdev/net-next/c/1e679b957ae2
-  - [net-next,v3,2/8] net: dpaa: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/9c3ddc44d0c0
-  - [net-next,v3,3/8] net: fec: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/12d6cc19f29b
-  - [net-next,v3,4/8] net: fman: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/4875b2a362e9
-  - [net-next,v3,5/8] net: fs_enet: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/ead29c5e0888
-  - [net-next,v3,6/8] net: fsl_pq_mdio: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/f833635589ae
-  - [net-next,v3,7/8] net: gianfar: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/4be0ebc33f39
-  - [net-next,v3,8/8] net: ucc_geth: Convert to platform remove callback returning void
-    https://git.kernel.org/netdev/net-next/c/ae18facf566c
+Likely to be relied upon later in other contexts e.g. freeing of
+empty page tables (but that's not work I'm doing).  mmap_write_lock
+avoidance when collapsing to anon THPs?  Perhaps, but again that's not
+work I've done: a quick attempt was not as easy as the shmem/file case.
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+These changes (though of course not these exact patches) have been in
+Google's data centre kernel for three years now: we do rely upon them.
 
+Based on v6.5-rc1; and almost good on current mm-unstable or current
+linux-next - just one patch conflicts, the 12/13: I'll reply to that
+one with its mm-unstable or linux-next equivalent (vma_assert_locked()
+has been added next to where vma_try_start_write() is being removed).
 
+01/13 mm/pgtable: add rcu_read_lock() and rcu_read_unlock()s
+      v3: same as v1
+02/13 mm/pgtable: add PAE safety to __pte_offset_map()
+      v3: same as v2
+      v2: rename to pmdp_get_lockless_start/end() per Matthew;
+          so use inlines without _irq_save(flags) macro oddity;
+          add pmdp_get_lockless_sync() for use later in 09/13.
+03/13 arm: adjust_pte() use pte_offset_map_nolock()
+      v3: same as v1
+04/13 powerpc: assert_pte_locked() use pte_offset_map_nolock()
+      v3: same as v1
+05/13 powerpc: add pte_free_defer() for pgtables sharing page
+      v3: much simpler version, following suggestion by Jason
+      v2: fix rcu_head usage to cope with concurrent deferrals;
+          add para to commit message explaining rcu_head issue.
+06/13 sparc: add pte_free_defer() for pte_t *pgtable_t
+      v3: same as v2
+      v2: use page_address() instead of less common page_to_virt();
+          add para to commit message explaining simple conversion;
+          changed title since sparc64 pgtables do not share page.
+07/13 s390: add pte_free_defer() for pgtables sharing page
+      v3: much simpler version, following suggestion by Gerald
+      v2: complete rewrite, integrated with s390's existing pgtable
+          management; temporarily using a global mm_pgtable_list_lock,
+          to be restored to per-mm spinlock in a later followup patch.
+08/13 mm/pgtable: add pte_free_defer() for pgtable as page
+      v3: same as v2
+      v2: add comment on rcu_head to "Page table pages", per JannH
+09/13 mm/khugepaged: retract_page_tables() without mmap or vma lock
+      v3: same as v2
+      v2: repeat checks under ptl because UFFD, per PeterX and JannH;
+          bring back mmu_notifier calls for PMD, per JannH and Jason;
+          pmdp_get_lockless_sync() to issue missing interrupt if PAE.
+10/13 mm/khugepaged: collapse_pte_mapped_thp() with mmap_read_lock()
+      v3: updated to using ptent instead of *pte
+      v2: first check VMA, in case page tables torn down, per JannH;
+          pmdp_get_lockless_sync() to issue missing interrupt if PAE;
+          moved mmu_notifier after step 1, reworked final goto labels.
+11/13 mm/khugepaged: delete khugepaged_collapse_pte_mapped_thps()
+      v3: rediffed
+      v2: same as v1
+12/13 mm: delete mmap_write_trylock() and vma_try_start_write()
+      v3: rediffed (different diff needed for mm-unstable or linux-next)
+      v2: same as v1
+13/13 mm/pgtable: notes on pte_offset_map[_lock]()
+      v3: new: JannH asked for more helpful comment, this is my attempt;
+          could be moved to be the first in the series.
+
+ arch/arm/mm/fault-armv.c            |   3 +-
+ arch/powerpc/include/asm/pgalloc.h  |   4 +
+ arch/powerpc/mm/pgtable-frag.c      |  29 +-
+ arch/powerpc/mm/pgtable.c           |  16 +-
+ arch/s390/include/asm/pgalloc.h     |   4 +
+ arch/s390/mm/pgalloc.c              |  80 ++++-
+ arch/sparc/include/asm/pgalloc_64.h |   4 +
+ arch/sparc/mm/init_64.c             |  16 +
+ include/linux/mm.h                  |  17 --
+ include/linux/mm_types.h            |   4 +
+ include/linux/mmap_lock.h           |  10 -
+ include/linux/pgtable.h             |  10 +-
+ mm/khugepaged.c                     | 481 +++++++++++-------------------
+ mm/pgtable-generic.c                |  97 +++++-
+ 14 files changed, 404 insertions(+), 371 deletions(-)
+
+Hugh
