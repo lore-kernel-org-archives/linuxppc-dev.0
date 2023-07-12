@@ -4,55 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A50C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 13:47:08 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iLrm54/O;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA4F1C001DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 17:31:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9wDp656Vz2ykP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 23:47:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iLrm54/O;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=legion@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RB1Cm1LW9z3cHd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 03:31:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=libc.org (client-ip=216.12.86.13; helo=brightrain.aerifal.cx; envelope-from=dalias@libc.org; receiver=lists.ozlabs.org)
+Received: from brightrain.aerifal.cx (brightrain.aerifal.cx [216.12.86.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9wCp0XH5z2yVb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 23:46:13 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id F3D2861AC3;
-	Wed, 26 Jul 2023 13:46:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31A6EC433C7;
-	Wed, 26 Jul 2023 13:46:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690379171;
-	bh=YMmxomfMr9G4i/xBDFo8a+tJ6BzX3X5lQtLwpyL37dM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=iLrm54/OyVAkeX7XRTdQI6vJKk7fvA9E8WFuxeM1GUgON2oCeY1wjM8yTYrtIi4IQ
-	 Oo3FMgcMnRzknsY84kWAeTJ0inxm7fg97Q/tOUTzG6ZMmI5ATwnzUC945HbXcM2RRW
-	 HKanW7qmiSF3lCZhc3wQfBbpJJOtev2Fm0SsXZJptqvFFvEwrKyC1aKGldedLK/9Vz
-	 62DImdurXvwbmhgOteOs/aXLApFhcpwiLDIG+sQUeQFLsagl1k2OVSVn88v78BFAcl
-	 Vj6NEoPbw1eyE9ZIq7xYhoiahGzuo+q0Lii/UprIQXPLwFPgjeIIKj3g1kimIqX0ng
-	 b/060n7yg03AQ==
-Date: Wed, 26 Jul 2023 15:45:56 +0200
-From: Alexey Gladkov <legion@kernel.org>
-To: Aleksa Sarai <cyphar@cyphar.com>
-Subject: Re: [PATCH v4 2/5] fs: Add fchmodat2()
-Message-ID: <ZMEjlDNJkFpYERr1@example.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RB1C83K7yz2yGX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 03:30:59 +1000 (AEST)
+Date: Tue, 11 Jul 2023 22:42:44 -0400
+From: Rich Felker <dalias@libc.org>
+To: Alexey Gladkov <legion@kernel.org>
+Subject: Re: [PATCH v4 0/5] Add a new fchmodat2() syscall
+Message-ID: <20230712024243.GX20050@brightrain.aerifal.cx>
 References: <cover.1689074739.git.legion@kernel.org>
  <cover.1689092120.git.legion@kernel.org>
- <f2a846ef495943c5d101011eebcf01179d0c7b61.1689092120.git.legion@kernel.org>
- <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
+In-Reply-To: <cover.1689092120.git.legion@kernel.org>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,79 +38,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@m
- onstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: kim.phillips@arm.com, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@HansenPartnership.com, monstr@monstr.eu, tony.luck@intel.com, linux-parisc@vger.kern
+ el.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 26, 2023 at 02:36:25AM +1000, Aleksa Sarai wrote:
-> On 2023-07-11, Alexey Gladkov <legion@kernel.org> wrote:
-> > On the userspace side fchmodat(3) is implemented as a wrapper
-> > function which implements the POSIX-specified interface. This
-> > interface differs from the underlying kernel system call, which does not
-> > have a flags argument. Most implementations require procfs [1][2].
-> > 
-> > There doesn't appear to be a good userspace workaround for this issue
-> > but the implementation in the kernel is pretty straight-forward.
-> > 
-> > The new fchmodat2() syscall allows to pass the AT_SYMLINK_NOFOLLOW flag,
-> > unlike existing fchmodat.
-> > 
-> > [1] https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/fchmodat.c;h=17eca54051ee28ba1ec3f9aed170a62630959143;hb=a492b1e5ef7ab50c6fdd4e4e9879ea5569ab0a6c#l35
-> > [2] https://git.musl-libc.org/cgit/musl/tree/src/stat/fchmodat.c?id=718f363bc2067b6487900eddc9180c84e7739f80#n28
-> > 
-> > Co-developed-by: Palmer Dabbelt <palmer@sifive.com>
-> > Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
-> > Signed-off-by: Alexey Gladkov <legion@kernel.org>
-> > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  fs/open.c                | 18 ++++++++++++++----
-> >  include/linux/syscalls.h |  2 ++
-> >  2 files changed, 16 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/fs/open.c b/fs/open.c
-> > index 0c55c8e7f837..39a7939f0d00 100644
-> > --- a/fs/open.c
-> > +++ b/fs/open.c
-> > @@ -671,11 +671,11 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
-> >  	return err;
-> >  }
-> >  
-> > -static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
-> > +static int do_fchmodat(int dfd, const char __user *filename, umode_t mode, int lookup_flags)
+On Tue, Jul 11, 2023 at 06:16:02PM +0200, Alexey Gladkov wrote:
+> In glibc, the fchmodat(3) function has a flags argument according to the
+> POSIX specification [1], but kernel syscalls has no such argument.
+> Therefore, libc implementations do workarounds using /proc. However,
+> this requires procfs to be mounted and accessible.
 > 
-> I think it'd be much neater to do the conversion of AT_ flags here and
-> pass 0 as a flags argument for all of the wrappers (this is how most of
-> the other xyz(), fxyz(), fxyzat() syscall wrappers are done IIRC).
-
-I just addressed the Al Viro's suggestion.
-
-https://lore.kernel.org/lkml/20190717014802.GS17978@ZenIV.linux.org.uk/
-
-> >  {
-> >  	struct path path;
-> >  	int error;
-> > -	unsigned int lookup_flags = LOOKUP_FOLLOW;
-> > +
-> >  retry:
-> >  	error = user_path_at(dfd, filename, lookup_flags, &path);
-> >  	if (!error) {
-> > @@ -689,15 +689,25 @@ static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
-> >  	return error;
-> >  }
-> >  
-> > +SYSCALL_DEFINE4(fchmodat2, int, dfd, const char __user *, filename,
-> > +		umode_t, mode, int, flags)
-> > +{
-> > +	if (unlikely(flags & ~AT_SYMLINK_NOFOLLOW))
-> > +		return -EINVAL;
+> This patch set adds fchmodat2(), a new syscall. The syscall allows to
+> pass the AT_SYMLINK_NOFOLLOW flag to disable LOOKUP_FOLLOW. In all other
+> respects, this syscall is no different from fchmodat().
 > 
-> We almost certainly want to support AT_EMPTY_PATH at the same time.
-> Otherwise userspace will still need to go through /proc when trying to
-> chmod a file handle they have.
+> [1] https://pubs.opengroup.org/onlinepubs/9699919799/functions/chmod.html
+> 
+> Changes since v3 [cover.1689074739.git.legion@kernel.org]:
+> 
+> * Rebased to master because a new syscall has appeared in master.
+> * Increased __NR_compat_syscalls as pointed out by Arnd Bergmann.
+> * Syscall renamed fchmodat4 -> fchmodat2 as suggested by Christian Brauner.
+> * Returned do_fchmodat4() the original name. We don't need to version
+>   internal functions.
+> * Fixed warnings found by checkpatch.pl.
+> 
+> Changes since v2 [20190717012719.5524-1-palmer@sifive.com]:
+> 
+> * Rebased to master.
+> * The lookup_flags passed to sys_fchmodat4 as suggested by Al Viro.
+> * Selftest added.
+> 
+> Changes since v1 [20190531191204.4044-1-palmer@sifive.com]:
+> 
+> * All architectures are now supported, which support squashed into a
+>   single patch.
+> * The do_fchmodat() helper function has been removed, in favor of directly
+>   calling do_fchmodat4().
+> * The patches are based on 5.2 instead of 5.1.
 
-I'm not sure I understand. Can you explain what you mean?
+It's good to see this moving forward. I originally proposed this in a
+patch submitted in 2020. I suspect implementation details have changed
+since then, but it might make sense to look back at that discussion if
+nobody has done so yet (apologies if this was already done and I
+missed it) to make sure nothing is overlooked -- I remember there were
+some subtleties with what fs backends might try to do with chmod on
+symlinks. My proposed commit message also documented a lot of the
+history of the issue that might be useful to have as context.
 
--- 
-Rgrds, legion
+https://lore.kernel.org/all/20200910170256.GK3265@brightrain.aerifal.cx/T/
 
+Rich
