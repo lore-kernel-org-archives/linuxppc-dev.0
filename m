@@ -4,58 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E3A9EB64D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 11:47:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86BF4EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 12:35:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ug77po3J;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hvmfEYYl;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1GFY2phpz3c2B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 21:47:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1HK36b1lz3c71
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 22:35:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ug77po3J;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hvmfEYYl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1GDb59PKz3bsQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 21:46:55 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1HJ356w8z3bVS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2023 22:34:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1689165294;
+	bh=l35p0TcEUmDUj/vXsObL62vUHe1+adoudEDWvF7VoK8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=hvmfEYYloo9+IRmXyrs4Arl/1kGU/paHNLUvie0T/nS6bRdMeeoB4WC7r+jeOIev9
+	 IayCUcVlviVodp3t3DV7/StkH94zI7nQDkG2FwVHeewYTleMnXbbkGBxGTdrRYROij
+	 LzBUNSxJTqRxFR1Ha25q55R5S6VKLCC19BLMcDRI3kpJLtqbm8511rPSMs+c6Ir3oI
+	 IS3gGq8K1J0acwa4JjPmQ0YMOcxVcgMAU3MjD1/gR2OBjfTngZjAjE1jHJeqnQZ8YD
+	 OQjJCotWDyb08kBL6MMPltKIlGmU0b1drzbQy6fyJJgUw6mjn920EQnDJz29ybLOS+
+	 L/xWDipukI61Q==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id C692961797;
-	Wed, 12 Jul 2023 11:46:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EE21C433CD;
-	Wed, 12 Jul 2023 11:46:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1689162411;
-	bh=JXAMcZrpRoE91F6XTSvxZwcYhk6D31xbdpQ1w4SM5Ns=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=Ug77po3JMwPWMfa4AgH0aTo577IWr7JHKnVhLNkT7MaYL7jRKqyYx9n7qmXYFms1F
-	 voLs+23dPqdWNMKTdRUW9Lti7Ynb2Te3lqf+1WarjmTBFRD+actcKwAE3Ht/QjArKi
-	 Jwa0dPaTXTU4WLNowXxlbesUOiY1YGQdey9ZNtdhQsQCVOEaOkV79J9bC+C3U1LitF
-	 1vlUyevOEuItBBWnt9mwXwolZG9ucqQfWvdxMIv5mxEIc4K37NtC0Q7vi3N9qrJUX3
-	 ZfwIsHV7tl3wm103IrqoN57DbjNBT+kTdH4MFQImTByu6QCJ8TBg5Hobmf43jgO3Gb
-	 sdufjRjTIFVgw==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, Chancel Liu <chancel.liu@nxp.com>
-In-Reply-To: <20230625065412.651870-1-chancel.liu@nxp.com>
-References: <20230625065412.651870-1-chancel.liu@nxp.com>
-Subject: Re: [PATCH] ASoC: imx-pcm-rpmsg: Set PCM hardware parameters
- separately
-Message-Id: <168916240829.46574.4591447025609181967.b4-ty@kernel.org>
-Date: Wed, 12 Jul 2023 12:46:48 +0100
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4R1HHx21V2z4wxW;
+	Wed, 12 Jul 2023 22:34:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stefan Berger <stefanb@linux.ibm.com>, Jarkko Sakkinen
+ <jarkko@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/2] powerpc/tpm: Create linux,sml-base/size as big
+ endian
+In-Reply-To: <0fb26243-0d63-118b-2737-05391ba0c69a@linux.ibm.com>
+References: <20230615123703.4028156-1-mpe@ellerman.id.au>
+ <4d378d53225fc8b8cdc99dde900388d2eefaad4e.camel@kernel.org>
+ <0fb26243-0d63-118b-2737-05391ba0c69a@linux.ibm.com>
+Date: Wed, 12 Jul 2023 22:34:47 +1000
+Message-ID: <87ttu9e2ag.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.13-dev-099c9
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,41 +61,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: jgg@ziepe.ca, linux-integrity@vger.kernel.org, eajames@linux.ibm.com, peterhuewe@gmx.de, yangyingliang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 25 Jun 2023 14:54:12 +0800, Chancel Liu wrote:
-> Different PCM devices may have different PCM hardware parameters. It
-> requires PCM hardware parameters set separately if there is more than
-> one rpmsg sound card.
-> 
-> 
+Stefan Berger <stefanb@linux.ibm.com> writes:
+> On 7/10/23 17:23, Jarkko Sakkinen wrote:
+>> On Thu, 2023-06-15 at 22:37 +1000, Michael Ellerman wrote:
+>>> There's code in prom_instantiate_sml() to do a "SML handover" (Stored
+>>> Measurement Log) from OF to Linux, before Linux shuts down Open
+>>> Firmware.
+>>>
+>>> This involves creating a buffer to hold the SML, and creating two device
+>>> tree properties to record its base address and size. The kernel then
+>>> later reads those properties from the device tree to find the SML.
+>>>
+>>> When the code was initially added in commit 4a727429abec ("PPC64: Add
+>>> support for instantiating SML from Open Firmware") the powerpc kernel
+>>> was always built big endian, so the properties were created big endian
+>>> by default.
+>>>
+>>> However since then little endian support was added to powerpc, and now
+>>> the code lacks conversions to big endian when creating the properties.
+>>>
+>>> This means on little endian kernels the device tree properties are
+>>> little endian, which is contrary to the device tree spec, and in
+>>> contrast to all other device tree properties.
+>>>
+>>> To cope with that a workaround was added in tpm_read_log_of() to skip
+>>> the endian conversion if the properties were created via the SML
+>>> handover.
+>>>
+>>> A better solution is to encode the properties as big endian as they
+>>> should be, and remove the workaround.
+>>>
+>>> Typically changing the encoding of a property like this would present
+>>> problems for kexec. However the SML is not propagated across kexec, so
+>>> changing the encoding of the properties is a non-issue.
+>>>
+>>> Fixes: e46e22f12b19 ("tpm: enhance read_log_of() to support Physical TPM event log")
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
+>>> ---
+>>>   arch/powerpc/kernel/prom_init.c |  8 ++++++--
+>>>   drivers/char/tpm/eventlog/of.c  | 23 ++++-------------------
+>>>   2 files changed, 10 insertions(+), 21 deletions(-)
+>> 
+>> Split into two patches (producer and consumer).
+>
+> I think this wouldn't be right since it would break the system when
+> only one patch is applied since it would be reading the fields in the
+> wrong endianess.
 
-Applied to
+Yes that's right.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+Typically we would split the patch by subsystem, but in this case it
+will just create a known-broken point in the git history, which helps no
+one.
 
-Thanks!
-
-[1/1] ASoC: imx-pcm-rpmsg: Set PCM hardware parameters separately
-      commit: 82770b76abae2ff9d70f354a61983b921e63bae1
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
+cheers
