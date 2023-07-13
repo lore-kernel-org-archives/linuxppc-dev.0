@@ -4,68 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 030E6C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 20:13:30 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=sq8DoIAk;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89B9AC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 23:20:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R25Qd1Yynz3c6c
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jul 2023 06:13:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=sq8DoIAk;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b29; helo=mail-yb1-xb29.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R29Z71qQJz3cWt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jul 2023 09:20:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=thunder.leizhen@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R25Pd1mMSz2xHT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2023 06:12:35 +1000 (AEST)
-Received: by mail-yb1-xb29.google.com with SMTP id 3f1490d57ef6-c5cf26e9669so998094276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 13:12:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689279150; x=1691871150;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=DJH06eQc+B3mlka9ca3yWe/BFaVZyKNH/FYbTdupon0=;
-        b=sq8DoIAkiJTqj/hA0HbPY+Du/lUKvsOypg9bWyJovvwhPvhZLs9OnAATt6DyWj3fhk
-         rMqRmV+ckvKtX3mqEovL47UsfIWG+DISWqHsS1jzloQgfd80YPjUGEY2gPScLUzXv3aj
-         bEKoTztrMYpGlhl7OU1cNI+EkY48vwK5Af5vcxbKGaAcx3oeCKF43vTk9dp0Os+ehnOh
-         4Vot+I5Pq1W7h0Qif76nH99c7qDXBLn72YuUgO10h1+BnKw70/5dvPpRQiXxmJnABb9F
-         k/FYmn1X8GMw43PAkTPuZbREEdx6SXIktOvGYFRyjOtq0ls4Ne1B0u4C5shdFL81lA90
-         k6gA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689279150; x=1691871150;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=DJH06eQc+B3mlka9ca3yWe/BFaVZyKNH/FYbTdupon0=;
-        b=BJyYs1X/SCOiSYMvgQlhab+DCpRJxdqCeS/UFURkBmRP4ahCEe3hjqWaCvCwzfOhZ4
-         wDMeM9OzoZbULvogOrqNZ+odum9b+3hem9yG8esmnln2ImweyPkIoNYowZjYh5zk0b0z
-         5q5X9gjHnFwTSCL08x1ffXgqvaXmWcULoBxLbeuHEVetTHgXiRIAqZE67R3XnZwbzHNa
-         E5RqEmV0jTgPBj6ObvR2PUPn5y/diBp9sLGXbn2ghUkwwRe4pMoO58qvTfh1GFNETso0
-         3nfcYwrt790pYWeyCjyJ72ZWt/JAw0TBU8ULon239JIxK70B5FcQby09C0qpQtOU+Jw2
-         4kbQ==
-X-Gm-Message-State: ABy/qLbNHH3WvokBTDCGcTOE1jO4+WnD6pg2+CeqFXFvxb7u8x/LYuhQ
-	ZGo1Jo3fQ0FpCtg/MSH2Df71OhZTMjRE8nyJ6+Uylw==
-X-Google-Smtp-Source: APBJJlHsBJjb/bCQUIDnbMcslY/+BRvpuOtfSJIDEY65ZXVL8Q9oqboC4ArbmfQevCrjLrPcX1Bsga2B7wxkVG3h+b4=
-X-Received: by 2002:a25:317:0:b0:c67:d3cd:6989 with SMTP id
- 23-20020a250317000000b00c67d3cd6989mr2431008ybd.21.1689279150076; Thu, 13 Jul
- 2023 13:12:30 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1sSx6LwLz306t
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 21:14:40 +1000 (AEST)
+Received: from dggpemm500006.china.huawei.com (unknown [172.30.72.56])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4R1sNg70PRztR5C;
+	Thu, 13 Jul 2023 19:10:59 +0800 (CST)
+Received: from [10.174.178.55] (10.174.178.55) by
+ dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Thu, 13 Jul 2023 19:13:58 +0800
+Subject: Re: [PATCH v6 02/14] x86/kexec: refactor for kernel/Kconfig.kexec
+To: Eric DeVolder <eric.devolder@oracle.com>, <linux@armlinux.org.uk>,
+	<catalin.marinas@arm.com>, <will@kernel.org>, <chenhuacai@kernel.org>,
+	<geert@linux-m68k.org>, <tsbogend@alpha.franken.de>,
+	<James.Bottomley@HansenPartnership.com>, <deller@gmx.de>,
+	<ysato@users.sourceforge.jp>, <dalias@libc.org>,
+	<glaubitz@physik.fu-berlin.de>, <tglx@linutronix.de>, <mingo@redhat.com>,
+	<bp@alien8.de>, <dave.hansen@linux.intel.com>, <x86@kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-ia64@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<linux-m68k@lists.linux-m68k.org>, <linux-mips@vger.kernel.org>,
+	<linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+	<linux-sh@vger.kernel.org>
+References: <20230712161545.87870-1-eric.devolder@oracle.com>
+ <20230712161545.87870-3-eric.devolder@oracle.com>
+From: "Leizhen (ThunderTown)" <thunder.leizhen@huawei.com>
+Message-ID: <d8ddd4bd-fbc9-dbe9-f5c3-daf8d89aa46d@huawei.com>
+Date: Thu, 13 Jul 2023 19:13:57 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.0
 MIME-Version: 1.0
-References: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
- <20230713095339.189715-2-wangkefeng.wang@huawei.com> <ZLAjFQGgcjt4ykS7@casper.infradead.org>
-In-Reply-To: <ZLAjFQGgcjt4ykS7@casper.infradead.org>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Thu, 13 Jul 2023 13:12:15 -0700
-Message-ID: <CAJuCfpGBaAJof=5-Xh1saoN9dhOauMiHBZzb0crVNn9OyOeZHw@mail.gmail.com>
-Subject: Re: [PATCH rfc -next 01/10] mm: add a generic VMA lock-based page
- fault handler
-To: Matthew Wilcox <willy@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20230712161545.87870-3-eric.devolder@oracle.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.178.55]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpemm500006.china.huawei.com (7.185.36.236)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Fri, 14 Jul 2023 09:17:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,98 +64,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, loongarch@lists.linux.dev, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, WANG Xuerui <kernel@xen0n.name>, linux-s390@vger.kernel.org, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt
- .com>, Sven Schnelle <svens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: peterz@infradead.org, linus.walleij@linaro.org, hpa@zytor.com, kernel@xen0n.name, ardb@kernel.org, tsi@tuyoix.net, agordeev@linux.ibm.com, paulmck@kernel.org, bhe@redhat.com, masahiroy@kernel.org, konrad.wilk@oracle.com, sebastian.reichel@collabora.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, aou@eecs.berkeley.edu, keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, rmk+kernel@armlinux.org.uk, paul.walmsley@sifive.com, boris.ostrovsky@oracle.com, ziy@nvidia.com, hbathini@linux.ibm.com, gregkh@linuxfoundation.org, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, akpm@linux-foundation.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 13, 2023 at 9:15=E2=80=AFAM Matthew Wilcox <willy@infradead.org=
-> wrote:
->
-> > +int try_vma_locked_page_fault(struct vm_locked_fault *vmlf, vm_fault_t=
- *ret)
-> > +{
-> > +     struct vm_area_struct *vma;
-> > +     vm_fault_t fault;
->
->
-> On Thu, Jul 13, 2023 at 05:53:29PM +0800, Kefeng Wang wrote:
-> > +#define VM_LOCKED_FAULT_INIT(_name, _mm, _address, _fault_flags, _vm_f=
-lags, _regs, _fault_code) \
-> > +     _name.mm                =3D _mm;                  \
-> > +     _name.address           =3D _address;             \
-> > +     _name.fault_flags       =3D _fault_flags;         \
-> > +     _name.vm_flags          =3D _vm_flags;            \
-> > +     _name.regs              =3D _regs;                \
-> > +     _name.fault_code        =3D _fault_code
->
-> More consolidated code is a good idea; no question.  But I don't think
-> this is the right way to do it.
->
-> > +int __weak arch_vma_check_access(struct vm_area_struct *vma,
-> > +                              struct vm_locked_fault *vmlf);
->
-> This should be:
->
-> #ifndef vma_check_access
-> bool vma_check_access(struct vm_area_struct *vma, )
-> {
->         return (vma->vm_flags & vm_flags) =3D=3D 0;
-> }
-> #endif
->
-> and then arches which want to do something different can just define
-> vma_check_access.
->
-> > +int try_vma_locked_page_fault(struct vm_locked_fault *vmlf, vm_fault_t=
- *ret)
-> > +{
-> > +     struct vm_area_struct *vma;
-> > +     vm_fault_t fault;
->
-> Declaring the vmf in this function and then copying it back is just wrong=
-.
-> We need to declare vm_fault_t earlier (in the arch fault handler) and
-> pass it in.
 
-Did you mean to say "we need to declare vmf (struct vm_fault) earlier
-(in the arch fault handler) and pass it in." ?
 
->  I don't think that creating struct vm_locked_fault is the
-> right idea either.
->
-> > +     if (!(vmlf->fault_flags & FAULT_FLAG_USER))
-> > +             return -EINVAL;
-> > +
-> > +     vma =3D lock_vma_under_rcu(vmlf->mm, vmlf->address);
-> > +     if (!vma)
-> > +             return -EINVAL;
-> > +
-> > +     if (arch_vma_check_access(vma, vmlf)) {
-> > +             vma_end_read(vma);
-> > +             return -EINVAL;
-> > +     }
-> > +
-> > +     fault =3D handle_mm_fault(vma, vmlf->address,
-> > +                             vmlf->fault_flags | FAULT_FLAG_VMA_LOCK,
-> > +                             vmlf->regs);
-> > +     *ret =3D fault;
-> > +
-> > +     if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
-> > +             vma_end_read(vma);
-> > +
-> > +     if ((fault & VM_FAULT_RETRY))
-> > +             count_vm_vma_lock_event(VMA_LOCK_RETRY);
-> > +     else
-> > +             count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> >  #endif /* CONFIG_PER_VMA_LOCK */
-> >
-> >  #ifndef __PAGETABLE_P4D_FOLDED
-> > --
-> > 2.27.0
-> >
-> >
+On 2023/7/13 0:15, Eric DeVolder wrote:
+> The kexec and crash kernel options are provided in the common
+> kernel/Kconfig.kexec. Utilize the common options and provide
+> the ARCH_SUPPORTS_ and ARCH_SELECTS_ entries to recreate the
+> equivalent set of KEXEC and CRASH options.
+> 
+> Signed-off-by: Eric DeVolder <eric.devolder@oracle.com>
+> ---
+>  arch/x86/Kconfig | 92 ++++++++++--------------------------------------
+>  1 file changed, 19 insertions(+), 73 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 7422db409770..9767a343f7c2 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -2040,88 +2040,34 @@ config EFI_RUNTIME_MAP
+>  
+>  source "kernel/Kconfig.hz"
+>  
+> -config KEXEC
+> -	bool "kexec system call"
+> -	select KEXEC_CORE
+> -	help
+> -	  kexec is a system call that implements the ability to shutdown your
+> -	  current kernel, and to start another kernel.  It is like a reboot
+> -	  but it is independent of the system firmware.   And like a reboot
+> -	  you can start any kernel with it, not just Linux.
+> -
+> -	  The name comes from the similarity to the exec system call.
+> -
+> -	  It is an ongoing process to be certain the hardware in a machine
+> -	  is properly shutdown, so do not be surprised if this code does not
+> -	  initially work for you.  As of this writing the exact hardware
+> -	  interface is strongly in flux, so no good recommendation can be
+> -	  made.
+> -
+> -config KEXEC_FILE
+> -	bool "kexec file based system call"
+> -	select KEXEC_CORE
+> -	select HAVE_IMA_KEXEC if IMA
+> -	depends on X86_64
+> -	depends on CRYPTO=y
+> -	depends on CRYPTO_SHA256=y
+> -	help
+> -	  This is new version of kexec system call. This system call is
+> -	  file based and takes file descriptors as system call argument
+> -	  for kernel and initramfs as opposed to list of segments as
+> -	  accepted by previous system call.
+> +config ARCH_SUPPORTS_KEXEC
+> +	def_bool y
+
+In v5, Joel Fernandes seems to suggest you change it to the following form:
+In arch/Kconfig:
++config ARCH_SUPPORTS_KEXEC
++	bool
+
+In arch/x86/Kconfig:
+config X86
+	... ...
++	select ARCH_SUPPORTS_KEXEC
+
+In arch/arm64/Kconfig:
+config ARM64
+	... ...
++	select ARCH_SUPPORTS_KEXEC if PM_SLEEP_SMP
+
+etc..
+
+You can refer to ARCH_HAS_DEBUG_VIRTUAL.
+
+>  
+> -config ARCH_HAS_KEXEC_PURGATORY
+> -	def_bool KEXEC_FILE
+> +config ARCH_SUPPORTS_KEXEC_FILE
+> +	def_bool X86_64 && CRYPTO && CRYPTO_SHA256
+>  
+> -config KEXEC_SIG
+> -	bool "Verify kernel signature during kexec_file_load() syscall"
+> +config ARCH_SELECTS_KEXEC_FILE
+> +	def_bool y
+>  	depends on KEXEC_FILE
+> -	help
+> +	select HAVE_IMA_KEXEC if IMA
+>  
+> -	  This option makes the kexec_file_load() syscall check for a valid
+> -	  signature of the kernel image.  The image can still be loaded without
+> -	  a valid signature unless you also enable KEXEC_SIG_FORCE, though if
+> -	  there's a signature that we can check, then it must be valid.
+> +config ARCH_HAS_KEXEC_PURGATORY
+> +	def_bool KEXEC_FILE
+>  
+> -	  In addition to this option, you need to enable signature
+> -	  verification for the corresponding kernel image type being
+> -	  loaded in order for this to work.
+> +config ARCH_SUPPORTS_KEXEC_SIG
+> +	def_bool y
+>  
+> -config KEXEC_SIG_FORCE
+> -	bool "Require a valid signature in kexec_file_load() syscall"
+> -	depends on KEXEC_SIG
+> -	help
+> -	  This option makes kernel signature verification mandatory for
+> -	  the kexec_file_load() syscall.
+> +config ARCH_SUPPORTS_KEXEC_SIG_FORCE
+> +	def_bool y
+>  
+> -config KEXEC_BZIMAGE_VERIFY_SIG
+> -	bool "Enable bzImage signature verification support"
+> -	depends on KEXEC_SIG
+> -	depends on SIGNED_PE_FILE_VERIFICATION
+> -	select SYSTEM_TRUSTED_KEYRING
+> -	help
+> -	  Enable bzImage signature verification support.
+> +config ARCH_SUPPORTS_KEXEC_BZIMAGE_VERIFY_SIG
+> +	def_bool y
+>  
+> -config CRASH_DUMP
+> -	bool "kernel crash dumps"
+> -	depends on X86_64 || (X86_32 && HIGHMEM)
+> -	help
+> -	  Generate crash dump after being started by kexec.
+> -	  This should be normally only set in special crash dump kernels
+> -	  which are loaded in the main kernel with kexec-tools into
+> -	  a specially reserved region and then later executed after
+> -	  a crash by kdump/kexec. The crash dump kernel must be compiled
+> -	  to a memory address not used by the main kernel or BIOS using
+> -	  PHYSICAL_START, or it must be built as a relocatable image
+> -	  (CONFIG_RELOCATABLE=y).
+> -	  For more details see Documentation/admin-guide/kdump/kdump.rst
+> +config ARCH_SUPPORTS_KEXEC_JUMP
+> +	def_bool y
+>  
+> -config KEXEC_JUMP
+> -	bool "kexec jump"
+> -	depends on KEXEC && HIBERNATION
+> -	help
+> -	  Jump between original kernel and kexeced kernel and invoke
+> -	  code in physical address mode via KEXEC
+> +config ARCH_SUPPORTS_CRASH_DUMP
+> +	def_bool X86_64 || (X86_32 && HIGHMEM)
+>  
+>  config PHYSICAL_START
+>  	hex "Physical address where the kernel is loaded" if (EXPERT || CRASH_DUMP)
+> 
+
+-- 
+Regards,
+  Zhen Lei
