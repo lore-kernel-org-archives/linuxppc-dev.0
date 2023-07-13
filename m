@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAA68EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 13:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB695EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 13:16:14 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ygTMARNx;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=2OO4syrr;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=xDMQnaXr;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PyQUJ+mj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1w8D3GCLz3cYq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 23:15:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1w99246Hz3dXT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 23:16:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ygTMARNx;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=2OO4syrr;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=xDMQnaXr;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PyQUJ+mj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1vtt3kyZz3c4B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 23:03:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1vtv2vnDz3c4Z
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 23:03:51 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 8A9A71FDD8;
-	Thu, 13 Jul 2023 13:03:47 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 866B32218D;
+	Thu, 13 Jul 2023 13:03:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1689253427; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1689253428; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8SrYfuYp2Zej0wYpXum9GiB3XZhSVLAFxOB80dQcWiA=;
-	b=ygTMARNxH5rZiRcOwOTU3ox2BZmWK7l5Y3TwBmbU71TcFwyGXdkzqTuGKxUMqtxyDjqoQj
-	iLxKzC6+Qkaa7aeAKpNWlViWmnFjLHDLf/JWqt7fz0n2MeZGzE7DdaYWN4pRYmYJh4FD+G
-	zM+O1d/zjQvOCjbFWxRomk8dILGObJI=
+	bh=ucmT+1GLTDoqupQ1pU8mLni2ss8QN6gSt8DgqXn9pcI=;
+	b=xDMQnaXrC0sbzn5vN86LIOql2HUYTjH6Rn2gk6GiGaPIgMn1wM9t8fyeFtlGeVLBKVRych
+	jZEQAhl9Cz+rXv2Xmv90zXqwpGPaTq3oQTLgj7bQsU93Ut1zQKNiVkAPZOvZ8Xw/7HLAvF
+	hfe8hTWSEW/ctYN/9cd4yTlUaNeyD7A=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1689253427;
+	s=susede2_ed25519; t=1689253428;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8SrYfuYp2Zej0wYpXum9GiB3XZhSVLAFxOB80dQcWiA=;
-	b=2OO4syrrldZK0Dmi06tmOl9dw0upP4oqmqYZ+l2cQkve4rv8hIuE2brlUULhx92b/bJ86+
-	NAdkvhyiPrs4CCDw==
+	bh=ucmT+1GLTDoqupQ1pU8mLni2ss8QN6gSt8DgqXn9pcI=;
+	b=PyQUJ+mjDGZPkhAsdSpBipeSRqA8G+lVO8ZMG+DvIZIx7osV1ZLdagMlZnxORWjReOpSlc
+	CGnqY7btTuRhblDQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2184E13A94;
-	Thu, 13 Jul 2023 13:03:47 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2CAAD13A94;
+	Thu, 13 Jul 2023 13:03:48 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id sMP9BjP2r2TVPgAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 13 Jul 2023 13:03:47 +0000
+	id eLT2CTT2r2TVPgAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 13 Jul 2023 13:03:48 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
 	javierm@redhat.com
-Subject: [PATCH v2 13/18] fbdev: Remove flag FBINFO_FLAG_DEFAULT from fbdev drivers
-Date: Thu, 13 Jul 2023 14:58:33 +0200
-Message-ID: <20230713130338.31086-14-tzimmermann@suse.de>
+Subject: [PATCH v2 15/18] fbdev/atafb: Remove flag FBINFO_FLAG_DEFAULT
+Date: Thu, 13 Jul 2023 14:58:35 +0200
+Message-ID: <20230713130338.31086-16-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230713130338.31086-1-tzimmermann@suse.de>
 References: <20230713130338.31086-1-tzimmermann@suse.de>
@@ -85,8 +85,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
-fbinfo.flags has been allocated to zero by kzalloc(). So do not
-set it.
+fbinfo.flags has been allocated to zero by a static declaration. So do
+not set it.
 
 Flags should signal differences from the default values. After cleaning
 up all occurrences of FBINFO_DEFAULT, the token will be removed.
@@ -98,38 +98,21 @@ Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Helge Deller <deller@gmx.de>
 ---
- drivers/video/fbdev/amba-clcd.c             | 1 -
- drivers/video/fbdev/matrox/matroxfb_crtc2.c | 5 ++---
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/atafb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index e45338227be6..24d89e6fb780 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -461,7 +461,6 @@ static int clcdfb_register(struct clcd_fb *fb)
- 	}
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index 2bc4089865e6..c4a420b791b9 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -3112,7 +3112,6 @@ static int __init atafb_probe(struct platform_device *pdev)
+ #ifdef ATAFB_FALCON
+ 	fb_info.pseudo_palette = current_par.hw.falcon.pseudo_palette;
+ #endif
+-	fb_info.flags = FBINFO_FLAG_DEFAULT;
  
- 	fb->fb.fbops		= &clcdfb_ops;
--	fb->fb.flags		= FBINFO_FLAG_DEFAULT;
- 	fb->fb.pseudo_palette	= fb->cmap;
- 
- 	strncpy(fb->fb.fix.id, clcd_name, sizeof(fb->fb.fix.id));
-diff --git a/drivers/video/fbdev/matrox/matroxfb_crtc2.c b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-index 7655afa3fd50..372197c124de 100644
---- a/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-@@ -603,9 +603,8 @@ static int matroxfb_dh_regit(const struct matrox_fb_info *minfo,
- 	void* oldcrtc2;
- 
- 	m2info->fbcon.fbops = &matroxfb_dh_ops;
--	m2info->fbcon.flags = FBINFO_FLAG_DEFAULT;
--	m2info->fbcon.flags |= FBINFO_HWACCEL_XPAN |
--			       FBINFO_HWACCEL_YPAN;
-+	m2info->fbcon.flags = FBINFO_HWACCEL_XPAN |
-+			      FBINFO_HWACCEL_YPAN;
- 	m2info->fbcon.pseudo_palette = m2info->cmap;
- 	fb_alloc_cmap(&m2info->fbcon.cmap, 256, 1);
- 
+ 	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, atafb_modedb,
+ 			  NUM_TOTAL_MODES, &atafb_modedb[defmode],
 -- 
 2.41.0
 
