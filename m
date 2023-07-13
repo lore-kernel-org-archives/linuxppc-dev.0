@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB9FEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 09:41:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD26BEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 09:42:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1qPq5ZM0z3cT5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 19:41:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1qQM3CmRz3cdM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 19:42:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1qNL6Kqyz3c2k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 19:40:34 +1000 (AEST)
-Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.57])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R1qLp2H4wzVjg5;
-	Thu, 13 Jul 2023 17:39:14 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1qNN5WZXz3c8c
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 19:40:36 +1000 (AEST)
+Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.56])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4R1qMc4wfvz18Lt7;
+	Thu, 13 Jul 2023 17:39:56 +0800 (CST)
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Thu, 13 Jul 2023 17:40:27 +0800
+ 15.1.2507.27; Thu, 13 Jul 2023 17:40:31 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
 	<surenb@google.com>
-Subject: [PATCH rfc -next 05/10] powerpc: mm: use try_vma_locked_page_fault()
-Date: Thu, 13 Jul 2023 17:53:33 +0800
-Message-ID: <20230713095339.189715-6-wangkefeng.wang@huawei.com>
+Subject: [PATCH rfc -next 08/10] loongarch: mm: cleanup __do_page_fault()
+Date: Thu, 13 Jul 2023 17:53:36 +0800
+Message-ID: <20230713095339.189715-9-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
 References: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
@@ -54,106 +54,95 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, loongarch@lists.li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use new try_vma_locked_page_fault() helper to simplify code.
-No functional change intended.
+Cleanup __do_page_fault() by reuse bad_area_nosemaphore and
+bad_area label.
 
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- arch/powerpc/mm/fault.c | 54 +++++++++++++++++------------------------
- 1 file changed, 22 insertions(+), 32 deletions(-)
+ arch/loongarch/mm/fault.c | 36 +++++++++++-------------------------
+ 1 file changed, 11 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 82954d0e6906..dd4832a3cf10 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -391,6 +391,23 @@ static int page_fault_is_bad(unsigned long err)
- #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_32S)
- #endif
+diff --git a/arch/loongarch/mm/fault.c b/arch/loongarch/mm/fault.c
+index da5b6d518cdb..03d06ee184da 100644
+--- a/arch/loongarch/mm/fault.c
++++ b/arch/loongarch/mm/fault.c
+@@ -151,18 +151,15 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
+ 		if (!user_mode(regs))
+ 			no_context(regs, address);
+ 		else
+-			do_sigsegv(regs, write, address, si_code);
+-		return;
++			goto bad_area_nosemaphore;
+ 	}
  
-+#ifdef CONFIG_PER_VMA_LOCK
-+int arch_vma_check_access(struct vm_area_struct *vma,
-+			  struct vm_locked_fault *vmlf)
-+{
-+	int is_exec = TRAP(vmlf->regs) == INTERRUPT_INST_STORAGE;
-+	int is_write = page_fault_is_write(vmlf->fault_code);
-+
-+	if (unlikely(access_pkey_error(is_write, is_exec,
-+				(vmlf->fault_code & DSISR_KEYFAULT), vma)))
-+		return -EINVAL;
-+
-+	if (unlikely(access_error(is_write, is_exec, vma)))
-+		return -EINVAL;
-+	return 0;
-+}
-+#endif
-+
- /*
-  * For 600- and 800-family processors, the error_code parameter is DSISR
-  * for a data fault, SRR1 for an instruction fault.
-@@ -413,6 +430,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
- 	int is_write = page_fault_is_write(error_code);
- 	vm_fault_t fault, major = 0;
- 	bool kprobe_fault = kprobe_page_fault(regs, 11);
-+	struct vm_locked_fault vmlf;
- 
- 	if (unlikely(debugger_fault_handler(regs) || kprobe_fault))
- 		return 0;
-@@ -469,41 +487,15 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
- 	if (is_exec)
- 		flags |= FAULT_FLAG_INSTRUCTION;
- 
--#ifdef CONFIG_PER_VMA_LOCK
--	if (!(flags & FAULT_FLAG_USER))
--		goto lock_mmap;
--
--	vma = lock_vma_under_rcu(mm, address);
--	if (!vma)
--		goto lock_mmap;
--
--	if (unlikely(access_pkey_error(is_write, is_exec,
--				       (error_code & DSISR_KEYFAULT), vma))) {
--		vma_end_read(vma);
--		goto lock_mmap;
+ 	/*
+ 	 * If we're in an interrupt or have no user
+ 	 * context, we must not take the fault..
+ 	 */
+-	if (faulthandler_disabled() || !mm) {
+-		do_sigsegv(regs, write, address, si_code);
+-		return;
 -	}
++	if (faulthandler_disabled() || !mm)
++		goto bad_area_nosemaphore;
+ 
+ 	if (user_mode(regs))
+ 		flags |= FAULT_FLAG_USER;
+@@ -172,23 +169,7 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
+ 	vma = lock_mm_and_find_vma(mm, address, regs);
+ 	if (unlikely(!vma))
+ 		goto bad_area_nosemaphore;
+-	goto good_area;
 -
--	if (unlikely(access_error(is_write, is_exec, vma))) {
--		vma_end_read(vma);
--		goto lock_mmap;
--	}
--
--	fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
--	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
--		vma_end_read(vma);
--
--	if (!(fault & VM_FAULT_RETRY)) {
--		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
-+	VM_LOCKED_FAULT_INIT(vmlf, mm, address, flags, 0, regs, error_code);
-+	if (try_vma_locked_page_fault(&vmlf, &fault))
-+		goto retry;
-+	else if (!(fault | VM_FAULT_RETRY))
- 		goto done;
--	}
--	count_vm_vma_lock_event(VMA_LOCK_RETRY);
+-/*
+- * Something tried to access memory that isn't in our memory map..
+- * Fix it, but check if it's kernel or user first..
+- */
+-bad_area:
+-	mmap_read_unlock(mm);
+-bad_area_nosemaphore:
+-	do_sigsegv(regs, write, address, si_code);
+-	return;
  
- 	if (fault_signal_pending(fault, regs))
- 		return user_mode(regs) ? 0 : SIGBUS;
+-/*
+- * Ok, we have a good vm_area for this memory access, so
+- * we can handle it..
+- */
+-good_area:
+ 	si_code = SEGV_ACCERR;
  
--lock_mmap:
--#endif /* CONFIG_PER_VMA_LOCK */
--
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -552,9 +544,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (write) {
+@@ -229,14 +210,15 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
+ 		 */
+ 		goto retry;
+ 	}
++
++	mmap_read_unlock(mm);
++
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+-		mmap_read_unlock(mm);
+ 		if (fault & VM_FAULT_OOM) {
+ 			do_out_of_memory(regs, address);
+ 			return;
+ 		} else if (fault & VM_FAULT_SIGSEGV) {
+-			do_sigsegv(regs, write, address, si_code);
+-			return;
++			goto bad_area_nosemaphore;
+ 		} else if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE)) {
+ 			do_sigbus(regs, write, address, si_code);
+ 			return;
+@@ -244,7 +226,11 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
+ 		BUG();
+ 	}
  
- 	mmap_read_unlock(current->mm);
++	return;
++bad_area:
+ 	mmap_read_unlock(mm);
++bad_area_nosemaphore:
++	do_sigsegv(regs, write, address, si_code);
+ }
  
--#ifdef CONFIG_PER_VMA_LOCK
- done:
--#endif
- 	if (unlikely(fault & VM_FAULT_ERROR))
- 		return mm_fault_error(regs, address, fault);
- 
+ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
 -- 
 2.27.0
 
