@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 132EBC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 09:41:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB9FEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 09:41:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1qPJ4KrKz3cT3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 19:41:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1qPq5ZM0z3cT5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 19:41:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1qNK6szJz3c2k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 19:40:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1qNL6Kqyz3c2k
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 19:40:34 +1000 (AEST)
 Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.57])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R1qLq3yDQzVjXt;
-	Thu, 13 Jul 2023 17:39:15 +0800 (CST)
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R1qLp2H4wzVjg5;
+	Thu, 13 Jul 2023 17:39:14 +0800 (CST)
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Thu, 13 Jul 2023 17:40:28 +0800
+ 15.1.2507.27; Thu, 13 Jul 2023 17:40:27 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
 	<surenb@google.com>
-Subject: [PATCH rfc -next 06/10] riscv: mm: use try_vma_locked_page_fault()
-Date: Thu, 13 Jul 2023 17:53:34 +0800
-Message-ID: <20230713095339.189715-7-wangkefeng.wang@huawei.com>
+Subject: [PATCH rfc -next 05/10] powerpc: mm: use try_vma_locked_page_fault()
+Date: Thu, 13 Jul 2023 17:53:33 +0800
+Message-ID: <20230713095339.189715-6-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
 References: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
@@ -59,61 +59,75 @@ No functional change intended.
 
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- arch/riscv/mm/fault.c | 38 +++++++++++++++-----------------------
- 1 file changed, 15 insertions(+), 23 deletions(-)
+ arch/powerpc/mm/fault.c | 54 +++++++++++++++++------------------------
+ 1 file changed, 22 insertions(+), 32 deletions(-)
 
-diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
-index 6ea2cce4cc17..13bc60370b5c 100644
---- a/arch/riscv/mm/fault.c
-+++ b/arch/riscv/mm/fault.c
-@@ -215,6 +215,16 @@ static inline bool access_error(unsigned long cause, struct vm_area_struct *vma)
- 	return false;
- }
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 82954d0e6906..dd4832a3cf10 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -391,6 +391,23 @@ static int page_fault_is_bad(unsigned long err)
+ #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_32S)
+ #endif
  
 +#ifdef CONFIG_PER_VMA_LOCK
 +int arch_vma_check_access(struct vm_area_struct *vma,
 +			  struct vm_locked_fault *vmlf)
 +{
-+	if (unlikely(access_error(vmlf->fault_code, vma)))
++	int is_exec = TRAP(vmlf->regs) == INTERRUPT_INST_STORAGE;
++	int is_write = page_fault_is_write(vmlf->fault_code);
++
++	if (unlikely(access_pkey_error(is_write, is_exec,
++				(vmlf->fault_code & DSISR_KEYFAULT), vma)))
++		return -EINVAL;
++
++	if (unlikely(access_error(is_write, is_exec, vma)))
 +		return -EINVAL;
 +	return 0;
 +}
 +#endif
 +
  /*
-  * This routine handles page faults.  It determines the address and the
-  * problem, and then passes it off to one of the appropriate routines.
-@@ -228,6 +238,7 @@ void handle_page_fault(struct pt_regs *regs)
- 	unsigned int flags = FAULT_FLAG_DEFAULT;
- 	int code = SEGV_MAPERR;
- 	vm_fault_t fault;
+  * For 600- and 800-family processors, the error_code parameter is DSISR
+  * for a data fault, SRR1 for an instruction fault.
+@@ -413,6 +430,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	int is_write = page_fault_is_write(error_code);
+ 	vm_fault_t fault, major = 0;
+ 	bool kprobe_fault = kprobe_page_fault(regs, 11);
 +	struct vm_locked_fault vmlf;
  
- 	cause = regs->cause;
- 	addr = regs->badaddr;
-@@ -283,35 +294,18 @@ void handle_page_fault(struct pt_regs *regs)
- 		flags |= FAULT_FLAG_WRITE;
- 	else if (cause == EXC_INST_PAGE_FAULT)
+ 	if (unlikely(debugger_fault_handler(regs) || kprobe_fault))
+ 		return 0;
+@@ -469,41 +487,15 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (is_exec)
  		flags |= FAULT_FLAG_INSTRUCTION;
+ 
 -#ifdef CONFIG_PER_VMA_LOCK
 -	if (!(flags & FAULT_FLAG_USER))
 -		goto lock_mmap;
- 
--	vma = lock_vma_under_rcu(mm, addr);
+-
+-	vma = lock_vma_under_rcu(mm, address);
 -	if (!vma)
 -		goto lock_mmap;
 -
--	if (unlikely(access_error(cause, vma))) {
+-	if (unlikely(access_pkey_error(is_write, is_exec,
+-				       (error_code & DSISR_KEYFAULT), vma))) {
 -		vma_end_read(vma);
 -		goto lock_mmap;
 -	}
 -
--	fault = handle_mm_fault(vma, addr, flags | FAULT_FLAG_VMA_LOCK, regs);
--	vma_end_read(vma);
+-	if (unlikely(access_error(is_write, is_exec, vma))) {
+-		vma_end_read(vma);
+-		goto lock_mmap;
+-	}
+-
+-	fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
+-	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
+-		vma_end_read(vma);
 -
 -	if (!(fault & VM_FAULT_RETRY)) {
 -		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
-+	VM_LOCKED_FAULT_INIT(vmlf, mm, addr, flags, 0, regs, cause);
++	VM_LOCKED_FAULT_INIT(vmlf, mm, address, flags, 0, regs, error_code);
 +	if (try_vma_locked_page_fault(&vmlf, &fault))
 +		goto retry;
 +	else if (!(fault | VM_FAULT_RETRY))
@@ -121,26 +135,25 @@ index 6ea2cce4cc17..13bc60370b5c 100644
 -	}
 -	count_vm_vma_lock_event(VMA_LOCK_RETRY);
  
- 	if (fault_signal_pending(fault, regs)) {
- 		if (!user_mode(regs))
- 			no_context(regs, addr);
- 		return;
- 	}
+ 	if (fault_signal_pending(fault, regs))
+ 		return user_mode(regs) ? 0 : SIGBUS;
+ 
 -lock_mmap:
 -#endif /* CONFIG_PER_VMA_LOCK */
+-
+ 	/* When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in the
+ 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
+@@ -552,9 +544,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
  
- retry:
- 	vma = lock_mm_and_find_vma(mm, addr, regs);
-@@ -368,9 +362,7 @@ void handle_page_fault(struct pt_regs *regs)
- 
- 	mmap_read_unlock(mm);
+ 	mmap_read_unlock(current->mm);
  
 -#ifdef CONFIG_PER_VMA_LOCK
  done:
 -#endif
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
- 		tsk->thread.bad_cause = cause;
- 		mm_fault_error(regs, addr, fault);
+ 	if (unlikely(fault & VM_FAULT_ERROR))
+ 		return mm_fault_error(regs, address, fault);
+ 
 -- 
 2.27.0
 
