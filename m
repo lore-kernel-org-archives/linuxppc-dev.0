@@ -4,71 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A661EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 13:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F24A1EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 13:07:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G3PYzma+;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=WeSOcLCL;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=oBNzVQVe;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FVvdD1Uc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1vxj0Grlz3cXL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 23:06:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1vyf29lGz3cc7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 23:07:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G3PYzma+;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=WeSOcLCL;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=oBNzVQVe;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FVvdD1Uc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1vtp06J6z3c3S
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 23:03:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1vtp0W90z3c3W
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 23:03:46 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 20AC11F45A;
-	Thu, 13 Jul 2023 13:03:42 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 01F6722189;
+	Thu, 13 Jul 2023 13:03:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1689253422; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	t=1689253423; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=sWCVV7wJiemOx2M9P2wz1m/QXnYnbGSsQYJ48wiDA5o=;
-	b=G3PYzma+GnPXsWDQcWEiJv7+6N0jkIzvIqL3XrkAaNDI5dGI8oCyGDegIPMBEhOO6zso9c
-	K5VThQHBuOhXlprpuD0nN/dF79tpjdwwkTSMKFCLf145LdCAaSa7mwQ+6NYpUz5Y4s5PAn
-	tEbKa6k8zUIs+FVcjuyiTVPw1uhIoY4=
+	bh=xL43EBO5xnFODw7DI91w3TTT+ZhOge9QgOFwJtZBLCM=;
+	b=oBNzVQVeVo79gjHPcjz8tUlrfjKcGZsv5lHU3GIJknuDIBmAwraE8yp+ixorz1/GViJ2tP
+	NjnnO3GblqExsjo8cLdJ1Pr6Uf5aHK4hd2IXaS5snY0KnodZycJrYxU/yDOk9C3naqQ3aF
+	yACyzoDOSZEr/pFHx51qaizsJQkyabo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1689253422;
+	s=susede2_ed25519; t=1689253423;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=sWCVV7wJiemOx2M9P2wz1m/QXnYnbGSsQYJ48wiDA5o=;
-	b=WeSOcLCLUIdHcwsbiId4esnjfTG+ztdeDfD2PYzOsAG3OUq0C7SYad86to4wDt0BZzV2cu
-	qQ29qEYIeql73fBw==
+	bh=xL43EBO5xnFODw7DI91w3TTT+ZhOge9QgOFwJtZBLCM=;
+	b=FVvdD1UchXuGU1Fl1W+GYEO5uTaH3aMNN+jnY1lfsnbesKYfg0Nj3+e4a9aNDu8G65OOfG
+	HyUuSyV45r06iCDg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9AA8D13A94;
-	Thu, 13 Jul 2023 13:03:41 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 938D913A94;
+	Thu, 13 Jul 2023 13:03:42 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id OGKbJC32r2TVPgAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 13 Jul 2023 13:03:41 +0000
+	id 2GjnIi72r2TVPgAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 13 Jul 2023 13:03:42 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
 	javierm@redhat.com
-Subject: [PATCH v2 01/18] drm: Remove flag FBINFO_DEFAULT from fbdev emulation
-Date: Thu, 13 Jul 2023 14:58:21 +0200
-Message-ID: <20230713130338.31086-2-tzimmermann@suse.de>
+Subject: [PATCH v2 03/18] fbdev: Remove flag FBINFO_DEFAULT from fbdev drivers
+Date: Thu, 13 Jul 2023 14:58:23 +0200
+Message-ID: <20230713130338.31086-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230713130338.31086-1-tzimmermann@suse.de>
 References: <20230713130338.31086-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,12 +80,12 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>, linux-fbdev@vger.kernel.org, "Pan, Xinhui" <Xinhui.Pan@amd.com>, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, Alex Deucher <alexander.deucher@amd.com>, linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
-has been allocated to zero by framebuffer_alloc(). So do not set it.
+has been allocated to zero by kzalloc(). So do not set it.
 
 Flags should signal differences from the default values. After cleaning
 up all occurrences of FBINFO_DEFAULT, the token will be removed.
@@ -96,67 +95,81 @@ v2:
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: "Christian König" <christian.koenig@amd.com>
-Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Russell King <linux@armlinux.org.uk>
 ---
- drivers/gpu/drm/drm_fbdev_dma.c       | 1 -
- drivers/gpu/drm/drm_fbdev_generic.c   | 1 -
- drivers/gpu/drm/gma500/fbdev.c        | 2 +-
- drivers/gpu/drm/radeon/radeon_fbdev.c | 2 +-
- 4 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/controlfb.c           | 2 +-
+ drivers/video/fbdev/cyber2000fb.c         | 2 +-
+ drivers/video/fbdev/valkyriefb.c          | 1 -
+ drivers/video/fbdev/vermilion/vermilion.c | 2 +-
+ drivers/video/fbdev/vt8500lcdfb.c         | 3 +--
+ 5 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_fbdev_dma.c b/drivers/gpu/drm/drm_fbdev_dma.c
-index f9b1f7cd31b7..ee7c265b0585 100644
---- a/drivers/gpu/drm/drm_fbdev_dma.c
-+++ b/drivers/gpu/drm/drm_fbdev_dma.c
-@@ -123,7 +123,6 @@ static int drm_fbdev_dma_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	drm_fb_helper_fill_info(info, fb_helper, sizes);
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 82eeb139c4eb..717134c141ff 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -775,7 +775,7 @@ static void __init control_init_info(struct fb_info *info, struct fb_info_contro
+ 	info->par = &p->par;
+ 	info->fbops = &controlfb_ops;
+ 	info->pseudo_palette = p->pseudo_palette;
+-        info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	info->flags = FBINFO_HWACCEL_YPAN;
+ 	info->screen_base = p->frame_buffer + CTRLFB_OFF;
  
- 	info->fbops = &drm_fbdev_dma_fb_ops;
+ 	fb_alloc_cmap(&info->cmap, 256, 0);
+diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
+index 38c0a6866d76..98ea56a9abf1 100644
+--- a/drivers/video/fbdev/cyber2000fb.c
++++ b/drivers/video/fbdev/cyber2000fb.c
+@@ -1459,7 +1459,7 @@ static struct cfb_info *cyberpro_alloc_fb_info(unsigned int id, char *name)
+ 	cfb->fb.var.accel_flags	= FB_ACCELF_TEXT;
+ 
+ 	cfb->fb.fbops		= &cyber2000fb_ops;
+-	cfb->fb.flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	cfb->fb.flags		= FBINFO_HWACCEL_YPAN;
+ 	cfb->fb.pseudo_palette	= cfb->pseudo_palette;
+ 
+ 	spin_lock_init(&cfb->reg_b0_lock);
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index b166b7cfe0e5..fd4488777032 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -535,7 +535,6 @@ static int __init valkyrie_init_info(struct fb_info *info,
+ {
+ 	info->fbops = &valkyriefb_ops;
+ 	info->screen_base = p->frame_buffer + 0x1000;
 -	info->flags = FBINFO_DEFAULT;
- 
- 	/* screen */
- 	info->flags |= FBINFO_VIRTFB; /* system memory */
-diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-index b9343fb6cf13..a0ea042b1526 100644
---- a/drivers/gpu/drm/drm_fbdev_generic.c
-+++ b/drivers/gpu/drm/drm_fbdev_generic.c
-@@ -109,7 +109,6 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	drm_fb_helper_fill_info(info, fb_helper, sizes);
- 
- 	info->fbops = &drm_fbdev_generic_fb_ops;
--	info->flags = FBINFO_DEFAULT;
- 
- 	/* screen */
- 	info->flags |= FBINFO_VIRTFB | FBINFO_READS_FAST;
-diff --git a/drivers/gpu/drm/gma500/fbdev.c b/drivers/gpu/drm/gma500/fbdev.c
-index 054426549fc6..be8f5fbd5260 100644
---- a/drivers/gpu/drm/gma500/fbdev.c
-+++ b/drivers/gpu/drm/gma500/fbdev.c
-@@ -215,7 +215,7 @@ static int psb_fbdev_fb_probe(struct drm_fb_helper *fb_helper,
+ 	info->pseudo_palette = p->pseudo_palette;
+ 	info->par = &p->par;
+ 	return fb_alloc_cmap(&info->cmap, 256, 0);
+diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
+index 32e74e02a02f..71584c775efd 100644
+--- a/drivers/video/fbdev/vermilion/vermilion.c
++++ b/drivers/video/fbdev/vermilion/vermilion.c
+@@ -477,7 +477,7 @@ static int vml_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
  	}
  
- 	info->fbops = &psb_fbdev_fb_ops;
--	info->flags = FBINFO_DEFAULT;
-+
- 	/* Accessed stolen memory directly */
- 	info->screen_base = dev_priv->vram_addr + backing->offset;
- 	info->screen_size = size;
-diff --git a/drivers/gpu/drm/radeon/radeon_fbdev.c b/drivers/gpu/drm/radeon/radeon_fbdev.c
-index f941e2e7cae6..68c06ac9acce 100644
---- a/drivers/gpu/drm/radeon/radeon_fbdev.c
-+++ b/drivers/gpu/drm/radeon/radeon_fbdev.c
-@@ -253,7 +253,7 @@ static int radeon_fbdev_fb_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	}
+ 	info = &vinfo->info;
+-	info->flags = FBINFO_DEFAULT | FBINFO_PARTIAL_PAN_OK;
++	info->flags = FBINFO_PARTIAL_PAN_OK;
  
- 	info->fbops = &radeon_fbdev_fb_ops;
--	info->flags = FBINFO_DEFAULT;
-+
- 	/* radeon resume is fragile and needs a vt switch to help it along */
- 	info->skip_vt_switch = false;
+ 	err = vmlfb_enable_mmio(par);
+ 	if (err)
+diff --git a/drivers/video/fbdev/vt8500lcdfb.c b/drivers/video/fbdev/vt8500lcdfb.c
+index 31d4e85b220c..42d39a9d5130 100644
+--- a/drivers/video/fbdev/vt8500lcdfb.c
++++ b/drivers/video/fbdev/vt8500lcdfb.c
+@@ -300,8 +300,7 @@ static int vt8500lcd_probe(struct platform_device *pdev)
+ 	fbi->fb.var.vmode	= FB_VMODE_NONINTERLACED;
  
+ 	fbi->fb.fbops		= &vt8500lcd_ops;
+-	fbi->fb.flags		= FBINFO_DEFAULT
+-				| FBINFO_HWACCEL_COPYAREA
++	fbi->fb.flags		= FBINFO_HWACCEL_COPYAREA
+ 				| FBINFO_HWACCEL_FILLRECT
+ 				| FBINFO_HWACCEL_YPAN
+ 				| FBINFO_VIRTFB
 -- 
 2.41.0
 
