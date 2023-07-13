@@ -4,33 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31A0BEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 09:43:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A62EEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 09:43:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1qRQ5H5Pz3cjh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 19:43:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R1qS621t3z3dFY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 19:43:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1qNR1MCBz3cBY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 19:40:39 +1000 (AEST)
-Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.53])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4R1qMg1LkQz18Lnh;
-	Thu, 13 Jul 2023 17:39:59 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1qNn4rLRz3cN1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2023 19:40:57 +1000 (AEST)
+Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.56])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4R1qMQ0F4fzrRnX;
+	Thu, 13 Jul 2023 17:39:46 +0800 (CST)
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Thu, 13 Jul 2023 17:40:33 +0800
+ 15.1.2507.27; Thu, 13 Jul 2023 17:40:21 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
 	<surenb@google.com>
-Subject: [PATCH rfc -next 10/10] loongarch: mm: try VMA lock-based page fault handling first
-Date: Thu, 13 Jul 2023 17:53:38 +0800
-Message-ID: <20230713095339.189715-11-wangkefeng.wang@huawei.com>
+Subject: [PATCH rfc -next 00/10] mm: convert to generic VMA lock-based page fault
+Date: Thu, 13 Jul 2023 17:53:28 +0800
+Message-ID: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
-References: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -54,85 +52,44 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, loongarch@lists.li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Attempt VMA lock-based page fault handling first, and fall back
-to the existing mmap_lock-based handling if that fails.
+Add a generic VMA lock-based page fault handler in mm core, and convert
+architectures to use it, which eliminate architectures's duplicated codes.
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
+With it, we can avoid multiple changes in architectures's code if we 
+add new feature or bugfix.
+
+This fixes riscv missing change about commit 38b3aec8e8d2 "mm: drop per-VMA
+lock when returning VM_FAULT_RETRY or VM_FAULT_COMPLETED", and in the end,
+we enable this feature on ARM32/Loongarch too.
+
+This is based on next-20230713, only built test(no loongarch compiler,
+so except loongarch).
+
+Kefeng Wang (10):
+  mm: add a generic VMA lock-based page fault handler
+  x86: mm: use try_vma_locked_page_fault()
+  arm64: mm: use try_vma_locked_page_fault()
+  s390: mm: use try_vma_locked_page_fault()
+  powerpc: mm: use try_vma_locked_page_fault()
+  riscv: mm: use try_vma_locked_page_fault()
+  ARM: mm: try VMA lock-based page fault handling first
+  loongarch: mm: cleanup __do_page_fault()
+  loongarch: mm: add access_error() helper
+  loongarch: mm: try VMA lock-based page fault handling first
+
+ arch/arm/Kconfig          |  1 +
+ arch/arm/mm/fault.c       | 15 ++++++-
+ arch/arm64/mm/fault.c     | 28 +++---------
  arch/loongarch/Kconfig    |  1 +
- arch/loongarch/mm/fault.c | 26 ++++++++++++++++++++++++++
- 2 files changed, 27 insertions(+)
+ arch/loongarch/mm/fault.c | 92 ++++++++++++++++++++++++---------------
+ arch/powerpc/mm/fault.c   | 54 ++++++++++-------------
+ arch/riscv/mm/fault.c     | 38 +++++++---------
+ arch/s390/mm/fault.c      | 23 +++-------
+ arch/x86/mm/fault.c       | 39 +++++++----------
+ include/linux/mm.h        | 28 ++++++++++++
+ mm/memory.c               | 42 ++++++++++++++++++
+ 11 files changed, 206 insertions(+), 155 deletions(-)
 
-diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-index 397203e18800..afb0ccabab97 100644
---- a/arch/loongarch/Kconfig
-+++ b/arch/loongarch/Kconfig
-@@ -53,6 +53,7 @@ config LOONGARCH
- 	select ARCH_SUPPORTS_LTO_CLANG
- 	select ARCH_SUPPORTS_LTO_CLANG_THIN
- 	select ARCH_SUPPORTS_NUMA_BALANCING
-+	select ARCH_SUPPORTS_PER_VMA_LOCK
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF
- 	select ARCH_USE_QUEUED_RWLOCKS
-diff --git a/arch/loongarch/mm/fault.c b/arch/loongarch/mm/fault.c
-index cde2ea0119fa..7e54bc48813e 100644
---- a/arch/loongarch/mm/fault.c
-+++ b/arch/loongarch/mm/fault.c
-@@ -136,6 +136,17 @@ static inline bool access_error(unsigned int flags, struct pt_regs *regs,
- 	return false;
- }
- 
-+#ifdef CONFIG_PER_VMA_LOCK
-+int arch_vma_check_access(struct vm_area_struct *vma,
-+			  struct vm_locked_fault *vmlf)
-+{
-+	if (unlikely(access_error(vmlf->fault_flags, vmlf->regs, vmlf->address,
-+		     vma)))
-+		return -EINVAL;
-+	return 0;
-+}
-+#endif
-+
- /*
-  * This routine handles page faults.  It determines the address,
-  * and the problem, and then passes it off to one of the appropriate
-@@ -149,6 +160,7 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
- 	struct task_struct *tsk = current;
- 	struct mm_struct *mm = tsk->mm;
- 	struct vm_area_struct *vma = NULL;
-+	struct vm_locked_fault vmlf;
- 	vm_fault_t fault;
- 
- 	if (kprobe_page_fault(regs, current->thread.trap_nr))
-@@ -183,6 +195,19 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
- 		flags |= FAULT_FLAG_WRITE;
- 
- 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
-+
-+	VM_LOCKED_FAULT_INIT(vmlf, mm, address, flags, 0, regs, 0);
-+	if (try_vma_locked_page_fault(&vmlf, &fault))
-+		goto retry;
-+	else if (!(fault | VM_FAULT_RETRY))
-+		goto done;
-+
-+	if (fault_signal_pending(fault, regs)) {
-+		if (!user_mode(regs))
-+			no_context(regs, address);
-+		return;
-+	}
-+
- retry:
- 	vma = lock_mm_and_find_vma(mm, address, regs);
- 	if (unlikely(!vma))
-@@ -223,6 +248,7 @@ static void __kprobes __do_page_fault(struct pt_regs *regs,
- 
- 	mmap_read_unlock(mm);
- 
-+done:
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
- 		if (fault & VM_FAULT_OOM) {
- 			do_out_of_memory(regs, address);
 -- 
 2.27.0
 
