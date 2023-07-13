@@ -4,56 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F279EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jul 2023 22:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A30BC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 16:17:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=df/VKiT9;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Axf2mJyT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R1XRT4Rd2z3c5W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jul 2023 08:27:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R20Bq51mbz3cKs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jul 2023 02:17:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=df/VKiT9;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Axf2mJyT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R1MM907y8z3bWr;
-	Thu, 13 Jul 2023 01:37:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R209q6B7zz2xH6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2023 02:17:03 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Cc:Content-ID:Content-Description;
-	bh=689SEK0ciFY8KgDlRHFBreHHAC2z+cvH0wQ011Q2aMI=; b=df/VKiT91ZqRa0x7ofoJaXGlph
-	PM7CRP4KkwoXZKNJlvYdkig+/LLrQ9LVGVf40H6Qaywx20JwTqHlizlUxF15FF/hdi7QMcfJ88rOM
-	Tk9o3z44pMTcermnTCrLWAF39fzqRsD0ms+1lMmZtzToJzTD0SUcPG6eXBFgIigvbDeEBrSIYXiW/
-	GnykGmmqxl8DWPpBQb6tfrtLGgdO7lnddHDuy7SXW0bC9E1PhpCLadB/V3QSWJPX+bNFvOifeRdsy
-	3Vg5gSGOgGr74Cyg+9z9dxsezgnvq5bViTggfgF6K6g7cj7jT1ssxpJXUEt4gBcr4IJbEN74vqTce
-	EZsIkLBg==;
-Received: from [2601:1c2:980:9ec0::2764]
-	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1qJboy-000MRl-20;
-	Wed, 12 Jul 2023 15:32:04 +0000
-Message-ID: <03e153ce-328b-f279-2a40-4074bea2bc8f@infradead.org>
-Date: Wed, 12 Jul 2023 08:31:55 -0700
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=qWs5+UJLbSYIWkNYobDTB5epXB0C966aqZhqz7qxkuE=; b=Axf2mJyTVJ//LDU0s3MzUQeSgC
+	XqBjZjmbF84lFbXZZnGPW2qs+rJCJ/RslMrc56Sjf+PZF4ohJANI2uSTXKC6LKrgacZjJ/DMaE/i5
+	VDHiNVenE5V8ISge/X+1BwBIVxL91IgDendNMP14IiQVBr6e2xOjBeJzMVjVuzr28vyD2X+0fK173
+	K1g33tS4S+reH260B9ZJTfHuzSMgSZOno0KJf1T10yUimbYrRGKAAC5T4/oFYb9QSb2LGJfTaOEC4
+	lrFENt2Js4jJuKx4hlBI6+0wtcrh1VuxzU08aWo5SqHtyJMNU6/qo0d2Llcncsjg09QE13F3f8xiW
+	oh83lHJA==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1qJyyL-000HxX-Pp; Thu, 13 Jul 2023 16:15:17 +0000
+Date: Thu, 13 Jul 2023 17:15:17 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: Re: [PATCH rfc -next 01/10] mm: add a generic VMA lock-based page
+ fault handler
+Message-ID: <ZLAjFQGgcjt4ykS7@casper.infradead.org>
+References: <20230713095339.189715-1-wangkefeng.wang@huawei.com>
+ <20230713095339.189715-2-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH 01/79] fs: add ctime accessors infrastructure
-Content-Language: en-US
-To: Jeff Layton <jlayton@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
- linux-um <linux-um@lists.infradead.org>
-References: <20230621144507.55591-1-jlayton@kernel.org>
- <20230621144507.55591-2-jlayton@kernel.org>
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20230621144507.55591-2-jlayton@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 13 Jul 2023 08:26:22 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230713095339.189715-2-wangkefeng.wang@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,18 +57,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: x86@kernel.org, loongarch@lists.linux.dev, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, WANG Xuerui <kernel@xen0n.name>, linux-s390@vger.kernel.org, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, surenb@google.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <s
+ vens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Jeff,
-
-On arch/um/, (subarch i386 or x86_64), hostfs build fails with:
-
-../fs/hostfs/hostfs_kern.c:520:36: error: incompatible type for arg
-ument 2 of 'inode_set_ctime_to_ts'
-../include/linux/fs.h:1499:73: note: expected 'struct timespec64' b
-ut argument is of type 'const struct hostfs_timespec *'
+> +int try_vma_locked_page_fault(struct vm_locked_fault *vmlf, vm_fault_t *ret)
+> +{
+> +	struct vm_area_struct *vma;
+> +	vm_fault_t fault;
 
 
--- 
-~Randy
+On Thu, Jul 13, 2023 at 05:53:29PM +0800, Kefeng Wang wrote:
+> +#define VM_LOCKED_FAULT_INIT(_name, _mm, _address, _fault_flags, _vm_flags, _regs, _fault_code) \
+> +	_name.mm		= _mm;			\
+> +	_name.address		= _address;		\
+> +	_name.fault_flags	= _fault_flags;		\
+> +	_name.vm_flags		= _vm_flags;		\
+> +	_name.regs		= _regs;		\
+> +	_name.fault_code	= _fault_code
+
+More consolidated code is a good idea; no question.  But I don't think
+this is the right way to do it.
+
+> +int __weak arch_vma_check_access(struct vm_area_struct *vma,
+> +				 struct vm_locked_fault *vmlf);
+
+This should be:
+
+#ifndef vma_check_access
+bool vma_check_access(struct vm_area_struct *vma, )
+{
+	return (vma->vm_flags & vm_flags) == 0;
+}
+#endif
+
+and then arches which want to do something different can just define
+vma_check_access.
+
+> +int try_vma_locked_page_fault(struct vm_locked_fault *vmlf, vm_fault_t *ret)
+> +{
+> +	struct vm_area_struct *vma;
+> +	vm_fault_t fault;
+
+Declaring the vmf in this function and then copying it back is just wrong.
+We need to declare vm_fault_t earlier (in the arch fault handler) and
+pass it in.  I don't think that creating struct vm_locked_fault is the
+right idea either.
+
+> +	if (!(vmlf->fault_flags & FAULT_FLAG_USER))
+> +		return -EINVAL;
+> +
+> +	vma = lock_vma_under_rcu(vmlf->mm, vmlf->address);
+> +	if (!vma)
+> +		return -EINVAL;
+> +
+> +	if (arch_vma_check_access(vma, vmlf)) {
+> +		vma_end_read(vma);
+> +		return -EINVAL;
+> +	}
+> +
+> +	fault = handle_mm_fault(vma, vmlf->address,
+> +				vmlf->fault_flags | FAULT_FLAG_VMA_LOCK,
+> +				vmlf->regs);
+> +	*ret = fault;
+> +
+> +	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
+> +		vma_end_read(vma);
+> +
+> +	if ((fault & VM_FAULT_RETRY))
+> +		count_vm_vma_lock_event(VMA_LOCK_RETRY);
+> +	else
+> +		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
+> +
+> +	return 0;
+> +}
+> +
+>  #endif /* CONFIG_PER_VMA_LOCK */
+>  
+>  #ifndef __PAGETABLE_P4D_FOLDED
+> -- 
+> 2.27.0
+> 
+> 
