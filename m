@@ -4,71 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 460B4C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jul 2023 15:12:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ABF0C05052
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jul 2023 18:54:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ieee.org header.i=@ieee.org header.a=rsa-sha256 header.s=google header.b=KpbiwA9N;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=d+psqWeU;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=leD8INTe;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R3Bfv4MmKz3c5J
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 01:12:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R3HZr2Hs9z3cB0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 04:54:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ieee.org header.i=@ieee.org header.a=rsa-sha256 header.s=google header.b=KpbiwA9N;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=d+psqWeU;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=leD8INTe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ieee.org (client-ip=2607:f8b0:4864:20::132; helo=mail-il1-x132.google.com; envelope-from=elder@ieee.org; receiver=lists.ozlabs.org)
-Received: from mail-il1-x132.google.com (mail-il1-x132.google.com [IPv6:2607:f8b0:4864:20::132])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3Bdq3WWgz30g2
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2023 01:11:55 +1000 (AEST)
-Received: by mail-il1-x132.google.com with SMTP id e9e14a558f8ab-346129c9512so6465695ab.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2023 08:11:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ieee.org; s=google; t=1689433909; x=1692025909;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=x9XlpRMNdAAEFImKOS7TDT4umEsjSeY77+bJ4P1MRe8=;
-        b=KpbiwA9NRF8+W6tdUk7oAEajedYliLcT3fLwx1hKWNPafETFpJG9nnPmhVRp1UdI1a
-         ec9mVwfBesk49WkdsrPfeQTQNowRCIhbKJuP16XD7dO7TZekJ8yDxNsj6kgUO5dmVinN
-         O/xItmOPmt9BnCnKdfjfmpm5zf8eizKb7wHPU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689433909; x=1692025909;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=x9XlpRMNdAAEFImKOS7TDT4umEsjSeY77+bJ4P1MRe8=;
-        b=M18xZJrLZ3Fj0lcmLBuAf5bPDAfidLlX8PW/Fq1Jks8NzLdYwogPrx6lxX2fapkytk
-         t16SNTSdj4hO7s0u7ST2rl7OeEwq0Nwq06UENIfh1mwJSZmTYoGLk3b7W4EGDw/J3gbk
-         nvDcOIUuC4NwBNyUAM8q3xxHBSh3caM3uBdBVjngkzl2loYNMuGdCKn/+a9Q25449fMk
-         LyQ/fUYuMtS8rxZ8E4UPRUGtLDzuRoUUPMtOLTH1ncvjqHrMz4qyU3/78+TjID1QfFCo
-         KHiBC17aClt7C6oOtTNn+VMNa1sURmonQSzGiVvwPVwg1uGOKE/TVWh01FsU/ZIwKE0N
-         VTOQ==
-X-Gm-Message-State: ABy/qLaiKJECs4ociveOpuLa3MvN+IHawH02few6RKGU1wi6ea1jrGmN
-	AWAbTq3233aqO6C/Crjn1oXxKA==
-X-Google-Smtp-Source: APBJJlGJVqbBu5lKEA54CgyQF24n/fOTJfhIYz9w3XH4VGOvH3KCmWksDsEmgsEiSCeG83sO26Hgmw==
-X-Received: by 2002:a05:6e02:1148:b0:343:ef5e:8286 with SMTP id o8-20020a056e02114800b00343ef5e8286mr3847417ill.7.1689433909634;
-        Sat, 15 Jul 2023 08:11:49 -0700 (PDT)
-Received: from [10.211.55.3] (c-98-61-227-136.hsd1.mn.comcast.net. [98.61.227.136])
-        by smtp.googlemail.com with ESMTPSA id f8-20020a056638022800b0042b2959e6dcsm3321388jaq.87.2023.07.15.08.11.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 15 Jul 2023 08:11:48 -0700 (PDT)
-Message-ID: <1c6175fc-496a-843c-c8c5-2173e065eaa8@ieee.org>
-Date: Sat, 15 Jul 2023 10:11:46 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3HYp1P2pz3bP2
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2023 04:53:50 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id CD5EB21AB1;
+	Sat, 15 Jul 2023 18:53:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1689447226; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2J9osIBjziSBvYjqJRuY3hx6gZ+n0EagAzqtJtaDujc=;
+	b=d+psqWeUUCVfcE4r23QFl9LBE5068B3nH1TzUrWvC1qZJQrVGRwGU2+t2PGHsbW9VpkmIw
+	EEDX7msXSAntfZimcuIm9Cib95YW0sBqtfUfGDYc5FmCEZjIDLvsZuoSwfP8Sh+HzSr5OF
+	FMUH3B8f+7FV8Lb2C1TwujpcfC5P+mc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1689447226;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2J9osIBjziSBvYjqJRuY3hx6gZ+n0EagAzqtJtaDujc=;
+	b=leD8INTeZe/fX0rwE+ZVIF1awTohtjmBICEQJyIxyhgzeXXG/rOQTQGxax57m1L2RqPbd2
+	VAMrZzy2R6VS3ABw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 616EA133F7;
+	Sat, 15 Jul 2023 18:53:46 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id SH/HFjrrsmQCBwAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Sat, 15 Jul 2023 18:53:46 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: deller@gmx.de,
+	javierm@redhat.com,
+	geert@linux-m68k.org,
+	dan.carpenter@linaro.org
+Subject: [PATCH v4 03/18] fbdev: Remove FBINFO_DEFAULT from kzalloc()'ed structs
+Date: Sat, 15 Jul 2023 20:51:45 +0200
+Message-ID: <20230715185343.7193-4-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230715185343.7193-1-tzimmermann@suse.de>
+References: <20230715185343.7193-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux aarch64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] net: Explicitly include correct DT includes
-Content-Language: en-US
-To: Rob Herring <robh@kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Alex Elder <elder@kernel.org>
-References: <20230714174809.4060885-1-robh@kernel.org>
-From: Alex Elder <elder@ieee.org>
-In-Reply-To: <20230714174809.4060885-1-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,62 +82,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-kernel@vger.kernel.org, ath10k@lists.infradead.org, linux-can@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-wpan@vger.kernel.org, linux-mediatek@lists.infradead.org, ath11k@lists.infradead.org, wcn36xx@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-oxnas@groups.io, linuxppc-dev@lists.ozlabs.org, linux-sunxi@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, Russell King <linux@armlinux.org.uk>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/14/23 12:48 PM, Rob Herring wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it as merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
+The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
+has been allocated to zero by kzalloc(). So do not set it.
 
-(I significantly reduced the addressee list to permit the message
-to be sent.)
+Flags should signal differences from the default values. After cleaning
+up all occurrences of FBINFO_DEFAULT, the token will be removed.
 
-For "drivers/net/ipa/ipa_main.c":
+v4:
+	* clarify commit message (Geert, Dan)
+v2:
+	* fix commit message (Miguel)
 
-Acked-by: Alex Elder <elder@linaro.org>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Russell King <linux@armlinux.org.uk>
+---
+ drivers/video/fbdev/controlfb.c           | 2 +-
+ drivers/video/fbdev/cyber2000fb.c         | 2 +-
+ drivers/video/fbdev/valkyriefb.c          | 1 -
+ drivers/video/fbdev/vermilion/vermilion.c | 2 +-
+ drivers/video/fbdev/vt8500lcdfb.c         | 3 +--
+ 5 files changed, 4 insertions(+), 6 deletions(-)
 
-> ---
->   drivers/net/can/bxcan.c                                 | 1 -
->   drivers/net/can/ifi_canfd/ifi_canfd.c                   | 1 -
-. . .
->   drivers/net/ieee802154/ca8210.c                         | 1 -
->   drivers/net/ipa/ipa_main.c                              | 2 +-
->   drivers/net/pcs/pcs-rzn1-miic.c                         | 1 +
->   drivers/net/phy/marvell-88x2222.c                       | 1 -
->   drivers/net/phy/mediatek-ge-soc.c                       | 2 --
->   drivers/net/wireless/ath/ath10k/ahb.c                   | 2 +-
->   drivers/net/wireless/ath/ath11k/qmi.c                   | 1 -
->   drivers/net/wireless/ath/wcn36xx/main.c                 | 3 +--
->   drivers/net/wireless/intersil/orinoco/airport.c         | 2 +-
->   drivers/net/wireless/mediatek/mt76/mt7915/soc.c         | 1 -
->   drivers/net/wireless/silabs/wfx/bus_sdio.c              | 2 +-
->   net/core/of_net.c                                       | 1 +
->   124 files changed, 110 insertions(+), 120 deletions(-)
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 82eeb139c4eb..717134c141ff 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -775,7 +775,7 @@ static void __init control_init_info(struct fb_info *info, struct fb_info_contro
+ 	info->par = &p->par;
+ 	info->fbops = &controlfb_ops;
+ 	info->pseudo_palette = p->pseudo_palette;
+-        info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	info->flags = FBINFO_HWACCEL_YPAN;
+ 	info->screen_base = p->frame_buffer + CTRLFB_OFF;
+ 
+ 	fb_alloc_cmap(&info->cmap, 256, 0);
+diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
+index 38c0a6866d76..98ea56a9abf1 100644
+--- a/drivers/video/fbdev/cyber2000fb.c
++++ b/drivers/video/fbdev/cyber2000fb.c
+@@ -1459,7 +1459,7 @@ static struct cfb_info *cyberpro_alloc_fb_info(unsigned int id, char *name)
+ 	cfb->fb.var.accel_flags	= FB_ACCELF_TEXT;
+ 
+ 	cfb->fb.fbops		= &cyber2000fb_ops;
+-	cfb->fb.flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	cfb->fb.flags		= FBINFO_HWACCEL_YPAN;
+ 	cfb->fb.pseudo_palette	= cfb->pseudo_palette;
+ 
+ 	spin_lock_init(&cfb->reg_b0_lock);
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index b166b7cfe0e5..fd4488777032 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -535,7 +535,6 @@ static int __init valkyrie_init_info(struct fb_info *info,
+ {
+ 	info->fbops = &valkyriefb_ops;
+ 	info->screen_base = p->frame_buffer + 0x1000;
+-	info->flags = FBINFO_DEFAULT;
+ 	info->pseudo_palette = p->pseudo_palette;
+ 	info->par = &p->par;
+ 	return fb_alloc_cmap(&info->cmap, 256, 0);
+diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
+index 32e74e02a02f..71584c775efd 100644
+--- a/drivers/video/fbdev/vermilion/vermilion.c
++++ b/drivers/video/fbdev/vermilion/vermilion.c
+@@ -477,7 +477,7 @@ static int vml_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	}
+ 
+ 	info = &vinfo->info;
+-	info->flags = FBINFO_DEFAULT | FBINFO_PARTIAL_PAN_OK;
++	info->flags = FBINFO_PARTIAL_PAN_OK;
+ 
+ 	err = vmlfb_enable_mmio(par);
+ 	if (err)
+diff --git a/drivers/video/fbdev/vt8500lcdfb.c b/drivers/video/fbdev/vt8500lcdfb.c
+index 31d4e85b220c..42d39a9d5130 100644
+--- a/drivers/video/fbdev/vt8500lcdfb.c
++++ b/drivers/video/fbdev/vt8500lcdfb.c
+@@ -300,8 +300,7 @@ static int vt8500lcd_probe(struct platform_device *pdev)
+ 	fbi->fb.var.vmode	= FB_VMODE_NONINTERLACED;
+ 
+ 	fbi->fb.fbops		= &vt8500lcd_ops;
+-	fbi->fb.flags		= FBINFO_DEFAULT
+-				| FBINFO_HWACCEL_COPYAREA
++	fbi->fb.flags		= FBINFO_HWACCEL_COPYAREA
+ 				| FBINFO_HWACCEL_FILLRECT
+ 				| FBINFO_HWACCEL_YPAN
+ 				| FBINFO_VIRTFB
+-- 
+2.41.0
 
-. . .
-
-> diff --git a/drivers/net/ipa/ipa_main.c b/drivers/net/ipa/ipa_main.c
-> index 6a2f2fc2f501..da853353a5c7 100644
-> --- a/drivers/net/ipa/ipa_main.c
-> +++ b/drivers/net/ipa/ipa_main.c
-> @@ -13,8 +13,8 @@
->   #include <linux/firmware.h>
->   #include <linux/module.h>
->   #include <linux/of.h>
-> -#include <linux/of_device.h>
->   #include <linux/of_address.h>
-> +#include <linux/platform_device.h>
->   #include <linux/pm_runtime.h>
->   #include <linux/firmware/qcom/qcom_scm.h>
->   #include <linux/soc/qcom/mdt_loader.h>
-
-. . .
