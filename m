@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6A5EC001B0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jul 2023 19:04:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD36DC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jul 2023 19:05:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=epo9Ya2u;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uW5O5mrD;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=LGM/xwri;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=woCXRKUV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R3HpY2Vczz3cS9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 05:04:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R3HqV433zz3cnK
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 05:05:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=epo9Ya2u;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uW5O5mrD;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=LGM/xwri;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=woCXRKUV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3HYx1bdqz3bnm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3HYy0l8mz3brm
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2023 04:53:57 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 265BD21AE4;
-	Sat, 15 Jul 2023 18:53:51 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D870521ADB;
+	Sat, 15 Jul 2023 18:53:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1689447231; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1689447228; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=HF0ntTEfTFR2eIXkYuLTyCKB+tFcMggnqDzzMkFmIGA=;
-	b=epo9Ya2u6FlD9nLz/rIKRF9OMdO+LNGFhrgi7rf57h6jrrZHQJGnRNkaimxXU9JHv6ETGH
-	6Y7fXLr7bKAIIItUjzL7zTfV23Sr4VAdvGYcRFePrJcbcOe91GMkkPVirlmPPu+v7wVAyy
-	xmnPmGIWIF/AJxQzL4L6meP5PHQznZ8=
+	bh=Tx/aqv++WTiG+HB9fsdEKxv/jL2xUmStLjqk656Qv/M=;
+	b=LGM/xwriYhu/JYpY/sODdROIjIyyy4kVYhF39qehbDsi52Wo4/A5Xwt5gHp3bNTBUvDGjm
+	KHW9iKiIXw6YcNDrLXWDjzgSio7xU/BrCpk3Xcj5AZsa9WbTKg/xeCjY/Zuz9hO/rJ+KcA
+	plKcHOaFWWJSG/wxnf4jLwoRDKV5oF4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1689447231;
+	s=susede2_ed25519; t=1689447228;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=HF0ntTEfTFR2eIXkYuLTyCKB+tFcMggnqDzzMkFmIGA=;
-	b=uW5O5mrDRVpr1c3h7FGRD8BpU7mhlgcUS7Bleuu0xigjOEEVU2pD7UO2kP9kaUee3uat+5
-	3x5dag1l2yfq+WCw==
+	bh=Tx/aqv++WTiG+HB9fsdEKxv/jL2xUmStLjqk656Qv/M=;
+	b=woCXRKUVmk86zkWeBPg6WvuxHcR74zbx0Gs2Ji3xe0q/vz0IA5pgv4tcLnvzSdaeEkIsnp
+	hs6HaThBjdubAYBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AE02C13A23;
-	Sat, 15 Jul 2023 18:53:50 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 78A90133F7;
+	Sat, 15 Jul 2023 18:53:48 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id MD+KKT7rsmQCBwAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Sat, 15 Jul 2023 18:53:50 +0000
+	id GF+AHDzrsmQCBwAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Sat, 15 Jul 2023 18:53:48 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
 	javierm@redhat.com,
 	geert@linux-m68k.org,
 	dan.carpenter@linaro.org
-Subject: [PATCH v4 12/18] staging: Remove flag FBINFO_FLAG_DEFAULT from fbdev drivers
-Date: Sat, 15 Jul 2023 20:51:54 +0200
-Message-ID: <20230715185343.7193-13-tzimmermann@suse.de>
+Subject: [PATCH v4 07/18] vfio-mdev: Remove flag FBINFO_DEFAULT from fbdev sample driver
+Date: Sat, 15 Jul 2023 20:51:49 +0200
+Message-ID: <20230715185343.7193-8-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230715185343.7193-1-tzimmermann@suse.de>
 References: <20230715185343.7193-1-tzimmermann@suse.de>
@@ -82,13 +82,12 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, Kirti Wankhede <kwankhede@nvidia.com>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
-fbinfo.flags has been allocated to zero by framebuffer_alloc(). So do
-not set it.
+The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
+has been allocated to zero by framebuffer_alloc(). So do not set it.
 
 Flags should signal differences from the default values. After cleaning
 up all occurrences of FBINFO_DEFAULT, the token will be removed.
@@ -98,39 +97,23 @@ v2:
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Kirti Wankhede <kwankhede@nvidia.com>
 ---
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- drivers/staging/sm750fb/sm750.c    | 1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ samples/vfio-mdev/mdpy-fb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 3a4abf3bae40..eac1d570f437 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -684,7 +684,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	info->var.transp.offset =  0;
- 	info->var.transp.length =  0;
+diff --git a/samples/vfio-mdev/mdpy-fb.c b/samples/vfio-mdev/mdpy-fb.c
+index 3c8001b9e407..cda477b28685 100644
+--- a/samples/vfio-mdev/mdpy-fb.c
++++ b/samples/vfio-mdev/mdpy-fb.c
+@@ -162,7 +162,6 @@ static int mdpy_fb_probe(struct pci_dev *pdev,
+ 	}
  
--	info->flags =              FBINFO_FLAG_DEFAULT | FBINFO_VIRTFB;
-+	info->flags =              FBINFO_VIRTFB;
+ 	info->fbops = &mdpy_fb_ops;
+-	info->flags = FBINFO_DEFAULT;
+ 	info->pseudo_palette = par->palette;
  
- 	par = info->par;
- 	par->info = info;
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index c260f73cf570..79bcd5bd4938 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -807,7 +807,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	info->screen_base = crtc->v_screen;
- 	pr_debug("screen_base vaddr = %p\n", info->screen_base);
- 	info->screen_size = line_length * var->yres_virtual;
--	info->flags = FBINFO_FLAG_DEFAULT | 0;
- 
- 	/* set info->fix */
- 	fix->type = FB_TYPE_PACKED_PIXELS;
+ 	ret = register_framebuffer(info);
 -- 
 2.41.0
 
