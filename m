@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 846D0C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jul 2023 18:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CF37C001B0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jul 2023 18:58:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rlx2K0DX;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=sIzlOQKv;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FKXRk9Rs;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1ikzy2+n;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R3Hfl1Hytz3cSf
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 04:58:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R3Hgj6y59z3cVR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 04:58:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rlx2K0DX;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=sIzlOQKv;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FKXRk9Rs;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1ikzy2+n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3HYr362qz30hM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2023 04:53:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3HYs66Fwz30hM
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2023 04:53:53 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 4CF6821ADE;
-	Sat, 15 Jul 2023 18:53:49 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id A8CE31FD67;
+	Sat, 15 Jul 2023 18:53:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1689447229; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1689447230; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=AudvpgVwEo8rKBJvmUL4nJ192ctihi90m956sryfWBI=;
-	b=rlx2K0DX0a7aLp8uigVFHuUAM9bV1hHZPasKhvTaGsQY9kZ/4eVtjq5LUVsKuQec422bE0
-	+mB1BYcbpceDSMWz3txt2h8RHtuIAVrQd7KADTim+k1y09Q8+6PaQ2P8rkFia9UHT3opPt
-	M832Ov6RomMMCW1eAKM4qqN4itU5oNA=
+	bh=q7Mpa+i5zVgwFyEUu/qFO3pmfeFq7myykbLWTHzzTXc=;
+	b=FKXRk9Rs0p/wWygeIwcofCSMLcvh3D+HZRevzxln0Q9nv0hzyaa2BjZyC8bgRiXvrhpd/D
+	nwQnSRB7LIFVZhB9gvdDuKZQp5s85400bWwXiKV7Nj/M7EnZxkMrJixADCwRbKZM5agq+j
+	9fN21b9/zQMyJzS+04n+ZKUe+zHBk6E=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1689447229;
+	s=susede2_ed25519; t=1689447230;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=AudvpgVwEo8rKBJvmUL4nJ192ctihi90m956sryfWBI=;
-	b=sIzlOQKvsGqS4WsvShqurtnstG7hUqxBdFaIRnVCAIKCT6s48j0bu9fHlgpf1Iv5erIHnG
-	p0vGP/J7dx1s/4Bw==
+	bh=q7Mpa+i5zVgwFyEUu/qFO3pmfeFq7myykbLWTHzzTXc=;
+	b=1ikzy2+ncpFn+AxbrKecbjenm1ztTvNEgh++r4yJKXhqXpuUDOGFhEJVh6taETEvUh26oz
+	EqUdeNHw5yPVf/BQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DBF9A13A23;
-	Sat, 15 Jul 2023 18:53:48 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3D076133F7;
+	Sat, 15 Jul 2023 18:53:50 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id yLrPNDzrsmQCBwAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Sat, 15 Jul 2023 18:53:48 +0000
+	id QKT+DT7rsmQCBwAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Sat, 15 Jul 2023 18:53:50 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
 	javierm@redhat.com,
 	geert@linux-m68k.org,
 	dan.carpenter@linaro.org
-Subject: [PATCH v4 08/18] sh: mach-sh7763rdp: Assign FB_MODE_IS_UNKNOWN to struct fb_videomode.flag
-Date: Sat, 15 Jul 2023 20:51:50 +0200
-Message-ID: <20230715185343.7193-9-tzimmermann@suse.de>
+Subject: [PATCH v4 11/18] media: Remove flag FBINFO_FLAG_DEFAULT from fbdev drivers
+Date: Sat, 15 Jul 2023 20:51:53 +0200
+Message-ID: <20230715185343.7193-12-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230715185343.7193-1-tzimmermann@suse.de>
 References: <20230715185343.7193-1-tzimmermann@suse.de>
@@ -82,44 +82,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, Yoshinori Sato <ysato@users.sourceforge.jp>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Andy Walls <awalls@md.metrocast.net>, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org, Hans Verkuil <hverkuil@xs4all.nl>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Assign FB_MODE_IS_UNKNOWN to sh7763fb_videomode.flag instead of
-FBINFO_FLAG_DEFAULT. Both are 0, so the stored value does not change.
+The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
+fbinfo.flags has been allocated to zero by kzalloc(). So do not
+set it.
 
-FBINFO_FLAG_DEFAULT is a flag for a framebuffer in struct fb_info.
-Flags for videomodes are prefixed with FB_MODE_.
+Flags should signal differences from the default values. After cleaning
+up all occurrences of FBINFO_DEFAULT, the token will be removed.
 
-v3:
-	* include board name in commit message (Adrian)
 v2:
-	* assign FB_MODE_IS_UNKNOWN (Adrian)
+	* fix commit message (Miguel)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: Andy Walls <awalls@md.metrocast.net>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
 ---
- arch/sh/boards/mach-sh7763rdp/setup.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/media/pci/ivtv/ivtvfb.c              | 1 -
+ drivers/media/test-drivers/vivid/vivid-osd.c | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/arch/sh/boards/mach-sh7763rdp/setup.c b/arch/sh/boards/mach-sh7763rdp/setup.c
-index 97e715e4e9b3..e25193001ea0 100644
---- a/arch/sh/boards/mach-sh7763rdp/setup.c
-+++ b/arch/sh/boards/mach-sh7763rdp/setup.c
-@@ -119,7 +119,7 @@ static struct fb_videomode sh7763fb_videomode = {
- 	.vsync_len = 1,
- 	.sync = 0,
- 	.vmode = FB_VMODE_NONINTERLACED,
--	.flag = FBINFO_FLAG_DEFAULT,
-+	.flag = FB_MODE_IS_UNKNOWN,
- };
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+index 0aeb9daaee4c..23c8c094e791 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -1048,7 +1048,6 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
+ 	/* Generate valid fb_info */
  
- static struct sh7760fb_platdata sh7763fb_def_pdata = {
+ 	oi->ivtvfb_info.node = -1;
+-	oi->ivtvfb_info.flags = FBINFO_FLAG_DEFAULT;
+ 	oi->ivtvfb_info.par = itv;
+ 	oi->ivtvfb_info.var = oi->ivtvfb_defined;
+ 	oi->ivtvfb_info.fix = oi->ivtvfb_fix;
+diff --git a/drivers/media/test-drivers/vivid/vivid-osd.c b/drivers/media/test-drivers/vivid/vivid-osd.c
+index ec25edc679b3..051f1805a16d 100644
+--- a/drivers/media/test-drivers/vivid/vivid-osd.c
++++ b/drivers/media/test-drivers/vivid/vivid-osd.c
+@@ -310,7 +310,6 @@ static int vivid_fb_init_vidmode(struct vivid_dev *dev)
+ 	/* Generate valid fb_info */
+ 
+ 	dev->fb_info.node = -1;
+-	dev->fb_info.flags = FBINFO_FLAG_DEFAULT;
+ 	dev->fb_info.par = dev;
+ 	dev->fb_info.var = dev->fb_defined;
+ 	dev->fb_info.fix = dev->fb_fix;
 -- 
 2.41.0
 
