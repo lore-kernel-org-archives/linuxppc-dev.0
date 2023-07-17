@@ -4,67 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6DFBEB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 08:47:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69877EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 17:25:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=semihalf.com header.i=@semihalf.com header.a=rsa-sha256 header.s=google header.b=e52IJgo7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U55TcGyi;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R4G122f3zz30Pr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 18:47:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R4TVj0fmHz301r
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 03:25:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=semihalf.com header.i=@semihalf.com header.a=rsa-sha256 header.s=google header.b=e52IJgo7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U55TcGyi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=semihalf.com (client-ip=2607:f8b0:4864:20::134; helo=mail-il1-x134.google.com; envelope-from=jaz@semihalf.com; receiver=lists.ozlabs.org)
-Received: from mail-il1-x134.google.com (mail-il1-x134.google.com [IPv6:2607:f8b0:4864:20::134])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=luto@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4Fcy69q1z2yDk
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 18:29:52 +1000 (AEST)
-Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-345ff33d286so22420995ab.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 01:29:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=semihalf.com; s=google; t=1689582586; x=1692174586;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=KrEcIar0BkfpmBL+8BCmNKqe2TUSK3LL+WBdNYsOjsM=;
-        b=e52IJgo7nORao0Gl4I5dRpwwbrYRCXZTSuwaC/thRVodGrQS/Ih+iZx/Zsqn89WU3w
-         pQgXUWQS+Vk59/Fh6rrIEqzCQJkEny2i0gy7zEPOvxwj9yUxhnNvrizRbt8YsZpplHpx
-         RjVLFZyrzR9wafddakUgpMo5lLKlNumHP6uiacp/wGVyLbBbCgrHIUP/7snpf7XV2sof
-         jlaeLm95LpwgAuzcjO7UCvT+e3bh2UJ0I6TbCUpKBOZvGLRTw6wJXY5zbY52dacz1/1P
-         iPPOvh8ArwyYCroEOLn3Y8OJKVgd78PUACDF8tTPiPB+Om3hyy+66x8dhT2yU/74h83y
-         v2JA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689582586; x=1692174586;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=KrEcIar0BkfpmBL+8BCmNKqe2TUSK3LL+WBdNYsOjsM=;
-        b=eSDiT6kMhpbbMz0sd1bf0LTnCHvNlVY4r8IfBoqkguESadcVMIITdqJEhVssryHpvX
-         /q2sTBEdWcd5bOkaI3ZlUnQVSK3DI1xMHwKSEq3r4WhEbrHSJtGMYcxviyeKfEuvKuRR
-         dhw/hcr1rWCa4tXTBrravnDzUczthjDtRRUFUEKTLWvmQ4IsQ71JU0i/9Z7v7W6zYU4H
-         +K82C4BoioIEvz4+7EGfd6sKBG4loMTTm4rX//b4yJ43TlAjFX7tIVu3mDN5nL9afmpW
-         rklNQC41MjfOVeKyx0snK1wjauURJAhGahI+FtN61ygXC5bhCZQWes2ud9LgbPrxWVaR
-         0qnQ==
-X-Gm-Message-State: ABy/qLb9VMbraUQ6l/22/i7Vx9Dl9byyWqe2SPIUwmDrl+pi1l+ectfy
-	NMAXLIGj4E2l4CWy4cZcWActuZU7PkP5uSS2Ti0UUQ==
-X-Google-Smtp-Source: APBJJlGE7jn73weZAb7Q+GH4ouydfCd9ILtA9ynYfWdyB1I4k5TGE6qNhhrOJBaOwSkah9YrBoRDKcKZ9t95G975sJc=
-X-Received: by 2002:a92:d4d2:0:b0:345:d470:baa6 with SMTP id
- o18-20020a92d4d2000000b00345d470baa6mr9664500ilm.29.1689582586220; Mon, 17
- Jul 2023 01:29:46 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230630155936.3015595-1-jaz@semihalf.com> <20230714-gauner-unsolidarisch-fc51f96c61e8@brauner>
-In-Reply-To: <20230714-gauner-unsolidarisch-fc51f96c61e8@brauner>
-From: Grzegorz Jaszczyk <jaz@semihalf.com>
-Date: Mon, 17 Jul 2023 10:29:34 +0200
-Message-ID: <CAH76GKPF4BjJLrzLBW8k12ATaAGADeMYc2NQ9+j0KgRa0pomUw@mail.gmail.com>
-Subject: Re: [PATCH 0/2] eventfd: simplify signal helpers
-To: Christian Brauner <brauner@kernel.org>, Alex Williamson <alex.williamson@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4TTl6NsYz2yGT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 03:24:27 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 196686118F;
+	Mon, 17 Jul 2023 17:24:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 249E2C433C8;
+	Mon, 17 Jul 2023 17:24:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1689614665;
+	bh=o+WgjDKzf9AD9b+kUzQGRClRYLlDB82OkTDYfv6a3Yk=;
+	h=In-Reply-To:References:Date:From:To:Cc:Subject:From;
+	b=U55TcGyi7YmJyhzLOTZnjrFVWw0H3+af918Yjk8mPHfHD/clSDnn9R44JznF10IRH
+	 Z8KK+n6r0jSrVIOFXY3K9zEUwgWJJmDl6U+xcWuKBgzWtStxy8DJ8vdgvW6lkDoW7B
+	 HjBUxuU9UxtzkC9l5ApN5DKkzBCr1VsqK7wmYWuXqa2OawFE6M2Oq9WP6fcTzeqAS1
+	 oQr1aLD/6waYS1NoUdY5C7XFt1xXn2X7vRDexou/Ye3pmNVTURfyjeGdd/9YrFIH9l
+	 MqvAuz5uF3yGQhNR2S/bV8TY4Zn4vPj0wIo0nVHW6MMTPN4UGDgaMVOo3Hl1Lknk4t
+	 QarZtUu8s3ucw==
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailauth.nyi.internal (Postfix) with ESMTP id 0594A27C0054;
+	Mon, 17 Jul 2023 13:24:22 -0400 (EDT)
+Received: from imap48 ([10.202.2.98])
+  by compute3.internal (MEProxy); Mon, 17 Jul 2023 13:24:23 -0400
+X-ME-Sender: <xms:RXm1ZG1tVKd235OTAKjb7YgspTMPR-qImOZNagZiOwv_r996Wpl_EA>
+    <xme:RXm1ZJGhtMeEyJx0NHmpmxK7orhG2xuLUV7eaWrGF_5mvemHNiGzAxoeoH8wHPKOx
+    Be-_jfsguKQ7NGLhQY>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrgedvgdduuddvucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtgfesthhqredtreerjeenucfhrhhomhepfdet
+    nhguhicunfhuthhomhhirhhskhhifdcuoehluhhtoheskhgvrhhnvghlrdhorhhgqeenuc
+    ggtffrrghtthgvrhhnpeduveffvdegvdefhfegjeejlefgtdffueekudfgkeduvdetvddu
+    ieeluefgjeeggfenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfh
+    hrohhmpegrnhguhidomhgvshhmthhprghuthhhphgvrhhsohhnrghlihhthidqudduiedu
+    keehieefvddqvdeifeduieeitdekqdhluhhtoheppehkvghrnhgvlhdrohhrgheslhhinh
+    hugidrlhhuthhordhush
+X-ME-Proxy: <xmx:RXm1ZO5oHfgOl5d-JsrWsEmT0wZ8c7lpn-wGY1Pk1MKOwuxnVn3prQ>
+    <xmx:RXm1ZH3tFnXsbSmPTR9ONplP-mkjz9Tn9-KQt1DQXW36vSF4M5jnmA>
+    <xmx:RXm1ZJEwoQUXW2HC-hvtBktlwQpPz6VjPtqSmOfmC010d9JGpLVfQw>
+    <xmx:Rnm1ZFKtTGUhG1K7QB02N33IARC_1h22efMRZVMJvVFaIkzEJg1UPw>
+Feedback-ID: ieff94742:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id D060531A0064; Mon, 17 Jul 2023 13:24:21 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-531-gfdfa13a06d-fm-20230703.001-gfdfa13a0
+Mime-Version: 1.0
+Message-Id: <d305b437-9eef-42da-821e-67365aad520b@app.fastmail.com>
+In-Reply-To:  <CAPhsuW4pDkd7rCWRM6938ve36rfhGxyu=8t1-GjcKnNajofpQA@mail.gmail.com>
+References: <20230616085038.4121892-1-rppt@kernel.org>
+ <20230616085038.4121892-3-rppt@kernel.org>
+ <f9a7eebe-d36e-4587-b99d-35d4edefdd14@app.fastmail.com>
+ <20230618080027.GA52412@kernel.org>
+ <a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com>
+ <20230625161417.GK52412@kernel.org> <ZJmFFmexl_1GUhIL@FVFF77S0Q05N>
+ <CAPhsuW4pDkd7rCWRM6938ve36rfhGxyu=8t1-GjcKnNajofpQA@mail.gmail.com>
+Date: Mon, 17 Jul 2023 10:23:56 -0700
+From: "Andy Lutomirski" <luto@kernel.org>
+To: "Song Liu" <song@kernel.org>, "Mark Rutland" <mark.rutland@arm.com>
+Subject: Re: [PATCH v2 02/12] mm: introduce execmem_text_alloc() and jit_text_alloc()
+Content-Type: text/plain;charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Mon, 17 Jul 2023 18:42:53 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,70 +94,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, Muchun Song <muchun.song@linux.dev>, Tony Krowiak <akrowiak@linux.ibm.com>, Matthew Rosato <mjrosato@linux.ibm.com>, Paul Durrant <paul@xen.org>, Tom Rix <trix@redhat.com>, Jason Wang <jasowang@redhat.com>, Roman Gushchin <roman.gushchin@linux.dev>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Michal Hocko <mhocko@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, linux-mm@kvack.org, Kirti Wankhede <kwankhede@nvidia.com>, Vineeth Vijayan <vneethv@linux.ibm.com>, Diana Craciun <diana.craciun@oss.nxp.com>, Borislav Petkov <bp@alien8.de>, Alexander Gordeev <agordeev@linux.ibm.com>, Fei Li <fei1.li@intel.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Marcin Wojtas <mw@semihalf.com>, Arnd Bergmann <arnd@arndb.de>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, x86@kernel.org, Halil Pasic <pasic@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Moritz Fischer <mdf@kernel.org>, Frederic 
- Barrat <fbarrat@linux.ibm.com>, Xu Yilun <yilun.xu@intel.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-fpga@vger.kernel.org, Zhi Wang <zhi.a.wang@intel.com>, Wu Hao <hao.wu@intel.com>, Jason Herne <jjherne@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Andrew Donnellan <ajd@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, linux-s390@vger.kernel.org, Dominik Behr <dbehr@chromium.org>, intel-gfx@lists.freedesktop.org, Sean Christopherson <seanjc@google.com>, Eric Auger <eric.auger@redhat.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Harald Freudenberger <freude@linux.ibm.com>, kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, cgroups@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, virtualization@lists.linux-foundation.org, intel-gvt-dev@lists.freedesktop.org, io-uring@vger.kernel.org, Jens Axboe <axboe@kernel.dk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, netdev@vger.kernel.org, Oded Gabbay <ogabba
- y@kernel.org>, linux-usb@vger.kernel.org, Peter Oberparleiter <oberpar@linux.ibm.com>, linux-kernel@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>, "Michael S. Tsirkin" <mst@redhat.com>, Sven Schnelle <svens@linux.ibm.com>, Johannes Weiner <hannes@cmpxchg.org>, linux-fsdevel@vger.kernel.org, Shakeel Butt <shakeelb@google.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>, linuxppc-dev@lists.ozlabs.org, Pavel Begunkov <asml.silence@gmail.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kerne
+ l.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pt., 14 lip 2023 o 09:05 Christian Brauner <brauner@kernel.org> napisa=C5=
-=82(a):
->
-> On Thu, Jul 13, 2023 at 11:10:54AM -0600, Alex Williamson wrote:
-> > On Thu, 13 Jul 2023 12:05:36 +0200
-> > Christian Brauner <brauner@kernel.org> wrote:
-> >
-> > > Hey everyone,
-> > >
-> > > This simplifies the eventfd_signal() and eventfd_signal_mask() helper=
-s
-> > > by removing the count argument which is effectively unused.
-> >
-> > We have a patch under review which does in fact make use of the
-> > signaling value:
-> >
-> > https://lore.kernel.org/all/20230630155936.3015595-1-jaz@semihalf.com/
->
-> Huh, thanks for the link.
->
-> Quoting from
-> https://patchwork.kernel.org/project/kvm/patch/20230307220553.631069-1-ja=
-z@semihalf.com/#25266856
->
-> > Reading an eventfd returns an 8-byte value, we generally only use it
-> > as a counter, but it's been discussed previously and IIRC, it's possibl=
-e
-> > to use that value as a notification value.
->
-> So the goal is to pipe a specific value through eventfd? But it is
-> explicitly a counter. The whole thing is written around a counter and
-> each write and signal adds to the counter.
->
-> The consequences are pretty well described in the cover letter of
-> v6 https://lore.kernel.org/all/20230630155936.3015595-1-jaz@semihalf.com/
->
-> > Since the eventfd counter is used as ACPI notification value
-> > placeholder, the eventfd signaling needs to be serialized in order to
-> > not end up with notification values being coalesced. Therefore ACPI
-> > notification values are buffered and signalized one by one, when the
-> > previous notification value has been consumed.
->
-> But isn't this a good indication that you really don't want an eventfd
-> but something that's explicitly designed to associate specific data with
-> a notification? Using eventfd in that manner requires serialization,
-> buffering, and enforces ordering.
->
-> I have no skin in the game aside from having to drop this conversion
-> which I'm fine to do if there are actually users for this btu really,
-> that looks a lot like abusing an api that really wasn't designed for
-> this.
 
-https://patchwork.kernel.org/project/kvm/patch/20230307220553.631069-1-jaz@=
-semihalf.com/
-was posted at the beginig of March and one of the main things we've
-discussed was the mechanism for propagating acpi notification value.
-We've endup with eventfd as the best mechanism and have actually been
-using it from v2. I really do not want to waste this effort, I think
-we are quite advanced with v6 now. Additionally we didn't actually
-modify any part of eventfd support that was in place, we only used it
-in a specific (and discussed beforehand) way.
+
+On Mon, Jun 26, 2023, at 10:48 AM, Song Liu wrote:
+> On Mon, Jun 26, 2023 at 5:31=E2=80=AFAM Mark Rutland <mark.rutland@arm=
+.com> wrote:
+>>
+> [...]
+>> >
+>> > So the idea was that jit_text_alloc() will have a cache of large pa=
+ges
+>> > mapped ROX, will allocate memory from those caches and there will be
+>> > jit_update() that uses text poking for writing to that memory.
+>> >
+>> > Upon allocation of a large page to increase the cache, that large p=
+age will
+>> > be "invalidated" by filling it with breakpoint instructions (e.g in=
+t3 on
+>> > x86)
+>>
+>> Does that work on x86?
+>>
+>> That is in no way gauranteed for other architectures; on arm64 you ne=
+ed
+>> explicit cache maintenance (with I-cache maintenance at the VA to be =
+executed
+>> from) followed by context-synchronization-events (e.g. via ISB instru=
+ctions, or
+>> IPIs).
+>
+> I guess we need:
+> 1) Invalidate unused part of the huge ROX pages;
+> 2) Do not put two jit users (including module text, bpf, etc.) in the
+> same cache line;
+> 3) Explicit cache maintenance;
+> 4) context-synchronization-events.
+>
+> Would these (or a subset of them) be sufficient to protect us from tor=
+n read?
+
+Maybe?  #4 is sufficiently vague that I can't really interpret it.
+
+I have a half-drafted email asking for official clarification on the rul=
+es that might help shed light on this.  I find that this type of request=
+ works best when it's really well written :)
+
+>
+> Thanks,
+> Song
