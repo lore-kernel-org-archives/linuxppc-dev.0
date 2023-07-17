@@ -4,51 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 690F9C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jul 2023 20:47:01 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=uU0ehauI;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DCB6EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 00:33:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R3y1v4NHjz3bsT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 06:46:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=uU0ehauI;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R432h4Fdxz3c4d
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 10:33:00 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R3y0w0vlZz3031
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 06:46:06 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R43280Y9Vz2y3Y
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 10:32:32 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 4B75560EB0;
-	Sun, 16 Jul 2023 20:46:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B8E1C433C8;
-	Sun, 16 Jul 2023 20:46:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1689540363;
-	bh=Oc4BTr5K3vTeSxq00miA1QYT23jOa88djcW0k/clk4w=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=uU0ehauIWTAfzIUh3lo+GLcKlOsv9n5oGhFCw/HWiqf8vdAMgfQw0KGh9isGz1kkd
-	 tyuawZPKTaAasKXj0vdpVBGhvA/B1Lt0FC4D5E5CapLOUcbtvpEIuUGm7qsldbXwYH
-	 4j/mBpI7301zn4g/ypUQuOkt+wFrbE+SYu1qQeF8=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Subject: [PATCH 6.1 336/591] crypto: nx - fix build warnings when DEBUG_FS is not enabled
-Date: Sun, 16 Jul 2023 21:47:55 +0200
-Message-ID: <20230716194932.590657421@linuxfoundation.org>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230716194923.861634455@linuxfoundation.org>
-References: <20230716194923.861634455@linuxfoundation.org>
-User-Agent: quilt/0.67
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4R43276QpZz4wxx;
+	Mon, 17 Jul 2023 10:32:31 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20230517123033.18430-1-mpe@ellerman.id.au>
+References: <20230517123033.18430-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: Fix native_hpte_remove() to be irq-safe
+Message-Id: <168955377881.195506.5601269587244004112.b4-ty@ellerman.id.au>
+Date: Mon, 17 Jul 2023 10:29:38 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,89 +42,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, patches@lists.linux.dev, Nicholas Piggin <npiggin@gmail.com>, Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linux-crypto@vger.kernel.org, =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+On Wed, 17 May 2023 22:30:33 +1000, Michael Ellerman wrote:
+> Lockdep warns that the use of the hpte_lock in native_hpte_remove() is
+> not safe against an IRQ coming in:
+> 
+>   ================================
+>   WARNING: inconsistent lock state
+>   6.4.0-rc2-g0c54f4d30ecc #1 Not tainted
+>   --------------------------------
+>   inconsistent {IN-SOFTIRQ-W} -> {SOFTIRQ-ON-W} usage.
+>   qemu-system-ppc/93865 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>   c0000000021f5180 (hpte_lock){+.?.}-{0:0}, at: native_lock_hpte+0x8/0xd0
+>   {IN-SOFTIRQ-W} state was registered at:
+>     lock_acquire+0x134/0x3f0
+>     native_lock_hpte+0x44/0xd0
+>     native_hpte_insert+0xd4/0x2a0
+>     __hash_page_64K+0x218/0x4f0
+>     hash_page_mm+0x464/0x840
+>     do_hash_fault+0x11c/0x260
+>     data_access_common_virt+0x210/0x220
+>     __ip_select_ident+0x140/0x150
+>     ...
+>     net_rx_action+0x3bc/0x440
+>     __do_softirq+0x180/0x534
+>     ...
+>     sys_sendmmsg+0x34/0x50
+>     system_call_exception+0x128/0x320
+>     system_call_common+0x160/0x2e4
+>   ...
+>    Possible unsafe locking scenario:
+> 
+> [...]
 
-[ Upstream commit b04b076fb56560b39d695ac3744db457e12278fd ]
+Applied to powerpc/fixes.
 
-Fix build warnings when DEBUG_FS is not enabled by using an empty
-do-while loop instead of a value:
+[1/1] powerpc/64s: Fix native_hpte_remove() to be irq-safe
+      https://git.kernel.org/powerpc/c/8bbe9fee5848371d4af101be445303cac8d880c5
 
-In file included from ../drivers/crypto/nx/nx.c:27:
-../drivers/crypto/nx/nx.c: In function 'nx_register_algs':
-../drivers/crypto/nx/nx.h:173:33: warning: statement with no effect [-Wunused-value]
-  173 | #define NX_DEBUGFS_INIT(drv)    (0)
-../drivers/crypto/nx/nx.c:573:9: note: in expansion of macro 'NX_DEBUGFS_INIT'
-  573 |         NX_DEBUGFS_INIT(&nx_driver);
-../drivers/crypto/nx/nx.c: In function 'nx_remove':
-../drivers/crypto/nx/nx.h:174:33: warning: statement with no effect [-Wunused-value]
-  174 | #define NX_DEBUGFS_FINI(drv)    (0)
-../drivers/crypto/nx/nx.c:793:17: note: in expansion of macro 'NX_DEBUGFS_FINI'
-  793 |                 NX_DEBUGFS_FINI(&nx_driver);
-
-Also, there is no need to build nx_debugfs.o when DEBUG_FS is not
-enabled, so change the Makefile to accommodate that.
-
-Fixes: ae0222b7289d ("powerpc/crypto: nx driver code supporting nx encryption")
-Fixes: aef7b31c8833 ("powerpc/crypto: Build files for the nx device driver")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Breno Leitão <leitao@debian.org>
-Cc: Nayna Jain <nayna@linux.ibm.com>
-Cc: Paulo Flabiano Smorigo <pfsmorigo@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/crypto/nx/Makefile | 2 +-
- drivers/crypto/nx/nx.h     | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/crypto/nx/Makefile b/drivers/crypto/nx/Makefile
-index d00181a26dd65..483cef62acee8 100644
---- a/drivers/crypto/nx/Makefile
-+++ b/drivers/crypto/nx/Makefile
-@@ -1,7 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
- obj-$(CONFIG_CRYPTO_DEV_NX_ENCRYPT) += nx-crypto.o
- nx-crypto-objs := nx.o \
--		  nx_debugfs.o \
- 		  nx-aes-cbc.o \
- 		  nx-aes-ecb.o \
- 		  nx-aes-gcm.o \
-@@ -11,6 +10,7 @@ nx-crypto-objs := nx.o \
- 		  nx-sha256.o \
- 		  nx-sha512.o
- 
-+nx-crypto-$(CONFIG_DEBUG_FS) += nx_debugfs.o
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_PSERIES) += nx-compress-pseries.o nx-compress.o
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV) += nx-compress-powernv.o nx-compress.o
- nx-compress-objs := nx-842.o
-diff --git a/drivers/crypto/nx/nx.h b/drivers/crypto/nx/nx.h
-index c6233173c612e..2697baebb6a35 100644
---- a/drivers/crypto/nx/nx.h
-+++ b/drivers/crypto/nx/nx.h
-@@ -170,8 +170,8 @@ struct nx_sg *nx_walk_and_build(struct nx_sg *, unsigned int,
- void nx_debugfs_init(struct nx_crypto_driver *);
- void nx_debugfs_fini(struct nx_crypto_driver *);
- #else
--#define NX_DEBUGFS_INIT(drv)	(0)
--#define NX_DEBUGFS_FINI(drv)	(0)
-+#define NX_DEBUGFS_INIT(drv)	do {} while (0)
-+#define NX_DEBUGFS_FINI(drv)	do {} while (0)
- #endif
- 
- #define NX_PAGE_NUM(x)		((u64)(x) & 0xfffffffffffff000ULL)
--- 
-2.39.2
-
-
-
+cheers
