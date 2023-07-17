@@ -4,117 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD9A8EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 08:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CDFBEB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 08:46:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=JtWPLPlr;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SWiZ2ZAW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BEpc9HQs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R4Fz50ly3z2yGd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 18:45:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R4G035w4kz3cX9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 18:46:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=JtWPLPlr;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SWiZ2ZAW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BEpc9HQs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=kurt@linutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 374 seconds by postgrey-1.37 at boromir; Mon, 17 Jul 2023 16:49:58 AEST
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4CPf2kwQz2yDp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 16:49:58 +1000 (AEST)
-From: Kurt Kanzenbach <kurt@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1689576217;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uboJEUKSahjdAVYpA+pF5+aSJ07v5EaQ349H/nsSHfw=;
-	b=JtWPLPlrsuM3RupOo5UUWtyEXwtzvhKqw/HW1UHwDOMmbBRQ/QmJZgZBjar4KOos/ATHBN
-	FVeRzyNa7e5MqS/vQpfZt+vcENuhhxsj2My8mYiL4fphLiPMtlOU6HdcMsxDqnQ1sEhNQz
-	NJjlbA026w0upxHlxBwNcBU5hgbd2qeeHGi0nDLJoGJyPHOkWNXGPfPEXK/lOb2QseiD0a
-	MRWYBkNWwkdz+j+H/qEC6XJscdi2JmQUkd9yvuFLKjPWqIzPFXtt0KNjzN/rZhI15vxlNH
-	DEVIwUHuNrU6jwJkdOWTM6D4LtFyGxEwGD5Hy8NKo36a44VqsUYSFgXDPqbH+A==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1689576217;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uboJEUKSahjdAVYpA+pF5+aSJ07v5EaQ349H/nsSHfw=;
-	b=SWiZ2ZAWDV2WrTFAOBDomuHgk89Qm6iY5G2ULlukqd9M8oXoTTZbgD1XRFh7LF0KLB/zVm
-	e5qJVtMqyKfxhiAQ==
-To: Rob Herring <robh@kernel.org>, Dario Binacchi
- <dario.binacchi@amarulasolutions.com>, Wolfgang Grandegger
- <wg@grandegger.com>, Marc Kleine-Budde <mkl@pengutronix.de>, "David S.
- Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
- Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Chandrasekar
- Ramakrishnan <rcsekar@samsung.com>, Chen-Yu Tsai <wens@csie.org>, Jernej
- Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>, Andrew Lunn
- <andrew@lunn.ch>, Vladimir Oltean <olteanv@gmail.com>, Woojung Huh
- <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com, =?utf-8?B?QXI=?=
- =?utf-8?B?xLFuw6cgw5xOQUw=?=
- <arinc.unal@arinc9.com>, Daniel Golle <daniel@makrotopia.org>, Landen Chao
- <Landen.Chao@mediatek.com>, DENG Qingfang <dqfext@gmail.com>, Sean Wang
- <sean.wang@mediatek.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Cla
- udiu Manoil <claudiu.manoil@nxp.com>, Alexandre Belloni
- <alexandre.belloni@bootlin.com>, Linus Walleij <linus.walleij@linaro.org>,
- Alvin =?utf-8?Q?=C5=A0ipraga?= <alsi@bang-olufsen.dk>, George McCollister
- <george.mccollister@gmail.com>, Andreas Larsson <andreas@gaisler.com>,
- Iyappan Subramanian <iyappan@os.amperecomputing.com>, Keyur Chudgar
- <keyur@os.amperecomputing.com>, Chris Snook <chris.snook@gmail.com>,
- Nicolas Ferre <nicolas.ferre@microchip.com>, Claudiu Beznea
- <claudiu.beznea@microchip.com>, Madalin Bucur <madalin.bucur@nxp.com>, Wei
- Fang <wei.fang@nxp.com>, Shenwei Wang <shenwei.wang@nxp.com>, Clark Wang
- <xiaoning.wang@nxp.com>, NXP Linux Team <linux-imx@nxp.com>, Sean Anderson
- <sean.anderson@seco.com>, Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Li Yang <leoyang.li@nxp.com>, Yisen Zhuang <yisen.zhuang@huawei.com>,
- Salil Mehta <salil.mehta@huawei.com>, Douglas Miller
- <dougmill@linux.ibm.com>, Marcin Wojtas <mw@semihalf.com>, Russell King
- <linux@armlinux.org.uk>, Tara s Chornyi <taras.chornyi@plvision.eu>, Mirko
- Lindner <mlindner@marvell.com>, Stephen Hemminger
- <stephen@networkplumber.org>, Felix Fietkau <nbd@nbd.name>, John Crispin
- <john@phrozen.org>, Mark Lee <Mark-MC.Lee@mediatek.com>, Lorenzo Bianconi
- <lorenzo@kernel.org>, Horatiu Vultur <horatiu.vultur@microchip.com>, Timur
- Tabi <timur@kernel.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, Steve
- Glendinning <steve.glendinning@shawell.net>, Kunihiko Hayashi
- <hayashi.kunihiko@socionext.com>, Giuseppe Cavallaro
- <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Jose Abreu <joabreu@synopsys.com>, Maxime Coquelin
- <mcoquelin.stm32@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer
- <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Neil Armstrong
- <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, Jerome
- Brunet <jbrunet@baylibre.com>, Martin Blumenstingl
- <martin.blumenstingl@googlemail.com>, Vinod Ko ul <vkoul@kernel.org>,
- Bhupesh Sharma <bhupesh.sharma@linaro.org>, Emil Renner Berthing
- <kernel@esmil.dk>, Samin Guo <samin.guo@starfivetech.com>, Thierry Reding
- <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>,
- Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>, Grygorii Strashko
- <grygorii.strashko@ti.com>, Kevin Brace <kevinbrace@bracecomputerlab.com>,
- Francois Romieu <romieu@fr.zoreil.com>, Michal Simek
- <michal.simek@amd.com>, Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>,
- Alexander Aring <alex.aring@gmail.com>, Stefan Schmidt
- <stefan@datenfreihafen.org>, Miquel Raynal <miquel.raynal@bootlin.com>,
- Alex Elder <elder@kernel.org>, =?utf-8?Q?Cl=C3=A9ment_L=C3=A9ger?=
- <clement.leger@bootlin.com>,
- Heiner Kallweit <hkallweit1@gmail.com>, SkyLake Huang
- <SkyLake.Huang@mediatek.com>, Kalle Valo <kvalo@kernel.org>, Loic Poulain
- <loic.poulain@linaro.org>, Ryder Lee <ryder.lee@mediatek.com>, Shayne Chen
- <shayne.chen@mediatek.com>, =?utf-8?B?SsOpcsO0bWU=?= Pouille r
- <jerome.pouiller@silabs.com>,
- Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH] net: Explicitly include correct DT includes
-In-Reply-To: <20230714174809.4060885-1-robh@kernel.org>
-References: <20230714174809.4060885-1-robh@kernel.org>
-Date: Mon, 17 Jul 2023 08:43:32 +0200
-Message-ID: <87r0p7597v.fsf@kurt>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4FBD28nGz2yDN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 18:10:12 +1000 (AEST)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36H7jwE9009953;
+	Mon, 17 Jul 2023 08:10:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ message-id : date : mime-version : subject : to : cc : references : from :
+ in-reply-to; s=pp1; bh=SBBYUx9ndl+ghkK33BCRs2eEPeKd41wqhr1CqHq5CGw=;
+ b=BEpc9HQsl92BpQ1nCRRPxWwmhhTYnxnz6kHXGPaDcQx3+jLZrQxdESjJa9RxLvDJObCQ
+ HKf3JR6wV9GCfgVOdoY01Gd2PVQQbl4y6OHHtF/Ixp1/ZsOWg07Z8tW53E9pdZKrtuk8
+ h74SUgd/JBAN/94aArViWAKiX7Eb5dHheF4N3gdgr9lkIeNad2trL3eAZfJNLM5AeOjv
+ S3FUaRSbYX+UlmCMRwRg0fiUvy3jvWJJWGna/H+Pvr8esq/k/7S8api3GACxn8rMgYFl
+ 5lPzpM8RdXZBYXIzlrJWAPee+tSbYfxUMo4WDC0mjzFiWc8OdA8FHLfdQkLpU/BsA7H8 gQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rw0qs270y-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Jul 2023 08:10:06 +0000
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36H7UM9Y006145;
+	Mon, 17 Jul 2023 08:10:06 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rw0qs270e-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Jul 2023 08:10:05 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36H30ePx004179;
+	Mon, 17 Jul 2023 08:10:05 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rv8g0t9n4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Jul 2023 08:10:05 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36H8A3685767884
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 17 Jul 2023 08:10:03 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8469820040;
+	Mon, 17 Jul 2023 08:10:03 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 44B5D20043;
+	Mon, 17 Jul 2023 08:10:02 +0000 (GMT)
+Received: from [9.43.50.197] (unknown [9.43.50.197])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 17 Jul 2023 08:10:02 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------65TZ5HVj3pEZ0Wk3hbmab0KZ"
+Message-ID: <c2eff602-a6d0-2b8d-2c11-5a556b0f4493@linux.ibm.com>
+Date: Mon, 17 Jul 2023 13:40:01 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [RFC 0/3] Asynchronous EEH recovery
+Content-Language: en-US
+To: "Oliver O'Halloran" <oohall@gmail.com>
+References: <20230613014337.286222-1-ganeshgr@linux.ibm.com>
+ <CAOSf1CGzmbbs16zCAV8_NN49Sd8ifi-4Dvo7wXdVNDE-j76qPQ@mail.gmail.com>
+From: Ganesh G R <ganeshgr@linux.ibm.com>
+In-Reply-To: <CAOSf1CGzmbbs16zCAV8_NN49Sd8ifi-4Dvo7wXdVNDE-j76qPQ@mail.gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: EwLYd9T_wFVacSkdoDCQK_0-KzXHFR1U
+X-Proofpoint-GUID: dH1JWrzBw0Y2QJfrztKTb1RX3XV4k8ff
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-17_06,2023-07-13_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
+ malwarescore=0 suspectscore=0 mlxlogscore=999 lowpriorityscore=0
+ bulkscore=0 impostorscore=0 spamscore=0 adultscore=0 clxscore=1011
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2307170072
 X-Mailman-Approved-At: Mon, 17 Jul 2023 18:42:53 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -127,51 +100,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-kernel@vger.kernel.org, ath10k@lists.infradead.org, linux-can@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-wpan@vger.kernel.org, linux-mediatek@lists.infradead.org, ath11k@lists.infradead.org, wcn36xx@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-oxnas@groups.io, linuxppc-dev@lists.ozlabs.org, linux-sunxi@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---=-=-=
-Content-Type: text/plain
+This is a multi-part message in MIME format.
+--------------65TZ5HVj3pEZ0Wk3hbmab0KZ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Fri Jul 14 2023, Rob Herring wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it as merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
 
-[...]
+On 6/13/23 8:06 AM, Oliver O'Halloran wrote:
 
->  drivers/net/dsa/hirschmann/hellcreek.c                  | 1 -
->  drivers/net/dsa/hirschmann/hellcreek_ptp.c              | 1 +
+> On Tue, Jun 13, 2023 at 11:44 AM Ganesh Goudar<ganeshgr@linux.ibm.com>  wrote:
+>> Hi,
+>>
+>> EEH recovery is currently serialized and these patches shorten
+>> the time taken for EEH recovery by making the recovery to run
+>> in parallel. The original author of these patches is Sam Bobroff,
+>> I have rebased and tested these patches.
+>>
+>> On powervm with 64 VFs from same PHB,  I see approximately 48%
+>> reduction in time taken in EEH recovery.
+>>
+>> On powernv with 9 network cards, Where 2 cards installed on one
+>> PHB and 1 card on each of the rest of the PHBs, Providing 20 PFs
+>> in total. I see approximately 33% reduction in time taken in EEH
+>> recovery.
+>>
+>> These patches were originally posted as separate RFCs by Sam, And
+>> I rebased and posted these patches almost a year back, I stopped
+>> pursuing these patches as I was not able test this on powernv, Due
+>> to the issues in drivers of cards I was testing this on, Which are
+>> now resolved. Since I am re-posting this after long time, Posting
+>> this as a fresh RFC, Please comment.
+> What changes have you made since the last time you posted this series?
+> If the patches are the same then the comments I posted last time still
+> apply.
 
-Acked-by: Kurt Kanzenbach <kurt@linutronix.de> # hellcreek
+Hi Oliver, You asked about the way we are testing this on powervm, You expressed
+concerns about having this on powernv, suggested to have this feature just for
+powervm for now, and also expressed concerns on having two locks.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+On powervm using two port card we are instantiating 64 VFS, for an lpar and injecting
+the error on the bus from phyp, to observe the behavior.
+I was able to test this on powernv with 16 PFs from 8 cards installed on separate PHBs,
+Where I saw considerable performance improvement.
+Regarding two locks idea, I may not have tested it for all scenarios, So far I have not
+faced any issue, Are you suggesting a different approach.
 
------BEGIN PGP SIGNATURE-----
+Thanks
 
-iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmS04xQTHGt1cnRAbGlu
-dXRyb25peC5kZQAKCRDBk9HyqkZzgtQ+D/4rxLrP90HZoMklo1bSDPz4shsBjqNI
-WnulP+nkfb+Qtwn8rBKcJezrFK9O6lJpYTq33kAJwEX/SE8b961KoY/V9s6ssagq
-UBdww2O31sKDjd4MbmNjsULZi1BpRmVBJLaxkTQRy/i1JQlHN3rNZtQBT9ZPLcus
-oYN4pegQ+WymkHI/KQtmFpPpTMNZjPn6ItB8g5uh6LFWgVIOZi5L13KC4mus7SFP
-ujD3Fe0Y2ya/EOyjT4NpcS2IQjTacbYk/z/hB3fuFp0mW5l1X8TKVKz2zquZ01ef
-armvD+bjs+3emvjNDs4/9yBd6kJ/4RHP6BkYJMWIHuYxxM62qOJvr3O6JV2FRKug
-CKGvmYJBedVkf4RAEc1nQrMH8U4H8ktjYYUKsMp2JdQ5mrDI0xS5Mrfzf4vsonpe
-OZXf5Z0CrehMlal4X5Y330gU0iVuZmUARGWKSGFmzWDV5A7vn3jubM8FqCJtiB0X
-wD9w4pdsJ+jRp+35GluO4anayr9lDPU3w8Y+4KDmwafuzG2VUajeUSWmBxiDgGh9
-6WB5lWsI0Oa+Llb6DzrALRkwXzJPDzZ7YULwb2v37sOq9xma8cce3W9N967on0bX
-YcnqpBdEg3tncRq58oK9uDJtdggXzTSO7C78b09WvIa2l5G2JkaM77I/VXhGgvGt
-BXSqDM8imlVRFg==
-=8lun
------END PGP SIGNATURE-----
---=-=-=--
+--------------65TZ5HVj3pEZ0Wk3hbmab0KZ
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">
+      <pre>On 6/13/23 8:06 AM, Oliver O'Halloran wrote:</pre>
+    </div>
+    <blockquote type="cite"
+cite="mid:CAOSf1CGzmbbs16zCAV8_NN49Sd8ifi-4Dvo7wXdVNDE-j76qPQ@mail.gmail.com">
+      <pre class="moz-quote-pre" wrap="">On Tue, Jun 13, 2023 at 11:44 AM Ganesh Goudar <a class="moz-txt-link-rfc2396E" href="mailto:ganeshgr@linux.ibm.com">&lt;ganeshgr@linux.ibm.com&gt;</a> wrote:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">
+Hi,
+
+EEH recovery is currently serialized and these patches shorten
+the time taken for EEH recovery by making the recovery to run
+in parallel. The original author of these patches is Sam Bobroff,
+I have rebased and tested these patches.
+
+On powervm with 64 VFs from same PHB,  I see approximately 48%
+reduction in time taken in EEH recovery.
+
+On powernv with 9 network cards, Where 2 cards installed on one
+PHB and 1 card on each of the rest of the PHBs, Providing 20 PFs
+in total. I see approximately 33% reduction in time taken in EEH
+recovery.
+
+These patches were originally posted as separate RFCs by Sam, And
+I rebased and posted these patches almost a year back, I stopped
+pursuing these patches as I was not able test this on powernv, Due
+to the issues in drivers of cards I was testing this on, Which are
+now resolved. Since I am re-posting this after long time, Posting
+this as a fresh RFC, Please comment.
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+What changes have you made since the last time you posted this series?
+If the patches are the same then the comments I posted last time still
+apply.
+</pre>
+    </blockquote>
+    <pre>Hi Oliver, You asked about the way we are testing this on powervm, You expressed
+concerns about having this on powernv, suggested to have this feature just for
+powervm for now, and also expressed concerns on having two locks.
+
+On powervm using two port card we are instantiating 64 VFS, for an lpar and injecting
+the error on the bus from phyp, to observe the behavior.
+I was able to test this on powernv with 16 PFs from 8 cards installed on separate PHBs,
+Where I saw considerable performance improvement.
+Regarding two locks idea, I may not have tested it for all scenarios, So far I have not
+faced any issue, Are you suggesting a different approach.
+
+Thanks    
+</pre>
+  </body>
+</html>
+
+--------------65TZ5HVj3pEZ0Wk3hbmab0KZ--
+
