@@ -4,86 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61A6AC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 17:00:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AABBEB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 17:44:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H9zzieJ6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n7SnaOlv;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R4Sxd4g76z2ykd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 03:00:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R4Twm6kwxz2ytG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 03:44:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H9zzieJ6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n7SnaOlv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4Swf5JGJz2xW7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 02:59:13 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36HGlVG8008734
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 16:59:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=s0RwxTSSzNkXt1j4bxmdMBrM44PJ0w2feHmLpPx+N9E=;
- b=H9zzieJ65AwwetNPVdaEc35+G2A+wkEDVQpFerjP4OgsAB4g5Yr0OVjpG4AKjb+nN37/
- fEIP1JsfAuwQOQ10o52VTY+OgxN7xAUa2t4iWTAy3lcazp18URPFFjcf5OE3rXsnfU9t
- DllBiUBRuqxRO+Ul1hMd20ioE3hNv6xdalTPaAzJX3KAGy798o5VQ1xAWViKBQjB6aJ4
- VpNTpt9yIbcIIz2ZfWEA5OfwDTXnh/3cy0DWAGK1MqUOIeUuWRFx1oLW4Y4JWsEpbru5
- YzUjV7AG3NJUqpHbfPaXf925gimdGYLvDUszI02J+HAGj8zz9WIuxEPl54Sco0HaxjiK rw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rw9fq08ty-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 16:59:10 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36HGlS5u008674
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 16:59:10 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rw9fq08t7-4
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Jul 2023 16:59:10 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36HDwpma008046;
-	Mon, 17 Jul 2023 16:38:41 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rv80j0e6g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Jul 2023 16:38:41 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36HGcc8Q25952888
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 17 Jul 2023 16:38:38 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 809922004B;
-	Mon, 17 Jul 2023 16:38:38 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4F9EB20043;
-	Mon, 17 Jul 2023 16:38:37 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.171.30.176])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 17 Jul 2023 16:38:37 +0000 (GMT)
-Date: Mon, 17 Jul 2023 22:08:34 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: Sachin Sant <sachinp@linux.ibm.com>
-Subject: Re: Kernel Crash Dump (kdump) broken with 6.5
-Message-ID: <udbe6orsg6jpzkwppupzekfwxjvn7e5q3rlzyqvm4xl3k44w7t@e7m2zjjwmh5c>
-References: <AB3C7C5C-86FD-4D86-9330-000CB9728F48@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4Tvm6TVhz2yGT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 03:43:32 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 593346112B
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 17:43:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C20C6C433C7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 17:43:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1689615808;
+	bh=WlylA38NBSrHdK1P/Qx5cdKzB17My2bbP8A4hWmtbl8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=n7SnaOlv0rod0BWi8qRhWwzkH130UCwC9DHtIw6e2ARgCRj2IFBirKNyBLBLD18Yf
+	 vXH3oQn0uzwral2KqRsugsmfcq43bioga3LdDP242wOgqAvOzDv/tfRoD+qiti1AHT
+	 2yrewtx7wMwtKLppRJC1XCOOLcU0cNDb47qwrTcbAG8f/k0yJMVEi6oCt5t9o8zJP4
+	 Jf39NnUNGUe4AEK7PJCokBqfHG9OIsaTS7AAn7T24r/0o712dI8HVd4Rn6hHoTqt08
+	 yiNTxnUo0bpbItLwUcygPd1ISb1BnMapv2fDf1tcc7GIK7DGnVJYJLO8Cx+bnlZ4qo
+	 V9NB1b/cag++Q==
+Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-51de9c2bc77so6440903a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 10:43:28 -0700 (PDT)
+X-Gm-Message-State: ABy/qLYrvb3VtsA+/oiu8BH7xpaC4P/Ew77xdbd1xSrfaCD2yV8MbQ7h
+	EnXPEQo+XnFWo6ulbJIzsCxdoRO0iBsfLBaqng==
+X-Google-Smtp-Source: APBJJlGV73zzxjpVsO/f3440v/5dveoUtTcIX0eLkgnTaVgBrap1rMmgbikswqUTIe4Df1/8A6Rrn+UvYZaRh77UJxY=
+X-Received: by 2002:a2e:9c91:0:b0:2b7:4169:fcf5 with SMTP id
+ x17-20020a2e9c91000000b002b74169fcf5mr11677042lji.37.1689615786908; Mon, 17
+ Jul 2023 10:43:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AB3C7C5C-86FD-4D86-9330-000CB9728F48@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: nLAZXF4GPYKAPPfdGSj_p-Z1hzwJkFzW
-X-Proofpoint-ORIG-GUID: MXTF_HNzal5tRHQX-dKNNV3JQmsTRUQj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-17_13,2023-07-13_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
- impostorscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1011 phishscore=0
- adultscore=0 priorityscore=1501 suspectscore=0 mlxscore=0 mlxlogscore=896
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2306200000
- definitions=main-2307170152
+References: <20230714175027.4065135-1-robh@kernel.org>
+In-Reply-To: <20230714175027.4065135-1-robh@kernel.org>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 17 Jul 2023 11:42:54 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqLxL2Mpsi=idA0KkDWNhCZfP3Nw4c79d5CfkjVWnUsqyg@mail.gmail.com>
+Message-ID: <CAL_JsqLxL2Mpsi=idA0KkDWNhCZfP3Nw4c79d5CfkjVWnUsqyg@mail.gmail.com>
+Subject: Re: [PATCH] usb: Explicitly include correct DT includes
+To: Peter Chen <peter.chen@kernel.org>, Pawel Laszczak <pawell@cadence.com>, 
+	Roger Quadros <rogerq@kernel.org>, Aswath Govindraju <a-govindraju@ti.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Minas Harutyunyan <hminas@synopsys.com>, Thinh Nguyen <Thinh.Nguyen@synopsys.com>, 
+	Li Yang <leoyang.li@nxp.com>, Daniel Mack <daniel@zonque.org>, 
+	Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
+	Herve Codina <herve.codina@bootlin.com>, Michal Simek <michal.simek@amd.com>, 
+	Alan Stern <stern@rowland.harvard.edu>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Claudiu Beznea <claudiu.beznea@microchip.com>, Mathias Nyman <mathias.nyman@intel.com>, 
+	Richard Leitner <richard.leitner@linux.dev>, Chunfeng Yun <chunfeng.yun@mediatek.com>, 
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
+	Conor Dooley <conor.dooley@microchip.com>, Daire McNamara <daire.mcnamara@microchip.com>, 
+	Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+	Samuel Holland <samuel@sholland.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	"Bryan O'Donoghue" <bryan.odonoghue@linaro.org>, Andy Gross <agross@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,60 +91,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: mahesh@linux.ibm.com
-Cc: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Sourabh Jain <sourabhjain@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2023-07-17 20:15:53 Mon, Sachin Sant wrote:
-> Kdump seems to be broken with 6.5 for ppc64le.
-> 
-> [ 14.200412] systemd[1]: Starting dracut pre-pivot and cleanup hook...
-> [[0;32m OK [0m] Started dracut pre-pivot and cleanup hook.
-> Starting Kdump Vmcore Save Service...
-> [ 14.231669] systemd[1]: Started dracut pre-pivot and cleanup hook.
-> [ 14.231801] systemd[1]: Starting Kdump Vmcore Save Service...
-> [ 14.341035] kdump.sh[297]: kdump: saving to /sysroot//var/crash//127.0.0.1-2023-07-14-13:32:34/
-> [ 14.350053] EXT4-fs (sda2): re-mounted e971a335-1ef8-4295-ab4e-3940f28e53fc r/w. Quota mode: none.
-> [ 14.345979] kdump.sh[297]: kdump: saving vmcore-dmesg.txt to /sysroot//var/crash//127.0.0.1-2023-07-14-13:32:34/
-> [ 14.348742] kdump.sh[331]: Cannot open /proc/vmcore: No such file or directory
-> [ 14.348845] kdump.sh[297]: kdump: saving vmcore-dmesg.txt failed
-> [ 14.349014] kdump.sh[297]: kdump: saving vmcore
-> [ 14.443422] kdump.sh[332]: open_dump_memory: Can't open the dump memory(/proc/vmcore). No such file or directory
-> [ 14.456413] kdump.sh[332]: makedumpfile Failed.
-> [ 14.456662] kdump.sh[297]: kdump: saving vmcore failed, _exitcode:1
-> [ 14.456822] kdump.sh[297]: kdump: saving the /run/initramfs/kexec-dmesg.log to /sysroot//var/crash//127.0.0.1-2023-07-14-13:32:34/
-> [ 14.487002] kdump.sh[297]: kdump: saving vmcore failed
-> [[0;1;31mFAILED[0m] Failed to start Kdump Vmcore Save Service.
+On Fri, Jul 14, 2023 at 11:50=E2=80=AFAM Rob Herring <robh@kernel.org> wrot=
+e:
+>
+> The DT of_device.h and of_platform.h date back to the separate
+> of_platform_bus_type before it as merged into the regular platform bus.
+> As part of that merge prepping Arm DT support 13 years ago, they
+> "temporarily" include each other. They also include platform_device.h
+> and of.h. As a result, there's a pretty much random mix of those include
+> files used throughout the tree. In order to detangle these headers and
+> replace the implicit includes with struct declarations, users need to
+> explicitly include the correct includes.
+>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
 
-Thanks Sachin for catching this.
-
-> 
-> 6.4 was good. Git bisect points to following patch
-> 
-> commit 606787fed7268feb256957872586370b56af697a
->     powerpc/64s: Remove support for ELFv1 little endian userspace
-> 
-> Reverting this patch allows a successful capture of vmcore.
-> 
-> Does this change require any corresponding change to kdump
-> and/or kexec tools?
-
-Need to investigate that. It looks like vmcore_elf64_check_arch(&ehdr)
-check from fs/proc/vmcore.c is failing after above commit.
-
-static int __init parse_crash_elf64_headers(void)
-{
 [...]
 
-        /* Do some basic Verification. */
-        if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0 ||
-                (ehdr.e_type != ET_CORE) ||
-                !vmcore_elf64_check_arch(&ehdr) ||
-[...]
+> diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-=
+dr-of.c
+> index a9877f2569f4..2574bccc151b 100644
+> --- a/drivers/usb/host/fsl-mph-dr-of.c
+> +++ b/drivers/usb/host/fsl-mph-dr-of.c
+> @@ -10,10 +10,12 @@
+>  #include <linux/fsl_devices.h>
+>  #include <linux/err.h>
+>  #include <linux/io.h>
+> -#include <linux/of_platform.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+>  #include <linux/clk.h>
+>  #include <linux/module.h>
+>  #include <linux/dma-mapping.h>
+> +#include <linux/of.h>
 
-It looks like ehdr->e_flags are not set properly while generating vmcore
-ELF header. I see that in kexec_file_load, ehdr->e_flags left set to 0
-irrespective of IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2) is true or false.
+Double include of of.h here. v2 coming.
 
--Mahesh
+Rob
