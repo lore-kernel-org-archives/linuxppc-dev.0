@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DCB6EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 00:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F2C0EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 00:33:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R432h4Fdxz3c4d
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 10:33:00 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R433D5q9Yz3cKh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 10:33:28 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R43280Y9Vz2y3Y
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 10:32:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R432B1kDCz2yxt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 10:32:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4R43276QpZz4wxx;
-	Mon, 17 Jul 2023 10:32:31 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4R43282lC9z4wxy;
+	Mon, 17 Jul 2023 10:32:32 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230517123033.18430-1-mpe@ellerman.id.au>
-References: <20230517123033.18430-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Fix native_hpte_remove() to be irq-safe
-Message-Id: <168955377881.195506.5601269587244004112.b4-ty@ellerman.id.au>
+In-Reply-To: <20230517074945.53188-1-mpe@ellerman.id.au>
+References: <20230517074945.53188-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/security: Fix Speculation_Store_Bypass reporting on Power10
+Message-Id: <168955377882.195506.16092114020800640274.b4-ty@ellerman.id.au>
 Date: Mon, 17 Jul 2023 10:29:38 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,45 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: ruscur@russell.cc, rnsastry@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 17 May 2023 22:30:33 +1000, Michael Ellerman wrote:
-> Lockdep warns that the use of the hpte_lock in native_hpte_remove() is
-> not safe against an IRQ coming in:
+On Wed, 17 May 2023 17:49:45 +1000, Michael Ellerman wrote:
+> Nageswara reported that /proc/self/status was showing "vulnerable" for
+> the Speculation_Store_Bypass feature on Power10, eg:
 > 
->   ================================
->   WARNING: inconsistent lock state
->   6.4.0-rc2-g0c54f4d30ecc #1 Not tainted
->   --------------------------------
->   inconsistent {IN-SOFTIRQ-W} -> {SOFTIRQ-ON-W} usage.
->   qemu-system-ppc/93865 [HC0[0]:SC0[0]:HE1:SE1] takes:
->   c0000000021f5180 (hpte_lock){+.?.}-{0:0}, at: native_lock_hpte+0x8/0xd0
->   {IN-SOFTIRQ-W} state was registered at:
->     lock_acquire+0x134/0x3f0
->     native_lock_hpte+0x44/0xd0
->     native_hpte_insert+0xd4/0x2a0
->     __hash_page_64K+0x218/0x4f0
->     hash_page_mm+0x464/0x840
->     do_hash_fault+0x11c/0x260
->     data_access_common_virt+0x210/0x220
->     __ip_select_ident+0x140/0x150
->     ...
->     net_rx_action+0x3bc/0x440
->     __do_softirq+0x180/0x534
->     ...
->     sys_sendmmsg+0x34/0x50
->     system_call_exception+0x128/0x320
->     system_call_common+0x160/0x2e4
->   ...
->    Possible unsafe locking scenario:
+>   $ grep Speculation_Store_Bypass: /proc/self/status
+>   Speculation_Store_Bypass:       vulnerable
+> 
+> But at the same time the sysfs files, and lscpu, were showing "Not
+> affected".
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/64s: Fix native_hpte_remove() to be irq-safe
-      https://git.kernel.org/powerpc/c/8bbe9fee5848371d4af101be445303cac8d880c5
+[1/1] powerpc/security: Fix Speculation_Store_Bypass reporting on Power10
+      https://git.kernel.org/powerpc/c/5bcedc5931e7bd6928a2d8207078d4cb476b3b55
 
 cheers
