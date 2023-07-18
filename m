@@ -4,81 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F0F2EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 02:41:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95F52EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 02:42:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MxCParRQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=koVSyh8T;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R4jrX24n7z3clP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 12:41:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R4jsd1vt5z30Kf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 12:42:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MxCParRQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=koVSyh8T;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4jcf4Lnhz30fh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 12:31:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4jcq4Q8Qz300f
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 12:31:23 +1000 (AEST)
 Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36I22p20027874;
-	Tue, 18 Jul 2023 02:30:49 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36I22tdw028188;
+	Tue, 18 Jul 2023 02:31:00 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=8eWjFBDf+yRxnTJPxKOQhUOIQyyFB6yshvJb80Wv8oI=;
- b=MxCParRQnCbu0hFQwsPPiDSmMl+C/dreOJgFrq43kzYrpn0I4nlgV9kNew14pLo92Cxr
- 78neI1Mx+rEwk3oomd/gooT+GXu9F7YFtogRLWGp7uylZTsNUvxaeXgWUFj4NWjY+dVn
- M8QYkaeMAtnu+ot0yIlh6qfN/3LvObzB4yqx0dbsOA9uIs8NznpS189bn+XOt5ud4og+
- j8RA4dHjyHF4vOj5W/JO73OjLDj2U1ENqd+QOxqqGtpV4I8C7LAE822x8d5UImUgf0Ww
- uvIaJSDhRbGtDK8J7VFIw8cI8I2BH9wPs+sAQxeZFe4L1LhbwBdFcOp9vE7lSO2SEI2A pw== 
+ bh=XCQvO4AMwAl3UVUAgFYIr0Tyqbjq93TFj9IeImIxS/c=;
+ b=koVSyh8TTP4JpgNw+6IrFaNhVGR/n3nMNDCCKrhgqhuhCk5jR3WZYFRDF3g2RRUKTOK1
+ sxIBAxBCnKqvHC+qJ5P6e5ejalPquSFcot3kidgftuGoI8z9rw34nIrgGtRsQT0ne8dr
+ 8Mkb0FApg+VsWIxbagdk3/BrCgeIykJ7u6L4zub7Ng4yY8Cs//j5LqwF3aMMvyaEn6j/
+ 8HdbtMH2nBlEnmGyBTinMu1OShhkXw5uFGOrKMh16lotjRUw8vwfX2CWrBotOFTVudbL
+ SEhy+WDNUbufjGpa7oXv5ZvnqeN66eDjCZ3l5nHYgxS9G6YLS8lt3zG0azl9DPM7hqSm yg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rwhksgmfy-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rwhksgmmf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Jul 2023 02:30:49 +0000
+	Tue, 18 Jul 2023 02:31:00 +0000
 Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36I2FAFc008424;
-	Tue, 18 Jul 2023 02:30:48 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rwhksgmfa-1
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36I2PZ9p004618;
+	Tue, 18 Jul 2023 02:30:59 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rwhksgmm3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Jul 2023 02:30:48 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36HNA8aA029098;
-	Tue, 18 Jul 2023 02:30:47 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3rv6smbtbr-1
+	Tue, 18 Jul 2023 02:30:59 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36HMo58M016880;
+	Tue, 18 Jul 2023 02:30:58 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rv5srmrdm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Jul 2023 02:30:47 +0000
+	Tue, 18 Jul 2023 02:30:58 +0000
 Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36I2UkW8066268
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36I2UvRI55312664
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 18 Jul 2023 02:30:46 GMT
+	Tue, 18 Jul 2023 02:30:58 GMT
 Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5A94C58063;
-	Tue, 18 Jul 2023 02:30:46 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id AA40158057;
+	Tue, 18 Jul 2023 02:30:57 +0000 (GMT)
 Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 335D858066;
-	Tue, 18 Jul 2023 02:30:41 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A6D2F58064;
+	Tue, 18 Jul 2023 02:30:52 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.43.62.199])
 	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 18 Jul 2023 02:30:40 +0000 (GMT)
+	Tue, 18 Jul 2023 02:30:52 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
         linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
         christophe.leroy@csgroup.eu
-Subject: [PATCH v5 11/13] powerpc/book3s64/radix: Add support for vmemmap optimization for radix
-Date: Tue, 18 Jul 2023 07:59:31 +0530
-Message-ID: <20230718022934.90447-12-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v5 13/13] powerpc/book3s64/radix: Add debug message to give more details of vmemmap allocation
+Date: Tue, 18 Jul 2023 07:59:33 +0530
+Message-ID: <20230718022934.90447-14-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230718022934.90447-1-aneesh.kumar@linux.ibm.com>
 References: <20230718022934.90447-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: CWQ4zwW5VcwWtF3kCTjIbEQbpYgm1Nam
-X-Proofpoint-ORIG-GUID: o2v39N_kVvA2i_XD9xwnLGcATWgtn6e0
+X-Proofpoint-GUID: THKORosA-E6gq1GbH_AJ8roPk4CkfDLz
+X-Proofpoint-ORIG-GUID: N271qjflk5lA9Iab8e12PGo5M26ghhsz
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-07-17_15,2023-07-13_01,2023-05-22_02
@@ -102,412 +102,67 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>, Muchun Song <muchun.song@linux.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With 2M PMD-level mapping, we require 32 struct pages and a single vmemmap
-page can contain 1024 struct pages (PAGE_SIZE/sizeof(struct page)). Hence
-with 64K page size, we don't use vmemmap deduplication for PMD-level
-mapping.
+Add some extra vmemmap pr_debug message that will indicate the type of
+vmemmap allocations.
+
+For ex: with DAX vmemmap optimization we can find the below details:
+[  187.166580] radix-mmu: PAGE_SIZE vmemmap mapping
+[  187.166587] radix-mmu: PAGE_SIZE vmemmap mapping
+[  187.166591] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166594] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166598] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166601] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166604] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166608] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166611] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166614] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166617] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166620] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166623] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166626] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166629] radix-mmu: Tail page reuse vmemmap mapping
+[  187.166632] radix-mmu: Tail page reuse vmemmap mapping
+
+And without vmemmap optimization
+[  293.549931] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.549984] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.550032] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.550076] radix-mmu: PMD_SIZE vmemmap mapping
+[  293.550117] radix-mmu: PMD_SIZE vmemmap mapping
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- Documentation/mm/vmemmap_dedup.rst         |   1 +
- Documentation/powerpc/index.rst            |   1 +
- Documentation/powerpc/vmemmap_dedup.rst    | 101 ++++++++++
- arch/powerpc/Kconfig                       |   1 +
- arch/powerpc/include/asm/book3s/64/radix.h |   9 +
- arch/powerpc/mm/book3s64/radix_pgtable.c   | 203 +++++++++++++++++++++
- 6 files changed, 316 insertions(+)
- create mode 100644 Documentation/powerpc/vmemmap_dedup.rst
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/mm/vmemmap_dedup.rst b/Documentation/mm/vmemmap_dedup.rst
-index a4b12ff906c4..c573e08b5043 100644
---- a/Documentation/mm/vmemmap_dedup.rst
-+++ b/Documentation/mm/vmemmap_dedup.rst
-@@ -210,6 +210,7 @@ the device (altmap).
- 
- The following page sizes are supported in DAX: PAGE_SIZE (4K on x86_64),
- PMD_SIZE (2M on x86_64) and PUD_SIZE (1G on x86_64).
-+For powerpc equivalent details see Documentation/powerpc/vmemmap_dedup.rst
- 
- The differences with HugeTLB are relatively minor.
- 
-diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
-index d33b554ca7ba..a50834798454 100644
---- a/Documentation/powerpc/index.rst
-+++ b/Documentation/powerpc/index.rst
-@@ -36,6 +36,7 @@ powerpc
-     ultravisor
-     vas-api
-     vcpudispatch_stats
-+    vmemmap_dedup
- 
-     features
- 
-diff --git a/Documentation/powerpc/vmemmap_dedup.rst b/Documentation/powerpc/vmemmap_dedup.rst
-new file mode 100644
-index 000000000000..dc4db59fdf87
---- /dev/null
-+++ b/Documentation/powerpc/vmemmap_dedup.rst
-@@ -0,0 +1,101 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+==========
-+Device DAX
-+==========
-+
-+The device-dax interface uses the tail deduplication technique explained in
-+Documentation/mm/vmemmap_dedup.rst
-+
-+On powerpc, vmemmap deduplication is only used with radix MMU translation. Also
-+with a 64K page size, only the devdax namespace with 1G alignment uses vmemmap
-+deduplication.
-+
-+With 2M PMD level mapping, we require 32 struct pages and a single 64K vmemmap
-+page can contain 1024 struct pages (64K/sizeof(struct page)). Hence there is no
-+vmemmap deduplication possible.
-+
-+With 1G PUD level mapping, we require 16384 struct pages and a single 64K
-+vmemmap page can contain 1024 struct pages (64K/sizeof(struct page)). Hence we
-+require 16 64K pages in vmemmap to map the struct page for 1G PUD level mapping.
-+
-+Here's how things look like on device-dax after the sections are populated::
-+ +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-+ |           |                     |     0     | -------------> |     0     |
-+ |           |                     +-----------+                +-----------+
-+ |           |                     |     1     | -------------> |     1     |
-+ |           |                     +-----------+                +-----------+
-+ |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-+ |           |                     +-----------+                   | | | | |
-+ |           |                     |     3     | ------------------+ | | | |
-+ |           |                     +-----------+                     | | | |
-+ |           |                     |     4     | --------------------+ | | |
-+ |    PUD    |                     +-----------+                       | | |
-+ |   level   |                     |     .     | ----------------------+ | |
-+ |  mapping  |                     +-----------+                         | |
-+ |           |                     |     .     | ------------------------+ |
-+ |           |                     +-----------+                           |
-+ |           |                     |     15    | --------------------------+
-+ |           |                     +-----------+
-+ |           |
-+ |           |
-+ |           |
-+ +-----------+
-+
-+
-+With 4K page size, 2M PMD level mapping requires 512 struct pages and a single
-+4K vmemmap page contains 64 struct pages(4K/sizeof(struct page)). Hence we
-+require 8 4K pages in vmemmap to map the struct page for 2M pmd level mapping.
-+
-+Here's how things look like on device-dax after the sections are populated::
-+
-+ +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-+ |           |                     |     0     | -------------> |     0     |
-+ |           |                     +-----------+                +-----------+
-+ |           |                     |     1     | -------------> |     1     |
-+ |           |                     +-----------+                +-----------+
-+ |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-+ |           |                     +-----------+                   | | | | |
-+ |           |                     |     3     | ------------------+ | | | |
-+ |           |                     +-----------+                     | | | |
-+ |           |                     |     4     | --------------------+ | | |
-+ |    PMD    |                     +-----------+                       | | |
-+ |   level   |                     |     5     | ----------------------+ | |
-+ |  mapping  |                     +-----------+                         | |
-+ |           |                     |     6     | ------------------------+ |
-+ |           |                     +-----------+                           |
-+ |           |                     |     7     | --------------------------+
-+ |           |                     +-----------+
-+ |           |
-+ |           |
-+ |           |
-+ +-----------+
-+
-+With 1G PUD level mapping, we require 262144 struct pages and a single 4K
-+vmemmap page can contain 64 struct pages (4K/sizeof(struct page)). Hence we
-+require 4096 4K pages in vmemmap to map the struct pages for 1G PUD level
-+mapping.
-+
-+Here's how things look like on device-dax after the sections are populated::
-+
-+ +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-+ |           |                     |     0     | -------------> |     0     |
-+ |           |                     +-----------+                +-----------+
-+ |           |                     |     1     | -------------> |     1     |
-+ |           |                     +-----------+                +-----------+
-+ |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-+ |           |                     +-----------+                   | | | | |
-+ |           |                     |     3     | ------------------+ | | | |
-+ |           |                     +-----------+                     | | | |
-+ |           |                     |     4     | --------------------+ | | |
-+ |    PUD    |                     +-----------+                       | | |
-+ |   level   |                     |     .     | ----------------------+ | |
-+ |  mapping  |                     +-----------+                         | |
-+ |           |                     |     .     | ------------------------+ |
-+ |           |                     +-----------+                           |
-+ |           |                     |   4095    | --------------------------+
-+ |           |                     +-----------+
-+ |           |
-+ |           |
-+ |           |
-+ +-----------+
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0b1172cbeccb..116d6add0bb0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -174,6 +174,7 @@ config PPC
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-+	select ARCH_WANT_OPTIMIZE_DAX_VMEMMAP	if PPC_RADIX_MMU
- 	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
- 	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index f1461289643a..3195f268ed7f 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -326,6 +326,7 @@ static inline pud_t radix__pud_mkdevmap(pud_t pud)
- }
- 
- struct vmem_altmap;
-+struct dev_pagemap;
- extern int __meminit radix__vmemmap_create_mapping(unsigned long start,
- 					     unsigned long page_size,
- 					     unsigned long phys);
-@@ -363,5 +364,13 @@ int radix__remove_section_mapping(unsigned long start, unsigned long end);
- 
- void radix__kernel_map_pages(struct page *page, int numpages, int enable);
- 
-+#define vmemmap_can_optimize vmemmap_can_optimize
-+bool vmemmap_can_optimize(struct vmem_altmap *altmap, struct dev_pagemap *pgmap);
-+
-+#define vmemmap_populate_compound_pages vmemmap_populate_compound_pages
-+int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
-+					      unsigned long start,
-+					      unsigned long end, int node,
-+					      struct dev_pagemap *pgmap);
- #endif /* __ASSEMBLY__ */
- #endif
 diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 9a7f3707b6fb..b492b67c0b7d 100644
+index 73d0987369ff..2828e7e0802c 100644
 --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
 +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -987,6 +987,15 @@ int __meminit radix__vmemmap_create_mapping(unsigned long start,
- 	return 0;
- }
+@@ -1034,6 +1034,7 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
+ 				p = vmemmap_alloc_block_buf(PAGE_SIZE, node, NULL);
+ 			if (!p)
+ 				return NULL;
++			pr_debug("PAGE_SIZE vmemmap mapping\n");
+ 		} else {
+ 			/*
+ 			 * When a PTE/PMD entry is freed from the init_mm
+@@ -1046,6 +1047,7 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
+ 			 */
+ 			get_page(reuse);
+ 			p = page_to_virt(reuse);
++			pr_debug("Tail page reuse vmemmap mapping\n");
+ 		}
  
-+
-+bool vmemmap_can_optimize(struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
-+{
-+	if (radix_enabled())
-+		return __vmemmap_can_optimize(altmap, pgmap);
-+
-+	return false;
-+}
-+
- int __meminit vmemmap_check_pmd(pmd_t *pmdp, int node,
- 				unsigned long addr, unsigned long next)
- {
-@@ -1194,6 +1203,200 @@ int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end, in
- 	return 0;
- }
- 
-+static pte_t * __meminit radix__vmemmap_populate_address(unsigned long addr, int node,
-+							 struct vmem_altmap *altmap,
-+							 struct page *reuse)
-+{
-+	pgd_t *pgd;
-+	p4d_t *p4d;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+
-+	pgd = pgd_offset_k(addr);
-+	p4d = p4d_offset(pgd, addr);
-+	pud = vmemmap_pud_alloc(p4d, node, addr);
-+	if (!pud)
-+		return NULL;
-+	pmd = vmemmap_pmd_alloc(pud, node, addr);
-+	if (!pmd)
-+		return NULL;
-+	if (pmd_leaf(*pmd))
-+		/*
-+		 * The second page is mapped as a hugepage due to a nearby request.
-+		 * Force our mapping to page size without deduplication
-+		 */
-+		return NULL;
-+	pte = vmemmap_pte_alloc(pmd, node, addr);
-+	if (!pte)
-+		return NULL;
-+	radix__vmemmap_pte_populate(pmd, addr, node, NULL, NULL);
-+	vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
-+
-+	return pte;
-+}
-+
-+static pte_t * __meminit vmemmap_compound_tail_page(unsigned long addr,
-+						    unsigned long pfn_offset, int node)
-+{
-+	pgd_t *pgd;
-+	p4d_t *p4d;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	unsigned long map_addr;
-+
-+	/* the second vmemmap page which we use for duplication */
-+	map_addr = addr - pfn_offset * sizeof(struct page) + PAGE_SIZE;
-+	pgd = pgd_offset_k(map_addr);
-+	p4d = p4d_offset(pgd, map_addr);
-+	pud = vmemmap_pud_alloc(p4d, node, map_addr);
-+	if (!pud)
-+		return NULL;
-+	pmd = vmemmap_pmd_alloc(pud, node, map_addr);
-+	if (!pmd)
-+		return NULL;
-+	if (pmd_leaf(*pmd))
-+		/*
-+		 * The second page is mapped as a hugepage due to a nearby request.
-+		 * Force our mapping to page size without deduplication
-+		 */
-+		return NULL;
-+	pte = vmemmap_pte_alloc(pmd, node, map_addr);
-+	if (!pte)
-+		return NULL;
-+	/*
-+	 * Check if there exist a mapping to the left
-+	 */
-+	if (pte_none(*pte)) {
-+		/*
-+		 * Populate the head page vmemmap page.
-+		 * It can fall in different pmd, hence
-+		 * vmemmap_populate_address()
-+		 */
-+		pte = radix__vmemmap_populate_address(map_addr - PAGE_SIZE, node, NULL, NULL);
-+		if (!pte)
-+			return NULL;
-+		/*
-+		 * Populate the tail pages vmemmap page
-+		 */
-+		pte = radix__vmemmap_pte_populate(pmd, map_addr, node, NULL, NULL);
-+		if (!pte)
-+			return NULL;
-+		vmemmap_verify(pte, node, map_addr, map_addr + PAGE_SIZE);
-+		return pte;
-+	}
-+	return pte;
-+}
-+
-+int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
-+					      unsigned long start,
-+					      unsigned long end, int node,
-+					      struct dev_pagemap *pgmap)
-+{
-+	/*
-+	 * we want to map things as base page size mapping so that
-+	 * we can save space in vmemmap. We could have huge mapping
-+	 * covering out both edges.
-+	 */
-+	unsigned long addr;
-+	unsigned long addr_pfn = start_pfn;
-+	unsigned long next;
-+	pgd_t *pgd;
-+	p4d_t *p4d;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+
-+	for (addr = start; addr < end; addr = next) {
-+
-+		pgd = pgd_offset_k(addr);
-+		p4d = p4d_offset(pgd, addr);
-+		pud = vmemmap_pud_alloc(p4d, node, addr);
-+		if (!pud)
-+			return -ENOMEM;
-+		pmd = vmemmap_pmd_alloc(pud, node, addr);
-+		if (!pmd)
-+			return -ENOMEM;
-+
-+		if (pmd_leaf(READ_ONCE(*pmd))) {
-+			/* existing huge mapping. Skip the range */
-+			addr_pfn += (PMD_SIZE >> PAGE_SHIFT);
-+			next = pmd_addr_end(addr, end);
-+			continue;
-+		}
-+		pte = vmemmap_pte_alloc(pmd, node, addr);
-+		if (!pte)
-+			return -ENOMEM;
-+		if (!pte_none(*pte)) {
-+			/*
-+			 * This could be because we already have a compound
-+			 * page whose VMEMMAP_RESERVE_NR pages were mapped and
-+			 * this request fall in those pages.
-+			 */
-+			addr_pfn += 1;
-+			next = addr + PAGE_SIZE;
-+			continue;
-+		} else {
-+			unsigned long nr_pages = pgmap_vmemmap_nr(pgmap);
-+			unsigned long pfn_offset = addr_pfn - ALIGN_DOWN(addr_pfn, nr_pages);
-+			pte_t *tail_page_pte;
-+
-+			/*
-+			 * if the address is aligned to huge page size it is the
-+			 * head mapping.
-+			 */
-+			if (pfn_offset == 0) {
-+				/* Populate the head page vmemmap page */
-+				pte = radix__vmemmap_pte_populate(pmd, addr, node, NULL, NULL);
-+				if (!pte)
-+					return -ENOMEM;
-+				vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
-+
-+				/*
-+				 * Populate the tail pages vmemmap page
-+				 * It can fall in different pmd, hence
-+				 * vmemmap_populate_address()
-+				 */
-+				pte = radix__vmemmap_populate_address(addr + PAGE_SIZE, node, NULL, NULL);
-+				if (!pte)
-+					return -ENOMEM;
-+
-+				addr_pfn += 2;
-+				next = addr + 2 * PAGE_SIZE;
-+				continue;
-+			}
-+			/*
-+			 * get the 2nd mapping details
-+			 * Also create it if that doesn't exist
-+			 */
-+			tail_page_pte = vmemmap_compound_tail_page(addr, pfn_offset, node);
-+			if (!tail_page_pte) {
-+
-+				pte = radix__vmemmap_pte_populate(pmd, addr, node, NULL, NULL);
-+				if (!pte)
-+					return -ENOMEM;
-+				vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
-+
-+				addr_pfn += 1;
-+				next = addr + PAGE_SIZE;
-+				continue;
-+			}
-+
-+			pte = radix__vmemmap_pte_populate(pmd, addr, node, NULL, pte_page(*tail_page_pte));
-+			if (!pte)
-+				return -ENOMEM;
-+			vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
-+
-+			addr_pfn += 1;
-+			next = addr + PAGE_SIZE;
-+			continue;
-+		}
-+	}
-+	return 0;
-+}
-+
-+
- #ifdef CONFIG_MEMORY_HOTPLUG
- void __meminit radix__vmemmap_remove_mapping(unsigned long start, unsigned long page_size)
- {
+ 		VM_BUG_ON(!PAGE_ALIGNED(addr));
+@@ -1155,6 +1157,7 @@ int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end, in
+ 			p = vmemmap_alloc_block_buf(PMD_SIZE, node, altmap);
+ 			if (p) {
+ 				vmemmap_set_pmd(pmd, p, node, addr, next);
++				pr_debug("PMD_SIZE vmemmap mapping\n");
+ 				continue;
+ 			} else if (altmap) {
+ 				/*
 -- 
 2.41.0
 
