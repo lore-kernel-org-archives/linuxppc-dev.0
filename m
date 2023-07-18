@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35DDAEB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 00:01:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61AA3EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 00:02:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=dy1/NFlQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=jr2fs44d;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5GFq4nRDz3dFV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 10:01:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5GGp0HNxz3cjS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 10:02:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=dy1/NFlQ;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=jr2fs44d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2001:4860:4864:20::49; helo=mail-oa1-x49.google.com; envelope-from=34ys3zaykddykwsfbuyggydw.ugedafmphhu-vwndaklk.grdstk.gjy@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x49.google.com (mail-oa1-x49.google.com [IPv6:2001:4860:4864:20::49])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=37cs3zaykdd8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.p0mbct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5Fz12SNLz30XM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 09:49:01 +1000 (AEST)
-Received: by mail-oa1-x49.google.com with SMTP id 586e51a60fabf-1b78a4797e1so9610986fac.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 16:49:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5Fz22FGFz3bXm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 09:49:02 +1000 (AEST)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1b8af49a5d2so48848235ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 16:49:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689724131; x=1692316131;
+        d=google.com; s=20221208; t=1689724140; x=1692316140;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=muvilKyoWvn1tarN80afquV4Wd3ZvyUZATzGD2ucPnA=;
-        b=dy1/NFlQGuJqswhd4jyp5/5Y2DKjXWq8ZhDnL7jyfQUkTP7A9Hvq/HvrZglV4JQg4M
-         0K4GnyosjYX3JEla9t9lm8LJXLHv4GUKKzg9xFm9cJWrlQ5Qmy5LmSHitAR/Xzi9H8/Y
-         MjJIFDOPL8g3wik3LCZjllYyd45Gr2H0qgazCaqc+yiHTFw7sn+VQEAa9DzzRpRQoil4
-         OF2suL13dOrJbxrD1Es2a+3MSZoSnJ4hgva3/KXiELtegBBB1WkzGy/iAanliFh6iYW0
-         B8x8MynR4QN8rTTnTiUPKbxJnJ7ZIBs38bI6aS2sGXphM22HDrUDYnhUpurmEDIvnFzg
-         o5tw==
+        bh=RgixHOC4KKphqTDNjO+JFitY6BYM03Mxe9+IG67pQW4=;
+        b=jr2fs44d+7BmMZPp9ybqRVhLe6DoUmnDVGGK/YxGf0Asu27qFmDOog5/7ezq8m4Ys7
+         LB4TAF+aUXOU9vvZC3f7sCq7Qp6i9IPbi3VCM23iiZE2lWsjgfpk1UphaC4PromgcBa9
+         nNuUO7C76a3+5q0Gf8ijV1dvvN0iI9MYocGBFlwlZWxo+oVA0VDDW9ZRP17wI+9kNKbR
+         b/F5X7vtJ0QCTS7pjO0kMtxUEap2HU9N8Chl8h4VBmGvGutp4QtM3GkrHRbiuZH0RfDS
+         Df8UlL/rj7lQEedr2TSELrHMasjkzJ51vXMKZpffeRoXHoSbQaRFODPANCOUb4yN0y8L
+         ypGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689724131; x=1692316131;
+        d=1e100.net; s=20221208; t=1689724140; x=1692316140;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=muvilKyoWvn1tarN80afquV4Wd3ZvyUZATzGD2ucPnA=;
-        b=JIeK03q37Eu3kVYMMp+uDQeUfZ6xy/AFPNnaadu6gujtlPA6OJKWgZUaijRtMJT8/w
-         CjjSZ34iviLGVZUECP+Aesd5LBmdF4c1Gwd1kdJ1Y/iLrExpIvN6k72dovonT1eX0IWU
-         pG78gMfSkTX7B42qg+AoO+sQlKr/nRxGmqtmdHSR0hbPikKRC/i36QuARFLurDSR1e94
-         7Z7lvZJMJ8hJedKUd3Q8dy4OVosVRll09CSf6r9IXISISqtxhFPJITxbr68olgM+GZwE
-         emRQov07+TTKq1z+9gnUQMrOB+NhH749xJaYD+jqv/ZT/K7HviSYBR3fVtZkkSigJb6/
-         rTtA==
-X-Gm-Message-State: ABy/qLZX0cQkfvaUzF6aI0b7FrHBrCxXxpNxL7HOeH9K+NXrnZz0Mc1B
-	J3Dsvejb/5Zb4rG3rn9E7VItLiWPBIE=
-X-Google-Smtp-Source: APBJJlE49QI+GKjHT7/jwtmKHpb+kXt66N6K7QDVRkzJgeGH+MWu0bF/51TSJcseqrb6U54aALrx+EClwNQ=
+        bh=RgixHOC4KKphqTDNjO+JFitY6BYM03Mxe9+IG67pQW4=;
+        b=C1i0pGnZfHvkBr7BJrNmIQ+QFFRuzN+bxjPE9LK91cZmGhJFJtuGmSO+U0yT66171Y
+         +zdFw+LvZ/eTKFRL29hsEXumoTNB0NalBk+rC0wg9E/mPIv0k2NeVH5C+l+4kwJYLMG5
+         tt9NcJd2VEyyTisl8ZwE1Zha7MpOWsU9K5EVup/0X3OmsBGJXH/MCWRRRsfTSvFJA46J
+         fJbuObrzvVCtJJYzVI/M08ApnU8kCFq4jmRzPhxY1BtOK7wWnFX0bZP2y5JD4oBJKQax
+         BsK30O6QSYSbnX/5cZX75waH3iH+6xSIv0WgjTN6lqaAJHIMcRZflBl03ThuYPFhwgPh
+         yPFg==
+X-Gm-Message-State: ABy/qLbQWMK4oJrN7Ln9dXfIW3S/3fva+hRdCvDLUCBgmTyxx4rPqebT
+	67mFVex07HtaDtjNkAqnM2BwXG+o8OE=
+X-Google-Smtp-Source: APBJJlGmnxKpuVWpCwuKlcGO555af6O2CzLSJLrftIAb/WXIRBmN0a0otiSNa7LmthtetMuC6YJJMcmnlto=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a05:6870:c796:b0:1b0:20bd:eef with SMTP id
- dy22-20020a056870c79600b001b020bd0eefmr758790oab.2.1689724131216; Tue, 18 Jul
- 2023 16:48:51 -0700 (PDT)
-Date: Tue, 18 Jul 2023 16:44:53 -0700
+ (user=seanjc job=sendgmr) by 2002:a17:902:d2cf:b0:1ba:a36d:f82c with SMTP id
+ n15-20020a170902d2cf00b001baa36df82cmr7700plc.7.1689724140625; Tue, 18 Jul
+ 2023 16:49:00 -0700 (PDT)
+Date: Tue, 18 Jul 2023 16:44:58 -0700
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20230718234512.1690985-1-seanjc@google.com>
 X-Mailer: git-send-email 2.41.0.255.g8b1d071c50-goog
-Message-ID: <20230718234512.1690985-11-seanjc@google.com>
-Subject: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
- completely unmovable
+Message-ID: <20230718234512.1690985-16-seanjc@google.com>
+Subject: [RFC PATCH v11 15/29] KVM: Drop superfluous __KVM_VCPU_MULTIPLE_ADDRESS_SPACE
+ macro
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>, 
@@ -90,68 +90,35 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- include/linux/pagemap.h | 11 +++++++++++
- mm/compaction.c         |  4 ++++
- mm/migrate.c            |  2 ++
- 3 files changed, 17 insertions(+)
+ arch/x86/include/asm/kvm_host.h | 1 -
+ include/linux/kvm_host.h        | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index 716953ee1ebd..931d2f1da7d5 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -203,6 +203,7 @@ enum mapping_flags {
- 	/* writeback related tags are not used */
- 	AS_NO_WRITEBACK_TAGS = 5,
- 	AS_LARGE_FOLIO_SUPPORT = 6,
-+	AS_UNMOVABLE	= 7,	/* The mapping cannot be moved, ever */
- };
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index b87ff7b601fa..7a905e033932 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -2105,7 +2105,6 @@ enum {
+ #define HF_SMM_MASK		(1 << 1)
+ #define HF_SMM_INSIDE_NMI_MASK	(1 << 2)
  
- /**
-@@ -273,6 +274,16 @@ static inline int mapping_use_writeback_tags(struct address_space *mapping)
- 	return !test_bit(AS_NO_WRITEBACK_TAGS, &mapping->flags);
- }
+-# define __KVM_VCPU_MULTIPLE_ADDRESS_SPACE
+ # define KVM_ADDRESS_SPACE_NUM 2
+ # define kvm_arch_vcpu_memslots_id(vcpu) ((vcpu)->arch.hflags & HF_SMM_MASK ? 1 : 0)
+ # define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, (role).smm)
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 0d1e2ee8ae7a..5839ef44e145 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -693,7 +693,7 @@ bool kvm_arch_irqchip_in_kernel(struct kvm *kvm);
+ #define KVM_MEM_SLOTS_NUM SHRT_MAX
+ #define KVM_USER_MEM_SLOTS (KVM_MEM_SLOTS_NUM - KVM_INTERNAL_MEM_SLOTS)
  
-+static inline void mapping_set_unmovable(struct address_space *mapping)
-+{
-+	set_bit(AS_UNMOVABLE, &mapping->flags);
-+}
-+
-+static inline bool mapping_unmovable(struct address_space *mapping)
-+{
-+	return test_bit(AS_UNMOVABLE, &mapping->flags);
-+}
-+
- static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
+-#ifndef __KVM_VCPU_MULTIPLE_ADDRESS_SPACE
++#if KVM_ADDRESS_SPACE_NUM == 1
+ static inline int kvm_arch_vcpu_memslots_id(struct kvm_vcpu *vcpu)
  {
- 	return mapping->gfp_mask;
-diff --git a/mm/compaction.c b/mm/compaction.c
-index dbc9f86b1934..a3d2b132df52 100644
---- a/mm/compaction.c
-+++ b/mm/compaction.c
-@@ -1047,6 +1047,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
- 		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
- 			goto isolate_fail_put;
- 
-+		/* The mapping truly isn't movable. */
-+		if (mapping && mapping_unmovable(mapping))
-+			goto isolate_fail_put;
-+
- 		/*
- 		 * Only allow to migrate anonymous pages in GFP_NOFS context
- 		 * because those do not depend on fs locks.
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 24baad2571e3..c00a4ca86698 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -954,6 +954,8 @@ static int move_to_new_folio(struct folio *dst, struct folio *src,
- 
- 		if (!mapping)
- 			rc = migrate_folio(mapping, dst, src, mode);
-+		else if (mapping_unmovable(mapping))
-+			rc = -EOPNOTSUPP;
- 		else if (mapping->a_ops->migrate_folio)
- 			/*
- 			 * Most folios have a mapping and most filesystems
+ 	return 0;
 -- 
 2.41.0.255.g8b1d071c50-goog
 
