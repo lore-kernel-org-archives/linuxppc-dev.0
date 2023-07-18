@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93E06EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 23:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF535EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 23:58:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=IZaEPyOB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=oKgQFwiC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5G8v20zQz3dFg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 09:57:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5G9z4ZpZz3dSH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 09:58:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=IZaEPyOB;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=oKgQFwiC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=34cs3zaykddmhtpcyrvddvat.rdbaxcjmeer-stkaxhih.doapqh.dgv@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x649.google.com (mail-pl1-x649.google.com [IPv6:2607:f8b0:4864:20::649])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=35ss3zaykddgmyuhdwaiiafy.wigfchorjjw-xypfcmnm.itfuvm.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5Fyp6HSNz3bWj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 09:48:50 +1000 (AEST)
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-1b8a44ee130so32271265ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 16:48:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5Fyt5Yhkz2yFC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 09:48:54 +1000 (AEST)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1b89e3715acso32241975ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 16:48:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689724129; x=1692316129;
+        d=google.com; s=20221208; t=1689724133; x=1692316133;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=Fu4IZGb2U3Va9MKTtjfVBe1U+H33z+Vvz3vKzeN2toA=;
-        b=IZaEPyOB4Xi+5QmwIHD8P7bc+aaX+suafWFmyT5uwQp3NUo61kUBrlISRhIplzjVEY
-         uIBImmDPLupPxDXzTC/50r1tCCSeNlOhOVA9fS78zyP8h2biybmVrYzbOwK26JEGKHg7
-         I6sJKMWknlDa2y4/RkUGMNcU33LK92gZhfmmSlvWmT3ZRUCpnDAoSRUYtWBJR6q/98qc
-         7IYBfRSml8lO4T0/G64blb3o3A6eL3IHfZ2JdAaLZw/yFNgP47pFoelbwcMFEWdCuDgU
-         rwttR7vXoy9ZQPZyTuXNE5j4H6jC+h7BIC2q5luL01pI3AyzFKBb/KLl+zHlx/O6BsOV
-         E2/g==
+        bh=SDxWIrfosG9XJ1i6+ao4lNZmMm/71hk0CPfpAh3rles=;
+        b=oKgQFwiCrPvHzuuXJTxGw9fTJQCZKL9TyIsnHUo20k7J6vJr/dP2UuT8GyfaXNhKWl
+         lfnwI4SNZlla+krW1fx/4HTGrmx9tbRfRVWIu3HGnyMHAJnHjaH8b3Nn7OD9lub8Upfz
+         ScGl6hIrQNtyqOKMdvwG71E9U1LJYrTTZQq71Kwv4L3GIqczSYB1Q2ibrVYwZRMv7ks2
+         QNhyu3W0Ns8Grpmlyc83iZpzHpUsL+aloKwTrirYI0WDq4iN8t2n8ha5cP4AK06m8uQ9
+         dXuqm5q+qG2yKgB+nUEYuog82s4uX9rRPSCnrZx4hsx8m3v5+ZWIujkgaic/poWXwLCP
+         o9Tw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689724129; x=1692316129;
+        d=1e100.net; s=20221208; t=1689724133; x=1692316133;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Fu4IZGb2U3Va9MKTtjfVBe1U+H33z+Vvz3vKzeN2toA=;
-        b=EKq4Sk8aNqJOaW9hQdDsUGeWwBwHIL3aNkWueVOb+m674Hrs5VNRApj/qfuJEvDTOH
-         GTDa4DIerR6c2Yv3sEh7NgBr3S4TpGW6YPQz7zGFbA+pgS/ww3MXTd0sNEqx9rNh6eKk
-         R0hl0WsCQM6ST2EGAD2V5OmRD3zGBVcXAHAiTth+S7FDL5mbRlwppTMKWqYFB6ul/tEb
-         JGVx4wEjFbLxYfIQdhqmNsRV64i/XLi3568HeXUy0UrsTEOfmhubXvguxujoVedPHX9F
-         7TDe/bf24oh0EFNZJPfWhtzk982Xy1YA2VmEyvx32G3hL/TidIQJo02BpuJNZkacx3Dx
-         7luQ==
-X-Gm-Message-State: ABy/qLZ68ijq+opByWx7HguvT4LqKv+o1rKXOxeujWj3NPrYN9Gs5epd
-	WrHcyubsz7g4pfKZHHmZbKtuANYaBOg=
-X-Google-Smtp-Source: APBJJlHCRauC+c30Qnbz/xVE6cHMskqGKCbuMUu/5uTMRLvWSmi8GHs1UQtZYN/I3Q3rU07U5notqbe0Vyo=
+        bh=SDxWIrfosG9XJ1i6+ao4lNZmMm/71hk0CPfpAh3rles=;
+        b=AnfRSdM3X3J+KjhB/WgoHKOdqZZYIsOiwCbqavZtcIPzF4+KgFqqN240bP5k3nXa63
+         idJzzGQPF4U1/k6yW4Gl8dbXfHXDUZZ466+aZvouxeD/APLHYsEkv0p91bwffQSwTQYg
+         gmzUxrHSc8fKkCt8LETLrN3KXElZzDMhYb3w6rSAM+Noyg123O/aJS+hmm7TWJBgHrTU
+         kN2nW1bLrG77DNWlt5FPp9fsz62Jue3Xa/K9zWPTKIYcQJUc6Ash4HQ3DBwjsLHxWW7w
+         x4s3IA/je7B8n/5BgtDDzQO6f2pCjxCv//tqJL/znVjb1LgS32FX3UuozE5wv9XbKlv9
+         8zsA==
+X-Gm-Message-State: ABy/qLbV0S3kBKltrGRz23FmudCojc0m7KgKFd9ILt6ijphh5oPv7up7
+	1EpWEvYiVwxvGt0DcTrX3nCRY/u0qJs=
+X-Google-Smtp-Source: APBJJlFRkrJKR6wk6kjyyawD9jUVadK517ZfNP5yf1yjj9/O0JQ+6He3HEMs3LUDgHlJok/ugi+AWDRSDQU=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a17:903:41ca:b0:1b8:a54c:61ef with SMTP id
- u10-20020a17090341ca00b001b8a54c61efmr8486ple.9.1689724128966; Tue, 18 Jul
- 2023 16:48:48 -0700 (PDT)
-Date: Tue, 18 Jul 2023 16:44:52 -0700
+ (user=seanjc job=sendgmr) by 2002:a17:902:c412:b0:1ba:1704:89d1 with SMTP id
+ k18-20020a170902c41200b001ba170489d1mr21516plk.10.1689724133087; Tue, 18 Jul
+ 2023 16:48:53 -0700 (PDT)
+Date: Tue, 18 Jul 2023 16:44:54 -0700
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20230718234512.1690985-1-seanjc@google.com>
 X-Mailer: git-send-email 2.41.0.255.g8b1d071c50-goog
-Message-ID: <20230718234512.1690985-10-seanjc@google.com>
-Subject: [RFC PATCH v11 09/29] KVM: x86: Disallow hugepages when memory
- attributes are mixed
+Message-ID: <20230718234512.1690985-12-seanjc@google.com>
+Subject: [RFC PATCH v11 11/29] security: Export security_inode_init_security_anon()
+ for use by KVM
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>, 
@@ -88,268 +88,23 @@ Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Chao Peng <chao.p.peng@linux.intel.com>
-
-Disallow creating hugepages with mixed memory attributes, e.g. shared
-versus private, as mapping a hugepage in this case would allow the guest
-to access memory with the wrong attributes, e.g. overlaying private memory
-with a shared hugepage.
-
-Tracking whether or not attributes are mixed via the existing
-disallow_lpage field, but use the most significant bit in 'disallow_lpage'
-to indicate a hugepage has mixed attributes instead using the normal
-refcounting.  Whether or not attributes are mixed is binary; either they
-are or they aren't.  Attempting to squeeze that info into the refcount is
-unnecessarily complex as it would require knowing the previous state of
-the mixed count when updating attributes.  Using a flag means KVM just
-needs to ensure the current status is reflected in the memslots.
-
-Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/include/asm/kvm_host.h |   3 +
- arch/x86/kvm/mmu/mmu.c          | 185 +++++++++++++++++++++++++++++++-
- arch/x86/kvm/x86.c              |   4 +
- 3 files changed, 190 insertions(+), 2 deletions(-)
+ security/security.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f9a927296d85..b87ff7b601fa 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1816,6 +1816,9 @@ int kvm_mmu_create(struct kvm_vcpu *vcpu);
- int kvm_mmu_init_vm(struct kvm *kvm);
- void kvm_mmu_uninit_vm(struct kvm *kvm);
- 
-+void kvm_mmu_init_memslot_memory_attributes(struct kvm *kvm,
-+					    struct kvm_memory_slot *slot);
-+
- void kvm_mmu_after_set_cpuid(struct kvm_vcpu *vcpu);
- void kvm_mmu_reset_context(struct kvm_vcpu *vcpu);
- void kvm_mmu_slot_remove_write_access(struct kvm *kvm,
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index b034727c4cf9..aefe67185637 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -803,16 +803,27 @@ static struct kvm_lpage_info *lpage_info_slot(gfn_t gfn,
- 	return &slot->arch.lpage_info[level - 2][idx];
+diff --git a/security/security.c b/security/security.c
+index b720424ca37d..7fc78f0f3622 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -1654,6 +1654,7 @@ int security_inode_init_security_anon(struct inode *inode,
+ 	return call_int_hook(inode_init_security_anon, 0, inode, name,
+ 			     context_inode);
  }
++EXPORT_SYMBOL_GPL(security_inode_init_security_anon);
  
-+/*
-+ * The most significant bit in disallow_lpage tracks whether or not memory
-+ * attributes are mixed, i.e. not identical for all gfns at the current level.
-+ * The lower order bits are used to refcount other cases where a hugepage is
-+ * disallowed, e.g. if KVM has shadow a page table at the gfn.
-+ */
-+#define KVM_LPAGE_MIXED_FLAG	BIT(31)
-+
- static void update_gfn_disallow_lpage_count(const struct kvm_memory_slot *slot,
- 					    gfn_t gfn, int count)
- {
- 	struct kvm_lpage_info *linfo;
--	int i;
-+	int old, i;
- 
- 	for (i = PG_LEVEL_2M; i <= KVM_MAX_HUGEPAGE_LEVEL; ++i) {
- 		linfo = lpage_info_slot(gfn, slot, i);
-+
-+		old = linfo->disallow_lpage;
- 		linfo->disallow_lpage += count;
--		WARN_ON(linfo->disallow_lpage < 0);
-+
-+		WARN_ON_ONCE((old ^ linfo->disallow_lpage) & KVM_LPAGE_MIXED_FLAG);
- 	}
- }
- 
-@@ -7223,3 +7234,173 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
- 	if (kvm->arch.nx_huge_page_recovery_thread)
- 		kthread_stop(kvm->arch.nx_huge_page_recovery_thread);
- }
-+
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+static bool hugepage_test_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
-+				int level)
-+{
-+	return lpage_info_slot(gfn, slot, level)->disallow_lpage & KVM_LPAGE_MIXED_FLAG;
-+}
-+
-+static void hugepage_clear_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
-+				 int level)
-+{
-+	lpage_info_slot(gfn, slot, level)->disallow_lpage &= ~KVM_LPAGE_MIXED_FLAG;
-+}
-+
-+static void hugepage_set_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
-+			       int level)
-+{
-+	lpage_info_slot(gfn, slot, level)->disallow_lpage |= KVM_LPAGE_MIXED_FLAG;
-+}
-+
-+static bool range_has_attrs(struct kvm *kvm, gfn_t start, gfn_t end,
-+			    unsigned long attrs)
-+{
-+	XA_STATE(xas, &kvm->mem_attr_array, start);
-+	unsigned long index;
-+	bool has_attrs;
-+	void *entry;
-+
-+	rcu_read_lock();
-+
-+	if (!attrs) {
-+		has_attrs = !xas_find(&xas, end);
-+		goto out;
-+	}
-+
-+	has_attrs = true;
-+	for (index = start; index < end; index++) {
-+		do {
-+			entry = xas_next(&xas);
-+		} while (xas_retry(&xas, entry));
-+
-+		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-+			has_attrs = false;
-+			break;
-+		}
-+	}
-+
-+out:
-+	rcu_read_unlock();
-+	return has_attrs;
-+}
-+
-+static bool hugepage_has_attrs(struct kvm *kvm, struct kvm_memory_slot *slot,
-+			       gfn_t gfn, int level, unsigned long attrs)
-+{
-+	const unsigned long start = gfn;
-+	const unsigned long end = start + KVM_PAGES_PER_HPAGE(level);
-+
-+	if (level == PG_LEVEL_2M)
-+		return range_has_attrs(kvm, start, end, attrs);
-+
-+	for (gfn = start; gfn < end; gfn += KVM_PAGES_PER_HPAGE(level - 1)) {
-+		if (hugepage_test_mixed(slot, gfn, level - 1) ||
-+		    attrs != kvm_get_memory_attributes(kvm, gfn))
-+			return false;
-+	}
-+	return true;
-+}
-+
-+bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
-+					 struct kvm_gfn_range *range)
-+{
-+	unsigned long attrs = range->arg.attributes;
-+	struct kvm_memory_slot *slot = range->slot;
-+	int level;
-+
-+	lockdep_assert_held_write(&kvm->mmu_lock);
-+	lockdep_assert_held(&kvm->slots_lock);
-+
-+	/*
-+	 * KVM x86 currently only supports KVM_MEMORY_ATTRIBUTE_PRIVATE, skip
-+	 * the slot if the slot will never consume the PRIVATE attribute.
-+	 */
-+	if (!kvm_slot_can_be_private(slot))
-+		return false;
-+
-+	/*
-+	 * The sequence matters here: upper levels consume the result of lower
-+	 * level's scanning.
-+	 */
-+	for (level = PG_LEVEL_2M; level <= KVM_MAX_HUGEPAGE_LEVEL; level++) {
-+		gfn_t nr_pages = KVM_PAGES_PER_HPAGE(level);
-+		gfn_t gfn = gfn_round_for_level(range->start, level);
-+
-+		/* Process the head page if it straddles the range. */
-+		if (gfn != range->start || gfn + nr_pages > range->end) {
-+			/*
-+			 * Skip mixed tracking if the aligned gfn isn't covered
-+			 * by the memslot, KVM can't use a hugepage due to the
-+			 * misaligned address regardless of memory attributes.
-+			 */
-+			if (gfn >= slot->base_gfn) {
-+				if (hugepage_has_attrs(kvm, slot, gfn, level, attrs))
-+					hugepage_clear_mixed(slot, gfn, level);
-+				else
-+					hugepage_set_mixed(slot, gfn, level);
-+			}
-+			gfn += nr_pages;
-+		}
-+
-+		/*
-+		 * Pages entirely covered by the range are guaranteed to have
-+		 * only the attributes which were just set.
-+		 */
-+		for ( ; gfn + nr_pages <= range->end; gfn += nr_pages)
-+			hugepage_clear_mixed(slot, gfn, level);
-+
-+		/*
-+		 * Process the last tail page if it straddles the range and is
-+		 * contained by the memslot.  Like the head page, KVM can't
-+		 * create a hugepage if the slot size is misaligned.
-+		 */
-+		if (gfn < range->end &&
-+		    (gfn + nr_pages) <= (slot->base_gfn + slot->npages)) {
-+			if (hugepage_has_attrs(kvm, slot, gfn, level, attrs))
-+				hugepage_clear_mixed(slot, gfn, level);
-+			else
-+				hugepage_set_mixed(slot, gfn, level);
-+		}
-+	}
-+	return false;
-+}
-+
-+void kvm_mmu_init_memslot_memory_attributes(struct kvm *kvm,
-+					    struct kvm_memory_slot *slot)
-+{
-+	int level;
-+
-+	if (!kvm_slot_can_be_private(slot))
-+		return;
-+
-+	for (level = PG_LEVEL_2M; level <= KVM_MAX_HUGEPAGE_LEVEL; level++) {
-+		/*
-+		 * Don't bother tracking mixed attributes for pages that can't
-+		 * be huge due to alignment, i.e. process only pages that are
-+		 * entirely contained by the memslot.
-+		 */
-+		gfn_t end = gfn_round_for_level(slot->base_gfn + slot->npages, level);
-+		gfn_t start = gfn_round_for_level(slot->base_gfn, level);
-+		gfn_t nr_pages = KVM_PAGES_PER_HPAGE(level);
-+		gfn_t gfn;
-+
-+		if (start < slot->base_gfn)
-+			start += nr_pages;
-+
-+		/*
-+		 * Unlike setting attributes, every potential hugepage needs to
-+		 * be manually checked as the attributes may already be mixed.
-+		 */
-+		for (gfn = start; gfn < end; gfn += nr_pages) {
-+			unsigned long attrs = kvm_get_memory_attributes(kvm, gfn);
-+
-+			if (hugepage_has_attrs(kvm, slot, gfn, level, attrs))
-+				hugepage_clear_mixed(slot, gfn, level);
-+			else
-+				hugepage_set_mixed(slot, gfn, level);
-+		}
-+	}
-+}
-+#endif
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 92e77afd3ffd..dd7cefe78815 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12570,6 +12570,10 @@ static int kvm_alloc_memslot_metadata(struct kvm *kvm,
- 		}
- 	}
- 
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	kvm_mmu_init_memslot_memory_attributes(kvm, slot);
-+#endif
-+
- 	if (kvm_page_track_create_memslot(kvm, slot, npages))
- 		goto out_free;
- 
+ #ifdef CONFIG_SECURITY_PATH
+ /**
 -- 
 2.41.0.255.g8b1d071c50-goog
 
