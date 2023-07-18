@@ -4,93 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E985EB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jul 2023 22:01:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 663D3EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 17:58:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S4ef+WhU;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S4ef+WhU;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=mMpImavf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R4bcs12sSz3cfT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jul 2023 08:01:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R56BG58htz30fd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 03:58:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S4ef+WhU;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S4ef+WhU;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=mMpImavf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R4Wp23PCtz2yTx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 05:08:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1689620917;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qHz5V5lwxUlduWSVUZLKGbl1lWEkFIrU74CIU+5Jsd8=;
-	b=S4ef+WhUf4kl/GW7GE4vqeY1Yx+Fzx5UqkiHtDnzYFK9B0c5SVIzG7fc9Svn0yy6/j41EE
-	5wuYBoOBe/GhatGMkHOmjNp0zr2QitOgbj5mvd/hnBs+4Ykn5fplN4lMU2uDOU4tAJkg8s
-	r6lsNUA9UYxCBj/Z+UGbs4Pmn8wGkuw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1689620917;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qHz5V5lwxUlduWSVUZLKGbl1lWEkFIrU74CIU+5Jsd8=;
-	b=S4ef+WhUf4kl/GW7GE4vqeY1Yx+Fzx5UqkiHtDnzYFK9B0c5SVIzG7fc9Svn0yy6/j41EE
-	5wuYBoOBe/GhatGMkHOmjNp0zr2QitOgbj5mvd/hnBs+4Ykn5fplN4lMU2uDOU4tAJkg8s
-	r6lsNUA9UYxCBj/Z+UGbs4Pmn8wGkuw=
-Received: from mail-il1-f200.google.com (mail-il1-f200.google.com
- [209.85.166.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-324-JA8utMQnP_i0zdxJ1XxdHA-1; Mon, 17 Jul 2023 15:08:35 -0400
-X-MC-Unique: JA8utMQnP_i0zdxJ1XxdHA-1
-Received: by mail-il1-f200.google.com with SMTP id e9e14a558f8ab-34610c52cf8so30600705ab.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2023 12:08:34 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R569G4RLmz30Db
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 03:57:20 +1000 (AEST)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-1b8b2b60731so33532885ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 10:57:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1689703035; x=1692295035;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=cRD9blNIxHluSUPOIYULRJbi8uFOds7uOEZDc3kDErE=;
+        b=mMpImavfY2ADOOfTsM0dULPAztPWwAkAxaN5EBRdgTONlUbuDv0bc/jnql1JEnUeOO
+         bda5Tj4uvdDQ4B+NJ/gmvkMeUhOrHdA5CxK42FliEYPeTWhjOiI8i0+G+nUodHSTQx/g
+         HanMLQr/dHe8w7iHPBOx35pnzrQWodjmfukbs1BbseIHXHWTRnEizqCumzGYhUaGm+dQ
+         jRxPO5RqjGL1hwX87TamgliuO3lsmronneNDvHaIucdFlccgiBcVHg4FAmdI6hkUO0Ji
+         3UXm13B3+3pT+2iToWzn8Ie1OvrVbaXYWR6AEsbzg//AwTK48dHUa2cpqzFIrDJGPtWZ
+         5PWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689620914; x=1692212914;
-        h=content-transfer-encoding:mime-version:organization:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Ir1J/k3wLKNYp7LI2ijvFBF6ZKrDfOA6Drq2a2Jon50=;
-        b=Is20O4cNgdt2cR//VAEjrHh7mPin12TEmE0jW10A1+s8sn4LVfxZbBAJ86M0YktmcV
-         S3PW9Q8iUxp4r6psqQc0s/qBjL+HxdlXLIf4Ei8PJZmY6UJm9avYy+gZ9LNg5rWcC/ER
-         nI6zi/rnMNxJOsN/ayx+CBXzNdU5NDAiddAxpPrncyaxo0icaQWMSH1UQ04hOvXJ6wI/
-         oNx6ND+PaB0VtZuZQykVEiitMdWfqq/rqOqsWlyz95nF8untL8PGdWuvx/Ie79LvFlhr
-         o+lljeSc3MZ/df8OD216kHdrn1vvu3PSiv+nfnydTh8sCStIJEPMmBafFNQIaxwxwWtJ
-         +fHQ==
-X-Gm-Message-State: ABy/qLbK61TTuNycpGfsbdYOkbG7G7S+HMrF5nIcdJOE3VWI5TcKc0cM
-	bv+Pou8dggjILx6DYF3eCYX+5fAATt5AcnLpJ2qcMcev8Q6Tk0Rdgcq3ClnomKl/kL+l0yK/M3N
-	Pfa33Yfqmyx/fq9eigbYya7Wn4w==
-X-Received: by 2002:a05:6e02:1a8b:b0:348:8542:a673 with SMTP id k11-20020a056e021a8b00b003488542a673mr578094ilv.22.1689620914142;
-        Mon, 17 Jul 2023 12:08:34 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlH8IAKDk/Qq0r0DbEq84CfbH5y70uroq/83Nyu0gFtjM6u4GlatJgupAE/Bg/5ujaAlXs4PMg==
-X-Received: by 2002:a05:6e02:1a8b:b0:348:8542:a673 with SMTP id k11-20020a056e021a8b00b003488542a673mr578040ilv.22.1689620913830;
-        Mon, 17 Jul 2023 12:08:33 -0700 (PDT)
-Received: from redhat.com ([38.15.36.239])
-        by smtp.gmail.com with ESMTPSA id o9-20020a92dac9000000b003460b456030sm129837ilq.60.2023.07.17.12.08.31
+        d=1e100.net; s=20221208; t=1689703035; x=1692295035;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=cRD9blNIxHluSUPOIYULRJbi8uFOds7uOEZDc3kDErE=;
+        b=ZBWB0fCvU1mKOZGDBd4yTnNDJJzLD+sE5CYvbGkG4O9R/M9tvfWGkzqEixSG7JDGNa
+         tf2iuTgSqchzQfp4bRpfcx/g8VawwLJxjP+m1spAuGpmYS0kYDQuIDx933CSkH8zGrag
+         hbj/5bqHrSHDj44MOvyoTMIyVwScubCP6zcm8RBoy2k1zcnpKq/XytGocdnVTsgsF75j
+         m4acKXQIOh5RHLfl/Zp07bglQJsDDsNk/rltQIqkQ0sRa7AIziXVeH9GOYhrKOTLuuQq
+         Oze5by/4dryBq72yYI65WTbenSgqX458zLxxQ714B05lrSJXKcWb02/st4Ht+vyIdO+7
+         ZJjg==
+X-Gm-Message-State: ABy/qLaD/cZf6stZalu5mj4JByi1x82y3TztSbZfuWFQqhQ+QztmSkOp
+	9gJyHNb6eSpvBg5fKst+79RBdA==
+X-Google-Smtp-Source: APBJJlH/DFdDcamBY608z6if+lXRDqfUJnrs4w53GX7UPxfbPo+Y0+UeHJe6ZmJVTzN0SvAK3Kq8RA==
+X-Received: by 2002:a17:902:e549:b0:1b8:aef2:773e with SMTP id n9-20020a170902e54900b001b8aef2773emr17009609plf.46.1689703034916;
+        Tue, 18 Jul 2023 10:57:14 -0700 (PDT)
+Received: from ziepe.ca ([206.223.160.26])
+        by smtp.gmail.com with ESMTPSA id iw10-20020a170903044a00b001b89612dc7dsm2167740plb.142.2023.07.18.10.57.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Jul 2023 12:08:33 -0700 (PDT)
-Date: Mon, 17 Jul 2023 13:08:31 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Grzegorz Jaszczyk <jaz@semihalf.com>
-Subject: Re: [PATCH 0/2] eventfd: simplify signal helpers
-Message-ID: <20230717130831.0f18381a.alex.williamson@redhat.com>
-In-Reply-To: <CAH76GKPF4BjJLrzLBW8k12ATaAGADeMYc2NQ9+j0KgRa0pomUw@mail.gmail.com>
-References: <20230630155936.3015595-1-jaz@semihalf.com>
-	<20230714-gauner-unsolidarisch-fc51f96c61e8@brauner>
-	<CAH76GKPF4BjJLrzLBW8k12ATaAGADeMYc2NQ9+j0KgRa0pomUw@mail.gmail.com>
-Organization: Red Hat
+        Tue, 18 Jul 2023 10:57:13 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.95)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1qLowi-002aex-Bi;
+	Tue, 18 Jul 2023 14:57:12 -0300
+Date: Tue, 18 Jul 2023 14:57:12 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Alistair Popple <apopple@nvidia.com>
+Subject: Re: [PATCH 1/4] mm_notifiers: Rename invalidate_range notifier
+Message-ID: <ZLbSeO+XjSx1W795@ziepe.ca>
+References: <cover.b4454f7f3d0afbfe1965e8026823cd50a42954b4.1689666760.git-series.apopple@nvidia.com>
+ <c0daf0870f7220bbf815713463aff86970a5d0fa.1689666760.git-series.apopple@nvidia.com>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 18 Jul 2023 07:55:09 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c0daf0870f7220bbf815713463aff86970a5d0fa.1689666760.git-series.apopple@nvidia.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,98 +82,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, Muchun Song <muchun.song@linux.dev>, Tony Krowiak <akrowiak@linux.ibm.com>, Matthew Rosato <mjrosato@linux.ibm.com>, Paul Durrant <paul@xen.org>, Tom Rix <trix@redhat.com>, Jason Wang <jasowang@redhat.com>, Roman Gushchin <roman.gushchin@linux.dev>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Michal Hocko <mhocko@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, linux-mm@kvack.org, Kirti Wankhede <kwankhede@nvidia.com>, Vineeth Vijayan <vneethv@linux.ibm.com>, Diana Craciun <diana.craciun@oss.nxp.com>, Borislav Petkov <bp@alien8.de>, Alexander Gordeev <agordeev@linux.ibm.com>, Fei Li <fei1.li@intel.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Marcin Wojtas <mw@semihalf.com>, Arnd Bergmann <arnd@arndb.de>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, x86@kernel.org, Halil Pasic <pasic@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Moritz Fischer <mdf@kernel.org>, Frederic 
- Barrat <fbarrat@linux.ibm.com>, Xu Yilun <yilun.xu@intel.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-fpga@vger.kernel.org, Zhi Wang <zhi.a.wang@intel.com>, Wu Hao <hao.wu@intel.com>, Jason Herne <jjherne@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Andrew Donnellan <ajd@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, linux-s390@vger.kernel.org, Dominik Behr <dbehr@chromium.org>, intel-gfx@lists.freedesktop.org, Sean Christopherson <seanjc@google.com>, Eric Auger <eric.auger@redhat.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Harald Freudenberger <freude@linux.ibm.com>, kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, cgroups@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, virtualization@lists.linux-foundation.org, intel-gvt-dev@lists.freedesktop.org, io-uring@vger.kernel.org, Jens Axboe <axboe@kernel.dk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, Christian Brauner <brauner@kernel.org>, net
- dev@vger.kernel.org, Oded Gabbay <ogabbay@kernel.org>, linux-usb@vger.kernel.org, Peter Oberparleiter <oberpar@linux.ibm.com>, linux-kernel@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>, "Michael S.
- Tsirkin" <mst@redhat.com>, Sven Schnelle <svens@linux.ibm.com>, Johannes Weiner <hannes@cmpxchg.org>, linux-fsdevel@vger.kernel.org, Shakeel Butt <shakeelb@google.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>, linuxppc-dev@lists.ozlabs.org, Pavel Begunkov <asml.silence@gmail.com>
+Cc: kevin.tian@intel.com, x86@kernel.org, ajd@linux.ibm.com, kvm@vger.kernel.org, catalin.marinas@arm.com, seanjc@google.com, will@kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, zhi.wang.linux@gmail.com, linux-mm@kvack.org, iommu@lists.linux.dev, nicolinc@nvidia.com, jhubbard@nvidia.com, fbarrat@linux.ibm.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, robin.murphy@arm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Jul 2023 10:29:34 +0200
-Grzegorz Jaszczyk <jaz@semihalf.com> wrote:
+On Tue, Jul 18, 2023 at 05:56:15PM +1000, Alistair Popple wrote:
+> diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
+> index b466172..48c81b9 100644
+> --- a/include/asm-generic/tlb.h
+> +++ b/include/asm-generic/tlb.h
+> @@ -456,7 +456,7 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
+>  		return;
+>  
+>  	tlb_flush(tlb);
+> -	mmu_notifier_invalidate_range(tlb->mm, tlb->start, tlb->end);
+> +	mmu_notifier_invalidate_secondary_tlbs(tlb->mm, tlb->start, tlb->end);
+>  	__tlb_reset_range(tlb);
 
-> pt., 14 lip 2023 o 09:05 Christian Brauner <brauner@kernel.org> napisa=C5=
-=82(a):
-> >
-> > On Thu, Jul 13, 2023 at 11:10:54AM -0600, Alex Williamson wrote: =20
-> > > On Thu, 13 Jul 2023 12:05:36 +0200
-> > > Christian Brauner <brauner@kernel.org> wrote:
-> > > =20
-> > > > Hey everyone,
-> > > >
-> > > > This simplifies the eventfd_signal() and eventfd_signal_mask() help=
-ers
-> > > > by removing the count argument which is effectively unused. =20
-> > >
-> > > We have a patch under review which does in fact make use of the
-> > > signaling value:
-> > >
-> > > https://lore.kernel.org/all/20230630155936.3015595-1-jaz@semihalf.com=
-/ =20
-> >
-> > Huh, thanks for the link.
-> >
-> > Quoting from
-> > https://patchwork.kernel.org/project/kvm/patch/20230307220553.631069-1-=
-jaz@semihalf.com/#25266856
-> > =20
-> > > Reading an eventfd returns an 8-byte value, we generally only use it
-> > > as a counter, but it's been discussed previously and IIRC, it's possi=
-ble
-> > > to use that value as a notification value. =20
-> >
-> > So the goal is to pipe a specific value through eventfd? But it is
-> > explicitly a counter. The whole thing is written around a counter and
-> > each write and signal adds to the counter.
-> >
-> > The consequences are pretty well described in the cover letter of
-> > v6 https://lore.kernel.org/all/20230630155936.3015595-1-jaz@semihalf.co=
-m/
-> > =20
-> > > Since the eventfd counter is used as ACPI notification value
-> > > placeholder, the eventfd signaling needs to be serialized in order to
-> > > not end up with notification values being coalesced. Therefore ACPI
-> > > notification values are buffered and signalized one by one, when the
-> > > previous notification value has been consumed. =20
-> >
-> > But isn't this a good indication that you really don't want an eventfd
-> > but something that's explicitly designed to associate specific data wit=
-h
-> > a notification? Using eventfd in that manner requires serialization,
-> > buffering, and enforces ordering.
+Does this compile? I don't see
+"mmu_notifier_invalidate_secondary_tlbs" ?
 
-What would that mechanism be?  We've been iterating on getting the
-serialization and buffering correct, but I don't know of another means
-that combines the notification with a value, so we'd likely end up with
-an eventfd only for notification and a separate ring buffer for
-notification values.
+Maybe we don't need to rename this function since you pretty much
+remove it in the next patches?
 
-As this series demonstrates, the current in-kernel users only increment
-the counter and most userspace likely discards the counter value, which
-makes the counter largely a waste.  While perhaps unconventional,
-there's no requirement that the counter may only be incremented by one,
-nor any restriction that I see in how userspace must interpret the
-counter value.
+> diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+> index 50c0dde..34c5a84 100644
+> --- a/mm/mmu_notifier.c
+> +++ b/mm/mmu_notifier.c
+> @@ -207,7 +207,7 @@ mmu_interval_read_begin(struct mmu_interval_notifier *interval_sub)
+>  	 *    spin_lock
+>  	 *     seq = ++subscriptions->invalidate_seq
+>  	 *    spin_unlock
+> -	 *     op->invalidate_range():
+> +	 *     op->invalidate_secondary_tlbs():
 
-As I understand the ACPI notification proposal that Grzegorz links
-below, a notification with an interpreted value allows for a more
-direct userspace implementation when dealing with a series of discrete
-notification with value events.  Thanks,
+The later patch should delete this stuff from the comment too, we
+no longer guarantee this relationship?
 
-Alex
+> @@ -560,23 +560,23 @@ mn_hlist_invalidate_end(struct mmu_notifier_subscriptions *subscriptions,
+>  	hlist_for_each_entry_rcu(subscription, &subscriptions->list, hlist,
+>  				 srcu_read_lock_held(&srcu)) {
+>  		/*
+> -		 * Call invalidate_range here too to avoid the need for the
+> -		 * subsystem of having to register an invalidate_range_end
+> -		 * call-back when there is invalidate_range already. Usually a
+> -		 * subsystem registers either invalidate_range_start()/end() or
+> -		 * invalidate_range(), so this will be no additional overhead
+> -		 * (besides the pointer check).
+> +		 * Subsystems should register either invalidate_secondary_tlbs()
+> +		 * or invalidate_range_start()/end() callbacks.
+>  		 *
+> -		 * We skip call to invalidate_range() if we know it is safe ie
+> -		 * call site use mmu_notifier_invalidate_range_only_end() which
+> -		 * is safe to do when we know that a call to invalidate_range()
+> -		 * already happen under page table lock.
+> +		 * We call invalidate_secondary_tlbs() here so that subsystems
+> +		 * can use larger range based invalidations. In some cases
+> +		 * though invalidate_secondary_tlbs() needs to be called while
+> +		 * holding the page table lock. In that case call sites use
+> +		 * mmu_notifier_invalidate_range_only_end() and we know it is
+> +		 * safe to skip secondary TLB invalidation as it will have
+> +		 * already been done.
+>  		 */
+> -		if (!only_end && subscription->ops->invalidate_range)
+> -			subscription->ops->invalidate_range(subscription,
+> -							    range->mm,
+> -							    range->start,
+> -							    range->end);
+> +		if (!only_end && subscription->ops->invalidate_secondary_tlbs)
+> +			subscription->ops->invalidate_secondary_tlbs(
 
-> > I have no skin in the game aside from having to drop this conversion
-> > which I'm fine to do if there are actually users for this btu really,
-> > that looks a lot like abusing an api that really wasn't designed for
-> > this. =20
->=20
-> https://patchwork.kernel.org/project/kvm/patch/20230307220553.631069-1-ja=
-z@semihalf.com/
-> was posted at the beginig of March and one of the main things we've
-> discussed was the mechanism for propagating acpi notification value.
-> We've endup with eventfd as the best mechanism and have actually been
-> using it from v2. I really do not want to waste this effort, I think
-> we are quite advanced with v6 now. Additionally we didn't actually
-> modify any part of eventfd support that was in place, we only used it
-> in a specific (and discussed beforehand) way.
+More doesn't compile, and the comment has the same issue..
 
+But I think the approach in this series looks fine, it is so much
+cleaner after we remove all the cruft in patch 4, just look at the
+diffstat..
+
+Jason
