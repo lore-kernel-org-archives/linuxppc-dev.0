@@ -4,111 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CB17C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 21:16:27 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=QChVRu7t;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BD3EC0015E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 21:24:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5pXV37wtz3bw9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 07:16:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=QChVRu7t;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe02::615; helo=eur01-db5-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com (mail-db5eur01on0615.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe02::615])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5pjt3sVvz3cM2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 07:24:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chengzhihao1@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1014 seconds by postgrey-1.37 at boromir; Thu, 20 Jul 2023 00:40:44 AEST
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5pWS2C78z30P3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 07:15:29 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=h/fjxIIfRx2PznDWXmUo066WIUbfiFW/QAQWmyyRYwAf+80GFk8Pu6Oks4+Xs3MxitrZg89skcvbrueAYnqAI7Tm5liI1dE1/xVuM7+cnnXGdrqUsHuZGcgpO1hi6XPTLviHid38Oi5kTAwXM+ut6ZzkmHElsRtiQ1XmdtQt/7dRTLWTz6FmoYcBZnVGW76400zUEw8Ziog/xGz+1Gc22QZ8HID7wHRmUBjJipFwxVEMQK7d25kp6RH53PfF8/0N8Fj8CQYsYcdCzevT0qzJKaH8s9XX49bH9frO0zJASq1EGUIl8coT3m5kqQShKcn5J39SJ77/PJoNrhGWlNW/0g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Lz3brBpmjxJG6fPFlrGOYwJ8tbaYbmg5Ru9ChWh6H0Q=;
- b=eCzNjZeq/Y/fTcoI/HBZ4iYTBUPx/xmUqQD9WKEErb55883C72XUmWpzOoJNb90/ojDUvjxBKOXGwSdkCSwJ3hKjU9tH6cbanAjKkVP8wl3j/NLrCx7PbffRn9XL7ster75uz8j6721eHd3YNEbpOxMz6HTs/Nf9iNY42I/0q/y/8ZuvaAtrAGhWZYVscgBEnzRpJhwP7RadzJGZEgvEVcWGLMGYhx5JhB/M5Oo+8sm1nXffVL0ipN+lfWj6evfpJsrBAnF+MXzKuHqEHiKBsLFI5a23qo9LP0ayrbvCxqwbqysJTBsnXkKr25fgviEdVB9VqHzFiuLhuihRvnzanw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Lz3brBpmjxJG6fPFlrGOYwJ8tbaYbmg5Ru9ChWh6H0Q=;
- b=QChVRu7tyeBr/qnK2mPSkyYenMY7TKnCP5coDsZ6i/rXfpVdfIdk8dQnXjgMLMiQS2LOIZy8aAElU7wAwP4RixWPuRf5SijVL0LXr+v1QUjFvmhP/QzKnFq2hYndHol+9YvlZlev5RT41ZdhIIBo7vIbaVg3pQCZoTzQ0kqKt4k=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM6PR04MB4838.eurprd04.prod.outlook.com (2603:10a6:20b:4::16)
- by PR3PR04MB7372.eurprd04.prod.outlook.com (2603:10a6:102:80::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.23; Wed, 19 Jul
- 2023 21:15:06 +0000
-Received: from AM6PR04MB4838.eurprd04.prod.outlook.com
- ([fe80::d0d5:3604:98da:20b1]) by AM6PR04MB4838.eurprd04.prod.outlook.com
- ([fe80::d0d5:3604:98da:20b1%7]) with mapi id 15.20.6609.024; Wed, 19 Jul 2023
- 21:15:06 +0000
-Date: Wed, 19 Jul 2023 17:14:52 -0400
-From: Frank Li <Frank.li@nxp.com>
-To: Markus Elfring <Markus.Elfring@web.de>
-Subject: Re: [v3 1/2] PCI: layerscape: Add support for Link down notification
-Message-ID: <ZLhSTH6M3XWgxMFy@lizhi-Precision-Tower-5810>
-References: <20230719155707.1948698-1-Frank.Li@nxp.com>
- <901fdc6a-a560-a431-adc9-aa73d7f69e7a@web.de>
- <ZLg9Mw/FvmMdNLjX@lizhi-Precision-Tower-5810>
- <065b12d7-d46f-adf9-e806-40802fe888cf@web.de>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <065b12d7-d46f-adf9-e806-40802fe888cf@web.de>
-X-ClientProxiedBy: SJ0PR05CA0048.namprd05.prod.outlook.com
- (2603:10b6:a03:33f::23) To AM6PR04MB4838.eurprd04.prod.outlook.com
- (2603:10a6:20b:4::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5dlw1WG1z3c1n
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 00:40:43 +1000 (AEST)
+Received: from kwepemm600013.china.huawei.com (unknown [172.30.72.54])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R5dJQ0gzxzNmKd;
+	Wed, 19 Jul 2023 22:20:22 +0800 (CST)
+Received: from [10.174.178.46] (10.174.178.46) by
+ kwepemm600013.china.huawei.com (7.193.23.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Wed, 19 Jul 2023 22:23:40 +0800
+Subject: Re: [RFC PATCH 05/21] ubifs: Pass worst-case buffer size to
+ compression routines
+To: Ard Biesheuvel <ardb@kernel.org>, Eric Biggers <ebiggers@kernel.org>
+References: <20230718125847.3869700-1-ardb@kernel.org>
+ <20230718125847.3869700-6-ardb@kernel.org>
+ <20230718223813.GC1005@sol.localdomain>
+ <CAMj1kXE1fND2h8ts6Xtfn19wkt=vAnj1TumxvoBCuEn7z3V4Aw@mail.gmail.com>
+From: Zhihao Cheng <chengzhihao1@huawei.com>
+Message-ID: <3330004f-acac-81b4-e382-a17221a0a128@huawei.com>
+Date: Wed, 19 Jul 2023 22:23:39 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM6PR04MB4838:EE_|PR3PR04MB7372:EE_
-X-MS-Office365-Filtering-Correlation-Id: 851ed36b-6c3c-4345-5507-08db889d3974
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	4enW4njal3RWASt2SLdtZWAtZxDWpr7GcPC1r5JOXLLNJURNEyAPws0IZoH1xurOQIqVqU0VtucuSrSCiZNqmQ5zx9vtMmwpe0wRrZ3wGetrOwUbGI/zaNmm0tuKtm2t2fXAdah+zzpiVAW2yxH9NN2XVn9gHeVtYY3r9JMtctIDxqF9jUO9ScqWn8kvAqP/dtmpXIySUqrVM+OkzMZ53Wk7yYTk/3Df1UtkmZDllbk4eepg1P+LRr1VIzbrP9iKIGlnrGz9zkJx3ezBf41zhksyqfVNR+rERfMHW/X+1pp0v4fdtG4Ab/FpWxFnH17XENsH8EgXepDv5Q2dTMmeY5S1GofDhLRssKSxPsjsITrCNRlkOaNgpAJheFkjAyXclPG7Cq5BxT4ugfCrNYR+EccemnCavxNSj5Q3sOM+IdDCat4hy5EJ+JIGThir3H+9QUYC8LSZFGNLeOxPIRoxEovmMK4L5XCQni+gkbrN9NXmFQUX3iihbKRiIqEngZuc5EJ64tWf94oMQZRcJ87MuYlILOzS3Bhuds3VoPRBrT95qk1oE00kAyUdqg/DKAz/lI6MNLckmxcHjLZ84kKGBfQnWwO/h4CAx4WYATAtuK8=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM6PR04MB4838.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(7916004)(4636009)(366004)(376002)(136003)(346002)(396003)(39860400002)(451199021)(316002)(41300700001)(66476007)(66556008)(66946007)(4326008)(6916009)(5660300002)(8676002)(8936002)(33716001)(86362001)(38350700002)(38100700002)(6486002)(9686003)(966005)(6512007)(52116002)(6506007)(186003)(26005)(6666004)(54906003)(478600001)(7416002)(2906002)(4744005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?/kOEMF0CyZ7iJU0s/QOVnyu50fEEDQtf8qdtrFjA95rd6cJfBd2XwMJE2zTv?=
- =?us-ascii?Q?X1DliFSLNkVFVmmb3TqBPfr2/oMJXfbbfVHZuCyNkB65zt1i6XNYsvugStVt?=
- =?us-ascii?Q?44T4KlmWWNelW7jKItb2CrJNs98MRnaAWJNFyfORsESQqS1YCeNRnEUEAz+b?=
- =?us-ascii?Q?cf6VKRu72CLgvqDTpgYPsUxSE9raSkXptHipd15KEwzaGktAAAOP74GRVuGa?=
- =?us-ascii?Q?KtutrVArrecAHSfRVDmSBJ6VxKy7IimIEEEEtOnlhLiakGg2LQtIqKAXQAK9?=
- =?us-ascii?Q?JrEFIAAtWMe9PNakaZyTE6+5APtyO2UGO4oM/7sOCa1goVHwfKCBuf9ZbB24?=
- =?us-ascii?Q?KwloVKHVZiUVMG+1B2Ujv2X8Ij8/RIaVNyG4xsXsHPb1u5rH6NfkxsPsouL8?=
- =?us-ascii?Q?UK/Znjlhqjx9q/K/mYqGmxIPq7YS930vEgv1EcrD9xzZCN3RKZL13mLQ86CR?=
- =?us-ascii?Q?lKfswwipJ0ibWHwX9sLuSYXmmKPocBHq72503JZcyMGusneAoz3pX7mSWG6P?=
- =?us-ascii?Q?rq3Lp8RPw8xjpCCUcbJGAdzulVbYfUHJKRzbCBSXGPlX6y3zSzWBEDxDwcxS?=
- =?us-ascii?Q?67hLwRxEAezx398mNuJPWv8QAb2P+9c8fiSDNJpUBabYfztoHB8JFso6sMRi?=
- =?us-ascii?Q?n7oxYygGnjQEYcdH7Pefhtfo8spZaVNneMvX7j+yXVDcriN/AncqFBmgArdx?=
- =?us-ascii?Q?o6Bie10VQnyRhUjaKbMZKh7VYrAyrwr1NK0Av5ZkeDROzvzVjbms8u546HbK?=
- =?us-ascii?Q?SKFstsR8LJxrqZLx9uKBcfXKzLDrFIzx1orujDVZAwtDtQQl1QWwuGAkLyE5?=
- =?us-ascii?Q?aLU3LQfzOlwOOi4xhxVSMtoDuzB2u2A+5LXXvruCgmiTuuhyqr3nBiLHSMEw?=
- =?us-ascii?Q?mfmc/tDbAdbKongmJovOMo9o7eJDB9sBJoxCOXj0zGdTRsMfs18tSf7vgcJW?=
- =?us-ascii?Q?FEHNre2Cj5vXrS9eLKNfboYEy6pS5ZY8utVWRGIHkfPQHRdZMuUfbL4kgaPR?=
- =?us-ascii?Q?M+Nil8vyt6Qrdt7n0u62Heem5tI1c9RLZARytrb96Q1ixHcxqWSljwu2zxEd?=
- =?us-ascii?Q?enBDpO0z3EPvrAyN7zqTzEfYocxx/TBGO44jwc428PxBdGdLPn26LObLWUr5?=
- =?us-ascii?Q?LliN3asM16ceFgrr3uRHf/39grdP1Iv0+7Bxjiv/OQz7sGu55bzu1xb+4czc?=
- =?us-ascii?Q?PHoGZm/8n2xwtqdDQvQMXEQSGdFJTdr3T9iR+UmNvI81FMJ+R8I3cTMmB4J1?=
- =?us-ascii?Q?hUjBN+PsIPlIgs3lKk8RjMVIEMK0wnsQmh+ardXaT18dZqELJJ/IT6jJNzd1?=
- =?us-ascii?Q?HDA2uYNaoqTs3COBODk6mtxriPuCqGVydYI9oadJi17Od8hew2igBuSB1dE5?=
- =?us-ascii?Q?Bf6mgggMfpvl361w3Sk9xFROqMzNyEdbFUiz/Ho3uh4PGf0hODi7vzaXgXuv?=
- =?us-ascii?Q?qz8Sf8yc1LXMI2nhxF+Q1PcZpHTnWwJ3/lHf6VfemBUYhdyCY2zR2RlDv99b?=
- =?us-ascii?Q?Z9x3grikAEkHM9et5HqhuF5K+xnj0kPgXUFq9RXfSnzNxmVTaP3OiNYtND02?=
- =?us-ascii?Q?q9QNmtouUpJJz+6+V2QQkPXOPW16LxzTLkFXKhg6?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 851ed36b-6c3c-4345-5507-08db889d3974
-X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB4838.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jul 2023 21:15:05.9350
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7SqRxIdM6S5pKjIMHSu8ZKetH7y0chXtTrdrCdySYhUwSyoR2Cf6gQMa+XGC6BqzfdleX3dBCJ4Pg32CxKKXUw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7372
+In-Reply-To: <CAMj1kXE1fND2h8ts6Xtfn19wkt=vAnj1TumxvoBCuEn7z3V4Aw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.174.178.46]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ kwepemm600013.china.huawei.com (7.193.23.68)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Thu, 20 Jul 2023 07:24:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,37 +55,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, imx@lists.linux.dev, Xiaowei Bao <xiaowei.bao@nxp.com>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, linux-pci@vger.kernel.org, Hou Zhiqiang <Zhiqiang.Hou@nxp.com>, Manivannan Sadhasivam <mani@kernel.org>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, linux-arm-kernel@lists.infradead.org
+Cc: Jens Axboe <axboe@kernel.dk>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Steffen Klassert <steffen.klassert@secunet.com>, Kees Cook <keescook@chromium.org>, qat-linux@intel.com, Sergey Senozhatsky <senozhatsky@chromium.org>, Richard Weinberger <richard@nod.at>, David Ahern <dsahern@kernel.org>, Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Nick Terrell <terrelln@fb.com>, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, Jakub Kicinski <kuba@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 19, 2023 at 10:08:16PM +0200, Markus Elfring wrote:
-> > Cover letter just annoise people here.
+在 2023/7/19 16:33, Ard Biesheuvel 写道:
+> On Wed, 19 Jul 2023 at 00:38, Eric Biggers <ebiggers@kernel.org> wrote:
+>>
+>> On Tue, Jul 18, 2023 at 02:58:31PM +0200, Ard Biesheuvel wrote:
+>>> Currently, the ubifs code allocates a worst case buffer size to
+>>> recompress a data node, but does not pass the size of that buffer to the
+>>> compression code. This means that the compression code will never use
+
+I think you mean the 'out_len' which describes the lengh of 'buf' is 
+passed into ubifs_decompress, which effects the result of 
+decompressor(eg. lz4 uses length to calculate the buffer end pos).
+So, we should pass the real lenghth of 'buf'.
+
+Reviewed-by: Zhihao Cheng <chengzhihao1@huawei.com>
+
+>>> the additional space, and might fail spuriously due to lack of space.
+>>>
+>>> So let's multiply out_len by WORST_COMPR_FACTOR after allocating the
+>>> buffer. Doing so is guaranteed not to overflow, given that the preceding
+>>> kmalloc_array() call would have failed otherwise.
+>>>
+>>> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+>>> ---
+>>>   fs/ubifs/journal.c | 2 ++
+>>>   1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/fs/ubifs/journal.c b/fs/ubifs/journal.c
+>>> index dc52ac0f4a345f30..4e5961878f336033 100644
+>>> --- a/fs/ubifs/journal.c
+>>> +++ b/fs/ubifs/journal.c
+>>> @@ -1493,6 +1493,8 @@ static int truncate_data_node(const struct ubifs_info *c, const struct inode *in
+>>>        if (!buf)
+>>>                return -ENOMEM;
+>>>
+>>> +     out_len *= WORST_COMPR_FACTOR;
+>>> +
+>>>        dlen = le32_to_cpu(dn->ch.len) - UBIFS_DATA_NODE_SZ;
+>>>        data_size = dn_size - UBIFS_DATA_NODE_SZ;
+>>>        compr_type = le16_to_cpu(dn->compr_type);
+>>
+>> This looks like another case where data that would be expanded by compression
+>> should just be stored uncompressed instead.
+>>
+>> In fact, it seems that UBIFS does that already.  ubifs_compress() has this:
+>>
+>>          /*
+>>           * If the data compressed only slightly, it is better to leave it
+>>           * uncompressed to improve read speed.
+>>           */
+>>          if (in_len - *out_len < UBIFS_MIN_COMPRESS_DIFF)
+>>                  goto no_compr;
+>>
+>> So it's unclear why the WORST_COMPR_FACTOR thing is needed at all.
+>>
 > 
-> How do you think about advices from another information source?
+> It is not. The buffer is used for decompression in the truncation
+> path, so none of this logic even matters. Even if the subsequent
+> recompression of the truncated data node could result in expansion
+> beyond the uncompressed size of the original data (which seems
+> impossible to me), increasing the size of this buffer would not help
+> as it is the input buffer for the compression not the output buffer.
+> .
 > 
-> See also:
-> https://kernelnewbies.org/PatchSeries
 
-"You may like to include a cover letter with your patch series."
-
-Generally, I think cover letter will be needed only if it really
-help reviewer to get main idea about patches. 
-
-Such as my on going pathes(with cover letter):
-  https://lore.kernel.org/imx/ZLglBiSz0meJm5os@lizhi-Precision-Tower-5810/T/#t
-
-Similar case without(cover leter) and accepted.
- https://lore.kernel.org/imx/20230719063425.GE151430@dragon/T/#t
-
-I don't think cover letter real help reviewer to review these two patches.
-
-I more like to get "real problem"(such as comments about "typo").
-
-It is just waste time to discuss if need add cover letter here.
-
-Frank
-
-> 
-> Regards,
-> Markus
