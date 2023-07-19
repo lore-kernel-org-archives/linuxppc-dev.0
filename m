@@ -4,75 +4,149 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A7FBC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 13:51:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55D83EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 14:00:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mSLGK2c7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZAYxCY6c;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5cfh55tKz3bZ6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 23:51:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5csb4Stsz3bXH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 00:00:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mSLGK2c7;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZAYxCY6c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=philmd@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=yan.y.zhao@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Wed, 19 Jul 2023 16:37:02 AEST
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5ccv0vp3z30Np
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 23:49:33 +1000 (AEST)
-Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-31454996e06so6503962f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 06:49:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689774570; x=1692366570;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=JeaSSoZd0P4aBDcnBZ8BgOhayrU2NW5OGYbO05NkL/4=;
-        b=mSLGK2c7L5EE4FfadrFnGKrx8rHqMorl3CkK/H11fHsq3cy4XSsKtutECoQcxj7VUH
-         6217O/9tcynPgDcZCiS5kwgKPRQ9yaxcBfet9pGpjP3OtetZCluXE3f4KQeLL37dXcdq
-         Shyafc4xZzvzAf3/I3duYT0A6Lan59ePh67EPf8B6LGZv9LJEeK4tH3b6lkOaji6veEW
-         jV3wN5L8eRb0FEZEQdFL5i8bBvckl20VHoXJydGdhlh18d4M6Z7KwE4oD2NfJGaix4SY
-         m60NOgE8+OkCmcQdiCC141H+NDbenv1Kvjlt/AYNlG4in4PaDFI5cUWT/kWWjIB6GhTf
-         8q+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689774570; x=1692366570;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=JeaSSoZd0P4aBDcnBZ8BgOhayrU2NW5OGYbO05NkL/4=;
-        b=ITnV7UtNU6GLZuX7UcgNR7SKKp8IvB95YQFMw/+u+qG/bs0XIb86ExC9yGnrN4wUXo
-         kVCi4BMEQ0RXL2kkcD43jTB9VJLCUDr4CKfsS8nSoR5tg5zXUHGM7qCSJxfjd/Utx+Ln
-         dbmXpaAUpqLZqv3b+e2gL8eeluxXNJ+wNsBDN++EIhrpG8iyoUYl5iDqZveziJLhnsdw
-         1zxQsvOEi6GSxe+c1DDxVx2Ka6FK4zjAGs7S1cwo1o9K8/1Zke8HQqeqEiPbLUficmlU
-         P01WUHc4StbRl0pt33RTQgG22eXnN9yUm8rqsbqu82vLNfjwkfnD61bWer0+ctVE404X
-         eW/g==
-X-Gm-Message-State: ABy/qLZXU0Acqsa/0aB/1b35G2PPiaNmhCW5km3UkgZcRP9AHFTChx+4
-	SGU8wzgH5fD+hjQwDv9An9VBJg==
-X-Google-Smtp-Source: APBJJlEbRVrqi3m5ZvwiJaNOZocZP7fbMQ7EmoV04cKWj5tMJSoThE8C5X94lSqKcc5w5KB/JoRc7Q==
-X-Received: by 2002:adf:d0d1:0:b0:314:824:3777 with SMTP id z17-20020adfd0d1000000b0031408243777mr13524380wrh.48.1689774570336;
-        Wed, 19 Jul 2023 06:49:30 -0700 (PDT)
-Received: from [192.168.69.115] ([176.187.201.220])
-        by smtp.gmail.com with ESMTPSA id w17-20020adfde91000000b00315a57f1128sm5357828wrl.115.2023.07.19.06.49.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 19 Jul 2023 06:49:29 -0700 (PDT)
-Message-ID: <32595080-dd79-5cf0-46e7-b82d0df8f067@linaro.org>
-Date: Wed, 19 Jul 2023 15:49:22 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5R1p1R4Mz2yDj
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 16:37:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1689748622; x=1721284622;
+  h=date:from:to:cc:subject:message-id:reply-to:references:
+   in-reply-to:mime-version;
+  bh=OT4WTVvH9tf5/dlVvTiAr/1zEZ3n1sLnHsNy7hD8IkQ=;
+  b=ZAYxCY6cvSlRJ1rsPVwo6V8BcoznlT2fvz1ffKVSJZQOPYhTYkG7HNwN
+   StxGD1WieFawPnpJ9zGZFvcvADUGVekpdKUaCc740RvOe+tgNHTuGxnEg
+   oooy4+CkmFg1ZsyjgNbljdoXBntw2ZawdncmZaCzlC/EjTAVa0mYuMaxC
+   bq7zf4kpSgbnwd4LP27b7nfwz+5QL5WUR3nXynE5JcQcxNjQ70Tbx5yxK
+   EUNk7UAr//FzVxo8ihkvCs+eAWT3KPnoDmwaoGgUBiPxc13lxQT9Ve1rZ
+   Zh2Gk3TcCywse74L4Tl3kb1ohFutbubws7g8mRUOV8bjKR14gO21r24oR
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10775"; a="369031187"
+X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; 
+   d="scan'208";a="369031187"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jul 2023 23:35:50 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10775"; a="814025207"
+X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; 
+   d="scan'208";a="814025207"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by FMSMGA003.fm.intel.com with ESMTP; 18 Jul 2023 23:35:50 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Tue, 18 Jul 2023 23:35:50 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Tue, 18 Jul 2023 23:35:49 -0700
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27 via Frontend Transport; Tue, 18 Jul 2023 23:35:49 -0700
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.171)
+ by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.27; Tue, 18 Jul 2023 23:35:49 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=BKXtGXvpOUFXXCO7uy+xAmxdkzFBc68nibNoP2mQRO3bzfqQBBwJyYZq90mSNqk9gosnHvPHJ98CiaAK4cBZuFQdbY1vJtQi+Q2yMSKFTUscAJEkJAz6ZjEZYzsP7nib+1xxQWpPzZZikV1pSghXtc70MQ6nzidduzt0UONUhtDxOMmIL1iJT4SK5HuzDS2A4PHz/QCVvF6lzx++k8FsJ/ygQME/fKRlBQEYTljsOzCqZ+oidXaEszX0iqHG19wqByLaUit1iCREVVxt/MYff+XJ3sxCFIHi89gLw8JrNt4hzcp4C86eWkJRVAPzNIVA0QfeG9fRTQws+pZsb6tniA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7EzO6VSU5nSON2Ssfz6O7lb7gePKocrSMN9+YaPeXKk=;
+ b=jEg0C9cwReE/Ozp5LY8VjdnJlytInyGhM0LkkCz8LhxJsnj52fT9lPb4ANofBsPGqEZee1NEQKrMyU9CbAH/rTWaEgARPT02h33J9/is68Yh8PSP6atLUnhvftGvtRDV7kxxldciivMXOlxDNqAQnCpzW0oEaP5ZPzTI/W4fNj/qG38hDGiu/Sy6/UzHXtXzCQBj3jUTvNuD055Aj1R3CjuP1Phz6glQ0cgWOmDItTMYpvJtFT+v8UcvDupQuKS4RMWtog+5vSZ2F+ebz89E5K/rQ3yqfa2KnLDwHO8AjXG2g/uEhtWxEe0q6kcEzAUe6ILjeCzCFOs0XGXB7ZNp6Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com (2603:10b6:8:71::6) by
+ BL3PR11MB6483.namprd11.prod.outlook.com (2603:10b6:208:3be::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6588.32; Wed, 19 Jul
+ 2023 06:35:46 +0000
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::1b1a:af8e:7514:6f63]) by DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::1b1a:af8e:7514:6f63%2]) with mapi id 15.20.6609.024; Wed, 19 Jul 2023
+ 06:35:46 +0000
+Date: Wed, 19 Jul 2023 14:09:01 +0800
+From: Yan Zhao <yan.y.zhao@intel.com>
+To: David Stevens <stevensd@chromium.org>
+Subject: Re: [PATCH v7 5/8] KVM: x86/mmu: Don't pass FOLL_GET to
+ __kvm_follow_pfn
+Message-ID: <ZLd9/V6EAxSwEAzY@yzhao56-desk.sh.intel.com>
+References: <20230704075054.3344915-1-stevensd@google.com>
+ <20230704075054.3344915-6-stevensd@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230704075054.3344915-6-stevensd@google.com>
+X-ClientProxiedBy: SI2PR01CA0039.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:193::16) To DS7PR11MB5966.namprd11.prod.outlook.com
+ (2603:10b6:8:71::6)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.13.0
-Subject: Re: [PATCH v2 5/9] vgacon: remove screen_info dependency
-Content-Language: en-US
-To: Arnd Bergmann <arnd@kernel.org>, linux-fbdev@vger.kernel.org,
- Thomas Zimmermann <tzimmermann@suse.de>, Helge Deller <deller@gmx.de>,
- Javier Martinez Canillas <javierm@redhat.com>
-References: <20230719123944.3438363-1-arnd@kernel.org>
- <20230719123944.3438363-6-arnd@kernel.org>
-From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
-In-Reply-To: <20230719123944.3438363-6-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR11MB5966:EE_|BL3PR11MB6483:EE_
+X-MS-Office365-Filtering-Correlation-Id: cf01554f-c24f-4ac6-caca-08db882261fe
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: i+uJ14KCQkehmcVeFsjsxN5qWboimT/LwipHJM76Uxq7neoMetaLC5U7PTKs0Q5wcvKTZkITkhPMGaAqxaaMKsmPB4WTJXHNIUHQDpSweluSath3AIcHOX7Z2JCnJWltQICCCOU/0O4zNHveWcj9lfmWBoeQnIz3cSpN2ZXnQYh39+0tAavZ/UceuSMk4hjkteCEY8055ptb8zWYA/CHGiFqNvPsvWD5XG1r9HhkFliprDqaIGfAKqWul0RIqtdst1qesj9HnPwRwsx0Z/0cZuO8+d1JozyuB59PTgl0pl4c4PeAKJYu938u87+FLH/TyxdqU+0FYhvxu7QalxQwqNdI1cSb4q/R/AR+Hz9+Zx06oNP9bTxvnCM2P/E6MPAyNQ1yBXaOaZAwDetlJRlwufFA3lFWObj8heIIYb022ChmwuhK1n3FpbDkJXncOmBrTXCiceNTSvPB4x93Z9d5mE/zUPyUtC31F7XZ1ASa0AJreD2p5XAGMEtGH7P0wxhOyHu35h5dem57aR+6PmRpnADTxIFdQenf0NS9JTtXLuEVK7zD/tPQMISO9Z5leQWB
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR11MB5966.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(396003)(366004)(136003)(346002)(376002)(39860400002)(451199021)(6666004)(6486002)(478600001)(82960400001)(7416002)(8676002)(2906002)(54906003)(3450700001)(8936002)(5660300002)(86362001)(4326008)(6916009)(38100700002)(66946007)(66556008)(66476007)(316002)(6506007)(41300700001)(26005)(83380400001)(186003)(6512007);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?sbxNv5NUZEgP8FrcXUtPj5X8cf6uBGJkOV0/xjfVrVgrYshHCOcj3tn1C3kO?=
+ =?us-ascii?Q?xwh+a91XGxp1WHraFZPfjnvDqyH+/xNPQQew9RvpDafr+mW1RT1vj3mZNwJA?=
+ =?us-ascii?Q?Gfn4jGrm3lHC3BhuZPf4DR5EQbxq/EakKqv6dwrNCAzzMrulJKicNLX+0hXJ?=
+ =?us-ascii?Q?GFW7IXD1NZ5wegFT40bAMAmyEtPXXtYFIxRyqd64M8JwwH3mdHjQNRNVmp2P?=
+ =?us-ascii?Q?JVneMWh9Joo7mplNhRystvjL4NKjfOh8eUkwdA2f/2NJ8BNFjuMtaDB0C2SE?=
+ =?us-ascii?Q?OFKTfOz0eVYwY7ztiNA1S8Srt2E3VMBnAaDICBJMlcV89y+p71WafL3DwasC?=
+ =?us-ascii?Q?kIjBFjLo34tjDb0k12IOX93dIR5gef7nkyuuiG7N7xqJeYLHWhwKvK25pvAj?=
+ =?us-ascii?Q?QnnVQnFYQ6lW1oQxmX5sBmO1skxlPOYmXKp5SMGWFHey1ITX5Osne0DdUkzT?=
+ =?us-ascii?Q?8niSAqVlw4jVGlNZcrUcTiybtL9jaIpA3P693GM0qlMQ1xIJhTpk12c0yuH3?=
+ =?us-ascii?Q?ppIFsjHHzRqufQ2+GYNKVMsARDLekB5vVolc6m++2vlnqg3BT7PR72aB/n/b?=
+ =?us-ascii?Q?j8sjHIIloul8ys26t96qsmQ/ecnvxTpsdg6Rp+wlnzUc5ttB9ZVjX8sKHOlQ?=
+ =?us-ascii?Q?kk0WMnfiKGAsPxOr2+wPdpJrOTmZLJuJxOnuNwBNggB27AorSmasZbMRqxWE?=
+ =?us-ascii?Q?0X8Nz/L0Pji1j875QsqE4ZH8kSOXZztwdny6LDYO6aDNLghbgmTrjO+B0qRb?=
+ =?us-ascii?Q?me1gbrD+jfN2s2kOFxeKE4YnLvGD2csXWSFEB4b29tznRDYY7IpnzDUPAiUZ?=
+ =?us-ascii?Q?BP2SHBWowR/wtMgmwsiFRcjEHzOiDMnte1kXZPolz9nisUT09IzMvjTOz9GC?=
+ =?us-ascii?Q?PpGttKCXLPl2GQhh/cHGyfGA2QJ0u/W6pGp9a/mSXxecc5fa455VTrmWDhnm?=
+ =?us-ascii?Q?OL4nUEY7CYczrlzdpS8v8hx6DA5XJfrOg6SDpkxN8KCn9CBVdHZooYVaND7V?=
+ =?us-ascii?Q?yDItgnnZoCXmbdDjcESsBpRjyB0aUANT+fSvxsOfsUZ1SCYGp3HLAx/qJ381?=
+ =?us-ascii?Q?PylF0rkJdnFPUWjt800hsdStLb8s5X5pC0LtWBww/Bnraacpsg0gKB5dIxiA?=
+ =?us-ascii?Q?s0sGDSuWrPrpItMd634GLKF8Afi47pQ6yYoN49WlLsgT/6Gtrex06S0WE/mR?=
+ =?us-ascii?Q?moGXvwDPiu23TJzx8UJ5kN8fvySUgnUXh6TFdgPFPGtjytI3qEwqQl0HjoHE?=
+ =?us-ascii?Q?ZHVU6hgJ65TStpIMz7WlFuqUeCmlBcA8YwQbFTII9xA5nmwivVOHCifh2kd9?=
+ =?us-ascii?Q?b/mc79javAzGwgByp2j1V0RDamRzAL/DsupyyCbPRTbNxiN9TPj2ahJ65zVc?=
+ =?us-ascii?Q?eml87c/pZjGzal58yHdiz59rQz6BOTT99JBkXsYbjEaA7k1Jz7EcCVq3PolT?=
+ =?us-ascii?Q?mJW8GZwbpsf7rST/hUX4i4GMsKDKkhBh4hGmF+VJbMXdUZH46aJ8gh/tCUzx?=
+ =?us-ascii?Q?99oHLxElL31CYWFfWJjSQoS+rnpBJs5h295lTexXZneGcLin5SqA6mjLFcCa?=
+ =?us-ascii?Q?fLWNtggDEO0tgUamApjFWWOG1skLjBX995peA52o?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: cf01554f-c24f-4ac6-caca-08db882261fe
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR11MB5966.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jul 2023 06:35:45.9252
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: QWuJJL+xWPZkh52/xeExwvrFqCkTp/GLoL84zlqPcOKBuyL7aUvS7AeAyHA3WOdfAavtDuJmRdUJV6tlvt0a7g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR11MB6483
+X-OriginatorOrg: intel.com
+X-Mailman-Approved-At: Wed, 19 Jul 2023 23:59:42 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,80 +158,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, linux-efi@vger.kernel.org, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, "K. Y. Srinivasan" <kys@microsoft.com>, David Airlie <airlied@gmail.com>, Ard Biesheuvel <ardb@kernel.org>, Wei Liu <wei.liu@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Dexuan Cui <decui@microsoft.com>, Russell King <linux@armlinux.org.uk>, Deepak Rawat <drawat.floss@gmail.com>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Haiyang Zhang <haiyangz@microsoft.com>, Nicholas Piggin <npiggin@gmail.com>, Bor
- islav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Khalid Aziz <khalid@gonehiking.org>, Brian Cain <bcain@quicinc.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Reply-To: Yan Zhao <yan.y.zhao@intel.com>
+Cc: Marc Zyngier <maz@kernel.org>, kvm@vger.kernel.org, Sean Christopherson <seanjc@google.com>, linux-kernel@vger.kernel.org, Peter Xu <peterx@redhat.com>, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Arnd,
+On Tue, Jul 04, 2023 at 04:50:50PM +0900, David Stevens wrote:
+> @@ -4451,7 +4461,8 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+>  
+>  out_unlock:
+>  	write_unlock(&vcpu->kvm->mmu_lock);
+> -	kvm_release_pfn_clean(fault->pfn);
+> +	if (fault->is_refcounted_page)
+> +		kvm_set_page_accessed(pfn_to_page(fault->pfn));
+For a refcounted page, as now KVM puts its ref early in kvm_faultin_pfn(),
+should this kvm_set_page_accessed() be placed before unlocking mmu_lock?
 
-On 19/7/23 14:39, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> The vga console driver is fairly self-contained, and only used by
-> architectures that explicitly initialize the screen_info settings.
-> 
-> Chance every instance that picks the vga console by setting conswitchp
-> to call a function instead, and pass a reference to the screen_info
-> there.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->   arch/alpha/kernel/setup.c      |  2 +-
->   arch/arm/kernel/setup.c        |  2 +-
->   arch/ia64/kernel/setup.c       |  2 +-
->   arch/mips/kernel/setup.c       |  2 +-
->   arch/x86/kernel/setup.c        |  2 +-
->   drivers/firmware/pcdp.c        |  2 +-
->   drivers/video/console/vgacon.c | 68 ++++++++++++++++++++--------------
->   include/linux/console.h        |  7 ++++
->   8 files changed, 53 insertions(+), 34 deletions(-)
+Otherwise, if the user unmaps a region (which triggers kvm_unmap_gfn_range()
+with mmu_lock holding for write), and release the page, and if the two
+steps happen after checking page_count() in kvm_set_page_accessed() and
+before mark_page_accessed(), the latter function may mark accessed to a page
+that is released or does not belong to current process.
 
+Is it true?
 
-> @@ -1074,13 +1077,13 @@ static int vgacon_resize(struct vc_data *c, unsigned int width,
->   		 * Ho ho!  Someone (svgatextmode, eh?) may have reprogrammed
->   		 * the video mode!  Set the new defaults then and go away.
->   		 */
-> -		screen_info.orig_video_cols = width;
-> -		screen_info.orig_video_lines = height;
-> +		vga_si->orig_video_cols = width;
-> +		vga_si->orig_video_lines = height;
->   		vga_default_font_height = c->vc_cell_height;
->   		return 0;
->   	}
-> -	if (width % 2 || width > screen_info.orig_video_cols ||
-> -	    height > (screen_info.orig_video_lines * vga_default_font_height)/
-> +	if (width % 2 || width > vga_si->orig_video_cols ||
-> +	    height > (vga_si->orig_video_lines * vga_default_font_height)/
->   	    c->vc_cell_height)
->   		return -EINVAL;
->   
-> @@ -1110,8 +1113,8 @@ static void vgacon_save_screen(struct vc_data *c)
->   		 * console initialization routines.
->   		 */
->   		vga_bootup_console = 1;
-> -		c->state.x = screen_info.orig_x;
-> -		c->state.y = screen_info.orig_y;
-> +		c->state.x = vga_si->orig_x;
-> +		c->state.y = vga_si->orig_y;
-
-Not really my area, so bare with me if this is obviously not
-possible :) If using DUMMY_CONSOLE, can we trigger a save_screen
-/ resize? If so, we'd reach here with vga_si=NULL.
-
->   	}
->   
->   	/* We can't copy in more than the size of the video buffer,
-> @@ -1204,4 +1207,13 @@ const struct consw vga_con = {
->   };
->   EXPORT_SYMBOL(vga_con);
->   
-> +void vgacon_register_screen(struct screen_info *si)
-> +{
-> +	if (!si || vga_si)
-> +		return;
-> +
-> +	conswitchp = &vga_con;
-> +	vga_si = si;
-> +}
-
+>  	return r;
+>  }
+>  
+> @@ -4529,7 +4540,8 @@ static int kvm_tdp_mmu_page_fault(struct kvm_vcpu *vcpu,
+>  
+>  out_unlock:
+>  	read_unlock(&vcpu->kvm->mmu_lock);
+> -	kvm_release_pfn_clean(fault->pfn);
+> +	if (fault->is_refcounted_page)
+> +		kvm_set_page_accessed(pfn_to_page(fault->pfn));
+>  	return r;
+>  }
+Ditto.
