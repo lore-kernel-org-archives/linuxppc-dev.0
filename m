@@ -4,100 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4200C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 16:44:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AD1FC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 15:40:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IvzgcL/C;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IvzgcL/C;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=zuZWZV29;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RB09p0zRLz3cN2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 02:44:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5g4N477Qz3c2F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 01:40:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IvzgcL/C;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IvzgcL/C;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=zuZWZV29;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3ngo4zaykdlejvreatxffxcv.tfdczeloggt-uvmczjkj.fqcrsj.fix@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RB08l411Nz2yGs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 02:43:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690389829;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eYyLIb3cAz+pfX2bhGfoxws54fDawRj2oU07jpEMHJk=;
-	b=IvzgcL/CsAFr5dqlHc8AOCGM3TFQaoo8XbuUazDP/74egE5WdUP03bwr/pnlut8WKEIgnv
-	XgDPkGJ8qDuQoAokcAaZTeffApa2wKMocnOQb0sLs8R48rAii2TC14SyP1LG5Pc4N6KgCu
-	zjSNAybsO9GyZzFSgmtm3QJ2VvfQAkQ=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690389829;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eYyLIb3cAz+pfX2bhGfoxws54fDawRj2oU07jpEMHJk=;
-	b=IvzgcL/CsAFr5dqlHc8AOCGM3TFQaoo8XbuUazDP/74egE5WdUP03bwr/pnlut8WKEIgnv
-	XgDPkGJ8qDuQoAokcAaZTeffApa2wKMocnOQb0sLs8R48rAii2TC14SyP1LG5Pc4N6KgCu
-	zjSNAybsO9GyZzFSgmtm3QJ2VvfQAkQ=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-408-rrBWZ3J0MAiGk0IvJDW6pg-1; Wed, 26 Jul 2023 12:43:47 -0400
-X-MC-Unique: rrBWZ3J0MAiGk0IvJDW6pg-1
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3fbdd5d09b8so43106725e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 09:43:47 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5g3R0FxVz2yGf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 01:39:13 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-cacd29a972fso6411960276.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 08:39:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1689781150; x=1692373150;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=3uTGEOgXGgjS1mpy4uY8Zn88ggwsAyaWY3/MU5WFUXU=;
+        b=zuZWZV29hv7HoMETiCkSKGIHZcpHTMG8TKF9qduMPPS/E1c0SfFLVA6kGEOoP5U9qq
+         U77CuEsLMMxKIxLMFnjtp2hpB+IIMkYXVFGsPC5bapP3nIk/nGTrjqlCGcZf5+xPpr8T
+         q16/aDqhEkgnoKMdGaA5rz+Gt+5uK6D6P1fr5Zm7R4i7YF7l973NWOrr+c3kq7IzyS9M
+         gLZmugAwtecTQMKF7z0UBcPf86RbNReN6ZSKfaBS2Zp8N7kJnMwhsDMUzBHIndlxccW1
+         lnFRHUcOrryTZsXwruMmKL2jJUIvic1/Jzr/kaZBJYZOlvirf0tEwgFNXnc0yrJBGF6s
+         gFpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690389826; x=1690994626;
-        h=content-transfer-encoding:in-reply-to:organization:from:references
-         :cc:to:content-language:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=eYyLIb3cAz+pfX2bhGfoxws54fDawRj2oU07jpEMHJk=;
-        b=e/OsvlBu6g4EhTXfHoNy7lVqLohrl9QDwOvjI1q/+21a2TsDIF3FvN+F8/7+Imlsu+
-         58wYMV5MYzfdhHsdkLd0cPkozpn90U/ei1YOpGixygz0DlOwxCGfB8kVqgkE025Wuc3c
-         eqc2f58zF8gEt7/IHmsf37masEpoT/pDK5UJZmSC6voelBNNL5SmcC9EYZZiDwtjAO6I
-         eMYyXpcHYBwyb7g465PWJQlRAzF1q53YmIyhKbiL6Tpuel1VmOWjlN2oS1vKsNOHabM1
-         212pzIEWgbuS4DGraUSUe3rFMB04ZelGAreDZcjXVXnKS6VPQtdQZHmm764ymBZqBCii
-         HDVw==
-X-Gm-Message-State: ABy/qLaRc2PDve2VpCW8nWvsipbKYM0lSjA0gy46Xlz0v3C7gjD0N/T7
-	Pd8RkV3Xi5M8GD709Ds8gNQZ1lgpowA4YXeLKKwaf8FVuU2cxnG4X1otwSoSE4Dqu3VDb5ax53I
-	T/soDx2tt2F6nNeOuOaTupR3ECQ==
-X-Received: by 2002:a05:600c:234a:b0:3fb:a937:6024 with SMTP id 10-20020a05600c234a00b003fba9376024mr1856850wmq.29.1690389825917;
-        Wed, 26 Jul 2023 09:43:45 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlHTWQ0vXQsl72sdiZMvhOQa/+Rk0rY3XwcgMajaulp8YNtfY27UWEaCR+WRZNqpblW/Z9FbwA==
-X-Received: by 2002:a05:600c:234a:b0:3fb:a937:6024 with SMTP id 10-20020a05600c234a00b003fba9376024mr1856823wmq.29.1690389825430;
-        Wed, 26 Jul 2023 09:43:45 -0700 (PDT)
-Received: from ?IPV6:2003:cb:c705:f600:a519:c50:799b:f1e3? (p200300cbc705f600a5190c50799bf1e3.dip0.t-ipconnect.de. [2003:cb:c705:f600:a519:c50:799b:f1e3])
-        by smtp.gmail.com with ESMTPSA id f9-20020a7bc8c9000000b003fa96fe2bd9sm2493280wml.22.2023.07.26.09.43.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 26 Jul 2023 09:43:45 -0700 (PDT)
-Message-ID: <65d2143d-ef76-cbe5-6d49-08953caa3b3b@redhat.com>
-Date: Wed, 26 Jul 2023 18:43:44 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v5 6/7] mm/hotplug: Embed vmem_altmap details in memory
- block
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
-References: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
- <20230725100212.531277-7-aneesh.kumar@linux.ibm.com>
- <aa27b96e-5296-0324-d9d3-07ab1ee969d0@redhat.com>
- <87wmynvu9k.fsf@linux.ibm.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-In-Reply-To: <87wmynvu9k.fsf@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        d=1e100.net; s=20221208; t=1689781150; x=1692373150;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=3uTGEOgXGgjS1mpy4uY8Zn88ggwsAyaWY3/MU5WFUXU=;
+        b=NVTFpYqbPNCxa8yCA2CV2mlY8DC0UaAQFq9OXI63S7W9QPdlKEW+3yaYzYrB3/18FW
+         4kPwn4+vkxcv86QivIA1OoBiwiqeyvJ/EWFk5/FXrkFhvvQsK8ZDXWtPi374P+ceAneb
+         /FAtWxhGFs70kWHjNq1aB1oQGJwzryWTzTL4fu/D9Zns490QzJW9XrmmJPMyeK5wlfM9
+         hLZGehX6x44s9nVlvHKEslqF9g76qbxSJBucm3f/qxLfVV8dE13OoHP73l+WXyLRcouF
+         o3b17xdrpanNPwoWX6gZhfXKM4nWaq8B03BN1Hh/8yb0zVKcivmtgiLj/k8AKtcgQUM3
+         EbHA==
+X-Gm-Message-State: ABy/qLaMG8heWpdWe67Jk9n9ojZcwcrPL8gBee+ULezR1gOGmePf5DZf
+	gFg+GwmdZ8OA6HTcxhjtY/rjdHieAs8=
+X-Google-Smtp-Source: APBJJlHKX/op8BIXr6hrdN4x6RovTyUJBoPmA+F//tB9wdB4uZjaG/yxyF0KPogxnGD6eEZAy2DX7qXfLUE=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a25:868b:0:b0:c4d:9831:9712 with SMTP id
+ z11-20020a25868b000000b00c4d98319712mr26898ybk.0.1689781150625; Wed, 19 Jul
+ 2023 08:39:10 -0700 (PDT)
+Date: Wed, 19 Jul 2023 08:39:09 -0700
+In-Reply-To: <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
+Mime-Version: 1.0
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
+ <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
+Message-ID: <ZLgDnYJUX/QR9UJi@google.com>
+Subject: Re: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
+From: Sean Christopherson <seanjc@google.com>
+To: Jarkko Sakkinen <jarkko@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,214 +74,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linu
+ x-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 26.07.23 12:31, Aneesh Kumar K.V wrote:
-> David Hildenbrand <david@redhat.com> writes:
+On Wed, Jul 19, 2023, Jarkko Sakkinen wrote:
+> On Wed Jul 19, 2023 at 2:44 AM EEST, Sean Christopherson wrote:
+> >  	/* Huge pages aren't expected to be modified without first being zapped. */
+> > -	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
+> > +	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
 > 
->> On 25.07.23 12:02, Aneesh Kumar K.V wrote:
->>> With memmap on memory, some architecture needs more details w.r.t altmap
->>> such as base_pfn, end_pfn, etc to unmap vmemmap memory. Instead of
->>> computing them again when we remove a memory block, embed vmem_altmap
->>> details in struct memory_block if we are using memmap on memory block
->>> feature.
->>>
->>> No functional change in this patch
->>>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->>> ---
->>
->> [...]
->>
->>>    
->>>    static int add_memory_block(unsigned long block_id, unsigned long state,
->>> -			    unsigned long nr_vmemmap_pages,
->>> +			    struct vmem_altmap *altmap,
->>>    			    struct memory_group *group)
->>>    {
->>>    	struct memory_block *mem;
->>> @@ -744,7 +751,14 @@ static int add_memory_block(unsigned long block_id, unsigned long state,
->>>    	mem->start_section_nr = block_id * sections_per_block;
->>>    	mem->state = state;
->>>    	mem->nid = NUMA_NO_NODE;
->>> -	mem->nr_vmemmap_pages = nr_vmemmap_pages;
->>> +	if (altmap) {
->>> +		mem->altmap = kmalloc(sizeof(struct vmem_altmap), GFP_KERNEL);
->>> +		if (!mem->altmap) {
->>> +			kfree(mem);
->>> +			return -ENOMEM;
->>> +		}
->>> +		memcpy(mem->altmap, altmap, sizeof(*altmap));
->>> +	}
->>
->> I'm wondering if we should instead let the caller do the alloc/free. So we would alloc
->> int the caller and would only store the pointer.
->>
->> Before removing the memory block, we would clear the pointer and free it in the caller.
->>
->> IOW, when removing a memory block and we still have an altmap set, something would be wrong.
->>
->> See below on try_remove_memory() handling.
->>
->> [...]
->>
->>> -static int get_nr_vmemmap_pages_cb(struct memory_block *mem, void *arg)
->>> +static int get_vmemmap_altmap_cb(struct memory_block *mem, void *arg)
->>>    {
->>> +	struct vmem_altmap *altmap = (struct vmem_altmap *)arg;
->>>    	/*
->>> -	 * If not set, continue with the next block.
->>> +	 * If we have any pages allocated from altmap
->>> +	 * return the altmap details and break callback.
->>>    	 */
->>> -	return mem->nr_vmemmap_pages;
->>> +	if (mem->altmap) {
->>> +		memcpy(altmap, mem->altmap, sizeof(struct vmem_altmap));
->>> +		return 1;
->>> +	}
->>> +	return 0;
->>>    }
->>>    
->>>    static int check_cpu_on_node(int nid)
->>> @@ -2146,9 +2152,8 @@ EXPORT_SYMBOL(try_offline_node);
->>>    
->>>    static int __ref try_remove_memory(u64 start, u64 size)
->>>    {
->>> -	struct vmem_altmap mhp_altmap = {};
->>> -	struct vmem_altmap *altmap = NULL;
->>> -	unsigned long nr_vmemmap_pages;
->>> +	int ret;
->>> +	struct vmem_altmap mhp_altmap, *altmap = NULL;
->>>    	int rc = 0, nid = NUMA_NO_NODE;
->>>    
->>>    	BUG_ON(check_hotplug_memory_range(start, size));
->>> @@ -2171,24 +2176,15 @@ static int __ref try_remove_memory(u64 start, u64 size)
->>>    	 * the same granularity it was added - a single memory block.
->>>    	 */
->>>    	if (mhp_memmap_on_memory()) {
->>> -		nr_vmemmap_pages = walk_memory_blocks(start, size, NULL,
->>> -						      get_nr_vmemmap_pages_cb);
->>> -		if (nr_vmemmap_pages) {
->>> +		ret = walk_memory_blocks(start, size, &mhp_altmap,
->>> +					 get_vmemmap_altmap_cb);
->>> +		if (ret) {
->>>    			if (size != memory_block_size_bytes()) {
->>>    				pr_warn("Refuse to remove %#llx - %#llx,"
->>>    					"wrong granularity\n",
->>>    					start, start + size);
->>>    				return -EINVAL;
->>>    			}
->>> -
->>> -			/*
->>> -			 * Let remove_pmd_table->free_hugepage_table do the
->>> -			 * right thing if we used vmem_altmap when hot-adding
->>> -			 * the range.
->>> -			 */
->>> -			mhp_altmap.base_pfn = PHYS_PFN(start);
->>> -			mhp_altmap.free = nr_vmemmap_pages;
->>> -			mhp_altmap.alloc = nr_vmemmap_pages;
->>>    			altmap = &mhp_altmap;
->>>    		}
->>
->>
->> Instead of that, I suggest (whitespace damage expected):
->>
->> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->> index 3f231cf1b410..f6860df64549 100644
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -1956,12 +1956,19 @@ static int check_memblock_offlined_cb(struct memory_block *mem, void *arg)
->>           return 0;
->>    }
->>    
->> -static int get_nr_vmemmap_pages_cb(struct memory_block *mem, void *arg)
->> +static int test_has_altmap_cb(struct memory_block *mem, void *arg)
->>    {
->> -       /*
->> -        * If not set, continue with the next block.
->> -        */
->> -       return mem->nr_vmemmap_pages;
->> +       struct memory_block **mem_ptr = (struct memory_block **)arg;
->> +
->> +       if (mem->altmap) {
->> +               /*
->> +                * We're not taking a reference on the memory block; it
->> +                * it cannot vanish while we're about to that memory ourselves.
->> +                */
->> +               *mem_ptr = mem;
->> +               return 1;
->> +       }
->> +       return 0;
->>    }
->>    
->>    static int check_cpu_on_node(int nid)
->> @@ -2036,9 +2043,7 @@ EXPORT_SYMBOL(try_offline_node);
->>    
->>    static int __ref try_remove_memory(u64 start, u64 size)
->>    {
->> -       struct vmem_altmap mhp_altmap = {};
->>           struct vmem_altmap *altmap = NULL;
->> -       unsigned long nr_vmemmap_pages;
->>           int rc = 0, nid = NUMA_NO_NODE;
->>    
->>           BUG_ON(check_hotplug_memory_range(start, size));
->> @@ -2061,9 +2066,9 @@ static int __ref try_remove_memory(u64 start, u64 size)
->>            * the same granularity it was added - a single memory block.
->>            */
->>           if (mhp_memmap_on_memory()) {
->> -               nr_vmemmap_pages = walk_memory_blocks(start, size, NULL,
->> -                                                     get_nr_vmemmap_pages_cb);
->> -               if (nr_vmemmap_pages) {
->> +               struct memory_block *mem;
->> +
->> +               if (walk_memory_blocks(start, size, &mem, test_has_altmap_cb)) {
->>                           if (size != memory_block_size_bytes()) {
->>                                   pr_warn("Refuse to remove %#llx - %#llx,"
->>                                           "wrong granularity\n",
->> @@ -2072,12 +2077,11 @@ static int __ref try_remove_memory(u64 start, u64 size)
->>                           }
->>    
->>                           /*
->> -                        * Let remove_pmd_table->free_hugepage_table do the
->> -                        * right thing if we used vmem_altmap when hot-adding
->> -                        * the range.
->> +                        * Clear the altmap from the memory block before we
->> +                        * remove it; we'll take care of freeing the altmap.
->>                            */
->> -                       mhp_altmap.alloc = nr_vmemmap_pages;
->> -                       altmap = &mhp_altmap;
->> +                       altmap = mem->altmap;
->> +                       mem->altmap = NULL;
->>                   }
->>           }
->>    
->> @@ -2094,6 +2098,9 @@ static int __ref try_remove_memory(u64 start, u64 size)
->>    
->>           arch_remove_memory(start, size, altmap);
->>    
->> +       if (altmap)
->> +               kfree(altmap);
->> +
->>           if (IS_ENABLED(CONFIG_ARCH_KEEP_MEMBLOCK)) {
->>                   memblock_phys_free(start, size);
->>                   memblock_remove(start, size);
->>
-> 
-> Is this any better. Any specific reason we want the alloc and free in
-> the caller?
+> Not familiar with this code. Just checking whether whether instead
+> pr_{warn,err}()
 
+The "full" WARN is desirable, this is effecitvely an assert on the contract between
+the primary MMU, generic KVM code, and x86's TDP MMU.  The .change_pte() mmu_notifier
+callback doesn't allow for hugepages, i.e. it's a (likely fatal) kernel bug if a
+hugepage is encountered at this point.  Ditto for the "start + 1 == end" check,
+if that fails then generic KVM likely has a fatal bug.
 
-IMHO if you only have a single instance you don't have to worry about 
-any inconsistencies. At least to me it looks cleaner than this copying 
-back and forth.
+> combined with return false would be a more graceful option?
 
-Below is better, but as you pointed out, your get_vmemmap_altmap_cb() 
-change is problematic/insufficient.
-
--- 
-Cheers,
-
-David / dhildenb
-
+The return value communicates whether or not a TLB flush is needed, not whether
+or not the operation was successful, i.e. there is no way to cancel the unexpected
+PTE change.
