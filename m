@@ -4,68 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A197C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 21:25:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C10EC001DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 21:32:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yA9Vox81;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Ai77xjd4;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5pkq6fmjz3cX9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 07:25:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5ptq4Fmlz3c5f
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 07:32:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yA9Vox81;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Ai77xjd4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com; envelope-from=vannapurve@google.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=matuszpd@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5jLC6pxcz2ytf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 03:22:10 +1000 (AEST)
-Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-991ef0b464cso230299966b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 10:22:10 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5hFT46nhz2yVX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 02:33:00 +1000 (AEST)
+Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-992f6d7c7fbso994714066b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 09:33:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689787326; x=1692379326;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=muf27eIntjXr3Sa3gdcQLPN4y9AYfVWt2TffDnLSMcw=;
-        b=yA9Vox816zD+aJ/FVd+gHS1eUUrpLebV0UPRWoTOQXRhwbDjiEzKfZKLt7ZPO+mtvH
-         SaibLGPqQv8DRVnknibkmwFWbPPfcXmr6c+ujgDGBFuCW/F/BitDoK4IVXsvCkVTbM2a
-         UUXFrIHyb9EtmF0G0jSo223YyW0H9eb4QyBBeSzBXy3UqItMc2tyGgaUGUFrdupt+8A5
-         dLZgmELLzzoUW2SKSL+4MBdgHsq0BaZC4v7p3QuLBtrY+JwzHEa0w4RaSfJgn6bTpTvs
-         oKq8cg7sWg40yA0HzTTcfPzlRvV46kkywbP49vwd3eHSPLgVvqkoTlu6Tp2eaYz6GzrZ
-         sQlQ==
+        d=gmail.com; s=20221208; t=1689784374; x=1692376374;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ezYh9TdYf9SPGlHOq/YkmRIkBcOvB6bLPP8t0cvosPU=;
+        b=Ai77xjd4Papa7mIdUTLLLOt0HjEVd4UaRKKLVWju83yIoffIwGYoOAGpHNGPTBkW7R
+         xzjBMM3CdMTo9T4RB9oSbJ75u9EW9fTtiCbZN8tfdNpmmrilnk8lNUNQTUFeECk61y56
+         jkeI/OeVa4PUEAV7qe9J6W64tzVgBxb/uOUch8GEPWxL83j9+7RYdDFueAzwh9u3s9ET
+         JrqViZoYcaeJku2l6lKHWbFdDFIwVlXGoDaG72e33Rrlz9B097nXYrVup6zSuA9iomFI
+         yhl7MOnt+FU3nyXRgZWaikNNV3lKagEaqODe+zmbirKNVvfNK+S8rUpIgAFCDfSRXVdo
+         3Fpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689787326; x=1692379326;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=muf27eIntjXr3Sa3gdcQLPN4y9AYfVWt2TffDnLSMcw=;
-        b=FaG36zfptmZEylayEVtpv2uGwv8twpAEg5Qo0MTLDt9H5IYf9uRLqNldQ89DYVLAhE
-         ++pHIf7hRaAixLHol7kBEUUjVhd7UvCB3Ld//PTe/t/BDiNJRUq2oZagVLtlthYVDNJS
-         gBaVFuDValN80HVKJ8x/HowtrvXqc/a6QsHFoABzSOqm5ZCe4H+sIvaBfLPlQj0spp7c
-         Dw9cbcrhLBtYvc4ckz0FmsD+yAdx0zw1jXhYPdAqq0hloqXwqIhrE75dlF4A2nSD62I+
-         d2i1lk3ynGHI8ZQRBQSiRHiAAWs00syuxUOjZNkUP+Aj6l138KobnBHqdN/+uMB9iPPB
-         xBBA==
-X-Gm-Message-State: ABy/qLb5PXJJUh/VHJzM61pKatIKiNCd4Jt1UqBGVD6eW7BzPZ7goaxh
-	w+r/FOS9pTa+FFifCelfztAFS4YyTABhhXh97AsItA==
-X-Google-Smtp-Source: APBJJlHLONYvTW7m5Fbx16RlTb/fOqinzIvyTzihLXJQXLhrTmtvBuSogp90ZclD7PbARqJZdKXYR/WVY9tuMb+Y5tE=
-X-Received: by 2002:a17:906:292:b0:97e:17cc:cc95 with SMTP id
- 18-20020a170906029200b0097e17cccc95mr3045374ejf.36.1689787326540; Wed, 19 Jul
- 2023 10:22:06 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1689784374; x=1692376374;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ezYh9TdYf9SPGlHOq/YkmRIkBcOvB6bLPP8t0cvosPU=;
+        b=ixiAlMi9UJBhsENw0tHKYkw+aM1YjEqAjmY7IIlGYbQC3jJl/CSbcgZt9L+Y9RnaIM
+         V3HE2EmPddZblaw5QIHuPPJXbXUHIreI4y+7o+X5B1vP0THwLxTjzuOqOVq90F8YDFW2
+         bdBMNZfixcVSdzZejUyLaCLenwqxZS5XGH8a0g3DIWSUe/8XF4MBhxSPY46YpXSHHtJP
+         WFzVpqpnVpTK0wovDoiu0R0Zy/yhBv2xJ+dXeDojAB2FScxIq1XGx2VKya1Ac/AgjWLD
+         kJAL4fIuvP2qvfeLy9Jzj1IRd9HqwA+6/9z+jRyITpZFzs7Zs9k54jKrOdZTCOonpKmf
+         B5vA==
+X-Gm-Message-State: ABy/qLYZTrvVcYfhLBq37RoAO1bCanJMLdeXRu8T6TJbtD0WgWdO7A65
+	MFtsCXP2cJD+P+CkVxCy7WY=
+X-Google-Smtp-Source: APBJJlHZwwjBvT87CgsBUjDjYtMiifOSzfmRfPiW+vi01bUGZ/rvbUobuTctzgwoF66GEBo+mJgTOA==
+X-Received: by 2002:a17:906:290:b0:999:37ff:be94 with SMTP id 16-20020a170906029000b0099937ffbe94mr2432672ejf.71.1689784373757;
+        Wed, 19 Jul 2023 09:32:53 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:c844:242b:b300:215:5dff:fe9c:4c81])
+        by smtp.gmail.com with ESMTPSA id o21-20020a17090637d500b0098e025cda3bsm2571044ejc.141.2023.07.19.09.32.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Jul 2023 09:32:53 -0700 (PDT)
+From: Matus Gajdos <matuszpd@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Subject: [PATCH] ASoC: fsl_spdif: Add support for 22.05 kHz sample rate
+Date: Wed, 19 Jul 2023 18:31:53 +0200
+Message-Id: <20230719163154.19492-1-matuszpd@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
-In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
-From: Vishal Annapurve <vannapurve@google.com>
-Date: Wed, 19 Jul 2023 10:21:55 -0700
-Message-ID: <CAGtprH9a2jX-hdww9GPuMrO9noNeXkoqE8oejtVn2vD0AZa3zA@mail.gmail.com>
-Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Thu, 20 Jul 2023 07:24:07 +1000
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 20 Jul 2023 07:31:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,63 +83,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver
-  Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Matus Gajdos <matuszpd@gmail.com>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 18, 2023 at 4:49=E2=80=AFPM Sean Christopherson <seanjc@google.=
-com> wrote:
-> ...
-> +static int kvm_gmem_error_page(struct address_space *mapping, struct pag=
-e *page)
-> +{
-> +       struct list_head *gmem_list =3D &mapping->private_list;
-> +       struct kvm_memory_slot *slot;
-> +       struct kvm_gmem *gmem;
-> +       unsigned long index;
-> +       pgoff_t start, end;
-> +       gfn_t gfn;
-> +
-> +       filemap_invalidate_lock_shared(mapping);
-> +
-> +       start =3D page->index;
-> +       end =3D start + thp_nr_pages(page);
-> +
-> +       list_for_each_entry(gmem, gmem_list, entry) {
-> +               xa_for_each_range(&gmem->bindings, index, slot, start, en=
-d - 1) {
-> +                       for (gfn =3D start; gfn < end; gfn++) {
-> +                               if (WARN_ON_ONCE(gfn < slot->base_gfn ||
-> +                                               gfn >=3D slot->base_gfn +=
- slot->npages))
-> +                                       continue;
-> +
-> +                               /*
-> +                                * FIXME: Tell userspace that the *privat=
-e*
-> +                                * memory encountered an error.
-> +                                */
-> +                               send_sig_mceerr(BUS_MCEERR_AR,
-> +                                               (void __user *)gfn_to_hva=
-_memslot(slot, gfn),
-> +                                               PAGE_SHIFT, current);
+Add support for 22.05 kHz sample rate for TX.
 
-Does it make sense to replicate what happens with MCE handling on
-tmpfs backed guest memory:
-1) Unmap gpa from guest
-2) On the next guest EPT fault, exit to userspace to handle/log the
-mce error for the gpa.
+Signed-off-by: Matus Gajdos <matuszpd@gmail.com>
+---
+ sound/soc/fsl/fsl_spdif.c | 8 ++++++--
+ sound/soc/fsl/fsl_spdif.h | 6 ++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
-IIUC, such MCEs could be asynchronous and "current" might not always
-be the intended recipient of this signal.
+diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+index 015c3708aa04..95e639711eba 100644
+--- a/sound/soc/fsl/fsl_spdif.c
++++ b/sound/soc/fsl/fsl_spdif.c
+@@ -514,6 +514,10 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
+ 	int ret;
+ 
+ 	switch (sample_rate) {
++	case 22050:
++		rate = SPDIF_TXRATE_22050;
++		csfs = IEC958_AES3_CON_FS_22050;
++		break;
+ 	case 32000:
+ 		rate = SPDIF_TXRATE_32000;
+ 		csfs = IEC958_AES3_CON_FS_32000;
+@@ -1422,7 +1426,7 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
+ 				struct clk *clk, u64 savesub,
+ 				enum spdif_txrate index, bool round)
+ {
+-	static const u32 rate[] = { 32000, 44100, 48000, 88200, 96000, 176400,
++	static const u32 rate[] = { 22050, 32000, 44100, 48000, 88200, 96000, 176400,
+ 				    192000, };
+ 	bool is_sysclk = clk_is_match(clk, spdif_priv->sysclk);
+ 	u64 rate_ideal, rate_actual, sub;
+@@ -1483,7 +1487,7 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
+ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
+ 				enum spdif_txrate index)
+ {
+-	static const u32 rate[] = { 32000, 44100, 48000, 88200, 96000, 176400,
++	static const u32 rate[] = { 22050, 32000, 44100, 48000, 88200, 96000, 176400,
+ 				    192000, };
+ 	struct platform_device *pdev = spdif_priv->pdev;
+ 	struct device *dev = &pdev->dev;
+diff --git a/sound/soc/fsl/fsl_spdif.h b/sound/soc/fsl/fsl_spdif.h
+index 75b42a692c90..2bc1b10c17d4 100644
+--- a/sound/soc/fsl/fsl_spdif.h
++++ b/sound/soc/fsl/fsl_spdif.h
+@@ -175,7 +175,8 @@ enum spdif_gainsel {
+ 
+ /* SPDIF tx rate */
+ enum spdif_txrate {
+-	SPDIF_TXRATE_32000 = 0,
++	SPDIF_TXRATE_22050 = 0,
++	SPDIF_TXRATE_32000,
+ 	SPDIF_TXRATE_44100,
+ 	SPDIF_TXRATE_48000,
+ 	SPDIF_TXRATE_88200,
+@@ -191,7 +192,8 @@ enum spdif_txrate {
+ #define SPDIF_QSUB_SIZE			(SPDIF_UBITS_SIZE / 8)
+ 
+ 
+-#define FSL_SPDIF_RATES_PLAYBACK	(SNDRV_PCM_RATE_32000 |	\
++#define FSL_SPDIF_RATES_PLAYBACK	(SNDRV_PCM_RATE_22050 |	\
++					 SNDRV_PCM_RATE_32000 |	\
+ 					 SNDRV_PCM_RATE_44100 |	\
+ 					 SNDRV_PCM_RATE_48000 |	\
+ 					 SNDRV_PCM_RATE_88200 | \
+-- 
+2.25.1
 
-> +                       }
-> +               }
-> +       }
-> +
-> +       filemap_invalidate_unlock_shared(mapping);
-> +
-> +       return 0;
-> +}
-> +
