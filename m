@@ -4,68 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CFC2EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 05:05:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14AB2EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 15:58:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=bsfPCapy;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=bWSV0DA9;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5Nzw49PJz30YP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 15:05:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5gV21G0kz3bpC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 01:58:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=bsfPCapy;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=bWSV0DA9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe16::619; helo=eur02-vi1-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR02-VI1-obe.outbound.protection.outlook.com (mail-vi1eur02on20619.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe16::619])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5Nyw31QRz2yFC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 15:04:23 +1000 (AEST)
-Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-5835388d632so16106877b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2023 22:04:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689743060; x=1692335060;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=f4gbnMS0W6E9Awn5g41KlL6GZi3HN5/R/yFQL1nQXJg=;
-        b=bsfPCapysjnAZODvh7VQx88fm7IvMM72XC0oEOupCXke50rzUpxBzJjYQpi6er51fb
-         D4bBL8Bh1D+h6gJQCrL3ilyuQNC5vtgJJbqXXVdUX3wGIHEmUxC4mo1pR0Z+lwJSnYwK
-         meVLK3418dgqsYosj9vCSuNEJNkdRzYHJy0dpVlfsGSOV8HIHO4e1UNyCrc3kkrhsuYl
-         F7Nsl4WNKMNEHKdGgWak0LJ4fwxrpogQk/dx/JNial3Rw8ApbYcti+VqcZ3cqR3TmrjR
-         HLyZAxKWibz4mBf1B911Dg5ToxkxCT+TuKgSTuRLqJQNqiyCWpJGUeH03fYVv65KsNEv
-         GKdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689743060; x=1692335060;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=f4gbnMS0W6E9Awn5g41KlL6GZi3HN5/R/yFQL1nQXJg=;
-        b=OdOvO4p7DX2dQkk97RilmmKqZjbaLY+8BrVK6D1p1k1WzlVkK+TeqIv8m2RR5CuDTS
-         94e8TPTkCTz8d+7D+E+i+3uamkVP1UeFGvJoRNXCISpiFERWCYEOfjzr3s7eNbWVzlnU
-         O9MyvhkQ0W9Gk+yI4WPt0b29zFbl7XwOucsVALzyTNqi8sz1Yp8elgr8JOGes20hwiwq
-         TTUhHDiG9qDntoQsviYxe2YA2oeTceXrUlBTw3KxmmtTKP9HR8Um4zhCeKI0sXWSvBai
-         B5f2hqR8yzcG3MGzF64atc5CsjgQvxyl3cckVSjLR8TmXWf8iSKyexg8mhtn73Z93jLa
-         C9Mg==
-X-Gm-Message-State: ABy/qLYYz9WVtTzWACJoYGC/NxFSI0AWtIqXjgtk5wFxhgFhWSL0pl9w
-	L+0Mii5lkiTAGWLlUZ7Bvpuvkw==
-X-Google-Smtp-Source: APBJJlFfOyYeGiVCuczZwoUNyN9JCPq13oUH5g6h02u0hokVq61z1GN7QWMboOKVDLBaFX+57WnbTA==
-X-Received: by 2002:a81:a00d:0:b0:573:d3cd:3d2a with SMTP id x13-20020a81a00d000000b00573d3cd3d2amr19838242ywg.28.1689743060542;
-        Tue, 18 Jul 2023 22:04:20 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id b125-20020a0df283000000b0056d304e224dsm847329ywf.90.2023.07.18.22.04.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Jul 2023 22:04:19 -0700 (PDT)
-Date: Tue, 18 Jul 2023 22:04:08 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v3 04/13] powerpc: assert_pte_locked() use
- pte_offset_map_nolock()
-In-Reply-To: <87msztbiy8.fsf@linux.ibm.com>
-Message-ID: <392f311f-83ac-a5a2-d16e-2c7736d1b577@google.com>
-References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <e8d56c95-c132-a82e-5f5f-7bb1b738b057@google.com> <87msztbiy8.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5gT05vwCz2ykZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 01:57:54 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=K20IQ9OqILpM+lerGEHXe3LirMemcpnaWZPYcPVmRErItHHTCIUencA1B/K03FX7wfQYPbyJh6GVwyloBDJ7xOSXWj3GM1BP2lcHcfIELkqR98+MEGpsCSS5jpzTYLM43FXb8N6wzmFWKBd8Fq4tXaP753/PVD89V6xsSvLKY8EqmlLEmEOFVw09MNauiG2NWtuV3WUpJaokTjNc9oyDn/nFKc/N8MxfEOxPkUB4fAB6AKmCH7O7nsdYzMRICSNFak2lT1lPf4nH3xA6SAtnf0fsRhNIGKSuVeFtVWM8CG5sGl9WlcaahAuN1aMSDxzm6Dys873vkjjs1jvsM9A7Tg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ZycBneTbgXkUljC+nErl4NsfVXu1LOODZM00tD9/H3I=;
+ b=DIAEtOwSCvc2VMskPOKMjH3mXco36rsemS9OEmGq36cns5sTK19H2jzFro7tU9/6OFxM0prWVJXmjpVOlPSegRHSJ/S5qe9xJRxpRwg0yiEH5EYaGhTwvT0rLgOmd/8bIsEwyo9I7Hz5REXUGrX9o8ffLGfG4AQwEQA6XjvNwC7L/c2nFIzVxPps/ucYHl0VeBvOWVmzXONgbXJFXF+1/v5sllQLtZzsOGhEEx1Mf2pXNMH4B47Ly9brQV8JxNgdOn5RhunNqqxt9wO0fqHfGZZUqzVllpm4mSMQaTZ8qS1Ar052W0h44O4UKHN+4sWNDShrghx+AeRBu3x1PNdiiw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ZycBneTbgXkUljC+nErl4NsfVXu1LOODZM00tD9/H3I=;
+ b=bWSV0DA90r60pHAE2Lxr6aWssvwsEQR/5rDX/1ORupg3oLK6HEVgcqVRcGay/H3vD2eIUJWkqrm1FK1yhXCMPqHNxm8L5rwSNinUG+6c7QEr0Xd3zeO82YIhT+zuKXDsH9/1w0aSRowjWlTbLL5sub9A6fCOsWbDhKvBlZICpm8=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM6PR04MB4838.eurprd04.prod.outlook.com (2603:10a6:20b:4::16)
+ by DBAPR04MB7399.eurprd04.prod.outlook.com (2603:10a6:10:1a8::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6588.33; Wed, 19 Jul
+ 2023 15:57:30 +0000
+Received: from AM6PR04MB4838.eurprd04.prod.outlook.com
+ ([fe80::d0d5:3604:98da:20b1]) by AM6PR04MB4838.eurprd04.prod.outlook.com
+ ([fe80::d0d5:3604:98da:20b1%7]) with mapi id 15.20.6609.024; Wed, 19 Jul 2023
+ 15:57:30 +0000
+From: Frank Li <Frank.Li@nxp.com>
+To: markus.elfring@web.de,
+	lpieralisi@kernel.org
+Subject: [PATCH v3 1/2] PCI: layerscape: Add support for Link down notification
+Date: Wed, 19 Jul 2023 11:57:06 -0400
+Message-Id: <20230719155707.1948698-1-Frank.Li@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ0PR03CA0137.namprd03.prod.outlook.com
+ (2603:10b6:a03:33c::22) To AM6PR04MB4838.eurprd04.prod.outlook.com
+ (2603:10a6:20b:4::16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM6PR04MB4838:EE_|DBAPR04MB7399:EE_
+X-MS-Office365-Filtering-Correlation-Id: a1732285-a8af-43f1-ed96-08db8870db41
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	0fndd5lTac0My0bzYhTUuaxRneajdGgO5aAq90P4g/+lzZE/tw1uxeDNNooRBjh1wkRYRBlzUb9xyOp8tT3Zn2rY4xbhPWgXQKZjrpxwh1c0Y0q9/BmV+lLYMhAQv4iMu2dX4c1E90PizOcH3oANKeO/vZffVx48zMAxQ7mHFd48+FfOQf82CIMGS0W5Gzlz3m3pQ13A7N8qgAAUZSi6bqhuZRAl/ViFHO7jRSHAr9IIpGZYtxsoVGqooCMGiOt3QDTWPpfgk98SDd0dTgLsxl2ETi7wAV/yVJtww1udbkcTwyzjXirerSkgb+En1e0YdhceVtPSpAN/RdF1dI3VYuwXy59OdxKHLaKKWtoy9VxXu7niuNYvoI7Ba9Zk6GNBt2i3A4oTJKx0j2KEkGOvGipkKIhP8cfHKmc4FpdMUbCpvyif1vSUh7nr2mrQVGLjoxBTmX4194+mCDK/M/uwy/RLFLNCt7Bn5IfKfod3wi0mCirnd21NHmrFpmWeOOjSqwVHn2863eA4snztRqa6cJjfW8IKYb2Uix6UPST+AYOuksnBcqaaTDdBoW8KU1lnS/xbTnu2rWL/i10lDId428sJ+dsESkgg2ObWYIBveFEC6Tw4J2aS8Cy1AblWmKsk
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM6PR04MB4838.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(366004)(39860400002)(136003)(376002)(396003)(451199021)(6512007)(6506007)(1076003)(15650500001)(36756003)(38350700002)(8936002)(7416002)(5660300002)(8676002)(86362001)(4326008)(2906002)(4744005)(316002)(66476007)(66556008)(41300700001)(66946007)(6486002)(26005)(38100700002)(6666004)(478600001)(186003)(2616005)(52116002)(83380400001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?K4zVk2G1aWv+l9SAEUXvXaxgAIt1Bfc2tds50A3+FYEcZwww9THMG/sMyQL4?=
+ =?us-ascii?Q?2oDFdn38CtjaKXPAhNAcxvB+tyO7VSumSMR9HmkDzBuqYJwWopYMJZfWH239?=
+ =?us-ascii?Q?gagQ7Hev+c8PqMz1l9+oP9mrHyrQ9M7cUWpCFKygFJMmQ+60Qr8oHNixN/x2?=
+ =?us-ascii?Q?vSqYmG7jDD91cGobhN6IVyhB1oJqFGpeXVpXiLJYhlhiOLCGR9Xyy/At91C5?=
+ =?us-ascii?Q?r2T8ASI4hrHkJPAoVZU+6UfYqjCn1dwlDtm5e064FTF8JdGwCeJ04ZrM8aTB?=
+ =?us-ascii?Q?TFBnwsVab/qM/NDrrCl6mlZoNStKYx/SFJS81LMel+jTwhLlOk66IqOWauYT?=
+ =?us-ascii?Q?9HhB5p6zjxXPqY6PzN+P5myJXO9CQGQGnoaMhq5woRegqCCMu8psrwhxFeyl?=
+ =?us-ascii?Q?pxOL/YjEbzGjbSIBuKYeNq2ZD/VksxQ+XBE/uSfxw1duSM4OyYMmrbHWmK9O?=
+ =?us-ascii?Q?muq3U5CqTkCYKBW9TlCvNelPuxioxGc3XOudfLWjbnvSOyUitNQNR1pa80Mw?=
+ =?us-ascii?Q?OlVhK1qwCBaJjSBTBofzpAm80yWzxzkYkCCCHYbDaLEoKqpAda8fmf2JwTGg?=
+ =?us-ascii?Q?BUZf3EE0365WyOlfqAoY2svu4wKuY5Fk6URykZaNGM804We6IQbGBVj8398s?=
+ =?us-ascii?Q?2X7PjjYcnu85GTrJ45vxaEnHQlAsqpJjVqA0IJhxAXm0yLYqWlx8j3noKVPY?=
+ =?us-ascii?Q?20S8apJFGvS/8Cu7yiglz+hdjVcOpnmBdibTx2cfxnZ+H7H1UEATBxMFaRpi?=
+ =?us-ascii?Q?CfvEqCbCZTDtkRuRUZHKocJKYSeLzgmLvhu9sKGt2Xi9D7EMggwNay9huT/m?=
+ =?us-ascii?Q?3PIr9ysiOXOD0jxAEfxt+J+aXUbw79Eo9gdzNX3tQ2i8PDlTJ4SRme72Fcxu?=
+ =?us-ascii?Q?BNIDeDX/ZQbb1pUWN6B7if0mH5bHiCcu/MYgx8xX7JBLwdWMZMupd44fTR95?=
+ =?us-ascii?Q?aTEj/9ApOMkWxeyfTFeetwdANKAcx0MCfpCQMABlb0hsMcyzOby8VL8XPGWV?=
+ =?us-ascii?Q?bSrBQ1Jd2IaeDG7xPKCC7rrqJ5RNnlMdqYQsjRkIlcVlEv338EqEuMkWvhHR?=
+ =?us-ascii?Q?CKEyYHdyLScNKPHmEqOmZcuoP1BfjwLzQrSUe95dAb14TpSqdydAkmvRaL/2?=
+ =?us-ascii?Q?kfBq0oMh9A/bxS6nVLH1T/jDpHC36TmBFuepGkupYxSMVqELgs8Ks8bGEylr?=
+ =?us-ascii?Q?Ilf3BF+CtfTSqszbh949T01T1NrvlpBXKuv+6C42ILV3hTaSJXHFQvKhgPxG?=
+ =?us-ascii?Q?lYPfk+iv+aH6fdCmvAu1ENBOVVrVNKooA3crHdA9AR7C/Cmy70EREBrX6mrv?=
+ =?us-ascii?Q?BKtYK7t/V8HRG9ZlYWne0/wz+VSp34REUE3rDe1SwbewrNpoxolZaOfpXCS1?=
+ =?us-ascii?Q?crZx+h7Gx3Yed0RmJ+22tdPjLVvy67aELGt2yKCadGknFnsVGecnTpiGVNkV?=
+ =?us-ascii?Q?hVEkm057NTyQ2gdikPmUU/1SgfNUu+heWt0rZ7rDeYcNi4UeD+d2HhjDKdCM?=
+ =?us-ascii?Q?VHYgJjLMA1xYOoJLPqrMZFg4jwT/ltw1hpP27tK1RGxLizpsSnVuBtESphze?=
+ =?us-ascii?Q?wJmdqLPdvFFGdIuTcOs=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a1732285-a8af-43f1-ed96-08db8870db41
+X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB4838.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jul 2023 15:57:30.2901
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: O6ZNVRKNXJDfG7oPXRy4rOAfNGoqlITx4Vb42vEnmKq29fOF/UMkvMTWrtNbkGNKod74+jfRImUGjRm+pT6bAA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR04MB7399
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,97 +117,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-kernel@lists.infradead.org, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hells
- trom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: imx@lists.linux.dev, xiaowei.bao@nxp.com, kw@linux.com, Frank.Li@nxp.com, Zhiqiang.Hou@nxp.com, mani@kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, minghuan.Lian@nxp.com, mingkai.hu@nxp.com, linux-pci@vger.kernel.org, bhelgaas@google.com, roy.zang@nxp.com, linuxppc-dev@lists.ozlabs.org, robh@kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 18 Jul 2023, Aneesh Kumar K.V wrote:
-> Hugh Dickins <hughd@google.com> writes:
-> 
-> > Instead of pte_lockptr(), use the recently added pte_offset_map_nolock()
-> > in assert_pte_locked().  BUG if pte_offset_map_nolock() fails: this is
-> > stricter than the previous implementation, which skipped when pmd_none()
-> > (with a comment on khugepaged collapse transitions): but wouldn't we want
-> > to know, if an assert_pte_locked() caller can be racing such transitions?
-> >
-> 
-> The reason we had that pmd_none check there was to handle khugpaged. In
-> case of khugepaged we do pmdp_collapse_flush and then do a ptep_clear.
-> ppc64 had the assert_pte_locked check inside that ptep_clear.
-> 
-> _pmd = pmdp_collapse_flush(vma, address, pmd);
-> ..
-> ptep_clear()
-> -> asset_ptep_locked()
-> ---> pmd_none
-> -----> BUG
-> 
-> 
-> The problem is how assert_pte_locked() verify whether we are holding
-> ptl. It does that by walking the page table again and in this specific
-> case by the time we call the function we already had cleared pmd .
+Add support to pass Link down notification to Endpoint function driver
+so that the LINK_DOWN event can be processed by the function.
 
-Aneesh, please clarify, I've spent hours on this.
+Acked-by: Manivannan Sadhasivam <mani@kernel.org>
+Signed-off-by: Frank Li <Frank.Li@nxp.com>
+---
+Change from v2 to v3
+ - none
+Change from v1 to v2
+ - move pci_epc_linkdown() after dev_dbg()
 
-From all your use of past tense ("had"), I thought you were Acking my
-patch; but now, after looking again at v3.11 source and today's,
-I think you are NAKing my patch in its present form.
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-You are pointing out that anon THP's __collapse_huge_page_copy_succeeded()
-uses ptep_clear() at a point after pmdp_collapse_flush() already cleared
-*pmd, so my patch now leads that one use of assert_pte_locked() to BUG.
-Is that your point?
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+index de4c1758a6c3..e0969ff2ddf7 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -89,6 +89,7 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
+ 		dev_dbg(pci->dev, "Link up\n");
+ 	} else if (val & PEX_PF0_PME_MES_DR_LDD) {
+ 		dev_dbg(pci->dev, "Link down\n");
++		pci_epc_linkdown(pci->ep.epc);
+ 	} else if (val & PEX_PF0_PME_MES_DR_HRD) {
+ 		dev_dbg(pci->dev, "Hot reset\n");
+ 	}
+-- 
+2.34.1
 
-I can easily restore that khugepaged comment (which had appeared to me
-out of date at the time, but now looks still relevant) and pmd_none(*pmd)
-check: but please clarify.
-
-Thanks,
-Hugh
-
-> >
-> > This mod might cause new crashes: which either expose my ignorance, or
-> > indicate issues to be fixed, or limit the usage of assert_pte_locked().
-> >
-> > Signed-off-by: Hugh Dickins <hughd@google.com>
-> > ---
-> >  arch/powerpc/mm/pgtable.c | 16 ++++++----------
-> >  1 file changed, 6 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> > index cb2dcdb18f8e..16b061af86d7 100644
-> > --- a/arch/powerpc/mm/pgtable.c
-> > +++ b/arch/powerpc/mm/pgtable.c
-> > @@ -311,6 +311,8 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
-> >  	p4d_t *p4d;
-> >  	pud_t *pud;
-> >  	pmd_t *pmd;
-> > +	pte_t *pte;
-> > +	spinlock_t *ptl;
-> >  
-> >  	if (mm == &init_mm)
-> >  		return;
-> > @@ -321,16 +323,10 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
-> >  	pud = pud_offset(p4d, addr);
-> >  	BUG_ON(pud_none(*pud));
-> >  	pmd = pmd_offset(pud, addr);
-> > -	/*
-> > -	 * khugepaged to collapse normal pages to hugepage, first set
-> > -	 * pmd to none to force page fault/gup to take mmap_lock. After
-> > -	 * pmd is set to none, we do a pte_clear which does this assertion
-> > -	 * so if we find pmd none, return.
-> > -	 */
-> > -	if (pmd_none(*pmd))
-> > -		return;
-> > -	BUG_ON(!pmd_present(*pmd));
-> > -	assert_spin_locked(pte_lockptr(mm, pmd));
-> > +	pte = pte_offset_map_nolock(mm, pmd, addr, &ptl);
-> > +	BUG_ON(!pte);
-> > +	assert_spin_locked(ptl);
-> > +	pte_unmap(pte);
-> >  }
-> >  #endif /* CONFIG_DEBUG_VM */
-> >  
-> > -- 
-> > 2.35.3
