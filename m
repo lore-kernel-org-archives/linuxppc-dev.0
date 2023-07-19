@@ -4,45 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BD3EC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 21:24:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A197C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 21:25:25 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yA9Vox81;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5pjt3sVvz3cM2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 07:24:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chengzhihao1@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1014 seconds by postgrey-1.37 at boromir; Thu, 20 Jul 2023 00:40:44 AEST
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R5pkq6fmjz3cX9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 07:25:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yA9Vox81;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com; envelope-from=vannapurve@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5dlw1WG1z3c1n
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 00:40:43 +1000 (AEST)
-Received: from kwepemm600013.china.huawei.com (unknown [172.30.72.54])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R5dJQ0gzxzNmKd;
-	Wed, 19 Jul 2023 22:20:22 +0800 (CST)
-Received: from [10.174.178.46] (10.174.178.46) by
- kwepemm600013.china.huawei.com (7.193.23.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Wed, 19 Jul 2023 22:23:40 +0800
-Subject: Re: [RFC PATCH 05/21] ubifs: Pass worst-case buffer size to
- compression routines
-To: Ard Biesheuvel <ardb@kernel.org>, Eric Biggers <ebiggers@kernel.org>
-References: <20230718125847.3869700-1-ardb@kernel.org>
- <20230718125847.3869700-6-ardb@kernel.org>
- <20230718223813.GC1005@sol.localdomain>
- <CAMj1kXE1fND2h8ts6Xtfn19wkt=vAnj1TumxvoBCuEn7z3V4Aw@mail.gmail.com>
-From: Zhihao Cheng <chengzhihao1@huawei.com>
-Message-ID: <3330004f-acac-81b4-e382-a17221a0a128@huawei.com>
-Date: Wed, 19 Jul 2023 22:23:39 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5jLC6pxcz2ytf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 03:22:10 +1000 (AEST)
+Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-991ef0b464cso230299966b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 10:22:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1689787326; x=1692379326;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=muf27eIntjXr3Sa3gdcQLPN4y9AYfVWt2TffDnLSMcw=;
+        b=yA9Vox816zD+aJ/FVd+gHS1eUUrpLebV0UPRWoTOQXRhwbDjiEzKfZKLt7ZPO+mtvH
+         SaibLGPqQv8DRVnknibkmwFWbPPfcXmr6c+ujgDGBFuCW/F/BitDoK4IVXsvCkVTbM2a
+         UUXFrIHyb9EtmF0G0jSo223YyW0H9eb4QyBBeSzBXy3UqItMc2tyGgaUGUFrdupt+8A5
+         dLZgmELLzzoUW2SKSL+4MBdgHsq0BaZC4v7p3QuLBtrY+JwzHEa0w4RaSfJgn6bTpTvs
+         oKq8cg7sWg40yA0HzTTcfPzlRvV46kkywbP49vwd3eHSPLgVvqkoTlu6Tp2eaYz6GzrZ
+         sQlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689787326; x=1692379326;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=muf27eIntjXr3Sa3gdcQLPN4y9AYfVWt2TffDnLSMcw=;
+        b=FaG36zfptmZEylayEVtpv2uGwv8twpAEg5Qo0MTLDt9H5IYf9uRLqNldQ89DYVLAhE
+         ++pHIf7hRaAixLHol7kBEUUjVhd7UvCB3Ld//PTe/t/BDiNJRUq2oZagVLtlthYVDNJS
+         gBaVFuDValN80HVKJ8x/HowtrvXqc/a6QsHFoABzSOqm5ZCe4H+sIvaBfLPlQj0spp7c
+         Dw9cbcrhLBtYvc4ckz0FmsD+yAdx0zw1jXhYPdAqq0hloqXwqIhrE75dlF4A2nSD62I+
+         d2i1lk3ynGHI8ZQRBQSiRHiAAWs00syuxUOjZNkUP+Aj6l138KobnBHqdN/+uMB9iPPB
+         xBBA==
+X-Gm-Message-State: ABy/qLb5PXJJUh/VHJzM61pKatIKiNCd4Jt1UqBGVD6eW7BzPZ7goaxh
+	w+r/FOS9pTa+FFifCelfztAFS4YyTABhhXh97AsItA==
+X-Google-Smtp-Source: APBJJlHLONYvTW7m5Fbx16RlTb/fOqinzIvyTzihLXJQXLhrTmtvBuSogp90ZclD7PbARqJZdKXYR/WVY9tuMb+Y5tE=
+X-Received: by 2002:a17:906:292:b0:97e:17cc:cc95 with SMTP id
+ 18-20020a170906029200b0097e17cccc95mr3045374ejf.36.1689787326540; Wed, 19 Jul
+ 2023 10:22:06 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAMj1kXE1fND2h8ts6Xtfn19wkt=vAnj1TumxvoBCuEn7z3V4Aw@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.178.46]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- kwepemm600013.china.huawei.com (7.193.23.68)
-X-CFilter-Loop: Reflected
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
+In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
+From: Vishal Annapurve <vannapurve@google.com>
+Date: Wed, 19 Jul 2023 10:21:55 -0700
+Message-ID: <CAGtprH9a2jX-hdww9GPuMrO9noNeXkoqE8oejtVn2vD0AZa3zA@mail.gmail.com>
+Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+To: Sean Christopherson <seanjc@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Thu, 20 Jul 2023 07:24:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,71 +77,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Steffen Klassert <steffen.klassert@secunet.com>, Kees Cook <keescook@chromium.org>, qat-linux@intel.com, Sergey Senozhatsky <senozhatsky@chromium.org>, Richard Weinberger <richard@nod.at>, David Ahern <dsahern@kernel.org>, Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Nick Terrell <terrelln@fb.com>, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, Jakub Kicinski <kuba@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver
+  Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-在 2023/7/19 16:33, Ard Biesheuvel 写道:
-> On Wed, 19 Jul 2023 at 00:38, Eric Biggers <ebiggers@kernel.org> wrote:
->>
->> On Tue, Jul 18, 2023 at 02:58:31PM +0200, Ard Biesheuvel wrote:
->>> Currently, the ubifs code allocates a worst case buffer size to
->>> recompress a data node, but does not pass the size of that buffer to the
->>> compression code. This means that the compression code will never use
+On Tue, Jul 18, 2023 at 4:49=E2=80=AFPM Sean Christopherson <seanjc@google.=
+com> wrote:
+> ...
+> +static int kvm_gmem_error_page(struct address_space *mapping, struct pag=
+e *page)
+> +{
+> +       struct list_head *gmem_list =3D &mapping->private_list;
+> +       struct kvm_memory_slot *slot;
+> +       struct kvm_gmem *gmem;
+> +       unsigned long index;
+> +       pgoff_t start, end;
+> +       gfn_t gfn;
+> +
+> +       filemap_invalidate_lock_shared(mapping);
+> +
+> +       start =3D page->index;
+> +       end =3D start + thp_nr_pages(page);
+> +
+> +       list_for_each_entry(gmem, gmem_list, entry) {
+> +               xa_for_each_range(&gmem->bindings, index, slot, start, en=
+d - 1) {
+> +                       for (gfn =3D start; gfn < end; gfn++) {
+> +                               if (WARN_ON_ONCE(gfn < slot->base_gfn ||
+> +                                               gfn >=3D slot->base_gfn +=
+ slot->npages))
+> +                                       continue;
+> +
+> +                               /*
+> +                                * FIXME: Tell userspace that the *privat=
+e*
+> +                                * memory encountered an error.
+> +                                */
+> +                               send_sig_mceerr(BUS_MCEERR_AR,
+> +                                               (void __user *)gfn_to_hva=
+_memslot(slot, gfn),
+> +                                               PAGE_SHIFT, current);
 
-I think you mean the 'out_len' which describes the lengh of 'buf' is 
-passed into ubifs_decompress, which effects the result of 
-decompressor(eg. lz4 uses length to calculate the buffer end pos).
-So, we should pass the real lenghth of 'buf'.
+Does it make sense to replicate what happens with MCE handling on
+tmpfs backed guest memory:
+1) Unmap gpa from guest
+2) On the next guest EPT fault, exit to userspace to handle/log the
+mce error for the gpa.
 
-Reviewed-by: Zhihao Cheng <chengzhihao1@huawei.com>
+IIUC, such MCEs could be asynchronous and "current" might not always
+be the intended recipient of this signal.
 
->>> the additional space, and might fail spuriously due to lack of space.
->>>
->>> So let's multiply out_len by WORST_COMPR_FACTOR after allocating the
->>> buffer. Doing so is guaranteed not to overflow, given that the preceding
->>> kmalloc_array() call would have failed otherwise.
->>>
->>> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
->>> ---
->>>   fs/ubifs/journal.c | 2 ++
->>>   1 file changed, 2 insertions(+)
->>>
->>> diff --git a/fs/ubifs/journal.c b/fs/ubifs/journal.c
->>> index dc52ac0f4a345f30..4e5961878f336033 100644
->>> --- a/fs/ubifs/journal.c
->>> +++ b/fs/ubifs/journal.c
->>> @@ -1493,6 +1493,8 @@ static int truncate_data_node(const struct ubifs_info *c, const struct inode *in
->>>        if (!buf)
->>>                return -ENOMEM;
->>>
->>> +     out_len *= WORST_COMPR_FACTOR;
->>> +
->>>        dlen = le32_to_cpu(dn->ch.len) - UBIFS_DATA_NODE_SZ;
->>>        data_size = dn_size - UBIFS_DATA_NODE_SZ;
->>>        compr_type = le16_to_cpu(dn->compr_type);
->>
->> This looks like another case where data that would be expanded by compression
->> should just be stored uncompressed instead.
->>
->> In fact, it seems that UBIFS does that already.  ubifs_compress() has this:
->>
->>          /*
->>           * If the data compressed only slightly, it is better to leave it
->>           * uncompressed to improve read speed.
->>           */
->>          if (in_len - *out_len < UBIFS_MIN_COMPRESS_DIFF)
->>                  goto no_compr;
->>
->> So it's unclear why the WORST_COMPR_FACTOR thing is needed at all.
->>
-> 
-> It is not. The buffer is used for decompression in the truncation
-> path, so none of this logic even matters. Even if the subsequent
-> recompression of the truncated data node could result in expansion
-> beyond the uncompressed size of the original data (which seems
-> impossible to me), increasing the size of this buffer would not help
-> as it is the input buffer for the compression not the output buffer.
-> .
-> 
-
+> +                       }
+> +               }
+> +       }
+> +
+> +       filemap_invalidate_unlock_shared(mapping);
+> +
+> +       return 0;
+> +}
+> +
