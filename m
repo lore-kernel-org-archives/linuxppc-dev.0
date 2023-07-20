@@ -4,65 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AD1FC001B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jul 2023 15:40:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 636D8EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 08:55:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=zuZWZV29;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PuKy3faF;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R5g4N477Qz3c2F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 01:40:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R662w0Cdjz3c3w
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 18:55:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=zuZWZV29;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PuKy3faF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3ngo4zaykdlejvreatxffxcv.tfdczeloggt-uvmczjkj.fqcrsj.fix@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R5g3R0FxVz2yGf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 01:39:13 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-cacd29a972fso6411960276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2023 08:39:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689781150; x=1692373150;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3uTGEOgXGgjS1mpy4uY8Zn88ggwsAyaWY3/MU5WFUXU=;
-        b=zuZWZV29hv7HoMETiCkSKGIHZcpHTMG8TKF9qduMPPS/E1c0SfFLVA6kGEOoP5U9qq
-         U77CuEsLMMxKIxLMFnjtp2hpB+IIMkYXVFGsPC5bapP3nIk/nGTrjqlCGcZf5+xPpr8T
-         q16/aDqhEkgnoKMdGaA5rz+Gt+5uK6D6P1fr5Zm7R4i7YF7l973NWOrr+c3kq7IzyS9M
-         gLZmugAwtecTQMKF7z0UBcPf86RbNReN6ZSKfaBS2Zp8N7kJnMwhsDMUzBHIndlxccW1
-         lnFRHUcOrryTZsXwruMmKL2jJUIvic1/Jzr/kaZBJYZOlvirf0tEwgFNXnc0yrJBGF6s
-         gFpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689781150; x=1692373150;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=3uTGEOgXGgjS1mpy4uY8Zn88ggwsAyaWY3/MU5WFUXU=;
-        b=NVTFpYqbPNCxa8yCA2CV2mlY8DC0UaAQFq9OXI63S7W9QPdlKEW+3yaYzYrB3/18FW
-         4kPwn4+vkxcv86QivIA1OoBiwiqeyvJ/EWFk5/FXrkFhvvQsK8ZDXWtPi374P+ceAneb
-         /FAtWxhGFs70kWHjNq1aB1oQGJwzryWTzTL4fu/D9Zns490QzJW9XrmmJPMyeK5wlfM9
-         hLZGehX6x44s9nVlvHKEslqF9g76qbxSJBucm3f/qxLfVV8dE13OoHP73l+WXyLRcouF
-         o3b17xdrpanNPwoWX6gZhfXKM4nWaq8B03BN1Hh/8yb0zVKcivmtgiLj/k8AKtcgQUM3
-         EbHA==
-X-Gm-Message-State: ABy/qLaMG8heWpdWe67Jk9n9ojZcwcrPL8gBee+ULezR1gOGmePf5DZf
-	gFg+GwmdZ8OA6HTcxhjtY/rjdHieAs8=
-X-Google-Smtp-Source: APBJJlHKX/op8BIXr6hrdN4x6RovTyUJBoPmA+F//tB9wdB4uZjaG/yxyF0KPogxnGD6eEZAy2DX7qXfLUE=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:868b:0:b0:c4d:9831:9712 with SMTP id
- z11-20020a25868b000000b00c4d98319712mr26898ybk.0.1689781150625; Wed, 19 Jul
- 2023 08:39:10 -0700 (PDT)
-Date: Wed, 19 Jul 2023 08:39:09 -0700
-In-Reply-To: <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
-Mime-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
- <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
-Message-ID: <ZLgDnYJUX/QR9UJi@google.com>
-Subject: Re: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
-From: Sean Christopherson <seanjc@google.com>
-To: Jarkko Sakkinen <jarkko@kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R661v5bNLz2ys8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 18:54:27 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 88A2F61941;
+	Thu, 20 Jul 2023 08:54:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7CBDC433C8;
+	Thu, 20 Jul 2023 08:54:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1689843264;
+	bh=nLUVvJJOl4QJGI6Kn3sQ8QCjl89R0J5mJFa8dm5XKOw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=PuKy3faF1XLn+PHZ7cjaF0uhzIpt8UmxXHlCkcxcysHntuAtgxenMOR0jiqzOaym1
+	 WMWgGa+uRvXPjZrWBFBGv038GXrBCyQv80gd0Hc45CQIyyzeMQ82Xaq3ITNm+SYtxo
+	 7gvtuugiUYygCScpbVFonOTqCAun5VzD6KVdXP8kD65xKrylzVr11GmSFEDCzkxtVT
+	 Q5YLU8AzeJyj7oiLMJZZJ6aCwC/Qi2kX+Q8rqNd9QgbjenTCySbXtXzS2WeAv6NkFU
+	 XQgNFCeQsS6eP/C71+pUsdXl355/AKUAswk/sIPsN/gxf6FufuEDrrFaYRAvJ0ZCdI
+	 ibNd7XIk2nm/g==
+Date: Thu, 20 Jul 2023 11:53:52 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 00/13] mm: jit/text allocator
+Message-ID: <20230720085352.GN1901145@kernel.org>
+References: <20230601101257.530867-1-rppt@kernel.org>
+ <ZHjDU/mxE+cugpLj@FVFF77S0Q05N.cambridge.arm.com>
+ <ZHjgIH3aX9dCvVZc@moria.home.lan>
+ <ZHm3zUUbwqlsZBBF@FVFF77S0Q05N>
+ <20230605092040.GB3460@kernel.org>
+ <ZH20XkD74prrdN4u@FVFF77S0Q05N>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZH20XkD74prrdN4u@FVFF77S0Q05N>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,28 +66,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linu
- x-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozla
+ bs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 19, 2023, Jarkko Sakkinen wrote:
-> On Wed Jul 19, 2023 at 2:44 AM EEST, Sean Christopherson wrote:
-> >  	/* Huge pages aren't expected to be modified without first being zapped. */
-> > -	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
-> > +	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
+On Mon, Jun 05, 2023 at 11:09:34AM +0100, Mark Rutland wrote:
+> On Mon, Jun 05, 2023 at 12:20:40PM +0300, Mike Rapoport wrote:
+> > On Fri, Jun 02, 2023 at 10:35:09AM +0100, Mark Rutland wrote:
+> > > On Thu, Jun 01, 2023 at 02:14:56PM -0400, Kent Overstreet wrote:
+> > > > On Thu, Jun 01, 2023 at 05:12:03PM +0100, Mark Rutland wrote:
+> > > > > For a while I have wanted to give kprobes its own allocator so that it can work
+> > > > > even with CONFIG_MODULES=n, and so that it doesn't have to waste VA space in
+> > > > > the modules area.
+> > > > > 
+> > > > > Given that, I think these should have their own allocator functions that can be
+> > > > > provided independently, even if those happen to use common infrastructure.
+> > > > 
+> > > > How much memory can kprobes conceivably use? I think we also want to try
+> > > > to push back on combinatorial new allocators, if we can.
+> > > 
+> > > That depends on who's using it, and how (e.g. via BPF).
+> > > 
+> > > To be clear, I'm not necessarily asking for entirely different allocators, but
+> > > I do thinkg that we want wrappers that can at least pass distinct start+end
+> > > parameters to a common allocator, and for arm64's modules code I'd expect that
+> > > we'd keep the range falblack logic out of the common allcoator, and just call
+> > > it twice.
+> > > 
+> > > > > > Several architectures override module_alloc() because of various
+> > > > > > constraints where the executable memory can be located and this causes
+> > > > > > additional obstacles for improvements of code allocation.
+> > > > > > 
+> > > > > > This set splits code allocation from modules by introducing
+> > > > > > jit_text_alloc(), jit_data_alloc() and jit_free() APIs, replaces call
+> > > > > > sites of module_alloc() and module_memfree() with the new APIs and
+> > > > > > implements core text and related allocation in a central place.
+> > > > > > 
+> > > > > > Instead of architecture specific overrides for module_alloc(), the
+> > > > > > architectures that require non-default behaviour for text allocation must
+> > > > > > fill jit_alloc_params structure and implement jit_alloc_arch_params() that
+> > > > > > returns a pointer to that structure. If an architecture does not implement
+> > > > > > jit_alloc_arch_params(), the defaults compatible with the current
+> > > > > > modules::module_alloc() are used.
+> > > > > 
+> > > > > As above, I suspect that each of the callsites should probably be using common
+> > > > > infrastructure, but I don't think that a single jit_alloc_arch_params() makes
+> > > > > sense, since the parameters for each case may need to be distinct.
+> > > > 
+> > > > I don't see how that follows. The whole point of function parameters is
+> > > > that they may be different :)
+> > > 
+> > > What I mean is that jit_alloc_arch_params() tries to aggregate common
+> > > parameters, but they aren't actually common (e.g. the actual start+end range
+> > > for allocation).
+> > 
+> > jit_alloc_arch_params() tries to aggregate architecture constraints and
+> > requirements for allocations of executable memory and this exactly what
+> > the first 6 patches of this set do.
+> > 
+> > A while ago Thomas suggested to use a structure that parametrizes
+> > architecture constraints by the memory type used in modules [1] and Song
+> > implemented the infrastructure for it and x86 part [2].
+> > 
+> > I liked the idea of defining parameters in a single structure, but I
+> > thought that approaching the problem from the arch side rather than from
+> > modules perspective will be better starting point, hence these patches.
+> > 
+> > I don't see a fundamental reason why a single structure cannot describe
+> > what is needed for different code allocation cases, be it modules, kprobes
+> > or bpf. There is of course an assumption that the core allocations will be
+> > the same for all the users, and it seems to me that something like 
+> > 
+> > * allocate physical memory if allocator caches are empty
+> > * map it in vmalloc or modules address space
+> > * return memory from the allocator cache to the caller
+> > 
+> > will work for all usecases.
+> > 
+> > We might need separate caches for different cases on different
+> > architectures, and a way to specify what cache should be used in the
+> > allocator API, but that does not contradict a single structure for arch
+> > specific parameters, but only makes it more elaborate, e.g. something like
+> > 
+> > enum jit_type {
+> > 	JIT_MODULES_TEXT,
+> > 	JIT_MODULES_DATA,
+> > 	JIT_KPROBES,
+> > 	JIT_FTRACE,
+> > 	JIT_BPF,
+> > 	JIT_TYPE_MAX,
+> > };
+> > 
+> > struct jit_alloc_params {
+> > 	struct jit_range	ranges[JIT_TYPE_MAX];
+> > 	/* ... */
+> > };
+> > 
+> > > > Can you give more detail on what parameters you need? If the only extra
+> > > > parameter is just "does this allocation need to live close to kernel
+> > > > text", that's not that big of a deal.
+> > > 
+> > > My thinking was that we at least need the start + end for each caller. That
+> > > might be it, tbh.
+> > 
+> > Do you mean that modules will have something like
+> > 
+> > 	jit_text_alloc(size, MODULES_START, MODULES_END);
+> > 
+> > and kprobes will have
+> > 
+> > 	jit_text_alloc(size, KPROBES_START, KPROBES_END);
+> > ?
 > 
-> Not familiar with this code. Just checking whether whether instead
-> pr_{warn,err}()
+> Yes.
+> 
+> > It sill can be achieved with a single jit_alloc_arch_params(), just by
+> > adding enum jit_type parameter to jit_text_alloc().
+> 
+> That feels backwards to me; it centralizes a bunch of information about
+> distinct users to be able to shove that into a static array, when the callsites
+> can pass that information. 
+> 
+> What's *actually* common after separating out the ranges? Is it just the
+> permissions?
 
-The "full" WARN is desirable, this is effecitvely an assert on the contract between
-the primary MMU, generic KVM code, and x86's TDP MMU.  The .change_pte() mmu_notifier
-callback doesn't allow for hugepages, i.e. it's a (likely fatal) kernel bug if a
-hugepage is encountered at this point.  Ditto for the "start + 1 == end" check,
-if that fails then generic KVM likely has a fatal bug.
+Even if for some architecture the only common thing are the permissions,
+having a definition for code allocations in a single place an improvement.
+The diffstat of the patches is indeed positive (even without comments), but
+having a single structure that specifies how the code should be allocated
+would IMHO actually reduce the maintenance burden.
 
-> combined with return false would be a more graceful option?
+And features like caching of large pages and sub-page size allocations are
+surely will be easier to opt-in this way.
+ 
+> If we want this to be able to share allocations and so on, why can't we do this
+> like a kmem_cache, and have the callsite pass a pointer to the allocator data?
+> That would make it easy for callsites to share an allocator or use a distinct
+> one.
 
-The return value communicates whether or not a TLB flush is needed, not whether
-or not the operation was successful, i.e. there is no way to cancel the unexpected
-PTE change.
+I've looked into doing this like a kmem_cache with call sites passing the
+allocator data, and this gets really hairy. For each user we need to pass
+the arch specific parameters to that user, create a cache there and only
+then the cache can be used. Since we don't have hooks to setup any of the
+users in the arch code, the initialization gets more complex than shoving
+everything into an array.
+
+I think that jit_alloc(type, size) is the best way to move forward to let
+different users choose their ranges and potentially caches. Differentiation
+by the API name will explode even now and it'll get worse if/when new users
+will show up and we can't even force users to avoid using PC-relative
+addressing because, e.g. RISC-V explicitly switched their BPF JIT to use
+that.
+ 
+> Thanks,
+> Mark.
+
+-- 
+Sincerely yours,
+Mike.
