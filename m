@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 618E5EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 13:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EA7AEB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 13:54:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6DgR0n2pz3d87
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 23:53:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6Dgx5t0Nz3cYk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 23:54:21 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6DdN35p8z3bTf
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6DdN4Jdcz3bTf
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 23:52:08 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4R6DdJ0CNPz4wyB;
-	Thu, 20 Jul 2023 23:52:04 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4R6DdK64vkz4wyC;
+	Thu, 20 Jul 2023 23:52:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>
-In-Reply-To: <20230719071821.320594-1-ajd@linux.ibm.com>
-References: <20230719071821.320594-1-ajd@linux.ibm.com>
-Subject: Re: [PATCH] Revert "powerpc/64s: Remove support for ELFv1 little endian userspace"
-Message-Id: <168986105081.1117384.2660879957630127014.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Josh Poimboeuf <jpoimboe@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Sathvika Vasireddy <sv@linux.ibm.com>, Naveen N Rao <naveen@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1689091394.git.christophe.leroy@csgroup.eu>
+References: <cover.1689091394.git.christophe.leroy@csgroup.eu>
+Subject: Re: (subset) [PATCH v4 00/15] powerpc/objtool: uaccess validation for PPC32 (v4)
+Message-Id: <168986105076.1117384.18255319220057556882.b4-ty@ellerman.id.au>
 Date: Thu, 20 Jul 2023 23:50:50 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,29 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Adam Borowski <kilobyte@angband.pl>, Naveen N Rao <naveen@kernel.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 19 Jul 2023 17:18:21 +1000, Andrew Donnellan wrote:
-> This reverts commit 606787fed7268feb256957872586370b56af697a.
+On Tue, 11 Jul 2023 18:08:26 +0200, Christophe Leroy wrote:
+> This series adds UACCESS validation for PPC32. It includes
+> a dozen of changes to objtool core.
 > 
-> ELFv1 with LE has never been a thing, and people who try to make ELFv1 LE
-> binaries are maniacs who need to be stopped, but unfortunately there are
-> ELFv1 LE binaries out there in the wild.
+> It applies on top of series "Cleanup/Optimise KUAP (v3)"
+> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=363368&state=*
 > 
-> One such binary is the ppc64el (as Debian calls it) helper for
-> arch-test[0], a tool for detecting architectures that can be executed on a
-> given machine by means of attempting to execute helper binaries compiled
-> for each architecture and seeing which binaries succeed and fail. The
-> helpers are small snippets of assembly, and the ppc64el assembly doesn't
-> include the right directives to generate an ELFv2 binary.
+> It is almost mature, performs code analysis for all PPC32.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] Revert "powerpc/64s: Remove support for ELFv1 little endian userspace"
-      https://git.kernel.org/powerpc/c/106ea7ffd56b0f9454cd4f625474967f12ac4dbd
+[01/15] Revert "powerpc/bug: Provide better flexibility to WARN_ON/__WARN_FLAGS() with asm goto"
+        https://git.kernel.org/powerpc/c/b49e578b9314db051da0ad72bba24094193f9bd0
 
 cheers
