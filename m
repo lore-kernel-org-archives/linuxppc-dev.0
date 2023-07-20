@@ -4,108 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B876EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 08:42:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59F61EB64DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 08:43:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VeLQOsU7;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=PlVmjHQs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R65md0Gklz3bZM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 18:42:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R65nb74Nlz3c2y
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 18:43:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VeLQOsU7;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=PlVmjHQs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e89::61b; helo=nam10-mw2-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2061b.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e89::61b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe5a::61e; helo=nam12-mw2-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2061e.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe5a::61e])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R65jL0QWcz3bZK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 18:40:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R65jM0S74z3bZK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 18:40:06 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=czcMPwRKE6Yr2kIDjbNOnrESZnanBo6EyDVBnAvQ74Ej/fqV0NSWZ2H2jQs4ta+JMsT0L5DVawomLtC3p0cFJ4krT2kc2/Qhq9+/X6QdnPQWbnP45+uH+C+ZfJsrfVJQHwV26g8DMtISfpvtrgQzdngWgWN4EJ75wnrShtjaDi361SOm1kA8daLRX9sD4ml6TfiQRh4uwsJ1VBgjs7NCtN3r4+7HivzAxMi2QlOHD6gFEgauL6TYs23Xg0nWexd652e3T1yJl0fuG0Rec9xaZWxLj2zmkGKlOiOQz/jkuJts58B+QEeuOLnHntcS84mD0oRomZw0cijOWIoThX3/Og==
+ b=ECvaaA3ySZDw5vHoY+JC9P8vXLYkaBk8MF4sYWcdmjMjl866XZlPdPmXXspCr2Fs64JXZuKEw/QfmJd4IZTj/gF9LCrNhCH3KTXtH/iRpa/Cr4x5K61RLU6Ql3bopGPA5J6gc1btkf60ZZQc2FJ0EZvrHQVLP+qpnX5gTQ+bkcoQSHkXxc8ppnhgo7MDtVvDDed6hlZ3CI+3bEnARdUniHs6L2arz98HuPg1V9eTm7/WjqeT13e+evf0C1PiS3UkFJYkVya0GyeIW/ln1eSszVyo15PUaQpqFPmdcUXOt1uR+6HT5HRzZLyspsXvCANqUTj5cdRE5DqEae75NhUQXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RPc/276d9SPxX1FIJHjG9BBb1nqejmmtat9YQEinW+8=;
- b=cRnJqlopQ99+U8o08s5fZx8AuhiAjTz+hgFA/8+cwpwrHmzOv8y1dd59QXbQ+oGyjnU6vicdbcnBAOotngxDyQ9wKaSduEmRWF1VT0wIXKizsDuEo9B0CBNqHxTzMUq8H2ATtSzoIzaj9OHIx3vKkaKYcyGdtHrvtMd6hb2HUQQ5WP9dgi+2ZnWTLGydK6jbzoyxaC8A6pVc44KBZ3y4d/1/jtmd92swtpDE46S/9OHV5ETK1MREFlbyQjC6oSCkhcDkqkl32xAR4LfgXgtdw1KgLP91auWOvQx8b4C0f6p3U4TWn0hGRFPIs8k2Gz8xCYbD42Gq75vHDSLCxXOHOw==
+ bh=D/cCYj8Xd7PDxmlOmxc7ZGo63wZ++XgwVNU3j4KQgOc=;
+ b=HOwjuVjj3bdkRRRf0+MyuOjBoIv6ui061C9eMFXHos//+uKfc4kQTUswHKR/xaKiZgGKv91Dqr7cToZCVhUKnaCuGGOfHqGHyp6zOgGX2G+OO2BVBDUCV0aCiKDv8fSGrPPJKJWJX+UKdWFZB7SANkAKfdp0I9brzdvN6/oe8Wl+oKlcH2j7DlwEpOpamGQhovIOBBYkHX9JHeSuO7Fb87EBZeU1kL6zJH8ONsIEKxK8gtta3vpJsWYHAa3MEmOLGAD1Ta2LlKYnWSvqqNcdADr7SxUwdUOL+EDT0sZB44ZaWvutveWbf05h3qLFBOfpEFmjnE+nE/coKbrTTwMp/w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RPc/276d9SPxX1FIJHjG9BBb1nqejmmtat9YQEinW+8=;
- b=VeLQOsU7dSdTLfcJ23tS5A9pvFzOHBLAAwJtf2rxoUwv0iRk5jSnZta26VH9ITQA8zxiQD6IM24U9d4pNcMmkdYm7jwqC4+lR2tthHwfyAweOFV3CJ+xYOjegDwZ8ufTpRceYj7/5qSj+VfUiav/SEvyXFaWKNRFA51041agt8HEVeh4UHTTSuM25C30Mhx6Skh1Ad8U7kNXaLJt19gYlSkpi5PGZqXtgf8WnNkty5Yd3SD5xm+8dQ9PFGELEtU6ikIdgE06bTG5cYhXSJCATxiXnfCe2akbG8bYn03kbPBDiYk/eMSWHk+nOXmI4c1R/NEWBj8xGkSpWe5QDS0jqQ==
+ bh=D/cCYj8Xd7PDxmlOmxc7ZGo63wZ++XgwVNU3j4KQgOc=;
+ b=PlVmjHQsWvDa8c0m9WSwFzKwG7DCZ4Z290hPqi2PT5toTVVL+SGoB8m8A+DdY+UGmG191MmxMkTc9dVPDcqSNsuve3OZWnF62qlYJL8WL7ZlD9ohDSaPtdmiPMcv9IG2+XQEV3R/yrB38DUqsWwag8DPey4DBspxKGleN92Zs48XrAnAM2Pu0srKAfLZHirUsbNiBr+6p24bvAVFJILEeH0X8LYoQOO/C41y4gL11bvtuTMA2RoOFwcb9v7WinQmdIg80Lm5X7xqI+0hXwyIdjvZCsJl2qczjiW1i0n9Jv7Tyc8EzGFamsZZHkN1nd6rxfizEvOGlgaeS4zKxKgqVw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from BYAPR12MB3176.namprd12.prod.outlook.com (2603:10b6:a03:134::26)
- by CH3PR12MB8712.namprd12.prod.outlook.com (2603:10b6:610:171::20) with
+ by PH8PR12MB7025.namprd12.prod.outlook.com (2603:10b6:510:1bc::22) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6588.33; Thu, 20 Jul
- 2023 08:39:39 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.24; Thu, 20 Jul
+ 2023 08:39:52 +0000
 Received: from BYAPR12MB3176.namprd12.prod.outlook.com
  ([fe80::cd5e:7e33:c2c9:fb74]) by BYAPR12MB3176.namprd12.prod.outlook.com
  ([fe80::cd5e:7e33:c2c9:fb74%7]) with mapi id 15.20.6609.025; Thu, 20 Jul 2023
- 08:39:38 +0000
+ 08:39:52 +0000
 From: Alistair Popple <apopple@nvidia.com>
 To: akpm@linux-foundation.org
-Subject: [PATCH v3 0/5] Invalidate secondary IOMMU TLB on permission upgrade
-Date: Thu, 20 Jul 2023 18:39:22 +1000
-Message-Id: <cover.b24362332ec6099bc8db4e8e06a67545c653291d.1689842332.git-series.apopple@nvidia.com>
+Subject: [PATCH v3 2/5] mmu_notifiers: Fixup comment in mmu_interval_read_begin()
+Date: Thu, 20 Jul 2023 18:39:24 +1000
+Message-Id: <06fa82756e4d6458895962a7743cc7f162658a54.1689842332.git-series.apopple@nvidia.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <cover.b24362332ec6099bc8db4e8e06a67545c653291d.1689842332.git-series.apopple@nvidia.com>
+References: <cover.b24362332ec6099bc8db4e8e06a67545c653291d.1689842332.git-series.apopple@nvidia.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SYCP282CA0023.AUSP282.PROD.OUTLOOK.COM
- (2603:10c6:10:80::35) To BYAPR12MB3176.namprd12.prod.outlook.com
+X-ClientProxiedBy: SY5P282CA0076.AUSP282.PROD.OUTLOOK.COM
+ (2603:10c6:10:201::6) To BYAPR12MB3176.namprd12.prod.outlook.com
  (2603:10b6:a03:134::26)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR12MB3176:EE_|CH3PR12MB8712:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6517a9dc-8a8f-4543-1827-08db88fcda74
+X-MS-TrafficTypeDiagnostic: BYAPR12MB3176:EE_|PH8PR12MB7025:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1b834c26-30b5-4686-5146-08db88fce2b4
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	hH8TX3bFHJJVxgNIpekeIL0B9ThbtIkT3gJOKkKNbql5HXAYsCFPeaan4TFU4c4LtYCRdwKXJjvWkUz6HZ55Hd6WlRQMeglMv6r4IxGjrunCiGKA3CJgvXD1Sp2gj8BWJaOGxDHrxP60uwU8aw33GxjSBRM5/fQV4ZolcE78QtqUAT/2BDUM9hE8+IZLvfpZXvbJvRClqOH8BAHDJyl3BR43Wo9Yv9dpiVD+cvT1P33tlbOfv0AEwrcsrhoBp2v/jmjT9jY+LlNWka0xN3DzmgJyd7QHM8pDU0+oICV6HdXv3jwn1JAntLXAb1zlyBG+XrEsInBdLTwFh05NFo+eQBuJXE4iBpFA9TronxKYvcNVQp6CZhdX/rKtrQI9f4ic2Iaw+SEXvJswzJEQOU/WQVfKjgvP3srxc9NTYObp+dbazDNX3pwYt/4wg74Nfd04ZEar4jVTZNSzww8YNLteDCmA+hFpu+OcfJeYDJIFevCBFca7MF7me00Ki8nBGtghjwm0HXMeR6GVSJcTO9l2BMrhYakQj31p9Uc/Q/srO5OwZqd+rjbHWhgHAxVr+sEdA2RucdyGd4r/IdOEggxotwUem6rRlSJbwaHz8N3L8qmlboB2Z3nziQOGV+/T8MoEyjXa0D6T4vRSXqUsiUxMqQ==
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR12MB3176.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(39860400002)(366004)(136003)(396003)(376002)(346002)(451199021)(66899021)(6486002)(6666004)(478600001)(86362001)(36756003)(2616005)(83380400001)(41300700001)(966005)(6506007)(38100700002)(186003)(6512007)(107886003)(26005)(2906002)(66556008)(316002)(8936002)(66946007)(7416002)(8676002)(66476007)(4326008)(5660300002)(6916009);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	NKFgrMSkEbwVZAmEFXKbnVft15qBKTzeInwePEcG1hrohOUbz6IiSkRTPGx9PLj1Y8p2la6CZoX+RYqMweJwM8eEWc5lPu31BfApk1Rqov10/F0xgEia8id4Mv9WkWcKlAr4cUGw9xyZxn8UA5LIJWtxxIDMyXgmBJmR7ugeUGIcA9fvda6z13SHnJE29cOEZePN2hAzVqkZhAz9Hu154e3T5IYyxznDhB4lP8GPbde58T2NCOBIzo6c00DEvAkzOmhB+iOVavCxksdbmLPjmZC1qhywVgVfceFP6K4Arur0Bv1OK6g2udVgvo7pBAZ+1QMsbJv0Q0fGk8iS+5xYkI5NbmF/+RN8eiQ+7WitilRrpyzJND75e+1b1+yg4aAOK7GfpdgRUTmSquC5HeCWAsZaLpEbkoKV87Po/V2TzBXzqnOpXJjA7+ZF9Pa6EQodp1YDMG/vA/UGhXDgMJMcRjAqUpErNHiCQS47Ajl8KqAhqDpVU12isoLV2xjdAoqtYUtyhOEOY8H4/y4ONMTFfo6UZUvrJF+Yn4dfEP6hfS8Cwkpe9NHXBShpqNSgtaOt
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR12MB3176.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(366004)(136003)(396003)(376002)(346002)(39860400002)(451199021)(36756003)(86362001)(38100700002)(186003)(7416002)(478600001)(6506007)(6666004)(26005)(41300700001)(66476007)(66946007)(4326008)(66556008)(6916009)(5660300002)(316002)(2616005)(8936002)(8676002)(83380400001)(6512007)(107886003)(6486002)(2906002);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?U1mG3T0zL9VTU7mRQtFV0TQ/6xziaz1V+U8+1VxPFbHwWjgxIpyFv3B5UajT?=
- =?us-ascii?Q?GW06PUl4qy3J1n1vcjYir69LrvfmDpRy3TooP8DV68+tfewu7QdWHD5/379p?=
- =?us-ascii?Q?CE/3itr/E+XQ9NtcOHKKGtZB8wKWD46DtlXSKtDOP8TUGInNuoY6a1fWspT7?=
- =?us-ascii?Q?YmqO1lXitKlBIQR25aALR8oYluyu18qWcxRXmzDpjhYV4TtdXaFWBxJWSyOU?=
- =?us-ascii?Q?wOK5SxgBIZEXYN2fp8eA0HlAwjjdFxL3GaqKt17HHoKr2vnq2w8Y/Of5CC9b?=
- =?us-ascii?Q?+5tkhpwEEYbOMcV5TGMnGhayLgW3j1BTTfx0MSJbkEzuIKh+tGYwHn1ApnQ+?=
- =?us-ascii?Q?G1+5SOnqVheJ/0UjtXBY9+26J3PgVRo+msk7ABy+JU4Cg4LXjcg+SwM1smDZ?=
- =?us-ascii?Q?6sQoveUNgFlzHEKYTBX9GjwroHAjpOVREEuiMz/Chw/f7WfRB/Z1iT2ma7nL?=
- =?us-ascii?Q?A///chfLDQexogYJ9liKA1awpIyK1/vQ6Nz7GEiqqdkCcPA9X6u7TcOnZ2+N?=
- =?us-ascii?Q?JQbXXZ36DDgWeFmGGFHPVoei8ejyY7BqEETct+CFOGiu1cJgo1Z+XxNxHD3j?=
- =?us-ascii?Q?0GL6oZJiGolYKZYQoI3jUHPtYNkhxupiBmShZzzivn9CshKzUg9sg1Mgwh3k?=
- =?us-ascii?Q?RMwIBrQoMyH3W1h9HnqhWkzmZ5c+H+RGennmY7imNBzVSlRmCnDf5D0XPfbS?=
- =?us-ascii?Q?pVRWz+eyb82i0BpyEs3JXriJ1P4+STKzBrQcMA/5PIPdyCQC2jutktwosSfQ?=
- =?us-ascii?Q?ytKdzD2c2RsErQVMGpLmZir8wY0kEFe/j5PiEXS3fhKqaeAw05at82vn7ENy?=
- =?us-ascii?Q?4DXXWGqSuNwT/ex2Uipn8VxWHM8o833d0NfHkIxToSACIt6VVYI20qGnD2j/?=
- =?us-ascii?Q?Qr5Gu4EUikm0BsTYudGzUj93rGS5PHjAODXmHL3YkeuoJJzVqmOXQiWTP9HI?=
- =?us-ascii?Q?kGiRulXMwQJ/AY5VKjIWJ0EqjOaZRIvb5jg5er+Q/gI/KsA+Iy/q67sBm0gX?=
- =?us-ascii?Q?NgNA/Zs4uLbDv2pP8iI1f2V57VANQHiK1hwWfo39/hdqOKsEH/p4D7BDgLwB?=
- =?us-ascii?Q?9O3vUZohb1Mcxw8nDcbdlFxVQgCWG13ZeuTVAlWMtcCxQPnowPScBzlAUcOF?=
- =?us-ascii?Q?hKJELufiJ+JhgxgETOYJzgD1xHUUCCxKUJBE5KjzAgfMP9J6hgDyRiY5LSv4?=
- =?us-ascii?Q?FWfoDvA3hcN44nKc97OprAUDCdUfL1P65Fb5C9cf/KKu//tfw/RzYaolctW6?=
- =?us-ascii?Q?4edEPl/VqZAyPKvE3Y9yPTvu7KcG1vN3e+Cy55IQp5z2BXxs7CbDoUN7W2yN?=
- =?us-ascii?Q?pciW0re0KP2zBJqOyYlthSJFpypjBfT5cysD30LqAbRzRGfh9aGfKGOKJGwR?=
- =?us-ascii?Q?huY2SeboGhHXj/FmrC58EWFJLG22RLIHWFNF/gLJ68mQTkop4UOot3Sx8aNp?=
- =?us-ascii?Q?miegAyAVPW2FF06E7x/HR2GMXC3E0bcKSaUvZB7a33IWCngmRQjwtRG0wOrD?=
- =?us-ascii?Q?4gTvZTiBq/vZQT40R7uFgsNEIzS9jcGVIBI6H2lXv4WACLdDYJea+qmsNy7D?=
- =?us-ascii?Q?kwqBKbgP8NrEL05Yao8RwV6XCCz7yw20ysjy6RWD?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?qCUN7qdsU7Ongh1mMS76qCO72xN+/RqD5YHQAwUkrveGbNzXZ7WuMZEi/RF8?=
+ =?us-ascii?Q?xZwgBd3ng2KbxVo+SWsqgRhv2fze2oIr6mO639CtOmCxRLgFo01AJ6DknYsC?=
+ =?us-ascii?Q?6IwswUZWHPAXkWT5XFQvL8DvnBFkDQb4iSnk+/ZgOh+YfpF6+5VPoPnKA5K6?=
+ =?us-ascii?Q?gtCWmBjj65s9zwHTbFzk06WS6P0Ec1VpWpUTpDBDlOONZv+OK2OsWhH2x8cm?=
+ =?us-ascii?Q?tF1gyJsuQGIHgV++Rp7Svia15rjEvT/F1GbW8dQUWk9oLixC+5R2mINHLfG0?=
+ =?us-ascii?Q?EPywjbjqu6x1OUiO9I+Cz3DH0o1goI+ZlOed71HHr40+RvA6Y0A7TAbGw6k7?=
+ =?us-ascii?Q?3m3zrbDGc5rG/1hRkubpDuysJfnYby4c7Y9ooeTatqBJJOQTmRvecy2RY7qE?=
+ =?us-ascii?Q?QB3DJitBojNpvAHmv0Naj5gpWGxWQdI3ioOJcCgrELdPdDg7Mk8rUra/MyrU?=
+ =?us-ascii?Q?Mqf3qldeLoe+J/H6EqI/Yye7H/cNy1lNDOS0vkpjceaUjeG1SHTjNbgW1xoU?=
+ =?us-ascii?Q?7b3iJceZ8wbGd4VDUZD+TW6qjTha88Wd7gVCewwQ2uecV8ysQQHbO9NeIIVa?=
+ =?us-ascii?Q?nr2kFtvoBw3rJCm7w+qYvG6MKDPI+FtuN6x756A/7x0ntL6xLOVSVjhzEG5M?=
+ =?us-ascii?Q?fES+YZW2MxQ+kCI3CUARcCvS+igFf5kbT4AV+Cnnaf8EnW5KMHgS/5O3NVwT?=
+ =?us-ascii?Q?OC5RC/6CPtJKjNJQBfbjSo4kK8dGcgeEWwokQ2lFAbWfRtc8k2yQCcBhkp5B?=
+ =?us-ascii?Q?oGmTAv9Hx4Ljaysbp89Hy0g9LA+L8XqA7yBTdCfD5Pmf7YG81fo34B4iVmMb?=
+ =?us-ascii?Q?Ty+dkPGYcbnYprEkXHHpsyNgvd7mNpTE15274Xfosb8+oqszrN4OxufdiReB?=
+ =?us-ascii?Q?2d7vkaGMs1mzLofRsPWVpH5AiZUL5uCR8HgUrH3s4bklc86ur2VDBzEVnexO?=
+ =?us-ascii?Q?wMvbVAq/oNofAD1d/FppOpMK3mYhy03+jNwcalo7q/EoGVwrN2dF5nvmPN67?=
+ =?us-ascii?Q?Qxq/OyxHOjuiEh5whqGkWDnvvAajdmMXPSC5lC43owilhQhGLA5HVlITKSKg?=
+ =?us-ascii?Q?GGeMT0rvm0iuXLMqEOQcUxe3iig6WqLJrfAyD42tpKYkYcdGwufxSWYTVgSH?=
+ =?us-ascii?Q?mx0C72HaBS5LdQnbhi6n2zlzZwntmYk5LKYSI9rfUsM7nI7L+itvBa6HRwYY?=
+ =?us-ascii?Q?ctzLj/Qyo8aicfCyiDj+zMT4TpXKgeRB5sWdH062c1/wccQHaYBI8HJ52CUc?=
+ =?us-ascii?Q?6nUfoiyumZhg75RMwVi7iUhdXUVEAsBwhMCpt5qkf4wLweCPALlcp+UIwOJx?=
+ =?us-ascii?Q?iY24VlmuUHmhvxPn637597fJmCvumnCfz2BRD873WMieAiw0hnOy9aC2J3BI?=
+ =?us-ascii?Q?rCNZbkpyfA7nANbDLTNUJPob55a+f7uS2ekOBb3DcCF2AjbVdtHQiwUw9xse?=
+ =?us-ascii?Q?vW0yxr48z0MZ3MEsXhMoBF+fkcerSRv8v4ViY6qbeVJChUjMiAzD8A5vxkY2?=
+ =?us-ascii?Q?W1YfdJBoqN3zvpW4X68fFb8rydn8BPV3Lr5sOLP4Ienwsjap6/ydsWRy5XnI?=
+ =?us-ascii?Q?Voa4FOTLCsPixPjk5Qj3J8NhgQNTZK0t/NVbGX8r?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6517a9dc-8a8f-4543-1827-08db88fcda74
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1b834c26-30b5-4686-5146-08db88fce2b4
 X-MS-Exchange-CrossTenant-AuthSource: BYAPR12MB3176.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2023 08:39:38.4442
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2023 08:39:52.0953
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Y61I+lzbuFGiKXwm9INIiYmxKCJX98YKxgYdJ7EgKqsD3LeWXHMooRhy86JjNGGJqfZ8YisHinKQC5qbhEroFg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8712
+X-MS-Exchange-CrossTenant-UserPrincipalName: tInQ6FJ2kzkNrjSLGbp/KoHQPBAJiteOD2LGi/O4vC0tNaD3WT7sJxlDmWe5wvnMCUeuRbjF3GBNIzxUnNJUaA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB7025
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,116 +123,37 @@ Cc: x86@kernel.org, zhi.wang.linux@gmail.com, kvm@vger.kernel.org, catalin.marin
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The main change is to move secondary TLB invalidation mmu notifier
-callbacks into the architecture specific TLB flushing functions. This
-makes secondary TLB invalidation mostly match CPU invalidation while
-still allowing efficient range based invalidations based on the
-existing TLB batching code.
+The comment in mmu_interval_read_begin() refers to a function that
+doesn't exist and uses the wrong call-back name. The op for mmu
+interval notifiers is mmu_interval_notifier_ops->invalidate() so fix
+the comment up to reflect that.
 
-Changes for v3:
+Signed-off-by: Alistair Popple <apopple@nvidia.com>
+---
+ mm/mmu_notifier.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- - On x86 call the invalidation when adding pending TLB invalidates
-   rather than when flushing the batch. This is because the mm is
-   required. It also matches what happens on ARM64. Fixes a bug
-   reported by SeongJae Park (thanks!)
-
-Changes for v2:
-
- - Rebased on linux-next commit 906fa30154ef ("mm/rmap: correct stale
-   comment of rmap_walk_anon and rmap_walk_file") to fix a minor
-   integration conflict with "arm64: support batched/deferred tlb
-   shootdown during page reclamation/migration". This series will need
-   to be applied after the conflicting patch.
-
- - Reordered the function rename until the end of the series as many
-   places that were getting renamed ended up being removed anyway.
-
- - Fixed a couple of build issues which broke bisection.
-
- - Added a minor patch to fix up a stale/incorrect comment.
-
-==========
-Background
-==========
-
-The arm64 architecture specifies TLB permission bits may be cached and
-therefore the TLB must be invalidated during permission upgrades. For
-the CPU this currently occurs in the architecture specific
-ptep_set_access_flags() routine.
-
-Secondary TLBs such as implemented by the SMMU IOMMU match the CPU
-architecture specification and may also cache permission bits and
-require the same TLB invalidations. This may be achieved in one of two
-ways.
-
-Some SMMU implementations implement broadcast TLB maintenance
-(BTM). This snoops CPU TLB invalidates and will invalidate any
-secondary TLB at the same time as the CPU. However implementations are
-not required to implement BTM.
-
-Implementations without BTM rely on mmu notifier callbacks to send
-explicit TLB invalidation commands to invalidate SMMU TLB. Therefore
-either generic kernel code or architecture specific code needs to call
-the mmu notifier on permission upgrade.
-
-Currently that doesn't happen so devices will fault indefinitely when
-writing to a PTE that was previously read-only as nothing invalidates
-the SMMU TLB.
-
-========
-Solution
-========
-
-To fix this the series first renames the .invalidate_range() callback
-to .arch_invalidate_secondary_tlbs() as suggested by Jason and Sean to
-make it clear this callback is only used for secondary TLBs. That was
-made possible thanks to Sean's series [1] to remove KVM's incorrect
-usage.
-
-Based on feedback from Jason [2] the proposed solution to the bug is
-to move the calls to mmu_notifier_arch_invalidate_secondary_tlbs()
-closer to the architecture specific TLB invalidation code. This
-ensures the secondary TLB won't miss invalidations, including the
-existing invalidation in the ARM64 code to deal with permission
-upgrade.
-
-Currently only ARM64, PowerPC and x86 have IOMMU with secondary TLBs
-requiring SW invalidation so the notifier is only called for those
-architectures. It is also not called for invalidation of kernel
-mappings as no secondary IOMMU implementations can access those and
-hence it is not required.
-
-[1] - https://lore.kernel.org/all/20230602011518.787006-1-seanjc@google.com/
-[2] - https://lore.kernel.org/linux-mm/ZJMR5bw8l+BbzdJ7@ziepe.ca/
-
-Alistair Popple (5):
-  arm64/smmu: Use TLBI ASID when invalidating entire range
-  mmu_notifiers: Fixup comment in mmu_interval_read_begin()
-  mmu_notifiers: Call invalidate_range() when invalidating TLBs
-  mmu_notifiers: Don't invalidate secondary TLBs as part of mmu_notifier_invalidate_range_end()
-  mmu_notifiers: Rename invalidate_range notifier
-
- arch/arm64/include/asm/tlbflush.h               |   5 +-
- arch/powerpc/include/asm/book3s/64/tlbflush.h   |   1 +-
- arch/powerpc/mm/book3s64/radix_hugetlbpage.c    |   1 +-
- arch/powerpc/mm/book3s64/radix_tlb.c            |   6 +-
- arch/x86/include/asm/tlbflush.h                 |   2 +-
- arch/x86/mm/tlb.c                               |   2 +-
- drivers/iommu/amd/iommu_v2.c                    |  10 +-
- drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c |  29 +++--
- drivers/iommu/intel/svm.c                       |   8 +-
- drivers/misc/ocxl/link.c                        |   8 +-
- include/asm-generic/tlb.h                       |   1 +-
- include/linux/mmu_notifier.h                    | 104 ++++-------------
- kernel/events/uprobes.c                         |   2 +-
- mm/huge_memory.c                                |  29 +----
- mm/hugetlb.c                                    |   8 +-
- mm/memory.c                                     |   8 +-
- mm/migrate_device.c                             |   9 +-
- mm/mmu_notifier.c                               |  49 +++-----
- mm/rmap.c                                       |  40 +-------
- 19 files changed, 111 insertions(+), 211 deletions(-)
-
-base-commit: 906fa30154ef42f93d28d7322860e76c6ae392ac
+diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+index 50c0dde..b7ad155 100644
+--- a/mm/mmu_notifier.c
++++ b/mm/mmu_notifier.c
+@@ -199,7 +199,7 @@ mmu_interval_read_begin(struct mmu_interval_notifier *interval_sub)
+ 	 * invalidate_start/end and is colliding.
+ 	 *
+ 	 * The locking looks broadly like this:
+-	 *   mn_tree_invalidate_start():          mmu_interval_read_begin():
++	 *   mn_itree_inv_start():                 mmu_interval_read_begin():
+ 	 *                                         spin_lock
+ 	 *                                          seq = READ_ONCE(interval_sub->invalidate_seq);
+ 	 *                                          seq == subs->invalidate_seq
+@@ -207,7 +207,7 @@ mmu_interval_read_begin(struct mmu_interval_notifier *interval_sub)
+ 	 *    spin_lock
+ 	 *     seq = ++subscriptions->invalidate_seq
+ 	 *    spin_unlock
+-	 *     op->invalidate_range():
++	 *     op->invalidate():
+ 	 *       user_lock
+ 	 *        mmu_interval_set_seq()
+ 	 *         interval_sub->invalidate_seq = seq
 -- 
 git-series 0.9.1
