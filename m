@@ -4,93 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E2EEB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 08:41:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD783EB64DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 08:42:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P2GNK895;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=bTkPNhib;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R65kX0xCBz3c5Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 18:41:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R65lf2YZMz3bl6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jul 2023 18:42:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P2GNK895;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=bTkPNhib;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe5a::61e; helo=nam12-mw2-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2061e.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe5a::61e])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R65hb6tyhz2ytp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 18:39:27 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36K8aamG002477;
-	Thu, 20 Jul 2023 08:39:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type : subject :
- from : in-reply-to : date : cc : message-id : references : to :
- content-transfer-encoding : mime-version; s=pp1;
- bh=XyE0wZeAGqKmCYZo60RlVS/hpDrPyB7u8SJPnbo3YV0=;
- b=P2GNK895ekwmYkKoS9IIPxTA5dYzKn5pPO4hE4ggG6ngpFsyowryOU7UoeThI5mXeFFj
- CQfic85uWy0gTJN+0ya3QW17YcCsjBCj+Xm6OWyf2rcgbr8/qx+h2Hac6rng2DaMTvRP
- oNB3nlWyNbeXrBa2O/gx0j9VHk1yCSRKTQATMXHovE2R2B6zWL4srkbcDGj4DGO0WgDd
- IF+QoXfJM9cr0VkA76c3lBVz3Ee40O1e89vhGjNW52NMTnbKh16QrWA4Lxf8OivD8gwA
- /Kr+t9Wst77HX+r7wvZcpGdedmok5awF/kUJSIZKddXzU5QMbwL3FbYYmCRKKsHr4+Xq Vw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ry0fhhpgg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 20 Jul 2023 08:39:21 +0000
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36K8b7pW005944;
-	Thu, 20 Jul 2023 08:39:21 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ry0fhhpfy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 20 Jul 2023 08:39:21 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36K81YEa004510;
-	Thu, 20 Jul 2023 08:39:20 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rv80jbfp7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 20 Jul 2023 08:39:19 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36K8dHV223003890
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 20 Jul 2023 08:39:17 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1659D20040;
-	Thu, 20 Jul 2023 08:39:17 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BD5A02004B;
-	Thu, 20 Jul 2023 08:39:15 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.109.241.238])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 20 Jul 2023 08:39:15 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: Kernel Crash Dump (kdump) broken with 6.5
-From: Sachin Sant <sachinp@linux.ibm.com>
-In-Reply-To: <2ogfzwjumrd44kxv7njfpot6fhtkzpqu77qv3bspfixdmsxcwc@umt35y2hmslm>
-Date: Thu, 20 Jul 2023 14:09:04 +0530
-Message-Id: <517DCD2F-33AA-454F-B3FE-CC4B3AD83C99@linux.ibm.com>
-References: <AB3C7C5C-86FD-4D86-9330-000CB9728F48@linux.ibm.com>
- <udbe6orsg6jpzkwppupzekfwxjvn7e5q3rlzyqvm4xl3k44w7t@e7m2zjjwmh5c>
- <87wmyxich0.fsf@mail.lhotse>
- <2ogfzwjumrd44kxv7njfpot6fhtkzpqu77qv3bspfixdmsxcwc@umt35y2hmslm>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, ajd@linux.ibm.com
-X-Mailer: Apple Mail (2.3731.600.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: PY86CmQrfF7QP5CMtuFWUKOBOVElt_es
-X-Proofpoint-ORIG-GUID: SESfGy4APLScVRa7ht5CAFnTrdyZ5SlR
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R65jL0bnYz3bcP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2023 18:40:03 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=nvSBmcOJMZUws4Z6ukb23Fh6o92px4nFt2UYG9ZhBJM2NKuwqXLKaHmGeNk0BxbnmZ8l4bQjX+Ms39xtuNGgPsELtlfNbjkCHpMdbKQkuXiL8/5UWqhPsbcCrnkeFupIW9YV7BNfuaJdeCJSVaBuUzfYhyrJJHl9SWQ6whLkZg2nJ7AMohtn443pd4tFnI6HPxK1hqLs8T1EIEC8OGmTyysFN15yu+mbZ3K9nmyMWyzJfla7SxPuuqexffB80x1v6B8NZfEA+bHpAtN8xTfNSeBmeiwCh80i+6j1iTAH9afX15FMM4i+iOwvdA+jZJ4IIajSsdUcQufHpxOvxtwBAw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ppehoSrCgyLFyaJH/ZGUibIGa4K8lHOftxZoQu5p944=;
+ b=hlpV1y2aptActkbla/Wo20ejvQYkw5zPb/y4EWi6rsD4HCJeWxbbSxgxoaTDbviyLbzQbjpaUf/z9EQffGIhufGNQprnbsUbbVGH80ZoEDQxKDBctWjFeTVYDKr97DEoha5gG1TIWce686y8GYUoCjIbWSXw5RPDV+g3lXO3fHxlhqL+5Y43lGvRlJBBo/FbsNcyBIIzIE5LXrZRwY9Px7xUz8lQJ2pvJ/o3d9Iz5invOinrMtmeEW9uTb8ykpG1cdi8fUH4HeqCpd6KVLBVSNUuBnbf9+0l+FxqheqGd4zTRhVOFaeRY3is12AyNjt8hQpyQSLspj1EKMRk4Cpucw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ppehoSrCgyLFyaJH/ZGUibIGa4K8lHOftxZoQu5p944=;
+ b=bTkPNhibWjcJI2W+dadrFK6opdVBohDuMRqf/o/60Y2E6Np1/xohYJNtpj9ePv2X0XsnbCY6CnrL7wUN5/EJ20MIpYvbMn9q2QKuj3IQS/I66D0MmpAQLQV7L6ocNexTkieQ81NeVd97LBQOfpvVu/4c7BMTorotvfg1eknwkPB3fKDL/naZKzC3JTxjSvgNo/Xd1OE6wevDju1jRnKDIu2k8GMXuUDfZkNq/vGj6V/Uck3twj8RL4Ks7b+FhZo/gpI/IOAgfrE+WJqfjknaVOlh5E+9tYx3gOJxATOyWYTWF+oQQ40hfwr0PZypexlH3bb2dEvuSzvVqmd5BRpk5Q==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from BYAPR12MB3176.namprd12.prod.outlook.com (2603:10b6:a03:134::26)
+ by PH8PR12MB7025.namprd12.prod.outlook.com (2603:10b6:510:1bc::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.24; Thu, 20 Jul
+ 2023 08:39:45 +0000
+Received: from BYAPR12MB3176.namprd12.prod.outlook.com
+ ([fe80::cd5e:7e33:c2c9:fb74]) by BYAPR12MB3176.namprd12.prod.outlook.com
+ ([fe80::cd5e:7e33:c2c9:fb74%7]) with mapi id 15.20.6609.025; Thu, 20 Jul 2023
+ 08:39:45 +0000
+From: Alistair Popple <apopple@nvidia.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH v3 1/5] arm64/smmu: Use TLBI ASID when invalidating entire range
+Date: Thu, 20 Jul 2023 18:39:23 +1000
+Message-Id: <082390057ec33969c81d49d35aa3024d7082b0bd.1689842332.git-series.apopple@nvidia.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <cover.b24362332ec6099bc8db4e8e06a67545c653291d.1689842332.git-series.apopple@nvidia.com>
+References: <cover.b24362332ec6099bc8db4e8e06a67545c653291d.1689842332.git-series.apopple@nvidia.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SY2PR01CA0037.ausprd01.prod.outlook.com
+ (2603:10c6:1:15::25) To BYAPR12MB3176.namprd12.prod.outlook.com
+ (2603:10b6:a03:134::26)
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-20_02,2023-07-19_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 phishscore=0 mlxlogscore=999 spamscore=0
- adultscore=0 mlxscore=0 priorityscore=1501 suspectscore=0 clxscore=1015
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2307200070
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BYAPR12MB3176:EE_|PH8PR12MB7025:EE_
+X-MS-Office365-Filtering-Correlation-Id: 71a9a0f8-e298-4619-4932-08db88fcde88
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	sVneCM/Dg9K30ylAW9TjIHNkuAsJ203YUZ7CqFkNHefMCTPdPuDCbA4YbzfTu0TtSxzvGupAkt5UD1ipoKHA8r/Zzngusdu2FqhYyGMNwfNvtXOS4rw052nGXRa6UNQev/m0IGXkhAgoRHYzcl+l9c/YqLIYogfz5qHJ43WsxrEdJqwh62qFAnDPxdeXhNOSQ5iuSATUXXliBo/wp6UqonTzxNu63hX6bR16PsTatvU2wXdT21WehheEX93VUqwNfDVbgYu7vGg+VqSZUrHtWbfAbJ28LhR/ZBTvsN/SVz2laNVVHuBmxWWQXi+AOysfan1pIhUzQtAvTZWzvL6ieY7/vapsBn2R+Twi7ixmz31m0UXfxKvBq0SIg/Ld3sX5tN97UpX6YbkA/8KS7z16RTH+hMhXLbavOJAc1srVjD9saeBeY8lv42RLiChF5NQBqzwRdu/oRECQEUE3egSZqlLb5D6bZ+sTmNBZpk4p6V+Q9aoXvCjt4LFpzIejfHkj+W12UZikkXLQef+48L1uqxIraG59Xh3c0dgPxy4vcfLGpqLrRqXi4ZMRYXcBjCpm
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR12MB3176.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(366004)(136003)(396003)(376002)(346002)(39860400002)(451199021)(36756003)(86362001)(66899021)(38100700002)(186003)(7416002)(478600001)(6506007)(6666004)(26005)(41300700001)(66476007)(66946007)(4326008)(66556008)(6916009)(5660300002)(316002)(2616005)(8936002)(8676002)(83380400001)(6512007)(107886003)(6486002)(2906002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?wHqiF3NjiI1Qkb+tt4ASongrf64ybb7hwVxTMrmfxWbMKjtOa2gzUg/zOxyC?=
+ =?us-ascii?Q?E9yWQdGIM2GzB1EeaZjb7QFk2GbrHJ1ZZi2My7vxoeIAFbrTWSnKMPvdTPmM?=
+ =?us-ascii?Q?QxptRc+6JvAjyhjZsUNXT2/XxawZr3XBRBds9oWQT7D7XMRuBE3vhzWscKw/?=
+ =?us-ascii?Q?zMN//uxEhFDa7ea47crbdM4L8W6x9w6bj+JZqxnbvFaeEq+40Vvw83trLfg3?=
+ =?us-ascii?Q?6tfXip4X8dVfYeil40bpW1J3d0R+ql9Xwf3YFv4oiIVmkVqNl9i6xXWOu8De?=
+ =?us-ascii?Q?YSnmuG3+CP5adYj9RShjZPwM+F3sGmUX4YHvpVpnNz3yr9tcWAYojt+DlhiB?=
+ =?us-ascii?Q?kYblPjju2Mae9zbHarWvCpeQzKlM4MCYh3rlNJkQSA44eD4hnPcWNXc949BB?=
+ =?us-ascii?Q?ZO5BKRKCqeV2S9GyLLTI0ghXvTT8vm2pydaXHBmg3EcBHAVnniuVDMTyXLVR?=
+ =?us-ascii?Q?epDwLOk6S2IbrgPbaig1LacV+aNqqB5Vm/Y/d0LlM/BGWg3KZlj0lzzHaIGQ?=
+ =?us-ascii?Q?S8lYxH8RnuT+U3SUX90WjfLl6vDCXbzsoZEc1P9Ujy3g/Aeo1msDc8p75ziF?=
+ =?us-ascii?Q?SlfrJHUCP8yZlP8gnhBIuwMVNyqYfytuiJKTRRXu7urCgPnwTvHewCE+QfYt?=
+ =?us-ascii?Q?mY4xASg5G1vfx6cOlwjtAowOyIBBEZLABnUSm5XYz+rrTCrMfuAW4x0+KYhr?=
+ =?us-ascii?Q?giPK4F0JcWOjlvIP4AzFOzzv7/4jolQEjpXXLD4vFYK6jKROZ2qA4BFri1LT?=
+ =?us-ascii?Q?Pc+AXG1fCQbnWG8QeijB02PNrG4shPdOmiUjHGw/rpJ59cn5d9uSHj+b9Hvy?=
+ =?us-ascii?Q?em05ckGhBWw4Te56m7ppztOGayCQBVSuKcCYdMvjvXzzsugpaP8gsfxsUUDx?=
+ =?us-ascii?Q?bckNee55QwmnAdlCtza7/yVFACGRXHHhHymAl56/qMtOa4LL4MuqQQDnXdCC?=
+ =?us-ascii?Q?OM8Rn7QOLlEj3+w4XMq3rFChlkCORVnijr4ZBOvFZF1BJxJGmZtraPANgMwf?=
+ =?us-ascii?Q?pEX6PzpIzN5xhvhCP+sduDXub48z4hV1m4E2xYGWv39HtmZOjpNHLMDtOyxA?=
+ =?us-ascii?Q?IgmSXX9HfzUSFRZrzyKxdAvhYD8N12VRhKX6GBYEmUEuMVzrkSTWR2oC7gC2?=
+ =?us-ascii?Q?obSInYRS/2hcaDCP/U2TgfPnwEz0xIybeTrveoALFkhYsBzxBrYsUASTsOvR?=
+ =?us-ascii?Q?ZuzfI4vVJIU4iaSFdmbiCq2BeTYrr/VtQ+5KCiGWIO2aQzzhNritYO+20Hkd?=
+ =?us-ascii?Q?1ACnCsHCJZsuoT+WKkK/ad2jez2RCA0iCeOl0se1qu27vHqoaOqQo6zcr88Y?=
+ =?us-ascii?Q?u7RrYxKA48lARIY2atKMGpmEX6whW67Ofr0sGdR2gPnK9boiIrBu93yYoaln?=
+ =?us-ascii?Q?rYfdDTMMZfidYH9wfZwqjV1g8dOUofZ0eHOjmpLwit0HMmLgAJBumOovkESu?=
+ =?us-ascii?Q?Pu2dyiEOq9AztKM3ym2tZqewmXXQDl8HBC6Cxe5Ni6baHRXYcGxS59r9v7fh?=
+ =?us-ascii?Q?PTVK2IzjwZpTmen0fubLGbrZkGx/vHVOieO0d0URNim14XkWf6QEsZGCIu0R?=
+ =?us-ascii?Q?40kKsrPjbG4I1BBHI0YNIUduI2oY98exf6aQhAV4?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 71a9a0f8-e298-4619-4932-08db88fcde88
+X-MS-Exchange-CrossTenant-AuthSource: BYAPR12MB3176.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2023 08:39:45.0950
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: y2+mhUVdw3pCz9hk3flwamV5KGK7+RznL33Ef24k9BsQxxw/OyhIqEiwNWShtqX//oMjIhuPWSa1MgCQx7kicg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB7025
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,102 +119,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Hari Bathini <hbathini@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: x86@kernel.org, zhi.wang.linux@gmail.com, kvm@vger.kernel.org, catalin.marinas@arm.com, linux-mm@kvack.org, will@kernel.org, Alistair Popple <apopple@nvidia.com>, jgg@ziepe.ca, iommu@lists.linux.dev, nicolinc@nvidia.com, kevin.tian@intel.com, ajd@linux.ibm.com, jhubbard@nvidia.com, robin.murphy@arm.com, npiggin@gmail.com, linux-arm-kernel@lists.infradead.org, sj@kernel.org, seanjc@google.com, linux-kernel@vger.kernel.org, fbarrat@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The ARM SMMU has a specific command for invalidating the TLB for an
+entire ASID. Currently this is used for the IO_PGTABLE API but not for
+ATS when called from the MMU notifier.
 
+The current implementation of notifiers does not attempt to invalidate
+such a large address range, instead walking each VMA and invalidating
+each range individually during mmap removal. However in future SMMU
+TLB invalidations are going to be sent as part of the normal
+flush_tlb_*() kernel calls. To better deal with that add handling to
+use TLBI ASID when invalidating the entire address space.
 
-> On 19-Jul-2023, at 11:33 PM, Mahesh J Salgaonkar <mahesh@linux.ibm.com> w=
-rote:
->=20
-> On 2023-07-18 23:19:23 Tue, Michael Ellerman wrote:
->> Mahesh J Salgaonkar <mahesh@linux.ibm.com> writes:
->>> On 2023-07-17 20:15:53 Mon, Sachin Sant wrote:
->>>> Kdump seems to be broken with 6.5 for ppc64le.
->>>>=20
->>>> [ 14.200412] systemd[1]: Starting dracut pre-pivot and cleanup hook...
->>>> [[0;32m OK [0m] Started dracut pre-pivot and cleanup hook.
->>>> Starting Kdump Vmcore Save Service...
->>>> [ 14.231669] systemd[1]: Started dracut pre-pivot and cleanup hook.
->>>> [ 14.231801] systemd[1]: Starting Kdump Vmcore Save Service...
->>>> [ 14.341035] kdump.sh[297]: kdump: saving to /sysroot//var/crash//127.=
-0.0.1-2023-07-14-13:32:34/
->>>> [ 14.350053] EXT4-fs (sda2): re-mounted e971a335-1ef8-4295-ab4e-3940f2=
-8e53fc r/w. Quota mode: none.
->>>> [ 14.345979] kdump.sh[297]: kdump: saving vmcore-dmesg.txt to /sysroot=
-//var/crash//127.0.0.1-2023-07-14-13:32:34/
->>>> [ 14.348742] kdump.sh[331]: Cannot open /proc/vmcore: No such file or =
-directory
->>>> [ 14.348845] kdump.sh[297]: kdump: saving vmcore-dmesg.txt failed
->>>> [ 14.349014] kdump.sh[297]: kdump: saving vmcore
->>>> [ 14.443422] kdump.sh[332]: open_dump_memory: Can't open the dump memo=
-ry(/proc/vmcore). No such file or directory
->>>> [ 14.456413] kdump.sh[332]: makedumpfile Failed.
->>>> [ 14.456662] kdump.sh[297]: kdump: saving vmcore failed, _exitcode:1
->>>> [ 14.456822] kdump.sh[297]: kdump: saving the /run/initramfs/kexec-dme=
-sg.log to /sysroot//var/crash//127.0.0.1-2023-07-14-13:32:34/
->>>> [ 14.487002] kdump.sh[297]: kdump: saving vmcore failed
->>>> [[0;1;31mFAILED[0m] Failed to start Kdump Vmcore Save Service.
->>>=20
->>> Thanks Sachin for catching this.
->>>=20
->>>>=20
->>>> 6.4 was good. Git bisect points to following patch
->>>>=20
->>>> commit 606787fed7268feb256957872586370b56af697a
->>>>    powerpc/64s: Remove support for ELFv1 little endian userspace
->>>>=20
->>>> Reverting this patch allows a successful capture of vmcore.
->>>>=20
->>>> Does this change require any corresponding change to kdump
->>>> and/or kexec tools?
->>>=20
->>> Need to investigate that. It looks like vmcore_elf64_check_arch(&ehdr)
->>> check from fs/proc/vmcore.c is failing after above commit.
->>>=20
->>> static int __init parse_crash_elf64_headers(void)
->>> {
->>> [...]
->>>=20
->>>        /* Do some basic Verification. */
->>>        if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) !=3D 0 ||
->>>                (ehdr.e_type !=3D ET_CORE) ||
->>>                !vmcore_elf64_check_arch(&ehdr) ||
->>> [...]
->>=20
->> Where vmcore_elf64_check_arch() calls elf_check_arch(), which was
->> modified by the commit, so that makes sense.
->>=20
->>> It looks like ehdr->e_flags are not set properly while generating vmcore
->>> ELF header. I see that in kexec_file_load, ehdr->e_flags left set to 0
->>> irrespective of IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2) is true or false.
->>=20
->> Does initialising it in crash_prepare_elf64_headers() fix the issue?
->=20
-> Yes, the bellow change fixes the issue. Can't use
-> IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2)i check in common code. I see that
-> fs/proc/kcore.c uses ELF_CORE_EFLAGS to set e_flags. Will send out
-> formal patch.
->=20
-> From 2d12fe7dff5dfe9035a75b1fe8d7da7da3000b90 Mon Sep 17 00:00:00 2001
-> From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Date: Wed, 19 Jul 2023 20:36:37 +0530
-> Subject: [PATCH] kdump fix
->=20
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> ---
+Signed-off-by: Alistair Popple <apopple@nvidia.com>
+---
+ drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Thanks Mahesh for the fix. With this patch applied I am able to capture kdu=
-mp.
-
-Tested-by: Sachin Sant <sachinp@linux.ibm.com>
-
-I also see that Andrew has posted a patch [0] to revert commit 606787fed726
-
-If the said commit is reverted, do we still need this change?
-
-- Sachin
-
-[0] https://lists.ozlabs.org/pipermail/linuxppc-dev/2023-July/260928.html
-
+diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c
+index a5a63b1..2a19784 100644
+--- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c
++++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c
+@@ -200,10 +200,20 @@ static void arm_smmu_mm_invalidate_range(struct mmu_notifier *mn,
+ 	 * range. So do a simple translation here by calculating size correctly.
+ 	 */
+ 	size = end - start;
++	if (size == ULONG_MAX)
++		size = 0;
++
++	if (!(smmu_domain->smmu->features & ARM_SMMU_FEAT_BTM)) {
++		if (!size)
++			arm_smmu_tlb_inv_asid(smmu_domain->smmu,
++					      smmu_mn->cd->asid);
++		else
++			arm_smmu_tlb_inv_range_asid(start, size,
++						    smmu_mn->cd->asid,
++						    PAGE_SIZE, false,
++						    smmu_domain);
++	}
+ 
+-	if (!(smmu_domain->smmu->features & ARM_SMMU_FEAT_BTM))
+-		arm_smmu_tlb_inv_range_asid(start, size, smmu_mn->cd->asid,
+-					    PAGE_SIZE, false, smmu_domain);
+ 	arm_smmu_atc_inv_domain(smmu_domain, mm->pasid, start, size);
+ }
+ 
+-- 
+git-series 0.9.1
