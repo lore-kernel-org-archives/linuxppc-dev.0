@@ -4,87 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29FDAC001DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 13:21:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9861EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 13:39:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IozPQREW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=cwd+YR3l;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6qvC2RK2z3c7f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 23:21:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6rJK6sdcz3cPt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 23:39:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IozPQREW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=cwd+YR3l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6qtB54tmz3brp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 23:20:18 +1000 (AEST)
-Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36LDBcSK009397;
-	Fri, 21 Jul 2023 13:20:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=Uwgcxc2z4kEB6P/RRcGFv0aRyWeiXf6BgQRzfUhra7U=;
- b=IozPQREWBVQ8R4llhfgkW2Ge4zvEaaEzrprrayQDIfGv4fewwS30VymNYEiB+8/dE5gQ
- 2RpFgr9T1Ne2vTR6iIOKU6rr8e32YJhwnFgI8avdJQKsXIAYY9T4Z19SvOxNFLgTkltJ
- sI6Q35z7HbKEoMehBajSBljLPISLKwyTgphX2QrV1sYBMJXP41M+Carse/eDn6REe0YG
- QjGXCieOe7zbGnmmcTkqtCKi1/kPAnh+bb+/m/uu64mnF1nR1jSaCMQPls/87mRP54Z+
- iA4akZTWNCYWXuk8D+wD6yUJnAcvjdp9CrQukD8h3KR2vIATTN8fLSfUEnCPbxBCg6DY zQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rye3fs837-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Jul 2023 13:20:05 +0000
-Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36LCk8in018128;
-	Fri, 21 Jul 2023 13:20:04 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rye3fs82n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Jul 2023 13:20:04 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36LDBR6c030678;
-	Fri, 21 Jul 2023 13:20:03 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3rv79k4cxc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Jul 2023 13:20:03 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36LDK2kX2949654
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 21 Jul 2023 13:20:03 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7905958066;
-	Fri, 21 Jul 2023 13:20:02 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F161258063;
-	Fri, 21 Jul 2023 13:19:57 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.43.117.127])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 21 Jul 2023 13:19:57 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH] mm/hotplug: Enable runtime update of memmap_on_memory parameter
-Date: Fri, 21 Jul 2023 18:49:50 +0530
-Message-ID: <20230721131951.306706-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.41.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: qEnX3fKJR7mUZ59B9XPaEQihZtq3JnNP
-X-Proofpoint-ORIG-GUID: -NtmF2eRzS3wEFAGjxRA23-0mB_NPtaB
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6jgp26F3z30YT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 18:40:53 +1000 (AEST)
+Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-2640a8ceefdso966562a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 01:40:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1689928848; x=1690533648;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=2pGzRRVQVi2kQNmNTUJmwk9RB1uD77Gzuy8FpEwpW64=;
+        b=cwd+YR3lFiPdsAbK6MUOven0NVx+wBfRcHCUOMXQtTJQyzh8X7PONdEfH753G2/Ozr
+         QWIpsBEFg9a7utpdvcs4nZ7yNBNmBQEzhEg+pGAMlaNtqc1W9D9PI6cpC8UDEECYxROa
+         OpUn7vfilNbRSSSwr1w1xMpOJdYmunxttAhJFn2vJqk5VZiKx+GtoDExnUWOUjiVDZIZ
+         YdNscAxulsS8lnKosH0wNQ64PbDeRz1EVy9NS2vjYPIv+pZoOjXYYAtbmw3uKQjC7OIZ
+         p6SDADADSqK84++IdopYDr8iKe861fIgHtja2UCOzHT9Pw5i58Jp47wdkMev1/i+uB8e
+         JHaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689928848; x=1690533648;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=2pGzRRVQVi2kQNmNTUJmwk9RB1uD77Gzuy8FpEwpW64=;
+        b=CnNIx9rN831P08Ca1MX34CqQDS03KgFl76myD4TyTiyQhF6v5gHFu9RjRrDpNwbOLu
+         0Hpm0oq4cfmJOelzW/Py8qPAxb53MlEOoSvaqgAfHkCkxL70HZvL1z+QfT9bZAQ1TQvX
+         KZ6ubgHzKYayrXP0+9QgMpFRn3NIjqt05KjDdIA4OzbEU29nLhoiPdG0v13IJtt5MXFf
+         s64YE32dQ37PuIQm8b0pTkbqLciGyMW3Vmni+hpkQEJTH2GBfI1xgN9DzrKF3FGLj3ge
+         U3sET9R4/XWLtgNE4jlmxiBruytzd0k+Wr69tZbuhQTkLXiKWnYbk/yE86/aS0Y5UgxH
+         +DTA==
+X-Gm-Message-State: ABy/qLZ+Vv7M1V83dE1jy4E+32BrvolpROqL6u8m7+iHg5lI27cQMmiP
+	Os5FRzv45kOd2ABjESNrdP1HlR8g53T/YkY9jVw=
+X-Google-Smtp-Source: APBJJlHU0NzcLMC2i97oAN+aTzVnIgpOEpYKnU6x+Q3I52jbhYWEdhAOzMHFt2m0pETfr1IDrwRbwt+DfufVJ43xi/E=
+X-Received: by 2002:a17:90b:3782:b0:260:e7ad:3659 with SMTP id
+ mz2-20020a17090b378200b00260e7ad3659mr1065682pjb.12.1689928848571; Fri, 21
+ Jul 2023 01:40:48 -0700 (PDT)
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-21_08,2023-07-20_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
- mlxscore=0 priorityscore=1501 adultscore=0 suspectscore=0 phishscore=0
- mlxlogscore=673 malwarescore=0 impostorscore=0 bulkscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2307210118
+References: <20230717145106.28013-1-ruc_gongyuanjun@163.com>
+In-Reply-To: <20230717145106.28013-1-ruc_gongyuanjun@163.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 21 Jul 2023 16:40:37 +0800
+Message-ID: <CAA+D8AP-3SWJe21qfMVz0j3umvS9bzDkeuQtab4OFrc2Ur+eVw@mail.gmail.com>
+Subject: Re: [PATCH 1/1] sound:soc: fix return value check in imx_audmux_suspend
+To: Yuanjun Gong <ruc_gongyuanjun@163.com>
+Content-Type: multipart/alternative; boundary="000000000000b703180600fb382f"
+X-Mailman-Approved-At: Fri, 21 Jul 2023 23:38:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,72 +74,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, David Hildenbrand <david@redhat.com>, Michal Hocko <mhocko@suse.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Fabio Estevam <festevam@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
-This is dependent on patches posted at
-https://lore.kernel.org/linux-mm/20230718024409.95742-1-aneesh.kumar@linux.ibm.com/
+--000000000000b703180600fb382f
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
- mm/memory_hotplug.c | 27 +++++++++++++++------------
- 1 file changed, 15 insertions(+), 12 deletions(-)
+On Mon, Jul 17, 2023 at 10:51=E2=80=AFPM Yuanjun Gong <ruc_gongyuanjun@163.=
+com>
+wrote:
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 6a8adbe030f9..21a5113fe9be 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -86,7 +86,12 @@ static int set_memmap_mode(const char *val, const struct kernel_param *kp)
- 		mode =  MEMMAP_ON_MEMORY_DISABLE;
- 
- matched:
-+	/*
-+	 * Avoid changing memmap mode during hotplug.
-+	 */
-+	get_online_mems();
- 	*((int *)kp->arg) =  mode;
-+	put_online_mems();
- 	if (mode == MEMMAP_ON_MEMORY_FORCE) {
- 		pr_info("Memory hotplug will reserve %ld pages in each memory block\n",
- 			memory_block_align_base(memory_block_size_bytes()));
-@@ -108,7 +113,7 @@ static const struct kernel_param_ops memmap_mode_ops = {
- 	.set = set_memmap_mode,
- 	.get = get_memmap_mode,
- };
--module_param_cb(memmap_on_memory, &memmap_mode_ops, &memmap_mode, 0444);
-+module_param_cb(memmap_on_memory, &memmap_mode_ops, &memmap_mode, 0644);
- MODULE_PARM_DESC(memmap_on_memory, "Enable memmap on memory for memory hotplug\n"
- 	"With value \"force\" it could result in memory wastage due to memmap size limitations \n"
- 	"For example, if the memmap for a memory block requires 1 MiB, but the pageblock \n"
-@@ -2162,18 +2167,16 @@ static int __ref try_remove_memory(u64 start, u64 size)
- 	 * We only support removing memory added with MHP_MEMMAP_ON_MEMORY in
- 	 * the same granularity it was added - a single memory block.
- 	 */
--	if (mhp_memmap_on_memory()) {
--		ret = walk_memory_blocks(start, size, &mhp_altmap,
--					 get_vmemmap_altmap_cb);
--		if (ret) {
--			if (size != memory_block_size_bytes()) {
--				pr_warn("Refuse to remove %#llx - %#llx,"
--					"wrong granularity\n",
--					start, start + size);
--				return -EINVAL;
--			}
--			altmap = &mhp_altmap;
-+	ret = walk_memory_blocks(start, size, &mhp_altmap,
-+				 get_vmemmap_altmap_cb);
-+	if (ret) {
-+		if (size != memory_block_size_bytes()) {
-+			pr_warn("Refuse to remove %#llx - %#llx,"
-+				"wrong granularity\n",
-+				start, start + size);
-+			return -EINVAL;
- 		}
-+		altmap = &mhp_altmap;
- 	}
- 
- 	/* remove memmap entry */
--- 
-2.41.0
+> check the return value of clk_prepare_enable, and if
+> clk_prepare_enable got an unexpected return value,
+> imx_audmux_suspend should return the error value.
+>
+> Signed-off-by: Yuanjun Gong <ruc_gongyuanjun@163.com>
+> ---
+>  sound/soc/fsl/imx-audmux.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+> index be003a117b39..962b6baf0a34 100644
+> --- a/sound/soc/fsl/imx-audmux.c
+> +++ b/sound/soc/fsl/imx-audmux.c
+> @@ -325,8 +325,11 @@ static void imx_audmux_remove(struct platform_device
+> *pdev)
+>  static int imx_audmux_suspend(struct device *dev)
+>  {
+>         int i;
+> +       ssize_t ret;
+>
+> -       clk_prepare_enable(audmux_clk);
+> +       ret =3D clk_prepare_enable(audmux_clk);
+> +       if (ret)
+> +               return ret;
+>
+> Please combine the two related patches together as one patch.
 
+commit subject can use ASoC: imx-audmux: xxxxx
+
+best regards
+wang shengjiu
+
+>         for (i =3D 0; i < reg_max; i++)
+>                 regcache[i] =3D readl(audmux_base + i * 4);
+> --
+> 2.17.1
+>
+>
+
+--000000000000b703180600fb382f
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Mon, Jul 17, 2023 at 10:51=E2=80=
+=AFPM Yuanjun Gong &lt;<a href=3D"mailto:ruc_gongyuanjun@163.com">ruc_gongy=
+uanjun@163.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" st=
+yle=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padd=
+ing-left:1ex">check the return value of clk_prepare_enable, and if<br>
+clk_prepare_enable got an unexpected return value,<br>
+imx_audmux_suspend should return the error value.<br>
+<br>
+Signed-off-by: Yuanjun Gong &lt;<a href=3D"mailto:ruc_gongyuanjun@163.com" =
+target=3D"_blank">ruc_gongyuanjun@163.com</a>&gt;<br>
+---<br>
+=C2=A0sound/soc/fsl/imx-audmux.c | 5 ++++-<br>
+=C2=A01 file changed, 4 insertions(+), 1 deletion(-)<br>
+<br>
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c<br>
+index be003a117b39..962b6baf0a34 100644<br>
+--- a/sound/soc/fsl/imx-audmux.c<br>
++++ b/sound/soc/fsl/imx-audmux.c<br>
+@@ -325,8 +325,11 @@ static void imx_audmux_remove(struct platform_device *=
+pdev)<br>
+=C2=A0static int imx_audmux_suspend(struct device *dev)<br>
+=C2=A0{<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 int i;<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0ssize_t ret;<br>
+<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0clk_prepare_enable(audmux_clk);<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0ret =3D clk_prepare_enable(audmux_clk);<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0if (ret)<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return ret;<br>
+<br></blockquote><div>Please combine the two related patches together as on=
+e patch.</div><div><br></div><div>commit subject can use=C2=A0ASoC: imx-aud=
+mux: xxxxx</div><div><br></div><div>best regards</div><div>wang shengjiu=C2=
+=A0</div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8e=
+x;border-left:1px solid rgb(204,204,204);padding-left:1ex">
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 for (i =3D 0; i &lt; reg_max; i++)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 regcache[i] =3D rea=
+dl(audmux_base + i * 4);<br>
+-- <br>
+2.17.1<br>
+<br>
+</blockquote></div></div>
+
+--000000000000b703180600fb382f--
