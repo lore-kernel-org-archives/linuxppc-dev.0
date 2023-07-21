@@ -4,57 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FE07EB64DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 02:54:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E872EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 03:51:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ALuNCEzP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=icOHcffH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6Z0F1lDcz3c8L
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 12:54:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6bGF519zz3bcH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 13:51:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ALuNCEzP;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=icOHcffH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6Yxk42ZTz3bdG
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 12:52:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6bFF1r4rz30JF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 13:50:56 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689907946; x=1721443946;
-  h=date:from:to:cc:subject:message-id;
-  bh=e15PHXS2AY8MwgcBxSt2wrtmHTIpF1oD2BtDhmfG/cs=;
-  b=ALuNCEzPcYDQZbPNqrAKPrsEZOfDkvDWmh++IKoJIhOZSQaSN1qqnmpT
-   cOGajgmynV95btlvubentdrB2mDYwYbT9wZ/o56Z+FifY5P0qaJYTn8H7
-   FvxGNowz/6/ZrDt9G9+UB2pr84p1iqle5N+SGnN2jMArSNHp9xGaNcJXK
-   m6oRTVYyvYkSs39Zj7nSiMWycFLt6aBmP0cqdIPGTrLwx1H0IzI0y6Jco
-   1k6C5RG2BIpWuBeJppk085Le6OS1zzTetR7S5O9vRc5Gin4UKJQMOT1G9
-   pMqMOlxhJIi2PlC9/oPGx0v/rzroWXQsuOH7fpc+5rRwibltXRJEFYgbq
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="453297211"
+  t=1689911457; x=1721447457;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=JNp10Mt5clD02qyeJ6DeFQiC9FL/84T24RBmha8oF4M=;
+  b=icOHcffHPLJaDR1lV6QSHj5WbJcQ0wExsWiav23Y7CFLL7vcEhLSMtY+
+   yUSah2FgkzNYIpEuTWuUmTdIGrMKI7ZK9z10+31XXn+wfMQXFacqPBBpX
+   eUM5aPiv1X0F3SL88+eRU6VMc74cr72twC6gOYEoKeiUfvghjiCouX7nG
+   wAdOaSc+VSOJgr07eS38M0ZHWsFEE2ImrnPphYMKw7Q9F8DMmEkGnzQyi
+   gQPTExBr9k33Un0dzyH5Ge4KhHYtiyC3SohcHDcVZJMtTydI7cJYIUcLs
+   2YkH7gnc8NjgzGmM54ZzwhmOW9WdPFzwPOdE5QDgoxuEg8kNULsdGyskD
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="433155814"
 X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
-   d="scan'208";a="453297211"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jul 2023 19:52:21 -0700
+   d="scan'208";a="433155814"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jul 2023 20:50:52 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="848683555"
+X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="838394843"
 X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
-   d="scan'208";a="848683555"
+   d="scan'208";a="838394843"
 Received: from lkp-server02.sh.intel.com (HELO 36946fcf73d7) ([10.239.97.151])
-  by orsmga004.jf.intel.com with ESMTP; 20 Jul 2023 19:52:20 -0700
+  by fmsmga002.fm.intel.com with ESMTP; 20 Jul 2023 20:50:50 -0700
 Received: from kbuild by 36946fcf73d7 with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1qMgFV-0006mx-1r;
-	Fri, 21 Jul 2023 02:52:12 +0000
-Date: Fri, 21 Jul 2023 10:50:18 +0800
+	id 1qMhAC-0006ps-1l;
+	Fri, 21 Jul 2023 03:50:45 +0000
+Date: Fri, 21 Jul 2023 11:50:10 +0800
 From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS
- b33ef67081f836e80773e2cec99592e78091bace
-Message-ID: <202307211017.E8KGXdg8-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] kdump fix
+Message-ID: <202307211100.UDh0FQ50-lkp@intel.com>
+References: <2ogfzwjumrd44kxv7njfpot6fhtkzpqu77qv3bspfixdmsxcwc@umt35y2hmslm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2ogfzwjumrd44kxv7njfpot6fhtkzpqu77qv3bspfixdmsxcwc@umt35y2hmslm>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,165 +71,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Sachin Sant <sachinp@linux.ibm.com>, oe-kbuild-all@lists.linux.dev, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: b33ef67081f836e80773e2cec99592e78091bace  Automatic merge of 'fixes' into merge (2023-07-20 23:24)
+Hi Mahesh,
 
-elapsed time: 797m
+kernel test robot noticed the following build errors:
 
-configs tested: 143
-configs skipped: 9
+[auto build test ERROR on linus/master]
+[also build test ERROR on v6.5-rc2 next-20230720]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+url:    https://github.com/intel-lab-lkp/linux/commits/Mahesh-J-Salgaonkar/kdump-fix/20230720-021115
+base:   linus/master
+patch link:    https://lore.kernel.org/r/2ogfzwjumrd44kxv7njfpot6fhtkzpqu77qv3bspfixdmsxcwc%40umt35y2hmslm
+patch subject: [PATCH] kdump fix
+config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20230721/202307211100.UDh0FQ50-lkp@intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
+reproduce: (https://download.01.org/0day-ci/archive/20230721/202307211100.UDh0FQ50-lkp@intel.com/reproduce)
 
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-alpha                randconfig-r011-20230720   gcc  
-alpha                randconfig-r022-20230720   gcc  
-alpha                randconfig-r023-20230720   gcc  
-alpha                randconfig-r024-20230720   gcc  
-alpha                randconfig-r033-20230720   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r004-20230720   gcc  
-arc                  randconfig-r016-20230720   gcc  
-arc                  randconfig-r032-20230720   gcc  
-arc                  randconfig-r036-20230720   gcc  
-arc                  randconfig-r043-20230720   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                           h3600_defconfig   gcc  
-arm                          pxa910_defconfig   gcc  
-arm                  randconfig-r004-20230720   clang
-arm                  randconfig-r033-20230720   clang
-arm                  randconfig-r046-20230720   gcc  
-arm                         s3c6400_defconfig   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r006-20230720   gcc  
-arm64                randconfig-r016-20230720   clang
-arm64                randconfig-r026-20230720   clang
-csky                                defconfig   gcc  
-csky                 randconfig-r011-20230720   gcc  
-csky                 randconfig-r014-20230720   gcc  
-csky                 randconfig-r021-20230720   gcc  
-hexagon              randconfig-r013-20230720   clang
-hexagon              randconfig-r041-20230720   clang
-hexagon              randconfig-r045-20230720   clang
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-r004-20230720   gcc  
-i386         buildonly-randconfig-r005-20230720   gcc  
-i386         buildonly-randconfig-r006-20230720   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-i001-20230720   gcc  
-i386                 randconfig-i002-20230720   gcc  
-i386                 randconfig-i003-20230720   gcc  
-i386                 randconfig-i004-20230720   gcc  
-i386                 randconfig-i005-20230720   gcc  
-i386                 randconfig-i006-20230720   gcc  
-i386                 randconfig-i011-20230720   clang
-i386                 randconfig-i012-20230720   clang
-i386                 randconfig-i013-20230720   clang
-i386                 randconfig-i014-20230720   clang
-i386                 randconfig-i015-20230720   clang
-i386                 randconfig-i016-20230720   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r034-20230720   gcc  
-m68k                             allmodconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r023-20230720   gcc  
-microblaze                      mmu_defconfig   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                  maltasmvp_eva_defconfig   gcc  
-mips                           mtx1_defconfig   clang
-mips                 randconfig-r005-20230720   clang
-mips                 randconfig-r013-20230720   gcc  
-mips                 randconfig-r024-20230720   gcc  
-mips                 randconfig-r025-20230720   gcc  
-mips                 randconfig-r035-20230720   clang
-nios2                               defconfig   gcc  
-nios2                randconfig-r002-20230720   gcc  
-nios2                randconfig-r012-20230720   gcc  
-openrisc                            defconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r003-20230720   gcc  
-parisc               randconfig-r005-20230720   gcc  
-parisc               randconfig-r015-20230720   gcc  
-parisc               randconfig-r031-20230720   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                        fsp2_defconfig   clang
-powerpc                        icon_defconfig   clang
-powerpc                      katmai_defconfig   clang
-powerpc                    klondike_defconfig   gcc  
-powerpc                      makalu_defconfig   gcc  
-powerpc                 mpc834x_itx_defconfig   gcc  
-powerpc                      ppc40x_defconfig   gcc  
-powerpc              randconfig-r026-20230720   clang
-powerpc                         wii_defconfig   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r002-20230720   gcc  
-riscv                randconfig-r032-20230720   gcc  
-riscv                randconfig-r042-20230720   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r015-20230720   clang
-s390                 randconfig-r031-20230720   gcc  
-s390                 randconfig-r044-20230720   clang
-sh                               allmodconfig   gcc  
-sh                   randconfig-r003-20230720   gcc  
-sh                           se7343_defconfig   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r034-20230720   gcc  
-sparc64              randconfig-r001-20230720   gcc  
-sparc64              randconfig-r036-20230720   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                   randconfig-r021-20230720   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-r001-20230720   gcc  
-x86_64       buildonly-randconfig-r002-20230720   gcc  
-x86_64       buildonly-randconfig-r003-20230720   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-x001-20230720   clang
-x86_64               randconfig-x002-20230720   clang
-x86_64               randconfig-x003-20230720   clang
-x86_64               randconfig-x004-20230720   clang
-x86_64               randconfig-x005-20230720   clang
-x86_64               randconfig-x006-20230720   clang
-x86_64               randconfig-x011-20230720   gcc  
-x86_64               randconfig-x012-20230720   gcc  
-x86_64               randconfig-x013-20230720   gcc  
-x86_64               randconfig-x014-20230720   gcc  
-x86_64               randconfig-x015-20230720   gcc  
-x86_64               randconfig-x016-20230720   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa                         virt_defconfig   gcc  
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202307211100.UDh0FQ50-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   kernel/kexec_file.c: In function 'crash_prepare_elf64_headers':
+>> kernel/kexec_file.c:1282:25: error: 'ELF_CORE_EFLAGS' undeclared (first use in this function)
+    1282 |         ehdr->e_flags = ELF_CORE_EFLAGS;
+         |                         ^~~~~~~~~~~~~~~
+   kernel/kexec_file.c:1282:25: note: each undeclared identifier is reported only once for each function it appears in
+
+
+vim +/ELF_CORE_EFLAGS +1282 kernel/kexec_file.c
+
+  1236	
+  1237	int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_map,
+  1238				  void **addr, unsigned long *sz)
+  1239	{
+  1240		Elf64_Ehdr *ehdr;
+  1241		Elf64_Phdr *phdr;
+  1242		unsigned long nr_cpus = num_possible_cpus(), nr_phdr, elf_sz;
+  1243		unsigned char *buf;
+  1244		unsigned int cpu, i;
+  1245		unsigned long long notes_addr;
+  1246		unsigned long mstart, mend;
+  1247	
+  1248		/* extra phdr for vmcoreinfo ELF note */
+  1249		nr_phdr = nr_cpus + 1;
+  1250		nr_phdr += mem->nr_ranges;
+  1251	
+  1252		/*
+  1253		 * kexec-tools creates an extra PT_LOAD phdr for kernel text mapping
+  1254		 * area (for example, ffffffff80000000 - ffffffffa0000000 on x86_64).
+  1255		 * I think this is required by tools like gdb. So same physical
+  1256		 * memory will be mapped in two ELF headers. One will contain kernel
+  1257		 * text virtual addresses and other will have __va(physical) addresses.
+  1258		 */
+  1259	
+  1260		nr_phdr++;
+  1261		elf_sz = sizeof(Elf64_Ehdr) + nr_phdr * sizeof(Elf64_Phdr);
+  1262		elf_sz = ALIGN(elf_sz, ELF_CORE_HEADER_ALIGN);
+  1263	
+  1264		buf = vzalloc(elf_sz);
+  1265		if (!buf)
+  1266			return -ENOMEM;
+  1267	
+  1268		ehdr = (Elf64_Ehdr *)buf;
+  1269		phdr = (Elf64_Phdr *)(ehdr + 1);
+  1270		memcpy(ehdr->e_ident, ELFMAG, SELFMAG);
+  1271		ehdr->e_ident[EI_CLASS] = ELFCLASS64;
+  1272		ehdr->e_ident[EI_DATA] = ELFDATA2LSB;
+  1273		ehdr->e_ident[EI_VERSION] = EV_CURRENT;
+  1274		ehdr->e_ident[EI_OSABI] = ELF_OSABI;
+  1275		memset(ehdr->e_ident + EI_PAD, 0, EI_NIDENT - EI_PAD);
+  1276		ehdr->e_type = ET_CORE;
+  1277		ehdr->e_machine = ELF_ARCH;
+  1278		ehdr->e_version = EV_CURRENT;
+  1279		ehdr->e_phoff = sizeof(Elf64_Ehdr);
+  1280		ehdr->e_ehsize = sizeof(Elf64_Ehdr);
+  1281		ehdr->e_phentsize = sizeof(Elf64_Phdr);
+> 1282		ehdr->e_flags = ELF_CORE_EFLAGS;
 
 -- 
 0-DAY CI Kernel Test Service
