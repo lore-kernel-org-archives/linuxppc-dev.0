@@ -4,73 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ADBFEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 19:32:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20ADAEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 21:16:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=kDmWxsg8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AL/SW/du;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R70756W4sz3cZH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 05:32:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R72Rv26Mgz3cQs
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 07:16:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=kDmWxsg8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AL/SW/du;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R70691GPWz30BZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 05:31:11 +1000 (AEST)
-Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-1b8b4749013so17016925ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 12:31:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1689967868; x=1690572668;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=f3fNBXK6DdLEjSA1dgCCAp4qYAepk3u3d3m0rz5z1fE=;
-        b=kDmWxsg8ZqlraY3EitIJv4Evr2CcqLMRY3qJJ8AcjlKJ3bFOzgBkDnjKefyYbdeSfz
-         k86T0qkxGRO51XZTaYeEKipExFEf8j1Hv1UVrlMbeSWAAge69sWytNfaMcA7RqeT6zuL
-         3L23q9S/iI50qzztXd/HyH2HoeCpvu0Z2gNnWlaIpHe3ERs66DUZ8IU1MTauRcMdzksf
-         ILJCbJ6VdIAYJt/7FJu58WJgwsSS2VgS9zoptDQ2XjWHdUPjgabRgHusalzm4+RsCynb
-         dnms2eGvIrcLiBFxG5n4oVrQg7cm8ONAc3J+1xhZDfp15hiSb0l0fBegQfffD1CHZhNd
-         TBLA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689967868; x=1690572668;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=f3fNBXK6DdLEjSA1dgCCAp4qYAepk3u3d3m0rz5z1fE=;
-        b=dEX4raAe3iqrzMWlj3fu5Xx9la7qagY6qkGCVKXaXc3oJrgUkKEZzHOnVFJiIJEMdy
-         r0N+6Z8OTSIGFqZHY/GcqKxEX/On2TiyxD8IFZcBRvYZbppc5zwwDrcmTWKbTwyV09Ko
-         gHcKLU2UelZoyvPzomMlPXl4EwkD/b1erCupwUiSa/wFnK+oI9nfW8cQpoQORkoy5gnE
-         TKNNq+Bb1zFi9q90yEaL95RH76EOD7efyJXQzJCiLpS4lJW28iXJjrr6rRvKi7brdTzo
-         wzvXVSbnQHNBLuuF/hUZAPbIIIrBFBgwcjb3vfQ/BfxCUM3E8tUrTsU+iKir0RvX/Gb7
-         L75A==
-X-Gm-Message-State: ABy/qLYp6MdCZgMB0AKWfUis3aigRKa45Krbur5eSXbRi77QGJ4/p+7L
-	Pml4vaJ/dzZtajDrwW2VmBms+g==
-X-Google-Smtp-Source: APBJJlHihJyY9wXFkjydx/6tfCAtPCW82R9C1y8RYnU52rOS6+M8sM4/6qnSkSyFxd3dSuGWl4EDkw==
-X-Received: by 2002:a17:902:b418:b0:1b8:b2c6:7e8d with SMTP id x24-20020a170902b41800b001b8b2c67e8dmr2649069plr.66.1689967868340;
-        Fri, 21 Jul 2023 12:31:08 -0700 (PDT)
-Received: from ziepe.ca ([206.223.160.26])
-        by smtp.gmail.com with ESMTPSA id r16-20020a170902be1000b001b8422f1000sm3860137pls.201.2023.07.21.12.31.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Jul 2023 12:31:07 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.95)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1qMvqE-003IGg-98;
-	Fri, 21 Jul 2023 16:31:06 -0300
-Date: Fri, 21 Jul 2023 16:31:06 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Alistair Popple <apopple@nvidia.com>
-Subject: Re: [PATCH v3 5/5] mmu_notifiers: Rename invalidate_range notifier
-Message-ID: <ZLrc+vEQcCEpI0wd@ziepe.ca>
-References: <cover.b24362332ec6099bc8db4e8e06a67545c653291d.1689842332.git-series.apopple@nvidia.com>
- <3cbd2a644d56d503b47cfc35868d547f924f880e.1689842332.git-series.apopple@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R72Qt3b3Vz3c2r
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 07:15:50 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36LL8A6s006742;
+	Fri, 21 Jul 2023 21:15:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Vdtjy7KMBO+X9Z7rUqm5H88eVKYCvsbAqEigHgRUlN8=;
+ b=AL/SW/duLMyXuAnBbV2t9KEBI6UoUS1fvuIY8Y7GWn/mwWLwX4l3RXkiEihuppBjT2Xj
+ okqzU0AucTLWY3+C2OXMZ1RcXVp1YAX8BdqSKJhA821dmrOy3NteTwQuOHt7Mnr3rKt8
+ WBAQCDf9elzG+VTe9eTGtsMfMYjF6OxSZaToCW/F4sKI3rm7HUVYM2Ux60BxICI32MEk
+ wuD1NHg47VET1rJMGI1Q6OY8Ls54hbSiGO+HTb/erdJDxHSFyIcUFvJO4H9IbMfa7Edg
+ jsd6xtZ7PdPUUOxXGTyuiiknpWCKuF7BO2IaEnEQcOb/E+SCtbeb6SZTGiWCwAbJp649 8Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rypxsypv6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Jul 2023 21:15:38 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36LLFb9O024887;
+	Fri, 21 Jul 2023 21:15:37 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rypxsypum-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Jul 2023 21:15:37 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36LKA0ZP017218;
+	Fri, 21 Jul 2023 21:15:36 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rv5ssanyj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Jul 2023 21:15:36 +0000
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36LLFZlI31916792
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 21 Jul 2023 21:15:36 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9BB6558059;
+	Fri, 21 Jul 2023 21:15:35 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 618BD5805D;
+	Fri, 21 Jul 2023 21:15:35 +0000 (GMT)
+Received: from rhel-laptop.ibm.com (unknown [9.61.29.102])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 21 Jul 2023 21:15:35 +0000 (GMT)
+From: gjoyce@linux.vnet.ibm.com
+To: linux-block@vger.kernel.org
+Subject: [PATCH v5 1/3 RESEND] block: sed-opal: Implement IOC_OPAL_DISCOVERY
+Date: Fri, 21 Jul 2023 16:15:32 -0500
+Message-Id: <20230721211534.3437070-2-gjoyce@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20230721211534.3437070-1-gjoyce@linux.vnet.ibm.com>
+References: <20230721211534.3437070-1-gjoyce@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3cbd2a644d56d503b47cfc35868d547f924f880e.1689842332.git-series.apopple@nvidia.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: bJX79HL7hX46QJ1GxeuktM0ELpkm9uMP
+X-Proofpoint-ORIG-GUID: xzA5Xjx1kZadHkDWems-Ffy7qygn69bI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-21_12,2023-07-20_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
+ priorityscore=1501 adultscore=0 suspectscore=0 mlxlogscore=999 spamscore=0
+ lowpriorityscore=0 impostorscore=0 mlxscore=0 bulkscore=0 malwarescore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2307210186
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,43 +96,143 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kevin.tian@intel.com, x86@kernel.org, ajd@linux.ibm.com, kvm@vger.kernel.org, catalin.marinas@arm.com, seanjc@google.com, will@kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, zhi.wang.linux@gmail.com, linux-mm@kvack.org, iommu@lists.linux.dev, sj@kernel.org, nicolinc@nvidia.com, jhubbard@nvidia.com, fbarrat@linux.ibm.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, robin.murphy@arm.com
+Cc: axboe@kernel.dk, gjoyce@linux.vnet.ibm.com, nayna@linux.ibm.com, okozina@redhat.com, dkeefe@redhat.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 20, 2023 at 06:39:27PM +1000, Alistair Popple wrote:
-> There are two main use cases for mmu notifiers. One is by KVM which
-> uses mmu_notifier_invalidate_range_start()/end() to manage a software
-> TLB.
-> 
-> The other is to manage hardware TLBs which need to use the
-> invalidate_range() callback because HW can establish new TLB entries
-> at any time. Hence using start/end() can lead to memory corruption as
-> these callbacks happen too soon/late during page unmap.
-> 
-> mmu notifier users should therefore either use the start()/end()
-> callbacks or the invalidate_range() callbacks. To make this usage
-> clearer rename the invalidate_range() callback to
-> arch_invalidate_secondary_tlbs() and update documention.
-> 
-> Signed-off-by: Alistair Popple <apopple@nvidia.com>
-> Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
-> ---
->  arch/arm64/include/asm/tlbflush.h               |  6 +-
->  arch/powerpc/mm/book3s64/radix_hugetlbpage.c    |  2 +-
->  arch/powerpc/mm/book3s64/radix_tlb.c            | 10 ++--
->  arch/x86/include/asm/tlbflush.h                 |  2 +-
->  arch/x86/mm/tlb.c                               |  2 +-
->  drivers/iommu/amd/iommu_v2.c                    | 10 ++--
->  drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c | 13 ++---
->  drivers/iommu/intel/svm.c                       |  8 +--
->  drivers/misc/ocxl/link.c                        |  8 +--
->  include/linux/mmu_notifier.h                    | 48 +++++++++---------
->  mm/huge_memory.c                                |  4 +-
->  mm/hugetlb.c                                    |  7 +--
->  mm/mmu_notifier.c                               | 20 ++++++--
->  13 files changed, 76 insertions(+), 64 deletions(-)
+From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
 
-Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+Add IOC_OPAL_DISCOVERY ioctl to return raw discovery data to a SED Opal
+application. This allows the application to display drive capabilities
+and state.
 
-Jason
+Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Jonathan Derrick <jonathan.derrick@linux.dev>
+---
+ block/sed-opal.c              | 38 ++++++++++++++++++++++++++++++++---
+ include/linux/sed-opal.h      |  1 +
+ include/uapi/linux/sed-opal.h |  6 ++++++
+ 3 files changed, 42 insertions(+), 3 deletions(-)
+
+diff --git a/block/sed-opal.c b/block/sed-opal.c
+index c18339446ef3..67c6c4f2b4b0 100644
+--- a/block/sed-opal.c
++++ b/block/sed-opal.c
+@@ -463,8 +463,11 @@ static int execute_steps(struct opal_dev *dev,
+ 	return error;
+ }
+ 
+-static int opal_discovery0_end(struct opal_dev *dev)
++static int opal_discovery0_end(struct opal_dev *dev, void *data)
+ {
++	struct opal_discovery *discv_out = data; /* may be NULL */
++	u8 __user *buf_out;
++	u64 len_out;
+ 	bool found_com_id = false, supported = true, single_user = false;
+ 	const struct d0_header *hdr = (struct d0_header *)dev->resp;
+ 	const u8 *epos = dev->resp, *cpos = dev->resp;
+@@ -480,6 +483,15 @@ static int opal_discovery0_end(struct opal_dev *dev)
+ 		return -EFAULT;
+ 	}
+ 
++	if (discv_out) {
++		buf_out = (u8 __user *)(uintptr_t)discv_out->data;
++		len_out = min_t(u64, discv_out->size, hlen);
++		if (buf_out && copy_to_user(buf_out, dev->resp, len_out))
++			return -EFAULT;
++
++		discv_out->size = hlen; /* actual size of data */
++	}
++
+ 	epos += hlen; /* end of buffer */
+ 	cpos += sizeof(*hdr); /* current position on buffer */
+ 
+@@ -565,13 +577,13 @@ static int opal_discovery0(struct opal_dev *dev, void *data)
+ 	if (ret)
+ 		return ret;
+ 
+-	return opal_discovery0_end(dev);
++	return opal_discovery0_end(dev, data);
+ }
+ 
+ static int opal_discovery0_step(struct opal_dev *dev)
+ {
+ 	const struct opal_step discovery0_step = {
+-		opal_discovery0,
++		opal_discovery0, NULL
+ 	};
+ 
+ 	return execute_step(dev, &discovery0_step, 0);
+@@ -2435,6 +2447,22 @@ static int opal_secure_erase_locking_range(struct opal_dev *dev,
+ 	return ret;
+ }
+ 
++static int opal_get_discv(struct opal_dev *dev, struct opal_discovery *discv)
++{
++	const struct opal_step discovery0_step = {
++		opal_discovery0, discv
++	};
++	int ret = 0;
++
++	mutex_lock(&dev->dev_lock);
++	setup_opal_dev(dev);
++	ret = execute_step(dev, &discovery0_step, 0);
++	mutex_unlock(&dev->dev_lock);
++	if (ret)
++		return ret;
++	return discv->size; /* modified to actual length of data */
++}
++
+ static int opal_erase_locking_range(struct opal_dev *dev,
+ 				    struct opal_session_info *opal_session)
+ {
+@@ -3056,6 +3084,10 @@ int sed_ioctl(struct opal_dev *dev, unsigned int cmd, void __user *arg)
+ 	case IOC_OPAL_GET_GEOMETRY:
+ 		ret = opal_get_geometry(dev, arg);
+ 		break;
++	case IOC_OPAL_DISCOVERY:
++		ret = opal_get_discv(dev, p);
++		break;
++
+ 	default:
+ 		break;
+ 	}
+diff --git a/include/linux/sed-opal.h b/include/linux/sed-opal.h
+index bbae1e52ab4f..ef65f589fbeb 100644
+--- a/include/linux/sed-opal.h
++++ b/include/linux/sed-opal.h
+@@ -47,6 +47,7 @@ static inline bool is_sed_ioctl(unsigned int cmd)
+ 	case IOC_OPAL_GET_STATUS:
+ 	case IOC_OPAL_GET_LR_STATUS:
+ 	case IOC_OPAL_GET_GEOMETRY:
++	case IOC_OPAL_DISCOVERY:
+ 		return true;
+ 	}
+ 	return false;
+diff --git a/include/uapi/linux/sed-opal.h b/include/uapi/linux/sed-opal.h
+index dc2efd345133..7f5732c5bdc5 100644
+--- a/include/uapi/linux/sed-opal.h
++++ b/include/uapi/linux/sed-opal.h
+@@ -173,6 +173,11 @@ struct opal_geometry {
+ 	__u8  __align[3];
+ };
+ 
++struct opal_discovery {
++	__u64 data;
++	__u64 size;
++};
++
+ #define IOC_OPAL_SAVE		    _IOW('p', 220, struct opal_lock_unlock)
+ #define IOC_OPAL_LOCK_UNLOCK	    _IOW('p', 221, struct opal_lock_unlock)
+ #define IOC_OPAL_TAKE_OWNERSHIP	    _IOW('p', 222, struct opal_key)
+@@ -192,5 +197,6 @@ struct opal_geometry {
+ #define IOC_OPAL_GET_STATUS         _IOR('p', 236, struct opal_status)
+ #define IOC_OPAL_GET_LR_STATUS      _IOW('p', 237, struct opal_lr_status)
+ #define IOC_OPAL_GET_GEOMETRY       _IOR('p', 238, struct opal_geometry)
++#define IOC_OPAL_DISCOVERY          _IOW('p', 239, struct opal_discovery)
+ 
+ #endif /* _UAPI_SED_OPAL_H */
+-- 
+gjoyce@linux.vnet.ibm.com
+
