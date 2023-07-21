@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D74FEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 17:42:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FCA2C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 17:51:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=DoHzE6IB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=lZQ3ytVA;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6xj96wKBz3cSZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 03:42:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6xtY3NlKz3cWh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 03:51:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=DoHzE6IB;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=lZQ3ytVA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3pmo6zaykdnkn95ie7bjjbg9.7jhgdipskk7-89qgdnon.jug56n.jmb@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3t8w6zaykdpakwsfbuyggydw.ugedafmphhu-vwndaklk.grdstk.gjy@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
 Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6xgP1gyFz3cCn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 03:41:19 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-cf4cb742715so2061952276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 10:41:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6xsb56knz2ytm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 03:50:09 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-d00a63fcdefso1479678276.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 10:50:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689961276; x=1690566076;
+        d=google.com; s=20221208; t=1689961807; x=1690566607;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=0EsEuc6ZrLkBpjfXrbTj3wl8CGw2RCGPAyUMK4WwkjA=;
-        b=DoHzE6IB/gTaLmkueM9yb30EUG6tzOb2A5AXrz9PQw1Ifq3ks790NG9A8kHnulrV92
-         RNCrZzNkmPOc83fANNDf5nXf1wPVFL2y5FNAhz+fPjDVllxc5Oizeq9OoCoSO3jrCWPO
-         Fdo3zuU1ITNzecPSKDNY0XL2xmTCfJibF/rCjlkemXFUh+Sr371B5TqkScdP+lHN0Bsv
-         l8bJ71cW4eJgHOkXZEVFnapIkfHWHqvRivBGgXBk81wx3rhHxJzYdjltDTwHbRDPypPU
-         FqCvfBjArc5TGgWA7G3s9Jm2aOIc06rnT78obfljmzEALSkpFg35cZZdMznfZTRdtzpx
-         x88Q==
+        bh=cGq520d0DqyrCnCF7s5Hdb0rD6NYwtkYzvVScy9HYVY=;
+        b=lZQ3ytVABaMbgeRDyRyj2Y4aroG9rwZE4tos1KIi9+yVur8kHjUJfNDjBsWbA5klWv
+         TLcM88saeccS8fNt+F3rMDPeeLUphdScBaSRyrIwijc1R9havyOwlUNE/IQcuJNK+B8L
+         fg4nRh9mVWUewpR8WoS4y2UShReGqGQI/p2sPXI0/xi9S/4bLyRSoR+wjHm8ngFldPX/
+         svRbdc4YBfOK5kZ24vC9n3F8L7Li2/2X6A5zsHfs5DeCFBQGgpDd6R/Lv+3ONLhdKh+D
+         zucg4UeBA4sEAN2XLHlR2RolIKqE8NS9aws4SoQANyJbQckavpkDoby1VzLjItanYN4z
+         z0Aw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689961276; x=1690566076;
+        d=1e100.net; s=20221208; t=1689961807; x=1690566607;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=0EsEuc6ZrLkBpjfXrbTj3wl8CGw2RCGPAyUMK4WwkjA=;
-        b=QEbQ9C7H7UAYq4Z2hY8x+FzrcDMFsmOhgMiyOvX5d/MzYBIyMD7mdrtWTek+tEOjLh
-         kOBLNi8fm2wJRXUnIdLZDe8DTymms59vbYgqmb01n6NZaJY1SFcP4z327SqK6VPau2ex
-         V96A0M09a6fn5YNf7AKE7ICV1GQEcJMfWBOllPFnAE7VbqK+Z08ceAE9V+Zl5hU3Gc5g
-         BvudGAvK1TdfygTQo9dTCmVy9+RXS5MxDa4xwadz60P5xmAO7xmCFUs8Na+cgpR4OJVj
-         MSek112SheqzfPsaueggS7vxGTM3+IKswn/hM0E+5serOu9WdV9VOmGnoda+Ime4dEaI
-         6RQQ==
-X-Gm-Message-State: ABy/qLaoXH4kKj7mhSdAEEOYzcUE2IQhIAIFfbfmmi6DYACBMO/8PnOc
-	pW8uQ4tnytU9DgVdw0kc3ObU3vbk2HA=
-X-Google-Smtp-Source: APBJJlFxyzDv1jxbiR1ec3ea79Hb3YohAr96lgMadcKGyfL8Br8SJoCJpXRoXSNCjiu8EtZhgF/6XBpHBow=
+        bh=cGq520d0DqyrCnCF7s5Hdb0rD6NYwtkYzvVScy9HYVY=;
+        b=IGbnBXwZ/UvD8FrRGQ2nMha+UwCPuOlNImPLtkDaJ4qMPRpoU5Ok+la16+0Mkvs2ls
+         FBGOt6YF+i6w60bDHmTf1ebwGGiWtVKFOrrW/BYv5FCo5Ik2a2W8Uxir0jVHZE19wX0v
+         pE3je55hmR+gLvsJrgHFTYrDmC3314MYl0cciDSuJvn2OuPLnsZ3WW9u0fyJLykLHs+H
+         +edoASQXzr1DNqjQQOBwiBvE3Fm444hIAIsEElzJI2a+S81h1NrGEgq4s1ldJt3pXQ4p
+         9pO1HyP6c7l0EcX1mh1ra+8fnMLX+AioOviRxG2r4hD5MGN2AEeLHdNHB7oHYQqXXId9
+         tzAw==
+X-Gm-Message-State: ABy/qLZSTLeO83GuRhSwiS1my3+YTiACKr3V0+SOSGVXMMW1my3b41+q
+	46IAwC/hKANdiDmuhtyNUVQE27jYYhM=
+X-Google-Smtp-Source: APBJJlGQVjm5RzrpH36bdluvnqR1OmovIF/Mv2HtKZQ0PUD+Zj6xyTxIa85gQ91Vm5Bag6YHDA7hXUEb4so=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:4f41:0:b0:cb6:6c22:d0f8 with SMTP id
- d62-20020a254f41000000b00cb66c22d0f8mr17638ybb.4.1689961276130; Fri, 21 Jul
- 2023 10:41:16 -0700 (PDT)
-Date: Fri, 21 Jul 2023 10:41:14 -0700
-In-Reply-To: <6118063e-5c91-acc4-129f-3bacc19f25ce@redhat.com>
+ (user=seanjc job=sendgmr) by 2002:a05:6902:10cd:b0:c1c:df23:44ee with SMTP id
+ w13-20020a05690210cd00b00c1cdf2344eemr19769ybu.0.1689961807734; Fri, 21 Jul
+ 2023 10:50:07 -0700 (PDT)
+Date: Fri, 21 Jul 2023 10:50:06 -0700
+In-Reply-To: <8ad7a846-64e9-a3f1-4bf1-731a994d62cb@redhat.com>
 Mime-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-10-seanjc@google.com>
- <6118063e-5c91-acc4-129f-3bacc19f25ce@redhat.com>
-Message-ID: <ZLrDOljnluTrt+l+@google.com>
-Subject: Re: [RFC PATCH v11 09/29] KVM: x86: Disallow hugepages when memory
- attributes are mixed
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
+ <8ad7a846-64e9-a3f1-4bf1-731a994d62cb@redhat.com>
+Message-ID: <ZLrFTq2f1NXtlJWd@google.com>
+Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>
 Content-Type: text/plain; charset="us-ascii"
@@ -82,39 +82,24 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 On Fri, Jul 21, 2023, Paolo Bonzini wrote:
 > On 7/19/23 01:44, Sean Christopherson wrote:
-> > +static bool range_has_attrs(struct kvm *kvm, gfn_t start, gfn_t end,
-> > +			    unsigned long attrs)
-> > +{
-> > +	XA_STATE(xas, &kvm->mem_attr_array, start);
-> > +	unsigned long index;
-> > +	bool has_attrs;
-> > +	void *entry;
+> > +	inode = alloc_anon_inode(mnt->mnt_sb);
+> > +	if (IS_ERR(inode))
+> > +		return PTR_ERR(inode);
 > > +
-> > +	rcu_read_lock();
-> > +
-> > +	if (!attrs) {
-> > +		has_attrs = !xas_find(&xas, end);
-> > +		goto out;
-> > +	}
-> > +
-> > +	has_attrs = true;
-> > +	for (index = start; index < end; index++) {
-> > +		do {
-> > +			entry = xas_next(&xas);
-> > +		} while (xas_retry(&xas, entry));
-> > +
-> > +		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-> > +			has_attrs = false;
-> > +			break;
-> > +		}
-> > +	}
-> > +
-> > +out:
-> > +	rcu_read_unlock();
-> > +	return has_attrs;
-> > +}
+> > +	err = security_inode_init_security_anon(inode, &qname, NULL);
+> > +	if (err)
+> > +		goto err_inode;
 > > +
 > 
-> Can you move this function to virt/kvm/kvm_main.c?
+> I don't understand the need to have a separate filesystem.  If it is to
+> fully setup the inode before it's given a struct file, why not just export
+> anon_inode_make_secure_inode instead of security_inode_init_security_anon?
 
-Ah, yeah, that's a good idea.
+Ugh, this is why comments are important, I can't remember either.
+
+I suspect I implemented a dedicated filesystem to kinda sorta show that we could
+allow userspace to provide the mount point with e.g. NUMA hints[*].  But my
+preference would be to not support a userspace provided mount and instead implement
+fbind() to let userspace control NUMA and whatnot.
+
+[*] https://lore.kernel.org/all/ef48935e5e6f947f6f0c6d748232b14ef5d5ad70.1681176340.git.ackerleytng@google.com
