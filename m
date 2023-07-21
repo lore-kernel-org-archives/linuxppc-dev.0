@@ -4,91 +4,146 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27F8BEB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 13:41:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0664FEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 13:42:14 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l4HAAHYf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kmnWQwXb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6rLQ4VX8z2yFK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 23:41:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6rMS4gXTz3cYc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 23:42:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l4HAAHYf;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kmnWQwXb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jaypatel@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=yan.y.zhao@intel.com; receiver=lists.ozlabs.org)
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6qmM226dz2yDx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 23:15:14 +1000 (AEST)
-Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36LC5LTp023077;
-	Fri, 21 Jul 2023 13:14:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=GMxUpVXcvnoLLXnu9uLOggDBYWetPJ2Owc61ZxWdi/0=;
- b=l4HAAHYfAN6KBD3cNXhvpRKUvzJ/ZLlmd9eatnMe2L+hv+K3i1JRg/1TKVowa0MT0BQY
- 7o8ZcqHTGprj2ctwLNccYfCkuqk/IC4sRNSQDbvFgH0u6fmvyxCS0R9wQSAkb3RPNFAd
- A7U/5su42EO4w8Qw/yyi9/NBhq3tcAtI7nAoX4T3JTLRKFr22ReGddZWQqXB7lueeFnI
- RgZvR3igweMoS+wqPflmBs6R81Ja2TJO+R9MMeRb12IZDtRZd6owlPDxu/STXuJPR8bH
- uB6CdVTaJhe07UlsjV8vCjzUQB4QHR/4evhMjcRYIE4NRBwC+DNqJj7naVQItFx4PYXs Uw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rye3fs3vw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Jul 2023 13:14:20 +0000
-Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36LCa2ho007793;
-	Fri, 21 Jul 2023 13:14:19 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3rye3fs3v5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Jul 2023 13:14:19 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36LAiIhP016886;
-	Fri, 21 Jul 2023 13:14:18 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3rv5ss7mvj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Jul 2023 13:14:17 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36LDEFwI63439216
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 21 Jul 2023 13:14:15 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EA95B2004B;
-	Fri, 21 Jul 2023 13:14:14 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5CBCB20040;
-	Fri, 21 Jul 2023 13:13:50 +0000 (GMT)
-Received: from patel (unknown [9.61.93.148])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 21 Jul 2023 13:13:49 +0000 (GMT)
-Date: Fri, 21 Jul 2023 18:43:41 +0530
-From: Jay Patel <jaypatel@linux.ibm.com>
-To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v3 04/13] powerpc: assert_pte_locked() use
- pte_offset_map_nolock()
-Message-ID: <20230721131341.w5abuxcbohofpzwa@patel>
-References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com>
- <e8d56c95-c132-a82e-5f5f-7bb1b738b057@google.com>
- <87msztbiy8.fsf@linux.ibm.com>
- <392f311f-83ac-a5a2-d16e-2c7736d1b577@google.com>
- <6762c880-6d2b-233f-6786-7ad5b0472dc7@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="l3k53vcfqq6gdq3m"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6gHl28j7z30hW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 16:53:14 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1689922403; x=1721458403;
+  h=date:from:to:cc:subject:message-id:reply-to:references:
+   in-reply-to:mime-version;
+  bh=yUQll0rK4kVTUGOeG0Yh0uOwjDQL88UV6m+/2FtQqVI=;
+  b=kmnWQwXbgJ6zI7qvk3+4t8uFbSoW3LAxxLV+LxBol8pX9gZ7OPGZ0X3G
+   y6kOKf97O4WgN2hA8dCFWuj1upaL/2/6emp1lOImAV1gTrtzTNe4gfHvC
+   7qLlLOT8bxg6v7UpOaQH0HzqXhVAm1fm8X4yFyfqbIaa2BDKEWS72g50O
+   CxSToxTOcpMlwPJicvv15U6P3Q+ax44HFLzPxfxbnUn+ouj5Tm/q8hFrs
+   AobAcH1GwPeTAfB7wVSukJA3tWw57NbKaY71v8+y4HuL0UICxAchMN0EW
+   4ecqW5+k5C+iAZh3K53yFlSxVIJ4lMYbDL6sNXw03cSpafC3NLKRZfFDr
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="356939374"
+X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
+   d="scan'208";a="356939374"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jul 2023 23:53:09 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="814844557"
+X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
+   d="scan'208";a="814844557"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by FMSMGA003.fm.intel.com with ESMTP; 20 Jul 2023 23:53:09 -0700
+Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Thu, 20 Jul 2023 23:53:08 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Thu, 20 Jul 2023 23:53:08 -0700
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27 via Frontend Transport; Thu, 20 Jul 2023 23:53:08 -0700
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (104.47.51.48) by
+ edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.27; Thu, 20 Jul 2023 23:53:08 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=a0qzjW5tqHXsQXnvBpV4ekR2SPY/BCYQ7pDxaJ7kDCxX94oKuBcCTEddxFVjL1ceuRuC8I00MLgqQs7iY9MpwPnonPXA4NQPIzmsQNeUEPsfWtz4DYBR7aBnR9vp55ZCfZd6Qs2v6rYPZjMj60zrNVfiwK1Kf01x8rPw7RPSOip4ToQD7WbWwXnL1StP+/0Q6Mk9J2nPXvlYI2oTa1XpWUp0BFP8lgD9uytAq0vQvMQ+udzUe26SR+gvZ27huSMrUbkU21ph5lKGHLNZtOUhvG+U9Lr6+FiN0wC/8+oHDXuTPjqEoJm1atSjeSiKteTxlWSBBX8dRXdQRMn3xdASMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=nnG3RxIBu4FDgBaLRsmAkxiC0xAWcmlPyisYnsYn2vA=;
+ b=FfS90Tq0i+SpWMEQQ7yLDUJ3gg7G4FJpTbwPgHESJG7vTcMM0CpTRak8Uk/xm/8TcLC+L2VCAWqmrBgBsKjDIHQOYORl1T/9oI5SbCtsf0VBWCP2HeItwT8lbL6BBBR2WWTpqgFhavzMMa8RsA3my0lKXUKSfEv6Pb+sgrEPEzzTFZo+fR87leQ3gUDNfKYfSuAbSFyMpcP6wcPo7U2OO9P2clKjLwF3Y+TF6P2Tmb+P4dytDSu1QiU4+steA8b8r2/u/9hDro7U0Rt9MkJZRxmk1NA+le/YwvC6SI4bzB5ecZY7If1PgUvQeU5xWitMrlO++oBuG3HO8QTOFoBzmQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com (2603:10b6:8:71::6) by
+ MW4PR11MB8268.namprd11.prod.outlook.com (2603:10b6:303:1ef::5) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6588.33; Fri, 21 Jul 2023 06:53:05 +0000
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::1b1a:af8e:7514:6f63]) by DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::1b1a:af8e:7514:6f63%2]) with mapi id 15.20.6609.024; Fri, 21 Jul 2023
+ 06:53:05 +0000
+Date: Fri, 21 Jul 2023 14:26:11 +0800
+From: Yan Zhao <yan.y.zhao@intel.com>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a
+ per-action union
+Message-ID: <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-2-seanjc@google.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <6762c880-6d2b-233f-6786-7ad5b0472dc7@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 2ecNA7NkEkMAHoLPyYtcVNUPMq4cUpvr
-X-Proofpoint-ORIG-GUID: UIxitr1ia8Es_QGazuOlejno-STdYv4d
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-21_08,2023-07-20_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 spamscore=0
- mlxscore=0 priorityscore=1501 adultscore=0 suspectscore=0 phishscore=0
- mlxlogscore=999 malwarescore=0 impostorscore=0 bulkscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2307210118
+In-Reply-To: <20230718234512.1690985-2-seanjc@google.com>
+X-ClientProxiedBy: SI2P153CA0005.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:4:140::11) To DS7PR11MB5966.namprd11.prod.outlook.com
+ (2603:10b6:8:71::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR11MB5966:EE_|MW4PR11MB8268:EE_
+X-MS-Office365-Filtering-Correlation-Id: c77e5cb2-7609-40a6-f648-08db89b7223d
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: K7ZrPuq/t8u9S6s3ZFloJHsv1ZSMD9HWXazxoyuk7vp5WIA/108qZSaPRrsek++nr4LOEsfSgNSx6qMS3KYroAx8yMBYrs5rfc5LC4FaJfei5+bv0lQPlxa2ClmQV+H8iC8Z+7E2EXE+/Q2KxhawT70iOPiZG+VyJZEiigkPv16U71ExaxeOpKXDjEeU7XMsqUtoPk5EV5tE97m31SQ/G4qkv62VyiYkrZ+vtKw4AvwgDMWZbFG7Pry54YNC4i1NnGWpqFwAkbRtMDbvBqPcJMVzfr//wIDLk94LgWANyxFvzeeuJkyaVFrcOAaoJQgbk94QwXdJ6HJUp7Ry9MUsy/Mx6zUkz7fLLg42aR+a+JJIDbw5iL4F5lczxJEycZILBMC/ueWq9ToC78/rIyUQNYrMUDIPybJLdf+8BlvuurlAIEbvezRUpYVXQlAXPUvfebKy5oxm3ATMy9O9N7Vtv6xkCa6O9ml3nqnZ+ZQ6MK67xXtjG/z3849WqVb8/VClY83u4Dbhsw6xHuIqA5v4KJSyhp5KwH3gOWMrxO8GduMY6/V6BYaPV72nABBbUsew
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR11MB5966.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(346002)(136003)(366004)(376002)(39860400002)(396003)(451199021)(316002)(41300700001)(66476007)(4326008)(6916009)(66946007)(5660300002)(66556008)(8936002)(8676002)(83380400001)(86362001)(82960400001)(38100700002)(186003)(26005)(6486002)(6506007)(6512007)(54906003)(478600001)(6666004)(7416002)(7406005)(3450700001)(2906002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?KaJlyRrhVeycil3x3jf/U+nArDb5ZDTUauKs8xWe+esL3seYWnNPUeq2SsxE?=
+ =?us-ascii?Q?O28MX2kFSy+yQT/TbzQQyRo/7JFRUYD0KseWVxgbLVf+af+ctIesne6r0WUF?=
+ =?us-ascii?Q?5DklqK/K6eUWWrgaO2OUlYZDFRk8eIpMCrePVwMM6mmQnxWheOR3xxnyz2OW?=
+ =?us-ascii?Q?UStN5amunf7VTXPTji5lLwpoZ+PvCSB2DxY0yp7XHQCN2Rk1OdAlThR5tLjM?=
+ =?us-ascii?Q?+m2ITHT1p3oKKnb80wCm85qM87qnkVj2F3YtCA2nPhfhMmK64tjC1aZJNRVy?=
+ =?us-ascii?Q?xCfkbIWPAFypHMxCyxYhD8CLa3UCWP4ZdANUiK+nRiMo91LUjU8iOX1vOycb?=
+ =?us-ascii?Q?VqH3mGROJ3ZYXjj4VJqNv5mlyNvjr5Zs+tG6b46WRF129jffz+tCwhNF6n7z?=
+ =?us-ascii?Q?fajcV3+ZXWuCKPfqTPTmQx7BVHIgYloYe1RjVWuXGaAguiLdkt5+5rvQ9mBz?=
+ =?us-ascii?Q?I6RPZ0e4Il1VGMxlzOUnuRvPho6FO3i4FR8bCFj3d+Q5qRDslU5sLrOX7tmQ?=
+ =?us-ascii?Q?HsofE2ouhIZMikACNsj8xNzeznQE2+rxpv8WkZyhmehBZ4ieStuuWjdMfhco?=
+ =?us-ascii?Q?ZJ5zcxNTsUVQOP6h4eUQbiTWGyXOk65IOD6H2fbJagBITNS9vVicddOGFXlf?=
+ =?us-ascii?Q?qA1TgKja4a/opqxz02vrW7dqkKuc1XeCqVjb4ZTbftG0sH/Ek+GyJ3Cl7iiR?=
+ =?us-ascii?Q?gWQyMFje6kpixNdiDUg06tgSmyEWY3+EkWdF+7Oc3fAnzbg6tf3oeTvoZuJl?=
+ =?us-ascii?Q?dlyxy6a7wphx9PLK6JFhhLzr65bsauOFzoauJasu5mllfyy37noAPsPjapIS?=
+ =?us-ascii?Q?4nxxDe5JHrEMFEcGS1DOI5X69Nm9dwEscWYANk8RmqeuSjxgeZU7CA5H/jJq?=
+ =?us-ascii?Q?FwNn4OlvWSsBR1eWnXx6FW/7CagN4P1zJW0ev+16W1R0QKjKSPjs9J20yA2B?=
+ =?us-ascii?Q?MSprym8bPYz7v8uhgawC3B8ABLM9gDnExpQ37kEzBi9w304ca/iSWmrG/z7b?=
+ =?us-ascii?Q?XYZbjRqKavrjDzFlBooIwOq4nnxpZT54ITX+43wb9CapDpQE6ZFIhQSKfMeL?=
+ =?us-ascii?Q?4qqv8JYIDimdzV2axdVeH7c77cD7sUGw+6BlK5+qDIe11MGrCMXj07zdKkVs?=
+ =?us-ascii?Q?vVbR462LhhHvqpstDjK1Rw+mZPwBh8kCW+gCP9LK/JtcUji/RcHMl4YmH0aj?=
+ =?us-ascii?Q?I0Ek5vvU0I6EVS5ZPQGEBIeC3ohNAZYau7r7xFYxW5EG/PI/AS3dA0g44X4h?=
+ =?us-ascii?Q?aGCiAZp6mxDDo414H38hai0FRmRnl96Y9GYaixqGHxkrCNo2pbHiaiR/dPK0?=
+ =?us-ascii?Q?Lg0LTxUBMBGyv8nACo/5EbdARbxNkCsyqvZBi+cBunz/rI4eCPRTFqakfqBq?=
+ =?us-ascii?Q?ikdjBS7qoeW03p5Fpyxea6G5xe6zZkGEbhN5moiFfFauZD0JaBQG1kvRws26?=
+ =?us-ascii?Q?zaLYNlr/bdcAD1Sp7m/Qf7XeXe7habhBXwM7iZmRAmLX+cBQeCIjiGQ6zQqn?=
+ =?us-ascii?Q?u0FdlX8sqEdYw4gxjp7dZT1caDxZv+Y9AEzj/ReLZ3BCIdl3arQFDF92Qmb4?=
+ =?us-ascii?Q?/LI9v+vhoWIu0ypINL7yGwA+1dKcbCYSVew6blyw?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: c77e5cb2-7609-40a6-f648-08db89b7223d
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR11MB5966.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jul 2023 06:53:05.2719
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 11A/t73+MtHjI1DmiWdfFNCyCvQA6+ZPQsGyWShXcP5qyJC+ReyKxp/Cmp/689nC/pVCfm9RN77/PO/kOkz1IQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB8268
+X-OriginatorOrg: intel.com
 X-Mailman-Approved-At: Fri, 21 Jul 2023 23:38:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -101,120 +156,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, Song Liu <song@kernel.org>, Mike Rapoport <rppt@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Ira Weiny <ira.weiny@intel.com>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Will Deacon <will@kernel.org>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellst
- rom@linux.intel.com>, Ralph Camp bell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>, Naoya Horiguchi <naoya.horiguchi@nec.com>, linux-kernel@vger.kernel.org, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Zack Rusin <zackr@vmware.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Reply-To: Yan Zhao <yan.y.zhao@intel.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku
+ Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@re
+ dhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Jul 18, 2023 at 04:44:44PM -0700, Sean Christopherson wrote:
 
---l3k53vcfqq6gdq3m
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+May I know why KVM now needs to register to callback .change_pte()?
+As also commented in kvm_mmu_notifier_change_pte(), .change_pte() must be
+surrounded by .invalidate_range_{start,end}().
 
-On Jul 19 2023, Aneesh Kumar K V wrote:
-> On 7/19/23 10:34 AM, Hugh Dickins wrote:
-> > On Tue, 18 Jul 2023, Aneesh Kumar K.V wrote:
-> >> Hugh Dickins <hughd@google.com> writes:
-> >>
-> >>> Instead of pte_lockptr(), use the recently added pte_offset_map_nolock()
-> >>> in assert_pte_locked().  BUG if pte_offset_map_nolock() fails: this is
-> >>> stricter than the previous implementation, which skipped when pmd_none()
-> >>> (with a comment on khugepaged collapse transitions): but wouldn't we want
-> >>> to know, if an assert_pte_locked() caller can be racing such transitions?
-> >>>
-> >>
-> >> The reason we had that pmd_none check there was to handle khugpaged. In
-> >> case of khugepaged we do pmdp_collapse_flush and then do a ptep_clear.
-> >> ppc64 had the assert_pte_locked check inside that ptep_clear.
-> >>
-> >> _pmd = pmdp_collapse_flush(vma, address, pmd);
-> >> ..
-> >> ptep_clear()
-> >> -> asset_ptep_locked()
-> >> ---> pmd_none
-> >> -----> BUG
-> >>
-> >>
-> >> The problem is how assert_pte_locked() verify whether we are holding
-> >> ptl. It does that by walking the page table again and in this specific
-> >> case by the time we call the function we already had cleared pmd .
-> > 
-> > Aneesh, please clarify, I've spent hours on this.
-> > 
-> > From all your use of past tense ("had"), I thought you were Acking my
-> > patch; but now, after looking again at v3.11 source and today's,
-> > I think you are NAKing my patch in its present form.
-> > 
-> 
-> Sorry for the confusion my reply created. 
-> 
-> > You are pointing out that anon THP's __collapse_huge_page_copy_succeeded()
-> > uses ptep_clear() at a point after pmdp_collapse_flush() already cleared
-> > *pmd, so my patch now leads that one use of assert_pte_locked() to BUG.
-> > Is that your point?
-> > 
-> 
-> Yes. I haven't tested this yet to verify that it is indeed hitting that BUG.
-> But a code inspection tells me we will hit that BUG on powerpc because of
-> the above details.
->
-Hi Aneesh,
+While kvm_mmu_notifier_invalidate_range_start() has called kvm_unmap_gfn_range()
+to zap all leaf SPTEs, and page fault path will not install new SPTEs
+successfully before kvm_mmu_notifier_invalidate_range_end(),
+kvm_set_spte_gfn() should not be able to find any shadow present leaf entries to
+update PFN.
 
-After testing it, I can confirm that it encountered a BUG on powerpc.
-Log report as attached
+Or could we just delete completely
+"kvm_handle_hva_range(mn, address, address + 1, pte, kvm_set_spte_gfn);"
+from kvm_mmu_notifier_change_pte() ?
 
-Thanks,
-Jay Patel 
-> > I can easily restore that khugepaged comment (which had appeared to me
-> > out of date at the time, but now looks still relevant) and pmd_none(*pmd)
-> > check: but please clarify.
-> > 
-> 
-> That is correct. if we add that pmd_none check back we should be good here.
-> 
-> 
-> -aneesh
-
---l3k53vcfqq6gdq3m
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="report.txt"
-
-[   53.513058][  T105] ------------[ cut here ]------------
-[   53.513080][  T105] kernel BUG at arch/powerpc/mm/pgtable.c:327!
-[   53.513090][  T105] Oops: Exception in kernel mode, sig: 5 [#1]
-[   53.513099][  T105] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-[   53.513109][  T105] Modules linked in: bonding pseries_rng rng_core vmx_crypto gf128mul ibmveth crc32c_vpmsum fuse autofs4                                                                              
-[   53.513135][  T105] CPU: 3 PID: 105 Comm: khugepaged Not tainted 6.5.0-rc1-gebfaf626e99f-dirty #1
-[   53.513146][  T105] Hardware name: IBM,9009-42G POWER9 (raw) 0x4e0202 0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries                                                                             
-[   53.513156][  T105] NIP:  c000000000079478 LR: c00000000007946c CTR: 0000000000000000
-[   53.513165][  T105] REGS: c000000008e9b930 TRAP: 0700   Not tainted  (6.5.0-rc1-gebfaf626e99f-dirty)                                                                                                    
-[   53.513175][  T105] MSR:  800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 24002882  XER: 20040000                                                                                               
-[   53.513202][  T105] CFAR: c000000000412a30 IRQMASK: 0
-[   53.513202][  T105] GPR00: c00000000007946c c000000008e9bbd0 c0000000012d3500 0000000000000001
-[   53.513202][  T105] GPR04: 0000000011000000 c000000008e9bbb0 c000000008e9bbf0 ffffffffffffffff
-[   53.513202][  T105] GPR08: 00000000000003ff 0000000000000000 0000000000000000 000000000000000a
-[   53.513202][  T105] GPR12: 00000000497b0000 c00000001ec9d480 c00c00000016fe00 c000000051455000
-[   53.513202][  T105] GPR16: 0000000000000000 ffffffffffffffff 0000000000000001 0000000000000001
-[   53.513202][  T105] GPR20: c000000002912430 c000000051455000 0000000000000000 c00000000946e650
-[   53.513202][  T105] GPR24: c0000000029800e8 0000000011000000 c00c000000145168 c000000002980180
-[   53.513202][  T105] GPR28: 0000000011000000 8603f85b000080c0 c000000008e9bc70 c00000001bd0d680
-[   53.513304][  T105] NIP [c000000000079478] assert_pte_locked.part.18+0x168/0x1b0
-[   53.513318][  T105] LR [c00000000007946c] assert_pte_locked.part.18+0x15c/0x1b0
-[   53.513329][  T105] Call Trace:
-[   53.513335][  T105] [c000000008e9bbd0] [c00000000007946c] assert_pte_locked.part.18+0x15c/0x1b0 (unreliable)                                                                                            
-[   53.513350][  T105] [c000000008e9bc00] [c00000000048e10c] collapse_huge_page+0x11dc/0x1700
-[   53.513362][  T105] [c000000008e9bd40] [c00000000048ed18] hpage_collapse_scan_pmd+0x6e8/0x850
-[   53.513374][  T105] [c000000008e9be30] [c000000000492544] khugepaged+0x7e4/0xb70
-[   53.513386][  T105] [c000000008e9bf90] [c00000000015f038] kthread+0x138/0x140
-[   53.513399][  T105] [c000000008e9bfe0] [c00000000000dd58] start_kernel_thread+0x14/0x18
-[   53.513411][  T105] Code: 7c852378 7c844c36 794a1564 7c894038 794af082 79241f24 78eaf00e 7c8a2214 48399541 60000000 7c630074 7863d182 <0b030000> e9210020 81290000 7d290074                             
-[   53.513448][  T105] ---[ end trace 0000000000000000 ]---
-[   53.516544][  T105]
-[   53.516551][  T105] note: khugepaged[105] exited with irqs disabled
-[  182.648447][ T1952] mconf[1952]: segfault (11) at 110efa38 nip 1001e97c lr 1001e8a8 code 1
-[  182.648482][ T1952] mconf[1952]: code: 60420000 4bfffd59 4bffffd0 60000000 60420000 e93f0070 2fa90000 409e0014
-[  182.648494][ T1952] mconf[1952]: code: 480000cc e9290000 2fa90000 419e00c0 <81490008> 2f8a0005 409effec e9490028
-[  962.694079][T39811] sda2: Can't mount, would change RO state
-
---l3k53vcfqq6gdq3m--
-
+> diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+> index 6db9ef288ec3..55f03a68f1cd 100644
+> --- a/arch/arm64/kvm/mmu.c
+> +++ b/arch/arm64/kvm/mmu.c
+> @@ -1721,7 +1721,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+>  
+>  bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+>  {
+> -	kvm_pfn_t pfn = pte_pfn(range->pte);
+> +	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
+>  
+>  	if (!kvm->arch.mmu.pgt)
+>  		return false;
+> diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
+> index e8c08988ed37..7b2ac1319d70 100644
+> --- a/arch/mips/kvm/mmu.c
+> +++ b/arch/mips/kvm/mmu.c
+> @@ -447,7 +447,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+>  bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+>  {
+>  	gpa_t gpa = range->start << PAGE_SHIFT;
+> -	pte_t hva_pte = range->pte;
+> +	pte_t hva_pte = range->arg.pte;
+>  	pte_t *gpa_pte = kvm_mips_pte_for_gpa(kvm, NULL, gpa);
+>  	pte_t old_pte;
+>  
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index f2eb47925806..857f4312b0f8 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -559,7 +559,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+>  bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+>  {
+>  	int ret;
+> -	kvm_pfn_t pfn = pte_pfn(range->pte);
+> +	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
+>  
+>  	if (!kvm->arch.pgd)
+>  		return false;
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index ec169f5c7dce..d72f2b20f430 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -1588,7 +1588,7 @@ static __always_inline bool kvm_handle_gfn_range(struct kvm *kvm,
+>  	for_each_slot_rmap_range(range->slot, PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL,
+>  				 range->start, range->end - 1, &iterator)
+>  		ret |= handler(kvm, iterator.rmap, range->slot, iterator.gfn,
+> -			       iterator.level, range->pte);
+> +			       iterator.level, range->arg.pte);
+>  
+>  	return ret;
+>  }
+> diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+> index 512163d52194..6250bd3d20c1 100644
+> --- a/arch/x86/kvm/mmu/tdp_mmu.c
+> +++ b/arch/x86/kvm/mmu/tdp_mmu.c
+> @@ -1241,7 +1241,7 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
+>  	u64 new_spte;
+>  
+>  	/* Huge pages aren't expected to be modified without first being zapped. */
+> -	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
+> +	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
+>  
+>  	if (iter->level != PG_LEVEL_4K ||
+>  	    !is_shadow_present_pte(iter->old_spte))
+> @@ -1255,9 +1255,9 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
+>  	 */
+>  	tdp_mmu_iter_set_spte(kvm, iter, 0);
+>  
+> -	if (!pte_write(range->pte)) {
+> +	if (!pte_write(range->arg.pte)) {
+>  		new_spte = kvm_mmu_changed_pte_notifier_make_spte(iter->old_spte,
+> -								  pte_pfn(range->pte));
+> +								  pte_pfn(range->arg.pte));
+>  
+>  		tdp_mmu_iter_set_spte(kvm, iter, new_spte);
+>  	}
+ 
