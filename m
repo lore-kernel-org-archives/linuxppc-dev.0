@@ -4,69 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B618EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 17:43:54 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Kleh8Qps;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BB31C04A6A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 18:24:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6xkJ4rPHz3cWQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 03:43:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Kleh8Qps;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3o8o6zaykdeiwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6yd6426Nz3cZ9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 04:24:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6xjL0l25z3c5H
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 03:43:01 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-c8f360a07a2so2020447276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 10:43:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1689961380; x=1690566180;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=7DBmD+NWofmGocm5Vnh+WkykM6ONviwwjpnheMJOIK8=;
-        b=Kleh8QpsTsNUhesVcFKaorRemH2b7oCPrjs/EZvvDbSIhnU646cwazqZifDUNyxi+Q
-         5JqV9CUAW8QaG2YIfQCin1qnHve1MgXICSxbyDPLV8MjQRP2Kpasi9pL5sbB8O7UYjBa
-         jgRp3U3UDnkkD6e19TR7wMGjHPVEilwKuPvhlll1BPS6C8DVpWehyFU2WczctGneBM1v
-         8h/JnmhFLy8tlfXVq6NzVrFmSK26MkEiOaRidvtVK6eqi9qhd/VP0gDfCAxADqhE52gi
-         5Uc2vJ9HkSFyp91F1M5r9W96Us+3KtG0sWvhTTO0jFsQ1GbEx81tOU6Kjmmi3SIi/0Fk
-         yy7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689961380; x=1690566180;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=7DBmD+NWofmGocm5Vnh+WkykM6ONviwwjpnheMJOIK8=;
-        b=Hy4hps6AnZz8YRkd49WDgTitPfe5kYyJhiMzP7KF2hbQzNdnhBLpU5QmzDjMoRnCLE
-         /TAqYUbnp7zeY1mzxtEOoADc6X9Dz49zuSEVoiwVF8Dov6qLp9lzvxEVpwhYN30xCThg
-         mh27J/bPmqRoT7RkyE9HEuydL2A2Xgrl6cJaYbxW1BXIs03mXry8oVwm4gT4W84tF2rM
-         Jld4k+ULKSOwG3vpO5GycdIq2jvgNResQwKbmbIkJxdqofRJaxYwMtITaxOsQmnaDh+g
-         FlTR6F+fDfFOXHfBe1MJMHEy0AE7xhO7jZrNhsv2lvNWEw/axfn0v3Fu8LnG4H5NgDYl
-         ROxA==
-X-Gm-Message-State: ABy/qLY6lTsBLVdbW57MbQtU/m3D9myoPizJtmFuCfcdJyhExkprlR/R
-	HSIX5aG30Edkl+ESrkuxhjwt1DaXle8=
-X-Google-Smtp-Source: APBJJlE/aF1pYHHKoAMy1+E4aY5+aL4FeQDb+p2ML0zhZVvr/Ah+OV80Lx1tRjSoeSb0qOhWhlHbRbztBVY=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a05:6902:10cd:b0:c1c:df23:44ee with SMTP id
- w13-20020a05690210cd00b00c1cdf2344eemr19665ybu.0.1689961379855; Fri, 21 Jul
- 2023 10:42:59 -0700 (PDT)
-Date: Fri, 21 Jul 2023 10:42:58 -0700
-In-Reply-To: <29baac45-7736-a28c-3b2d-2a6e45171b8b@intel.com>
-Mime-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
- <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com> <29baac45-7736-a28c-3b2d-2a6e45171b8b@intel.com>
-Message-ID: <ZLrDopLH+3vN8rE6@google.com>
-Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-From: Sean Christopherson <seanjc@google.com>
-To: Xiaoyao Li <xiaoyao.li@intel.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6ycZ2Yp0z3c2y
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 04:23:58 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 64AFE61D70;
+	Fri, 21 Jul 2023 18:23:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41432C433C9;
+	Fri, 21 Jul 2023 18:23:50 +0000 (UTC)
+Date: Fri, 21 Jul 2023 11:23:49 -0700
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Yicong Yang <yangyicong@huawei.com>
+Subject: Re: [PATCH v11 1/4] mm/tlbbatch: Introduce
+ arch_tlbbatch_should_defer()
+Message-ID: <ZLrNNcApzNLp9pdj@arm.com>
+References: <20230717131004.12662-1-yangyicong@huawei.com>
+ <20230717131004.12662-2-yangyicong@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230717131004.12662-2-yangyicong@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,42 +47,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver
-  Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: mark.rutland@arm.com, wangkefeng.wang@huawei.com, prime.zeng@hisilicon.com, realmz6@gmail.com, linux-doc@vger.kernel.org, peterz@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, punit.agrawal@bytedance.com, linux-riscv@lists.infradead.org, will@kernel.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, x86@kernel.org, Barry Song <21cnbao@gmail.com>, ryan.roberts@arm.com, arnd@arndb.de, anshuman.khandual@arm.com, openrisc@lists.librecores.org, darren@os.amperecomputing.com, Jonathan.Cameron@huawei.com, yangyicong@hisilicon.com, linux-arm-kernel@lists.infradead.org, Barry Song <baohua@kernel.org>, guojian@oppo.com, xhao@linux.alibaba.com, linux-mips@vger.kernel.org, huzhanyuan@oppo.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 21, 2023, Xiaoyao Li wrote:
-> On 7/21/2023 11:05 PM, Xiaoyao Li wrote:
-> > On 7/19/2023 7:44 AM, Sean Christopherson wrote:
-> > > @@ -6255,12 +6298,17 @@ int kvm_init(unsigned vcpu_size, unsigned
-> > > vcpu_align, struct module *module)
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (r)
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 goto err_async=
-_pf;
-> > > +=C2=A0=C2=A0=C2=A0 r =3D kvm_gmem_init();
-> > > +=C2=A0=C2=A0=C2=A0 if (r)
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 goto err_gmem;
-> > > +
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kvm_chardev_ops.owner =3D module;
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kvm_preempt_ops.sched_in =3D kvm_sched=
-_in;
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kvm_preempt_ops.sched_out =3D kvm_sche=
-d_out;
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kvm_init_debug();
-> > > +=C2=A0=C2=A0=C2=A0 kvm_gmem_init();
-> >=20
-> > why kvm_gmem_init() needs to be called again? by mistake?
->=20
-> I'm sure it's a mistake.
+On Mon, Jul 17, 2023 at 09:10:01PM +0800, Yicong Yang wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> 
+> The entire scheme of deferred TLB flush in reclaim path rests on the
+> fact that the cost to refill TLB entries is less than flushing out
+> individual entries by sending IPI to remote CPUs. But architecture
+> can have different ways to evaluate that. Hence apart from checking
+> TTU_BATCH_FLUSH in the TTU flags, rest of the decision should be
+> architecture specific.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> [https://lore.kernel.org/linuxppc-dev/20171101101735.2318-2-khandual@linux.vnet.ibm.com/]
+> Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+> [Rebase and fix incorrect return value type]
+> Reviewed-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+> Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> Reviewed-by: Barry Song <baohua@kernel.org>
+> Reviewed-by: Xin Hao <xhao@linux.alibaba.com>
+> Tested-by: Punit Agrawal <punit.agrawal@bytedance.com>
 
-Yeah, definitely a bug.
-
-> I'm testing the gmem QEMU with this series. SW_PROTECTED_VM gets stuck in=
- a
-> loop in early OVMF code due to two shared page of OVMF get zapped and
-> re-mapped infinitely. Removing the second call of kvm_gmem_init() can sol=
-ve
-> the issue, though I'm not sure about the reason.
-
-Not worth investigating unless you want to satiate your curiosity :-)
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
