@@ -4,65 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4E8DEB64DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 13:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5285DEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 15:08:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=rE3DzRp7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fu8DkLeC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R6rKM11Q9z3cXW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jul 2023 23:40:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R6tGs4cXdz3cWN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 01:08:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=rE3DzRp7;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fu8DkLeC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Sat, 22 Jul 2023 01:07:25 AEST
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6k2R4Bmyz30hW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 18:57:02 +1000 (AEST)
-Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-5638180156aso484977a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2023 01:57:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689929819; x=1690534619;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=j8WQBkFu4tvTXD4bPW+LHU2k2KLsKgRpTrrvokeBKL0=;
-        b=rE3DzRp7BBFN9+X6t2vQSf8I5YjmSjf0KNRlimILxrEIgplLXbteHHMMYLBsvSi7vf
-         nhthK2nfGqXJbcm3FVXDCyiy0WsmRyFypzE7hP3oHo8IAQcLFoBw2H013XNUj/TithMX
-         bapZOvfYljRFQXEV4W3aKZ7ylxrth9VfL0zbPxVLXXlCeTSW2Twa3c1pY7DVSnZQiqoo
-         bvzmEepXEFopUXUWYW0hjRGtNQVIhaZtkqmn00S6cXR2yrtqBYDVZxQg5JSEhwiGMEbF
-         AZAWedNJJI+Hh+QED9KYzseytK7MeBMCMxMAr4bzuQfffSLMefEQLEpGSxlIl56SlL0x
-         3MJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689929819; x=1690534619;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=j8WQBkFu4tvTXD4bPW+LHU2k2KLsKgRpTrrvokeBKL0=;
-        b=eHHal3G5gOLUyzW9JpQITxI3NvUVaTt0Sj2ycudkj8opI9DByUls35yJyGjx+A2hso
-         pef8zlMl/lQlwu1dRmVehGVzpOoYIS59nFIsLrigrdP+AN2busgP5eBEnXlcc0t8EEOL
-         EhuxMCksT4W97nerX/lSO1++rLud3v8C9KDR9Ho2rWSe18nPoh5fuVd9lcN7ZvqBeVfC
-         l2Ca3bBb0vW4i/wHwWzFaBSCTwnC1kWksduTKj1c8PLlOmJKx6vImQcVeRG0Du9da34K
-         Widi+U16St3S/hlKt45zv0f7i8DMP8EXhH7HM3pk4l3hu3vPOiL1tVNyl5HZhleT5waV
-         gY0A==
-X-Gm-Message-State: ABy/qLau2XU4s1KzuqREtmY+60maYrBpH/N+yU80rJclkEKJ9jOVWU2t
-	Ara0GLIDe5BINoPnMfzsfbCdm/szujgX3FrwHUh/PR0T
-X-Google-Smtp-Source: APBJJlHTifAwLppS7bDTlmvVIi9dZMaNGMAPe58R+h3YwyWR1/lE+O3ukij7vgdmWXh8OdY1JzAtabbj2DJxXNgjdjA=
-X-Received: by 2002:a17:90b:4b03:b0:259:b065:da4f with SMTP id
- lx3-20020a17090b4b0300b00259b065da4fmr1091854pjb.36.1689929819610; Fri, 21
- Jul 2023 01:56:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R6tFn2f3Gz3bwF
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 01:07:25 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1689952045; x=1721488045;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=m75I2ERfRQTCcOTwNioBlzNNFor8J6AUk5uhhkX1LBE=;
+  b=fu8DkLeCxQBTxVSTbIBBf5bCSZ5YK73RjKzCa5EPWrF0aR9K/TWJwvZV
+   tEEn9FhpzGig8SBGlA88Ac7TJFgX1gBqWyHevbp03oF1FuMVkeh6ew5/i
+   XoQjtRBAQnuc8FGiAYebxuBqH3UmwNGqmckvlp74hIjwJB5V6i6XEOA94
+   HE381JfwMgYKzr8u7/J3dzQ/Z1iOHrjcD12OtajqzZwsVoo5K99i5CWAF
+   WgnAqkB5kxW+24CJiJ0icphlS2gwvXVAi4BO71bKGRztHNrXSYMrCEIPD
+   fDe2/2Y0G7KOfigMz/w+e7FZsfu1iIVLprWJ/4zg4qT3TQMxLwbCk/D5N
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="430835120"
+X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
+   d="scan'208";a="430835120"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2023 08:06:07 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="790229682"
+X-IronPort-AV: E=Sophos;i="6.01,222,1684825200"; 
+   d="scan'208";a="790229682"
+Received: from xiaoyaol-hp-g830.ccr.corp.intel.com (HELO [10.93.6.77]) ([10.93.6.77])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2023 08:05:57 -0700
+Message-ID: <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com>
+Date: Fri, 21 Jul 2023 23:05:53 +0800
 MIME-Version: 1.0
-References: <20230717145058.27860-1-ruc_gongyuanjun@163.com>
-In-Reply-To: <20230717145058.27860-1-ruc_gongyuanjun@163.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 21 Jul 2023 16:56:48 +0800
-Message-ID: <CAA+D8AMgcS_gx15evivo665Ta=FRLJwpfx7U0YD1zyg6gC=3_Q@mail.gmail.com>
-Subject: Re: [PATCH 1/1] sound:soc: fix return value check in imx_audmux_resume
-To: Yuanjun Gong <ruc_gongyuanjun@163.com>
-Content-Type: multipart/alternative; boundary="00000000000097e05b0600fb7255"
-X-Mailman-Approved-At: Fri, 21 Jul 2023 23:38:37 +1000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.13.0
+Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+Content-Language: en-US
+To: Sean Christopherson <seanjc@google.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
+ Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Anup Patel <anup@brainfault.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Paul Moore <paul@paul-moore.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-13-seanjc@google.com>
+From: Xiaoyao Li <xiaoyao.li@intel.com>
+In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,100 +80,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Fabio Estevam <festevam@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, linux-security-module@vger.kernel.org, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, kvmarm@lists.linux.dev, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, linux-mips@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, Yu Zhang <yu.c.zhang@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---00000000000097e05b0600fb7255
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On 7/19/2023 7:44 AM, Sean Christopherson wrote:
+> @@ -6255,12 +6298,17 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
+>   	if (r)
+>   		goto err_async_pf;
+>   
+> +	r = kvm_gmem_init();
+> +	if (r)
+> +		goto err_gmem;
+> +
+>   	kvm_chardev_ops.owner = module;
+>   
+>   	kvm_preempt_ops.sched_in = kvm_sched_in;
+>   	kvm_preempt_ops.sched_out = kvm_sched_out;
+>   
+>   	kvm_init_debug();
+> +	kvm_gmem_init();
 
-On Mon, Jul 17, 2023 at 10:51=E2=80=AFPM Yuanjun Gong <ruc_gongyuanjun@163.=
-com>
-wrote:
-
-> check the return value of clk_prepare_enable, and if
-> clk_prepare_enable got an unexpected return value,
-> imx_audmux_resume should return the error value.
->
-> Signed-off-by: Yuanjun Gong <ruc_gongyuanjun@163.com>
-> ---
->  sound/soc/fsl/imx-audmux.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
-> index be003a117b39..e8a3a1baf18d 100644
-> --- a/sound/soc/fsl/imx-audmux.c
-> +++ b/sound/soc/fsl/imx-audmux.c
-> @@ -339,8 +339,11 @@ static int imx_audmux_suspend(struct device *dev)
->  static int imx_audmux_resume(struct device *dev)
->  {
->         int i;
-> +       ssize_t ret;
->
-> -       clk_prepare_enable(audmux_clk);
-> +       ret =3D clk_prepare_enable(audmux_clk);
-> +       if (ret)
-> +               return ret;
->
-
-Please combine this with another one patch.
-
-best regards
-wang shengjiu
-
->
->         for (i =3D 0; i < reg_max; i++)
->                 writel(regcache[i], audmux_base + i * 4);
-> --
-> 2.17.1
->
->
-
---00000000000097e05b0600fb7255
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
-<div dir=3D"ltr" class=3D"gmail_attr">On Mon, Jul 17, 2023 at 10:51=E2=80=
-=AFPM Yuanjun Gong &lt;<a href=3D"mailto:ruc_gongyuanjun@163.com">ruc_gongy=
-uanjun@163.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" st=
-yle=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padd=
-ing-left:1ex">check the return value of clk_prepare_enable, and if<br>
-clk_prepare_enable got an unexpected return value,<br>
-imx_audmux_resume should return the error value.<br>
-<br>
-Signed-off-by: Yuanjun Gong &lt;<a href=3D"mailto:ruc_gongyuanjun@163.com" =
-target=3D"_blank">ruc_gongyuanjun@163.com</a>&gt;<br>
----<br>
-=C2=A0sound/soc/fsl/imx-audmux.c | 5 ++++-<br>
-=C2=A01 file changed, 4 insertions(+), 1 deletion(-)<br>
-<br>
-diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c<br>
-index be003a117b39..e8a3a1baf18d 100644<br>
---- a/sound/soc/fsl/imx-audmux.c<br>
-+++ b/sound/soc/fsl/imx-audmux.c<br>
-@@ -339,8 +339,11 @@ static int imx_audmux_suspend(struct device *dev)<br>
-=C2=A0static int imx_audmux_resume(struct device *dev)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 int i;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0ssize_t ret;<br>
-<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0clk_prepare_enable(audmux_clk);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0ret =3D clk_prepare_enable(audmux_clk);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (ret)<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return ret;<br></bl=
-ockquote><div><br></div><div>Please combine this with another one patch.</d=
-iv><div><br></div><div>best regards</div><div>wang shengjiu=C2=A0</div><blo=
-ckquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left=
-:1px solid rgb(204,204,204);padding-left:1ex">
-<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 for (i =3D 0; i &lt; reg_max; i++)<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 writel(regcache[i],=
- audmux_base + i * 4);<br>
--- <br>
-2.17.1<br>
-<br>
-</blockquote></div></div>
-
---00000000000097e05b0600fb7255--
+why kvm_gmem_init() needs to be called again? by mistake?
