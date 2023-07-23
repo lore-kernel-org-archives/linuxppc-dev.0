@@ -4,62 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00143EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 01:23:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E878FC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jul 2023 22:30:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qX6KSrLj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=HldvRjk0;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R77wk1jcxz2yVX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jul 2023 11:23:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R8J0B4CZSz3bZr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 08:30:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qX6KSrLj;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=HldvRjk0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::232; helo=mail-oi1-x232.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x232.google.com (mail-oi1-x232.google.com [IPv6:2607:f8b0:4864:20::232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R77vh6T8kz3bt5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2023 11:22:40 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 0344D61DB8;
-	Sat, 22 Jul 2023 01:22:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A5AEC433C7;
-	Sat, 22 Jul 2023 01:22:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1689988957;
-	bh=ymdnVGyJNnGUv2HZI8/M1PK0lCyu640ix4SSxWqfV44=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=qX6KSrLjUNhNPi02nh+6ca0mclsiX8ngx6MgAoXToVEXfxGVJDqDd+M/xrQSvGPdo
-	 HnjJABDZ+OFRbofb+JDvnjIEveDSuko/ikgRmWfqsjkq952i36BAMvINTGaChjawkN
-	 B6OgwD+8AJO8pd8z/xs4a/6K9P/a/2QBnvpuWam+MrqHhLdmuXK4SwdOcmYgpxe7vM
-	 22q4vDY9qAL+C5nUG3OBKyhHxxOwDvkPnHotsHGxEf6IGBGHRf44LFpW0ECov/5dH/
-	 YZurOS/9kOxHoWBIWBcbE7057VWjExGXUHZp3YSqZogBmtq6DHFSz4dzR5vmf0EeHL
-	 9OCfZ4ADrf3gQ==
-Date: Fri, 21 Jul 2023 18:22:35 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing: Have all levels of checks prevent recursion
-Message-ID: <20230721182235.6617a466@kernel.org>
-In-Reply-To: <20230721122632.56b4df6c@gandalf.local.home>
-References: <20211015110035.14813389@gandalf.local.home>
-	<20211015161702.GF174703@worktop.programming.kicks-ass.net>
-	<20211015133504.6c0a9fcc@gandalf.local.home>
-	<20211015135806.72d1af23@gandalf.local.home>
-	<20211015180429.GK174703@worktop.programming.kicks-ass.net>
-	<20211015142033.72605b47@gandalf.local.home>
-	<20211015142541.4badd8a9@gandalf.local.home>
-	<1b402c0c-1beb-d93f-ff6d-955350995ca3@intel.com>
-	<20230721120040.6ed2c02a@gandalf.local.home>
-	<035cee53-255b-11a3-d7ac-ca46c05b907b@intel.com>
-	<20230721122632.56b4df6c@gandalf.local.home>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8Hz95Pftz2yTt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 08:29:41 +1000 (AEST)
+Received: by mail-oi1-x232.google.com with SMTP id 5614622812f47-3a44fae863fso2522712b6e.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2023 15:29:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1690151378; x=1690756178;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=sNTpJwF6903WETZaUR6RqWiM1FUDiqrdqTK5pWkvOlI=;
+        b=HldvRjk0ys92jdNfeVWBvFtU170B3Sgl14twuVgU3PfgDSaDoMcHUhPaz6AeMDu2ht
+         Uif+LfgB6gTAkrapwLoFohouFxezysGIwMIbWr79XgdEZv9T4Ta9JcXZ/xBgIhza5Wp6
+         fGeIcGxiljkQ3KbjHflb2DqW6Ps1SdtwHA/t4H1ct7WpWFLF6Bv/l70pxlcxn5R0BUKr
+         Iazbm5RkEcD8IGB87s3PXGfBT5AeBhyzBinqvCJhTdPqY/jJZS+FqXmJovfCB0tAmiod
+         IWq1u2IAT6X27nS6190Pq6YJ8Hg+nIaVyTtHCpJcN+Q3aXVeneJaex1eWhS9PdC4bSB8
+         ACrg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690151378; x=1690756178;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=sNTpJwF6903WETZaUR6RqWiM1FUDiqrdqTK5pWkvOlI=;
+        b=Orc9SeV6jdtN3CBWNv3O6U3XEAtEtidVUtcBhvlWgswqbi2QpO5hRLMADcZHwlqpxJ
+         fYM1dd1fpacWfvbDLBkfe6V/ywfNTKrX4EkLeleyAneIfsnLtnnFueI97L7C/Mw86gnj
+         JtNrR54mB12qZhOYE4jC8H8+VoT+3fbEyW3yVbeDys9R0d1SaLFrL6n8Ig1kvghesThL
+         GAe6hkKLZTD9g6u4EY23vPT27pNycwR7JP955y0mt8ANylqn8Nrd6XWQD7WCH/5gSIya
+         hmEdjeyoUn1uhZpmfAlSkniiSPMv9Ic7ep+CITd2BamCbzDQ1ibDENJGUxH4q4U3Gnpx
+         uAPQ==
+X-Gm-Message-State: ABy/qLbCKdyu0LxjdbCdF/8ojXtu++DCCpmCzKQUz2LFVYCShkKKejvS
+	Ny2K8yqqoik76aamTNM7gp9P+g==
+X-Google-Smtp-Source: APBJJlGCOgtzl5Q2J86M2vQtJN89EUt0E/aCdYP/U+IucyQfogqdSTRUg5XhtlxwoMDwEEOnXDkYbw==
+X-Received: by 2002:a05:6808:1b2b:b0:3a4:31ee:da6a with SMTP id bx43-20020a0568081b2b00b003a431eeda6amr7828406oib.55.1690151378127;
+        Sun, 23 Jul 2023 15:29:38 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id o5-20020a05680803c500b003a41484b23dsm3509589oie.46.2023.07.23.15.29.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 23 Jul 2023 15:29:37 -0700 (PDT)
+Date: Sun, 23 Jul 2023 15:29:32 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3 07/13 fix] s390: add pte_free_defer() for pgtables sharing
+ page: fix
+In-Reply-To: <20230719162506.235856eb@p-imbrenda>
+Message-ID: <3bc095ba-a180-ce3b-82b1-2bfc64612f3@google.com>
+References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <94eccf5f-264c-8abe-4567-e77f4b4e14a@google.com> <20230719162506.235856eb@p-imbrenda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,21 +77,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>, Peter Zijlstra <peterz@infradead.org>, Paul Walmsley <paul.walmsley@sifive.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Paul Mackerras <paulus@samba.org>, Jisheng Zhang <jszhang@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, live-patching@vger.kernel.org, linux-riscv@lists.infradead.org, Miroslav Benes <mbenes@suse.cz>, Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>, x86@kernel.org, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Petr Mladek <pmladek@suse.com>, Albert Ou <aou@eecs.berkeley.edu>, Jiri Kosina <jikos@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-parisc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Alexander Lobakin <aleksander.lobakin@intel.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Guo Ren <guo
- ren@kernel.org>, Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <t
+ homas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 21 Jul 2023 12:26:32 -0400 Steven Rostedt wrote:
-> > if (!(in_hardirq() || irqs_disabled()))
-> >   
-> 
-> Yeah, probably.
-> 
-> > , nothing more elegant / already existing / ...?  
-> 
-> It's not a common check. What would you call that?
+Claudio finds warning on mm_has_pgste() more useful than on mm_alloc_pgste().
 
-Looks like Olek started the weekend already so let me answer.
-He's trying to check if we can use a fast path cache which takes
-a _bh spin lock.
+Signed-off-by: Hugh Dickins <hughd@google.com>
+---
+ arch/s390/mm/pgalloc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/s390/mm/pgalloc.c b/arch/s390/mm/pgalloc.c
+index 760b4ace475e..d7374add7820 100644
+--- a/arch/s390/mm/pgalloc.c
++++ b/arch/s390/mm/pgalloc.c
+@@ -459,7 +459,7 @@ void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
+ 	 * page_table_free() does not do the pgste gmap_unlink() which
+ 	 * page_table_free_rcu() does: warn us if pgste ever reaches here.
+ 	 */
+-	WARN_ON_ONCE(mm_alloc_pgste(mm));
++	WARN_ON_ONCE(mm_has_pgste(mm));
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
+-- 
+2.35.3
+
