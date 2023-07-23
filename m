@@ -4,67 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06950C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jul 2023 22:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F496C001B0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jul 2023 22:33:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=iVLb6pAc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=6TW6tzdC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R8HwM3bzDz3bZ4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 08:27:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R8J3b4n3Wz3cCb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 08:33:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=iVLb6pAc;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=6TW6tzdC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1132; helo=mail-yw1-x1132.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8HvL2Fr2z2yTc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 08:26:20 +1000 (AEST)
-Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-57a551ce7e9so46941157b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2023 15:26:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8J2Z6MtWz2yKy
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 08:32:37 +1000 (AEST)
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-5768a7e3adbso71437027b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2023 15:32:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690151175; x=1690755975;
+        d=google.com; s=20221208; t=1690151554; x=1690756354;
         h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=xrAdJXY/DYoZ1QqZrxUyGx5Ypm1XnUOGUxRagKc/Az8=;
-        b=iVLb6pAcMPMbH+sKIFDKrp13WE2BH14wgf0sfLLhG3EUD8G/hlzddsk9BjOLwwBDek
-         i4tMCHQWviMOQirYDf83bTCcJPZWFHJR7xkFk3VHd5hC7xG8MCrz4NcetF3qgqDqKUnu
-         xAsV+Rie6eGsL074ig7H7XBphUKKdrVVeh2TIH148CpPb1+P0n1+X7jZdveWNOjVJ6Ba
-         Kp6B7SozJs02j+R5YidTAfbP/CCuxGe3VqDtLCHCvJZKMpIS4f/D4qj/sIim49FJ+8/T
-         kdqRCusHGpxIPd559J2JIVCjJWnkF/KB5ylzgPVROKPwcB7Y5HxAlrSuCa01u6hWj0LC
-         1Twg==
+        bh=6mJ5yjUa61OKtsotomDyQc7p3NQ997kyi3UbHr9vQck=;
+        b=6TW6tzdCv/zJZetW3at30hfzlMddap7Z7fj+GldyzIgigr6T/xHW6mjhCM4pvSj3Q5
+         h5TyPuiLMyS54ezUO7aFMsJB86VYDD1vKE694/gkNGbdnL9iY77JcmkcNUGvyjawJaIq
+         BjAE9MN2ZbLEq/LNBLIFuF2Ek09JgxgKNG9cXLscgacxJQ5lJbuWKmjJuALrca8xMAt3
+         5DroplM2hCTuaQrXESdTEpiFCx+/8R7A51nPLTYCGWcc5xPkH47MNRHi+ctmstGgrSf9
+         eVsau7CwzmMa2SBw+NS5ElWiu1xHP1FxRVmTB4ePG0Chh3dV63YJC00zhVrRRqL4zgXj
+         HBcQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690151175; x=1690755975;
+        d=1e100.net; s=20221208; t=1690151554; x=1690756354;
         h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xrAdJXY/DYoZ1QqZrxUyGx5Ypm1XnUOGUxRagKc/Az8=;
-        b=FudBPzzMslcSEmf0V0QNxNRvlT0k7cUSc1iZz+M+EAJcIvXP/tmRkJ1OnuBtluZoMi
-         lA+WNPQUYwxkqv7IIh5Zf8yP8GEL9yWV8OORrbHeFTJ4JeA85b2FiKWSIBWaJJLBPP2i
-         91ZAnDMnZqqv5VJw6DySVe3vgGUB/+fTBYE1yzIBmHuCgeEsMfmDF+PjuCcM56ftLvqT
-         w3d3QlQg9909z8Dff77TYQ7aFldUrK8JZCXwTDZG3A/+26LHeDdTi4YF3YWtGXXlmxLF
-         y9bfWNs+JeGZGKpAd3y7LIjgdy2OsEYKZbihKlZJiOzrXt7lsekg85W4B0tsuUhP2o5U
-         AJEA==
-X-Gm-Message-State: ABy/qLa3tWcoL3Sg0/UiHwIV/wXX2cjCPzPHWQE9nD4VGjMu2fysQ1lV
-	j+K6i0mx1BsvpiyaWqVEcAi4hQ==
-X-Google-Smtp-Source: APBJJlG9iREnJulltCfWnEIqWXVGbxKFPc9M2vviU+KVFolzwpucWCLcuiZJ3CMHwTth2+2e2Ovuug==
-X-Received: by 2002:a81:7d88:0:b0:583:9018:6fbb with SMTP id y130-20020a817d88000000b0058390186fbbmr5157782ywc.37.1690151174666;
-        Sun, 23 Jul 2023 15:26:14 -0700 (PDT)
+        bh=6mJ5yjUa61OKtsotomDyQc7p3NQ997kyi3UbHr9vQck=;
+        b=TixPwYusgZGnPcWv8A6Q4d/IvPqFAoI8GeWEPjRCu6vbOoSVnRII/anTdhg1avzxIF
+         NAIKlnJg7picNvKQeQ44//jEMpd8LKxaTFTUe3gYfpbIv0CUiChMwZIgSxXc9K8jZEUM
+         lEqSYiUfVEilVS6p0JiFU4X5kQL7ZsATjV/56Idwt+Dpt+uiNYrXZ481GBAV3T8dvn5y
+         Lo05//ZFlpCOc8JNI1FBOC5zyOMuX9vFo12xw1DacYdTTq/YAIpP+gm8EG4rseMQgbGk
+         DBHciTVz1VPeYAZ/kyhVDDs2OyB3Jouj1z9g5/zrlSKqu9zVi3BaFA9W9YumYW/8/BVr
+         E0zw==
+X-Gm-Message-State: ABy/qLbkcJ21EstmVWSf+L0hGYE77DKSHOFQDD69CMv3612P/ZU9W3/n
+	EI60qLSFC3+Lcdr0AJLEWlGcYA==
+X-Google-Smtp-Source: APBJJlHufBlazAq/Jg+6fKB/G5aofMpIvebr8HbzAqYoBP3QAOOO5H84n4F6vZlA+flxU3ygHkBQcw==
+X-Received: by 2002:a0d:e211:0:b0:583:4064:a35f with SMTP id l17-20020a0de211000000b005834064a35fmr4569918ywe.23.1690151554487;
+        Sun, 23 Jul 2023 15:32:34 -0700 (PDT)
 Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id n124-20020a817282000000b00573898fb12bsm78328ywc.82.2023.07.23.15.26.09
+        by smtp.gmail.com with ESMTPSA id n189-20020a8172c6000000b005771bb5a25dsm2391276ywc.61.2023.07.23.15.32.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 23 Jul 2023 15:26:13 -0700 (PDT)
-Date: Sun, 23 Jul 2023 15:26:02 -0700 (PDT)
+        Sun, 23 Jul 2023 15:32:34 -0700 (PDT)
+Date: Sun, 23 Jul 2023 15:32:27 -0700 (PDT)
 From: Hugh Dickins <hughd@google.com>
 X-X-Sender: hugh@ripple.attlocal.net
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 04/13 fix] powerpc: assert_pte_locked() use pte_offset_map_nolock():
- fix
-In-Reply-To: <20230721131341.w5abuxcbohofpzwa@patel>
-Message-ID: <c73d1543-532c-3da2-8cf2-a95363a14116@google.com>
-References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <e8d56c95-c132-a82e-5f5f-7bb1b738b057@google.com> <87msztbiy8.fsf@linux.ibm.com> <392f311f-83ac-a5a2-d16e-2c7736d1b577@google.com> <6762c880-6d2b-233f-6786-7ad5b0472dc7@linux.ibm.com>
- <20230721131341.w5abuxcbohofpzwa@patel>
+Subject: [PATCH v3 10/13 fix] mm/khugepaged: collapse_pte_mapped_thp() with
+ mmap_read_lock(): fix
+In-Reply-To: <b53be6a4-7715-51f9-aad-f1347dcb7c4@google.com>
+Message-ID: <d3d9ff14-ef8-8f84-e160-bfa1f5794275@google.com>
+References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <b53be6a4-7715-51f9-aad-f1347dcb7c4@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -78,43 +77,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, Song Liu <song@kernel.org>, Mike Rapoport <rppt@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Ira Weiny <ira.weiny@intel.com>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Vasily Gorbik <
- gor@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Camp bell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Will Deacon <will@kernel.org>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>, Naoya Horiguchi <naoya.horiguchi@nec.com>, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, Jay Patel <jaypatel@linux.ibm.com>, Zack Rusin <zackr@vmware.com>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
+  Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Aneesh points out that assert_pte_locked() still needs the pmd_none()
-check, to stop crashing in khugepaged: restore that comment and check.
+madvise_collapse() setting "mmap_locked = true" after calling
+collapse_pte_mapped_thp() looked good but was wrong.  If the loop then
+moves on to the next extent, mmap_locked assures it that "vma" has been
+revalidated under mmap_lock, which was not the case: and led to UAFs,
+crashes in __fput() or task_work_run(), even collapse_file()'s
+VM_BUG_ON(start & (HPAGE_PMD_NR - 1)) - all detected by syzbot.
 
-Andrew, when merging with original commit, please edit its 1st para to:
+(collapse_pte_mapped_thp() does validate the vma that it works on:
+but it's not passed in as an argument, collapse_pte_mapped_thp() finds
+the vma for mm and addr by itself - which may by this time have changed
+from the vma saved in madvise_collapse().)
 
-Instead of pte_lockptr(), use the recently added pte_offset_map_nolock()
-in assert_pte_locked().  BUG if pte_offset_map_nolock() fails.
-
+Reported-by: syzbot+fe7b1487405295d29268@syzkaller.appspotmail.com
+Closes: https://lore.kernel.org/lkml/000000000000f9de430600ae05db@google.com/
+Reported-by: syzbot+173cc8cfdfbbef6dd755@syzkaller.appspotmail.com
+Closes: https://lore.kernel.org/linux-mm/000000000000e4b0f0060123ca40@google.com/
 Signed-off-by: Hugh Dickins <hughd@google.com>
 ---
- arch/powerpc/mm/pgtable.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ mm/khugepaged.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 16b061af86d7..a3dcdb2d5b4b 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -323,6 +323,14 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- 	pud = pud_offset(p4d, addr);
- 	BUG_ON(pud_none(*pud));
- 	pmd = pmd_offset(pud, addr);
-+	/*
-+	 * khugepaged to collapse normal pages to hugepage, first set
-+	 * pmd to none to force page fault/gup to take mmap_lock. After
-+	 * pmd is set to none, we do a pte_clear which does this assertion
-+	 * so if we find pmd none, return.
-+	 */
-+	if (pmd_none(*pmd))
-+		return;
- 	pte = pte_offset_map_nolock(mm, pmd, addr, &ptl);
- 	BUG_ON(!pte);
- 	assert_spin_locked(ptl);
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index 6bad69c0e4bd..1c773db26e88 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -2747,7 +2747,7 @@ int madvise_collapse(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 			BUG_ON(*prev);
+ 			mmap_read_lock(mm);
+ 			result = collapse_pte_mapped_thp(mm, addr, true);
+-			mmap_locked = true;
++			mmap_read_unlock(mm);
+ 			goto handle_result;
+ 		/* Whitelisted set of results where continuing OK */
+ 		case SCAN_PMD_NULL:
 -- 
 2.35.3
 
