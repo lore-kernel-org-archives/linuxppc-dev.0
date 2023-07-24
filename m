@@ -4,128 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47214C001DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 10:00:38 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=roJqN2Hf;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DBC6C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 12:08:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R8bJN6mDFz30fD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 20:00:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=roJqN2Hf;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f400:fe5b::623; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=nikunj.dadhania@amd.com; receiver=lists.ozlabs.org)
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on20623.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe5b::623])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R8f800m9Nz30Dw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 22:08:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.179; helo=mail-oi1-f179.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-f179.google.com (mail-oi1-f179.google.com [209.85.167.179])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8VrN5lTYz2y3Y
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 16:39:29 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=TBNytuG9pELw+wCkLN4x1giJm/z26G8CcsZMEb99JyC7zp0yx3rWos8RU/0dlROo3sxMwAe0im8lJnlNJGafVpsYrxEMGjS0teCClOd98oKvcOMIJyyvrwrGGw0AVcvlJA/rYE0m6/Y/rck1kLPbvvHxY8C3fb/460schR3rlhHWw6KL9NkMgko2LVLPqoyPXNQwkf/UQVRwyRtxUztW6miLhX4HFI+SbIwRDOCC1aXvFwLHXeaag/MiE3qJOsw9ocEs28kp3NsKRwxTeIUlXZs+kmXPBoJ2hWeaWa5yc69LvwSrBTMD4gf978M2zx02o3eDGvUYsZQl6RnpOeXUUw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GPDUPsv+OHeCKSGGIj9yi+Hnv4eueeGpUW2NUc1vEDw=;
- b=LhO6m3ocqmex7d/RiRz6C+W48Y/dlBNLSaT7riGfIOUvDKG4vG2V8Y0VtjaRheC9UV3P2VeziKL1G75rSTWZNXJriALI2qrQLdhQpXVAqGpD1+QPEPRbOC14de5cz5QF8maxpWXo22syNarAQRlAg8e2oP5IM48xZFfzRQoFZ+4/VzPbyyWL3+4ejuMCMJ1lZ31eRIE0PQcJ9WT1IMYoljH0E8b8Ix9wTz0pDcSPvEM/ZLqJicswHTQNJzK0BLG3G4MFPFdhDdnqk7B4w0DN3JtlaFomSLQwT22d70lznVjQsCflUqSdd/toocnmrrdlm3/3Q2uo9/ZNI1EwGCThDw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GPDUPsv+OHeCKSGGIj9yi+Hnv4eueeGpUW2NUc1vEDw=;
- b=roJqN2HfCG4+WWoSkaJ5YX0Dhx+IIDOWW2tAahPS/3+/eWlxrGMch5sudrWV+rEMrv3EcI/FawMVF+1CrL4iXZhJccDOMF21ltZzRL9QGH6LnCeUy7bXLe1aVAvefSIdQJl/jVH67i3QG2u3mYk86nD0uxrOJScsHSxMBiv8kRg=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DS7PR12MB6309.namprd12.prod.outlook.com (2603:10b6:8:96::19) by
- SA3PR12MB8045.namprd12.prod.outlook.com (2603:10b6:806:31d::5) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6609.31; Mon, 24 Jul 2023 06:39:05 +0000
-Received: from DS7PR12MB6309.namprd12.prod.outlook.com
- ([fe80::9ade:451:96c3:7b54]) by DS7PR12MB6309.namprd12.prod.outlook.com
- ([fe80::9ade:451:96c3:7b54%3]) with mapi id 15.20.6609.032; Mon, 24 Jul 2023
- 06:39:05 +0000
-Message-ID: <110f1aa0-7fcd-1287-701a-89c2203f0ac2@amd.com>
-Date: Mon, 24 Jul 2023 12:08:40 +0530
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [RFC PATCH v11 00/29] KVM: guest_memfd() and per-page attributes
-To: Sean Christopherson <seanjc@google.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
-Content-Language: en-US
-From: "Nikunj A. Dadhania" <nikunj@amd.com>
-In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: PN2PR01CA0232.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:c01:eb::10) To DS7PR12MB6309.namprd12.prod.outlook.com
- (2603:10b6:8:96::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8f7S0DZKz2yVD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 22:08:03 +1000 (AEST)
+Received: by mail-oi1-f179.google.com with SMTP id 5614622812f47-3a412653335so2549354b6e.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 05:08:03 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690200479; x=1690805279;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9nNGOJzgymf6gQYpdxd2UIkw90HSJ+oAIVzOwuAShWk=;
+        b=Uc9UL+s4rkz4xnkvNh6TRYxhbvm0b3lH6KcfGdn5oTMT3+57AsxsyUsmqFT6GTtqrS
+         AxzK+ezIxliz3LjAo3TR7ud7igixl7fyeIyVJT260vtZMuWRshujPZUeQ8d1tQ7nK43+
+         3Zf+/VsHuhTIW6er58na3M0O4JQYnQQj707noTbxZxKKWENGQy5ON3JPg0RxZZK3pQer
+         SVvxi3LkFsH66Wyi2zzOf5+cjxFLGtxvok6qZZLo/qPwDbDSUisyG4rhEITPTxrIIWDH
+         c+QMouJyv2Rxe8m2w3mrueJBO139MnyZedImkc3yjUif0CqwEeGtNX68VRxgf4kUE4zP
+         SQmw==
+X-Gm-Message-State: ABy/qLaZlolsi9G/3HxRJAh4nOcbTP0GAfS7VlvAFmf0mh++QlhuEWFa
+	UqgrFIYM2OfevFdcEoYHGMT4XPfoNRboeg==
+X-Google-Smtp-Source: APBJJlEmgZbLG5IaugsFEGpqAs4yisXCj/hbYmhR8QIN8MmDbHf+3M7Q4PNwbQH0eNELiR3tHdhzaA==
+X-Received: by 2002:a05:6808:99:b0:39e:c615:949f with SMTP id s25-20020a056808009900b0039ec615949fmr10184238oic.24.1690200478721;
+        Mon, 24 Jul 2023 05:07:58 -0700 (PDT)
+Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com. [209.85.167.173])
+        by smtp.gmail.com with ESMTPSA id c7-20020a544e87000000b003a5a976791fsm1964200oiy.45.2023.07.24.05.07.58
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Jul 2023 05:07:58 -0700 (PDT)
+Received: by mail-oi1-f173.google.com with SMTP id 5614622812f47-3a3fbfb616dso2543279b6e.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 05:07:58 -0700 (PDT)
+X-Received: by 2002:a25:238e:0:b0:d05:abaf:9933 with SMTP id
+ j136-20020a25238e000000b00d05abaf9933mr7019302ybj.36.1690200457350; Mon, 24
+ Jul 2023 05:07:37 -0700 (PDT)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB6309:EE_|SA3PR12MB8045:EE_
-X-MS-Office365-Filtering-Correlation-Id: 076b3286-626b-46fb-6874-08db8c10ac96
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	VwYfBBYT3muu8BO+rgOd4DlIqS5SleOjlqADeG6tqthegVLvuIHdPzgj6H5dWm5trTsr1gQ+a83UM4DUGUAi+s8y+5bygSM4VV3/hE1kaJrz/a4y/mpQMlKMfdxA06u+D0KZFpFXZyKPFAphKH1erhpeOzQ9Y7HAL4OPncyt45DtJCBhSqVt24WqHrsKYKanJYshZCrnW/ZKC5pkYevwdPXanLJIYiplpLv+xdLOohfOhpbYDSDl9wuJtf8wstUbxwHgW0Jn23DpK86GKfQl8sYN0OEOnuJE+hc9Nw7ZT/ayxaAvokW7Vn+DC+dUPbTkzetAAoOjexkLSsvUPnjCe0LrlPsQLQaDAfgeC/EGoH73ipqsLssy18aJ3btJadnkR03V+2lVPVeiubyp7Vvs1pB9B8Iwflx/FPOeXT9sBRTaU5U64w/3jPxe3FzozvnKtmQINxz45EUWMSD3R36xRL2chpYEHOw+eChZr/qtXGs0fb3oTOYwGofQo0TzAlE7xBMsJKCkPPgFSTC+CK79Yo0u6/9XpvYt+jMDpe0tR9ZDxQMeIDsHuM5eZcECeicUA/AwbSuB7/Zgklg14ELPuOFHT9B8fGaoWvpRO9sfweolkLHEUpbIeIMvf0u0aOMVdqHYgZNyWgP2Qsl7F6mIOKPdNMDsFxlUQrUyq95QtS0=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB6309.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(136003)(376002)(366004)(396003)(39860400002)(451199021)(38100700002)(921005)(66899021)(53546011)(2616005)(36756003)(83380400001)(7406005)(7416002)(8676002)(110136005)(8936002)(5660300002)(478600001)(54906003)(66556008)(66476007)(316002)(66946007)(4326008)(41300700001)(186003)(26005)(6506007)(6512007)(6486002)(6666004)(2906002)(31696002)(31686004)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?S1ZoRnlBUDJyR1dyWEs5b0ZscndEVWJXa2NFczU5bDFYV05rSW5nYXNEZXdm?=
- =?utf-8?B?OERoOWdWYkkxK3VENjJVbXEyNkkxYXVEVjBLZmpPL0VhL1cwZzVvY1drR1JT?=
- =?utf-8?B?N1hjSVhZQmUyNzh3SUdhY0VBVUJWVHNjVTkvajRUQ29xL1ZSM2tBZy9sREdj?=
- =?utf-8?B?UFpldzlBOVVINVRZM2lVOHFmWDV5MlMrOWttNmhXem1pOHZkeDI1Q3VJQ2FB?=
- =?utf-8?B?RjV3Vm84bkFqM1g5WWgwWkw1ZUtWeXFLdVkvSzZGTkZ3NGFQQkp0RGxTMWhx?=
- =?utf-8?B?SVprQTNOV3RJUG1ESUpaU2JoMFlvcDEvSHRoYXBBWmYyWWxJamRsQUdXd1Ur?=
- =?utf-8?B?TllKekMwVUNpQlNYdFU1NHRaR24xaG5CQWN5Wks4aUV2T21EbC9wS0pnZElu?=
- =?utf-8?B?V1ZzeUw1VjlsYnZGODRIRFd4Wm9iTGVtbldZcDQzKy81WTBTUGIyeG5STHZT?=
- =?utf-8?B?djEyNWo1WTZkdmJaYmI1TFdMMGNpdEMxSmZ4WGhYSmUxYXhiVk9sSEcyQkJM?=
- =?utf-8?B?b25FWFhqK1dlRGNWaVhKTXY4K1dnVE9wUjdYcE5Ed3NxTXNOeTlRb3IzSzkx?=
- =?utf-8?B?Wnp4THY1TTd4VHVzcWhRNnJQU2FTZmxnMlVETXNIUWpRZndzN0NmdjFRd3h1?=
- =?utf-8?B?a1laUW1EK0dKOHJjVExpTkZkT0tSUUZBZzVISHVOZFJhNG9CcUZHcnQzUWJR?=
- =?utf-8?B?VUZXVzNaanp4b3o0UlprdlhJNjVPSjY5ZnlXQStCeEE3Tk1nNng3R0R5OUN3?=
- =?utf-8?B?RWQ1RkpEK1ViQ2Nua040UnJORWx4WHZRamVFMFcxcGFvem9BbUhrcU4wZms0?=
- =?utf-8?B?WlRWZ2QzTmg4dzZPdmpMYWhBUjhZUm8rZ25iV3ZCYkI5ejk3eEpiRXJGZWV5?=
- =?utf-8?B?dWVOMU16VUFKaitGTmhKUDU3eFRPMFVZSkRoT3R0Vk9vWFAzdjBTNWhUR0xO?=
- =?utf-8?B?cEJ2K2trMDMxdXFIWGE3elRlU3BEbm1wdmhnalVCaTdPaFE4VnVDcEhYcUNk?=
- =?utf-8?B?bDkrWUdCUlFqcTdjNVJuaXpuMkFqT0dDT0RXZUxlUTRqdFE4MmF5bit5MnBz?=
- =?utf-8?B?QmUrMkc3ejA3M3NGNDJpU2x6b1BTZDZRQXlpQ1Z3ZmZna1RkVnNNUTloSHdo?=
- =?utf-8?B?MmplQmN3emREVTc3QjM0NzljU1ZxZDZwY0p3RWJKbjhCa0xrT2FLWlAzRmVU?=
- =?utf-8?B?VFZtQnlMdXg5aGc2SWdvb1FVVms1Wkp1YTd3YWYrOFlHTHJRWWZNcTViZEVE?=
- =?utf-8?B?U2hJVGFzVjVSOHhDK0t5dklTNGFmRmkvZk53bTdpYWE4U1E1VTdEa0VRTXNl?=
- =?utf-8?B?dU4wa3JjK040UW5ZeEpQNzl5bkUyakhaYTBBRWVpU2YwMXFXeTZhdDlxY1hM?=
- =?utf-8?B?VFMyc2xuN3ZOd1Q3VS8veXVpQVhkTSt3aG1MMGxOWDg5ZGZiVkpHeldmWkg2?=
- =?utf-8?B?OUpmUE1lUnRXT2RIWUI1VCtyZFJUcm5lbkpRb29nekt2SUV0RmZtakdFbGQz?=
- =?utf-8?B?QjFXWC9MRDAzNGFUMHpicHFSTFJxZEdUK2hNTGNYcHJaTzVFZGc5NzNlUjFm?=
- =?utf-8?B?dzFIOEZqTzJrcFRDNXFjR3NlMHBNbXlkcUhHQnZqL3kzRUZRYnlMQ1ZscW1Z?=
- =?utf-8?B?UVVHV2p4T1ZRa0haTFQ2Zkh1UGZuNThEaVNhOUFTcEh4WW9aa0szYzJYTGJ1?=
- =?utf-8?B?RWpWdmFxY2l3Yk9EdHZDY0hpNHNuTU9KVStXZzZwT0pCNCt2NmtZYjFNVGkw?=
- =?utf-8?B?eEszanhYZmwwb0RUL1JOZ2Vkc3FzT1V3NUVscm9Mdk1oTjE3QmQ4bXNkL0Fk?=
- =?utf-8?B?b1MzYzJqWXBNcnlaVDdNUzBSUFVZVnZQdlNEMnYrUEFBbDdOZnVSSlNXQ3dp?=
- =?utf-8?B?V0tYS2pScVZlTmlsWC9MYTFId2NiOXVxbHhqYWF6TCtLdlVnSGNQYS9XbGxw?=
- =?utf-8?B?NG1HcWsxeXlNVFpzbC9ma3dNK1JjRG9iNXE5ZGxlL0dzNWltMWd6bXZPMWV6?=
- =?utf-8?B?aExPMnZadU0zZXoxMmtlRzVaMUhZYzJDL2h2WTRHMkIyaTMzdi9aa2VKNTE5?=
- =?utf-8?B?cHpHUGdydDVLZVBrSFhlQms5Yko4NVRnbk4rVHNLMk12aFFIVzR0QkwrUjRR?=
- =?utf-8?Q?amJpMnW8DV/IBiVn2HDv8+u+r?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 076b3286-626b-46fb-6874-08db8c10ac96
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB6309.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jul 2023 06:39:05.1204
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: UzVeJFK0RtlE0mOaAY9S50k+ogzzjG0MuHLg60uHtqbm99Rz/tgFNZ7/z7dMuV5otSKvWBXRaXMFk7RMCFmatQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR12MB8045
-X-Mailman-Approved-At: Mon, 24 Jul 2023 19:59:47 +1000
+References: <20230719123944.3438363-1-arnd@kernel.org> <20230719123944.3438363-2-arnd@kernel.org>
+ <87pm4lj1w3.fsf@mail.lhotse> <19631e74-415e-4dcb-b79d-33dcf03d2dfc@app.fastmail.com>
+In-Reply-To: <19631e74-415e-4dcb-b79d-33dcf03d2dfc@app.fastmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 24 Jul 2023 14:07:25 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVszR+oZi8x8L0iXx=ydTiaNUZxToBSdf=2ZH5t85+D_Q@mail.gmail.com>
+Message-ID: <CAMuHMdVszR+oZi8x8L0iXx=ydTiaNUZxToBSdf=2ZH5t85+D_Q@mail.gmail.com>
+Subject: Re: [PATCH v2 1/9] vgacon: rework Kconfig dependencies
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -137,79 +68,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, linux-security-module@vger.kernel.org, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, kvmarm@lists.linux.dev, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, linux-mips@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, Yu Zhang <yu.c.zhang@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linux-fbdev@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org, Russell King <linux@armlinux.org.uk>, Max Filippov <jcmvbkbc@gmail.com>, linux-efi@vger.kernel.org, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, "K. Y. Srinivasan" <kys@microsoft.com>, Dave Airlie <airlied@gmail.com>, Ard Biesheuvel <ardb@kernel.org>, Wei Liu <wei.liu@kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Dexuan Cui <decui@microsoft.com>, Javier Martinez Canillas <javierm@redhat.com>, Deepak Rawat <drawat.floss@gmail.com>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org, Thomas 
+ Zimmermann <tzimmermann@suse.de>, Will Deacon <will@kernel.org>, Brian Cain <bcain@quicinc.com>, Haiyang Zhang <haiyangz@microsoft.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Khalid Aziz <khalid@gonehiking.org>, Arnd Bergmann <arnd@kernel.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/19/2023 5:14 AM, Sean Christopherson wrote:
-> This is the next iteration of implementing fd-based (instead of vma-based)
-> memory for KVM guests.  If you want the full background of why we are doing
-> this, please go read the v10 cover letter[1].
-> 
-> The biggest change from v10 is to implement the backing storage in KVM
-> itself, and expose it via a KVM ioctl() instead of a "generic" sycall.
-> See link[2] for details on why we pivoted to a KVM-specific approach.
-> 
-> Key word is "biggest".  Relative to v10, there are many big changes.
-> Highlights below (I can't remember everything that got changed at
-> this point).
-> 
-> Tagged RFC as there are a lot of empty changelogs, and a lot of missing
-> documentation.  And ideally, we'll have even more tests before merging.
-> There are also several gaps/opens (to be discussed in tomorrow's PUCK).
+Hi Arnd,
 
-As per our discussion on the PUCK call, here are the memory/NUMA accounting 
-related observations that I had while working on SNP guest secure page migration:
+On Fri, Jul 21, 2023 at 10:29=E2=80=AFAM Arnd Bergmann <arnd@arndb.de> wrot=
+e:
+> On Fri, Jul 21, 2023, at 06:59, Michael Ellerman wrote:
+> > Arnd Bergmann <arnd@kernel.org> writes:
+> >> From: Arnd Bergmann <arnd@arndb.de>
+> >>
+> >> The list of dependencies here is phrased as an opt-out, but this is mi=
+ssing
+> >> a lot of architectures that don't actually support VGA consoles, and s=
+ome
+> >> of the entries are stale:
+> >>
+> >>  - powerpc used to support VGA consoles in the old arch/ppc codebase, =
+but
+> >>    the merged arch/powerpc never did
+> >
+> > Not disputing this, but how did you come to that conclusion? I grepped
+> > around and couldn't convince myself whether it can work on powerpc or
+> > not. ie. currently it's possible to enable CONFIG_VGA_CONSOLE and
+> > powerpc does have a struct screen_info defined which seems like it woul=
+d
+> > allow vgacon_startup() to complete.
+>
+> The VGA console needs both screen_info and vga_con to work. In arch/ppc
+> we had both, but in arch/powerpc we only retained the screen_info:
+>
+> $ git grep vga_con v2.6.26 -- arch/ppc arch/ppc64 arch/powerpc
+> v2.6.26:arch/ppc/platforms/pplus.c:     conswitchp =3D &vga_con;
+> v2.6.26:arch/ppc/platforms/prep_setup.c:        conswitchp =3D &vga_con;
+>
+> so after arch/ppc was removed, this became impossible to use on both
+> pplus and prep. These two platforms were also (as far as I can tell)
+> the only ones to support vga16fb as an alternative to vgacon, but
+> both platforms were removed later on.
 
-* gmem allocations are currently treated as file page allocations
-  accounted to the kernel and not to the QEMU process. 
-  
-  Starting an SNP guest with 40G memory with memory interleave between
-  Node2 and Node3
+I did use vgacon and vga16fb on CHRP on a second video card
+(initialized using Gabriel Paubert's x86 BIOS emulator), but that was
+definitely before the advent of arch/powerpc/.
 
-  $ numactl -i 2,3 ./bootg_snp.sh
+Gr{oetje,eeting}s,
 
-    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
- 242179 root      20   0   40.4g  99580  51676 S  78.0   0.0   0:56.58 qemu-system-x86
+                        Geert
 
-  -> Incorrect process resident memory and shared memory is reported
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-  Accounting of the memory happens in the host page fault handler path,
-  but for private guest pages we will never hit that.
-
-* NUMA allocation does use the process mempolicy for appropriate node 
-  allocation (Node2 and Node3), but they again do not get attributed to 
-  the QEMU process
-
-  Every 1.0s: sudo numastat  -m -p qemu-system-x86 | egrep -i "qemu|PID|Node|Filepage"   gomati: Mon Jul 24 11:51:34 2023
-
-  Per-node process memory usage (in MBs)
-  PID                               Node 0          Node 1          Node 2          Node 3           Total
-  242179 (qemu-system-x86)           21.14            1.61           39.44           39.38          101.57
-  Per-node system memory usage (in MBs):
-                            Node 0          Node 1          Node 2          Node 3           Total
-  FilePages                2475.63         2395.83        23999.46        23373.22        52244.14
-
-
-* Most of the memory accounting relies on the VMAs and as private-fd of 
-  gmem doesn't have a VMA(and that was the design goal), user-space fails 
-  to attribute the memory appropriately to the process.
-
-  /proc/<qemu pid>/numa_maps
-  7f528be00000 interleave:2-3 file=/memfd:memory-backend-memfd-shared\040(deleted) anon=1070 dirty=1070 mapped=1987 mapmax=256 active=1956 N2=582 N3=1405 kernelpagesize_kB=4
-  7f5c90200000 interleave:2-3 file=/memfd:rom-backend-memfd-shared\040(deleted)
-  7f5c90400000 interleave:2-3 file=/memfd:rom-backend-memfd-shared\040(deleted) dirty=32 active=0 N2=32 kernelpagesize_kB=4
-  7f5c90800000 interleave:2-3 file=/memfd:rom-backend-memfd-shared\040(deleted) dirty=892 active=0 N2=512 N3=380 kernelpagesize_kB=4
-
-  /proc/<qemu pid>/smaps
-  7f528be00000-7f5c8be00000 rw-p 00000000 00:01 26629                      /memfd:memory-backend-memfd-shared (deleted)
-  7f5c90200000-7f5c90220000 rw-s 00000000 00:01 44033                      /memfd:rom-backend-memfd-shared (deleted)
-  7f5c90400000-7f5c90420000 rw-s 00000000 00:01 44032                      /memfd:rom-backend-memfd-shared (deleted)
-  7f5c90800000-7f5c90b7c000 rw-s 00000000 00:01 1025                       /memfd:rom-backend-memfd-shared (deleted)
-
-* QEMU based NUMA bindings will not work. Memory backend uses mbind() 
-  to set the policy for a particular virtual memory range but gmem 
-  private-FD does not have a virtual memory range visible in the host.
-
-Regards,
-Nikunj
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
