@@ -4,147 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43609C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 17:43:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F6F1C00528
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 17:45:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=iKsPyPL8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZEhMjk6H;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R8nZD6m3Qz3dGP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 03:43:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R8ncc1sN8z3dmF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 03:45:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=iKsPyPL8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZEhMjk6H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e8c::623; helo=nam04-mw2-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on20623.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e8c::623])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8n6g0cbqz30Jc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 03:22:49 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=FShXW3Wj2lPC1lW72g/h4z2tsVFbdwwoMDmfhJgwjNVnTaMyv5MXK4SGD/f9Wm/hSgp8xYsA9FSZejk7qq3Y907W2/7bhUOqDU4IZMsaOx0DY/ZD8uqNzfcA0Oo6oy23w1VazQUyQrBukzVqfohx+qsof4Yi9x4JeQT5noYAYN4K1O6IjER0Z0ykajSqwzmbJjAimqT7NNrqU0+HYzOB+H7NBwC9KXaHqJHPMXX0KlQEsDokZN4pTy8u5W2XJRwc8ooU6WOtMbs3ErNUKXN2BimYsGwrwDkxnijSQraysyHY4+aGQTE28xbBwrBqONDlZmZbqTjRBBGSQo+lUqKoDw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ERLee1ZWMOQB/9cYetsh1Svvjjbt+zObeX7Q0tU7fU0=;
- b=RrTTTGtfe+QJoNbo4DtYjOUWHesJyfm0oHlo7QZRBr0l6NT90AZ/taLqWCJp8fOr6hSvD/iXKljI5hnVRGBUfU1bb3vXYdiYavE3dqZbTCxfWj6/YrfXItGnknMka7YiQ5o7pBWipL1wAkxp6vXiYnNmJSqzOXt7mP85MZe6Nw1JfNABgm7jZnB06PVQkuIIVICPpLJaUVMBbysJp1slYMJZmHQk51NGrsZwsKXehfT6aXRxVCpIjJgrtQDaxImB+c+ZcLBcgySpiG3PDVBT/cfehsPhnqWcI8uNecgA1nQ2VO46mO3ccz8PKA3C2r1qzMnjIFLGsHLbqYR/QFCxNw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ERLee1ZWMOQB/9cYetsh1Svvjjbt+zObeX7Q0tU7fU0=;
- b=iKsPyPL8u2WjZBBiXDJ1swB6TzKAb1MzY17njaL9aepdbtmxv50e0DRDMxh7sJBOhqSySGJxLgXqOJ0X1hL5re++UrfvIY1ZqJdHqBh0zz1YINkqtlxaJeBsln0gAmMlJTbMIIXnnCF/X2luZ9cDAPY3PH5gA6YaT0U/mknSsdmLFNgmUOIF7bXhgR3IzdZ232X1TmlWFcyu2ScViFUAyJH+vI12xNG/Ix80KPlYpSxVoEGdTANaUf45oTAAsWg/aOBuL27rjdjKlgMqbiDpEUVMcK3i3N6N2u9HpXf37ExsSE6np9NQzZEO6UPRfQkMpgqjyLm1SvqStAzeAzRa2Q==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
- by CH0PR12MB5252.namprd12.prod.outlook.com (2603:10b6:610:d3::24) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.32; Mon, 24 Jul
- 2023 17:22:24 +0000
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::5111:16e8:5afe:1da1]) by LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::5111:16e8:5afe:1da1%6]) with mapi id 15.20.6609.032; Mon, 24 Jul 2023
- 17:22:24 +0000
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Andy Gross <agross@kernel.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	iommu@lists.linux.dev,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Joerg Roedel <joro@8bytes.org>,
-	Kevin Tian <kevin.tian@intel.com>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-mediatek@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org,
-	linux-sunxi@lists.linux.dev,
-	linux-tegra@vger.kernel.org,
-	Russell King <linux@armlinux.org.uk>,
-	linuxppc-dev@lists.ozlabs.org,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Matthew Rosato <mjrosato@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Rob Clark <robdclark@gmail.com>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Krishna Reddy <vdumpa@nvidia.com>,
-	Chen-Yu Tsai <wens@csie.org>,
-	Will Deacon <will@kernel.org>,
-	Yong Wu <yong.wu@mediatek.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>
-Subject: [PATCH v5 02/25] iommu: Add IOMMU_DOMAIN_PLATFORM
-Date: Mon, 24 Jul 2023 14:21:52 -0300
-Message-ID: <2-v5-d0a204c678c7+3d16a-iommu_all_defdom_jgg@nvidia.com>
-In-Reply-To: <0-v5-d0a204c678c7+3d16a-iommu_all_defdom_jgg@nvidia.com>
-References: 
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MN2PR22CA0023.namprd22.prod.outlook.com
- (2603:10b6:208:238::28) To LV2PR12MB5869.namprd12.prod.outlook.com
- (2603:10b6:408:176::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8nGv3HX0z3clc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 03:29:59 +1000 (AEST)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36OHGeCM009368;
+	Mon, 24 Jul 2023 17:29:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=sH8XVM0G3hMSqr/LiWTFztzsvKol+Jn3yplQbRHngGw=;
+ b=ZEhMjk6HCYAdXCP7cE0+9qbJhGF8RYDDUHYLPF3P74qgHvzgbZm9AFyLa4yYtZxHdbs+
+ OtmL34boZ8I8XtWXsyq2nVn5blELZbRlSuwxwXoXMpF2Vo2u2+rdzADIy7yFi/l+7BiT
+ 3nmLAvNGs8Yr/3/OEcbm8oeRXq36N5xQ63PAnBEpwwkxOPhg6K8JcV3CGD179Y4c7yxq
+ x6M/ayoWCoPshXLy4y5lvjt46pAPFc+vRYmgFOh9G44mCIcWihMNsPHpTzvcQJg8fRgo
+ jx2rCtYEEKPiiMdWNy7pZjc8dmTotHCziUwo/1fxr6FiSDz7nFYJS5rhKN0q89Lewq2e rA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s1vev2u66-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Jul 2023 17:29:43 +0000
+Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36OHH1kC013377;
+	Mon, 24 Jul 2023 17:29:42 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s1vev2u50-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Jul 2023 17:29:42 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36OGHOOp002639;
+	Mon, 24 Jul 2023 17:29:41 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3s0txjmxbp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Jul 2023 17:29:41 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36OHTeLA1376776
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 24 Jul 2023 17:29:40 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 86DF55805A;
+	Mon, 24 Jul 2023 17:29:40 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0CE9658051;
+	Mon, 24 Jul 2023 17:29:37 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.177.66.22])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 24 Jul 2023 17:29:36 +0000 (GMT)
+X-Mailer: emacs 29.0.91 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org,
+        akpm@linux-foundation.org, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+Subject: Re: [PATCH v4 4/6] mm/hotplug: Allow pageblock alignment via altmap
+ reservation
+In-Reply-To: <5ee3550d-5bbe-4223-722b-9a388f86fc21@redhat.com>
+References: <20230718024409.95742-1-aneesh.kumar@linux.ibm.com>
+ <20230718024409.95742-5-aneesh.kumar@linux.ibm.com>
+ <f9597236-866d-17cd-d549-938ea80eacbe@redhat.com>
+ <bbd774bb-10b9-30b1-c82b-27d01d304f8d@linux.ibm.com>
+ <29eb32f0-fb0b-c8f9-ba23-8295147808ea@redhat.com>
+ <3f22b23a-701a-548b-9d84-8ecad695c313@linux.ibm.com>
+ <5ee3550d-5bbe-4223-722b-9a388f86fc21@redhat.com>
+Date: Mon, 24 Jul 2023 22:59:34 +0530
+Message-ID: <87h6pt2p6p.fsf@linux.ibm.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|CH0PR12MB5252:EE_
-X-MS-Office365-Filtering-Correlation-Id: da5be102-91cd-45ec-f58c-08db8c6a882c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	7IE0QyvdNEt54D62puXcr6lpBxOZdzATiIGcg9FrIyD/6lX7GNIyExmQMmss8uSK5DNffgpX2HnDXGvHLvMa1drscumV9Na6X1TDOhq7mEszXn9keAkiyVe9k0MSs6qyjaG0iXct1CmYaeqnFl+50B47G1g5MCh1xRfULXiRsXkPz+uihve4MbyrKJi7E9v36OcJt1/+Gtj7j5CLG9xggHK+4UBHYCUwX95/Z3laI3m8BguPiS1I8elz985N2CzFdFrOnvv+/3dMtY+hHO5M9qX49LAR4hcGcsuNQ3HdNq1f+Xp81BKbz40Jg2+VklHGsCMobaVwc/L4Q6NuIaWT8/fc9bVQ5x2QN3K1vPUK9GkY618gZ5sdz8o/E+P8gdSu+hiCe+tZbDrKtPxFnoHQMgKXFlt6e2bLD+N6x48SPvx/ctvinfbF6ESA5MAvjidTkeml36XfUEPrJWvOvi5nPhrfrFfyW2RTEk8JGm6JwXc64mqo5SLZlYRlbUKSYPnoEMF5Cvq/lyC/jBB5WZTHYmBYhbPRJqgrWUCsJA+0DP2A7d1Slr1kc2cHhck5tLGgGVs8W8Bce8rjADnN9IRhwpXEfhD5bwH4f/j4yPJgK0wtwzHuMLlTaWotPWoXLEQZ
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(376002)(346002)(396003)(136003)(39860400002)(366004)(451199021)(2906002)(2616005)(83380400001)(4326008)(316002)(6512007)(66476007)(66556008)(66946007)(107886003)(41300700001)(6486002)(36756003)(478600001)(6666004)(86362001)(110136005)(54906003)(921005)(38100700002)(186003)(7406005)(7416002)(8676002)(8936002)(6506007)(5660300002)(26005)(4216001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?Xf8agOG3QtG3T6M+igoQCVtCZ1P+V7AXviXfzHxhxAmmGNqmbsKohTOG3UEc?=
- =?us-ascii?Q?ZXxKXn/w2732/GwP+vBtxZzw7CinBNBSuBhVDKFWcqWnXA9KHwl/sehPf885?=
- =?us-ascii?Q?5t9dVudx+hmZJj0OKHH77KJ+Hlyu7whaFkD7RGDEaIvwBXJo7RGfGg/0ZlmL?=
- =?us-ascii?Q?TBgEB7rafdfyPpVAzTtwT9rwgMLyBKqTdIf2Hk+CXlt8pZWq8cMO3bTzYsEg?=
- =?us-ascii?Q?Dki4KqXV4rCd8t/dyboenzd9u2s1cENfyWJbpW4IY51zX8OiWvNma2645NIs?=
- =?us-ascii?Q?P6V7GY3W6Dqy1tJ5JKQjwV6Q+LXUGFi/o4fs5BYM74+Uir/ga7Mpu19dn/yQ?=
- =?us-ascii?Q?oD/dxmjWc1hTZ/cL9EoBknR8CsODz+Eq8MlC93Y4yFiGxScuQxuP1OBrMq3G?=
- =?us-ascii?Q?ycyakq6lrp34DiyV+TuGPpXLlfV0bcrw7X35sIdEuBjERlRGUt4uH4tbZst6?=
- =?us-ascii?Q?0RPRUZApPVnDiIBopBKomuyktpPvjf9VzWiF7buPnyi3wnHLx+O+GV9qCJYk?=
- =?us-ascii?Q?MMpYH5ANZE3fksTIzNLVlrJrFBDlWtcr2gtiZ+G9tW3T4CZdfFMbyjo3ksfB?=
- =?us-ascii?Q?paR6qn4CtlaFIZ9EYLMlfqbJj8OGmCyKmv5r98lPLPIqdxI8OWVcaiWV98OC?=
- =?us-ascii?Q?IXCiGmVZD3c8MwON0Rza+XDnVCMdfDyoo5RndkSjj9SxmP27XWJmQ00QgcKs?=
- =?us-ascii?Q?vyDtHMI8th6baEzuEPy+Fq4ea421L+QxX7Smu139rIR2BJuLnDKNaJNrGrg+?=
- =?us-ascii?Q?dVnqylsMYXscC5tYUPlL2qTJ2Hz56c6MAXXY0YYOTFryskVRVZSxLfouHOeK?=
- =?us-ascii?Q?WesdpJUQUizaRPg6MmDWEymFLf/K7MjeEi3wThIND+8HeopQBx6XMDF+lFtJ?=
- =?us-ascii?Q?8+9vNPzxIAtlM+TcHgg4uFZv25N9DwcZNszQ9AZH3iMvuaEeyrY3AZXyipgT?=
- =?us-ascii?Q?vU5BhE1WV2S1ydCDqBlhVIz6jYMI8j1cJBdmWJZUZW3bX7PlaY+6WDiyRrtd?=
- =?us-ascii?Q?Rvnzp8nVLyCHlzAGrfUdT4vIX2lyvvF75dC0j0LTm+PpsKBQwYGiczrg/Qyy?=
- =?us-ascii?Q?wvdfCBEShP8b3IgR0nha2xpIYyiHV9cgzOBgJeubxgzR0MlzMHbvt1UVSjod?=
- =?us-ascii?Q?GtqE2dj/BEQKQ1pKXvieHjpVmmO35LHeeNYyIKIEmoOb3BtRuRuneaHlLxOG?=
- =?us-ascii?Q?KhfkFxFH2MnpQzYxJblntxrPoPko00+c1GzcL3aGv3Bvkgmir0ZVQ7+iZc67?=
- =?us-ascii?Q?6vqeFvuXrwzg6YjcIaP8wq3DBuVvfe2Z8lHvPe3JdQ136mdwyOBvljdEeBBR?=
- =?us-ascii?Q?eHyfpfsc5JYx9mtkofCRs0O7Zb5RPehcJOUsKR1V/PfxAzqcsLKE9aarX+tl?=
- =?us-ascii?Q?ae7hnuDwEvk7gfOnMLfRr0c35krENs+B0xxnHGRE7TmgzuHHS/Gxt4KyC0pT?=
- =?us-ascii?Q?S0RmC0y1J/tjXmyK6lVFX6sLTy/rcVf3teJffZMoArPtGH6HTPBk2pZYvVqD?=
- =?us-ascii?Q?185jkl01lYbEu6vsNY7F5y6BySqQiT2lZjFqDnei82obJsfETDkVrQXHd5b/?=
- =?us-ascii?Q?02i/lmmWGqG6Zvo3J2M277WBB00cCIivs/PjvRy2?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: da5be102-91cd-45ec-f58c-08db8c6a882c
-X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jul 2023 17:22:18.5756
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: UEIITfW0ifH49cK+0wel+eQhdbmaCrzyp7hi/grYZPVMVJxSeuioIyzVR3aNAHBG
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR12MB5252
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 1PYaEmD_D1QWxJkn0YoRf90FoD82ETrI
+X-Proofpoint-ORIG-GUID: mNfzqTrUthbqlWrR2jgwk9hcATyw0H5f
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-24_13,2023-07-24_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 phishscore=0
+ clxscore=1015 mlxlogscore=999 impostorscore=0 spamscore=0 mlxscore=0
+ malwarescore=0 suspectscore=0 bulkscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2307240152
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -156,100 +107,424 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thierry Reding <treding@nvidia.com>, Niklas Schnelle <schnelle@linux.ibm.com>, Steven Price <steven.price@arm.com>, Nicolin Chen <nicolinc@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, Lu Baolu <baolu.lu@linux.intel.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is used when the iommu driver is taking control of the dma_ops,
-currently only on S390 and power spapr. It is designed to preserve the
-original ops->detach_dev() semantic that these S390 was built around.
+David Hildenbrand <david@redhat.com> writes:
 
-Provide an opaque domain type and a 'default_domain' ops value that allows
-the driver to trivially force any single domain as the default domain.
+> On 24.07.23 18:02, Aneesh Kumar K V wrote:
+>> On 7/24/23 9:11 PM, David Hildenbrand wrote:
+>>> On 24.07.23 17:16, Aneesh Kumar K V wrote:
+>>>
+>>>>>
+>>>>> /*
+>>>>>  =C2=A0=C2=A0* In "forced" memmap_on_memory mode, we always align the=
+ vmemmap size up to cover
+>>>>>  =C2=A0=C2=A0* full pageblocks. That way, we can add memory even if t=
+he vmemmap size is not properly
+>>>>>  =C2=A0=C2=A0* aligned, however, we might waste memory.
+>>>>>  =C2=A0=C2=A0*/
+>>>>
+>>>> I am finding that confusing. We do want things to be pageblock_nr_page=
+s aligned both ways.
+>>>> With MEMMAP_ON_MEMORY_FORCE, we do that by allocating more space for m=
+emmap and
+>>>> in the default case we do that by making sure only memory blocks of sp=
+ecific size supporting
+>>>> that alignment can use MEMMAP_ON_MEMORY feature.
+>>>
+>>> See the usage inm hp_supports_memmap_on_memory(), I guess that makes se=
+nse then.
+>>>
+>>> But if you have any ideas on how to clarify that (terminology), I'm all=
+ ears!
+>>>
+>>=20
+>>=20
+>> I updated the commit message
+>>=20
+>> mm/hotplug: Support memmap_on_memory when memmap is not aligned to pageb=
+locks
+>>=20
+>> Currently, memmap_on_memory feature is only supported with memory block
+>> sizes that result in vmemmap pages covering full page blocks. This is
+>> because memory onlining/offlining code requires applicable ranges to be
+>> pageblock-aligned, for example, to set the migratetypes properly.
+>>=20
+>> This patch helps to lift that restriction by reserving more pages than
+>> required for vmemmap space. This helps to align the start addr to be
+>> page block aligned with different memory block sizes. This implies the
+>> kernel will be reserving some pages for every memoryblock. This also
+>> allows the memmap on memory feature to be widely useful with different
+>> memory block size values.
+>>=20
+>> For ex: with 64K page size and 256MiB memory block size, we require 4
+>> pages to map vmemmap pages, To align things correctly we end up adding a
+>> reserve of 28 pages. ie, for every 4096 pages 28 pages get reserved.
+>>=20
+>>=20
+>
+> Much better.
+>
+>> Also while implementing your  suggestion to use memory_block_memmap_on_m=
+emory_size()
+>> I am finding it not really useful because in mhp_supports_memmap_on_memo=
+ry() we are checking
+>> if remaining_size is pageblock_nr_pages aligned (dax_kmem may want to us=
+e that helper
+>> later).
+>
+> Let's focus on this patchset here first.
+>
+> Factoring out how manye memmap pages we actually need vs. how many pages=
+=20
+> we need when aligning up sound very reasonable to me.
+>
+>
+> Can you elaborate what the problem is?
+>
+>> Also I still think altmap.reserve is easier because of the start_pfn cal=
+culation.
+>> (more on this below)
+>
+> Can you elaborate? Do you mean the try_remove_memory() change?
+>
+>>=20
+>>=20
+>>> [...]
+>>>
+>>>>>> +=C2=A0=C2=A0=C2=A0 return arch_supports_memmap_on_memory(size);
+>>>>>>  =C2=A0=C2=A0 }
+>>>>>>  =C2=A0=C2=A0 =C2=A0 /*
+>>>>>> @@ -1311,7 +1391,11 @@ int __ref add_memory_resource(int nid, struct=
+ resource *res, mhp_t mhp_flags)
+>>>>>>  =C2=A0=C2=A0 {
+>>>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 struct mhp_params params =3D {=
+ .pgprot =3D pgprot_mhp(PAGE_KERNEL) };
+>>>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 enum memblock_flags memblock_f=
+lags =3D MEMBLOCK_NONE;
+>>>>>> -=C2=A0=C2=A0=C2=A0 struct vmem_altmap mhp_altmap =3D {};
+>>>>>> +=C2=A0=C2=A0=C2=A0 struct vmem_altmap mhp_altmap =3D {
+>>>>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .base_pfn =3D=C2=A0 PHYS=
+_PFN(res->start),
+>>>>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .end_pfn=C2=A0 =3D=C2=A0=
+ PHYS_PFN(res->end),
+>>>>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .reserve=C2=A0 =3D memor=
+y_block_align_base(resource_size(res)),
+>>>>>
+>>>>> Can you remind me why we have to set reserve here at all?
+>>>>>
+>>>>> IOW, can't we simply set
+>>>>>
+>>>>> .free =3D memory_block_memmap_on_memory_size();
+>>>>>
+>>>>> end then pass
+>>>>>
+>>>>> mhp_altmap.alloc + mhp_altmap.free
+>>>>>
+>>>>> to create_memory_block_devices() instead?
+>>>>>
+>>>>
+>>>> But with the dax usage of altmap, altmap->reserve is what we use to re=
+serve things to get
+>>>> the required alignment. One difference is where we allocate the struct=
+ page at. For this specific
+>>>> case it should not matter.
+>>>>
+>>>> static unsigned long __meminit vmem_altmap_next_pfn(struct vmem_altmap=
+ *altmap)
+>>>> {
+>>>>  =C2=A0=C2=A0=C2=A0=C2=A0return altmap->base_pfn + altmap->reserve + a=
+ltmap->alloc
+>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 + altmap->align;
+>>>> }
+>>>>
+>>>> And other is where we online a memory block
+>>>>
+>>>> We find the start pfn using mem->altmap->alloc + mem->altmap->reserve;
+>>>>
+>>>> Considering altmap->reserve is what dax pfn_dev use, is there a reason=
+ you want to use altmap->free for this?
+>>>
+>>> "Reserve" is all about "reserving that much memory for driver usage".
+>>>
+>>> We don't care about that. We simply want vmemmap allocations coming fro=
+m the pageblock(s) we set aside. Where exactly, we don't care.
+>>>
+>>>> I find it confusing to update free when we haven't allocated any altma=
+p blocks yet.
+>>>
+>>> "
+>>> @reserve: pages mapped, but reserved for driver use (relative to @base)"
+>>> @free: free pages set aside in the mapping for memmap storage
+>>> @alloc: track pages consumed, private to vmemmap_populate()
+>>> "
+>>>
+>>> To me, that implies that we can ignore "reserve". We set @free to the a=
+ligned value and let the vmemmap get allocated from anything in there.
+>>>
+>>> free + alloc should always sum up to our set-aside pageblock(s), no?
+>>>
+>>>
+>>=20
+>> The difference is
+>>=20
+>>   mhp_altmap.free =3D PHYS_PFN(size) - reserved blocks;
+>>=20
+>> ie, with 256MiB memory block size with 64K pages, we need 4 memmap pages=
+ and we reserve 28 pages for aligment.
+>>=20
+>> mhp_altmap.free =3D PHYS_PFN(size) - 28.
+>>=20
+>> So that 4 pages from which we are allocating the memmap pages are still =
+counted in free page.
+>>=20
+>> We could all make it work by doing
+>>=20
+>> mhp_altmap.free =3D PHYS_PFN(size) -  (memory_block_memmap_on_memory_siz=
+e() - memory_block_memmap_size())
+>>=20
+>> But is that any better than what we have now? I understand the term "res=
+erved for driver use" is confusing for this use case.
+>> But it is really reserving things for required alignment.
+>
+>
+> Let's take a step back.
+>
+> altmap->alloc tells us how much was already allocated.
+>
+> altmap->free tells us how much memory we can allocate at max (confusing,=
+=20
+> but see vmem_altmap_nr_free()).
+>
+> altmap->free should actually have been called differently.
+>
+>
+> I think it's currently even *wrong* to set free =3D PHYS_PFN(size). We=20
+> don't want to allocate beyond the first pageblock(s) we selected.
+>
 
-Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+You are correct. The calculation of altmap.free was wrong.
+It was wrong upstream and also had wrong computation in the ppc64
+upstream code.
+
+modified   arch/powerpc/mm/init_64.c
+@@ -326,8 +326,7 @@ void __ref __vmemmap_free(unsigned long start, unsigned=
+ long end,
+ 	start =3D ALIGN_DOWN(start, page_size);
+ 	if (altmap) {
+ 		alt_start =3D altmap->base_pfn;
+-		alt_end =3D altmap->base_pfn + altmap->reserve +
+-			  altmap->free + altmap->alloc + altmap->align;
++		alt_end =3D altmap->base_pfn + altmap->reserve + altmap->free ;
+ 	}
+=20
+ 	pr_debug("vmemmap_free %lx...%lx\n", start, end);
+
+
+Fixing all that up the patch is now updated as below
+
+1 file changed, 109 insertions(+), 15 deletions(-)
+mm/memory_hotplug.c | 124 +++++++++++++++++++++++++++++++++++++++++++++----=
 ---
- drivers/iommu/iommu.c | 14 +++++++++++++-
- include/linux/iommu.h |  6 ++++++
- 2 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 5e3cdc9f3a9e78..c64365169b678d 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -1705,6 +1705,17 @@ iommu_group_alloc_default_domain(struct iommu_group *group, int req_type)
- 
- 	lockdep_assert_held(&group->mutex);
- 
-+	/*
-+	 * Allow legacy drivers to specify the domain that will be the default
-+	 * domain. This should always be either an IDENTITY or PLATFORM domain.
-+	 * Do not use in new drivers.
-+	 */
-+	if (bus->iommu_ops->default_domain) {
-+		if (req_type)
-+			return ERR_PTR(-EINVAL);
-+		return bus->iommu_ops->default_domain;
+modified   mm/memory_hotplug.c
+@@ -41,17 +41,91 @@
+ #include "internal.h"
+ #include "shuffle.h"
+=20
++enum {
++	MEMMAP_ON_MEMORY_DISABLE =3D 0,
++	MEMMAP_ON_MEMORY_ENABLE,
++	MEMMAP_ON_MEMORY_FORCE,
++};
++
++static int memmap_mode __read_mostly =3D MEMMAP_ON_MEMORY_DISABLE;
++
++static inline unsigned long memory_block_memmap_size(void)
++{
++    return PHYS_PFN(memory_block_size_bytes()) * sizeof(struct page);
++}
++
++static inline unsigned long memory_block_memmap_on_memory_size(void)
++{
++    unsigned long size =3D memory_block_memmap_size();
++
++    /*
++     * In "forced" memmap_on_memory mode, we add extra pages to align the
++     * vmemmap size up to cover full pageblocks. That way, we can add memo=
+ry
++     * even if the vmemmap size is not properly aligned, however, we might=
+ waste
++     * memory.
++     */
++    if (memmap_mode =3D=3D MEMMAP_ON_MEMORY_FORCE)
++	    return ALIGN(size, PFN_PHYS(pageblock_nr_pages));
++    return size;
++}
++
+ #ifdef CONFIG_MHP_MEMMAP_ON_MEMORY
+ /*
+  * memory_hotplug.memmap_on_memory parameter
+  */
+-static bool memmap_on_memory __ro_after_init;
+-module_param(memmap_on_memory, bool, 0444);
+-MODULE_PARM_DESC(memmap_on_memory, "Enable memmap on memory for memory hot=
+plug");
++static int set_memmap_mode(const char *val, const struct kernel_param *kp)
++{
++	int ret, mode;
++	bool enabled;
++
++	if (sysfs_streq(val, "force") ||  sysfs_streq(val, "FORCE")) {
++		mode =3D  MEMMAP_ON_MEMORY_FORCE;
++		goto matched;
 +	}
 +
- 	if (req_type)
- 		return __iommu_group_alloc_default_domain(bus, group, req_type);
- 
-@@ -1967,7 +1978,8 @@ void iommu_domain_free(struct iommu_domain *domain)
- 	if (domain->type == IOMMU_DOMAIN_SVA)
- 		mmdrop(domain->mm);
- 	iommu_put_dma_cookie(domain);
--	domain->ops->free(domain);
-+	if (domain->ops->free)
-+		domain->ops->free(domain);
++	ret =3D kstrtobool(val, &enabled);
++	if (ret < 0)
++		return ret;
++	if (enabled)
++		mode =3D  MEMMAP_ON_MEMORY_ENABLE;
++	else
++		mode =3D  MEMMAP_ON_MEMORY_DISABLE;
++
++matched:
++	*((int *)kp->arg) =3D  mode;
++	if (mode =3D=3D MEMMAP_ON_MEMORY_FORCE) {
++		pr_info("Memory hotplug will reserve %ld pages in each memory block\n",
++			memory_block_memmap_on_memory_size() - memory_block_memmap_size());
++	}
++	return 0;
++}
++
++static int get_memmap_mode(char *buffer, const struct kernel_param *kp)
++{
++	if (*((int *)kp->arg) =3D=3D MEMMAP_ON_MEMORY_FORCE)
++		return sprintf(buffer,  "force\n");
++	if (*((int *)kp->arg) =3D=3D MEMMAP_ON_MEMORY_ENABLE)
++		return sprintf(buffer,  "y\n");
++
++	return sprintf(buffer,  "n\n");
++}
++
++static const struct kernel_param_ops memmap_mode_ops =3D {
++	.set =3D set_memmap_mode,
++	.get =3D get_memmap_mode,
++};
++module_param_cb(memmap_on_memory, &memmap_mode_ops, &memmap_mode, 0444);
++MODULE_PARM_DESC(memmap_on_memory, "Enable memmap on memory for memory hot=
+plug\n"
++	"With value \"force\" it could result in memory wastage due to memmap siz=
+e limitations \n"
++	"For example, if the memmap for a memory block requires 1 MiB, but the pa=
+geblock \n"
++	"size is 2 MiB, 1 MiB of hotplugged memory will be wasted. Note that ther=
+e are \n"
++	"still cases where the feature cannot be enforced: for example, if the me=
+mmap is \n"
++	"smaller than a single page, or if the architecture does not support the =
+forced \n"
++	"mode in all configurations. (y/n/force)");
+=20
+ static inline bool mhp_memmap_on_memory(void)
+ {
+-	return memmap_on_memory;
++	return memmap_mode !=3D MEMMAP_ON_MEMORY_DISABLE;
  }
- EXPORT_SYMBOL_GPL(iommu_domain_free);
- 
-diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-index e05c93b6c37fba..87aebba474e093 100644
---- a/include/linux/iommu.h
-+++ b/include/linux/iommu.h
-@@ -64,6 +64,7 @@ struct iommu_domain_geometry {
- #define __IOMMU_DOMAIN_DMA_FQ	(1U << 3)  /* DMA-API uses flush queue    */
- 
- #define __IOMMU_DOMAIN_SVA	(1U << 4)  /* Shared process address space */
-+#define __IOMMU_DOMAIN_PLATFORM	(1U << 5)
- 
- #define IOMMU_DOMAIN_ALLOC_FLAGS ~__IOMMU_DOMAIN_DMA_FQ
+ #else
+ static inline bool mhp_memmap_on_memory(void)
+@@ -1266,7 +1340,7 @@ static bool mhp_supports_memmap_on_memory(unsigned lo=
+ng size)
+ {
+ 	unsigned long nr_vmemmap_pages =3D size >> PAGE_SHIFT;
+ 	unsigned long vmemmap_size =3D nr_vmemmap_pages * sizeof(struct page);
+-	unsigned long remaining_size =3D size - vmemmap_size;
++	unsigned long memmap_on_memory_size =3D memory_block_memmap_on_memory_siz=
+e();
+=20
+ 	/*
+ 	 * Besides having arch support and the feature enabled at runtime, we
+@@ -1294,10 +1368,28 @@ static bool mhp_supports_memmap_on_memory(unsigned =
+long size)
+ 	 *       altmap as an alternative source of memory, and we do not exactly
+ 	 *       populate a single PMD.
+ 	 */
+-	return mhp_memmap_on_memory() &&
+-	       size =3D=3D memory_block_size_bytes() &&
+-	       IS_ALIGNED(remaining_size, (pageblock_nr_pages << PAGE_SHIFT)) &&
+-	       arch_supports_memmap_on_memory(size);
++	if (!mhp_memmap_on_memory() || size !=3D memory_block_size_bytes())
++		return false;
++
++	/*
++	 * Make sure the vmemmap allocation is fully contained
++	 * so that we always allocate vmemmap memory from altmap area.
++	 */
++	if (!IS_ALIGNED(vmemmap_size,  PAGE_SIZE))
++		return false;
++
++	/*
++	 * start pfn should be pageblock_nr_pages aligned for correctly
++	 * setting migrate types
++	 */
++	if (!IS_ALIGNED(memmap_on_memory_size, PFN_PHYS(pageblock_nr_pages)))
++		return false;
++
++	if (memmap_on_memory_size =3D=3D memory_block_size_bytes())
++		/* No effective hotplugged memory doesn't make sense. */
++		return false;
++
++	return arch_supports_memmap_on_memory(size);
+ }
+=20
  /*
-@@ -81,6 +82,8 @@ struct iommu_domain_geometry {
-  *				  invalidation.
-  *	IOMMU_DOMAIN_SVA	- DMA addresses are shared process addresses
-  *				  represented by mm_struct's.
-+ *	IOMMU_DOMAIN_PLATFORM	- Legacy domain for drivers that do their own
-+ *				  dma_api stuff. Do not use in new drivers.
-  */
- #define IOMMU_DOMAIN_BLOCKED	(0U)
- #define IOMMU_DOMAIN_IDENTITY	(__IOMMU_DOMAIN_PT)
-@@ -91,6 +94,7 @@ struct iommu_domain_geometry {
- 				 __IOMMU_DOMAIN_DMA_API |	\
- 				 __IOMMU_DOMAIN_DMA_FQ)
- #define IOMMU_DOMAIN_SVA	(__IOMMU_DOMAIN_SVA)
-+#define IOMMU_DOMAIN_PLATFORM	(__IOMMU_DOMAIN_PLATFORM)
- 
- struct iommu_domain {
- 	unsigned type;
-@@ -256,6 +260,7 @@ struct iommu_iotlb_gather {
-  * @owner: Driver module providing these ops
-  * @identity_domain: An always available, always attachable identity
-  *                   translation.
-+ * @default_domain: If not NULL this will always be set as the default domain.
-  */
- struct iommu_ops {
- 	bool (*capable)(struct device *dev, enum iommu_cap);
-@@ -290,6 +295,7 @@ struct iommu_ops {
- 	unsigned long pgsize_bitmap;
- 	struct module *owner;
- 	struct iommu_domain *identity_domain;
-+	struct iommu_domain *default_domain;
- };
- 
- /**
--- 
-2.41.0
+@@ -1310,7 +1402,10 @@ int __ref add_memory_resource(int nid, struct resour=
+ce *res, mhp_t mhp_flags)
+ {
+ 	struct mhp_params params =3D { .pgprot =3D pgprot_mhp(PAGE_KERNEL) };
+ 	enum memblock_flags memblock_flags =3D MEMBLOCK_NONE;
+-	struct vmem_altmap mhp_altmap =3D {};
++	struct vmem_altmap mhp_altmap =3D {
++		.base_pfn =3D  PHYS_PFN(res->start),
++		.end_pfn  =3D  PHYS_PFN(res->end),
++	};
+ 	struct memory_group *group =3D NULL;
+ 	u64 start, size;
+ 	bool new_node =3D false;
+@@ -1355,8 +1450,7 @@ int __ref add_memory_resource(int nid, struct resourc=
+e *res, mhp_t mhp_flags)
+ 	 */
+ 	if (mhp_flags & MHP_MEMMAP_ON_MEMORY) {
+ 		if (mhp_supports_memmap_on_memory(size)) {
+-			mhp_altmap.free =3D PHYS_PFN(size);
+-			mhp_altmap.base_pfn =3D PHYS_PFN(start);
++			mhp_altmap.free =3D PHYS_PFN(memory_block_memmap_on_memory_size());
+ 			params.altmap =3D &mhp_altmap;
+ 		}
+ 		/* fallback to not using altmap  */
+@@ -1368,8 +1462,7 @@ int __ref add_memory_resource(int nid, struct resourc=
+e *res, mhp_t mhp_flags)
+ 		goto error;
+=20
+ 	/* create memory block devices after memory was added */
+-	ret =3D create_memory_block_devices(start, size, mhp_altmap.alloc,
+-					  group);
++	ret =3D create_memory_block_devices(start, size, mhp_altmap.free, group);
+ 	if (ret) {
+ 		arch_remove_memory(start, size, NULL);
+ 		goto error;
+@@ -2090,7 +2183,8 @@ static int __ref try_remove_memory(u64 start, u64 siz=
+e)
+ 			 * right thing if we used vmem_altmap when hot-adding
+ 			 * the range.
+ 			 */
+-			mhp_altmap.alloc =3D nr_vmemmap_pages;
++			mhp_altmap.base_pfn =3D PHYS_PFN(start);
++			mhp_altmap.free =3D nr_vmemmap_pages;
+ 			altmap =3D &mhp_altmap;
+ 		}
+ 	}
+
 
