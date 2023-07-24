@@ -4,56 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8BCEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 22:39:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 813C0EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 23:38:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K2A9RJni;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=pDGOOj9O;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R8w7T5V2Vz3brX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 08:39:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R8xSd5yDWz30gJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 09:38:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K2A9RJni;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=pDGOOj9O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=wclc=dk=robh_at_kernel.org=rob@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8tRJ3Knzz2ytd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 07:22:36 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 652DB61411;
-	Mon, 24 Jul 2023 21:22:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B9D0C433C7;
-	Mon, 24 Jul 2023 21:22:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690233753;
-	bh=XxYi/1Gt9v2LpWnn1if18vwrLT6DyG4npZ3OigxbwRk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=K2A9RJnit2vN0UMa8CIYp4blG561GUaS/VYkcXbOplBtSLnikOEZtBka3725p1v4F
-	 KM6sfS3TtNaY3mXdRpxLDaeOK7DJbKJHyPGE+X7Tw1dh/rFrbQM/fvxWHCC4LLi3jj
-	 7945t1SKRIxGpTgkFTAGHTGmMb7YYkevAOdzGJg+JtUkgILgbL+bKXb/YWDk+TAHk3
-	 zmahpT5xuS+FnHFGsQ9qjknkQ1SeR0Z76uX8iSLLSjSKXRc+TBUR0YmYoel7izQ8qj
-	 fZwKtNK+JqFgcak+4ugW9pKkY2V33Nv73ep0w2SB+RBarr0JQ3V+VBD//JtzGO0/68
-	 0PGALBo2UQiug==
-Received: (nullmailer pid 810136 invoked by uid 1000);
-	Mon, 24 Jul 2023 21:22:25 -0000
-From: Rob Herring <robh@kernel.org>
-To: Andreas Larsson <andreas@gaisler.com>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Iyappan Subramanian <iyappan@os.amperecomputing.com>, Keyur Chudgar <keyur@os.amperecomputing.com>, Chris Snook <chris.snook@gmail.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, Claudiu Beznea <claudiu.beznea@microchip.com>, Madalin Bucur <madalin.bucur@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Wei Fang <wei.fang@nxp.com>, Shenwei Wang <shenwei.wang@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>, NXP Linux Team <linux-imx@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Pantelis Antoniou <pantelis.antoniou@gmail.com>, Li Yang <leoyang.li@nxp.com>, Yisen Zhuang <yisen.zhuang@huawei.com>, Salil Mehta <salil.mehta@huawei.com>, Douglas Miller <dougmill@linux.ibm.com>, Marcin Wojtas <mw@semihalf.com>, Russell King <linux@armlinux.org.uk>, Taras Chorny
- i <taras.chornyi@plvision.eu>, Mirko Lindner <mlindner@marvell.com>, Stephen Hemminger <stephen@networkplumber.org>, Felix Fietkau <nbd@nbd.name>, John Crispin <john@phrozen.org>, Sean Wang <sean.wang@mediatek.com>, Mark Lee <Mark-MC.Lee@mediatek.com>, Lorenzo Bianconi <lorenzo@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, UNGLinuxDriver@microchip.com, Alexandre Belloni <alexandre.belloni@bootlin.com>, Timur Tabi <timur@kernel.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, Steve Glendinning <steve.glendinning@shawell.net>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Jose Abreu <joabreu@synopsys.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>,
-  Fabio Estevam <festevam@gmail.com>, Neil Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Vinod Koul <vkoul@kernel.org>, Bhupesh Sharma <bhupesh.sharma@linaro.org>, Emil Renner Berthing <kernel@esmil.dk>, Samin Guo <samin.guo@starfivetech.com>, Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Brace <kevinbrace@bracecomputerlab.com>, Francois Romieu <romieu@fr.zoreil.com>, Michal Simek <michal.simek@amd.com>, Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>, Alexander Aring <alex.aring@gmail.com>, Stefan Schmidt <stefan@datenfreihafen.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Alex Elder <elder@kernel.org>, A
- ndrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>, Richard Cochran <richardcochran@gmail.com>
-Subject: [PATCH v2] net: Explicitly include correct DT includes
-Date: Mon, 24 Jul 2023 15:22:16 -0600
-Message-Id: <20230724212222.809909-1-robh@kernel.org>
-X-Mailer: git-send-email 2.40.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8xRb0l2Tz2ytl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 09:38:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Content-Type:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=I8vJ+3ed+C231PrXlFICGFrzwQVkktZbFctL9rtxMCs=; b=pDGOOj9ODxeJK/i4jbjvXaydFs
+	92ca99FOPnQOSK3x8QeOJv64ehYRysTYTPUFzouR5WIrnLyYnd2pEzcpQ65sevlvNnHsl4Lt4jJFG
+	F+q93jtl6vFrgi8GRiJHrsvjZ1+Goe+HAoQ+dT6SqLJRvA2JEYazHUzQICqJOBCb65phRoCvi5vox
+	nLD98EQ1V1158g6R1bEWP2QOEvZitGXK+B6ZXQEXpX11Ic8KKSjpL7pLMWvJrA/2hhkAgMlUIw8Ba
+	a3KU9NfB6AtZj59tpx5I/C2K3rnh2JKQZLOioR5Z03Xt7bHqVhBlgvrRbsdRooZl4YgKTlfdm6Q9P
+	1R6v3i6Q==;
+Received: from [2601:1c2:980:9ec0::2764]
+	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1qO57f-005f7C-2h;
+	Mon, 24 Jul 2023 23:37:52 +0000
+Content-Type: multipart/mixed; boundary="------------TQd7QMcHb0nrrjq0Eg4w7Llq"
+Message-ID: <1e2c4ad2-94e9-5541-cdbe-5817bf33e757@infradead.org>
+Date: Mon, 24 Jul 2023 16:37:50 -0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 25 Jul 2023 08:38:12 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: linux-next: Tree for Jul 24
+ (arch/powerpc/platforms/embedded6xx/mvme5100.c)
+Content-Language: en-US
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>
+References: <20230724140819.4ae24e17@canb.auug.org.au>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20230724140819.4ae24e17@canb.auug.org.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,1392 +61,585 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-omap@vger.kernel.org, netdev@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sunxi@lists.linux.dev, linux-renesas-soc@vger.kernel.org, linux-wpan@vger.kernel.org, linux-mediatek@lists.infradead.org, Alex Elder <elder@linaro.org>, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-oxnas@groups.io, linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The DT of_device.h and of_platform.h date back to the separate
-of_platform_bus_type before it as merged into the regular platform bus.
-As part of that merge prepping Arm DT support 13 years ago, they
-"temporarily" include each other. They also include platform_device.h
-and of.h. As a result, there's a pretty much random mix of those include
-files used throughout the tree. In order to detangle these headers and
-replace the implicit includes with struct declarations, users need to
-explicitly include the correct includes.
+This is a multi-part message in MIME format.
+--------------TQd7QMcHb0nrrjq0Eg4w7Llq
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Acked-by: Alex Elder <elder@linaro.org>
-Reviewed-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
-Reviewed-by: Wei Fang <wei.fang@nxp.com>
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-v2:
- - Fix applying to net-next (was due to dependency in my tree)
- - Split out can, dsa, wireless, phy/pcs to separate patches
----
- drivers/net/ethernet/aeroflex/greth.c                   | 4 ++--
- drivers/net/ethernet/amd/sunlance.c                     | 2 +-
- drivers/net/ethernet/apm/xgene-v2/main.h                | 1 +
- drivers/net/ethernet/arc/emac_main.c                    | 2 +-
- drivers/net/ethernet/atheros/ag71xx.c                   | 3 ++-
- drivers/net/ethernet/cadence/macb_main.c                | 1 -
- drivers/net/ethernet/cirrus/cs89x0.c                    | 1 -
- drivers/net/ethernet/ezchip/nps_enet.c                  | 5 ++---
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c          | 3 ++-
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c      | 2 ++
- drivers/net/ethernet/freescale/enetc/enetc_ierb.c       | 2 +-
- drivers/net/ethernet/freescale/fec_mpc52xx.c            | 4 ++--
- drivers/net/ethernet/freescale/fec_mpc52xx_phy.c        | 3 ++-
- drivers/net/ethernet/freescale/fec_ptp.c                | 1 -
- drivers/net/ethernet/freescale/fman/fman.c              | 1 +
- drivers/net/ethernet/freescale/fman/fman_port.c         | 1 +
- drivers/net/ethernet/freescale/fman/mac.c               | 2 ++
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c        | 1 -
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c        | 1 -
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c        | 1 -
- drivers/net/ethernet/freescale/fsl_pq_mdio.c            | 1 +
- drivers/net/ethernet/freescale/gianfar.c                | 2 +-
- drivers/net/ethernet/freescale/gianfar_ethtool.c        | 2 ++
- drivers/net/ethernet/freescale/ucc_geth.c               | 3 ++-
- drivers/net/ethernet/freescale/xgmac_mdio.c             | 4 ++--
- drivers/net/ethernet/hisilicon/hns/hns_dsaf_ppe.c       | 3 ---
- drivers/net/ethernet/hisilicon/hns/hns_dsaf_rcb.c       | 4 ----
- drivers/net/ethernet/ibm/ehea/ehea_main.c               | 1 +
- drivers/net/ethernet/ibm/emac/core.c                    | 1 +
- drivers/net/ethernet/ibm/emac/core.h                    | 1 -
- drivers/net/ethernet/ibm/emac/mal.c                     | 2 ++
- drivers/net/ethernet/ibm/emac/rgmii.c                   | 2 ++
- drivers/net/ethernet/ibm/emac/tah.c                     | 2 ++
- drivers/net/ethernet/ibm/emac/zmii.c                    | 2 ++
- drivers/net/ethernet/korina.c                           | 2 +-
- drivers/net/ethernet/marvell/mvmdio.c                   | 2 +-
- drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c         | 1 -
- drivers/net/ethernet/marvell/prestera/prestera_rxtx.c   | 3 ---
- drivers/net/ethernet/marvell/sky2.c                     | 1 -
- drivers/net/ethernet/mediatek/mtk_eth_soc.c             | 3 ++-
- drivers/net/ethernet/mediatek/mtk_star_emac.c           | 1 -
- drivers/net/ethernet/mediatek/mtk_wed.c                 | 1 +
- drivers/net/ethernet/mediatek/mtk_wed_wo.c              | 3 +--
- drivers/net/ethernet/microchip/lan966x/lan966x_main.c   | 3 ++-
- drivers/net/ethernet/mscc/ocelot_fdma.c                 | 1 -
- drivers/net/ethernet/mscc/ocelot_vsc7514.c              | 3 ++-
- drivers/net/ethernet/ni/nixge.c                         | 5 ++---
- drivers/net/ethernet/qualcomm/emac/emac-sgmii.c         | 2 ++
- drivers/net/ethernet/qualcomm/emac/emac.c               | 1 -
- drivers/net/ethernet/qualcomm/qca_spi.c                 | 1 -
- drivers/net/ethernet/qualcomm/qca_uart.c                | 1 -
- drivers/net/ethernet/renesas/ravb_main.c                | 3 +--
- drivers/net/ethernet/renesas/rswitch.c                  | 3 +--
- drivers/net/ethernet/renesas/sh_eth.c                   | 2 --
- drivers/net/ethernet/smsc/smsc911x.c                    | 1 -
- drivers/net/ethernet/socionext/sni_ave.c                | 3 ++-
- drivers/net/ethernet/stmicro/stmmac/dwmac-dwc-qos-eth.c | 2 +-
- drivers/net/ethernet/stmicro/stmmac/dwmac-imx.c         | 1 -
- drivers/net/ethernet/stmicro/stmmac/dwmac-ingenic.c     | 1 -
- drivers/net/ethernet/stmicro/stmmac/dwmac-mediatek.c    | 2 +-
- drivers/net/ethernet/stmicro/stmmac/dwmac-meson8b.c     | 2 +-
- drivers/net/ethernet/stmicro/stmmac/dwmac-oxnas.c       | 1 -
- drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c | 1 -
- drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c          | 2 +-
- drivers/net/ethernet/stmicro/stmmac/dwmac-starfive.c    | 4 +++-
- drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c         | 1 -
- drivers/net/ethernet/stmicro/stmmac/dwmac-stm32.c       | 1 -
- drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c       | 3 ++-
- drivers/net/ethernet/stmicro/stmmac/dwmac-tegra.c       | 2 +-
- drivers/net/ethernet/stmicro/stmmac/dwmac-visconti.c    | 3 ++-
- drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c   | 1 -
- drivers/net/ethernet/sun/niu.c                          | 2 +-
- drivers/net/ethernet/sun/sunbmac.c                      | 2 +-
- drivers/net/ethernet/sun/sungem.c                       | 1 +
- drivers/net/ethernet/sun/sunhme.c                       | 3 ++-
- drivers/net/ethernet/sun/sunqe.c                        | 2 +-
- drivers/net/ethernet/ti/am65-cpsw-nuss.c                | 1 +
- drivers/net/ethernet/ti/cpsw-common.c                   | 1 -
- drivers/net/ethernet/ti/cpsw-phy-sel.c                  | 1 -
- drivers/net/ethernet/ti/davinci_mdio.c                  | 1 -
- drivers/net/ethernet/via/via-rhine.c                    | 2 +-
- drivers/net/ethernet/via/via-velocity.c                 | 2 +-
- drivers/net/ethernet/xilinx/ll_temac.h                  | 1 +
- drivers/net/ethernet/xilinx/ll_temac_main.c             | 4 +---
- drivers/net/ethernet/xilinx/ll_temac_mdio.c             | 2 +-
- drivers/net/ethernet/xilinx/xilinx_axienet_main.c       | 3 ++-
- drivers/net/ethernet/xilinx/xilinx_emaclite.c           | 4 ++--
- drivers/net/ieee802154/ca8210.c                         | 1 -
- drivers/net/ipa/ipa_main.c                              | 2 +-
- net/core/of_net.c                                       | 1 +
- 90 files changed, 88 insertions(+), 92 deletions(-)
 
-diff --git a/drivers/net/ethernet/aeroflex/greth.c b/drivers/net/ethernet/aeroflex/greth.c
-index aa0d2f3aaeaa..597a02c75d52 100644
---- a/drivers/net/ethernet/aeroflex/greth.c
-+++ b/drivers/net/ethernet/aeroflex/greth.c
-@@ -29,9 +29,9 @@
- #include <linux/io.h>
- #include <linux/crc32.h>
- #include <linux/mii.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <asm/cacheflush.h>
- #include <asm/byteorder.h>
-diff --git a/drivers/net/ethernet/amd/sunlance.c b/drivers/net/ethernet/amd/sunlance.c
-index 68ca1225eedc..33bb539ad70a 100644
---- a/drivers/net/ethernet/amd/sunlance.c
-+++ b/drivers/net/ethernet/amd/sunlance.c
-@@ -92,7 +92,7 @@ static char lancestr[] = "LANCE";
- #include <linux/bitops.h>
- #include <linux/dma-mapping.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
-+#include <linux/platform_device.h>
- #include <linux/gfp.h>
- #include <linux/pgtable.h>
- 
-diff --git a/drivers/net/ethernet/apm/xgene-v2/main.h b/drivers/net/ethernet/apm/xgene-v2/main.h
-index b3985a7be59d..7be6f83e22fe 100644
---- a/drivers/net/ethernet/apm/xgene-v2/main.h
-+++ b/drivers/net/ethernet/apm/xgene-v2/main.h
-@@ -22,6 +22,7 @@
- #include <linux/of_mdio.h>
- #include <linux/prefetch.h>
- #include <linux/phy.h>
-+#include <linux/platform_device.h>
- #include <net/ip.h>
- #include "mac.h"
- #include "enet.h"
-diff --git a/drivers/net/ethernet/arc/emac_main.c b/drivers/net/ethernet/arc/emac_main.c
-index 2b427d8a1831..31ee477dd131 100644
---- a/drivers/net/ethernet/arc/emac_main.c
-+++ b/drivers/net/ethernet/arc/emac_main.c
-@@ -15,11 +15,11 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
- 
- #include "emac.h"
- 
-diff --git a/drivers/net/ethernet/atheros/ag71xx.c b/drivers/net/ethernet/atheros/ag71xx.c
-index ff1a5edf8df1..009e0b3066fa 100644
---- a/drivers/net/ethernet/atheros/ag71xx.c
-+++ b/drivers/net/ethernet/atheros/ag71xx.c
-@@ -29,9 +29,10 @@
- 
- #include <linux/if_vlan.h>
- #include <linux/mfd/syscon.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/phylink.h>
- #include <linux/regmap.h>
- #include <linux/reset.h>
-diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
-index f6a0f12a6d52..b61566afb2f4 100644
---- a/drivers/net/ethernet/cadence/macb_main.c
-+++ b/drivers/net/ethernet/cadence/macb_main.c
-@@ -26,7 +26,6 @@
- #include <linux/platform_device.h>
- #include <linux/phylink.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_gpio.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
-diff --git a/drivers/net/ethernet/cirrus/cs89x0.c b/drivers/net/ethernet/cirrus/cs89x0.c
-index 276c32c3926a..7c51fd9fc9be 100644
---- a/drivers/net/ethernet/cirrus/cs89x0.c
-+++ b/drivers/net/ethernet/cirrus/cs89x0.c
-@@ -54,7 +54,6 @@
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/kernel.h>
- #include <linux/types.h>
-diff --git a/drivers/net/ethernet/ezchip/nps_enet.c b/drivers/net/ethernet/ezchip/nps_enet.c
-index f1eb660aaee2..edf000e7bab4 100644
---- a/drivers/net/ethernet/ezchip/nps_enet.c
-+++ b/drivers/net/ethernet/ezchip/nps_enet.c
-@@ -6,10 +6,9 @@
- #include <linux/module.h>
- #include <linux/etherdevice.h>
- #include <linux/interrupt.h>
--#include <linux/of_address.h>
--#include <linux/of_irq.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include "nps_enet.h"
- 
- #define DRV_NAME			"nps_mgt_enet"
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index 431f8917dc39..7cbfc5864ade 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -7,8 +7,8 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/init.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
--#include <linux/of_platform.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/io.h>
-@@ -17,6 +17,7 @@
- #include <linux/icmp.h>
- #include <linux/ip.h>
- #include <linux/ipv6.h>
-+#include <linux/platform_device.h>
- #include <linux/udp.h>
- #include <linux/tcp.h>
- #include <linux/net.h>
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-index 9c71cbbb13d8..5bd0b36d1feb 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-@@ -6,7 +6,9 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/string.h>
-+#include <linux/of.h>
- #include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/net_tstamp.h>
- #include <linux/fsl/ptp_qoriq.h>
- 
-diff --git a/drivers/net/ethernet/freescale/enetc/enetc_ierb.c b/drivers/net/ethernet/freescale/enetc/enetc_ierb.c
-index b307bef4dc29..d39617ab9306 100644
---- a/drivers/net/ethernet/freescale/enetc/enetc_ierb.c
-+++ b/drivers/net/ethernet/freescale/enetc/enetc_ierb.c
-@@ -18,8 +18,8 @@
-  */
- 
- #include <linux/io.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
--#include <linux/of_device.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
- #include "enetc.h"
-diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx.c b/drivers/net/ethernet/freescale/fec_mpc52xx.c
-index b88816b71ddf..f843ea0df065 100644
---- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
-+++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
-@@ -29,12 +29,12 @@
- #include <linux/crc32.h>
- #include <linux/hardirq.h>
- #include <linux/delay.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- 
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
-diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c b/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
-index 95f778cce98c..894130985e2c 100644
---- a/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
-+++ b/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
-@@ -13,10 +13,11 @@
- #include <linux/module.h>
- #include <linux/netdevice.h>
- #include <linux/phy.h>
--#include <linux/of_platform.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_mdio.h>
-+#include <linux/platform_device.h>
- #include <asm/io.h>
- #include <asm/mpc52xx.h>
- #include "fec_mpc52xx.h"
-diff --git a/drivers/net/ethernet/freescale/fec_ptp.c b/drivers/net/ethernet/freescale/fec_ptp.c
-index ab86bb8562ef..9428a06b6a87 100644
---- a/drivers/net/ethernet/freescale/fec_ptp.c
-+++ b/drivers/net/ethernet/freescale/fec_ptp.c
-@@ -30,7 +30,6 @@
- #include <linux/phy.h>
- #include <linux/fec.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_gpio.h>
- #include <linux/of_net.h>
- 
-diff --git a/drivers/net/ethernet/freescale/fman/fman.c b/drivers/net/ethernet/freescale/fman/fman.c
-index 9d85fb136e34..d96028f01770 100644
---- a/drivers/net/ethernet/freescale/fman/fman.c
-+++ b/drivers/net/ethernet/freescale/fman/fman.c
-@@ -7,6 +7,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/fsl/guts.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fman/fman_port.c b/drivers/net/ethernet/freescale/fman/fman_port.c
-index ab90fe2bee5e..406e75e9e5ea 100644
---- a/drivers/net/ethernet/freescale/fman/fman_port.c
-+++ b/drivers/net/ethernet/freescale/fman/fman_port.c
-@@ -6,6 +6,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/io.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/interrupt.h>
-diff --git a/drivers/net/ethernet/freescale/fman/mac.c b/drivers/net/ethernet/freescale/fman/mac.c
-index 43665806c590..57de8a6ab180 100644
---- a/drivers/net/ethernet/freescale/fman/mac.c
-+++ b/drivers/net/ethernet/freescale/fman/mac.c
-@@ -12,12 +12,14 @@
- #include <linux/of_net.h>
- #include <linux/of_mdio.h>
- #include <linux/device.h>
-+#include <linux/of_platform.h>
- #include <linux/phy.h>
- #include <linux/netdevice.h>
- #include <linux/phy_fixed.h>
- #include <linux/phylink.h>
- #include <linux/etherdevice.h>
- #include <linux/libfdt_env.h>
-+#include <linux/platform_device.h>
- 
- #include "mac.h"
- #include "fman_mac.h"
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index b47490be872c..925428f1b0c8 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -32,7 +32,6 @@
- #include <linux/platform_device.h>
- #include <linux/phy.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/gfp.h>
- #include <linux/pgtable.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index 61f4b6e50d29..f609dc112458 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -32,7 +32,6 @@
- #include <linux/fs.h>
- #include <linux/platform_device.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/gfp.h>
- 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 64300ac13e02..66d40da5cde0 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -32,7 +32,6 @@
- #include <linux/platform_device.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
--#include <linux/of_platform.h>
- 
- #include <asm/irq.h>
- #include <linux/uaccess.h>
-diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-index 9d58d8334467..647a499fe84b 100644
---- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-+++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-@@ -12,6 +12,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/platform_device.h>
- #include <linux/string.h>
- #include <linux/errno.h>
- #include <linux/slab.h>
-diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index 38d5013c6fed..4f0099ce8f1e 100644
---- a/drivers/net/ethernet/freescale/gianfar.c
-+++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -60,6 +60,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/kernel.h>
-+#include <linux/platform_device.h>
- #include <linux/string.h>
- #include <linux/errno.h>
- #include <linux/unistd.h>
-@@ -75,7 +76,6 @@
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/of_mdio.h>
--#include <linux/of_platform.h>
- #include <linux/ip.h>
- #include <linux/tcp.h>
- #include <linux/udp.h>
-diff --git a/drivers/net/ethernet/freescale/gianfar_ethtool.c b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-index b2b0d3c26fcc..7a15b9245698 100644
---- a/drivers/net/ethernet/freescale/gianfar_ethtool.c
-+++ b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-@@ -38,7 +38,9 @@
- #include <linux/phy.h>
- #include <linux/sort.h>
- #include <linux/if_vlan.h>
-+#include <linux/of.h>
- #include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/fsl/ptp_qoriq.h>
- 
- #include "gianfar.h"
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 7a4cb4f07c32..49e759f24444 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -28,11 +28,12 @@
- #include <linux/phy.h>
- #include <linux/phy_fixed.h>
- #include <linux/workqueue.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- 
- #include <linux/uaccess.h>
- #include <asm/irq.h>
-diff --git a/drivers/net/ethernet/freescale/xgmac_mdio.c b/drivers/net/ethernet/freescale/xgmac_mdio.c
-index a13b4ba4d6e1..65dc07d0df0f 100644
---- a/drivers/net/ethernet/freescale/xgmac_mdio.c
-+++ b/drivers/net/ethernet/freescale/xgmac_mdio.c
-@@ -19,10 +19,10 @@
- #include <linux/kernel.h>
- #include <linux/mdio.h>
- #include <linux/module.h>
--#include <linux/of_address.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
--#include <linux/of_platform.h>
- #include <linux/phy.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- 
- /* Number of microseconds to wait for a register to respond */
-diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_ppe.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_ppe.c
-index a7eb87da4e70..a08d1f0a5a16 100644
---- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_ppe.c
-+++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_ppe.c
-@@ -9,9 +9,6 @@
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
- #include <linux/platform_device.h>
--#include <linux/of.h>
--#include <linux/of_address.h>
--#include <linux/of_platform.h>
- 
- #include "hns_dsaf_ppe.h"
- 
-diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_rcb.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_rcb.c
-index e2ff3ca198d1..93344563a259 100644
---- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_rcb.c
-+++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_rcb.c
-@@ -11,10 +11,6 @@
- #include <linux/etherdevice.h>
- #include <asm/cacheflush.h>
- #include <linux/platform_device.h>
--#include <linux/of.h>
--#include <linux/of_address.h>
--#include <linux/of_platform.h>
--#include <linux/of_irq.h>
- #include <linux/spinlock.h>
- 
- #include "hns_dsaf_main.h"
-diff --git a/drivers/net/ethernet/ibm/ehea/ehea_main.c b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-index b4aff59b3eb4..0a56e9752464 100644
---- a/drivers/net/ethernet/ibm/ehea/ehea_main.c
-+++ b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-@@ -31,6 +31,7 @@
- #include <linux/prefetch.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/platform_device.h>
- 
- #include <net/ip.h>
- 
-diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
-index c97095abd26a..0c314bf97480 100644
---- a/drivers/net/ethernet/ibm/emac/core.c
-+++ b/drivers/net/ethernet/ibm/emac/core.c
-@@ -38,6 +38,7 @@
- #include <linux/of_irq.h>
- #include <linux/of_net.h>
- #include <linux/of_mdio.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- 
-diff --git a/drivers/net/ethernet/ibm/emac/core.h b/drivers/net/ethernet/ibm/emac/core.h
-index 89a1b0fea158..295516b07662 100644
---- a/drivers/net/ethernet/ibm/emac/core.h
-+++ b/drivers/net/ethernet/ibm/emac/core.h
-@@ -27,7 +27,6 @@
- #include <linux/netdevice.h>
- #include <linux/dma-mapping.h>
- #include <linux/spinlock.h>
--#include <linux/of_platform.h>
- #include <linux/slab.h>
- 
- #include <asm/io.h>
-diff --git a/drivers/net/ethernet/ibm/emac/mal.c b/drivers/net/ethernet/ibm/emac/mal.c
-index ff5487bbebe3..c3236b59e7e9 100644
---- a/drivers/net/ethernet/ibm/emac/mal.c
-+++ b/drivers/net/ethernet/ibm/emac/mal.c
-@@ -22,7 +22,9 @@
- 
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- #include <linux/of_irq.h>
-+#include <linux/platform_device.h>
- 
- #include "core.h"
- #include <asm/dcr-regs.h>
-diff --git a/drivers/net/ethernet/ibm/emac/rgmii.c b/drivers/net/ethernet/ibm/emac/rgmii.c
-index 50358cf00130..fd437f986edf 100644
---- a/drivers/net/ethernet/ibm/emac/rgmii.c
-+++ b/drivers/net/ethernet/ibm/emac/rgmii.c
-@@ -19,7 +19,9 @@
- #include <linux/slab.h>
- #include <linux/kernel.h>
- #include <linux/ethtool.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <asm/io.h>
- 
- #include "emac.h"
-diff --git a/drivers/net/ethernet/ibm/emac/tah.c b/drivers/net/ethernet/ibm/emac/tah.c
-index 008bbdaf1204..aae9a88d95d7 100644
---- a/drivers/net/ethernet/ibm/emac/tah.c
-+++ b/drivers/net/ethernet/ibm/emac/tah.c
-@@ -14,7 +14,9 @@
-  *
-  * Copyright (c) 2005 Eugene Surovegin <ebs@ebshome.net>
-  */
-+#include <linux/mod_devicetable.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <asm/io.h>
- 
- #include "emac.h"
-diff --git a/drivers/net/ethernet/ibm/emac/zmii.c b/drivers/net/ethernet/ibm/emac/zmii.c
-index 57a25c7a9e70..6337388ee5f4 100644
---- a/drivers/net/ethernet/ibm/emac/zmii.c
-+++ b/drivers/net/ethernet/ibm/emac/zmii.c
-@@ -19,7 +19,9 @@
- #include <linux/slab.h>
- #include <linux/kernel.h>
- #include <linux/ethtool.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <asm/io.h>
- 
- #include "emac.h"
-diff --git a/drivers/net/ethernet/korina.c b/drivers/net/ethernet/korina.c
-index 2b9335cb4bb3..41f3f3df6ec3 100644
---- a/drivers/net/ethernet/korina.c
-+++ b/drivers/net/ethernet/korina.c
-@@ -33,6 +33,7 @@
-  *  should stick to this procedure.
-  */
- 
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/moduleparam.h>
-@@ -43,7 +44,6 @@
- #include <linux/ioport.h>
- #include <linux/iopoll.h>
- #include <linux/in.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-diff --git a/drivers/net/ethernet/marvell/mvmdio.c b/drivers/net/ethernet/marvell/mvmdio.c
-index 8662543ca5c8..a1a80f13b1e8 100644
---- a/drivers/net/ethernet/marvell/mvmdio.c
-+++ b/drivers/net/ethernet/marvell/mvmdio.c
-@@ -24,8 +24,8 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
--#include <linux/of_device.h>
- #include <linux/of_mdio.h>
- #include <linux/phy.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c b/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c
-index 1fec84b4c068..9e1b596c8f08 100644
---- a/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c
-+++ b/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c
-@@ -24,7 +24,6 @@
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
- #include <linux/phy.h>
- #include <linux/phylink.h>
- #include <linux/phy/phy.h>
-diff --git a/drivers/net/ethernet/marvell/prestera/prestera_rxtx.c b/drivers/net/ethernet/marvell/prestera/prestera_rxtx.c
-index 9277a8fd1339..cc2a9ae794be 100644
---- a/drivers/net/ethernet/marvell/prestera/prestera_rxtx.c
-+++ b/drivers/net/ethernet/marvell/prestera/prestera_rxtx.c
-@@ -5,9 +5,6 @@
- #include <linux/dmapool.h>
- #include <linux/etherdevice.h>
- #include <linux/if_vlan.h>
--#include <linux/of_address.h>
--#include <linux/of_device.h>
--#include <linux/of.h>
- #include <linux/platform_device.h>
- 
- #include "prestera_dsa.h"
-diff --git a/drivers/net/ethernet/marvell/sky2.c b/drivers/net/ethernet/marvell/sky2.c
-index 7c487f9b36ec..c4cca27fb0d5 100644
---- a/drivers/net/ethernet/marvell/sky2.c
-+++ b/drivers/net/ethernet/marvell/sky2.c
-@@ -32,7 +32,6 @@
- #include <linux/prefetch.h>
- #include <linux/debugfs.h>
- #include <linux/mii.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/dmi.h>
- 
-diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-index 2d15342c260a..ac8b98c023c8 100644
---- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-+++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-@@ -6,11 +6,12 @@
-  *   Copyright (C) 2013-2016 Michael Lee <igvtee@gmail.com>
-  */
- 
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/of_address.h>
- #include <linux/mfd/syscon.h>
-+#include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/clk.h>
- #include <linux/pm_runtime.h>
-diff --git a/drivers/net/ethernet/mediatek/mtk_star_emac.c b/drivers/net/ethernet/mediatek/mtk_star_emac.c
-index 02c03325911f..31aebeb2e285 100644
---- a/drivers/net/ethernet/mediatek/mtk_star_emac.c
-+++ b/drivers/net/ethernet/mediatek/mtk_star_emac.c
-@@ -17,7 +17,6 @@
- #include <linux/module.h>
- #include <linux/netdevice.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/mediatek/mtk_wed.c b/drivers/net/ethernet/mediatek/mtk_wed.c
-index 985cff910f30..52688cbaa7b4 100644
---- a/drivers/net/ethernet/mediatek/mtk_wed.c
-+++ b/drivers/net/ethernet/mediatek/mtk_wed.c
-@@ -2,6 +2,7 @@
- /* Copyright (C) 2021 Felix Fietkau <nbd@nbd.name> */
- 
- #include <linux/kernel.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/bitfield.h>
-diff --git a/drivers/net/ethernet/mediatek/mtk_wed_wo.c b/drivers/net/ethernet/mediatek/mtk_wed_wo.c
-index 69fba29055e9..3bd51a3d6650 100644
---- a/drivers/net/ethernet/mediatek/mtk_wed_wo.c
-+++ b/drivers/net/ethernet/mediatek/mtk_wed_wo.c
-@@ -7,10 +7,9 @@
- 
- #include <linux/kernel.h>
- #include <linux/dma-mapping.h>
--#include <linux/of_platform.h>
- #include <linux/interrupt.h>
--#include <linux/of_address.h>
- #include <linux/mfd/syscon.h>
-+#include <linux/of.h>
- #include <linux/of_irq.h>
- #include <linux/bitfield.h>
- 
-diff --git a/drivers/net/ethernet/microchip/lan966x/lan966x_main.c b/drivers/net/ethernet/microchip/lan966x/lan966x_main.c
-index fbb0bb4594cd..73f20683210e 100644
---- a/drivers/net/ethernet/microchip/lan966x/lan966x_main.c
-+++ b/drivers/net/ethernet/microchip/lan966x/lan966x_main.c
-@@ -5,9 +5,10 @@
- #include <linux/if_vlan.h>
- #include <linux/iopoll.h>
- #include <linux/ip.h>
--#include <linux/of_platform.h>
-+#include <linux/of.h>
- #include <linux/of_net.h>
- #include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
- #include <linux/reset.h>
- #include <net/addrconf.h>
- 
-diff --git a/drivers/net/ethernet/mscc/ocelot_fdma.c b/drivers/net/ethernet/mscc/ocelot_fdma.c
-index 83a3ce0c568e..312a46832154 100644
---- a/drivers/net/ethernet/mscc/ocelot_fdma.c
-+++ b/drivers/net/ethernet/mscc/ocelot_fdma.c
-@@ -12,7 +12,6 @@
- #include <linux/dmapool.h>
- #include <linux/dsa/ocelot.h>
- #include <linux/netdevice.h>
--#include <linux/of_platform.h>
- #include <linux/skbuff.h>
- 
- #include "ocelot_fdma.h"
-diff --git a/drivers/net/ethernet/mscc/ocelot_vsc7514.c b/drivers/net/ethernet/mscc/ocelot_vsc7514.c
-index 97e90e2869d4..151b42465348 100644
---- a/drivers/net/ethernet/mscc/ocelot_vsc7514.c
-+++ b/drivers/net/ethernet/mscc/ocelot_vsc7514.c
-@@ -10,8 +10,9 @@
- #include <linux/of_net.h>
- #include <linux/netdevice.h>
- #include <linux/phylink.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/mfd/syscon.h>
- #include <linux/skbuff.h>
- #include <net/switchdev.h>
-diff --git a/drivers/net/ethernet/ni/nixge.c b/drivers/net/ethernet/ni/nixge.c
-index 0fd156286d4d..ba27bbc68f85 100644
---- a/drivers/net/ethernet/ni/nixge.c
-+++ b/drivers/net/ethernet/ni/nixge.c
-@@ -7,11 +7,10 @@
- #include <linux/etherdevice.h>
- #include <linux/module.h>
- #include <linux/netdevice.h>
--#include <linux/of_address.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
--#include <linux/of_irq.h>
-+#include <linux/platform_device.h>
- #include <linux/skbuff.h>
- #include <linux/phy.h>
- #include <linux/mii.h>
-diff --git a/drivers/net/ethernet/qualcomm/emac/emac-sgmii.c b/drivers/net/ethernet/qualcomm/emac/emac-sgmii.c
-index 802ef81493e0..e4bc18009d08 100644
---- a/drivers/net/ethernet/qualcomm/emac/emac-sgmii.c
-+++ b/drivers/net/ethernet/qualcomm/emac/emac-sgmii.c
-@@ -8,7 +8,9 @@
- #include <linux/interrupt.h>
- #include <linux/iopoll.h>
- #include <linux/acpi.h>
-+#include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/of_platform.h>
- #include "emac.h"
- #include "emac-mac.h"
- #include "emac-sgmii.h"
-diff --git a/drivers/net/ethernet/qualcomm/emac/emac.c b/drivers/net/ethernet/qualcomm/emac/emac.c
-index eaa50050aa0b..19bb16daf4e7 100644
---- a/drivers/net/ethernet/qualcomm/emac/emac.c
-+++ b/drivers/net/ethernet/qualcomm/emac/emac.c
-@@ -11,7 +11,6 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_net.h>
--#include <linux/of_device.h>
- #include <linux/phy.h>
- #include <linux/platform_device.h>
- #include <linux/acpi.h>
-diff --git a/drivers/net/ethernet/qualcomm/qca_spi.c b/drivers/net/ethernet/qualcomm/qca_spi.c
-index 4a1b94e5a8ea..bec723028e96 100644
---- a/drivers/net/ethernet/qualcomm/qca_spi.c
-+++ b/drivers/net/ethernet/qualcomm/qca_spi.c
-@@ -35,7 +35,6 @@
- #include <linux/moduleparam.h>
- #include <linux/netdevice.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/sched.h>
- #include <linux/skbuff.h>
-diff --git a/drivers/net/ethernet/qualcomm/qca_uart.c b/drivers/net/ethernet/qualcomm/qca_uart.c
-index 26646cb6a20a..ace99c62d03a 100644
---- a/drivers/net/ethernet/qualcomm/qca_uart.c
-+++ b/drivers/net/ethernet/qualcomm/qca_uart.c
-@@ -32,7 +32,6 @@
- #include <linux/module.h>
- #include <linux/netdevice.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/sched.h>
- #include <linux/serdev.h>
-diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
-index 4d6b3b7d6abb..7df9f9f8e134 100644
---- a/drivers/net/ethernet/renesas/ravb_main.c
-+++ b/drivers/net/ethernet/renesas/ravb_main.c
-@@ -21,10 +21,9 @@
- #include <linux/module.h>
- #include <linux/net_tstamp.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
--#include <linux/of_irq.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
-+#include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-diff --git a/drivers/net/ethernet/renesas/rswitch.c b/drivers/net/ethernet/renesas/rswitch.c
-index 4e412ac0965a..0ba7fb75d589 100644
---- a/drivers/net/ethernet/renesas/rswitch.c
-+++ b/drivers/net/ethernet/renesas/rswitch.c
-@@ -12,11 +12,10 @@
- #include <linux/module.h>
- #include <linux/net_tstamp.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
--#include <linux/of_irq.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/rtnetlink.h>
- #include <linux/slab.h>
-diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
-index d8ec729825be..274ea16c0a1f 100644
---- a/drivers/net/ethernet/renesas/sh_eth.c
-+++ b/drivers/net/ethernet/renesas/sh_eth.c
-@@ -19,8 +19,6 @@
- #include <linux/mdio-bitbang.h>
- #include <linux/netdevice.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
--#include <linux/of_irq.h>
- #include <linux/of_net.h>
- #include <linux/phy.h>
- #include <linux/cache.h>
-diff --git a/drivers/net/ethernet/smsc/smsc911x.c b/drivers/net/ethernet/smsc/smsc911x.c
-index 174dc8908b72..2f755722e858 100644
---- a/drivers/net/ethernet/smsc/smsc911x.c
-+++ b/drivers/net/ethernet/smsc/smsc911x.c
-@@ -43,7 +43,6 @@
- #include <linux/smsc911x.h>
- #include <linux/device.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_gpio.h>
- #include <linux/of_net.h>
- #include <linux/acpi.h>
-diff --git a/drivers/net/ethernet/socionext/sni_ave.c b/drivers/net/ethernet/socionext/sni_ave.c
-index 492c39c08af1..4838d2383a43 100644
---- a/drivers/net/ethernet/socionext/sni_ave.c
-+++ b/drivers/net/ethernet/socionext/sni_ave.c
-@@ -15,10 +15,11 @@
- #include <linux/mii.h>
- #include <linux/module.h>
- #include <linux/netdevice.h>
-+#include <linux/of.h>
- #include <linux/of_net.h>
- #include <linux/of_mdio.h>
--#include <linux/of_platform.h>
- #include <linux/phy.h>
-+#include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/reset.h>
- #include <linux/types.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-dwc-qos-eth.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-dwc-qos-eth.c
-index 9f88530c5e8c..2bf74efbf2eb 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-dwc-qos-eth.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-dwc-qos-eth.c
-@@ -14,7 +14,7 @@
- #include <linux/iopoll.h>
- #include <linux/ioport.h>
- #include <linux/module.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/of_net.h>
- #include <linux/mfd/syscon.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-imx.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-imx.c
-index b9378a63f0e8..92e06a96757a 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-imx.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-imx.c
-@@ -12,7 +12,6 @@
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/phy.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-ingenic.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-ingenic.c
-index 8063ba1c3ce8..e22ef0d6bc73 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-ingenic.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-ingenic.c
-@@ -11,7 +11,6 @@
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/phy.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-mediatek.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-mediatek.c
-index 73c1dfa7ecb1..e301bf7fc30f 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-mediatek.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-mediatek.c
-@@ -7,8 +7,8 @@
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
-+#include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/stmmac.h>
- 
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-meson8b.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-meson8b.c
-index 92b16048f91c..0b159dc0d5f6 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-meson8b.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-meson8b.c
-@@ -13,7 +13,7 @@
- #include <linux/io.h>
- #include <linux/ioport.h>
- #include <linux/module.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/of_net.h>
- #include <linux/mfd/syscon.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-oxnas.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-oxnas.c
-index 42954020de2c..f91753565d60 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-oxnas.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-oxnas.c
-@@ -12,7 +12,6 @@
- #include <linux/io.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/mfd/syscon.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
-index e62940414e54..fa791f0f24ad 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
-@@ -3,7 +3,6 @@
- 
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/phy.h>
- #include <linux/phy/phy.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
-index d81591b470a2..35789cb549f7 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
-@@ -14,8 +14,8 @@
- #include <linux/of_net.h>
- #include <linux/gpio.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/of_gpio.h>
--#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
- #include <linux/delay.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-starfive.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-starfive.c
-index d3a39d2fb3a9..b1c5f2527c0d 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-starfive.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-starfive.c
-@@ -7,8 +7,10 @@
-  *
-  */
- 
-+#include <linux/mod_devicetable.h>
-+#include <linux/platform_device.h>
-+#include <linux/property.h>
- #include <linux/mfd/syscon.h>
--#include <linux/of_device.h>
- #include <linux/regmap.h>
- 
- #include "stmmac_platform.h"
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c
-index dcbb17c4f07a..ef03e4669491 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c
-@@ -17,7 +17,6 @@
- #include <linux/regmap.h>
- #include <linux/clk.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- 
- #include "stmmac_platform.h"
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-stm32.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-stm32.c
-index bdb4de59a672..3a09085819dc 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-stm32.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-stm32.c
-@@ -11,7 +11,6 @@
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/phy.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c
-index 1e714380d125..2885d8568d4b 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c
-@@ -11,9 +11,10 @@
- #include <linux/mdio-mux.h>
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
-+#include <linux/of_platform.h>
- #include <linux/phy.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-tegra.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-tegra.c
-index f8367c5b490b..65ddf6ce1535 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-tegra.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-tegra.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
- #include <linux/platform_device.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/module.h>
- #include <linux/stmmac.h>
- #include <linux/clk.h>
-diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-visconti.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-visconti.c
-index acbb284be174..a8731ce0fff0 100644
---- a/drivers/net/ethernet/stmicro/stmmac/dwmac-visconti.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-visconti.c
-@@ -6,7 +6,8 @@
-  */
- 
- #include <linux/module.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- #include <linux/of_net.h>
- #include <linux/stmmac.h>
- 
-diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c
-index 231152ee5a32..85ec9d975a55 100644
---- a/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c
-@@ -15,7 +15,6 @@
- #include <linux/io.h>
- #include <linux/of.h>
- #include <linux/of_net.h>
--#include <linux/of_device.h>
- #include <linux/of_mdio.h>
- 
- #include "stmmac.h"
-diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index 7a2e76776297..011d74087f86 100644
---- a/drivers/net/ethernet/sun/niu.c
-+++ b/drivers/net/ethernet/sun/niu.c
-@@ -31,7 +31,7 @@
- #include <linux/slab.h>
- 
- #include <linux/io.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- 
- #include "niu.h"
- 
-diff --git a/drivers/net/ethernet/sun/sunbmac.c b/drivers/net/ethernet/sun/sunbmac.c
-index 34b94153bf0c..cc34d92d2e3d 100644
---- a/drivers/net/ethernet/sun/sunbmac.c
-+++ b/drivers/net/ethernet/sun/sunbmac.c
-@@ -25,7 +25,7 @@
- #include <linux/bitops.h>
- #include <linux/dma-mapping.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
-+#include <linux/platform_device.h>
- #include <linux/gfp.h>
- 
- #include <asm/auxio.h>
-diff --git a/drivers/net/ethernet/sun/sungem.c b/drivers/net/ethernet/sun/sungem.c
-index 4154e68639ac..9bd1df8308d2 100644
---- a/drivers/net/ethernet/sun/sungem.c
-+++ b/drivers/net/ethernet/sun/sungem.c
-@@ -40,6 +40,7 @@
- #include <linux/bitops.h>
- #include <linux/mm.h>
- #include <linux/gfp.h>
-+#include <linux/of.h>
- 
- #include <asm/io.h>
- #include <asm/byteorder.h>
-diff --git a/drivers/net/ethernet/sun/sunhme.c b/drivers/net/ethernet/sun/sunhme.c
-index b93613cd1994..b983b9c23be6 100644
---- a/drivers/net/ethernet/sun/sunhme.c
-+++ b/drivers/net/ethernet/sun/sunhme.c
-@@ -32,9 +32,10 @@
- #include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/netdevice.h>
--#include <linux/of_device.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/pci.h>
-+#include <linux/platform_device.h>
- #include <linux/random.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
-diff --git a/drivers/net/ethernet/sun/sunqe.c b/drivers/net/ethernet/sun/sunqe.c
-index 6418fcc3139f..b37360f44972 100644
---- a/drivers/net/ethernet/sun/sunqe.c
-+++ b/drivers/net/ethernet/sun/sunqe.c
-@@ -27,8 +27,8 @@
- #include <linux/bitops.h>
- #include <linux/dma-mapping.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/pgtable.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/dma.h>
-diff --git a/drivers/net/ethernet/ti/am65-cpsw-nuss.c b/drivers/net/ethernet/ti/am65-cpsw-nuss.c
-index bebcfd5e6b57..bea6fc0f324c 100644
---- a/drivers/net/ethernet/ti/am65-cpsw-nuss.c
-+++ b/drivers/net/ethernet/ti/am65-cpsw-nuss.c
-@@ -19,6 +19,7 @@
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/of_device.h>
-+#include <linux/of_platform.h>
- #include <linux/phylink.h>
- #include <linux/phy/phy.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/ti/cpsw-common.c b/drivers/net/ethernet/ti/cpsw-common.c
-index bfa81bbfce3f..26dc906eae90 100644
---- a/drivers/net/ethernet/ti/cpsw-common.c
-+++ b/drivers/net/ethernet/ti/cpsw-common.c
-@@ -3,7 +3,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/regmap.h>
- #include <linux/mfd/syscon.h>
- 
-diff --git a/drivers/net/ethernet/ti/cpsw-phy-sel.c b/drivers/net/ethernet/ti/cpsw-phy-sel.c
-index 25e707d7b87c..4edb7963f856 100644
---- a/drivers/net/ethernet/ti/cpsw-phy-sel.c
-+++ b/drivers/net/ethernet/ti/cpsw-phy-sel.c
-@@ -12,7 +12,6 @@
- #include <linux/netdevice.h>
- #include <linux/phy.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- 
- #include "cpsw.h"
- 
-diff --git a/drivers/net/ethernet/ti/davinci_mdio.c b/drivers/net/ethernet/ti/davinci_mdio.c
-index 23169e36a3d4..89b6d23e9937 100644
---- a/drivers/net/ethernet/ti/davinci_mdio.c
-+++ b/drivers/net/ethernet/ti/davinci_mdio.c
-@@ -23,7 +23,6 @@
- #include <linux/pm_runtime.h>
- #include <linux/davinci_emac.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_mdio.h>
- #include <linux/pinctrl/consumer.h>
- #include <linux/mdio-bitbang.h>
-diff --git a/drivers/net/ethernet/via/via-rhine.c b/drivers/net/ethernet/via/via-rhine.c
-index d716e6fe26e1..3e09e5036490 100644
---- a/drivers/net/ethernet/via/via-rhine.c
-+++ b/drivers/net/ethernet/via/via-rhine.c
-@@ -94,7 +94,7 @@ static const int multicast_filter_limit = 32;
- #include <linux/ioport.h>
- #include <linux/interrupt.h>
- #include <linux/pci.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
-diff --git a/drivers/net/ethernet/via/via-velocity.c b/drivers/net/ethernet/via/via-velocity.c
-index 86f7843b4591..731f689412e6 100644
---- a/drivers/net/ethernet/via/via-velocity.c
-+++ b/drivers/net/ethernet/via/via-velocity.c
-@@ -57,8 +57,8 @@
- #include <linux/if.h>
- #include <linux/uaccess.h>
- #include <linux/proc_fs.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/inetdevice.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/net/ethernet/xilinx/ll_temac.h b/drivers/net/ethernet/xilinx/ll_temac.h
-index 6668d1b760d8..90d122d5475c 100644
---- a/drivers/net/ethernet/xilinx/ll_temac.h
-+++ b/drivers/net/ethernet/xilinx/ll_temac.h
-@@ -5,6 +5,7 @@
- 
- #include <linux/netdevice.h>
- #include <linux/of.h>
-+#include <linux/platform_device.h>
- #include <linux/spinlock.h>
- 
- #ifdef CONFIG_PPC_DCR
-diff --git a/drivers/net/ethernet/xilinx/ll_temac_main.c b/drivers/net/ethernet/xilinx/ll_temac_main.c
-index e0ac1bcd9925..0bf9cdee1df2 100644
---- a/drivers/net/ethernet/xilinx/ll_temac_main.c
-+++ b/drivers/net/ethernet/xilinx/ll_temac_main.c
-@@ -35,12 +35,10 @@
- #include <linux/netdevice.h>
- #include <linux/if_ether.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
--#include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <linux/skbuff.h>
- #include <linux/spinlock.h>
- #include <linux/tcp.h>      /* needed for sizeof(tcphdr) */
-diff --git a/drivers/net/ethernet/xilinx/ll_temac_mdio.c b/drivers/net/ethernet/xilinx/ll_temac_mdio.c
-index 2371c072b53f..07a9fb49eda1 100644
---- a/drivers/net/ethernet/xilinx/ll_temac_mdio.c
-+++ b/drivers/net/ethernet/xilinx/ll_temac_mdio.c
-@@ -10,8 +10,8 @@
- #include <linux/mutex.h>
- #include <linux/phy.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/of_mdio.h>
- #include <linux/platform_data/xilinx-ll-temac.h>
-diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
-index 8e32dc50a408..b7ec4dafae90 100644
---- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
-+++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
-@@ -27,11 +27,12 @@
- #include <linux/etherdevice.h>
- #include <linux/module.h>
- #include <linux/netdevice.h>
-+#include <linux/of.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
--#include <linux/of_platform.h>
- #include <linux/of_irq.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <linux/skbuff.h>
- #include <linux/math64.h>
- #include <linux/phy.h>
-diff --git a/drivers/net/ethernet/xilinx/xilinx_emaclite.c b/drivers/net/ethernet/xilinx/xilinx_emaclite.c
-index ad2c30d9a482..b358ecc67227 100644
---- a/drivers/net/ethernet/xilinx/xilinx_emaclite.c
-+++ b/drivers/net/ethernet/xilinx/xilinx_emaclite.c
-@@ -8,6 +8,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/platform_device.h>
- #include <linux/uaccess.h>
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
-@@ -15,9 +16,8 @@
- #include <linux/ethtool.h>
- #include <linux/io.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
--#include <linux/of_platform.h>
- #include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/phy.h>
-diff --git a/drivers/net/ieee802154/ca8210.c b/drivers/net/ieee802154/ca8210.c
-index f9b10e84de06..aebb19f1b3a4 100644
---- a/drivers/net/ieee802154/ca8210.c
-+++ b/drivers/net/ieee802154/ca8210.c
-@@ -57,7 +57,6 @@
- #include <linux/io.h>
- #include <linux/kfifo.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_gpio.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-diff --git a/drivers/net/ipa/ipa_main.c b/drivers/net/ipa/ipa_main.c
-index 6a2f2fc2f501..da853353a5c7 100644
---- a/drivers/net/ipa/ipa_main.c
-+++ b/drivers/net/ipa/ipa_main.c
-@@ -13,8 +13,8 @@
- #include <linux/firmware.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/firmware/qcom/qcom_scm.h>
- #include <linux/soc/qcom/mdt_loader.h>
-diff --git a/net/core/of_net.c b/net/core/of_net.c
-index 55d3fe229269..93ea425b9248 100644
---- a/net/core/of_net.c
-+++ b/net/core/of_net.c
-@@ -8,6 +8,7 @@
- #include <linux/kernel.h>
- #include <linux/of_net.h>
- #include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/phy.h>
- #include <linux/export.h>
- #include <linux/device.h>
+
+On 7/23/23 21:08, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20230721:
+> 
+
+on ppc32:
+
+../arch/powerpc/platforms/embedded6xx/mvme5100.c: In function 'mvme5100_add_bridge':
+../arch/powerpc/platforms/embedded6xx/mvme5100.c:135:65: error: passing argument 5 of 'early_read_config_dword' from incompatible pointer type [-Werror=incompatible-pointer-types]
+  135 |         early_read_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_1, &pci_membase);
+      |                                                                 ^~~~~~~~~~~~
+      |                                                                 |
+      |                                                                 phys_addr_t * {aka long long unsigned int *}
+In file included from ../arch/powerpc/platforms/embedded6xx/mvme5100.c:19:
+../arch/powerpc/include/asm/pci-bridge.h:150:53: note: expected 'u32 *' {aka 'unsigned int *'} but argument is of type 'phys_addr_t *' {aka 'long long unsigned int *'}
+  150 |                         int dev_fn, int where, u32 *val);
+      |                                                ~~~~~^~~
+In file included from ../include/asm-generic/bug.h:22,
+                 from ../arch/powerpc/include/asm/bug.h:116,
+                 from ../include/linux/bug.h:5,
+                 from ../include/linux/thread_info.h:13,
+                 from ../include/asm-generic/preempt.h:5,
+                 from ./arch/powerpc/include/generated/asm/preempt.h:1,
+                 from ../include/linux/preempt.h:79,
+                 from ../include/linux/spinlock.h:56,
+                 from ../include/linux/irq.h:14,
+                 from ../include/linux/of_irq.h:7,
+                 from ../arch/powerpc/platforms/embedded6xx/mvme5100.c:15:
+../include/linux/kern_levels.h:5:25: warning: format '%x' expects argument of type 'unsigned int', but argument 2 has type 'phys_addr_t' {aka 'long long unsigned int'} [-Wformat=]
+    5 | #define KERN_SOH        "\001"          /* ASCII Start Of Header */
+      |                         ^~~~~~
+../include/linux/printk.h:427:25: note: in definition of macro 'printk_index_wrap'
+  427 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
+      |                         ^~~~
+../include/linux/printk.h:528:9: note: in expansion of macro 'printk'
+  528 |         printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+      |         ^~~~~~
+../include/linux/kern_levels.h:14:25: note: in expansion of macro 'KERN_SOH'
+   14 | #define KERN_INFO       KERN_SOH "6"    /* informational */
+      |                         ^~~~~~~~
+../include/linux/printk.h:528:16: note: in expansion of macro 'KERN_INFO'
+  528 |         printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+      |                ^~~~~~~~~
+../arch/powerpc/platforms/embedded6xx/mvme5100.c:142:9: note: in expansion of macro 'pr_info'
+  142 |         pr_info("mvme5100_pic_init: pci_membase: %x\n", pci_membase);
+      |         ^~~~~~~
+cc1: some warnings being treated as errors
+
+
+Full randconfig file is attached.
+
 -- 
-2.40.1
+~Randy
+--------------TQd7QMcHb0nrrjq0Eg4w7Llq
+Content-Type: application/gzip; name="config-r3694.gz"
+Content-Disposition: attachment; filename="config-r3694.gz"
+Content-Transfer-Encoding: base64
 
+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
+
+--------------TQd7QMcHb0nrrjq0Eg4w7Llq--
