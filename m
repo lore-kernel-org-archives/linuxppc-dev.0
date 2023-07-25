@@ -4,68 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E878FC001B0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jul 2023 22:30:35 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=HldvRjk0;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EDD7C00528
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 07:17:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R8J0B4CZSz3bZr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jul 2023 08:30:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=HldvRjk0;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::232; helo=mail-oi1-x232.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-x232.google.com (mail-oi1-x232.google.com [IPv6:2607:f8b0:4864:20::232])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R97dh14dtz3cZJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 17:17:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.50; helo=mail-vs1-f50.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com [209.85.217.50])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R8Hz95Pftz2yTt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2023 08:29:41 +1000 (AEST)
-Received: by mail-oi1-x232.google.com with SMTP id 5614622812f47-3a44fae863fso2522712b6e.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2023 15:29:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690151378; x=1690756178;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=sNTpJwF6903WETZaUR6RqWiM1FUDiqrdqTK5pWkvOlI=;
-        b=HldvRjk0ys92jdNfeVWBvFtU170B3Sgl14twuVgU3PfgDSaDoMcHUhPaz6AeMDu2ht
-         Uif+LfgB6gTAkrapwLoFohouFxezysGIwMIbWr79XgdEZv9T4Ta9JcXZ/xBgIhza5Wp6
-         fGeIcGxiljkQ3KbjHflb2DqW6Ps1SdtwHA/t4H1ct7WpWFLF6Bv/l70pxlcxn5R0BUKr
-         Iazbm5RkEcD8IGB87s3PXGfBT5AeBhyzBinqvCJhTdPqY/jJZS+FqXmJovfCB0tAmiod
-         IWq1u2IAT6X27nS6190Pq6YJ8Hg+nIaVyTtHCpJcN+Q3aXVeneJaex1eWhS9PdC4bSB8
-         ACrg==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R97d36b8rz3bpp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 17:16:55 +1000 (AEST)
+Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-444c42f608aso1701389137.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 00:16:55 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690151378; x=1690756178;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=sNTpJwF6903WETZaUR6RqWiM1FUDiqrdqTK5pWkvOlI=;
-        b=Orc9SeV6jdtN3CBWNv3O6U3XEAtEtidVUtcBhvlWgswqbi2QpO5hRLMADcZHwlqpxJ
-         fYM1dd1fpacWfvbDLBkfe6V/ywfNTKrX4EkLeleyAneIfsnLtnnFueI97L7C/Mw86gnj
-         JtNrR54mB12qZhOYE4jC8H8+VoT+3fbEyW3yVbeDys9R0d1SaLFrL6n8Ig1kvghesThL
-         GAe6hkKLZTD9g6u4EY23vPT27pNycwR7JP955y0mt8ANylqn8Nrd6XWQD7WCH/5gSIya
-         hmEdjeyoUn1uhZpmfAlSkniiSPMv9Ic7ep+CITd2BamCbzDQ1ibDENJGUxH4q4U3Gnpx
-         uAPQ==
-X-Gm-Message-State: ABy/qLbCKdyu0LxjdbCdF/8ojXtu++DCCpmCzKQUz2LFVYCShkKKejvS
-	Ny2K8yqqoik76aamTNM7gp9P+g==
-X-Google-Smtp-Source: APBJJlGCOgtzl5Q2J86M2vQtJN89EUt0E/aCdYP/U+IucyQfogqdSTRUg5XhtlxwoMDwEEOnXDkYbw==
-X-Received: by 2002:a05:6808:1b2b:b0:3a4:31ee:da6a with SMTP id bx43-20020a0568081b2b00b003a431eeda6amr7828406oib.55.1690151378127;
-        Sun, 23 Jul 2023 15:29:38 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id o5-20020a05680803c500b003a41484b23dsm3509589oie.46.2023.07.23.15.29.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 23 Jul 2023 15:29:37 -0700 (PDT)
-Date: Sun, 23 Jul 2023 15:29:32 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 07/13 fix] s390: add pte_free_defer() for pgtables sharing
- page: fix
-In-Reply-To: <20230719162506.235856eb@p-imbrenda>
-Message-ID: <3bc095ba-a180-ce3b-82b1-2bfc64612f3@google.com>
-References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <94eccf5f-264c-8abe-4567-e77f4b4e14a@google.com> <20230719162506.235856eb@p-imbrenda>
+        d=1e100.net; s=20221208; t=1690269411; x=1690874211;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=cJjDsseCku7rw4c3XWBJPjjfZ2OLqB4Q28CEWAPlCas=;
+        b=LCGfEuG2NrVTLMrO7aevx2mz81LL15puai2CEGipDSs08bqinqOLvIm8MbKxEFr0oT
+         qqy3ZQxEK5v+K5HFkJ3MDNMipEkCZBxPYf80YTfrnxQiX2o7x5HC4k6BgkjpRdvAxIYT
+         JWc+PFqKvOe2FWl1c+00dBBofPmdpBeTfYQHqYUV2iDN1xBvmD1CVTlWoizy6auDN12e
+         wxjguFei+0Av/ALN5IcLVjX4nm3+X16TwiETB3kLWA0pp21HsyGzCxrSiBTpb5vS9h13
+         yTV7QO7RlXdWRBiJK8SKZ4QHxnxypPUtGLsw5Im8+PHfcKlwuDlslLGoYz/DP/vW+WxV
+         Iyig==
+X-Gm-Message-State: ABy/qLYmq8/q4gE1voRkyWdtXJ+yCZXNQR/sVwmYb4uZMFz1nB+l8mU1
+	6LVwKu+p/OINqkKQWVarc1khlB7JvuLi6rIv
+X-Google-Smtp-Source: APBJJlH62PJXTHJKWWx7+3Q4qAhYR1UrgJTV7Rj3TuG1GXQjr5AY/zTdbmkATmy0O6cO/DZeTEAe5g==
+X-Received: by 2002:a05:6102:2448:b0:444:e9a0:13f7 with SMTP id g8-20020a056102244800b00444e9a013f7mr4254548vss.5.1690269411385;
+        Tue, 25 Jul 2023 00:16:51 -0700 (PDT)
+Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
+        by smtp.gmail.com with ESMTPSA id q18-20020a67cc12000000b00446d8968615sm1733271vsl.2.2023.07.25.00.16.49
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Jul 2023 00:16:49 -0700 (PDT)
+Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-794cddcab71so1499404241.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 00:16:49 -0700 (PDT)
+X-Received: by 2002:a25:10c5:0:b0:c91:717e:7658 with SMTP id
+ 188-20020a2510c5000000b00c91717e7658mr10654915ybq.2.1690269388936; Tue, 25
+ Jul 2023 00:16:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <cover.1689074739.git.legion@kernel.org> <cover.1689092120.git.legion@kernel.org>
+ <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
+In-Reply-To: <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 25 Jul 2023 09:16:17 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXzYxo83AXfWWVyp2fL3fcEUNgbG5aSZuA62FwO2i3jDg@mail.gmail.com>
+Message-ID: <CAMuHMdXzYxo83AXfWWVyp2fL3fcEUNgbG5aSZuA62FwO2i3jDg@mail.gmail.com>
+Subject: Re: [PATCH v4 3/5] arch: Register fchmodat2, usually as syscall 452
+To: Alexey Gladkov <legion@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,31 +68,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <t
- homas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@monstr.eu, tony.luck@in
+ tel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Claudio finds warning on mm_has_pgste() more useful than on mm_alloc_pgste().
+On Tue, Jul 11, 2023 at 6:25=E2=80=AFPM Alexey Gladkov <legion@kernel.org> =
+wrote:
+> From: Palmer Dabbelt <palmer@sifive.com>
+>
+> This registers the new fchmodat2 syscall in most places as nuber 452,
+> with alpha being the exception where it's 562.  I found all these sites
+> by grepping for fspick, which I assume has found me everything.
+>
+> Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
+> Signed-off-by: Alexey Gladkov <legion@kernel.org>
 
-Signed-off-by: Hugh Dickins <hughd@google.com>
----
- arch/s390/mm/pgalloc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
 
-diff --git a/arch/s390/mm/pgalloc.c b/arch/s390/mm/pgalloc.c
-index 760b4ace475e..d7374add7820 100644
---- a/arch/s390/mm/pgalloc.c
-+++ b/arch/s390/mm/pgalloc.c
-@@ -459,7 +459,7 @@ void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
- 	 * page_table_free() does not do the pgste gmap_unlink() which
- 	 * page_table_free_rcu() does: warn us if pgste ever reaches here.
- 	 */
--	WARN_ON_ONCE(mm_alloc_pgste(mm));
-+	WARN_ON_ONCE(mm_has_pgste(mm));
- }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
- 
--- 
-2.35.3
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
