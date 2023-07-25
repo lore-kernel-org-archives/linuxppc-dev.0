@@ -4,63 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BF92C001E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 10:26:29 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RKVIVtfV;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC0F3C001DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 12:32:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9Cql5Fmpz30dn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 20:26:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RKVIVtfV;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=kirill.shutemov@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 25 Jul 2023 20:25:27 AEST
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9Gdg2V5Pz3dBH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 22:32:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.50; helo=mail-oo1-f50.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9Cpc04YHz30Kd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 20:25:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1690280735; x=1721816735;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=z2JgSRr57QfGjyG/fWEsaikXL6iwmaxUOjUdDAVtI0A=;
-  b=RKVIVtfVNyXGOZAdRGgKuAERGkMtUlvf/CPBsm+zBu8E4WZnwY8HwCh5
-   lka+USeFPocOV0SoPAwsbsGsgsw9FVjU8pwi7gnsT35so7RQ3Ovg1xglq
-   Agt4aGeky9tcSBn7BfWLDu0JkbVSQp19eniDoyNRLxb2/m3C3XMRcfmIk
-   Pi6Eo2dZKc7attnEHcxDUrctV80oOa964n+gYf+muLAzAxS+iR7GuVila
-   HPfC4VXxTi3Lt7VigpEl5/CzAdv8qyN7tRSVIXhcijatFnjx1A8jOWS5W
-   x1LaAEZUNPCVM9cHrwrQdd0eyT931nlt5veriH8UQnv/QTDu0kPcFIUmc
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="347956832"
-X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
-   d="scan'208";a="347956832"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 03:24:14 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="1056753039"
-X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
-   d="scan'208";a="1056753039"
-Received: from mlytkin-mobl2.ger.corp.intel.com (HELO box.shutemov.name) ([10.252.57.129])
-  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 03:24:05 -0700
-Received: by box.shutemov.name (Postfix, from userid 1000)
-	id 171E4103A12; Tue, 25 Jul 2023 13:24:03 +0300 (+03)
-Date: Tue, 25 Jul 2023 13:24:03 +0300
-From: "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
-To: Sean Christopherson <seanjc@google.com>,
-	Vlastimil Babka <vbabka@suse.cz>
-Subject: Re: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
- completely unmovable
-Message-ID: <20230725102403.xywjqlhyqkrzjok6@box.shutemov.name>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-11-seanjc@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R97gN5qnGz2yW2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 17:18:56 +1000 (AEST)
+Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-5675add2980so3227536eaf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 00:18:56 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690269534; x=1690874334;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Lrkzr5cvjosFI//uEK1aHD1IOI0Bz2cNenZQg3FVc4w=;
+        b=Bq36wYflhA1iQWVOd2IYM8eckFWZDXFUNWqSdS/ezZXYea/wPzT/IO22zZEf1u9qkh
+         IjTRFU05EMIxh0eBnGMtanrwytLO8c7Jnl1KkLNjkVf0ryTkn/iGRWjPaqQ1rq30KMLX
+         CObDLbQwtx3LZG3zZm6T3JDBmFDckqzHXEqLcUTxNgQ/QFkz5AGASnNoMiKaKZhxcU5X
+         iZHyMMZfMOgA2EcgAxxLOt+z9FqKm/MDC3HP3VqY4XVmJRZsDmiA/8zCe1AeSQ0BBVkC
+         JAhNnqQ7KKZ65pTJD4YMBP7SP11fndDDndEUtCBtNmD92hOjgECo7l2HYsQ1FdwL+X9e
+         B3vQ==
+X-Gm-Message-State: ABy/qLYWqgCsuYjbrjQ2qkoC8UEFJPBHUdF8AFO0O5+B3P/fhSXdNTqg
+	viEPnUf56JEQIXX0Jk7smjQ/qdPVLRT5exjJ
+X-Google-Smtp-Source: APBJJlFwP97Z63CuN4cSA45PbVx37GeyOAmZWQQeAVJElsCYGFJ1MSrSkBJI00xvKzm03vY8nKpoYw==
+X-Received: by 2002:aca:1a07:0:b0:39d:f03e:71ca with SMTP id a7-20020aca1a07000000b0039df03e71camr11348228oia.53.1690269533838;
+        Tue, 25 Jul 2023 00:18:53 -0700 (PDT)
+Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com. [209.85.167.173])
+        by smtp.gmail.com with ESMTPSA id bj39-20020a05680819a700b003a478233094sm4843544oib.56.2023.07.25.00.18.52
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Jul 2023 00:18:52 -0700 (PDT)
+Received: by mail-oi1-f173.google.com with SMTP id 5614622812f47-3a3efee1d44so3850709b6e.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 00:18:52 -0700 (PDT)
+X-Received: by 2002:a25:b07:0:b0:d07:bce0:be77 with SMTP id
+ 7-20020a250b07000000b00d07bce0be77mr6021730ybl.61.1690269511226; Tue, 25 Jul
+ 2023 00:18:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230718234512.1690985-11-seanjc@google.com>
+References: <20230628230935.1196180-1-sohil.mehta@intel.com> <20230710185124.3848462-1-sohil.mehta@intel.com>
+In-Reply-To: <20230710185124.3848462-1-sohil.mehta@intel.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 25 Jul 2023 09:18:19 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdX4HAMD5PA8OOsTGvx_1LuUw=Stegtcb9KQFVa-CP3T_w@mail.gmail.com>
+Message-ID: <CAMuHMdX4HAMD5PA8OOsTGvx_1LuUw=Stegtcb9KQFVa-CP3T_w@mail.gmail.com>
+Subject: Re: [PATCH v2] syscalls: Cleanup references to sys_lookup_dcookie()
+To: Sohil Mehta <sohil.mehta@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Tue, 25 Jul 2023 22:32:02 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,32 +68,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, l
- inux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner 
+ <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-api@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <sv
+ ens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 18, 2023 at 04:44:53PM -0700, Sean Christopherson wrote:
-> diff --git a/mm/compaction.c b/mm/compaction.c
-> index dbc9f86b1934..a3d2b132df52 100644
-> --- a/mm/compaction.c
-> +++ b/mm/compaction.c
-> @@ -1047,6 +1047,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
->  		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
->  			goto isolate_fail_put;
->  
-> +		/* The mapping truly isn't movable. */
-> +		if (mapping && mapping_unmovable(mapping))
-> +			goto isolate_fail_put;
-> +
+On Mon, Jul 10, 2023 at 8:52=E2=80=AFPM Sohil Mehta <sohil.mehta@intel.com>=
+ wrote:
+> commit 'be65de6b03aa ("fs: Remove dcookies support")' removed the
+> syscall definition for lookup_dcookie.  However, syscall tables still
+> point to the old sys_lookup_dcookie() definition. Update syscall tables
+> of all architectures to directly point to sys_ni_syscall() instead.
+>
+> Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
+> Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+> Acked-by: Namhyung Kim <namhyung@kernel.org> # for perf
+> ---
+> v2:
+> - Rebased to v6.5-rc1. No other dependencies.
+> - Added acquired tags.
 
-I doubt that it is safe to dereference mapping here. I believe the folio
-can be truncated from under us and the mapping freed with the inode.
+>  arch/m68k/kernel/syscalls/syscall.tbl               | 2 +-
 
-The folio has to be locked to dereference mapping safely (given that the
-mapping is still tied to the folio).
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Vlastimil, any comments?
+Gr{oetje,eeting}s,
 
--- 
-  Kiryl Shutsemau / Kirill A. Shutemov
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
