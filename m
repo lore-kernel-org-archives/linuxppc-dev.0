@@ -4,45 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2E2DC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 06:52:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C171C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 09:26:57 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=fCLiUYSC;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R974b2LjJz3dBc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 16:52:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9BW41Vwxz3c5N
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 19:26:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=fCLiUYSC;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 60 seconds by postgrey-1.37 at boromir; Tue, 25 Jul 2023 19:26:03 AEST
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R973w3VWmz30MD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 16:51:37 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qOBsF-0008CR-QE; Tue, 25 Jul 2023 08:50:23 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qOBs7-001wAn-Vc; Tue, 25 Jul 2023 08:50:15 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qOBs7-007bOg-45; Tue, 25 Jul 2023 08:50:15 +0200
-Date: Tue, 25 Jul 2023 08:50:14 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2] tty: Explicitly include correct DT includes
-Message-ID: <20230725065014.kjdcos77kzepprvw@pengutronix.de>
-References: <20230724205440.767071-1-robh@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9BV31KLKz3bNp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 19:26:02 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id A030640002;
+	Tue, 25 Jul 2023 09:25:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1690277160;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=n7Bj1UB3LPRPXqk/qZ/IcEb6nTP/00Iq1F26oZlAG3g=;
+	b=fCLiUYSCnhteF1VPXm7YqBOGFQWjrJSHZ1efeE0l9zcj523pMnPDFur1MqWZ2PRv9yKMtq
+	9kgg4xzbm2viGhFmovDujr4QV4QXt3Cw3zmlYWTRGAAuQJjVSGs7MupXSR8+OjQ2J0ITmE
+	wnWWMA9jfXaZLGaGoyOxn1PtDiEcn7OOUYqyVvGtmjRxHptrOVZK1Bmy5N80t/ZTgwXczL
+	ByF6O1mp/sd1WnnrT28VoMND6Wasuxic74eIvMcHh8tZbdC9nvy+FtSHVWhHK1VdoMUGhg
+	6p/7HPel8lyoxx5WRKa01CPVYQ85iVTAElpZagYQDLKPunSEhg5fhzoN/rlQNw==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Lee Jones <lee@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH 24/26] ASoC: codecs: Add support for the framer codec
+Date: Tue, 25 Jul 2023 11:24:00 +0200
+Message-ID: <20230725092417.43706-25-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230725092417.43706-1-herve.codina@bootlin.com>
+References: <20230725092417.43706-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="egg3m5pjvujeb37y"
-Content-Disposition: inline
-In-Reply-To: <20230724205440.767071-1-robh@kernel.org>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,55 +79,506 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Mateusz Holenko <mholenko@antmicro.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, sparclinux@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, Shan-Chun Hung <schung@nuvoton.com>, Peter Korsgaard <jacmet@sunsite.dk>, Fabio Estevam <festevam@gmail.com>, Karol Gugala <kgugala@antmicro.com>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, Gabriel Somlo <gsomlo@gmail.com>, Andy Gross <agross@kernel.org>, Joel Stanley <joel@jms.id.au>, linux-serial@vger.kernel.org, linux-mips@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Jacky Huang <ychuang3@nuvoton.com>, linux-tegra@vger.kernel.org, linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Jiri Slaby <jirislaby@kernel.org>, linux-arm-kernel@lists.infradead.o
- rg, Timur Tabi <timur@kernel.org>, Richard Genoud <richard.genoud@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Andersson <andersson@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, "David S. Miller" <davem@davemloft.net>, Konrad Dybcio <konrad.dybcio@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Shawn Guo <shawnguo@kernel.org>, Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The framer codec interracts with a framer.
+It allows to use some of the framer timeslots as audio channels to
+transport audio data over the framer E1/T1/J1 lines.
+It also reports line carrier detection events through the ALSA jack
+detection feature.
 
---egg3m5pjvujeb37y
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ sound/soc/codecs/Kconfig        |  15 ++
+ sound/soc/codecs/Makefile       |   2 +
+ sound/soc/codecs/framer-codec.c | 423 ++++++++++++++++++++++++++++++++
+ 3 files changed, 440 insertions(+)
+ create mode 100644 sound/soc/codecs/framer-codec.c
 
-Hello Rob,
+diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
+index f99203ef9b03..8bd534c94893 100644
+--- a/sound/soc/codecs/Kconfig
++++ b/sound/soc/codecs/Kconfig
+@@ -110,6 +110,7 @@ config SND_SOC_ALL_CODECS
+ 	imply SND_SOC_ES8328_I2C
+ 	imply SND_SOC_ES7134
+ 	imply SND_SOC_ES7241
++	imply SND_SOC_FRAMER
+ 	imply SND_SOC_GTM601
+ 	imply SND_SOC_HDAC_HDMI
+ 	imply SND_SOC_HDAC_HDA
+@@ -1043,6 +1044,20 @@ config SND_SOC_ES8328_SPI
+ 	depends on SPI_MASTER
+ 	select SND_SOC_ES8328
+ 
++config SND_SOC_FRAMER
++	tristate "Framer codec"
++	depends on GENERIC_FRAMER
++	help
++	  Enable support for the framer codec.
++	  The framer codec uses the generic framer infrastructure to transport
++	  some audio data over an analog E1/T1/J1 line.
++	  This codec allows to use some of the time slots available on the TDM
++	  bus on with the framer is connected to transport the audio data.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called snd-soc-framer.
++
++
+ config SND_SOC_GTM601
+ 	tristate 'GTM601 UMTS modem audio codec'
+ 
+diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
+index 32dcc6de58bd..54667274a0f6 100644
+--- a/sound/soc/codecs/Makefile
++++ b/sound/soc/codecs/Makefile
+@@ -116,6 +116,7 @@ snd-soc-es8326-objs := es8326.o
+ snd-soc-es8328-objs := es8328.o
+ snd-soc-es8328-i2c-objs := es8328-i2c.o
+ snd-soc-es8328-spi-objs := es8328-spi.o
++snd-soc-framer-objs := framer-codec.o
+ snd-soc-gtm601-objs := gtm601.o
+ snd-soc-hdac-hdmi-objs := hdac_hdmi.o
+ snd-soc-hdac-hda-objs := hdac_hda.o
+@@ -499,6 +500,7 @@ obj-$(CONFIG_SND_SOC_ES8326)    += snd-soc-es8326.o
+ obj-$(CONFIG_SND_SOC_ES8328)	+= snd-soc-es8328.o
+ obj-$(CONFIG_SND_SOC_ES8328_I2C)+= snd-soc-es8328-i2c.o
+ obj-$(CONFIG_SND_SOC_ES8328_SPI)+= snd-soc-es8328-spi.o
++obj-$(CONFIG_SND_SOC_FRAMER)	+= snd-soc-framer.o
+ obj-$(CONFIG_SND_SOC_GTM601)    += snd-soc-gtm601.o
+ obj-$(CONFIG_SND_SOC_HDAC_HDMI) += snd-soc-hdac-hdmi.o
+ obj-$(CONFIG_SND_SOC_HDAC_HDA) += snd-soc-hdac-hda.o
+diff --git a/sound/soc/codecs/framer-codec.c b/sound/soc/codecs/framer-codec.c
+new file mode 100644
+index 000000000000..0db82082620b
+--- /dev/null
++++ b/sound/soc/codecs/framer-codec.c
+@@ -0,0 +1,423 @@
++// SPDX-License-Identifier: GPL-2.0
++//
++// Framer ALSA SoC driver
++//
++// Copyright 2023 CS GROUP France
++//
++// Author: Herve Codina <herve.codina@bootlin.com>
++
++#include <linux/clk.h>
++#include <linux/framer/framer.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <sound/jack.h>
++#include <sound/pcm_params.h>
++#include <sound/soc.h>
++#include <sound/tlv.h>
++
++#define FRAMER_NB_CHANNEL	32
++#define FRAMER_JACK_MASK (SND_JACK_LINEIN | SND_JACK_LINEOUT)
++
++struct framer_codec {
++	struct framer *framer;
++	struct device *dev;
++	struct snd_soc_jack jack;
++	struct notifier_block nb;
++	struct work_struct carrier_work;
++	int max_chan_playback;
++	int max_chan_capture;
++};
++
++static int framer_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
++				   unsigned int rx_mask, int slots, int width)
++{
++	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
++
++	switch (width) {
++	case 0:
++		/* Not set -> default 8 */
++	case 8:
++		break;
++	default:
++		dev_err(dai->dev, "tdm slot width %d not supported\n", width);
++		return -EINVAL;
++	}
++
++	framer->max_chan_playback = hweight32(tx_mask);
++	if (framer->max_chan_playback > FRAMER_NB_CHANNEL) {
++		dev_err(dai->dev, "too much tx slots defined (mask = 0x%x) support max %d\n",
++			tx_mask, FRAMER_NB_CHANNEL);
++		return -EINVAL;
++	}
++
++	framer->max_chan_capture = hweight32(rx_mask);
++	if (framer->max_chan_capture > FRAMER_NB_CHANNEL) {
++		dev_err(dai->dev, "too much rx slots defined (mask = 0x%x) support max %d\n",
++			rx_mask, FRAMER_NB_CHANNEL);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++/*
++ * The constraints for format/channel is to match with the number of 8bit
++ * time-slots available.
++ */
++static int framer_dai_hw_rule_channels_by_format(struct snd_soc_dai *dai,
++						 struct snd_pcm_hw_params *params,
++						 unsigned int nb_ts)
++{
++	struct snd_interval *c = hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
++	snd_pcm_format_t format = params_format(params);
++	struct snd_interval ch = {0};
++
++	switch (snd_pcm_format_physical_width(format)) {
++	case 8:
++		ch.max = nb_ts;
++		break;
++	case 16:
++		ch.max = nb_ts / 2;
++		break;
++	case 32:
++		ch.max = nb_ts / 4;
++		break;
++	case 64:
++		ch.max = nb_ts / 8;
++		break;
++	default:
++		dev_err(dai->dev, "format physical width %u not supported\n",
++			snd_pcm_format_physical_width(format));
++		return -EINVAL;
++	}
++
++	ch.min = ch.max ? 1 : 0;
++
++	return snd_interval_refine(c, &ch);
++}
++
++static int framer_dai_hw_rule_playback_channels_by_format(struct snd_pcm_hw_params *params,
++							  struct snd_pcm_hw_rule *rule)
++{
++	struct snd_soc_dai *dai = rule->private;
++	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
++
++	return framer_dai_hw_rule_channels_by_format(dai, params, framer->max_chan_playback);
++}
++
++static int framer_dai_hw_rule_capture_channels_by_format(struct snd_pcm_hw_params *params,
++							 struct snd_pcm_hw_rule *rule)
++{
++	struct snd_soc_dai *dai = rule->private;
++	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
++
++	return framer_dai_hw_rule_channels_by_format(dai, params, framer->max_chan_capture);
++}
++
++static int framer_dai_hw_rule_format_by_channels(struct snd_soc_dai *dai,
++						 struct snd_pcm_hw_params *params,
++						 unsigned int nb_ts)
++{
++	struct snd_mask *f_old = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
++	unsigned int channels = params_channels(params);
++	unsigned int slot_width;
++	snd_pcm_format_t format;
++	struct snd_mask f_new;
++
++	if (!channels || channels > nb_ts) {
++		dev_err(dai->dev, "channels %u not supported\n", nb_ts);
++		return -EINVAL;
++	}
++
++	slot_width = (nb_ts / channels) * 8;
++
++	snd_mask_none(&f_new);
++	for (format = SNDRV_PCM_FORMAT_FIRST; format <= SNDRV_PCM_FORMAT_LAST; format++) {
++		if (snd_mask_test(f_old, format)) {
++			if (snd_pcm_format_physical_width(format) <= slot_width)
++				snd_mask_set(&f_new, format);
++		}
++	}
++
++	return snd_mask_refine(f_old, &f_new);
++}
++
++static int framer_dai_hw_rule_playback_format_by_channels(struct snd_pcm_hw_params *params,
++							  struct snd_pcm_hw_rule *rule)
++{
++	struct snd_soc_dai *dai = rule->private;
++	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
++
++	return framer_dai_hw_rule_format_by_channels(dai, params, framer->max_chan_playback);
++}
++
++static int framer_dai_hw_rule_capture_format_by_channels(struct snd_pcm_hw_params *params,
++							 struct snd_pcm_hw_rule *rule)
++{
++	struct snd_soc_dai *dai = rule->private;
++	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
++
++	return framer_dai_hw_rule_format_by_channels(dai, params, framer->max_chan_capture);
++}
++
++static u64 framer_formats(u8 nb_ts)
++{
++	u64 formats;
++	unsigned int chan_width;
++	unsigned int format_width;
++	int i;
++
++	if (!nb_ts)
++		return 0;
++
++	formats = 0;
++	chan_width = nb_ts * 8;
++	for (i = 0; i <= SNDRV_PCM_FORMAT_LAST; i++) {
++		/* Support physical width multiple of 8bit */
++		format_width = snd_pcm_format_physical_width(i);
++		if (format_width == 0 || format_width % 8)
++			continue;
++
++		/*
++		 * And support physical width that can fit N times in the
++		 * channel
++		 */
++		if (format_width > chan_width || chan_width % format_width)
++			continue;
++
++		formats |= (1ULL << i);
++	}
++	return formats;
++}
++
++static int framer_dai_startup(struct snd_pcm_substream *substream,
++			      struct snd_soc_dai *dai)
++{
++	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
++	snd_pcm_hw_rule_func_t hw_rule_channels_by_format;
++	snd_pcm_hw_rule_func_t hw_rule_format_by_channels;
++	unsigned int frame_bits;
++	u64 format;
++	int ret;
++
++	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
++		format = framer_formats(framer->max_chan_capture);
++		hw_rule_channels_by_format = framer_dai_hw_rule_capture_channels_by_format;
++		hw_rule_format_by_channels = framer_dai_hw_rule_capture_format_by_channels;
++		frame_bits = framer->max_chan_capture * 8;
++	} else {
++		format = framer_formats(framer->max_chan_playback);
++		hw_rule_channels_by_format = framer_dai_hw_rule_playback_channels_by_format;
++		hw_rule_format_by_channels = framer_dai_hw_rule_playback_format_by_channels;
++		frame_bits = framer->max_chan_playback * 8;
++	}
++
++	ret = snd_pcm_hw_constraint_mask64(substream->runtime,
++					   SNDRV_PCM_HW_PARAM_FORMAT, format);
++	if (ret) {
++		dev_err(dai->dev, "Failed to add format constraint (%d)\n", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_hw_rule_add(substream->runtime, 0, SNDRV_PCM_HW_PARAM_CHANNELS,
++				  hw_rule_channels_by_format, dai,
++				  SNDRV_PCM_HW_PARAM_FORMAT, -1);
++	if (ret) {
++		dev_err(dai->dev, "Failed to add channels rule (%d)\n", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_hw_rule_add(substream->runtime, 0,  SNDRV_PCM_HW_PARAM_FORMAT,
++				  hw_rule_format_by_channels, dai,
++				  SNDRV_PCM_HW_PARAM_CHANNELS, -1);
++	if (ret) {
++		dev_err(dai->dev, "Failed to add format rule (%d)\n", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_hw_constraint_single(substream->runtime,
++					   SNDRV_PCM_HW_PARAM_FRAME_BITS,
++					   frame_bits);
++	if (ret < 0) {
++		dev_err(dai->dev, "Failed to add frame_bits constraint (%d)\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static u64 framer_dai_formats[] = {
++	SND_SOC_POSSIBLE_DAIFMT_DSP_B,
++};
++
++static const struct snd_soc_dai_ops framer_dai_ops = {
++	.startup	= framer_dai_startup,
++	.set_tdm_slot	= framer_dai_set_tdm_slot,
++	.auto_selectable_formats     = framer_dai_formats,
++	.num_auto_selectable_formats = ARRAY_SIZE(framer_dai_formats),
++};
++
++static struct snd_soc_dai_driver framer_dai_driver = {
++	.name = "framer",
++	.playback = {
++		.stream_name = "Playback",
++		.channels_min = 1,
++		.channels_max = FRAMER_NB_CHANNEL,
++		.rates = SNDRV_PCM_RATE_8000,
++		.formats = U64_MAX, /* Will be refined on DAI .startup() */
++	},
++	.capture = {
++		.stream_name = "Capture",
++		.channels_min = 1,
++		.channels_max = FRAMER_NB_CHANNEL,
++		.rates = SNDRV_PCM_RATE_8000,
++		.formats = U64_MAX, /* Will be refined on DAI .startup() */
++	},
++	.ops = &framer_dai_ops,
++};
++
++static void framer_carrier_work(struct work_struct *work)
++{
++	struct framer_codec *framer = container_of(work, struct framer_codec, carrier_work);
++	struct framer_status framer_status;
++	int jack_status;
++	int ret;
++
++	ret = framer_get_status(framer->framer, &framer_status);
++	if (ret) {
++		dev_err(framer->dev, "get framer status failed (%d)\n", ret);
++		return;
++	}
++
++	jack_status = framer_status.link_is_on ? FRAMER_JACK_MASK : 0;
++	snd_soc_jack_report(&framer->jack, jack_status, FRAMER_JACK_MASK);
++}
++
++static int framer_carrier_notifier(struct notifier_block *nb, unsigned long action,
++				   void *data)
++{
++	struct framer_codec *framer = container_of(nb, struct framer_codec, nb);
++
++	switch (action) {
++	case FRAMER_EVENT_STATUS:
++		queue_work(system_power_efficient_wq, &framer->carrier_work);
++		break;
++	default:
++		return NOTIFY_DONE;
++	}
++
++	return NOTIFY_OK;
++}
++
++static int framer_component_probe(struct snd_soc_component *component)
++{
++	struct framer_codec *framer = snd_soc_component_get_drvdata(component);
++	struct framer_status status;
++	char *name;
++	int ret;
++
++	INIT_WORK(&framer->carrier_work, framer_carrier_work);
++
++	name = "carrier";
++	if (component->name_prefix) {
++		name = kasprintf(GFP_KERNEL, "%s carrier", component->name_prefix);
++		if (!name)
++			return -ENOMEM;
++	}
++
++	ret = snd_soc_card_jack_new(component->card, name, FRAMER_JACK_MASK, &framer->jack);
++	if (component->name_prefix)
++		kfree(name); /* A copy is done by snd_soc_card_jack_new */
++	if (ret) {
++		dev_err(component->dev, "Cannot create jack\n");
++		return ret;
++	}
++
++	ret = framer_init(framer->framer);
++	if (ret) {
++		dev_err(component->dev, "framer init failed (%d)\n", ret);
++		return ret;
++	}
++
++	ret = framer_power_on(framer->framer);
++	if (ret) {
++		dev_err(component->dev, "framer power-on failed (%d)\n", ret);
++		goto framer_exit;
++	}
++
++	/* Be sure that get_status is supported */
++	ret = framer_get_status(framer->framer, &status);
++	if (ret) {
++		dev_err(component->dev, "get framer status failed (%d)\n", ret);
++		goto framer_power_off;
++	}
++
++	framer->nb.notifier_call = framer_carrier_notifier;
++	ret = framer_notifier_register(framer->framer, &framer->nb);
++	if (ret) {
++		dev_err(component->dev, "Cannot register event notifier\n");
++		goto framer_power_off;
++	}
++
++	/* Queue work to set the initial value */
++	queue_work(system_power_efficient_wq, &framer->carrier_work);
++
++	return 0;
++
++framer_power_off:
++	framer_power_off(framer->framer);
++framer_exit:
++	framer_exit(framer->framer);
++	return ret;
++}
++
++static void framer_component_remove(struct snd_soc_component *component)
++{
++	struct framer_codec *framer = snd_soc_component_get_drvdata(component);
++
++	framer_notifier_unregister(framer->framer, &framer->nb);
++	cancel_work_sync(&framer->carrier_work);
++	framer_power_off(framer->framer);
++	framer_exit(framer->framer);
++}
++
++static const struct snd_soc_component_driver framer_component_driver = {
++	.probe		= framer_component_probe,
++	.remove		= framer_component_remove,
++	.endianness	= 1,
++};
++
++static int framer_codec_probe(struct platform_device *pdev)
++{
++	struct framer_codec *framer;
++
++	framer = devm_kzalloc(&pdev->dev, sizeof(*framer), GFP_KERNEL);
++	if (!framer)
++		return -ENOMEM;
++
++	framer->dev = &pdev->dev;
++
++	/* Get framer from parents node */
++	framer->framer = devm_framer_get(&pdev->dev, NULL);
++	if (IS_ERR(framer->framer))
++		return dev_err_probe(&pdev->dev, PTR_ERR(framer->framer), "get framer failed\n");
++
++	platform_set_drvdata(pdev, framer);
++
++	return devm_snd_soc_register_component(&pdev->dev, &framer_component_driver,
++					       &framer_dai_driver, 1);
++}
++
++static struct platform_driver framer_codec_driver = {
++	.driver = {
++		.name = "framer-codec",
++	},
++	.probe = framer_codec_probe,
++};
++module_platform_driver(framer_codec_driver);
++
++MODULE_AUTHOR("Herve Codina <herve.codina@bootlin.com>");
++MODULE_DESCRIPTION("FRAMER ALSA SoC driver");
++MODULE_LICENSE("GPL");
+-- 
+2.41.0
 
-On Mon, Jul 24, 2023 at 02:54:38PM -0600, Rob Herring wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it as merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
->=20
-> Signed-off-by: Rob Herring <robh@kernel.org>
-
-Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de> # for imx
-
-Thanks for your efforts!
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---egg3m5pjvujeb37y
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmS/cKYACgkQj4D7WH0S
-/k5DeQf/XZ9i2MKupQ474foZd/xSXDoeGP/mzcur4EO3Bu06s1VDyknWODS3IU5p
-VGN/GNMpV8QCC4UBbhddhyqP60D9vYNBqbyw6ZsVZTH5+9Ld4Dmfi8jTYeTNiYYc
-+EmM4HrAdY1GVXkdkip00c1GWdcPsHQA6JgSwV1z2cjiJU/7AeRdF6FTB7LPtxCO
-lHZ+at0pra4cRma7o2dZyjIZCa3M05OFqBIX5FAbCCptQsRYlnfTJbOuA2Fr3aTq
-mn7uHJbHPuX+r4PnWXzeq/IC4eEynkYfcINsTmQtG2H2ecI+GvJGttDpTrZstKr7
-ThQy424A1jo0R00lnwmfFmOG/Q7gKQ==
-=p7gV
------END PGP SIGNATURE-----
-
---egg3m5pjvujeb37y--
