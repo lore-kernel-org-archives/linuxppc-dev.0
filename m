@@ -4,59 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EDD7C00528
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 07:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BF92C001E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 10:26:29 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RKVIVtfV;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R97dh14dtz3cZJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 17:17:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.50; helo=mail-vs1-f50.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com [209.85.217.50])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9Cql5Fmpz30dn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 20:26:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RKVIVtfV;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=kirill.shutemov@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 25 Jul 2023 20:25:27 AEST
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R97d36b8rz3bpp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 17:16:55 +1000 (AEST)
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-444c42f608aso1701389137.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 00:16:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690269411; x=1690874211;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=cJjDsseCku7rw4c3XWBJPjjfZ2OLqB4Q28CEWAPlCas=;
-        b=LCGfEuG2NrVTLMrO7aevx2mz81LL15puai2CEGipDSs08bqinqOLvIm8MbKxEFr0oT
-         qqy3ZQxEK5v+K5HFkJ3MDNMipEkCZBxPYf80YTfrnxQiX2o7x5HC4k6BgkjpRdvAxIYT
-         JWc+PFqKvOe2FWl1c+00dBBofPmdpBeTfYQHqYUV2iDN1xBvmD1CVTlWoizy6auDN12e
-         wxjguFei+0Av/ALN5IcLVjX4nm3+X16TwiETB3kLWA0pp21HsyGzCxrSiBTpb5vS9h13
-         yTV7QO7RlXdWRBiJK8SKZ4QHxnxypPUtGLsw5Im8+PHfcKlwuDlslLGoYz/DP/vW+WxV
-         Iyig==
-X-Gm-Message-State: ABy/qLYmq8/q4gE1voRkyWdtXJ+yCZXNQR/sVwmYb4uZMFz1nB+l8mU1
-	6LVwKu+p/OINqkKQWVarc1khlB7JvuLi6rIv
-X-Google-Smtp-Source: APBJJlH62PJXTHJKWWx7+3Q4qAhYR1UrgJTV7Rj3TuG1GXQjr5AY/zTdbmkATmy0O6cO/DZeTEAe5g==
-X-Received: by 2002:a05:6102:2448:b0:444:e9a0:13f7 with SMTP id g8-20020a056102244800b00444e9a013f7mr4254548vss.5.1690269411385;
-        Tue, 25 Jul 2023 00:16:51 -0700 (PDT)
-Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
-        by smtp.gmail.com with ESMTPSA id q18-20020a67cc12000000b00446d8968615sm1733271vsl.2.2023.07.25.00.16.49
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Jul 2023 00:16:49 -0700 (PDT)
-Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-794cddcab71so1499404241.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 00:16:49 -0700 (PDT)
-X-Received: by 2002:a25:10c5:0:b0:c91:717e:7658 with SMTP id
- 188-20020a2510c5000000b00c91717e7658mr10654915ybq.2.1690269388936; Tue, 25
- Jul 2023 00:16:28 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9Cpc04YHz30Kd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 20:25:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1690280735; x=1721816735;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=z2JgSRr57QfGjyG/fWEsaikXL6iwmaxUOjUdDAVtI0A=;
+  b=RKVIVtfVNyXGOZAdRGgKuAERGkMtUlvf/CPBsm+zBu8E4WZnwY8HwCh5
+   lka+USeFPocOV0SoPAwsbsGsgsw9FVjU8pwi7gnsT35so7RQ3Ovg1xglq
+   Agt4aGeky9tcSBn7BfWLDu0JkbVSQp19eniDoyNRLxb2/m3C3XMRcfmIk
+   Pi6Eo2dZKc7attnEHcxDUrctV80oOa964n+gYf+muLAzAxS+iR7GuVila
+   HPfC4VXxTi3Lt7VigpEl5/CzAdv8qyN7tRSVIXhcijatFnjx1A8jOWS5W
+   x1LaAEZUNPCVM9cHrwrQdd0eyT931nlt5veriH8UQnv/QTDu0kPcFIUmc
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="347956832"
+X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
+   d="scan'208";a="347956832"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 03:24:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="1056753039"
+X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
+   d="scan'208";a="1056753039"
+Received: from mlytkin-mobl2.ger.corp.intel.com (HELO box.shutemov.name) ([10.252.57.129])
+  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 03:24:05 -0700
+Received: by box.shutemov.name (Postfix, from userid 1000)
+	id 171E4103A12; Tue, 25 Jul 2023 13:24:03 +0300 (+03)
+Date: Tue, 25 Jul 2023 13:24:03 +0300
+From: "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+To: Sean Christopherson <seanjc@google.com>,
+	Vlastimil Babka <vbabka@suse.cz>
+Subject: Re: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
+ completely unmovable
+Message-ID: <20230725102403.xywjqlhyqkrzjok6@box.shutemov.name>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-11-seanjc@google.com>
 MIME-Version: 1.0
-References: <cover.1689074739.git.legion@kernel.org> <cover.1689092120.git.legion@kernel.org>
- <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
-In-Reply-To: <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 25 Jul 2023 09:16:17 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXzYxo83AXfWWVyp2fL3fcEUNgbG5aSZuA62FwO2i3jDg@mail.gmail.com>
-Message-ID: <CAMuHMdXzYxo83AXfWWVyp2fL3fcEUNgbG5aSZuA62FwO2i3jDg@mail.gmail.com>
-Subject: Re: [PATCH v4 3/5] arch: Register fchmodat2, usually as syscall 452
-To: Alexey Gladkov <legion@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230718234512.1690985-11-seanjc@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,36 +72,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@monstr.eu, tony.luck@in
- tel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, l
+ inux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 11, 2023 at 6:25=E2=80=AFPM Alexey Gladkov <legion@kernel.org> =
-wrote:
-> From: Palmer Dabbelt <palmer@sifive.com>
->
-> This registers the new fchmodat2 syscall in most places as nuber 452,
-> with alpha being the exception where it's 562.  I found all these sites
-> by grepping for fspick, which I assume has found me everything.
->
-> Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
-> Signed-off-by: Alexey Gladkov <legion@kernel.org>
+On Tue, Jul 18, 2023 at 04:44:53PM -0700, Sean Christopherson wrote:
+> diff --git a/mm/compaction.c b/mm/compaction.c
+> index dbc9f86b1934..a3d2b132df52 100644
+> --- a/mm/compaction.c
+> +++ b/mm/compaction.c
+> @@ -1047,6 +1047,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+>  		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
+>  			goto isolate_fail_put;
+>  
+> +		/* The mapping truly isn't movable. */
+> +		if (mapping && mapping_unmovable(mapping))
+> +			goto isolate_fail_put;
+> +
 
->  arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
+I doubt that it is safe to dereference mapping here. I believe the folio
+can be truncated from under us and the mapping freed with the inode.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+The folio has to be locked to dereference mapping safely (given that the
+mapping is still tied to the folio).
 
-Gr{oetje,eeting}s,
+Vlastimil, any comments?
 
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+-- 
+  Kiryl Shutsemau / Kirill A. Shutemov
