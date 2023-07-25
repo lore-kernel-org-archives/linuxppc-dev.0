@@ -4,72 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3939C001E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 09:51:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAED7C04A6A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 10:03:34 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ETztwDNV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nBGlVP7V;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9C3n3pz4z3dTZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 19:51:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9CKK2Brlz3cHC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 20:03:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ETztwDNV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nBGlVP7V;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9Bk12y5Zz3dDQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 19:36:25 +1000 (AEST)
-Received: from relay2-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::222])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id E35B4C1629
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 09:26:00 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 74C2240017;
-	Tue, 25 Jul 2023 09:25:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1690277157;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BA3F2u1SZiCY48MSiDxa+5DDfOyOk5GnyA6qyBP7qGk=;
-	b=ETztwDNVNWzC0A8WFTCHSRKyLMdOlQ0HjdCnGGYj5JVoYhka7dJKt3y4I+7DjKOxEyqtWs
-	2qz59A6biwr+XMi4BUaGRn/TAUATTeoT9OIjhR5pxeor95w0LeN7DjrW0GwhCewQhHVdJz
-	AOzK2r6Wf7fEexNajgEhRQDT8F09tIn8LQPa3NMpFcvqB8nIw7rwgwOWUjNvMJHji0jMR/
-	1/M/Nj5acIEO+Gasx98yDdn8y6RymCwdCOw4f8mkT90PZHpmtGvmTf0mNjy7q4Kes9DzAP
-	Z7zjSNsbb5ks6GpGE1W48LUhf2cfMXjciVRRDVJvWMTut9eyxClCG5wuXUlAFQ==
-From: Herve Codina <herve.codina@bootlin.com>
-To: Herve Codina <herve.codina@bootlin.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Lee Jones <lee@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 23/26] MAINTAINERS: Add the Lantiq PEF2256 driver entry
-Date: Tue, 25 Jul 2023 11:23:59 +0200
-Message-ID: <20230725092417.43706-24-herve.codina@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9CJK2hqDz2xHb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 20:02:40 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36P9bfoC025395;
+	Tue, 25 Jul 2023 10:02:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=CGUlAJvMCS6sRK63SjAzMj2NTm5JvG6HgFTGq1Auw2w=;
+ b=nBGlVP7VHM4nVm/6uR7hqnDOQTeCnLBCmsyydXRzJV3mOwelc45TaPlBSEYmgN8IyiNb
+ g2AUcB3uQgi1EPvZsx8Z/cWySMWHuK+oHTucIQQq9CnsjiOx5Ju2Z3vvmINvnS0LU6HX
+ kn3oYg+WuuDJU5t3OaaKmWAMtFD6rV4nOUMOhIBca3yd8Gq9McpQCVvgYNr7d1u4r+ja
+ J+xPwINqoOLON2qEnPfZkAJ93h5owBCJMxf07I/AGNcKkzaf4AE7cjLa0YLr8Z22Ue1t
+ cFn6YWQXqQVyAHmp6PDfkcOkHAyJEBNFKXPfPaCCAIuQIjsxCeDHWyhgcSiWmDL8lDbP xg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s24q1smn0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Jul 2023 10:02:24 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36P9dC87004109;
+	Tue, 25 Jul 2023 10:02:23 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s24q1smm0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Jul 2023 10:02:23 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36P8da4f003714;
+	Tue, 25 Jul 2023 10:02:22 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3s0txjtup7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Jul 2023 10:02:22 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36PA2Lt520250964
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 25 Jul 2023 10:02:21 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8A3D45805E;
+	Tue, 25 Jul 2023 10:02:21 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BDEF458051;
+	Tue, 25 Jul 2023 10:02:17 +0000 (GMT)
+Received: from skywalker.in.ibm.com (unknown [9.109.212.144])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 25 Jul 2023 10:02:17 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+Subject: [PATCH v5 0/7] Add support for memmap on memory feature on ppc64
+Date: Tue, 25 Jul 2023 15:32:05 +0530
+Message-ID: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230725092417.43706-1-herve.codina@bootlin.com>
-References: <20230725092417.43706-1-herve.codina@bootlin.com>
-MIME-Version: 1.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: hYYhVq_v3ldVfVg9O8nZ4Y6bVjpj7Jfw
+X-Proofpoint-GUID: 4rdXYET5no1eKQZpAJoDZjspjMf6sU7u
 Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-25_04,2023-07-24_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ lowpriorityscore=0 impostorscore=0 bulkscore=0 mlxscore=0 spamscore=0
+ suspectscore=0 adultscore=0 phishscore=0 mlxlogscore=999 malwarescore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2307250082
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,38 +96,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Vishal Verma <vishal.l.verma@intel.com>, David Hildenbrand <david@redhat.com>, Michal Hocko <mhocko@suse.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After contributing the driver, add myself as the maintainer for the
-Lantiq PEF2256 driver.
+This patch series update memmap on memory feature to fall back to
+memmap allocation outside the memory block if the alignment rules are
+not met. This makes the feature more useful on architectures like
+ppc64 where alignment rules are different with 64K page size.
 
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
----
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+This patch series is dependent on dax vmemmap optimization series
+posted here
+https://lore.kernel.org/linux-mm/20230718022934.90447-1-aneesh.kumar@linux.ibm.com/
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 14041d90f9c8..07a7d9fca3c4 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11776,6 +11776,15 @@ S:	Maintained
- F:	arch/mips/lantiq
- F:	drivers/soc/lantiq
- 
-+LANTIQ PEF2256 DRIVER
-+M:	Herve Codina <herve.codina@bootlin.com>
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
-+F:	drivers/net/wan/framer/pef2256/
-+F:	drivers/pinctrl/pinctrl-pef2256-regs.h
-+F:	drivers/pinctrl/pinctrl-pef2256.c
-+F:	include/linux/framer/pef2256.h
-+
- LASI 53c700 driver for PARISC
- M:	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
- L:	linux-scsi@vger.kernel.org
+Changes from v4:
+* Use altmap.free instead of altmap.reserve
+* Address review feedback
+
+Changes from v3:
+* Extend the module parameter memmap_on_memory to force allocation even
+  though we can waste hotplug memory.
+
+Changes from v2:
+* Rebase to latest linus tree
+* Redo the series based on review feedback. Multiple changes to the patchset.
+
+Changes from v1:
+* update the memblock to store vmemmap_altmap details. This is required
+so that when we remove the memory we can find the altmap details which
+is needed on some architectures.
+* rebase to latest linus tree
+
+
+
+Aneesh Kumar K.V (7):
+  mm/hotplug: Simplify ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE kconfig
+  mm/hotplug: Allow memmap on memory hotplug request to fallback
+  mm/hotplug: Allow architecture to override memmap on memory support
+    check
+  mm/hotplug: Support memmap_on_memory when memmap is not aligned to
+    pageblocks
+  powerpc/book3s64/memhotplug: Enable memmap on memory for radix
+  mm/hotplug: Embed vmem_altmap details in memory block
+  mm/hotplug: Enable runtime update of memmap_on_memory parameter
+
+ .../admin-guide/mm/memory-hotplug.rst         |  12 ++
+ arch/arm64/Kconfig                            |   4 +-
+ arch/powerpc/Kconfig                          |   1 +
+ arch/powerpc/include/asm/pgtable.h            |  24 +++
+ .../platforms/pseries/hotplug-memory.c        |   3 +-
+ arch/x86/Kconfig                              |   4 +-
+ drivers/acpi/acpi_memhotplug.c                |   3 +-
+ drivers/base/memory.c                         |  32 ++-
+ include/linux/memory.h                        |   8 +-
+ include/linux/memory_hotplug.h                |   3 +-
+ mm/Kconfig                                    |   3 +
+ mm/memory_hotplug.c                           | 201 ++++++++++++++----
+ 12 files changed, 229 insertions(+), 69 deletions(-)
+
 -- 
 2.41.0
 
