@@ -4,98 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4549C001E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 10:11:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88BE0C04A6A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 11:10:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W43QyLcg;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W43QyLcg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IiVsIIEr;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9CVN3589z3dHv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 20:11:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9Dpy04NZz30Ql
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 21:10:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W43QyLcg;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W43QyLcg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IiVsIIEr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9CRr6snLz3dg8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 20:09:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690279749;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9SNXGmFxRnqmLKduKCutCSEqITPsC6EnMPmnNMtGpqA=;
-	b=W43QyLcgBqAfeaAfSSAC7yrhFvuXlt30WnIh7rDSr/4LKS3uvqHm1UYspyrI7B5WPbh/sk
-	lkNEVfXl28X7RXH97COKd9E0pc7bcgpNl1nB8ZhJmquK7RVT9XpgJauGKA+5xuhm/qj26y
-	yazwMlKAvgIuwswVjJmnMf77OW5efp0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690279749;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9SNXGmFxRnqmLKduKCutCSEqITPsC6EnMPmnNMtGpqA=;
-	b=W43QyLcgBqAfeaAfSSAC7yrhFvuXlt30WnIh7rDSr/4LKS3uvqHm1UYspyrI7B5WPbh/sk
-	lkNEVfXl28X7RXH97COKd9E0pc7bcgpNl1nB8ZhJmquK7RVT9XpgJauGKA+5xuhm/qj26y
-	yazwMlKAvgIuwswVjJmnMf77OW5efp0=
-Received: from mail-lj1-f197.google.com (mail-lj1-f197.google.com
- [209.85.208.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-325-hWB-TnnbPsio4viib3I7eQ-1; Tue, 25 Jul 2023 06:09:07 -0400
-X-MC-Unique: hWB-TnnbPsio4viib3I7eQ-1
-Received: by mail-lj1-f197.google.com with SMTP id 38308e7fff4ca-2b701c82e83so41961701fa.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 03:09:07 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690279746; x=1690884546;
-        h=content-transfer-encoding:in-reply-to:organization:from:references
-         :cc:to:content-language:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=9SNXGmFxRnqmLKduKCutCSEqITPsC6EnMPmnNMtGpqA=;
-        b=EHtcFiw3ITY8sKJe2M9f59iaax4cn59oMRp+kfUgOxp+jt9k0KAxepwFXP4KehfTgH
-         gXpqTvtx9ETVrLj6tbN4BQBcVOGMal8wSDVAggBmdnZnMXKXKTJe5K6M7Q1IgmQA3oLj
-         3FsQEiXnLEpvf3S4FRhXrZGmqo0yGiQQ/fjk+77c99TWnlZA1fCgetFM7cieUFUnQ62A
-         WV+kplhCNsQzt9BmORQcMws3hDBuMXJMeKA9mGYrv3EJON7UK0xOO36S9qzURVqYuMEh
-         QBw2Kx8+612KOGLf7Q1KyWIzDZYnqnzg2Mqk3nW7yaw7xmtF0Qq5S19QupEfe3EVQ9TC
-         fDHQ==
-X-Gm-Message-State: ABy/qLY6VjVewVag2HOx3mc7ok/4bue4vyqviXRmhCJUBQcb0A1bnd/d
-	P9y4KbJ+2X5uYwwy2Ki0+lPhgGknYzoGU2+fVoLvuK2hSr9N6n7Dy/59zxb0iKawIhZwMh1Wtes
-	98rl1eL7458deazZ9Ln0/hW0DcQ==
-X-Received: by 2002:a2e:9b18:0:b0:2b4:737c:e316 with SMTP id u24-20020a2e9b18000000b002b4737ce316mr8290986lji.14.1690279746246;
-        Tue, 25 Jul 2023 03:09:06 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlFQODdJ2pJSJgBtgDO5NoCJ1Mp9aVOPiqr5L/+ITahpdOn6uSBK5VHpmuqnyfazcSnPfTGJgw==
-X-Received: by 2002:a2e:9b18:0:b0:2b4:737c:e316 with SMTP id u24-20020a2e9b18000000b002b4737ce316mr8290951lji.14.1690279745665;
-        Tue, 25 Jul 2023 03:09:05 -0700 (PDT)
-Received: from ?IPV6:2003:cb:c73f:e900:3b0d:87a6:2953:20d1? (p200300cbc73fe9003b0d87a6295320d1.dip0.t-ipconnect.de. [2003:cb:c73f:e900:3b0d:87a6:2953:20d1])
-        by smtp.gmail.com with ESMTPSA id i7-20020a05600c290700b003fbd597bccesm15341720wmd.41.2023.07.25.03.09.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Jul 2023 03:09:05 -0700 (PDT)
-Message-ID: <7a711faf-0e26-2a3c-eb9e-5b0084ff3810@redhat.com>
-Date: Tue, 25 Jul 2023 12:09:04 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v5 5/7] powerpc/book3s64/memhotplug: Enable memmap on
- memory for radix
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
-References: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
- <20230725100212.531277-6-aneesh.kumar@linux.ibm.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-In-Reply-To: <20230725100212.531277-6-aneesh.kumar@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9Dnv6L5wz2yGg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 21:09:55 +1000 (AEST)
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36PB9R6P009270;
+	Tue, 25 Jul 2023 11:09:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=+Iygf2tGqoRwuW0+Vy2AWM7vI5r+nyDtBDPS1VhS6xE=;
+ b=IiVsIIErdmO+7kGkBe657iOAnRkkR5UfdUFT7wkBO6D/ZP1MYhsoQdm/EfaXpbwLj2l8
+ U3lzgTHcUu/kpgxHFOucTwcNWwPeNHsjb4QpkLjvrdx6VF/ZXX7wgGRYPqIqJjfHAdqm
+ eE5x3WmmO5Fh96N/X3Z7g73ql4UeYAfMDlbIfuWsabg71zwvlRM0o0K1FSq1uJdR3VMK
+ v8NVIHN+TmLRbxYuGGtu7Fb5LIBoFRzEAxyO3k0gJ4E8YqgU3Z7oR8M/IL8QTusZxDDs
+ CL5CZEssbQgCMsvYgvhNmdRwO9A18+FLNcUtACIfV8gnmcl2Xu1ietlKOp1ZY22cwYwn LA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s2cmnrqu8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Jul 2023 11:09:48 +0000
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36PB9lOC011167;
+	Tue, 25 Jul 2023 11:09:47 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s2cmnrqu1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Jul 2023 11:09:47 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36PAFSLd016584;
+	Tue, 25 Jul 2023 11:09:47 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s0v512tnq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Jul 2023 11:09:47 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36PB9iF325690836
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 25 Jul 2023 11:09:44 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 14AE520040;
+	Tue, 25 Jul 2023 11:09:44 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D0AAF20043;
+	Tue, 25 Jul 2023 11:09:41 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.43.119.82])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 25 Jul 2023 11:09:41 +0000 (GMT)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.500.231\))
+Subject: Re: [PATCH] tools/perf: Fix addr location init during
+ arch_skip_callchain_idx function
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <ZL7nLEFFjTCTcZW6@kernel.org>
+Date: Tue, 25 Jul 2023 16:39:29 +0530
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <6C610EE0-DA53-4341-B3B2-D1EE3120F149@linux.vnet.ibm.com>
+References: <20230724165815.17810-1-atrajeev@linux.vnet.ibm.com>
+ <ZL7nLEFFjTCTcZW6@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+X-Mailer: Apple Mail (2.3731.500.231)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Y3MQ_Pjajee0snIasVKZr-EeyNgAjpz1
+X-Proofpoint-ORIG-GUID: ysG283ScSmkWr3q3BI6ERA6En7XWS1Dy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-25_06,2023-07-25_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 malwarescore=0
+ adultscore=0 spamscore=0 clxscore=1011 lowpriorityscore=0 suspectscore=0
+ mlxlogscore=999 phishscore=0 mlxscore=0 impostorscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2306200000
+ definitions=main-2307250096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,44 +100,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
+Cc: Ian Rogers <irogers@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>, Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->   #endif /* CONFIG_PPC64 */
->   
->   #endif /* __ASSEMBLY__ */
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 9c62c2c3b3d0..1447509357a7 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -617,6 +617,7 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
->   
->   static int dlpar_add_lmb(struct drmem_lmb *lmb)
->   {
-> +	mhp_t mhp_flags = MHP_NONE | MHP_MEMMAP_ON_MEMORY;
 
-MHP_NONE is a placeholder, so no need for that and ...
 
->   	unsigned long block_sz;
->   	int nid, rc;
->   
-> @@ -637,7 +638,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
->   		nid = first_online_node;
->   
->   	/* Add the memory */
-> -	rc = __add_memory(nid, lmb->base_addr, block_sz, MHP_NONE);
-> +	rc = __add_memory(nid, lmb->base_addr, block_sz, mhp_flags);
-... this becomes
+> On 25-Jul-2023, at 2:33 AM, Arnaldo Carvalho de Melo <acme@kernel.org> =
+wrote:
+>=20
+> Em Mon, Jul 24, 2023 at 10:28:15PM +0530, Athira Rajeev escreveu:
+>> perf record with callchain recording fails as below
+>> in powerpc:
+>>=20
+>>   ./perf record -a -gR sleep 10
+>>   ./perf report
+>>   perf: Segmentation fault
+>>=20
+>> gdb trace points to thread__find_map
+>>=20
+>>   0  0x00000000101df314 in atomic_cmpxchg (newval=3D1818846826, =
+oldval=3D1818846827, v=3D0x1001a8f3) at =
+/home/athira/linux/tools/include/asm-generic/atomic-gcc.h:70
+>>   1  refcount_sub_and_test (i=3D1, r=3D0x1001a8f3) at =
+/home/athira/linux/tools/include/linux/refcount.h:135
+>>   2  refcount_dec_and_test (r=3D0x1001a8f3) at =
+/home/athira/linux/tools/include/linux/refcount.h:148
+>>   3  map__put (map=3D0x1001a8b3) at util/map.c:311
+>>   4  0x000000001016842c in __map__zput (map=3D0x7fffffffa368) at =
+util/map.h:190
+>>   5  thread__find_map (thread=3D0x105b92f0, cpumode=3D<optimized =
+out>, addr=3D13835058055283572736, al=3Dal@entry=3D0x7fffffffa358) at =
+util/event.c:582
+>>   6  0x000000001016882c in thread__find_symbol (thread=3D<optimized =
+out>, cpumode=3D<optimized out>, addr=3D<optimized out>, =
+al=3D0x7fffffffa358) at util/event.c:656
+>>   7  0x00000000102e12b4 in arch_skip_callchain_idx (thread=3D<optimized=
+ out>, chain=3D<optimized out>) at =
+arch/powerpc/util/skip-callchain-idx.c:255
+>>   8  0x00000000101d3bf4 in thread__resolve_callchain_sample =
+(thread=3D0x105b92f0, cursor=3D0x1053d160, evsel=3D<optimized out>, =
+sample=3D0x7fffffffa908, parent=3D0x7fffffffa778, =
+root_al=3D0x7fffffffa710,
+>>       max_stack=3D<optimized out>) at util/machine.c:2940
+>>   9  0x00000000101cd210 in sample__resolve_callchain =
+(sample=3D<optimized out>, cursor=3D<optimized out>, parent=3D<optimized =
+out>, evsel=3D<optimized out>, al=3D<optimized out>, =
+max_stack=3D<optimized out>)
+>>       at util/callchain.c:1112
+>>   10 0x000000001022a9d8 in hist_entry_iter__add (iter=3D0x7fffffffa750,=
+ al=3D0x7fffffffa710, max_stack_depth=3D<optimized out>, =
+arg=3D0x7fffffffbbd0) at util/hist.c:1232
+>>   11 0x0000000010056d98 in process_sample_event (tool=3D0x7fffffffbbd0,=
+ event=3D0x7ffff6223c38, sample=3D0x7fffffffa908, evsel=3D<optimized =
+out>, machine=3D0x10524ef8) at builtin-report.c:332
+>>=20
+>> Here arch_skip_callchain_idx calls thread__find_symbol and which
+>> invokes thread__find_map with uninitialised "addr_location".
+>> Snippet:
+>>=20
+>> thread__find_symbol(thread, PERF_RECORD_MISC_USER, ip, &al);
+>>=20
+>> Recent change with commit 0dd5041c9a0ea ("perf addr_location:
+>> Add init/exit/copy functions"), introduced "maps__zput" in the
+>> function thread__find_map. This could result in segfault while
+>> accessing uninitialised map from "struct addr_location". Fix this
+>> by adding addr_location__init and addr_location__exit in
+>> arch_skip_callchain_idx.
+>=20
+> Thanks, applied.
 
-	rc = __add_memory(nid, lmb->base_addr, block_sz, MHP_MEMMAP_ON_MEMORY);
+Hi Arnaldo,
 
-With that
+Thanks for picking the fix=20
 
-Reviewed-by: David Hildenbrand <david@redhat.com>
+Athira
+>=20
+>> Fixes: 0dd5041c9a0ea ("perf addr_location: Add init/exit/copy =
+functions")
+>=20
+>> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+>=20
+> I'll also do a audit of all calls to thread__find_map() and its =
+callers
+> to check for other such cases :-\
+>=20
+> For instance, this one seem buggy as well, Adrian?
+>=20
+> diff --git a/tools/perf/util/dlfilter.c b/tools/perf/util/dlfilter.c
+> index 46f74b2344dbb34c..798a53d7e6c9dfc5 100644
+> --- a/tools/perf/util/dlfilter.c
+> +++ b/tools/perf/util/dlfilter.c
+> @@ -166,6 +166,7 @@ static __s32 dlfilter__resolve_address(void *ctx, =
+__u64 address, struct perf_dlf
+> if (!thread)
+> return -1;
+>=20
+> + addr_location__init(&al);
+> thread__find_symbol_fb(thread, d->sample->cpumode, address, &al);
+>=20
+> al_to_d_al(&al, &d_al);
 
--- 
-Cheers,
-
-David / dhildenb
 
