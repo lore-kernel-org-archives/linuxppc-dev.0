@@ -4,64 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9028C001DE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 16:42:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CD42C001DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 17:28:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=OE0Yv0C1;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=EXnFZ73G;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9N9d1DkTz3byl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 02:42:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9PBl2H1gz3cWY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 03:28:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=OE0Yv0C1;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=EXnFZ73G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9N8Z4JL0z3bT1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 02:41:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=VOpi6FeyBBxDJ9AWuyvGv6z4rjqWqlFn0g7noxTOdPg=; b=OE0Yv0C1dfCRicRWSmNMM59Dgv
-	MSlzOqH2FV32nJBQJYdaqktbAXnisAv4pM7CWD5mP9T7qa9mLIz8K9Ttq4APloaqzMCPgRMRhlsS/
-	muNPAvD9OZaUubBkxJZvQp1mw6eIdlwtFYM3JoCaGNhX/kBG+VrMhTclgrlCHqbDInmNRjBuZE1rJ
-	miJiFycFAZZ8O+qr9Lk/9p72vtqzNt4lDguzRfxt3Kx5aWulYjUwyyPDyD+I+qFRnn/HclzHEHzUA
-	UtHYz2xsCpPl/gEJBy/hGRuLEzy4irKjnW8K0JJrZkxj8GlXfp8f9fi4l2nTMdRRrYaQTpTls0+vh
-	uXR7iMsA==;
-Received: from [2601:1c2:980:9ec0::2764]
-	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1qOL64-0083WK-1X;
-	Tue, 25 Jul 2023 16:41:16 +0000
-Message-ID: <ce045e96-e9b6-ae66-dd54-67a958ca1774@infradead.org>
-Date: Tue, 25 Jul 2023 09:41:14 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9P9k70Mgz3bnP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 03:27:37 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 19082617DC;
+	Tue, 25 Jul 2023 17:27:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04B55C433C8;
+	Tue, 25 Jul 2023 17:27:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1690306054;
+	bh=CcM1IgStycED3EC2PKiW7/oey5fK8XVGM11fqAHnwvU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=EXnFZ73GREwzmyNVPlOFvkbZgDlHBbesKIUKiXMcyp55Md7qsCMXEmF/hlur29jWS
+	 CDkFah8B31D/Rks/YVgvJ/bYhvbGy2A87YIxg6JTSBRFlr9IUSp/6WlQ9F3E21nWNq
+	 gB7XseMaLUGC9VB5SaqZS+ORGkAcRHDavz7cPI1M=
+Date: Tue, 25 Jul 2023 19:27:31 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH] Documentation: devices.txt: reconcile serial/ucc_uart
+ minor numers
+Message-ID: <2023072544-cloning-footsie-65e0@gregkh>
+References: <20230724063341.28198-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH 24/26] ASoC: codecs: Add support for the framer codec
-Content-Language: en-US
-To: Herve Codina <herve.codina@bootlin.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh+dt@kernel.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
- Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>, Qiang Zhao <qiang.zhao@nxp.com>,
- Li Yang <leoyang.li@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <20230725092417.43706-1-herve.codina@bootlin.com>
- <20230725092417.43706-25-herve.codina@bootlin.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20230725092417.43706-25-herve.codina@bootlin.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230724063341.28198-1-rdunlap@infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,28 +59,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Timur Tabi <timur@kernel.org>, Jonathan Corbet <corbet@lwn.net>, linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Kumar Gala <galak@kernel.crashing.org>, linux-serial@vger.kernel.org, Jiri Slaby <jirislaby@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sun, Jul 23, 2023 at 11:33:41PM -0700, Randy Dunlap wrote:
+> Reconcile devices.txt with serial/ucc_uart.c regarding device number
+> assignments. ucc_uart.c supports 4 ports and uses minor devnums
+> 46-49, so update devices.txt with that info.
+> Then update ucc_uart.c's reference to the location of the devices.txt
+> list in the kernel source tree.
+> 
+> Fixes: d7584ed2b994 ("[POWERPC] qe-uart: add support for Freescale QUICCEngine UART")
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Timur Tabi <timur@kernel.org>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Jiri Slaby <jirislaby@kernel.org>
+> Cc: linux-serial@vger.kernel.org
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: linux-doc@vger.kernel.org
+> ---
+>  Documentation/admin-guide/devices.txt |    2 +-
+>  drivers/tty/serial/ucc_uart.c         |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
+Very nice, thanks for catching this, I'll go queue it up.
 
-On 7/25/23 02:24, Herve Codina wrote:
-> +config SND_SOC_FRAMER
-> +	tristate "Framer codec"
-> +	depends on GENERIC_FRAMER
-> +	help
-> +	  Enable support for the framer codec.
-> +	  The framer codec uses the generic framer infrastructure to transport
-> +	  some audio data over an analog E1/T1/J1 line.
-> +	  This codec allows to use some of the time slots available on the TDM
-> +	  bus on with the framer is connected to transport the audio data.
+Actually, how did you notice this?  I don't think the devices.txt file
+is up to date at all anymore, and odds are, other things are wrong in it
+too.
 
-	      on which
+thanks,
 
-> +
-> +	  To compile this driver as a module, choose M here: the module
-> +	  will be called snd-soc-framer.
-
--- 
-~Randy
+greg k-h
