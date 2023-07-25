@@ -4,89 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADAE8C001DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 10:09:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F76BC001DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 10:10:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=shP7B5uj;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bHoPiOxs;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bHoPiOxs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9CSJ2TbYz3ckl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 20:09:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9CTG53r2z3dT8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jul 2023 20:10:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=shP7B5uj;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bHoPiOxs;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bHoPiOxs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9CMd5sRJz3dBl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 20:05:33 +1000 (AEST)
-Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36PA4sBX021896;
-	Tue, 25 Jul 2023 10:05:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=D6w7Lot4e8BcNeMjCVSUtPdDiB71BA0lpgavvF7b3RE=;
- b=shP7B5ujmWDO+U2BiS7P6H6gPz3mHhqA/ZfnNIRxek6l4gFdg2c1xroGKxcOYXVouvAt
- Fwap1KMxUVYk6S9pl55JMEvAiq+/TfMSP4mVuvJQ+kia2geGq3yi4vb+T3wUFamBRcXT
- xkNKnxQQAImeVfA8Dn/KX6CQ/WKW+STHxGeJayR3yQIZELAFmYU7THD39vHI1tMJFHZ+
- wCyrREvaO16QWnn+HK5ojqMfJ6n9UiSPsnfbZaTRd7Lc84CjYkTrFcdX6oqtUl/9r4hs
- /Ni5aHvTK51QkdJPWxJWL/Cu4T/S4ulUag86sXXaPSEUKK9QxO90RqACddWF0kxu/WAZ 8g== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s255jsdxx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Jul 2023 10:05:21 +0000
-Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36PA5KkD024411;
-	Tue, 25 Jul 2023 10:05:20 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s255jsdqt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Jul 2023 10:05:16 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36P9hPjv002281;
-	Tue, 25 Jul 2023 10:02:35 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s0unjam2j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Jul 2023 10:02:35 +0000
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36PA2YEJ21889350
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 25 Jul 2023 10:02:35 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C8AAC58060;
-	Tue, 25 Jul 2023 10:02:34 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F08BA5805C;
-	Tue, 25 Jul 2023 10:02:30 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.109.212.144])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 25 Jul 2023 10:02:30 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH v5 3/7] mm/hotplug: Allow architecture to override memmap on memory support check
-Date: Tue, 25 Jul 2023 15:32:08 +0530
-Message-ID: <20230725100212.531277-4-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
-References: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9CPP55grz3dCK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 20:07:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1690279622;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/2VenSLEYb8bO0SLCRcE+DJKonVyjC0zvnrdCthKHcM=;
+	b=bHoPiOxsxAARSy5E3bX73h2UHUT4rOA0Q1h3dZOHm92i6SCvf7H5xnVMxL0MBcDMphiM6j
+	zkeYM6+f1G2/VAk63V0RtPxPxF6higdS+RKJfMb/vsyc9yyMBa6V4Psz43Ic1sH1pqTGUG
+	DI7nZGPvMf8lOH3IriUZ0tIwq1sfGMY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1690279622;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/2VenSLEYb8bO0SLCRcE+DJKonVyjC0zvnrdCthKHcM=;
+	b=bHoPiOxsxAARSy5E3bX73h2UHUT4rOA0Q1h3dZOHm92i6SCvf7H5xnVMxL0MBcDMphiM6j
+	zkeYM6+f1G2/VAk63V0RtPxPxF6higdS+RKJfMb/vsyc9yyMBa6V4Psz43Ic1sH1pqTGUG
+	DI7nZGPvMf8lOH3IriUZ0tIwq1sfGMY=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-350-4mCTO_17O9CDYgmfT3nwTA-1; Tue, 25 Jul 2023 06:07:01 -0400
+X-MC-Unique: 4mCTO_17O9CDYgmfT3nwTA-1
+Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-3176ace3f58so287894f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 03:07:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690279620; x=1690884420;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/2VenSLEYb8bO0SLCRcE+DJKonVyjC0zvnrdCthKHcM=;
+        b=g1CeLlPHS9ZDW6vaqwLaQ8tg7q6zIdWtJGqqpdJB/y6Fn0u5sCAOvHymZBenO7MA4w
+         489fQSpYZxErfOEGanKtfXcrmusf9WW3r9W7S6a1QWTh0myPsmpoEgEbd12MDai6Siq4
+         9e5yJJFwTnm8YrLFNKJEki6sy7mWMRxbZCl5FWW3HVL3+jYtRFM8UezoAnInkzplyIUM
+         GbPTuFjTgPzQePc4IguG/917EbSZT2YTl8LW6oiGe4ZpG+D9RyGHhaQ2yF4qHAAiYJAD
+         AwVq0nXlrrKczXDNYMIfD4LiRvXt5Kst10XGLouaYZ8K6hefTld/f3F2LythaB6EcXm2
+         8NYA==
+X-Gm-Message-State: ABy/qLbJC4TsSvWCzTBexFz5emvpLGEzKNEtRXoRm7PMSBmUQGdCN+eE
+	roUekobbeDDM5rIRqMgnitjtI1gJpVD58j7XfBaQk2HdmjbDK2GYl0neolkpA+1NQNyKuJpHGVI
+	jIIycM2qnOIcNusVoC7pjWf2rIQ==
+X-Received: by 2002:a05:600c:ca:b0:3fc:dd9:91fd with SMTP id u10-20020a05600c00ca00b003fc0dd991fdmr7738500wmm.40.1690279619826;
+        Tue, 25 Jul 2023 03:06:59 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlG1LVe8tJoCHQdIFIil1IEN5XwljVIHGL8eeT5YBiLU3OKnv23vz9RgYv97k5fUIjPjqNeHLA==
+X-Received: by 2002:a05:600c:ca:b0:3fc:dd9:91fd with SMTP id u10-20020a05600c00ca00b003fc0dd991fdmr7738480wmm.40.1690279619503;
+        Tue, 25 Jul 2023 03:06:59 -0700 (PDT)
+Received: from ?IPV6:2003:cb:c73f:e900:3b0d:87a6:2953:20d1? (p200300cbc73fe9003b0d87a6295320d1.dip0.t-ipconnect.de. [2003:cb:c73f:e900:3b0d:87a6:2953:20d1])
+        by smtp.gmail.com with ESMTPSA id m14-20020a7bcb8e000000b003fbc9371193sm12862042wmi.13.2023.07.25.03.06.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Jul 2023 03:06:59 -0700 (PDT)
+Message-ID: <315cc808-ab62-c133-8579-7e13010ac9c7@redhat.com>
+Date: Tue, 25 Jul 2023 12:06:58 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: wa5YJNwiOKhzS4Z2on0AOQ9xoLeTsKUK
-X-Proofpoint-ORIG-GUID: HOPEk8GXVZCohyAsTaTDWTuv_qE2mfns
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-25_04,2023-07-24_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
- lowpriorityscore=0 malwarescore=0 mlxlogscore=999 adultscore=0
- priorityscore=1501 spamscore=0 clxscore=1015 impostorscore=0
- suspectscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2306200000 definitions=main-2307250087
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v5 0/7] Add support for memmap on memory feature on ppc64
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
+ akpm@linux-foundation.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
+References: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <20230725100212.531277-1-aneesh.kumar@linux.ibm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,62 +105,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, David Hildenbrand <david@redhat.com>, Michal Hocko <mhocko@suse.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>
+Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some architectures would want different restrictions. Hence add an
-architecture-specific override.
+On 25.07.23 12:02, Aneesh Kumar K.V wrote:
+> This patch series update memmap on memory feature to fall back to
+> memmap allocation outside the memory block if the alignment rules are
+> not met. This makes the feature more useful on architectures like
+> ppc64 where alignment rules are different with 64K page size.
+> 
+> This patch series is dependent on dax vmemmap optimization series
+> posted here
+> https://lore.kernel.org/linux-mm/20230718022934.90447-1-aneesh.kumar@linux.ibm.com/
+> 
+> Changes from v4:
+> * Use altmap.free instead of altmap.reserve
+> * Address review feedback
+> 
+> Changes from v3:
+> * Extend the module parameter memmap_on_memory to force allocation even
+>    though we can waste hotplug memory.
+> 
+> Changes from v2:
+> * Rebase to latest linus tree
+> * Redo the series based on review feedback. Multiple changes to the patchset.
+> 
+> Changes from v1:
+> * update the memblock to store vmemmap_altmap details. This is required
+> so that when we remove the memory we can find the altmap details which
+> is needed on some architectures.
+> * rebase to latest linus tree
+> 
+> 
+> 
+> Aneesh Kumar K.V (7):
+>    mm/hotplug: Simplify ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE kconfig
+>    mm/hotplug: Allow memmap on memory hotplug request to fallback
+>    mm/hotplug: Allow architecture to override memmap on memory support
+>      check
+>    mm/hotplug: Support memmap_on_memory when memmap is not aligned to
+>      pageblocks
+>    powerpc/book3s64/memhotplug: Enable memmap on memory for radix
+>    mm/hotplug: Embed vmem_altmap details in memory block
+>    mm/hotplug: Enable runtime update of memmap_on_memory parameter
 
-The PMD_SIZE check is moved there.
+Nit for all patches: we use "mm/memory_hotplug" as prefix. (I somehow 
+missed that earlier :D )
 
-Acked-by: David Hildenbrand <david@redhat.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- mm/memory_hotplug.c | 21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
-
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index eca32ccd45cc..457824a6ecb8 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1247,9 +1247,24 @@ static int online_memory_block(struct memory_block *mem, void *arg)
- 	return device_online(&mem->dev);
- }
- 
-+#ifndef arch_supports_memmap_on_memory
-+static inline bool arch_supports_memmap_on_memory(unsigned long size)
-+{
-+	unsigned long nr_vmemmap_pages = size >> PAGE_SHIFT;
-+	unsigned long vmemmap_size = nr_vmemmap_pages * sizeof(struct page);
-+
-+	/*
-+	 * As default, we want the vmemmap to span a complete PMD such that we
-+	 * can map the vmemmap using a single PMD if supported by the
-+	 * architecture.
-+	 */
-+	return IS_ALIGNED(vmemmap_size, PMD_SIZE);
-+}
-+#endif
-+
- static bool mhp_supports_memmap_on_memory(unsigned long size)
- {
--	unsigned long nr_vmemmap_pages = size / PAGE_SIZE;
-+	unsigned long nr_vmemmap_pages = size >> PAGE_SHIFT;
- 	unsigned long vmemmap_size = nr_vmemmap_pages * sizeof(struct page);
- 	unsigned long remaining_size = size - vmemmap_size;
- 
-@@ -1281,8 +1296,8 @@ static bool mhp_supports_memmap_on_memory(unsigned long size)
- 	 */
- 	return mhp_memmap_on_memory() &&
- 	       size == memory_block_size_bytes() &&
--	       IS_ALIGNED(vmemmap_size, PMD_SIZE) &&
--	       IS_ALIGNED(remaining_size, (pageblock_nr_pages << PAGE_SHIFT));
-+	       IS_ALIGNED(remaining_size, (pageblock_nr_pages << PAGE_SHIFT)) &&
-+	       arch_supports_memmap_on_memory(size);
- }
- 
- /*
 -- 
-2.41.0
+Cheers,
+
+David / dhildenb
 
