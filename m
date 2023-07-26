@@ -4,69 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B85DFEB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Aug 2023 17:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC70EC001DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 20:23:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=z4avZMYB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=eM8gatpI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RMrm56bh3z3c1L
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Aug 2023 03:45:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RB5200MpDz3cM3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 06:23:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=z4avZMYB;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=eM8gatpI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3bxpwzaykdnooa6jf8ckkcha.8kihejqtll8-9arheopo.kvh67o.knc@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3gidbzaykdlmlxtgcvzhhzex.vhfebgnqiiv-wxoeblml.hsetul.hkz@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
 Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RMrl80Ftfz2ydR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2023 03:44:18 +1000 (AEST)
-Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-c5fc972760eso2331909276.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2023 10:44:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RB50z6PR4z2yVF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 06:22:26 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-d1ebc896bd7so142437276.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 13:22:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1691775853; x=1692380653;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=y5tf/etP9591sBoXXP0u0lhmE2sGhQYCIj4rXej+PgY=;
-        b=z4avZMYBxF/USDP2G14KA+P8N8yreov1u2JOHwfc1TVZdl6Iz+YTKH19wDx7mUMq9M
-         o4u6qon1QiMk8DVxh93qeN2Mz6fZGsUFtzOg33bB4Mo7KFsOypRjJRdzz9Y8WFCiY85q
-         br+fPgBO/on1YU5soxnymBtm9OPZyICHaFKZfYSg9Ropko2mo0wKLVwIok1lVrWFw51i
-         jjhtl/HK+nEz+jNhJe7imTF+VBA6+NGFZjFm7+hHqXCkfP3+rYY1oaYSypJ0v6009kFT
-         lq7bEwknPOhWjDhET6YMFrJ/3n1YTZ5hf1bP/IHZB/5/XDyHPzuDGnqfF1kEhe1cc6AD
-         1nfg==
+        d=google.com; s=20221208; t=1690402944; x=1691007744;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=wk8YN2z9DygnTN7wIkQ/drKhQeRLfAOWaFSkpwIJ9VA=;
+        b=eM8gatpIFAPsVcHsvCyPq5hyC8MsN3TVlS3mNniSEUN+A8XGjxiS8F6dC4aFmL513/
+         OKqKBd4JNqQZqMKS0xCiGe+t5AXNUTDm2VuHrYqk4zFosWdPFjPIB6URfw5vd93IMKdx
+         lKXXLluLhbwl+YjfsuqRPKzKU2+mG/aerZ1RHkgGlaQ2XngSQ4QWGzUzw8Bk02VhX6BY
+         iemdbo75Y0mm9KaGC6Z479jAT6buL5FMFb75fU2ROzDvErIFsnjLxci0m6st5PC1U67q
+         6FdRgc7HGPP7DF/FaK/f0cWfoJ+ZjAfbcmtP5i/qUasNowuJ11SfJCK8qdGxq6HB8Y5C
+         RWCA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691775853; x=1692380653;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=y5tf/etP9591sBoXXP0u0lhmE2sGhQYCIj4rXej+PgY=;
-        b=fPoPA9bv4l1kYcIVrnAWOaTNuduyB+sTosUoJodraP6UeDtll3m12O/XUvGaLs37Ks
-         mMnW8T3IYoJNrGjR7VpltH4gYeB+0uBLPpsSve+cWThkvfT7WbNhZAcJrAtuXBtWEh/c
-         Z1UQTFsxuveSJIJ8ciA1TycD/2fHcwWv6IEg5rCYVtuZ7gGu2T8MyeCKrbyvZo3TdDMj
-         19cn6HpwT+xxpBvRNN/Piwjs+crWuhbTtJAY6SaS0DEeG8LCuugY4uc5V7n5KZu1GwBF
-         Qf1My4sFQpGXlCueTYGJlvQavlm3XICrsDtQ/+3hxY7eRa0YdLslKG/F+bos6P8btOCC
-         O99w==
-X-Gm-Message-State: AOJu0YyBZFQlIoInP1T6S5GPLI+3PNT7slGu1WBkUzbNCQ4OorSyZVBG
-	UoNBLMKNvr7Zfr3/PheCiW2/guKhRvU=
-X-Google-Smtp-Source: AGHT+IFlh+eXwF8rMcD2luIRCX1nl8Idt0F+6stO6hsWWfidj415wHUgqoJc8kVAwNGB8y2mQW1tGjk2lPA=
+        d=1e100.net; s=20221208; t=1690402944; x=1691007744;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=wk8YN2z9DygnTN7wIkQ/drKhQeRLfAOWaFSkpwIJ9VA=;
+        b=l02Jo6muOR7xT4BTZLN4CTnhx8Yks76zzQ/Hb/jNUEHc94rcSMaZQzMZJz2ys+OxNP
+         EcgSAifgvDmdbmwtRP5Jj6CaosVWT53cvt34XwyDDZuSHLwgShxsNLUxnrbmwDm+csB6
+         oSj1+jaUtOKLRA1eBGBL173L/3tHuMV7njsm20N2tMK/opPvBHLzmfpWkbpDWbC82wKQ
+         VLB0rjGqtu2l9ydGIIEar/msCg1Ln0veE6udF+rL9wg81v5p5gx/2yzlq4yNfsWQ/ONO
+         I3ujA1z4erwCtYvKnd9dPLr4l8ao15ehUGw3J95v3mv6phcSz0g46NsBkTTj3kK01MzO
+         wbow==
+X-Gm-Message-State: ABy/qLa4izWX7/6rZwo6/Llvu1+OuAsgblatS5grKjGFulRLdmhqz/7j
+	ES0jHSU0Ai8kF+3rpcE8SIPrY0Dj1y0=
+X-Google-Smtp-Source: APBJJlHa4e7bNU/FXY+wuV4M+6WYSA4uQsVmjVu+paqFG49PZpexPl+XQpMgzwVCSNNiruIZErv3dNdZQXc=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:7443:0:b0:d20:7752:e384 with SMTP id
- p64-20020a257443000000b00d207752e384mr41859ybc.3.1691775853469; Fri, 11 Aug
- 2023 10:44:13 -0700 (PDT)
-Date: Fri, 11 Aug 2023 10:44:11 -0700
-In-Reply-To: <CAGtprH9YE50RtqhW-U+wK0Vv6aKfqqtOPn8q4s8or=UZwPXZoA@mail.gmail.com>
+ (user=seanjc job=sendgmr) by 2002:a25:cf48:0:b0:d06:1a77:7d2 with SMTP id
+ f69-20020a25cf48000000b00d061a7707d2mr18632ybg.13.1690402944082; Wed, 26 Jul
+ 2023 13:22:24 -0700 (PDT)
+Date: Wed, 26 Jul 2023 13:22:22 -0700
+In-Reply-To: <711f74d6-fe15-6bd4-a9b9-c4f178d95bf3@redhat.com>
 Mime-Version: 1.0
-References: <20230718234512.1690985-13-seanjc@google.com> <diqzv8dq3116.fsf@ackerleytng-ctop.c.googlers.com>
- <ZNKv9ul2I7A4V7IF@google.com> <CAGtprH9YE50RtqhW-U+wK0Vv6aKfqqtOPn8q4s8or=UZwPXZoA@mail.gmail.com>
-Message-ID: <ZNZza/emWldkJC6X@google.com>
-Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
+ <711f74d6-fe15-6bd4-a9b9-c4f178d95bf3@redhat.com>
+Message-ID: <ZMGAfvzEkVphWPdZ@google.com>
+Subject: Re: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
 From: Sean Christopherson <seanjc@google.com>
-To: Vishal Annapurve <vannapurve@google.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+To: Paolo Bonzini <pbonzini@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,91 +74,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, david@redhat.com, yu.c.zhang@linux.intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org, chao.p.peng@linux.intel.com, linux-riscv@lists.infradead.org, isaku.yamahata@gmail.com, paul@paul-moore.com, maz@kernel.org, chenhuacai@kernel.org, jmorris@namei.org, willy@infradead.org, wei.w.wang@intel.com, tabba@google.com, jarkko@kernel.org, serge@hallyn.com, mail@maciej.szmigiero.name, aou@eecs.berkeley.edu, vbabka@suse.cz, michael.roth@amd.com, Ackerley Tng <ackerleytng@google.com>, paul.walmsley@sifive.com, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, qperret@google.com, liam.merwick@oracle.com, linux-mips@vger.kernel.org, oliver.upton@linux.dev, linux-security-module@vger.kernel.org, palmer@dabbelt.com, kvm-riscv@lists.infradead.org, anup@brainfault.org, linux-fsdevel@vger.kernel.org, pbonzini@redhat.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-s
+ ecurity-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Aug 10, 2023, Vishal Annapurve wrote:
-> On Tue, Aug 8, 2023 at 2:13=E2=80=AFPM Sean Christopherson <seanjc@google=
-.com> wrote:
-> > ...
->=20
-> > > + When binding a memslot to the file, if a kvm pointer exists, it mus=
-t
-> > >   be the same kvm as the one in this binding
-> > > + When the binding to the last memslot is removed from a file, NULL t=
-he
-> > >   kvm pointer.
-> >
-> > Nullifying the KVM pointer isn't sufficient, because without additional=
- actions
-> > userspace could extract data from a VM by deleting its memslots and the=
-n binding
-> > the guest_memfd to an attacker controlled VM.  Or more likely with TDX =
-and SNP,
-> > induce badness by coercing KVM into mapping memory into a guest with th=
-e wrong
-> > ASID/HKID.
-> >
->=20
-> TDX/SNP have mechanisms i.e. PAMT/RMP tables to ensure that the same
-> memory is not assigned to two different VMs.
+On Wed, Jul 19, 2023, Paolo Bonzini wrote:
+> On 7/19/23 01:44, Sean Christopherson wrote:
+> > +	BUILD_BUG_ON(sizeof(gfn_range.arg) != sizeof(gfn_range.arg.raw));
+> > +	BUILD_BUG_ON(sizeof(range->arg) != sizeof(range->arg.raw));
+> 
+> I think these should be static assertions near the definition of the
+> structs.  However another possibility is to remove 'raw' and just assign the
+> whole union.
 
-One of the main reasons we pivoted away from using a flag in "struct page" =
-to
-indicate that a page was private was so that KVM could enforce 1:1 VM:page =
-ownership
-*without* relying on hardware.
+Duh, and use a named union.  I think when I first proposed this I forgot that
+a single value would be passed between kvm_hva_range *and* kvm_gfn_range, and so
+created an anonymous union without thinking about the impliciations.
 
-And FWIW, the PAMT provides no protection in this specific case because KVM=
- does
-TDH.MEM.PAGE.REMOVE when zapping S-EPT entries, and that marks the page cle=
-ar in
-the PAMT.  The danger there is that physical memory is still encrypted with=
- the
-guest's HKID, and so mapping the memory into a different VM, which might no=
-t be
-a TDX guest!, could lead to corruption and/or poison #MCs.
+A named union is _much_ cleaner.  I'll post a complete version of the below
+snippet as a standalone non-RFC patch.
 
-The HKID issues wouldn't be a problem if v15 is merged as-is, because zappi=
-ng
-S-EPT entries also fully purges and reclaims the page, but as we discussed =
-in
-one of the many threads, reclaiming physical memory should be tied to the i=
-node,
-i.e. to memory truly being freed, and not to S-EPTs being zapped.  And ther=
-e is
-a very good reason for wanting to do that, as it allows KVM to do the expen=
-sive
-cache flush + clear outside of mmu_lock.
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 9d3ac7720da9..9125d0ab642d 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -256,11 +256,15 @@ int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
+ #endif
+ 
+ #ifdef KVM_ARCH_WANT_MMU_NOTIFIER
++union kvm_mmu_notifier_arg {
++       pte_t pte;
++};
++
+ struct kvm_gfn_range {
+        struct kvm_memory_slot *slot;
+        gfn_t start;
+        gfn_t end;
+-       pte_t pte;
++       union kvm_mmu_notifier_arg arg;
+        bool may_block;
+ };
+ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index dfbaafbe3a00..f84ef9399aee 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -526,7 +526,7 @@ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+ struct kvm_hva_range {
+        unsigned long start;
+        unsigned long end;
+-       pte_t pte;
++       union kvm_mmu_notifier_arg arg;
+        hva_handler_t handler;
+        on_lock_fn_t on_lock;
+        on_unlock_fn_t on_unlock;
+@@ -547,6 +547,8 @@ static void kvm_null_fn(void)
+ }
+ #define IS_KVM_NULL_FN(fn) ((fn) == (void *)kvm_null_fn)
+ 
++static const union kvm_mmu_notifier_arg KVM_NO_ARG;
++
+ /* Iterate over each memslot intersecting [start, last] (inclusive) range */
+ #define kvm_for_each_memslot_in_hva_range(node, slots, start, last)         \
+        for (node = interval_tree_iter_first(&slots->hva_tree, start, last); \
+@@ -591,7 +593,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+                         * bother making these conditional (to avoid writes on
+                         * the second or later invocation of the handler).
+                         */
+-                       gfn_range.pte = range->pte;
++                       gfn_range.arg = range->arg;
+                        gfn_range.may_block = range->may_block;
+ 
+                        /*
 
-> Deleting memslots should also clear out the contents of the memory as the=
- EPT
-> tables will be zapped in the process
-
-No, deleting a memslot should not clear memory.  As I said in my previous r=
-esponse,
-the fact that zapping S-EPT entries is destructive is a limitiation of TDX,=
- not a
-feature we want to apply to other VM types.  And that's not even a fundamen=
-tal
-property of TDX, e.g. TDX could remove the limitation, at the cost of consu=
-ming
-quite a bit more memory, by tracking the exact owner by HKID in the PAMT an=
-d
-decoupling S-EPT entries from page ownership.
-
-Or in theory, KVM could workaround the limitation by only doing TDH.MEM.RAN=
-GE.BLOCK
-when zapping S-EPTs.  Hmm, that might actually be worth looking at.
-
-> and the host will reclaim the memory.
-
-There are no guarantees that the host will reclaim the memory.  E.g. QEMU w=
-ill
-delete and re-create memslots for "regular" VMs when emulating option ROMs.=
-  Even
-if that use case is nonsensical for confidential VMs (and it probably is no=
-nsensical),
-I don't want to define KVM's ABI based on what we *think* userspace will do=
-.
