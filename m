@@ -4,62 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EDD1C001DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 00:14:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A50C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 13:47:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RK+5U9OH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iLrm54/O;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4R9ZCV0fzZz30hF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 10:14:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4R9wDp656Vz2ykP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 23:47:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RK+5U9OH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iLrm54/O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=legion@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9SY06CKrz3bf6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 05:59:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4R9wCp0XH5z2yVb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 23:46:13 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 9F545618F4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 19:59:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C7ABC43140
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 19:59:29 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id F3D2861AC3;
+	Wed, 26 Jul 2023 13:46:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31A6EC433C7;
+	Wed, 26 Jul 2023 13:46:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690315169;
-	bh=jVkGbzOh79AEXIeMVY1s/WgLpPOOReQVmsy9pu11HgA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=RK+5U9OHGM5kVctFC0fXVoH/MPRkxl3yqjH0JkiqY14J62a84cAuHHldU+QJmZwJw
-	 m+XqPzyLakTqHV2HXVcWKWGF1mJiOi483ksql83UAjacp2W+449PAc1Gy7ne7EwyeR
-	 MsoU56g+i2jjsXGJeJINbc52BCaV8HU0tYJJ7er833v7XkogTWiQi1fNS2kICYDa74
-	 P8CPb6B9Topo5JelE0Q1Pj/c79T5XDlopvnCrd/HqoNTziMh4A4pI0EHt0afJyJ7vk
-	 ha8zpcp3YQiQ9ilYgEvI8y/bppIY1jkW6W5qaFxm4Z0AGFxqSgeeGZwG6UB78Vkakt
-	 mzVNJZl4/0d6w==
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-2b734aea34aso86977231fa.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2023 12:59:29 -0700 (PDT)
-X-Gm-Message-State: ABy/qLa4P4+KIa8agEb6f447t0bA+aJbkroGX0rLWluwmXJj9z0++CVx
-	XsFQMXENUfwF9bqqCwr4SnU+RsAmzKficwVySA==
-X-Google-Smtp-Source: APBJJlFwGjXaJCJydGIeGV4iVYCIq6ysqPH1CxKSwb/h2lZDdMtrrV65McGRvNB57SLo+rUN/j76IhUhQXfq96gAGDg=
-X-Received: by 2002:a2e:8786:0:b0:2b6:dd26:c02a with SMTP id
- n6-20020a2e8786000000b002b6dd26c02amr8693672lji.14.1690315146580; Tue, 25 Jul
- 2023 12:59:06 -0700 (PDT)
+	s=k20201202; t=1690379171;
+	bh=YMmxomfMr9G4i/xBDFo8a+tJ6BzX3X5lQtLwpyL37dM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=iLrm54/OyVAkeX7XRTdQI6vJKk7fvA9E8WFuxeM1GUgON2oCeY1wjM8yTYrtIi4IQ
+	 Oo3FMgcMnRzknsY84kWAeTJ0inxm7fg97Q/tOUTzG6ZMmI5ATwnzUC945HbXcM2RRW
+	 HKanW7qmiSF3lCZhc3wQfBbpJJOtev2Fm0SsXZJptqvFFvEwrKyC1aKGldedLK/9Vz
+	 62DImdurXvwbmhgOteOs/aXLApFhcpwiLDIG+sQUeQFLsagl1k2OVSVn88v78BFAcl
+	 Vj6NEoPbw1eyE9ZIq7xYhoiahGzuo+q0Lii/UprIQXPLwFPgjeIIKj3g1kimIqX0ng
+	 b/060n7yg03AQ==
+Date: Wed, 26 Jul 2023 15:45:56 +0200
+From: Alexey Gladkov <legion@kernel.org>
+To: Aleksa Sarai <cyphar@cyphar.com>
+Subject: Re: [PATCH v4 2/5] fs: Add fchmodat2()
+Message-ID: <ZMEjlDNJkFpYERr1@example.org>
+References: <cover.1689074739.git.legion@kernel.org>
+ <cover.1689092120.git.legion@kernel.org>
+ <f2a846ef495943c5d101011eebcf01179d0c7b61.1689092120.git.legion@kernel.org>
+ <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
 MIME-Version: 1.0
-References: <20230724212222.809909-1-robh@kernel.org> <ZMAD25Yp6gCNq+wH@corigine.com>
-In-Reply-To: <ZMAD25Yp6gCNq+wH@corigine.com>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 25 Jul 2023 13:58:54 -0600
-X-Gmail-Original-Message-ID: <CAL_Jsq+UYF79tUWvHh=5AfrERJPvFRaV4vh1mnbYn_nNjOQTcw@mail.gmail.com>
-Message-ID: <CAL_Jsq+UYF79tUWvHh=5AfrERJPvFRaV4vh1mnbYn_nNjOQTcw@mail.gmail.com>
-Subject: Re: [PATCH v2] net: Explicitly include correct DT includes
-To: Simon Horman <simon.horman@corigine.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 26 Jul 2023 10:11:06 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,31 +64,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kevin Brace <kevinbrace@bracecomputerlab.com>, A ndrew Lunn <andrew@lunn.ch>, Iyappan Subramanian <iyappan@os.amperecomputing.com>, Miquel Raynal <miquel.raynal@bootlin.com>, Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>, Jonathan Hunter <jonathanh@nvidia.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>, Jerome Brunet <jbrunet@baylibre.com>, Samuel Holland <samuel@sholland.org>, Sean Anderson <sean.anderson@seco.com>, Kevin Hilman <khilman@baylibre.com>, Madalin Bucur <madalin.bucur@nxp.com>, Jose Abreu <joabreu@synopsys.com>, NXP Linux Team <linux-imx@nxp.com>, Mark Lee <Mark-MC.Lee@mediatek.com>, Sascha Hauer <s.hauer@pengutronix.de>, linux-omap@vger.kernel.org, Alex Elder <elder@kernel.org>, Douglas Miller <dougmill@linux.ibm.com>, linux-kernel@vger.kernel.org, Pengutronix Kernel Team <kernel@pengutronix.de>, linux-wpan@vger.kernel.org, Claudiu Beznea <claudiu.beznea@microchip.com>, Alexandre Belloni <alexandre.bello
- ni@bootlin.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Chris Snook <chris.snook@gmail.com>, Eric Dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, Stefan Schmidt <stefan@datenfreihafen.org>, Yisen Zhuang <yisen.zhuang@huawei.com>, Steve Glendinning <steve.glendinning@shawell.net>, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, linux-arm-msm@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, linux-amlogic@lists.infradead.org, Michal Simek <michal.simek@amd.com>, linux-arm-kernel@lists.infradead.org, Mirko Lindner <mlindner@marvell.com>, Neil Armstrong <neil.armstrong@linaro.org>, UNGLinuxDriver@microchip.com, linux-renesas-soc@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>, linux-mediatek@lists.infradead.org, Heiner Kallweit <hkallweit1@gmail.com>, Taras Chorny i <taras.chornyi@plvision.eu>, Emil Renner Berthing <kernel@esmil.dk>, Andreas 
- Larsson <andreas@gaisler.com>, linux-tegra@vger.kernel.org, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Fabio Estevam <festevam@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Shenwei Wang <shenwei.wang@nxp.com>, Samin Guo <samin.guo@starfivetech.com>, Francois Romieu <romieu@fr.zoreil.com>, Paolo Abeni <pabeni@redhat.com>, Lorenzo Bianconi <lorenzo@kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Bhupesh Sharma <bhupesh.sharma@linaro.org>, John Crispin <john@phrozen.org>, Salil Mehta <salil.mehta@huawei.com>, Sergey Shtylyov <s.shtylyov@omp.ru>, Timur Tabi <timur@kernel.org>, linux-sunxi@lists.linux.dev, linux-oxnas@groups.io, Shawn Guo <shawnguo@kernel.org>, "David S. Miller" <davem@davemloft.net>, Alexander Aring <alex.aring@gmail.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Russell King <linux@armlinux.org.uk>, Clark Wang <xiaoning.wang@nxp.com>, Alex Elder <elder@linaro.org>, Ja
- kub Kicinski <kuba@kernel.org>, Richard Cochran <richardcochran@gmail.com>, Keyur Chudgar <keyur@os.amperecomputing.com>, Wei Fang <wei.fang@nxp.com>, Matthias Brugger <matthias.bgg@gmail.com>, Marcin Wojtas <mw@semihalf.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, netdev@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>, Li Yang <leoyang.li@nxp.com>, Stephen Hemminger <stephen@networkplumber.org>, Vinod Koul <vkoul@kernel.org>, linuxppc-dev@lists.ozlabs.org, Felix Fietkau <nbd@nbd.name>
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@m
+ onstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 25, 2023 at 11:18=E2=80=AFAM Simon Horman <simon.horman@corigin=
-e.com> wrote:
->
-> On Mon, Jul 24, 2023 at 03:22:16PM -0600, Rob Herring wrote:
->
-> ...
->
-> >  90 files changed, 88 insertions(+), 92 deletions(-)
->
-> Hi Rob,
->
-> I suppose that it's reasonable to take this patch through netdev.
-> But it does have a pretty wide surface, and netdev moves a lot.
->
-> As it stands the patch doesn't apply due to a conflict
-> in dwmac-qcom-ethqos.c
+On Wed, Jul 26, 2023 at 02:36:25AM +1000, Aleksa Sarai wrote:
+> On 2023-07-11, Alexey Gladkov <legion@kernel.org> wrote:
+> > On the userspace side fchmodat(3) is implemented as a wrapper
+> > function which implements the POSIX-specified interface. This
+> > interface differs from the underlying kernel system call, which does not
+> > have a flags argument. Most implementations require procfs [1][2].
+> > 
+> > There doesn't appear to be a good userspace workaround for this issue
+> > but the implementation in the kernel is pretty straight-forward.
+> > 
+> > The new fchmodat2() syscall allows to pass the AT_SYMLINK_NOFOLLOW flag,
+> > unlike existing fchmodat.
+> > 
+> > [1] https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/fchmodat.c;h=17eca54051ee28ba1ec3f9aed170a62630959143;hb=a492b1e5ef7ab50c6fdd4e4e9879ea5569ab0a6c#l35
+> > [2] https://git.musl-libc.org/cgit/musl/tree/src/stat/fchmodat.c?id=718f363bc2067b6487900eddc9180c84e7739f80#n28
+> > 
+> > Co-developed-by: Palmer Dabbelt <palmer@sifive.com>
+> > Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
+> > Signed-off-by: Alexey Gladkov <legion@kernel.org>
+> > Acked-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> >  fs/open.c                | 18 ++++++++++++++----
+> >  include/linux/syscalls.h |  2 ++
+> >  2 files changed, 16 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/fs/open.c b/fs/open.c
+> > index 0c55c8e7f837..39a7939f0d00 100644
+> > --- a/fs/open.c
+> > +++ b/fs/open.c
+> > @@ -671,11 +671,11 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
+> >  	return err;
+> >  }
+> >  
+> > -static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
+> > +static int do_fchmodat(int dfd, const char __user *filename, umode_t mode, int lookup_flags)
+> 
+> I think it'd be much neater to do the conversion of AT_ flags here and
+> pass 0 as a flags argument for all of the wrappers (this is how most of
+> the other xyz(), fxyz(), fxyzat() syscall wrappers are done IIRC).
 
-It did yesterday... Anyways, looks like 0-day decided to find something els=
-e.
+I just addressed the Al Viro's suggestion.
 
-Rob
+https://lore.kernel.org/lkml/20190717014802.GS17978@ZenIV.linux.org.uk/
+
+> >  {
+> >  	struct path path;
+> >  	int error;
+> > -	unsigned int lookup_flags = LOOKUP_FOLLOW;
+> > +
+> >  retry:
+> >  	error = user_path_at(dfd, filename, lookup_flags, &path);
+> >  	if (!error) {
+> > @@ -689,15 +689,25 @@ static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
+> >  	return error;
+> >  }
+> >  
+> > +SYSCALL_DEFINE4(fchmodat2, int, dfd, const char __user *, filename,
+> > +		umode_t, mode, int, flags)
+> > +{
+> > +	if (unlikely(flags & ~AT_SYMLINK_NOFOLLOW))
+> > +		return -EINVAL;
+> 
+> We almost certainly want to support AT_EMPTY_PATH at the same time.
+> Otherwise userspace will still need to go through /proc when trying to
+> chmod a file handle they have.
+
+I'm not sure I understand. Can you explain what you mean?
+
+-- 
+Rgrds, legion
+
