@@ -4,65 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC70EC001DC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jul 2023 20:23:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 228FDEB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 03:58:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=eM8gatpI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EZdgMDJN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RB5200MpDz3cM3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 06:23:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBH6s14Lgz3bY3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 13:58:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=eM8gatpI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EZdgMDJN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3gidbzaykdlmlxtgcvzhhzex.vhfebgnqiiv-wxoeblml.hsetul.hkz@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RB50z6PR4z2yVF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 06:22:26 +1000 (AEST)
-Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-d1ebc896bd7so142437276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2023 13:22:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690402944; x=1691007744;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=wk8YN2z9DygnTN7wIkQ/drKhQeRLfAOWaFSkpwIJ9VA=;
-        b=eM8gatpIFAPsVcHsvCyPq5hyC8MsN3TVlS3mNniSEUN+A8XGjxiS8F6dC4aFmL513/
-         OKqKBd4JNqQZqMKS0xCiGe+t5AXNUTDm2VuHrYqk4zFosWdPFjPIB6URfw5vd93IMKdx
-         lKXXLluLhbwl+YjfsuqRPKzKU2+mG/aerZ1RHkgGlaQ2XngSQ4QWGzUzw8Bk02VhX6BY
-         iemdbo75Y0mm9KaGC6Z479jAT6buL5FMFb75fU2ROzDvErIFsnjLxci0m6st5PC1U67q
-         6FdRgc7HGPP7DF/FaK/f0cWfoJ+ZjAfbcmtP5i/qUasNowuJ11SfJCK8qdGxq6HB8Y5C
-         RWCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690402944; x=1691007744;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=wk8YN2z9DygnTN7wIkQ/drKhQeRLfAOWaFSkpwIJ9VA=;
-        b=l02Jo6muOR7xT4BTZLN4CTnhx8Yks76zzQ/Hb/jNUEHc94rcSMaZQzMZJz2ys+OxNP
-         EcgSAifgvDmdbmwtRP5Jj6CaosVWT53cvt34XwyDDZuSHLwgShxsNLUxnrbmwDm+csB6
-         oSj1+jaUtOKLRA1eBGBL173L/3tHuMV7njsm20N2tMK/opPvBHLzmfpWkbpDWbC82wKQ
-         VLB0rjGqtu2l9ydGIIEar/msCg1Ln0veE6udF+rL9wg81v5p5gx/2yzlq4yNfsWQ/ONO
-         I3ujA1z4erwCtYvKnd9dPLr4l8ao15ehUGw3J95v3mv6phcSz0g46NsBkTTj3kK01MzO
-         wbow==
-X-Gm-Message-State: ABy/qLa4izWX7/6rZwo6/Llvu1+OuAsgblatS5grKjGFulRLdmhqz/7j
-	ES0jHSU0Ai8kF+3rpcE8SIPrY0Dj1y0=
-X-Google-Smtp-Source: APBJJlHa4e7bNU/FXY+wuV4M+6WYSA4uQsVmjVu+paqFG49PZpexPl+XQpMgzwVCSNNiruIZErv3dNdZQXc=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:cf48:0:b0:d06:1a77:7d2 with SMTP id
- f69-20020a25cf48000000b00d061a7707d2mr18632ybg.13.1690402944082; Wed, 26 Jul
- 2023 13:22:24 -0700 (PDT)
-Date: Wed, 26 Jul 2023 13:22:22 -0700
-In-Reply-To: <711f74d6-fe15-6bd4-a9b9-c4f178d95bf3@redhat.com>
-Mime-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
- <711f74d6-fe15-6bd4-a9b9-c4f178d95bf3@redhat.com>
-Message-ID: <ZMGAfvzEkVphWPdZ@google.com>
-Subject: Re: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
-From: Sean Christopherson <seanjc@google.com>
-To: Paolo Bonzini <pbonzini@redhat.com>
-Content-Type: text/plain; charset="us-ascii"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBH5s6f3fz2yVF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 13:57:21 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 7BE4261CF1;
+	Thu, 27 Jul 2023 03:57:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 333DBC433C8;
+	Thu, 27 Jul 2023 03:57:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1690430233;
+	bh=2LZQxDDrrueBXO8BVcvN88sdAiFgW61YpvmWoV4rusk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=EZdgMDJNvWHpTU/TbbeuJIRdZELQC4io44o7BRZjr/qEbqXP+mOb3SpnPc3GnzZUJ
+	 6/89F+qI71eFF4iUju0DDwCRfWxlmyu525kPI64StVeMn3g22mxzWiFX5SyeyJUOvC
+	 7vpMprEDvWDPdxrLmbFWPjI1sopKugt5VjA6tOeYBWY7dbKLYXy1ooOebTmGv3ACSj
+	 fFwMNdhI5gT7lq20ftyAy9B2B7F0Kx3men5CLDs/URmKMEbxn6qNQpfOdz4+yFLRKM
+	 U8TEEb4JSsQRcj9xreGkiiwQXGZr6UG1WIoN/6+4R39C1Goqdd0J+NCOS+t8EZnNCl
+	 LnOw3z+jPm6bA==
+Date: Wed, 26 Jul 2023 20:57:10 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: Add fchmodat2() - or add a more general syscall?
+Message-ID: <20230727035710.GA15127@sol.localdomain>
+References: <cover.1689092120.git.legion@kernel.org>
+ <cover.1689074739.git.legion@kernel.org>
+ <104971.1690300714@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <104971.1690300714@warthog.procyon.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,77 +63,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-s
- ecurity-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com, stefan@agner.ch, ldv@altlinux.org, James.Bottomley@hansenpartnership.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, linux-api@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, fweimer@redhat.com, ysato@users.sourceforge.jp, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, catalin.marinas@arm.com, jhogan@kernel.org, mattst88@gmail.com, fenghua.yu@intel.com, gor@linux.ibm.com, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, linux-m68k@lists.linux-m68k.org, ink@jurassic.park.msu.ru, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, monstr@monstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linuxppc-dev@lis
+ ts.ozlabs.org, linux-mips@vger.kernel.org, ralf@linux-mips.org, LKML <linux-kernel@vger.kernel.org>, peterz@infradead.org, Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, bp@alien8.de, Alexey Gladkov <legion@kernel.org>, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 19, 2023, Paolo Bonzini wrote:
-> On 7/19/23 01:44, Sean Christopherson wrote:
-> > +	BUILD_BUG_ON(sizeof(gfn_range.arg) != sizeof(gfn_range.arg.raw));
-> > +	BUILD_BUG_ON(sizeof(range->arg) != sizeof(range->arg.raw));
+On Tue, Jul 25, 2023 at 04:58:34PM +0100, David Howells wrote:
+> Rather than adding a fchmodat2() syscall, should we add a "set_file_attrs()"
+> syscall that takes a mask and allows you to set a bunch of stuff all in one
+> go?  Basically, an interface to notify_change() in the kernel that would allow
+> several stats to be set atomically.  This might be of particular interest to
+> network filesystems.
 > 
-> I think these should be static assertions near the definition of the
-> structs.  However another possibility is to remove 'raw' and just assign the
-> whole union.
+> David
+> 
 
-Duh, and use a named union.  I think when I first proposed this I forgot that
-a single value would be passed between kvm_hva_range *and* kvm_gfn_range, and so
-created an anonymous union without thinking about the impliciations.
+fchmodat2() is a simple addition that fits well with the existing syscalls.
+It fixes an oversight in fchmodat().
 
-A named union is _much_ cleaner.  I'll post a complete version of the below
-snippet as a standalone non-RFC patch.
+IMO we should just add fchmodat2(), and not get sidetracked by trying to add
+some super-generalized syscall instead.  That can always be done later.
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 9d3ac7720da9..9125d0ab642d 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -256,11 +256,15 @@ int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
- #endif
- 
- #ifdef KVM_ARCH_WANT_MMU_NOTIFIER
-+union kvm_mmu_notifier_arg {
-+       pte_t pte;
-+};
-+
- struct kvm_gfn_range {
-        struct kvm_memory_slot *slot;
-        gfn_t start;
-        gfn_t end;
--       pte_t pte;
-+       union kvm_mmu_notifier_arg arg;
-        bool may_block;
- };
- bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dfbaafbe3a00..f84ef9399aee 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -526,7 +526,7 @@ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
- struct kvm_hva_range {
-        unsigned long start;
-        unsigned long end;
--       pte_t pte;
-+       union kvm_mmu_notifier_arg arg;
-        hva_handler_t handler;
-        on_lock_fn_t on_lock;
-        on_unlock_fn_t on_unlock;
-@@ -547,6 +547,8 @@ static void kvm_null_fn(void)
- }
- #define IS_KVM_NULL_FN(fn) ((fn) == (void *)kvm_null_fn)
- 
-+static const union kvm_mmu_notifier_arg KVM_NO_ARG;
-+
- /* Iterate over each memslot intersecting [start, last] (inclusive) range */
- #define kvm_for_each_memslot_in_hva_range(node, slots, start, last)         \
-        for (node = interval_tree_iter_first(&slots->hva_tree, start, last); \
-@@ -591,7 +593,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
-                         * bother making these conditional (to avoid writes on
-                         * the second or later invocation of the handler).
-                         */
--                       gfn_range.pte = range->pte;
-+                       gfn_range.arg = range->arg;
-                        gfn_range.may_block = range->may_block;
- 
-                        /*
-
+- Eric
