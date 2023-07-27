@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64B2AC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 08:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87D0EC0015E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 08:05:34 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RtWiIMRc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R1sBpylW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBNbH0d0Fz3dC5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 18:04:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBNcF0zBHz3dGs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 18:05:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RtWiIMRc;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R1sBpylW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBNYN0DMzz2ys8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 18:03:03 +1000 (AEST)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36R82hep001260;
-	Thu, 27 Jul 2023 08:02:50 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBNYW2HMHz30gy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 18:03:11 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36R7cY0x013762;
+	Thu, 27 Jul 2023 08:02:59 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=aKFNefd2TBLZ6cEsX29AYF2dHHKvLqjSwjs//gL5bUw=;
- b=RtWiIMRcITQSXND44vbFWrN1gR4OPwtGm4PWKF+7YOIwl5przQqm9WlWaQxy6ijcTjjx
- qKo7Q2IlIYbfksxO4NFVRZ9hnIvrv8VSfbqm3KjDu35QTZTT3PN5lxUGV29vbn4YLEnT
- h7pawNiVtkGi16V+BuexgscQGaQhcCiYDsw3XbyX6yOAv6o0bCdVuFwNVzK2FCr41TNF
- fFkCWKXrZ29pWAdc5te4JE5KtV/3tPWrHaS/b79+WLEY8IN1sfbFKB3S8hcjGVYozj49
- yhiyRNfEMfpnFl//U5tsdd34UPH77EUaD8awUcSkeQ785iLHXv3aJSulqJkuNTqO+uHQ WQ== 
+ bh=fwaoNkaypaNUy2xOWUXUJIe/5DhknF9d766otjQ/UDk=;
+ b=R1sBpylWwpz+8DKzU+v8KoGZ8LwLpBDPgCE1bm4lcDCKA/qBwVac0pDNm3V6cTroG1sj
+ +bjf06Y/l83KODD1VDkXnb7pUfDp+GRJGx1R5wDSz9RUT63TTi0bybKeFbyYuNsLYYZP
+ Hyd8VuPfIKk6izJxC8yWpZQaVQKXR4g/9N+dXAY3A0D3/iUGXo+UUMEpmgk8qcdyAlYf
+ bo7QZC9sNMsOXf3qu21EmF3eJxmYXa7MXCLFhj/VDtrBqEuiVRuwVXFtxiRugxx5ZKKs
+ B1QSKId8ZDzepPqhC+PZLmjuqWpHavxYp4CtJs6r06H9NJIB0Ev1vMmRC5pqbd95Oif6 Mw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3met8end-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3k83je2m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Jul 2023 08:02:50 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36R7kMHu009641;
-	Thu, 27 Jul 2023 08:02:49 GMT
+	Thu, 27 Jul 2023 08:02:59 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36R7cka5015256;
+	Thu, 27 Jul 2023 08:02:58 GMT
 Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3met8emk-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3k83je23-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Jul 2023 08:02:49 +0000
+	Thu, 27 Jul 2023 08:02:58 +0000
 Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36R7ei2D026189;
-	Thu, 27 Jul 2023 08:02:48 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s0sesc7yw-1
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36R7qvoZ026197;
+	Thu, 27 Jul 2023 08:02:57 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s0sesc80f-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Jul 2023 08:02:48 +0000
+	Thu, 27 Jul 2023 08:02:57 +0000
 Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36R82l1P66585000
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36R82vDd44827098
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 27 Jul 2023 08:02:48 GMT
+	Thu, 27 Jul 2023 08:02:57 GMT
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CDAEF58055;
-	Thu, 27 Jul 2023 08:02:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 06E135805B;
+	Thu, 27 Jul 2023 08:02:57 +0000 (GMT)
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AE5F45804B;
-	Thu, 27 Jul 2023 08:02:43 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0BAB05804B;
+	Thu, 27 Jul 2023 08:02:53 +0000 (GMT)
 Received: from skywalker.in.ibm.com (unknown [9.109.212.144])
 	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 27 Jul 2023 08:02:43 +0000 (GMT)
+	Thu, 27 Jul 2023 08:02:52 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
         linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
         christophe.leroy@csgroup.eu
-Subject: [PATCH v6 1/7] mm/memory_hotplug: Simplify ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE kconfig
-Date: Thu, 27 Jul 2023 13:32:26 +0530
-Message-ID: <20230727080232.667439-2-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v6 3/7] mm/memory_hotplug: Allow architecture to override memmap on memory support check
+Date: Thu, 27 Jul 2023 13:32:28 +0530
+Message-ID: <20230727080232.667439-4-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230727080232.667439-1-aneesh.kumar@linux.ibm.com>
 References: <20230727080232.667439-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: DBlEa65vE2X6Lr_BcrO5H7h9AnbfXoga
-X-Proofpoint-ORIG-GUID: bVy3i_rx3TKvQn8bVS6LU8LDfyXagqgs
+X-Proofpoint-ORIG-GUID: azA2QzQLvEzycei_fynRUEET_6I1Ptos
+X-Proofpoint-GUID: g6uawDR3OktpApgEvvaAU4yv256cT2sB
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
  definitions=2023-07-26_08,2023-07-26_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
- priorityscore=1501 suspectscore=0 mlxscore=0 spamscore=0 adultscore=0
- mlxlogscore=696 bulkscore=0 malwarescore=0 impostorscore=0 clxscore=1015
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 spamscore=0
+ priorityscore=1501 mlxscore=0 bulkscore=0 phishscore=0 mlxlogscore=999
+ adultscore=0 clxscore=1015 lowpriorityscore=0 impostorscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2306200000 definitions=main-2307270066
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,77 +102,61 @@ Cc: Vishal Verma <vishal.l.verma@intel.com>, David Hildenbrand <david@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of adding menu entry with all supported architectures, add
-mm/Kconfig variable and select the same from supported architectures.
+Some architectures would want different restrictions. Hence add an
+architecture-specific override.
 
-No functional change in this patch.
+The PMD_SIZE check is moved there.
 
 Acked-by: David Hildenbrand <david@redhat.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/arm64/Kconfig | 4 +---
- arch/x86/Kconfig   | 4 +---
- mm/Kconfig         | 3 +++
- 3 files changed, 5 insertions(+), 6 deletions(-)
+ mm/memory_hotplug.c | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index b1573257a4d6..0f749cfab8e6 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -78,6 +78,7 @@ config ARM64
- 	select ARCH_INLINE_SPIN_UNLOCK_IRQ if !PREEMPTION
- 	select ARCH_INLINE_SPIN_UNLOCK_IRQRESTORE if !PREEMPTION
- 	select ARCH_KEEP_MEMBLOCK
-+	select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
- 	select ARCH_USE_CMPXCHG_LOCKREF
- 	select ARCH_USE_GNU_PROPERTY
- 	select ARCH_USE_MEMTEST
-@@ -347,9 +348,6 @@ config GENERIC_CSUM
- config GENERIC_CALIBRATE_DELAY
- 	def_bool y
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index eca32ccd45cc..746cb7c08c64 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1247,10 +1247,26 @@ static int online_memory_block(struct memory_block *mem, void *arg)
+ 	return device_online(&mem->dev);
+ }
  
--config ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
--	def_bool y
--
- config SMP
- 	def_bool y
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 78224aa76409..d0258e92a8af 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -102,6 +102,7 @@ config X86
- 	select ARCH_HAS_DEBUG_WX
- 	select ARCH_HAS_ZONE_DMA_SET if EXPERT
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
-+	select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
- 	select ARCH_MIGHT_HAVE_ACPI_PDC		if ACPI
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
-@@ -2610,9 +2611,6 @@ config ARCH_HAS_ADD_PAGES
- 	def_bool y
- 	depends on ARCH_ENABLE_MEMORY_HOTPLUG
- 
--config ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
--	def_bool y
--
- menu "Power management and ACPI options"
- 
- config ARCH_HIBERNATION_HEADER
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 5fe49c030961..721dc88423c7 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -571,6 +571,9 @@ config MHP_MEMMAP_ON_MEMORY
- 
- endif # MEMORY_HOTPLUG
- 
-+config ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
-+       bool
++static inline unsigned long memory_block_memmap_size(void)
++{
++	return PHYS_PFN(memory_block_size_bytes()) * sizeof(struct page);
++}
 +
- # Heavily threaded applications may benefit from splitting the mm-wide
- # page_table_lock, so that faults on different parts of the user address
- # space can be handled with less contention: split it at this NR_CPUS.
++#ifndef arch_supports_memmap_on_memory
++static inline bool arch_supports_memmap_on_memory(unsigned long vmemmap_size)
++{
++	/*
++	 * As default, we want the vmemmap to span a complete PMD such that we
++	 * can map the vmemmap using a single PMD if supported by the
++	 * architecture.
++	 */
++	return IS_ALIGNED(vmemmap_size, PMD_SIZE);
++}
++#endif
++
+ static bool mhp_supports_memmap_on_memory(unsigned long size)
+ {
+-	unsigned long nr_vmemmap_pages = size / PAGE_SIZE;
+-	unsigned long vmemmap_size = nr_vmemmap_pages * sizeof(struct page);
++	unsigned long vmemmap_size = memory_block_memmap_size();
+ 	unsigned long remaining_size = size - vmemmap_size;
+ 
+ 	/*
+@@ -1281,8 +1297,8 @@ static bool mhp_supports_memmap_on_memory(unsigned long size)
+ 	 */
+ 	return mhp_memmap_on_memory() &&
+ 	       size == memory_block_size_bytes() &&
+-	       IS_ALIGNED(vmemmap_size, PMD_SIZE) &&
+-	       IS_ALIGNED(remaining_size, (pageblock_nr_pages << PAGE_SHIFT));
++	       IS_ALIGNED(remaining_size, (pageblock_nr_pages << PAGE_SHIFT)) &&
++	       arch_supports_memmap_on_memory(vmemmap_size);
+ }
+ 
+ /*
 -- 
 2.41.0
 
