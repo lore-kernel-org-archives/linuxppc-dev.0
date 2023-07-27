@@ -4,89 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FBA8C04E69
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 08:39:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23390C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 09:10:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bAHaVFhm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Zwk9FRWm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBPMm6KMPz3cPY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 18:39:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBQ3b5SFFz3c3X
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 19:10:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bAHaVFhm;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Zwk9FRWm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.200; helo=relay7-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBPLq5CCFz3c18
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 18:38:59 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36R8cCw1005419;
-	Thu, 27 Jul 2023 08:38:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=gY00gaF9F3v55zO8suQ4Uq0pj+76FmgM+3B5bjw5DX0=;
- b=bAHaVFhmZftT0Z4LBXirJ86aPVGZ95l/8xamtuovbI3VkKQZbC7xSZ7KpV4YY2ceVJmS
- fLe/+KZY6vfxiJ+/IqqCmexTOqGNkODQwFxSFdRy96Pj2vyfqe1za8nIK5Wkl5hD4rkM
- QtUkFuTPHIaoFjP/pN/PNwGmpRWSErciBkETunKb4eVrQdS6hCYyIfh0eob+RgJqyHY8
- uEP8Q23t+nmgF4e6xQqMKbWYp7F34rLAe6xrpWVxDoij6AgMk8khASZ2S8LEYTFVT/T4
- oJPuILGneVkDaXbhKmhY6nyw3dLXVH1mhgzT0L+Bt0ysyI0udE6GvuZs/4tWKYiH9CIi 3g== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3mw1ghsg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Jul 2023 08:38:41 +0000
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36R8cNCC007206;
-	Thu, 27 Jul 2023 08:38:33 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3mw1ghe1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Jul 2023 08:38:33 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36R7H6LC001858;
-	Thu, 27 Jul 2023 08:03:16 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s0unjue52-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Jul 2023 08:03:16 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36R83FYM20251132
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 27 Jul 2023 08:03:15 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5807358065;
-	Thu, 27 Jul 2023 08:03:15 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 673D158063;
-	Thu, 27 Jul 2023 08:03:11 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.109.212.144])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 27 Jul 2023 08:03:11 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH v6 7/7] mm/memory_hotplug: Enable runtime update of memmap_on_memory parameter
-Date: Thu, 27 Jul 2023 13:32:32 +0530
-Message-ID: <20230727080232.667439-8-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230727080232.667439-1-aneesh.kumar@linux.ibm.com>
-References: <20230727080232.667439-1-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBQ2c63Phz30F5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 19:09:58 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 5973D20002;
+	Thu, 27 Jul 2023 09:09:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1690448995;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rK0kgw5LzcKtfaISYOOP5YAwk737ZNSt9k6WE/IR5iU=;
+	b=Zwk9FRWmX7HtxhycqPP+GSgdJ/lE0Jsf02fG5eRjCnrnNZdzdBeO3YgnQihx1VtKrAmoHu
+	R+0fUpDKNNSvxBL0sOdsfTkUTdxLJcK2e+JZfYc0cSUDB5fpsHtZqGaxUsNmy6IFaMmuiz
+	dzpVaJAU0Qm7BptVX7fr77ZTMdjJ+WBVFl1VyLwsAx0VzlYMw72vhsGb6BbtbtId7re+rG
+	wdUrJrAqrkpatIxufuuSXEgZH0QIUrPoKcVDJ/w/T9BgSHStT8mQmL1ENohCMeFat8FBGp
+	lN6gQStuXkUsJpILuQdCU3oeVTw6XMMCMt/6OO6NPj+uuYPoHKtcIf2ONnIQIg==
+Date: Thu, 27 Jul 2023 11:09:48 +0200
+From: Herve Codina <herve.codina@bootlin.com>
+To: Conor Dooley <conor@kernel.org>
+Subject: Re: [PATCH v2 05/28] dt-bindings: net: Add support for QMC HDLC
+Message-ID: <20230727110948.7926a532@bootlin.com>
+In-Reply-To: <20230727-talcum-backside-5bdbe2171fb6@spud>
+References: <20230726150225.483464-1-herve.codina@bootlin.com>
+	<20230726150225.483464-6-herve.codina@bootlin.com>
+	<20230727-talcum-backside-5bdbe2171fb6@spud>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: tyUklHxVR2BzqjOm5IcYH-ZWaFrEDcJ9
-X-Proofpoint-GUID: tQzp6q3lAURwcBBMcChfngT81804v6cb
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-26_08,2023-07-26_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- impostorscore=0 spamscore=0 phishscore=0 mlxscore=0 clxscore=1015
- mlxlogscore=656 adultscore=0 malwarescore=0 suspectscore=0
- priorityscore=1501 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2306200000 definitions=main-2307270075
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,78 +61,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, David Hildenbrand <david@redhat.com>, Michal Hocko <mhocko@suse.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <dave
+ m@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Acked-by: David Hildenbrand <david@redhat.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- mm/memory_hotplug.c | 35 +++++++++++++++++++----------------
- 1 file changed, 19 insertions(+), 16 deletions(-)
+Hi Conor,
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index aa8724bd1d53..7c877756b363 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -89,7 +89,12 @@ static int set_memmap_mode(const char *val, const struct kernel_param *kp)
- 		else
- 			mode = MEMMAP_ON_MEMORY_DISABLE;
- 	}
-+	/*
-+	 * Avoid changing memmap mode during hotplug.
-+	 */
-+	get_online_mems();
- 	*((int *)kp->arg) = mode;
-+	put_online_mems();
- 	if (mode == MEMMAP_ON_MEMORY_FORCE) {
- 		unsigned long memmap_pages = memory_block_memmap_on_memory_pages();
- 
-@@ -110,7 +115,7 @@ static const struct kernel_param_ops memmap_mode_ops = {
- 	.set = set_memmap_mode,
- 	.get = get_memmap_mode,
- };
--module_param_cb(memmap_on_memory, &memmap_mode_ops, &memmap_mode, 0444);
-+module_param_cb(memmap_on_memory, &memmap_mode_ops, &memmap_mode, 0644);
- MODULE_PARM_DESC(memmap_on_memory, "Enable memmap on memory for memory hotplug\n"
- 		 "With value \"force\" it could result in memory wastage due "
- 		 "to memmap size limitations (Y/N/force)");
-@@ -2172,22 +2177,20 @@ static int __ref try_remove_memory(u64 start, u64 size)
- 	 * We only support removing memory added with MHP_MEMMAP_ON_MEMORY in
- 	 * the same granularity it was added - a single memory block.
- 	 */
--	if (mhp_memmap_on_memory()) {
--		ret = walk_memory_blocks(start, size, &mem, test_has_altmap_cb);
--		if (ret) {
--			if (size != memory_block_size_bytes()) {
--				pr_warn("Refuse to remove %#llx - %#llx,"
--					"wrong granularity\n",
--					start, start + size);
--				return -EINVAL;
--			}
--			altmap = mem->altmap;
--			/*
--			 * Mark altmap NULL so that we can add a debug
--			 * check on memblock free.
--			 */
--			mem->altmap = NULL;
-+	ret = walk_memory_blocks(start, size, &mem, test_has_altmap_cb);
-+	if (ret) {
-+		if (size != memory_block_size_bytes()) {
-+			pr_warn("Refuse to remove %#llx - %#llx,"
-+				"wrong granularity\n",
-+				start, start + size);
-+			return -EINVAL;
- 		}
-+		altmap = mem->altmap;
-+		/*
-+		 * Mark altmap NULL so that we can add a debug
-+		 * check on memblock free.
-+		 */
-+		mem->altmap = NULL;
- 	}
- 
- 	/* remove memmap entry */
--- 
-2.41.0
+On Thu, 27 Jul 2023 09:19:59 +0100
+Conor Dooley <conor@kernel.org> wrote:
 
+> On Wed, Jul 26, 2023 at 05:02:01PM +0200, Herve Codina wrote:
+> > The QMC (QUICC mutichannel controller) is a controller present in some
+> > PowerQUICC SoC such as MPC885.
+> > The QMC HDLC uses the QMC controller to transfer HDLC data.
+> > 
+> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > ---
+> >  .../devicetree/bindings/net/fsl,qmc-hdlc.yaml | 41 +++++++++++++++++++
+> >  1 file changed, 41 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/net/fsl,qmc-hdlc.yaml
+> > 
+> > diff --git a/Documentation/devicetree/bindings/net/fsl,qmc-hdlc.yaml b/Documentation/devicetree/bindings/net/fsl,qmc-hdlc.yaml
+> > new file mode 100644
+> > index 000000000000..8bb6f34602d9
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/net/fsl,qmc-hdlc.yaml
+> > @@ -0,0 +1,41 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/net/fsl,qmc-hdlc.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: QMC HDLC  
+> 
+> "QMC HDLC" seems excessively terse.
+
+The name was based on the fsl,qmc-audio.yaml already present upstream.
+  https://elixir.bootlin.com/linux/v6.4/source/Documentation/devicetree/bindings/sound/fsl,qmc-audio.yaml
+
+If needed, I can change to:
+  title: QMC (QUICC Multichannel Controller) HDLC
+Let me known if it is better to you.
+
+> 
+> > +
+> > +maintainers:
+> > +  - Herve Codina <herve.codina@bootlin.com>
+> > +
+> > +description: |
+> > +  The QMC HDLC uses a QMC (QUICC Multichannel Controller) channel to transfer
+> > +  HDLC data.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: fsl,qmc-hdlc
+> > +
+> > +  fsl,qmc-chan:  
+> 
+> Perhaps I am just showing my lack of knowledge in this area, but what is
+> fsl specific about wanting a reference to the channel of a "QMC"?
+> Is this something that hardware from other manufacturers would not also
+> want to do?
+
+The QMC and the QMC channel are something specific to the SoC. This IP is only
+available on some Freescale/NXP SoCs.
+
+When I upstreamed the 'fsl,qmc-audio.yaml', I first used a generic name for this
+property and Kristoff asked to change to a vendor prefixed name.
+  https://lore.kernel.org/linux-kernel/1dfade07-f8c4-2e16-00dc-c7d183708259@linaro.org/
+
+Based on this, as the property 'fsl,qmc-chan' has the exact same meaning in
+fsl,qmc-audio.yaml and fsl,qmc-hdlc.yaml, I use the same name.
+
+Best regards,
+Hervé
+
+> 
+> > +    $ref: /schemas/types.yaml#/definitions/phandle-array
+> > +    items:
+> > +      - items:
+> > +          - description: phandle to QMC node
+> > +          - description: Channel number
+> > +    description:
+> > +      Should be a phandle/number pair. The phandle to QMC node and the QMC
+> > +      channel to use.
+> > +
+> > +required:
+> > +  - compatible
+> > +  - fsl,qmc-chan
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    hdlc {
+> > +        compatible = "fsl,qmc-hdlc";
+> > +        fsl,qmc-chan = <&qmc 16>;
+> > +    };
+> > -- 
+> > 2.41.0
+> >   
