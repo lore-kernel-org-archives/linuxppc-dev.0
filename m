@@ -4,54 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03E40C001DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 10:35:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63EFCC001DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 10:56:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=D7sErss6;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=HoIxeaM2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBRxl4ZRRz3cSv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 20:35:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBSP573kWz3cSP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 20:56:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=D7sErss6;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=HoIxeaM2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.201; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [217.70.183.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBRwj3yG9z3cCr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 20:35:00 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id CBAA01BF207;
-	Thu, 27 Jul 2023 10:34:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1690454095;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBSN70vbsz3cJS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 20:55:17 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 6B9371F37C;
+	Thu, 27 Jul 2023 10:55:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1690455308; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=49SapdFsUUzXkb0zmYsMHZkg7CHiz7VOLc7j0san1b4=;
-	b=D7sErss6g6hwoemn0ONI4uqJb+K/IsweOTLB1naVOQSB0jnxItj4HIIYOc01Bt1PCbQWls
-	x2lcEAR9Bd9VjcK6MIkZw2GgBXiwTdL0BWCBkLp6FGIk8zL9HeoByCjQcU71EgLZvHIX9c
-	ENATbxHfRlfF0SU97Zp8/habefY7ZArdGsISAkXbKwdQKnHTa46Poh7Izti1MQgJHfgtY+
-	+trXOG76m0g/9BUX139rvy1EaJBvWlTKa0L2vTIHxz+5+JsANW+49ziW/vf766xYPBj86D
-	/xe6CDk60hgIFLNs0LFEukyLTaCTJBZRtsZB+11cVUQUOpWASao2sGMwjhfrJQ==
-Date: Thu, 27 Jul 2023 12:34:49 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Conor Dooley <conor@kernel.org>
-Subject: Re: [PATCH v2 05/28] dt-bindings: net: Add support for QMC HDLC
-Message-ID: <20230727123449.0ab1c58e@bootlin.com>
-In-Reply-To: <20230727-decidable-sterile-06ef617c144b@spud>
-References: <20230726150225.483464-1-herve.codina@bootlin.com>
-	<20230726150225.483464-6-herve.codina@bootlin.com>
-	<20230727-talcum-backside-5bdbe2171fb6@spud>
-	<20230727110948.7926a532@bootlin.com>
-	<20230727-decidable-sterile-06ef617c144b@spud>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; x86_64-redhat-linux-gnu)
+	bh=03ocS2CkLhvohMqLX/92YU/WWyH6YW59W+34dQnBH7s=;
+	b=HoIxeaM2rz7MaAKAhiqORT7me6xBbcPKIr31jxIYx8uWwbVWYrSTo8dPykyD9QOXdZQQWX
+	HQYMsbxEbe78wrPz2+FV4yMp8GXACgiMk1lYEHkcD3+ymg4i1eUJW2dR3f75WAGUOO4j8L
+	rR+3y1YahibbdCfuIK14UoE+Qric6F0=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 48D8013902;
+	Thu, 27 Jul 2023 10:55:08 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id NyvYDgxNwmRNGQAAMHmgww
+	(envelope-from <mhocko@suse.com>); Thu, 27 Jul 2023 10:55:08 +0000
+Date: Thu, 27 Jul 2023 12:55:07 +0200
+From: Michal Hocko <mhocko@suse.com>
+To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v6 4/7] mm/memory_hotplug: Support memmap_on_memory when
+ memmap is not aligned to pageblocks
+Message-ID: <ZMJNC7F+BsOj6YDV@dhcp22.suse.cz>
+References: <20230727080232.667439-1-aneesh.kumar@linux.ibm.com>
+ <20230727080232.667439-5-aneesh.kumar@linux.ibm.com>
+ <ZMI3o8k/+QKbhRol@dhcp22.suse.cz>
+ <f977e09b-6a09-901f-96c3-e59cd0b3470c@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f977e09b-6a09-901f-96c3-e59cd0b3470c@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,56 +71,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <dave
- m@davemloft.net>
+Cc: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org, npiggin@gmail.com, Vishal Verma <vishal.l.verma@intel.com>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Conor,
-
-On Thu, 27 Jul 2023 10:53:15 +0100
-Conor Dooley <conor@kernel.org> wrote:
-
-> On Thu, Jul 27, 2023 at 11:09:48AM +0200, Herve Codina wrote:
-> > On Thu, 27 Jul 2023 09:19:59 +0100
-> > Conor Dooley <conor@kernel.org> wrote:  
-> > > On Wed, Jul 26, 2023 at 05:02:01PM +0200, Herve Codina wrote:  
-> 
-> > If needed, I can change to:
-> >   title: QMC (QUICC Multichannel Controller) HDLC
-> > Let me known if it is better to you.  
-> 
-> If it were me writing the binding, I'd probably use something like
-> "Freescale/NXP QUICC Multichannel Controller (QMC) HDLC", but it is not
-> a big deal, I just had a "wtf is this" moment :)
-
-I will change to "Freescale/NXP QUICC Multichannel Controller (QMC) HDLC" in
-the next iteration.
-
-> 
-> 
-> 
-> > > > +  fsl,qmc-chan:  
-> > > 
-> > > Perhaps I am just showing my lack of knowledge in this area, but what is
-> > > fsl specific about wanting a reference to the channel of a "QMC"?
-> > > Is this something that hardware from other manufacturers would not also
-> > > want to do?  
+On Thu 27-07-23 14:57:17, Aneesh Kumar K V wrote:
+> On 7/27/23 2:53 PM, Michal Hocko wrote:
+> > On Thu 27-07-23 13:32:29, Aneesh Kumar K.V wrote:
+> > [...]
+> >> +	if (mode == MEMMAP_ON_MEMORY_FORCE) {
+> >> +		unsigned long memmap_pages = memory_block_memmap_on_memory_pages();
+> >> +
+> >> +		pr_info_once("Memory hotplug will reserve %ld pages in each memory block\n",
+> >> +			     memmap_pages - PFN_UP(memory_block_memmap_size()));
+> >> +	}
+> >> +	return 0;
+> >> +}
 > > 
-> > The QMC and the QMC channel are something specific to the SoC. This IP is only
-> > available on some Freescale/NXP SoCs.
+> > Why should we print this only for the forced case? Isn't that
+> > interesting for any on memory memmap? Also is this the above sufficient
+> > on its own? the size depends on the block size and that can vary.
+> > I think it would make more sense to print the block size and the vmemmap
+> > reservation and for the force case also any wasted amount on top (if
+> > any).
 > > 
-> > When I upstreamed the 'fsl,qmc-audio.yaml', I first used a generic name for this
-> > property and Kristoff asked to change to a vendor prefixed name.
-> >   https://lore.kernel.org/linux-kernel/1dfade07-f8c4-2e16-00dc-c7d183708259@linaro.org/
-> > 
-> > Based on this, as the property 'fsl,qmc-chan' has the exact same meaning in
-> > fsl,qmc-audio.yaml and fsl,qmc-hdlc.yaml, I use the same name.  
 > 
-> Okay, thanks for explaining!
+> For the other cases the space is completely used by for struct page allocation. What
+> the information is indicating here is that for each memblock we add we are loosing/wasting so many pages. 
+> May be I should have used the term "waste" instead of "reserve" ?
 
-You're welcome.
-
-Regards,
-Hervé
-
+OK, so I have clearly misread and it just confirms this would benefit
+from a clarification. In any case I still think that it would be
+benefitial to also report how much of the memory is used for vmemmap on
+the hotplugged memory. Maybe as a separate patch.
+-- 
+Michal Hocko
+SUSE Labs
