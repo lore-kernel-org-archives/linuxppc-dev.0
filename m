@@ -4,56 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D63FC001E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 11:36:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E792C001DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 11:37:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QIRxzFuZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=la4Lmi/D;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBTJ34WHbz3d8W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 21:36:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBTK10chwz3dCb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 21:37:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QIRxzFuZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=la4Lmi/D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBRlm1sd7z3c3X
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 20:27:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBS0R0LlXz3cJC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 20:38:14 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id C9A1761E0A;
-	Thu, 27 Jul 2023 10:27:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40B3AC433C7;
-	Thu, 27 Jul 2023 10:27:02 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id B1F9461E23;
+	Thu, 27 Jul 2023 10:38:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2484BC433C7;
+	Thu, 27 Jul 2023 10:38:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690453633;
-	bh=R/FYmp9MZEn+gyMq0ULNxE++Cfcy5PFI0h0gHoMCEaU=;
+	s=k20201202; t=1690454292;
+	bh=wh4ycVHyDy/meMpcFy2ujkA7FnfZIbKiF964oBpVy5w=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=QIRxzFuZRUpzkkFGKnnORGNBJ80AiPRF99WZpuM+vb47BufRaRCX0nIyujfGYNZQe
-	 NeYMFGrUe3lvpoUWfgZe9pK/BpocYz7rTImYpnueNbLJ8q5lyHeeW1TAJF5SI/w+Zt
-	 VsP5DmcMZq6gKczQX/HTSDSpbLUYeJemvT+46ZRPtId5YN+FAuc5U7zjXDXBTiUhES
-	 KLHJnbCE6Y8IrNHY5cY5wkkgFPDXeJZi3CjVnYPpYgTUMnxr2+kPa96nXV92DuNGtT
-	 2wPdCtmvz6aPl0zP7CxK5fM5OA63Ga+2qGCzHv/Dp/yIidvhBQEYCQ8rZQpRIqiDJP
-	 d13GHDccbk2Cg==
-Date: Thu, 27 Jul 2023 12:26:59 +0200
+	b=la4Lmi/DhdfArnUIJ/DbZ78SFqaneHcZNAsl7vyC6Bp1sh+e4HQI8e4jBnieO39j6
+	 Rmq90io/GLqGoqqH4KkgjJEuKDDwP558rmmvSt0FVF7KhEbTHcezlFb9UppkdHYSda
+	 jhi/dMRwdDkMKonZJKiGKFXJNLOHTIEijgJrGqqlhNsPV0MkiTVFgniC59vxFaHMe+
+	 /PgQ2nYibh/PpeGMNXJPhBkYhxE3bGCCuiviuqMrlry/Jp24MyFm3S6udZz5sJhaZ+
+	 s1t/etXhC/mU8K1VZK7pw57PG4j5iKPd/L4jWewp3rgGuvPk9cYY28p/tSjAv5ikoK
+	 B2c9Xn3Ycs/Lg==
+Date: Thu, 27 Jul 2023 12:37:58 +0200
 From: Christian Brauner <brauner@kernel.org>
-To: Alexey Gladkov <legion@kernel.org>
-Subject: Re: [PATCH v4 2/5] fs: Add fchmodat2()
-Message-ID: <20230727-mitkommen-deck-2db8197421bd@brauner>
+To: Aleksa Sarai <cyphar@cyphar.com>
+Subject: Re: [PATCH v4 3/5] arch: Register fchmodat2, usually as syscall 452
+Message-ID: <20230727-fangen-olympiade-85fcbdaf03d7@brauner>
 References: <cover.1689074739.git.legion@kernel.org>
  <cover.1689092120.git.legion@kernel.org>
- <f2a846ef495943c5d101011eebcf01179d0c7b61.1689092120.git.legion@kernel.org>
- <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
- <ZMEjlDNJkFpYERr1@example.org>
+ <a677d521f048e4ca439e7080a5328f21eb8e960e.1689092120.git.legion@kernel.org>
+ <nbtxxotfsotuiepm7r4tegc4hy5qxe4dfjuqq7rm6qkkevooxh@4hacgjwit4or>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <ZMEjlDNJkFpYERr1@example.org>
+In-Reply-To: <nbtxxotfsotuiepm7r4tegc4hy5qxe4dfjuqq7rm6qkkevooxh@4hacgjwit4or>
 X-Mailman-Approved-At: Thu, 27 Jul 2023 21:35:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -66,13 +65,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, fenghua.yu@intel.com, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, x86@kernel.org, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, gor@linux.ibm.com, ysato@users.sourceforge.jp, deller@gmx.de, linux-sh@vger.kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, fweimer@redhat.com, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, tycho@tycho.ws, acme@kernel.org, Aleksa Sarai <cyphar@cyphar.com>, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@hansenpartnership.com, monstr@
- monstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, stefan@agner.ch, ldv@altlinux.org, dhowells@redhat.com, kim.phillips@arm.com, paulus@samba.org, deepa.kernel@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, hare@suse.com, fweimer@redhat.com, ysato@users.sourceforge.jp, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, borntraeger@de.ibm.com, mingo@redhat.com, geert@linux-m68k.org, jhogan@kernel.org, mattst88@gmail.com, linux-mips@vger.kernel.org, gor@linux.ibm.com, fenghua.yu@intel.com, tycho@tycho.ws, Arnd Bergmann <arnd@arndb.de>, glebfm@altlinux.org, linuxppc-dev@lists.ozlabs.org, acme@kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de, viro@zeniv.linux.org.uk, luto@kernel.org, namhyung@kernel.org, tglx@linutronix.de, christian@brauner.io, axboe@kernel.dk, James.Bottomley@
+ hansenpartnership.com, monstr@monstr.eu, tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, peterz@infradead.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, ink@jurassic.park.msu.ru, Alexey Gladkov <legion@kernel.org>, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> > I think it'd be much neater to do the conversion of AT_ flags here and
-> > pass 0 as a flags argument for all of the wrappers (this is how most of
-> > the other xyz(), fxyz(), fxyzat() syscall wrappers are done IIRC).
+On Wed, Jul 26, 2023 at 02:43:41AM +1000, Aleksa Sarai wrote:
+> On 2023-07-11, Alexey Gladkov <legion@kernel.org> wrote:
+> > From: Palmer Dabbelt <palmer@sifive.com>
+> > 
+> > This registers the new fchmodat2 syscall in most places as nuber 452,
+> > with alpha being the exception where it's 562.  I found all these sites
+> > by grepping for fspick, which I assume has found me everything.
+> 
+> Shouldn't this patch be squashed with the patch that adds the syscall?
+> At least, that's how I've usually seen it done...
 
-I've fixed that up in-tree.
+Depends. Iirc, someone said they'd prefer for doing it in one patch
+in some circumstances on some system call we added years ago. But otoh,
+having the syscall wiring done separately makes it easy for arch
+maintainers to ack only the wiring up part. Both ways are valid imho.
+(cachestat() did it for x86 and then all the others separately. So
+really it seems a bit all over the place depending on the scenario.)
