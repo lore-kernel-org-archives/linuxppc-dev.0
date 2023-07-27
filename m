@@ -4,56 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EF3CC001DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 09:54:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48E73C001DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 10:19:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CkkEAksC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=LGBKo4DD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBR1l6Lw0z3cQC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 19:54:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBRb04RNFz3cRR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 20:19:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CkkEAksC;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=LGBKo4DD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBR0l3M7yz3c7f
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 19:53:27 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 6D6DD61DE0;
-	Thu, 27 Jul 2023 09:53:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3684EC433C7;
-	Thu, 27 Jul 2023 09:53:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690451603;
-	bh=EdAZ9yCp4NjWVpXzH6AhTQQee2XgoMhciT9wDsXDj3c=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CkkEAksCAqLlikCk9JjEcjPhux5P1puAANDl8+6/+YFdpP9MyxEJZmjYWgS9TNlVR
-	 D/PuEZi9uV2jU/E9C4t4GZeWLZTMBKdLz3XRpkg24gGeTKUymJLOlyRVjPhhAUhd1J
-	 R7XfjrbP+K1pz3BowFAxrPEyZSH7yb3kNfhihY0wUPK43CKgVjQtKxfdhC+BKb4kSZ
-	 vauM0v1qddB3XFsxJ84JTIG98VtZ4Sezo0oPi8G0dyOHMT7P7uRtPK7SJwMFGT0iRT
-	 wsSpKH6SkCMDV4cWplBERK47w7DXi27cZLxp9y98ByFJ5lFKGEO9cER2P8IuDSrw2p
-	 /+AUJuabvTyIw==
-Date: Thu, 27 Jul 2023 10:53:15 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Herve Codina <herve.codina@bootlin.com>
-Subject: Re: [PATCH v2 05/28] dt-bindings: net: Add support for QMC HDLC
-Message-ID: <20230727-decidable-sterile-06ef617c144b@spud>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBRZ13L4kz3c6H
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 20:18:46 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id CC9DF240009;
+	Thu, 27 Jul 2023 10:18:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1690453120;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LVq3Vc2yDzDKpJTcAR2jA40+zkxL5sFVNMLQL+uihyc=;
+	b=LGBKo4DDE6TlLK+r5fTDq47Or6GsDCPWtkuzd8m01djTnntuS1whrhZ2QA3u0laO3aepgx
+	rqvLj+Dz26tpJXrON2TF+vdJS7VEZAS6u+braSD1zItS8ACXGXCV/HJOaMNzrJensddzRn
+	vLkeJfbV+0di+euOuaVZ9CDsqgncSuKL4pqV/LzInvwOK9eMrHE2IPGs6TpoFGMtc3Dz9B
+	NAq27nwXNI7xm0DLU67stWHWnZaGSrDO6Ja3XiR87FCrQfmbtK1KH4XzlWa31FCWcSeyP1
+	ZOqjOi2BM6kZns8uVQmjpT0xj014mQnM1O+zGWPTUXUApK/CTHrOu0cc7swVyA==
+Date: Thu, 27 Jul 2023 12:18:34 +0200
+From: Herve Codina <herve.codina@bootlin.com>
+To: Lee Jones <lee@kernel.org>
+Subject: Re: [PATCH v2 22/28] mfd: core: Ensure disabled devices are skiped
+ without aborting
+Message-ID: <20230727121834.475541d0@bootlin.com>
+In-Reply-To: <20230727092209.GA8175@google.com>
 References: <20230726150225.483464-1-herve.codina@bootlin.com>
- <20230726150225.483464-6-herve.codina@bootlin.com>
- <20230727-talcum-backside-5bdbe2171fb6@spud>
- <20230727110948.7926a532@bootlin.com>
+	<20230726150225.483464-23-herve.codina@bootlin.com>
+	<20230727092209.GA8175@google.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="O7XSXK7XxHjViR5H"
-Content-Disposition: inline
-In-Reply-To: <20230727110948.7926a532@bootlin.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,64 +62,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <dave
- m@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Jaroslav Kysela <perex@perex.cz>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Takashi Iwai <tiwai@suse.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Lee,
 
---O7XSXK7XxHjViR5H
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 27 Jul 2023 10:22:09 +0100
+Lee Jones <lee@kernel.org> wrote:
 
-On Thu, Jul 27, 2023 at 11:09:48AM +0200, Herve Codina wrote:
-> On Thu, 27 Jul 2023 09:19:59 +0100
-> Conor Dooley <conor@kernel.org> wrote:
-> > On Wed, Jul 26, 2023 at 05:02:01PM +0200, Herve Codina wrote:
+> On Wed, 26 Jul 2023, Herve Codina wrote:
+> 
+> > The loop searching for a matching device based on its compatible
+> > string is aborted when a matching disabled device is found.
+> > This abort avoid to add devices as soon as one disabled device
+> > is found.
+> > 
+> > Continue searching for an other device instead of aborting on the
+> > first disabled one fixes the issue.
+> > 
+> > Fixes: 22380b65dc70 ("mfd: mfd-core: Ensure disabled devices are ignored without error")
+> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > ---
+> >  drivers/mfd/mfd-core.c | 18 +++++++++++++-----
+> >  1 file changed, 13 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+> > index 0ed7c0d7784e..bcc26e64639a 100644
+> > --- a/drivers/mfd/mfd-core.c
+> > +++ b/drivers/mfd/mfd-core.c
+> > @@ -146,6 +146,7 @@ static int mfd_add_device(struct device *parent, int id,
+> >  	struct platform_device *pdev;
+> >  	struct device_node *np = NULL;
+> >  	struct mfd_of_node_entry *of_entry, *tmp;
+> > +	bool disabled;
+> >  	int ret = -ENOMEM;
+> >  	int platform_id;
+> >  	int r;
+> > @@ -181,13 +182,13 @@ static int mfd_add_device(struct device *parent, int id,
+> >  		goto fail_res;
+> >  
+> >  	if (IS_ENABLED(CONFIG_OF) && parent->of_node && cell->of_compatible) {
+> > +		disabled = false;  
+> 
+> This does not appear to reside in a loop.
+> 
+> Why not set it to false on declaration?
 
-> If needed, I can change to:
->   title: QMC (QUICC Multichannel Controller) HDLC
-> Let me known if it is better to you.
+Indeed, I will change in the next iteration and set the value to false at
+the declaration.
 
-If it were me writing the binding, I'd probably use something like
-"Freescale/NXP QUICC Multichannel Controller (QMC) HDLC", but it is not
-a big deal, I just had a "wtf is this" moment :)
+> 
+> >  		for_each_child_of_node(parent->of_node, np) {
+> >  			if (of_device_is_compatible(np, cell->of_compatible)) {
+> > -				/* Ignore 'disabled' devices error free */
+> > +				/* Skip 'disabled' devices */
+> >  				if (!of_device_is_available(np)) {
+> > -					of_node_put(np);  
+> 
+> Doesn't this result in a resource leak?
 
+No because we change from 'goto fail_alias' to 'continue' and so we don't
+exit from the for_each_child_of_node().
+The for_each_child_of_node() calls of_get_next_child() and, in turn, calls
+of_node_put().
 
+Regards,
+Hervé
 
-> > > +  fsl,qmc-chan:
-> >=20
-> > Perhaps I am just showing my lack of knowledge in this area, but what is
-> > fsl specific about wanting a reference to the channel of a "QMC"?
-> > Is this something that hardware from other manufacturers would not also
-> > want to do?
->=20
-> The QMC and the QMC channel are something specific to the SoC. This IP is=
- only
-> available on some Freescale/NXP SoCs.
->=20
-> When I upstreamed the 'fsl,qmc-audio.yaml', I first used a generic name f=
-or this
-> property and Kristoff asked to change to a vendor prefixed name.
->   https://lore.kernel.org/linux-kernel/1dfade07-f8c4-2e16-00dc-c7d1837082=
-59@linaro.org/
->=20
-> Based on this, as the property 'fsl,qmc-chan' has the exact same meaning =
-in
-> fsl,qmc-audio.yaml and fsl,qmc-hdlc.yaml, I use the same name.
+> 
+> > -					ret = 0;
+> > -					goto fail_alias;
+> > +					disabled = true;
+> > +					continue;
+> >  				}
+> >  
+> >  				ret = mfd_match_of_node_to_dev(pdev, np, cell);
+> > @@ -197,10 +198,17 @@ static int mfd_add_device(struct device *parent, int id,
+> >  				if (ret)
+> >  					goto fail_alias;
+> >  
+> > -				break;
+> > +				goto match;
+> >  			}
+> >  		}
+> >  
+> > +		if (disabled) {
+> > +			/* Ignore 'disabled' devices error free */
+> > +			ret = 0;
+> > +			goto fail_alias;
+> > +		}
+> > +
+> > +match:
+> >  		if (!pdev->dev.of_node)
+> >  			pr_warn("%s: Failed to locate of_node [id: %d]\n",
+> >  				cell->name, platform_id);
+> > -- 
+> > 2.41.0
+> >   
+> 
 
-Okay, thanks for explaining!
-
---O7XSXK7XxHjViR5H
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZMI+iwAKCRB4tDGHoIJi
-0qi3APwL74Mb2llAu7YBw/3bmeFa7gR7fA/ofP+aXSE3vKilNwEAr7q9DVx5VZdT
-1kkQaOjZ61gQb0aNwEfyWDLEqkpWAgw=
-=qYki
------END PGP SIGNATURE-----
-
---O7XSXK7XxHjViR5H--
