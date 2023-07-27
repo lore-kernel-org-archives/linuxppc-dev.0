@@ -4,98 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FCA5C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 11:19:36 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q0tQRdsh;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q0tQRdsh;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FD67C001DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 11:36:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBSw63GCyz3cVB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 21:19:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q0tQRdsh;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q0tQRdsh;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBTH76Dptz3cP1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 21:36:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aculab.com (client-ip=185.58.85.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 308 seconds by postgrey-1.37 at boromir; Thu, 27 Jul 2023 19:07:33 AEST
+Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBStl2bXrz3cJ4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 21:18:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690456700;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=J5aSglhBSh7Q6jT77+XYZea18X5UXNoMlG4BeMpxQmA=;
-	b=Q0tQRdsh5qiwf/eZx0HxKw5LQuPQzqPd6Bl3dAyeQ4IIt7vk2rLuKR2CQBbG9hkuN3nBax
-	XC+mZDmQW4mLG2CDAImlY2eikAjyNo6ikUR0Ly8Qyja9sAtwC3yW+rqF62/xRvY7yv7XHH
-	ZpjObrV65TF+bL9EJNBeueTY2E/V7tc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690456700;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=J5aSglhBSh7Q6jT77+XYZea18X5UXNoMlG4BeMpxQmA=;
-	b=Q0tQRdsh5qiwf/eZx0HxKw5LQuPQzqPd6Bl3dAyeQ4IIt7vk2rLuKR2CQBbG9hkuN3nBax
-	XC+mZDmQW4mLG2CDAImlY2eikAjyNo6ikUR0Ly8Qyja9sAtwC3yW+rqF62/xRvY7yv7XHH
-	ZpjObrV65TF+bL9EJNBeueTY2E/V7tc=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-226-pePiulysNLC3hQ1N-AOiCQ-1; Thu, 27 Jul 2023 07:18:16 -0400
-X-MC-Unique: pePiulysNLC3hQ1N-AOiCQ-1
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-3fbdf341934so4374295e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 04:18:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690456691; x=1691061491;
-        h=content-transfer-encoding:in-reply-to:organization:from:references
-         :cc:to:content-language:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=J5aSglhBSh7Q6jT77+XYZea18X5UXNoMlG4BeMpxQmA=;
-        b=RlZfSY2xMBLB3wCvZlRtSCE2dx18iyWc7t0xegyjHx5szNJDDDtlwsMSjHvBaL0xrY
-         8Ch1JOFRQqDitVpsdUP+dvnnZ+ACQLy1Z5rRFRR+kzgkcEKWuOakUAocxXD4ER+xkHKj
-         gE+x5la4LctTguuFsXGIclD9UfXcD7JHLisWOstF9XSTCDFgckScQP8zwTMab21WHoWT
-         EKOlwuNvBOoyoAcZt87Lr9jqVwVVGtnAAlQEP2aU+FjIWCm1dQQVW4LcayMXEio6yrge
-         8mVk0YXSlBp0HvDA7gtnAMvN/Hp/QJb5FfmTuqFwJC/4193JyP88hHiaO++6imylJ+26
-         aVHg==
-X-Gm-Message-State: ABy/qLZJqV2/veNxJm+crlM/oFPW94FC/W3ei9qifHXY+V0Mb7GtC+FF
-	fAe2uvRwpaiSNmpv9EEwdZnBMwDdVsGCiUGsDZ9s7luUqUEEz/Dy/zeCo+YuwMmD9seZYA2sXgc
-	+Vgxcl/eZS4fvYnszX6UvMpPSO9cTiRCKEA==
-X-Received: by 2002:a1c:e908:0:b0:3fc:5bcc:a91a with SMTP id q8-20020a1ce908000000b003fc5bcca91amr1662985wmc.6.1690456691333;
-        Thu, 27 Jul 2023 04:18:11 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlH0ZToprIgSDfwJmmp3kGZee2OelfjDJ8Mj+brRBQssO3Ov83L9J2RbIhEq7LfPgIeu9SrYDQ==
-X-Received: by 2002:a1c:e908:0:b0:3fc:5bcc:a91a with SMTP id q8-20020a1ce908000000b003fc5bcca91amr1662966wmc.6.1690456690984;
-        Thu, 27 Jul 2023 04:18:10 -0700 (PDT)
-Received: from ?IPV6:2a09:80c0:192:0:5dac:bf3d:c41:c3e7? ([2a09:80c0:192:0:5dac:bf3d:c41:c3e7])
-        by smtp.gmail.com with ESMTPSA id l19-20020a1c7913000000b003fc07e17d4esm4384584wme.2.2023.07.27.04.18.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 27 Jul 2023 04:18:10 -0700 (PDT)
-Message-ID: <8735f065-cdf7-6383-d9e3-98a022e6f0e2@redhat.com>
-Date: Thu, 27 Jul 2023 13:18:09 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBPzn12t1z3c37
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 19:07:30 +1000 (AEST)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with both STARTTLS and AUTH (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-59-jWjmQDvBMMi6NLEiZstNIw-1; Thu, 27 Jul 2023 10:01:12 +0100
+X-MC-Unique: jWjmQDvBMMi6NLEiZstNIw-1
+Received: from AcuMS.Aculab.com (10.202.163.4) by AcuMS.aculab.com
+ (10.202.163.4) with Microsoft SMTP Server (TLS) id 15.0.1497.48; Thu, 27 Jul
+ 2023 10:01:06 +0100
+Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
+ id 15.00.1497.048; Thu, 27 Jul 2023 10:01:06 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Aleksa Sarai' <cyphar@cyphar.com>, Alexey Gladkov <legion@kernel.org>
+Subject: RE: [PATCH v4 2/5] fs: Add fchmodat2()
+Thread-Topic: [PATCH v4 2/5] fs: Add fchmodat2()
+Thread-Index: AQHZvxZDeKGBJJpK+0qJRy2agWp2qK/NUtoA
+Date: Thu, 27 Jul 2023 09:01:06 +0000
+Message-ID: <d052e1266bf042f9b4961bbf42261a55@AcuMS.aculab.com>
+References: <cover.1689074739.git.legion@kernel.org>
+ <cover.1689092120.git.legion@kernel.org>
+ <f2a846ef495943c5d101011eebcf01179d0c7b61.1689092120.git.legion@kernel.org>
+ <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
+In-Reply-To: <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v6 7/7] mm/memory_hotplug: Enable runtime update of
- memmap_on_memory parameter
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu
-References: <20230727080232.667439-1-aneesh.kumar@linux.ibm.com>
- <20230727080232.667439-8-aneesh.kumar@linux.ibm.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-In-Reply-To: <20230727080232.667439-8-aneesh.kumar@linux.ibm.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
+X-Mimecast-Originator: aculab.com
 Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Thu, 27 Jul 2023 21:35:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,33 +62,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vishal Verma <vishal.l.verma@intel.com>, Michal Hocko <mhocko@suse.com>, Oscar Salvador <osalvador@suse.de>
+Cc: "dalias@libc.org" <dalias@libc.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "fenghua.yu@intel.com" <fenghua.yu@intel.com>, "alexander.shishkin@linux.intel.com" <alexander.shishkin@linux.intel.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@sifive.com>, "x86@kernel.org" <x86@kernel.org>, "stefan@agner.ch" <stefan@agner.ch>, "ldv@altlinux.org" <ldv@altlinux.org>, "dhowells@redhat.com" <dhowells@redhat.com>, "kim.phillips@arm.com" <kim.phillips@arm.com>, "paulus@samba.org" <paulus@samba.org>, "deepa.kernel@gmail.com" <deepa.kernel@gmail.com>, "hpa@zytor.com" <hpa@zytor.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "will@kernel.org" <will@kernel.org>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "hare@suse.com" <hare@suse.com>, "gor@linux.ibm.com" <gor@linux.ibm.com>, "ysato@users.sourceforge.jp" <ysato@users.sourceforge.jp>, "deller@gmx.de
+ " <deller@gmx.de>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>, "mingo@redhat.com" <mingo@redhat.com>, "geert@linux-m68k.org" <geert@linux-m68k.org>, "jhogan@kernel.org" <jhogan@kernel.org>, "mattst88@gmail.com" <mattst88@gmail.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "fweimer@redhat.com" <fweimer@redhat.com>, Arnd Bergmann <arnd@arndb.de>, "glebfm@altlinux.org" <glebfm@altlinux.org>, "tycho@tycho.ws" <tycho@tycho.ws>, "acme@kernel.org" <acme@kernel.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, "bp@alien8.de" <bp@alien8.de>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "luto@kernel.org" <luto@kernel.org>, "namhyung@kernel.org" <namhyung@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "christian@brauner.io" <christian@brauner.io>, "axboe@kernel.dk" <axboe@kernel.dk>, "James.Bottomley@hansenpartnership.com" <
+ James.Bottomley@hansenpartnership.com>, "monstr@monstr.eu" <monstr@monstr.eu>, "tony.luck@intel.com" <tony.luck@intel.com>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "ralf@linux-mips.org" <ralf@linux-mips.org>, "peterz@infradead.org" <peterz@infradead.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "davem@davemloft.net" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27.07.23 10:02, Aneesh Kumar K.V wrote:
-> Acked-by: David Hildenbrand <david@redhat.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->   mm/memory_hotplug.c | 35 +++++++++++++++++++----------------
->   1 file changed, 19 insertions(+), 16 deletions(-)
-> 
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index aa8724bd1d53..7c877756b363 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -89,7 +89,12 @@ static int set_memmap_mode(const char *val, const struct kernel_param *kp)
->   		else
->   			mode = MEMMAP_ON_MEMORY_DISABLE;
->   	}
-> +	/*
-> +	 * Avoid changing memmap mode during hotplug.
-> +	 */
+From: Aleksa Sarai
+> Sent: 25 July 2023 17:36
+...
+> We almost certainly want to support AT_EMPTY_PATH at the same time.
+> Otherwise userspace will still need to go through /proc when trying to
+> chmod a file handle they have.
 
-Nit: comment fits into a single line.
+That can't be allowed.
 
--- 
-Cheers,
+Just because a process has a file open and write access to
+the directory that contains it doesn't mean they are allowed
+to change the file permissions.
 
-David / dhildenb
+They also need directory search access from a directory
+they have open through to the containing directory.
+
+=09David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
