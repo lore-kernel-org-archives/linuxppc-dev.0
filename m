@@ -4,66 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9CB3C001E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 11:38:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1C6EC001DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 12:27:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=BRo0MX+z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G1IXjkAL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBTKy3D2Xz3cTQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 21:38:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBVQ80sgkz3cPy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 22:27:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=BRo0MX+z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G1IXjkAL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f29; helo=mail-qv1-xf29.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBS2q5K6Qz3c3c
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 20:40:18 +1000 (AEST)
-Received: by mail-qv1-xf29.google.com with SMTP id 6a1803df08f44-63d09d886a6so5741036d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 03:40:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690454415; x=1691059215;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=sndfUp5VQwyYdDkfd9c4UQTPXsXPqaVmv/x1Ijy8DrI=;
-        b=BRo0MX+z2r1SS6yWvALim/6/nbcuIraz/dvlfYWOZ9asJfVrKNdNm2FzRqaxLf+dSr
-         gd8iH6tStNBkd23/w31KCfLL9pbPEeNVyPTR03aUqTDZY6wZTMoqJSnBUDPOFUCLZI8l
-         DGkcMHGLOMeyEEgRm2q9vaf0Y5Q5Azvv1tkZ/xFOCXwAaoOvebuUDqbcoCdnlpWZyTyX
-         q38zkUOHeP0Tt+nEWAcZ8JszB60VlCahpErQX1nO7BawFSz3QtUcVh1o5Am/iWB313H6
-         H0uJV9FuYrV0GCIZde+45ERDs3S4qD78OMMR7S/b1svm4zQQyj/BCkUn3DI2PJoOlxx+
-         Zjrg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690454415; x=1691059215;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sndfUp5VQwyYdDkfd9c4UQTPXsXPqaVmv/x1Ijy8DrI=;
-        b=jR5UcamHkjpSyvIcbvykrFci7CsIKVbqYS+eoaDvWSzvFB53a6iOV3tmt+1n2YMFvp
-         qzr7CAN+BxYV2ny/dyJThDgv0S/YRLl+UwLgqLCwhv4pmZvfLmMI+OKIyq5kfxgFLY1p
-         /GMy5u6g0JuFBTRntmfHo5IOsKoWZA7S5kvw28yo1155Xwcl/xmvPQGEI53OTW0LUOSx
-         iP1N1ZLzyIkUdGPnnJyzyfrqy4Qn8yzcKiQoxSNO+CWzXnqOCZ5SwV86tkhb2IKmXrBW
-         A0UlPcAHcQKpxVa4sNXqyVyO+sRm4Qj91ZXTBoQ7k8FSCwzpPXzunLTojYFG34w5PoZv
-         ww9g==
-X-Gm-Message-State: ABy/qLbl6Y6WFVzciG8rWaLuGYLTYt2KphOeCISgN4dlP1DIBNcrlyIF
-	PAgeyNZMx16pYv0reSEPMoie9KK8dvW77Yq/S4vsSw==
-X-Google-Smtp-Source: APBJJlE+0dXFxcWiQX8kiDXJfKau+LxjypHc8uOGBYfuDsHhoPcJDBpq4NHTu2yqyvhkPVt07nS69cNqQCueoayyUeg=
-X-Received: by 2002:a05:6214:12b:b0:63d:218:c83f with SMTP id
- w11-20020a056214012b00b0063d0218c83fmr4306083qvs.36.1690454414736; Thu, 27
- Jul 2023 03:40:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBVP73r9tz3c8n
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 22:26:19 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id CE33B61E52;
+	Thu, 27 Jul 2023 12:26:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D51C7C433C8;
+	Thu, 27 Jul 2023 12:26:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1690460775;
+	bh=27hdkgrWFVckIqtGKwcqckK1Jo4k5q7PyN7ZJPYm1Ek=;
+	h=From:To:Cc:Subject:Date:From;
+	b=G1IXjkALkleX4HzpP/GBUU4jC0fioQoVwq9nLLdOBjMTiQUNvINgLBZWZSKZRzFjp
+	 rPNxwdh576pES6qHQaW63U5RrOmgCMISK0DCvCcjlsS0F0CVfpmd2mvuyHNGB8lByr
+	 XJfIsEAigySm7RvZBH/ymFF5ooJ7tHkC+pqepI3potipnIRue/OQfyjH3lK2i9qOGw
+	 TTMEdeWmERD7kuxrWK/kHWbcAE8fEIeHPV8VUE7PnNQbqQsatYfsLSU+lZHaTQcLP/
+	 OLylrNrJgkBI21vtBnota2Sd4H4ehNblQw5px/x0jcXDNPZjKeeOP3wcFTuPwxCxgM
+	 gQtvCfdH30sSw==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Christoph Hellwig <hch@lst.de>,
+	Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH] dma-mapping: move arch_dma_set_mask() declaration to header
+Date: Thu, 27 Jul 2023 14:25:42 +0200
+Message-Id: <20230727122608.2507415-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
-In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
-From: Fuad Tabba <tabba@google.com>
-Date: Thu, 27 Jul 2023 11:39:38 +0100
-Message-ID: <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com>
-Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 27 Jul 2023 21:35:36 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,34 +61,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>
- , linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org, iommu@lists.linux.dev, Nicholas Piggin <npiggin@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sean,
+From: Arnd Bergmann <arnd@arndb.de>
 
-<snip>
-...
+This function has a __weak definition and an override that is only used on
+freescale powerpc chips. The powerpc definition however does not see the
+declaration that is in a .c file:
 
-> @@ -5134,6 +5167,16 @@ static long kvm_vm_ioctl(struct file *filp,
->         case KVM_GET_STATS_FD:
->                 r = kvm_vm_ioctl_get_stats_fd(kvm);
->                 break;
-> +       case KVM_CREATE_GUEST_MEMFD: {
-> +               struct kvm_create_guest_memfd guest_memfd;
-> +
-> +               r = -EFAULT;
-> +               if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
-> +                       goto out;
-> +
-> +               r = kvm_gmem_create(kvm, &guest_memfd);
-> +               break;
-> +       }
+arch/powerpc/kernel/dma-mask.c:7:6: error: no previous prototype for 'arch_dma_set_mask' [-Werror=missing-prototypes]
 
-I'm thinking line of sight here, by having this as a vm ioctl (rather
-than a system iocl), would it complicate making it possible in the
-future to share/donate memory between VMs?
+Move it into the linux/dma-map-ops.h header where the other arch_dma_* functions
+are declared.
 
-Cheers,
-/fuad
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/kernel/dma-mask.c | 1 +
+ include/linux/dma-map-ops.h    | 6 ++++++
+ kernel/dma/mapping.c           | 6 ------
+ 3 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/dma-mask.c b/arch/powerpc/kernel/dma-mask.c
+index ffbbbc4326126..5b07ca7b73aac 100644
+--- a/arch/powerpc/kernel/dma-mask.c
++++ b/arch/powerpc/kernel/dma-mask.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ 
+ #include <linux/dma-mapping.h>
++#include <linux/dma-map-ops.h>
+ #include <linux/export.h>
+ #include <asm/machdep.h>
+ 
+diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
+index 9bf19b5bf7559..bb5e06fd359d5 100644
+--- a/include/linux/dma-map-ops.h
++++ b/include/linux/dma-map-ops.h
+@@ -343,6 +343,12 @@ void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
+ 		dma_addr_t dma_addr, unsigned long attrs);
+ 
++#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
++void arch_dma_set_mask(struct device *dev, u64 mask);
++#else
++#define arch_dma_set_mask(dev, mask)	do { } while (0)
++#endif
++
+ #ifdef CONFIG_MMU
+ /*
+  * Page protection so that devices that can't snoop CPU caches can use the
+diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
+index 9a4db5cce6004..e323ca48f7f2a 100644
+--- a/kernel/dma/mapping.c
++++ b/kernel/dma/mapping.c
+@@ -760,12 +760,6 @@ bool dma_pci_p2pdma_supported(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dma_pci_p2pdma_supported);
+ 
+-#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
+-void arch_dma_set_mask(struct device *dev, u64 mask);
+-#else
+-#define arch_dma_set_mask(dev, mask)	do { } while (0)
+-#endif
+-
+ int dma_set_mask(struct device *dev, u64 mask)
+ {
+ 	/*
+-- 
+2.39.2
+
