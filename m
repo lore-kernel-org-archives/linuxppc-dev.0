@@ -4,66 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 905F7C001E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 17:14:55 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=uR617wLp;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73969EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 22:50:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBcp60RY5z3cWr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 03:14:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=uR617wLp;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3paxczaykdcgwierngksskpi.gsqpmrybttg-hizpmwxw.sdpefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBmF40xvbz3cRp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 08:50:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=libc.org (client-ip=216.12.86.13; helo=brightrain.aerifal.cx; envelope-from=dalias@libc.org; receiver=lists.ozlabs.org)
+Received: from brightrain.aerifal.cx (brightrain.aerifal.cx [216.12.86.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBcmC5b2sz3c3s
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 03:13:13 +1000 (AEST)
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1bbb34b091dso8228825ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 10:13:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690477989; x=1691082789;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=F7oDMpfc0bW6NSyfuHNNNYlN2HFPFEuCSHvjU51+NBs=;
-        b=uR617wLpg6qNB677nCTpj/mRcHCn7jeMQ6T975dwFWafb05LBOA5GXBHggNBovfIzX
-         O/7M392ccdTOGZqesE1qC7szLmXDUVbpTkdUSAnDKesUZGTHf6YrHw7iRdcLemcslWSD
-         KrRYixDmKkhke5BhBNDcGGoexHbctICnVSugeNNjkFTNcd3g+7vTx3m4xPX98nUwGt3/
-         mWhf+uFvINzhg7lFN3O3GR8jmx04AReHHh1Ek1sP09ZwG+oxGwlWe7n39MiREf5a36wi
-         QECqs1dJt2n4+euTMFmAQH0Oiz0RKLy4HgS6MVL8RVa78gxf6JRosPxL/mvaakJouVeF
-         ho3w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690477989; x=1691082789;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=F7oDMpfc0bW6NSyfuHNNNYlN2HFPFEuCSHvjU51+NBs=;
-        b=iAq8GxUB1jOHdgFWJvOih3E7CMF7TlK1whiMQqVnb+XZN9omttPmHKhVMZeJKB5L1R
-         FwVaOjSvRbki7XG91G7ry/9OrGRTLrpdx7tUNWEZqZFSnCd6ivFA/M/vhxwyTuL6g8/N
-         vbonYzQqi4+TwFkAYTbOAjDlZ9+16qzjuSm3uKDfMuld5azt/E15wGAWtZV2bpMHN+gL
-         ECjNI747csLuU7Y0vugrxKG1S0G4rKwSBnZfEPsjxuNHVCJocpRHdYqzACtE/YkYqas5
-         uWVQgicXG2NEiAbQX3+S+EydmJy/jy7H9S7UYF8u6J+UlOEXoxI2oKpUi9yBR8A22y8E
-         ntFw==
-X-Gm-Message-State: ABy/qLahSQf97g0zhpZ/+fdha2EPBntvY8iJPO1vbtYaRRbwMDY3L9g4
-	bKSdxLGykdjzpo7V4nqNepERgLuZj9k=
-X-Google-Smtp-Source: APBJJlEiCX9DyxliShqr2xPxTiyej7fUi+PkS+4LO77eNeghg1Fiv4b0fvD5YH2w9mP2/cy4q9w9vNXHRRI=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a17:903:22c6:b0:1b5:2b14:5f2c with SMTP id
- y6-20020a17090322c600b001b52b145f2cmr24803plg.4.1690477989357; Thu, 27 Jul
- 2023 10:13:09 -0700 (PDT)
-Date: Thu, 27 Jul 2023 10:13:07 -0700
-In-Reply-To: <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com>
-Mime-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
- <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com>
-Message-ID: <ZMKlo+Fe8n/eLQ82@google.com>
-Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-From: Sean Christopherson <seanjc@google.com>
-To: Fuad Tabba <tabba@google.com>
-Content-Type: text/plain; charset="us-ascii"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBbqd3zhNz3c3c
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 02:31:08 +1000 (AEST)
+Date: Thu, 27 Jul 2023 12:31:04 -0400
+From: "dalias@libc.org" <dalias@libc.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH v4 2/5] fs: Add fchmodat2()
+Message-ID: <20230727163103.GB20050@brightrain.aerifal.cx>
+References: <cover.1689074739.git.legion@kernel.org>
+ <cover.1689092120.git.legion@kernel.org>
+ <f2a846ef495943c5d101011eebcf01179d0c7b61.1689092120.git.legion@kernel.org>
+ <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
+ <d052e1266bf042f9b4961bbf42261a55@AcuMS.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d052e1266bf042f9b4961bbf42261a55@AcuMS.aculab.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
+X-Mailman-Approved-At: Fri, 28 Jul 2023 08:48:48 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,83 +42,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>
- , linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: "kim.phillips@arm.com" <kim.phillips@arm.com>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "fenghua.yu@intel.com" <fenghua.yu@intel.com>, "alexander.shishkin@linux.intel.com" <alexander.shishkin@linux.intel.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@sifive.com>, "x86@kernel.org" <x86@kernel.org>, "stefan@agner.ch" <stefan@agner.ch>, "ldv@altlinux.org" <ldv@altlinux.org>, "dhowells@redhat.com" <dhowells@redhat.com>, "paulus@samba.org" <paulus@samba.org>, "deepa.kernel@gmail.com" <deepa.kernel@gmail.com>, "hpa@zytor.com" <hpa@zytor.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "will@kernel.org" <will@kernel.org>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "hare@suse.com" <hare@suse.com>, "gor@linux.ibm.com" <gor@linux.ibm.com>, "ysato@users.sourceforge.jp" <ysato@users.sourceforge.jp>, "deller@gmx.de" <deller@gmx.de>, "linux-sh@vger.ker
+ nel.org" <linux-sh@vger.kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>, "mingo@redhat.com" <mingo@redhat.com>, "geert@linux-m68k.org" <geert@linux-m68k.org>, "jhogan@kernel.org" <jhogan@kernel.org>, "mattst88@gmail.com" <mattst88@gmail.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "fweimer@redhat.com" <fweimer@redhat.com>, "tycho@tycho.ws" <tycho@tycho.ws>, Arnd Bergmann <arnd@arndb.de>, "glebfm@altlinux.org" <glebfm@altlinux.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "acme@kernel.org" <acme@kernel.org>, 'Aleksa Sarai' <cyphar@cyphar.com>, "bp@alien8.de" <bp@alien8.de>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "luto@kernel.org" <luto@kernel.org>, "namhyung@kernel.org" <namhyung@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "christian@brauner.io" <christian@brauner.io>, "axboe@kernel.dk" <axboe@kernel.dk>, "James.Bottomley@hansenpartnership.com" <James
+ .Bottomley@hansenpartnership.com>, "monstr@monstr.eu" <monstr@monstr.eu>, "tony.luck@intel.com" <tony.luck@intel.com>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "ralf@linux-mips.org" <ralf@linux-mips.org>, "peterz@infradead.org" <peterz@infradead.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>, Alexey Gladkov <legion@kernel.org>, "davem@davemloft.net" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 27, 2023, Fuad Tabba wrote:
-> Hi Sean,
+On Thu, Jul 27, 2023 at 09:01:06AM +0000, David Laight wrote:
+> From: Aleksa Sarai
+> > Sent: 25 July 2023 17:36
+> ....
+> > We almost certainly want to support AT_EMPTY_PATH at the same time.
+> > Otherwise userspace will still need to go through /proc when trying to
+> > chmod a file handle they have.
 > 
-> <snip>
-> ...
+> That can't be allowed.
 > 
-> > @@ -5134,6 +5167,16 @@ static long kvm_vm_ioctl(struct file *filp,
-> >         case KVM_GET_STATS_FD:
-> >                 r = kvm_vm_ioctl_get_stats_fd(kvm);
-> >                 break;
-> > +       case KVM_CREATE_GUEST_MEMFD: {
-> > +               struct kvm_create_guest_memfd guest_memfd;
-> > +
-> > +               r = -EFAULT;
-> > +               if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
-> > +                       goto out;
-> > +
-> > +               r = kvm_gmem_create(kvm, &guest_memfd);
-> > +               break;
-> > +       }
+> Just because a process has a file open and write access to
+> the directory that contains it doesn't mean they are allowed
+> to change the file permissions.
 > 
-> I'm thinking line of sight here, by having this as a vm ioctl (rather
-> than a system iocl), would it complicate making it possible in the
-> future to share/donate memory between VMs?
+> They also need directory search access from a directory
+> they have open through to the containing directory.
 
-Maybe, but I hope not?
+Am I missing something? How is this different from fchmod?
 
-There would still be a primary owner of the memory, i.e. the memory would still
-need to be allocated in the context of a specific VM.  And the primary owner should
-be able to restrict privileges, e.g. allow a different VM to read but not write
-memory.
-
-My current thinking is to (a) tie the lifetime of the backing pages to the inode,
-i.e. allow allocations to outlive the original VM, and (b) create a new file each
-time memory is shared/donated with a different VM (or other entity in the kernel).
-
-That should make it fairly straightforward to provide different permissions, e.g.
-track them per-file, and I think should also avoid the need to change the memslot
-binding logic since each VM would have it's own view/bindings.
-
-Copy+pasting a relevant snippet from a lengthier response in a different thread[*]:
-
-  Conceptually, I think KVM should to bind to the file.  The inode is effectively
-  the raw underlying physical storage, while the file is the VM's view of that
-  storage. 
-  
-  Practically, I think that gives us a clean, intuitive way to handle intra-host
-  migration.  Rather than transfer ownership of the file, instantiate a new file
-  for the target VM, using the gmem inode from the source VM, i.e. create a hard
-  link.  That'd probably require new uAPI, but I don't think that will be hugely
-  problematic.  KVM would need to ensure the new VM's guest_memfd can't be mapped
-  until KVM_CAP_VM_MOVE_ENC_CONTEXT_FROM (which would also need to verify the
-  memslots/bindings are identical), but that should be easy enough to enforce.
-  
-  That way, a VM, its memslots, and its SPTEs are tied to the file, while allowing
-  the memory and the *contents* of memory to outlive the VM, i.e. be effectively
-  transfered to the new target VM.  And we'll maintain the invariant that each
-  guest_memfd is bound 1:1 with a single VM.
-  
-  As above, that should also help us draw the line between mapping memory into a
-  VM (file), and freeing/reclaiming the memory (inode).
-  
-  There will be extra complexity/overhead as we'll have to play nice with the
-  possibility of multiple files per inode, e.g. to zap mappings across all files
-  when punching a hole, but the extra complexity is quite small, e.g. we can use
-  address_space.private_list to keep track of the guest_memfd instances associated
-  with the inode.
-  
-  Setting aside TDX and SNP for the moment, as it's not clear how they'll support
-  memory that is "private" but shared between multiple VMs, I think per-VM files
-  would work well for sharing gmem between two VMs.  E.g. would allow a give page
-  to be bound to a different gfn for each VM, would allow having different permissions
-  for each file (e.g. to allow fallocate() only from the original owner).
-
-[*] https://lore.kernel.org/all/ZLGiEfJZTyl7M8mS@google.com
+Rich
