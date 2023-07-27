@@ -4,50 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC3CAC001DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 12:28:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 905F7C001E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 17:14:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KSvoBeVD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=uR617wLp;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBVRV0LWBz3cRF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 22:28:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBcp60RY5z3cWr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 03:14:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KSvoBeVD;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=uR617wLp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3paxczaykdcgwierngksskpi.gsqpmrybttg-hizpmwxw.sdpefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBVQV0KmWz2yDm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 22:27:30 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 43E4161E2F;
-	Thu, 27 Jul 2023 12:27:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AE70C433C7;
-	Thu, 27 Jul 2023 12:27:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690460845;
-	bh=ZT1ZAhDl9Us1qyYzoAo30SmrH7DzyLRh79VUEapqkR8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=KSvoBeVDFB2WLb/ZthrcY2/5un3LhBPT2h010VvMXIIbxrI9k59hU1haL9I4YmAS6
-	 bweh4UMZ2tZTtgDk02XSJzxUx4Wz9qX/Z7OS7DqzKWLefzH9tutQ4EP5x4IulZPjlz
-	 b7xs3B5CISDY6Ca7r+x3H+buQQjyB5STEpjdKEla1KsJU0Kymp8QufwNXQYuYctSTZ
-	 wnzD2l3VYqQOl443xDPNcz8wUWipGoQY25c3fSboxLLviwH5DATj3vti7Exfl4ukLq
-	 7/iXcE9hUcBeAYKXNUlgGZg49p4ypTI1VwvDCsYBt3sBw7swYO5Vd/9hHBquNi2Jjz
-	 P+7UhDPFeRwjA==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: address missing-prototypes warnings
-Date: Thu, 27 Jul 2023 14:26:50 +0200
-Message-Id: <20230727122720.2558065-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBcmC5b2sz3c3s
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 03:13:13 +1000 (AEST)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1bbb34b091dso8228825ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 10:13:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1690477989; x=1691082789;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=F7oDMpfc0bW6NSyfuHNNNYlN2HFPFEuCSHvjU51+NBs=;
+        b=uR617wLpg6qNB677nCTpj/mRcHCn7jeMQ6T975dwFWafb05LBOA5GXBHggNBovfIzX
+         O/7M392ccdTOGZqesE1qC7szLmXDUVbpTkdUSAnDKesUZGTHf6YrHw7iRdcLemcslWSD
+         KrRYixDmKkhke5BhBNDcGGoexHbctICnVSugeNNjkFTNcd3g+7vTx3m4xPX98nUwGt3/
+         mWhf+uFvINzhg7lFN3O3GR8jmx04AReHHh1Ek1sP09ZwG+oxGwlWe7n39MiREf5a36wi
+         QECqs1dJt2n4+euTMFmAQH0Oiz0RKLy4HgS6MVL8RVa78gxf6JRosPxL/mvaakJouVeF
+         ho3w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690477989; x=1691082789;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=F7oDMpfc0bW6NSyfuHNNNYlN2HFPFEuCSHvjU51+NBs=;
+        b=iAq8GxUB1jOHdgFWJvOih3E7CMF7TlK1whiMQqVnb+XZN9omttPmHKhVMZeJKB5L1R
+         FwVaOjSvRbki7XG91G7ry/9OrGRTLrpdx7tUNWEZqZFSnCd6ivFA/M/vhxwyTuL6g8/N
+         vbonYzQqi4+TwFkAYTbOAjDlZ9+16qzjuSm3uKDfMuld5azt/E15wGAWtZV2bpMHN+gL
+         ECjNI747csLuU7Y0vugrxKG1S0G4rKwSBnZfEPsjxuNHVCJocpRHdYqzACtE/YkYqas5
+         uWVQgicXG2NEiAbQX3+S+EydmJy/jy7H9S7UYF8u6J+UlOEXoxI2oKpUi9yBR8A22y8E
+         ntFw==
+X-Gm-Message-State: ABy/qLahSQf97g0zhpZ/+fdha2EPBntvY8iJPO1vbtYaRRbwMDY3L9g4
+	bKSdxLGykdjzpo7V4nqNepERgLuZj9k=
+X-Google-Smtp-Source: APBJJlEiCX9DyxliShqr2xPxTiyej7fUi+PkS+4LO77eNeghg1Fiv4b0fvD5YH2w9mP2/cy4q9w9vNXHRRI=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a17:903:22c6:b0:1b5:2b14:5f2c with SMTP id
+ y6-20020a17090322c600b001b52b145f2cmr24803plg.4.1690477989357; Thu, 27 Jul
+ 2023 10:13:09 -0700 (PDT)
+Date: Thu, 27 Jul 2023 10:13:07 -0700
+In-Reply-To: <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com>
+Mime-Version: 1.0
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
+ <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com>
+Message-ID: <ZMKlo+Fe8n/eLQ82@google.com>
+Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+From: Sean Christopherson <seanjc@google.com>
+To: Fuad Tabba <tabba@google.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,208 +75,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>
+ , linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+On Thu, Jul 27, 2023, Fuad Tabba wrote:
+> Hi Sean,
+> 
+> <snip>
+> ...
+> 
+> > @@ -5134,6 +5167,16 @@ static long kvm_vm_ioctl(struct file *filp,
+> >         case KVM_GET_STATS_FD:
+> >                 r = kvm_vm_ioctl_get_stats_fd(kvm);
+> >                 break;
+> > +       case KVM_CREATE_GUEST_MEMFD: {
+> > +               struct kvm_create_guest_memfd guest_memfd;
+> > +
+> > +               r = -EFAULT;
+> > +               if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
+> > +                       goto out;
+> > +
+> > +               r = kvm_gmem_create(kvm, &guest_memfd);
+> > +               break;
+> > +       }
+> 
+> I'm thinking line of sight here, by having this as a vm ioctl (rather
+> than a system iocl), would it complicate making it possible in the
+> future to share/donate memory between VMs?
 
-There are a few warnings in powerpc64 defconfig builds after -Wmissing-prototypes
-gets promoted from W=1 to the default warning set:
+Maybe, but I hope not?
 
-arch/powerpc/mm/book3s64/pgtable.c:422:6: error: no previous prototype for 'arch_report_meminfo' [-Werror=missing-prototypes]
-arch/powerpc/mm/init_64.c:311:12: error: no previous prototype for '__vmemmap_free' [-Werror=missing-prototypes]
-arch/powerpc/platforms/cell/ras.c:275:5: error: no previous prototype for 'cbe_sysreset_hack' [-Werror=missing-prototypes]
-arch/powerpc/platforms/cell/spu_manage.c:29:21: error: no previous prototype for 'spu_devnode' [-Werror=missing-prototypes]
-arch/powerpc/platforms/pasemi/time.c:12:17: error: no previous prototype for 'pas_get_boot_time' [-Werror=missing-prototypes]
-arch/powerpc/platforms/powermac/feature.c:1532:13: error: no previous prototype for 'g5_phy_disable_cpu1' [-Werror=missing-prototypes]
-arch/powerpc/platforms/86xx/pic.c:28:13: error: no previous prototype for 'mpc86xx_init_irq' [-Werror=missing-prototypes]
-drivers/pci/pci-sysfs.c:936:13: error: no previous prototype for 'pci_adjust_legacy_attr' [-Werror=missing-prototypes]
+There would still be a primary owner of the memory, i.e. the memory would still
+need to be allocated in the context of a specific VM.  And the primary owner should
+be able to restrict privileges, e.g. allow a different VM to read but not write
+memory.
 
-Address these by including the right header files or marking the
-functions static. The audit.c one is a bit tricky since compat_audit.h
-cannot include regular kernel headers tht have conflicting types on
-32-bit powerpc.
+My current thinking is to (a) tie the lifetime of the backing pages to the inode,
+i.e. allow allocations to outlive the original VM, and (b) create a new file each
+time memory is shared/donated with a different VM (or other entity in the kernel).
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/powerpc/include/asm/pci.h            | 3 ++-
- arch/powerpc/kernel/audit.c               | 3 ++-
- arch/powerpc/kernel/audit_32.h            | 7 +++++++
- arch/powerpc/kernel/compat_audit.c        | 2 ++
- arch/powerpc/mm/book3s64/pgtable.c        | 1 +
- arch/powerpc/mm/init_64.c                 | 2 +-
- arch/powerpc/platforms/86xx/pic.c         | 2 ++
- arch/powerpc/platforms/cell/ras.c         | 2 +-
- arch/powerpc/platforms/cell/spu_manage.c  | 1 +
- arch/powerpc/platforms/pasemi/pasemi.h    | 1 +
- arch/powerpc/platforms/pasemi/time.c      | 2 ++
- arch/powerpc/platforms/powermac/feature.c | 2 ++
- 12 files changed, 24 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/kernel/audit_32.h
+That should make it fairly straightforward to provide different permissions, e.g.
+track them per-file, and I think should also avoid the need to change the memslot
+binding logic since each VM would have it's own view/bindings.
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 289f1ec85bc54..f5078a7dd85a5 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -82,7 +82,8 @@ extern int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val,
- extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
- 				      struct vm_area_struct *vma,
- 				      enum pci_mmap_state mmap_state);
--
-+extern void pci_adjust_legacy_attr(struct pci_bus *bus,
-+				   enum pci_mmap_state mmap_type);
- #define HAVE_PCI_LEGACY	1
- 
- extern void pcibios_claim_one_bus(struct pci_bus *b);
-diff --git a/arch/powerpc/kernel/audit.c b/arch/powerpc/kernel/audit.c
-index 1bcfca5fdf676..92298d6a3a37a 100644
---- a/arch/powerpc/kernel/audit.c
-+++ b/arch/powerpc/kernel/audit.c
-@@ -4,6 +4,8 @@
- #include <linux/audit.h>
- #include <asm/unistd.h>
- 
-+#include "audit_32.h"
-+
- static unsigned dir_class[] = {
- #include <asm-generic/audit_dir_write.h>
- ~0U
-@@ -41,7 +43,6 @@ int audit_classify_arch(int arch)
- int audit_classify_syscall(int abi, unsigned syscall)
- {
- #ifdef CONFIG_PPC64
--	extern int ppc32_classify_syscall(unsigned);
- 	if (abi == AUDIT_ARCH_PPC)
- 		return ppc32_classify_syscall(syscall);
- #endif
-diff --git a/arch/powerpc/kernel/audit_32.h b/arch/powerpc/kernel/audit_32.h
-new file mode 100644
-index 0000000000000..c6c79c3041ab2
---- /dev/null
-+++ b/arch/powerpc/kernel/audit_32.h
-@@ -0,0 +1,7 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#ifndef __AUDIT_32_H__
-+#define __AUDIT_32_H__
-+
-+extern int ppc32_classify_syscall(unsigned);
-+
-+#endif
-diff --git a/arch/powerpc/kernel/compat_audit.c b/arch/powerpc/kernel/compat_audit.c
-index d92ffe4e5dc1c..57b38c592b9f3 100644
---- a/arch/powerpc/kernel/compat_audit.c
-+++ b/arch/powerpc/kernel/compat_audit.c
-@@ -3,6 +3,8 @@
- #include <linux/audit_arch.h>
- #include <asm/unistd.h>
- 
-+#include "audit_32.h"
-+
- unsigned ppc32_dir_class[] = {
- #include <asm-generic/audit_dir_write.h>
- ~0U
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 75b938268b040..0558202103171 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -9,6 +9,7 @@
- #include <linux/memremap.h>
- #include <linux/pkeys.h>
- #include <linux/debugfs.h>
-+#include <linux/proc_fs.h>
- #include <misc/cxl-base.h>
- 
- #include <asm/pgalloc.h>
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 6db7a063ba63f..7241b8515f89b 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -315,7 +315,7 @@ static unsigned long vmemmap_list_free(unsigned long start)
- 	return vmem_back->phys;
- }
- 
--void __ref __vmemmap_free(unsigned long start, unsigned long end,
-+static void __ref __vmemmap_free(unsigned long start, unsigned long end,
- 			  struct vmem_altmap *altmap)
- {
- 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
-index 2c32c3488afbb..7cdb16dc8b936 100644
---- a/arch/powerpc/platforms/86xx/pic.c
-+++ b/arch/powerpc/platforms/86xx/pic.c
-@@ -12,6 +12,8 @@
- #include <asm/mpic.h>
- #include <asm/i8259.h>
- 
-+#include "mpc86xx.h"
-+
- #ifdef CONFIG_PPC_I8259
- static void mpc86xx_8259_cascade(struct irq_desc *desc)
- {
-diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
-index 98db63b72d56b..f6b87926530cc 100644
---- a/arch/powerpc/platforms/cell/ras.c
-+++ b/arch/powerpc/platforms/cell/ras.c
-@@ -22,7 +22,7 @@
- #include <asm/cell-regs.h>
- 
- #include "ras.h"
--
-+#include "pervasive.h"
- 
- static void dump_fir(int cpu)
- {
-diff --git a/arch/powerpc/platforms/cell/spu_manage.c b/arch/powerpc/platforms/cell/spu_manage.c
-index 74567b32c48c2..f464a1f2e5681 100644
---- a/arch/powerpc/platforms/cell/spu_manage.c
-+++ b/arch/powerpc/platforms/cell/spu_manage.c
-@@ -25,6 +25,7 @@
- 
- #include "spufs/spufs.h"
- #include "interrupt.h"
-+#include "spu_priv1_mmio.h"
- 
- struct device_node *spu_devnode(struct spu *spu)
- {
-diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
-index 3f277a200fd87..018c30665e1b3 100644
---- a/arch/powerpc/platforms/pasemi/pasemi.h
-+++ b/arch/powerpc/platforms/pasemi/pasemi.h
-@@ -4,6 +4,7 @@
- 
- extern time64_t pas_get_boot_time(void);
- extern void pas_pci_init(void);
-+struct pci_dev;
- extern void pas_pci_irq_fixup(struct pci_dev *dev);
- extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
- 
-diff --git a/arch/powerpc/platforms/pasemi/time.c b/arch/powerpc/platforms/pasemi/time.c
-index ad721882c8b6f..70ac6db027d0e 100644
---- a/arch/powerpc/platforms/pasemi/time.c
-+++ b/arch/powerpc/platforms/pasemi/time.c
-@@ -9,6 +9,8 @@
- 
- #include <asm/time.h>
- 
-+#include "pasemi.h"
-+
- time64_t __init pas_get_boot_time(void)
- {
- 	/* Let's just return a fake date right now */
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
-index ed58928469b5b..ed472b797e28a 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -37,6 +37,8 @@
- #include <asm/pci-bridge.h>
- #include <asm/pmac_low_i2c.h>
- 
-+#include "pmac.h"
-+
- #undef DEBUG_FEATURE
- 
- #ifdef DEBUG_FEATURE
--- 
-2.39.2
+Copy+pasting a relevant snippet from a lengthier response in a different thread[*]:
 
+  Conceptually, I think KVM should to bind to the file.  The inode is effectively
+  the raw underlying physical storage, while the file is the VM's view of that
+  storage. 
+  
+  Practically, I think that gives us a clean, intuitive way to handle intra-host
+  migration.  Rather than transfer ownership of the file, instantiate a new file
+  for the target VM, using the gmem inode from the source VM, i.e. create a hard
+  link.  That'd probably require new uAPI, but I don't think that will be hugely
+  problematic.  KVM would need to ensure the new VM's guest_memfd can't be mapped
+  until KVM_CAP_VM_MOVE_ENC_CONTEXT_FROM (which would also need to verify the
+  memslots/bindings are identical), but that should be easy enough to enforce.
+  
+  That way, a VM, its memslots, and its SPTEs are tied to the file, while allowing
+  the memory and the *contents* of memory to outlive the VM, i.e. be effectively
+  transfered to the new target VM.  And we'll maintain the invariant that each
+  guest_memfd is bound 1:1 with a single VM.
+  
+  As above, that should also help us draw the line between mapping memory into a
+  VM (file), and freeing/reclaiming the memory (inode).
+  
+  There will be extra complexity/overhead as we'll have to play nice with the
+  possibility of multiple files per inode, e.g. to zap mappings across all files
+  when punching a hole, but the extra complexity is quite small, e.g. we can use
+  address_space.private_list to keep track of the guest_memfd instances associated
+  with the inode.
+  
+  Setting aside TDX and SNP for the moment, as it's not clear how they'll support
+  memory that is "private" but shared between multiple VMs, I think per-VM files
+  would work well for sharing gmem between two VMs.  E.g. would allow a give page
+  to be bound to a different gfn for each VM, would allow having different permissions
+  for each file (e.g. to allow fallocate() only from the original owner).
+
+[*] https://lore.kernel.org/all/ZLGiEfJZTyl7M8mS@google.com
