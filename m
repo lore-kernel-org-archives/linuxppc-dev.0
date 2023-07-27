@@ -4,59 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 381EBC001DE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 03:28:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBCF7EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 05:08:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QYwp38ru;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tFEsGvrt;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBGST50xMz3cLY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 13:28:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RBJgZ31kLz3cR4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jul 2023 15:08:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QYwp38ru;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tFEsGvrt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=yilun.xu@intel.com; receiver=lists.ozlabs.org)
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBGRR1M3lz2yLV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 13:27:29 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1690428451; x=1721964451;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=zZw7shzyeqWcwUz/3pXk4wTr0ManqzTTZSighI1zgHU=;
-  b=QYwp38ru5vaEnfOf8iHpXcpOwAz80YSBO+ViO+VbXRm6wx7OUDG07Ly/
-   7gDKoKvC9WCflij9CRdjvxYfjj8h9xJrZFAkIunVX9VzcbExzHruAl6rd
-   pjExVdgR9x1EKfy1KtlvhEmEDKgQra2VbPR+0FlkB6fAHj9nboeuWkYaA
-   u50Jbq9LqVEcqosMhF/6ymaAPqnFpvW9N4t07FK0luGbUF6ttB5rr8whN
-   tkzviKCNc9CUmy8wMf4tnbpM+HDMDlFixCh7ripZzQbr1g0I9Wrra7eRX
-   OSe/qBBiVkPcSWIXm+xiDW6bnBDfPPhZNfxojIS4ucR6JC4PwKyHxB5c0
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10783"; a="347799017"
-X-IronPort-AV: E=Sophos;i="6.01,233,1684825200"; 
-   d="scan'208";a="347799017"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jul 2023 20:26:23 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; 
-   d="scan'208";a="870179046"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmsmga001.fm.intel.com with ESMTP; 26 Jul 2023 20:26:15 -0700
-Date: Thu, 27 Jul 2023 11:24:22 +0800
-From: Xu Yilun <yilun.xu@intel.com>
-To: Sean Christopherson <seanjc@google.com>
-Subject: Re: [RFC PATCH v11 08/29] KVM: Introduce per-page memory attributes
-Message-ID: <ZMHjZvcmzxMhTyM3@yilunxu-OptiPlex-7050>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-9-seanjc@google.com>
- <ZL4BiQWihfrD0TOJ@yilunxu-OptiPlex-7050>
- <ZMFC+V6Llv1JWLEt@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBJfZ3KY1z307V
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2023 15:07:18 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36R55lp5032382;
+	Thu, 27 Jul 2023 05:06:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=ZRmrXjtwrCFgelRk+lTxAIReeEev3k3Qbshsmvf5Vpc=;
+ b=tFEsGvrt+AEozlat3DYUApjolPhCBrjDQ7OIJMditKg3/q4jPeEuhobmc6RsoPCmlVab
+ e433oSLOc06yuX5mH+a+TaVrs9pfCv6MEri2FEx9jLFJaKTEk1B2BRc7thmBQOdHlbrm
+ n3lKvLDgPV33Lsm1EDSk5zVAQBhoNR815Bzd7rPyIJ4V9SphLY+faa29JXr2Ga4otcRr
+ D2wtNvsUe+6AkeVNG+VEVUzIJRMGvDWVVvcg5ps24yT5QkShZVGvv1DMK+g8GmamShk3
+ qREBv88x9c1Cyj8NY5A9J7zSXOjtrKHutJPu6k0xCmMePcFSYT0mqU3+nwAFdpMIPCv1 Vw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3hty0c88-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Jul 2023 05:06:55 +0000
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36R56E6V002031;
+	Thu, 27 Jul 2023 05:06:54 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s3hty0c75-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Jul 2023 05:06:54 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36R405ug003714;
+	Thu, 27 Jul 2023 05:06:52 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3s0txkagjs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Jul 2023 05:06:52 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36R56qNs64946544
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 27 Jul 2023 05:06:52 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 403B258051;
+	Thu, 27 Jul 2023 05:06:52 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C4E205805A;
+	Thu, 27 Jul 2023 05:06:47 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.109.212.144])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 27 Jul 2023 05:06:47 +0000 (GMT)
+X-Mailer: emacs 29.0.91 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+Subject: [PATCH v6 10/13 -fix] powerpc/book3s64/vmemmap: Switch radix to use
+ a different vmemmap handling function
+In-Reply-To: <20230724190759.483013-11-aneesh.kumar@linux.ibm.com>
+References: <20230724190759.483013-1-aneesh.kumar@linux.ibm.com>
+ <20230724190759.483013-11-aneesh.kumar@linux.ibm.com>
+Date: Thu, 27 Jul 2023 10:36:45 +0530
+Message-ID: <87edkuvt7e.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZMFC+V6Llv1JWLEt@google.com>
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: xHn9Uh0XayuDHJYGfvdcWpFLAz4HNTdQ
+X-Proofpoint-ORIG-GUID: _cL_E65yOdvgMaTZOEy15pxCaHBE8O9Y
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-26_08,2023-07-26_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
+ adultscore=0 malwarescore=0 suspectscore=0 priorityscore=1501 spamscore=0
+ impostorscore=0 mlxlogscore=999 phishscore=0 lowpriorityscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2306200000
+ definitions=main-2307270046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,20 +99,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver
-  Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Muchun Song <muchun.song@linux.dev>, Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>, Will Deacon <will@kernel.org>, Joao Martins <joao.m.martins@oracle.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2023-07-26 at 08:59:53 -0700, Sean Christopherson wrote:
-> On Mon, Jul 24, 2023, Xu Yilun wrote:
-> > On 2023-07-18 at 16:44:51 -0700, Sean Christopherson wrote:
-> > > +	if (WARN_ON_ONCE(start == end))
-> > > +		return -EINVAL;
-> > 
-> > Also, is this check possible to be hit? Maybe remove it?
-> 
-> It should be impossible to, hence the WARN.  I added the check for two reasons:
-> (1) to help document that end is exclusive, and (2) to guard against future bugs.
 
-Understood. I'm good to it.
+From 9125b1815758ab3b83966aeead6f486c0708ea73 Mon Sep 17 00:00:00 2001
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Thu, 27 Jul 2023 10:02:37 +0530
+Subject: [PATCH] powerpc/mm: Fix section mismatch warning
+
+remove_pte_table is only called from remove_pmd_table which is marked
+__meminit. These functions are used only during memory hotplug and they
+also call functions marked __meminit. Mark remove_pte_table also with
+__meminit so that we can avoid the section mismatch warning below.
+
+WARNING: modpost: vmlinux: section mismatch in reference: remove_pte_table+0x230 (section: .text.remove_pte_table) -> free_vmemmap_pages (section: .meminit.text)
+WARNING: modpost: vmlinux: section mismatch in reference: remove_pte_table+0x43c (section: .text.remove_pte_table) -> vmemmap_populated (section: .meminit.text)
+WARNING: modpost: vmlinux: section mismatch in reference: remove_pte_table+0x4a4 (section: .text.remove_pte_table) -> free_vmemmap_pages (section: .meminit.text)
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 53f8340e390c..6d04dd579d03 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -793,9 +793,9 @@ static void __meminit free_vmemmap_pages(struct page *page,
+ 		free_pages((unsigned long)page_address(page), order);
+ }
+ 
+-static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+-			     unsigned long end, bool direct,
+-			     struct vmem_altmap *altmap)
++static void __meminit remove_pte_table(pte_t *pte_start, unsigned long addr,
++				       unsigned long end, bool direct,
++				       struct vmem_altmap *altmap)
+ {
+ 	unsigned long next, pages = 0;
+ 	pte_t *pte;
+-- 
+2.41.0
+
