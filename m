@@ -4,88 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D473C001DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 10:41:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67A5EC001E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 11:04:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qV23wp1m;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QKRPLJ4s;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QKRPLJ4s;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RC41q73thz3dCg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 20:41:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RC4Wq69thz3cQc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 21:04:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qV23wp1m;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QKRPLJ4s;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QKRPLJ4s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=omosnace@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RC40G0FnGz3cT7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 20:40:13 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36SAOa6M022794;
-	Fri, 28 Jul 2023 10:40:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=cbyyVJRZiJ1i7jXMce5JkSasPuiD77sGBtRrnq7PoNg=;
- b=qV23wp1mUmHl17dwET7XskixEM5NrSNr5leMuC9lbPUAhU+l1FHDKP/vJU3GW3DOaLkt
- ELfFPPyu3lE3w7d/A/WjOICBoawZJAw1q//Qm/kLvN92Zt2YRQZ12lxtbLIPRh5BKV+6
- sSA9P477PTtKmDy06PCvZZjtSySv5u9a0CsEErTxasgFDYDq9XawfDQTQBCnLmbyjsMY
- ZKku2o366VVOe6p6lIG9cvPOmzooPOI4ErrNkv/cBamXdMD4hObMVVqnv1g28j6pzLjm
- 39I5Ihk4eQMV0sg04bAlOa3W4QtE/T0ZvJQCGVYexoITkL2KBDl17MWGVcdd+vzTLZ97 hg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s4bw18ffd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jul 2023 10:40:06 +0000
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36SAQFp1028154;
-	Fri, 28 Jul 2023 10:40:06 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s4bw18fej-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jul 2023 10:40:05 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36SA0mJK002370;
-	Fri, 28 Jul 2023 10:40:04 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3s0txkn4nq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jul 2023 10:40:04 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36SAe3DZ1508020
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 28 Jul 2023 10:40:03 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C1A26580D4;
-	Fri, 28 Jul 2023 10:36:06 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 64FDF580CA;
-	Fri, 28 Jul 2023 10:36:03 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.43.12.215])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 28 Jul 2023 10:36:02 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH v3 2/2] powerpc/mm: Add memory_block_size as a kernel parameter
-Date: Fri, 28 Jul 2023 16:05:56 +0530
-Message-ID: <20230728103556.745681-2-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230728103556.745681-1-aneesh.kumar@linux.ibm.com>
-References: <20230728103556.745681-1-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RC4Vq3m7Hz3bNj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 21:03:14 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1690542191;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=YRDAIP7TWOWzkcjHET3GgHuSuYBQhkcL+zbEgtv9LlA=;
+	b=QKRPLJ4sFeEu+QaHdyAbV0Fw/hpI+vQBNyogVttq4PXc+TCe0ZEEKFRDlwOPJWubs0ZUDC
+	wzteGfaQT09cgP+nij66rPPWito0w3PagLIRoVZtjTIx4HTSGlijnNAKEnRTDsltF2KlJ0
+	3a07HrBtH0zLzXMJKjDg6uHK3ck0JWE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1690542191;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=YRDAIP7TWOWzkcjHET3GgHuSuYBQhkcL+zbEgtv9LlA=;
+	b=QKRPLJ4sFeEu+QaHdyAbV0Fw/hpI+vQBNyogVttq4PXc+TCe0ZEEKFRDlwOPJWubs0ZUDC
+	wzteGfaQT09cgP+nij66rPPWito0w3PagLIRoVZtjTIx4HTSGlijnNAKEnRTDsltF2KlJ0
+	3a07HrBtH0zLzXMJKjDg6uHK3ck0JWE=
+Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com
+ [209.85.216.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-249-c6XOGJXNOnKYlh9IftGUqA-1; Fri, 28 Jul 2023 07:03:10 -0400
+X-MC-Unique: c6XOGJXNOnKYlh9IftGUqA-1
+Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-267f666104aso1474757a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 04:03:10 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690542189; x=1691146989;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=YRDAIP7TWOWzkcjHET3GgHuSuYBQhkcL+zbEgtv9LlA=;
+        b=VwMf/tGGq/slAVzZmizfAOWwkJlPOBUlqsvH4hcZKdp5BqyeOYl+OB8jkeRBKasP4+
+         55DyFLs7vTQmObWYO0QS3UK3Any60xarJdbHw2aH9LHVMcDPX1s3uJHv1dlZ3FEO6jl/
+         R9HdtjAXhPC8IPL+xU3KEz/wmrn+X3B4frdthhGosK9T8ztxws/fu8DiA8znejD+yXyI
+         f+3vYWAxPdgU5qVABAw7yUbvxjW/P2JuskaiOMRICBRkf2I4noEWFuxMfD1WnEErcu35
+         5e/Jzva0YAHIK2fnB+xQavF0xkY0QbcmHc4nYWQ7myTtZ9qQgN9ucO28eZBrO/GHR12N
+         qdVQ==
+X-Gm-Message-State: ABy/qLYh2MMHPFFCmj6T6MqLhQEnVTW7KCqdfzH5L1p0ycHxGNDEht7R
+	JCucgcj7prNC284VrRbRF0aB8w6StD7Z63XLKYn7tffVk71D+zqFHVwhjicz+4rYID4iY1/X97T
+	r7SzM5ZUXVLW6JUUv0Z0I9Wr8EFExk1YkkqbPEROkyg==
+X-Received: by 2002:a17:90a:c210:b0:267:f8f4:73ab with SMTP id e16-20020a17090ac21000b00267f8f473abmr1972292pjt.16.1690542189379;
+        Fri, 28 Jul 2023 04:03:09 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlFpM31f8xiI5XV4XQ4pPKorUiehU8YoIyXepdh/t5x0b+PJODmj9I2IfnV6k11CAK+Fxd67QVKBY4VbC4WYnMo=
+X-Received: by 2002:a17:90a:c210:b0:267:f8f4:73ab with SMTP id
+ e16-20020a17090ac21000b00267f8f473abmr1972270pjt.16.1690542189073; Fri, 28
+ Jul 2023 04:03:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: WIEkResTjTaKXe5-Uv25g3Mzkb9Y8xXj
-X-Proofpoint-ORIG-GUID: _0zYZmIAVjnMlU6GelIdn6t-PFg1rU1L
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-27_10,2023-07-26_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- spamscore=0 clxscore=1015 impostorscore=0 suspectscore=0 adultscore=0
- malwarescore=0 priorityscore=1501 mlxlogscore=999 bulkscore=0 phishscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2307280097
+References: <20230620131223.431281-1-omosnace@redhat.com> <87edkseqf8.fsf@mail.lhotse>
+In-Reply-To: <87edkseqf8.fsf@mail.lhotse>
+From: Ondrej Mosnacek <omosnace@redhat.com>
+Date: Fri, 28 Jul 2023 13:02:58 +0200
+Message-ID: <CAFqZXNtsCKsr0YHPCSJJQ5An=RoMhf0dufgr7P_SnAAv7CrLjw@mail.gmail.com>
+Subject: Re: Login broken with old userspace (was Re: [PATCH v2] selinux:
+ introduce an initial SID for early boot processes)
+To: Michael Ellerman <mpe@ellerman.id.au>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,103 +96,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, foraker1@llnl.gov, Reza Arbab <arbab@linux.ibm.com>
+Cc: selinux@vger.kernel.org, linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Paul Moore <paul@paul-moore.com>, LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Certain devices can possess non-standard memory capacities, not constrained
-to multiples of 1GB. Provide a kernel parameter so that we can map the
-device memory completely on memory hotplug.
+On Fri, Jul 28, 2023 at 4:12=E2=80=AFAM Michael Ellerman <mpe@ellerman.id.a=
+u> wrote:
+>
+> Ondrej Mosnacek <omosnace@redhat.com> writes:
+> > Currently, SELinux doesn't allow distinguishing between kernel threads
+> > and userspace processes that are started before the policy is first
+> > loaded - both get the label corresponding to the kernel SID. The only
+> > way a process that persists from early boot can get a meaningful label
+> > is by doing a voluntary dyntransition or re-executing itself.
+>
+> Hi,
+>
+> This commit breaks login for me when booting linux-next kernels with old
+> userspace, specifically Ubuntu 16.04 on ppc64le. 18.04 is OK.
+>
+> The symptom is that login never accepts the root password, it just
+> always says "Login incorrect".
+>
+> Bisect points to this commit.
+>
+> Reverting this commit on top of next-20230726, fixes the problem
+> (ie. login works again).
+>
+> Booting with selinux=3D0 also fixes the problem.
+>
+> Is this expected? The change log below suggests backward compatibility
+> was considered, is 16.04 just too old?
 
-Restrict memory_block_size value to a power of 2 value similar to LMB size.
-The memory block size should also be more than the section size.
+Hi Michael,
 
-Reviewed-by: Reza Arbab <arbab@linux.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- .../admin-guide/kernel-parameters.txt         |  3 +++
- arch/powerpc/kernel/setup_64.c                | 23 +++++++++++++++++++
- arch/powerpc/mm/init_64.c                     | 17 ++++++++++----
- 3 files changed, 38 insertions(+), 5 deletions(-)
+I can reproduce it on Fedora 38 when I boot with SELINUX=3Ddisabled in
+/etc/selinux/config (+ a kernel including that commit), so it likely
+isn't caused by the userspace being old. Can you check what you have
+in /etc/selinux/config (or if it exists at all)?
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a1457995fd41..4e49696e0976 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3201,6 +3201,9 @@
- 			Note that even when enabled, there are a few cases where
- 			the feature is not effective.
- 
-+	memory_block_size=size [PPC]
-+			 Use this parameter to configure the memory block size value.
-+
- 	memtest=	[KNL,X86,ARM,M68K,PPC,RISCV] Enable memtest
- 			Format: <integer>
- 			default : 0 <disable>
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 246201d0d879..cbdb924462c7 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -892,6 +892,29 @@ unsigned long memory_block_size_bytes(void)
- 
- 	return MIN_MEMORY_BLOCK_SIZE;
- }
-+
-+/*
-+ * Restrict to a power of 2 value for memblock which is larger than
-+ * section size
-+ */
-+static int __init parse_mem_block_size(char *ptr)
-+{
-+	unsigned int order;
-+	unsigned long size = memparse(ptr, NULL);
-+
-+	order = fls64(size);
-+	if (!order)
-+		return 0;
-+
-+	order--;
-+	if (order < SECTION_SIZE_BITS)
-+		return 0;
-+
-+	memory_block_size = 1UL << order;
-+
-+	return 0;
-+}
-+early_param("memory_block_size", parse_mem_block_size);
- #endif
- 
- #if defined(CONFIG_PPC_INDIRECT_PIO) || defined(CONFIG_PPC_INDIRECT_MMIO)
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 29178b3aafe6..dbed37d6cffb 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -569,13 +569,20 @@ static int __init probe_memory_block_size(unsigned long node, const char *uname,
- 	return 0;
- }
- 
--/*
-- * start with 1G memory block size. Early init will
-- * fix this with correct value.
-- */
--unsigned long memory_block_size __ro_after_init = 1UL << 30;
-+unsigned long memory_block_size __ro_after_init;
- static void __init early_init_memory_block_size(void)
- {
-+	/*
-+	 * if it is set via early param just return.
-+	 */
-+	if (memory_block_size)
-+		return;
-+
-+	/*
-+	 * start with 1G memory block size. update_memory_block_size()
-+	 * will derive the right value based on device tree details.
-+	 */
-+	memory_block_size = SZ_1G;
- 	/*
- 	 * We need to do memory_block_size probe early so that
- 	 * radix__early_init_mmu() can use this as limit for
--- 
-2.41.0
+We have deprecated and removed the "runtime disable" functionality in
+SELinux recently [1], which was used to implement "disabling" SELinux
+via the /etc/selinux/config file, so now the situation (selinux=3D0 +
+SELINUX=3Ddisabled in /etc/selinux/config) leads to a state where
+SELinux is enabled, but no policy is loaded (and no enforcement is
+done). Such a state mostly behaves as if SElinux was truly disabled
+(via kernel command line), but there are some subtle differences and I
+believe we don't officially support it (Paul might clarify). With
+latest kernels it is recommended to either disable SELinux via the
+kernel command line (or Kconfig[2]) or to boot it in Enforcing or
+Permissive mode with a valid/usable policy installed.
+
+So I wonder if Ubuntu ships by default with the bad configuration or
+if it's just a result of using the custom-built linux-next kernel (or
+some changes on your part). If Ubuntu's stock kernel is configured to
+boot with SELinux enabled by default, they should also by default ship
+a usable policy and SELINUX=3Dpermissive/enforcing in
+/etc/selinux/config (or configure the kernel[2] or bootloader to boot
+with SELinux disabled by default). (Although if they ship a pre-[1]
+kernel, they may continue to rely on the runtime disable
+functionality, but it means people will have to be careful when
+booting newer or custom kernels.)
+
+That said, I'd like to get to the bottom of why the commit causes the
+login to fail and fix it somehow. I presume something in PAM chokes on
+the fact that userspace tasks now have "init" instead of "kernel" as
+the pre-policy-load security context, but so far I haven't been able
+to pinpoint the problem. I'll keep digging...
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
+it/?id=3Df22f9aaf6c3d92ebd5ad9e67acc03afebaaeb289
+[2] via CONFIG_LSM (or CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE on older ker=
+nels)
+
+--=20
+Ondrej Mosnacek
+Senior Software Engineer, Linux Security - SELinux kernel
+Red Hat, Inc.
 
