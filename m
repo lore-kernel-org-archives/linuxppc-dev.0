@@ -4,90 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89A6AC0015E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 21:56:39 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fzluV/sP;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81F8BC001DC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 05:41:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RCM0j3SBrz3cVZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 07:56:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fzluV/sP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=arbab@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RCYKD5Lslz3d9K
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 15:41:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=libc.org (client-ip=216.12.86.13; helo=brightrain.aerifal.cx; envelope-from=dalias@libc.org; receiver=lists.ozlabs.org)
+Received: from brightrain.aerifal.cx (brightrain.aerifal.cx [216.12.86.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCLzh5h90z3cKC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 07:55:44 +1000 (AEST)
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36SLg8Na004101;
-	Fri, 28 Jul 2023 21:55:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=Z0KQipUX684zPBgdOZJNOmOFRos7OFxqhDBCsvU3lv4=;
- b=fzluV/sPSQX/YNSgYgavF2pIDlVfqmEI+E+a+0KqhVf0dR/zNAl4uY0ZXaz3I2t4vINK
- wUln2V112qoYjCp+KgULbtIk1FEPX3TMc8eFij5LaToiMuYtdPfEKUA+RkjVOVDV6nns
- KR8p01d54/j0drnlyk2QSduRCHlkCQFTxcRLatyc8PGoZJDzL34pno3BUkOo8IivHw5C
- Gviil1JVYERyR3RSkZOrlCCNnlpLepSUm8NMhg6aCYA7pUcQkClOSMGk+Su7UNztYTq+
- SJC1fmPCfYedQmCEx/NcPcMrMApUY5zg1TTizXzFuqtbLXcjLZXxSHqD++JmZIMAlvcT ag== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s4ntmr8ej-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jul 2023 21:55:35 +0000
-Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 36SLrL9R001885;
-	Fri, 28 Jul 2023 21:55:34 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s4ntmr8e6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jul 2023 21:55:34 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36SK18JH002059;
-	Fri, 28 Jul 2023 21:55:33 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3s0tenspjb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jul 2023 21:55:33 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36SLtWXr5440248
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 28 Jul 2023 21:55:32 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8222758056;
-	Fri, 28 Jul 2023 21:55:32 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4572158052;
-	Fri, 28 Jul 2023 21:55:32 +0000 (GMT)
-Received: from arbab-laptop.localdomain (unknown [9.61.53.90])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with SMTP;
-	Fri, 28 Jul 2023 21:55:32 +0000 (GMT)
-Received: from arbab-laptop.ghola.net (localhost [IPv6:::1])
-	by arbab-laptop.localdomain (Postfix) with ESMTPS id 2BB2F14FDA9;
-	Fri, 28 Jul 2023 16:55:31 -0500 (CDT)
-Date: Fri, 28 Jul 2023 16:55:23 -0500
-From: Reza Arbab <arbab@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v3 1/2] powerpc/mm: Cleanup memory block size probing
-Message-ID: <f38660ab-89ed-44f5-ac7e-34c89a3e66d1@arbab-laptop>
-References: <20230728103556.745681-1-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCGhV58l8z3cNv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 04:42:17 +1000 (AEST)
+Date: Fri, 28 Jul 2023 14:42:12 -0400
+From: "dalias@libc.org" <dalias@libc.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH v4 2/5] fs: Add fchmodat2()
+Message-ID: <20230728184212.GD20050@brightrain.aerifal.cx>
+References: <cover.1689074739.git.legion@kernel.org>
+ <cover.1689092120.git.legion@kernel.org>
+ <f2a846ef495943c5d101011eebcf01179d0c7b61.1689092120.git.legion@kernel.org>
+ <njnhwhgmsk64e6vf3ur7fifmxlipmzez3r5g7ejozsrkbwvq7w@tu7w3ieystcq>
+ <ZMEjlDNJkFpYERr1@example.org>
+ <20230727.041348-imposing.uptake.velvet.nylon-712tDwzCAbCCoSGx@cyphar.com>
+ <20230727.173441-loving.habit.lame.acrobat-V6VTPe8G4FRI@cyphar.com>
+ <dc48b40748e24d3799e7ee66fa7e8cb4@AcuMS.aculab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230728103556.745681-1-aneesh.kumar@linux.ibm.com>
-Organization: IBM Linux Technology Center
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 6a1m7UrZw0WXJO3HBHiNhZVzanoXJczw
-X-Proofpoint-ORIG-GUID: FaflA7oD7CRGD84NQacOFEVG0E3-qT1G
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-27_10,2023-07-26_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
- malwarescore=0 mlxlogscore=999 clxscore=1011 lowpriorityscore=0
- phishscore=0 impostorscore=0 priorityscore=1501 mlxscore=0 spamscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2307280197
+In-Reply-To: <dc48b40748e24d3799e7ee66fa7e8cb4@AcuMS.aculab.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
+X-Mailman-Approved-At: Sat, 29 Jul 2023 15:41:09 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,143 +45,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: foraker1@llnl.gov, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: "kim.phillips@arm.com" <kim.phillips@arm.com>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "fenghua.yu@intel.com" <fenghua.yu@intel.com>, "alexander.shishkin@linux.intel.com" <alexander.shishkin@linux.intel.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@sifive.com>, "x86@kernel.org" <x86@kernel.org>, "stefan@agner.ch" <stefan@agner.ch>, "ldv@altlinux.org" <ldv@altlinux.org>, "dhowells@redhat.com" <dhowells@redhat.com>, "paulus@samba.org" <paulus@samba.org>, "deepa.kernel@gmail.com" <deepa.kernel@gmail.com>, "hpa@zytor.com" <hpa@zytor.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "will@kernel.org" <will@kernel.org>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "hare@suse.com" <hare@suse.com>, "gor@linux.ibm.com" <gor@linux.ibm.com>, "ysato@users.sourceforge.jp" <ysato@users.sourceforge.jp>, "deller@gmx.de" <deller@gmx.de>, "linux-sh@vger.ker
+ nel.org" <linux-sh@vger.kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>, "mingo@redhat.com" <mingo@redhat.com>, "geert@linux-m68k.org" <geert@linux-m68k.org>, "jhogan@kernel.org" <jhogan@kernel.org>, "mattst88@gmail.com" <mattst88@gmail.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "fweimer@redhat.com" <fweimer@redhat.com>, "tycho@tycho.ws" <tycho@tycho.ws>, Arnd Bergmann <arnd@arndb.de>, "glebfm@altlinux.org" <glebfm@altlinux.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "acme@kernel.org" <acme@kernel.org>, 'Aleksa Sarai' <cyphar@cyphar.com>, "bp@alien8.de" <bp@alien8.de>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "luto@kernel.org" <luto@kernel.org>, "namhyung@kernel.org" <namhyung@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "christian@brauner.io" <christian@brauner.io>, "axboe@kernel.dk" <axboe@kernel.dk>, "James.Bottomley@hansenpartnership.com" <James
+ .Bottomley@hansenpartnership.com>, "monstr@monstr.eu" <monstr@monstr.eu>, "tony.luck@intel.com" <tony.luck@intel.com>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "ralf@linux-mips.org" <ralf@linux-mips.org>, "peterz@infradead.org" <peterz@infradead.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>, Alexey Gladkov <legion@kernel.org>, "davem@davemloft.net" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 28, 2023 at 04:05:55PM +0530, Aneesh Kumar K.V wrote:
->--- a/arch/powerpc/mm/init_64.c
->+++ b/arch/powerpc/mm/init_64.c
-[snip]
->+	/*
->+	 * "ibm,coherent-device-memory with linux,usable-memory = 0
->+	 * Force 256MiB block size. Work around for GPUs on P9 PowerNV
->+	 * linux,usable-memory == 0 implies driver managed memory and
->+	 * we can't use large memory block size due to hotplug/unplug
->+	 * limitations.
->+	 */
->+	compatible = of_get_flat_dt_prop(node, "compatible", NULL);
->+	if (compatible && !strcmp(compatible, "ibm,coherent-device-memory")) {
->+		int len = 0;
->+		const __be32 *usm;
->+
->+		usm = of_get_flat_dt_prop(node, "linux,drconf-usable-memory", &len);
+On Fri, Jul 28, 2023 at 08:43:58AM +0000, David Laight wrote:
+> ....
+> > FWIW, I agree with Christian that these behaviours are not ideal (and
+> > I'm working on a series that might allow for these things to be properly
+> > blocked in the future) but there's also the consistency argument -- I
+> > don't think fchownat() is much safer to allow in this way than
+> > fchmodat() and (again) this behaviour is already possible through
+> > procfs.
+> 
+> If the 'through procfs' involves readlink("/proc/self/fd/n") and
+> accessing through the returned path then the permission checks
+> are different.
+> Using the returned path requires search permissions on all the
+> directories.
 
-I think this should be "linux,usable-memory".
+That's *not* how "through procfs" works. The "magic symlinks" in
+/proc/*/fd are not actual symlinks that get dereferenced to the
+contents they readlink() to, but special-type objects that dereference
+directly to the underlying file associated with the open file
+description.
 
->+		if (usm && !len) {
->+			*block_size = SZ_256M;
->+			return 1;
->+		}
-
-This isn't quite right. The criteria is not that the property itself has 
-no registers, it's that the base/size combo has size zero.
-
-If you fold in the patch appended to the end of this mail, things worked 
-for me.
-
->+	}
->+
->+	reg = of_get_flat_dt_prop(node, "reg", &l);
->+	endp = reg + (l / sizeof(__be32));
->+
->+	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
->+		u64 base, size;
->+
->+		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
->+		size = dt_mem_next_cell(dt_root_size_cells, &reg);
->+
->+		if (size == 0)
->+			continue;
->+
->+		update_memory_block_size(block_size, size);
->+	}
->+	/* continue looking for other memory device types */
->+	return 0;
->+}
->+
->+/*
->+ * start with 1G memory block size. Early init will
->+ * fix this with correct value.
->+ */
->+unsigned long memory_block_size __ro_after_init = 1UL << 30;
-
-Could use SZ_1G here.
-
-With the following fixup, I got 256MiB blocks on a system with
-"ibm,coherent-device-memory" nodes.
-
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index dbed37d6cffb..1ac58e72a885 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -487,7 +487,6 @@ static int __init probe_memory_block_size(unsigned long node, const char *uname,
-  					  depth, void *data)
-  {
-  	const char *type;
--	const char *compatible;
-  	unsigned long *block_size = (unsigned long *)data;
-  	const __be32 *reg, *endp;
-  	int l;
-@@ -532,38 +531,38 @@ static int __init probe_memory_block_size(unsigned long node, const char *uname,
-  	if (type == NULL || strcmp(type, "memory") != 0)
-  		return 0;
-  
--	/*
--	 * "ibm,coherent-device-memory with linux,usable-memory = 0
--	 * Force 256MiB block size. Work around for GPUs on P9 PowerNV
--	 * linux,usable-memory == 0 implies driver managed memory and
--	 * we can't use large memory block size due to hotplug/unplug
--	 * limitations.
--	 */
--	compatible = of_get_flat_dt_prop(node, "compatible", NULL);
--	if (compatible && !strcmp(compatible, "ibm,coherent-device-memory")) {
--		int len = 0;
--		const __be32 *usm;
--
--		usm = of_get_flat_dt_prop(node, "linux,drconf-usable-memory", &len);
--		if (usm && !len) {
--			*block_size = SZ_256M;
--			return 1;
--		}
--	}
-+	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
-+	if (!reg)
-+		reg = of_get_flat_dt_prop(node, "reg", &l);
-+	if (!reg)
-+		return 0;
-  
--	reg = of_get_flat_dt_prop(node, "reg", &l);
-  	endp = reg + (l / sizeof(__be32));
-  
-  	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
-+		const char *compatible;
-  		u64 base, size;
-  
-  		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
-  		size = dt_mem_next_cell(dt_root_size_cells, &reg);
-  
--		if (size == 0)
-+		if (size) {
-+			update_memory_block_size(block_size, size);
-  			continue;
-+		}
-  
--		update_memory_block_size(block_size, size);
-+		/*
-+		 * ibm,coherent-device-memory with linux,usable-memory = 0
-+		 * Force 256MiB block size. Work around for GPUs on P9 PowerNV
-+		 * linux,usable-memory == 0 implies driver managed memory and
-+		 * we can't use large memory block size due to hotplug/unplug
-+		 * limitations.
-+		 */
-+		compatible = of_get_flat_dt_prop(node, "compatible", NULL);
-+		if (compatible && !strcmp(compatible, "ibm,coherent-device-memory")) {
-+			*block_size = SZ_256M;
-+			return 1;
-+		}
-  	}
-  	/* continue looking for other memory device types */
-  	return 0;
--- 
-Reza Arbab
+Rich
