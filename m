@@ -4,56 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D7D4C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 04:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6CFFC001DE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 09:26:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n5OOA0he;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yZlBBa+Q;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RBvMm3Tp1z3cG0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 14:11:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RC2M4101Mz3cR0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 19:26:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n5OOA0he;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yZlBBa+Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=qperret@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RBtgv59sbz2yDy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 13:40:27 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8DEF561FC8;
-	Fri, 28 Jul 2023 03:40:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6D85AC433CA;
-	Fri, 28 Jul 2023 03:40:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690515623;
-	bh=nh7VNF71Px8+ehWsNezgTEu3Q5hpaEOt5oKxXH92/qA=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=n5OOA0hexFDJfGiqn8bTgbsd1NxuBlbkYDKSx4jve1A1uhS5AnTOvFTQV4JWG7aBf
-	 g/w60ZUiuyy1xVob0CGewYJXVq1VL+QTFR/Web3ZJJ2NNh+cY5USv/q3z7SDcq/wTR
-	 lonQnxK346qjNlcQZfWCfeuaLMI8E7TUSZjSKMLEMehF+DgMrtLu+XmXsACHxfUrce
-	 uCl8v7KPKSe+YopRiOOHSvNs0MFFYZuVftoYlnB7ke0VUB/3LypcDS6Ej2rHAU9kNd
-	 8tKWHNxo+5s5dfDX+o4x42ap7+FrTJwJM45yRjAs4oZ8Nub3PfEMVbrmDiV7UKUGPk
-	 vMj95R4jHRhaw==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 417E1C691EE;
-	Fri, 28 Jul 2023 03:40:23 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RC2L41l4pz308W
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 19:25:30 +1000 (AEST)
+Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-98de21518fbso274224266b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 02:25:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1690536326; x=1691141126;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=MyDeksRVqGtJNd0fe/itajI8E9fXoiZCjVyZ7emrXms=;
+        b=yZlBBa+QgG6A3izqrAvYrZmjNARnJqe9UVJDDaWeo1ngnmOt9VRY93kWsBg3OxlgJ6
+         BNgAnv6T/0ObsR7NeaCjk+WNJnmyD7Q59yeCq15kUZEqjsFvHdvXA60zH7S6F25/qIjt
+         fm8Sg5o5MpunPrL/BqoXYGZy7msDjit8jc0wg2EmQ6Q8Th8F7S82AjrHRl+/FMq8bTJh
+         sEoAOBkEqP29Krhf8xqYypp/joUWh9VUOF8DEcZIisv2V3iWTfC6qxmMhKHNjRW9HI9T
+         TolK5KmZ7NzIlhfQCguxbwjQDJpXunGMqxws18N6XaE4FtdLuzrmk4BalRM99UvIXMiI
+         LjuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690536326; x=1691141126;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MyDeksRVqGtJNd0fe/itajI8E9fXoiZCjVyZ7emrXms=;
+        b=cyo8vmf2S/9gjKYFJrgWae3jJRiQ7MehT4eG/uluW0fomptRfAos4L53PpgLhUb8As
+         aQnIWjrmysz3znF6lFwdqAByn2QIH00opA2YnCwgREH7DwdZ9+N2QHqZh/xUjZ7M0Ram
+         KNkL22oq0mCFgiDIrLboIy79C7MuUV8HADr9sj1xbNGAMUv00luCoESZR7Zv7Iy5bqof
+         OjgpCzWlNsSiMRtOw75xt+mxmnzR6i1Yyf+/cYghhmp9cvHH2Y+Yv0zdXwKhvW2rngqv
+         mCpYTg0PYNNBDXDt5e8fiVzQMjhgR9Bf27jNtXu5bq2JUS60kJlXs7g+qnaZp7v0uJwr
+         112A==
+X-Gm-Message-State: ABy/qLbvs8THcwX/OTlgfW9QLKqYh+/ZWr1ZxKF7Yz5fK5teK5O8qihw
+	GqGh/1U0+qBXmCWMY6yVmXInXg==
+X-Google-Smtp-Source: APBJJlG4DNtaaix3llwTkCcLiQNG9ALlnJv6ynH+2HDeVn6HzB3Xx8i5ieUEd323eDEBkV9C48RmSw==
+X-Received: by 2002:a17:906:8454:b0:994:1fee:3065 with SMTP id e20-20020a170906845400b009941fee3065mr1975862ejy.15.1690536326590;
+        Fri, 28 Jul 2023 02:25:26 -0700 (PDT)
+Received: from google.com (64.227.90.34.bc.googleusercontent.com. [34.90.227.64])
+        by smtp.gmail.com with ESMTPSA id n12-20020a170906688c00b00992c92af6f4sm1857653ejr.144.2023.07.28.02.25.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Jul 2023 02:25:26 -0700 (PDT)
+Date: Fri, 28 Jul 2023 09:25:22 +0000
+From: Quentin Perret <qperret@google.com>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: [RFC PATCH v11 06/29] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+Message-ID: <ZMOJgnyzzUNIx+Tn@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-7-seanjc@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH net-next v3] net: Explicitly include correct DT includes
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id:  <169051562326.23821.4231940284607437337.git-patchwork-notify@kernel.org>
-Date: Fri, 28 Jul 2023 03:40:23 +0000
-References: <20230727014944.3972546-1-robh@kernel.org>
-In-Reply-To: <20230727014944.3972546-1-robh@kernel.org>
-To: Rob Herring <robh@kernel.org>
-X-Mailman-Approved-At: Fri, 28 Jul 2023 14:10:44 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230718234512.1690985-7-seanjc@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,36 +78,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kevinbrace@bracecomputerlab.com, andrew@lunn.ch, iyappan@os.amperecomputing.com, miquel.raynal@bootlin.com, nobuhiro1.iwamatsu@toshiba.co.jp, jonathanh@nvidia.com, horatiu.vultur@microchip.com, radhey.shyam.pandey@amd.com, jbrunet@baylibre.com, samuel@sholland.org, sean.anderson@seco.com, khilman@baylibre.com, madalin.bucur@nxp.com, joabreu@synopsys.com, linux-imx@nxp.com, Mark-MC.Lee@mediatek.com, s.hauer@pengutronix.de, linux-omap@vger.kernel.org, elder@kernel.org, dougmill@linux.ibm.com, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-wpan@vger.kernel.org, claudiu.beznea@microchip.com, alexandre.belloni@bootlin.com, hayashi.kunihiko@socionext.com, chris.snook@gmail.com, edumazet@google.com, thierry.reding@gmail.com, linux-stm32@st-md-mailman.stormreply.com, stefan@datenfreihafen.org, yisen.zhuang@huawei.com, steve.glendinning@shawell.net, martin.blumenstingl@googlemail.com, linux-arm-msm@vger.kernel.org, sean.wang@mediatek.com, claudiu.manoil@nxp.com, linux-amlogic@
- lists.infradead.org, michal.simek@amd.com, linux-arm-kernel@lists.infradead.org, mlindner@marvell.com, neil.armstrong@linaro.org, UNGLinuxDriver@microchip.com, linux-renesas-soc@vger.kernel.org, mcoquelin.stm32@gmail.com, linux-mediatek@lists.infradead.org, hkallweit1@gmail.com, taras.chornyi@plvision.eu, kernel@esmil.dk, andreas@gaisler.com, linux-tegra@vger.kernel.org, peppe.cavallaro@st.com, festevam@gmail.com, jernej.skrabec@gmail.com, wens@csie.org, shenwei.wang@nxp.com, samin.guo@starfivetech.com, romieu@fr.zoreil.com, pabeni@redhat.com, lorenzo@kernel.org, grygorii.strashko@ti.com, bhupesh.sharma@linaro.org, john@phrozen.org, salil.mehta@huawei.com, s.shtylyov@omp.ru, timur@kernel.org, linux-sunxi@lists.linux.dev, linux-oxnas@groups.io, shawnguo@kernel.org, davem@davemloft.net, alex.aring@gmail.com, vladimir.oltean@nxp.com, alexandre.torgue@foss.st.com, linux@armlinux.org.uk, xiaoning.wang@nxp.com, elder@linaro.org, kuba@kernel.org, richardcochran@gmail.com, keyur@os.ampereco
- mputing.com, wei.fang@nxp.com, matthias.bgg@gmail.com, mw@semihalf.com, angelogioacchino.delregno@collabora.com, netdev@vger.kernel.org, nicolas.ferre@microchip.com, leoyang.li@nxp.com, stephen@networkplumber.org, vkoul@kernel.org, linuxppc-dev@lists.ozlabs.org, nbd@nbd.name
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linu
+ x-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
+On Tuesday 18 Jul 2023 at 16:44:49 (-0700), Sean Christopherson wrote:
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
+>  	__u64 userspace_addr; /* start of the userspace allocated memory */
+>  };
+>  
+> +/* for KVM_SET_USER_MEMORY_REGION2 */
+> +struct kvm_userspace_memory_region2 {
+> +	__u32 slot;
+> +	__u32 flags;
+> +	__u64 guest_phys_addr;
+> +	__u64 memory_size;
+> +	__u64 userspace_addr;
+> +	__u64 pad[16];
 
-This patch was applied to netdev/net-next.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+Should we replace that pad[16] with:
 
-On Wed, 26 Jul 2023 19:49:39 -0600 you wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it as merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
-> 
-> [...]
+	__u64 size;
 
-Here is the summary with links:
-  - [net-next,v3] net: Explicitly include correct DT includes
-    https://git.kernel.org/netdev/net-next/c/3d40aed86287
-
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+where 'size' is the size of the structure as seen by userspace? This is
+used in other UAPIs (see struct sched_attr for example) and is a bit
+more robust for future extensions (e.g. an 'old' kernel can correctly
+reject a newer version of the struct with additional fields it doesn't
+know about if that makes sense, etc).
