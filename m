@@ -4,56 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39425EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 07:51:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3C6FC001E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 07:59:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dOnUWXAM;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Ve9ftLHd;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=h3KqjBdP;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=v0mAYXza;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RC0Dz1608z3cRd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 17:50:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RC0R40Dhxz3cQX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 17:59:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dOnUWXAM;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Ve9ftLHd;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=h3KqjBdP;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=v0mAYXza;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 583 seconds by postgrey-1.37 at boromir; Fri, 28 Jul 2023 17:50:07 AEST
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1101 seconds by postgrey-1.37 at boromir; Fri, 28 Jul 2023 17:58:50 AEST
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RC0Cz0Nvwz3012
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 17:50:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RC0Q23swDz30Qm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 17:58:50 +1000 (AEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1690530018;
+	s=2020; t=1690531127;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=L3lFFYmxXQsCGkR7WqgUDzZWwO7vYvbu+VSipk5DNPA=;
-	b=dOnUWXAMBHlcF7DznBkjH1bNSRZt+A6Mltw6RDp2xMdbpTnFdfZBI3y1RDIiQndh8norCs
-	xgaR6VqxfVHeggOYHmhBxPMiDlAaLCNYfZR3VoDu25WsUpWOUPH0WgFJ/oAPIEC2pSTIYe
-	k438ON5htB+OEfFOxqneM4VHIeGVLIQXPSwi0j/birbgYbTwS1aQ+m90UQ4lMluYbs5a49
-	M6C8x3aTtTkqVg8sAoRWE5LZY7sFQKgQFWOmmAQa3RF/RMgRRb6yiD79UNeahJrVQ3wKlA
-	0ofotDXP5emQXeBeW6E7GiF2jWptWbCnD7GI9BgBZcRP7c4Ux94kdXRBfdkb+w==
+	bh=J2d/NQgST3OleKl0Jw+5SHcTojuKsykf8D+CZyk9mUA=;
+	b=h3KqjBdPA4v2gP3IJl3i4HKURHxrs7Z5zalvYFOXjqo5taHgckMES/Ak2aXstzmdk0h1Zl
+	vdGk9Q44NlT4AJ29PCV0W6W2q8tx8RidGxHWChicPXnOZ6vUUtCWGERVTYO4tDd2C1KHE9
+	6HQ18KUtgSpdSIRwHAHpW9flJMyN5Qr5e0T+LkogiYQs907k+p6PVC2lLIVNMa8QCnI5Tj
+	Uh5F7gzHbWSHqEOXp2w4AKIl7Wu8PiRg9uoRzKFIEaDL0AVSPbGeKlL7hQb5f0dAGbHeTM
+	MkHPtBbVI7dAu6zjZ9YVGAgxNixDe8ZxyysVnQzvhPUUk5c04LeQ8A6yPwZprg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1690530018;
+	s=2020e; t=1690531127;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=L3lFFYmxXQsCGkR7WqgUDzZWwO7vYvbu+VSipk5DNPA=;
-	b=Ve9ftLHdXNIrLTDWdMIvBVbeE5nyJztICBjwg4I7sZqU1LICnyGJbPbsQ6R9RRc5HsYj6c
-	XRpOJBT5fqzZ3UCg==
-To: "Zhang, Rui" <rui.zhang@intel.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "ldufour@linux.ibm.com"
- <ldufour@linux.ibm.com>
+	bh=J2d/NQgST3OleKl0Jw+5SHcTojuKsykf8D+CZyk9mUA=;
+	b=v0mAYXzamMC3q0Q2OV8KW7XiJxlxCHl7htvJxDhy7rV+jL9o+Kr7oEtmoThFL05diOag8V
+	MnN8MMUFkbWycpAw==
+To: Laurent Dufour <ldufour@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v4 00/10] Introduce SMT level and add PowerPC support
-In-Reply-To: <c66e3e800a7d257ef7a90749fe567f056f4c3ace.camel@intel.com>
+In-Reply-To: <20230705145143.40545-1-ldufour@linux.ibm.com>
 References: <20230705145143.40545-1-ldufour@linux.ibm.com>
- <c66e3e800a7d257ef7a90749fe567f056f4c3ace.camel@intel.com>
-Date: Fri, 28 Jul 2023 09:40:17 +0200
-Message-ID: <87wmykqyam.ffs@tglx>
+Date: Fri, 28 Jul 2023 09:58:46 +0200
+Message-ID: <87tttoqxft.ffs@tglx>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,17 +64,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "npiggin@gmail.com" <npiggin@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, "bp@alien8.de" <bp@alien8.de>
+Cc: linux-arch@vger.kernel.org, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, mingo@redhat.com, bp@alien8.de, npiggin@gmail.com, rui.zhang@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rui!
+Laurent, Michael!
 
-On Sun, Jul 09 2023 at 15:25, Rui Zhang wrote:
-> I ran into a boot hang regression with latest upstream code, and it
-> took me a while to bisect the offending commit and workaround it.
+On Wed, Jul 05 2023 at 16:51, Laurent Dufour wrote:
+> I'm taking over the series Michael sent previously [1] which is smartly
+> reviewing the initial series I sent [2].  This series is addressing the
+> comments sent by Thomas and me on the Michael's one.
 
-Where is the bug report and the analysis? And what's the workaround?
+Thanks for getting this into shape.
+
+I've merged it into:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git smp/core
+
+and tagged it at patch 7 for consumption into the powerpc tree, so the
+powerpc specific changes can be applied there on top:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git smp-core-for-ppc-23-07-28
 
 Thanks,
 
