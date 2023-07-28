@@ -4,67 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69C72C41513
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 16:02:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00C5BC001DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 16:36:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=efVlqDVS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iBVanlns;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RCC7y5GVNz3d88
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 02:02:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RCCv61S8Tz3cV6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 02:36:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=efVlqDVS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iBVanlns;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82d; helo=mail-qt1-x82d.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com [IPv6:2607:f8b0:4864:20::82d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCC6w47cvz2yq3
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 02:01:27 +1000 (AEST)
-Received: by mail-qt1-x82d.google.com with SMTP id d75a77b69052e-40631c5b9e9so298641cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 09:01:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690560083; x=1691164883;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mZH6nQn01C8Sr35XvItongnJrzthU2bVlvOmhLP0Vz4=;
-        b=efVlqDVSjL6hA7pH00Obl7K/hepyTwEAmwJ9S77NzwRdLZhvsACfpPSV/UEEDWueDO
-         WqpN1pZSCukYdKhuENE81FkCJ41Or7iSNohh3brPPiPR/EJcdFWXy3CxD1/Ezu2LfaMJ
-         dDIqc7PSfthEwCbT4aH/hWJxzMmziJXj074F6WkoQ0jMqgjGNCTFB8lMxYCoB6mxTa6v
-         TFXANH5T2OzmoPWaxtENtjUldT8CS6rV6cyAGsqj4i7z0uhCJVJK++r+84cErubxBpJS
-         THtb+DI/cGVHK6IKxTtJHZVYVM+A/wShTe8cBebMKoPDyvb8rij1DmDWRBAMYmW4tR3S
-         hVkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690560083; x=1691164883;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mZH6nQn01C8Sr35XvItongnJrzthU2bVlvOmhLP0Vz4=;
-        b=J7n2LCdkIo6Yb1mN3lKp9k2l8ct9uXHuKFMA80+xZ6cF10nP37tmcCaOzKP0pMmy8r
-         8B+Ur2M0M41qPl2iSRCMUpCiw/QpfYrv/oQMa34xkrqReYHkOd2fsLTv2rt0wg3WbOO9
-         FvGpRPTcptby38bHTGKf2Z/ar0G9r3/4I9kj0K2fEpzrw39c7l1BW0jGWIiTGEiLu8iG
-         oDfeMPJyCoo/RkUnolIeV2cQpzcqj+c7mVuwl7Z+fkdmWg+FM0COkRgE7sgT+H8k4KpI
-         1Y5KHjHLZQOJkQPh7CPS8rr2lohYtYuzRPcrCbf6tlV4UVsiakokEj2sg2Tx1F0U9HZC
-         EcpQ==
-X-Gm-Message-State: ABy/qLbTtsR8zgyeL/dOaVQ3K7g7AiUsLD+8/Y3BNbTOqwJX0XUr9Jy3
-	O4QoaRRlMK4SziPCWYEZSCc2NlffgdJ2S22SJ7ogfg==
-X-Google-Smtp-Source: APBJJlGz8xBM5B0JACXOlDeDiPzvNUvs8ZfSUITEkeaXWUnL/b+pJDlsmnUkdUfhBNfddso1uEi2UhmOVMqQozMD6zs=
-X-Received: by 2002:a05:622a:15d2:b0:3f5:2006:50f1 with SMTP id
- d18-20020a05622a15d200b003f5200650f1mr318937qty.12.1690560083088; Fri, 28 Jul
- 2023 09:01:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCCt36kTHz308W
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 02:35:23 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id F34AC6219E;
+	Fri, 28 Jul 2023 16:35:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71D2BC433C8;
+	Fri, 28 Jul 2023 16:35:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1690562118;
+	bh=DoVwk5cw4lHeorzGw8TinHHfK83bjvPZo1PlOG1eoZA=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=iBVanlnsFj/wWIQupGmfXwv38rePffMDw9duJTNhoGjp/yiz18q6e5BcufHfGtgh2
+	 2N244UZ2chau5lMu7XQ8jTAC1s2cYly8XbF8Zy9GTnEvmF73kZE9YcC9SUSvc2jtA+
+	 pzosk9DlCMwjOnksou7E8IpSWQsuyw5LGDwlwjtFA8jGZcb8QgJzClc4f1pXeZ4dwh
+	 5gYtUGQBb7lx+mPpvBYh2AET5Qyn5GzER6N+3M5l6uI8PzeYzO+C+Z/40xX6Rcinz+
+	 cymDQ7AcaoZ7CwOBUv4eP/wZVrmAJuY/sguf7a806Ct9ZClvJiqffRQ7KrXS5X6TB7
+	 n9JGg+2gV6D4w==
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, Justin Stitt <justinstitt@google.com>
+In-Reply-To: <20230727-sound-soc-fsl-v1-1-4fc0ed7e0366@google.com>
+References: <20230727-sound-soc-fsl-v1-1-4fc0ed7e0366@google.com>
+Subject: Re: [PATCH] ASoC: fsl_micfil: refactor deprecated strncpy
+Message-Id: <169056211617.208880.10400351966983316793.b4-ty@kernel.org>
+Date: Fri, 28 Jul 2023 17:35:16 +0100
 MIME-Version: 1.0
-References: <20230725061649.34937-1-adityag@linux.ibm.com> <ZMPWk5K63tadmDlU@kernel.org>
-In-Reply-To: <ZMPWk5K63tadmDlU@kernel.org>
-From: Ian Rogers <irogers@google.com>
-Date: Fri, 28 Jul 2023 09:01:11 -0700
-Message-ID: <CAP-5=fW1zkpJ4zr4ngz=6bZQuE6hOHo4AtXwUsVJK9oiDSc_mg@mail.gmail.com>
-Subject: Re: [PATCH 1/1] perf tests task_analyzer: Check perf build options
- for libtraceevent support
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-099c9
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,93 +65,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, disgoel@linux.vnet.ibm.com, linux-perf-users@vger.kernel.org, atrajeev@linux.vnet.ibm.com, jolsa@kernel.org, namhyung@kernel.org, Aditya Gupta <adityag@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 28, 2023 at 7:54=E2=80=AFAM Arnaldo Carvalho de Melo
-<acme@kernel.org> wrote:
->
-> Em Tue, Jul 25, 2023 at 11:46:49AM +0530, Aditya Gupta escreveu:
-> > Currently we depend on output of 'perf record -e "sched:sched_switch"',=
- to
-> > check whether perf was built with libtraceevent support.
-> >
-> > Instead, a more straightforward approach can be to check the build opti=
-ons,
-> > using 'perf version --build-options', to check for libtraceevent suppor=
-t.
-> >
-> > When perf is compiled WITHOUT libtraceevent ('make NO_LIBTRACEEVENT=3D1=
-'),
-> > 'perf version --build-options' outputs (output trimmed):
-> >
-> >        ...
-> >          libtraceevent: [ OFF ]  # HAVE_LIBTRACEEVENT
-> >        ...
-> >
-> > While, when perf is compiled WITH libtraceevent,
-> >
-> > 'perf version --build-options' outputs:
-> >
-> > ...
-> >          libtraceevent: [ on ]  # HAVE_LIBTRACEEVENT
-> >        ...
-> >
-> > Suggested-by: Ian Rogers <irogers@google.com>
-> > Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
-> > ---
-> >
-> >  tools/perf/tests/shell/test_task_analyzer.sh | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/tools/perf/tests/shell/test_task_analyzer.sh b/tools/perf/=
-tests/shell/test_task_analyzer.sh
-> > index 0095abbe20ca..a28d784987b4 100755
-> > --- a/tools/perf/tests/shell/test_task_analyzer.sh
-> > +++ b/tools/perf/tests/shell/test_task_analyzer.sh
-> > @@ -52,7 +52,7 @@ find_str_or_fail() {
-> >
-> >  # check if perf is compiled with libtraceevent support
-> >  skip_no_probe_record_support() {
-> > -     perf record -e "sched:sched_switch" -a -- sleep 1 2>&1 | grep "li=
-btraceevent is necessary for tracepoint support" && return 2
-> > +     perf version --build-options | grep HAVE_LIBTRACEEVENT | grep -q =
-OFF && return 2
-> >       return 0
->
-> I'll apply this, but please consider adding a:
->
->         perf build --has libtraceevent
+On Thu, 27 Jul 2023 22:26:41 +0000, Justin Stitt wrote:
+> `strncpy` is deprecated for use on NUL-terminated destination strings [1].
+> 
+> A suitable replacement is `strscpy` [2] due to the fact that it
+> guarantees NUL-termination on its destination buffer argument which is
+> _not_ always the case for `strncpy`!
+> 
+> In this case, though, there was great care taken to ensure that the
+> destination buffer would be NUL-terminated through the use of `len - 1`
+> ensuring that the previously zero-initialized buffer would not overwrite
+> the last NUL byte. This means that there's no bug here.
+> 
+> [...]
 
-That's a nice idea. You mean add a script like perf-archive.sh?
-Perhaps this flag should be supported by perf version instead.
+Applied to
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[1/1] ASoC: fsl_micfil: refactor deprecated strncpy
+      commit: 7eb10bfbbae6025cb7b4bba3db0c1281eac05862
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
-Ian
+Mark
 
-> subcommand to have that query made more compact and to avoid the two
-> extra grep.
->
-> BTW, I'll change that to:
->
-> [acme@quaco perf-tools-next]$ perf version --build-options | grep " on .*=
- HAVE_LIBTRACEEVENT"
->          libtraceevent: [ on  ]  # HAVE_LIBTRACEEVENT
-> [acme@quaco perf-tools-next]$
->
-> replacing "on" with OFF, so that we have just one grep.
->
-> Thanks,
->
-> - Arnaldo
->
-> >  }
-> >
-> > --
-> > 2.41.0
-> >
->
-> --
->
-> - Arnaldo
