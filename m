@@ -4,98 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2438C001DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jul 2023 16:14:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 385BBC0015E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 00:04:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EzFo3gQj;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EzFo3gQj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Zp0GOXqU;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RCCPv2zXYz3cVB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 02:14:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RCPrL1hpyz3d8M
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 10:04:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EzFo3gQj;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EzFo3gQj;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Zp0GOXqU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3vlfezaykdemxjfsohlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCCNw1CMGz3bpC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 02:13:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690560812;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=1Dyh7+qatvQDKM5qDRHq8YkO5TCQeLww3uN1vYmzEUU=;
-	b=EzFo3gQj5XQ/9hIaortrhTD4LYBvIArNQeuoEUMjFSmK9OVj9+r5R7l037EK/2lLnNq90Z
-	iCl5HGQAazJ5SxihMyCGgtE/1fNg8e8aP6nCISlzVK2BY7YZYcv/jQY5OtVem140TIuwGZ
-	xjSysc4LiYaO9KBdfIkJceHnTkWpOxw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1690560812;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=1Dyh7+qatvQDKM5qDRHq8YkO5TCQeLww3uN1vYmzEUU=;
-	b=EzFo3gQj5XQ/9hIaortrhTD4LYBvIArNQeuoEUMjFSmK9OVj9+r5R7l037EK/2lLnNq90Z
-	iCl5HGQAazJ5SxihMyCGgtE/1fNg8e8aP6nCISlzVK2BY7YZYcv/jQY5OtVem140TIuwGZ
-	xjSysc4LiYaO9KBdfIkJceHnTkWpOxw=
-Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
- [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-534-BlL4-tq2NBCygAGv650q1Q-1; Fri, 28 Jul 2023 12:13:30 -0400
-X-MC-Unique: BlL4-tq2NBCygAGv650q1Q-1
-Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-94a355cf318so136857766b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 09:13:30 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCPqJ185Pz2yDy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 10:03:37 +1000 (AEST)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1bb962ada0dso17078825ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2023 17:03:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1690589015; x=1691193815;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=rJg9MbukUkeAf25VcBnSvGPEfaUIyqqF94QJU8orhSY=;
+        b=Zp0GOXqU9vAtanM7byzLEY1ZTAuQCQrnfrak1thKcFFHMBCZO/N4KqKDBd5I3kJffW
+         Vh8ovzLtMVpv7R9tgjnJuitRPz0iowTqbSccpqb9sCrit8s8jZkHgE3EKWmaz9/YJybN
+         uhR+1LBQ/EGKFm12kofvmo1N8Or8Mhd5I9QIxgAZxJjUnAncn/OfNQ+xg9V9rSfFrTW5
+         6+gyXWvxsDfod0XUAEoSS/aCS0HqakbjGuI1/I8BU2Uy6FDW2YJ6LrCVt60GU5GehRX5
+         3Ug/sPFW2Iawha4cKCkpfEtG9Mwjo7aL2M8Rz65tztUDm7ObzFqkZ6ozvUAWJtziwaLO
+         +gKQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690560809; x=1691165609;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1Dyh7+qatvQDKM5qDRHq8YkO5TCQeLww3uN1vYmzEUU=;
-        b=HmbmKeani7PYSAyIXjCXGmiDlJU3BlByYfRtiE3itc0WZo/3/z0hGxx82rB/7J8ij0
-         9YnIB4IDseRsIcsJ3J/Pil3nfpITUCOdFHa9zAwlt2COtiqapKDVbgIE76bl28bGknYX
-         PREP5luAqcvdgVBlu5TWDhrJrzxA739YBn5Ns+WvXKIRY1dD0N1cVHFxuakMbdlGe1Lf
-         AMtR8GWUm19m6U1Y708xM3XFY55MXZxBV0f3Zwi8UcU+Wxo2CkYgJKEMJjQLT29MKXCv
-         HpDg6sPrcvtNVBGAKj0rR0z7TY/4R0yA8uD2uz+dmnH8Pz7gkdJnhFnXoco5PoNVyPL9
-         w0yw==
-X-Gm-Message-State: ABy/qLY+4InVdDwGVPC5l+E/JQFyMv3WZHaO/i98nvXgGBzwCDbh+dqz
-	hJpdiMBHVPa2p1Vwt8WLip8UiyUL/hmIspllD4HgtZVvHtA2CvD6f5nbKm67HRhap5nKr5RmJea
-	MZJNmqZ7WWTyv5ZvGoPg2K9WTlQ==
-X-Received: by 2002:a17:906:5354:b0:99b:efd3:3dcc with SMTP id j20-20020a170906535400b0099befd33dccmr1357366ejo.62.1690560809632;
-        Fri, 28 Jul 2023 09:13:29 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlHd2sX/AyGtIAscRR2p4pTksaGOsuCTBRQ37WpaEGChaEB1fcJtjozFJjrwhV4jFSHGD+pttg==
-X-Received: by 2002:a17:906:5354:b0:99b:efd3:3dcc with SMTP id j20-20020a170906535400b0099befd33dccmr1357325ejo.62.1690560809219;
-        Fri, 28 Jul 2023 09:13:29 -0700 (PDT)
-Received: from ?IPV6:2001:b07:6468:f312:9af8:e5f5:7516:fa89? ([2001:b07:6468:f312:9af8:e5f5:7516:fa89])
-        by smtp.googlemail.com with ESMTPSA id gy26-20020a170906f25a00b00993470682e5sm2197928ejb.32.2023.07.28.09.13.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 28 Jul 2023 09:13:28 -0700 (PDT)
-Message-ID: <6da710cf-2bc0-bb6e-26f1-fba14ca767db@redhat.com>
-Date: Fri, 28 Jul 2023 18:13:26 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
- completely unmovable
-To: Vlastimil Babka <vbabka@suse.cz>, Matthew Wilcox <willy@infradead.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-11-seanjc@google.com>
- <20230725102403.xywjqlhyqkrzjok6@box.shutemov.name>
- <ZL/Fa4W2Ne9EVxoh@casper.infradead.org>
- <692b09f7-70d9-1119-7fe2-3e7396ec259d@suse.cz>
-From: Paolo Bonzini <pbonzini@redhat.com>
-In-Reply-To: <692b09f7-70d9-1119-7fe2-3e7396ec259d@suse.cz>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        d=1e100.net; s=20221208; t=1690589015; x=1691193815;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=rJg9MbukUkeAf25VcBnSvGPEfaUIyqqF94QJU8orhSY=;
+        b=Bc6tNL5hkO3nK5xTuYezBRcn+CJnvP9HN8NqfzUCZz2/GHEAMScJ7jPD2alf1mX+RM
+         Y17zZYLu9GCBTtyfoktqD9BQuVjBPSg2m82HOiLqB8kKF6SM4l1QDpbBscxk5VrntSAI
+         y6SI0xve/pZlIGZGpaRoPLAz4s7HSD0t6vNPDi2W1ZGrJTH/3uYNLtlY8+UevHW/E5VN
+         d/Iz20RqqvaUPf3dW9AT8uLpR5RfkomVK4X2a/fdc2ttwr5cLobYXSukvi0JVxz52Owm
+         KpFnBAx1AhlIG16MEHd1MOcgIQjRz9dk6LoXYyerfEbOGjnjrRfvbkjuIq45DDAMpnxt
+         OtNQ==
+X-Gm-Message-State: ABy/qLacrJ0kk472TJ/vZY5KysmIWTTLCS0ljpnMKUcWLh3dLn7IXQHg
+	c+WQxwsxY3fbeRtNr45uye4v1ez1WDw=
+X-Google-Smtp-Source: APBJJlGy4rMQGFiWHQC+IuRONPQH0HvvNAt7asJXiFk+bZ/uVjfNOjPYVgrOl+x+eQJGyA+j61wbqvGP0DI=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a17:902:c951:b0:1ae:6895:cb96 with SMTP id
+ i17-20020a170902c95100b001ae6895cb96mr12864pla.5.1690589014804; Fri, 28 Jul
+ 2023 17:03:34 -0700 (PDT)
+Date: Fri, 28 Jul 2023 17:03:33 -0700
+In-Reply-To: <ZMOJgnyzzUNIx+Tn@google.com>
+Mime-Version: 1.0
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-7-seanjc@google.com>
+ <ZMOJgnyzzUNIx+Tn@google.com>
+Message-ID: <ZMRXVZYaJ9wojGtS@google.com>
+Subject: Re: [RFC PATCH v11 06/29] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+From: Sean Christopherson <seanjc@google.com>
+To: Quentin Perret <qperret@google.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,22 +74,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Anup Patel <anup@brainfault.org>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Quentin Perret <qperret@google.com>, Sean Christopherson <seanjc@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-mo
- dule@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linu
+ x-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/28/23 18:02, Vlastimil Babka wrote:
->> There's even a comment to that effect later on in the function:
-> Hmm, well spotted. But it wouldn't be so great if we now had to lock every
-> inspected page (and not just dirty pages), just to check the AS_ bit.
+On Fri, Jul 28, 2023, Quentin Perret wrote:
+> On Tuesday 18 Jul 2023 at 16:44:49 (-0700), Sean Christopherson wrote:
+> > --- a/include/uapi/linux/kvm.h
+> > +++ b/include/uapi/linux/kvm.h
+> > @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
+> >  	__u64 userspace_addr; /* start of the userspace allocated memory */
+> >  };
+> >  
+> > +/* for KVM_SET_USER_MEMORY_REGION2 */
+> > +struct kvm_userspace_memory_region2 {
+> > +	__u32 slot;
+> > +	__u32 flags;
+> > +	__u64 guest_phys_addr;
+> > +	__u64 memory_size;
+> > +	__u64 userspace_addr;
+> > +	__u64 pad[16];
 > 
-> But I wonder if this is leftover from previous versions. Are the guest pages
-> even PageLRU currently? (and should they be, given how they can't be swapped
-> out or anything?) If not, isolate_migratepages_block will skip them anyway.
+> Should we replace that pad[16] with:
+> 
+> 	__u64 size;
+> 
+> where 'size' is the size of the structure as seen by userspace? This is
+> used in other UAPIs (see struct sched_attr for example) and is a bit
+> more robust for future extensions (e.g. an 'old' kernel can correctly
+> reject a newer version of the struct with additional fields it doesn't
+> know about if that makes sense, etc).
 
-No, they're not (migration or even swap-out is not excluded for the 
-future, but for now it's left for future work.
+"flags" serves that purpose, i.e. allows userspace to opt-in to having KVM actually
+consume what is currently just padding.
 
-Paolo
+The padding is there mainly to simplify kernel/KVM code, e.g. the number of bytes
+that KVM needs to copy in is static.
 
+But now that I think more on this, I don't know why we didn't just unconditionally
+bump the size of kvm_userspace_memory_region.  We tried to play games with unions
+and overlays, but that was a mess[*].
+
+KVM would need to do multiple uaccess reads, but that's not a big deal.  Am I
+missing something, or did past us just get too clever and miss the obvious solution?
+
+[*] https://lkml.kernel.org/r/Y7xrtf9FCuYRYm1q%40google.com
