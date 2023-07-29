@@ -4,80 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D9F0C001DC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 08:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E80F5C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 09:57:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k5F8lY8g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VidWPMcw;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RCdDs70xVz3cV6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 18:38:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RCg0L14mYz3cTm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jul 2023 19:57:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k5F8lY8g;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VidWPMcw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (unknown [134.134.136.65])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCdCr2bt8z2yq4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 18:37:11 +1000 (AEST)
-Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36T8XdcF010886;
-	Sat, 29 Jul 2023 08:36:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=XeK4Sf5juNaQH99VDRhIaB3pMmMFubU2ytlj8MSnGig=;
- b=k5F8lY8gleFrWSw+4yFnHuA1Cn+roFCc6botNgplIUJj7561MPH84ayLKHGAG4W4tarQ
- r3IAVOMs9CGG6XJtVgZFGz896WjKhBQbg71YphdWnmHNSNbBL5bl/D8Kvb8gQcMfieOs
- 9WIg+AzfnIaYjiUQhq1yU22+LIQHmwRmTKSpysZci15VeOgB0Hi0FRgTgBFlY9MYh3Je
- jK6B/dWKoJd13cXl4fj4lmrvRddw4RRYAEcHkz3EXbvHPkztellztF8YsPVDmMeDZXMO
- nXU52/ZgaF8QOkkwU2rfGQ0JN+UTgG4SarnOngaOhyAKIP4vvS3RfcnD/3Ah4YFFwPmb Zw== 
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s4xpt8t6u-4
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 29 Jul 2023 08:36:50 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 36T5m1ho002278;
-	Sat, 29 Jul 2023 07:35:35 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s0unkcbtw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 29 Jul 2023 07:35:35 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 36T7ZXTD20841122
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 29 Jul 2023 07:35:33 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E7F7620040;
-	Sat, 29 Jul 2023 07:35:32 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A944520043;
-	Sat, 29 Jul 2023 07:35:30 +0000 (GMT)
-Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown [9.171.60.192])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 29 Jul 2023 07:35:30 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v4 07/10] powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via domain information
-Date: Sat, 29 Jul 2023 13:04:52 +0530
-Message-Id: <20230729073455.7918-8-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.39.3
-In-Reply-To: <20230729073455.7918-1-kjain@linux.ibm.com>
-References: <20230729073455.7918-1-kjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RCfzM4ctKz2ylk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2023 19:56:28 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1690624592; x=1722160592;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=NQFacC9L5QtHY1yiY74lQF4h5DC97r0Z95MUzxvVgJY=;
+  b=VidWPMcwiD12eH5eZEKGEIqT8el+VBj7qvOAuw0qvpBDhs+XT64f8hOz
+   JsHAm0ccDflJjA+G8r383UrEYy6S6tsP40p4+tnyMisIwQNAIWGx4CNuI
+   NMbQieR+N3brN+vVWUhfW1s/aHUTi0mPoh1dLUmbUvceL39XHE+9ZzOYq
+   VaTHxu0X9eejFcf8P+brhEj6JRflFrwPvx7BOmYg0clHKhBdaZGrc1PNa
+   FUdLI2VJFbyGdIxAwpfnCJuBYxggY+busP3rJSSmS6krF5O2gXgxsHbsg
+   CW5FO8PmjHNfFuWEX7sXmlqwsmZyqVO5f1BYxmQGCGs9ijP4lAbwKMcbA
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10785"; a="372381404"
+X-IronPort-AV: E=Sophos;i="6.01,240,1684825200"; 
+   d="scan'208";a="372381404"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jul 2023 02:56:22 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10785"; a="793168798"
+X-IronPort-AV: E=Sophos;i="6.01,240,1684825200"; 
+   d="scan'208";a="793168798"
+Received: from lkp-server02.sh.intel.com (HELO 953e8cd98f7d) ([10.239.97.151])
+  by fmsmga008.fm.intel.com with ESMTP; 29 Jul 2023 02:56:19 -0700
+Received: from kbuild by 953e8cd98f7d with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1qPggM-0003xt-2Y;
+	Sat, 29 Jul 2023 09:56:18 +0000
+Date: Sat, 29 Jul 2023 17:55:56 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+	npiggin@gmail.com, christophe.leroy@csgroup.eu
+Subject: Re: [PATCH v3 1/2] powerpc/mm: Cleanup memory block size probing
+Message-ID: <202307291753.opRf3JsB-lkp@intel.com>
+References: <20230728103556.745681-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: gJdRYkVTtnigIZOHx0glgf-Nyoap21h2
-X-Proofpoint-GUID: gJdRYkVTtnigIZOHx0glgf-Nyoap21h2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-27_10,2023-07-26_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxlogscore=999
- priorityscore=1501 phishscore=0 mlxscore=0 adultscore=0 bulkscore=0
- spamscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2307290078
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230728103556.745681-1-aneesh.kumar@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,158 +72,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, rdunlap@infradead.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, foraker1@llnl.gov, llvm@lists.linux.dev, Reza Arbab <arbab@linux.ibm.com>, oe-kbuild-all@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The hcall H_GET_PERF_COUNTER_INFO with counter request value as
-AFFINITY_DOMAIN_INFORMATION_BY_DOMAIN(0XB0), can be used to get
-the system affinity domain via domain information. To expose the system
-affinity domain via domain information, patch adds sysfs file called
-"affinity_domain_via_domain" to the "/sys/devices/hv_gpci/interface/"
-of hv_gpci pmu driver.
+Hi Aneesh,
 
-Add new entry for AFFINITY_DOMAIN_VIA_DOM in sysinfo_counter_request
-array, which points to the counter request value
-"affinity_domain_via_domain" in hv-gpci.c file.
+kernel test robot noticed the following build errors:
 
-The affinity_domain_via_domain sysfs file is only available for power10
-and above platforms. Add a macro called
-INTERFACE_AFFINITY_DOMAIN_VIA_DOM_ATTR, which points to the index of NULL
-placeholder, for affinity_domain_via_domain attribute in interface_attrs
-array. Also updated the value of INTERFACE_NULL_ATTR macro in hv-gpci.c
-file.
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on powerpc/fixes linus/master v6.5-rc3 next-20230728]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Reviewed-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
----
- arch/powerpc/perf/hv-gpci.c | 80 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 1 deletion(-)
+url:    https://github.com/intel-lab-lkp/linux/commits/Aneesh-Kumar-K-V/powerpc-mm-Add-memory_block_size-as-a-kernel-parameter/20230728-184256
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+patch link:    https://lore.kernel.org/r/20230728103556.745681-1-aneesh.kumar%40linux.ibm.com
+patch subject: [PATCH v3 1/2] powerpc/mm: Cleanup memory block size probing
+config: powerpc-powernv_defconfig (https://download.01.org/0day-ci/archive/20230729/202307291753.opRf3JsB-lkp@intel.com/config)
+compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project.git 4a5ac14ee968ff0ad5d2cc1ffa0299048db4c88a)
+reproduce: (https://download.01.org/0day-ci/archive/20230729/202307291753.opRf3JsB-lkp@intel.com/reproduce)
 
-diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
-index 68502cb18262..326b758df7c8 100644
---- a/arch/powerpc/perf/hv-gpci.c
-+++ b/arch/powerpc/perf/hv-gpci.c
-@@ -106,19 +106,22 @@ static ssize_t cpumask_show(struct device *dev,
- #define INTERFACE_PROCESSOR_BUS_TOPOLOGY_ATTR	6
- #define INTERFACE_PROCESSOR_CONFIG_ATTR		7
- #define INTERFACE_AFFINITY_DOMAIN_VIA_VP_ATTR	8
--#define INTERFACE_NULL_ATTR			9
-+#define INTERFACE_AFFINITY_DOMAIN_VIA_DOM_ATTR	9
-+#define INTERFACE_NULL_ATTR			10
- 
- /* Counter request value to retrieve system information */
- enum {
- 	PROCESSOR_BUS_TOPOLOGY,
- 	PROCESSOR_CONFIG,
- 	AFFINITY_DOMAIN_VIA_VP, /* affinity domain via virtual processor */
-+	AFFINITY_DOMAIN_VIA_DOM, /* affinity domain via domain */
- };
- 
- static int sysinfo_counter_request[] = {
- 	[PROCESSOR_BUS_TOPOLOGY] = 0xD0,
- 	[PROCESSOR_CONFIG] = 0x90,
- 	[AFFINITY_DOMAIN_VIA_VP] = 0xA0,
-+	[AFFINITY_DOMAIN_VIA_DOM] = 0xB0,
- };
- 
- static DEFINE_PER_CPU(char, hv_gpci_reqb[HGPCI_REQ_BUFFER_SIZE]) __aligned(sizeof(uint64_t));
-@@ -389,6 +392,72 @@ static ssize_t affinity_domain_via_virtual_processor_show(struct device *dev,
- 	return ret;
- }
- 
-+static ssize_t affinity_domain_via_domain_show(struct device *dev, struct device_attribute *attr,
-+						char *buf)
-+{
-+	struct hv_gpci_request_buffer *arg;
-+	unsigned long ret;
-+	size_t n = 0;
-+
-+	arg = (void *)get_cpu_var(hv_gpci_reqb);
-+	memset(arg, 0, HGPCI_REQ_BUFFER_SIZE);
-+
-+	/*
-+	 * Pass the counter request 0xB0 corresponds to request
-+	 * type 'Affinity_domain_information_by_domain',
-+	 * to retrieve the system affinity domain information.
-+	 * starting_index value refers to the starting hardware
-+	 * processor index.
-+	 */
-+	ret = systeminfo_gpci_request(sysinfo_counter_request[AFFINITY_DOMAIN_VIA_DOM],
-+			0, 0, buf, &n, arg);
-+
-+	if (!ret)
-+		return n;
-+
-+	if (ret != H_PARAMETER)
-+		goto out;
-+
-+	/*
-+	 * ret value as 'H_PARAMETER' corresponds to 'GEN_BUF_TOO_SMALL', which
-+	 * implies that buffer can't accommodate all information, and a partial buffer
-+	 * returned. To handle that, we need to take subsequent requests
-+	 * with next starting index to retrieve additional (missing) data.
-+	 * Below loop do subsequent hcalls with next starting index and add it
-+	 * to buffer util we get all the information.
-+	 */
-+	while (ret == H_PARAMETER) {
-+		int returned_values = be16_to_cpu(arg->params.returned_values);
-+		int elementsize = be16_to_cpu(arg->params.cv_element_size);
-+		int last_element = (returned_values - 1) * elementsize;
-+
-+		/*
-+		 * Since the starting index value is part of counter_value
-+		 * buffer elements, use the starting index value in the last
-+		 * element and add 1 to make subsequent hcalls.
-+		 */
-+		u32 starting_index = arg->bytes[last_element + 1] +
-+			(arg->bytes[last_element] << 8) + 1;
-+
-+		memset(arg, 0, HGPCI_REQ_BUFFER_SIZE);
-+
-+		ret = systeminfo_gpci_request(sysinfo_counter_request[AFFINITY_DOMAIN_VIA_DOM],
-+					starting_index, 0, buf, &n, arg);
-+
-+		if (!ret)
-+			return n;
-+
-+		if (ret != H_PARAMETER)
-+			goto out;
-+	}
-+
-+	return n;
-+
-+out:
-+	put_cpu_var(hv_gpci_reqb);
-+	return ret;
-+}
-+
- static DEVICE_ATTR_RO(kernel_version);
- static DEVICE_ATTR_RO(cpumask);
- 
-@@ -420,6 +489,11 @@ static struct attribute *interface_attrs[] = {
- 	 * attribute, set in init function if applicable.
- 	 */
- 	NULL,
-+	/*
-+	 * This NULL is a placeholder for the affinity_domain_via_domain
-+	 * attribute, set in init function if applicable.
-+	 */
-+	NULL,
- 	NULL,
- };
- 
-@@ -677,6 +751,10 @@ static struct device_attribute *sysinfo_device_attr_create(int
- 			attr->attr.name = "affinity_domain_via_virtual_processor";
- 			attr->show = affinity_domain_via_virtual_processor_show;
- 		break;
-+		case INTERFACE_AFFINITY_DOMAIN_VIA_DOM_ATTR:
-+			attr->attr.name = "affinity_domain_via_domain";
-+			attr->show = affinity_domain_via_domain_show;
-+		break;
- 		}
- 	} else
- 		pr_devel("hcall failed, with error: 0x%lx\n", ret);
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202307291753.opRf3JsB-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> arch/powerpc/mm/init_64.c:558:7: error: variable 'base' set but not used [-Werror,-Wunused-but-set-variable]
+     558 |                 u64 base, size;
+         |                     ^
+   1 error generated.
+
+
+vim +/base +558 arch/powerpc/mm/init_64.c
+
+   485	
+   486	static int __init probe_memory_block_size(unsigned long node, const char *uname, int
+   487						  depth, void *data)
+   488	{
+   489		const char *type;
+   490		const char *compatible;
+   491		unsigned long *block_size = (unsigned long *)data;
+   492		const __be32 *reg, *endp;
+   493		int l;
+   494	
+   495		if (depth != 1)
+   496			return 0;
+   497		/*
+   498		 * If we have dynamic-reconfiguration-memory node, use the
+   499		 * lmb value.
+   500		 */
+   501		if (strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0) {
+   502	
+   503			const __be32 *prop;
+   504	
+   505			prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
+   506	
+   507			if (!prop || l < dt_root_size_cells * sizeof(__be32))
+   508				/*
+   509				 * Nothing in the device tree
+   510				 */
+   511				*block_size = MIN_MEMORY_BLOCK_SIZE;
+   512			else
+   513				*block_size = of_read_number(prop, dt_root_size_cells);
+   514			/*
+   515			 * We have found the final value. Don't probe further.
+   516			 */
+   517			return 1;
+   518		}
+   519		/*
+   520		 * Find all the device tree nodes of memory type and make sure
+   521		 * the area can be mapped using the memory block size value
+   522		 * we end up using. We start with 1G value and keep reducing
+   523		 * it such that we can map the entire area using memory_block_size.
+   524		 * This will be used on powernv and older pseries that don't
+   525		 * have ibm,lmb-size node.
+   526		 * For ex: with P5 we can end up with
+   527		 * memory@0 -> 128MB
+   528		 * memory@128M -> 64M
+   529		 * This will end up using 64MB  memory block size value.
+   530		 */
+   531		type = of_get_flat_dt_prop(node, "device_type", NULL);
+   532		if (type == NULL || strcmp(type, "memory") != 0)
+   533			return 0;
+   534	
+   535		/*
+   536		 * "ibm,coherent-device-memory with linux,usable-memory = 0
+   537		 * Force 256MiB block size. Work around for GPUs on P9 PowerNV
+   538		 * linux,usable-memory == 0 implies driver managed memory and
+   539		 * we can't use large memory block size due to hotplug/unplug
+   540		 * limitations.
+   541		 */
+   542		compatible = of_get_flat_dt_prop(node, "compatible", NULL);
+   543		if (compatible && !strcmp(compatible, "ibm,coherent-device-memory")) {
+   544			int len = 0;
+   545			const __be32 *usm;
+   546	
+   547			usm = of_get_flat_dt_prop(node, "linux,drconf-usable-memory", &len);
+   548			if (usm && !len) {
+   549				*block_size = SZ_256M;
+   550				return 1;
+   551			}
+   552		}
+   553	
+   554		reg = of_get_flat_dt_prop(node, "reg", &l);
+   555		endp = reg + (l / sizeof(__be32));
+   556	
+   557		while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
+ > 558			u64 base, size;
+   559	
+   560			base = dt_mem_next_cell(dt_root_addr_cells, &reg);
+   561			size = dt_mem_next_cell(dt_root_size_cells, &reg);
+   562	
+   563			if (size == 0)
+   564				continue;
+   565	
+   566			update_memory_block_size(block_size, size);
+   567		}
+   568		/* continue looking for other memory device types */
+   569		return 0;
+   570	}
+   571	
+
 -- 
-2.39.3
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
