@@ -4,69 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6095BC001DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 16:25:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E7C3C05051
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 17:04:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Nxq6zpIl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=R8qXZOyV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RF3Vq41yfz3bW4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Aug 2023 02:25:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RF4NR3Cczz3bVJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Aug 2023 03:04:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Nxq6zpIl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=R8qXZOyV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f2d; helo=mail-qv1-xf2d.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf2d.google.com (mail-qv1-xf2d.google.com [IPv6:2607:f8b0:4864:20::f2d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b36; helo=mail-yb1-xb36.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RF3Tp5kShz2y1b
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2023 02:24:13 +1000 (AEST)
-Received: by mail-qv1-xf2d.google.com with SMTP id 6a1803df08f44-63cfe6e0c32so34597236d6.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2023 09:24:13 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RF4MP0YBjz2ykW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2023 03:03:43 +1000 (AEST)
+Received: by mail-yb1-xb36.google.com with SMTP id 3f1490d57ef6-d05a63946e0so4859558276.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2023 10:03:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690820650; x=1691425450;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20221208; t=1690823020; x=1691427820;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=3bBibAebd9TH21iCDO05hSEk2osKPAFkgUcjQOZN6IE=;
-        b=Nxq6zpIl4t0T0IKgYCttihPgWkXDGg2v82UeoDRuJEPiuoZCcaCHDZLE9kkIxiKoGj
-         jk+IsC1Guj9oI8nO++cnUqPSWZhSmAdBVc5lsM1hT0kSe4RC/KjMhhSc6wlqkqU2YaQ2
-         MlzhwgMrC6YuHdeNmM0ceLnhR0bBMJIyRtICLHnduD/dx0KJOUH8SaivN46+P6VL/13o
-         HD2+rdmaVCfzWB1fiLuejcoL89Z+FWgZTnHkXXYaDxZvnDyh2EIFMo2Vuj5jGb8JG448
-         0UmR6aeSUdj4a9FGESdjj1akt6y1FHupeca6JLTCIL1tXPbyPZc4VruR8nQPmlFHhYMX
-         m2iA==
+        bh=DXYENedStYVsFXpaqy8X3+wmlabVR1q8JHyD5+dxFj0=;
+        b=R8qXZOyVQEehD2hSCsZpjQT5/Xf4F/brzByoll1mkB6kHNfXhJ+RcuKFwjYgA2X3Sk
+         +7iApdQo4Cg5rRr+JdIoFqDPegtGDiAGRb35thEkDI1bUQUjq4aw+LSTgzrTpSIcmWfL
+         bJsnhuf8GiZRZhIc6fFdHQySZ/IskewEUKqkNZ8aYCG1nKX4deKA2DfN9abSC9BVfmNb
+         sjmF+khX55fBUw2Vqk+TxqOS6BA3VaGbAlziGVokfw/bjXQRn/YvIXdekpuhXXQ/VglV
+         zbi9hIBXyZbJADitdtmejGR4UrX429LImbE9yX5FhLBTl4AmxfHwzr7gnLpRW2zU3ngh
+         Rejg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690820650; x=1691425450;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1690823020; x=1691427820;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3bBibAebd9TH21iCDO05hSEk2osKPAFkgUcjQOZN6IE=;
-        b=LYVkI6AXHoj0NGriF7mKw0UleSAiJLbME96J7Iu7jH33bN0a+9ls3mrn8vEEbAqqLI
-         OJDseMsorlq/2F3xkuSzoHneOcy7EYOkd+SdgZP9q/7rNylccSw1DV6Zu2gCMwC0auQs
-         DmuyklAxoNXw9L+DvdYxpnhRy5Ekcis67gmb2TuuY1wHJmr4p4ox8GqYejtn8seJyzBJ
-         6bTUYRKSd5Ff4QdeZUg4wuy+6BYSnJ2rwZsg6ugBbwJFIEYGUmB5XkklT7NTBMhJfGNZ
-         hHU0OAHtoQohFAJlMHRGsnAjzTfcLyks8QENxlw/yNf1HjVsmjZ3ZRt20f9EJhyazoaL
-         R7gQ==
-X-Gm-Message-State: ABy/qLaIQDSKqHRftQCn+8ML7IK/5t5YTp1EF9F1jN7oKASrM0861pvK
-	kxnn/fbEuDAbQsV97ZxnMrIpOub1CviIJH1jMZfsmA==
-X-Google-Smtp-Source: APBJJlHREYUxXxwX9gGy7EcKK3cJKFiEBqZ2OxDI6ULebXBrqt9zCYKQ0hqOpLlGDOWyAd0KbYFFLQMR5e4GSI0P8JE=
-X-Received: by 2002:a0c:ef0a:0:b0:63d:281d:d9cd with SMTP id
- t10-20020a0cef0a000000b0063d281dd9cdmr11195773qvr.57.1690820649949; Mon, 31
- Jul 2023 09:24:09 -0700 (PDT)
+        bh=DXYENedStYVsFXpaqy8X3+wmlabVR1q8JHyD5+dxFj0=;
+        b=d9Rgb7/nnebFgFLH8vZiN4WnwraASyJA4+faprM8NvglcCdlOEyG1xuH2a50M86xUt
+         NtD5WmVT7XaH8+4UoQtXtRJdFU1bd63QRbfkaPuanrqPW6mSrzbn0Pl1N/QK/ifhj7Vh
+         uX4h8/OdJY7OdtmgVKFLIvshzEu4p6dPWKWv8qkny1VWpM9O4Iim3fJk7GQcnc/qSVEy
+         uPYVFBDL64epL/heG/xss8qeRh7+7hHIHrI+i915u5LqBKltuvaa6ilAovXdFtxKgc8B
+         7667fgBUbaX8npy7fvlJKBvV6Gd6hKaNC6pT/B3jCDhdhwbbv+V5ih6iwhHec84Y3ZwP
+         uwtw==
+X-Gm-Message-State: ABy/qLZK3toDpBjOs82fFUGrHb5TeYPPBYcPvNw3M+jB3rksav62UeaJ
+	xy1sxfrs62FNJqRPBfjN7mU=
+X-Google-Smtp-Source: APBJJlG+a23ZkNAOXVkZypjt9XfAMSGYibV34A8tZ1fqqbfsROXiDspwRbZtJgVYmae4gyEjzVzU0Q==
+X-Received: by 2002:a05:6902:18d6:b0:c15:c55d:c26e with SMTP id ck22-20020a05690218d600b00c15c55dc26emr12586459ybb.54.1690823019726;
+        Mon, 31 Jul 2023 10:03:39 -0700 (PDT)
+Received: from unknowna0e70b2ca394.attlocal.net ([2600:1700:2f7d:1800::16])
+        by smtp.googlemail.com with ESMTPSA id x31-20020a25ac9f000000b00c832ad2e2eesm2511833ybi.60.2023.07.31.10.03.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Jul 2023 10:03:39 -0700 (PDT)
+From: "Vishal Moola (Oracle)" <vishal.moola@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Matthew Wilcox <willy@infradead.org>
+Subject: [PATCH mm-unstable v8 01/31] mm: Add PAGE_TYPE_OP folio functions
+Date: Mon, 31 Jul 2023 10:03:02 -0700
+Message-Id: <20230731170332.69404-2-vishal.moola@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230731170332.69404-1-vishal.moola@gmail.com>
+References: <20230731170332.69404-1-vishal.moola@gmail.com>
 MIME-Version: 1.0
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
- <DS0PR11MB637386533A4A10667BA6DF03DC03A@DS0PR11MB6373.namprd11.prod.outlook.com>
- <ZL/yb4wL4Nhf9snZ@google.com>
-In-Reply-To: <ZL/yb4wL4Nhf9snZ@google.com>
-From: Fuad Tabba <tabba@google.com>
-Date: Mon, 31 Jul 2023 17:23:33 +0100
-Message-ID: <CA+EHjTwGoMgoTEktL9zq2190TMY=vU29xv+oQ7X2Eeu8c8AmjQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,78 +79,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Chao Peng <chao.p.peng@linux.intel.com>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Paul Moore <paul@paul-moore.com>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wei W Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "linux-arm-kernel@lists.infrade
- ad.org" <linux-arm-kernel@lists.infradead.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Oliver Upton <oliver.upton@linux.dev>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, Anup Patel <anup@brainfault.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-csky@vger.kernel.org, "Vishal Moola \(Oracle\)" <vishal.moola@gmail.com>, linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org, Hugh Dickins <hughd@google.com>, Mike Rapoport <rppt@kernel.org>, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sean,
+No folio equivalents for page type operations have been defined, so
+define them for later folio conversions.
 
-On Tue, Jul 25, 2023 at 5:04=E2=80=AFPM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> On Tue, Jul 25, 2023, Wei W Wang wrote:
-> > On Wednesday, July 19, 2023 7:45 AM, Sean Christopherson wrote:
-> > > +int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
-> > > +                gfn_t gfn, kvm_pfn_t *pfn, int *max_order) {
-> > > +   pgoff_t index =3D gfn - slot->base_gfn + slot->gmem.pgoff;
-> > > +   struct kvm_gmem *gmem;
-> > > +   struct folio *folio;
-> > > +   struct page *page;
-> > > +   struct file *file;
-> > > +
-> > > +   file =3D kvm_gmem_get_file(slot);
-> > > +   if (!file)
-> > > +           return -EFAULT;
-> > > +
-> > > +   gmem =3D file->private_data;
-> > > +
-> > > +   if (WARN_ON_ONCE(xa_load(&gmem->bindings, index) !=3D slot)) {
-> > > +           fput(file);
-> > > +           return -EIO;
-> > > +   }
-> > > +
-> > > +   folio =3D kvm_gmem_get_folio(file_inode(file), index);
-> > > +   if (!folio) {
-> > > +           fput(file);
-> > > +           return -ENOMEM;
-> > > +   }
-> > > +
-> > > +   page =3D folio_file_page(folio, index);
-> > > +
-> > > +   *pfn =3D page_to_pfn(page);
-> > > +   *max_order =3D compound_order(compound_head(page));
-> >
-> > Maybe better to check if caller provided a buffer to get the max_order:
-> > if (max_order)
-> >       *max_order =3D compound_order(compound_head(page));
-> >
-> > This is what the previous version did (restrictedmem_get_page),
-> > so that callers who only want to get a pfn don't need to define
-> > an unused "order" param.
->
-> My preference would be to require @max_order.  I can kinda sorta see why =
-a generic
-> implementation (restrictedmem) would make the param optional, but with gm=
-em being
-> KVM-internal I think it makes sense to require the param.  Even if pKVM d=
-oesn't
-> _currently_ need/want the order of the backing allocation, presumably tha=
-t's because
-> hugepage support is still on the TODO list, not because pKVM fundamentall=
-y doesn't
-> need to know the order of the backing allocation.
+Also changes the Page##uname macros to take in const struct page* since
+we only read the memory here.
 
-You're right that with huge pages pKVM will eventually need to know
-the order of the backing allocation, but there is at least one use
-case where it doesn't, which I ran into in the previous ports as well
-as this one. In pKVM (and in possibly other implementations), the host
-needs to access (shared) guest memory that isn't mapped. For that,
-I've used kvm_*_get_pfn(), only requiring the pfn, so get the page via
-pfn_to_page().
+Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
+Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
+---
+ include/linux/page-flags.h | 30 +++++++++++++++++++++++-------
+ 1 file changed, 23 insertions(+), 7 deletions(-)
 
-Although it's not that big, my preference would be for max_order to be opti=
-onal.
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index 92a2063a0a23..9218028caf33 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -908,6 +908,8 @@ static inline bool is_page_hwpoison(struct page *page)
+ 
+ #define PageType(page, flag)						\
+ 	((page->page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
++#define folio_test_type(folio, flag)					\
++	((folio->page.page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
+ 
+ static inline int page_type_has_type(unsigned int page_type)
+ {
+@@ -919,27 +921,41 @@ static inline int page_has_type(struct page *page)
+ 	return page_type_has_type(page->page_type);
+ }
+ 
+-#define PAGE_TYPE_OPS(uname, lname)					\
+-static __always_inline int Page##uname(struct page *page)		\
++#define PAGE_TYPE_OPS(uname, lname, fname)				\
++static __always_inline int Page##uname(const struct page *page)		\
+ {									\
+ 	return PageType(page, PG_##lname);				\
+ }									\
++static __always_inline int folio_test_##fname(const struct folio *folio)\
++{									\
++	return folio_test_type(folio, PG_##lname);			\
++}									\
+ static __always_inline void __SetPage##uname(struct page *page)		\
+ {									\
+ 	VM_BUG_ON_PAGE(!PageType(page, 0), page);			\
+ 	page->page_type &= ~PG_##lname;					\
+ }									\
++static __always_inline void __folio_set_##fname(struct folio *folio)	\
++{									\
++	VM_BUG_ON_FOLIO(!folio_test_type(folio, 0), folio);		\
++	folio->page.page_type &= ~PG_##lname;				\
++}									\
+ static __always_inline void __ClearPage##uname(struct page *page)	\
+ {									\
+ 	VM_BUG_ON_PAGE(!Page##uname(page), page);			\
+ 	page->page_type |= PG_##lname;					\
+-}
++}									\
++static __always_inline void __folio_clear_##fname(struct folio *folio)	\
++{									\
++	VM_BUG_ON_FOLIO(!folio_test_##fname(folio), folio);		\
++	folio->page.page_type |= PG_##lname;				\
++}									\
+ 
+ /*
+  * PageBuddy() indicates that the page is free and in the buddy system
+  * (see mm/page_alloc.c).
+  */
+-PAGE_TYPE_OPS(Buddy, buddy)
++PAGE_TYPE_OPS(Buddy, buddy, buddy)
+ 
+ /*
+  * PageOffline() indicates that the page is logically offline although the
+@@ -963,7 +979,7 @@ PAGE_TYPE_OPS(Buddy, buddy)
+  * pages should check PageOffline() and synchronize with such drivers using
+  * page_offline_freeze()/page_offline_thaw().
+  */
+-PAGE_TYPE_OPS(Offline, offline)
++PAGE_TYPE_OPS(Offline, offline, offline)
+ 
+ extern void page_offline_freeze(void);
+ extern void page_offline_thaw(void);
+@@ -973,12 +989,12 @@ extern void page_offline_end(void);
+ /*
+  * Marks pages in use as page tables.
+  */
+-PAGE_TYPE_OPS(Table, table)
++PAGE_TYPE_OPS(Table, table, pgtable)
+ 
+ /*
+  * Marks guardpages used with debug_pagealloc.
+  */
+-PAGE_TYPE_OPS(Guard, guard)
++PAGE_TYPE_OPS(Guard, guard, guard)
+ 
+ extern bool is_free_buddy_page(struct page *page);
+ 
+-- 
+2.40.1
 
-Thanks!
-/fuad
