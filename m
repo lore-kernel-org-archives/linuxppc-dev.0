@@ -4,52 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D87E4C001DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 08:03:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51FBEC001DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 10:23:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Zxkxs5Hl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tAB55pWA;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RDrNQ26s4z2ys8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 18:03:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RDvV25V3sz3bVp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 20:23:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Zxkxs5Hl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tAB55pWA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RDrMP2W66z2ykX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2023 18:02:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RDvT23mG3z2yVW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2023 20:23:02 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 3885960F5E;
-	Mon, 31 Jul 2023 08:02:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63489C433C7;
-	Mon, 31 Jul 2023 08:02:51 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 66C7860DBF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2023 10:22:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id CD501C433C9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2023 10:22:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1690790572;
-	bh=CFCUO1q2jsK74UC2bwVz7miuEtn6Vz1wrsnbjpoYBoE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Zxkxs5HlsQ22+uk6HxRfSnXVnkXQrgnRL0xYAU9zOhLxxVwnTltHXn3xkW5TIMaVA
-	 s2/ZkpjZZrsy8Yg47g2Yf6J1CiFdQWjIc8LClZCxbWSWsIx4BJBwYCTFv++rMjad0T
-	 bHa+WlPcEaoyuTPupPQn+KQzuiUUJlUe85LatZEg8/M7dVgtlx5YSXL2fBjUXkCtGR
-	 EeZxkxnt3IiL1s2w3nP4JNwjGIP/y34/uWg1PvxyRzGHy6wyoIRPcvYu2IFVYnJvdK
-	 Mm7KNXDq6EX4oP1juDpt5FVQYe8qiOOzMV4TeS1zxXzR4gLmFiHzfb0/A9xEBtChFX
-	 qmetPBluQldWA==
-From: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
-To: gregkh@linuxfoundation.org
-Subject: [PATCH 03/10] tty: hvsi: remove an extra variable from hvsi_write()
-Date: Mon, 31 Jul 2023 10:02:37 +0200
-Message-ID: <20230731080244.2698-4-jirislaby@kernel.org>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230731080244.2698-1-jirislaby@kernel.org>
-References: <20230731080244.2698-1-jirislaby@kernel.org>
+	s=k20201202; t=1690798978;
+	bh=Dd0QMwcl5ktKln0QLIs7SbBwDeHtmxr7MQc/8LmLu9I=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=tAB55pWAg3gRqj9fL5FR+3GevHEWhHOqpRD9aszxKT3z3JexSsIwcG4t1yJtdQxOh
+	 /Us0XYPEBUc1Ht+cOOLzn7ObE3km5Q+DAeKDhtAl3RElR6zjgDkF36qomyHlkLMMXO
+	 Ul/zKMoHgrNDhAPcZe/V2b9BnX3nT9+vJTbbts5dVEKk8vEzoyPfiMcLI8rFmtvLLI
+	 RAezgyX1T7amfeTG/5OkomuxR/LOp9bdk+t4B8r5NBXEgNgqXNzsw3IX13Jzcv2gcb
+	 dr9T3KM5ieqU9vCIQldsxlKnNLrzuQrbC3uvkVc1IHVy/WQo4C7UysQA+EkwDg80k8
+	 gSwCBFJ4inuVA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id B08BFC4332E; Mon, 31 Jul 2023 10:22:58 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 215862] clang-15 fails ppc64 BE kernel build - ld.lld: error:
+ undefined symbol: .early_setup
+Date: Mon, 31 Jul 2023 10:22:58 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: OBSOLETE
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status resolution
+Message-ID: <bug-215862-206035-M7EgrzHPMK@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-215862-206035@https.bugzilla.kernel.org/>
+References: <bug-215862-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,38 +81,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, "Jiri Slaby \(SUSE\)" <jirislaby@kernel.org>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'source' is the same as 'buf'. Rename the parameter ('buf') to
-'source' and drop the local variable.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D215862
 
-Likely, the two were introduced to have a different type. But 'char' and
-'unsigned char' are the same in the kernel for a long time.
+Erhard F. (erhard_f@mailbox.org) changed:
 
-Signed-off-by: Jiri Slaby (SUSE) <jirislaby@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/tty/hvc/hvsi.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|---                         |OBSOLETE
 
-diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
-index a200d01eceed..c1b8a4fd8b1e 100644
---- a/drivers/tty/hvc/hvsi.c
-+++ b/drivers/tty/hvc/hvsi.c
-@@ -905,10 +905,9 @@ static unsigned int hvsi_chars_in_buffer(struct tty_struct *tty)
- }
- 
- static int hvsi_write(struct tty_struct *tty,
--		     const unsigned char *buf, int count)
-+		     const unsigned char *source, int count)
- {
- 	struct hvsi_struct *hp = tty->driver_data;
--	const char *source = buf;
- 	unsigned long flags;
- 	int total = 0;
- 	int origcount = count;
--- 
-2.41.0
+--- Comment #5 from Erhard F. (erhard_f@mailbox.org) ---
+Fixed in kernel v6.4.x series.
 
+Closing.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are watching the assignee of the bug.=
