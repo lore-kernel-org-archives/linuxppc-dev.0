@@ -4,59 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F27B9C001DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 22:53:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4986FC001DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jul 2023 23:23:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa1 header.b=gbD2l+F4;
-	dkim=fail reason="signature verification failed" header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed1 header.b=lbxy0fAh;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=W1MEZXbM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RFD6M22mnz3c1L
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Aug 2023 08:52:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RFDnj44Djz30fb
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Aug 2023 09:23:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa1 header.b=gbD2l+F4;
-	dkim=pass header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed1 header.b=lbxy0fAh;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=W1MEZXbM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mailrelay1-1.pub.mailoutpod2-cph3.one.com (client-ip=2a02:2350:5:400::1; helo=mailrelay1-1.pub.mailoutpod2-cph3.one.com; envelope-from=sam@ravnborg.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 11726 seconds by postgrey-1.37 at boromir; Tue, 01 Aug 2023 08:52:03 AEST
-Received: from mailrelay1-1.pub.mailoutpod2-cph3.one.com (mailrelay1-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:400::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RFD5H3BF9z2xgp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2023 08:51:58 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=6qASGIsrRTha6LW4nGlFz5hVK9QFyCgkRnIOH/MfmdI=;
-	b=gbD2l+F4txZSKOikg9ULrRxYvmKpodr8viXTZBSfsyRhtbkseAGNq5G/j1Yjw/MChSfPAbovOOckO
-	 fDLnWkOt+KM0RrinBws0z3F8YDy4ZK+v8OA63YMgBDwno7Hos7KtKozzN1O0VOr+88mykbAMD9nyem
-	 JOtXu92SRr2bmjPmUpaS/v4CXn8TOlB/DULIqsm0bq8fQjbPCL4F1imrCWJD8+zw9e7BtI5nvLQGBr
-	 Vvw9pxE+uYxbtboGk5CCcL6EiLab9g7/w/44JEZWP4Pd2Wrvf/kbo+XywEiXBXQWvpKJz31cF8878D
-	 7E3htRYGp0KE2CAKyAhYuzmi55Lpy+w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=6qASGIsrRTha6LW4nGlFz5hVK9QFyCgkRnIOH/MfmdI=;
-	b=lbxy0fAhUsTGM7a0p9jw1JGKiT98vxHJLhFafsTjUZmjfLKS+bkQvy0jxq/0Be1QR1jiE0GoMXFoE
-	 wcLb15eBg==
-X-HalOne-ID: 626809cf-2fd9-11ee-8694-c5367ef0e45e
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay1 (Halon) with ESMTPSA
-	id 626809cf-2fd9-11ee-8694-c5367ef0e45e;
-	Mon, 31 Jul 2023 19:35:21 +0000 (UTC)
-Date: Mon, 31 Jul 2023 21:35:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH] fbdev/ps3fb: Build without kernel device
-Message-ID: <20230731193520.GA1463201@ravnborg.org>
-References: <20230731175535.11345-1-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RFDmX5lLCz2ytK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2023 09:22:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=0VwbE9w1enjcPt7/IUT5th5f1ZIeAHMgI/cQbU9ZQ2A=; b=W1MEZXbMSYUAoRpiX2J1gLUs6J
+	QNI3LZBl83MsiVfSkFwwVlVnz2w0CjvDmoqTdQ8gv+SYMSY2r0HtouhhUB5uUd+LbZmAPgaiaUlmS
+	qdipmFFr0Fl+4bPXWd4UhqXWIVGZCOf3ciB+VlGAJfo5GzvNp3rD3yDx66pCe1iWS42hN31arU9sa
+	IiveAdR1+sND6wubHmrrJpaPk4dF3Dr3DfIv01LVVDOX/64l05bpRsU+oOai73TB5NyG9wjVzoLyD
+	Z2lRPFbkS7szaMiGpw9aktwsF7+uOWMEn0cLp1cv6Jb49B1tHCwiPsSAfrVHqSNiea89JcJ+8JHFI
+	ZoPiTwJw==;
+Received: from [2601:1c2:980:9ec0::2764]
+	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1qQcDK-00HZ0e-1R;
+	Mon, 31 Jul 2023 23:22:10 +0000
+Message-ID: <fb977502-ec9b-c847-6b9c-049bd226f4b1@infradead.org>
+Date: Mon, 31 Jul 2023 16:22:09 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH] fbdev/ps3fb: Build without kernel device
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+ mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ sam@ravnborg.org, javierm@redhat.com, bagasdotme@gmail.com,
+ rd.dunlab@gmail.com, regressions@leemhuis.info, sfr@canb.auug.org.au
+References: <20230731175535.11345-1-tzimmermann@suse.de>
+From: Randy Dunlap <rdunlap@infradead.org>
 In-Reply-To: <20230731175535.11345-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,11 +63,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dri-devel@lists.freedesktop.org, sfr@canb.auug.org.au, linux-fbdev@vger.kernel.org, regressions@lists.linux.dev, deller@gmx.de, Randy Dunlap <rdunlap@infradead.org>, javierm@redhat.com, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, regressions@leemhuis.info, npiggin@gmail.com, bagasdotme@gmail.com, linuxppc-dev@lists.ozlabs.org, rd.dunlab@gmail.com
+Cc: linux-fbdev@vger.kernel.org, regressions@lists.linux.dev, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 31, 2023 at 07:55:00PM +0200, Thomas Zimmermann wrote:
+
+
+On 7/31/23 10:55, Thomas Zimmermann wrote:
 > Use fb_info() to print status message at the end of the probe function,
 > which avoids decoding the devices. fb_info() works with or without an
 > fbdev kernel device. Fixes the following error:
@@ -111,7 +108,12 @@ On Mon, Jul 31, 2023 at 07:55:00PM +0200, Thomas Zimmermann wrote:
 > Cc: dri-devel@lists.freedesktop.org
 > Cc: linux-fbdev@vger.kernel.org
 > Cc: linuxppc-dev@lists.ozlabs.org
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Tested-by: Randy Dunlap <rdunlap@infradead.org> # build-tested
+
+Thanks.
+
 > ---
 >  drivers/video/fbdev/ps3fb.c | 4 +---
 >  1 file changed, 1 insertion(+), 3 deletions(-)
@@ -131,5 +133,6 @@ Acked-by: Sam Ravnborg <sam@ravnborg.org>
 >  
 >  	task = kthread_run(ps3fbd, info, DEVICE_NAME);
 >  	if (IS_ERR(task)) {
-> -- 
-> 2.41.0
+
+-- 
+~Randy
