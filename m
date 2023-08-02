@@ -4,82 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2B00C001E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Aug 2023 23:03:47 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ARK92OU5;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 634EBC001DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Aug 2023 23:16:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RGSFt3GCXz3dK6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 09:03:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ARK92OU5;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RGSXP75mMz3cPC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 09:16:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tinylab.org (client-ip=43.155.65.254; helo=bg4.exmail.qq.com; envelope-from=tanyuan@tinylab.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 342 seconds by postgrey-1.37 at boromir; Wed, 02 Aug 2023 23:47:57 AEST
+Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.155.65.254])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGS8q629Wz3cCr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2023 08:59:23 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 372MgVIl014857;
-	Wed, 2 Aug 2023 22:59:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- mime-version : content-transfer-encoding; s=pp1;
- bh=GpAGXLlF4MFiIeIlOeRB3FOTgQoo/nj/0JBNKef5ICc=;
- b=ARK92OU5wOn/CBW5EfcY7SV2jBk8DWb16hu+hOLdO7FpaRG6DBacp0T4Pgf18trYSshu
- tycnQe4vf75vpUgLquNIrwYxyQ4yI0c4VJFAopBDEkg5wQ17JPKNfVB3JyYnWZRGuy6b
- mBcBi8ov/Z/IbFgc9+VKeD8mhMW+Fv+F9G1+Gu6hpCX1hws+LMIwkFMnxHu4b/2mzEIV
- RLrOg9bsUKd6pfV90L7zhpvURgVAPx5oYjDk6Mle2NntudD0vNk9oAt8ZNV78L69mRHH
- wLNlj/ML76Xp5dmomLcftFcHTUoIjHIT6/hpi1D62YyjCxUrsNWKbH/OIhPhJCSR/6p4 hw== 
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3s7yysgbf9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Aug 2023 22:59:19 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 372MAkVN014533;
-	Wed, 2 Aug 2023 22:59:18 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3s5ft1qvta-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Aug 2023 22:59:18 +0000
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 372MxHci66060792
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 2 Aug 2023 22:59:17 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C3AA458054;
-	Wed,  2 Aug 2023 22:59:17 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A331558050;
-	Wed,  2 Aug 2023 22:59:16 +0000 (GMT)
-Received: from li-f45666cc-3089-11b2-a85c-c57d1a57929f.ibm.com (unknown [9.61.115.23])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  2 Aug 2023 22:59:16 +0000 (GMT)
-Message-ID: <b3a604758ef1bc18efb6a7750b4362a23cb9adf2.camel@linux.ibm.com>
-Subject: Re: [PATCH 5/6] integrity: PowerVM machine keyring enablement.
-From: Mimi Zohar <zohar@linux.ibm.com>
-To: Nayna Jain <nayna@linux.ibm.com>, linux-integrity@vger.kernel.org
-Date: Wed, 02 Aug 2023 18:59:11 -0400
-In-Reply-To: <20230714153435.28155-6-nayna@linux.ibm.com>
-References: <20230714153435.28155-1-nayna@linux.ibm.com>
-	 <20230714153435.28155-6-nayna@linux.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-X-Mailer: Evolution 3.28.5 (3.28.5-22.el8) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: jwv7mcVB6RPCzbrgVEN_2_WremGD4Tt-
-X-Proofpoint-GUID: jwv7mcVB6RPCzbrgVEN_2_WremGD4Tt-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-08-02_18,2023-08-01_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxscore=0
- spamscore=0 priorityscore=1501 mlxlogscore=691 malwarescore=0
- suspectscore=0 clxscore=1015 phishscore=0 bulkscore=0 lowpriorityscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2308020199
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGCwY1zsYz2y1b
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2023 23:47:56 +1000 (AEST)
+X-QQ-mid: bizesmtp83t1690983695tkl1bdm6
+Received: from dslab-main2-ubuntu.tail147f4.ts ( [202.201.15.117])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Wed, 02 Aug 2023 21:41:33 +0800 (CST)
+X-QQ-SSF: 01200000000000804000000A0000000
+X-QQ-FEAT: +ynUkgUhZJn7p/xtroOKoKamEOM95iSfLWNvyAoMRRihsQS51qgYDWZdy/pc0
+	vNwyDDKSIlgg578ffugSztrUrp481RiJNo/fcXoOgX5i/W72A/eHa98j3QQ49vMcDKHQQ9D
+	wmWOa/NB6hQ0LxeRGjeVLdrIoDeLh9MhqoKko579cpRRzVVm3aj5vM0MZn/jbndpl8iPqaP
+	WQRlnfktyQd8HRDtkV4DzR2nyD99uoEURmWeXFMK/4StO86VeZISGu0z9br32PCWPz7GlNQ
+	rPMaZBG/4cUu14UzzpmL/pHEnWbuxlH7fJXPX1ZGdBfWFUI4pKFIGmpo8d3nUFsU53tbtdY
+	kCOp0Qz2qlmaqRufzyL8Au3q15ydZYaUgLMngJsY8/kFR2Zr0YUTAEBJgNMbA==
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 13677686161433521607
+From: Yuan Tan <tanyuan@tinylab.org>
+To: npiggin@gmail.com,
+	christophe.leroy@csgroup.eu
+Subject: [PATCH] powerpc: pmac32: enable serial options by default in defconfig
+Date: Wed,  2 Aug 2023 21:41:30 +0800
+Message-Id: <bb7b5f9958b3e3a20f6573ff7ce7c5dc566e7e32.1690982937.git.tanyuan@tinylab.org>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:tinylab.org:qybglogicsvrgz:qybglogicsvrgz5a-1
+X-Mailman-Approved-At: Thu, 03 Aug 2023 09:15:55 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,15 +52,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux@weissschuh.net, linux-kernel@vger.kernel.org, falcon@tinylab.org, linuxppc-dev@lists.ozlabs.org, w@1wt.eu, tanyuan@tinylab.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2023-07-14 at 11:34 -0400, Nayna Jain wrote:
-> Update Kconfig to enable machine keyring and limit to CA certificates
-> on PowerVM.
-> 
-> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+Serial is a critical feature for logging and debuging, and the other
+architectures enable serial by default.
 
-Reviewed-and-tested-by: Mimi Zohar <zohar@linux.ibm.com>
+Let's enable CONFIG_SERIAL_PMACZILOG and CONFIG_SERIAL_PMACZILOG_CONSOLE
+by default.
+
+Signed-off-by: Yuan Tan <tanyuan@tinylab.org>
+---
+ arch/powerpc/configs/pmac32_defconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+index 019163c2571e..3aae79afb9d9 100644
+--- a/arch/powerpc/configs/pmac32_defconfig
++++ b/arch/powerpc/configs/pmac32_defconfig
+@@ -176,8 +176,9 @@ CONFIG_MOUSE_APPLETOUCH=y
+ # CONFIG_SERIO_I8042 is not set
+ # CONFIG_SERIO_SERPORT is not set
+ CONFIG_SERIAL_8250=m
+-CONFIG_SERIAL_PMACZILOG=m
++CONFIG_SERIAL_PMACZILOG=y
+ CONFIG_SERIAL_PMACZILOG_TTYS=y
++CONFIG_SERIAL_PMACZILOG_CONSOLE=y
+ CONFIG_NVRAM=y
+ CONFIG_I2C_CHARDEV=m
+ CONFIG_APM_POWER=y
+-- 
+2.34.1
 
