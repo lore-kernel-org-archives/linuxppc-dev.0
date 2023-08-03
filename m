@@ -4,63 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77ECCC001DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 23:09:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8270C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 00:14:54 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Yrtl0fTO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Wy81fxHc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RH4LX5gZtz3cQg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 09:09:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RH5nT1mxtz2yV3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 10:14:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Yrtl0fTO;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Wy81fxHc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RH4KT6gWXz3cJ7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 09:09:00 +1000 (AEST)
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-1b8ad356f03so10751345ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2023 16:09:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGjth2B4dz2yVr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2023 19:18:03 +1000 (AEST)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-68781a69befso133118b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2023 02:18:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1691104138; x=1691708938;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=jZFR6hR4MgixZPi5Vx/h6mh3aFizC5jpLVjbFDuTXzk=;
-        b=Yrtl0fTOBqR41ImU0+amCbPztuZDGzUVxCdl3x0hw6hwOIv/8k3m9WQO/mttMu369L
-         zZlwEoO4tNu+89BRw7b4JSzisHqdfF51BYFauemtPvhBnCBJ3j9RdTR0bcfq39FJx3ux
-         vQ0ingPHXd5bSZBRYqP4s4/XhMbsdipJBQ+m0=
+        d=bytedance.com; s=google; t=1691054276; x=1691659076;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=GRlGFt/b+eLL81fhIoc4g8Xnl9ZXM32WoVDoUNCTBPI=;
+        b=Wy81fxHcIQAkCOjVlz/bXR2PEFHMyBpLCB/0rUSMHU/+AN9M9o+SWg7IeMqOl7dtXJ
+         u4X5Xmtgbr1j2HlIsVyt5UNXMMDLJxoTaRAclA9TqXI7WKrW9+IBnJfH+DTnoe8C1pR/
+         Ua8vJ7SkvZ3BfGOtQX4f/oVAVl0L5wivyhyymiEivlwLY8IuN30VfinZQXBHe84NQwjn
+         vxvkWuD4OufFqIDnDBL6RQ49ypYOjDcMNYf9unSkCaHxT+Wgbf46GjdKuPaFlP2cpDBq
+         02ZumQIM1oI0uqByQs5V8bGS3+Zz9zHG2v99uaBr1W/QHfi9khuYRMuO4GhTbMXqmhfg
+         fEBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691104138; x=1691708938;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=jZFR6hR4MgixZPi5Vx/h6mh3aFizC5jpLVjbFDuTXzk=;
-        b=QLjNsMdaFZpqVF1qBMhWUPwIp5Yi3a+ZVy7Ozzc6EQEcW/I6x3P+d8nynJk/SjwecP
-         uWZOP54Y1lH78+oJZ+YetAjlFvhqsNJCru1csG8IVTY2Vf9U3OoFoA+3rsWw9Lr9lMtB
-         i2PmS3Ju9c/ZtDEje7pYlLUUnM7o08JvQ8D3kiyX2KA878hfD69QizIpkD3HECcbJb/u
-         2+OjPD45xM8ftqpO5Suxb5tXJAX/isH4J9o8dJOwLcjv7KW/sgYh3ALMWHt7XYpyyaSx
-         oOTwF9yloTBIArwg3sojP/VU7k0PHgvVRoXxPVh7iazHN1ZTtdrmzZ28ugRnuHoONxS0
-         kt/A==
-X-Gm-Message-State: AOJu0YyGRVNPd2Wa2c1+X3VS+/4tIGydo6D16StLsVWBmprb5HLGDW8w
-	UU1ZsVKJaizxllvJEPbvPuqZEA==
-X-Google-Smtp-Source: AGHT+IHpt3GmqxmUYWeyDxrjsC/U+hfzZspynC8VLCIFtP8cNsZp90XHIeRqwjI5dpuN/mozNLSnNg==
-X-Received: by 2002:a17:902:6909:b0:1b8:9002:c9ee with SMTP id j9-20020a170902690900b001b89002c9eemr114243plk.1.1691104137546;
-        Thu, 03 Aug 2023 16:08:57 -0700 (PDT)
-Received: from tictac2.mtv.corp.google.com ([2620:15c:9d:2:7e35:e6d0:7bbf:64])
-        by smtp.gmail.com with ESMTPSA id q16-20020a170902dad000b001adf6b21c77sm369405plx.107.2023.08.03.16.08.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Aug 2023 16:08:57 -0700 (PDT)
-From: Douglas Anderson <dianders@chromium.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 1/2] nmi_backtrace: Allow excluding an arbitrary CPU
-Date: Thu,  3 Aug 2023 16:07:57 -0700
-Message-ID: <20230803160649.v3.1.Ia35521b91fc781368945161d7b28538f9996c182@changeid>
-X-Mailer: git-send-email 2.41.0.585.gd2178a4bd4-goog
+        d=1e100.net; s=20221208; t=1691054276; x=1691659076;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=GRlGFt/b+eLL81fhIoc4g8Xnl9ZXM32WoVDoUNCTBPI=;
+        b=TUKOXKhhbJdMGiLBWlPb9BTdCbiAv5NfNNf/nNg2fKDv+Rk1kcamdmBjIWLou7jTtJ
+         ZKh9r3pVdkt82TqlA6remTbyz4Nhav09wWi4QjxCfjSPrwMTWVQLX6cOpW+c+uC140s+
+         jYu0WJV2ynLzjrECH2gKBHNB306RTZLV7FlaYXPy00LaPH8JD+yp8lmrl040gCTFFe85
+         zpc93jMJC3hPf2CiwEdhZm84tdJYKWGB+EL5RNkUb1Kt1zmhlwepisD2+YunKgAkGkIi
+         v4eoAdp30bzVX3K57D/a/EaJnwArd0hgLOKo/ZSKzsClbWReNNjVH8toI2snxndUn/wW
+         iWzQ==
+X-Gm-Message-State: ABy/qLYNkZPW2dzHSVV5hpc1tuHn6H4GgcBa+hcS7/vY2F9/4sE2AiYc
+	t1YdV+K9HIM4LK59TwBW7Z1Huw==
+X-Google-Smtp-Source: APBJJlF1R67qBIL1XVp7Pt2rmoZtkUWRGJa2ZDwYOFvPcmMmGiKpQTlnEEw5SIHIdIIPkp3jz66NKQ==
+X-Received: by 2002:a05:6a21:9989:b0:111:a0e5:d2b7 with SMTP id ve9-20020a056a21998900b00111a0e5d2b7mr20024356pzb.4.1691054276027;
+        Thu, 03 Aug 2023 02:17:56 -0700 (PDT)
+Received: from [10.70.252.135] ([203.208.167.146])
+        by smtp.gmail.com with ESMTPSA id g10-20020a63b14a000000b0056471d2ae8fsm3892765pgp.90.2023.08.03.02.17.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 03 Aug 2023 02:17:55 -0700 (PDT)
+Message-ID: <0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com>
+Date: Thu, 3 Aug 2023 17:17:34 +0800
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.12.0
+Subject: Re: [PATCH v3 10/13] mm/khugepaged: collapse_pte_mapped_thp() with
+ mmap_read_lock()
+Content-Language: en-US
+To: Hugh Dickins <hughd@google.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Pasha Tatashin <pasha.tatashin@soleen.com>
+References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com>
+ <b53be6a4-7715-51f9-aad-f1347dcb7c4@google.com>
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+In-Reply-To: <b53be6a4-7715-51f9-aad-f1347dcb7c4@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Fri, 04 Aug 2023 10:13:42 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,337 +85,329 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>, Jinyang He <hejinyang@loongson.cn>, Lecopzer Chen <lecopzer.chen@mediatek.com>, Peter Zijlstra <peterz@infradead.org>, "Darrick J. Wong" <djwong@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, Qing Zhang <zhangqing@loongson.cn>, Pingfan Liu <kernelfans@gmail.com>, linux-kernel@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Gaosheng Cui <cuigaosheng1@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Valentin Schneider <vschneid@redhat.com>, "Paul E. McKenney" <paulmck@kernel.org>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Tom Rix <trix@redhat.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-mips@vger.kernel.org, Petr Mladek <pmladek@suse.com>, Kees Cook <keescook@chromium.or
- g>, Arnd Bergmann <arnd@arndb.de>, Nicholas Piggin <npiggin@gmail.com>, Jianmin Lv <lvjianmin@loongson.cn>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Douglas Anderson <dianders@chromium.org>, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvi
+ dia.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Naoya Horiguchi <naoya.horiguchi@nec.com>, linux-kernel@vger.kernel.org, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, Mike Rapoport <rppt@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Zack Rusin <zackr@vmware.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The APIs that allow backtracing across CPUs have always had a way to
-exclude the current CPU. This convenience means callers didn't need to
-find a place to allocate a CPU mask just to handle the common case.
+Hi,
 
-Let's extend the API to take a CPU ID to exclude instead of just a
-boolean. This isn't any more complex for the API to handle and allows
-the hardlockup detector to exclude a different CPU (the one it already
-did a trace for) without needing to find space for a CPU mask.
+On 2023/7/12 12:42, Hugh Dickins wrote:
+> Bring collapse_and_free_pmd() back into collapse_pte_mapped_thp().
+> It does need mmap_read_lock(), but it does not need mmap_write_lock(),
+> nor vma_start_write() nor i_mmap lock nor anon_vma lock.  All racing
+> paths are relying on pte_offset_map_lock() and pmd_lock(), so use those.
+> 
+> Follow the pattern in retract_page_tables(); and using pte_free_defer()
+> removes most of the need for tlb_remove_table_sync_one() here; but call
+> pmdp_get_lockless_sync() to use it in the PAE case.
+> 
+> First check the VMA, in case page tables are being torn down: from JannH.
+> Confirm the preliminary find_pmd_or_thp_or_none() once page lock has been
+> acquired and the page looks suitable: from then on its state is stable.
+> 
+> However, collapse_pte_mapped_thp() was doing something others don't:
+> freeing a page table still containing "valid" entries.  i_mmap lock did
+> stop a racing truncate from double-freeing those pages, but we prefer
+> collapse_pte_mapped_thp() to clear the entries as usual.  Their TLB
+> flush can wait until the pmdp_collapse_flush() which follows, but the
+> mmu_notifier_invalidate_range_start() has to be done earlier.
+> 
+> Do the "step 1" checking loop without mmu_notifier: it wouldn't be good
+> for khugepaged to keep on repeatedly invalidating a range which is then
+> found unsuitable e.g. contains COWs.  "step 2", which does the clearing,
+> must then be more careful (after dropping ptl to do mmu_notifier), with
+> abort prepared to correct the accounting like "step 3".  But with those
+> entries now cleared, "step 4" (after dropping ptl to do pmd_lock) is kept
+> safe by the huge page lock, which stops new PTEs from being faulted in.
+> 
+> Signed-off-by: Hugh Dickins <hughd@google.com>
+> ---
+>   mm/khugepaged.c | 172 ++++++++++++++++++++++----------------------------
+>   1 file changed, 77 insertions(+), 95 deletions(-)
+> 
+> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+> index 3bb05147961b..46986eb4eebb 100644
+> --- a/mm/khugepaged.c
+> +++ b/mm/khugepaged.c
+> @@ -1483,7 +1483,7 @@ static bool khugepaged_add_pte_mapped_thp(struct mm_struct *mm,
+>   	return ret;
+>   }
+>   
+> -/* hpage must be locked, and mmap_lock must be held in write */
+> +/* hpage must be locked, and mmap_lock must be held */
+>   static int set_huge_pmd(struct vm_area_struct *vma, unsigned long addr,
+>   			pmd_t *pmdp, struct page *hpage)
+>   {
+> @@ -1495,7 +1495,7 @@ static int set_huge_pmd(struct vm_area_struct *vma, unsigned long addr,
+>   	};
+>   
+>   	VM_BUG_ON(!PageTransHuge(hpage));
+> -	mmap_assert_write_locked(vma->vm_mm);
+> +	mmap_assert_locked(vma->vm_mm);
+>   
+>   	if (do_set_pmd(&vmf, hpage))
+>   		return SCAN_FAIL;
+> @@ -1504,48 +1504,6 @@ static int set_huge_pmd(struct vm_area_struct *vma, unsigned long addr,
+>   	return SCAN_SUCCEED;
+>   }
+>   
+> -/*
+> - * A note about locking:
+> - * Trying to take the page table spinlocks would be useless here because those
+> - * are only used to synchronize:
+> - *
+> - *  - modifying terminal entries (ones that point to a data page, not to another
+> - *    page table)
+> - *  - installing *new* non-terminal entries
+> - *
+> - * Instead, we need roughly the same kind of protection as free_pgtables() or
+> - * mm_take_all_locks() (but only for a single VMA):
+> - * The mmap lock together with this VMA's rmap locks covers all paths towards
+> - * the page table entries we're messing with here, except for hardware page
+> - * table walks and lockless_pages_from_mm().
+> - */
+> -static void collapse_and_free_pmd(struct mm_struct *mm, struct vm_area_struct *vma,
+> -				  unsigned long addr, pmd_t *pmdp)
+> -{
+> -	pmd_t pmd;
+> -	struct mmu_notifier_range range;
+> -
+> -	mmap_assert_write_locked(mm);
+> -	if (vma->vm_file)
+> -		lockdep_assert_held_write(&vma->vm_file->f_mapping->i_mmap_rwsem);
+> -	/*
+> -	 * All anon_vmas attached to the VMA have the same root and are
+> -	 * therefore locked by the same lock.
+> -	 */
+> -	if (vma->anon_vma)
+> -		lockdep_assert_held_write(&vma->anon_vma->root->rwsem);
+> -
+> -	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, mm, addr,
+> -				addr + HPAGE_PMD_SIZE);
+> -	mmu_notifier_invalidate_range_start(&range);
+> -	pmd = pmdp_collapse_flush(vma, addr, pmdp);
+> -	tlb_remove_table_sync_one();
+> -	mmu_notifier_invalidate_range_end(&range);
+> -	mm_dec_nr_ptes(mm);
+> -	page_table_check_pte_clear_range(mm, addr, pmd);
+> -	pte_free(mm, pmd_pgtable(pmd));
+> -}
+> -
+>   /**
+>    * collapse_pte_mapped_thp - Try to collapse a pte-mapped THP for mm at
+>    * address haddr.
+> @@ -1561,26 +1519,29 @@ static void collapse_and_free_pmd(struct mm_struct *mm, struct vm_area_struct *v
+>   int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+>   			    bool install_pmd)
+>   {
+> +	struct mmu_notifier_range range;
+> +	bool notified = false;
+>   	unsigned long haddr = addr & HPAGE_PMD_MASK;
+>   	struct vm_area_struct *vma = vma_lookup(mm, haddr);
+>   	struct page *hpage;
+>   	pte_t *start_pte, *pte;
+> -	pmd_t *pmd;
+> -	spinlock_t *ptl;
+> -	int count = 0, result = SCAN_FAIL;
+> +	pmd_t *pmd, pgt_pmd;
+> +	spinlock_t *pml, *ptl;
+> +	int nr_ptes = 0, result = SCAN_FAIL;
+>   	int i;
+>   
+> -	mmap_assert_write_locked(mm);
+> +	mmap_assert_locked(mm);
+> +
+> +	/* First check VMA found, in case page tables are being torn down */
+> +	if (!vma || !vma->vm_file ||
+> +	    !range_in_vma(vma, haddr, haddr + HPAGE_PMD_SIZE))
+> +		return SCAN_VMA_CHECK;
+>   
+>   	/* Fast check before locking page if already PMD-mapped */
+>   	result = find_pmd_or_thp_or_none(mm, haddr, &pmd);
+>   	if (result == SCAN_PMD_MAPPED)
+>   		return result;
+>   
+> -	if (!vma || !vma->vm_file ||
+> -	    !range_in_vma(vma, haddr, haddr + HPAGE_PMD_SIZE))
+> -		return SCAN_VMA_CHECK;
+> -
+>   	/*
+>   	 * If we are here, we've succeeded in replacing all the native pages
+>   	 * in the page cache with a single hugepage. If a mm were to fault-in
+> @@ -1610,6 +1571,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+>   		goto drop_hpage;
+>   	}
+>   
+> +	result = find_pmd_or_thp_or_none(mm, haddr, &pmd);
+>   	switch (result) {
+>   	case SCAN_SUCCEED:
+>   		break;
+> @@ -1623,27 +1585,10 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+>   		goto drop_hpage;
+>   	}
+>   
+> -	/* Lock the vma before taking i_mmap and page table locks */
+> -	vma_start_write(vma);
+> -
+> -	/*
+> -	 * We need to lock the mapping so that from here on, only GUP-fast and
+> -	 * hardware page walks can access the parts of the page tables that
+> -	 * we're operating on.
+> -	 * See collapse_and_free_pmd().
+> -	 */
+> -	i_mmap_lock_write(vma->vm_file->f_mapping);
+> -
+> -	/*
+> -	 * This spinlock should be unnecessary: Nobody else should be accessing
+> -	 * the page tables under spinlock protection here, only
+> -	 * lockless_pages_from_mm() and the hardware page walker can access page
+> -	 * tables while all the high-level locks are held in write mode.
+> -	 */
+>   	result = SCAN_FAIL;
+>   	start_pte = pte_offset_map_lock(mm, pmd, haddr, &ptl);
+> -	if (!start_pte)
+> -		goto drop_immap;
+> +	if (!start_pte)		/* mmap_lock + page lock should prevent this */
+> +		goto drop_hpage;
+>   
+>   	/* step 1: check all mapped PTEs are to the right huge page */
+>   	for (i = 0, addr = haddr, pte = start_pte;
+> @@ -1670,10 +1615,18 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+>   		 */
+>   		if (hpage + i != page)
+>   			goto abort;
+> -		count++;
+>   	}
+>   
+> -	/* step 2: adjust rmap */
+> +	pte_unmap_unlock(start_pte, ptl);
+> +	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, mm,
+> +				haddr, haddr + HPAGE_PMD_SIZE);
+> +	mmu_notifier_invalidate_range_start(&range);
+> +	notified = true;
+> +	start_pte = pte_offset_map_lock(mm, pmd, haddr, &ptl);
+> +	if (!start_pte)		/* mmap_lock + page lock should prevent this */
+> +		goto abort;
+> +
+> +	/* step 2: clear page table and adjust rmap */
+>   	for (i = 0, addr = haddr, pte = start_pte;
+>   	     i < HPAGE_PMD_NR; i++, addr += PAGE_SIZE, pte++) {
+>   		struct page *page;
+> @@ -1681,47 +1634,76 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+>   
+>   		if (pte_none(ptent))
+>   			continue;
+> -		page = vm_normal_page(vma, addr, ptent);
+> -		if (WARN_ON_ONCE(page && is_zone_device_page(page)))
+> +		/*
+> +		 * We dropped ptl after the first scan, to do the mmu_notifier:
+> +		 * page lock stops more PTEs of the hpage being faulted in, but
+> +		 * does not stop write faults COWing anon copies from existing
+> +		 * PTEs; and does not stop those being swapped out or migrated.
+> +		 */
+> +		if (!pte_present(ptent)) {
+> +			result = SCAN_PTE_NON_PRESENT;
+>   			goto abort;
+> +		}
+> +		page = vm_normal_page(vma, addr, ptent);
+> +		if (hpage + i != page)
+> +			goto abort;
+> +
+> +		/*
+> +		 * Must clear entry, or a racing truncate may re-remove it.
+> +		 * TLB flush can be left until pmdp_collapse_flush() does it.
+> +		 * PTE dirty? Shmem page is already dirty; file is read-only.
+> +		 */
+> +		pte_clear(mm, addr, pte);
 
-Arguably, this new API also encourages safer behavior. Specifically if
-the caller wants to avoid tracing the current CPU (maybe because they
-already traced the current CPU) this makes it more obvious to the
-caller that they need to make sure that the current CPU ID can't
-change.
+This is not non-present PTE entry, so we should call ptep_clear() to let
+page_table_check track the PTE clearing operation, right? Otherwise it
+may lead to false positives?
 
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
----
+Thanks,
+Qi
 
-Changes in v3:
-- ("nmi_backtrace: Allow excluding an arbitrary CPU") new for v3.
-
- arch/arm/include/asm/irq.h       |  2 +-
- arch/arm/kernel/smp.c            |  4 ++--
- arch/loongarch/include/asm/irq.h |  2 +-
- arch/loongarch/kernel/process.c  |  4 ++--
- arch/mips/include/asm/irq.h      |  2 +-
- arch/mips/kernel/process.c       |  4 ++--
- arch/powerpc/include/asm/irq.h   |  2 +-
- arch/powerpc/kernel/stacktrace.c |  4 ++--
- arch/powerpc/kernel/watchdog.c   |  4 ++--
- arch/sparc/include/asm/irq_64.h  |  2 +-
- arch/sparc/kernel/process_64.c   |  6 +++---
- arch/x86/include/asm/irq.h       |  2 +-
- arch/x86/kernel/apic/hw_nmi.c    |  4 ++--
- include/linux/nmi.h              | 12 ++++++------
- kernel/watchdog.c                |  2 +-
- lib/nmi_backtrace.c              |  6 +++---
- 16 files changed, 31 insertions(+), 31 deletions(-)
-
-diff --git a/arch/arm/include/asm/irq.h b/arch/arm/include/asm/irq.h
-index 18605f1b3580..26c1d2ced4ce 100644
---- a/arch/arm/include/asm/irq.h
-+++ b/arch/arm/include/asm/irq.h
-@@ -32,7 +32,7 @@ void handle_IRQ(unsigned int, struct pt_regs *);
- #include <linux/cpumask.h>
- 
- extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
--					   bool exclude_self);
-+					   int exclude_cpu);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
- #endif
- 
-diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-index 6756203e45f3..3431c0553f45 100644
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -846,7 +846,7 @@ static void raise_nmi(cpumask_t *mask)
- 	__ipi_send_mask(ipi_desc[IPI_CPU_BACKTRACE], mask);
- }
- 
--void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
- {
--	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_nmi);
-+	nmi_trigger_cpumask_backtrace(mask, exclude_cpu, raise_nmi);
- }
-diff --git a/arch/loongarch/include/asm/irq.h b/arch/loongarch/include/asm/irq.h
-index a115e8999c69..218b4da0ea90 100644
---- a/arch/loongarch/include/asm/irq.h
-+++ b/arch/loongarch/include/asm/irq.h
-@@ -40,7 +40,7 @@ void spurious_interrupt(void);
- #define NR_IRQS_LEGACY 16
- 
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
--void arch_trigger_cpumask_backtrace(const struct cpumask *mask, bool exclude_self);
-+void arch_trigger_cpumask_backtrace(const struct cpumask *mask, int exclude_cpu);
- 
- #define MAX_IO_PICS 2
- #define NR_IRQS	(64 + (256 * MAX_IO_PICS))
-diff --git a/arch/loongarch/kernel/process.c b/arch/loongarch/kernel/process.c
-index 2e04eb07abb6..778e8d09953e 100644
---- a/arch/loongarch/kernel/process.c
-+++ b/arch/loongarch/kernel/process.c
-@@ -345,9 +345,9 @@ static void raise_backtrace(cpumask_t *mask)
- 	}
- }
- 
--void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
- {
--	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace);
-+	nmi_trigger_cpumask_backtrace(mask, exclude_cpu, raise_backtrace);
- }
- 
- #ifdef CONFIG_64BIT
-diff --git a/arch/mips/include/asm/irq.h b/arch/mips/include/asm/irq.h
-index 75abfa834ab7..3a848e7e69f7 100644
---- a/arch/mips/include/asm/irq.h
-+++ b/arch/mips/include/asm/irq.h
-@@ -77,7 +77,7 @@ extern int cp0_fdc_irq;
- extern int get_c0_fdc_int(void);
- 
- void arch_trigger_cpumask_backtrace(const struct cpumask *mask,
--				    bool exclude_self);
-+				    int exclude_cpu);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
- 
- #endif /* _ASM_IRQ_H */
-diff --git a/arch/mips/kernel/process.c b/arch/mips/kernel/process.c
-index a3225912c862..5387ed0a5186 100644
---- a/arch/mips/kernel/process.c
-+++ b/arch/mips/kernel/process.c
-@@ -750,9 +750,9 @@ static void raise_backtrace(cpumask_t *mask)
- 	}
- }
- 
--void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
- {
--	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace);
-+	nmi_trigger_cpumask_backtrace(mask, exclude_cpu, raise_backtrace);
- }
- 
- int mips_get_process_fp_mode(struct task_struct *task)
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index f257cacb49a9..ba1a5974e714 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -55,7 +55,7 @@ int irq_choose_cpu(const struct cpumask *mask);
- 
- #if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI)
- extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
--					   bool exclude_self);
-+					   int exclude_cpu);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
- #endif
- 
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 5de8597eaab8..b15f15dcacb5 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -221,8 +221,8 @@ static void raise_backtrace_ipi(cpumask_t *mask)
- 	}
- }
- 
--void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
- {
--	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace_ipi);
-+	nmi_trigger_cpumask_backtrace(mask, exclude_cpu, raise_backtrace_ipi);
- }
- #endif /* defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI) */
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index edb2dd1f53eb..8c464a5d8246 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -245,7 +245,7 @@ static void watchdog_smp_panic(int cpu)
- 			__cpumask_clear_cpu(c, &wd_smp_cpus_ipi);
- 		}
- 	} else {
--		trigger_allbutself_cpu_backtrace();
-+		trigger_allbutcpu_cpu_backtrace(cpu);
- 		cpumask_clear(&wd_smp_cpus_ipi);
- 	}
- 
-@@ -416,7 +416,7 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
- 		xchg(&__wd_nmi_output, 1); // see wd_lockup_ipi
- 
- 		if (sysctl_hardlockup_all_cpu_backtrace)
--			trigger_allbutself_cpu_backtrace();
-+			trigger_allbutcpu_cpu_backtrace(cpu);
- 
- 		if (hardlockup_panic)
- 			nmi_panic(regs, "Hard LOCKUP");
-diff --git a/arch/sparc/include/asm/irq_64.h b/arch/sparc/include/asm/irq_64.h
-index b436029f1ced..8c4c0c87f998 100644
---- a/arch/sparc/include/asm/irq_64.h
-+++ b/arch/sparc/include/asm/irq_64.h
-@@ -87,7 +87,7 @@ static inline unsigned long get_softint(void)
- }
- 
- void arch_trigger_cpumask_backtrace(const struct cpumask *mask,
--				    bool exclude_self);
-+				    int exclude_cpu);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
- 
- extern void *hardirq_stack[NR_CPUS];
-diff --git a/arch/sparc/kernel/process_64.c b/arch/sparc/kernel/process_64.c
-index b51d8fb0ecdc..1ea3f37fa985 100644
---- a/arch/sparc/kernel/process_64.c
-+++ b/arch/sparc/kernel/process_64.c
-@@ -236,7 +236,7 @@ static void __global_reg_poll(struct global_reg_snapshot *gp)
- 	}
- }
- 
--void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
- {
- 	struct thread_info *tp = current_thread_info();
- 	struct pt_regs *regs = get_irq_regs();
-@@ -252,7 +252,7 @@ void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
- 
- 	memset(global_cpu_snapshot, 0, sizeof(global_cpu_snapshot));
- 
--	if (cpumask_test_cpu(this_cpu, mask) && !exclude_self)
-+	if (cpumask_test_cpu(this_cpu, mask) && this_cpu != exclude_cpu)
- 		__global_reg_self(tp, regs, this_cpu);
- 
- 	smp_fetch_global_regs();
-@@ -260,7 +260,7 @@ void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
- 	for_each_cpu(cpu, mask) {
- 		struct global_reg_snapshot *gp;
- 
--		if (exclude_self && cpu == this_cpu)
-+		if (cpu == exclude_cpu)
- 			continue;
- 
- 		gp = &global_cpu_snapshot[cpu].reg;
-diff --git a/arch/x86/include/asm/irq.h b/arch/x86/include/asm/irq.h
-index 29e083b92813..836c170d3087 100644
---- a/arch/x86/include/asm/irq.h
-+++ b/arch/x86/include/asm/irq.h
-@@ -42,7 +42,7 @@ extern void init_ISA_irqs(void);
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- void arch_trigger_cpumask_backtrace(const struct cpumask *mask,
--				    bool exclude_self);
-+				    int exclude_cpu);
- 
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
- #endif
-diff --git a/arch/x86/kernel/apic/hw_nmi.c b/arch/x86/kernel/apic/hw_nmi.c
-index 34a992e275ef..d6e01f924299 100644
---- a/arch/x86/kernel/apic/hw_nmi.c
-+++ b/arch/x86/kernel/apic/hw_nmi.c
-@@ -34,9 +34,9 @@ static void nmi_raise_cpu_backtrace(cpumask_t *mask)
- 	apic->send_IPI_mask(mask, NMI_VECTOR);
- }
- 
--void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
- {
--	nmi_trigger_cpumask_backtrace(mask, exclude_self,
-+	nmi_trigger_cpumask_backtrace(mask, exclude_cpu,
- 				      nmi_raise_cpu_backtrace);
- }
- 
-diff --git a/include/linux/nmi.h b/include/linux/nmi.h
-index e3e6a64b98e0..00982b133dc1 100644
---- a/include/linux/nmi.h
-+++ b/include/linux/nmi.h
-@@ -157,31 +157,31 @@ static inline void touch_nmi_watchdog(void)
- #ifdef arch_trigger_cpumask_backtrace
- static inline bool trigger_all_cpu_backtrace(void)
- {
--	arch_trigger_cpumask_backtrace(cpu_online_mask, false);
-+	arch_trigger_cpumask_backtrace(cpu_online_mask, -1);
- 	return true;
- }
- 
--static inline bool trigger_allbutself_cpu_backtrace(void)
-+static inline bool trigger_allbutcpu_cpu_backtrace(int exclude_cpu)
- {
--	arch_trigger_cpumask_backtrace(cpu_online_mask, true);
-+	arch_trigger_cpumask_backtrace(cpu_online_mask, exclude_cpu);
- 	return true;
- }
- 
- static inline bool trigger_cpumask_backtrace(struct cpumask *mask)
- {
--	arch_trigger_cpumask_backtrace(mask, false);
-+	arch_trigger_cpumask_backtrace(mask, -1);
- 	return true;
- }
- 
- static inline bool trigger_single_cpu_backtrace(int cpu)
- {
--	arch_trigger_cpumask_backtrace(cpumask_of(cpu), false);
-+	arch_trigger_cpumask_backtrace(cpumask_of(cpu), -1);
- 	return true;
- }
- 
- /* generic implementation */
- void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
--				   bool exclude_self,
-+				   int exclude_cpu,
- 				   void (*raise)(cpumask_t *mask));
- bool nmi_cpu_backtrace(struct pt_regs *regs);
- 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index be38276a365f..085d7a78f62f 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -523,7 +523,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 			dump_stack();
- 
- 		if (softlockup_all_cpu_backtrace) {
--			trigger_allbutself_cpu_backtrace();
-+			trigger_allbutcpu_cpu_backtrace(smp_processor_id());
- 			clear_bit_unlock(0, &soft_lockup_nmi_warn);
- 		}
- 
-diff --git a/lib/nmi_backtrace.c b/lib/nmi_backtrace.c
-index 5274bbb026d7..33c154264bfe 100644
---- a/lib/nmi_backtrace.c
-+++ b/lib/nmi_backtrace.c
-@@ -34,7 +34,7 @@ static unsigned long backtrace_flag;
-  * they are passed being updated as a side effect of this call.
-  */
- void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
--				   bool exclude_self,
-+				   int exclude_cpu,
- 				   void (*raise)(cpumask_t *mask))
- {
- 	int i, this_cpu = get_cpu();
-@@ -49,8 +49,8 @@ void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
- 	}
- 
- 	cpumask_copy(to_cpumask(backtrace_mask), mask);
--	if (exclude_self)
--		cpumask_clear_cpu(this_cpu, to_cpumask(backtrace_mask));
-+	if (exclude_cpu != -1)
-+		cpumask_clear_cpu(exclude_cpu, to_cpumask(backtrace_mask));
- 
- 	/*
- 	 * Don't try to send an NMI to this cpu; it may work on some
--- 
-2.41.0.585.gd2178a4bd4-goog
-
+>   		page_remove_rmap(page, vma, false);
+> +		nr_ptes++;
+>   	}
+>   
+>   	pte_unmap_unlock(start_pte, ptl);
+>   
+>   	/* step 3: set proper refcount and mm_counters. */
+> -	if (count) {
+> -		page_ref_sub(hpage, count);
+> -		add_mm_counter(vma->vm_mm, mm_counter_file(hpage), -count);
+> +	if (nr_ptes) {
+> +		page_ref_sub(hpage, nr_ptes);
+> +		add_mm_counter(mm, mm_counter_file(hpage), -nr_ptes);
+>   	}
+>   
+> -	/* step 4: remove pte entries */
+> -	/* we make no change to anon, but protect concurrent anon page lookup */
+> -	if (vma->anon_vma)
+> -		anon_vma_lock_write(vma->anon_vma);
+> +	/* step 4: remove page table */
+>   
+> -	collapse_and_free_pmd(mm, vma, haddr, pmd);
+> +	/* Huge page lock is still held, so page table must remain empty */
+> +	pml = pmd_lock(mm, pmd);
+> +	if (ptl != pml)
+> +		spin_lock_nested(ptl, SINGLE_DEPTH_NESTING);
+> +	pgt_pmd = pmdp_collapse_flush(vma, haddr, pmd);
+> +	pmdp_get_lockless_sync();
+> +	if (ptl != pml)
+> +		spin_unlock(ptl);
+> +	spin_unlock(pml);
+>   
+> -	if (vma->anon_vma)
+> -		anon_vma_unlock_write(vma->anon_vma);
+> -	i_mmap_unlock_write(vma->vm_file->f_mapping);
+> +	mmu_notifier_invalidate_range_end(&range);
+> +
+> +	mm_dec_nr_ptes(mm);
+> +	page_table_check_pte_clear_range(mm, haddr, pgt_pmd);
+> +	pte_free_defer(mm, pmd_pgtable(pgt_pmd));
+>   
+>   maybe_install_pmd:
+>   	/* step 5: install pmd entry */
+>   	result = install_pmd
+>   			? set_huge_pmd(vma, haddr, pmd, hpage)
+>   			: SCAN_SUCCEED;
+> -
+> +	goto drop_hpage;
+> +abort:
+> +	if (nr_ptes) {
+> +		flush_tlb_mm(mm);
+> +		page_ref_sub(hpage, nr_ptes);
+> +		add_mm_counter(mm, mm_counter_file(hpage), -nr_ptes);
+> +	}
+> +	if (start_pte)
+> +		pte_unmap_unlock(start_pte, ptl);
+> +	if (notified)
+> +		mmu_notifier_invalidate_range_end(&range);
+>   drop_hpage:
+>   	unlock_page(hpage);
+>   	put_page(hpage);
+>   	return result;
+> -
+> -abort:
+> -	pte_unmap_unlock(start_pte, ptl);
+> -drop_immap:
+> -	i_mmap_unlock_write(vma->vm_file->f_mapping);
+> -	goto drop_hpage;
+>   }
+>   
+>   static void khugepaged_collapse_pte_mapped_thps(struct khugepaged_mm_slot *mm_slot)
+> @@ -2855,9 +2837,9 @@ int madvise_collapse(struct vm_area_struct *vma, struct vm_area_struct **prev,
+>   		case SCAN_PTE_MAPPED_HUGEPAGE:
+>   			BUG_ON(mmap_locked);
+>   			BUG_ON(*prev);
+> -			mmap_write_lock(mm);
+> +			mmap_read_lock(mm);
+>   			result = collapse_pte_mapped_thp(mm, addr, true);
+> -			mmap_write_unlock(mm);
+> +			mmap_locked = true;
+>   			goto handle_result;
+>   		/* Whitelisted set of results where continuing OK */
+>   		case SCAN_PMD_NULL:
