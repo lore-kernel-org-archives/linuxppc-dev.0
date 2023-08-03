@@ -4,70 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F9D7C04A6A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 13:12:27 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=OgeQqTU3;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37211C04A6A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 13:57:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RGq554PHZz3cMH
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 23:12:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=OgeQqTU3;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d35; helo=mail-io1-xd35.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-io1-xd35.google.com (mail-io1-xd35.google.com [IPv6:2607:f8b0:4864:20::d35])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RGr5G4THJz3c3s
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 23:57:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGq473C2Zz30FW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2023 23:11:34 +1000 (AEST)
-Received: by mail-io1-xd35.google.com with SMTP id ca18e2360f4ac-790bed44880so31373539f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2023 06:11:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1691068291; x=1691673091;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7lC0SW0eAGcjrPelcOslL8Ss4E31DBBOJeX5ruPDUDU=;
-        b=OgeQqTU3eLsToIFQqpnPIA8g1WCwq6zItGL9mntQIrUxGhjbBitttp4rPonWdcsfxP
-         iRu6lmPdnlStCJoOCDCEuv4opy0zlLNTWrDmAEXCgmXENtRx5rA/fBxUCmTnEEXn1s3d
-         +b7fpiJVshrK7ErQ0MD+MO4FLFbHFFpyzV69Zs7aLy44fmoU9jTLoK5MvRuK820kS5RG
-         J+SRnf5gQSlsbchEYrjWURjn7aZhSZjoQmyVb5mdk1f9ajw0rn3vuOWoAlhOae+REEzD
-         zfGk59orqaoBC1o2Oruv8/rVXoVQYP4t+5ttTB6qg7JIglPFNGEO+kjJ6kcvnW4QH0jw
-         r2EA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691068291; x=1691673091;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7lC0SW0eAGcjrPelcOslL8Ss4E31DBBOJeX5ruPDUDU=;
-        b=NC8iPyj2JcUje4v0aO7y/Qa+oXiyXVw5GDEbQYa0BLv7NnlF6iP57w0cP1HgF+Vmzy
-         GqBqezAENPw250eGPYPhk4jnnSrhVu6B2AOCbBkbd0U5xt9dsPYcJIyjUDTnv54KUree
-         S/dvwBezTjJK+Ng3kIC/bQP9bOj2iShl8Z/ayp412G7HLwTyiC1X2JN4NRATOc+AdyV8
-         EbR4Gwpm49thv7nOMsyzhc1beOHipSP1bt1HYVBPmKPe/LeIfgCo452UZx9Awk9Gy4rF
-         D+F75y1NG+vFF9OPZa8QxGjxf0ddWpYOCaylJujvVbMv2OzmYHvlMeJyUza5EDXhHiO+
-         a2Pg==
-X-Gm-Message-State: ABy/qLZKcuUFFUC+W2wKIxDcZWHaF1ip7rFaVp2c+yMcIzndpvqFnz/2
-	vq8qfxmF+luxY7F2nsXwrzMtdb0zJxHQ26GCFvo=
-X-Google-Smtp-Source: APBJJlEtqzIxYCVUFEvV5fgDCP81fGeD3GZpt6levaG9H4upWh9g5EvLMYrqL4ob+7IT6h4Vjry/EVcjmBnCK9V7HJM=
-X-Received: by 2002:a05:6e02:1569:b0:348:c041:abd7 with SMTP id
- k9-20020a056e02156900b00348c041abd7mr15797226ilu.13.1691068290064; Thu, 03
- Aug 2023 06:11:30 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGr4j6DyZz2yDH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2023 23:57:07 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4RGr4b212Mz9t3b;
+	Thu,  3 Aug 2023 15:57:03 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ak7R_ssOuJCs; Thu,  3 Aug 2023 15:57:03 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RGr4b1HkPz9t3S;
+	Thu,  3 Aug 2023 15:57:03 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 26F3D8B775;
+	Thu,  3 Aug 2023 15:57:03 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id T6xF0XTocxw5; Thu,  3 Aug 2023 15:57:03 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.144])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D45C68B774;
+	Thu,  3 Aug 2023 15:57:02 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 373DuvZJ494169
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 3 Aug 2023 15:56:58 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 373Duv1W494168;
+	Thu, 3 Aug 2023 15:56:57 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Timur Tabi <timur@kernel.org>
+Subject: [PATCH v1 03/12] serial: cpm_uart: Stop using fs_uart_id enum
+Date: Thu,  3 Aug 2023 15:56:44 +0200
+Message-ID: <4772d2a21894db443fe42836421eb22206a334aa.1691068700.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <cover.1691068700.git.christophe.leroy@csgroup.eu>
+References: <cover.1691068700.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-References: <1690265540-25999-1-git-send-email-shengjiu.wang@nxp.com>
- <47d66c28-1eb2-07f5-d6f9-779d675aefe8@xs4all.nl> <87il9xu1ro.wl-tiwai@suse.de>
- <CAA+D8ANmBKMp_L2GS=Lp-saMQKja6L4E6No3yP-e=a5YQBD_jQ@mail.gmail.com>
- <87il9xoddo.wl-tiwai@suse.de> <CAA+D8AOVEpGxO0YNeS1p+Ym86k6VP-CNQB3JmbeT7mPKg0R99A@mail.gmail.com>
- <844ef9b6-d5e2-46a9-b7a5-7ee86a2e449c@sirena.org.uk>
-In-Reply-To: <844ef9b6-d5e2-46a9-b7a5-7ee86a2e449c@sirena.org.uk>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Thu, 3 Aug 2023 21:11:16 +0800
-Message-ID: <CAA+D8AOnsx+7t3MrWm42waxtetL07nbKURLsh1hBx39LUDm+Zg@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 0/7] Add audio support in v4l2 framework
-To: Mark Brown <broonie@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691071000; l=1401; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=r4taSckRnJqi2ljuzJlsU6U+LaNsK9KbE/XTRnntqGg=; b=EYOi0XZS4gbljM+1i4YrImOx0hKzYpJQ2QLfzBaxWoBZA096FR7PAksGEU3MGKEw/AiJDfLdq T6mtPW9OoXWAGmdVd+Yg39IzySZxcDbJAUcrO+5eLibNUzg0+PfEAZE
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,37 +70,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nicoleotsuka@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, Hans Verkuil <hverkuil@xs4all.nl>, linuxppc-dev@lists.ozlabs.org, sakari.ailus@iki.fi, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Aug 3, 2023 at 1:28=E2=80=AFAM Mark Brown <broonie@kernel.org> wrot=
-e:
->
-> On Wed, Aug 02, 2023 at 10:41:43PM +0800, Shengjiu Wang wrote:
->
-> > Currently the ASRC in ALSA is to connect to another I2S device as
-> > a sound card.  But we'd like to the ASRC can be used by user space dire=
-ctly
-> > that user space application can get the output after conversion from AS=
-RC.
->
-> That sort of use case would be handled via DPCM at the minute, though
-> persuading it to connect two front ends together might be fun (which is
-> the sort of reason why we want to push digital information down into
-> DAPM and make everything a component).
+Using an enum indirection to define numeric macros is
+pointless. Directly use the wanted numeric value.
 
-Thanks.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ drivers/tty/serial/cpm_uart/cpm_uart.h      | 3 +--
+ drivers/tty/serial/cpm_uart/cpm_uart_core.c | 1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
-ASRC M2M case needs to run as fast as possible, no sync clock control.
-If use sound card to handle ASRC M2M case,  the user application
-should be aplay/arecord, then we need to consider xrun issue, buffer
-may timeout, sync between aplay and arecord,  these should't be
-considered by pure memory to memory operation.
+diff --git a/drivers/tty/serial/cpm_uart/cpm_uart.h b/drivers/tty/serial/cpm_uart/cpm_uart.h
+index 687b48fc6fb6..c220700df693 100644
+--- a/drivers/tty/serial/cpm_uart/cpm_uart.h
++++ b/drivers/tty/serial/cpm_uart/cpm_uart.h
+@@ -11,7 +11,6 @@
+ #define CPM_UART_H
+ 
+ #include <linux/platform_device.h>
+-#include <linux/fs_uart_pd.h>
+ 
+ struct gpio_desc;
+ 
+@@ -28,7 +27,7 @@ struct gpio_desc;
+ #define FLAG_SMC	0x00000002
+ #define FLAG_CONSOLE	0x00000001
+ 
+-#define UART_NR		fs_uart_nr
++#define UART_NR		6
+ 
+ #define RX_NUM_FIFO	4
+ #define RX_BUF_SIZE	32
+diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+index d804dd4019c0..c5a896f79d80 100644
+--- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+@@ -26,7 +26,6 @@
+ #include <linux/device.h>
+ #include <linux/memblock.h>
+ #include <linux/dma-mapping.h>
+-#include <linux/fs_uart_pd.h>
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+-- 
+2.41.0
 
-DPCM may achitect all the audio things in components and sound
-card,  it is good. but for the M2M case, it is complcated. not sure
-it is doable.
-
-best regards
-wang shengjiu
