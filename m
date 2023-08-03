@@ -4,39 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89E67C00528
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 11:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF8C7C04A94
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 11:28:26 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oG0KahOF;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RGmND0Mgcz3c3x
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 21:10:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RGmn549CJz3cGk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Aug 2023 21:28:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oG0KahOF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGmMg5pp9z3bNq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2023 21:09:51 +1000 (AEST)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.54])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RGlqN4DzSztRq5;
-	Thu,  3 Aug 2023 18:45:20 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by kwepemi500008.china.huawei.com
- (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Thu, 3 Aug
- 2023 18:48:42 +0800
-From: Ruan Jinjie <ruanjinjie@huawei.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
-	<qiang.zhao@nxp.com>, <leoyang.li@nxp.com>, <michal.simek@amd.com>,
-	<robh@kernel.org>
-Subject: [PATCH -next 0/2] soc: Do not check for 0 return after calling platform_get_irq()
-Date: Thu, 3 Aug 2023 18:48:05 +0800
-Message-ID: <20230803104807.814005-1-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RGmm70W9Tz30FW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2023 21:27:35 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 1E1FA61D60;
+	Thu,  3 Aug 2023 11:27:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C32ACC433C7;
+	Thu,  3 Aug 2023 11:27:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1691062051;
+	bh=94uq0Bo3QnKTETsWRpHX00Zq/UK65SuO7RrYYlFqiPY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=oG0KahOFGElnYYGp4HYhmQgvg12UxbdCUyxny5SFkjCOEMA5i4Q2UPxt18674wuma
+	 Jn8edrfpdKCWlbkX9s6h9Xw0tjVvFCatrcxiOv4ML9SNYiu21qT50URueafImaLgxx
+	 YSBZvgGLjfHjyEoK1+2pEP8T+k4Gr27Dk1XFZUO+t+6a5LzuG/SGcWQfW46koHrjQR
+	 IdPRrMxlk63w/H541M7W6UFDa+p5zVbXoUmgRIK5vdfuaW4i/PLVd7KhSVDaacjovF
+	 ZaE4IorHLntzzTN4qdqb0oyR+cqgz0GnKZ04Ymcdr7DlVE0M92+M1NMJum6uXPdF4l
+	 D3aJbsziWhgiA==
+Date: Thu, 3 Aug 2023 12:27:26 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v2 RESEND*3] ASoC: fsl MPC52xx drivers require
+ PPC_BESTCOMM
+Message-ID: <9581313f-5340-455d-a75d-dc27d2eb3ec0@sirena.org.uk>
+References: <20230803025941.24157-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="JtDrcl5vLUX5Kj+l"
+Content-Disposition: inline
+In-Reply-To: <20230803025941.24157-1-rdunlap@infradead.org>
+X-Cookie: One Bell System - it works.
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,27 +64,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ruanjinjie@huawei.com
+Cc: alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Grant Likely <grant.likely@secretlab.ca>, Jaroslav Kysela <perex@perex.cz>, Shengjiu Wang <shengjiu.wang@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit ce753ad1549c ("platform: finally disallow IRQ0 in
-platform_get_irq() and its ilk"), there is no possible for
-platform_get_irq() to return 0.
 
-And the return value of platform_get_irq() is
-more sensible to show the error reason.
+--JtDrcl5vLUX5Kj+l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Ruan Jinjie (2):
-  soc: fsl: qe: Do not check for 0 return after calling
-    platform_get_irq()
-  soc: xilinx: Do not check for 0 return after calling
-    platform_get_irq()
+On Wed, Aug 02, 2023 at 07:59:41PM -0700, Randy Dunlap wrote:
+> Both SND_MPC52xx_SOC_PCM030 and SND_MPC52xx_SOC_EFIKA select
+> SND_SOC_MPC5200_AC97. The latter symbol depends on PPC_BESTCOMM,
+> so the 2 former symbols should also depend on PPC_BESTCOMM since
+> "select" does not follow any dependency chains.
 
- drivers/soc/fsl/qe/qe_ic.c        | 4 ++--
- drivers/soc/xilinx/zynqmp_power.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Take a hint, it's not clear that the patch is tasteful.
 
--- 
-2.34.1
+--JtDrcl5vLUX5Kj+l
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmTLjx0ACgkQJNaLcl1U
+h9APBwf/Xlz8zi+ScLXchSdGVzlpBaygqFFBp+EYQnQuF+pLp1RgI0dzC3kNdV/b
+UiYqKfemmWpNm+E/hBv2DgcPPGbB6d1iQQqpTeuymxO4Gloe06zD6Xwa34VJWB7y
+lz8fB2dSwxMLTxBCRKo7zQ+ZvOCVHDBZ6TXUFjMtPNM16Mn6P/IurMUh1GT63csu
+ssICm8IKAyCnvZqfjYn2SsfwXKzs2M8h6aVsbSCD2WPjJfHBHrE3SN2jIWhHjkPJ
+fXZUi2MGJmGHiUD/rPOjHgFfJX1WCmaABpYQVfoZXsPF/Fk015SNCH2AR+8PU1NF
+dT/TaWGwdHn4vBWSFTpsk/0yHjL2KQ==
+=Baba
+-----END PGP SIGNATURE-----
+
+--JtDrcl5vLUX5Kj+l--
