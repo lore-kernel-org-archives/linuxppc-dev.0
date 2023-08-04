@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27318C001DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 13:32:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13489C001DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 13:32:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RHRTb5wfdz3dKX
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 23:32:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RHRV74K40z3cRh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 23:32:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHRRx52T6z3cLk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 23:30:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHRS20wgQz3cKK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 23:30:57 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RHRRk3wyXz9tG0;
-	Fri,  4 Aug 2023 15:30:42 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RHRRr2v8rz9tG8;
+	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7KHKm-eITv9W; Fri,  4 Aug 2023 15:30:42 +0200 (CEST)
+	with ESMTP id tpIgqsLyCOLn; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RHRRh3BHgz9tG2;
-	Fri,  4 Aug 2023 15:30:40 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RHRRr28Z4z9tG3;
+	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 688918B763;
-	Fri,  4 Aug 2023 15:30:40 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 43EAA8B77E;
+	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id S7HStBC5zR65; Fri,  4 Aug 2023 15:30:40 +0200 (CEST)
+	with ESMTP id T1Q2o6b9OOkb; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.144])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 170858B775;
-	Fri,  4 Aug 2023 15:30:40 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E5368B763;
+	Fri,  4 Aug 2023 15:30:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 374DUWex693295
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 374DUelT693345
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 4 Aug 2023 15:30:32 +0200
+	Fri, 4 Aug 2023 15:30:40 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 374DUWSQ693294;
-	Fri, 4 Aug 2023 15:30:32 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 374DUeg3693344;
+	Fri, 4 Aug 2023 15:30:40 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
@@ -50,14 +50,14 @@ To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
         Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>, robh@kernel.org
-Subject: [PATCH net-next v2 02/10] net: fs_enet: Fix address space and base types mismatches
-Date: Fri,  4 Aug 2023 15:30:12 +0200
-Message-ID: <25c7965e6aeeb6bbe1b6be5a3c2c7125182fcb02.1691155346.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH net-next v2 06/10] net: fs_enet: Remove stale prototypes from fsl_soc.c
+Date: Fri,  4 Aug 2023 15:30:16 +0200
+Message-ID: <f2f2db5dce3242eaa4a2aad6c226ba587fb0f513.1691155347.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1691155346.git.christophe.leroy@csgroup.eu>
 References: <cover.1691155346.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691155809; l=2593; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ZgDtmZ1i65wM+0RHDGG/TwwCzh2fNr2ZIgPm+CzmuSU=; b=wTwzL4Z0w9mSlMlgKrBFj1EFGF3FRmXl2Jnn99Zg0L4w5sJx65sf5tH6ZwaYnJPNYnKpMFbzS HGHWfzFZiWrDqXrkYSEqitORZWlvrIq1JB62v5Eg0b2YR83C1aOaF/H
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691155810; l=1158; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=d/WCjiasQLANg6IJlHtfimSgbCJSyWoFsctV/aZN7Qo=; b=ojYUrhwh9n5Bsq32bUkxMmoDkIA/MMcNC53GRYddpq/HOcV9I4X2yd6skryUQfHLHZOiFSRG4 sF8IKuDEwQWAR/mJNTPlTUkLPUlhRA9hWcmapH6XiCRSf/Br9AmFbp+
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,56 +75,39 @@ Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  CHECK   drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-drivers/net/ethernet/freescale/fs_enet/mac-fcc.c:550:9: warning: cast removes address space '__iomem' of expression
-drivers/net/ethernet/freescale/fs_enet/mac-fcc.c:550:9: error: subtraction of different types can't work (different address spaces)
-  CC      drivers/net/ethernet/freescale/fs_enet/mii-bitbang.o
-  CHECK   drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:95:31: warning: incorrect type in argument 1 (different base types)
-drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:95:31:    expected unsigned int [noderef] [usertype] __iomem *p
-drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:95:31:    got restricted __be32 [noderef] [usertype] __iomem *dat
-...
-drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:63:31: warning: incorrect type in argument 1 (different base types)
-drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:63:31:    expected unsigned int [noderef] [usertype] __iomem *p
-drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:63:31:    got restricted __be32 [noderef] [usertype] __iomem *dir
-...
+Commit 3dd82a1ea724 ("[POWERPC] CPM: Always use new binding.")
+removed last use of init_fec_ioports() and init_fcc_ioports().
 
-Fix those address space and base type mismatches reported by sparse.
+Remove stale prototypes then don't include anymore fs_enet_pd.h
+which was only included to provide fs_platform_info structure
+for the prototypes.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c     | 2 +-
- drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index 925428f1b0c8..ce63fd56df89 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -547,7 +547,7 @@ static void tx_restart(struct net_device *dev)
- 	}
- 	/* Now update the TBPTR and dirty flag to the current buffer */
- 	W32(ep, fen_genfcc.fcc_tbptr,
--		(uint) (((void *)recheck_bd - fep->ring_base) +
-+		(uint)(((void __iomem *)recheck_bd - fep->ring_base) +
- 		fep->ring_mem_addr));
- 	fep->dirty_tx = recheck_bd;
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 68709743450e..c11771542bec 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -23,7 +23,6 @@
+ #include <linux/phy.h>
+ #include <linux/spi/spi.h>
+ #include <linux/fsl_devices.h>
+-#include <linux/fs_enet_pd.h>
+ #include <linux/fs_uart_pd.h>
+ #include <linux/reboot.h>
  
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-index 91a69fc2f7c2..f965a2329055 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-@@ -29,8 +29,8 @@
+@@ -37,8 +36,6 @@
+ #include <asm/cpm2.h>
+ #include <asm/fsl_hcalls.h>	/* For the Freescale hypervisor */
  
- struct bb_info {
- 	struct mdiobb_ctrl ctrl;
--	__be32 __iomem *dir;
--	__be32 __iomem *dat;
-+	u32 __iomem *dir;
-+	u32 __iomem *dat;
- 	u32 mdio_msk;
- 	u32 mdc_msk;
- };
+-extern void init_fcc_ioports(struct fs_platform_info*);
+-extern void init_fec_ioports(struct fs_platform_info*);
+ extern void init_smc_ioports(struct fs_uart_platform_info*);
+ static phys_addr_t immrbase = -1;
+ 
 -- 
 2.41.0
 
