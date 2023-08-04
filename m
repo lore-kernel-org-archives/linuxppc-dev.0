@@ -4,44 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F227CC00528
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 09:36:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E7C4C001DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 09:37:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RHLFy520Vz3dht
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 19:36:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RHLGX1VfTz3dwj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 19:37:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=167.179.156.38; helo=167-179-156-38.a7b39c.syd.nbn.aussiebb.net; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
+Received: from 167-179-156-38.a7b39c.syd.nbn.aussiebb.net (167-179-156-38.a7b39c.syd.nbn.aussiebb.net [167.179.156.38])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHLC12Sm0z3cJg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 19:34:21 +1000 (AEST)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.53])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RHL941xGGzrS7f;
-	Fri,  4 Aug 2023 17:32:40 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by kwepemi500008.china.huawei.com
- (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Fri, 4 Aug
- 2023 17:33:44 +0800
-From: Ruan Jinjie <ruanjinjie@huawei.com>
-To: <peter.chen@kernel.org>, <gregkh@linuxfoundation.org>,
-	<leoyang.li@nxp.com>, <b-liu@ti.com>, <valentina.manea.m@gmail.com>,
-	<shuah@kernel.org>, <i@zenithal.me>, <stern@rowland.harvard.edu>,
-	<u.kleine-koenig@pengutronix.de>, <aaro.koskinen@iki.fi>,
-	<void0red@gmail.com>, <linux-usb@vger.kernel.org>,
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH -next 4/5] usb: musb: Remove an unnecessary NULL value
-Date: Fri, 4 Aug 2023 17:32:52 +0800
-Message-ID: <20230804093253.91647-5-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230804093253.91647-1-ruanjinjie@huawei.com>
-References: <20230804093253.91647-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHLFf5r7Xz3dhB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 19:36:37 +1000 (AEST)
+Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
+	by formenos.hmeau.com with smtp (Exim 4.94.2 #2 (Debian))
+	id 1qRrDk-003baN-9J; Fri, 04 Aug 2023 17:35:45 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Fri, 04 Aug 2023 17:35:44 +0800
+Date: Fri, 4 Aug 2023 17:35:44 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3] hwrng: Explicitly include correct DT includes
+Message-ID: <ZMzGcMJh6TA+V+p5@gondor.apana.org.au>
+References: <20230728134828.3224218-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230728134828.3224218-1-robh@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,32 +41,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ruanjinjie@huawei.com
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Tomer Maimon <tmaimon77@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Tali Perry <tali.perry1@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, Benjamin Fair <benjaminfair@google.com>, Florian Fainelli <florian.fainelli@broadcom.com>, openbmc@lists.ozlabs.org, Nancy Yuen <yuenn@google.com>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, devicetree@vger.kernel.org, Deepak Saxena <dsaxena@plexity.net>, Ray Jui <rjui@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, linux-rpi-kernel@lists.infradead.org, Olivia Mackall <olivia@selenic.com>, linux-arm-kernel@lists.infradead.org, Scott Branden <sbranden@broadcom.com>, Avi Fishman <avifishman70@gmail.com>, Patrick Venture <venture@google.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea
+  <claudiu.beznea@microchip.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The NULL initialization of the pointers assigned by kzalloc() first is
-not necessary, because if the kzalloc() failed, the pointers will be
-assigned NULL, otherwise it works as usual. so remove it.
+On Fri, Jul 28, 2023 at 07:48:27AM -0600, Rob Herring wrote:
+> The DT of_device.h and of_platform.h date back to the separate
+> of_platform_bus_type before it was merged into the regular platform bus.
+> As part of that merge prepping Arm DT support 13 years ago, they
+> "temporarily" include each other. They also include platform_device.h
+> and of.h. As a result, there's a pretty much random mix of those include
+> files used throughout the tree. In order to detangle these headers and
+> replace the implicit includes with struct declarations, users need to
+> explicitly include the correct includes.
+> 
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> v3:
+>  - Split out hw_random, ipmi and tpm
+> v2:
+>  - Fix build for pic32-rng.c dropping of_match_ptr()
+> ---
+>  drivers/char/hw_random/atmel-rng.c     | 2 +-
+>  drivers/char/hw_random/bcm2835-rng.c   | 3 +--
+>  drivers/char/hw_random/ingenic-trng.c  | 2 +-
+>  drivers/char/hw_random/iproc-rng200.c  | 3 +--
+>  drivers/char/hw_random/npcm-rng.c      | 3 +--
+>  drivers/char/hw_random/omap-rng.c      | 2 --
+>  drivers/char/hw_random/omap3-rom-rng.c | 1 -
+>  drivers/char/hw_random/pasemi-rng.c    | 3 +--
+>  drivers/char/hw_random/pic32-rng.c     | 5 ++---
+>  drivers/char/hw_random/stm32-rng.c     | 3 ++-
+>  drivers/char/hw_random/xgene-rng.c     | 5 ++---
+>  drivers/char/hw_random/xiphera-trng.c  | 1 -
+>  12 files changed, 12 insertions(+), 21 deletions(-)
 
-Signed-off-by: Ruan Jinjie <ruanjinjie@huawei.com>
----
- drivers/usb/musb/musb_gadget.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-index 31c44325e828..051c6da7cf6d 100644
---- a/drivers/usb/musb/musb_gadget.c
-+++ b/drivers/usb/musb/musb_gadget.c
-@@ -1130,7 +1130,7 @@ static int musb_gadget_disable(struct usb_ep *ep)
- struct usb_request *musb_alloc_request(struct usb_ep *ep, gfp_t gfp_flags)
- {
- 	struct musb_ep		*musb_ep = to_musb_ep(ep);
--	struct musb_request	*request = NULL;
-+	struct musb_request	*request;
- 
- 	request = kzalloc(sizeof *request, gfp_flags);
- 	if (!request)
+Patch applied.  Thanks.
 -- 
-2.34.1
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
