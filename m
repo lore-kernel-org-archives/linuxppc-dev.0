@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8858C04A94
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 13:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D12EBC00528
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 13:35:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RHRXT2q71z3fGd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 23:34:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RHRY10yV2z3cTM
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 23:35:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHRSK0M5sz3cVW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 23:31:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHRSN53ZDz3cWB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 23:31:16 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RHRRw0pXwz9tG6;
-	Fri,  4 Aug 2023 15:30:52 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RHRRx5x9tz9tG1;
+	Fri,  4 Aug 2023 15:30:53 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HfZcoc1Bb-al; Fri,  4 Aug 2023 15:30:52 +0200 (CEST)
+	with ESMTP id HfNVyfa3_gPh; Fri,  4 Aug 2023 15:30:53 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RHRRr2mVwz9tG7;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RHRRr2bDfz9tG5;
 	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 593EA8B778;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 530C18B763;
 	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id TZ1mdcPbhWDF; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
+	with ESMTP id h3GXZUbIiyXS; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.144])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A16EF8B776;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A274D8B778;
 	Fri,  4 Aug 2023 15:30:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 374DUeKN693353
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 374DUe25693341
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Fri, 4 Aug 2023 15:30:40 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 374DUesE693352;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 374DUeTT693340;
 	Fri, 4 Aug 2023 15:30:40 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -50,14 +50,14 @@ To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
         Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>, robh@kernel.org
-Subject: [PATCH net-next v2 08/10] net: fs_enet: Don't include fs_enet_pd.h when not needed
-Date: Fri,  4 Aug 2023 15:30:18 +0200
-Message-ID: <de62ad1261a801c4a8ae4238bd4842ff278d2ddf.1691155347.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH net-next v2 05/10] net: fs_enet: Remove has_phy field in fs_platform_info struct
+Date: Fri,  4 Aug 2023 15:30:15 +0200
+Message-ID: <bb5264e09e18f0ce8a0dbee399926a59f33cb248.1691155346.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1691155346.git.christophe.leroy@csgroup.eu>
 References: <cover.1691155346.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691155810; l=1659; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=wiYZJaVAd6C6hv7T6eDAPFilwlr4eeTyZnzPcByG1cc=; b=eTgm0DsrTNZLL3mMVSmqDyjjASK9lxEc4Y6ee2Pk6exwR+4PtVejVpYZtHpx19pE6Qdf2/5w/ 5GQKfqoT11LDfx2tTTvtL+jGLX0wCrmbYmE5Q9afbrmG6yT70Smtbea
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691155810; l=2058; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=M35boY3oJLnv+Ktg3fVSjFga7v0KalODYTNO8b5c+ww=; b=HTz0BE8UipCed9tyxCa6teXM7kZvwkpWnHphLrz8/8eS6ceYy4lYZrs8zFl/OWa0SPO8Bow2+ haBObk1Vn5oAiS7UVn55nswvG6ptQie8n042YSMv9YrL4GubUqv6rkr
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,54 +75,62 @@ Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Three platforms in arch/powerpc/platforms/8xx/ include fs_enet_pd.h
-but don't use anything from it.
+Since commit 3dd82a1ea724 ("[POWERPC] CPM: Always use new binding.")
+has_phy field is never set.
 
-Remove the includes.
+Remove dead code and remove the field.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/platforms/8xx/adder875.c        | 1 -
- arch/powerpc/platforms/8xx/mpc885ads_setup.c | 1 -
- arch/powerpc/platforms/8xx/tqm8xx_setup.c    | 1 -
- 3 files changed, 3 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 14 --------------
+ include/linux/fs_enet_pd.h                       |  1 -
+ 2 files changed, 15 deletions(-)
 
-diff --git a/arch/powerpc/platforms/8xx/adder875.c b/arch/powerpc/platforms/8xx/adder875.c
-index 7e83eb6746f4..f6bd232f8323 100644
---- a/arch/powerpc/platforms/8xx/adder875.c
-+++ b/arch/powerpc/platforms/8xx/adder875.c
-@@ -7,7 +7,6 @@
-  */
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+index f609dc112458..cdc89d83cf07 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+@@ -339,11 +339,7 @@ static void restart(struct net_device *dev)
+ static void stop(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+-	const struct fs_platform_info *fpi = fep->fpi;
+ 	struct fec __iomem *fecp = fep->fec.fecp;
+-
+-	struct fec_info *feci = dev->phydev->mdio.bus->priv;
+-
+ 	int i;
  
- #include <linux/init.h>
--#include <linux/fs_enet_pd.h>
- #include <linux/of_platform.h>
+ 	if ((FR(fecp, ecntrl) & FEC_ECNTRL_ETHER_EN) == 0)
+@@ -363,16 +359,6 @@ static void stop(struct net_device *dev)
+ 	FC(fecp, ecntrl, FEC_ECNTRL_ETHER_EN);
  
- #include <asm/time.h>
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 2fc7cacbcd96..c7c4f082b838 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -21,7 +21,6 @@
- #include <linux/device.h>
- #include <linux/delay.h>
+ 	fs_cleanup_bds(dev);
+-
+-	/* shut down FEC1? that's where the mii bus is */
+-	if (fpi->has_phy) {
+-		FS(fecp, r_cntrl, fpi->use_rmii ?
+-				FEC_RCNTRL_RMII_MODE :
+-				FEC_RCNTRL_MII_MODE);	/* MII/RMII enable */
+-		FS(fecp, ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_ETHER_EN);
+-		FW(fecp, ievent, FEC_ENET_MII);
+-		FW(fecp, mii_speed, feci->mii_speed);
+-	}
+ }
  
--#include <linux/fs_enet_pd.h>
- #include <linux/fs_uart_pd.h>
- #include <linux/fsl_devices.h>
- #include <linux/mii.h>
-diff --git a/arch/powerpc/platforms/8xx/tqm8xx_setup.c b/arch/powerpc/platforms/8xx/tqm8xx_setup.c
-index 7d8eb50bb9cd..6e56be852b2c 100644
---- a/arch/powerpc/platforms/8xx/tqm8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/tqm8xx_setup.c
-@@ -24,7 +24,6 @@
- #include <linux/device.h>
- #include <linux/delay.h>
+ static void napi_clear_event_fs(struct net_device *dev)
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index a1905e41c167..2b351b676467 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -123,7 +123,6 @@ struct fs_platform_info {
+ 	int napi_weight;	/* NAPI weight                 */
  
--#include <linux/fs_enet_pd.h>
- #include <linux/fs_uart_pd.h>
- #include <linux/fsl_devices.h>
- #include <linux/mii.h>
+ 	int use_rmii;		/* use RMII mode 	       */
+-	int has_phy;            /* if the network is phy container as well...*/
+ 
+ 	struct clk *clk_per;	/* 'per' clock for register access */
+ };
 -- 
 2.41.0
 
