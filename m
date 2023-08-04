@@ -4,37 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 368FFC001DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 07:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63577C001DE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 08:07:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RHHxw34KLz3cTr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 17:52:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=wangxiongfeng2@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 454 seconds by postgrey-1.37 at boromir; Fri, 04 Aug 2023 17:52:20 AEST
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RHJGX5w8zz3cjX
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 18:07:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangxiongfeng2@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHHxJ4D8Xz2xZp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 17:52:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHJFy2r1yz2xFl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 18:06:42 +1000 (AEST)
 Received: from dggpemm500002.china.huawei.com (unknown [172.30.72.55])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4RHHt04rL7zJrRR;
-	Fri,  4 Aug 2023 15:49:28 +0800 (CST)
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RHHkY4StdzrS9C;
+	Fri,  4 Aug 2023 15:43:01 +0800 (CST)
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500002.china.huawei.com (7.185.36.229) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Fri, 4 Aug 2023 15:52:12 +0800
+ 15.1.2507.27; Fri, 4 Aug 2023 15:44:06 +0800
 From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
-	<joel@jms.id.au>, <fbarrat@linux.ibm.com>
-Subject: [PATCH] powerpc/powernv/pci: use pci_dev_id() to simplify the code
-Date: Fri, 4 Aug 2023 16:04:35 +0800
-Message-ID: <20230804080435.191196-1-wangxiongfeng2@huawei.com>
+To: <fbarrat@linux.ibm.com>, <ajd@linux.ibm.com>, <arnd@arndb.de>,
+	<gregkh@linuxfoundation.org>
+Subject: [RFC PATCH] cxl: Use pci_find_vsec_capability() to simplify the code
+Date: Fri, 4 Aug 2023 15:56:30 +0800
+Message-ID: <20230804075630.186054-1-wangxiongfeng2@huawei.com>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
  dggpemm500002.china.huawei.com (7.185.36.229)
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -52,45 +51,45 @@ Cc: linuxppc-dev@lists.ozlabs.org, wangxiongfeng2@huawei.com, yangyingliang@huaw
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PCI core API pci_dev_id() can be used to get the BDF number for a pci
-device. We don't need to compose it mannually. Use pci_dev_id() to
-simplify the code a little bit.
+PCI core add pci_find_vsec_capability() to query VSEC. We can use that
+core API to simplify the code.
+
+The only logical change is that pci_find_vsec_capability check the
+Vendor ID before finding the VSEC.
+
+PCI spec rev 5.0 says in 7.9.5.2 Vendor-Specific Header:
+  VSEC ID - This field is a vendor-defined ID number that indicates the
+  nature and format of the VSEC structure
+  Software must qualify the Vendor ID before interpreting this field.
 
 Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/misc/cxl/pci.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index cb637827bc58..28fac4770073 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -997,14 +997,14 @@ static void pnv_pci_ioda_dma_dev_setup(struct pci_dev *pdev)
- 	struct pnv_ioda_pe *pe;
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 0ff944860dda..f3108977755d 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -150,16 +150,8 @@ static inline resource_size_t p2_size(struct pci_dev *dev)
  
- 	/* Check if the BDFN for this device is associated with a PE yet */
--	pe = pnv_pci_bdfn_to_pe(phb, pdev->devfn | (pdev->bus->number << 8));
-+	pe = pnv_pci_bdfn_to_pe(phb, pci_dev_id(pdev));
- 	if (!pe) {
- 		/* VF PEs should be pre-configured in pnv_pci_sriov_enable() */
- 		if (WARN_ON(pdev->is_virtfn))
- 			return;
+ static int find_cxl_vsec(struct pci_dev *dev)
+ {
+-	int vsec = 0;
+-	u16 val;
+-
+-	while ((vsec = pci_find_next_ext_capability(dev, vsec, PCI_EXT_CAP_ID_VNDR))) {
+-		pci_read_config_word(dev, vsec + 0x4, &val);
+-		if (val == CXL_PCI_VSEC_ID)
+-			return vsec;
+-	}
+-	return 0;
+-
++	return pci_find_vsec_capability(dev, PCI_VENDOR_ID_IBM,
++					CXL_PCI_VSEC_ID);
+ }
  
- 		pnv_pci_configure_bus(pdev->bus);
--		pe = pnv_pci_bdfn_to_pe(phb, pdev->devfn | (pdev->bus->number << 8));
-+		pe = pnv_pci_bdfn_to_pe(phb, pci_dev_id(pdev));
- 		pci_info(pdev, "Configured PE#%x\n", pe ? pe->pe_number : 0xfffff);
- 
- 
-@@ -2526,7 +2526,7 @@ static struct iommu_group *pnv_pci_device_group(struct pci_controller *hose,
- 	if (WARN_ON(!phb))
- 		return ERR_PTR(-ENODEV);
- 
--	pe = pnv_pci_bdfn_to_pe(phb, pdev->devfn | (pdev->bus->number << 8));
-+	pe = pnv_pci_bdfn_to_pe(phb, pci_dev_id(pdev));
- 	if (!pe)
- 		return ERR_PTR(-ENODEV);
- 
+ static void dump_cxl_config_space(struct pci_dev *dev)
 -- 
 2.20.1
 
