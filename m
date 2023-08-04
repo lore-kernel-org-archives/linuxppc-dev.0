@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13489C001DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 13:32:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFBB4C001DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 13:33:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RHRV74K40z3cRh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 23:32:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RHRVj20bwz3dgj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Aug 2023 23:33:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHRS20wgQz3cKK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 23:30:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RHRS557K4z3cST
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2023 23:31:01 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RHRRr2v8rz9tG8;
-	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RHRRs164Hz9tG3;
+	Fri,  4 Aug 2023 15:30:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tpIgqsLyCOLn; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
+	with ESMTP id u4GCvJnGJO5F; Fri,  4 Aug 2023 15:30:49 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RHRRr28Z4z9tG3;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RHRRr28Y6z9tG2;
 	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 43EAA8B77E;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 43C398B77D;
 	Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id T1Q2o6b9OOkb; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
+	with ESMTP id 2cyf4YMQf6a3; Fri,  4 Aug 2023 15:30:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.144])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E5368B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A55DA8B779;
 	Fri,  4 Aug 2023 15:30:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 374DUelT693345
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 374DUduj693328
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Fri, 4 Aug 2023 15:30:40 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 374DUeg3693344;
-	Fri, 4 Aug 2023 15:30:40 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 374DUdYP693298;
+	Fri, 4 Aug 2023 15:30:39 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
@@ -50,14 +50,14 @@ To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
         Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>, robh@kernel.org
-Subject: [PATCH net-next v2 06/10] net: fs_enet: Remove stale prototypes from fsl_soc.c
-Date: Fri,  4 Aug 2023 15:30:16 +0200
-Message-ID: <f2f2db5dce3242eaa4a2aad6c226ba587fb0f513.1691155347.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH net-next v2 03/10] net: fs_enet: Remove fs_get_id()
+Date: Fri,  4 Aug 2023 15:30:13 +0200
+Message-ID: <7a53b88cc40302fcbea59554f5e7067e3594ad53.1691155346.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1691155346.git.christophe.leroy@csgroup.eu>
 References: <cover.1691155346.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691155810; l=1158; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=d/WCjiasQLANg6IJlHtfimSgbCJSyWoFsctV/aZN7Qo=; b=ojYUrhwh9n5Bsq32bUkxMmoDkIA/MMcNC53GRYddpq/HOcV9I4X2yd6skryUQfHLHZOiFSRG4 sF8IKuDEwQWAR/mJNTPlTUkLPUlhRA9hWcmapH6XiCRSf/Br9AmFbp+
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691155809; l=877; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=YPuYxchGmeaw9yXFoiX8HdeChYSA05DjiAjNvISq/+4=; b=81HZjJgBR3rs72E0uFd2bGfYkMJk/4YEvuqWIpCPhQqhUVORBOWtIYSeBExyOkQSU3ienQQEE c5fS9H2F+i9AbjRPpijCXBXO5W5OSAqSZjMwWg8SuUrbuMb4wXCfwM+
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,39 +75,36 @@ Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 3dd82a1ea724 ("[POWERPC] CPM: Always use new binding.")
-removed last use of init_fec_ioports() and init_fcc_ioports().
+fs_get_id() hasn't been used since commit b219108cbace ("fs_enet:
+Remove !CONFIG_PPC_CPM_NEW_BINDING code")
 
-Remove stale prototypes then don't include anymore fs_enet_pd.h
-which was only included to provide fs_platform_info structure
-for the prototypes.
+Remove it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/sysdev/fsl_soc.c | 3 ---
- 1 file changed, 3 deletions(-)
+ include/linux/fs_enet_pd.h | 11 -----------
+ 1 file changed, 11 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 68709743450e..c11771542bec 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -23,7 +23,6 @@
- #include <linux/phy.h>
- #include <linux/spi/spi.h>
- #include <linux/fsl_devices.h>
--#include <linux/fs_enet_pd.h>
- #include <linux/fs_uart_pd.h>
- #include <linux/reboot.h>
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 77d783f71527..2351c3d9404d 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -151,15 +151,4 @@ struct fs_mii_fec_platform_info {
+ 	u32 mii_speed;
+ };
  
-@@ -37,8 +36,6 @@
- #include <asm/cpm2.h>
- #include <asm/fsl_hcalls.h>	/* For the Freescale hypervisor */
- 
--extern void init_fcc_ioports(struct fs_platform_info*);
--extern void init_fec_ioports(struct fs_platform_info*);
- extern void init_smc_ioports(struct fs_uart_platform_info*);
- static phys_addr_t immrbase = -1;
- 
+-static inline int fs_get_id(struct fs_platform_info *fpi)
+-{
+-	if(strstr(fpi->fs_type, "SCC"))
+-		return fs_scc_index2id(fpi->fs_no);
+-	if(strstr(fpi->fs_type, "FCC"))
+-		return fs_fcc_index2id(fpi->fs_no);
+-	if(strstr(fpi->fs_type, "FEC"))
+-		return fs_fec_index2id(fpi->fs_no);
+-	return fpi->fs_no;
+-}
+-
+ #endif
 -- 
 2.41.0
 
