@@ -4,57 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B1E8EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 01:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 578E4C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 04:00:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=clGaQYfN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=fPoU/fRu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RJMky1RcPz3cQD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 11:47:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RJQht54lfz30f4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 14:00:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=clGaQYfN;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=fPoU/fRu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RJMjr6nYWz2yTy
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2023 11:46:05 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1691286369; x=1722822369;
-  h=date:from:to:cc:subject:message-id;
-  bh=txrdPp6/GGcjyhse7rlw6aCr7bC5raWoADwclHrs4ZY=;
-  b=clGaQYfN4IfGzu53bdkr7fpthpgl8eaeEpB7wToo9hCOApr5pmBHy6zl
-   UdCJNO83RShTHMUjH6bKOfv0ld6Oomm4HzS2WVCGfto31Z0vYYGiBKZBp
-   D4xENr/CBkzzxNWf2sDiE6i6JO2r31+UZFXGkfI4+oC7z2kyRYi0iEcNj
-   t14H57aSEKOlH9X41lX6skOy1+/+NBIyTdeuCAQMefgj4PBnPQFQMJWz1
-   SmTBNIB/8WG1WkjkOeUvEq/kUIB7Oy03Qg6gWnZNH8WkQF4Te4ZNYp83l
-   5Htxznqm/r+MszBzzVkCF+28YbCi2y8B5hCQs41tsWeFY8d/KkaKhMnxW
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10793"; a="350659493"
-X-IronPort-AV: E=Sophos;i="6.01,259,1684825200"; 
-   d="scan'208";a="350659493"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Aug 2023 18:46:00 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10793"; a="800521150"
-X-IronPort-AV: E=Sophos;i="6.01,259,1684825200"; 
-   d="scan'208";a="800521150"
-Received: from lkp-server01.sh.intel.com (HELO d1ccc7e87e8f) ([10.239.97.150])
-  by fmsmga004.fm.intel.com with ESMTP; 05 Aug 2023 18:45:59 -0700
-Received: from kbuild by d1ccc7e87e8f with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1qSSqE-0003yp-1q;
-	Sun, 06 Aug 2023 01:45:58 +0000
-Date: Sun, 06 Aug 2023 09:45:58 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- f70befab789763be9c0a5d7073a4f27b9337c704
-Message-ID: <202308060956.fthoxXOn-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RJQgr566zz2yVR
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2023 13:59:36 +1000 (AEST)
+Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-5844bb9923eso39993247b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2023 20:59:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1691294373; x=1691899173;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=lrjEl367R/y3HI+4JKvQ0DDl1pq1Lit9a0Zn8ubupwU=;
+        b=fPoU/fRuHX5caeTxQNTi6xCx7rooozWVX8OCkvcRFbiVcZeihuuZZlQmHVtAw45YAU
+         kFT79lh292tEMsPH0yFic9OWUawFTESm7xFiS7iMD5hNLVpkpBLE1WwEzPp8KYPc9FvH
+         766vba+m+Ozk/SUm7hZshVAuKp3hxt+fVNapmNcBwnLA8Tu4o53ObK+EGCiIS1gfH4rG
+         uel9HuMTx0Oe+VPeKFnHbRMjn+5QkVxnK6oa0BwRKKK/2LR8eKx9092x6l95LvzWPB4R
+         /SFh7mg0lNI5CkVsjDsRo/ouKCF7FXkkPaU6nGGyY8dfVtlmJW+KmCWlykivefXbbzzJ
+         QLIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691294373; x=1691899173;
+        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=lrjEl367R/y3HI+4JKvQ0DDl1pq1Lit9a0Zn8ubupwU=;
+        b=kmu2MavWkzpFY9UJu/YAMbftxAmKwq63S36xvAcbmB3nctKa2WGVqh/hN+7xNvzG2u
+         iP7xx9hL8CMlKZ56L35N2qTgcsWpAgCni4kPjrAuCZiOgZR6Vu8nWfMAKRqo9qBIN4sz
+         mYBVb1l9EsdVYnEB5c1VOKH5O2ioLW2VnJf7suBMUhezqDBuBuM9fjCkyhYhkMwwLpGz
+         AUmbdkWQ8E35xV9xo5xzmUyHsV3e33nXAu+2PLsAOqZ6N7zkecdoXYIgy2RZIZzoXm/G
+         y07ytvcu2kv8GB1P67Wx3cc/yRHB36FlaMSsamMR1nB0mQb7Ml+ffRGYUj0b67Uy8Ysc
+         y/1g==
+X-Gm-Message-State: AOJu0YyK8fqORisVc6/bUyvw+NRcp2ZHPw2uNvz68+dY+FU1h9NDeHxj
+	Dge0W0MLt8mexLmjUBQFmFZoOQ==
+X-Google-Smtp-Source: AGHT+IEL/z5m+be82hvNIbgvVlYv0KrLIPiuRdrdQbyoEcvhg0nO6N3eCW4FBoXQZBwSKC83ZFZFiw==
+X-Received: by 2002:a0d:e253:0:b0:584:189c:13ec with SMTP id l80-20020a0de253000000b00584189c13ecmr5953081ywe.21.1691294373186;
+        Sat, 05 Aug 2023 20:59:33 -0700 (PDT)
+Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id p6-20020a815b06000000b00584554be59dsm1887384ywb.85.2023.08.05.20.59.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 05 Aug 2023 20:59:32 -0700 (PDT)
+Date: Sat, 5 Aug 2023 20:59:27 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@ripple.attlocal.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3 10/13 fix2] mm/khugepaged: collapse_pte_mapped_thp() with
+ mmap_read_lock(): fix2
+In-Reply-To: <0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com>
+Message-ID: <e0197433-8a47-6a65-534d-eda26eeb78b0@google.com>
+References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <b53be6a4-7715-51f9-aad-f1347dcb7c4@google.com> <0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,130 +77,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hel
+ lstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Peter Xu <peterx@redhat.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: f70befab789763be9c0a5d7073a4f27b9337c704  powerpc/pmac32: enable serial options by default in defconfig
+Use ptep_clear() instead of pte_clear(): when CONFIG_PAGE_TABLE_CHECK=y,
+ptep_clear() adds some accounting, missing which would cause a BUG later.
 
-elapsed time: 784m
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Reported-by: Qi Zheng <zhengqi.arch@bytedance.com>
+Closes: https://lore.kernel.org/linux-mm/0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com/
+---
+ mm/khugepaged.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-configs tested: 107
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r011-20230805   gcc  
-arc                  randconfig-r012-20230805   gcc  
-arc                  randconfig-r032-20230805   gcc  
-arc                  randconfig-r034-20230805   gcc  
-arc                  randconfig-r036-20230805   gcc  
-arc                  randconfig-r043-20230731   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r003-20230805   clang
-arm                  randconfig-r013-20230805   gcc  
-arm                  randconfig-r035-20230805   clang
-arm                  randconfig-r046-20230731   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r033-20230805   gcc  
-csky                                defconfig   gcc  
-hexagon              randconfig-r005-20230805   clang
-hexagon              randconfig-r041-20230731   clang
-hexagon              randconfig-r045-20230731   clang
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-r004-20230731   gcc  
-i386         buildonly-randconfig-r005-20230731   gcc  
-i386         buildonly-randconfig-r006-20230731   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-i001-20230731   gcc  
-i386                 randconfig-i002-20230731   gcc  
-i386                 randconfig-i003-20230731   gcc  
-i386                 randconfig-i004-20230731   gcc  
-i386                 randconfig-i005-20230731   gcc  
-i386                 randconfig-i006-20230731   gcc  
-i386                 randconfig-i011-20230801   clang
-i386                 randconfig-i012-20230801   clang
-i386                 randconfig-i013-20230801   clang
-i386                 randconfig-i014-20230801   clang
-i386                 randconfig-i015-20230801   clang
-i386                 randconfig-i016-20230801   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r023-20230805   gcc  
-m68k                             allmodconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r021-20230805   gcc  
-m68k                 randconfig-r024-20230805   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                 randconfig-r006-20230805   clang
-nios2                               defconfig   gcc  
-openrisc             randconfig-r016-20230805   gcc  
-openrisc             randconfig-r022-20230805   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r001-20230805   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r042-20230731   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r044-20230731   clang
-sh                               allmodconfig   gcc  
-sh                   randconfig-r004-20230805   gcc  
-sh                   randconfig-r031-20230805   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r002-20230805   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-r001-20230731   gcc  
-x86_64       buildonly-randconfig-r002-20230731   gcc  
-x86_64       buildonly-randconfig-r003-20230731   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-r015-20230805   clang
-x86_64               randconfig-x001-20230731   clang
-x86_64               randconfig-x002-20230731   clang
-x86_64               randconfig-x003-20230731   clang
-x86_64               randconfig-x004-20230731   clang
-x86_64               randconfig-x005-20230731   clang
-x86_64               randconfig-x006-20230731   clang
-x86_64               randconfig-x011-20230731   gcc  
-x86_64               randconfig-x012-20230731   gcc  
-x86_64               randconfig-x013-20230731   gcc  
-x86_64               randconfig-x014-20230731   gcc  
-x86_64               randconfig-x015-20230731   gcc  
-x86_64               randconfig-x016-20230731   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa               randconfig-r025-20230805   gcc  
-
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index bb76a5d454de..78fc1a24a1cc 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -1603,7 +1603,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+ 		 * TLB flush can be left until pmdp_collapse_flush() does it.
+ 		 * PTE dirty? Shmem page is already dirty; file is read-only.
+ 		 */
+-		pte_clear(mm, addr, pte);
++		ptep_clear(mm, addr, pte);
+ 		page_remove_rmap(page, vma, false);
+ 		nr_ptes++;
+ 	}
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.35.3
+
