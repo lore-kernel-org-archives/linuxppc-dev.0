@@ -4,53 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FDB7C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 15:13:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E235C001B0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 15:38:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e/FIPO3I;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WsGd4QRK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RJjd765S2z30Ng
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 01:13:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RJk9h6m6vz30QQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 01:38:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e/FIPO3I;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WsGd4QRK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RJjYZ2cMvz2ywL
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2023 01:10:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RJk8j0GcTz2yG9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2023 01:37:08 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 3C06C61132;
-	Sun,  6 Aug 2023 15:10:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E1F7C433CA;
-	Sun,  6 Aug 2023 15:10:05 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 1F1D5611A0;
+	Sun,  6 Aug 2023 15:37:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 579F7C433C7;
+	Sun,  6 Aug 2023 15:37:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1691334607;
-	bh=XWcGPs3wlJLQMOkajZ5ap0aPtwZ0AG8zS8ewAKz4h5g=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=e/FIPO3InylhjF4O3HN9gZVSNXzwJ9cahwetd+dnCssUrzzS9XLsvbyg2xWTGMMlS
-	 g/4GL3XRJEAQbN2bVXVc7CNr/BytxauXZHAnzUf06iqzbriX3KWxHdjCvvLKOdIec9
-	 z4hlSoJhGBazr3tWsMjiQmKIyaT15LTxr64PSjs1N5WWLWLqaaH0NBzDNDUleBC0KR
-	 DtmkwXSNacaRidoD5G6HpeB0TienVDGnpiT69uZKEXHQ5kfLXYIrsonLDIh0LHJaX4
-	 fwaMAtLaeoGTPjR6/BuIwwQ0Nl/CHebMVRje561j+jFi2lSkYuGVTPkcondx9xClmn
-	 EXuEEnF8qLgaw==
-From: Masahiro Yamada <masahiroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc: remove <asm/export.h>
-Date: Mon,  7 Aug 2023 00:09:54 +0900
-Message-Id: <20230806150954.394189-3-masahiroy@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230806150954.394189-1-masahiroy@kernel.org>
-References: <20230806150954.394189-1-masahiroy@kernel.org>
+	s=k20201202; t=1691336226;
+	bh=2mjUK8700j2g79TU7Ih+YIIZC0YtpcE+kTjNT8R0CGc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=WsGd4QRKxt0EYKFdTHhkTw3chr5tuibu0t6WAJe5OHdfSMg+qMmcOUrAz7VHLVjx+
+	 8HZqicBCR2C3uNmmqt8FfB0PwZSr2/K/cDNTFiczGwWKdHQoMdk3CP8CMRoNvs0CH2
+	 mKhqq9MX3spfTbVK67nqyea0Z1MYlPmu9jVUD20x6/ss78WPchc33rcnyLV9D8FGjd
+	 RwFnH3ruq7PQEdmo0kv8bHwVN9E46h9wqAMrFpxo+3LFVnYgjJcztsXO2MxewWXNrv
+	 S/+2uOzKfWp5bkjYPmiV8pXeaf/H60Bsjt1DXpR7iFFW6sfPhIPHdvfMWZxoQsFQa1
+	 +Xvhb4jcbQnbg==
+Date: Sun, 6 Aug 2023 17:37:02 +0200
+From: Simon Horman <horms@kernel.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH net-next v2 10/10] net: fs_enet: Use cpm_muram_xxx()
+ functions instead of cpm_dpxxx() macros
+Message-ID: <ZM++Hq8h6EUnUGQL@vergenet.net>
+References: <cover.1691155346.git.christophe.leroy@csgroup.eu>
+ <2400b3156891adb653dc387fff6393de10cf2b24.1691155347.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2400b3156891adb653dc387fff6393de10cf2b24.1691155347.git.christophe.leroy@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,33 +63,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Masahiro Yamada <masahiroy@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
+Cc: robh@kernel.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All *.S files under arch/powerpc/ have been converted to include
-<linux/export.h> instead of <asm/export.h>.
+On Fri, Aug 04, 2023 at 03:30:20PM +0200, Christophe Leroy wrote:
+> cpm_dpxxx() macros are now always referring to cpm_muram_xxx() fonctions
 
-Remove <asm/export.h>.
+nit: fonctions -> functions
 
-Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
----
+Thanks Christophe,
 
- arch/powerpc/include/asm/Kbuild | 1 -
- 1 file changed, 1 deletion(-)
+This minor nit notwithstanding, this series looks good to me.
+I'll send a reviewed-by tag for the whole series in response
+to the cover letter.
 
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index 419319c4963c..61a8d5555cd7 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -3,7 +3,6 @@ generated-y += syscall_table_32.h
- generated-y += syscall_table_64.h
- generated-y += syscall_table_spu.h
- generic-y += agp.h
--generic-y += export.h
- generic-y += kvm_types.h
- generic-y += mcs_spinlock.h
- generic-y += qrwlock.h
--- 
-2.39.2
-
+...
