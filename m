@@ -4,68 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 578E4C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 04:00:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE086C001DE
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 15:11:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=fPoU/fRu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kSt2zt1z;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RJQht54lfz30f4
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Aug 2023 14:00:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RJjZj4XYQz3cM5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 01:11:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=fPoU/fRu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kSt2zt1z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RJQgr566zz2yVR
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2023 13:59:36 +1000 (AEST)
-Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-5844bb9923eso39993247b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2023 20:59:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1691294373; x=1691899173;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=lrjEl367R/y3HI+4JKvQ0DDl1pq1Lit9a0Zn8ubupwU=;
-        b=fPoU/fRuHX5caeTxQNTi6xCx7rooozWVX8OCkvcRFbiVcZeihuuZZlQmHVtAw45YAU
-         kFT79lh292tEMsPH0yFic9OWUawFTESm7xFiS7iMD5hNLVpkpBLE1WwEzPp8KYPc9FvH
-         766vba+m+Ozk/SUm7hZshVAuKp3hxt+fVNapmNcBwnLA8Tu4o53ObK+EGCiIS1gfH4rG
-         uel9HuMTx0Oe+VPeKFnHbRMjn+5QkVxnK6oa0BwRKKK/2LR8eKx9092x6l95LvzWPB4R
-         /SFh7mg0lNI5CkVsjDsRo/ouKCF7FXkkPaU6nGGyY8dfVtlmJW+KmCWlykivefXbbzzJ
-         QLIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691294373; x=1691899173;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=lrjEl367R/y3HI+4JKvQ0DDl1pq1Lit9a0Zn8ubupwU=;
-        b=kmu2MavWkzpFY9UJu/YAMbftxAmKwq63S36xvAcbmB3nctKa2WGVqh/hN+7xNvzG2u
-         iP7xx9hL8CMlKZ56L35N2qTgcsWpAgCni4kPjrAuCZiOgZR6Vu8nWfMAKRqo9qBIN4sz
-         mYBVb1l9EsdVYnEB5c1VOKH5O2ioLW2VnJf7suBMUhezqDBuBuM9fjCkyhYhkMwwLpGz
-         AUmbdkWQ8E35xV9xo5xzmUyHsV3e33nXAu+2PLsAOqZ6N7zkecdoXYIgy2RZIZzoXm/G
-         y07ytvcu2kv8GB1P67Wx3cc/yRHB36FlaMSsamMR1nB0mQb7Ml+ffRGYUj0b67Uy8Ysc
-         y/1g==
-X-Gm-Message-State: AOJu0YyK8fqORisVc6/bUyvw+NRcp2ZHPw2uNvz68+dY+FU1h9NDeHxj
-	Dge0W0MLt8mexLmjUBQFmFZoOQ==
-X-Google-Smtp-Source: AGHT+IEL/z5m+be82hvNIbgvVlYv0KrLIPiuRdrdQbyoEcvhg0nO6N3eCW4FBoXQZBwSKC83ZFZFiw==
-X-Received: by 2002:a0d:e253:0:b0:584:189c:13ec with SMTP id l80-20020a0de253000000b00584189c13ecmr5953081ywe.21.1691294373186;
-        Sat, 05 Aug 2023 20:59:33 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id p6-20020a815b06000000b00584554be59dsm1887384ywb.85.2023.08.05.20.59.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 05 Aug 2023 20:59:32 -0700 (PDT)
-Date: Sat, 5 Aug 2023 20:59:27 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 10/13 fix2] mm/khugepaged: collapse_pte_mapped_thp() with
- mmap_read_lock(): fix2
-In-Reply-To: <0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com>
-Message-ID: <e0197433-8a47-6a65-534d-eda26eeb78b0@google.com>
-References: <7cd843a9-aa80-14f-5eb2-33427363c20@google.com> <b53be6a4-7715-51f9-aad-f1347dcb7c4@google.com> <0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RJjYY212kz2yV3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2023 01:10:09 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 20CFE61194;
+	Sun,  6 Aug 2023 15:10:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD511C433C7;
+	Sun,  6 Aug 2023 15:10:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1691334605;
+	bh=MphpIhD3thEdHZ/rHZRWdlhY2fLCRpb5BviGtAQTVrc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=kSt2zt1zDpq9nQjvrVAKamZrlO4ccN/pr08P2+H66sWYoAigzXj791hNw4nl5oXto
+	 sJoQjnJQ4YorNLDqz+/67iRCsUYT8Q8tSEnz5gj0tr69Jyoy+vHE6ujeNbUGuu69Zz
+	 1OaztbIrHZQONY9j4ebpPSnMip1yO2bJ2jVbzC08y6A+uFJFCR+F5sjEn+5/aYbtVk
+	 E34LHqrPu8867MWH9qQVPDo42nPjZozngFkJI6q4+OvDyy+OEDuqABQoM5huBPswtR
+	 AsjaSIaW6jhhLpOM87AOsos2Xgmnu7PO1zJ6NORm5FbKK2oU8o8zSoTLmI9cxfYuFF
+	 oz9j4rzvL6mAA==
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/3] powerpc: replace #include <asm/export.h> with #include <linux/export.h>
+Date: Mon,  7 Aug 2023 00:09:53 +0900
+Message-Id: <20230806150954.394189-2-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230806150954.394189-1-masahiroy@kernel.org>
+References: <20230806150954.394189-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,34 +62,536 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Qi Zheng <zhengqi.arch@bytedance.com>, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hel
- lstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Peter Xu <peterx@redhat.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-arch@vger.kernel.org, Masahiro Yamada <masahiroy@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use ptep_clear() instead of pte_clear(): when CONFIG_PAGE_TABLE_CHECK=y,
-ptep_clear() adds some accounting, missing which would cause a BUG later.
+Commit ddb5cdbafaaa ("kbuild: generate KSYMTAB entries by modpost")
+deprecated <asm/export.h>, which is now a wrapper of <linux/export.h>.
 
-Signed-off-by: Hugh Dickins <hughd@google.com>
-Reported-by: Qi Zheng <zhengqi.arch@bytedance.com>
-Closes: https://lore.kernel.org/linux-mm/0df84f9f-e9b0-80b1-4c9e-95abc1a73a96@bytedance.com/
+Replace #include <asm/export.h> with #include <linux/export.h>.
+
+After all the <asm/export.h> lines are converted, <asm/export.h> and
+<asm-generic/export.h> will be removed.
+
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
- mm/khugepaged.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index bb76a5d454de..78fc1a24a1cc 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -1603,7 +1603,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
- 		 * TLB flush can be left until pmdp_collapse_flush() does it.
- 		 * PTE dirty? Shmem page is already dirty; file is read-only.
- 		 */
--		pte_clear(mm, addr, pte);
-+		ptep_clear(mm, addr, pte);
- 		page_remove_rmap(page, vma, false);
- 		nr_ptes++;
- 	}
+ arch/powerpc/kernel/epapr_hcalls.S      | 2 +-
+ arch/powerpc/kernel/fpu.S               | 2 +-
+ arch/powerpc/kernel/misc.S              | 2 +-
+ arch/powerpc/kernel/misc_32.S           | 2 +-
+ arch/powerpc/kernel/misc_64.S           | 2 +-
+ arch/powerpc/kernel/tm.S                | 2 +-
+ arch/powerpc/kernel/trace/ftrace_low.S  | 2 +-
+ arch/powerpc/kernel/ucall.S             | 2 +-
+ arch/powerpc/kernel/vector.S            | 2 +-
+ arch/powerpc/kvm/book3s_64_entry.S      | 2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 2 +-
+ arch/powerpc/kvm/tm.S                   | 2 +-
+ arch/powerpc/lib/checksum_32.S          | 2 +-
+ arch/powerpc/lib/checksum_64.S          | 2 +-
+ arch/powerpc/lib/copy_32.S              | 2 +-
+ arch/powerpc/lib/copy_mc_64.S           | 2 +-
+ arch/powerpc/lib/copypage_64.S          | 2 +-
+ arch/powerpc/lib/copyuser_64.S          | 2 +-
+ arch/powerpc/lib/hweight_64.S           | 2 +-
+ arch/powerpc/lib/mem_64.S               | 2 +-
+ arch/powerpc/lib/memcmp_32.S            | 2 +-
+ arch/powerpc/lib/memcmp_64.S            | 2 +-
+ arch/powerpc/lib/memcpy_64.S            | 2 +-
+ arch/powerpc/lib/string.S               | 2 +-
+ arch/powerpc/lib/string_32.S            | 2 +-
+ arch/powerpc/lib/string_64.S            | 2 +-
+ arch/powerpc/lib/strlen_32.S            | 2 +-
+ arch/powerpc/mm/book3s32/hash_low.S     | 2 +-
+ arch/powerpc/sysdev/dcr-low.S           | 2 +-
+ 29 files changed, 29 insertions(+), 29 deletions(-)
+
+diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+index 033116e465d0..1a9b5ae8ccb2 100644
+--- a/arch/powerpc/kernel/epapr_hcalls.S
++++ b/arch/powerpc/kernel/epapr_hcalls.S
+@@ -3,6 +3,7 @@
+  * Copyright (C) 2012 Freescale Semiconductor, Inc.
+  */
+ 
++#include <linux/export.h>
+ #include <linux/threads.h>
+ #include <asm/epapr_hcalls.h>
+ #include <asm/reg.h>
+@@ -12,7 +13,6 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+-#include <asm/export.h>
+ 
+ #ifndef CONFIG_PPC64
+ /* epapr_ev_idle() was derived from e500_idle() */
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index f71f2bbd4de6..6a9acfb690c9 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -9,6 +9,7 @@
+  *    Copyright (C) 1997 Dan Malek (dmalek@jlc.net).
+  */
+ 
++#include <linux/export.h>
+ #include <asm/reg.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -18,7 +19,6 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/ptrace.h>
+-#include <asm/export.h>
+ #include <asm/asm-compat.h>
+ #include <asm/feature-fixups.h>
+ 
+diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+index fb7de3543c03..29e1440d14cc 100644
+--- a/arch/powerpc/kernel/misc.S
++++ b/arch/powerpc/kernel/misc.S
+@@ -10,11 +10,11 @@
+  *
+  * setjmp/longjmp code by Paul Mackerras.
+  */
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/unistd.h>
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+-#include <asm/export.h>
+ 
+ 	.text
+ 
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index daf8f87d2372..2eabb15687a6 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -8,6 +8,7 @@
+  *
+  */
+ 
++#include <linux/export.h>
+ #include <linux/sys.h>
+ #include <asm/unistd.h>
+ #include <asm/errno.h>
+@@ -22,7 +23,6 @@
+ #include <asm/processor.h>
+ #include <asm/bug.h>
+ #include <asm/ptrace.h>
+-#include <asm/export.h>
+ #include <asm/feature-fixups.h>
+ 
+ 	.text
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 2c9ac70aaf0c..1a8cdafd68e8 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -9,6 +9,7 @@
+  * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com)
+  */
+ 
++#include <linux/export.h>
+ #include <linux/linkage.h>
+ #include <linux/sys.h>
+ #include <asm/unistd.h>
+@@ -23,7 +24,6 @@
+ #include <asm/kexec.h>
+ #include <asm/ptrace.h>
+ #include <asm/mmu.h>
+-#include <asm/export.h>
+ #include <asm/feature-fixups.h>
+ 
+ 	.text
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 9feab5e0485b..a9cd6507163a 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -6,13 +6,13 @@
+  * Copyright 2012 Matt Evans & Michael Neuling, IBM Corporation.
+  */
+ 
++#include <linux/export.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/ptrace.h>
+ #include <asm/reg.h>
+ #include <asm/bug.h>
+-#include <asm/export.h>
+ #include <asm/feature-fixups.h>
+ 
+ #ifdef CONFIG_VSX
+diff --git a/arch/powerpc/kernel/trace/ftrace_low.S b/arch/powerpc/kernel/trace/ftrace_low.S
+index 294d1e05958a..5e271f87f799 100644
+--- a/arch/powerpc/kernel/trace/ftrace_low.S
++++ b/arch/powerpc/kernel/trace/ftrace_low.S
+@@ -3,12 +3,12 @@
+  * Split from entry_64.S
+  */
+ 
++#include <linux/export.h>
+ #include <linux/magic.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/ftrace.h>
+ #include <asm/ppc-opcode.h>
+-#include <asm/export.h>
+ 
+ #ifdef CONFIG_PPC64
+ .pushsection ".tramp.ftrace.text","aw",@progbits;
+diff --git a/arch/powerpc/kernel/ucall.S b/arch/powerpc/kernel/ucall.S
+index 07296bc39166..80a1f9a4300a 100644
+--- a/arch/powerpc/kernel/ucall.S
++++ b/arch/powerpc/kernel/ucall.S
+@@ -5,8 +5,8 @@
+  * Copyright 2019, IBM Corporation.
+  *
+  */
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ 
+ _GLOBAL(ucall_norets)
+ EXPORT_SYMBOL_GPL(ucall_norets)
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index fcc0ad6d9c7b..4094e4c4c77a 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -1,4 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
++#include <linux/export.h>
+ #include <linux/linkage.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+@@ -8,7 +9,6 @@
+ #include <asm/thread_info.h>
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
+-#include <asm/export.h>
+ #include <asm/asm-compat.h>
+ 
+ /*
+diff --git a/arch/powerpc/kvm/book3s_64_entry.S b/arch/powerpc/kvm/book3s_64_entry.S
+index 6c2b1d17cb63..3b361af87313 100644
+--- a/arch/powerpc/kvm/book3s_64_entry.S
++++ b/arch/powerpc/kvm/book3s_64_entry.S
+@@ -1,9 +1,9 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
++#include <linux/export.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/cache.h>
+ #include <asm/code-patching-asm.h>
+ #include <asm/exception-64s.h>
+-#include <asm/export.h>
+ #include <asm/kvm_asm.h>
+ #include <asm/kvm_book3s_asm.h>
+ #include <asm/mmu.h>
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 870110e3d9b1..ea7ad200b330 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -10,6 +10,7 @@
+  * Authors: Alexander Graf <agraf@suse.de>
+  */
+ 
++#include <linux/export.h>
+ #include <linux/linkage.h>
+ #include <linux/objtool.h>
+ #include <asm/ppc_asm.h>
+@@ -24,7 +25,6 @@
+ #include <asm/exception-64s.h>
+ #include <asm/kvm_book3s_asm.h>
+ #include <asm/book3s/64/mmu-hash.h>
+-#include <asm/export.h>
+ #include <asm/tm.h>
+ #include <asm/opal.h>
+ #include <asm/thread_info.h>
+diff --git a/arch/powerpc/kvm/tm.S b/arch/powerpc/kvm/tm.S
+index 2158f61e317f..b506c4d9a8d9 100644
+--- a/arch/powerpc/kvm/tm.S
++++ b/arch/powerpc/kvm/tm.S
+@@ -6,10 +6,10 @@
+  * Copyright 2011 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
+  */
+ 
++#include <linux/export.h>
+ #include <asm/reg.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+-#include <asm/export.h>
+ #include <asm/tm.h>
+ #include <asm/cputable.h>
+ 
+diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
+index 4541e8e29467..cd00b9bdd772 100644
+--- a/arch/powerpc/lib/checksum_32.S
++++ b/arch/powerpc/lib/checksum_32.S
+@@ -8,12 +8,12 @@
+  * Severely hacked about by Paul Mackerras (paulus@cs.anu.edu.au).
+  */
+ 
++#include <linux/export.h>
+ #include <linux/sys.h>
+ #include <asm/processor.h>
+ #include <asm/cache.h>
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ 
+ 	.text
+ 
+diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
+index 98ff51bd2f7d..d53d8f09a2c2 100644
+--- a/arch/powerpc/lib/checksum_64.S
++++ b/arch/powerpc/lib/checksum_64.S
+@@ -8,11 +8,11 @@
+  * Severely hacked about by Paul Mackerras (paulus@cs.anu.edu.au).
+  */
+ 
++#include <linux/export.h>
+ #include <linux/sys.h>
+ #include <asm/processor.h>
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ 
+ /*
+  * Computes the checksum of a memory block at buff, length len,
+diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+index 3e9c27c46331..933b685e7ab6 100644
+--- a/arch/powerpc/lib/copy_32.S
++++ b/arch/powerpc/lib/copy_32.S
+@@ -4,11 +4,11 @@
+  *
+  * Copyright (C) 1996-2005 Paul Mackerras.
+  */
++#include <linux/export.h>
+ #include <asm/processor.h>
+ #include <asm/cache.h>
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/code-patching-asm.h>
+ #include <asm/kasan.h>
+ 
+diff --git a/arch/powerpc/lib/copy_mc_64.S b/arch/powerpc/lib/copy_mc_64.S
+index 88d46c471493..bf1014b28fe8 100644
+--- a/arch/powerpc/lib/copy_mc_64.S
++++ b/arch/powerpc/lib/copy_mc_64.S
+@@ -4,9 +4,9 @@
+  * Derived from copyuser_power7.s by Anton Blanchard <anton@au.ibm.com>
+  * Author - Balbir Singh <bsingharora@gmail.com>
+  */
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/errno.h>
+-#include <asm/export.h>
+ 
+ 	.macro err1
+ 100:
+diff --git a/arch/powerpc/lib/copypage_64.S b/arch/powerpc/lib/copypage_64.S
+index 5d09a029b556..f33a2e6088e5 100644
+--- a/arch/powerpc/lib/copypage_64.S
++++ b/arch/powerpc/lib/copypage_64.S
+@@ -2,11 +2,11 @@
+ /*
+  * Copyright (C) 2008 Mark Nelson, IBM Corp.
+  */
++#include <linux/export.h>
+ #include <asm/page.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+-#include <asm/export.h>
+ #include <asm/feature-fixups.h>
+ 
+ _GLOBAL_TOC(copy_page)
+diff --git a/arch/powerpc/lib/copyuser_64.S b/arch/powerpc/lib/copyuser_64.S
+index db8719a14846..9af969d2cc0c 100644
+--- a/arch/powerpc/lib/copyuser_64.S
++++ b/arch/powerpc/lib/copyuser_64.S
+@@ -2,9 +2,9 @@
+ /*
+  * Copyright (C) 2002 Paul Mackerras, IBM Corp.
+  */
++#include <linux/export.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/asm-compat.h>
+ #include <asm/feature-fixups.h>
+ 
+diff --git a/arch/powerpc/lib/hweight_64.S b/arch/powerpc/lib/hweight_64.S
+index 09af29561314..151875050da9 100644
+--- a/arch/powerpc/lib/hweight_64.S
++++ b/arch/powerpc/lib/hweight_64.S
+@@ -5,9 +5,9 @@
+  *
+  * Author: Anton Blanchard <anton@au.ibm.com>
+  */
++#include <linux/export.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/feature-fixups.h>
+ 
+ /* Note: This code relies on -mminimal-toc */
+diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
+index 9351ffab409c..6fd06cd20faa 100644
+--- a/arch/powerpc/lib/mem_64.S
++++ b/arch/powerpc/lib/mem_64.S
+@@ -4,10 +4,10 @@
+  *
+  * Copyright (C) 1996 Paul Mackerras.
+  */
++#include <linux/export.h>
+ #include <asm/processor.h>
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/kasan.h>
+ 
+ #ifndef CONFIG_KASAN
+diff --git a/arch/powerpc/lib/memcmp_32.S b/arch/powerpc/lib/memcmp_32.S
+index 5010e376f7b8..f6fca5664e91 100644
+--- a/arch/powerpc/lib/memcmp_32.S
++++ b/arch/powerpc/lib/memcmp_32.S
+@@ -7,8 +7,8 @@
+  *
+  */
+ 
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ 
+ 	.text
+ 
+diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+index 0b9b1685a33d..142c666d3897 100644
+--- a/arch/powerpc/lib/memcmp_64.S
++++ b/arch/powerpc/lib/memcmp_64.S
+@@ -3,8 +3,8 @@
+  * Author: Anton Blanchard <anton@au.ibm.com>
+  * Copyright 2015 IBM Corporation.
+  */
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/ppc-opcode.h>
+ 
+ #define off8	r6
+diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+index 016c91e958d8..b5a67e20143f 100644
+--- a/arch/powerpc/lib/memcpy_64.S
++++ b/arch/powerpc/lib/memcpy_64.S
+@@ -2,9 +2,9 @@
+ /*
+  * Copyright (C) 2002 Paul Mackerras, IBM Corp.
+  */
++#include <linux/export.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/asm-compat.h>
+ #include <asm/feature-fixups.h>
+ #include <asm/kasan.h>
+diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+index 2752b1cc1d45..daa72061dc0c 100644
+--- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -4,8 +4,8 @@
+  *
+  * Copyright (C) 1996 Paul Mackerras.
+  */
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/cache.h>
+ 
+ 	.text
+diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+index 1ddb26394e8a..3ee45619a3f8 100644
+--- a/arch/powerpc/lib/string_32.S
++++ b/arch/powerpc/lib/string_32.S
+@@ -7,8 +7,8 @@
+  *
+  */
+ 
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/cache.h>
+ 
+ 	.text
+diff --git a/arch/powerpc/lib/string_64.S b/arch/powerpc/lib/string_64.S
+index df41ce06f86b..a25eb8588434 100644
+--- a/arch/powerpc/lib/string_64.S
++++ b/arch/powerpc/lib/string_64.S
+@@ -6,10 +6,10 @@
+  * Author: Anton Blanchard <anton@au.ibm.com>
+  */
+ 
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/linkage.h>
+ #include <asm/asm-offsets.h>
+-#include <asm/export.h>
+ 
+ /**
+  * __arch_clear_user: - Zero a block of memory in user space, with less checking.
+diff --git a/arch/powerpc/lib/strlen_32.S b/arch/powerpc/lib/strlen_32.S
+index 0a8d3f64d493..bbd24feb233f 100644
+--- a/arch/powerpc/lib/strlen_32.S
++++ b/arch/powerpc/lib/strlen_32.S
+@@ -6,8 +6,8 @@
+  *
+  * Inspired from glibc implementation
+  */
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+-#include <asm/export.h>
+ #include <asm/cache.h>
+ 
+ 	.text
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index a5a21d444e72..8b804e1a9fa4 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -14,6 +14,7 @@
+  *  hash table, so this file is not used on them.)
+  */
+ 
++#include <linux/export.h>
+ #include <linux/pgtable.h>
+ #include <linux/init.h>
+ #include <asm/reg.h>
+@@ -22,7 +23,6 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/thread_info.h>
+ #include <asm/asm-offsets.h>
+-#include <asm/export.h>
+ #include <asm/feature-fixups.h>
+ #include <asm/code-patching-asm.h>
+ 
+diff --git a/arch/powerpc/sysdev/dcr-low.S b/arch/powerpc/sysdev/dcr-low.S
+index 329b9c4ae542..e8401b205d38 100644
+--- a/arch/powerpc/sysdev/dcr-low.S
++++ b/arch/powerpc/sysdev/dcr-low.S
+@@ -5,10 +5,10 @@
+  * Copyright (c) 2004 Eugene Surovegin <ebs@ebshome.net>
+  */
+ 
++#include <linux/export.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/processor.h>
+ #include <asm/bug.h>
+-#include <asm/export.h>
+ 
+ #define DCR_ACCESS_PROLOG(table) \
+ 	cmplwi	cr0,r3,1024;	 \
 -- 
-2.35.3
+2.39.2
 
