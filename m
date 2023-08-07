@@ -4,64 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2637C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 07:04:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2A91EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 12:28:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=SpNvqN9W;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=jGB/0xmV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RK6lG2378z3bvY
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 17:04:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RKFwB204Jz2ytc
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 22:28:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=SpNvqN9W;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=jGB/0xmV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RK6k84l2dz2yW7
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2023 17:04:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RKFv821dXz2xgv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2023 22:27:14 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 6CB1C2189B;
-	Mon,  7 Aug 2023 07:03:44 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 3F8441FD71;
+	Mon,  7 Aug 2023 12:27:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1691391824; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1691411230; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qBVvdfQ+7uAuAbXARcqoglYVEWjC2ubdJ2O+ToyhcnU=;
-	b=SpNvqN9W8w6c37IfcNk3eNCCy+0l0bY2sLCvSbaXXbOq+nOiCcs5cLMdA3n9BIlH9vi8jv
-	8ByLlL96TK8WiF7qhIOzvIwWLjdpbTOwSIgsMSMdc2Zhix/B3WxC9HUozdEXzDUtH3HOia
-	ikj4S2h/luSXV1azSnZY+DCjxmABQiQ=
+	bh=9Ifzb7x78kbe8BQlHJjSmAmTRXb/0wuGfRfcHhbZJYQ=;
+	b=jGB/0xmV0/Osr5vEcsaQlLBWX6PjZEBnUgxSUToRfYqjdShVbCPgYDJ8LMEzM+p2Q/bVr/
+	wphmoI2UFAM2xmVttYjIZF9utJMgjvUtQPpNCiHHQMzw0XHZCj540SkgO5Db7ydCvPZP6C
+	TJ8KQzN15Kn9G2mUjfvFeTfq2ISA6Mo=
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 43F6D13910;
-	Mon,  7 Aug 2023 07:03:44 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1B54713487;
+	Mon,  7 Aug 2023 12:27:10 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id 2asJEFCX0GQwWAAAMHmgww
-	(envelope-from <mhocko@suse.com>); Mon, 07 Aug 2023 07:03:44 +0000
-Date: Mon, 7 Aug 2023 09:03:43 +0200
+	id 0UuTAx7j0GSuegAAMHmgww
+	(envelope-from <mhocko@suse.com>); Mon, 07 Aug 2023 12:27:10 +0000
+Date: Mon, 7 Aug 2023 14:27:09 +0200
 From: Michal Hocko <mhocko@suse.com>
-To: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v3 1/2] nmi_backtrace: Allow excluding an arbitrary CPU
-Message-ID: <ZNCXT+nRHnTKJX0y@dhcp22.suse.cz>
-References: <20230803160649.v3.1.Ia35521b91fc781368945161d7b28538f9996c182@changeid>
- <ZMytyEoCARgP9VR8@dhcp22.suse.cz>
- <CAD=FV=UQ18JG-sMBJHrhXByCWYSgOpCq8tL=3R8pT8CnFEa=pA@mail.gmail.com>
- <ZM0S9gKBBiu83kFq@dhcp22.suse.cz>
- <CAD=FV=XhksUsBKjkD08YxdmxvvbgoZH-va7WnPptkYA6EOpPsg@mail.gmail.com>
+To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v7 7/7] mm/memory_hotplug: Enable runtime update of
+ memmap_on_memory parameter
+Message-ID: <ZNDjHbtm3jaWS8h8@dhcp22.suse.cz>
+References: <a32fe748-fa18-bd92-3a10-5da8dbad96e6@linux.ibm.com>
+ <ZMjjbKnxZXSNcJL5@dhcp22.suse.cz>
+ <c1e6e3f6-2e3a-c098-ae78-0d86de8a3a95@linux.ibm.com>
+ <ZMp7Vr8PbfoADQw0@dhcp22.suse.cz>
+ <31305ab7-1e65-80aa-ee91-9190c8f67430@redhat.com>
+ <ZMqLV2S6vY0cZxbp@dhcp22.suse.cz>
+ <ZMtqu76Tgh9jj+AI@dhcp22.suse.cz>
+ <1c6a74f0-85e9-5299-1520-9068e842b1a5@redhat.com>
+ <ZMuP7gsxQzAmRpNX@dhcp22.suse.cz>
+ <d71a85b1-c0ea-6451-d65c-d7c5040caf77@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAD=FV=XhksUsBKjkD08YxdmxvvbgoZH-va7WnPptkYA6EOpPsg@mail.gmail.com>
+In-Reply-To: <d71a85b1-c0ea-6451-d65c-d7c5040caf77@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,60 +77,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Jinyang He <hejinyang@loongson.cn>, Lecopzer Chen <lecopzer.chen@mediatek.com>, Peter Zijlstra <peterz@infradead.org>, "Darrick J. Wong" <djwong@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, Qing Zhang <zhangqing@loongson.cn>, Pingfan Liu <kernelfans@gmail.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Gaosheng Cui <cuigaosheng1@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Valentin Schneider <vschneid@redhat.com>, "Paul E. McKenney" <paulmck@kernel.org>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Tom Rix <trix@redhat.com>, Ulf Hansson <ulf.hansson@linaro.org>, Petr Mladek <pmladek@suse.com>, Kees Cook <keescook@chromium.org>, Arnd Ber
- gmann <arnd@arndb.de>, Nicholas Piggin <npiggin@gmail.com>, Jianmin Lv <lvjianmin@loongson.cn>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: David Hildenbrand <david@redhat.com>, npiggin@gmail.com, linux-mm@kvack.org, Vishal Verma <vishal.l.verma@intel.com>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri 04-08-23 09:06:07, Doug Anderson wrote:
-> Hi,
-> 
-> On Fri, Aug 4, 2023 at 8:02 AM Michal Hocko <mhocko@suse.com> wrote:
-> >
-> > > > It would have been slightly safer to modify arch_trigger_cpumask_backtrace
-> > > > by switching arguments so that some leftovers are captured easier.
-> > >
-> > > I'm not sure I understand. Oh, you're saying make the prototype of
-> > > arch_trigger_cpumask_backtrace() incompatible so that if someone is
-> > > directly calling it then it'll be a compile-time error?
-> >
-> > exactly. bool to int promotion would be too easy to miss while the
-> > pointer to int would complain loudly.
-> >
-> > > I guess the
-> > > hope is that nobody is calling that directly and they're calling
-> > > through the trigger_...() functions.
-> >
-> > Hope is one thing, being preventive another.
-> >
-> > > For now I'm going to leave this alone.
-> >
-> > If you are going to send another version then please consider this. Not
-> > a hard requirement but better.
-> 
-> If I do send another version, do you have any suggestions for how to
-> change this to make it incompatible?
+On Sat 05-08-23 19:54:23, Aneesh Kumar K V wrote:
+[...]
+> Do you see a need for firmware-managed memory to be hotplugged in with
+> different memory block sizes?
 
-I would swap parameters as this seems simplest.
-
-> I guess swapping the order of the
-> parameters would be best? I considered doing that for v4 but I felt
-> like long term the current order of the parameters was better.
-
-Yes the current ordering is better but having it other way around is not
-really horrendous either.
-
-> I also
-> considered a rename, but that different problems. ;-) If I rename both
-> the #define and the function then if someone has an out-of-tree patch
-> adding arch_trigger_cpumask_backtrace() for another architecture, like
-> say arm64, then there would be no compile-time failure indicating that
-> the out-of-tree patch needs updating. I could rename the functions but
-> _not_ the #define, I guess?
-
-I think that swapping would be simplest as the type mismatch should
-catch also pending out-of-tree potential implementations.
-
+In short. Yes. Slightly longer, a fixed size memory block semantic is
+just standing in the way and I would even argue it is actively harmful.
+Just have a look at ridicously small memory blocks on ppc. I do
+understand that it makes some sense to be aligned to the memory model
+(so sparsmem section aligned). In an ideal world, memory hotplug v2
+interface (if we ever go that path) should be physical memory range based.
 -- 
 Michal Hocko
 SUSE Labs
