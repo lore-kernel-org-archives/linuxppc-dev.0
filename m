@@ -4,70 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 251F1C001DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Aug 2023 23:39:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C458EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 00:54:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=ny/PO9Rz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=SUvvBPxW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Pf6G8+kx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RKXq45QbFz3fK2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 09:39:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RKZTX39nKz3bVp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 10:54:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=ny/PO9Rz;
+	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=SUvvBPxW;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Pf6G8+kx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=lists.ozlabs.org)
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com [66.111.4.26])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RKX4c6T4cz3cH2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2023 09:06:24 +1000 (AEST)
-Received: by mail-yb1-xb2a.google.com with SMTP id 3f1490d57ef6-bc379e4c1cbso5465604276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2023 16:06:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1691449583; x=1692054383;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gIX4EtUZRQHbbGVDBj/rJyP4ZKSCaTL9vvlgteJwLjg=;
-        b=ny/PO9Rzwz4wKD05c8Oj8x01t9rfWUwF+DPBSi6xhAQ1t3uiUBYZ7YUUbf8WtD6fas
-         a2dGGpvFO2SYjUkztwf/JpnNv7QhJL+Goto2OWRpxKnsAjXenC9v6P3rISzqLv6y4LVV
-         4Qzw+SXgVTszZ9R94kkJTKmg5SvkJhFFe8ZHJiGz98l2xVrWZH/L4O6QNYM4Ix9oN6dK
-         IfbxHi4LcKxjr+5M4cvO0MwysEIi/pmb6eegOI2VGQmX9xJr0pTMWjXflu5Ws+wnG+9V
-         BkJIEDxKgjBTQlry6d49f1/eWCkgGXBEpt1ui7ZKc/08IVlfaQd/C3Y9s9851HPExZOi
-         t/gw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691449583; x=1692054383;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=gIX4EtUZRQHbbGVDBj/rJyP4ZKSCaTL9vvlgteJwLjg=;
-        b=FqkK8dKIs5E2EWuZ/dom89srdkTxrvNsVEzoYcSUS1XphlTzT3bmwuePqpHDDb3lYy
-         mhMhFAaubt867v24OUgN02WoKTDgJsnURIw8pQtyf21WEWOZf5btzzeZFSqtgEvCQD4+
-         GHM5Iw/qFdDxEikYnpwoG306qU5JDWueCZ/2vePpweHeHmGfYlbiSGWycnj1vG3i1HwH
-         AMyxOG27Iw17v0cyL+f9iAw/hEt2zktbGY8zDKGoIrBAJ9fB0bueW/Bz9wnd2Rvt2sXT
-         k8KrB6aPDk325zRjd+A8pwJtbIomDvrxT3bNLBtKmAYnCYc59v0UlSztBtnLLp5Lw4qo
-         BH+w==
-X-Gm-Message-State: AOJu0Yzj4Q8w7SyZhi0hW79J7gq7xD793SnNJFHdwp+m8tkQbFIYQ/Ou
-	eaTOu+ThNSRy/W42LxtY29Y=
-X-Google-Smtp-Source: AGHT+IHSz7sLxFa/9tcB1BFEAx77xsw7IyoQHCgeHupxbvTa93/qmodby26m2eSPWXo4FijMYi73DQ==
-X-Received: by 2002:a25:e708:0:b0:d53:f88a:dc09 with SMTP id e8-20020a25e708000000b00d53f88adc09mr3953501ybh.2.1691449582662;
-        Mon, 07 Aug 2023 16:06:22 -0700 (PDT)
-Received: from unknowna0e70b2ca394.attlocal.net ([2600:1700:2f7d:1800::16])
-        by smtp.googlemail.com with ESMTPSA id d190-20020a25cdc7000000b00d3596aca5bcsm2545203ybf.34.2023.08.07.16.06.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Aug 2023 16:06:22 -0700 (PDT)
-From: "Vishal Moola (Oracle)" <vishal.moola@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Matthew Wilcox <willy@infradead.org>
-Subject: [PATCH mm-unstable v9 31/31] mm: Remove pgtable_{pmd, pte}_page_{ctor, dtor}() wrappers
-Date: Mon,  7 Aug 2023 16:05:13 -0700
-Message-Id: <20230807230513.102486-32-vishal.moola@gmail.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230807230513.102486-1-vishal.moola@gmail.com>
-References: <20230807230513.102486-1-vishal.moola@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RKZSM2Bhyz2xdq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2023 10:53:38 +1000 (AEST)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.nyi.internal (Postfix) with ESMTP id 0D2BF5C00CA;
+	Mon,  7 Aug 2023 20:53:32 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Mon, 07 Aug 2023 20:53:32 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
+	:cc:content-transfer-encoding:content-type:date:date:from:from
+	:in-reply-to:message-id:mime-version:reply-to:sender:subject
+	:subject:to:to; s=fm1; t=1691456012; x=1691542412; bh=qBMMrh7VrW
+	7fjEYBm2m0oQsOcjSmEBabbV0yY+gnnII=; b=SUvvBPxWqPleUqgZvKeDrds7n6
+	PV9TiZeGA9ZgtCE8usQcn/jX+Sk4zosTNZPcV+yvV+1MVXf7XOgho9kfdoL2HV4j
+	Lt9eefaW/ZphgeLwjurKhGhJ50ZM90qXpYluejDNuP6Y+gdHTIW4DCGfCe2dOWkX
+	A8u6sA7kBukaC0sDeSTqY8GnFRufwIIseaz9ck3yQHH31pRsbSwXb5KjUSGrEnst
+	omHLqRbX9jq0IhgxQnYSF6HBAL/G62ZEv4wCcHDcSzX+HhLPARHiHLQ0+Z8L1PRs
+	PR5CYRm9xV79WXJfIh0gKmlaZlbTXpZgSe+mMT7Gp3XKi2FnXLsRw8zZZBtQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:message-id:mime-version:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm3; t=1691456012; x=1691542412; bh=qBMMrh7VrW7fj
+	EYBm2m0oQsOcjSmEBabbV0yY+gnnII=; b=Pf6G8+kxqQauAKrh4ZhBVUE37JAky
+	p6JDGoBNXf06+3oDA2bulEGAyLPCKyrM+rvVqhyvzvvIZKZ70zb9jabTzCCNPWbF
+	18Qd16fWLx6NGKxsnKI5SL22jC0iTd6fJ/unDKvZzhI6Iqnym95+Z+yUayzLgCAU
+	s8Ice632qaxgVbk7u2Pxe0XKvFDplY/OQ1yVkZm+V9noBA1KR5mwTyhsiZuBAUnd
+	h28D+OjdakSSluXWXZWF4nJrsARZS48dV6Tm52a6l8uYFYglr7GmVIi8qBt76/mj
+	PDgMzcr6lnOnnD0rGVh5PyfA4yjtpKKh1553zeoWDGn9Km0BRkbf9cCiw==
+X-ME-Sender: <xms:C5LRZDd8WvUh6PYALIXfS_T4Cc7Xv1GSSrLrzN47OM7lHCnQL9Qd-w>
+    <xme:C5LRZJNpyj_1B5tMnrhySRfiof2OlasYQgfm3iMbIaSUcu8aIWdyHy7ps5z7nYXlh
+    n3XDYOD7CrOCS5qeQ>
+X-ME-Received: <xmr:C5LRZMhd7chCA6oj_UCll77rcHCfOCJPSnahF3uV_GsqiKNJoYrcQJ4duYAooM4ojmLyfe__Mdx9EvA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrledugdefjecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephffvve
+    fufffkofgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgih
+    uceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecuggftrfgrthhtvghrnhepvdegud
+    etjefgveevvedutdeigeelueffvefhfeeuheeuffekhfffheegheejhfdtnecuvehluhhs
+    thgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruh
+    hsshgvlhhlrdgttg
+X-ME-Proxy: <xmx:C5LRZE8KlvgPJ8AwHt1bLNO27WP6SdMpoHZA9QOHUTcUhEr1jkyJ7g>
+    <xmx:C5LRZPshPeS0WCHaLfhfOgnC84i3pMEA2jAwYyyk7yse4dCwb1IicQ>
+    <xmx:C5LRZDGW2ZiCm-HBp_3eJHmR2wCc58YPTNL2BrdlxlXW_90KbxyfNQ>
+    <xmx:DJLRZN1rDUL0LKIxpnusfh5Lh6--VDYZgUwC2Dv_BYOLm1j6uiw_6A>
+Feedback-ID: i4421424f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 7 Aug 2023 20:53:30 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: Rework lppaca_shared_proc() to avoid DEBUG_PREEMPT
+Date: Tue,  8 Aug 2023 10:53:17 +1000
+Message-ID: <20230808005317.20374-1-ruscur@russell.cc>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -80,160 +89,158 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-csky@vger.kernel.org, "Vishal Moola \(Oracle\)" <vishal.moola@gmail.com>, linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org, Hugh Dickins <hughd@google.com>, Mike Rapoport <rppt@kernel.org>, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These functions are no longer necessary. Remove them and cleanup
-Documentation referencing them.
+lppaca_shared_proc() takes a pointer to the lppaca which is typically
+accessed through get_lppaca().  With DEBUG_PREEMPT enabled, this leads
+to checking if preemption is enabled, for example:
 
-Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
-Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
+	BUG: using smp_processor_id() in preemptible [00000000] code: grep/10693
+	caller is lparcfg_data+0x408/0x19a0
+	CPU: 4 PID: 10693 Comm: grep Not tainted 6.5.0-rc3 #2
+	Call Trace:
+		dump_stack_lvl+0x154/0x200 (unreliable)
+		check_preemption_disabled+0x214/0x220
+		lparcfg_data+0x408/0x19a0
+		...
+
+This isn't actually a problem however, as it does not matter which
+lppaca is accessed, the shared proc state will be the same.
+vcpudispatch_stats_procfs_init() already works around this by disabling
+preemption, but the lparcfg code does not, erroring any time
+/proc/powerpc/lparcfg is accessed with DEBUG_PREEMPT enabled.
+
+Instead of disabling preemption on the caller side, rework
+lppaca_shared_proc() to not take a pointer and instead directly access
+the lppaca, bypassing any potential preemption checks.
+
+Fixes: f13c13a00512 ("powerpc: Stop using non-architected shared_proc field in lppaca")
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- Documentation/mm/split_page_table_lock.rst    | 12 +++++------
- .../zh_CN/mm/split_page_table_lock.rst        | 14 ++++++-------
- include/linux/mm.h                            | 20 -------------------
- 3 files changed, 13 insertions(+), 33 deletions(-)
+Fixes tag might be a bit overkill.
+---
+ arch/powerpc/include/asm/lppaca.h        |  9 ++++++++-
+ arch/powerpc/include/asm/paca.h          |  5 +++++
+ arch/powerpc/platforms/pseries/lpar.c    | 10 +---------
+ arch/powerpc/platforms/pseries/lparcfg.c |  4 ++--
+ arch/powerpc/platforms/pseries/setup.c   |  2 +-
+ drivers/cpuidle/cpuidle-pseries.c        |  8 +-------
+ 6 files changed, 18 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/mm/split_page_table_lock.rst b/Documentation/mm/split_page_table_lock.rst
-index a834fad9de12..e4f6972eb6c0 100644
---- a/Documentation/mm/split_page_table_lock.rst
-+++ b/Documentation/mm/split_page_table_lock.rst
-@@ -58,7 +58,7 @@ Support of split page table lock by an architecture
- ===================================================
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index 34d44cb17c87..c12e1a6e3595 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -127,7 +127,14 @@ struct lppaca {
+  */
+ #define LPPACA_OLD_SHARED_PROC		2
  
- There's no need in special enabling of PTE split page table lock: everything
--required is done by pgtable_pte_page_ctor() and pgtable_pte_page_dtor(), which
-+required is done by pagetable_pte_ctor() and pagetable_pte_dtor(), which
- must be called on PTE table allocation / freeing.
- 
- Make sure the architecture doesn't use slab allocator for page table
-@@ -68,8 +68,8 @@ This field shares storage with page->ptl.
- PMD split lock only makes sense if you have more than two page table
- levels.
- 
--PMD split lock enabling requires pgtable_pmd_page_ctor() call on PMD table
--allocation and pgtable_pmd_page_dtor() on freeing.
-+PMD split lock enabling requires pagetable_pmd_ctor() call on PMD table
-+allocation and pagetable_pmd_dtor() on freeing.
- 
- Allocation usually happens in pmd_alloc_one(), freeing in pmd_free() and
- pmd_free_tlb(), but make sure you cover all PMD table allocation / freeing
-@@ -77,7 +77,7 @@ paths: i.e X86_PAE preallocate few PMDs on pgd_alloc().
- 
- With everything in place you can set CONFIG_ARCH_ENABLE_SPLIT_PMD_PTLOCK.
- 
--NOTE: pgtable_pte_page_ctor() and pgtable_pmd_page_ctor() can fail -- it must
-+NOTE: pagetable_pte_ctor() and pagetable_pmd_ctor() can fail -- it must
- be handled properly.
- 
- page->ptl
-@@ -97,7 +97,7 @@ trick:
-    split lock with enabled DEBUG_SPINLOCK or DEBUG_LOCK_ALLOC, but costs
-    one more cache line for indirect access;
- 
--The spinlock_t allocated in pgtable_pte_page_ctor() for PTE table and in
--pgtable_pmd_page_ctor() for PMD table.
-+The spinlock_t allocated in pagetable_pte_ctor() for PTE table and in
-+pagetable_pmd_ctor() for PMD table.
- 
- Please, never access page->ptl directly -- use appropriate helper.
-diff --git a/Documentation/translations/zh_CN/mm/split_page_table_lock.rst b/Documentation/translations/zh_CN/mm/split_page_table_lock.rst
-index 4fb7aa666037..a2c288670a24 100644
---- a/Documentation/translations/zh_CN/mm/split_page_table_lock.rst
-+++ b/Documentation/translations/zh_CN/mm/split_page_table_lock.rst
-@@ -56,16 +56,16 @@ Hugetlb特定的辅助函数:
- 架构对分页表锁的支持
- ====================
- 
--没有必要特别启用PTE分页表锁：所有需要的东西都由pgtable_pte_page_ctor()
--和pgtable_pte_page_dtor()完成，它们必须在PTE表分配/释放时被调用。
-+没有必要特别启用PTE分页表锁：所有需要的东西都由pagetable_pte_ctor()
-+和pagetable_pte_dtor()完成，它们必须在PTE表分配/释放时被调用。
- 
- 确保架构不使用slab分配器来分配页表：slab使用page->slab_cache来分配其页
- 面。这个区域与page->ptl共享存储。
- 
- PMD分页锁只有在你有两个以上的页表级别时才有意义。
- 
--启用PMD分页锁需要在PMD表分配时调用pgtable_pmd_page_ctor()，在释放时调
--用pgtable_pmd_page_dtor()。
-+启用PMD分页锁需要在PMD表分配时调用pagetable_pmd_ctor()，在释放时调
-+用pagetable_pmd_dtor()。
- 
- 分配通常发生在pmd_alloc_one()中，释放发生在pmd_free()和pmd_free_tlb()
- 中，但要确保覆盖所有的PMD表分配/释放路径：即X86_PAE在pgd_alloc()中预先
-@@ -73,7 +73,7 @@ PMD分页锁只有在你有两个以上的页表级别时才有意义。
- 
- 一切就绪后，你可以设置CONFIG_ARCH_ENABLE_SPLIT_PMD_PTLOCK。
- 
--注意：pgtable_pte_page_ctor()和pgtable_pmd_page_ctor()可能失败--必
-+注意：pagetable_pte_ctor()和pagetable_pmd_ctor()可能失败--必
- 须正确处理。
- 
- page->ptl
-@@ -90,7 +90,7 @@ page->ptl用于访问分割页表锁，其中'page'是包含该表的页面struc
-    的指针并动态分配它。这允许在启用DEBUG_SPINLOCK或DEBUG_LOCK_ALLOC的
-    情况下使用分页锁，但由于间接访问而多花了一个缓存行。
- 
--PTE表的spinlock_t分配在pgtable_pte_page_ctor()中，PMD表的spinlock_t
--分配在pgtable_pmd_page_ctor()中。
-+PTE表的spinlock_t分配在pagetable_pte_ctor()中，PMD表的spinlock_t
-+分配在pagetable_pmd_ctor()中。
- 
- 请不要直接访问page->ptl - -使用适当的辅助函数。
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 6310e0c59efe..6a95dfed4957 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -2932,11 +2932,6 @@ static inline bool pagetable_pte_ctor(struct ptdesc *ptdesc)
- 	return true;
- }
- 
--static inline bool pgtable_pte_page_ctor(struct page *page)
--{
--	return pagetable_pte_ctor(page_ptdesc(page));
--}
--
- static inline void pagetable_pte_dtor(struct ptdesc *ptdesc)
+-static inline bool lppaca_shared_proc(struct lppaca *l)
++/*
++ * All CPUs should have the same shared proc value, so directly access the PACA
++ * to avoid false positives from DEBUG_PREEMPT.
++ *
++ * local_paca can't be referenced directly from lppaca.h, hence the macro.
++ */
++#define lppaca_shared_proc() (__lppaca_shared_proc(local_paca->lppaca_ptr))
++static inline bool __lppaca_shared_proc(struct lppaca *l)
  {
- 	struct folio *folio = ptdesc_folio(ptdesc);
-@@ -2946,11 +2941,6 @@ static inline void pagetable_pte_dtor(struct ptdesc *ptdesc)
- 	lruvec_stat_sub_folio(folio, NR_PAGETABLE);
- }
+ 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return false;
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index cb325938766a..f77337b92ccf 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -49,6 +49,11 @@ extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
  
--static inline void pgtable_pte_page_dtor(struct page *page)
--{
--	pagetable_pte_dtor(page_ptdesc(page));
--}
--
- pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp);
- static inline pte_t *pte_offset_map(pmd_t *pmd, unsigned long addr)
+ #ifdef CONFIG_PPC_PSERIES
+ #define get_lppaca()	(get_paca()->lppaca_ptr)
++/*
++ * All CPUs should have the same shared proc value, so directly access the PACA
++ * to avoid false positives from DEBUG_PREEMPT.
++ */
++#define lppaca_shared_proc() (__lppaca_shared_proc(local_paca->lppaca_ptr))
+ #endif
+ 
+ #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 2eab323f6970..cb2f1211f7eb 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -639,16 +639,8 @@ static const struct proc_ops vcpudispatch_stats_freq_proc_ops = {
+ 
+ static int __init vcpudispatch_stats_procfs_init(void)
  {
-@@ -3057,11 +3047,6 @@ static inline bool pagetable_pmd_ctor(struct ptdesc *ptdesc)
- 	return true;
- }
+-	/*
+-	 * Avoid smp_processor_id while preemptible. All CPUs should have
+-	 * the same value for lppaca_shared_proc.
+-	 */
+-	preempt_disable();
+-	if (!lppaca_shared_proc(get_lppaca())) {
+-		preempt_enable();
++	if (!lppaca_shared_proc())
+ 		return 0;
+-	}
+-	preempt_enable();
  
--static inline bool pgtable_pmd_page_ctor(struct page *page)
--{
--	return pagetable_pmd_ctor(page_ptdesc(page));
--}
--
- static inline void pagetable_pmd_dtor(struct ptdesc *ptdesc)
- {
- 	struct folio *folio = ptdesc_folio(ptdesc);
-@@ -3071,11 +3056,6 @@ static inline void pagetable_pmd_dtor(struct ptdesc *ptdesc)
- 	lruvec_stat_sub_folio(folio, NR_PAGETABLE);
- }
+ 	if (!proc_create("powerpc/vcpudispatch_stats", 0600, NULL,
+ 					&vcpudispatch_stats_proc_ops))
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index 8acc70509520..1c151d77e74b 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -206,7 +206,7 @@ static void parse_ppp_data(struct seq_file *m)
+ 	           ppp_data.active_system_procs);
  
--static inline void pgtable_pmd_page_dtor(struct page *page)
--{
--	pagetable_pmd_dtor(page_ptdesc(page));
--}
--
- /*
-  * No scalability reason to split PUD locks yet, but follow the same pattern
-  * as the PMD locks to make it easier if we decide to.  The VM should not be
+ 	/* pool related entries are appropriate for shared configs */
+-	if (lppaca_shared_proc(get_lppaca())) {
++	if (lppaca_shared_proc()) {
+ 		unsigned long pool_idle_time, pool_procs;
+ 
+ 		seq_printf(m, "pool=%d\n", ppp_data.pool_num);
+@@ -560,7 +560,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+ 		   partition_potential_processors);
+ 
+ 	seq_printf(m, "shared_processor_mode=%d\n",
+-		   lppaca_shared_proc(get_lppaca()));
++		   lppaca_shared_proc());
+ 
+ #ifdef CONFIG_PPC_64S_HASH_MMU
+ 	if (!radix_enabled())
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e2a57cfa6c83..0ef2a7e014aa 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -847,7 +847,7 @@ static void __init pSeries_setup_arch(void)
+ 	if (firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		vpa_init(boot_cpuid);
+ 
+-		if (lppaca_shared_proc(get_lppaca())) {
++		if (lppaca_shared_proc()) {
+ 			static_branch_enable(&shared_processor);
+ 			pv_spinlocks_init();
+ #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index a7d33f3ee01e..14db9b7d985d 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -414,13 +414,7 @@ static int __init pseries_idle_probe(void)
+ 		return -ENODEV;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		/*
+-		 * Use local_paca instead of get_lppaca() since
+-		 * preemption is not disabled, and it is not required in
+-		 * fact, since lppaca_ptr does not need to be the value
+-		 * associated to the current CPU, it can be from any CPU.
+-		 */
+-		if (lppaca_shared_proc(local_paca->lppaca_ptr)) {
++		if (lppaca_shared_proc()) {
+ 			cpuidle_state_table = shared_states;
+ 			max_idle_state = ARRAY_SIZE(shared_states);
+ 		} else {
 -- 
-2.40.1
+2.41.0
 
