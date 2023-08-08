@@ -4,58 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2BA7C001DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 06:08:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3AE9C001DE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 06:16:22 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xl/mJrKF;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RKjRs2LnXz3dff
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 16:08:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RKjcj3SMbz30YQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Aug 2023 16:16:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xl/mJrKF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RKjNV4HyWz3bdG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2023 16:05:46 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RKjN81wcnz9t2v;
-	Tue,  8 Aug 2023 08:05:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id iLuMp5iRbXOZ; Tue,  8 Aug 2023 08:05:28 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RKjN640pcz9t39;
-	Tue,  8 Aug 2023 08:05:26 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 866C08B763;
-	Tue,  8 Aug 2023 08:05:26 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id nk8cZBQx_IvN; Tue,  8 Aug 2023 08:05:26 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.230])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 347B58B76C;
-	Tue,  8 Aug 2023 08:05:26 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37865Mbv1246317
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 8 Aug 2023 08:05:23 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37865MXv1246316;
-	Tue, 8 Aug 2023 08:05:22 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 5/6] powerpc/8xx: Remove immr_map() and immr_unmap()
-Date: Tue,  8 Aug 2023 08:04:42 +0200
-Message-ID: <633ed46f6015ff44d5599258647ea517f75d6a1d.1691474658.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <b056c4e986a4a7707fc1994304c34f7bd15d6871.1691474658.git.christophe.leroy@csgroup.eu>
-References: <b056c4e986a4a7707fc1994304c34f7bd15d6871.1691474658.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RKjbc62z4z2x9T
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2023 16:15:24 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3786EOC9029456;
+	Tue, 8 Aug 2023 06:15:10 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=tNLJ7oP0DHlAbP1b+ZVt3ZWifaoyi1CX5SuOmwo6U7k=;
+ b=Xl/mJrKFrniQOf1oKzc5ZydXGTJYm6aNgOSeJSQ1f7ALJBd8fSRmUoVgkoq7qi3tKbLp
+ 5T1UjvIE1sCgwLJPWXwlWkiDUVlBbfQfDbFUuCW5eV44JY1piHS7UYbibS4w1o1dNpb+
+ pwPrkeFFG8F4pKJOiRleWO7C+A1rewvvGzMLQMpoddEnqIn2heZv6MUsm4Q/fFdmq2f1
+ 3WS0y0bnwjJCk7hQ5MzXkiZWfhPu6WJsyHveDObkaX+ITQ2npA09Q8TCNBl4Wruqqv5x
+ v43vc2+EGXwwuyZZ3Tl/stRKQzCw21W1F5jRws/AMvMmF450GzLSTOKxoXQe29Wajlvi 4w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sbg2brb4f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Aug 2023 06:15:07 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3786ERKi029523;
+	Tue, 8 Aug 2023 06:14:36 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sbg2br9gn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Aug 2023 06:14:34 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3785Ruq0015354;
+	Tue, 8 Aug 2023 06:09:47 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3sb3f2nhy9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Aug 2023 06:09:47 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37869iME30671332
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 8 Aug 2023 06:09:45 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B750A2004E;
+	Tue,  8 Aug 2023 06:09:44 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E39D420043;
+	Tue,  8 Aug 2023 06:09:42 +0000 (GMT)
+Received: from [9.109.212.144] (unknown [9.109.212.144])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  8 Aug 2023 06:09:42 +0000 (GMT)
+Message-ID: <e5070448-0a67-9947-8504-fce48d6d22de@linux.ibm.com>
+Date: Tue, 8 Aug 2023 11:39:41 +0530
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691474677; l=7074; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=g2dlefSjjZ3lLgAFce4vTphawlHxlpF+G8RgO/xmm48=; b=1FwpDKJY+UtQx8b2jfXULzK8aNB2fHij3QMvpdAZkzhoDj0JKWgikIh1Ry9GHTTkHTMxsdmIQ 1bOgDE4bCKKA23Fu9+6h/7yEXIYZ+lkSjhsppxidhFQuO6ITgUd8yHT
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v7 7/7] mm/memory_hotplug: Enable runtime update of
+ memmap_on_memory parameter
+Content-Language: en-US
+To: David Hildenbrand <david@redhat.com>, Michal Hocko <mhocko@suse.com>
+References: <a32fe748-fa18-bd92-3a10-5da8dbad96e6@linux.ibm.com>
+ <ZMjjbKnxZXSNcJL5@dhcp22.suse.cz>
+ <c1e6e3f6-2e3a-c098-ae78-0d86de8a3a95@linux.ibm.com>
+ <ZMp7Vr8PbfoADQw0@dhcp22.suse.cz>
+ <31305ab7-1e65-80aa-ee91-9190c8f67430@redhat.com>
+ <ZMqLV2S6vY0cZxbp@dhcp22.suse.cz> <ZMtqu76Tgh9jj+AI@dhcp22.suse.cz>
+ <1c6a74f0-85e9-5299-1520-9068e842b1a5@redhat.com>
+ <ZMuP7gsxQzAmRpNX@dhcp22.suse.cz>
+ <d71a85b1-c0ea-6451-d65c-d7c5040caf77@linux.ibm.com>
+ <ZNDjHbtm3jaWS8h8@dhcp22.suse.cz>
+ <a32a9e7f-1e24-bab1-cb73-8058fed3b59c@redhat.com>
+ <b6753402-2de9-25b2-36e9-eacd49752b19@redhat.com>
+From: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
+In-Reply-To: <b6753402-2de9-25b2-36e9-eacd49752b19@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 00LLm1CbxmxJ4JJdlQG2d82cR0AuHfgg
+X-Proofpoint-ORIG-GUID: g9FQUUpzu-nfcsHw-h90ubHu6fcwniZy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-08-08_04,2023-08-03_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
+ spamscore=0 suspectscore=0 mlxlogscore=525 impostorscore=0
+ lowpriorityscore=0 priorityscore=1501 adultscore=0 phishscore=0
+ malwarescore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2308080054
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,225 +111,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, npiggin@gmail.com, Vishal Verma <vishal.l.verma@intel.com>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit fb533d0c5a97 ("[POWERPC] 8xx: Infrastructure code cleanup.")
-immr_map() is just returning mpc8xxx_immr pointer and immr_unmap()
-do nothing.
+On 8/8/23 12:05 AM, David Hildenbrand wrote:
+> On 07.08.23 14:41, David Hildenbrand wrote:
+>> On 07.08.23 14:27, Michal Hocko wrote:
+>>> On Sat 05-08-23 19:54:23, Aneesh Kumar K V wrote:
+>>> [...]
+>>>> Do you see a need for firmware-managed memory to be hotplugged in with
+>>>> different memory block sizes?
+>>>
+>>> In short. Yes. Slightly longer, a fixed size memory block semantic is
+>>> just standing in the way and I would even argue it is actively harmful.
+>>> Just have a look at ridicously small memory blocks on ppc. I do
+>>> understand that it makes some sense to be aligned to the memory model
+>>> (so sparsmem section aligned). In an ideal world, memory hotplug v2
+>>> interface (if we ever go that path) should be physical memory range based.
+>>
+>> Yes, we discussed that a couple of times already (and so far nobody
+>> cared to implement any of that).
+>>
+>> Small memory block sizes are very beneficial for use cases like PPC
+>> dlar, virtio-mem, hyperv-balloon, ... essentially in most virtual
+>> environments where you might want to add/remove memory in very small
+>> granularity. I don't see that changing any time soon. Rather the opposite.
+>>
+>> Small memory block sizes are suboptimal for large machines where you
+>> might never end up removing such memory (boot memory), or when dealing
+>> with devices that can only be removed in one piece (DIMM/kmem). We
+>> already have memory groups in place to model that.
+>>
+>> For the latter it might be beneficial to have memory blocks of larger
+>> size that correspond to the physical memory ranges. That might also make
+>> a memmap (re-)configuration easier.
+>>
+>> Not sure if that is standing in any way or is harmful, though.
+>>
+> 
+> Just because I thought of something right now, I'll share it, maybe it makes sense.
+> 
+> Assume when we get add_memory*(MHP_MEMMAP_ON_MEMORY) and it is enabled by the admin:
+> 
+> 1) We create a single altmap at the beginning of the memory
+> 
+> 2) We create the existing fixed-size memory block devices, but flag them
+>    to be part of a single "altmap" unit.
+> 
+> 3) Whenever we trigger offlining of a single such memory block, we
+>    offline *all* memory blocks belonging to that altmap, essentially
+>    using a single offline_pages() call and updating all memory block
+>    states accordingly.
+> 
+> 4) Whenever we trigger onlining of a single such memory block, we
+>    online *all* memory blocks belonging to that altmap, using a single
+>    online_pages() call.
+> 
+> 5) We fail remove_memory() if it doesn't cover the same (altmap) range.
+> 
+> So we can avoid having a memory block v2 (and all that comes with that ...) for now and still get that altmap stuff sorted out. As that altmap behavior can be controlled by the admin, we should be fine for now.
+> 
+> I think all memory notifiers should already be able to handle bigger granularity, but it would be easy to check. Some internal things might require a bit of tweaking.
+> 
+> Just a thought.
+> 
 
-We already have parts of code that use mpc8xxx_immr directly so get rid
-of immr_map() and immr_unmap() by using mpc8xxx_immr directly. And avoid
-going through local pointers that hide the pointed structure.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/fs_pd.h        |  8 ---
- arch/powerpc/platforms/8xx/cpm1.c       | 10 ++--
- arch/powerpc/platforms/8xx/m8xx_setup.c | 66 +++++++------------------
- 3 files changed, 22 insertions(+), 62 deletions(-)
+W.r.t enabling memmap_on_memory for ppc64, I guess I will drop patch 7 and resend the series so that Andrew can pick rest of the patches? 
 
-diff --git a/arch/powerpc/include/asm/fs_pd.h b/arch/powerpc/include/asm/fs_pd.h
-index d251a55de8b0..82f0e528e21c 100644
---- a/arch/powerpc/include/asm/fs_pd.h
-+++ b/arch/powerpc/include/asm/fs_pd.h
-@@ -22,14 +22,6 @@
- #define cpm2_unmap(addr) do {} while(0)
- #endif
- 
--#ifdef CONFIG_PPC_8xx
--#include <asm/8xx_immap.h>
--
--#define immr_map(member) (&mpc8xx_immr->member)
--#define immr_map_size(member, size) (&mpc8xx_immr->member)
--#define immr_unmap(addr) do {} while (0)
--#endif
--
- static inline int uart_baudrate(void)
- {
-         return get_baudrate();
-diff --git a/arch/powerpc/platforms/8xx/cpm1.c b/arch/powerpc/platforms/8xx/cpm1.c
-index 34ab29966c8b..ebb5f6a27dbf 100644
---- a/arch/powerpc/platforms/8xx/cpm1.c
-+++ b/arch/powerpc/platforms/8xx/cpm1.c
-@@ -41,7 +41,7 @@
- #include <asm/rheap.h>
- #include <asm/cpm.h>
- 
--#include <asm/fs_pd.h>
-+#include <sysdev/fsl_soc.h>
- 
- #ifdef CONFIG_8xx_GPIO
- #include <linux/gpio/legacy-of-mm-gpiochip.h>
-@@ -54,8 +54,6 @@ immap_t __iomem *mpc8xx_immr = (void __iomem *)VIRT_IMMR_BASE;
- 
- void __init cpm_reset(void)
- {
--	sysconf8xx_t __iomem *siu_conf;
--
- 	cpmp = &mpc8xx_immr->im_cpm;
- 
- #ifndef CONFIG_PPC_EARLY_DEBUG_CPM
-@@ -77,12 +75,10 @@ void __init cpm_reset(void)
- 	 * manual recommends it.
- 	 * Bit 25, FAM can also be set to use FEC aggressive mode (860T).
- 	 */
--	siu_conf = immr_map(im_siu_conf);
- 	if ((mfspr(SPRN_IMMR) & 0xffff) == 0x0900) /* MPC885 */
--		out_be32(&siu_conf->sc_sdcr, 0x40);
-+		out_be32(&mpc8xx_immr->im_siu_conf.sc_sdcr, 0x40);
- 	else
--		out_be32(&siu_conf->sc_sdcr, 1);
--	immr_unmap(siu_conf);
-+		out_be32(&mpc8xx_immr->im_siu_conf.sc_sdcr, 1);
- }
- 
- static DEFINE_SPINLOCK(cmd_lock);
-diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-index 24f358f86d16..3c5c4e08b6a9 100644
---- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-@@ -22,7 +22,6 @@
- 
- #include <asm/io.h>
- #include <asm/8xx_immap.h>
--#include <asm/fs_pd.h>
- #include <mm/mmu_decl.h>
- 
- #include "pic.h"
-@@ -41,14 +40,11 @@ static irqreturn_t timebase_interrupt(int irq, void *dev)
- void __init __attribute__ ((weak))
- init_internal_rtc(void)
- {
--	sit8xx_t __iomem *sys_tmr = immr_map(im_sit);
--
- 	/* Disable the RTC one second and alarm interrupts. */
--	clrbits16(&sys_tmr->sit_rtcsc, (RTCSC_SIE | RTCSC_ALE));
-+	clrbits16(&mpc8xx_immr->im_sit.sit_rtcsc, (RTCSC_SIE | RTCSC_ALE));
- 
- 	/* Enable the RTC */
--	setbits16(&sys_tmr->sit_rtcsc, (RTCSC_RTF | RTCSC_RTE));
--	immr_unmap(sys_tmr);
-+	setbits16(&mpc8xx_immr->im_sit.sit_rtcsc, (RTCSC_RTF | RTCSC_RTE));
- }
- 
- static int __init get_freq(char *name, unsigned long *val)
-@@ -80,23 +76,14 @@ static int __init get_freq(char *name, unsigned long *val)
- void __init mpc8xx_calibrate_decr(void)
- {
- 	struct device_node *cpu;
--	cark8xx_t __iomem *clk_r1;
--	car8xx_t __iomem *clk_r2;
--	sitk8xx_t __iomem *sys_tmr1;
--	sit8xx_t __iomem *sys_tmr2;
- 	int irq, virq;
- 
--	clk_r1 = immr_map(im_clkrstk);
--
- 	/* Unlock the SCCR. */
--	out_be32(&clk_r1->cark_sccrk, ~KAPWR_KEY);
--	out_be32(&clk_r1->cark_sccrk, KAPWR_KEY);
--	immr_unmap(clk_r1);
-+	out_be32(&mpc8xx_immr->im_clkrstk.cark_sccrk, ~KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_clkrstk.cark_sccrk, KAPWR_KEY);
- 
- 	/* Force all 8xx processors to use divide by 16 processor clock. */
--	clk_r2 = immr_map(im_clkrst);
--	setbits32(&clk_r2->car_sccr, 0x02000000);
--	immr_unmap(clk_r2);
-+	setbits32(&mpc8xx_immr->im_clkrst.car_sccr, 0x02000000);
- 
- 	/* Processor frequency is MHz.
- 	 */
-@@ -123,14 +110,12 @@ void __init mpc8xx_calibrate_decr(void)
- 	 * we guarantee the registers are locked, then we unlock them
- 	 * for our use.
- 	 */
--	sys_tmr1 = immr_map(im_sitk);
--	out_be32(&sys_tmr1->sitk_tbscrk, ~KAPWR_KEY);
--	out_be32(&sys_tmr1->sitk_rtcsck, ~KAPWR_KEY);
--	out_be32(&sys_tmr1->sitk_tbk, ~KAPWR_KEY);
--	out_be32(&sys_tmr1->sitk_tbscrk, KAPWR_KEY);
--	out_be32(&sys_tmr1->sitk_rtcsck, KAPWR_KEY);
--	out_be32(&sys_tmr1->sitk_tbk, KAPWR_KEY);
--	immr_unmap(sys_tmr1);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_tbscrk, ~KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_rtcsck, ~KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_tbk, ~KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_tbscrk, KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_rtcsck, KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_tbk, KAPWR_KEY);
- 
- 	init_internal_rtc();
- 
-@@ -144,10 +129,8 @@ void __init mpc8xx_calibrate_decr(void)
- 	of_node_put(cpu);
- 	irq = virq_to_hw(virq);
- 
--	sys_tmr2 = immr_map(im_sit);
--	out_be16(&sys_tmr2->sit_tbscr, ((1 << (7 - (irq/2))) << 8) |
--					(TBSCR_TBF | TBSCR_TBE));
--	immr_unmap(sys_tmr2);
-+	out_be16(&mpc8xx_immr->im_sit.sit_tbscr,
-+		 ((1 << (7 - (irq / 2))) << 8) | (TBSCR_TBF | TBSCR_TBE));
- 
- 	if (request_irq(virq, timebase_interrupt, IRQF_NO_THREAD, "tbint",
- 			NULL))
-@@ -161,47 +144,36 @@ void __init mpc8xx_calibrate_decr(void)
- 
- int mpc8xx_set_rtc_time(struct rtc_time *tm)
- {
--	sitk8xx_t __iomem *sys_tmr1;
--	sit8xx_t __iomem *sys_tmr2;
- 	time64_t time;
- 
--	sys_tmr1 = immr_map(im_sitk);
--	sys_tmr2 = immr_map(im_sit);
- 	time = rtc_tm_to_time64(tm);
- 
--	out_be32(&sys_tmr1->sitk_rtck, KAPWR_KEY);
--	out_be32(&sys_tmr2->sit_rtc, (u32)time);
--	out_be32(&sys_tmr1->sitk_rtck, ~KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_rtck, KAPWR_KEY);
-+	out_be32(&mpc8xx_immr->im_sit.sit_rtc, (u32)time);
-+	out_be32(&mpc8xx_immr->im_sitk.sitk_rtck, ~KAPWR_KEY);
- 
--	immr_unmap(sys_tmr2);
--	immr_unmap(sys_tmr1);
- 	return 0;
- }
- 
- void mpc8xx_get_rtc_time(struct rtc_time *tm)
- {
- 	unsigned long data;
--	sit8xx_t __iomem *sys_tmr = immr_map(im_sit);
- 
- 	/* Get time from the RTC. */
--	data = in_be32(&sys_tmr->sit_rtc);
-+	data = in_be32(&mpc8xx_immr->im_sit.sit_rtc);
- 	rtc_time64_to_tm(data, tm);
--	immr_unmap(sys_tmr);
- 	return;
- }
- 
- void __noreturn mpc8xx_restart(char *cmd)
- {
--	car8xx_t __iomem *clk_r = immr_map(im_clkrst);
--
--
- 	local_irq_disable();
- 
--	setbits32(&clk_r->car_plprcr, 0x00000080);
-+	setbits32(&mpc8xx_immr->im_clkrst.car_plprcr, 0x00000080);
- 	/* Clear the ME bit in MSR to cause checkstop on machine check
- 	*/
- 	mtmsr(mfmsr() & ~0x1000);
- 
--	in_8(&clk_r->res[0]);
-+	in_8(&mpc8xx_immr->im_clkrst.res[0]);
- 	panic("Restart failed\n");
- }
--- 
-2.41.0
+-aneesh
+
+
 
