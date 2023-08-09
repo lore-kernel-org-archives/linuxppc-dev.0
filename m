@@ -4,50 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8B30EB64DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Aug 2023 11:16:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20606EB64DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Aug 2023 13:11:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=LcnHYKgG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RXXIuN93;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RLSF40cR4z3c5S
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Aug 2023 21:16:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RLVn80tp1z3c62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Aug 2023 23:11:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=LcnHYKgG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RXXIuN93;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RLSD31TlPz2xjw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2023 21:16:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RLVmB4ZFMz2xwG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2023 23:10:34 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 7CD9761FA9;
-	Wed,  9 Aug 2023 11:16:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66084C433C7;
-	Wed,  9 Aug 2023 11:16:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1691579760;
-	bh=96sKNmtnIIK64djcwh9/3Dm4kxWk2IB64DUJ1ZVgN8g=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=LcnHYKgGL2rJmh849MfWLBdVcUihFAkjlY0x3q5OQnBZa1JcomKpuRnki694FaAV2
-	 E69NtBqiMO5ImoMRwHsTzmvL5yGA/ULsolZtlkDbTiRrq/IyF4qV/o8f4hmzwXJwJz
-	 +a+IBxKjmbDkNP3FnCEA1tIIZmssDYaMuW8Up1Ls=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Subject: [PATCH 4.19 077/323] crypto: nx - fix build warnings when DEBUG_FS is not enabled
-Date: Wed,  9 Aug 2023 12:38:35 +0200
-Message-ID: <20230809103701.669183900@linuxfoundation.org>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230809103658.104386911@linuxfoundation.org>
-References: <20230809103658.104386911@linuxfoundation.org>
-User-Agent: quilt/0.67
+	by dfw.source.kernel.org (Postfix) with ESMTPS id B8A9863A0B;
+	Wed,  9 Aug 2023 13:10:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 835C9C433C8;
+	Wed,  9 Aug 2023 13:10:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1691586632;
+	bh=VPYRR5y0iVxg93FJ4ki40+zbVk3xF5h4tykwjI0oDgE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=RXXIuN93M8eZ/+Hfkchq8jhaWvrx55xUY8Pa/Ft/RWBjix/7zvMAtLGR3wSXBhA6U
+	 qSOP+itl24FcEJan6xbseV2jRzxeRoTk0e+XGQu4ebFkywGRq1bd6KdKvP4J9l2S+T
+	 Kf6KBmmFsWbY2JOWPPTAw0ny7f/ZbDY0QVnJ2baqVLX3OmHSSK+h/AdU9LIU6h2vdz
+	 XmosAjLOm6TfahmXksZDkJy6qy8W3L/aa2NorXepa9zSjLIEMIz7AYyc64R+dvWsI0
+	 XtsbN7MT2Ck2PcCKtXBp6G2DTFhdwj2KKHvfkTduQfOXvuj0aYFfeIMdsqL8oy/NwT
+	 QZm4aI2AUG1pQ==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc: mark more local variables as volatile
+Date: Wed,  9 Aug 2023 15:10:08 +0200
+Message-Id: <20230809131024.2039647-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -60,89 +59,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, patches@lists.linux.dev, Nicholas Piggin <npiggin@gmail.com>, Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linux-crypto@vger.kernel.org, =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org, Hugh Dickins <hughd@google.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Maninder Singh <maninder1.s@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jirislaby@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+From: Arnd Bergmann <arnd@arndb.de>
 
-[ Upstream commit b04b076fb56560b39d695ac3744db457e12278fd ]
+A while ago I created a2305e3de8193 ("powerpc: mark local variables
+around longjmp as volatile") in order to allow building powerpc with
+-Wextra enabled on gcc-11.
 
-Fix build warnings when DEBUG_FS is not enabled by using an empty
-do-while loop instead of a value:
+I tried this again with gcc-13 and found two more of the same issues,
+presumably based on slightly different optimization paths being taken
+here:
 
-In file included from ../drivers/crypto/nx/nx.c:27:
-../drivers/crypto/nx/nx.c: In function 'nx_register_algs':
-../drivers/crypto/nx/nx.h:173:33: warning: statement with no effect [-Wunused-value]
-  173 | #define NX_DEBUGFS_INIT(drv)    (0)
-../drivers/crypto/nx/nx.c:573:9: note: in expansion of macro 'NX_DEBUGFS_INIT'
-  573 |         NX_DEBUGFS_INIT(&nx_driver);
-../drivers/crypto/nx/nx.c: In function 'nx_remove':
-../drivers/crypto/nx/nx.h:174:33: warning: statement with no effect [-Wunused-value]
-  174 | #define NX_DEBUGFS_FINI(drv)    (0)
-../drivers/crypto/nx/nx.c:793:17: note: in expansion of macro 'NX_DEBUGFS_FINI'
-  793 |                 NX_DEBUGFS_FINI(&nx_driver);
+arch/powerpc/xmon/xmon.c:3306:27: error: variable 'mm' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+arch/powerpc/kexec/crash.c:353:22: error: variable 'i' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
 
-Also, there is no need to build nx_debugfs.o when DEBUG_FS is not
-enabled, so change the Makefile to accommodate that.
+I checked a bunch of randconfigs and found only these two, so just
+address them the same way as the others.
 
-Fixes: ae0222b7289d ("powerpc/crypto: nx driver code supporting nx encryption")
-Fixes: aef7b31c8833 ("powerpc/crypto: Build files for the nx device driver")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Breno Leitão <leitao@debian.org>
-Cc: Nayna Jain <nayna@linux.ibm.com>
-Cc: Paulo Flabiano Smorigo <pfsmorigo@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/crypto/nx/Makefile | 2 +-
- drivers/crypto/nx/nx.h     | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/kexec/crash.c | 2 +-
+ arch/powerpc/xmon/xmon.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/crypto/nx/Makefile b/drivers/crypto/nx/Makefile
-index 015155da59c29..76139865d7fa1 100644
---- a/drivers/crypto/nx/Makefile
-+++ b/drivers/crypto/nx/Makefile
-@@ -1,7 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
- obj-$(CONFIG_CRYPTO_DEV_NX_ENCRYPT) += nx-crypto.o
- nx-crypto-objs := nx.o \
--		  nx_debugfs.o \
- 		  nx-aes-cbc.o \
- 		  nx-aes-ecb.o \
- 		  nx-aes-gcm.o \
-@@ -11,6 +10,7 @@ nx-crypto-objs := nx.o \
- 		  nx-sha256.o \
- 		  nx-sha512.o
+diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
+index 252724ed666a3..ef5c2d25ec397 100644
+--- a/arch/powerpc/kexec/crash.c
++++ b/arch/powerpc/kexec/crash.c
+@@ -350,7 +350,7 @@ EXPORT_SYMBOL(crash_shutdown_unregister);
  
-+nx-crypto-$(CONFIG_DEBUG_FS) += nx_debugfs.o
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_PSERIES) += nx-compress-pseries.o nx-compress.o
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV) += nx-compress-powernv.o nx-compress.o
- nx-compress-objs := nx-842.o
-diff --git a/drivers/crypto/nx/nx.h b/drivers/crypto/nx/nx.h
-index c3e54af18645c..ebad937a9545c 100644
---- a/drivers/crypto/nx/nx.h
-+++ b/drivers/crypto/nx/nx.h
-@@ -180,8 +180,8 @@ struct nx_sg *nx_walk_and_build(struct nx_sg *, unsigned int,
- int nx_debugfs_init(struct nx_crypto_driver *);
- void nx_debugfs_fini(struct nx_crypto_driver *);
- #else
--#define NX_DEBUGFS_INIT(drv)	(0)
--#define NX_DEBUGFS_FINI(drv)	(0)
-+#define NX_DEBUGFS_INIT(drv)	do {} while (0)
-+#define NX_DEBUGFS_FINI(drv)	do {} while (0)
- #endif
+ void default_machine_crash_shutdown(struct pt_regs *regs)
+ {
+-	unsigned int i;
++	volatile unsigned int i;
+ 	int (*old_handler)(struct pt_regs *regs);
  
- #define NX_PAGE_NUM(x)		((u64)(x) & 0xfffffffffffff000ULL)
+ 	if (TRAP(regs) == INTERRUPT_SYSTEM_RESET)
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 3b6f524c790e3..9e12b75850d75 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3303,7 +3303,7 @@ static void show_pte(unsigned long addr)
+ {
+ 	unsigned long tskv = 0;
+ 	struct task_struct *volatile tsk = NULL;
+-	struct mm_struct *mm;
++	struct mm_struct *volatile mm;
+ 	pgd_t *pgdp;
+ 	p4d_t *p4dp;
+ 	pud_t *pudp;
 -- 
 2.39.2
-
-
 
