@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74092C001B0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 06:05:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5002C001B0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 06:05:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RLxGs12bfz3cPy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 16:05:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RLxHP21Pqz3dXR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 16:05:37 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RLxFH6b4nz2ygv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2023 16:03:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RLxFJ2nF4z2ygv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2023 16:03:48 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RLxFH3zKNz4wy5;
-	Thu, 10 Aug 2023 16:03:47 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RLxFJ1LS5z4wy7;
+	Thu, 10 Aug 2023 16:03:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20230725132759.53975-1-ldufour@linux.ibm.com>
-References: <20230725132759.53975-1-ldufour@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/kexec: fix minor typo
-Message-Id: <169164734547.180689.16694037773373602886.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20230717115223.286158-1-mpe@ellerman.id.au>
+References: <20230717115223.286158-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64: Enable accelerated crypto algorithms in defconfig
+Message-Id: <169164734544.180689.6706141224540352673.b4-ty@ellerman.id.au>
 Date: Thu, 10 Aug 2023 16:02:25 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,18 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 25 Jul 2023 15:27:59 +0200, Laurent Dufour wrote:
-> Function name in the descriptor was not correct.
+On Mon, 17 Jul 2023 21:52:23 +1000, Michael Ellerman wrote:
+> Enable all the acclerated crypto algorithms as modules in the 64-bit
+> defconfig, to get more test coverage.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/kexec: fix minor typo
-      https://git.kernel.org/powerpc/c/7f96539437eafec8fd062fb13f31cf53251ea18d
+[1/1] powerpc/64: Enable accelerated crypto algorithms in defconfig
+      https://git.kernel.org/powerpc/c/ab481817912ec5c882a6a42ce12c57aed3cfd506
 
 cheers
