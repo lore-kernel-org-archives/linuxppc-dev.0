@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E12CFC001B0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 06:04:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFABCC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 06:04:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RLxFq1pY2z3cYj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 16:04:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RLxGL32mGz3dFg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Aug 2023 16:04:42 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RLxFH0Bz0z2ygv
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RLxFH0GXfz2ygx
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2023 16:03:47 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RLxFF14zzz4wqX;
-	Thu, 10 Aug 2023 16:03:45 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RLxFG4GHgz4wxK;
+	Thu, 10 Aug 2023 16:03:46 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Arnd Bergmann <arnd@kernel.org>
-In-Reply-To: <20230727122720.2558065-1-arnd@kernel.org>
-References: <20230727122720.2558065-1-arnd@kernel.org>
-Subject: Re: [PATCH] powerpc: address missing-prototypes warnings
-Message-Id: <169164734546.180689.4715496668121527837.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
+In-Reply-To: <20230725005841.28854-1-bgray@linux.ibm.com>
+References: <20230725005841.28854-1-bgray@linux.ibm.com>
+Subject: Re: (subset) [PATCH v1 0/4] Improve ptrace selftest usability
+Message-Id: <169164734544.180689.15632219650808795120.b4-ty@ellerman.id.au>
 Date: Thu, 10 Aug 2023 16:02:25 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,28 +42,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 27 Jul 2023 14:26:50 +0200, Arnd Bergmann wrote:
-> There are a few warnings in powerpc64 defconfig builds after -Wmissing-prototypes
-> gets promoted from W=1 to the default warning set:
+On Tue, 25 Jul 2023 10:58:37 +1000, Benjamin Gray wrote:
+> While trying to test changes to the breakpoint implementation in the kernel, I
+> tried to run the ptrace tests and met many unexplained skips and failures.
 > 
-> arch/powerpc/mm/book3s64/pgtable.c:422:6: error: no previous prototype for 'arch_report_meminfo' [-Werror=missing-prototypes]
-> arch/powerpc/mm/init_64.c:311:12: error: no previous prototype for '__vmemmap_free' [-Werror=missing-prototypes]
-> arch/powerpc/platforms/cell/ras.c:275:5: error: no previous prototype for 'cbe_sysreset_hack' [-Werror=missing-prototypes]
-> arch/powerpc/platforms/cell/spu_manage.c:29:21: error: no previous prototype for 'spu_devnode' [-Werror=missing-prototypes]
-> arch/powerpc/platforms/pasemi/time.c:12:17: error: no previous prototype for 'pas_get_boot_time' [-Werror=missing-prototypes]
-> arch/powerpc/platforms/powermac/feature.c:1532:13: error: no previous prototype for 'g5_phy_disable_cpu1' [-Werror=missing-prototypes]
-> arch/powerpc/platforms/86xx/pic.c:28:13: error: no previous prototype for 'mpc86xx_init_irq' [-Werror=missing-prototypes]
-> drivers/pci/pci-sysfs.c:936:13: error: no previous prototype for 'pci_adjust_legacy_attr' [-Werror=missing-prototypes]
+> This series addresses the pain points of trying to run these tests and learn
+> what they are doing.
+> 
+> Benjamin Gray (4):
+>   Documentation/powerpc: Fix ptrace request names
+>   selftests/powerpc/ptrace: Explain why tests are skipped
+>   selftests/powerpc/ptrace: Fix typo in pid_max search error
+>   selftests/powerpc/ptrace: Declare test temporary variables as volatile
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: address missing-prototypes warnings
-      https://git.kernel.org/powerpc/c/54f30b83fe627453082f15d83d7820b28b2d24bb
+[2/4] selftests/powerpc/ptrace: Explain why tests are skipped
+      https://git.kernel.org/powerpc/c/68877ff20a7f4f773069784cfe4f6fe9c7b9a841
+[3/4] selftests/powerpc/ptrace: Fix typo in pid_max search error
+      https://git.kernel.org/powerpc/c/fc6732a8556c1099b89f4777a96bd6a1ae5a4378
+[4/4] selftests/powerpc/ptrace: Declare test temporary variables as volatile
+      https://git.kernel.org/powerpc/c/c3062ede9927053754ba27b280afe00b9b31b37a
 
 cheers
