@@ -4,71 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56ED4C0015E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Aug 2023 21:22:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7B49C0015E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Aug 2023 21:26:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=128hCHya;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yp3x6i43;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RMxbG75Twz3cM1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Aug 2023 07:22:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RMxgc2mQMz3cHN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Aug 2023 07:26:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=128hCHya;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=yp3x6i43;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--justinstitt.bounces.google.com (client-ip=2001:4860:4864:20::4a; helo=mail-oa1-x4a.google.com; envelope-from=336xwzaskdlibmklafklallyggydw.ugedafmphhu-vwndaklk.grdstk.gjy@flex--justinstitt.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x4a.google.com (mail-oa1-x4a.google.com [IPv6:2001:4860:4864:20::4a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=justinstitt@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RMxWW22G7z2yW5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2023 07:19:34 +1000 (AEST)
-Received: by mail-oa1-x4a.google.com with SMTP id 586e51a60fabf-1c1112030a7so1805727fac.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2023 14:19:34 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RMxff3Pmbz2xdt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2023 07:25:45 +1000 (AEST)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-51e28cac164so7223269a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2023 14:25:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1691788768; x=1692393568;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=TQpId7/xrpQlCKdhMKKnoX3RMnX16k+BrWUnYQTLzJw=;
-        b=128hCHya//JHzdXhTW2CGyRdp38F0s52ydFM+ztzOLjWpqji4lq7pRKtUvxGv84IkH
-         wTsTmt7XD+pLGDWgO+vr/qo4k/H/EqByvTcULpct3zOI2yFHEP+DuGVJ3DY08XXZNvba
-         XjqfRrHnR9CNNHo3IiiSWnahVHqbPnt1J7Vv7ouY70wrKUfBlDC3DXK5DyQBNc4oTxuA
-         I+28vm9RAKZYpeLXLVoVDQscn2FTLOS+BhBJw4/ipAlkBwpxC2QOzF/Tc+xi+v5KI+Rb
-         ItXmg3VLoMd2HBgt3X5I8nnv8VqWD4LOe70c8pfhXN6nlrUbLXHvKWZ5fpT1zDF+A57S
-         3dHA==
+        d=google.com; s=20221208; t=1691789138; x=1692393938;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=86JGYZ3ry5mveviksjcn/qEvMtmvc4Ix/xUvNeLXEDs=;
+        b=yp3x6i43BD8RlV322qJmJKCChEAV4UH5GzYm+QKTIbEfh7XUtrsq+1zAx0sNg+t1d+
+         5Wdx8+yD9PcpjFm6EwHkertYyul98NZdT7eMM1xpNAGQvsovbk+87Q0wdMIbXOqYfONq
+         6YuGbb337lL0MnSOZ+zkCGkXtOM0YWf5KDk6wCBq61CXXtdyV10ODW7oScEWFrfKV1Fb
+         gHshtevWMATpYNZmgU73KijInvpPplIazRtamhNz+s/hZNupYZjFG3dKpshD04LAQR3b
+         +hhD59qaxfiKGmC3EzhWXafo2eDdjNVkhYcLndoGmpPabWfR4zaRjXU/jERrCpyxvtNP
+         At1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691788768; x=1692393568;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=TQpId7/xrpQlCKdhMKKnoX3RMnX16k+BrWUnYQTLzJw=;
-        b=IF8RLfDPOhtw6scB0VHqYKNjjTGJjoTirBztO3RQfBV62FAvlu9lFpi1uTPKN5G/hf
-         lF6PTP2p9YkA0wVcGUGmAcpcSlNeiYNhTNZjyJSetHSKa9uguLNMVp3U1KfpgaL/UuOG
-         v59hY2kh0qBpLSJUVYDzxbF6sBKW4+4XV82E0DmzBA2xPpZaAQgYtLsRbnoFthHPDVg+
-         12lND+iHgg5l5gsx4451pwNd8JhJ1Z5xGDkrSBaLqPdh6mgpTtX8DTfgYHlu/SPoPdQ0
-         3jGARxqesQauu/8T/p9eYHOj2NquqGnouExsDbBynlGU2DaSITUOzEXkAHqGAyhANPcd
-         A5FA==
-X-Gm-Message-State: AOJu0YwAmeoneH7eNp1Vi1PDVdiAxqQLLOr9YpgYgDAV7/+6QbV3F0KK
-	bYXT3QTN0BxqilE1JGKpRhaGpKXfIcytVLCLbA==
-X-Google-Smtp-Source: AGHT+IGk1uf0kGWR1cjzqQP7AfmkJkzJDJmfyuKmDjGLWg1w0/gQx1YVAdwd/TAqEYcQ0G5w7a5EsM3oLCtnyG9dyA==
-X-Received: from jstitt-linux1.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
- (user=justinstitt job=sendgmr) by 2002:a05:6870:9567:b0:1c0:eac2:979c with
- SMTP id v39-20020a056870956700b001c0eac2979cmr65726oal.3.1691788767834; Fri,
- 11 Aug 2023 14:19:27 -0700 (PDT)
-Date: Fri, 11 Aug 2023 21:19:20 +0000
-In-Reply-To: <20230811-strncpy-arch-powerpc-platforms-ps3-v1-0-301052a5663e@google.com>
-Mime-Version: 1.0
+        d=1e100.net; s=20221208; t=1691789138; x=1692393938;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=86JGYZ3ry5mveviksjcn/qEvMtmvc4Ix/xUvNeLXEDs=;
+        b=HmQpfq8iBy6zkmlseRry/SPDf2B1CG49G5HbmPGaFSqM4UhtPzuiE4UsciVrNAs6Uj
+         DXRNs04T2MWjE9b0mz6RGoIjjUcEhxzenWKYH8cHEolSC4BB2+JvKwRJ/mS293dx+89e
+         EonoCuN/ueioysPErDaC4axz4JZXwWoXwO3Dmdo+DKakJ4omlazABQ5RD8JQG8BkUYhc
+         olzcdDOiLlCqpgznODSddMPOE7+JvFboquq0Pktlv3qQY/yXdjNf8peVdbjulZI8uiLl
+         ofjCt9MRrAQZm5tajFQxABZOzyufX00MbQBoBrCidxL9ZQPBRdZfhXSooWXKZfvCGXHJ
+         sxKA==
+X-Gm-Message-State: AOJu0Yy1vHSN0Vx3a/B+7MiTBWqj76x2H7nFdnijMNy/uSPuDIoIEOkP
+	xhBGJX+0VyOmMUS87Dp7Z8WYH/QiI46kBCTyfdT0ng==
+X-Google-Smtp-Source: AGHT+IHsxCBP/w9r5NRNaDnfZRytZV75kWryG4q6b+1hs+BKKLWWPj716c7QrOT8uP1DUmE3xa+OcLdt4WGWk5ajISA=
+X-Received: by 2002:a05:6402:268e:b0:523:72fe:a3c4 with SMTP id
+ w14-20020a056402268e00b0052372fea3c4mr7852202edd.0.1691789138513; Fri, 11 Aug
+ 2023 14:25:38 -0700 (PDT)
+MIME-Version: 1.0
 References: <20230811-strncpy-arch-powerpc-platforms-ps3-v1-0-301052a5663e@google.com>
-X-Developer-Key: i=justinstitt@google.com; a=ed25519; pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691788764; l=2495;
- i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
- bh=OU2B7x8FNL1q157scUIMm8YAPWH0YRRYFkNwfqAAlYc=; b=t8i/MBrRZYTBCyZG+n62sm6BtF8rrxy6c3AXOklnMgD6g/y9j3NSShRjs0U3zb6DojFQXi7R6
- t71tXOebyWwC4lP3GudY7BB2KoS2VPhOxRDI6pEsirAJWNJJ7/C+0lD
-X-Mailer: b4 0.12.3
-Message-ID: <20230811-strncpy-arch-powerpc-platforms-ps3-v1-2-301052a5663e@google.com>
-Subject: [PATCH RFC 2/3] powerpc/ps3: refactor strncpy usage attempt 2
+In-Reply-To: <20230811-strncpy-arch-powerpc-platforms-ps3-v1-0-301052a5663e@google.com>
 From: Justin Stitt <justinstitt@google.com>
+Date: Fri, 11 Aug 2023 14:25:26 -0700
+Message-ID: <CAFhGd8oZLTaFNg3pQSi=zX121HPfY9_v-H5e3_+27W3=1fXxmw@mail.gmail.com>
+Subject: Re: [PATCH RFC 0/3] powerpc/ps3: refactor strncpy usage
 To: Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, 
 	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,77 +76,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kees Cook <keescook@chromium.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, linux-hardening@vger.kernel.org, Justin Stitt <justinstitt@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Kees Cook <keescook@chromium.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This approach tries to use `make_field` inside of `make_first_field`.
-This comes with some weird implementation as to get the same result we
-need to first subtract `index` from the `make_field` result whilst being
-careful with order of operations. We then have to add index back.
+On Fri, Aug 11, 2023 at 2:19=E2=80=AFPM Justin Stitt <justinstitt@google.co=
+m> wrote:
+>
+> Within this RFC-series I want to get some comments on two ideas that I
+> have for refactoring the current `strncpy` usage in repository.c.
+>
+> When looking at `make_first_field` we see a u64 is being used to store
+> up to 8 bytes from a literal string. This is slightly suspect to me but
+> it works? In regards to `strncpy` here, it makes the code needlessly
+> complex imo.
+>
+> Please see my two ideas to change this and let me know if any other
+> approaches are more reasonable.
+>
+> Link: https://github.com/KSPP/linux/issues/90
+> Signed-off-by: Justin Stitt <justinstitt@google.com>
+> ---
+> Justin Stitt (3):
+>       [RFC] powerpc/ps3: refactor strncpy usage attempt 1
+>       [RFC] powerpc/ps3: refactor strncpy usage attempt 2
+>       [RFC] powerpc/ps3: refactor strncpy usage attempt 2.5
+Errhm, It looks like the diffs after attempt 1 came out poorly and
+probably won't apply cleanly because they were inter-diffed with the
+first patch. Is there a way to let b4 know I wanted each patch diff'd
+against the same SHA and not each other sequentially?
 
-The behavior should be the same but would love some comments on this.
+As it stands only attempt 1 is readable.
 
-Signed-off-by: Justin Stitt <justinstitt@google.com>
-
----
-Note: I swapped the position of the two methods so as to not have to
-forward declare `make_field`. This results in a weird diff here.
----
- arch/powerpc/platforms/ps3/repository.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-index 1abe33fbe529..6b731a5d4adc 100644
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -63,36 +63,33 @@ static void _dump_node(unsigned int lpar_id, u64 n1, u64 n2, u64 n3, u64 n4,
- }
- 
- /**
-- * make_first_field - Make the first field of a repository node name.
-- * @text: Text portion of the field.
-+ * make_field - Make subsequent fields of a repository node name.
-+ * @text: Text portion of the field.  Use "" for 'don't care'.
-  * @index: Numeric index portion of the field.  Use zero for 'don't care'.
-  *
-- * This routine sets the vendor id to zero (non-vendor specific).
-  * Returns field value.
-  */
- 
--static u64 make_first_field(const char *text, u64 index)
-+static u64 make_field(const char *text, u64 index)
- {
- 	u64 n = 0;
- 
- 	memcpy((char *)&n, text, strnlen(text, sizeof(n)));
--	return PS3_VENDOR_ID_NONE + (n >> 32) + index;
-+	return n + index;
- }
- 
- /**
-- * make_field - Make subsequent fields of a repository node name.
-- * @text: Text portion of the field.  Use "" for 'don't care'.
-+ * make_first_field - Make the first field of a repository node name.
-+ * @text: Text portion of the field.
-  * @index: Numeric index portion of the field.  Use zero for 'don't care'.
-  *
-+ * This routine sets the vendor id to zero (non-vendor specific).
-  * Returns field value.
-  */
- 
--static u64 make_field(const char *text, u64 index)
-+static u64 make_first_field(const char *text, u64 index)
- {
--	u64 n = 0;
--
--	memcpy((char *)&n, text, strnlen(text, sizeof(n)));
--	return n + index;
-+	return PS3_VENDOR_ID_NONE + ((make_field(text, index) - index) >> 32) + index;
- }
- 
- /**
-
--- 
-2.41.0.640.ga95def55d0-goog
-
+>
+>  arch/powerpc/platforms/ps3/repository.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> ---
+> base-commit: 52a93d39b17dc7eb98b6aa3edb93943248e03b2f
+> change-id: 20230811-strncpy-arch-powerpc-platforms-ps3-57a1cdb2ad9b
+>
+> Best regards,
+> --
+> Justin Stitt <justinstitt@google.com>
+>
