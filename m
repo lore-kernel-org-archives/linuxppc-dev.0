@@ -4,56 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F36E9C04A6A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Aug 2023 10:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F2FDC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Aug 2023 11:28:52 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D1F+0kB0;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RQ7Yb3lGKz3cSQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Aug 2023 20:58:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RQ8D26bTRz3cRZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Aug 2023 21:28:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D1F+0kB0;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RQ7Xz0Yv0z3brg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2023 20:58:24 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RQ7Xq5Q3zz9sgl;
-	Tue, 15 Aug 2023 12:58:19 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 35I_1FWIg5xz; Tue, 15 Aug 2023 12:58:19 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RQ7Xq4YBhz9sgk;
-	Tue, 15 Aug 2023 12:58:19 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 984238B76C;
-	Tue, 15 Aug 2023 12:58:19 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8HnwJpFcbP5f; Tue, 15 Aug 2023 12:58:19 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.233.223])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5400C8B763;
-	Tue, 15 Aug 2023 12:58:19 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37FAwBrP077191
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 15 Aug 2023 12:58:11 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37FAw9lQ077190;
-	Tue, 15 Aug 2023 12:58:09 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc: Move zalloc_maybe_bootmem() into pci-common.c
-Date: Tue, 15 Aug 2023 12:57:55 +0200
-Message-ID: <4235adc9515a4b084f815cc12f24ef1ac2b43eba.1692097067.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.41.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RQ8C11p2Tz3c1M
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2023 21:27:56 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37FBRC16007205;
+	Tue, 15 Aug 2023 11:27:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Hw4qeJt1isrmJOmGcFqgv2g0GPpFNTNd2BuJM6JTsDg=;
+ b=D1F+0kB05AtA9VBfA0ObTe8okyMvCOewWA4o46FYAkgf0KBV1YIg5PjPTJl6w+bdaU6N
+ tuE+vhX/13NKzgukBlNMihsYb8T0qaZoRigd3wdLi9WBoHQ285+bD48ieUjkbE3aqLqG
+ GOaZEQWt48zmvpRtNrCRXjkYgwNaRwe2Nc1YPG63IM4vt1gf/IvpkMhq+NbaBnMxGoHq
+ Akx8/PN70DoHjC//0Bm50ypqr8vN6NG0ek1RLD9l/ZXZ/7bQYNV4pPaJ28EOQQZkH8MJ
+ 8LQop67kVbtpwbV+v1XDPUdy9eDeT2/6dr+Fln2nb9iZYvDV4YaNsjOOenukaGrOoAZY kA== 
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sg8gd80cf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Aug 2023 11:27:43 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37F8cmTA013228;
+	Tue, 15 Aug 2023 11:27:42 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3sepmjkxuk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Aug 2023 11:27:42 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37FBReqg11928178
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 15 Aug 2023 11:27:40 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E978520043;
+	Tue, 15 Aug 2023 11:27:39 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DC52420040;
+	Tue, 15 Aug 2023 11:27:37 +0000 (GMT)
+Received: from li-4b5937cc-25c4-11b2-a85c-cea3a66903e4.ibm.com (unknown [9.61.3.84])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 15 Aug 2023 11:27:37 +0000 (GMT)
+From: Nayna Jain <nayna@linux.ibm.com>
+To: linux-integrity@vger.kernel.org
+Subject: [PATCH v4 2/6] integrity: ignore keys failing CA restrictions on non-UEFI platform
+Date: Tue, 15 Aug 2023 07:27:18 -0400
+Message-Id: <20230815112722.1591829-3-nayna@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20230815112722.1591829-1-nayna@linux.ibm.com>
+References: <20230815112722.1591829-1-nayna@linux.ibm.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1692097074; l=3588; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=7P8PUpj4knPK7IjXYrS0Hvc31FR/JHVAdIARH2NQJQU=; b=xSL8aUcrGcbJXZE8h0NNjhr5UldtJ5uzYxIKloDP3CucTjaKVIG6VjsAZyvW533ssrmwuivai 3JIHfxS7617BmFnBWAf1xD88dfjiTsMIuM6Vb4QskmuBMoGNVTyD8IS
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: sGDZer-yRbdzCzPNiApymnRE-LdP_-bS
+X-Proofpoint-GUID: sGDZer-yRbdzCzPNiApymnRE-LdP_-bS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-08-15_10,2023-08-15_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ mlxlogscore=999 priorityscore=1501 spamscore=0 adultscore=0 bulkscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 clxscore=1011 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2308150099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,125 +89,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, inux-kernel@vger.kernel.org, Nayna Jain <nayna@linux.ibm.com>, linux-security-module@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>, Jarkko Sakkinen <jarkko@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-zalloc_maybe_bootmem() is only used by PCI related functions.
+On non-UEFI platforms, handle restrict_link_by_ca failures differently.
 
-Move it into pci-common.c and remove the always built alloc.c
+Certificates which do not satisfy CA restrictions on non-UEFI platforms
+are ignored.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+Reviewed-and-tested-by: Mimi Zohar <zohar@linux.ibm.com>
+Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
 ---
- arch/powerpc/include/asm/pci.h   |  2 ++
- arch/powerpc/include/asm/setup.h |  1 -
- arch/powerpc/kernel/pci-common.c | 16 ++++++++++++++++
- arch/powerpc/lib/Makefile        |  2 +-
- arch/powerpc/lib/alloc.c         | 23 -----------------------
- 5 files changed, 19 insertions(+), 25 deletions(-)
- delete mode 100644 arch/powerpc/lib/alloc.c
+ security/integrity/platform_certs/machine_keyring.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index f5078a7dd85a..13d36ec3a5ea 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -45,6 +45,8 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- 	return channel ? 15 : 14;
- }
+diff --git a/security/integrity/platform_certs/machine_keyring.c b/security/integrity/platform_certs/machine_keyring.c
+index 7aaed7950b6e..389a6e7c9245 100644
+--- a/security/integrity/platform_certs/machine_keyring.c
++++ b/security/integrity/platform_certs/machine_keyring.c
+@@ -36,7 +36,7 @@ void __init add_to_machine_keyring(const char *source, const void *data, size_t
+ 	 * If the restriction check does not pass and the platform keyring
+ 	 * is configured, try to add it into that keyring instead.
+ 	 */
+-	if (rc && IS_ENABLED(CONFIG_INTEGRITY_PLATFORM_KEYRING))
++	if (rc && efi_enabled(EFI_BOOT) && IS_ENABLED(CONFIG_INTEGRITY_PLATFORM_KEYRING))
+ 		rc = integrity_load_cert(INTEGRITY_KEYRING_PLATFORM, source,
+ 					 data, len, perm);
  
-+void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
-+
- #ifdef CONFIG_PCI
- void __init set_pci_dma_ops(const struct dma_map_ops *dma_ops);
- #else	/* CONFIG_PCI */
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index e29e83f8a89c..eed74c1fb832 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -8,7 +8,6 @@
- extern void ppc_printk_progress(char *s, unsigned short hex);
- 
- extern unsigned long long memory_limit;
--extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
- 
- struct device_node;
- 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index e88d7c9feeec..34e66b06a030 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -31,6 +31,7 @@
- #include <linux/numa.h>
- #include <linux/msi.h>
- #include <linux/irqdomain.h>
-+#include <linux/memblock.h>
- 
- #include <asm/processor.h>
- #include <asm/io.h>
-@@ -121,6 +122,21 @@ static int get_phb_number(struct device_node *dn)
- 	return phb_id;
- }
- 
-+void * __ref zalloc_maybe_bootmem(size_t size, gfp_t mask)
-+{
-+	void *p;
-+
-+	if (slab_is_available()) {
-+		p = kzalloc(size, mask);
-+	} else {
-+		p = memblock_alloc(size, SMP_CACHE_BYTES);
-+		if (!p)
-+			panic("%s: Failed to allocate %zu bytes\n", __func__,
-+			      size);
-+	}
-+	return p;
-+}
-+
- struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
- {
- 	struct pci_controller *phb;
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 9aa8286c9687..51ad0397c17a 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -27,7 +27,7 @@ endif
- CFLAGS_code-patching.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
- CFLAGS_feature-fixups.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
- 
--obj-y += alloc.o code-patching.o feature-fixups.o pmem.o
-+obj-y += code-patching.o feature-fixups.o pmem.o
- 
- obj-$(CONFIG_CODE_PATCHING_SELFTEST) += test-code-patching.o
- 
-diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
-deleted file mode 100644
-index ce180870bd52..000000000000
---- a/arch/powerpc/lib/alloc.c
-+++ /dev/null
-@@ -1,23 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/memblock.h>
--#include <linux/string.h>
--#include <asm/setup.h>
--
--
--void * __ref zalloc_maybe_bootmem(size_t size, gfp_t mask)
--{
--	void *p;
--
--	if (slab_is_available())
--		p = kzalloc(size, mask);
--	else {
--		p = memblock_alloc(size, SMP_CACHE_BYTES);
--		if (!p)
--			panic("%s: Failed to allocate %zu bytes\n", __func__,
--			      size);
--	}
--	return p;
--}
 -- 
-2.41.0
+2.31.1
 
