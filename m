@@ -4,57 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C94DAC04A6A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Aug 2023 14:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CA7BC001B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Aug 2023 14:42:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ClSwS5ef;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U6jdEwZ3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RQrSD23dZz3cGc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 00:41:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RQrT946nZz2xqB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 00:42:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ClSwS5ef;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U6jdEwZ3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RQrQL0bhbz2xq8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 00:40:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1692196810; x=1723732810;
-  h=date:from:to:cc:subject:message-id;
-  bh=OvHO6UrRBcKl0UoOWglgJJD2qH8miCAER6VfTu4sLUo=;
-  b=ClSwS5efzFjdh7fqRKGthB/qG+gGcgIRT352SzbG8XG9lR0ACqN0sLON
-   m/XCbBqXfntdViURStiOhwcGE+Iiz59gK3RlG0UVPDx6cwKn+XOeyo2tf
-   YENcMspBnqV9McC1mJ0oUkqLRwVOrgThHVsVQ+n1eZyBR1ukGsI9Nx4v2
-   YIAOryXi4LtsJw8qpyPNiqz6ZEBr5GSTlc8cli7x0amSFvbkUvKzhwLqC
-   zFuMn0+n1N0ZOkz8X9CmA6C+bAEBncxQkKqb4zXMyTyrjFxuG86WLmsV3
-   s4tvuUTiebUDqQdp9k3OzBl+SuPPxMtqNVvQwXK10Y14XD8p9v0pnX0Lr
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="362702389"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; 
-   d="scan'208";a="362702389"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Aug 2023 07:40:00 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="727765029"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; 
-   d="scan'208";a="727765029"
-Received: from lkp-server02.sh.intel.com (HELO a9caf1a0cf30) ([10.239.97.151])
-  by orsmga007.jf.intel.com with ESMTP; 16 Aug 2023 07:39:59 -0700
-Received: from kbuild by a9caf1a0cf30 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1qWHgl-0000NF-0C;
-	Wed, 16 Aug 2023 14:39:59 +0000
-Date: Wed, 16 Aug 2023 22:39:40 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:topic/ppc-kvm] BUILD SUCCESS WITH WARNING
- c95bf4c16099f2ed29a7f6949559bc4187d30710
-Message-ID: <202308162237.1Gclz77q-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RQrRL5bqXz3cRj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 00:41:02 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37GEdQj7020221;
+	Wed, 16 Aug 2023 14:40:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=1waCB4ES7jBPwgYqnxuZZXisMpuTJTeVygV2vRMlpYw=;
+ b=U6jdEwZ3KUeNoBe2dRxB66dqdyMjL8waDm0XTzGJOUOPwLBu8I41OQXNYRsKm1QVT2Dg
+ MMzBGcoPTix1pNJHpyvgIjulq9IYOZ/D7XMjuPWCwO7c1OVnd9D5NXjVoLylp/sX9Gv2
+ /9cUJU6Z4RE/DWts0pewvDoqgfb10DJ8av98xZtk504PKdm4xMObAtqRGekCqKUUuLZp
+ jJ263gdDJqbbXnTsmChM3/hDLQEjc7lI3NtqlJYLYISxXRD+eusWEvZvexpY2TbxbVWh
+ hgi3Mogt5YRJAjgWxtBSTV+MNf9x4SiDFEhWvkRQga1nrW6X3NHu9fHCOyvyVWJ6I+bz 2g== 
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sgy4utbwg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 16 Aug 2023 14:40:57 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37GDjqai001107;
+	Wed, 16 Aug 2023 14:40:53 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3semsydpq3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 16 Aug 2023 14:40:53 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37GEen3g22872680
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 16 Aug 2023 14:40:49 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 22F012004D;
+	Wed, 16 Aug 2023 14:40:49 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6333D2004B;
+	Wed, 16 Aug 2023 14:40:47 +0000 (GMT)
+Received: from [9.43.32.205] (unknown [9.43.32.205])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 16 Aug 2023 14:40:47 +0000 (GMT)
+Message-ID: <cecf4c1d-e7be-ae64-d184-8d6f72948dff@linux.ibm.com>
+Date: Wed, 16 Aug 2023 20:10:45 +0530
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.14.0
+Subject: Re: [PATCH v4 1/6] integrity: PowerVM support for loading CA keys on
+ machine keyring
+Content-Language: en-US
+To: Nayna Jain <nayna@linux.ibm.com>, linux-integrity@vger.kernel.org
+References: <20230815112722.1591829-1-nayna@linux.ibm.com>
+ <20230815112722.1591829-2-nayna@linux.ibm.com>
+From: R Nageswara Sastry <rnsastry@linux.ibm.com>
+In-Reply-To: <20230815112722.1591829-2-nayna@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ywiIaqZSgUFwhM0b1c81sEw2HWQCZweR
+X-Proofpoint-ORIG-GUID: ywiIaqZSgUFwhM0b1c81sEw2HWQCZweR
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-08-16_14,2023-08-15_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ lowpriorityscore=0 phishscore=0 priorityscore=1501 mlxlogscore=999
+ mlxscore=0 impostorscore=0 spamscore=0 malwarescore=0 clxscore=1011
+ adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2306200000 definitions=main-2308160125
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,176 +94,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, inux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>, Jarkko Sakkinen <jarkko@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/ppc-kvm
-branch HEAD: c95bf4c16099f2ed29a7f6949559bc4187d30710  docs: powerpc: Document nested KVM on POWER
 
-Warning reports:
 
-https://lore.kernel.org/oe-kbuild-all/202308161348.NnNxubXr-lkp@intel.com
-https://lore.kernel.org/oe-kbuild-all/202308161359.9d2Z52f5-lkp@intel.com
-https://lore.kernel.org/oe-kbuild-all/202308161433.p1L5wedY-lkp@intel.com
+On 15/08/23 4:57 pm, Nayna Jain wrote:
+> Keys that derive their trust from an entity such as a security officer,
+> administrator, system owner, or machine owner are said to have "imputed
+> trust". CA keys with imputed trust can be loaded onto the machine keyring.
+> The mechanism for loading these keys onto the machine keyring is platform
+> dependent.
+> 
+> Load keys stored in the variable trustedcadb onto the .machine keyring
+> on PowerVM platform.
+> 
+> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+> Reviewed-and-tested-by: Mimi Zohar <zohar@linux.ibm.com>
 
-Warning: (recently discovered and may have been fixed)
+Tested with trustedcadb, moduledb scenarios
+Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
 
-arch/powerpc/kvm/book3s_hv_nestedv2.c:465:29: warning: variable 'amor' set but not used [-Wunused-but-set-variable]
-arch/powerpc/kvm/guest-state-buffer.c:505: warning: expecting prototype for kvmppc_gsm_init(). Prototype was for kvmppc_gsm_new() instead
-arch/powerpc/kvm/guest-state-buffer.c:565: warning: expecting prototype for kvmppc_gsm_fill_info(). Prototype was for kvmppc_gsm_refresh_info() instead
-include/linux/kern_levels.h:5:25: warning: format '%d' expects argument of type 'int', but argument 2 has type 'long unsigned int' [-Wformat=]
 
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- powerpc-allmodconfig
-    |-- arch-powerpc-kvm-book3s_hv_nestedv2.c:warning:variable-amor-set-but-not-used
-    |-- arch-powerpc-kvm-guest-state-buffer.c:warning:expecting-prototype-for-kvmppc_gsm_fill_info().-Prototype-was-for-kvmppc_gsm_refresh_info()-instead
-    |-- arch-powerpc-kvm-guest-state-buffer.c:warning:expecting-prototype-for-kvmppc_gsm_init().-Prototype-was-for-kvmppc_gsm_new()-instead
-    `-- include-linux-kern_levels.h:warning:format-d-expects-argument-of-type-int-but-argument-has-type-long-unsigned-int
-
-elapsed time: 723m
-
-configs tested: 133
-configs skipped: 4
-
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-alpha                randconfig-r025-20230816   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                 nsimosci_hs_smp_defconfig   gcc  
-arc                  randconfig-r022-20230816   gcc  
-arc                  randconfig-r043-20230816   gcc  
-arc                           tb10x_defconfig   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                        clps711x_defconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r021-20230816   gcc  
-arm                  randconfig-r034-20230816   clang
-arm                  randconfig-r046-20230816   gcc  
-arm                       versatile_defconfig   clang
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r026-20230816   clang
-arm64                randconfig-r031-20230816   gcc  
-csky                                defconfig   gcc  
-hexagon              randconfig-r002-20230816   clang
-hexagon              randconfig-r041-20230816   clang
-hexagon              randconfig-r045-20230816   clang
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-r004-20230816   gcc  
-i386         buildonly-randconfig-r005-20230816   gcc  
-i386         buildonly-randconfig-r006-20230816   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-i001-20230816   gcc  
-i386                 randconfig-i002-20230816   gcc  
-i386                 randconfig-i003-20230816   gcc  
-i386                 randconfig-i004-20230816   gcc  
-i386                 randconfig-i005-20230816   gcc  
-i386                 randconfig-i006-20230816   gcc  
-i386                 randconfig-i011-20230816   clang
-i386                 randconfig-i012-20230816   clang
-i386                 randconfig-i013-20230816   clang
-i386                 randconfig-i014-20230816   clang
-i386                 randconfig-i015-20230816   clang
-i386                 randconfig-i016-20230816   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-m68k                             allmodconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r004-20230816   gcc  
-microblaze           randconfig-r002-20230816   gcc  
-microblaze           randconfig-r005-20230816   gcc  
-microblaze           randconfig-r011-20230816   gcc  
-microblaze           randconfig-r035-20230816   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                        bcm63xx_defconfig   clang
-mips                        qi_lb60_defconfig   gcc  
-mips                 randconfig-r005-20230816   clang
-mips                           rs90_defconfig   clang
-nios2                               defconfig   gcc  
-nios2                randconfig-r023-20230816   gcc  
-nios2                randconfig-r024-20230816   gcc  
-nios2                randconfig-r036-20230816   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r001-20230816   gcc  
-parisc               randconfig-r003-20230816   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                     ksi8560_defconfig   clang
-powerpc                         ps3_defconfig   gcc  
-powerpc                     rainier_defconfig   gcc  
-powerpc              randconfig-r006-20230816   gcc  
-powerpc                     redwood_defconfig   gcc  
-powerpc                 xes_mpc85xx_defconfig   clang
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   clang
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                    nommu_virt_defconfig   clang
-riscv                randconfig-r013-20230816   clang
-riscv                randconfig-r042-20230816   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r004-20230816   gcc  
-s390                 randconfig-r044-20230816   clang
-s390                       zfcpdump_defconfig   gcc  
-sh                               allmodconfig   gcc  
-sh                         ap325rxa_defconfig   gcc  
-sh                          lboxre2_defconfig   gcc  
-sh                   randconfig-r006-20230816   gcc  
-sh                          rsk7203_defconfig   gcc  
-sh                   rts7751r2dplus_defconfig   gcc  
-sh                           sh2007_defconfig   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc64              randconfig-r014-20230816   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                   randconfig-r032-20230816   clang
-um                           x86_64_defconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-r001-20230816   gcc  
-x86_64       buildonly-randconfig-r002-20230816   gcc  
-x86_64       buildonly-randconfig-r003-20230816   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-r001-20230816   gcc  
-x86_64               randconfig-r012-20230816   clang
-x86_64               randconfig-r033-20230816   gcc  
-x86_64               randconfig-x001-20230816   clang
-x86_64               randconfig-x002-20230816   clang
-x86_64               randconfig-x003-20230816   clang
-x86_64               randconfig-x004-20230816   clang
-x86_64               randconfig-x005-20230816   clang
-x86_64               randconfig-x006-20230816   clang
-x86_64               randconfig-x011-20230816   gcc  
-x86_64               randconfig-x012-20230816   gcc  
-x86_64               randconfig-x013-20230816   gcc  
-x86_64               randconfig-x014-20230816   gcc  
-x86_64               randconfig-x015-20230816   gcc  
-x86_64               randconfig-x016-20230816   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa                  nommu_kc705_defconfig   gcc  
-xtensa               randconfig-r003-20230816   gcc  
+> ---
+>   .../integrity/platform_certs/keyring_handler.c  |  8 ++++++++
+>   .../integrity/platform_certs/keyring_handler.h  |  5 +++++
+>   .../integrity/platform_certs/load_powerpc.c     | 17 +++++++++++++++++
+>   3 files changed, 30 insertions(+)
+> 
+> diff --git a/security/integrity/platform_certs/keyring_handler.c b/security/integrity/platform_certs/keyring_handler.c
+> index 8a1124e4d769..1649d047e3b8 100644
+> --- a/security/integrity/platform_certs/keyring_handler.c
+> +++ b/security/integrity/platform_certs/keyring_handler.c
+> @@ -69,6 +69,14 @@ __init efi_element_handler_t get_handler_for_mok(const efi_guid_t *sig_type)
+>   	return NULL;
+>   }
+>   
+> +__init efi_element_handler_t get_handler_for_ca_keys(const efi_guid_t *sig_type)
+> +{
+> +	if (efi_guidcmp(*sig_type, efi_cert_x509_guid) == 0)
+> +		return add_to_machine_keyring;
+> +
+> +	return NULL;
+> +}
+> +
+>   /*
+>    * Return the appropriate handler for particular signature list types found in
+>    * the UEFI dbx and MokListXRT tables.
+> diff --git a/security/integrity/platform_certs/keyring_handler.h b/security/integrity/platform_certs/keyring_handler.h
+> index 212d894a8c0c..6f15bb4cc8dc 100644
+> --- a/security/integrity/platform_certs/keyring_handler.h
+> +++ b/security/integrity/platform_certs/keyring_handler.h
+> @@ -29,6 +29,11 @@ efi_element_handler_t get_handler_for_db(const efi_guid_t *sig_type);
+>    */
+>   efi_element_handler_t get_handler_for_mok(const efi_guid_t *sig_type);
+>   
+> +/*
+> + * Return the handler for particular signature list types for CA keys.
+> + */
+> +efi_element_handler_t get_handler_for_ca_keys(const efi_guid_t *sig_type);
+> +
+>   /*
+>    * Return the handler for particular signature list types found in the dbx.
+>    */
+> diff --git a/security/integrity/platform_certs/load_powerpc.c b/security/integrity/platform_certs/load_powerpc.c
+> index 170789dc63d2..339053d9726d 100644
+> --- a/security/integrity/platform_certs/load_powerpc.c
+> +++ b/security/integrity/platform_certs/load_powerpc.c
+> @@ -59,6 +59,7 @@ static __init void *get_cert_list(u8 *key, unsigned long keylen, u64 *size)
+>   static int __init load_powerpc_certs(void)
+>   {
+>   	void *db = NULL, *dbx = NULL, *data = NULL;
+> +	void *trustedca;
+>   	u64 dsize = 0;
+>   	u64 offset = 0;
+>   	int rc = 0;
+> @@ -120,6 +121,22 @@ static int __init load_powerpc_certs(void)
+>   		kfree(data);
+>   	}
+>   
+> +	data = get_cert_list("trustedcadb", 12,  &dsize);
+> +	if (!data) {
+> +		pr_info("Couldn't get trustedcadb list from firmware\n");
+> +	} else if (IS_ERR(data)) {
+> +		rc = PTR_ERR(data);
+> +		pr_err("Error reading trustedcadb from firmware: %d\n", rc);
+> +	} else {
+> +		extract_esl(trustedca, data, dsize, offset);
+> +
+> +		rc = parse_efi_signature_list("powerpc:trustedca", trustedca, dsize,
+> +					      get_handler_for_ca_keys);
+> +		if (rc)
+> +			pr_err("Couldn't parse trustedcadb signatures: %d\n", rc);
+> +		kfree(data);
+> +	}
+> +
+>   	return rc;
+>   }
+>   late_initcall(load_powerpc_certs);
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Thanks and Regards
+R.Nageswara Sastry
