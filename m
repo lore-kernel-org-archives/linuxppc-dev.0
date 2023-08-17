@@ -4,71 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18A96C27C6D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Aug 2023 23:26:52 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=J+2GZw9s;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47AF8C2FC06
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 00:12:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RR4623tjBz305R
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 09:26:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=J+2GZw9s;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f33; helo=mail-qv1-xf33.google.com; envelope-from=mr.bossman075@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf33.google.com (mail-qv1-xf33.google.com [IPv6:2607:f8b0:4864:20::f33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RR56d5FWRz3cT3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 10:12:25 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RR3B73XXBz2yTc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 08:45:17 +1000 (AEST)
-Received: by mail-qv1-xf33.google.com with SMTP id 6a1803df08f44-6418c819c3cso32381296d6.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2023 15:45:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692225914; x=1692830714;
-        h=content-transfer-encoding:subject:from:reply-to:cc:to
-         :content-language:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MGoBkEwlCnbJad+CecbjRY+VjiJK8E7bojDgpjg7FvU=;
-        b=J+2GZw9sDgAuPCvyYPqSvvzp1lVg6wE6qeMOlcYMGPuThPNLCGYiiW2dwFVq91l/vl
-         NT/yeq5xZ4Ufc7IZxR6ugOwOZQfg5nMbUshmMxhNTewriji8eUuaNn0c360FPsW5tkH4
-         6cS/vKC7K0l0lZLKGVqDi2VTUmRXgo+WSJJ9fOFjLJU7uhgHYQzddKm06zxNwf3BXFjN
-         SCDUE56G1UeYAPYGs2dGSOsKeDDFiUZRdgQwqGIeL2NpPJhlcnrVVGytRXUYD0OF20a4
-         87SE8XWZHMx/EGlk2yISP6pygxQx+aQ11VINZVZvJIAIyOIfvz+sxSaS9uqbom35csu9
-         8sYQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692225914; x=1692830714;
-        h=content-transfer-encoding:subject:from:reply-to:cc:to
-         :content-language:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=MGoBkEwlCnbJad+CecbjRY+VjiJK8E7bojDgpjg7FvU=;
-        b=YtekNW+NEeq5JC0T/o1W7Lt+nSQj81PP+WxgC0jkY2XuHP4pDeq8/XbtAq3zGX3KrC
-         iGnD6l0XGQ+XLj+wY6smcc2ftjxTPOmLMqj5kQB9s5FO8ygkAgZc4QXdzXN/Uu21VdGF
-         wdi8+LbyH8BlJurzWp7mxwIbvpH/6oTE1mCNfDESl/AvgvMEcA/Ndiv3ixnnHev6M+iR
-         0FxESwZITTQeCNSlvmnQKJoyqVN+FPXdzyAToThjfc3FaG6P8dMYeBzK46FlZcUwSjvI
-         B2O57kdedaovVI4eho5IBh3Tc2ixWVSeUo10EFngQMn692jhSMu/9Lfd+aVnyEItxu3/
-         keDw==
-X-Gm-Message-State: AOJu0Yy1XymGFlnWAyhJCDizcwXK/jQ2pVKobMZL5vXHyZ9+TrrdNYIE
-	gVVzxwv9NpsYIVZ6tIamE9k=
-X-Google-Smtp-Source: AGHT+IFsHNXunRgp3X8hlKrWnp7WXFK/+sVXWgsvRCLnJDzFjNXPGtXcdWLNPeHWJ41d2OTBT7Z5iQ==
-X-Received: by 2002:a0c:e4c7:0:b0:649:980c:4ee1 with SMTP id g7-20020a0ce4c7000000b00649980c4ee1mr1626603qvm.5.1692225914347;
-        Wed, 16 Aug 2023 15:45:14 -0700 (PDT)
-Received: from ?IPV6:2600:4040:57a3:100:5b2e:7da0:3ac1:56bd? ([2600:4040:57a3:100:5b2e:7da0:3ac1:56bd])
-        by smtp.gmail.com with ESMTPSA id w13-20020a0ce10d000000b00645cbb3b6bbsm3864703qvk.115.2023.08.16.15.45.12
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Aug 2023 15:45:13 -0700 (PDT)
-Message-ID: <38e1a01b-1e8b-7c66-bafc-fc5861f08da9@gmail.com>
-Date: Wed, 16 Aug 2023 18:45:12 -0400
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RR56136fqz2yGW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 10:11:53 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RR55z4RDCz4wy3;
+	Thu, 17 Aug 2023 10:11:51 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Kees Cook <keescook@chromium.org>, Nathan Lynch <nathanl@linux.ibm.com>
+In-Reply-To: <20230810-rtas-flash-vs-hardened-usercopy-v2-1-dcf63793a938@linux.ibm.com>
+References: <20230810-rtas-flash-vs-hardened-usercopy-v2-1-dcf63793a938@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/rtas_flash: allow user copy to flash block cache objects
+Message-Id: <169223107895.375104.3687617958725578000.b4-ty@ellerman.id.au>
+Date: Thu, 17 Aug 2023 10:11:18 +1000
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Content-Language: en-US
-To: Randy Dunlap <rdunlap@infradead.org>
-From: Jesse Taube <mr.bossman075@gmail.com>
-Subject: Re: [PATCH] treewide: drop CONFIG_EMBEDDED
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 17 Aug 2023 09:24:54 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,31 +42,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: 20230816055010.31534-1-rdunlap@infradead.org
-Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-kernel@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-riscv@lists.infradead.org, Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Masahiro Yamada <masahiroy@kernel.org>, Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, Jonas Bonn <jonas@southpole.se>, Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Boge
- ndoerfer <tsbogend@alpha.franken.de>, Max Filippov <jcmvbkbc@gmail.com>, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, Randy
+On Thu, 10 Aug 2023 22:37:55 -0500, Nathan Lynch wrote:
+> With hardened usercopy enabled (CONFIG_HARDENED_USERCOPY=y), using the
+> /proc/powerpc/rtas/firmware_update interface to prepare a system
+> firmware update yields a BUG():
+> 
+> kernel BUG at mm/usercopy.c:102!
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+> Modules linked in:
+> CPU: 0 PID: 2232 Comm: dd Not tainted 6.5.0-rc3+ #2
+> Hardware name: IBM,8408-E8E POWER8E (raw) 0x4b0201 0xf000004 of:IBM,FW860.50 (SV860_146) hv:phyp pSeries
+> NIP:  c0000000005991d0 LR: c0000000005991cc CTR: 0000000000000000
+> REGS: c0000000148c76a0 TRAP: 0700   Not tainted  (6.5.0-rc3+)
+> MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24002242  XER: 0000000c
+> CFAR: c0000000001fbd34 IRQMASK: 0
+> [ ... GPRs omitted ... ]
+> NIP [c0000000005991d0] usercopy_abort+0xa0/0xb0
+> LR [c0000000005991cc] usercopy_abort+0x9c/0xb0
+> Call Trace:
+> [c0000000148c7940] [c0000000005991cc] usercopy_abort+0x9c/0xb0 (unreliable)
+> [c0000000148c79b0] [c000000000536814] __check_heap_object+0x1b4/0x1d0
+> [c0000000148c79f0] [c000000000599080] __check_object_size+0x2d0/0x380
+> [c0000000148c7a30] [c000000000045ed4] rtas_flash_write+0xe4/0x250
+> [c0000000148c7a80] [c00000000068a0fc] proc_reg_write+0xfc/0x160
+> [c0000000148c7ab0] [c0000000005a381c] vfs_write+0xfc/0x4e0
+> [c0000000148c7b70] [c0000000005a3e10] ksys_write+0x90/0x160
+> [c0000000148c7bc0] [c00000000002f2c8] system_call_exception+0x178/0x320
+> [c0000000148c7e50] [c00000000000d520] system_call_common+0x160/0x2c4
+> --- interrupt: c00 at 0x7fff9f17e5e4
+> 
+> [...]
 
- > diff -- a/init/Kconfig b/init/Kconfig
- > --- a/init/Kconfig
- > +++ b/init/Kconfig
- > @@ -1790,14 +1790,6 @@ config DEBUG_RSEQ
- >
- >  	  If unsure, say N.
- >
- > -config EMBEDDED
- > -	bool "Embedded system"
- > -	select EXPERT
- > -	help
- > -	  This option should be enabled if compiling the kernel for
- > -	  an embedded system so certain expert options are available
- > -	  for configuration.
+Applied to powerpc/fixes.
 
-Wouldn't removing this break many out of tree configs?
-Should there be a warning here to update change it instead of removal?
+[1/1] powerpc/rtas_flash: allow user copy to flash block cache objects
+      https://git.kernel.org/powerpc/c/4f3175979e62de3b929bfa54a0db4b87d36257a7
 
-Thanks,
-Jesse Taube
+cheers
