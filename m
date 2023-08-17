@@ -4,40 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39A09C2FC14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 14:02:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16290C2FC35
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 14:14:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRRX04VgCz3cbH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 00:02:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=yuehaibing@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1130 seconds by postgrey-1.37 at boromir; Fri, 18 Aug 2023 00:01:38 AEST
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRRpM5PGGz3cNt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 00:14:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=fail (SPF fail - not authorized) smtp.mailfrom=csgroup.eu (client-ip=90.115.179.12; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (unknown [90.115.179.12])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRRWQ4szjz2ytV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 00:01:34 +1000 (AEST)
-Received: from canpemm500007.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RRR1L6nX9zNmrP;
-	Thu, 17 Aug 2023 21:39:02 +0800 (CST)
-Received: from localhost (10.174.179.215) by canpemm500007.china.huawei.com
- (7.192.104.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Thu, 17 Aug
- 2023 21:42:34 +0800
-From: Yue Haibing <yuehaibing@huawei.com>
-To: <madalin.bucur@nxp.com>, <sean.anderson@seco.com>, <davem@davemloft.net>,
-	<edumazet@google.com>, <kuba@kernel.org>, <pabeni@redhat.com>,
-	<pantelis.antoniou@gmail.com>, <camelia.groza@nxp.com>,
-	<christophe.leroy@csgroup.eu>, <yuehaibing@huawei.com>
-Subject: [PATCH net-next] net: freescale: Remove unused declarations
-Date: Thu, 17 Aug 2023 21:41:59 +0800
-Message-ID: <20230817134159.38484-1-yuehaibing@huawei.com>
-X-Mailer: git-send-email 2.10.2.windows.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRRnq3st4z30dt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 00:14:06 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4RRRnl1bY4zB0Wt;
+	Thu, 17 Aug 2023 16:14:03 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id krFBy4CYFv1f; Thu, 17 Aug 2023 16:14:03 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RRRnk5QcXzB0Wr;
+	Thu, 17 Aug 2023 16:14:02 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B6CCA8B76C;
+	Thu, 17 Aug 2023 16:14:02 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id yzgK5_x5-n_m; Thu, 17 Aug 2023 16:14:02 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.19.54.59])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 783B18B763;
+	Thu, 17 Aug 2023 16:14:02 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37HEDpZg444184
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 17 Aug 2023 16:13:52 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37HEDmYc444180;
+	Thu, 17 Aug 2023 16:13:48 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/47x: Remove early_init_mmu_47x() to fix no previous prototype
+Date: Thu, 17 Aug 2023 16:13:40 +0200
+Message-ID: <17e245625f44be5cef3e7a358ae6b1e09ca05bc6.1692281067.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.174.179.215]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- canpemm500007.china.huawei.com (7.192.104.62)
-X-CFilter-Loop: Reflected
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1692281619; l=2264; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=DkkHOuMkgJ4ThoX2EWwXEWeo60SmP8clLH8vy9/I+bY=; b=jm7XoCuI/CpoXSlX5549kYosZf44K/8O4VlHLtSh0LlrO5eOSJwffT0YZC0VOI8HiRiCKlewp XT/qjpDgUdcCw0s3ie3tM/D0OGFLxE7nWOOQpHCtJpy7OvhgY2drKBL
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,53 +65,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 5d93cfcf7360 ("net: dpaa: Convert to phylink") removed
-fman_set_mac_active_pause()/fman_get_pause_cfg() but not declarations.
-Commit 48257c4f168e ("Add fs_enet ethernet network driver, for several
-embedded platforms.") declared but never implemented
-fs_enet_platform_init() and fs_enet_platform_cleanup().
+4xx/iss476-smp_defconfig leads to:
 
-Signed-off-by: Yue Haibing <yuehaibing@huawei.com>
+  CC      arch/powerpc/mm/nohash/tlb.o
+arch/powerpc/mm/nohash/tlb.c:322:13: error: no previous prototype for 'early_init_mmu_47x' [-Werror=missing-prototypes]
+  322 | void __init early_init_mmu_47x(void)
+      |             ^~~~~~~~~~~~~~~~~~
+
+early_init_mmu_47x() is used only at one place and only locally.
+
+Fold it into its only caller and remove it.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/net/ethernet/freescale/fman/mac.h        | 4 ----
- drivers/net/ethernet/freescale/fs_enet/fs_enet.h | 5 -----
- 2 files changed, 9 deletions(-)
+ arch/powerpc/mm/mmu_decl.h   |  1 +
+ arch/powerpc/mm/nohash/tlb.c | 19 +++++--------------
+ 2 files changed, 6 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fman/mac.h b/drivers/net/ethernet/freescale/fman/mac.h
-index ad06f8d7924b..fe747915cc73 100644
---- a/drivers/net/ethernet/freescale/fman/mac.h
-+++ b/drivers/net/ethernet/freescale/fman/mac.h
-@@ -68,10 +68,6 @@ struct dpaa_eth_data {
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index c6dccb4f06dc..7f9ff0640124 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -110,6 +110,7 @@ extern void MMU_init_hw(void);
+ void MMU_init_hw_patch(void);
+ unsigned long mmu_mapin_ram(unsigned long base, unsigned long top);
+ #endif
++void mmu_init_secondary(int cpu);
  
- extern const char	*mac_driver_description;
+ #ifdef CONFIG_PPC_E500
+ extern unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx,
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index a903b308acc5..5ffa0af4328a 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -318,17 +318,6 @@ EXPORT_SYMBOL(flush_tlb_page);
  
--int fman_set_mac_active_pause(struct mac_device *mac_dev, bool rx, bool tx);
+ #endif /* CONFIG_SMP */
+ 
+-#ifdef CONFIG_PPC_47x
+-void __init early_init_mmu_47x(void)
+-{
+-#ifdef CONFIG_SMP
+-	unsigned long root = of_get_flat_dt_root();
+-	if (of_get_flat_dt_prop(root, "cooperative-partition", NULL))
+-		mmu_clear_feature(MMU_FTR_USE_TLBIVAX_BCAST);
+-#endif /* CONFIG_SMP */
+-}
+-#endif /* CONFIG_PPC_47x */
 -
--void fman_get_pause_cfg(struct mac_device *mac_dev, bool *rx_pause,
--			bool *tx_pause);
- int fman_set_multi(struct net_device *net_dev, struct mac_device *mac_dev);
- 
- #endif	/* __MAC_H */
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-index d371072fff60..759bb7080e22 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-@@ -208,11 +208,6 @@ void fs_cleanup_bds(struct net_device *dev);
- #define DRV_MODULE_NAME		"fs_enet"
- #define PFX DRV_MODULE_NAME	": "
- 
--/***************************************************************************/
--
--int fs_enet_platform_init(void);
--void fs_enet_platform_cleanup(void);
--
- /***************************************************************************/
- /* buffer descriptor access macros */
- 
+ /*
+  * Flush kernel TLB entries in the given range
+  */
+@@ -746,8 +735,10 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ #else /* ! CONFIG_PPC64 */
+ void __init early_init_mmu(void)
+ {
+-#ifdef CONFIG_PPC_47x
+-	early_init_mmu_47x();
+-#endif
++	unsigned long root = of_get_flat_dt_root();
++
++	if (IS_ENABLED(CONFIG_PPC_47x) && IS_ENABLED(CONFIG_SMP) &&
++	    of_get_flat_dt_prop(root, "cooperative-partition", NULL))
++		mmu_clear_feature(MMU_FTR_USE_TLBIVAX_BCAST);
+ }
+ #endif /* CONFIG_PPC64 */
 -- 
-2.34.1
+2.41.0
 
