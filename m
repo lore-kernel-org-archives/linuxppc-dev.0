@@ -4,73 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1F59C3065A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 15:45:03 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Y7OkJ5kz;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23F09C3DA4D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:14:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRTpk1Bplz3cT2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 01:45:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Y7OkJ5kz;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::136; helo=mail-lf1-x136.google.com; envelope-from=philmd@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVSG2wqKz3cTy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:14:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.132.48; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 333 seconds by postgrey-1.37 at boromir; Fri, 18 Aug 2023 02:13:36 AEST
+Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRTnj5P4dz3bWQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 01:44:07 +1000 (AEST)
-Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4fe0c566788so12466599e87.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 08:44:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692287038; x=1692891838;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Lp1IuZHqWfKCAVZooutFxjvYW2JldAzLdhi3fANGf+o=;
-        b=Y7OkJ5kzfBR9aS1o3hbSjWBbpDhDfQvuOJAbLWMeHIdCvYVqIqsch4xPQi6nhKj1sW
-         MyG2VLyh2d/VhqbZsXyum3ahPYS8bZD/3vhehfn8OxUL5vrX+3/9cMxCnE5qiSsgyDR/
-         fShe46mhdY+NApZpcWsPqTIffnvlvkPtOI+jgn4rIt384WQhvhdi97ih/Ilt5JjDZtjs
-         doYEk6M74dQhbXRqKo5cHgm5Sxala+iBlG/zi0HHIrvQSCxfxkgmFC1tMXvlzNgJkmoZ
-         rUDnjo4tsPM/cqSjpRMFtA5WxE0YyMxathg7q3nRUgdWs7XXqmVaU3lpDCCDHWNMmo6U
-         MjbA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692287038; x=1692891838;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Lp1IuZHqWfKCAVZooutFxjvYW2JldAzLdhi3fANGf+o=;
-        b=foaOsu9wiQ7Rf1+EPNBOHCWi1E7E2KJ4h38g8OtF5v4F/nb38LyiYtNtGASlezRkxa
-         NArV1gGX1aRcPdmJNdvmnHFiM9iL/oiZcpdl6nyYFhsSLubKDzwZH5chdwSOon8oEWAt
-         YXqcH1sLoL+7QwxGmJ4iWW/ibdKJ7x0bPEdAgDr8oHqEwVgddsla2u987G/Ag41VK/na
-         vS6Meup/V5t0p3RNI8rIus2TneEhHvReuhTNbIu+BPxFvGZmLTaoXiIaOrwFpMJLZGAU
-         401uNx1huE1OVxc5FOvUMGMYAm14g4ClQ8PdjGc8lJ/YN2giZllbgZciLoi5CAoqanro
-         99XQ==
-X-Gm-Message-State: AOJu0Yx/1mivKO9ubWeyoVU8D/EboIE1s5vCbCvzjs3u15x1GnrszU+w
-	fWHhxGFhz4s4WYKpot1563ycnw==
-X-Google-Smtp-Source: AGHT+IGo/MkOhuQ87pyBbC2n512LcvZgd8ip292GYtt+yin2/JuZNeICWXDi7cMjkYGQ4p2MIAoVng==
-X-Received: by 2002:a2e:241a:0:b0:2b9:df53:4c2a with SMTP id k26-20020a2e241a000000b002b9df534c2amr4656731ljk.20.1692287038600;
-        Thu, 17 Aug 2023 08:43:58 -0700 (PDT)
-Received: from [192.168.69.115] (mek33-h02-176-184-23-56.dsl.sta.abo.bbox.fr. [176.184.23.56])
-        by smtp.gmail.com with ESMTPSA id lj5-20020a170906f9c500b0098d2d219649sm10418014ejb.174.2023.08.17.08.43.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 17 Aug 2023 08:43:57 -0700 (PDT)
-Message-ID: <c608d62f-e3fe-1ead-b0a7-f935fea80702@linaro.org>
-Date: Thu, 17 Aug 2023 17:43:56 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVRh5x2yz2yW0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 02:13:35 +1000 (AEST)
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4RRVK74g9gz4x17g
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 18:07:55 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d85a:258d:2c59:b44])
+	by baptiste.telenet-ops.be with bizsmtp
+	id ag7i2A0074QHFyo01g7ivj; Thu, 17 Aug 2023 18:07:55 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1qWfX4-000uJ4-GF;
+	Thu, 17 Aug 2023 18:07:42 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1qWfXB-007YF1-VZ;
+	Thu, 17 Aug 2023 18:07:41 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Russell King <linux@armlinux.org.uk>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"David S . Miller" <davem@davemloft.net>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Christoph Hellwig <hch@lst.de>,
+	Jens Axboe <axboe@kernel.dk>
+Subject: [PATCH 7/9] ata: pata_falcon: Remove #include <asm/ide.h>
+Date: Thu, 17 Aug 2023 18:07:38 +0200
+Message-Id: <1147903ba2f9c5e5e840d8b3c2d05b6eafc78340.1692288018.git.geert@linux-m68k.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1692288018.git.geert@linux-m68k.org>
+References: <cover.1692288018.git.geert@linux-m68k.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.14.0
-Subject: Re: [PATCH v3 3/4] arch/mips/configs/*_defconfig cleanup
-Content-Language: en-US
-To: Trevor Woerner <twoerner@gmail.com>, linux-kernel@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-References: <20230817115017.35663-1-twoerner@gmail.com>
- <20230817115017.35663-4-twoerner@gmail.com>
-From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
-In-Reply-To: <20230817115017.35663-4-twoerner@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,23 +64,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 17/8/23 13:50, Trevor Woerner wrote:
-> Drop CONFIG_IP_NF_TARGET_CLUSTERIP from any remaining mips defconfigs as it
-> was removed in commit 9db5d918e2c0 ("netfilter: ip_tables: remove clusterip
-> target").
-> 
-> Signed-off-by: Trevor Woerner <twoerner@gmail.com>
-> ---
->   arch/mips/configs/ip22_defconfig        | 1 -
->   arch/mips/configs/malta_defconfig       | 1 -
->   arch/mips/configs/malta_kvm_defconfig   | 1 -
->   arch/mips/configs/maltaup_xpa_defconfig | 1 -
->   arch/mips/configs/rm200_defconfig       | 1 -
->   5 files changed, 5 deletions(-)
+The Atari Falcon PATA driver does not need anything from <asm/ide.h>.
 
-Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/ata/pata_falcon.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/ata/pata_falcon.c b/drivers/ata/pata_falcon.c
+index 996516e64f13504e..0904232e5e0c4c8c 100644
+--- a/drivers/ata/pata_falcon.c
++++ b/drivers/ata/pata_falcon.c
+@@ -28,7 +28,6 @@
+ #include <asm/atarihw.h>
+ #include <asm/atariints.h>
+ #include <asm/atari_stdma.h>
+-#include <asm/ide.h>
+ 
+ #define DRV_NAME "pata_falcon"
+ #define DRV_VERSION "0.1.0"
+-- 
+2.34.1
 
