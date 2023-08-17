@@ -4,32 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1629DC3DA4D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:17:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED7CDC3DA4D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:17:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVWn52Pbz3dRc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:17:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:120:4::f00:11; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [IPv6:2a02:1800:120:4::f00:11])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVXJ4rkFz3dDv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:17:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:110:4::f00:10; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 519 seconds by postgrey-1.37 at boromir; Fri, 18 Aug 2023 02:16:42 AEST
+Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [IPv6:2a02:1800:110:4::f00:10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVWF63Psz2xqq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVWG0b0Lz2yTx
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 02:16:41 +1000 (AEST)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
-	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4RRVK72mRCz4wxRJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 18:07:55 +0200 (CEST)
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4RRVK64t24z4x0np
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 18:07:54 +0200 (CEST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d85a:258d:2c59:b44])
-	by andre.telenet-ops.be with bizsmtp
-	id ag7i2A0054QHFyo01g7iFH; Thu, 17 Aug 2023 18:07:54 +0200
+	by albert.telenet-ops.be with bizsmtp
+	id ag7i2A0024QHFyo06g7iZt; Thu, 17 Aug 2023 18:07:54 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1qWfX4-000uIp-DZ;
-	Thu, 17 Aug 2023 18:07:42 +0200
+	id 1qWfX4-000uIi-Bd;
+	Thu, 17 Aug 2023 18:07:41 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1qWfXB-007YEp-Se;
+	id 1qWfXB-007YEh-Qn;
 	Thu, 17 Aug 2023 18:07:41 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Russell King <linux@armlinux.org.uk>,
@@ -44,9 +45,9 @@ To: Russell King <linux@armlinux.org.uk>,
 	Damien Le Moal <dlemoal@kernel.org>,
 	Christoph Hellwig <hch@lst.de>,
 	Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 4/9] sparc: Remove <asm/ide.h>
-Date: Thu, 17 Aug 2023 18:07:35 +0200
-Message-Id: <d26247f29e65b017c06e993f8aedece13a100369.1692288018.git.geert@linux-m68k.org>
+Subject: [PATCH 2/9] parisc: Remove <asm/ide.h>
+Date: Thu, 17 Aug 2023 18:07:33 +0200
+Message-Id: <5ea78d9c54cf94c6074fde6f277bb7a08bfe8d08.1692288018.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1692288018.git.geert@linux-m68k.org>
 References: <cover.1692288018.git.geert@linux-m68k.org>
@@ -72,113 +73,70 @@ v5.14, there are no more generic users of <asm/ide.h>.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/sparc/include/asm/ide.h | 97 ------------------------------------
- 1 file changed, 97 deletions(-)
- delete mode 100644 arch/sparc/include/asm/ide.h
+ arch/parisc/include/asm/ide.h | 54 -----------------------------------
+ 1 file changed, 54 deletions(-)
+ delete mode 100644 arch/parisc/include/asm/ide.h
 
-diff --git a/arch/sparc/include/asm/ide.h b/arch/sparc/include/asm/ide.h
+diff --git a/arch/parisc/include/asm/ide.h b/arch/parisc/include/asm/ide.h
 deleted file mode 100644
-index 904cc6cbc1550cd8..0000000000000000
---- a/arch/sparc/include/asm/ide.h
+index 7aa75b93a1b6c76d..0000000000000000
+--- a/arch/parisc/include/asm/ide.h
 +++ /dev/null
-@@ -1,97 +0,0 @@
+@@ -1,54 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0 */
--/* ide.h: SPARC PCI specific IDE glue.
+-/*
+- *  linux/include/asm-parisc/ide.h
 - *
-- * Copyright (C) 1997  David S. Miller (davem@davemloft.net)
-- * Copyright (C) 1998  Eddie C. Dost   (ecd@skynet.be)
-- * Adaptation from sparc64 version to sparc by Pete Zaitcev.
+- *  Copyright (C) 1994-1996  Linus Torvalds & authors
 - */
 -
--#ifndef _SPARC_IDE_H
--#define _SPARC_IDE_H
+-/*
+- *  This file contains the PARISC architecture specific IDE code.
+- */
 -
--#ifdef __KERNEL__
+-#ifndef __ASM_PARISC_IDE_H
+-#define __ASM_PARISC_IDE_H
 -
--#include <asm/io.h>
--#ifdef CONFIG_SPARC64
--#include <asm/spitfire.h>
--#include <asm/cacheflush.h>
--#include <asm/page.h>
--#else
--#include <linux/pgtable.h>
--#include <asm/psr.h>
--#endif
+-/* Generic I/O and MEMIO string operations.  */
 -
--#define __ide_insl(data_reg, buffer, wcount) \
--	__ide_insw(data_reg, buffer, (wcount)<<1)
--#define __ide_outsl(data_reg, buffer, wcount) \
--	__ide_outsw(data_reg, buffer, (wcount)<<1)
+-#define __ide_insw	insw
+-#define __ide_insl	insl
+-#define __ide_outsw	outsw
+-#define __ide_outsl	outsl
 -
--/* On sparc, I/O ports and MMIO registers are accessed identically.  */
--#define __ide_mm_insw	__ide_insw
--#define __ide_mm_insl	__ide_insl
--#define __ide_mm_outsw	__ide_outsw
--#define __ide_mm_outsl	__ide_outsl
--
--static inline void __ide_insw(void __iomem *port, void *dst, u32 count)
+-static __inline__ void __ide_mm_insw(void __iomem *port, void *addr, u32 count)
 -{
--#if defined(CONFIG_SPARC64) && defined(DCACHE_ALIASING_POSSIBLE)
--	unsigned long end = (unsigned long)dst + (count << 1);
--#endif
--	u16 *ps = dst;
--	u32 *pi;
--
--	if(((unsigned long)ps) & 0x2) {
--		*ps++ = __raw_readw(port);
--		count--;
+-	while (count--) {
+-		*(u16 *)addr = __raw_readw(port);
+-		addr += 2;
 -	}
--	pi = (u32 *)ps;
--	while(count >= 2) {
--		u32 w;
--
--		w  = __raw_readw(port) << 16;
--		w |= __raw_readw(port);
--		*pi++ = w;
--		count -= 2;
--	}
--	ps = (u16 *)pi;
--	if(count)
--		*ps++ = __raw_readw(port);
--
--#if defined(CONFIG_SPARC64) && defined(DCACHE_ALIASING_POSSIBLE)
--	__flush_dcache_range((unsigned long)dst, end);
--#endif
 -}
 -
--static inline void __ide_outsw(void __iomem *port, const void *src, u32 count)
+-static __inline__ void __ide_mm_insl(void __iomem *port, void *addr, u32 count)
 -{
--#if defined(CONFIG_SPARC64) && defined(DCACHE_ALIASING_POSSIBLE)
--	unsigned long end = (unsigned long)src + (count << 1);
--#endif
--	const u16 *ps = src;
--	const u32 *pi;
--
--	if(((unsigned long)src) & 0x2) {
--		__raw_writew(*ps++, port);
--		count--;
+-	while (count--) {
+-		*(u32 *)addr = __raw_readl(port);
+-		addr += 4;
 -	}
--	pi = (const u32 *)ps;
--	while(count >= 2) {
--		u32 w;
--
--		w = *pi++;
--		__raw_writew((w >> 16), port);
--		__raw_writew(w, port);
--		count -= 2;
--	}
--	ps = (const u16 *)pi;
--	if(count)
--		__raw_writew(*ps, port);
--
--#if defined(CONFIG_SPARC64) && defined(DCACHE_ALIASING_POSSIBLE)
--	__flush_dcache_range((unsigned long)src, end);
--#endif
 -}
 -
--#endif /* __KERNEL__ */
+-static __inline__ void __ide_mm_outsw(void __iomem *port, void *addr, u32 count)
+-{
+-	while (count--) {
+-		__raw_writew(*(u16 *)addr, port);
+-		addr += 2;
+-	}
+-}
 -
--#endif /* _SPARC_IDE_H */
+-static __inline__ void __ide_mm_outsl(void __iomem *port, void *addr, u32 count)
+-{
+-	while (count--) {
+-		__raw_writel(*(u32 *)addr, port);
+-		addr += 4;
+-	}
+-}
+-
+-#endif /* __ASM_PARISC_IDE_H */
 -- 
 2.34.1
 
