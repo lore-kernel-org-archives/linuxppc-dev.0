@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74089C3DA4D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:18:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9DA3C3DA4D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:19:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVYM1Mzrz3dmQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:18:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVYv3hWcz3dFZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:18:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:110:4::f00:11; helo=weierstrass.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
 Received: from weierstrass.telenet-ops.be (weierstrass.telenet-ops.be [IPv6:2a02:1800:110:4::f00:11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVWL0D1Lz3cPR
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVWL36kqz3cS0
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 02:16:46 +1000 (AEST)
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-	by weierstrass.telenet-ops.be (Postfix) with ESMTPS id 4RRVK72mPxz4xCYM
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
+	by weierstrass.telenet-ops.be (Postfix) with ESMTPS id 4RRVK74pxZz4xbjQ
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 18:07:55 +0200 (CEST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d85a:258d:2c59:b44])
-	by xavier.telenet-ops.be with bizsmtp
-	id ag7i2A0044QHFyo01g7imX; Thu, 17 Aug 2023 18:07:54 +0200
+	by baptiste.telenet-ops.be with bizsmtp
+	id ag7i2A00B4QHFyo01g7ivk; Thu, 17 Aug 2023 18:07:55 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1qWfX4-000uJ0-FK;
+	id 1qWfX4-000uJD-JE;
 	Thu, 17 Aug 2023 18:07:42 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1qWfXB-007YEx-Ua;
-	Thu, 17 Aug 2023 18:07:41 +0200
+	id 1qWfXC-007YFD-16;
+	Thu, 17 Aug 2023 18:07:42 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Russell King <linux@armlinux.org.uk>,
 	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
@@ -44,9 +44,9 @@ To: Russell King <linux@armlinux.org.uk>,
 	Damien Le Moal <dlemoal@kernel.org>,
 	Christoph Hellwig <hch@lst.de>,
 	Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 6/9] ata: pata_buddha: Remove #include <asm/ide.h>
-Date: Thu, 17 Aug 2023 18:07:37 +0200
-Message-Id: <0e03e9d36c80f9d6702191fb202ce7b56360bf49.1692288018.git.geert@linux-m68k.org>
+Subject: [PATCH 9/9] m68k: Remove <asm/ide.h>
+Date: Thu, 17 Aug 2023 18:07:40 +0200
+Message-Id: <3e84d9f8bf0aefcbc06a73bb9f0b98dedab0271f.1692288018.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1692288018.git.geert@linux-m68k.org>
 References: <cover.1692288018.git.geert@linux-m68k.org>
@@ -67,26 +67,87 @@ Cc: linux-arch@vger.kernel.org, linux-parisc@vger.kernel.org, linux-kernel@vger.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Buddha, Catweasel, and X-Surf PATA driver does not need anything
-from <asm/ide.h>.
+There are no more users of <asm/ide.h>.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/ata/pata_buddha.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/m68k/include/asm/ide.h | 67 -------------------------------------
+ 1 file changed, 67 deletions(-)
+ delete mode 100644 arch/m68k/include/asm/ide.h
 
-diff --git a/drivers/ata/pata_buddha.c b/drivers/ata/pata_buddha.c
-index 49bc619b83e255a3..c36ee991d5e5fdcc 100644
---- a/drivers/ata/pata_buddha.c
-+++ b/drivers/ata/pata_buddha.c
-@@ -27,7 +27,6 @@
- 
- #include <asm/amigahw.h>
- #include <asm/amigaints.h>
--#include <asm/ide.h>
- #include <asm/setup.h>
- 
- #define DRV_NAME "pata_buddha"
+diff --git a/arch/m68k/include/asm/ide.h b/arch/m68k/include/asm/ide.h
+deleted file mode 100644
+index 05cc7dc00e0c1437..0000000000000000
+--- a/arch/m68k/include/asm/ide.h
++++ /dev/null
+@@ -1,67 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- *  Copyright (C) 1994-1996  Linus Torvalds & authors
+- */
+-
+-/* Copyright(c) 1996 Kars de Jong */
+-/* Based on the ide driver from 1.2.13pl8 */
+-
+-/*
+- * Credits (alphabetical):
+- *
+- *  - Bjoern Brauel
+- *  - Kars de Jong
+- *  - Torsten Ebeling
+- *  - Dwight Engen
+- *  - Thorsten Floeck
+- *  - Roman Hodek
+- *  - Guenther Kelleter
+- *  - Chris Lawrence
+- *  - Michael Rausch
+- *  - Christian Sauer
+- *  - Michael Schmitz
+- *  - Jes Soerensen
+- *  - Michael Thurm
+- *  - Geert Uytterhoeven
+- */
+-
+-#ifndef _M68K_IDE_H
+-#define _M68K_IDE_H
+-
+-#ifdef __KERNEL__
+-#include <asm/setup.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-
+-#ifdef CONFIG_MMU
+-
+-/*
+- * Get rid of defs from io.h - ide has its private and conflicting versions
+- * Since so far no single m68k platform uses ISA/PCI I/O space for IDE, we
+- * always use the `raw' MMIO versions
+- */
+-#undef readb
+-#undef readw
+-#undef writeb
+-#undef writew
+-
+-#define readb				in_8
+-#define readw				in_be16
+-#define __ide_mm_insw(port, addr, n)	raw_insw((u16 *)port, addr, n)
+-#define __ide_mm_insl(port, addr, n)	raw_insl((u32 *)port, addr, n)
+-#define writeb(val, port)		out_8(port, val)
+-#define writew(val, port)		out_be16(port, val)
+-#define __ide_mm_outsw(port, addr, n)	raw_outsw((u16 *)port, addr, n)
+-#define __ide_mm_outsl(port, addr, n)	raw_outsl((u32 *)port, addr, n)
+-
+-#else
+-
+-#define __ide_mm_insw(port, addr, n)	io_insw((unsigned int)port, addr, n)
+-#define __ide_mm_insl(port, addr, n)	io_insl((unsigned int)port, addr, n)
+-#define __ide_mm_outsw(port, addr, n)	io_outsw((unsigned int)port, addr, n)
+-#define __ide_mm_outsl(port, addr, n)	io_outsl((unsigned int)port, addr, n)
+-
+-#endif /* CONFIG_MMU */
+-
+-#endif /* __KERNEL__ */
+-#endif /* _M68K_IDE_H */
 -- 
 2.34.1
 
