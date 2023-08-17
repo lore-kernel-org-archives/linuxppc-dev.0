@@ -4,48 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 091D5C2FC04
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 06:35:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0FFAC27C7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 06:45:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YtX6jgHN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pz9ElAba;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRFcr21Sfz3cHT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:35:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRFrL02xtz3cLj
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:45:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YtX6jgHN;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pz9ElAba;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRFbt2Vplz2yWD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 16:34:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRFqN0B2tz2yVd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 16:44:48 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4RRFqC5H8lz4wy3; Thu, 17 Aug 2023 16:44:39 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1692254089;
-	bh=QOKoW3wyRNr1RLwRnOsY4BbnnwrSfpgB6x3DEw7vRYI=;
+	s=201909; t=1692254679;
+	bh=Wx3nMILiB1NeGS4OwS92O58JvJol6RuBMilPby1aexs=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=YtX6jgHNQC0nPGKx1/R/ojff9UHbjVywbxalcoJG1mImb7/m3AfOy1YxIRzmpUbXz
-	 XMOqb3hmaYHVodauNH9eIpdozm6OBERMmsll7/Pw+Wl0cb9VQ/2acakYaNYNBXADU1
-	 O9zbt1mjuLqWzpm2qnJy//jGVuMgsiuvuuFbOULlvWIbaDARBudQxqDQZHZgua4nNq
-	 BaBkSHCqV8nZZfoFR5FIXAu/CUfAjssMfrDBv75ftIBAQM65jNufcC778EP8Y6dbTH
-	 FIFgeb/6SxFuQcbuJ1QvROfVwJ9x+X54Mv9MVyQf8i0ZvwA422MnIBpZdqsUHF03T9
-	 yd7OYR/Nrd/RQ==
+	b=pz9ElAbaHeW1WlM6FirXgpjKbRPGtcW5zyN9pjls0kdL5arkLwqzNAVC2PRn8qBwa
+	 H7IIeZkTzubrcVySUgmaLN+TVRI99448w/43xEZmkedXGjwkQqUrLNaZmEExYUZ3Bm
+	 XYqMrfLSaC1FaZ8/j+tbrK639d5HhNFaWXxueq9xAh/P7BTLPTGv/ijFYQk9ork8Cb
+	 7zE2UxOOMfQgPJPLpx84Pc0eVfEe3/KQ1eFlSzHg8H0DaTxISTWpBmNsNlo6kT5kM5
+	 tD6xpCigM1TCzd9uFuB1hn9Zb+Zagh9PO32Di7yumRtEJRKfvGIKl80K3hYIMqRr7g
+	 AGomz3KsKnWEA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RRFbs15Tdz4wZn;
-	Thu, 17 Aug 2023 16:34:49 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RRFqC2jtTz4wZn;
+	Thu, 17 Aug 2023 16:44:39 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Justin Stitt <justinstitt@google.com>, Geoff Levand
- <geoff@infradead.org>, Nicholas Piggin <npiggin@gmail.com>, Christophe
- Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/ps3: refactor strncpy usage
-In-Reply-To: <20230816-strncpy-arch-powerpc-platforms-ps3-repository-v1-1-88283b02fb09@google.com>
-References: <20230816-strncpy-arch-powerpc-platforms-ps3-repository-v1-1-88283b02fb09@google.com>
-Date: Thu, 17 Aug 2023 16:34:47 +1000
-Message-ID: <87350i6ut4.fsf@mail.lhotse>
+To: mahesh@linux.ibm.com
+Subject: Re: [PATCH v8 1/2] powerpc/rtas: Rename rtas_error_rc to
+ rtas_generic_errno
+In-Reply-To: <xzsx7qc3el674iyy2lsn3adm7j2vh5xj6cjaqxgjm6lwcjiz5u@evoqbrvhqf26>
+References: <169138864808.65607.6576358707894823512.stgit@jupiter>
+ <877cpxdksx.fsf@mail.lhotse>
+ <xzsx7qc3el674iyy2lsn3adm7j2vh5xj6cjaqxgjm6lwcjiz5u@evoqbrvhqf26>
+Date: Thu, 17 Aug 2023 16:44:38 +1000
+Message-ID: <87zg2q5fs9.fsf@mail.lhotse>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,31 +62,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hardening@vger.kernel.org, Justin Stitt <justinstitt@google.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci <linux-pci@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Justin Stitt <justinstitt@google.com> writes:
-> `strncpy` is deprecated for use on NUL-terminated destination strings [1].
+Mahesh J Salgaonkar <mahesh@linux.ibm.com> writes:
+> On 2023-08-15 13:52:14 Tue, Michael Ellerman wrote:
+>> Mahesh Salgaonkar <mahesh@linux.ibm.com> writes:
+...
+>> > diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+>> > index 3abe15ac79db1..5572a0a2f6e18 100644
+>> > --- a/arch/powerpc/include/asm/rtas.h
+>> > +++ b/arch/powerpc/include/asm/rtas.h
+>> > @@ -202,7 +202,9 @@ typedef struct {
+>> >  #define RTAS_USER_REGION_SIZE (64 * 1024)
+>> >  
+>> >  /* RTAS return status codes */
+>> > -#define RTAS_BUSY		-2    /* RTAS Busy */
+>> > +#define RTAS_HARDWARE_ERROR	(-1)  /* Hardware Error */
+>> > +#define RTAS_BUSY		(-2)  /* RTAS Busy */
+>> 
+>> Are the brackets necessary?
 >
-> `make_first_field()` should use similar implementation to `make_field()`
-> due to memcpy having more obvious behavior here. The end result yields
-> the same behavior as the previous `strncpy`-based implementation
-> including the NUL-padding.
->
-> Link: www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings[1]
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
-> ---
-> Note:
-> This follows up on a previous RFC which can be found here:
-> https://lore.kernel.org/all/20230811-strncpy-arch-powerpc-platforms-ps3-v1-0-301052a5663e@google.com/
-> ---
->  arch/powerpc/platforms/ps3/repository.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> During v5 changset I received offline review comment to add brackets,
+> hence continued here as well. I can take it away if Nathan is fine with
+> it.
 
-This looks good to me. I'll pick this up directly, Geoff let me know if
-this breaks something somehow.
+OK. I can't think of a context where the brackets are useful, but I'm
+probably just not thinking hard enough. I don't really mind adding them,
+I was just curious what the justification for them was.
 
 cheers
