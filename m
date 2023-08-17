@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 256F2C64E96
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 20:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54CC6C64E96
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 20:46:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRcCm4vW9z3dCb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 06:33:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRcVh6vl9z3cWP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 06:46:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=omp.ru (client-ip=90.154.21.10; helo=mx01.omp.ru; envelope-from=s.shtylyov@omp.ru; receiver=lists.ozlabs.org)
 Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRcC82jQ1z2xq8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 06:33:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRcV752JFz3c2y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 06:46:06 +1000 (AEST)
 Received: from [192.168.1.103] (178.176.75.135) by msexch01.omp.ru
  (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.986.14; Thu, 17 Aug
- 2023 23:33:02 +0300
-Subject: Re: [PATCH 8/9] ata: pata_gayle: Remove #include <asm/ide.h>
+ 2023 23:30:45 +0300
+Subject: Re: [PATCH 6/9] ata: pata_buddha: Remove #include <asm/ide.h>
 To: Geert Uytterhoeven <geert@linux-m68k.org>, Russell King
 	<linux@armlinux.org.uk>, "James E . J . Bottomley"
 	<James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>,
@@ -29,15 +29,15 @@ To: Geert Uytterhoeven <geert@linux-m68k.org>, Russell King
 	<dlemoal@kernel.org>, Christoph Hellwig <hch@lst.de>, Jens Axboe
 	<axboe@kernel.dk>
 References: <cover.1692288018.git.geert@linux-m68k.org>
- <8a6ff4d7caad33dcb6b32ab49329b7bc4ec0c29b.1692288018.git.geert@linux-m68k.org>
+ <0e03e9d36c80f9d6702191fb202ce7b56360bf49.1692288018.git.geert@linux-m68k.org>
 From: Sergey Shtylyov <s.shtylyov@omp.ru>
 Organization: Open Mobile Platform
-Message-ID: <5dbbce1d-eb01-1e8d-b82f-2aae50f07ca5@omp.ru>
-Date: Thu, 17 Aug 2023 23:33:01 +0300
+Message-ID: <c5e25ff3-c178-7ef4-f354-a3788b2b2c1c@omp.ru>
+Date: Thu, 17 Aug 2023 23:30:45 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.10.1
 MIME-Version: 1.0
-In-Reply-To: <8a6ff4d7caad33dcb6b32ab49329b7bc4ec0c29b.1692288018.git.geert@linux-m68k.org>
+In-Reply-To: <0e03e9d36c80f9d6702191fb202ce7b56360bf49.1692288018.git.geert@linux-m68k.org>
 Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -58,8 +58,6 @@ X-KSE-AntiSpam-Info: {rep_avail}
 X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
 X-KSE-AntiSpam-Info: {relay has no DNS name}
 X-KSE-AntiSpam-Info: {SMTP from is not routable}
-X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.75.135 in (user)
- dbl.spamhaus.org}
 X-KSE-AntiSpam-Info: 	127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;omp.ru:7.1.1;178.176.75.135:7.1.2
 X-KSE-AntiSpam-Info: FromAlignment: s
 X-KSE-AntiSpam-Info: {rdns complete}
@@ -96,7 +94,8 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 On 8/17/23 7:07 PM, Geert Uytterhoeven wrote:
 
-> The Amiga Gayle PATA driver does not need anything from <asm/ide.h>.
+> The Buddha, Catweasel, and X-Surf PATA driver does not need anything
+> from <asm/ide.h>.
 > 
 > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
