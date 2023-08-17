@@ -4,48 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A56BC2FC0F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 04:39:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB935C27C7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 05:45:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XBb7K0DG;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=UCvGdQzs;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=AJujbMB8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRC2R06mjz3bmj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 14:39:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRDW65p4Zz3cPR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 15:45:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XBb7K0DG;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=UCvGdQzs;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=AJujbMB8;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=hare@suse.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 115 seconds by postgrey-1.37 at boromir; Thu, 17 Aug 2023 15:44:47 AEST
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRC1S0YxSz2yWD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 14:38:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1692247099;
-	bh=TTioG2ECpny8c1gUsV9lSzzBSbOyxoHgJmKmcWGJJb4=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=XBb7K0DGSY/aWma20FuWJJsaYj/I7WnxTgc1QHrKacwxzHabn8IDVtxnh+u1kir6R
-	 0/dCSv6v4j6K+H0n0qfcFvbzDwuMx48my6HmK54JUowGxZTDeBv/LzC/fGdkjM0jbL
-	 uhrythOSDp6fSsw5OTIIfIEFFsUSHSrvxpvNZyVXzcV91YnrQwqGxwE4iXdMVpv7PD
-	 KJDmjPNi29obujTq193LiorByY4yu6Webks9bDdTMqdbgikcZ6YUA9A+9yqAiDvppy
-	 K31/Jqh8vTUknZvmhTxSZipw5CVFpctxK0wQ1Ogxo+krqzabVOtQDHKwv50O+7cmGR
-	 NxwruEUcx/hdw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRDV70njsz2yW0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 15:44:47 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RRC1B2MJWz4wZn;
-	Thu, 17 Aug 2023 14:38:06 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] treewide: drop CONFIG_EMBEDDED
-In-Reply-To: <20230816055010.31534-1-rdunlap@infradead.org>
-References: <20230816055010.31534-1-rdunlap@infradead.org>
-Date: Thu, 17 Aug 2023 14:38:05 +1000
-Message-ID: <875y5e707m.fsf@mail.lhotse>
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2AC5821878;
+	Thu, 17 Aug 2023 05:44:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1692251084; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tUKGMJHxXThW+3CxRiXsATA8bvSBSHPOFoANBWJuN9Q=;
+	b=UCvGdQzsBZEbkjNeDAja+z1ZA2aDEyTKpJoDKTgvVV7+2v+0Q2YXlmfOD/mHBP3aFJVz4x
+	qHWlXUTwUYr3T+O7VcPzga9ChATa9skJVhC6CmkIoj2ZytmW/g28p/HJvWGBrSOKSE1D7H
+	Pn2Rz5ZLK1cud5CJTPi88DCKt19t9wg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1692251084;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tUKGMJHxXThW+3CxRiXsATA8bvSBSHPOFoANBWJuN9Q=;
+	b=AJujbMB8qI8cURpl8NQ6c7h3lvshK7hrYGPcQRYO/mvY0UMMbQ2shaIebCgcKynLJ4MKHN
+	O5tAdKjtmYlgWqCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C809E13909;
+	Thu, 17 Aug 2023 05:44:43 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id ibzoL8uz3WTnCAAAMHmgww
+	(envelope-from <hare@suse.de>); Thu, 17 Aug 2023 05:44:43 +0000
+Message-ID: <0b2c4f7e-5fca-5a32-a169-f01624c0d03a@suse.de>
+Date: Thu, 17 Aug 2023 07:44:43 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v7 2/3 RESEND] block: sed-opal: keystore access for SED
+ Opal keys
+Content-Language: en-US
+To: gjoyce@linux.vnet.ibm.com, linux-block@vger.kernel.org
+References: <20230721211949.3437598-1-gjoyce@linux.vnet.ibm.com>
+ <20230721211949.3437598-3-gjoyce@linux.vnet.ibm.com>
+From: Hannes Reinecke <hare@suse.de>
+In-Reply-To: <20230721211949.3437598-3-gjoyce@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,41 +85,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-openrisc@vger.kernel.org, linux-riscv@lists.infradead.org, Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org, Masahiro Yamada <masahiroy@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, Jonas Bonn <jonas@southpole.se>, Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, 
- Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Max Filippov <jcmvbkbc@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com
+Cc: axboe@kernel.dk, nayna@linux.ibm.com, okozina@redhat.com, dkeefe@redhat.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Randy Dunlap <rdunlap@infradead.org> writes:
-> There is only one Kconfig user of CONFIG_EMBEDDED and it can be
-> switched to EXPERT or "if !ARCH_MULTIPLATFORM" (suggested by Arnd).
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-...
->  arch/powerpc/configs/40x/klondike_defconfig          |    2 +-
->  arch/powerpc/configs/44x/fsp2_defconfig              |    2 +-
->  arch/powerpc/configs/52xx/tqm5200_defconfig          |    2 +-
->  arch/powerpc/configs/mgcoge_defconfig                |    2 +-
->  arch/powerpc/configs/microwatt_defconfig             |    2 +-
->  arch/powerpc/configs/ps3_defconfig                   |    2 +-
-  
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+On 7/21/23 23:19, gjoyce@linux.vnet.ibm.com wrote:
+> From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> 
+> Allow for permanent SED authentication keys by
+> reading/writing to the SED Opal non-volatile keystore.
+> 
+> Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> Reviewed-by: Jonathan Derrick <jonathan.derrick@linux.dev>
+> ---
+>   block/sed-opal.c | 18 ++++++++++++++++--
+>   1 file changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/block/sed-opal.c b/block/sed-opal.c
+> index 6d7f25d1711b..fa23a6a60485 100644
+> --- a/block/sed-opal.c
+> +++ b/block/sed-opal.c
+> @@ -18,6 +18,7 @@
+>   #include <linux/uaccess.h>
+>   #include <uapi/linux/sed-opal.h>
+>   #include <linux/sed-opal.h>
+> +#include <linux/sed-opal-key.h>
+>   #include <linux/string.h>
+>   #include <linux/kdev_t.h>
+>   #include <linux/key.h>
+> @@ -3019,7 +3020,13 @@ static int opal_set_new_pw(struct opal_dev *dev, struct opal_new_pw *opal_pw)
+>   	if (ret)
+>   		return ret;
+>   
+> -	/* update keyring with new password */
+> +	/* update keyring and key store with new password */
+> +	ret = sed_write_key(OPAL_AUTH_KEY,
+> +			    opal_pw->new_user_pw.opal_key.key,
+> +			    opal_pw->new_user_pw.opal_key.key_len);
+> +	if (ret != -EOPNOTSUPP)
+> +		pr_warn("error updating SED key: %d\n", ret);
+> +
+>   	ret = update_sed_opal_key(OPAL_AUTH_KEY,
+>   				  opal_pw->new_user_pw.opal_key.key,
+>   				  opal_pw->new_user_pw.opal_key.key_len);
+> @@ -3292,6 +3299,8 @@ EXPORT_SYMBOL_GPL(sed_ioctl);
+>   static int __init sed_opal_init(void)
+>   {
+>   	struct key *kr;
+> +	char init_sed_key[OPAL_KEY_MAX];
+> +	int keylen = OPAL_KEY_MAX - 1;
+>   
+>   	kr = keyring_alloc(".sed_opal",
+>   			   GLOBAL_ROOT_UID, GLOBAL_ROOT_GID, current_cred(),
+> @@ -3304,6 +3313,11 @@ static int __init sed_opal_init(void)
+>   
+>   	sed_opal_keyring = kr;
+>   
+> -	return 0;
+> +	if (sed_read_key(OPAL_AUTH_KEY, init_sed_key, &keylen) < 0) {
+> +		memset(init_sed_key, '\0', sizeof(init_sed_key));
+> +		keylen = OPAL_KEY_MAX - 1;
+> +	}
+> +
+> +	return update_sed_opal_key(OPAL_AUTH_KEY, init_sed_key, keylen);
+>   }
+>   late_initcall(sed_opal_init);
 
-...
+See the previous patch for comments about 'struct key'.
 
-> diff -- a/init/Kconfig b/init/Kconfig
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -1790,14 +1790,6 @@ config DEBUG_RSEQ
->  
->  	  If unsure, say N.
->  
-> -config EMBEDDED
-> -	bool "Embedded system"
-> -	select EXPERT
+Cheers,
 
-This is a crucial detail that could be mentioned in the change log. ie.
-that all defconfigs that currently have EMBEDDED=y are currently
-selecting EXPERT already.
+Hannes
+-- 
+Dr. Hannes Reinecke                Kernel Storage Architect
+hare@suse.de                              +49 911 74053 688
+SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
+HRB 36809 (AG Nürnberg), Geschäftsführer: Ivo Totev, Andrew
+Myers, Andrew McDonald, Martje Boudien Moerman
 
-cheers
