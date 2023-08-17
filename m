@@ -4,33 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABEC1C3DA4E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:18:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74089C3DA4D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Aug 2023 16:18:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVXq1bN4z3dFr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:18:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.137.81; helo=weierstrass.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 522 seconds by postgrey-1.37 at boromir; Fri, 18 Aug 2023 02:16:45 AEST
-Received: from weierstrass.telenet-ops.be (weierstrass.telenet-ops.be [195.130.137.81])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RRVYM1Mzrz3dmQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 02:18:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:110:4::f00:11; helo=weierstrass.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from weierstrass.telenet-ops.be (weierstrass.telenet-ops.be [IPv6:2a02:1800:110:4::f00:11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVWK69ctz3cP2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 02:16:45 +1000 (AEST)
-Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
-	by weierstrass.telenet-ops.be (Postfix) with ESMTPS id 4RRVK84H7Dz4x7hT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 18:07:56 +0200 (CEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RRVWL0D1Lz3cPR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2023 02:16:46 +1000 (AEST)
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+	by weierstrass.telenet-ops.be (Postfix) with ESMTPS id 4RRVK72mPxz4xCYM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2023 18:07:55 +0200 (CEST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d85a:258d:2c59:b44])
-	by laurent.telenet-ops.be with bizsmtp
-	id ag7i2A0034QHFyo01g7i1C; Thu, 17 Aug 2023 18:07:55 +0200
+	by xavier.telenet-ops.be with bizsmtp
+	id ag7i2A0044QHFyo01g7imX; Thu, 17 Aug 2023 18:07:54 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1qWfX4-000uIf-BZ;
-	Thu, 17 Aug 2023 18:07:41 +0200
+	id 1qWfX4-000uJ0-FK;
+	Thu, 17 Aug 2023 18:07:42 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1qWfXB-007YEb-P7;
+	id 1qWfXB-007YEx-Ua;
 	Thu, 17 Aug 2023 18:07:41 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Russell King <linux@armlinux.org.uk>,
@@ -45,10 +44,12 @@ To: Russell King <linux@armlinux.org.uk>,
 	Damien Le Moal <dlemoal@kernel.org>,
 	Christoph Hellwig <hch@lst.de>,
 	Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH treewide 0/9] Remove obsolete IDE headers
-Date: Thu, 17 Aug 2023 18:07:31 +0200
-Message-Id: <cover.1692288018.git.geert@linux-m68k.org>
+Subject: [PATCH 6/9] ata: pata_buddha: Remove #include <asm/ide.h>
+Date: Thu, 17 Aug 2023 18:07:37 +0200
+Message-Id: <0e03e9d36c80f9d6702191fb202ce7b56360bf49.1692288018.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1692288018.git.geert@linux-m68k.org>
+References: <cover.1692288018.git.geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -66,55 +67,26 @@ Cc: linux-arch@vger.kernel.org, linux-parisc@vger.kernel.org, linux-kernel@vger.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-	Hi all,
+The Buddha, Catweasel, and X-Surf PATA driver does not need anything
+from <asm/ide.h>.
 
-This patch series removes all unused <asm/ide.h> headers and
-<asm-generic/ide_iops.h>.  <asm/ide.h> was still included by 3 PATA
-drivers for m68k platforms, but without any real need.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/ata/pata_buddha.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-The first 5 patches have no dependencies.
-The last patch depends on the 3 pata patches.
-
-Thanks for your comments!
-
-Geert Uytterhoeven (9):
-  ARM: Remove <asm/ide.h>
-  parisc: Remove <asm/ide.h>
-  powerpc: Remove <asm/ide.h>
-  sparc: Remove <asm/ide.h>
-  asm-generic: Remove ide_iops.h
-  ata: pata_buddha: Remove #include <asm/ide.h>
-  ata: pata_falcon: Remove #include <asm/ide.h>
-  ata: pata_gayle: Remove #include <asm/ide.h>
-  m68k: Remove <asm/ide.h>
-
- arch/arm/include/asm/ide.h     | 24 ---------
- arch/m68k/include/asm/ide.h    | 67 -----------------------
- arch/parisc/include/asm/ide.h  | 54 -------------------
- arch/powerpc/include/asm/ide.h | 18 -------
- arch/sparc/include/asm/ide.h   | 97 ----------------------------------
- drivers/ata/pata_buddha.c      |  1 -
- drivers/ata/pata_falcon.c      |  1 -
- drivers/ata/pata_gayle.c       |  1 -
- include/asm-generic/ide_iops.h | 39 --------------
- 9 files changed, 302 deletions(-)
- delete mode 100644 arch/arm/include/asm/ide.h
- delete mode 100644 arch/m68k/include/asm/ide.h
- delete mode 100644 arch/parisc/include/asm/ide.h
- delete mode 100644 arch/powerpc/include/asm/ide.h
- delete mode 100644 arch/sparc/include/asm/ide.h
- delete mode 100644 include/asm-generic/ide_iops.h
-
+diff --git a/drivers/ata/pata_buddha.c b/drivers/ata/pata_buddha.c
+index 49bc619b83e255a3..c36ee991d5e5fdcc 100644
+--- a/drivers/ata/pata_buddha.c
++++ b/drivers/ata/pata_buddha.c
+@@ -27,7 +27,6 @@
+ 
+ #include <asm/amigahw.h>
+ #include <asm/amigaints.h>
+-#include <asm/ide.h>
+ #include <asm/setup.h>
+ 
+ #define DRV_NAME "pata_buddha"
 -- 
 2.34.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
