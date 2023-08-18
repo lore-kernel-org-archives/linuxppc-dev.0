@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72699C71159
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 16:53:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2677C7EE2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 16:53:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RS7H15wF2z3hgP
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Aug 2023 02:53:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RS7Hj29k4z3hJ6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Aug 2023 02:53:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=fail (SPF fail - not authorized) smtp.mailfrom=csgroup.eu (client-ip=90.115.179.12; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (unknown [90.115.179.12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RS71j2FW5z3dR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2023 02:41:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RS71n4dyDz3dRx
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2023 02:41:49 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RS70B1LHpz9vjs;
-	Fri, 18 Aug 2023 18:40:26 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RS70C1pb6z9vk0;
+	Fri, 18 Aug 2023 18:40:27 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bWXxe8wsY9rt; Fri, 18 Aug 2023 18:40:26 +0200 (CEST)
+	with ESMTP id wLBqMdf2JR0B; Fri, 18 Aug 2023 18:40:27 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RS6zq1BWNz9vhs;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RS6zq1wmFz9vht;
 	Fri, 18 Aug 2023 18:40:07 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 18ECF8B76C;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 312008B763;
 	Fri, 18 Aug 2023 18:40:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id uNNsLfzZ8BuV; Fri, 18 Aug 2023 18:40:06 +0200 (CEST)
+	with ESMTP id Gh0B2wMpKaTT; Fri, 18 Aug 2023 18:40:07 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (PO17626.IDSI0.si.c-s.fr [172.19.54.29])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CD5D38B76D;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D8FDD8B773;
 	Fri, 18 Aug 2023 18:40:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37IGe0HT142039
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37IGdxTn142027
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 18 Aug 2023 18:40:00 +0200
+	Fri, 18 Aug 2023 18:39:59 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37IGe02H142038;
-	Fri, 18 Aug 2023 18:40:00 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37IGdxBq142026;
+	Fri, 18 Aug 2023 18:39:59 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Herve Codina <herve.codina@bootlin.com>,
@@ -61,14 +61,14 @@ To: Herve Codina <herve.codina@bootlin.com>,
         Nicolin Chen <nicoleotsuka@gmail.com>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH v4 24/28] net: wan: framer: Add support for the Lantiq PEF2256 framer
-Date: Fri, 18 Aug 2023 18:39:18 +0200
-Message-ID: <9aa13d3e45f8ccc3b60e4a906346b3485f431890.1692376361.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 21/28] net: wan: Add framer framework support
+Date: Fri, 18 Aug 2023 18:39:15 +0200
+Message-ID: <5f671caf19be0a9bb7ea7b96a6c86381e243ca4c.1692376361.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1692376360.git.christophe.leroy@csgroup.eu>
 References: <cover.1692376360.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1692376736; l=40300; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=m9/ogsUy2VSsplg8Lq4rCkecGmyItX69wP77DWz0ehc=; b=McAh5Km3iY51d4XRRS2sgeLBb38Zr6EhrnTzEQNZJjQ5gcmpKKlSIMM6JlSMIR0BVJsshu/C+ pMGUCp0InimBA0zP0SE/ElwJvY2VipIpZbZRRBw0RGbcpac/HvysbNe
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1692376735; l=40999; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Y/wU6Xe3B47tqNiF9XOPbrbUyF2zTfP8S7jNCo50jqk=; b=BrXBSZemguFKCUr5vzqAxHlooPBOiYHr6Ez9XNIPWErpvRmETbS+Vckp7gjfjP+y2gX+qus6X zl1O/i98Gr/C6z+Qw9aBTOkcUnhCxMeFy/zMv7UZvBZsWlVW63C8PtK
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -88,1253 +88,1401 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Herve Codina <herve.codina@bootlin.com>
 
-The Lantiq PEF2256 is a framer and line interface component designed to
-fulfill all required interfacing between an analog E1/T1/J1 line and the
-digital PCM system highway/H.100 bus.
+A framer is a component in charge of an E1/T1 line interface.
+Connected usually to a TDM bus, it converts TDM frames to/from E1/T1
+frames. It also provides information related to the E1/T1 line.
+
+The framer framework provides a set of APIs for the framer drivers
+(framer provider) to create/destroy a framer and APIs for the framer
+users (framer consumer) to obtain a reference to the framer, and
+use the framer.
+
+This basic implementation provides a framer abstraction for:
+ - power on/off the framer
+ - get the framer status (line state)
+ - be notified on framer status changes
+ - get/set the framer configuration
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/net/wan/framer/Kconfig                |  16 +
- drivers/net/wan/framer/Makefile               |   1 +
- drivers/net/wan/framer/pef2256/Makefile       |   8 +
- drivers/net/wan/framer/pef2256/pef2256-regs.h | 250 +++++
- drivers/net/wan/framer/pef2256/pef2256.c      | 880 ++++++++++++++++++
- include/linux/framer/pef2256.h                |  31 +
- 6 files changed, 1186 insertions(+)
- create mode 100644 drivers/net/wan/framer/pef2256/Makefile
- create mode 100644 drivers/net/wan/framer/pef2256/pef2256-regs.h
- create mode 100644 drivers/net/wan/framer/pef2256/pef2256.c
- create mode 100644 include/linux/framer/pef2256.h
+v4: Fixed wrong names in three EXPORT_SYMBOL()
+---
+ drivers/net/wan/Kconfig                |   2 +
+ drivers/net/wan/Makefile               |   2 +
+ drivers/net/wan/framer/Kconfig         |  19 +
+ drivers/net/wan/framer/Makefile        |   6 +
+ drivers/net/wan/framer/framer-core.c   | 886 +++++++++++++++++++++++++
+ include/linux/framer/framer-provider.h | 194 ++++++
+ include/linux/framer/framer.h          | 199 ++++++
+ 7 files changed, 1308 insertions(+)
+ create mode 100644 drivers/net/wan/framer/Kconfig
+ create mode 100644 drivers/net/wan/framer/Makefile
+ create mode 100644 drivers/net/wan/framer/framer-core.c
+ create mode 100644 include/linux/framer/framer-provider.h
+ create mode 100644 include/linux/framer/framer.h
 
+diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
+index 8de99f4b647b..31ab2136cdf1 100644
+--- a/drivers/net/wan/Kconfig
++++ b/drivers/net/wan/Kconfig
+@@ -95,6 +95,8 @@ config HDLC_X25
+ comment "X.25/LAPB support is disabled"
+ 	depends on HDLC && (LAPB!=m || HDLC!=m) && LAPB!=y
+ 
++source "drivers/net/wan/framer/Kconfig"
++
+ config PCI200SYN
+ 	tristate "Goramo PCI200SYN support"
+ 	depends on HDLC && PCI
+diff --git a/drivers/net/wan/Makefile b/drivers/net/wan/Makefile
+index f338f4830626..00e9b7ee1e01 100644
+--- a/drivers/net/wan/Makefile
++++ b/drivers/net/wan/Makefile
+@@ -14,6 +14,8 @@ obj-$(CONFIG_HDLC_FR)		+= hdlc_fr.o
+ obj-$(CONFIG_HDLC_PPP)		+= hdlc_ppp.o
+ obj-$(CONFIG_HDLC_X25)		+= hdlc_x25.o
+ 
++obj-y				+= framer/
++
+ obj-$(CONFIG_FARSYNC)		+= farsync.o
+ 
+ obj-$(CONFIG_LAPBETHER)		+= lapbether.o
 diff --git a/drivers/net/wan/framer/Kconfig b/drivers/net/wan/framer/Kconfig
-index 96ef1e7ba8eb..ba43d7f162a2 100644
---- a/drivers/net/wan/framer/Kconfig
-+++ b/drivers/net/wan/framer/Kconfig
-@@ -16,4 +16,20 @@ config GENERIC_FRAMER
- 	  framework and framer users can obtain reference to the framer.
- 	  All the users of this framework should select this config.
- 
-+config FRAMER_PEF2256
-+	tristate "Lantiq PEF2256"
-+	depends on OF
-+	select GENERIC_FRAMER
-+	select MFD_CORE
-+	select REGMAP_MMIO
-+	help
-+	  Enable support for the Lantiq PEF2256 (FALC56) framer.
-+	  The PEF2256 is a framer and line interface between analog E1/T1/J1
-+	  line and a digital PCM bus.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called framer-pef2256.
-+
- endmenu
-diff --git a/drivers/net/wan/framer/Makefile b/drivers/net/wan/framer/Makefile
-index 78dbd8e563d0..3403f2b14534 100644
---- a/drivers/net/wan/framer/Makefile
-+++ b/drivers/net/wan/framer/Makefile
-@@ -4,3 +4,4 @@
- #
- 
- obj-$(CONFIG_GENERIC_FRAMER)			+= framer-core.o
-+obj-$(CONFIG_FRAMER_PEF2256)			+= pef2256/
-diff --git a/drivers/net/wan/framer/pef2256/Makefile b/drivers/net/wan/framer/pef2256/Makefile
 new file mode 100644
-index 000000000000..f4d1208dd8a4
+index 000000000000..96ef1e7ba8eb
 --- /dev/null
-+++ b/drivers/net/wan/framer/pef2256/Makefile
-@@ -0,0 +1,8 @@
++++ b/drivers/net/wan/framer/Kconfig
+@@ -0,0 +1,19 @@
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# FRAMER
++#
++
++menu "Framer Subsystem"
++
++config GENERIC_FRAMER
++	bool "Framer Core"
++	help
++	  Generic Framer support.
++
++	  This framework is designed to provide a generic interface for framer
++	  devices present in the kernel. This layer will have the generic
++	  API by which framer drivers can create framer using the framer
++	  framework and framer users can obtain reference to the framer.
++	  All the users of this framework should select this config.
++
++endmenu
+diff --git a/drivers/net/wan/framer/Makefile b/drivers/net/wan/framer/Makefile
+new file mode 100644
+index 000000000000..78dbd8e563d0
+--- /dev/null
++++ b/drivers/net/wan/framer/Makefile
+@@ -0,0 +1,6 @@
 +# SPDX-License-Identifier: GPL-2.0
 +#
-+# Makefile for the pef2256 driver.
++# Makefile for the framer drivers.
 +#
 +
-+obj-$(CONFIG_FRAMER_PEF2256)		+= framer-pef2256.o
-+
-+framer-pef2256-objs	:= pef2256.o
-diff --git a/drivers/net/wan/framer/pef2256/pef2256-regs.h b/drivers/net/wan/framer/pef2256/pef2256-regs.h
++obj-$(CONFIG_GENERIC_FRAMER)			+= framer-core.o
+diff --git a/drivers/net/wan/framer/framer-core.c b/drivers/net/wan/framer/framer-core.c
 new file mode 100644
-index 000000000000..5d3183c91714
+index 000000000000..1fb23a068010
 --- /dev/null
-+++ b/drivers/net/wan/framer/pef2256/pef2256-regs.h
-@@ -0,0 +1,250 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
++++ b/drivers/net/wan/framer/framer-core.c
+@@ -0,0 +1,886 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * PEF2256 registers definition
-+ *
-+ * Copyright 2023 CS GROUP France
-+ *
-+ * Author: Herve Codina <herve.codina@bootlin.com>
-+ */
-+#ifndef __PEF2256_REGS_H__
-+#define __PEF2256_REGS_H__
-+
-+#include "linux/bitfield.h"
-+
-+/* Command Register */
-+#define PEF2256_CMDR		0x02
-+#define PEF2256_CMDR_RRES	BIT(6)
-+#define PEF2256_CMDR_XRES	BIT(4)
-+#define PEF2256_CMDR_SRES	BIT(0)
-+
-+/* Interrupt Mask Register 0..5 */
-+#define PEF2256_IMR0	        0x14
-+#define PEF2256_IMR1	        0x15
-+#define PEF2256_IMR2	        0x16
-+#define PEF2256_IMR3	        0x17
-+#define PEF2256_IMR4	        0x18
-+#define PEF2256_IMR5	        0x19
-+
-+/* Framer Mode Register 0 */
-+#define PEF2256_FMR0		0x1C
-+#define PEF2256_FMR0_XC_MASK	GENMASK(7, 6)
-+#define PEF2256_FMR0_XC_NRZ	FIELD_PREP_CONST(PEF2256_FMR0_XC_MASK, 0x0)
-+#define PEF2256_FMR0_XC_CMI	FIELD_PREP_CONST(PEF2256_FMR0_XC_MASK, 0x1)
-+#define PEF2256_FMR0_XC_AMI	FIELD_PREP_CONST(PEF2256_FMR0_XC_MASK, 0x2)
-+#define PEF2256_FMR0_XC_HDB3	FIELD_PREP_CONST(PEF2256_FMR0_XC_MASK, 0x3)
-+#define PEF2256_FMR0_RC_MASK	GENMASK(5, 4)
-+#define PEF2256_FMR0_RC_NRZ	FIELD_PREP_CONST(PEF2256_FMR0_RC_MASK, 0x0)
-+#define PEF2256_FMR0_RC_CMI	FIELD_PREP_CONST(PEF2256_FMR0_RC_MASK, 0x1)
-+#define PEF2256_FMR0_RC_AMI	FIELD_PREP_CONST(PEF2256_FMR0_RC_MASK, 0x2)
-+#define PEF2256_FMR0_RC_HDB3	FIELD_PREP_CONST(PEF2256_FMR0_RC_MASK, 0x3)
-+
-+/* Framer Mode Register 1 */
-+#define PEF2256_FMR1		0x1D
-+#define PEF2256_FMR1_XFS	BIT(3)
-+#define PEF2256_FMR1_ECM	BIT(2)
-+/* SSD is defined on 2 bits. The other bit is on SIC1 register */
-+#define PEF2256_FMR1_SSD_MASK	GENMASK(1, 1)
-+#define PEF2256_FMR1_SSD_2048	FIELD_PREP_CONST(PEF2256_FMR1_SSD_MASK, 0x0)
-+#define PEF2256_FMR1_SSD_4096	FIELD_PREP_CONST(PEF2256_FMR1_SSD_MASK, 0x1)
-+#define PEF2256_FMR1_SSD_8192	FIELD_PREP_CONST(PEF2256_FMR1_SSD_MASK, 0x0)
-+#define PEF2256_FMR1_SSD_16384	FIELD_PREP_CONST(PEF2256_FMR1_SSD_MASK, 0x1)
-+
-+/* Framer Mode Register 2 */
-+#define PEF2256_FMR2			  0x1E
-+#define PEF2256_FMR2_RFS_MASK		  GENMASK(7, 6)
-+#define PEF2256_FMR2_RFS_DOUBLEFRAME	  FIELD_PREP_CONST(PEF2256_FMR2_RFS_MASK, 0x0)
-+#define PEF2256_FMR2_RFS_CRC4_MULTIFRAME  FIELD_PREP_CONST(PEF2256_FMR2_RFS_MASK, 0x2)
-+#define PEF2256_FMR2_RFS_AUTO_MULTIFRAME  FIELD_PREP_CONST(PEF2256_FMR2_RFS_MASK, 0x3)
-+#define PEF2256_FMR2_AXRA		  BIT(1)
-+
-+/* Transmit Service Word */
-+#define PEF2256_XSW		0x20
-+#define PEF2256_XSW_XSIS	BIT(7)
-+#define PEF2256_XSW_XTM		BIT(6)
-+#define PEF2256_XSW_XY_MASK	GENMASK(5, 0)
-+#define PEF2256_XSW_XY(_v)	FIELD_PREP(PEF2256_XSW_XY_MASK, _v)
-+
-+/* Transmit Spare Bits */
-+#define PEF2256_XSP	        0x21
-+#define PEF2256_XSP_XSIF	BIT(2)
-+
-+/* Transmit Control 0..1 */
-+#define PEF2256_XC0		0x22
-+#define PEF2256_XC1		0x23
-+
-+/* Receive Control 0 */
-+#define PEF2256_RC0		0x24
-+#define PEF2256_RC0_SWD		BIT(7)
-+#define PEF2256_RC0_ASY4	BIT(6)
-+
-+/* Receive Control 1 */
-+#define PEF2256_RC1		0x25
-+
-+/* Transmit Pulse Mask 0..1 */
-+#define PEF2256_XPM0		0x26
-+#define PEF2256_XPM1		0x27
-+
-+/* Transmit Pulse Mask 2 */
-+#define PEF2256_XPM2		0x28
-+#define PEF2256_XPM2_XLT	BIT(6)
-+
-+/* Transparent Service Word Mask */
-+#define PEF2256_TSWM		0x29
-+
-+/* Line Interface Mode 0 */
-+#define PEF2256_LIM0		0x36
-+#define PEF2256_2X_LIM0_BIT3	BIT(3) /* v2.x, described as a forced '1' bit */
-+#define PEF2256_LIM0_MAS	BIT(0)
-+
-+/* Line Interface Mode 1 */
-+#define PEF2256_LIM1		  0x37
-+#define PEF2256_12_LIM1_RIL_MASK  GENMASK(6, 4)
-+#define PEF2256_12_LIM1_RIL_910	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x0)
-+#define PEF2256_12_LIM1_RIL_740	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x1)
-+#define PEF2256_12_LIM1_RIL_590	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x2)
-+#define PEF2256_12_LIM1_RIL_420	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x3)
-+#define PEF2256_12_LIM1_RIL_320	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x4)
-+#define PEF2256_12_LIM1_RIL_210	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x5)
-+#define PEF2256_12_LIM1_RIL_160	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x6)
-+#define PEF2256_12_LIM1_RIL_100	  FIELD_PREP_CONST(PEF2256_12_LIM1_RIL_MASK, 0x7)
-+#define PEF2256_2X_LIM1_RIL_MASK  GENMASK(6, 4)
-+#define PEF2256_2X_LIM1_RIL_2250  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x0)
-+#define PEF2256_2X_LIM1_RIL_1100  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x1)
-+#define PEF2256_2X_LIM1_RIL_600	  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x2)
-+#define PEF2256_2X_LIM1_RIL_350	  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x3)
-+#define PEF2256_2X_LIM1_RIL_210	  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x4)
-+#define PEF2256_2X_LIM1_RIL_140	  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x5)
-+#define PEF2256_2X_LIM1_RIL_100	  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x6)
-+#define PEF2256_2X_LIM1_RIL_50	  FIELD_PREP_CONST(PEF2256_2X_LIM1_RIL_MASK, 0x7)
-+
-+/* Pulse Count Detection */
-+#define PEF2256_PCD		0x38
-+
-+ /* Pulse Count Recovery */
-+#define PEF2256_PCR		0x39
-+
-+ /* Line Interface Mode 2 */
-+#define PEF2256_LIM2		0x3A
-+#define PEF2256_LIM2_SLT_MASK	GENMASK(5, 4)
-+#define PEF2256_LIM2_SLT_THR55	FIELD_PREP_CONST(PEF2256_LIM2_SLT_MASK, 0x0)
-+#define PEF2256_LIM2_SLT_THR67	FIELD_PREP_CONST(PEF2256_LIM2_SLT_MASK, 0x1)
-+#define PEF2256_LIM2_SLT_THR50	FIELD_PREP_CONST(PEF2256_LIM2_SLT_MASK, 0x2)
-+#define PEF2256_LIM2_SLT_THR45	FIELD_PREP_CONST(PEF2256_LIM2_SLT_MASK, 0x3)
-+#define PEF2256_LIM2_ELT	BIT(2)
-+
-+/* System Interface Control 1 */
-+#define PEF2256_SIC1	          0x3E
-+#define PEF2256_SIC1_SSC_MASK	  (BIT(7) |  BIT(3))
-+#define PEF2256_SIC1_SSC_2048	  (0)
-+#define PEF2256_SIC1_SSC_4096	  BIT(3)
-+#define PEF2256_SIC1_SSC_8192	  BIT(7)
-+#define PEF2256_SIC1_SSC_16384	  (BIT(7) |  BIT(3))
-+/* SSD is defined on 2 bits. The other bit is on FMR1 register */
-+#define PEF2256_SIC1_SSD_MASK	  GENMASK(6, 6)
-+#define PEF2256_SIC1_SSD_2048	  FIELD_PREP_CONST(PEF2256_SIC1_SSD_MASK, 0x0)
-+#define PEF2256_SIC1_SSD_4096	  FIELD_PREP_CONST(PEF2256_SIC1_SSD_MASK, 0x0)
-+#define PEF2256_SIC1_SSD_8192	  FIELD_PREP_CONST(PEF2256_SIC1_SSD_MASK, 0x1)
-+#define PEF2256_SIC1_SSD_16384	  FIELD_PREP_CONST(PEF2256_SIC1_SSD_MASK, 0x1)
-+#define PEF2256_SIC1_RBS_MASK	  GENMASK(5, 4)
-+#define PEF2256_SIC1_RBS_2FRAMES  FIELD_PREP_CONST(PEF2256_SIC1_RBS_MASK, 0x0)
-+#define PEF2256_SIC1_RBS_1FRAME	  FIELD_PREP_CONST(PEF2256_SIC1_RBS_MASK, 0x1)
-+#define PEF2256_SIC1_RBS_96BITS	  FIELD_PREP_CONST(PEF2256_SIC1_RBS_MASK, 0x2)
-+#define PEF2256_SIC1_RBS_BYPASS	  FIELD_PREP_CONST(PEF2256_SIC1_RBS_MASK, 0x3)
-+#define PEF2256_SIC1_XBS_MASK	  GENMASK(1, 0)
-+#define PEF2256_SIC1_XBS_BYPASS	  FIELD_PREP_CONST(PEF2256_SIC1_XBS_MASK, 0x0)
-+#define PEF2256_SIC1_XBS_1FRAME	  FIELD_PREP_CONST(PEF2256_SIC1_XBS_MASK, 0x1)
-+#define PEF2256_SIC1_XBS_2FRAMES  FIELD_PREP_CONST(PEF2256_SIC1_XBS_MASK, 0x2)
-+#define PEF2256_SIC1_XBS_96BITS	  FIELD_PREP_CONST(PEF2256_SIC1_XBS_MASK, 0x3)
-+
-+/* System Interface Control 2 */
-+#define PEF2256_SIC2		0x3F
-+#define PEF2256_SIC2_SICS_MASK	GENMASK(3, 1)
-+#define PEF2256_SIC2_SICS(_v)	FIELD_PREP(PEF2256_SIC2_SICS_MASK, _v)
-+
-+/* System Interface Control 3 */
-+#define PEF2256_SIC3		0x40
-+#define PEF2256_SIC3_RTRI	BIT(5)
-+#define PEF2256_SIC3_RESX	BIT(3)
-+#define PEF2256_SIC3_RESR	BIT(2)
-+
-+/* Clock Mode Register 1 */
-+#define PEF2256_CMR1			0x44
-+#define PEF2256_CMR1_RS_MASK		GENMASK(5, 4)
-+#define PEF2256_CMR1_RS_DPLL		FIELD_PREP_CONST(PEF2256_CMR1_RS_MASK, 0x0)
-+#define PEF2256_CMR1_RS_DPLL_LOS_HIGH	FIELD_PREP_CONST(PEF2256_CMR1_RS_MASK, 0x1)
-+#define PEF2256_CMR1_RS_DCOR_2048	FIELD_PREP_CONST(PEF2256_CMR1_RS_MASK, 0x2)
-+#define PEF2256_CMR1_RS_DCOR_8192	FIELD_PREP_CONST(PEF2256_CMR1_RS_MASK, 0x3)
-+#define PEF2256_CMR1_DCS		BIT(3)
-+
-+/* Clock Mode Register 2 */
-+#define PEF2256_CMR2		0x45
-+#define PEF2256_CMR2_DCOXC	BIT(5)
-+
-+/* Global Configuration Register */
-+#define PEF2256_GCR		0x46
-+#define PEF2256_GCR_SCI		BIT(6)
-+#define PEF2256_GCR_ECMC	BIT(4)
-+
-+/* Port Configuration 5 */
-+#define PEF2256_PC5		0x84
-+#define PEF2256_PC5_CRP         BIT(0)
-+
-+/* Global Port Configuration 1 */
-+#define PEF2256_GPC1			0x85
-+#define PEF2256_GPC1_CSFP_MASK		GENMASK(7, 5)
-+#define PEF2256_GPC1_CSFP_SEC_IN_HIGH	FIELD_PREP_CONST(PEF2256_GPC1_CSFP_MASK, 0x0)
-+#define PEF2256_GPC1_CSFP_SEC_OUT_HIGH	FIELD_PREP_CONST(PEF2256_GPC1_CSFP_MASK, 0x1)
-+#define PEF2256_GPC1_CSFP_FSC_OUT_HIGH	FIELD_PREP_CONST(PEF2256_GPC1_CSFP_MASK, 0x2)
-+#define PEF2256_GPC1_CSFP_FSC_OUT_LOW	FIELD_PREP_CONST(PEF2256_GPC1_CSFP_MASK, 0x3)
-+
-+/* Port Configuration 6 */
-+#define PEF2256_PC6		0x86
-+
-+/* Global Counter Mode n=1..8 */
-+#define PEF2256_GCM(_n)         (0x92 + (_n) - 1)
-+#define PEF2256_GCM1	        0x92
-+#define PEF2256_GCM2	        0x93
-+#define PEF2256_GCM3	        0x94
-+#define PEF2256_GCM4	        0x95
-+#define PEF2256_GCM5	        0x96
-+#define PEF2256_GCM6	        0x97
-+#define PEF2256_GCM7	        0x98
-+#define PEF2256_GCM8	        0x99
-+
-+/* Version Status Register */
-+#define PEF2256_VSTR		 0x4A
-+#define PEF2256_VSTR_VERSION_12	 0x00
-+#define PEF2256_VSTR_VERSION_21	 0x10
-+#define PEF2256_VSTR_VERSION_2x	 0x05
-+
-+/* Framer Receive Status 0 */
-+#define PEF2256_FRS0		0x4C
-+#define PEF2256_FRS0_LOS	BIT(7)
-+#define PEF2256_FRS0_AIS	BIT(6)
-+
-+/* Interrupt Status Register 0..5 */
-+#define PEF2256_ISR(_n)		(0x68 + (_n))
-+#define PEF2256_ISR0		0x68
-+#define PEF2256_ISR1		0x69
-+#define PEF2256_ISR2		0x6A
-+#define PEF2256_ISR3		0x6B
-+#define PEF2256_ISR4		0x6C
-+#define PEF2256_ISR5		0x6D
-+
-+/* Global Interrupt Status */
-+#define PEF2256_GIS		0x6E
-+#define PEF2256_GIS_ISR(_n)	BIT(_n)
-+
-+/* Wafer Identification Register */
-+#define PEF2256_WID		   0xEC
-+#define PEF2256_12_WID_MASK	   GENMASK(1, 0)
-+#define PEF2256_12_WID_VERSION_12  FIELD_PREP_CONST(PEF2256_12_WID_MASK, 0x3)
-+#define PEF2256_2X_WID_MASK	   GENMASK(7, 6)
-+#define PEF2256_2X_WID_VERSION_21  FIELD_PREP_CONST(PEF2256_2X_WID_MASK, 0x0)
-+#define PEF2256_2X_WID_VERSION_22  FIELD_PREP_CONST(PEF2256_2X_WID_MASK, 0x1)
-+
-+/* IMR2/ISR2 Interrupts common bits */
-+#define PEF2256_INT2_AIS	BIT(3)
-+#define PEF2256_INT2_LOS	BIT(2)
-+
-+#endif /* __PEF2256_REGS_H__ */
-diff --git a/drivers/net/wan/framer/pef2256/pef2256.c b/drivers/net/wan/framer/pef2256/pef2256.c
-new file mode 100644
-index 000000000000..0aa7740ab82f
---- /dev/null
-+++ b/drivers/net/wan/framer/pef2256/pef2256.c
-@@ -0,0 +1,880 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * PEF2256 also known as FALC56 driver
++ * Generic Framer framework.
 + *
 + * Copyright 2023 CS GROUP France
 + *
 + * Author: Herve Codina <herve.codina@bootlin.com>
 + */
 +
-+#include <linux/framer/pef2256.h>
-+#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/framer/framer.h>
 +#include <linux/framer/framer-provider.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/mfd/core.h>
++#include <linux/idr.h>
 +#include <linux/module.h>
 +#include <linux/notifier.h>
 +#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
++#include <linux/pm_runtime.h>
++#include <linux/regulator/consumer.h>
 +#include <linux/slab.h>
-+#include "pef2256-regs.h"
 +
-+enum pef2256_frame_type {
-+	PEF2256_FRAME_E1_DOUBLEFRAME,
-+	PEF2256_FRAME_E1_CRC4_MULTIFRAME,
-+	PEF2256_FRAME_E1_AUTO_MULTIFRAME,
-+	PEF2256_FRAME_T1J1_4FRAME,
-+	PEF2256_FRAME_T1J1_12FRAME,
-+	PEF2256_FRAME_T1J1_24FRAME,
-+	PEF2256_FRAME_T1J1_72FRAME,
-+};
++static struct class *framer_class;
++static DEFINE_MUTEX(framer_provider_mutex);
++static LIST_HEAD(framer_provider_list);
++static DEFINE_IDA(framer_ida);
 +
-+struct pef2256 {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	enum pef2256_version version;
-+	struct clk *mclk;
-+	struct clk *sclkr;
-+	struct clk *sclkx;
-+	struct gpio_desc *reset_gpio;
-+	unsigned long sysclk_rate;
-+	u32 data_rate;
-+	bool is_tx_falling_edge;
-+	bool is_subordinate;
-+	enum pef2256_frame_type frame_type;
-+	u8 channel_phase;
-+	atomic_t carrier;
-+	struct framer *framer;
-+};
++#define dev_to_framer(a)	(container_of((a), struct framer, dev))
 +
-+static u8 pef2256_read8(struct pef2256 *pef2256, int offset)
-+{
-+	int val;
-+
-+	regmap_read(pef2256->regmap, offset, &val);
-+	return val;
-+}
-+
-+static void pef2256_write8(struct pef2256 *pef2256, int offset, u8 val)
-+{
-+	regmap_write(pef2256->regmap, offset, val);
-+}
-+
-+static void pef2256_clrbits8(struct pef2256 *pef2256, int offset, u8 clr)
-+{
-+	regmap_clear_bits(pef2256->regmap, offset, clr);
-+}
-+
-+static void pef2256_setbits8(struct pef2256 *pef2256, int offset, u8 set)
-+{
-+	regmap_set_bits(pef2256->regmap, offset, set);
-+}
-+
-+static void pef2256_clrsetbits8(struct pef2256 *pef2256, int offset, u8 clr, u8 set)
-+{
-+	regmap_update_bits(pef2256->regmap, offset, clr | set, set);
-+}
-+
-+enum pef2256_version pef2256_get_version(struct pef2256 *pef2256)
-+{
-+	enum pef2256_version version = PEF2256_VERSION_UNKNOWN;
-+	u8 vstr, wid;
-+
-+	vstr = pef2256_read8(pef2256, PEF2256_VSTR);
-+	wid = pef2256_read8(pef2256, PEF2256_WID);
-+
-+	switch (vstr) {
-+	case PEF2256_VSTR_VERSION_12:
-+		if ((wid & PEF2256_12_WID_MASK) == PEF2256_12_WID_VERSION_12)
-+			version = PEF2256_VERSION_1_2;
-+		break;
-+	case PEF2256_VSTR_VERSION_2x:
-+		switch (wid & PEF2256_2X_WID_MASK) {
-+		case PEF2256_2X_WID_VERSION_21:
-+			version = PEF2256_VERSION_2_1;
-+			break;
-+		case PEF2256_2X_WID_VERSION_22:
-+			version = PEF2256_VERSION_2_2;
-+			break;
-+		}
-+		break;
-+	case PEF2256_VSTR_VERSION_21:
-+		version = PEF2256_VERSION_2_1;
-+		break;
-+	}
-+
-+	if (version == PEF2256_VERSION_UNKNOWN)
-+		dev_err(pef2256->dev, "Unknown version (0x%02x, 0x%02x)\n", vstr, wid);
-+
-+	return version;
-+}
-+EXPORT_SYMBOL_GPL(pef2256_get_version);
-+
-+enum pef2256_gcm_config_item {
-+	PEF2256_GCM_CONFIG_1544000 = 0,
-+	PEF2256_GCM_CONFIG_2048000,
-+	PEF2256_GCM_CONFIG_8192000,
-+	PEF2256_GCM_CONFIG_10000000,
-+	PEF2256_GCM_CONFIG_12352000,
-+	PEF2256_GCM_CONFIG_16384000,
-+};
-+
-+struct pef2256_gcm_config {
-+	u8 gcm_12[6];
-+	u8 gcm_2x[8];
-+};
-+
-+static const struct pef2256_gcm_config pef2256_gcm_configs[] = {
-+	[PEF2256_GCM_CONFIG_1544000] = {
-+		.gcm_12 = {0xF0, 0x51, 0x00, 0x80, 0x00, 0x15},
-+		.gcm_2x = {0x00, 0x15, 0x00, 0x08, 0x00, 0x3F, 0x9C, 0xDF},
-+	},
-+	[PEF2256_GCM_CONFIG_2048000] = {
-+		.gcm_12 = {0x00, 0x58, 0xD2, 0xC2, 0x00, 0x10},
-+		.gcm_2x = {0x00, 0x18, 0xFB, 0x0B, 0x00, 0x2F, 0xDB, 0xDF},
-+	},
-+	[PEF2256_GCM_CONFIG_8192000] = {
-+		.gcm_12 = {0x00, 0x58, 0xD2, 0xC2, 0x03, 0x10},
-+		.gcm_2x = {0x00, 0x18, 0xFB, 0x0B, 0x00, 0x0B, 0xDB, 0xDF},
-+	},
-+	[PEF2256_GCM_CONFIG_10000000] = {
-+		.gcm_12 = {0x90, 0x51, 0x81, 0x8F, 0x04, 0x10},
-+		.gcm_2x = {0x40, 0x1B, 0x3D, 0x0A, 0x00, 0x07, 0xC9, 0xDC},
-+	},
-+	[PEF2256_GCM_CONFIG_12352000] = {
-+		.gcm_12 = {0xF0, 0x51, 0x00, 0x80, 0x07, 0x15},
-+		.gcm_2x = {0x00, 0x19, 0x00, 0x08, 0x01, 0x0A, 0x98, 0xDA},
-+	},
-+	[PEF2256_GCM_CONFIG_16384000] = {
-+		.gcm_12 = {0x00, 0x58, 0xD2, 0xC2, 0x07, 0x10},
-+		.gcm_2x = {0x00, 0x18, 0xFB, 0x0B, 0x01, 0x0B, 0xDB, 0xDF},
-+	},
-+};
-+
-+static int pef2256_setup_gcm(struct pef2256 *pef2256)
-+{
-+	enum pef2256_gcm_config_item item;
-+	unsigned long mclk_rate;
-+	const u8 *gcm;
-+	int i, count;
-+
-+	mclk_rate = clk_get_rate(pef2256->mclk);
-+	switch (mclk_rate) {
-+	case 1544000:
-+		item = PEF2256_GCM_CONFIG_1544000;
-+		break;
-+	case 2048000:
-+		item = PEF2256_GCM_CONFIG_2048000;
-+		break;
-+	case 8192000:
-+		item = PEF2256_GCM_CONFIG_8192000;
-+		break;
-+	case 10000000:
-+		item = PEF2256_GCM_CONFIG_10000000;
-+		break;
-+	case 12352000:
-+		item = PEF2256_GCM_CONFIG_12352000;
-+		break;
-+	case 16384000:
-+		item = PEF2256_GCM_CONFIG_16384000;
-+		break;
-+	default:
-+		dev_err(pef2256->dev, "Unsupported v2.x MCLK rate %lu\n", mclk_rate);
-+		return -EINVAL;
-+	}
-+
-+	BUILD_BUG_ON(item >= ARRAY_SIZE(pef2256_gcm_configs));
-+
-+	if (pef2256->version == PEF2256_VERSION_1_2) {
-+		gcm = pef2256_gcm_configs[item].gcm_12;
-+		count = ARRAY_SIZE(pef2256_gcm_configs[item].gcm_12);
-+	} else {
-+		gcm = pef2256_gcm_configs[item].gcm_2x;
-+		count = ARRAY_SIZE(pef2256_gcm_configs[item].gcm_2x);
-+	}
-+
-+	for (i = 0; i < count; i++)
-+		pef2256_write8(pef2256, PEF2256_GCM(i + 1), *(gcm + i));
-+
-+	return 0;
-+}
-+
-+static int pef2256_setup_e1_line(struct pef2256 *pef2256)
-+{
-+	u8 fmr1, fmr2;
-+
-+	/* RCLK output : DPLL clock, DCO-X enabled, DCO-X internal ref clock */
-+	pef2256_write8(pef2256, PEF2256_CMR1, 0x00);
-+
-+	/* SCLKR selected, SCLKX selected,
-+	 * receive synchro pulse sourced by SYPR,
-+	 * transmit synchro pulse sourced by SYPX,
-+	 * DCO-X center frequency enabled
-+	 */
-+	pef2256_write8(pef2256, PEF2256_CMR2, PEF2256_CMR2_DCOXC);
-+
-+	if (pef2256->is_subordinate) {
-+		/* select RCLK source = 2M,  disable switching from RCLK to SYNC */
-+		pef2256_clrsetbits8(pef2256, PEF2256_CMR1, PEF2256_CMR1_RS_MASK,
-+				    PEF2256_CMR1_RS_DCOR_2048 | PEF2256_CMR1_DCS);
-+	}
-+
-+	/* slave mode, local loop off, mode short-haul
-+	 * In v2.x, bit3 is a forced 1 bit in the datasheet -> Need to be set.
-+	 */
-+	if (pef2256->version == PEF2256_VERSION_1_2)
-+		pef2256_write8(pef2256, PEF2256_LIM0, 0x00);
-+	else
-+		pef2256_write8(pef2256, PEF2256_LIM0, PEF2256_2X_LIM0_BIT3);
-+
-+	/* "master" mode */
-+	if (!pef2256->is_subordinate)
-+		pef2256_setbits8(pef2256, PEF2256_LIM0, PEF2256_LIM0_MAS);
-+
-+	/* analog interface selected, remote loop off */
-+	pef2256_write8(pef2256, PEF2256_LIM1, 0x00);
-+
-+	/* receive input threshold = 0,21V */
-+	if (pef2256->version == PEF2256_VERSION_1_2)
-+		pef2256_clrsetbits8(pef2256, PEF2256_LIM1, PEF2256_12_LIM1_RIL_MASK,
-+				    PEF2256_12_LIM1_RIL_210);
-+	else
-+		pef2256_clrsetbits8(pef2256, PEF2256_LIM1, PEF2256_2X_LIM1_RIL_MASK,
-+				    PEF2256_2X_LIM1_RIL_210);
-+
-+	/* transmit pulse mask, default value from datasheet
-+	 * transmit line in normal operation
-+	 */
-+	if (pef2256->version == PEF2256_VERSION_1_2)
-+		pef2256_write8(pef2256, PEF2256_XPM0, 0x7B);
-+	else
-+		pef2256_write8(pef2256, PEF2256_XPM0, 0x9C);
-+	pef2256_write8(pef2256, PEF2256_XPM1, 0x03);
-+	pef2256_write8(pef2256, PEF2256_XPM2, 0x00);
-+
-+	/* HDB3 coding, no alarm simulation */
-+	pef2256_write8(pef2256, PEF2256_FMR0, PEF2256_FMR0_XC_HDB3 | PEF2256_FMR0_RC_HDB3);
-+
-+	/* E1, frame format, 2 Mbit/s system data rate, no AIS
-+	 * transmission to remote end or system interface, payload loop
-+	 * off, transmit remote alarm on
-+	 */
-+	fmr1 = 0x00;
-+	fmr2 = PEF2256_FMR2_AXRA;
-+	switch (pef2256->frame_type) {
-+	case PEF2256_FRAME_E1_DOUBLEFRAME:
-+		fmr2 |= PEF2256_FMR2_RFS_DOUBLEFRAME;
-+		break;
-+	case PEF2256_FRAME_E1_CRC4_MULTIFRAME:
-+		fmr1 |= PEF2256_FMR1_XFS;
-+		fmr2 |= PEF2256_FMR2_RFS_CRC4_MULTIFRAME;
-+		break;
-+	case PEF2256_FRAME_E1_AUTO_MULTIFRAME:
-+		fmr1 |= PEF2256_FMR1_XFS;
-+		fmr2 |= PEF2256_FMR2_RFS_AUTO_MULTIFRAME;
-+		break;
-+	default:
-+		dev_err(pef2256->dev, "Unsupported frame type %d\n", pef2256->frame_type);
-+		return -EINVAL;
-+	}
-+	pef2256_clrsetbits8(pef2256, PEF2256_FMR1, PEF2256_FMR1_XFS, fmr1);
-+	pef2256_write8(pef2256, PEF2256_FMR2, fmr2);
-+
-+	if (!pef2256->is_subordinate) {
-+		/* SEC input, active high */
-+		pef2256_write8(pef2256, PEF2256_GPC1, PEF2256_GPC1_CSFP_SEC_IN_HIGH);
-+	} else {
-+		/* FSC output, active high */
-+		pef2256_write8(pef2256, PEF2256_GPC1, PEF2256_GPC1_CSFP_FSC_OUT_HIGH);
-+	}
-+
-+	/* SCLKR, SCLKX, RCLK configured to inputs,
-+	 * XFMS active low, CLK1 and CLK2 pin configuration
-+	 */
-+	pef2256_write8(pef2256, PEF2256_PC5, 0x00);
-+	pef2256_write8(pef2256, PEF2256_PC6, 0x00);
-+
-+	/* port RCLK is output */
-+	pef2256_setbits8(pef2256, PEF2256_PC5, PEF2256_PC5_CRP);
-+
-+	return 0;
-+}
-+
-+static void pef2256_setup_e1_los(struct pef2256 *pef2256)
-+{
-+	/* detection of LOS alarm = 176 pulses (ie (10 + 1) * 16) */
-+	pef2256_write8(pef2256, PEF2256_PCD, 10);
-+	/* recovery of LOS alarm = 22 pulses (ie 21 + 1) */
-+	pef2256_write8(pef2256, PEF2256_PCR, 21);
-+	/* E1 default for the receive slicer threshold */
-+	pef2256_write8(pef2256, PEF2256_LIM2, PEF2256_LIM2_SLT_THR50);
-+	if (pef2256->is_subordinate) {
-+		/* Loop-timed */
-+		pef2256_setbits8(pef2256, PEF2256_LIM2, PEF2256_LIM2_ELT);
-+	}
-+}
-+
-+static int pef2256_setup_e1_system(struct pef2256 *pef2256)
-+{
-+	u8 sic1, fmr1;
-+
-+	/* 2.048 MHz system clocking rate, receive buffer 2 frames, transmit
-+	 * buffer bypass, data sampled and transmitted on the falling edge of
-+	 * SCLKR/X, automatic freeze signaling, data is active in the first
-+	 * channel phase
-+	 */
-+	pef2256_write8(pef2256, PEF2256_SIC1, 0x00);
-+	pef2256_write8(pef2256, PEF2256_SIC2, 0x00);
-+	pef2256_write8(pef2256, PEF2256_SIC3, 0x00);
-+
-+	if (pef2256->is_subordinate) {
-+		/* transmit buffer size = 2 frames, transparent mode */
-+		pef2256_clrsetbits8(pef2256, PEF2256_SIC1, PEF2256_SIC1_XBS_MASK,
-+				    PEF2256_SIC1_XBS_2FRAMES);
-+	}
-+
-+	if (pef2256->version != PEF2256_VERSION_1_2) {
-+		/* during inactive channel phase switch RDO/RSIG into tri-state */
-+		pef2256_setbits8(pef2256, PEF2256_SIC3, PEF2256_SIC3_RTRI);
-+	}
-+
-+	if (pef2256->is_tx_falling_edge) {
-+		/* falling edge sync pulse transmit, rising edge sync pulse receive */
-+		pef2256_clrsetbits8(pef2256, PEF2256_SIC3, PEF2256_SIC3_RESX, PEF2256_SIC3_RESR);
-+	} else {
-+		/* rising edge sync pulse transmit, falling edge sync pulse receive */
-+		pef2256_clrsetbits8(pef2256, PEF2256_SIC3, PEF2256_SIC3_RESR, PEF2256_SIC3_RESX);
-+	}
-+
-+	/* transmit offset counter (XCO10..0) = 4 */
-+	pef2256_write8(pef2256, PEF2256_XC0, 0);
-+	pef2256_write8(pef2256, PEF2256_XC1, 4);
-+	/* receive offset counter (RCO10..0) = 4 */
-+	pef2256_write8(pef2256, PEF2256_RC0, 0);
-+	pef2256_write8(pef2256, PEF2256_RC1, 4);
-+
-+	/* system clock rate */
-+	switch (pef2256->sysclk_rate) {
-+	case 2048000:
-+		sic1 = PEF2256_SIC1_SSC_2048;
-+		break;
-+	case 4096000:
-+		sic1 = PEF2256_SIC1_SSC_4096;
-+		break;
-+	case 8192000:
-+		sic1 = PEF2256_SIC1_SSC_8192;
-+		break;
-+	case 16384000:
-+		sic1 = PEF2256_SIC1_SSC_16384;
-+		break;
-+	default:
-+		dev_err(pef2256->dev, "Unsupported sysclk rate %lu\n", pef2256->sysclk_rate);
-+		return -EINVAL;
-+	}
-+	pef2256_clrsetbits8(pef2256, PEF2256_SIC1, PEF2256_SIC1_SSC_MASK, sic1);
-+
-+	/* data clock rate */
-+	switch (pef2256->data_rate) {
-+	case 2048000:
-+		fmr1 = PEF2256_FMR1_SSD_2048;
-+		sic1 = PEF2256_SIC1_SSD_2048;
-+		break;
-+	case 4096000:
-+		fmr1 = PEF2256_FMR1_SSD_4096;
-+		sic1 = PEF2256_SIC1_SSD_4096;
-+		break;
-+	case 8192000:
-+		fmr1 = PEF2256_FMR1_SSD_8192;
-+		sic1 = PEF2256_SIC1_SSD_8192;
-+		break;
-+	case 16384000:
-+		fmr1 = PEF2256_FMR1_SSD_16384;
-+		sic1 = PEF2256_SIC1_SSD_16384;
-+		break;
-+	default:
-+		dev_err(pef2256->dev, "Unsupported data rate %u\n", pef2256->data_rate);
-+		return -EINVAL;
-+	}
-+	pef2256_clrsetbits8(pef2256, PEF2256_FMR1, PEF2256_FMR1_SSD_MASK, fmr1);
-+	pef2256_clrsetbits8(pef2256, PEF2256_SIC1, PEF2256_SIC1_SSD_MASK, sic1);
-+
-+	/* channel phase */
-+	pef2256_clrsetbits8(pef2256, PEF2256_SIC2, PEF2256_SIC2_SICS_MASK,
-+			    PEF2256_SIC2_SICS(pef2256->channel_phase));
-+
-+	return 0;
-+}
-+
-+static void pef2256_setup_e1_signaling(struct pef2256 *pef2256)
-+{
-+	/* All bits of the transmitted service word are cleared */
-+	pef2256_write8(pef2256, PEF2256_XSW, PEF2256_XSW_XY(0x1F));
-+
-+	/* CAS disabled and clear spare bit values */
-+	pef2256_write8(pef2256, PEF2256_XSP, 0x00);
-+
-+	if (pef2256->is_subordinate) {
-+		/* transparent mode */
-+		pef2256_setbits8(pef2256, PEF2256_XSW, PEF2256_XSW_XTM);
-+	}
-+
-+	/* Si-Bit, Spare bit For International, FAS word */
-+	pef2256_setbits8(pef2256, PEF2256_XSW, PEF2256_XSW_XSIS);
-+	pef2256_setbits8(pef2256, PEF2256_XSP, PEF2256_XSP_XSIF);
-+
-+	/* no transparent mode active */
-+	pef2256_write8(pef2256, PEF2256_TSWM, 0x00);
-+}
-+
-+static void pef2256_setup_e1_errors(struct pef2256 *pef2256)
-+{
-+	/* error counter latched every 1s */
-+	pef2256_setbits8(pef2256, PEF2256_FMR1, PEF2256_FMR1_ECM);
-+
-+	/* error counter mode COFA */
-+	pef2256_setbits8(pef2256, PEF2256_GCR, PEF2256_GCR_ECMC);
-+
-+	/* errors in service words have no influence */
-+	pef2256_setbits8(pef2256, PEF2256_RC0, PEF2256_RC0_SWD);
-+
-+	/* 4 consecutive incorrect FAS causes loss of sync */
-+	pef2256_setbits8(pef2256, PEF2256_RC0, PEF2256_RC0_ASY4);
-+}
-+
-+static int pef2256_setup_e1(struct pef2256 *pef2256)
++int framer_pm_runtime_get(struct framer *framer)
 +{
 +	int ret;
 +
-+	/* Setup, Master clocking mode (GCM8..1) */
-+	ret = pef2256_setup_gcm(pef2256);
-+	if (ret)
-+		return ret;
++	if (!pm_runtime_enabled(&framer->dev))
++		return -EOPNOTSUPP;
 +
-+	/* Select E1 mode */
-+	pef2256_write8(pef2256, PEF2256_FMR1, 0x00);
++	ret = pm_runtime_get(&framer->dev);
++	if (ret < 0 && ret != -EINPROGRESS)
++		pm_runtime_put_noidle(&framer->dev);
 +
-+	/* internal second timer, power on */
-+	pef2256_write8(pef2256, PEF2256_GCR, 0x00);
-+
-+	/* Setup line interface */
-+	ret = pef2256_setup_e1_line(pef2256);
-+	if (ret)
-+		return ret;
-+
-+	/* Setup Loss-of-signal detection and recovery */
-+	pef2256_setup_e1_los(pef2256);
-+
-+	/* Setup system interface */
-+	ret = pef2256_setup_e1_system(pef2256);
-+	if (ret)
-+		return ret;
-+
-+	/* Setup signaling */
-+	pef2256_setup_e1_signaling(pef2256);
-+
-+	/* Setup errors counters and condition */
-+	pef2256_setup_e1_errors(pef2256);
-+
-+	/* status changed interrupt at both up and down */
-+	pef2256_setbits8(pef2256, PEF2256_GCR, PEF2256_GCR_SCI);
-+
-+	/* Clear any ISR2 pending interrupts and unmask needed interrupts */
-+	pef2256_read8(pef2256, PEF2256_ISR2);
-+	pef2256_clrbits8(pef2256, PEF2256_IMR2, PEF2256_INT2_LOS | PEF2256_INT2_AIS);
-+
-+	/* reset lines */
-+	pef2256_write8(pef2256, PEF2256_CMDR, PEF2256_CMDR_RRES | PEF2256_CMDR_XRES);
-+	return 0;
-+}
-+
-+static void pef2256_isr_default_handler(struct pef2256 *pef2256, u8 nbr, u8 isr)
-+{
-+	dev_warn_ratelimited(pef2256->dev, "ISR%u: 0x%02x not handled\n", nbr, isr);
-+}
-+
-+static bool pef2256_is_carrier_on(struct pef2256 *pef2256)
-+{
-+	u8 frs0;
-+
-+	frs0 = pef2256_read8(pef2256, PEF2256_FRS0);
-+	return !(frs0 & (PEF2256_FRS0_LOS | PEF2256_FRS0_AIS));
-+}
-+
-+static void pef2256_isr2_handler(struct pef2256 *pef2256, u8 nbr, u8 isr)
-+{
-+	bool carrier;
-+
-+	if (isr & (PEF2256_INT2_LOS | PEF2256_INT2_AIS)) {
-+		carrier = pef2256_is_carrier_on(pef2256);
-+		if (atomic_xchg(&pef2256->carrier, carrier) != carrier)
-+			framer_notify_status_change(pef2256->framer);
-+	}
-+}
-+
-+static irqreturn_t pef2256_irq_handler(int irq, void *priv)
-+{
-+	static void (*pef2256_isr_handler[])(struct pef2256 *, u8, u8) = {
-+		[0] = pef2256_isr_default_handler,
-+		[1] = pef2256_isr_default_handler,
-+		[2] = pef2256_isr2_handler,
-+		[3] = pef2256_isr_default_handler,
-+		[4] = pef2256_isr_default_handler,
-+		[5] = pef2256_isr_default_handler
-+	};
-+	struct pef2256 *pef2256 = (struct pef2256 *)priv;
-+	u8 gis;
-+	u8 isr;
-+	u8 n;
-+
-+	gis = pef2256_read8(pef2256, PEF2256_GIS);
-+
-+	for (n = 0; n < ARRAY_SIZE(pef2256_isr_handler); n++) {
-+		if (gis & PEF2256_GIS_ISR(n)) {
-+			isr = pef2256_read8(pef2256, PEF2256_ISR(n));
-+			pef2256_isr_handler[n](pef2256, n, isr);
-+		}
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int pef2256_check_rates(struct pef2256 *pef2256, unsigned long sysclk_rate,
-+			       unsigned long data_rate)
-+{
-+	unsigned long rate;
-+
-+	switch (sysclk_rate) {
-+	case 2048000:
-+	case 4096000:
-+	case 8192000:
-+	case 16384000:
-+		break;
-+	default:
-+		dev_err(pef2256->dev, "Unsupported system clock rate %lu\n", sysclk_rate);
-+		return -EINVAL;
-+	}
-+
-+	for (rate = data_rate; rate <= data_rate * 4; rate *= 2) {
-+		if (rate == sysclk_rate)
-+			return 0;
-+	}
-+	dev_err(pef2256->dev, "Unsupported data rate %lu with system clock rate %lu\n",
-+		data_rate, sysclk_rate);
-+	return -EINVAL;
-+}
-+
-+static int pef2556_of_parse(struct pef2256 *pef2256, struct device_node *np)
-+{
-+	int ret;
-+
-+	pef2256->data_rate = 2048000;
-+	ret = of_property_read_u32(np, "lantiq,data-rate-bps", &pef2256->data_rate);
-+	if (ret && ret != -EINVAL) {
-+		dev_err(pef2256->dev, "%pOF: failed to read lantiq,data-rate-bps\n", np);
-+		return ret;
-+	}
-+
-+	ret =  pef2256_check_rates(pef2256, pef2256->sysclk_rate, pef2256->data_rate);
-+	if (ret)
-+		return ret;
-+
-+	pef2256->is_tx_falling_edge = of_property_read_bool(np, "lantiq,clock-falling-edge");
-+
-+	pef2256->channel_phase = 0;
-+	ret = of_property_read_u8(np, "lantiq,channel-phase", &pef2256->channel_phase);
-+	if (ret && ret != -EINVAL) {
-+		dev_err(pef2256->dev, "%pOF: failed to read lantiq,channel-phase\n",
-+			np);
-+		return ret;
-+	}
-+	if (pef2256->channel_phase >= pef2256->sysclk_rate / pef2256->data_rate) {
-+		dev_err(pef2256->dev, "%pOF: Invalid lantiq,channel-phase %u\n",
-+			np, pef2256->channel_phase);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct regmap_config pef2256_regmap_config = {
-+	.reg_bits = 32,
-+	.val_bits = 8,
-+	.max_register = 0xff,
-+};
-+
-+static const struct mfd_cell pef2256_devs[] = {
-+	{ .name = "lantiq-pef2256-pinctrl", },
-+};
-+
-+static int pef2256_add_audio_devices(struct pef2256 *pef2256)
-+{
-+	const char *compatible = "lantiq,pef2256-codec";
-+	struct mfd_cell *audio_devs;
-+	struct device_node *np;
-+	unsigned int count = 0;
-+	unsigned int i;
-+	int ret;
-+
-+	for_each_available_child_of_node(pef2256->dev->of_node, np) {
-+		if (of_device_is_compatible(np, compatible))
-+			count++;
-+	}
-+
-+	if (!count)
-+		return 0;
-+
-+	audio_devs = kcalloc(count, sizeof(*audio_devs), GFP_KERNEL);
-+	if (!audio_devs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < count; i++) {
-+		(audio_devs + i)->name = "framer-codec";
-+		(audio_devs + i)->of_compatible = compatible;
-+		(audio_devs + i)->id = i;
-+	}
-+
-+	ret = mfd_add_devices(pef2256->dev, 0, audio_devs, count, NULL, 0, NULL);
-+	kfree(audio_devs);
 +	return ret;
 +}
++EXPORT_SYMBOL_GPL(framer_pm_runtime_get);
 +
-+static int pef2256_framer_get_status(struct framer *framer, struct framer_status *status)
++int framer_pm_runtime_get_sync(struct framer *framer)
 +{
-+	struct pef2256 *pef2256 = framer_get_drvdata(framer);
-+
-+	status->link_is_on = !!atomic_read(&pef2256->carrier);
-+	return 0;
-+}
-+
-+static int pef2256_framer_set_config(struct framer *framer, const struct framer_config *config)
-+{
-+	struct pef2256 *pef2256 = framer_get_drvdata(framer);
-+
-+	if (config->iface != FRAMER_IFACE_E1) {
-+		dev_err(pef2256->dev, "Only E1 line is currently supported\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	switch (config->clock_type) {
-+	case FRAMER_CLOCK_EXT:
-+		pef2256->is_subordinate = true;
-+		break;
-+	case FRAMER_CLOCK_INT:
-+		pef2256->is_subordinate = false;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* Apply the new settings */
-+	return pef2256_setup_e1(pef2256);
-+}
-+
-+static int pef2256_framer_get_config(struct framer *framer, struct framer_config *config)
-+{
-+	struct pef2256 *pef2256 = framer_get_drvdata(framer);
-+
-+	config->iface = FRAMER_IFACE_E1;
-+	config->clock_type = pef2256->is_subordinate ? FRAMER_CLOCK_EXT : FRAMER_CLOCK_INT;
-+	config->line_clock_rate = 2048000;
-+	return 0;
-+}
-+
-+static const struct framer_ops pef2256_framer_ops = {
-+	.owner = THIS_MODULE,
-+	.get_status = pef2256_framer_get_status,
-+	.get_config = pef2256_framer_get_config,
-+	.set_config = pef2256_framer_set_config,
-+};
-+
-+static int pef2256_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	unsigned long sclkr_rate, sclkx_rate;
-+	struct framer_provider *framer_provider;
-+	struct pef2256 *pef2256;
-+	const char *version_txt;
-+	void __iomem *iomem;
 +	int ret;
-+	int irq;
 +
-+	pef2256 = devm_kzalloc(&pdev->dev, sizeof(*pef2256), GFP_KERNEL);
-+	if (!pef2256)
-+		return -ENOMEM;
++	if (!pm_runtime_enabled(&framer->dev))
++		return -EOPNOTSUPP;
 +
-+	pef2256->dev = &pdev->dev;
-+	atomic_set(&pef2256->carrier, 0);
-+
-+	pef2256->is_subordinate = true;
-+	pef2256->frame_type = PEF2256_FRAME_E1_DOUBLEFRAME;
-+
-+	iomem = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(iomem))
-+		return PTR_ERR(iomem);
-+
-+	pef2256->regmap = devm_regmap_init_mmio(&pdev->dev, iomem,
-+						&pef2256_regmap_config);
-+	if (IS_ERR(pef2256->regmap)) {
-+		dev_err(&pdev->dev, "Failed to initialise Regmap (%ld)\n",
-+			PTR_ERR(pef2256->regmap));
-+		return PTR_ERR(pef2256->regmap);
-+	}
-+
-+	pef2256->mclk = devm_clk_get_enabled(&pdev->dev, "mclk");
-+	if (IS_ERR(pef2256->mclk))
-+		return PTR_ERR(pef2256->mclk);
-+
-+	pef2256->sclkr = devm_clk_get_enabled(&pdev->dev, "sclkr");
-+	if (IS_ERR(pef2256->sclkr))
-+		return PTR_ERR(pef2256->sclkr);
-+
-+	pef2256->sclkx = devm_clk_get_enabled(&pdev->dev, "sclkx");
-+	if (IS_ERR(pef2256->sclkx))
-+		return PTR_ERR(pef2256->sclkx);
-+
-+	/* Both SCLKR (receive) and SCLKX (transmit) must have the same rate,
-+	 * stored as sysclk_rate.
-+	 * The exact value will be checked at pef2256_check_rates()
-+	 */
-+	sclkr_rate = clk_get_rate(pef2256->sclkr);
-+	sclkx_rate = clk_get_rate(pef2256->sclkx);
-+	if (sclkr_rate != sclkx_rate) {
-+		dev_err(pef2256->dev, "clk rate mismatch. sclkr %lu Hz, sclkx %lu Hz\n",
-+			sclkr_rate, sclkx_rate);
-+		return -EINVAL;
-+	}
-+	pef2256->sysclk_rate = sclkr_rate;
-+
-+	/* Reset the component. The MCLK clock must be active during reset */
-+	pef2256->reset_gpio = devm_gpiod_get_optional(&pdev->dev, "reset", GPIOD_OUT_LOW);
-+	if (IS_ERR(pef2256->reset_gpio))
-+		return PTR_ERR(pef2256->reset_gpio);
-+	if (pef2256->reset_gpio) {
-+		gpiod_set_value_cansleep(pef2256->reset_gpio, 1);
-+		usleep_range(10, 20);
-+		gpiod_set_value_cansleep(pef2256->reset_gpio, 0);
-+		usleep_range(10, 20);
-+	}
-+
-+	pef2256->version = pef2256_get_version(pef2256);
-+	switch (pef2256->version) {
-+	case PEF2256_VERSION_1_2:
-+		version_txt = "1.2";
-+		break;
-+	case PEF2256_VERSION_2_1:
-+		version_txt = "2.1";
-+		break;
-+	case PEF2256_VERSION_2_2:
-+		version_txt = "2.2";
-+		break;
-+	default:
-+		return -ENODEV;
-+	}
-+	dev_info(pef2256->dev, "Version %s detected\n", version_txt);
-+
-+	ret = pef2556_of_parse(pef2256, np);
-+	if (ret)
-+		return ret;
-+
-+	/* Create the framer. It can be used on interrupts */
-+	pef2256->framer = devm_framer_create(pef2256->dev, NULL, &pef2256_framer_ops);
-+	if (IS_ERR(pef2256->framer))
-+		return PTR_ERR(pef2256->framer);
-+
-+	framer_set_drvdata(pef2256->framer, pef2256);
-+
-+	/* Disable interrupts */
-+	pef2256_write8(pef2256, PEF2256_IMR0, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR1, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR2, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR3, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR4, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR5, 0xff);
-+
-+	/* Clear any pending interrupts */
-+	pef2256_read8(pef2256, PEF2256_ISR0);
-+	pef2256_read8(pef2256, PEF2256_ISR1);
-+	pef2256_read8(pef2256, PEF2256_ISR2);
-+	pef2256_read8(pef2256, PEF2256_ISR3);
-+	pef2256_read8(pef2256, PEF2256_ISR4);
-+	pef2256_read8(pef2256, PEF2256_ISR5);
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+	ret = devm_request_irq(pef2256->dev, irq, pef2256_irq_handler, 0, "pef2256", pef2256);
++	ret = pm_runtime_get_sync(&framer->dev);
 +	if (ret < 0)
++		pm_runtime_put_sync(&framer->dev);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_pm_runtime_get_sync);
++
++int framer_pm_runtime_put(struct framer *framer)
++{
++	if (!pm_runtime_enabled(&framer->dev))
++		return -EOPNOTSUPP;
++
++	return pm_runtime_put(&framer->dev);
++}
++EXPORT_SYMBOL_GPL(framer_pm_runtime_put);
++
++int framer_pm_runtime_put_sync(struct framer *framer)
++{
++	if (!pm_runtime_enabled(&framer->dev))
++		return -EOPNOTSUPP;
++
++	return pm_runtime_put_sync(&framer->dev);
++}
++EXPORT_SYMBOL_GPL(framer_pm_runtime_put_sync);
++
++/**
++ * framer_init - framer internal initialization before framer operation
++ * @framer: the framer returned by framer_get()
++ *
++ * Used to allow framer's driver to perform framer internal initialization,
++ * such as PLL block powering, clock initialization or anything that's
++ * is required by the framer to perform the start of operation.
++ * Must be called before framer_power_on().
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_init(struct framer *framer)
++{
++	bool start_polling = false;
++	int ret;
++
++	ret = framer_pm_runtime_get_sync(framer);
++	if (ret < 0 && ret != -EOPNOTSUPP)
 +		return ret;
++	ret = 0; /* Override possible ret == -EOPNOTSUPP */
 +
-+	platform_set_drvdata(pdev, pef2256);
++	mutex_lock(&framer->mutex);
++	if (framer->power_count > framer->init_count)
++		dev_warn(&framer->dev, "framer_power_on was called before framer init\n");
 +
-+	ret = mfd_add_devices(pef2256->dev, 0, pef2256_devs,
-+			      ARRAY_SIZE(pef2256_devs), NULL, 0, NULL);
++	if (framer->init_count == 0) {
++		if (framer->ops->init) {
++			ret = framer->ops->init(framer);
++			if (ret < 0) {
++				dev_err(&framer->dev, "framer init failed --> %d\n", ret);
++				goto out;
++			}
++		}
++		if (framer->ops->flags & FRAMER_FLAG_POLL_STATUS)
++			start_polling = true;
++	}
++	++framer->init_count;
++
++out:
++	mutex_unlock(&framer->mutex);
++
++	if (!ret && start_polling) {
++		ret = framer_get_status(framer, &framer->prev_status);
++		if (ret < 0) {
++			dev_warn(&framer->dev, "framer get status failed --> %d\n", ret);
++			/* Will be retried on polling_work */
++			ret = 0;
++		}
++		queue_delayed_work(system_power_efficient_wq, &framer->polling_work, 1 * HZ);
++	}
++
++	framer_pm_runtime_put(framer);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_init);
++
++/**
++ * framer_exit - Framer internal un-initialization
++ * @framer: the framer returned by framer_get()
++ *
++ * Must be called after framer_power_off().
++ */
++int framer_exit(struct framer *framer)
++{
++	int ret;
++
++	ret = framer_pm_runtime_get_sync(framer);
++	if (ret < 0 && ret != -EOPNOTSUPP)
++		return ret;
++	ret = 0; /* Override possible ret == -EOPNOTSUPP */
++
++	mutex_lock(&framer->mutex);
++	--framer->init_count;
++	if (framer->init_count == 0) {
++		if (framer->ops->flags & FRAMER_FLAG_POLL_STATUS) {
++			mutex_unlock(&framer->mutex);
++			cancel_delayed_work_sync(&framer->polling_work);
++			mutex_lock(&framer->mutex);
++		}
++
++		if (framer->ops->exit)
++			framer->ops->exit(framer);
++	}
++
++	mutex_unlock(&framer->mutex);
++	framer_pm_runtime_put(framer);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_exit);
++
++/**
++ * framer_power_on - Enable the framer and enter proper operation
++ * @framer: the framer returned by framer_get()
++ *
++ * Must be called after framer_init().
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_power_on(struct framer *framer)
++{
++	int ret;
++
++	if (framer->pwr) {
++		ret = regulator_enable(framer->pwr);
++		if (ret)
++			return ret;
++	}
++
++	ret = framer_pm_runtime_get_sync(framer);
++	if (ret < 0 && ret != -EOPNOTSUPP)
++		goto err_pm_sync;
++
++	ret = 0; /* Override possible ret == -EOPNOTSUPP */
++
++	mutex_lock(&framer->mutex);
++	if (framer->power_count == 0 && framer->ops->power_on) {
++		ret = framer->ops->power_on(framer);
++		if (ret < 0) {
++			dev_err(&framer->dev, "framer poweron failed --> %d\n", ret);
++			goto err_pwr_on;
++		}
++	}
++	++framer->power_count;
++	mutex_unlock(&framer->mutex);
++	return 0;
++
++err_pwr_on:
++	mutex_unlock(&framer->mutex);
++	framer_pm_runtime_put_sync(framer);
++err_pm_sync:
++	if (framer->pwr)
++		regulator_disable(framer->pwr);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_power_on);
++
++/**
++ * framer_power_off - Disable the framer.
++ * @framer: the framer returned by framer_get()
++ *
++ * Must be called before framer_exit().
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_power_off(struct framer *framer)
++{
++	int ret;
++
++	mutex_lock(&framer->mutex);
++	if (framer->power_count == 1 && framer->ops->power_off) {
++		ret =  framer->ops->power_off(framer);
++		if (ret < 0) {
++			dev_err(&framer->dev, "framer poweroff failed --> %d\n", ret);
++			mutex_unlock(&framer->mutex);
++			return ret;
++		}
++	}
++	--framer->power_count;
++	mutex_unlock(&framer->mutex);
++	framer_pm_runtime_put(framer);
++
++	if (framer->pwr)
++		regulator_disable(framer->pwr);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(framer_power_off);
++
++/**
++ * framer_get_status() - Gets the framer status
++ * @framer: the framer returned by framer_get()
++ * @status: the status to retrieve
++ *
++ * Used to get the framer status. framer_init() must have been called
++ * on the framer.
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_get_status(struct framer *framer, struct framer_status *status)
++{
++	int ret;
++
++	if (!framer->ops->get_status)
++		return -EOPNOTSUPP;
++
++	/* Be sure to have known values (struct padding and future extensions) */
++	memset(status, 0, sizeof(*status));
++
++	mutex_lock(&framer->mutex);
++	ret = framer->ops->get_status(framer, status);
++	mutex_unlock(&framer->mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_get_status);
++
++/**
++ * framer_set_config() - Sets the framer configuration
++ * @framer: the framer returned by framer_get()
++ * @config: the configuration to set
++ *
++ * Used to set the framer configuration. framer_init() must have been called
++ * on the framer.
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_set_config(struct framer *framer, const struct framer_config *config)
++{
++	int ret;
++
++	if (!framer->ops->set_config)
++		return -EOPNOTSUPP;
++
++	mutex_lock(&framer->mutex);
++	ret = framer->ops->set_config(framer, config);
++	mutex_unlock(&framer->mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_set_config);
++
++/**
++ * framer_get_config() - Gets the framer configuration
++ * @framer: the framer returned by framer_get()
++ * @config: the configuration to retrieve
++ *
++ * Used to get the framer configuration. framer_init() must have been called
++ * on the framer.
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_get_config(struct framer *framer, struct framer_config *config)
++{
++	int ret;
++
++	if (!framer->ops->get_config)
++		return -EOPNOTSUPP;
++
++	mutex_lock(&framer->mutex);
++	ret = framer->ops->get_config(framer, config);
++	mutex_unlock(&framer->mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(framer_get_config);
++
++static void framer_polling_work(struct work_struct *work)
++{
++	struct framer *framer = container_of(work, struct framer, polling_work.work);
++	struct framer_status status;
++	int ret;
++
++	ret = framer_get_status(framer, &status);
 +	if (ret) {
-+		dev_err(pef2256->dev, "add devices failed (%d)\n", ret);
-+		return ret;
++		dev_err(&framer->dev, "polling, get status failed (%d)\n", ret);
++		goto end;
++	}
++	if (memcmp(&framer->prev_status, &status, sizeof(status))) {
++		blocking_notifier_call_chain(&framer->notifier_list,
++					     FRAMER_EVENT_STATUS, NULL);
++		memcpy(&framer->prev_status, &status, sizeof(status));
 +	}
 +
-+	ret = pef2256_setup_e1(pef2256);
++end:
++	/* Re-schedule task in 1 sec */
++	queue_delayed_work(system_power_efficient_wq, &framer->polling_work, 1 * HZ);
++}
++
++/**
++ * framer_notifier_register() - Registers a notifier
++ * @framer: the framer returned by framer_get()
++ * @nb: the notifier block to register
++ *
++ * Used to register a notifier block on framer events. framer_init() must have
++ * been called on the framer.
++ * The available framer events are present in enum framer_events.
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_notifier_register(struct framer *framer, struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&framer->notifier_list, nb);
++}
++EXPORT_SYMBOL_GPL(framer_notifier_register);
++
++/**
++ * framer_notifier_unregister() - Unregisters a notifier
++ * @framer: the framer returned by framer_get()
++ * @nb: the notifier block to unregister
++ *
++ * Used to unregister a notifier block. framer_init() must have
++ * been called on the framer.
++ *
++ * Return: %0 if successful, a negative error code otherwise
++ */
++int framer_notifier_unregister(struct framer *framer, struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&framer->notifier_list, nb);
++}
++EXPORT_SYMBOL_GPL(framer_notifier_unregister);
++
++static struct framer_provider *framer_provider_of_lookup(const struct device_node *node)
++{
++	struct framer_provider *framer_provider;
++
++	list_for_each_entry(framer_provider, &framer_provider_list, list) {
++		if (device_match_of_node(framer_provider->dev, node))
++			return framer_provider;
++	}
++
++	return ERR_PTR(-EPROBE_DEFER);
++}
++
++static struct framer *framer_of_get_from_provider(struct of_phandle_args *args)
++{
++	struct framer_provider *framer_provider;
++	struct framer *framer;
++
++	mutex_lock(&framer_provider_mutex);
++	framer_provider = framer_provider_of_lookup(args->np);
++	if (IS_ERR(framer_provider) || !try_module_get(framer_provider->owner)) {
++		framer = ERR_PTR(-EPROBE_DEFER);
++		goto end;
++	}
++
++	framer = framer_provider->of_xlate(framer_provider->dev, args);
++
++	module_put(framer_provider->owner);
++
++end:
++	mutex_unlock(&framer_provider_mutex);
++
++	return framer;
++}
++
++static struct framer *framer_of_get_byphandle(struct device_node *np, const char *propname,
++					      int index)
++{
++	struct of_phandle_args args;
++	struct framer *framer;
++	int ret;
++
++	ret = of_parse_phandle_with_args(np, propname, "#framer-cells", index, &args);
 +	if (ret)
-+		return ret;
++		return ERR_PTR(-ENODEV);
 +
-+	framer_provider = devm_framer_provider_of_register(pef2256->dev,
-+							   framer_provider_simple_of_xlate);
-+	if (IS_ERR(framer_provider))
-+		return PTR_ERR(framer_provider);
-+
-+	/* Add audio devices */
-+	ret = pef2256_add_audio_devices(pef2256);
-+	if (ret < 0) {
-+		dev_err(pef2256->dev, "add audio devices failed (%d)\n", ret);
-+		return ret;
++	if (!of_device_is_available(args.np)) {
++		framer = ERR_PTR(-ENODEV);
++		goto out_node_put;
 +	}
 +
++	framer = framer_of_get_from_provider(&args);
++
++out_node_put:
++	of_node_put(args.np);
++
++	return framer;
++}
++
++static struct framer *framer_of_get_byparent(struct device_node *np, int index)
++{
++	struct of_phandle_args args;
++	struct framer *framer;
++
++	args.np = of_get_parent(np);
++	args.args_count = 1;
++	args.args[0] = index;
++
++	while (args.np) {
++		framer = framer_of_get_from_provider(&args);
++		if (IS_ERR(framer) && PTR_ERR(framer) != -EPROBE_DEFER) {
++			args.np = of_get_next_parent(args.np);
++			continue;
++		}
++		of_node_put(args.np);
++		return framer;
++	}
++
++	return ERR_PTR(-ENODEV);
++}
++
++/**
++ * framer_get() - lookup and obtain a reference to a framer.
++ * @dev: device that requests the framer
++ * @con_id: name of the framer from device's point of view
++ *
++ * Returns the framer driver, after getting a refcount to it; or
++ * -ENODEV if there is no such framer. The caller is responsible for
++ * calling framer_put() to release that count.
++ */
++struct framer *framer_get(struct device *dev, const char *con_id)
++{
++	struct framer *framer = ERR_PTR(-ENODEV);
++	struct device_link *link;
++	int ret;
++
++	if (dev->of_node) {
++		if (con_id)
++			framer = framer_of_get_byphandle(dev->of_node, con_id, 0);
++		else
++			framer = framer_of_get_byparent(dev->of_node, 0);
++	}
++
++	if (IS_ERR(framer))
++		return framer;
++
++	get_device(&framer->dev);
++
++	if (!try_module_get(framer->ops->owner)) {
++		ret = -EPROBE_DEFER;
++		goto err_put_device;
++	}
++
++	link = device_link_add(dev, &framer->dev, DL_FLAG_STATELESS);
++	if (!link) {
++		dev_err(dev, "failed to create device_link to %s\n", dev_name(&framer->dev));
++		ret = -EPROBE_DEFER;
++		goto err_module_put;
++	}
++
++	return framer;
++
++err_module_put:
++	module_put(framer->ops->owner);
++err_put_device:
++	put_device(&framer->dev);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(framer_get);
++
++/**
++ * framer_put() - release the framer
++ * @dev: device that wants to release this framer
++ * @framer: the framer returned by framer_get()
++ *
++ * Releases a refcount the caller received from framer_get().
++ */
++void framer_put(struct device *dev, struct framer *framer)
++{
++	device_link_remove(dev, &framer->dev);
++
++	module_put(framer->ops->owner);
++	put_device(&framer->dev);
++}
++EXPORT_SYMBOL_GPL(framer_put);
++
++static void devm_framer_put(struct device *dev, void *res)
++{
++	struct framer *framer = *(struct framer **)res;
++
++	framer_put(dev, framer);
++}
++
++/**
++ * devm_framer_get() - lookup and obtain a reference to a framer.
++ * @dev: device that requests this framer
++ * @con_id: name of the framer from device's point of view
++ *
++ * Gets the framer using framer_get(), and associates a device with it using
++ * devres. On driver detach, framer_put() function is invoked on the devres
++ * data, then, devres data is freed.
++ */
++struct framer *devm_framer_get(struct device *dev, const char *con_id)
++{
++	struct framer **ptr, *framer;
++
++	ptr = devres_alloc(devm_framer_put, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return ERR_PTR(-ENOMEM);
++
++	framer = framer_get(dev, con_id);
++	if (!IS_ERR(framer)) {
++		*ptr = framer;
++		devres_add(dev, ptr);
++	} else {
++		devres_free(ptr);
++		return framer;
++	}
++
++	return framer;
++}
++EXPORT_SYMBOL_GPL(devm_framer_get);
++
++/**
++ * devm_framer_optional_get() - lookup and obtain a reference to an optional
++ * framer.
++ * @dev: device that requests this framer
++ * @con_id: name of the framer from device's point of view
++ *
++ * Same as devm_framer_get() except that if the framer does not exist, it is not
++ * considered an error and -ENODEV will not be returned. Instead the NULL framer
++ * is returned.
++ */
++struct framer *devm_framer_optional_get(struct device *dev, const char *con_id)
++{
++	struct framer *framer = devm_framer_get(dev, con_id);
++
++	if (PTR_ERR(framer) == -ENODEV)
++		framer = NULL;
++
++	return framer;
++}
++EXPORT_SYMBOL_GPL(devm_framer_optional_get);
++
++static void framer_notify_status_work(struct work_struct *work)
++{
++	struct framer *framer = container_of(work, struct framer, notify_status_work);
++
++	blocking_notifier_call_chain(&framer->notifier_list, FRAMER_EVENT_STATUS, NULL);
++}
++
++void framer_notify_status_change(struct framer *framer)
++{
++	/* Can be called from atomic context -> just schedule a task to call
++	 * blocking notifiers
++	 */
++	queue_work(system_power_efficient_wq, &framer->notify_status_work);
++}
++EXPORT_SYMBOL_GPL(framer_notify_status_change);
++
++/**
++ * framer_create() - create a new framer
++ * @dev: device that is creating the new framer
++ * @node: device node of the framer. default to dev->of_node.
++ * @ops: function pointers for performing framer operations
++ *
++ * Called to create a framer using framer framework.
++ */
++struct framer *framer_create(struct device *dev, struct device_node *node,
++			     const struct framer_ops *ops)
++{
++	int ret;
++	int id;
++	struct framer *framer;
++
++	if (WARN_ON(!dev))
++		return ERR_PTR(-EINVAL);
++
++	/* get_status() is mandatory if the provider ask for polling status */
++	if (WARN_ON((ops->flags & FRAMER_FLAG_POLL_STATUS) && !ops->get_status))
++		return ERR_PTR(-EINVAL);
++
++	framer = kzalloc(sizeof(*framer), GFP_KERNEL);
++	if (!framer)
++		return ERR_PTR(-ENOMEM);
++
++	id = ida_simple_get(&framer_ida, 0, 0, GFP_KERNEL);
++	if (id < 0) {
++		dev_err(dev, "unable to get id\n");
++		ret = id;
++		goto free_framer;
++	}
++
++	device_initialize(&framer->dev);
++	mutex_init(&framer->mutex);
++	INIT_WORK(&framer->notify_status_work, framer_notify_status_work);
++	INIT_DELAYED_WORK(&framer->polling_work, framer_polling_work);
++	BLOCKING_INIT_NOTIFIER_HEAD(&framer->notifier_list);
++
++	framer->dev.class = framer_class;
++	framer->dev.parent = dev;
++	framer->dev.of_node = node ? node : dev->of_node;
++	framer->id = id;
++	framer->ops = ops;
++
++	ret = dev_set_name(&framer->dev, "framer-%s.%d", dev_name(dev), id);
++	if (ret)
++		goto put_dev;
++
++	/* framer-supply */
++	framer->pwr = regulator_get_optional(&framer->dev, "framer");
++	if (IS_ERR(framer->pwr)) {
++		ret = PTR_ERR(framer->pwr);
++		if (ret == -EPROBE_DEFER)
++			goto put_dev;
++
++		framer->pwr = NULL;
++	}
++
++	ret = device_add(&framer->dev);
++	if (ret)
++		goto put_dev;
++
++	if (pm_runtime_enabled(dev)) {
++		pm_runtime_enable(&framer->dev);
++		pm_runtime_no_callbacks(&framer->dev);
++	}
++
++	return framer;
++
++put_dev:
++	put_device(&framer->dev);  /* calls framer_release() which frees resources */
++	return ERR_PTR(ret);
++
++free_framer:
++	kfree(framer);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(framer_create);
++
++/**
++ * framer_destroy() - destroy the framer
++ * @framer: the framer to be destroyed
++ *
++ * Called to destroy the framer.
++ */
++void framer_destroy(struct framer *framer)
++{
++	/* polling_work should already be stopped but if framer_exit() was not
++	 * called (bug), here it's the last time to do that ...
++	 */
++	cancel_delayed_work_sync(&framer->polling_work);
++	cancel_work_sync(&framer->notify_status_work);
++	pm_runtime_disable(&framer->dev);
++	device_unregister(&framer->dev); /* calls framer_release() which frees resources */
++}
++EXPORT_SYMBOL_GPL(framer_destroy);
++
++static void devm_framer_destroy(struct device *dev, void *res)
++{
++	struct framer *framer = *(struct framer **)res;
++
++	framer_destroy(framer);
++}
++
++/**
++ * devm_framer_create() - create a new framer
++ * @dev: device that is creating the new framer
++ * @node: device node of the framer
++ * @ops: function pointers for performing framer operations
++ *
++ * Creates a new framer device adding it to the framer class.
++ * While at that, it also associates the device with the framer using devres.
++ * On driver detach, release function is invoked on the devres data,
++ * then, devres data is freed.
++ */
++struct framer *devm_framer_create(struct device *dev, struct device_node *node,
++				  const struct framer_ops *ops)
++{
++	struct framer **ptr, *framer;
++
++	ptr = devres_alloc(devm_framer_destroy, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return ERR_PTR(-ENOMEM);
++
++	framer = framer_create(dev, node, ops);
++	if (!IS_ERR(framer)) {
++		*ptr = framer;
++		devres_add(dev, ptr);
++	} else {
++		devres_free(ptr);
++	}
++
++	return framer;
++}
++EXPORT_SYMBOL_GPL(devm_framer_create);
++
++/**
++ * framer_provider_simple_of_xlate() - returns the framer instance from framer provider
++ * @dev: the framer provider device
++ * @args: of_phandle_args (not used here)
++ *
++ * Intended to be used by framer provider for the common case where #framer-cells is
++ * 0. For other cases where #framer-cells is greater than '0', the framer provider
++ * should provide a custom of_xlate function that reads the *args* and returns
++ * the appropriate framer.
++ */
++struct framer *framer_provider_simple_of_xlate(struct device *dev, struct of_phandle_args *args)
++{
++	struct framer *framer;
++	struct class_dev_iter iter;
++
++	class_dev_iter_init(&iter, framer_class, NULL, NULL);
++	while ((dev = class_dev_iter_next(&iter))) {
++		framer = dev_to_framer(dev);
++		if (args->np != framer->dev.of_node)
++			continue;
++
++		class_dev_iter_exit(&iter);
++		return framer;
++	}
++
++	class_dev_iter_exit(&iter);
++	return ERR_PTR(-ENODEV);
++}
++EXPORT_SYMBOL_GPL(framer_provider_simple_of_xlate);
++
++/**
++ * __framer_provider_of_register() - create/register framer provider with the framework
++ * @dev: struct device of the framer provider
++ * @owner: the module owner containing of_xlate
++ * @of_xlate: function pointer to obtain framer instance from framer provider
++ *
++ * Creates struct framer_provider from dev and of_xlate function pointer.
++ * This is used in the case of dt boot for finding the framer instance from
++ * framer provider.
++ */
++struct framer_provider *
++__framer_provider_of_register(struct device *dev, struct module *owner,
++			      struct framer *(*of_xlate)(struct device *dev,
++							 struct of_phandle_args *args))
++{
++	struct framer_provider *framer_provider;
++
++	framer_provider = kzalloc(sizeof(*framer_provider), GFP_KERNEL);
++	if (!framer_provider)
++		return ERR_PTR(-ENOMEM);
++
++	framer_provider->dev = dev;
++	framer_provider->owner = owner;
++	framer_provider->of_xlate = of_xlate;
++
++	of_node_get(framer_provider->dev->of_node);
++
++	mutex_lock(&framer_provider_mutex);
++	list_add_tail(&framer_provider->list, &framer_provider_list);
++	mutex_unlock(&framer_provider_mutex);
++
++	return framer_provider;
++}
++EXPORT_SYMBOL_GPL(__framer_provider_of_register);
++
++/**
++ * framer_provider_of_unregister() - unregister framer provider from the framework
++ * @framer_provider: framer provider returned by framer_provider_of_register()
++ *
++ * Removes the framer_provider created using framer_provider_of_register().
++ */
++void framer_provider_of_unregister(struct framer_provider *framer_provider)
++{
++	mutex_lock(&framer_provider_mutex);
++	list_del(&framer_provider->list);
++	of_node_put(framer_provider->dev->of_node);
++	kfree(framer_provider);
++	mutex_unlock(&framer_provider_mutex);
++}
++EXPORT_SYMBOL_GPL(framer_provider_of_unregister);
++
++static void devm_framer_provider_of_unregister(struct device *dev, void *res)
++{
++	struct framer_provider *framer_provider = *(struct framer_provider **)res;
++
++	framer_provider_of_unregister(framer_provider);
++}
++
++/**
++ * __devm_framer_provider_of_register() - create/register framer provider with
++ * the framework
++ * @dev: struct device of the framer provider
++ * @owner: the module owner containing of_xlate
++ * @of_xlate: function pointer to obtain framer instance from framer provider
++ *
++ * Creates struct framer_provider from dev and of_xlate function pointer.
++ * This is used in the case of dt boot for finding the framer instance from
++ * framer provider. While at that, it also associates the device with the
++ * framer provider using devres. On driver detach, release function is invoked
++ * on the devres data, then, devres data is freed.
++ */
++struct framer_provider *
++__devm_framer_provider_of_register(struct device *dev, struct module *owner,
++				   struct framer *(*of_xlate)(struct device *dev,
++							      struct of_phandle_args *args))
++{
++	struct framer_provider **ptr, *framer_provider;
++
++	ptr = devres_alloc(devm_framer_provider_of_unregister, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return ERR_PTR(-ENOMEM);
++
++	framer_provider = __framer_provider_of_register(dev, owner, of_xlate);
++	if (!IS_ERR(framer_provider)) {
++		*ptr = framer_provider;
++		devres_add(dev, ptr);
++	} else {
++		devres_free(ptr);
++	}
++
++	return framer_provider;
++}
++EXPORT_SYMBOL_GPL(__devm_framer_provider_of_register);
++
++/**
++ * framer_release() - release the framer
++ * @dev: the dev member within framer
++ *
++ * When the last reference to the device is removed, it is called
++ * from the embedded kobject as release method.
++ */
++static void framer_release(struct device *dev)
++{
++	struct framer *framer;
++
++	framer = dev_to_framer(dev);
++	regulator_put(framer->pwr);
++	ida_simple_remove(&framer_ida, framer->id);
++	kfree(framer);
++}
++
++static int __init framer_core_init(void)
++{
++	framer_class = class_create("framer");
++	if (IS_ERR(framer_class)) {
++		pr_err("failed to create framer class (%pe)\n", framer_class);
++		return PTR_ERR(framer_class);
++	}
++
++	framer_class->dev_release = framer_release;
++
 +	return 0;
 +}
-+
-+static int pef2256_remove(struct platform_device *pdev)
-+{
-+	struct pef2256 *pef2256 = platform_get_drvdata(pdev);
-+
-+	/* Disable interrupts */
-+	pef2256_write8(pef2256, PEF2256_IMR0, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR1, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR2, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR3, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR4, 0xff);
-+	pef2256_write8(pef2256, PEF2256_IMR5, 0xff);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id pef2256_id_table[] = {
-+	{ .compatible = "lantiq,pef2256" },
-+	{} /* sentinel */
-+};
-+MODULE_DEVICE_TABLE(of, pef2256_id_table);
-+
-+static struct platform_driver pef2256_driver = {
-+	.driver = {
-+		.name = "lantiq-pef2256",
-+		.of_match_table = pef2256_id_table,
-+	},
-+	.probe = pef2256_probe,
-+	.remove = pef2256_remove,
-+};
-+module_platform_driver(pef2256_driver);
-+
-+struct regmap *pef2256_get_regmap(struct pef2256 *pef2256)
-+{
-+	return pef2256->regmap;
-+}
-+EXPORT_SYMBOL_GPL(pef2256_get_regmap);
-+
-+MODULE_AUTHOR("Herve Codina <herve.codina@bootlin.com>");
-+MODULE_DESCRIPTION("PEF2256 driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/framer/pef2256.h b/include/linux/framer/pef2256.h
++device_initcall(framer_core_init);
+diff --git a/include/linux/framer/framer-provider.h b/include/linux/framer/framer-provider.h
 new file mode 100644
-index 000000000000..71d80af58c40
+index 000000000000..941a343c3ba7
 --- /dev/null
-+++ b/include/linux/framer/pef2256.h
-@@ -0,0 +1,31 @@
++++ b/include/linux/framer/framer-provider.h
+@@ -0,0 +1,194 @@
 +/* SPDX-License-Identifier: GPL-2.0-or-later */
 +/*
-+ * PEF2256 consumer API
++ * Generic framer profider header file
 + *
 + * Copyright 2023 CS GROUP France
 + *
 + * Author: Herve Codina <herve.codina@bootlin.com>
 + */
-+#ifndef __PEF2256_H__
-+#define __PEF2256_H__
 +
++#ifndef __DRIVERS_PROVIDER_FRAMER_H
++#define __DRIVERS_PROVIDER_FRAMER_H
++
++#include <linux/export.h>
++#include <linux/framer/framer.h>
 +#include <linux/types.h>
 +
-+struct pef2256;
-+struct regmap;
++#define FRAMER_FLAG_POLL_STATUS  BIT(0)
 +
-+/* Retrieve the PEF2256 regmap */
-+struct regmap *pef2256_get_regmap(struct pef2256 *pef2256);
++/**
++ * struct framer_ops - set of function pointers for performing framer operations
++ * @init: operation to be performed for initializing the framer
++ * @exit: operation to be performed while exiting
++ * @power_on: powering on the framer
++ * @power_off: powering off the framer
++ * @flags: OR-ed flags (FRAMER_FLAG_*) to ask for core functionality
++ *          - @FRAMER_FLAG_POLL_STATUS:
++ *            Ask the core to perfom a polling to get the framer status and
++ *            notify consumers on change.
++ *            The framer should call @framer_notify_status_change() when it
++ *            detects a status change. This is usally done using interrutps.
++ *            If the framer cannot detect this change, it can ask the core for
++ *            a status polling. The core will call @get_status() periodically
++ *            and, on change detected, it will notify the consumer.
++ *            the @get_status()
++ * @owner: the module owner containing the ops
++ */
++struct framer_ops {
++	int	(*init)(struct framer *framer);
++	void	(*exit)(struct framer *framer);
++	int	(*power_on)(struct framer *framer);
++	int	(*power_off)(struct framer *framer);
 +
-+/* PEF2256 hardware versions */
-+enum pef2256_version {
-+	PEF2256_VERSION_UNKNOWN,
-+	PEF2256_VERSION_1_2,
-+	PEF2256_VERSION_2_1,
-+	PEF2256_VERSION_2_2,
++	/**
++	 * @get_status:
++	 *
++	 * Optional.
++	 *
++	 * Used to get the framer status. framer_init() must have
++	 * been called on the framer.
++	 *
++	 * Returns: 0 if successful, an negative error code otherwise
++	 */
++	int	(*get_status)(struct framer *framer, struct framer_status *status);
++
++	/**
++	 * @set_config:
++	 *
++	 * Optional.
++	 *
++	 * Used to set the framer configuration. framer_init() must have
++	 * been called on the framer.
++	 *
++	 * Returns: 0 if successful, an negative error code otherwise
++	 */
++	int	(*set_config)(struct framer *framer, const struct framer_config *config);
++
++	/**
++	 * @get_config:
++	 *
++	 * Optional.
++	 *
++	 * Used to get the framer configuration. framer_init() must have
++	 * been called on the framer.
++	 *
++	 * Returns: 0 if successful, an negative error code otherwise
++	 */
++	int	(*get_config)(struct framer *framer, struct framer_config *config);
++
++	u32 flags;
++	struct module *owner;
 +};
 +
-+/* Get the PEF2256 hardware version */
-+enum pef2256_version pef2256_get_version(struct pef2256 *pef2256);
++/**
++ * struct framer_provider - represents the framer provider
++ * @dev: framer provider device
++ * @children: can be used to override the default (dev->of_node) child node
++ * @owner: the module owner having of_xlate
++ * @list: to maintain a linked list of framer providers
++ * @of_xlate: function pointer to obtain framer instance from framer pointer
++ */
++struct framer_provider {
++	struct device		*dev;
++	struct module		*owner;
++	struct list_head	list;
++	struct framer * (*of_xlate)(struct device *dev,
++				    struct of_phandle_args *args);
++};
 +
-+#endif /* __PEF2256_H__ */
++static inline void framer_set_drvdata(struct framer *framer, void *data)
++{
++	dev_set_drvdata(&framer->dev, data);
++}
++
++static inline void *framer_get_drvdata(struct framer *framer)
++{
++	return dev_get_drvdata(&framer->dev);
++}
++
++#if IS_ENABLED(CONFIG_GENERIC_FRAMER)
++
++/* Create and destroy a framer */
++struct framer *framer_create(struct device *dev, struct device_node *node,
++			     const struct framer_ops *ops);
++void framer_destroy(struct framer *framer);
++
++/* devm version */
++struct framer *devm_framer_create(struct device *dev, struct device_node *node,
++				  const struct framer_ops *ops);
++
++struct framer *framer_provider_simple_of_xlate(struct device *dev,
++					       struct of_phandle_args *args);
++
++struct framer_provider *
++__framer_provider_of_register(struct device *dev, struct module *owner,
++			      struct framer *(*of_xlate)(struct device *dev,
++							 struct of_phandle_args *args));
++
++void framer_provider_of_unregister(struct framer_provider *framer_provider);
++
++struct framer_provider *
++__devm_framer_provider_of_register(struct device *dev, struct module *owner,
++				   struct framer *(*of_xlate)(struct device *dev,
++							      struct of_phandle_args *args));
++
++void framer_notify_status_change(struct framer *framer);
++
++#else /* IS_ENABLED(CONFIG_GENERIC_FRAMER) */
++
++static inline struct framer *framer_create(struct device *dev, struct device_node *node,
++					   const struct framer_ops *ops)
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++static inline void framer_destroy(struct framer *framer)
++{
++}
++
++/* devm version */
++static inline struct framer *devm_framer_create(struct device *dev, struct device_node *node,
++						const struct framer_ops *ops)
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++static inline struct framer *framer_provider_simple_of_xlate(struct device *dev,
++							     struct of_phandle_args *args)
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++static inline struct framer_provider *
++__framer_provider_of_register(struct device *dev, struct module *owner,
++			      struct framer *(*of_xlate)(struct device *dev,
++							 struct of_phandle_args *args))
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++void framer_provider_of_unregister(struct framer_provider *framer_provider)
++{
++}
++
++static inline struct framer_provider *
++__devm_framer_provider_of_register(struct device *dev, struct module *owner,
++				   struct framer *(*of_xlate)(struct device *dev,
++							      struct of_phandle_args *args))
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++void framer_notify_status_change(struct framer *framer)
++{
++}
++
++#endif /* IS_ENABLED(CONFIG_GENERIC_FRAMER) */
++
++#define framer_provider_of_register(dev, xlate)		\
++	__framer_provider_of_register((dev), THIS_MODULE, (xlate))
++
++#define devm_framer_provider_of_register(dev, xlate)	\
++	__devm_framer_provider_of_register((dev), THIS_MODULE, (xlate))
++
++#endif /* __DRIVERS_PROVIDER_FRAMER_H */
+diff --git a/include/linux/framer/framer.h b/include/linux/framer/framer.h
+new file mode 100644
+index 000000000000..0bee7135142f
+--- /dev/null
++++ b/include/linux/framer/framer.h
+@@ -0,0 +1,199 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Generic framer header file
++ *
++ * Copyright 2023 CS GROUP France
++ *
++ * Author: Herve Codina <herve.codina@bootlin.com>
++ */
++
++#ifndef __DRIVERS_FRAMER_H
++#define __DRIVERS_FRAMER_H
++
++#include <linux/err.h>
++#include <linux/mutex.h>
++#include <linux/notifier.h>
++#include <linux/of.h>
++#include <linux/device.h>
++#include <linux/workqueue.h>
++
++/**
++ * enum framer_iface - Framer interface
++ */
++enum framer_iface {
++	FRAMER_IFACE_E1,      /* E1 interface */
++	FRAMER_IFACE_T1,      /* T1 interface */
++};
++
++/**
++ * enum framer_clock_mode - Framer clock mode
++ */
++enum framer_clock_type {
++	FRAMER_CLOCK_EXT, /* External clock */
++	FRAMER_CLOCK_INT, /* Internal clock */
++};
++
++/**
++ * struct framer_configuration - Framer configuration
++ * @line_iface: Framer line interface
++ * @clock_mode: Framer clock type
++ * @clock_rate: Framer clock rate
++ */
++struct framer_config {
++	enum framer_iface iface;
++	enum framer_clock_type clock_type;
++	unsigned long line_clock_rate;
++};
++
++/**
++ * struct framer_status - Framer status
++ * @link_is_on: Framer link state. true, the link is on, false, the link is off.
++ */
++struct framer_status {
++	bool link_is_on;
++};
++
++/**
++ * framer_event - event available for notification
++ */
++enum framer_event {
++	FRAMER_EVENT_STATUS,	/* Event notified on framer_status changes */
++};
++
++/**
++ * struct framer - represents the framer device
++ * @dev: framer device
++ * @id: id of the framer device
++ * @ops: function pointers for performing framer operations
++ * @mutex: mutex to protect framer_ops
++ * @init_count: used to protect when the framer is used by multiple consumers
++ * @power_count: used to protect when the framer is used by multiple consumers
++ * @pwr: power regulator associated with the framer
++ * @polling_task: polling task used if framer notifier operations are not provided
++ * @polling_notifier_list: notifier list used by the polling task
++ * @prev_status: previous read status used by the polling task to detect changes
++ */
++struct framer {
++	struct device			dev;
++	int				id;
++	const struct framer_ops		*ops;
++	struct mutex			mutex;	/* Protect framer */
++	int				init_count;
++	int				power_count;
++	struct regulator		*pwr;
++	struct work_struct		notify_status_work;
++	struct blocking_notifier_head	notifier_list;
++	struct delayed_work		polling_work;
++	struct framer_status		prev_status;
++};
++
++#if IS_ENABLED(CONFIG_GENERIC_FRAMER)
++int framer_pm_runtime_get(struct framer *framer);
++int framer_pm_runtime_get_sync(struct framer *framer);
++int framer_pm_runtime_put(struct framer *framer);
++int framer_pm_runtime_put_sync(struct framer *framer);
++int framer_init(struct framer *framer);
++int framer_exit(struct framer *framer);
++int framer_power_on(struct framer *framer);
++int framer_power_off(struct framer *framer);
++int framer_get_status(struct framer *framer, struct framer_status *status);
++int framer_get_config(struct framer *framer, struct framer_config *config);
++int framer_set_config(struct framer *framer, const struct framer_config *config);
++int framer_notifier_register(struct framer *framer, struct notifier_block *nb);
++int framer_notifier_unregister(struct framer *framer, struct notifier_block *nb);
++
++struct framer *framer_get(struct device *dev, const char *con_id);
++void framer_put(struct device *dev, struct framer *framer);
++
++struct framer *devm_framer_get(struct device *dev, const char *con_id);
++struct framer *devm_framer_optional_get(struct device *dev, const char *con_id);
++#else
++static inline int framer_pm_runtime_get(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_pm_runtime_get_sync(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_pm_runtime_put(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_pm_runtime_put_sync(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_init(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_exit(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_power_on(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_power_off(struct framer *framer)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_get_status(struct framer *framer, struct framer_status *status)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_get_config(struct framer *framer, struct framer_config *config)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_set_config(struct framer *framer, const struct framer_config *config)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_notifier_register(struct framer *framer,
++					   struct notifier_block *nb)
++{
++	return -ENOSYS;
++}
++
++static inline int framer_notifier_unregister(struct framer *framer,
++					     struct notifier_block *nb)
++{
++	return -ENOSYS;
++}
++
++struct framer *framer_get(struct device *dev, const char *con_id)
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++void framer_put(struct device *dev, struct framer *framer)
++{
++}
++
++static inline struct framer *devm_framer_get(struct device *dev, const char *con_id)
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++static inline struct framer *devm_framer_optional_get(struct device *dev, const char *con_id)
++{
++	return NULL;
++}
++
++#endif
++
++#endif /* __DRIVERS_FRAMER_H */
 -- 
 2.41.0
 
