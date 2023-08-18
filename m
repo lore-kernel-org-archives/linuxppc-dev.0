@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDA71C71159
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 16:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5071EC7EE2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Aug 2023 16:52:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RS7FJ0xtlz3hPB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Aug 2023 02:51:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RS7Fq49mRz3hTv
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Aug 2023 02:52:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=fail (SPF fail - not authorized) smtp.mailfrom=csgroup.eu (client-ip=90.115.179.12; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (unknown [90.115.179.12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RS71S3H6Gz3dCy
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2023 02:41:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RS71X23JYz3dKq
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2023 02:41:35 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RS70715djz9vh8;
-	Fri, 18 Aug 2023 18:40:23 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RS7081Zjnz9vjl;
+	Fri, 18 Aug 2023 18:40:24 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vw7WEx3gluED; Fri, 18 Aug 2023 18:40:23 +0200 (CEST)
+	with ESMTP id ZdBsb51iqtzc; Fri, 18 Aug 2023 18:40:24 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RS6zp6QMwz9vhn;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RS6zp740Kz9vhq;
 	Fri, 18 Aug 2023 18:40:06 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D3FF08B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E9A808B763;
 	Fri, 18 Aug 2023 18:40:06 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id aJ8Foudrmvpf; Fri, 18 Aug 2023 18:40:06 +0200 (CEST)
+	with ESMTP id U-vlUOJ5AxeO; Fri, 18 Aug 2023 18:40:06 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (PO17626.IDSI0.si.c-s.fr [172.19.54.29])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D48408B770;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D14BA8B76E;
 	Fri, 18 Aug 2023 18:40:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37IGdxk6142031
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 37IGe1wE142062
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 18 Aug 2023 18:39:59 +0200
+	Fri, 18 Aug 2023 18:40:01 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37IGdxHi142030;
-	Fri, 18 Aug 2023 18:39:59 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 37IGe1RS142060;
+	Fri, 18 Aug 2023 18:40:01 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Herve Codina <herve.codina@bootlin.com>,
@@ -61,14 +61,14 @@ To: Herve Codina <herve.codina@bootlin.com>,
         Nicolin Chen <nicoleotsuka@gmail.com>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH v4 22/28] dt-bindings: net: Add the Lantiq PEF2256 E1/T1/J1 framer
-Date: Fri, 18 Aug 2023 18:39:16 +0200
-Message-ID: <7c67d590b13a889466f53edf94192bca3bf6ceec.1692376361.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 28/28] net: wan: fsl_qmc_hdlc: Add framer support
+Date: Fri, 18 Aug 2023 18:39:22 +0200
+Message-ID: <f9cd14450de783ff18e701aeaafccb9183c66eb7.1692376361.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1692376360.git.christophe.leroy@csgroup.eu>
 References: <cover.1692376360.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1692376735; l=7698; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=YqyJgFwDkMtyydaXfdndsE6FWbduJz/zUoz/auJeyZM=; b=i0rJpTDTgxxCIgPg+BaVGddlx9j+XvU+EZDrNOTLWg5NAi+RfnesvI1l9GQcdoI5pJ9+5bcfd FYQ02wEOvBuBiXp4+hD7nHtbVFjApSWeyajERVHe+GN2ZvuHo/FAkBZ
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1692376736; l=9256; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=RvHkc8ehF1HbXgq/GBw8B5vNFJTvQ6oKhwEXtv8NNIw=; b=vp0Qf80njQjfZJHhjiV5Q7qXe01mNvlbvYUWfL6pHZ8p21BXYNG54AkpdCEhp03nMLQ5ebT0i qxJOqGJ65AxCfYn0SsM9VXCIa5OxWdJVVZtP3eYs0OD5ZZXqhtHeHXv
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -88,242 +88,367 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Herve Codina <herve.codina@bootlin.com>
 
-The Lantiq PEF2256 is a framer and line interface component designed to
-fulfill all required interfacing between an analog E1/T1/J1 line and the
-digital PCM system highway/H.100 bus.
+Add framer support in the fsl_qmc_hdlc driver in order to be able to
+signal carrier changes to the network stack based on the framer status
+Also use this framer to provide information related to the E1/T1 line
+interface on IF_GET_IFACE and configure the line interface according to
+IF_IFACE_{E1,T1} information.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- .../bindings/net/lantiq,pef2256.yaml          | 219 ++++++++++++++++++
- 1 file changed, 219 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
+ drivers/net/wan/fsl_qmc_hdlc.c | 239 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 235 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/lantiq,pef2256.yaml b/Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
-new file mode 100644
-index 000000000000..72f6777afa3a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
-@@ -0,0 +1,219 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/net/lantiq,pef2256.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/net/wan/fsl_qmc_hdlc.c b/drivers/net/wan/fsl_qmc_hdlc.c
+index 4b8cb5761fd1..3efed8fedb40 100644
+--- a/drivers/net/wan/fsl_qmc_hdlc.c
++++ b/drivers/net/wan/fsl_qmc_hdlc.c
+@@ -8,6 +8,7 @@
+  */
+ 
+ #include <linux/dma-mapping.h>
++#include <linux/framer/framer.h>
+ #include <linux/hdlc.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -27,6 +28,9 @@ struct qmc_hdlc {
+ 	struct device *dev;
+ 	struct qmc_chan *qmc_chan;
+ 	struct net_device *netdev;
++	struct framer *framer;
++	spinlock_t carrier_lock; /* Protect carrier detection */
++	struct notifier_block nb;
+ 	bool is_crc32;
+ 	spinlock_t tx_lock; /* Protect tx descriptors */
+ 	struct qmc_hdlc_desc tx_descs[8];
+@@ -40,6 +44,195 @@ static inline struct qmc_hdlc *netdev_to_qmc_hdlc(struct net_device *netdev)
+ 	return dev_to_hdlc(netdev)->priv;
+ }
+ 
++static int qmc_hdlc_framer_set_carrier(struct qmc_hdlc *qmc_hdlc)
++{
++	struct framer_status framer_status;
++	unsigned long flags;
++	int ret;
 +
-+title: Lantiq PEF2256
++	if (!qmc_hdlc->framer)
++		return 0;
 +
-+maintainers:
-+  - Herve Codina <herve.codina@bootlin.com>
++	spin_lock_irqsave(&qmc_hdlc->carrier_lock, flags);
 +
-+description:
-+  The Lantiq PEF2256, also known as Infineon PEF2256 or FALC56, is a framer and
-+  line interface component designed to fulfill all required interfacing between
-+  an analog E1/T1/J1 line and the digital PCM system highway/H.100 bus.
++	ret = framer_get_status(qmc_hdlc->framer, &framer_status);
++	if (ret) {
++		dev_err(qmc_hdlc->dev, "get framer status failed (%d)\n", ret);
++		goto end;
++	}
++	if (framer_status.link_is_on)
++		netif_carrier_on(qmc_hdlc->netdev);
++	else
++		netif_carrier_off(qmc_hdlc->netdev);
 +
-+properties:
-+  compatible:
-+    items:
-+      - const: lantiq,pef2256
++end:
++	spin_unlock_irqrestore(&qmc_hdlc->carrier_lock, flags);
++	return ret;
++}
 +
-+  reg:
-+    maxItems: 1
++static int qmc_hdlc_framer_notifier(struct notifier_block *nb, unsigned long action,
++				    void *data)
++{
++	struct qmc_hdlc *qmc_hdlc = container_of(nb, struct qmc_hdlc, nb);
++	int ret;
 +
-+  clocks:
-+    items:
-+      - description: Master clock
-+      - description: System Clock Receive
-+      - description: System Clock Transmit
++	if (action != FRAMER_EVENT_STATUS)
++		return NOTIFY_DONE;
 +
-+  clock-names:
-+    items:
-+      - const: mclk
-+      - const: sclkr
-+      - const: sclkx
++	ret = qmc_hdlc_framer_set_carrier(qmc_hdlc);
++	return ret ? NOTIFY_DONE : NOTIFY_OK;
++}
 +
-+  interrupts:
-+    maxItems: 1
++static int qmc_hdlc_framer_start(struct qmc_hdlc *qmc_hdlc)
++{
++	struct framer_status framer_status;
++	int ret;
 +
-+  reset-gpios:
-+    description:
-+      GPIO used to reset the device.
-+    maxItems: 1
++	if (!qmc_hdlc->framer)
++		return 0;
 +
-+  '#framer-cells':
-+    const: 0
++	ret = framer_power_on(qmc_hdlc->framer);
++	if (ret) {
++		dev_err(qmc_hdlc->dev, "framer power-on failed (%d)\n", ret);
++		return ret;
++	}
 +
-+  pinctrl:
-+    $ref: /schemas/pinctrl/pinctrl.yaml#
-+    additionalProperties: false
++	/* Be sure that get_status is supported */
++	ret = framer_get_status(qmc_hdlc->framer, &framer_status);
++	if (ret) {
++		dev_err(qmc_hdlc->dev, "get framer status failed (%d)\n", ret);
++		goto framer_power_off;
++	}
 +
-+    patternProperties:
-+      '-pins$':
-+        type: object
-+        $ref: /schemas/pinctrl/pincfg-node.yaml#
-+        additionalProperties: false
++	qmc_hdlc->nb.notifier_call = qmc_hdlc_framer_notifier;
++	ret = framer_notifier_register(qmc_hdlc->framer, &qmc_hdlc->nb);
++	if (ret) {
++		dev_err(qmc_hdlc->dev, "framer notifier register failed (%d)\n", ret);
++		goto framer_power_off;
++	}
 +
-+        properties:
-+          pins:
-+            enum: [ RPA, RPB, RPC, RPD, XPA, XPB, XPC, XPD ]
++	return 0;
 +
-+          function:
-+            enum: [ SYPR, RFM, RFMB, RSIGM, RSIG, DLR, FREEZE, RFSP, LOS,
-+                    SYPX, XFMS, XSIG, TCLK, XMFB, XSIGM, DLX, XCLK, XLT,
-+                    GPI, GPOH, GPOL ]
++framer_power_off:
++	framer_power_off(qmc_hdlc->framer);
++	return ret;
++}
 +
-+        required:
-+          - pins
-+          - function
++static void qmc_hdlc_framer_stop(struct qmc_hdlc *qmc_hdlc)
++{
++	if (!qmc_hdlc->framer)
++		return;
 +
-+  lantiq,data-rate-bps:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [2048000, 4096000, 8192000, 16384000]
-+    default: 2048000
-+    description:
-+      Data rate (bit per seconds) on the system highway.
++	framer_notifier_unregister(qmc_hdlc->framer, &qmc_hdlc->nb);
++	framer_power_off(qmc_hdlc->framer);
++}
 +
-+  lantiq,clock-falling-edge:
-+    $ref: /schemas/types.yaml#/definitions/flag
-+    description:
-+      Data is sent on falling edge of the clock (and received on the rising
-+      edge). If 'clock-falling-edge' is not present, data is sent on the
-+      rising edge (and received on the falling edge).
++static int qmc_hdlc_framer_set_iface(struct qmc_hdlc *qmc_hdlc, int if_iface,
++				     const te1_settings *te1)
++{
++	struct framer_config config;
++	int ret;
 +
-+  lantiq,channel-phase:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [0, 1, 2, 3, 4, 5, 6, 7]
-+    default: 0
-+    description:
-+      The pef2256 delivers a full frame (32 8bit time-slots in E1 and 24 8bit
-+      time-slots 8 8bit signaling in E1/J1) every 125us. This lead to a data
-+      rate of 2048000 bit/s. When lantiq,data-rate-bps is more than 2048000
-+      bit/s, the data (all 32 8bit) present in the frame are interleave with
-+      unused time-slots. The lantiq,channel-phase property allows to set the
-+      correct alignment of the interleave mechanism.
-+      For instance, suppose lantiq,data-rate-bps = 8192000 (ie 4*2048000), and
-+      lantiq,channel-phase = 2, the interleave schema with unused time-slots
-+      (nu) and used time-slots (XX) for TSi is
-+        nu nu XX nu nu nu XX nu nu nu XX nu
-+        <-- TSi --> <- TSi+1 -> <- TSi+2 ->
-+      With lantiq,data-rate-bps = 8192000, and lantiq,channel-phase = 1, the
-+      interleave schema is
-+        nu XX nu nu nu XX nu nu nu XX nu nu
-+        <-- TSi --> <- TSi+1 -> <- TSi+2 ->
-+      With lantiq,data-rate-bps = 4096000 (ie 2*2048000), and
-+      lantiq,channel-phase = 1, the interleave schema is
-+        nu    XX    nu    XX    nu    XX
-+        <-- TSi --> <- TSi+1 -> <- TSi+2 ->
++	if (!qmc_hdlc->framer)
++		return 0;
 +
-+patternProperties:
-+  '^codec(-([0-9]|[1-2][0-9]|3[0-1]))?$':
-+    type: object
-+    $ref: /schemas/sound/dai-common.yaml
-+    unevaluatedProperties: false
-+    description:
-+      Codec provided by the pef2256. This codec allows to use some of the PCM
-+      system highway time-slots as audio channels to transport audio data over
-+      the E1/T1/J1 lines.
-+      The time-slots used by the codec must be set and so, the properties
-+      'dai-tdm-slot-num', 'dai-tdm-slot-width', 'dai-tdm-slot-tx-mask' and
-+      'dai-tdm-slot-rx-mask' must be present in the sound card node for
-+      sub-nodes that involve the codec. The codec uses 8bit time-slots.
-+      'dai-tdm-tdm-slot-with' must be set to 8.
-+      The tx and rx masks define the pef2256 time-slots assigned to the codec.
++	ret = framer_get_config(qmc_hdlc->framer, &config);
++	if (ret)
++		return ret;
 +
-+    properties:
-+      compatible:
-+        const: lantiq,pef2256-codec
++	switch (if_iface) {
++	case IF_IFACE_E1:
++		config.iface = FRAMER_IFACE_E1;
++		break;
++	case IF_IFACE_T1:
++		config.iface = FRAMER_IFACE_T1;
++		break;
++	default:
++		return -EINVAL;
++	}
 +
-+      '#sound-dai-cells':
-+        const: 0
++	switch (te1->clock_type) {
++	case CLOCK_DEFAULT:
++		/* Keep current value */
++		break;
++	case CLOCK_EXT:
++		config.clock_type = FRAMER_CLOCK_EXT;
++		break;
++	case CLOCK_INT:
++		config.clock_type = FRAMER_CLOCK_INT;
++		break;
++	default:
++		return -EINVAL;
++	}
++	config.line_clock_rate = te1->clock_rate;
 +
-+    required:
-+      - compatible
-+      - '#sound-dai-cells'
++	return framer_set_config(qmc_hdlc->framer, &config);
++}
 +
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - clock-names
-+  - interrupts
-+  - '#framer-cells'
++static int qmc_hdlc_framer_get_iface(struct qmc_hdlc *qmc_hdlc, int *if_iface, te1_settings *te1)
++{
++	struct framer_config config;
++	int ret;
 +
-+additionalProperties: false
++	if (!qmc_hdlc->framer) {
++		*if_iface = IF_IFACE_E1;
++		return 0;
++	}
 +
-+examples:
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
++	ret = framer_get_config(qmc_hdlc->framer, &config);
++	if (ret)
++		return ret;
 +
-+    pef2256: framer@2000000 {
-+      compatible = "lantiq,pef2256";
-+      reg = <0x2000000 0x100>;
-+      interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
-+      interrupt-parent = <&intc>;
-+      clocks = <&clk_mclk>, <&clk_sclkr>, <&clk_sclkx>;
-+      clock-names = "mclk", "sclkr", "sclkx";
-+      reset-gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
-+      lantiq,data-rate-bps = <4096000>;
-+      #framer-cells = <0>;
++	switch (config.iface) {
++	case FRAMER_IFACE_E1:
++		*if_iface = IF_IFACE_E1;
++		break;
++	case FRAMER_IFACE_T1:
++		*if_iface = IF_IFACE_T1;
++		break;
++	}
 +
-+      pinctrl {
-+        pef2256_rpa_sypr: rpa-pins {
-+          pins = "RPA";
-+          function = "SYPR";
-+        };
-+        pef2256_xpa_sypx: xpa-pins {
-+          pins = "XPA";
-+          function = "SYPX";
-+        };
-+      };
++	if (!te1)
++		return 0; /* Only iface type requested */
 +
-+      pef2256_codec0: codec-0 {
-+        compatible = "lantiq,pef2256-codec";
-+        #sound-dai-cells = <0>;
-+        sound-name-prefix = "PEF2256_0";
-+      };
++	switch (config.clock_type) {
++	case FRAMER_CLOCK_EXT:
++		te1->clock_type = CLOCK_EXT;
++		break;
++	case FRAMER_CLOCK_INT:
++		te1->clock_type = CLOCK_INT;
++		break;
++	default:
++		return -EINVAL;
++	}
++	te1->clock_rate = config.line_clock_rate;
++	return 0;
++}
 +
-+      pef2256_codec1: codec-1 {
-+        compatible = "lantiq,pef2256-codec";
-+        #sound-dai-cells = <0>;
-+        sound-name-prefix = "PEF2256_1";
-+      };
-+    };
++static int qmc_hdlc_framer_init(struct qmc_hdlc *qmc_hdlc)
++{
++	int ret;
 +
-+    sound {
-+      compatible = "simple-audio-card";
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+      simple-audio-card,dai-link@0 { /* CPU DAI1 - pef2256 codec 1 */
-+        reg = <0>;
-+        cpu {
-+          sound-dai = <&cpu_dai1>;
-+        };
-+        codec {
-+          sound-dai = <&pef2256_codec0>;
-+          dai-tdm-slot-num = <4>;
-+          dai-tdm-slot-width = <8>;
-+          /* TS 1, 2, 3, 4 */
-+          dai-tdm-slot-tx-mask = <0 1 1 1 1>;
-+          dai-tdm-slot-rx-mask = <0 1 1 1 1>;
-+        };
-+      };
-+      simple-audio-card,dai-link@1 { /* CPU DAI2 - pef2256 codec 2 */
-+        reg = <1>;
-+        cpu {
-+          sound-dai = <&cpu_dai2>;
-+        };
-+        codec {
-+          sound-dai = <&pef2256_codec1>;
-+          dai-tdm-slot-num = <4>;
-+          dai-tdm-slot-width = <8>;
-+          /* TS 5, 6, 7, 8 */
-+          dai-tdm-slot-tx-mask = <0 0 0 0 0 1 1 1 1>;
-+          dai-tdm-slot-rx-mask = <0 0 0 0 0 1 1 1 1>;
-+        };
-+      };
-+    };
++	if (!qmc_hdlc->framer)
++		return 0;
++
++	ret = framer_init(qmc_hdlc->framer);
++	if (ret) {
++		dev_err(qmc_hdlc->dev, "framer init failed (%d)\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static void qmc_hdlc_framer_exit(struct qmc_hdlc *qmc_hdlc)
++{
++	if (!qmc_hdlc->framer)
++		return;
++
++	framer_exit(qmc_hdlc->framer);
++}
++
+ static int qmc_hdlc_recv_queue(struct qmc_hdlc *qmc_hdlc, struct qmc_hdlc_desc *desc, size_t size);
+ 
+ #define QMC_HDLC_RX_ERROR_FLAGS (QMC_RX_FLAG_HDLC_OVF | \
+@@ -313,6 +506,12 @@ static int qmc_hdlc_set_iface(struct qmc_hdlc *qmc_hdlc, int if_iface, const te1
+ 
+ 	qmc_hdlc->slot_map = te1->slot_map;
+ 
++	ret = qmc_hdlc_framer_set_iface(qmc_hdlc, if_iface, te1);
++	if (ret) {
++		dev_err(qmc_hdlc->dev, "framer set iface failed %d\n", ret);
++		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -320,11 +519,16 @@ static int qmc_hdlc_ioctl(struct net_device *netdev, struct if_settings *ifs)
+ {
+ 	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
+ 	te1_settings te1;
++	int ret;
+ 
+ 	switch (ifs->type) {
+ 	case IF_GET_IFACE:
+-		ifs->type = IF_IFACE_E1;
+ 		if (ifs->size < sizeof(te1)) {
++			/* Retrieve type only */
++			ret = qmc_hdlc_framer_get_iface(qmc_hdlc, &ifs->type, NULL);
++			if (ret)
++				return ret;
++
+ 			if (!ifs->size)
+ 				return 0; /* only type requested */
+ 
+@@ -334,6 +538,11 @@ static int qmc_hdlc_ioctl(struct net_device *netdev, struct if_settings *ifs)
+ 
+ 		memset(&te1, 0, sizeof(te1));
+ 
++		/* Retrieve info from framer */
++		ret = qmc_hdlc_framer_get_iface(qmc_hdlc, &ifs->type, &te1);
++		if (ret)
++			return ret;
++
+ 		/* Update slot_map */
+ 		te1.slot_map = qmc_hdlc->slot_map;
+ 
+@@ -367,10 +576,17 @@ static int qmc_hdlc_open(struct net_device *netdev)
+ 	int ret;
+ 	int i;
+ 
+-	ret = hdlc_open(netdev);
++	ret = qmc_hdlc_framer_start(qmc_hdlc);
+ 	if (ret)
+ 		return ret;
+ 
++	ret = hdlc_open(netdev);
++	if (ret)
++		goto framer_stop;
++
++	/* Update carrier */
++	qmc_hdlc_framer_set_carrier(qmc_hdlc);
++
+ 	chan_param.mode = QMC_HDLC;
+ 	/* HDLC_MAX_MRU + 4 for the CRC
+ 	 * HDLC_MAX_MRU + 4 + 8 for the CRC and some extraspace needed by the QMC
+@@ -420,6 +636,8 @@ static int qmc_hdlc_open(struct net_device *netdev)
+ 	}
+ hdlc_close:
+ 	hdlc_close(netdev);
++framer_stop:
++	qmc_hdlc_framer_stop(qmc_hdlc);
+ 	return ret;
+ }
+ 
+@@ -455,6 +673,7 @@ static int qmc_hdlc_close(struct net_device *netdev)
+ 	}
+ 
+ 	hdlc_close(netdev);
++	qmc_hdlc_framer_stop(qmc_hdlc);
+ 	return 0;
+ }
+ 
+@@ -503,6 +722,7 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
+ 
+ 	qmc_hdlc->dev = &pdev->dev;
+ 	spin_lock_init(&qmc_hdlc->tx_lock);
++	spin_lock_init(&qmc_hdlc->carrier_lock);
+ 
+ 	qmc_hdlc->qmc_chan = devm_qmc_chan_get_byphandle(qmc_hdlc->dev, np, "fsl,qmc-chan");
+ 	if (IS_ERR(qmc_hdlc->qmc_chan)) {
+@@ -531,10 +751,19 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	qmc_hdlc->framer = devm_framer_optional_get(qmc_hdlc->dev, "framer");
++	if (IS_ERR(qmc_hdlc->framer))
++		return PTR_ERR(qmc_hdlc->framer);
++
++	ret = qmc_hdlc_framer_init(qmc_hdlc);
++	if (ret)
++		return ret;
++
+ 	qmc_hdlc->netdev = alloc_hdlcdev(qmc_hdlc);
+ 	if (!qmc_hdlc->netdev) {
+ 		dev_err(qmc_hdlc->dev, "failed to alloc hdlc dev\n");
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto framer_exit;
+ 	}
+ 
+ 	hdlc = dev_to_hdlc(qmc_hdlc->netdev);
+@@ -550,11 +779,12 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, qmc_hdlc);
+-
+ 	return 0;
+ 
+ free_netdev:
+ 	free_netdev(qmc_hdlc->netdev);
++framer_exit:
++	qmc_hdlc_framer_exit(qmc_hdlc);
+ 	return ret;
+ }
+ 
+@@ -564,6 +794,7 @@ static int qmc_hdlc_remove(struct platform_device *pdev)
+ 
+ 	unregister_hdlc_device(qmc_hdlc->netdev);
+ 	free_netdev(qmc_hdlc->netdev);
++	qmc_hdlc_framer_exit(qmc_hdlc);
+ 
+ 	return 0;
+ }
 -- 
 2.41.0
 
