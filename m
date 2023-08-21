@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90B56EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 12:57:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8CEEE4996
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 13:00:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RTsv50wLBz3dsM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 22:57:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RTszQ10phz3dFr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 23:00:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RTstT2H1Gz2yh2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2023 22:56:33 +1000 (AEST)
-Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.56])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4RTsHg0Sf6z1L9Pp;
-	Mon, 21 Aug 2023 20:29:51 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RTsym6lKyz30BZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2023 23:00:15 +1000 (AEST)
+Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.55])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RTsF110wXztSVv;
+	Mon, 21 Aug 2023 20:27:33 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.31; Mon, 21 Aug 2023 20:31:16 +0800
+ 15.1.2507.31; Mon, 21 Aug 2023 20:31:14 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, <linux-mm@kvack.org>
-Subject: [PATCH rfc v2 04/10] s390: mm: use try_vma_locked_page_fault()
-Date: Mon, 21 Aug 2023 20:30:50 +0800
-Message-ID: <20230821123056.2109942-5-wangkefeng.wang@huawei.com>
+Subject: [PATCH rfc v2 02/10] arm64: mm: use try_vma_locked_page_fault()
+Date: Mon, 21 Aug 2023 20:30:48 +0800
+Message-ID: <20230821123056.2109942-3-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
 References: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
@@ -53,161 +53,153 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, loongarch@lists.li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use new try_vma_locked_page_fault() helper to simplify code.
-No functional change intended.
+Use new try_vma_locked_page_fault() helper to simplify code, also
+pass struct vmf to __do_page_fault() directly instead of each
+independent variable. No functional change intended.
 
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- arch/s390/mm/fault.c | 66 ++++++++++++++++++--------------------------
- 1 file changed, 27 insertions(+), 39 deletions(-)
+ arch/arm64/mm/fault.c | 60 ++++++++++++++++---------------------------
+ 1 file changed, 22 insertions(+), 38 deletions(-)
 
-diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
-index 099c4824dd8a..fbbdebde6ea7 100644
---- a/arch/s390/mm/fault.c
-+++ b/arch/s390/mm/fault.c
-@@ -357,16 +357,18 @@ static noinline void do_fault_error(struct pt_regs *regs, vm_fault_t fault)
- static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
+diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
+index 2e5d1e238af9..2b7a1e610b3e 100644
+--- a/arch/arm64/mm/fault.c
++++ b/arch/arm64/mm/fault.c
+@@ -498,9 +498,8 @@ static void do_bad_area(unsigned long far, unsigned long esr,
+ #define VM_FAULT_BADACCESS	((__force vm_fault_t)0x020000)
+ 
+ static vm_fault_t __do_page_fault(struct mm_struct *mm,
+-				  struct vm_area_struct *vma, unsigned long addr,
+-				  unsigned int mm_flags, unsigned long vm_flags,
+-				  struct pt_regs *regs)
++				  struct vm_area_struct *vma,
++				  struct vm_fault *vmf)
  {
- 	struct gmap *gmap;
--	struct task_struct *tsk;
--	struct mm_struct *mm;
- 	struct vm_area_struct *vma;
- 	enum fault_type type;
--	unsigned long address;
--	unsigned int flags;
-+	struct mm_struct *mm = current->mm;
-+	unsigned long address = get_fault_address(regs);
+ 	/*
+ 	 * Ok, we have a good vm_area for this memory access, so we can handle
+@@ -508,9 +507,9 @@ static vm_fault_t __do_page_fault(struct mm_struct *mm,
+ 	 * Check that the permissions on the VMA allow for the fault which
+ 	 * occurred.
+ 	 */
+-	if (!(vma->vm_flags & vm_flags))
++	if (!(vma->vm_flags & vmf->vm_flags))
+ 		return VM_FAULT_BADACCESS;
+-	return handle_mm_fault(vma, addr, mm_flags, regs);
++	return handle_mm_fault(vma, vmf->real_address, vmf->flags, vmf->regs);
+ }
+ 
+ static bool is_el0_instruction_abort(unsigned long esr)
+@@ -533,10 +532,12 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 	const struct fault_info *inf;
+ 	struct mm_struct *mm = current->mm;
  	vm_fault_t fault;
- 	bool is_write;
+-	unsigned long vm_flags;
+-	unsigned int mm_flags = FAULT_FLAG_DEFAULT;
+ 	unsigned long addr = untagged_addr(far);
+ 	struct vm_area_struct *vma;
 +	struct vm_fault vmf = {
-+		.real_address = address,
++		.real_address = addr,
 +		.flags = FAULT_FLAG_DEFAULT,
-+		.vm_flags = access,
 +	};
  
--	tsk = current;
- 	/*
- 	 * The instruction that caused the program check has
- 	 * been nullified. Don't signal single step via SIGTRAP.
-@@ -376,8 +378,6 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
- 	if (kprobe_page_fault(regs, 14))
+ 	if (kprobe_page_fault(regs, esr))
  		return 0;
+@@ -549,7 +550,7 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 		goto no_context;
  
--	mm = tsk->mm;
--	address = get_fault_address(regs);
- 	is_write = fault_is_write(regs);
+ 	if (user_mode(regs))
+-		mm_flags |= FAULT_FLAG_USER;
++		vmf.flags |= FAULT_FLAG_USER;
  
  	/*
-@@ -398,45 +398,33 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
+ 	 * vm_flags tells us what bits we must have in vma->vm_flags
+@@ -559,20 +560,20 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 	 */
+ 	if (is_el0_instruction_abort(esr)) {
+ 		/* It was exec fault */
+-		vm_flags = VM_EXEC;
+-		mm_flags |= FAULT_FLAG_INSTRUCTION;
++		vmf.vm_flags = VM_EXEC;
++		vmf.flags |= FAULT_FLAG_INSTRUCTION;
+ 	} else if (is_write_abort(esr)) {
+ 		/* It was write fault */
+-		vm_flags = VM_WRITE;
+-		mm_flags |= FAULT_FLAG_WRITE;
++		vmf.vm_flags = VM_WRITE;
++		vmf.flags |= FAULT_FLAG_WRITE;
+ 	} else {
+ 		/* It was read fault */
+-		vm_flags = VM_READ;
++		vmf.vm_flags = VM_READ;
+ 		/* Write implies read */
+-		vm_flags |= VM_WRITE;
++		vmf.vm_flags |= VM_WRITE;
+ 		/* If EPAN is absent then exec implies read */
+ 		if (!cpus_have_const_cap(ARM64_HAS_EPAN))
+-			vm_flags |= VM_EXEC;
++			vmf.vm_flags |= VM_EXEC;
  	}
  
- 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
--	flags = FAULT_FLAG_DEFAULT;
- 	if (user_mode(regs))
--		flags |= FAULT_FLAG_USER;
-+		vmf.flags |= FAULT_FLAG_USER;
- 	if (is_write)
--		access = VM_WRITE;
--	if (access == VM_WRITE)
--		flags |= FAULT_FLAG_WRITE;
--	if (!(flags & FAULT_FLAG_USER))
+ 	if (is_ttbr0_addr(addr) && is_el1_permission_fault(addr, esr, regs)) {
+@@ -587,26 +588,11 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 
+ 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, addr);
+ 
+-	if (!(mm_flags & FAULT_FLAG_USER))
 -		goto lock_mmap;
--	vma = lock_vma_under_rcu(mm, address);
+-
+-	vma = lock_vma_under_rcu(mm, addr);
 -	if (!vma)
 -		goto lock_mmap;
--	if (!(vma->vm_flags & access)) {
+-
+-	if (!(vma->vm_flags & vm_flags)) {
 -		vma_end_read(vma);
 -		goto lock_mmap;
 -	}
--	fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
+-	fault = handle_mm_fault(vma, addr, mm_flags | FAULT_FLAG_VMA_LOCK, regs);
 -	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
 -		vma_end_read(vma);
+-
 -	if (!(fault & VM_FAULT_RETRY)) {
 -		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
--		if (likely(!(fault & VM_FAULT_ERROR)))
--			fault = 0;
-+		vmf.vm_flags = VM_WRITE;
-+	if (vmf.vm_flags == VM_WRITE)
-+		vmf.flags |= FAULT_FLAG_WRITE;
-+
 +	fault = try_vma_locked_page_fault(&vmf);
 +	if (fault == VM_FAULT_NONE)
-+		goto lock_mm;
++		goto retry;
 +	if (!(fault & VM_FAULT_RETRY))
- 		goto out;
+ 		goto done;
 -	}
 -	count_vm_vma_lock_event(VMA_LOCK_RETRY);
-+
+ 
  	/* Quick path to respond to signals */
  	if (fault_signal_pending(fault, regs)) {
- 		fault = VM_FAULT_SIGNAL;
- 		goto out;
+@@ -614,8 +600,6 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 			goto no_context;
+ 		return 0;
  	}
 -lock_mmap:
-+
-+lock_mm:
- 	mmap_read_lock(mm);
- 
- 	gmap = NULL;
- 	if (IS_ENABLED(CONFIG_PGSTE) && type == GMAP_FAULT) {
- 		gmap = (struct gmap *) S390_lowcore.gmap;
- 		current->thread.gmap_addr = address;
--		current->thread.gmap_write_flag = !!(flags & FAULT_FLAG_WRITE);
-+		current->thread.gmap_write_flag = !!(vmf.flags & FAULT_FLAG_WRITE);
- 		current->thread.gmap_int_code = regs->int_code & 0xffff;
- 		address = __gmap_translate(gmap, address);
- 		if (address == -EFAULT) {
-@@ -444,7 +432,7 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
- 			goto out_up;
- 		}
- 		if (gmap->pfault_enabled)
--			flags |= FAULT_FLAG_RETRY_NOWAIT;
-+			vmf.flags |= FAULT_FLAG_RETRY_NOWAIT;
- 	}
- 
+-
  retry:
-@@ -466,7 +454,7 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
- 	 * we can handle it..
- 	 */
- 	fault = VM_FAULT_BADACCESS;
--	if (unlikely(!(vma->vm_flags & access)))
-+	if (unlikely(!(vma->vm_flags & vmf.vm_flags)))
- 		goto out_up;
- 
- 	/*
-@@ -474,10 +462,10 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
- 	 * make sure we exit gracefully rather than endlessly redo
- 	 * the fault.
- 	 */
--	fault = handle_mm_fault(vma, address, flags, regs);
-+	fault = handle_mm_fault(vma, address, vmf.flags, regs);
- 	if (fault_signal_pending(fault, regs)) {
- 		fault = VM_FAULT_SIGNAL;
--		if (flags & FAULT_FLAG_RETRY_NOWAIT)
-+		if (vmf.flags & FAULT_FLAG_RETRY_NOWAIT)
- 			goto out_up;
- 		goto out;
+ 	vma = lock_mm_and_find_vma(mm, addr, regs);
+ 	if (unlikely(!vma)) {
+@@ -623,7 +607,7 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 		goto done;
  	}
-@@ -497,7 +485,7 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
+ 
+-	fault = __do_page_fault(mm, vma, addr, mm_flags, vm_flags, regs);
++	fault = __do_page_fault(mm, vma, &vmf);
+ 
+ 	/* Quick path to respond to signals */
+ 	if (fault_signal_pending(fault, regs)) {
+@@ -637,7 +621,7 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 		return 0;
  
  	if (fault & VM_FAULT_RETRY) {
- 		if (IS_ENABLED(CONFIG_PGSTE) && gmap &&
--			(flags & FAULT_FLAG_RETRY_NOWAIT)) {
-+			(vmf.flags & FAULT_FLAG_RETRY_NOWAIT)) {
- 			/*
- 			 * FAULT_FLAG_RETRY_NOWAIT has been set, mmap_lock has
- 			 * not been released
-@@ -506,8 +494,8 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
- 			fault = VM_FAULT_PFAULT;
- 			goto out_up;
- 		}
--		flags &= ~FAULT_FLAG_RETRY_NOWAIT;
--		flags |= FAULT_FLAG_TRIED;
-+		vmf.flags &= ~FAULT_FLAG_RETRY_NOWAIT;
+-		mm_flags |= FAULT_FLAG_TRIED;
 +		vmf.flags |= FAULT_FLAG_TRIED;
- 		mmap_read_lock(mm);
  		goto retry;
  	}
+ 	mmap_read_unlock(mm);
 -- 
 2.27.0
 
