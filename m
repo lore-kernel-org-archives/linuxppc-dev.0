@@ -4,32 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F215EE4996
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 12:53:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8CE5EE4996
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 12:53:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RTspX6VWMz3cGY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 22:53:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RTsq33tYvz3dVt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 22:53:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RTsmv0yPsz3byH
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2023 22:51:43 +1000 (AEST)
-Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RTsFF3Rj6zNnTN;
-	Mon, 21 Aug 2023 20:27:45 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RTsnL4j0Nz3c1R
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2023 22:52:06 +1000 (AEST)
+Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.57])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RTsHY0pyfzrSqg;
+	Mon, 21 Aug 2023 20:29:45 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.31; Mon, 21 Aug 2023 20:31:17 +0800
+ 15.1.2507.31; Mon, 21 Aug 2023 20:31:11 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, <linux-mm@kvack.org>
-Subject: [PATCH rfc v2 05/10] powerpc: mm: use try_vma_locked_page_fault()
-Date: Mon, 21 Aug 2023 20:30:51 +0800
-Message-ID: <20230821123056.2109942-6-wangkefeng.wang@huawei.com>
+Subject: [PATCH rfc -next v2 00/10] mm: convert to generic VMA lock-based page fault
+Date: Mon, 21 Aug 2023 20:30:46 +0800
+Message-ID: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
-References: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -53,132 +51,53 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, loongarch@lists.li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use new try_vma_locked_page_fault() helper to simplify code.
-No functional change intended.
+Add a generic VMA lock-based page fault handler in mm core, and convert
+architectures to use it, which eliminate architectures's duplicated
+codes.
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- arch/powerpc/mm/fault.c | 66 ++++++++++++++++++++---------------------
- 1 file changed, 32 insertions(+), 34 deletions(-)
+With it, we can avoid multiple changes in architectures's code if we 
+add new feature or bugfix, in the end, enable this feature on ARM32
+and Loongarch.
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index b1723094d464..52f9546e020e 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -391,6 +391,22 @@ static int page_fault_is_bad(unsigned long err)
- #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_32S)
- #endif
- 
-+#ifdef CONFIG_PER_VMA_LOCK
-+bool arch_vma_access_error(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	int is_exec = TRAP(vmf->regs) == INTERRUPT_INST_STORAGE;
-+	int is_write = page_fault_is_write(vmf->fault_code);
-+
-+	if (unlikely(access_pkey_error(is_write, is_exec,
-+				(vmf->fault_code & DSISR_KEYFAULT), vma)))
-+		return true;
-+
-+	if (unlikely(access_error(is_write, is_exec, vma)))
-+		return true;
-+	return false;
-+}
-+#endif
-+
- /*
-  * For 600- and 800-family processors, the error_code parameter is DSISR
-  * for a data fault, SRR1 for an instruction fault.
-@@ -407,12 +423,18 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
- {
- 	struct vm_area_struct * vma;
- 	struct mm_struct *mm = current->mm;
--	unsigned int flags = FAULT_FLAG_DEFAULT;
- 	int is_exec = TRAP(regs) == INTERRUPT_INST_STORAGE;
- 	int is_user = user_mode(regs);
- 	int is_write = page_fault_is_write(error_code);
- 	vm_fault_t fault, major = 0;
- 	bool kprobe_fault = kprobe_page_fault(regs, 11);
-+	struct vm_fault vmf = {
-+		.real_address = address,
-+		.fault_code = error_code,
-+		.regs = regs,
-+		.flags = FAULT_FLAG_DEFAULT,
-+	};
-+
- 
- 	if (unlikely(debugger_fault_handler(regs) || kprobe_fault))
- 		return 0;
-@@ -463,45 +485,21 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * mmap_lock held
- 	 */
- 	if (is_user)
--		flags |= FAULT_FLAG_USER;
-+		vmf.flags |= FAULT_FLAG_USER;
- 	if (is_write)
--		flags |= FAULT_FLAG_WRITE;
-+		vmf.flags |= FAULT_FLAG_WRITE;
- 	if (is_exec)
--		flags |= FAULT_FLAG_INSTRUCTION;
-+		vmf.flags |= FAULT_FLAG_INSTRUCTION;
- 
--	if (!(flags & FAULT_FLAG_USER))
--		goto lock_mmap;
--
--	vma = lock_vma_under_rcu(mm, address);
--	if (!vma)
--		goto lock_mmap;
--
--	if (unlikely(access_pkey_error(is_write, is_exec,
--				       (error_code & DSISR_KEYFAULT), vma))) {
--		vma_end_read(vma);
--		goto lock_mmap;
--	}
--
--	if (unlikely(access_error(is_write, is_exec, vma))) {
--		vma_end_read(vma);
--		goto lock_mmap;
--	}
--
--	fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
--	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
--		vma_end_read(vma);
--
--	if (!(fault & VM_FAULT_RETRY)) {
--		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
-+	fault = try_vma_locked_page_fault(&vmf);
-+	if (fault == VM_FAULT_NONE)
-+		goto retry;
-+	if (!(fault & VM_FAULT_RETRY))
- 		goto done;
--	}
--	count_vm_vma_lock_event(VMA_LOCK_RETRY);
- 
- 	if (fault_signal_pending(fault, regs))
- 		return user_mode(regs) ? 0 : SIGBUS;
- 
--lock_mmap:
--
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -528,7 +526,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * make sure we exit gracefully rather than endlessly redo
- 	 * the fault.
- 	 */
--	fault = handle_mm_fault(vma, address, flags, regs);
-+	fault = handle_mm_fault(vma, address, vmf.flags, regs);
- 
- 	major |= fault & VM_FAULT_MAJOR;
- 
-@@ -544,7 +542,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * case.
- 	 */
- 	if (unlikely(fault & VM_FAULT_RETRY)) {
--		flags |= FAULT_FLAG_TRIED;
-+		vmf.flags |= FAULT_FLAG_TRIED;
- 		goto retry;
- 	}
- 
+This is based on next-20230817, only built test.
+
+v2: 
+- convert "int arch_vma_check_access()" to "bool arch_vma_access_error()"
+  still use __weak function for arch_vma_access_error(), which avoid to
+  declare access_error() in architecture's(x86/powerpc/riscv/loongarch)
+  headfile.
+- re-use struct vm_fault instead of adding new struct vm_locked_fault,
+  per Matthew Wilcox, add necessary pt_regs/fault error code/vm flags
+  into vm_fault since they could be used in arch_vma_access_error()
+- add special VM_FAULT_NONE and make try_vma_locked_page_fault() to
+  return vm_fault_t
+
+Kefeng Wang (10):
+  mm: add a generic VMA lock-based page fault handler
+  arm64: mm: use try_vma_locked_page_fault()
+  x86: mm: use try_vma_locked_page_fault()
+  s390: mm: use try_vma_locked_page_fault()
+  powerpc: mm: use try_vma_locked_page_fault()
+  riscv: mm: use try_vma_locked_page_fault()
+  ARM: mm: try VMA lock-based page fault handling first
+  loongarch: mm: cleanup __do_page_fault()
+  loongarch: mm: add access_error() helper
+  loongarch: mm: try VMA lock-based page fault handling first
+
+ arch/arm/Kconfig          |   1 +
+ arch/arm/mm/fault.c       |  35 ++++++++----
+ arch/arm64/mm/fault.c     |  60 ++++++++-------------
+ arch/loongarch/Kconfig    |   1 +
+ arch/loongarch/mm/fault.c | 111 ++++++++++++++++++++++----------------
+ arch/powerpc/mm/fault.c   |  66 +++++++++++------------
+ arch/riscv/mm/fault.c     |  58 +++++++++-----------
+ arch/s390/mm/fault.c      |  66 ++++++++++-------------
+ arch/x86/mm/fault.c       |  55 ++++++++-----------
+ include/linux/mm.h        |  17 ++++++
+ include/linux/mm_types.h  |   2 +
+ mm/memory.c               |  39 ++++++++++++++
+ 12 files changed, 278 insertions(+), 233 deletions(-)
+
 -- 
 2.27.0
 
