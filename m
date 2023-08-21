@@ -4,64 +4,119 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F684EE49A6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 19:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E956EE49A0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Aug 2023 19:59:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=RZl6OjBi;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=ru0g7N0Z;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RV3416W6Sz3c7Q
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 05:50:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RV3Gp3hRkz2yVR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 05:59:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=RZl6OjBi;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=ru0g7N0Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--ackerleytng.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3sr_jzaskdo0prztgatnicvvddvat.rdbaxcjmeer-stkaxhih.doapqh.dgv@flex--ackerleytng.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe13::603; helo=eur02-am0-obe.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR02-AM0-obe.outbound.protection.outlook.com (mail-am0eur02on20603.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe13::603])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RV32b23z5z3bv9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 05:49:10 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-d7493303b5cso2308895276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2023 12:49:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1692647347; x=1693252147;
-        h=cc:to:from:subject:message-id:mime-version:in-reply-to:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=cJZGEQtf1VL3HQEXak5eCjnl1mSbYK2LpINf2Y7mWuc=;
-        b=RZl6OjBiLyxrlN7m8yUzSzxx4s8l6y5XQtCqoL2DKa9CznCEyAG8OEzPqxiGWWfNJU
-         DP58nwM09rHRg7Se9vncvUgBs+EoatdB0oIHiYis/CY/mK8bpz5tBW/wF/N/V/N/8FcH
-         u/rMp5FZpxMI+ASR8w8FwZSKb5yUKy8z1UKPp14XAoTBk3vwb+9KvbuE4eIugJspN8RX
-         snR6LHbvF/g0TCDHMTgr7kn44jTj6A+c9BdOOfnITVAKCoxj2XXqVMiBuH5zs1EhWFJ1
-         LASBEZFLbEqzA+6VnHUNymrGUBh6X+GLDf47Xj3E2vNSql4sDsL+0xZSb2rnh4OE9Sf8
-         LLXQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692647347; x=1693252147;
-        h=cc:to:from:subject:message-id:mime-version:in-reply-to:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=cJZGEQtf1VL3HQEXak5eCjnl1mSbYK2LpINf2Y7mWuc=;
-        b=O3egJ4D0cvipy6+JqfzzMKWmAnx/d3Tbkd0FD0sSBiyODsIEut+V5AxmOk52MkKSSV
-         GtHpz3lqDdsXXSNA0hSq/c20cshrJ7HzYxI+kzrAGnNPph9Q93HBrCRRzUFE+p9P7UlF
-         Fb/BXhUNjFBevg67FyIdjIg46OkI90UK6YzitWidkQAUdayRZ9uABhVwVKLJEoH7xiDo
-         FCMreaj+byWDRTi8DIMMT6fNfHak/LGyU2ymY8Zg6wbovbsTca+vrLnad4gTczCccr+j
-         2VRClqkRHk7qj/G82Fl0FTlyUnYKerIXoPrkd1BcDZ9+lD96Wn/De21fc+qxyx7lO7+t
-         n7mw==
-X-Gm-Message-State: AOJu0YxT85Olc7a28Gh1vyzyAX/ivZVFxnGMUlRm31PqH9qGo2h0jKGe
-	m2LVIN/YDTGVAhUgNsaGT8GwX5DAWZv4kQ6yJw==
-X-Google-Smtp-Source: AGHT+IHM9bfoMlIQRP0Zhx06e/5qWh61CmNcgWIzhDyB//MY5jBFnNMVKsg1bGSAIpor6rGkYRANDK9cShM4uv9gKA==
-X-Received: from ackerleytng-ctop.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:13f8])
- (user=ackerleytng job=sendgmr) by 2002:a25:fc0d:0:b0:d07:e80c:412e with SMTP
- id v13-20020a25fc0d000000b00d07e80c412emr56346ybd.12.1692647346791; Mon, 21
- Aug 2023 12:49:06 -0700 (PDT)
-Date: Mon, 21 Aug 2023 19:49:05 +0000
-In-Reply-To: <ZN/4RjDsBLf0FB98@google.com> (message from Sean Christopherson
- on Fri, 18 Aug 2023 16:01:26 -0700)
-Mime-Version: 1.0
-Message-ID: <diqzwmxotbv2.fsf@ackerleytng-ctop.c.googlers.com>
-Subject: Re: [RFC PATCH v11 28/29] KVM: selftests: Add basic selftest for guest_memfd()
-From: Ackerley Tng <ackerleytng@google.com>
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RV3Fn0nxtz2xVn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 05:58:51 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=CbNz5YEedylV/dAjvzcDf+lesfJfwQyFHifk0Ed6VglTMTqy7i6mjjqsGlKBSYrlwd4Mig5peuFAPBIZ1KlHPlINcVfllpvVSGjU9Qaq0lI6wcPSra7mtwJwNhbCXiZ4TMea4aM4toyCX3C4+lmZ3xP642YZnrXPssv12F870HmcsCYBRrnZXuXwcJybXocw1UcQdxyT1dffeegEAJH6l0PMcVonEEojgkO7IiDZlAV8v9ZWMeRrJDdbXESIeZ+EMYRynZ0cKrn4uuDuSo6yowW5d67Q5ifoe015vHY5IH5nb97ivL/7iqTwNvmot/Fvs1eVRI9yrciSJLvt2yxLeg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=3Uw2dqzeVz3mOz3X5TWJk+1gvqybhGGEkQvrrY8vXHk=;
+ b=Q6YbmuzweNKMNqE6GEEGc3D7m7l1Ts5ZmsCRzUB0KMIF5am1/i7f4OXxRLcEbRc3MpiSOqkD8SxJ/6cY49j/vGd2gE4XURsTmY4IaplU27n2u8Apj+C5syrs/FI5TAyIta/sJU93OmEpqokljSkAqfRqNhhGnQv79pVNOD2J232zZp3Ud8A4eLOdZBOv9FI03KzPQezfvXcvJqA+n8866P49c3DpU6JOfVaWmr4qpxl25k7wn5Y16Ml/FwjQHPWGfzlQ/DeQttxE7rUI9R72xHEUSYR7mKQAJe236IVe1pAUA3mLmk6HLZ4ksQ4v+9l4B/c8e0wefV+ZYh0mOPH9sQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=3Uw2dqzeVz3mOz3X5TWJk+1gvqybhGGEkQvrrY8vXHk=;
+ b=ru0g7N0ZFuudho4dvhNNZ9B5VmEr6yKkrxxYArDLfQPN0nm2hXQMcAS6iwVW/QENtZZ8xOl+w9kqhZL9knJTT0hHC1QYskqM8YTPTPaMRPoZZL7DavslnxhKov8UFvrMJA2GYuyorVOk6eR1akxLuBbX7tA3aM90pdeGYg5IT8Q=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM0PR04MB6452.eurprd04.prod.outlook.com (2603:10a6:208:16d::21)
+ by PAXPR04MB8173.eurprd04.prod.outlook.com (2603:10a6:102:1ca::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.20; Mon, 21 Aug
+ 2023 19:58:28 +0000
+Received: from AM0PR04MB6452.eurprd04.prod.outlook.com
+ ([fe80::d4ed:20a0:8c0a:d9cf]) by AM0PR04MB6452.eurprd04.prod.outlook.com
+ ([fe80::d4ed:20a0:8c0a:d9cf%7]) with mapi id 15.20.6699.022; Mon, 21 Aug 2023
+ 19:58:28 +0000
+Date: Mon, 21 Aug 2023 22:58:23 +0300
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: Sean Anderson <sean.anderson@seco.com>
+Subject: Re: [PATCH v14 00/15] phy: Add support for Lynx 10G SerDes
+Message-ID: <20230821195823.ns55h3livxgol7fp@skbuf>
+References: <20230612163353.dwouatvqbuo6h4ea@skbuf>
+ <1dd01fe2-08a8-ec2f-1184-a58b2f55ba85@seco.com>
+ <20230613142754.wr5njtjo4tbloqwu@skbuf>
+ <20230811150826.urp2hzl3tahesrjx@skbuf>
+ <26623d0c-8a5a-614b-7df7-69214aaec524@seco.com>
+ <20230811163637.bs7a46juasjgnmf4@skbuf>
+ <20230821124952.mraqqp7pxlo56gkh@skbuf>
+ <a2e3fcad-9857-f1b3-8ada-efb2013a4bf5@seco.com>
+ <20230821181349.hls6pukp5d6rc5av@LXL00007.wbi.nxp.com>
+ <73d59dd2-88f0-3c1a-0de2-de2e050cba5a@seco.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <73d59dd2-88f0-3c1a-0de2-de2e050cba5a@seco.com>
+X-ClientProxiedBy: AM0PR06CA0108.eurprd06.prod.outlook.com
+ (2603:10a6:208:fa::49) To AM0PR04MB6452.eurprd04.prod.outlook.com
+ (2603:10a6:208:16d::21)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB6452:EE_|PAXPR04MB8173:EE_
+X-MS-Office365-Filtering-Correlation-Id: 11a6bbbd-784b-4ed9-98f1-08dba280fc52
+X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:  y1xxVW3z5kJ7ohSZmxlKkJZt7qj4mTZxmBSaxQZnxISI8z+5IN17b224EA4hH9NmiJBPuFaMR3I2FfkPWNqxU6N+2Z0JKCopw3u3lkI5LLYeogScZJwHoF6iWsqdkgoNfZab+m21h0DCVgfrqkzlwkzSVQHDN1GUIydj34okQ17Ixo+GefeZIfyDJDc/bZ+oWLl8WUsaH1UZ3sTI1huL4fboDKw1Z/SZqoOJ9OQWA00q1B5csOWjfl2RMJiGrmdyHQosu8yi8QjQhlgnHmYJiF4N5i2rjDHSFCINYZ+QeDaZn7TflXicTtvocUWGlpc6sD+fWtHeXK0sP9MPU0d02Dj08sDXGY8yLCDdv6PTsKN0sAUB9U76aFVM/hGoTc2hdmEM1XBdnej/eros+rbkXoQerT2sA0nPydig9/VcUPs66owUSQ3gmk/pFYN8hkXZTguAdhAMgHbSBbHfzIHBq7isgyoxENZRRtIfsVBCs51fEYWq0mL0XcYsHyDH6kNsPWHAJ+Ykvym2y7Rv4HqvbrEB+09xc2j7iwKDY2AC80w=
+X-Forefront-Antispam-Report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6452.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(7916004)(366004)(376002)(396003)(136003)(39860400002)(346002)(186009)(1800799009)(451199024)(1076003)(26005)(9686003)(6512007)(66899024)(86362001)(38100700002)(83380400001)(33716001)(41300700001)(316002)(8936002)(8676002)(66946007)(6916009)(66476007)(54906003)(66556008)(2906002)(44832011)(5660300002)(4326008)(7416002)(6666004)(6486002)(6506007)(966005)(478600001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:  =?us-ascii?Q?PXXVgPOj0v1x3m2uWPaunKNURW5jaRA+dutMJteJzhFPjkJrUR6cHKQGgvD0?=
+ =?us-ascii?Q?f6YLa5qzDAeydEJb6IwV3UinVcDJ6M2FinDWK9PHMzDCy0fSfhdPtJXH1sRd?=
+ =?us-ascii?Q?EJjUQO/o5P4yx3skSDrZivpPXrfC1hCIxwARaU9mriAeD1Iu0J4j1Yioda4E?=
+ =?us-ascii?Q?G9QpXkzHpDPVKQg2vLFPbotVw2osACQ42xpv0ajWId3T/ibG93+3xSYQ8FTI?=
+ =?us-ascii?Q?TwRg6Xudw3agOx7leEe4ISZjrE8jCJpJAzUGAf2S/vHildh4xs+L6kHnZ9R/?=
+ =?us-ascii?Q?nw6iSQey24d9QKTbxQK0PEKa7pTgdLWN+F1Np/K9UHc1b2Drv3vVQ2T5IUdv?=
+ =?us-ascii?Q?3/mO10PjnuRYWhI4AP/p6wicNq5FUK3xHh+3nb8NX67AUu2hqU1PQeHHPcfG?=
+ =?us-ascii?Q?rqAgxgjhGeR0fS1j6e9VtgEEQnoD96lio3A1nvjiEYrxN1xjIuvb6ek4JQtb?=
+ =?us-ascii?Q?LeSxQA0fHo7ZToAH46fClcUe9w/4oDZGXpHCl+C1JfWv4i13EvgYtB/L4NO+?=
+ =?us-ascii?Q?sQZ7RlFGuwHJr3ZQadgJSzrfapfAnFYtXpGfahOVk6bbRwYVyE3LWXNQHU1P?=
+ =?us-ascii?Q?x2QguDcrNN23UIQ+FTJOFGddKcaIUVdFO8dv3CIGowsL9jdOI6qWJP/DKg3V?=
+ =?us-ascii?Q?jPi/qvBAENoubges2GyD3FeK20cb6qUHt7IczMnXsuX9KhI6cW93eJTxpkEQ?=
+ =?us-ascii?Q?u/J0H1JJZB+/6llaCdRtcF+jPg9z+Qwtw1qeqN0CDbEdHeoICmEq62qjUmpk?=
+ =?us-ascii?Q?m5v2W/mYFYyLJp8IWoHVMjQSeH7KdcGL8894ixoSkxG8O8T8Q00pznCSNna7?=
+ =?us-ascii?Q?Iuvw+AKTFeMsg0GZG0dBMUnaG0iDsG3u03onIR1/Bq+J9fFIC1XLnUmFAtlw?=
+ =?us-ascii?Q?FTzHRbL4ODHxbqxX2hQ5hNkrjNk5RMA1kCgs4Vw96pWBwB0Y7WVPOKX2BB26?=
+ =?us-ascii?Q?J7ftV2ca9VL/L4zS/gyuLIB6sZAnKyy5BrD8o77MEsIdA2r/550dPniZB5Se?=
+ =?us-ascii?Q?UVomiV/1Dtp9UKDvVn143szZT8mlFoEdOUDIcJxmWOuMRxl5xNjSG7bmarQT?=
+ =?us-ascii?Q?1fmEnvXwsHbwnR7xA6+vmTVI7Ha4cEvxwTTZmgCygFZx7Tik8uPHGXRLwSXQ?=
+ =?us-ascii?Q?wCxDGQWkfLWU7CD9oSX1kJsQrZdHLj42a844Zq8j1laL/BW9Tqa5xwm1Q/7c?=
+ =?us-ascii?Q?EcLq8caD0TxHJf4fqHzfQdGTiZkwxMeYdsVDyQF4dvc7xqMXIAilFbgVlXnM?=
+ =?us-ascii?Q?VQhyZ2pNox+/1KVjSJKszTXua7SaXE6C39L4zgWbNfn1x2FiDYcXJTDGkr/Z?=
+ =?us-ascii?Q?62+ZyuKfjn0TBHcVzz6mC+cYbScjKvh3h+/ooLxG/ft7NU+q1BXUCYlpomST?=
+ =?us-ascii?Q?ygzg/g6/35oKn+ZgiERI+TCbni5mZ21eX09qRLnGCjlZ6pK55i2nIH4LfUK1?=
+ =?us-ascii?Q?KwUp8QNIREGf9jUUwwvs/9fClsllCIf++rcM61OQfX3Q2qPEAIsVrMnSuQBm?=
+ =?us-ascii?Q?1aC3v5pAj9T0Y8ufC0+ZI5Tw3CfG/wy9LIsVDnBGozBzHdpsr5rY+LL3JQdW?=
+ =?us-ascii?Q?zVxqmHLutUxFJzhgVSH6a+sJ9kxXC3FIq+AOz28G/lKbEJUcfnZHlc7Q1yLx?=
+ =?us-ascii?Q?3g=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 11a6bbbd-784b-4ed9-98f1-08dba280fc52
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6452.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2023 19:58:27.7888
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 9dbcWDFzHB+CsIrdjgF5uvkQWBEYcGDwncaG2Y7ijQsZ+WvxGjsM/EMYwPgD4dfgtAI8+A3JQ6j9zBCNNPCqcQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8173
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,30 +128,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, david@redhat.com, yu.c.zhang@linux.intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org, chao.p.peng@linux.intel.com, linux-riscv@lists.infradead.org, isaku.yamahata@gmail.com, paul@paul-moore.com, maz@kernel.org, chenhuacai@kernel.org, jmorris@namei.org, willy@infradead.org, wei.w.wang@intel.com, tabba@google.com, jarkko@kernel.org, serge@hallyn.com, mail@maciej.szmigiero.name, aou@eecs.berkeley.edu, vbabka@suse.cz, michael.roth@amd.com, paul.walmsley@sifive.com, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, qperret@google.com, liam.merwick@oracle.com, linux-mips@vger.kernel.org, oliver.upton@linux.dev, linux-security-module@vger.kernel.org, palmer@dabbelt.com, kvm-riscv@lists.infradead.org, anup@brainfault.org, linux-fsdevel@vger.kernel.org, pbonzini@redhat.com, akpm@linux-foundation.org, vannapurve@google.com, linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
+Cc: =?utf-8?B?RmVybuKUnMOtbmRleg==?= Rojas <noltari@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Michael Turquette <mturquette@baylibre.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Jonas Gorski <jonas.gorski@gmail.com>, linux-phy@lists.infradead.org, linux-clk@vger.kernel.org, Kishon Vijay Abraham I <kishon@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, linux-doc@vger.kernel.org, Camelia Alexandra Groza <camelia.groza@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@kernel.org>, linuxppc-dev@lists.ozlabs.org, Li Yang <leoyang.li@nxp.com>, Vinod Koul <vkoul@kernel.org>, Shawn Guo <shawnguo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sean Christopherson <seanjc@google.com> writes:
+On Mon, Aug 21, 2023 at 02:46:53PM -0400, Sean Anderson wrote:
+> After further review, it seems the reason 28g can get away without this
+> is because there's a one-to-one mapping between protocol controllers and
+> lanes. Unfortunately, that regularity is not present for 10g.
+> 
+> --Sean
 
-> On Mon, Aug 07, 2023, Ackerley Tng wrote:
->> Sean Christopherson <seanjc@google.com> writes:
->> 
->> > Add a selftest to verify the basic functionality of guest_memfd():
->> >
->> > <snip>
->> 
->> Here's one more test:
->
-> First off, thank you!  I greatly appreciate all the selftests work you (and
-> others!) have been doing.
->
-> For v2, can you please post a standalone patch?  My workflow barfs on unrelated,
-> inlined patches.  I'm guessing I can get b4 to play nice, but it's easier to just
-> yell at people :-)
->
+There are some things I saw in your phy-fsl-lynx-10g.c driver and device
+tree bindings that I don't understand (the concept of lane groups), and
+I'm not sure if they're related with what you're saying here, so if you
+could elaborate a bit more (ideally with an example) on the one-to-one
+mapping and the specific problems it causes, it would be great.
 
-Here's a standalone patch :)
-https://lore.kernel.org/lkml/20230821194411.2165757-1-ackerleytng@google.com/
+I may be off with my understanding of the regularity you are talking about,
+but the LX2160 (and Lynx 28G block) also has multi-lane protocols like 40G,
+100G, assuming that's what you are talking about. I haven't started yet
+working on those for the mtip_backplane driver, but I'm not currently
+seeing a problem with the architecture where a phy_device represents a
+single lane that's part of a multi-lane port, and not an entire group.
 
-> <snip>
+In my imagination, there are 2 cases:
+- all 4 lanes are managed by the single dpaa2-mac consumer (which has 4
+  phandles, and iterates over them with a "for" loop)
+- each of the 4 lanes is managed by the respective backplane AN/LT core,
+  and thus, there's one phandle to each lane
+
+I sketched some dt-bindings for the second case here, so I guess it must
+be the first scenario that's somehow problematic?
+https://patchwork.kernel.org/project/netdevbpf/patch/20230817150644.3605105-9-vladimir.oltean@nxp.com/
