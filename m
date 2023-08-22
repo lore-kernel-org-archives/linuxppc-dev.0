@@ -4,68 +4,128 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1339CEE4996
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 02:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5813EEE49A8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 09:40:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Q0qcwIyC;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=F3Ok798y;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVDRQ2fWCz3c2B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 12:52:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVPTF01l9z3c2H
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 19:40:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=Q0qcwIyC;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=F3Ok798y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e18::619; helo=fra01-pr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from FRA01-PR2-obe.outbound.protection.outlook.com (mail-pr2fra01on20619.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e18::619])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVDQP2140z2yD4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 12:51:56 +1000 (AEST)
-Received: by mail-yb1-xb2a.google.com with SMTP id 3f1490d57ef6-d74a012e613so2700701276.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2023 19:51:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1692672710; x=1693277510;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=BD58/XthciO0sTCaxjR+dsg5ZYNZ/J3nmIWihGISY24=;
-        b=Q0qcwIyCJhThDsq21LrOEUM4nzcH1AytzGvc8q68ncl1mJ+TCbnsbsnqgXNKXHlnfV
-         DW1P2aIRbJwxPz4W/lCAKObkYGQ21iOYfNp3rzyR5qwadhIk7ILSWaIULUS2h8WGw6a9
-         rlXKAzIVrjqasXr8byUeVrdd0PyWBbTaDz736M7iFsTTtsTwOgxmkEgo8Y8npLfzZ6le
-         vZjEl3gNCkWohBuLVPgBLHLBjkVeDc1/PGmPEP/IZ9tWMePJ1s8nI8wLexg9la++INv1
-         iFWlafywvOUU+emzq1kdkkES4j9YqSSYxNCUuV1wQo77eM3kjveaJMseJ2onnShSco3s
-         XhRw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692672710; x=1693277510;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=BD58/XthciO0sTCaxjR+dsg5ZYNZ/J3nmIWihGISY24=;
-        b=CAW2JFY/Lc7UlyBEkpC9kCzfCyezGtKW7Kj8pLBRMTqqki17Ly5Im6Sl6YD9Gs0Xpv
-         evpYuQxqIX1XEIFHdSuSk5T4JE+3xulhJRD+YJpnFZQSstkTd/7Wdzdo8LGmekOYzhIe
-         lX3+QlsP0XMislC4YG8A1ftixDfCmmr77wQrcTNyPQg7QR19l9G7DyBfRF8HH5rcf4vX
-         iHVYfwgzXCnnfHRjc0Kt1EriTxPO0wv6r26KBl6iSlDzpvRmvKv2F758ZEc1tpcWDSUv
-         ltQ5zEKvWVWv1LJynbEUMT+xX8IQbuYC0qBbBDpa0aziu+y38DL3tCdvYdZS9c1WqbKd
-         pjUw==
-X-Gm-Message-State: AOJu0YxxiEzwYfb34uk4VcKr+2+0rm78GzP0PwZ3QAnXZnpl3TXXDF4L
-	xWclsz0zjYFY8elQFR0Af43m0g==
-X-Google-Smtp-Source: AGHT+IEEalFENjTwS6ybo+mX3CovLc5hqPqdTe+cS18Ojl4MmAmt12MBrpQ2mhlWRcpCfqQmCFJDnQ==
-X-Received: by 2002:a05:6902:566:b0:d0f:dc7d:ff19 with SMTP id a6-20020a056902056600b00d0fdc7dff19mr6752743ybt.9.1692672710361;
-        Mon, 21 Aug 2023 19:51:50 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id n82-20020a25da55000000b00d5d4bae6fdfsm2146761ybf.30.2023.08.21.19.51.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Aug 2023 19:51:49 -0700 (PDT)
-Date: Mon, 21 Aug 2023 19:51:38 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Jann Horn <jannh@google.com>
-Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
- versus uffd
-In-Reply-To: <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com>
-Message-ID: <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com>
-References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com> <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVPSF1fx5z2ym1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 19:39:07 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=SRHu++Yo9T4PAqMlaY+BxKXD66i9vAhVIRIlkSQI86IqLKUKSSlOZsC5+jjqOX+m1tGokDz+GL67kQQSntbdghIgQVaUrCIGyf/6qAPKPvXxwf3dbMrHpcrb72mWCtpnjuw83gb98T4igARxqiNoz71XknQOwvesDHw4oP0E853Qnud8wJPOOIFqqV0XAP+C/J73A8gu1rcOhYG/h2UixNuKRlCqX6sUrIkK5vP8/ogez1TQ8vg1VOChGSNtGCA7A59SgmzbzPNIJ7Dcza6oc5XJ7lFL6wYvnRulgIneFrlbviNTFiTkvu8JnQUlhfItS2JzZwOFqRUAb8OyLnTSRA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=wH/l2CNgTa9S+IgIgIgcvnAAZSGrVh8OhHz2mTSqaak=;
+ b=RxTVXtO3KEA83kt1YlujgSzDo9BK9ZL5DXqwOqGzQRmOFS6uiEADUV4/3cAxFAUDCnfZAIlCnGvytes7uuEaJS5fGhheAw85Fj4BoyFDHiHNE8jwhRwmYRwsFV+NBl+w92Fa/7RuKiHMN7NQFUeb1GnvhYIelyA1vwqhRVoYSccrUY21UtCo9hPHMckc/BcmmipbJ6aOse6v33r1MiKhP5PF1afbIkxQCfOHRJe0AvNPJkwh0fLj84DM5YbcqhxeWb9Hmhg25remSCgkF1Pv2vhuqSpkOeCDwA8sIFc1Rbk24Br1LBP43kwTioqHU2DORFkcJehXnydkhFRCiNUOlA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=wH/l2CNgTa9S+IgIgIgcvnAAZSGrVh8OhHz2mTSqaak=;
+ b=F3Ok798yndOm8gSvUK9lN7G665eBeTho2+ITiKWkPJsLeJ3YUoqOYBPwj/FKOA6fKZXOCCTAvLsDN8gC3OVNnN8Mcu2bzozhq8E/yjWPIq1Mubj817ejGIyBecfgLTuvOQ3mBdckNGYyz52QdXlGW8rt3Tlruzl74MsDRAvroZkCgRCZppMGUvJ879F2tn0X4V7dbAPA64APUKxJGFAmBTOZMrhsDKhUf9slxI6FfF898PtW2uOTBZxiKmPST3VZNNuA7BCLCtpH6QT/Uwmhxc6y6dS9aKlfFoin9I1CHJ7XzevUkeW29cshPuIcIpkIuItrB695Ay2GzhU7kYFU4A==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PAZP264MB3167.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1f5::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.24; Tue, 22 Aug
+ 2023 09:38:47 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::2820:d3a6:1cdf:c60e]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::2820:d3a6:1cdf:c60e%7]) with mapi id 15.20.6699.022; Tue, 22 Aug 2023
+ 09:38:47 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Kefeng Wang <wangkefeng.wang@huawei.com>, Andrew Morton
+	<akpm@linux-foundation.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH rfc v2 05/10] powerpc: mm: use try_vma_locked_page_fault()
+Thread-Topic: [PATCH rfc v2 05/10] powerpc: mm: use
+ try_vma_locked_page_fault()
+Thread-Index: AQHZ1Ctmq7Potl0WZU+a4ok98ufykK/2EI0A
+Date: Tue, 22 Aug 2023 09:38:47 +0000
+Message-ID: <7eeed961-c2c0-2aeb-ff8c-3717de09d605@csgroup.eu>
+References: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
+ <20230821123056.2109942-6-wangkefeng.wang@huawei.com>
+In-Reply-To: <20230821123056.2109942-6-wangkefeng.wang@huawei.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|PAZP264MB3167:EE_
+x-ms-office365-filtering-correlation-id: 49cabab4-84af-4e15-1d96-08dba2f395ce
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  cTGBMk5ixqVUvzj5NO3dhjPSyk8HDb3vdX6OgNpuL+SIi7uFCNEWM6BHcWhhGz/l0890lxMOABdioLRPEqznsubV3HN0OWbg4RFZ+ga2EqmbYnWIOjLw+7doSZxF7W1BFAuXVDOWLQFZ/2rYdcMofAzHlNmjtUWc/nmwOuKvb+pThcueitu/naoT2L+RVGQ2r9b3lzWHkTVaDBVjCmfGlfHqq5OB0TZA8OYKeafK+tQJwqVCDuyhIt7TVmh0hJcbJF0RwegdZkFxcM9neFAwBfAxSAiaMZVPv4BfVcyL46HxwZKvnW/lfJsQ34IIKP450SKLUEo17Zcol4FaAV+eOYtLEhpD4JF3MP6FkbqDC9VP2viGfj594AKhoG+XKWHYRT3DqBYCs0h+Z8JJ5oBpKH700PQtPfYtQcT/e9eGzyP9thnZGmsJUh8EpTVT1VCUuExqcKKMN/jvnoQfYJUaJrQyDSaR1H7NP0cERJwm5T29YW9sdHAFSRkIXiAMEXQPWxZNxtJQNcNhH8ul0lY+s8prJ7KvpQk6/8MMrf6qeeWvCiDH1kVv0ox9leMBFOJdMIEFQUj5ZKPrlOf7D1iCDzgJkGMwzsQ2+xe8IML65tyaAT3suCnH1tDsNavD4RaRwWy1T1wL5saxZ5Yo9n1tD7gr4v4OIiQnF2RK1ebBDYCsHmY9DVUJmPlCcgapupNT
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(39850400004)(366004)(346002)(376002)(136003)(396003)(451199024)(1800799009)(186009)(2906002)(66574015)(7416002)(7406005)(38070700005)(38100700002)(6506007)(6486002)(83380400001)(5660300002)(44832011)(26005)(86362001)(31686004)(31696002)(8676002)(2616005)(8936002)(4326008)(316002)(6512007)(66946007)(64756008)(66446008)(76116006)(54906003)(66556008)(66476007)(91956017)(110136005)(66899024)(478600001)(122000001)(71200400001)(36756003)(41300700001)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?Rms4NURHZUJrZkhPSnJMTHN6S3lqSHBXRFJ2bkhqNnNGRmMvOThTSkNQZmRE?=
+ =?utf-8?B?WlRtVXVzbm1Sb3ZOeTBqS2hiRHhmYVE3ZHZGWkpnZDNCRHlldnRtbzNFWTli?=
+ =?utf-8?B?RURWQUE1MW95T2RsbitPS3hJSmpzWkVIL1BVRVBZcWJJdENjTE0xYW1WcjNw?=
+ =?utf-8?B?d3ZzN1cwZ1pBN05xS05landHSzVpdGpnd2M4eWxLMkNmQU5UdDNadmE2Y3dJ?=
+ =?utf-8?B?S0V5TTNQeVNkWUtGd1ZURHJTdld5MG5CRXZKQ09nekNnaUlNbzJDWkJETno0?=
+ =?utf-8?B?cG5wQ1Z6ZTJ5TS9mK1JlVUF4cHZhdzRFa0RWeUNmeDVqcmhXQndCdnlTdW44?=
+ =?utf-8?B?dDk5QUlScHdFMkZFV1hrK1lMNVhiN2JPMHVaZ05hZjE5Z2p0SWkwdk91QXJm?=
+ =?utf-8?B?VFN3SGh1R0d1djNlSWxEdzNQR05jdW54alpHYlVpVXFiQlAzdmZUbnZVc2FI?=
+ =?utf-8?B?M1pVZ0hYMzk0cXhuaElkanRwWEg5UGZ6THlLeGY3Z1Nqb3Fjc1AvSHdxK2tk?=
+ =?utf-8?B?cytuSEUzM2ZNQVdUbWt1MFgvcTMvSkx2d0dMY2hsdlROOGpiWEFWME4xRXNs?=
+ =?utf-8?B?ekRacnc4Q3J5VWNYREhoODdaVXU1NmFCbGRXV3IxTWp0dnJpVlh2V3J3cHRL?=
+ =?utf-8?B?UGtKWUxpc2l5aS9rdkNPS2MyNEJ2bWEvNzFBV0xhemVlM0l5bU5MT0NPTUxY?=
+ =?utf-8?B?TC9Oc3I3eGpyMXNLVXA2TVYzdEhnWW5nRVZaemphbklKZXBBdzc4ejhjekZ3?=
+ =?utf-8?B?Sm5ka3B2cXhXdFdBSmtyYit2c2JVellTZnY5S3JqdzA4S1htQzlGcVY1KzVt?=
+ =?utf-8?B?ZDQvcWpJNm1adlNReWNpTXJSaE90aXJoQlZ4ZU9KTGNDZytxYlRzVklyczNy?=
+ =?utf-8?B?UTRhNlZnRjVvdm9FVi81dGoyQ3NleGtFRExqQ3Q5VGJSaE5jd2JLMk52Zzh3?=
+ =?utf-8?B?cldkdDh1OTNJakl4VGNHcVZaY053U24yVXF0L1d2eU03a2QzNzBQZldEczJW?=
+ =?utf-8?B?d2MzdkZTZzYrKzZpdUc0NlBpaUJ4TUUzaVYzeDV5dGlkeXR2dTVqMUhJVW92?=
+ =?utf-8?B?QkdxeXJ5VThoL2xzWnoyc3Z3SG5RU3JJYXBwcTVzQ3FjOXJLNDV5VUoyWHBM?=
+ =?utf-8?B?Y0hBVzJmOVZJeFN1SVAwaU0vSFhUeW1naHRyMVZBWGJ0NlA5d1J3WjkxbWpr?=
+ =?utf-8?B?QUZMUGtpNm11S09qMFJHdkE1U0hmdkJINHNNVlUwdk1XQjhWa1B1Q1d5NitO?=
+ =?utf-8?B?bTlsQ1ZWNkZHS0pRa2RBVW5WYXZaZFVOMmVmdzNZbTBiSTA1UVZZbUNHZFFv?=
+ =?utf-8?B?M3BzQlVqSytMV28zVDBnT2NHczVCajFKcEdpVXU2U0NTTlpkWjEwanlaNXd6?=
+ =?utf-8?B?NmswZkFPeEJaTVNsRldiaHRaQllwQS9ZNG16S0c4aUNMS2ZpQ0Ztc3hRYkQ1?=
+ =?utf-8?B?cE9CMFVrL3loV0U2bnZCOGM3bmdaVWVIcVhicXBmWkdTV2w5SXBGZDR4Q0Jx?=
+ =?utf-8?B?ZUFldTZxVklWM1p4T1hTQnl0OHA5V2RPQ0Fwb0pTNUJjOTkwMlVwKzVlRHNJ?=
+ =?utf-8?B?TkRMOGV3TEdjQWlrd1NISVYxTG1tS25rS25OOXlHZkpxRGFTR1Qybm15L0ZC?=
+ =?utf-8?B?NnlGN1ZSbFRzMXpRL04wbFRpLzM0Q1hpNHV2eGpMcHZSaU1FcGdUb2ZhU3o2?=
+ =?utf-8?B?UFZFSU9rSkhNK3VBYWdBTmtuNDROOXFaRk4wQUU0NzFHd1FySGU4V3FGVWlM?=
+ =?utf-8?B?Y2FOZHUzMUdKbkpLeDd5ZmRmTE1wZ2dWNEorcjFiOVhGeFVzNjI5QUZKVTVZ?=
+ =?utf-8?B?MnIvclFBN2g3Z0lKWXZFbXBZRDJ0VC95K2lnNHRleG1rNnJ5Nlg3d3lEZ1hw?=
+ =?utf-8?B?QnE0dUE5alM5bklBODNlVWR5MElpcHV6K28zQWhmWlFtVHRwcjBTZmIraGdT?=
+ =?utf-8?B?YlBsREJpK2c0K3VFSXJNOWM3ZGRWTzMwWDJlT1JQQjlwaHN2NzUxVFdqSTBU?=
+ =?utf-8?B?Q0NLMTZZaDFjakVTQVFGTWEyMWNYcm83U3NYdTkvWUt0MG5zNDRpVHdOMWQv?=
+ =?utf-8?B?dTRTWit2Q0F1TXYrWDRVYzc3bHZaOWdVU2NVTVNRNTNtVTZhOE8wLzI5M2Ra?=
+ =?utf-8?B?UUJGNVRZRHhWWVZNM0s5ZFNvU3l4RUlkSkxEWVFIcmJnZHVUUDZKR3NtbCt1?=
+ =?utf-8?B?enc9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <FE7D90B0D7BC114ABCA6BD087463CBE9@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="-1463760895-2088143463-1692672709=:1872"
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 49cabab4-84af-4e15-1d96-08dba2f395ce
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Aug 2023 09:38:47.6502
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: nYc7eufCQHFv9LswbK/kooR8GGP2tEM50FDy8P60bSEDk8sH0paqB6B4SoHltRB4T4fgyVuqaaRiKiVgsl75ng8mOAivB2cTt4dO3RoaGXI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAZP264MB3167
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,204 +137,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ib
- m.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@or
- acle.com>
+Cc: "x86@kernel.org" <x86@kernel.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, "H . Peter Anvin" <hpa@zytor.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "willy@infradead.org" <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, "surenb@google.com" <surenb@googl
+ e.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463760895-2088143463-1692672709=:1872
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-On Mon, 21 Aug 2023, Jann Horn wrote:
-> On Mon, Aug 21, 2023 at 9:51=E2=80=AFPM Hugh Dickins <hughd@google.com> w=
-rote:
-> > Jann Horn demonstrated how userfaultfd ioctl UFFDIO_COPY into a private
-> > shmem mapping can add valid PTEs to page table collapse_pte_mapped_thp(=
-)
-> > thought it had emptied: page lock on the huge page is enough to protect
-> > against WP faults (which find the PTE has been cleared), but not enough
-> > to protect against userfaultfd.  "BUG: Bad rss-counter state" followed.
-> >
-> > retract_page_tables() protects against this by checking !vma->anon_vma;
-> > but we know that MADV_COLLAPSE needs to be able to work on private shme=
-m
-> > mappings, even those with an anon_vma prepared for another part of the
-> > mapping; and we know that MADV_COLLAPSE needs to work on shared shmem
-> > mappings which are userfaultfd_armed().  Whether it needs to work on
-> > private shmem mappings which are userfaultfd_armed(), I'm not so sure:
-> > but assume that it does.
->=20
-> I think we couldn't rely on anon_vma here anyway, since holding the
-> mmap_lock in read mode doesn't prevent concurrent creation of an
-> anon_vma?
-
-We would have had to do the same as in retract_page_tables() (which
-doesn't even have mmap_lock for read): recheck !vma->anon_vma after
-finally acquiring ptlock.  But the !anon_vma limitation is certainly
-not acceptable here anyway.
-
->=20
-> > Just for this case, take the pmd_lock() two steps earlier: not because
-> > it gives any protection against this case itself, but because ptlock
-> > nests inside it, and it's the dropping of ptlock which let the bug in.
-> > In other cases, continue to minimize the pmd_lock() hold time.
->=20
-> Special-casing userfaultfd like this makes me a bit uncomfortable; but
-> I also can't find anything other than userfaultfd that would insert
-> pages into regions that are khugepaged-compatible, so I guess this
-> works?
-
-I'm as sure as I can be that it's solely because userfaultfd breaks
-the usual rules here (and in fairness, IIRC Andrea did ask my permission
-before making it behave that way on shmem, COWing without a source page).
-
-Perhaps something else will want that same behaviour in future (it's
-tempting, but difficult to guarantee correctness); for now, it is just
-userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
-expecting uffd to add more such exceptional modes in future).
-
->=20
-> I guess an alternative would be to use a spin_trylock() instead of the
-> current pmd_lock(), and if that fails, temporarily drop the page table
-> lock and then restart from step 2 with both locks held - and at that
-> point the page table scan should be fast since we expect it to usually
-> be empty.
-
-That's certainly a good idea, if collapse on userfaultfd_armed private
-is anything of a common case (I doubt, but I don't know).  It may be a
-better idea anyway (saving a drop and retake of ptlock).
-
-I gave it a try, expecting to end up with something that would lead
-me to say "I tried it, but it didn't work out well"; but actually it
-looks okay to me.  I wouldn't say I prefer it, but it seems reasonable,
-and no more complicated (as Peter rightly observes) than the original.
-
-It's up to you and Peter, and whoever has strong feelings about it,
-to choose between them: I don't mind (but I shall be sad if someone
-demands that I indent that comment deeper - I'm not a fan of long
-multi-line comments near column 80).
-
-
-[PATCH mm-unstable v2] mm/khugepaged: fix collapse_pte_mapped_thp() versus =
-uffd
-
-Jann Horn demonstrated how userfaultfd ioctl UFFDIO_COPY into a private
-shmem mapping can add valid PTEs to page table collapse_pte_mapped_thp()
-thought it had emptied: page lock on the huge page is enough to protect
-against WP faults (which find the PTE has been cleared), but not enough
-to protect against userfaultfd.  "BUG: Bad rss-counter state" followed.
-
-retract_page_tables() protects against this by checking !vma->anon_vma;
-but we know that MADV_COLLAPSE needs to be able to work on private shmem
-mappings, even those with an anon_vma prepared for another part of the
-mapping; and we know that MADV_COLLAPSE needs to work on shared shmem
-mappings which are userfaultfd_armed().  Whether it needs to work on
-private shmem mappings which are userfaultfd_armed(), I'm not so sure:
-but assume that it does.
-
-Now trylock pmd lock without dropping ptlock (suggested by jannh): if
-that fails, drop and retake ptlock around taking pmd lock, and just in
-the uffd private case, go back to recheck and empty the page table.
-
-Reported-by: Jann Horn <jannh@google.com>
-Closes: https://lore.kernel.org/linux-mm/CAG48ez0FxiRC4d3VTu_a9h=3Drg5FW-kY=
-D5Rg5xo_RDBM0LTTqZQ@mail.gmail.com/
-Fixes: 1043173eb5eb ("mm/khugepaged: collapse_pte_mapped_thp() with mmap_re=
-ad_lock()")
-Signed-off-by: Hugh Dickins <hughd@google.com>
----
- mm/khugepaged.c | 39 +++++++++++++++++++++++++++++----------
- 1 file changed, 29 insertions(+), 10 deletions(-)
-
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index 40d43eccdee8..ad1c571772fe 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -1476,7 +1476,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, uns=
-igned long addr,
- =09struct page *hpage;
- =09pte_t *start_pte, *pte;
- =09pmd_t *pmd, pgt_pmd;
--=09spinlock_t *pml, *ptl;
-+=09spinlock_t *pml =3D NULL, *ptl;
- =09int nr_ptes =3D 0, result =3D SCAN_FAIL;
- =09int i;
-=20
-@@ -1572,9 +1572,10 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, un=
-signed long addr,
- =09=09=09=09haddr, haddr + HPAGE_PMD_SIZE);
- =09mmu_notifier_invalidate_range_start(&range);
- =09notified =3D true;
--=09start_pte =3D pte_offset_map_lock(mm, pmd, haddr, &ptl);
--=09if (!start_pte)=09=09/* mmap_lock + page lock should prevent this */
--=09=09goto abort;
-+=09spin_lock(ptl);
-+recheck:
-+=09start_pte =3D pte_offset_map(pmd, haddr);
-+=09VM_BUG_ON(!start_pte);=09/* mmap_lock + page lock should prevent this *=
-/
-=20
- =09/* step 2: clear page table and adjust rmap */
- =09for (i =3D 0, addr =3D haddr, pte =3D start_pte;
-@@ -1608,20 +1609,36 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, u=
-nsigned long addr,
- =09=09nr_ptes++;
- =09}
-=20
--=09pte_unmap_unlock(start_pte, ptl);
-+=09pte_unmap(start_pte);
-=20
- =09/* step 3: set proper refcount and mm_counters. */
- =09if (nr_ptes) {
- =09=09page_ref_sub(hpage, nr_ptes);
- =09=09add_mm_counter(mm, mm_counter_file(hpage), -nr_ptes);
-+=09=09nr_ptes =3D 0;
- =09}
-=20
--=09/* step 4: remove page table */
-+=09/* step 4: remove empty page table */
-+=09if (!pml) {
-+=09=09pml =3D pmd_lockptr(mm, pmd);
-+=09=09if (pml !=3D ptl && !spin_trylock(pml)) {
-+=09=09=09spin_unlock(ptl);
-+=09=09=09spin_lock(pml);
-+=09=09=09spin_lock_nested(ptl, SINGLE_DEPTH_NESTING);
-+=09/*
-+=09 * pmd_lock covers a wider range than ptl, and (if split from mm's
-+=09 * page_table_lock) ptl nests inside pml. The less time we hold pml,
-+=09 * the better; but userfaultfd's mfill_atomic_pte() on a private VMA
-+=09 * inserts a valid as-if-COWed PTE without even looking up page cache.
-+=09 * So page lock of hpage does not protect from it, so we must not drop
-+=09 * ptl before pgt_pmd is removed, so uffd private needs rechecking.
-+=09 */
-+=09=09=09if (userfaultfd_armed(vma) &&
-+=09=09=09    !(vma->vm_flags & VM_SHARED))
-+=09=09=09=09goto recheck;
-+=09=09}
-+=09}
-=20
--=09/* Huge page lock is still held, so page table must remain empty */
--=09pml =3D pmd_lock(mm, pmd);
--=09if (ptl !=3D pml)
--=09=09spin_lock_nested(ptl, SINGLE_DEPTH_NESTING);
- =09pgt_pmd =3D pmdp_collapse_flush(vma, haddr, pmd);
- =09pmdp_get_lockless_sync();
- =09if (ptl !=3D pml)
-@@ -1648,6 +1665,8 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, uns=
-igned long addr,
- =09}
- =09if (start_pte)
- =09=09pte_unmap_unlock(start_pte, ptl);
-+=09if (pml && pml !=3D ptl)
-+=09=09spin_unlock(pml);
- =09if (notified)
- =09=09mmu_notifier_invalidate_range_end(&range);
- drop_hpage:
---=20
-2.35.3
----1463760895-2088143463-1692672709=:1872--
+DQoNCkxlIDIxLzA4LzIwMjMgw6AgMTQ6MzAsIEtlZmVuZyBXYW5nIGEgw6ljcml0wqA6DQo+IFVz
+ZSBuZXcgdHJ5X3ZtYV9sb2NrZWRfcGFnZV9mYXVsdCgpIGhlbHBlciB0byBzaW1wbGlmeSBjb2Rl
+Lg0KPiBObyBmdW5jdGlvbmFsIGNoYW5nZSBpbnRlbmRlZC4NCg0KRG9lcyBpdCByZWFsbHkgc2lt
+cGxpZmllcyBjb2RlID8gSXQncyAzMiBpbnNlcnRpb25zIHZlcnN1cyAzNCBkZWxldGlvbnMgDQpz
+byBvbmx5IHJlbW92aW5nIDIgbGluZXMuDQoNCkkgZG9uJ3QgbGlrZSB0aGUgc3RydWN0IHZtX2Zh
+dWx0IHlvdSBhcmUgYWRkaW5nIGJlY2F1c2Ugd2hlbiBpdCB3YXMgZm91ciANCmluZGVwZW5kYW50
+IHZhcmlhYmxlcyBpdCB3YXMgaGFuZGxlZCB0aHJvdWdoIGxvY2FsIHJlZ2lzdGVycy4gTm93IHRo
+YXQgDQppdCBpcyBhIHN0cnVjdCBpdCBoYXMgdG8gZ28gdmlhIHRoZSBzdGFjaywgbGVhZGluZyB0
+byB1bm5lY2Vzc2FyeSBtZW1vcnkgDQpyZWFkIGFuZCB3cml0ZXMuIEFuZCBnb2luZyBiYWNrIGFu
+ZCBmb3J0aCBiZXR3ZWVuIGFyY2hpdGVjdHVyZSBjb2RlIGFuZCANCmdlbmVyaWMgY29kZSBtYXkg
+YWxzbyBiZSBjb3VudGVyLXBlcmZvcm1hbnQuDQoNCkRpZCB5b3UgbWFrZSBhbnkgcGVyZm9ybWFu
+Y2UgYW5hbHlzaXMgPyBQYWdlIGZhdWx0cyBhcmUgcmVhbGx5IGEgaG90IA0KcGF0aCB3aGVuIGRl
+YWxsaW5nIHdpdGggbWlub3IgZmF1bHRzLg0KDQpUaGFua3MNCkNocmlzdG9waGUNCg0KPiANCj4g
+U2lnbmVkLW9mZi1ieTogS2VmZW5nIFdhbmcgPHdhbmdrZWZlbmcud2FuZ0BodWF3ZWkuY29tPg0K
+PiAtLS0NCj4gICBhcmNoL3Bvd2VycGMvbW0vZmF1bHQuYyB8IDY2ICsrKysrKysrKysrKysrKysr
+KysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAgMSBmaWxlIGNoYW5nZWQsIDMyIGluc2VydGlv
+bnMoKyksIDM0IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9t
+bS9mYXVsdC5jIGIvYXJjaC9wb3dlcnBjL21tL2ZhdWx0LmMNCj4gaW5kZXggYjE3MjMwOTRkNDY0
+Li41MmY5NTQ2ZTAyMGUgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9tbS9mYXVsdC5jDQo+
+ICsrKyBiL2FyY2gvcG93ZXJwYy9tbS9mYXVsdC5jDQo+IEBAIC0zOTEsNiArMzkxLDIyIEBAIHN0
+YXRpYyBpbnQgcGFnZV9mYXVsdF9pc19iYWQodW5zaWduZWQgbG9uZyBlcnIpDQo+ICAgI2RlZmlu
+ZSBwYWdlX2ZhdWx0X2lzX2JhZChfX2VycikJKChfX2VycikgJiBEU0lTUl9CQURfRkFVTFRfMzJT
+KQ0KPiAgICNlbmRpZg0KPiAgIA0KPiArI2lmZGVmIENPTkZJR19QRVJfVk1BX0xPQ0sNCj4gK2Jv
+b2wgYXJjaF92bWFfYWNjZXNzX2Vycm9yKHN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqdm1hLCBzdHJ1
+Y3Qgdm1fZmF1bHQgKnZtZikNCj4gK3sNCj4gKwlpbnQgaXNfZXhlYyA9IFRSQVAodm1mLT5yZWdz
+KSA9PSBJTlRFUlJVUFRfSU5TVF9TVE9SQUdFOw0KPiArCWludCBpc193cml0ZSA9IHBhZ2VfZmF1
+bHRfaXNfd3JpdGUodm1mLT5mYXVsdF9jb2RlKTsNCj4gKw0KPiArCWlmICh1bmxpa2VseShhY2Nl
+c3NfcGtleV9lcnJvcihpc193cml0ZSwgaXNfZXhlYywNCj4gKwkJCQkodm1mLT5mYXVsdF9jb2Rl
+ICYgRFNJU1JfS0VZRkFVTFQpLCB2bWEpKSkNCj4gKwkJcmV0dXJuIHRydWU7DQo+ICsNCj4gKwlp
+ZiAodW5saWtlbHkoYWNjZXNzX2Vycm9yKGlzX3dyaXRlLCBpc19leGVjLCB2bWEpKSkNCj4gKwkJ
+cmV0dXJuIHRydWU7DQo+ICsJcmV0dXJuIGZhbHNlOw0KPiArfQ0KPiArI2VuZGlmDQo+ICsNCj4g
+ICAvKg0KPiAgICAqIEZvciA2MDAtIGFuZCA4MDAtZmFtaWx5IHByb2Nlc3NvcnMsIHRoZSBlcnJv
+cl9jb2RlIHBhcmFtZXRlciBpcyBEU0lTUg0KPiAgICAqIGZvciBhIGRhdGEgZmF1bHQsIFNSUjEg
+Zm9yIGFuIGluc3RydWN0aW9uIGZhdWx0Lg0KPiBAQCAtNDA3LDEyICs0MjMsMTggQEAgc3RhdGlj
+IGludCBfX19kb19wYWdlX2ZhdWx0KHN0cnVjdCBwdF9yZWdzICpyZWdzLCB1bnNpZ25lZCBsb25n
+IGFkZHJlc3MsDQo+ICAgew0KPiAgIAlzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKiB2bWE7DQo+ICAg
+CXN0cnVjdCBtbV9zdHJ1Y3QgKm1tID0gY3VycmVudC0+bW07DQo+IC0JdW5zaWduZWQgaW50IGZs
+YWdzID0gRkFVTFRfRkxBR19ERUZBVUxUOw0KPiAgIAlpbnQgaXNfZXhlYyA9IFRSQVAocmVncykg
+PT0gSU5URVJSVVBUX0lOU1RfU1RPUkFHRTsNCj4gICAJaW50IGlzX3VzZXIgPSB1c2VyX21vZGUo
+cmVncyk7DQo+ICAgCWludCBpc193cml0ZSA9IHBhZ2VfZmF1bHRfaXNfd3JpdGUoZXJyb3JfY29k
+ZSk7DQo+ICAgCXZtX2ZhdWx0X3QgZmF1bHQsIG1ham9yID0gMDsNCj4gICAJYm9vbCBrcHJvYmVf
+ZmF1bHQgPSBrcHJvYmVfcGFnZV9mYXVsdChyZWdzLCAxMSk7DQo+ICsJc3RydWN0IHZtX2ZhdWx0
+IHZtZiA9IHsNCj4gKwkJLnJlYWxfYWRkcmVzcyA9IGFkZHJlc3MsDQo+ICsJCS5mYXVsdF9jb2Rl
+ID0gZXJyb3JfY29kZSwNCj4gKwkJLnJlZ3MgPSByZWdzLA0KPiArCQkuZmxhZ3MgPSBGQVVMVF9G
+TEFHX0RFRkFVTFQsDQo+ICsJfTsNCj4gKw0KPiAgIA0KPiAgIAlpZiAodW5saWtlbHkoZGVidWdn
+ZXJfZmF1bHRfaGFuZGxlcihyZWdzKSB8fCBrcHJvYmVfZmF1bHQpKQ0KPiAgIAkJcmV0dXJuIDA7
+DQo+IEBAIC00NjMsNDUgKzQ4NSwyMSBAQCBzdGF0aWMgaW50IF9fX2RvX3BhZ2VfZmF1bHQoc3Ry
+dWN0IHB0X3JlZ3MgKnJlZ3MsIHVuc2lnbmVkIGxvbmcgYWRkcmVzcywNCj4gICAJICogbW1hcF9s
+b2NrIGhlbGQNCj4gICAJICovDQo+ICAgCWlmIChpc191c2VyKQ0KPiAtCQlmbGFncyB8PSBGQVVM
+VF9GTEFHX1VTRVI7DQo+ICsJCXZtZi5mbGFncyB8PSBGQVVMVF9GTEFHX1VTRVI7DQo+ICAgCWlm
+IChpc193cml0ZSkNCj4gLQkJZmxhZ3MgfD0gRkFVTFRfRkxBR19XUklURTsNCj4gKwkJdm1mLmZs
+YWdzIHw9IEZBVUxUX0ZMQUdfV1JJVEU7DQo+ICAgCWlmIChpc19leGVjKQ0KPiAtCQlmbGFncyB8
+PSBGQVVMVF9GTEFHX0lOU1RSVUNUSU9OOw0KPiArCQl2bWYuZmxhZ3MgfD0gRkFVTFRfRkxBR19J
+TlNUUlVDVElPTjsNCj4gICANCj4gLQlpZiAoIShmbGFncyAmIEZBVUxUX0ZMQUdfVVNFUikpDQo+
+IC0JCWdvdG8gbG9ja19tbWFwOw0KPiAtDQo+IC0Jdm1hID0gbG9ja192bWFfdW5kZXJfcmN1KG1t
+LCBhZGRyZXNzKTsNCj4gLQlpZiAoIXZtYSkNCj4gLQkJZ290byBsb2NrX21tYXA7DQo+IC0NCj4g
+LQlpZiAodW5saWtlbHkoYWNjZXNzX3BrZXlfZXJyb3IoaXNfd3JpdGUsIGlzX2V4ZWMsDQo+IC0J
+CQkJICAgICAgIChlcnJvcl9jb2RlICYgRFNJU1JfS0VZRkFVTFQpLCB2bWEpKSkgew0KPiAtCQl2
+bWFfZW5kX3JlYWQodm1hKTsNCj4gLQkJZ290byBsb2NrX21tYXA7DQo+IC0JfQ0KPiAtDQo+IC0J
+aWYgKHVubGlrZWx5KGFjY2Vzc19lcnJvcihpc193cml0ZSwgaXNfZXhlYywgdm1hKSkpIHsNCj4g
+LQkJdm1hX2VuZF9yZWFkKHZtYSk7DQo+IC0JCWdvdG8gbG9ja19tbWFwOw0KPiAtCX0NCj4gLQ0K
+PiAtCWZhdWx0ID0gaGFuZGxlX21tX2ZhdWx0KHZtYSwgYWRkcmVzcywgZmxhZ3MgfCBGQVVMVF9G
+TEFHX1ZNQV9MT0NLLCByZWdzKTsNCj4gLQlpZiAoIShmYXVsdCAmIChWTV9GQVVMVF9SRVRSWSB8
+IFZNX0ZBVUxUX0NPTVBMRVRFRCkpKQ0KPiAtCQl2bWFfZW5kX3JlYWQodm1hKTsNCj4gLQ0KPiAt
+CWlmICghKGZhdWx0ICYgVk1fRkFVTFRfUkVUUlkpKSB7DQo+IC0JCWNvdW50X3ZtX3ZtYV9sb2Nr
+X2V2ZW50KFZNQV9MT0NLX1NVQ0NFU1MpOw0KPiArCWZhdWx0ID0gdHJ5X3ZtYV9sb2NrZWRfcGFn
+ZV9mYXVsdCgmdm1mKTsNCj4gKwlpZiAoZmF1bHQgPT0gVk1fRkFVTFRfTk9ORSkNCj4gKwkJZ290
+byByZXRyeTsNCj4gKwlpZiAoIShmYXVsdCAmIFZNX0ZBVUxUX1JFVFJZKSkNCj4gICAJCWdvdG8g
+ZG9uZTsNCj4gLQl9DQo+IC0JY291bnRfdm1fdm1hX2xvY2tfZXZlbnQoVk1BX0xPQ0tfUkVUUlkp
+Ow0KPiAgIA0KPiAgIAlpZiAoZmF1bHRfc2lnbmFsX3BlbmRpbmcoZmF1bHQsIHJlZ3MpKQ0KPiAg
+IAkJcmV0dXJuIHVzZXJfbW9kZShyZWdzKSA/IDAgOiBTSUdCVVM7DQo+ICAgDQo+IC1sb2NrX21t
+YXA6DQo+IC0NCj4gICAJLyogV2hlbiBydW5uaW5nIGluIHRoZSBrZXJuZWwgd2UgZXhwZWN0IGZh
+dWx0cyB0byBvY2N1ciBvbmx5IHRvDQo+ICAgCSAqIGFkZHJlc3NlcyBpbiB1c2VyIHNwYWNlLiAg
+QWxsIG90aGVyIGZhdWx0cyByZXByZXNlbnQgZXJyb3JzIGluIHRoZQ0KPiAgIAkgKiBrZXJuZWwg
+YW5kIHNob3VsZCBnZW5lcmF0ZSBhbiBPT1BTLiAgVW5mb3J0dW5hdGVseSwgaW4gdGhlIGNhc2Ug
+b2YgYW4NCj4gQEAgLTUyOCw3ICs1MjYsNyBAQCBzdGF0aWMgaW50IF9fX2RvX3BhZ2VfZmF1bHQo
+c3RydWN0IHB0X3JlZ3MgKnJlZ3MsIHVuc2lnbmVkIGxvbmcgYWRkcmVzcywNCj4gICAJICogbWFr
+ZSBzdXJlIHdlIGV4aXQgZ3JhY2VmdWxseSByYXRoZXIgdGhhbiBlbmRsZXNzbHkgcmVkbw0KPiAg
+IAkgKiB0aGUgZmF1bHQuDQo+ICAgCSAqLw0KPiAtCWZhdWx0ID0gaGFuZGxlX21tX2ZhdWx0KHZt
+YSwgYWRkcmVzcywgZmxhZ3MsIHJlZ3MpOw0KPiArCWZhdWx0ID0gaGFuZGxlX21tX2ZhdWx0KHZt
+YSwgYWRkcmVzcywgdm1mLmZsYWdzLCByZWdzKTsNCj4gICANCj4gICAJbWFqb3IgfD0gZmF1bHQg
+JiBWTV9GQVVMVF9NQUpPUjsNCj4gICANCj4gQEAgLTU0NCw3ICs1NDIsNyBAQCBzdGF0aWMgaW50
+IF9fX2RvX3BhZ2VfZmF1bHQoc3RydWN0IHB0X3JlZ3MgKnJlZ3MsIHVuc2lnbmVkIGxvbmcgYWRk
+cmVzcywNCj4gICAJICogY2FzZS4NCj4gICAJICovDQo+ICAgCWlmICh1bmxpa2VseShmYXVsdCAm
+IFZNX0ZBVUxUX1JFVFJZKSkgew0KPiAtCQlmbGFncyB8PSBGQVVMVF9GTEFHX1RSSUVEOw0KPiAr
+CQl2bWYuZmxhZ3MgfD0gRkFVTFRfRkxBR19UUklFRDsNCj4gICAJCWdvdG8gcmV0cnk7DQo+ICAg
+CX0NCj4gICANCg==
