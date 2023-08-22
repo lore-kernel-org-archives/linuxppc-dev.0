@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96648EE49AE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 18:35:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 082ACEE49AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 18:55:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=CqKdw30W;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1YIoFqVN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVdM55JX1z3c1R
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 04:35:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVdpR2mXGz3c2k
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 04:55:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=CqKdw30W;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1YIoFqVN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112b.google.com (mail-yw1-x112b.google.com [IPv6:2607:f8b0:4864:20::112b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2e; helo=mail-yb1-xb2e.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb2e.google.com (mail-yb1-xb2e.google.com [IPv6:2607:f8b0:4864:20::b2e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVdL339RKz2xdK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 04:34:34 +1000 (AEST)
-Received: by mail-yw1-x112b.google.com with SMTP id 00721157ae682-58caaedb20bso53897007b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 11:34:34 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVdnP5Hvcz2yPG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 04:54:48 +1000 (AEST)
+Received: by mail-yb1-xb2e.google.com with SMTP id 3f1490d57ef6-d77b9d574f8so114526276.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 11:54:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1692729271; x=1693334071;
+        d=google.com; s=20221208; t=1692730485; x=1693335285;
         h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=1WMcORuWW+xF6gY7IBQ8Ihi596ledfzVY2HvWzF69bs=;
-        b=CqKdw30WIbzK4C9BVl49dnPtQXsgCMK0Fwag7SfAQ7kJ3tRw3a7cCtAS2xlL+AAHPv
-         r4CyCLMJ96e3fzvi6KQ2+Mk2O4mxYTfynjOc4lp8n2WAusPnJ0mJQFK7v37QkqTuklZU
-         tnqIswyE/oOd6pufMG74u6bbYZve+ApM3b7Zli+E8Pyg6W+tz1RxcHGcTmcykMK316cc
-         LUBM256+2HbMmx9hRSmMDeQiyL3Rq3sOsZSKyAj8s8Z/mqaB/WaY7mvAo/e/OzP+iP5y
-         9dZszyvUph+0J7RUe79fX1n/CELkDCL8vwhLU2dWg1KmyLTTud17ZRZdF97E/T8sm0bz
-         yJyw==
+        bh=EC4FoWXo6SNQKwsXxt28KsctazZB0KZm2Dgg9LreMAM=;
+        b=1YIoFqVN55j3XEBWw5UYnqxvNjoz+koElbxuVIP/CJlJ0hkI9N8eMY39So2s6Zh8e0
+         lYOJwoMEQBCBGM9ObvuUJ43RLHkBTQhPIi4D2e21eC0WOzSMo3w6Pej51GXssjJncxsr
+         40V/Mu1pMG/D3T0D49sODOZIfKYGqNqFAaOkTMSHTKzO6xb16qy4PWhFgzJJXzDEWNDd
+         syAPBovHWWRT8jV5/JwCsG9j6lWmyoq166pYQYj+5LjUZx2PNOAhbu+jAuVXXYMq6btV
+         oWcKnK9p1XjuZsNocTtOJIfHWsLUDWxxgnOuAfTnpiEG8/nc/26eHsq/XlCM+fMpNl17
+         lGng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692729271; x=1693334071;
+        d=1e100.net; s=20221208; t=1692730485; x=1693335285;
         h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1WMcORuWW+xF6gY7IBQ8Ihi596ledfzVY2HvWzF69bs=;
-        b=VMn8Ye+FRx/FV17aSpgXGg199Z8F45amrDb9EcHtGKqCnikXmaOFJoxMfm+PZufrnx
-         drt8lALW0VuBjkKjGxpacyXjVL4BXBygU+iNRzZGe0HT+iHFrBAIyBmqi7jbcZ+X/GSu
-         kDnP9IOz2PfcfqJjkO6vltatoeNo7mBn3iu2KOrIkrOovG6CGu0Cv292xejRYdxg+03Z
-         piBxl0LxdYB7snTIrNcoJt+I0rL0bSrqOu69haf7+Oh3B488lpmzpJCJ4CTnKOARLDJ7
-         pK2o9d8VdXCWkAoEnJgDeNvHPDLA+brfr4W9dKAhIKyXJ/CWTyPdgGLsP6PSRwybj7uV
-         p9EA==
-X-Gm-Message-State: AOJu0YxQ2v8BOCWYGzXAas2CxobRYCDZY7GWeUVIorR5t3Ajrumf8ZIs
-	uX+Qgbd+2azHU64WwnNALz00zA==
-X-Google-Smtp-Source: AGHT+IHKsobp5e7zqoup7VzvHJTcsGRbS8zrGrBX3SoF5xm7qcy+ngOpN9zqdPkzqj75WfGQt5eHpQ==
-X-Received: by 2002:a81:6009:0:b0:582:5527:ddc with SMTP id u9-20020a816009000000b0058255270ddcmr10163921ywb.34.1692729270534;
-        Tue, 22 Aug 2023 11:34:30 -0700 (PDT)
+        bh=EC4FoWXo6SNQKwsXxt28KsctazZB0KZm2Dgg9LreMAM=;
+        b=Y8n8vS3BTlv1MqsSJ8CxIJ1JXcXmcbfcg+VixRR4EcfQk2fEQdIgoshiKvYJ6sY3Zj
+         Zek9pF0gOxo6cGFfhJz7YA5zFZPz6EjQT5/nnWIjNMpgGFeiePni0UmzUtzYfOJpnDU5
+         fmTx3DVT6E/eKHetANP7l9RNfZfjw2bTqcOpucgfQhcExljipCj5lM+NpE7EpfvWREOV
+         OnzsQSmP86sEzsbP7P/sSjfxwkbaL4iD6NFXBip5TEOAO3o9nIETNi2CDL4T7d/lG5r7
+         H5ecjoZ8Cg3oUHuk1eW8hjCrrJxIVraKNxcfhyGt3pAV5Z3K4QviZQWpdtpzJF6ARZom
+         GLHg==
+X-Gm-Message-State: AOJu0YzSMtZECYDF3Mze8pHACYl1PSLYp0R2ngLiQNs8y0W8OZybZlGV
+	u3TvAyrf0YouHIniazHta0caWA==
+X-Google-Smtp-Source: AGHT+IFpHQvIMwN5WYlfI56GAofuwQT9IU67DR/OnesR0CbZe8XpbWpAMdSzZjh6aZoI7atOZrgvQQ==
+X-Received: by 2002:a81:4843:0:b0:583:2df2:35f3 with SMTP id v64-20020a814843000000b005832df235f3mr9917420ywa.1.1692730484669;
+        Tue, 22 Aug 2023 11:54:44 -0700 (PDT)
 Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id j1-20020a0dc701000000b0058ddb62f99bsm2956436ywd.38.2023.08.22.11.34.25
+        by smtp.gmail.com with ESMTPSA id r64-20020a815d43000000b00545a08184cesm2915469ywb.94.2023.08.22.11.54.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Aug 2023 11:34:29 -0700 (PDT)
-Date: Tue, 22 Aug 2023 11:34:19 -0700 (PDT)
+        Tue, 22 Aug 2023 11:54:44 -0700 (PDT)
+Date: Tue, 22 Aug 2023 11:54:39 -0700 (PDT)
 From: Hugh Dickins <hughd@google.com>
 X-X-Sender: hugh@ripple.attlocal.net
-To: Peter Xu <peterx@redhat.com>
+To: Jann Horn <jannh@google.com>
 Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
  versus uffd
-In-Reply-To: <ZOTGvfO31pleXrPF@x1n>
-Message-ID: <1b7c7056-d742-86bf-fec-fdb024b2381@google.com>
-References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com> <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com> <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com> <ZOTGvfO31pleXrPF@x1n>
+In-Reply-To: <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+Message-ID: <82d294-c9b0-d7b4-71c9-cfed3925c47b@google.com>
+References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com> <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com> <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com> <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="-1463760895-405531799-1692730484=:3162"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,96 +77,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Anshuman Khandual <anshuman.khandual@arm.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Qi Zheng <zhengqi.arch@bytedance.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@lin
- ux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Jann Horn <jannh@google.com>, Heiko Carstens <hca@linux.ibm.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@or
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ib
+ m.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@or
  acle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 22 Aug 2023, Peter Xu wrote:
-> On Mon, Aug 21, 2023 at 07:51:38PM -0700, Hugh Dickins wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463760895-405531799-1692730484=:3162
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+On Tue, 22 Aug 2023, Jann Horn wrote:
+> On Tue, Aug 22, 2023 at 4:51=E2=80=AFAM Hugh Dickins <hughd@google.com> w=
+rote:
 > > On Mon, 21 Aug 2023, Jann Horn wrote:
-...
-> > > 
-> > > I guess an alternative would be to use a spin_trylock() instead of the
-> > > current pmd_lock(), and if that fails, temporarily drop the page table
+> > > On Mon, Aug 21, 2023 at 9:51=E2=80=AFPM Hugh Dickins <hughd@google.co=
+m> wrote:
+> > > > Just for this case, take the pmd_lock() two steps earlier: not beca=
+use
+> > > > it gives any protection against this case itself, but because ptloc=
+k
+> > > > nests inside it, and it's the dropping of ptlock which let the bug =
+in.
+> > > > In other cases, continue to minimize the pmd_lock() hold time.
+> > >
+> > > Special-casing userfaultfd like this makes me a bit uncomfortable; bu=
+t
+> > > I also can't find anything other than userfaultfd that would insert
+> > > pages into regions that are khugepaged-compatible, so I guess this
+> > > works?
+> >
+> > I'm as sure as I can be that it's solely because userfaultfd breaks
+> > the usual rules here (and in fairness, IIRC Andrea did ask my permissio=
+n
+> > before making it behave that way on shmem, COWing without a source page=
+).
+> >
+> > Perhaps something else will want that same behaviour in future (it's
+> > tempting, but difficult to guarantee correctness); for now, it is just
+> > userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
+> > expecting uffd to add more such exceptional modes in future).
+>=20
+> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
+> wanted to make it possible to reliably install PTE markers with
+> madvise() or something like that, which might be nice for allowing
+> userspace to create guard pages without unnecessary extra VMAs...)
+
+I see the mailthread has taken inspiration from your comment there,
+and veered off in that direction: but I'll ignore those futures.
+
+>=20
+> > > I guess an alternative would be to use a spin_trylock() instead of th=
+e
+> > > current pmd_lock(), and if that fails, temporarily drop the page tabl=
+e
 > > > lock and then restart from step 2 with both locks held - and at that
-> > > point the page table scan should be fast since we expect it to usually
+> > > point the page table scan should be fast since we expect it to usuall=
+y
 > > > be empty.
-> > 
+> >
 > > That's certainly a good idea, if collapse on userfaultfd_armed private
 > > is anything of a common case (I doubt, but I don't know).  It may be a
 > > better idea anyway (saving a drop and retake of ptlock).
-> > 
+>=20
+> I was thinking it also has the advantage that it would still perform
+> okay if we got rid of the userfaultfd_armed() condition at some point
+> - though I realize that designing too much for hypothetical future
+> features is an antipattern.
+>=20
 > > I gave it a try, expecting to end up with something that would lead
 > > me to say "I tried it, but it didn't work out well"; but actually it
 > > looks okay to me.  I wouldn't say I prefer it, but it seems reasonable,
 > > and no more complicated (as Peter rightly observes) than the original.
-> > 
+> >
 > > It's up to you and Peter, and whoever has strong feelings about it,
 > > to choose between them: I don't mind (but I shall be sad if someone
 > > demands that I indent that comment deeper - I'm not a fan of long
 > > multi-line comments near column 80).
-> 
-> No strong opinion here, either.  Just one trivial comment/question below on
-> the new patch (if that will be preferred)..
+>=20
+> I prefer this version because it would make it easier to remove the
+> "userfaultfd_armed()" check in the future if we have to, but I guess
+> we could also always change it later if that becomes necessary, so I
+> don't really have strong feelings on it at this point.
 
-I'm going to settle for the original v1 for now (I'll explain why in reply
-to Jann next) - which already has the blessing of your Acked-by, thanks.
+Thanks for considering them both, Jann.  I do think your trylock way,
+as in v2, is in principle superior, and we may well have good reason
+to switch over to it in future; but I find it slightly more confusing,
+so will follow your and Peter's "no strong feelings" for now, and ask
+Andrew please to take the original (implicit v1).
 
-(Yes, the locking is a bit confusing: but mainly for the unrelated reason,
-that with the split locking configs, we never quite know whether this lock
-is the same as that lock or not, and so have to be rather careful.)
+Overriding reason: I realized overnight that v2 is not quite correct:
+I was clever enough to realize that nr_ptes needed to be reset to 0
+to get the accounting right with a recheck pass, but not clever enough
+to realize that resetting it to 0 there would likely skip the abort
+path's flush_tlb_mm(mm), when we actually had cleared entries on the
+first pass.  It needs a separate bool to decide the flush_tlb_mm(mm),
+or it needs that (ridiculously minor!) step 3 to be moved down.
 
-> > [PATCH mm-unstable v2] mm/khugepaged: fix collapse_pte_mapped_thp() versus uffd
-...
-> > @@ -1572,9 +1572,10 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
-> >  				haddr, haddr + HPAGE_PMD_SIZE);
-> >  	mmu_notifier_invalidate_range_start(&range);
-> >  	notified = true;
-> > -	start_pte = pte_offset_map_lock(mm, pmd, haddr, &ptl);
-> > -	if (!start_pte)		/* mmap_lock + page lock should prevent this */
-> > -		goto abort;
-> > +	spin_lock(ptl);
-> 
-> .. here will the ptl always be valid?
-> 
-> That comes from the previous round of pte_offset_map_lock(), and I assume
-> after this whole "thp collapse without write lock" work landed, it has the
-> same lifecycle with the *pte pointer, so can be invalid right after the rcu
-> read lock released; mmap read lock isn't strong enough to protect the ptl,
-> not anymore.
-> 
-> Maybe it's all fine because the thp collapse path is the solo path(s) that
-> will release the pte pgtable page without write mmap lock (so as to release
-> the ptl too when doing so), and we at least still hold the page lock, so
-> the worst case is the other concurrent "thp collapse" will still serialize
-> with this one on the huge page lock. But that doesn't look as solid as
-> fetching again the ptl from another pte_offset_map_nolock().  So still just
-> raise this question up.  It's possible I just missed something.
+But rather than reworking it, please let's just go with v1 for now.
 
-It is safe, as you say because of us holding the hpage lock, which stops
-any racing callers of collapse_pte_mapped_thp() or retract_page_tables():
-and these are the functions which (currently) make the *pmd transition
-which pte_offset_map_lock() etc. are being careful to guard against.
-
-[In future we can imagine empty page table removal making that transition
-too: and that wouldn't even have any hpage to lock.  Will it rely on
-mmap_lock for write? or pmd_lock? probably both, but no need to design
-for it now.]
-
-But I agree that it does *look* more questionable in this patch: there was
-a reassuring pte_offset_map_lock() there before, and now I rely more on
-the assumptions and just use the "previous" ptl (and that's why I chose
-to make the !start_pte case a VM_BUG_ON a few lines later).
-
-I expect, with more time spent, I could cast it back into more reassuring
-form: but it's all a bit of a con trick - if you look further down (even
-before v2 or v1 fixes) to "step 4", there we have "if (ptl != pml)" which
-is also relying on the fact that ptl cannot have changed.  And no doubt
-that too could be recast into more reassuring-looking form, but it
-wouldn't actually be worthwhile.
-
-Thanks for considering these, Peter: I'll recommend v1 to Andrew.
-
+Thanks,
 Hugh
+---1463760895-405531799-1692730484=:3162--
