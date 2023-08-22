@@ -4,43 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35C83EE49A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 12:13:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20B27EE4996
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 15:25:11 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=M/0/D5T3;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVStS3thwz3c8c
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 22:13:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVY7T3RkHz3c2V
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 01:25:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=M/0/D5T3;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVSst3t8hz2xdc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 22:13:04 +1000 (AEST)
-Received: from dggpemm100001.china.huawei.com (unknown [172.30.72.56])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4RVSr13fyWz1L9DH;
-	Tue, 22 Aug 2023 20:11:29 +0800 (CST)
-Received: from [10.174.177.243] (10.174.177.243) by
- dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.31; Tue, 22 Aug 2023 20:12:56 +0800
-Message-ID: <7fff8202-0be1-4989-959f-8c0b14ca1236@huawei.com>
-Date: Tue, 22 Aug 2023 20:12:55 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVY6T42cRz2yVN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 01:24:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=VmtAtCcHRfR32PnwuVa9rLL2uGT/TuCRRqTlgyU2vBA=; b=M/0/D5T3AyM8nE1eiuk7zbB7kQ
+	BJrm5LWDM76wZcpRlUeUCl5ar6M7LqHhjbON3vQMbyweMSxSFmB5OgRYyMzWmBnVFnL7cRXEIRI2k
+	+n31COizrjThN1j9n443LMvLNQLHJUILNsqHPwBiXGmJhYz9WMrndPhu2WLjej9VojPyBazd4IAPZ
+	3i2zAOqaXLdAgTzgiS0tE8XMBFu5jps70cx4hrqdbETII5iv5evh1/hveF6E8VBdkOPciXOwlGJeA
+	jaQxBw/pZbJCFwqisyevMFsMIrN1oQcerGvlcS3NpR38lQxo3TF10oJ//HmzjywWxjVjY6ifAcgqY
+	VYfbDqvg==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1qYTDW-00H50z-QD; Tue, 22 Aug 2023 15:22:50 +0000
+Date: Tue, 22 Aug 2023 16:22:50 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: Jann Horn <jannh@google.com>
+Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
+ versus uffd
+Message-ID: <ZOTSyv6fuC1pkt76@casper.infradead.org>
+References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com>
+ <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com>
+ <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com>
+ <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH rfc v2 05/10] powerpc: mm: use try_vma_locked_page_fault()
-Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Andrew Morton
-	<akpm@linux-foundation.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <20230821123056.2109942-1-wangkefeng.wang@huawei.com>
- <20230821123056.2109942-6-wangkefeng.wang@huawei.com>
- <7eeed961-c2c0-2aeb-ff8c-3717de09d605@csgroup.eu>
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-In-Reply-To: <7eeed961-c2c0-2aeb-ff8c-3717de09d605@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.177.243]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm100001.china.huawei.com (7.185.36.93)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,167 +59,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "x86@kernel.org" <x86@kernel.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, "H . Peter Anvin" <hpa@zytor.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "willy@infradead.org" <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, "surenb@google.com" <surenb@googl
- e.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Qi Zheng <zhengqi.arch@bytedance.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <tho
+ mas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Peter Xu <peterx@redhat.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 2023/8/22 17:38, Christophe Leroy wrote:
+On Tue, Aug 22, 2023 at 04:39:43PM +0200, Jann Horn wrote:
+> > Perhaps something else will want that same behaviour in future (it's
+> > tempting, but difficult to guarantee correctness); for now, it is just
+> > userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
+> > expecting uffd to add more such exceptional modes in future).
 > 
-> 
-> Le 21/08/2023 à 14:30, Kefeng Wang a écrit :
->> Use new try_vma_locked_page_fault() helper to simplify code.
->> No functional change intended.
-> 
-> Does it really simplifies code ? It's 32 insertions versus 34 deletions
-> so only removing 2 lines.
+> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
+> wanted to make it possible to reliably install PTE markers with
+> madvise() or something like that, which might be nice for allowing
+> userspace to create guard pages without unnecessary extra VMAs...)
 
-Yes，it is unfriendly for powerpc as the arch's vma access check is much
-complex than other arch,
-> 
-> I don't like the struct vm_fault you are adding because when it was four
-> independant variables it was handled through local registers. Now that
-> it is a struct it has to go via the stack, leading to unnecessary memory
-> read and writes. And going back and forth between architecture code and
-> generic code may also be counter-performant.
+I don't know what a userspace API for this would look like, but I have
+a dream of creating guard VMAs which only live in the maple tree and
+don't require the allocation of a struct VMA.  Use some magic reserved
+pointer value like XA_ZERO_ENTRY to represent them ... seems more
+robust than putting a PTE marker in the page tables?
 
-Because different arch has different var to check vma access, so the
-easy way to add them into vmf, I don' find a better way.
-> 
-> Did you make any performance analysis ? Page faults are really a hot
-> path when dealling with minor faults.
-
-no, this is only built and rfc to see the feedback about the conversion.
-
-Thanks.
-
-> 
-> Thanks
-> Christophe
-> 
->>
->> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
->> ---
->>    arch/powerpc/mm/fault.c | 66 ++++++++++++++++++++---------------------
->>    1 file changed, 32 insertions(+), 34 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index b1723094d464..52f9546e020e 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -391,6 +391,22 @@ static int page_fault_is_bad(unsigned long err)
->>    #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_32S)
->>    #endif
->>    
->> +#ifdef CONFIG_PER_VMA_LOCK
->> +bool arch_vma_access_error(struct vm_area_struct *vma, struct vm_fault *vmf)
->> +{
->> +	int is_exec = TRAP(vmf->regs) == INTERRUPT_INST_STORAGE;
->> +	int is_write = page_fault_is_write(vmf->fault_code);
->> +
->> +	if (unlikely(access_pkey_error(is_write, is_exec,
->> +				(vmf->fault_code & DSISR_KEYFAULT), vma)))
->> +		return true;
->> +
->> +	if (unlikely(access_error(is_write, is_exec, vma)))
->> +		return true;
->> +	return false;
->> +}
->> +#endif
->> +
->>    /*
->>     * For 600- and 800-family processors, the error_code parameter is DSISR
->>     * for a data fault, SRR1 for an instruction fault.
->> @@ -407,12 +423,18 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
->>    {
->>    	struct vm_area_struct * vma;
->>    	struct mm_struct *mm = current->mm;
->> -	unsigned int flags = FAULT_FLAG_DEFAULT;
->>    	int is_exec = TRAP(regs) == INTERRUPT_INST_STORAGE;
->>    	int is_user = user_mode(regs);
->>    	int is_write = page_fault_is_write(error_code);
->>    	vm_fault_t fault, major = 0;
->>    	bool kprobe_fault = kprobe_page_fault(regs, 11);
->> +	struct vm_fault vmf = {
->> +		.real_address = address,
->> +		.fault_code = error_code,
->> +		.regs = regs,
->> +		.flags = FAULT_FLAG_DEFAULT,
->> +	};
->> +
->>    
->>    	if (unlikely(debugger_fault_handler(regs) || kprobe_fault))
->>    		return 0;
->> @@ -463,45 +485,21 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
->>    	 * mmap_lock held
->>    	 */
->>    	if (is_user)
->> -		flags |= FAULT_FLAG_USER;
->> +		vmf.flags |= FAULT_FLAG_USER;
->>    	if (is_write)
->> -		flags |= FAULT_FLAG_WRITE;
->> +		vmf.flags |= FAULT_FLAG_WRITE;
->>    	if (is_exec)
->> -		flags |= FAULT_FLAG_INSTRUCTION;
->> +		vmf.flags |= FAULT_FLAG_INSTRUCTION;
->>    
->> -	if (!(flags & FAULT_FLAG_USER))
->> -		goto lock_mmap;
->> -
->> -	vma = lock_vma_under_rcu(mm, address);
->> -	if (!vma)
->> -		goto lock_mmap;
->> -
->> -	if (unlikely(access_pkey_error(is_write, is_exec,
->> -				       (error_code & DSISR_KEYFAULT), vma))) {
->> -		vma_end_read(vma);
->> -		goto lock_mmap;
->> -	}
->> -
->> -	if (unlikely(access_error(is_write, is_exec, vma))) {
->> -		vma_end_read(vma);
->> -		goto lock_mmap;
->> -	}
->> -
->> -	fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
->> -	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
->> -		vma_end_read(vma);
->> -
->> -	if (!(fault & VM_FAULT_RETRY)) {
->> -		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
->> +	fault = try_vma_locked_page_fault(&vmf);
->> +	if (fault == VM_FAULT_NONE)
->> +		goto retry;
->> +	if (!(fault & VM_FAULT_RETRY))
->>    		goto done;
->> -	}
->> -	count_vm_vma_lock_event(VMA_LOCK_RETRY);
->>    
->>    	if (fault_signal_pending(fault, regs))
->>    		return user_mode(regs) ? 0 : SIGBUS;
->>    
->> -lock_mmap:
->> -
->>    	/* When running in the kernel we expect faults to occur only to
->>    	 * addresses in user space.  All other faults represent errors in the
->>    	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
->> @@ -528,7 +526,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
->>    	 * make sure we exit gracefully rather than endlessly redo
->>    	 * the fault.
->>    	 */
->> -	fault = handle_mm_fault(vma, address, flags, regs);
->> +	fault = handle_mm_fault(vma, address, vmf.flags, regs);
->>    
->>    	major |= fault & VM_FAULT_MAJOR;
->>    
->> @@ -544,7 +542,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
->>    	 * case.
->>    	 */
->>    	if (unlikely(fault & VM_FAULT_RETRY)) {
->> -		flags |= FAULT_FLAG_TRIED;
->> +		vmf.flags |= FAULT_FLAG_TRIED;
->>    		goto retry;
->>    	}
->>    
