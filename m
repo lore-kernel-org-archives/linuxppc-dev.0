@@ -4,93 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29486EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 15:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DB7FEE49A4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 15:34:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UdPc4Pft;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NbcKa2io;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YTJoWRsr;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YTJoWRsr;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVYD243bZz3c3h
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 01:29:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVYLj4PKVz3c4L
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 01:34:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UdPc4Pft;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NbcKa2io;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YTJoWRsr;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YTJoWRsr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVYC42BGNz2yVc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 01:28:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVYKk2jhJz2yVc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 01:34:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1692718092;
+	s=mimecast20190719; t=1692718438;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=W7u/YZ/Wut0bLQVB3sIyShhombPvduPeoIFrUf/4TCs=;
-	b=UdPc4Pft9tipryYd0mHz+CP5mHtw1szhDDDnThMMLOrsyCosvre7TGmhWB11sVjKWrIER6
-	RQ6no4YTxzZstwj3dpviSeCwOs5Ah4bk5/OB5bgc/wPfDAiqt//I4P785NVXJLyOY7GMUs
-	BiVbqd7k79hzFEkiEBTNjFJp2Vmd+es=
+	bh=gfDVn6rZaVtHsRanik8WVSt7RnpiFjyAz4ecoDpN/hY=;
+	b=YTJoWRsrLWhhm+QydrbaNM1b4slmyvtQMut8mbhOJiyiE4w7YZKH9qlpPxSrULXM0WdcTW
+	2MshFfKXhmZBeyPE1QRepYb9VL09ES6Hj52n/PUn9wSmNBK1uPCObQwmPUpH5geynhkYOX
+	fR8w9MTfdH1aI+Z36ndQE34S0IQ9hho=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1692718093;
+	s=mimecast20190719; t=1692718438;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=W7u/YZ/Wut0bLQVB3sIyShhombPvduPeoIFrUf/4TCs=;
-	b=NbcKa2ioUP+cwfxGVeJojChGhZU74aUPQl/Yhn7RSQeCqFrqdVsd4lqd4foJIe5NZgs9DE
-	EBn2v7WzUXQJBPLpxm+qPwYynNxwseIkOkHWSqIwtwu3ifeL9jtRoAB2uZ+skel3WCaj1v
-	HCOVGY8RREqpFwhaxbaqpj/lgOJ2SO0=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=gfDVn6rZaVtHsRanik8WVSt7RnpiFjyAz4ecoDpN/hY=;
+	b=YTJoWRsrLWhhm+QydrbaNM1b4slmyvtQMut8mbhOJiyiE4w7YZKH9qlpPxSrULXM0WdcTW
+	2MshFfKXhmZBeyPE1QRepYb9VL09ES6Hj52n/PUn9wSmNBK1uPCObQwmPUpH5geynhkYOX
+	fR8w9MTfdH1aI+Z36ndQE34S0IQ9hho=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-277-O_M8PMjbO4yigR1WEsMUgg-1; Tue, 22 Aug 2023 11:28:11 -0400
-X-MC-Unique: O_M8PMjbO4yigR1WEsMUgg-1
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-3fefc7845a2so3288785e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 08:28:10 -0700 (PDT)
+ us-mta-43-71TjtVlkPI2sBc7-YqZllw-1; Tue, 22 Aug 2023 11:33:57 -0400
+X-MC-Unique: 71TjtVlkPI2sBc7-YqZllw-1
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3fe919c0348so25482655e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 08:33:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692718090; x=1693322890;
+        d=1e100.net; s=20221208; t=1692718436; x=1693323236;
         h=content-transfer-encoding:in-reply-to:organization:from:references
          :cc:to:content-language:subject:user-agent:mime-version:date
          :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=W7u/YZ/Wut0bLQVB3sIyShhombPvduPeoIFrUf/4TCs=;
-        b=hgi/GLeYPdBYB6lp7YsobsWs3rJr5TjSzlgt/LqTOcUs6z4eY2lp1Y/ODz8Wv9XiB9
-         DszotJNOO9FZ1CBGng74pt2LuPbCLIz08lo3q9rF6iMyI2yi0k/2GrDJt+iJyz72A71m
-         af5204DZhwKtzd/Fto0cd62zF12oOo98r5ixNd2u1mZuGNM8a0Hbk8mJyJhQDR+Z35AF
-         UhxVNzQUP7P5oi8KH/lDXaE/FiTet9RVt7ETvvkEc7+j1cszCPCCTfBLp+dWwgutJYg1
-         HOp8WsH+/hsmVspa+qW0kIPqXeLH6ne2jgi4g7ZMj4vVqE1+nuHeD7KYi1mwhlzqjmLZ
-         s/Ew==
-X-Gm-Message-State: AOJu0YySSa6+ucwyAEvbAsgO5aJQN2ALjZISBF9qdlahgL1pYFW7btH3
-	q8/UkRZfPaxjojFTp8o3pR6W1z1LY6E2iuOy1KHO9vmHTawHgd7UA/wBAQ+GMxCd66yVXlc9XnE
-	ViGuoc+pO0RodkHr/ZaLEbf/BCg==
-X-Received: by 2002:a5d:684b:0:b0:317:597b:9f92 with SMTP id o11-20020a5d684b000000b00317597b9f92mr7482695wrw.57.1692718089911;
-        Tue, 22 Aug 2023 08:28:09 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGhmcY7QpIcuWsmvQMDNEnSwssc+JVnL70SZ7OEjsgpDCceuGn/p5O/9IhA+49A189R7TloOg==
-X-Received: by 2002:a5d:684b:0:b0:317:597b:9f92 with SMTP id o11-20020a5d684b000000b00317597b9f92mr7482669wrw.57.1692718089535;
-        Tue, 22 Aug 2023 08:28:09 -0700 (PDT)
+        bh=gfDVn6rZaVtHsRanik8WVSt7RnpiFjyAz4ecoDpN/hY=;
+        b=hDegfnwlYOz+siyMx1Wg6wbygvWFD2LfT/ZVhiOvUhlAlq4qYhgy6gC3WRmWI7VaCq
+         Coltvh1pEnp1QLETrfyJQYKhbr6ZzDE02e52W3grtg0XIed4rXLPKcIiBr7FOTwXeqgU
+         1GrtiylMd5VU3QhHaQKj1bmHrKMKodaVIagcvMt/hWRYl4tyyqrzFOTiE7apinehF6Ma
+         qhevhdta9xVy8dqETYcArg2dDGQE0ayd/DFrKuAfOJWqQJpey9g6WDzOGgczCxal/vTv
+         jKrZk4iVnkf0+eIGNAeT9Tld/KWy3WBokSGlasYxqwtD+q27R0oDmhee4yRxJnzXATk1
+         QyNw==
+X-Gm-Message-State: AOJu0Yyz34gWkwfOrjAQlBhrQsCHNsEnfibidqPFeXk0mOkJojLGdt46
+	PlQZ0t0CXSRbuFcOBOeXVDZzjCuP4jXFSC+/4vHdXQ4r1CA3rTZlilZLnn7WLdrICo/23qktw3D
+	bp0LUxd6KaYVHC/+vVejNKNhpzw==
+X-Received: by 2002:a05:600c:5122:b0:3fe:fbba:afa2 with SMTP id o34-20020a05600c512200b003fefbbaafa2mr1535348wms.6.1692718435898;
+        Tue, 22 Aug 2023 08:33:55 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEEzgSt6c0d06CTldkinI+npTxalTCO8OFb2Fse9kAQ1VCoxoVKY5diKxmxkF7aMIBFdM0KIA==
+X-Received: by 2002:a05:600c:5122:b0:3fe:fbba:afa2 with SMTP id o34-20020a05600c512200b003fefbbaafa2mr1535303wms.6.1692718435498;
+        Tue, 22 Aug 2023 08:33:55 -0700 (PDT)
 Received: from ?IPV6:2003:cb:c706:7400:83da:ebad:ba7f:c97c? (p200300cbc706740083daebadba7fc97c.dip0.t-ipconnect.de. [2003:cb:c706:7400:83da:ebad:ba7f:c97c])
-        by smtp.gmail.com with ESMTPSA id d4-20020adffd84000000b003141f96ed36sm16156605wrr.0.2023.08.22.08.28.07
+        by smtp.gmail.com with ESMTPSA id s14-20020a05600c044e00b003fa96fe2bd9sm19752310wmb.22.2023.08.22.08.33.53
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Aug 2023 08:28:09 -0700 (PDT)
-Message-ID: <ae86ecd2-08b9-1865-ad80-591cb4f4d83f@redhat.com>
-Date: Tue, 22 Aug 2023 17:28:06 +0200
+        Tue, 22 Aug 2023 08:33:54 -0700 (PDT)
+Message-ID: <d05a6922-8dbc-e6fb-f2c5-48f331652f20@redhat.com>
+Date: Tue, 22 Aug 2023 17:33:52 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.13.0
 Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
  versus uffd
-To: Jann Horn <jannh@google.com>, Hugh Dickins <hughd@google.com>
+To: Jann Horn <jannh@google.com>, Matthew Wilcox <willy@infradead.org>
 References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com>
  <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com>
  <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com>
  <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+ <ZOTSyv6fuC1pkt76@casper.infradead.org>
+ <CAG48ez2NrQjB5T5++uJSZ8-id5-H2mbSRX8c36gAJ5p_BMHOFw@mail.gmail.com>
 From: David Hildenbrand <david@redhat.com>
 Organization: Red Hat
-In-Reply-To: <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+In-Reply-To: <CAG48ez2NrQjB5T5++uJSZ8-id5-H2mbSRX8c36gAJ5p_BMHOFw@mail.gmail.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
@@ -107,44 +109,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Camp
- bell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Qi Zheng <zhengqi.arch@bytedance.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph 
+ Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Peter Xu <peterx@redhat.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 22.08.23 16:39, Jann Horn wrote:
-> On Tue, Aug 22, 2023 at 4:51 AM Hugh Dickins <hughd@google.com> wrote:
->> On Mon, 21 Aug 2023, Jann Horn wrote:
->>> On Mon, Aug 21, 2023 at 9:51 PM Hugh Dickins <hughd@google.com> wrote:
->>>> Just for this case, take the pmd_lock() two steps earlier: not because
->>>> it gives any protection against this case itself, but because ptlock
->>>> nests inside it, and it's the dropping of ptlock which let the bug in.
->>>> In other cases, continue to minimize the pmd_lock() hold time.
+On 22.08.23 17:30, Jann Horn wrote:
+> On Tue, Aug 22, 2023 at 5:23 PM Matthew Wilcox <willy@infradead.org> wrote:
+>> On Tue, Aug 22, 2023 at 04:39:43PM +0200, Jann Horn wrote:
+>>>> Perhaps something else will want that same behaviour in future (it's
+>>>> tempting, but difficult to guarantee correctness); for now, it is just
+>>>> userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
+>>>> expecting uffd to add more such exceptional modes in future).
 >>>
->>> Special-casing userfaultfd like this makes me a bit uncomfortable; but
->>> I also can't find anything other than userfaultfd that would insert
->>> pages into regions that are khugepaged-compatible, so I guess this
->>> works?
+>>> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
+>>> wanted to make it possible to reliably install PTE markers with
+>>> madvise() or something like that, which might be nice for allowing
+>>> userspace to create guard pages without unnecessary extra VMAs...)
 >>
->> I'm as sure as I can be that it's solely because userfaultfd breaks
->> the usual rules here (and in fairness, IIRC Andrea did ask my permission
->> before making it behave that way on shmem, COWing without a source page).
->>
->> Perhaps something else will want that same behaviour in future (it's
->> tempting, but difficult to guarantee correctness); for now, it is just
->> userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
->> expecting uffd to add more such exceptional modes in future).
+>> I don't know what a userspace API for this would look like, but I have
+>> a dream of creating guard VMAs which only live in the maple tree and
+>> don't require the allocation of a struct VMA.  Use some magic reserved
+>> pointer value like XA_ZERO_ENTRY to represent them ... seems more
+>> robust than putting a PTE marker in the page tables?
 > 
-> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
-> wanted to make it possible to reliably install PTE markers with
-> madvise() or something like that, which might be nice for allowing
-> userspace to create guard pages without unnecessary extra VMAs...)
+> Chrome currently uses a lot of VMAs for its heap, which I think are
+> basically alternating PROT_NONE and PROT_READ|PROT_WRITE anonymous
+> VMAs. Like this:
+> 
+> [...]
+> 3a10002cf000-3a10002d0000 ---p 00000000 00:00 0
+> 3a10002d0000-3a10002e6000 rw-p 00000000 00:00 0
+> 3a10002e6000-3a10002e8000 ---p 00000000 00:00 0
+> 3a10002e8000-3a10002f2000 rw-p 00000000 00:00 0
+> 3a10002f2000-3a10002f4000 ---p 00000000 00:00 0
+> 3a10002f4000-3a10002fb000 rw-p 00000000 00:00 0
+> 3a10002fb000-3a10002fc000 ---p 00000000 00:00 0
+> 3a10002fc000-3a1000303000 rw-p 00000000 00:00 0
+> 3a1000303000-3a1000304000 ---p 00000000 00:00 0
+> 3a1000304000-3a100031b000 rw-p 00000000 00:00 0
+> 3a100031b000-3a100031c000 ---p 00000000 00:00 0
+> 3a100031c000-3a1000326000 rw-p 00000000 00:00 0
+> 3a1000326000-3a1000328000 ---p 00000000 00:00 0
+> 3a1000328000-3a100033a000 rw-p 00000000 00:00 0
+> 3a100033a000-3a100033c000 ---p 00000000 00:00 0
+> 3a100033c000-3a100038b000 rw-p 00000000 00:00 0
+> 3a100038b000-3a100038c000 ---p 00000000 00:00 0
+> 3a100038c000-3a100039b000 rw-p 00000000 00:00 0
+> 3a100039b000-3a100039c000 ---p 00000000 00:00 0
+> 3a100039c000-3a10003af000 rw-p 00000000 00:00 0
+> 3a10003af000-3a10003b0000 ---p 00000000 00:00 0
+> 3a10003b0000-3a10003e8000 rw-p 00000000 00:00 0
+> 3a10003e8000-3a1000401000 ---p 00000000 00:00 0
+> 3a1000401000-3a1000402000 rw-p 00000000 00:00 0
+> 3a1000402000-3a100040c000 ---p 00000000 00:00 0
+> 3a100040c000-3a100046f000 rw-p 00000000 00:00 0
+> 3a100046f000-3a1000470000 ---p 00000000 00:00 0
+> 3a1000470000-3a100047a000 rw-p 00000000 00:00 0
+> 3a100047a000-3a100047c000 ---p 00000000 00:00 0
+> 3a100047c000-3a1000492000 rw-p 00000000 00:00 0
+> 3a1000492000-3a1000494000 ---p 00000000 00:00 0
+> 3a1000494000-3a10004a2000 rw-p 00000000 00:00 0
+> 3a10004a2000-3a10004a4000 ---p 00000000 00:00 0
+> 3a10004a4000-3a10004b6000 rw-p 00000000 00:00 0
+> 3a10004b6000-3a10004b8000 ---p 00000000 00:00 0
+> 3a10004b8000-3a10004ea000 rw-p 00000000 00:00 0
+> 3a10004ea000-3a10004ec000 ---p 00000000 00:00 0
+> 3a10004ec000-3a10005f4000 rw-p 00000000 00:00 0
+> 3a10005f4000-3a1000601000 ---p 00000000 00:00 0
+> 3a1000601000-3a1000602000 rw-p 00000000 00:00 0
+> 3a1000602000-3a1000604000 ---p 00000000 00:00 0
+> 3a1000604000-3a100062b000 rw-p 00000000 00:00 0
+> 3a100062b000-3a1000801000 ---p 00000000 00:00 0
+> [...]
+> 
+> I was thinking if you used PTE markers as guards, you could maybe turn
+> all that into more or less a single VMA?
 
-I'm working on something similar that goes a bit further than just guard 
-pages. It also installs PTE markers into page tables, inside existing 
-large VMAs.
-
-Initially, I'll only tackle anon VMAs, though.
+I proposed the topic "A proper API for sparse memory mappings" for the 
+bi-weekly MM meeting on September 20, that would also cover exactly that 
+use case. :)
 
 -- 
 Cheers,
