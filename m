@@ -4,50 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20B27EE4996
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 15:25:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92CF4EE49AA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 15:31:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=M/0/D5T3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1wJYwF/X;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVY7T3RkHz3c2V
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 01:25:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVYHJ5PHdz3c1M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 01:31:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=M/0/D5T3;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1wJYwF/X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=jannh@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVY6T42cRz2yVN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 01:24:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=VmtAtCcHRfR32PnwuVa9rLL2uGT/TuCRRqTlgyU2vBA=; b=M/0/D5T3AyM8nE1eiuk7zbB7kQ
-	BJrm5LWDM76wZcpRlUeUCl5ar6M7LqHhjbON3vQMbyweMSxSFmB5OgRYyMzWmBnVFnL7cRXEIRI2k
-	+n31COizrjThN1j9n443LMvLNQLHJUILNsqHPwBiXGmJhYz9WMrndPhu2WLjej9VojPyBazd4IAPZ
-	3i2zAOqaXLdAgTzgiS0tE8XMBFu5jps70cx4hrqdbETII5iv5evh1/hveF6E8VBdkOPciXOwlGJeA
-	jaQxBw/pZbJCFwqisyevMFsMIrN1oQcerGvlcS3NpR38lQxo3TF10oJ//HmzjywWxjVjY6ifAcgqY
-	VYfbDqvg==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1qYTDW-00H50z-QD; Tue, 22 Aug 2023 15:22:50 +0000
-Date: Tue, 22 Aug 2023 16:22:50 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: Jann Horn <jannh@google.com>
-Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
- versus uffd
-Message-ID: <ZOTSyv6fuC1pkt76@casper.infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVYGJ3DCVz2yVR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 01:31:03 +1000 (AEST)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3fef56e85edso83595e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 08:31:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20221208; t=1692718257; x=1693323057;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=a7rvpiaBmdaWESCzJVCBdhucf56RoNv7C/zYiNdqugw=;
+        b=1wJYwF/XUeBhFNuVLT9M6HxNx22zvWEOGkabOBprp3VPK7ecH6H8+WQb+PZ7C/NCpt
+         Ck5ii8Mz711rRiDKPqlGnX/A/fC8hzKhoGaSLeXlK9RiTR3yPUlaVATQ4tR1Evqow1XZ
+         6truoiONXUoJXKQRJm1T7EVAuC/tr7RAC8LolwaT4w6uct3C9G/LHCao8Kvcj06I7f8u
+         eDaGKuBZhqGT8KibcEIVeVLhn5DZX6+OupQi/a1pu/hNrXF5HQ/UOn6EFCRqpqY64qup
+         zJqW1TqWuAN5jMj9xCzbC8AwDj59mQbkBi01tS5+mEMcOpKjVh+FpJ1T1dOf9nzgWhxh
+         QEtA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692718257; x=1693323057;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=a7rvpiaBmdaWESCzJVCBdhucf56RoNv7C/zYiNdqugw=;
+        b=OrH8K6PG/gc+js7ef47EucxQmyOOhdAzBm+ZqJPY7ilWoOw9KmUfPCBCVBX8lLOZIL
+         flu54d3ZOztKhxKAdT1gmkyssnmb4xuRtSyBEIsyb1w+KMGak202nsxqZZ18nInK976y
+         V2dvEFmFaNzFhPISVRCQfP3AhBqPwu+a3BJqbtpZHHQwREqMtTZf8dcPfaFzCwuklFeG
+         zfng9hUKK9gECnA3TAC6seE+wdS7AkYV33UDqm3KNoHkeyCpu5jL4nqXhY3pvj7Ldrrs
+         3Pws4HCoG9bqy1t+7z2wb0Jtevu4MHsjzx35bKVRM6JPtJORs/by7CXI4FQMl+rf5JKp
+         xx3A==
+X-Gm-Message-State: AOJu0Yw231odrxiXNP1EqwPhaqanjIcUaia9AqSuB8vpQt7eCJFVkDeX
+	ba9GiiLw1Eipo3Cg4zGUbJpkq+s23hLkMV6qqzOaaQ==
+X-Google-Smtp-Source: AGHT+IFyMgkMgYPE+lsjqN8nfI8yOuu8gDBvx8ZWd4M7BOWwoDnsNIcZ50kelsgmgyRcsCUSHPMH6DyCCbSZ5fwKiiA=
+X-Received: by 2002:a05:600c:1716:b0:3fe:5228:b7a2 with SMTP id
+ c22-20020a05600c171600b003fe5228b7a2mr96047wmn.5.1692718256744; Tue, 22 Aug
+ 2023 08:30:56 -0700 (PDT)
+MIME-Version: 1.0
 References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com>
  <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com>
- <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com>
- <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+ <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com> <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+ <ZOTSyv6fuC1pkt76@casper.infradead.org>
+In-Reply-To: <ZOTSyv6fuC1pkt76@casper.infradead.org>
+From: Jann Horn <jannh@google.com>
+Date: Tue, 22 Aug 2023 17:30:19 +0200
+Message-ID: <CAG48ez2NrQjB5T5++uJSZ8-id5-H2mbSRX8c36gAJ5p_BMHOFw@mail.gmail.com>
+Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
+ versus uffd
+To: Matthew Wilcox <willy@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,20 +84,75 @@ Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Pet
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 22, 2023 at 04:39:43PM +0200, Jann Horn wrote:
-> > Perhaps something else will want that same behaviour in future (it's
-> > tempting, but difficult to guarantee correctness); for now, it is just
-> > userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
-> > expecting uffd to add more such exceptional modes in future).
-> 
-> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
-> wanted to make it possible to reliably install PTE markers with
-> madvise() or something like that, which might be nice for allowing
-> userspace to create guard pages without unnecessary extra VMAs...)
+On Tue, Aug 22, 2023 at 5:23=E2=80=AFPM Matthew Wilcox <willy@infradead.org=
+> wrote:
+> On Tue, Aug 22, 2023 at 04:39:43PM +0200, Jann Horn wrote:
+> > > Perhaps something else will want that same behaviour in future (it's
+> > > tempting, but difficult to guarantee correctness); for now, it is jus=
+t
+> > > userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
+> > > expecting uffd to add more such exceptional modes in future).
+> >
+> > Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
+> > wanted to make it possible to reliably install PTE markers with
+> > madvise() or something like that, which might be nice for allowing
+> > userspace to create guard pages without unnecessary extra VMAs...)
+>
+> I don't know what a userspace API for this would look like, but I have
+> a dream of creating guard VMAs which only live in the maple tree and
+> don't require the allocation of a struct VMA.  Use some magic reserved
+> pointer value like XA_ZERO_ENTRY to represent them ... seems more
+> robust than putting a PTE marker in the page tables?
 
-I don't know what a userspace API for this would look like, but I have
-a dream of creating guard VMAs which only live in the maple tree and
-don't require the allocation of a struct VMA.  Use some magic reserved
-pointer value like XA_ZERO_ENTRY to represent them ... seems more
-robust than putting a PTE marker in the page tables?
+Chrome currently uses a lot of VMAs for its heap, which I think are
+basically alternating PROT_NONE and PROT_READ|PROT_WRITE anonymous
+VMAs. Like this:
 
+[...]
+3a10002cf000-3a10002d0000 ---p 00000000 00:00 0
+3a10002d0000-3a10002e6000 rw-p 00000000 00:00 0
+3a10002e6000-3a10002e8000 ---p 00000000 00:00 0
+3a10002e8000-3a10002f2000 rw-p 00000000 00:00 0
+3a10002f2000-3a10002f4000 ---p 00000000 00:00 0
+3a10002f4000-3a10002fb000 rw-p 00000000 00:00 0
+3a10002fb000-3a10002fc000 ---p 00000000 00:00 0
+3a10002fc000-3a1000303000 rw-p 00000000 00:00 0
+3a1000303000-3a1000304000 ---p 00000000 00:00 0
+3a1000304000-3a100031b000 rw-p 00000000 00:00 0
+3a100031b000-3a100031c000 ---p 00000000 00:00 0
+3a100031c000-3a1000326000 rw-p 00000000 00:00 0
+3a1000326000-3a1000328000 ---p 00000000 00:00 0
+3a1000328000-3a100033a000 rw-p 00000000 00:00 0
+3a100033a000-3a100033c000 ---p 00000000 00:00 0
+3a100033c000-3a100038b000 rw-p 00000000 00:00 0
+3a100038b000-3a100038c000 ---p 00000000 00:00 0
+3a100038c000-3a100039b000 rw-p 00000000 00:00 0
+3a100039b000-3a100039c000 ---p 00000000 00:00 0
+3a100039c000-3a10003af000 rw-p 00000000 00:00 0
+3a10003af000-3a10003b0000 ---p 00000000 00:00 0
+3a10003b0000-3a10003e8000 rw-p 00000000 00:00 0
+3a10003e8000-3a1000401000 ---p 00000000 00:00 0
+3a1000401000-3a1000402000 rw-p 00000000 00:00 0
+3a1000402000-3a100040c000 ---p 00000000 00:00 0
+3a100040c000-3a100046f000 rw-p 00000000 00:00 0
+3a100046f000-3a1000470000 ---p 00000000 00:00 0
+3a1000470000-3a100047a000 rw-p 00000000 00:00 0
+3a100047a000-3a100047c000 ---p 00000000 00:00 0
+3a100047c000-3a1000492000 rw-p 00000000 00:00 0
+3a1000492000-3a1000494000 ---p 00000000 00:00 0
+3a1000494000-3a10004a2000 rw-p 00000000 00:00 0
+3a10004a2000-3a10004a4000 ---p 00000000 00:00 0
+3a10004a4000-3a10004b6000 rw-p 00000000 00:00 0
+3a10004b6000-3a10004b8000 ---p 00000000 00:00 0
+3a10004b8000-3a10004ea000 rw-p 00000000 00:00 0
+3a10004ea000-3a10004ec000 ---p 00000000 00:00 0
+3a10004ec000-3a10005f4000 rw-p 00000000 00:00 0
+3a10005f4000-3a1000601000 ---p 00000000 00:00 0
+3a1000601000-3a1000602000 rw-p 00000000 00:00 0
+3a1000602000-3a1000604000 ---p 00000000 00:00 0
+3a1000604000-3a100062b000 rw-p 00000000 00:00 0
+3a100062b000-3a1000801000 ---p 00000000 00:00 0
+[...]
+
+I was thinking if you used PTE markers as guards, you could maybe turn
+all that into more or less a single VMA?
