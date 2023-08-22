@@ -4,118 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A522BEE4996
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 14:56:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29486EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 15:29:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=PY0VteW8;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UdPc4Pft;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NbcKa2io;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVXVb0qq3z3byP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 00:56:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVYD243bZz3c3h
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 01:29:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=PY0VteW8;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UdPc4Pft;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NbcKa2io;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe0e::602; helo=eur04-vi1-obe.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com (mail-vi1eur04on0602.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe0e::602])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVXTZ5QFFz2xdg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 00:55:44 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=nVuo8A24PCw6Rl38JfcYoVJJCAVBmgTBDkr08WfryThY2wu8r8JEyLynZf6+eS/RqPoRzXy3Xgnq3nIld7trJFG4ll/vUpxMieyYxktbvUEh+dc2voIQoWjrbHI84iYv1uZ6uKpZydVm2Sq9m9WNUxJOk6UDf4vAkYq8fu5/7GQhjj9NZtH1iSmO2D1nbLuLiDYtkFkx9VPRGd5EjnchOltDoswkmx0sBZTQIGpafImZ/6TPZd+Nrrex0qD1YKBk22s95mJdH5gG1rxJu8FN7NHKOvaO8oaYjxSjF69+QlvAwdacBNwUd4a7EHH6ACMpD0ai/RHikeYpllCVziWZAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=aVqB6QIr0Oy194tvuxVk0WB6vOoANW0evRTgIrd85a4=;
- b=mhbgSoGKr9LK5Js4stcpv6o0sB3NyE9SAWOCNjrQ+MaTfgWZhJ49UvoJPQSBiWYpCXCcSk/hSq0N7NaaoM0LHP4hyH0d2sWR+XVe0GyRccXqF1AtG+rz6ko5s5rz4K1FHCakuHkATx0+lYXO9xwQ1i1GYlDA0INDQM0gaPoEGEeR8PoyNdARCACx0YrPcB4dCy2z2Q5VStDIHGyTUZMmfWichYj6p+CXFEA4AkEaQmKQ8uGt8Sr3Uq6l3NJgkNt0UUndRulFLddwBEvs0AqFZfdPFXcyZoEo8QNZt/hSX9X7b6zw+/EBZs97IfBOa5+EPLNSZPEvwGKJ6USAdfZI9Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=aVqB6QIr0Oy194tvuxVk0WB6vOoANW0evRTgIrd85a4=;
- b=PY0VteW8P8i6pRQbtFxcHy+DsToKlbwsl1JlDUWqUzemwNunANhS1uGVdAvzWFo0l2TKYVWGyUVnDhZ4OeEmr9wui62FDfJCtrbjL5Zi2KbqYQ73DjKyYwALVBSbRM08DCtmM6cvh7DLgWB+wjwZONj5Msp3IbquIqVO3CvHXlk=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from GV1PR04MB9070.eurprd04.prod.outlook.com (2603:10a6:150:21::14)
- by AS8PR04MB8547.eurprd04.prod.outlook.com (2603:10a6:20b:422::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.24; Tue, 22 Aug
- 2023 14:55:18 +0000
-Received: from GV1PR04MB9070.eurprd04.prod.outlook.com
- ([fe80::fd28:f7a2:1bc1:53a0]) by GV1PR04MB9070.eurprd04.prod.outlook.com
- ([fe80::fd28:f7a2:1bc1:53a0%6]) with mapi id 15.20.6699.022; Tue, 22 Aug 2023
- 14:55:17 +0000
-Date: Tue, 22 Aug 2023 17:55:12 +0300
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Sean Anderson <sean.anderson@seco.com>
-Subject: Re: [PATCH v14 00/15] phy: Add support for Lynx 10G SerDes
-Message-ID: <20230822145512.pc6qd4ovvnw4y3en@LXL00007.wbi.nxp.com>
-References: <20230612163353.dwouatvqbuo6h4ea@skbuf>
- <1dd01fe2-08a8-ec2f-1184-a58b2f55ba85@seco.com>
- <20230613142754.wr5njtjo4tbloqwu@skbuf>
- <20230811150826.urp2hzl3tahesrjx@skbuf>
- <26623d0c-8a5a-614b-7df7-69214aaec524@seco.com>
- <20230811163637.bs7a46juasjgnmf4@skbuf>
- <20230821124952.mraqqp7pxlo56gkh@skbuf>
- <a2e3fcad-9857-f1b3-8ada-efb2013a4bf5@seco.com>
- <20230821181349.hls6pukp5d6rc5av@LXL00007.wbi.nxp.com>
- <73d59dd2-88f0-3c1a-0de2-de2e050cba5a@seco.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <73d59dd2-88f0-3c1a-0de2-de2e050cba5a@seco.com>
-X-ClientProxiedBy: VI1P194CA0051.EURP194.PROD.OUTLOOK.COM
- (2603:10a6:803:3c::40) To GV1PR04MB9070.eurprd04.prod.outlook.com
- (2603:10a6:150:21::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVYC42BGNz2yVc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 01:28:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1692718092;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=W7u/YZ/Wut0bLQVB3sIyShhombPvduPeoIFrUf/4TCs=;
+	b=UdPc4Pft9tipryYd0mHz+CP5mHtw1szhDDDnThMMLOrsyCosvre7TGmhWB11sVjKWrIER6
+	RQ6no4YTxzZstwj3dpviSeCwOs5Ah4bk5/OB5bgc/wPfDAiqt//I4P785NVXJLyOY7GMUs
+	BiVbqd7k79hzFEkiEBTNjFJp2Vmd+es=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1692718093;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=W7u/YZ/Wut0bLQVB3sIyShhombPvduPeoIFrUf/4TCs=;
+	b=NbcKa2ioUP+cwfxGVeJojChGhZU74aUPQl/Yhn7RSQeCqFrqdVsd4lqd4foJIe5NZgs9DE
+	EBn2v7WzUXQJBPLpxm+qPwYynNxwseIkOkHWSqIwtwu3ifeL9jtRoAB2uZ+skel3WCaj1v
+	HCOVGY8RREqpFwhaxbaqpj/lgOJ2SO0=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-277-O_M8PMjbO4yigR1WEsMUgg-1; Tue, 22 Aug 2023 11:28:11 -0400
+X-MC-Unique: O_M8PMjbO4yigR1WEsMUgg-1
+Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-3fefc7845a2so3288785e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 08:28:10 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692718090; x=1693322890;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=W7u/YZ/Wut0bLQVB3sIyShhombPvduPeoIFrUf/4TCs=;
+        b=hgi/GLeYPdBYB6lp7YsobsWs3rJr5TjSzlgt/LqTOcUs6z4eY2lp1Y/ODz8Wv9XiB9
+         DszotJNOO9FZ1CBGng74pt2LuPbCLIz08lo3q9rF6iMyI2yi0k/2GrDJt+iJyz72A71m
+         af5204DZhwKtzd/Fto0cd62zF12oOo98r5ixNd2u1mZuGNM8a0Hbk8mJyJhQDR+Z35AF
+         UhxVNzQUP7P5oi8KH/lDXaE/FiTet9RVt7ETvvkEc7+j1cszCPCCTfBLp+dWwgutJYg1
+         HOp8WsH+/hsmVspa+qW0kIPqXeLH6ne2jgi4g7ZMj4vVqE1+nuHeD7KYi1mwhlzqjmLZ
+         s/Ew==
+X-Gm-Message-State: AOJu0YySSa6+ucwyAEvbAsgO5aJQN2ALjZISBF9qdlahgL1pYFW7btH3
+	q8/UkRZfPaxjojFTp8o3pR6W1z1LY6E2iuOy1KHO9vmHTawHgd7UA/wBAQ+GMxCd66yVXlc9XnE
+	ViGuoc+pO0RodkHr/ZaLEbf/BCg==
+X-Received: by 2002:a5d:684b:0:b0:317:597b:9f92 with SMTP id o11-20020a5d684b000000b00317597b9f92mr7482695wrw.57.1692718089911;
+        Tue, 22 Aug 2023 08:28:09 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGhmcY7QpIcuWsmvQMDNEnSwssc+JVnL70SZ7OEjsgpDCceuGn/p5O/9IhA+49A189R7TloOg==
+X-Received: by 2002:a5d:684b:0:b0:317:597b:9f92 with SMTP id o11-20020a5d684b000000b00317597b9f92mr7482669wrw.57.1692718089535;
+        Tue, 22 Aug 2023 08:28:09 -0700 (PDT)
+Received: from ?IPV6:2003:cb:c706:7400:83da:ebad:ba7f:c97c? (p200300cbc706740083daebadba7fc97c.dip0.t-ipconnect.de. [2003:cb:c706:7400:83da:ebad:ba7f:c97c])
+        by smtp.gmail.com with ESMTPSA id d4-20020adffd84000000b003141f96ed36sm16156605wrr.0.2023.08.22.08.28.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 22 Aug 2023 08:28:09 -0700 (PDT)
+Message-ID: <ae86ecd2-08b9-1865-ad80-591cb4f4d83f@redhat.com>
+Date: Tue, 22 Aug 2023 17:28:06 +0200
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV1PR04MB9070:EE_|AS8PR04MB8547:EE_
-X-MS-Office365-Filtering-Correlation-Id: 54584efa-0dff-41a4-178c-08dba31fcca5
-X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:  QUz2pvSPJ8nkLvCZguMDVEOIoeZzTzgoBR5iaEi4y3K7Lkx7K95UJCVSXj2kDGkoYDTJ2f9zG+hbQeCaGj5NOAHu7qu2RKjtQfQ9GGwhwc1dtepTA31yvVc7rhakulyIIHytzVpOhb6PdCrNYimjHGiOzfPOtUut77kT0LOGOrLlEs8CiNF0fA4hSll1lbCVI4JsqYBW0cklqn4/KHZtAgeA8kl6FwmbbnQwZCW7R7u8/pLv87RCqbtB5wpLBeWEFsdhA6Okof/SHNenUFVQ7xtJr9jme3gEniC2PTGXEy1BbS8CWFe8OeestrVoMCH84CPyT1iHZeTDz4ygkPw9jtWn2MjwYBLXdFlZM3q3CoaTTc1Bggo4ZnBRBYm2zo2kWVbRvbI0xHq2bVXw01nC/3rW4zdwVVgAhEwlqfnrtQRoTeYkdyT7HmRrrhVgJRE66jM6m1Lu7kes4WqLtBLWSoi1ZEy7F+Bitn2KxND6EdMehmr9EFE48WNNvyKrPXp0JjIoR1fpsxWOzudZcNJzWthz2WSdQ2iylA156pTQvX4=
-X-Forefront-Antispam-Report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV1PR04MB9070.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(136003)(376002)(39860400002)(346002)(366004)(1800799009)(186009)(451199024)(54906003)(6916009)(66476007)(66556008)(6512007)(316002)(66946007)(8676002)(8936002)(4326008)(966005)(41300700001)(1076003)(478600001)(6666004)(38100700002)(6486002)(53546011)(6506007)(83380400001)(2906002)(7416002)(86362001)(44832011)(5660300002)(26005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:  =?us-ascii?Q?vlzlZgil1aNwyhrB2b9V7gLe81GcMP+g9pCLRPZ45Xnfocn3RsogTp8fxyTD?=
- =?us-ascii?Q?YxMTsbsxJ3pqzRhBQZHj7SEJAhvwZtJMbFq2y8NLBhrMLuyxyQ9mdvYqcsxv?=
- =?us-ascii?Q?qVyVCwDAFz27Dd2Db7fAm579tm0beU9OFU52DZsScMHk2782rf5jOxIaragT?=
- =?us-ascii?Q?VPLRLbC+/Iy8rNc2CrkUU/mZLRz7lnBKVHDrJdzX6FKRcJ1NCrByvJAv5fwG?=
- =?us-ascii?Q?JCed244xDNWFgGD4AFwYATpcoNlHn7tLOEkZsCcrzlIdzFQj9rgsSJemHXNt?=
- =?us-ascii?Q?eDQH4OTD6U7/jeo3ICIDk8UT1mDEUp8XUueKvftc/PP0ZOrgLH35KRSrKCZ/?=
- =?us-ascii?Q?ZLidJxUUgmEnkRPSuCsvSzhTTf1g/rYNVvW2oW9RNhWomF5BlOYI4ISQuCwh?=
- =?us-ascii?Q?XwasCL4d9nBM3hshyvMzrRpYjagzkkpd13hw1HfvU356JWamcXg/+PAmb5B4?=
- =?us-ascii?Q?xDddnl9FztLX2rUDVzOu6df7bY7dQJ1wXf/Vjb7keu/Dpr8uddyx1hwZ0Hcj?=
- =?us-ascii?Q?Kk6luiW3z2QDQpH3LWP7kVCM3hmn2pCh+z0O4cHoEihSHLwL2uCfhYai7LzD?=
- =?us-ascii?Q?J9pQJAJtOCUhzf52LhOHdpBr0ndq580QgATZ5FD+L5J5KaUf9+Dm1ludgiZ2?=
- =?us-ascii?Q?Anib4qwtT6AKeBErRseM/u9LInMbfMY7U2RUMtKkmh4RTN9p2pKOr3Zek8KT?=
- =?us-ascii?Q?vsV/kqpqsfEQJWPcjNLlDfTiSS2GM9z4CJK5kNoYAeHy0tYsA/lprFxn4Ey3?=
- =?us-ascii?Q?1SY/5u7TcRazNb3FRcvv91KZwdFlPsAEZsiGduet4wnOSmJvqPk8n8QBbLbD?=
- =?us-ascii?Q?BKPgJj0bbp0w23N0p6mzEdMfNR/gRLfxshSEttcXn3pjSmMIipc/zjND0ULu?=
- =?us-ascii?Q?DvkMOyRJV8dDNJRPRqG0ozgx1gA2S9OzObZvmRsMEjHH+TTTva21AjQe6Bux?=
- =?us-ascii?Q?QgRsl7nIOeIbxj846ftgfapYWM3FqdbSwanC2VwpPm3mRQbXILf4i8NZ+xI8?=
- =?us-ascii?Q?yVpn8vp0XTxHfMIbPCBGrLmh0eKnFRV4TczGMdWg31dmxUIol2Z88XP2rzhj?=
- =?us-ascii?Q?glGfPRNBwqMnELnbAhmapJe/BnyaWglz9uumS9Yc+Aqlc9aLXFhestEeR3HP?=
- =?us-ascii?Q?QvISoPyxOIMh+r4T/aA9Oprd9T/4QvWH1WB2I+pEd3VYEvG9AVkOes0zzmAg?=
- =?us-ascii?Q?kB7Kdj7ZMvzzhq89LWdgFne9GbyyRZDfyYgqlDY0oup4ql4ZWLhNrx/APaRx?=
- =?us-ascii?Q?ZUYhxFwFv8Kk8k3OgYglu3w6jWMnEy3S0A0SP5Ikkx5JhiN2kQ/rQaizoDDf?=
- =?us-ascii?Q?afFTYpCc35xraFLwKg5gJPJVhlHiHwb7MmMflI2mqKXZwsxATS3d12DzQmue?=
- =?us-ascii?Q?JYlDk6PWPv0jndkPaSyscrz20g8k0SJoii1SK6XR1BJN3Buocp63v4IBTzK1?=
- =?us-ascii?Q?G4ABpaJuCHKO+J20isE2w7ofmSYwnplA8XWz5R6oNnM0Anl60P7jN9v9MQdd?=
- =?us-ascii?Q?sNMsCV9Q30+UqUsYG8S71vcnSBBkhcRPBz0LlgNh5oJ0n5v6pzfvLvubGTVl?=
- =?us-ascii?Q?wyG5Nv5iBK5/5rcAVZFFbqeLLkz0eGLTXiQnbjRR?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 54584efa-0dff-41a4-178c-08dba31fcca5
-X-MS-Exchange-CrossTenant-AuthSource: GV1PR04MB9070.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Aug 2023 14:55:17.8808
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: mPR8Y+BRCl4En17NB8tef9OvHdiTZUoVrcnhtbZSfX/b5+0fJnQ9IUKwFKlcijgoxe/yC83jwCh7EOvXkE3NjA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8547
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
+ versus uffd
+To: Jann Horn <jannh@google.com>, Hugh Dickins <hughd@google.com>
+References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com>
+ <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com>
+ <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com>
+ <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,70 +107,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?utf-8?B?RmVybuKUnMOtbmRleg==?= Rojas <noltari@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Michael Turquette <mturquette@baylibre.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Jonas Gorski <jonas.gorski@gmail.com>, linux-phy@lists.infradead.org, linux-clk@vger.kernel.org, Kishon Vijay Abraham I <kishon@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, linux-doc@vger.kernel.org, Camelia Alexandra Groza <camelia.groza@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@kernel.org>, linuxppc-dev@lists.ozlabs.org, Li Yang <leoyang.li@nxp.com>, Vinod Koul <vkoul@kernel.org>, Shawn Guo <shawnguo@kernel.org>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Camp
+ bell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 21, 2023 at 02:46:53PM -0400, Sean Anderson wrote:
-> On 8/21/23 14:13, Ioana Ciornei wrote:
-> > On Mon, Aug 21, 2023 at 01:45:44PM -0400, Sean Anderson wrote:
-> >> Well, we have two pieces of information we need
-> >> 
-> >> - What values do we need to program in the PCCRs to select a particular
-> >>   mode? This includes whether to e.g. set the KX bits.
-> >> - Implied by the above, what protocols are supported on which lanes?
-> >>   This is not strictly necessary, but will certainly solve a lot of
-> >>   headscratching.
-> >> 
-> >> This information varies between different socs, and different serdes on
-> >> the same socs. We can't really look at the RCW or the clocks and figure
-> >> out what we need to program. So what are our options?
-> >> 
-> >> - We can have a separate compatible for each serdes on each SoC (e.g.
-> >>   "fsl,lynx-10g-a"). This was rejected by the devicetree maintainers.
-
-I previously took this statement at face value and didn't further
-investigate. After a bit of digging through the first versions of this
-patch set it's evident that you left out a big piece of information.
-
-The devicetree maintainers have indeed rejected compatible strings of
-the "fsl,<soc-name>-serdes-<instance>" form but they also suggested to
-move the numbering to a property instead:
-
-https://lore.kernel.org/all/db9d9455-37af-1616-8f7f-3d752e7930f1@linaro.org/
-
-But instead of doing that, you chose to move all the different details
-that vary between SerDes blocks/SoCs from the driver to the DTS. I don't
-see that this was done in response to explicit feedback.
-
-> >> - We can have one compatible for each SoC, and determine the serdes
-> >>   based on the address. I would like to avoid this...
-> > 
-> > To me this really seems like a straightforward approach.
+On 22.08.23 16:39, Jann Horn wrote:
+> On Tue, Aug 22, 2023 at 4:51 AM Hugh Dickins <hughd@google.com> wrote:
+>> On Mon, 21 Aug 2023, Jann Horn wrote:
+>>> On Mon, Aug 21, 2023 at 9:51 PM Hugh Dickins <hughd@google.com> wrote:
+>>>> Just for this case, take the pmd_lock() two steps earlier: not because
+>>>> it gives any protection against this case itself, but because ptlock
+>>>> nests inside it, and it's the dropping of ptlock which let the bug in.
+>>>> In other cases, continue to minimize the pmd_lock() hold time.
+>>>
+>>> Special-casing userfaultfd like this makes me a bit uncomfortable; but
+>>> I also can't find anything other than userfaultfd that would insert
+>>> pages into regions that are khugepaged-compatible, so I guess this
+>>> works?
+>>
+>> I'm as sure as I can be that it's solely because userfaultfd breaks
+>> the usual rules here (and in fairness, IIRC Andrea did ask my permission
+>> before making it behave that way on shmem, COWing without a source page).
+>>
+>> Perhaps something else will want that same behaviour in future (it's
+>> tempting, but difficult to guarantee correctness); for now, it is just
+>> userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
+>> expecting uffd to add more such exceptional modes in future).
 > 
-> Indeed it would be straightforward, but what's the point of having a
-> devicetree in the first place then? We could just go back to being a
-> (non-dt) platform device.
-> 
+> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
+> wanted to make it possible to reliably install PTE markers with
+> madvise() or something like that, which might be nice for allowing
+> userspace to create guard pages without unnecessary extra VMAs...)
 
-I am confused why you are now so adamant to have these details into the
-DTS. Your first approach was to put them into the driver, not the DTS:
+I'm working on something similar that goes a bit further than just guard 
+pages. It also installs PTE markers into page tables, inside existing 
+large VMAs.
 
-https://lore.kernel.org/netdev/20220628221404.1444200-5-sean.anderson@seco.com/
+Initially, I'll only tackle anon VMAs, though.
 
-And this approach could still work now and get accepted by the device
-tree maintainers. The only change that would be needed is to add a
-property like "fsl,serdes-block-id = <1>".
+-- 
+Cheers,
 
-> >> - We can stick all the details which vary between serdes/socs into the
-> >>   device tree. This is very flexible, since supporting new SoCs is
-> >>   mostly a matter of adding a new compatible and writing a new
-> >>   devicetree. On the other hand, if you have a bug in your devicetree,
-> >>   it's not easy to fix it in the kernel.
-> >> - Just don't support protocol switching. The 28G driver does this, which
-> >>   is why it only has one compatible. However, supporting protocol
-> >>   switching is a core goal of this driver, so dropping support is not an
-> >>   option.
-> >> 
+David / dhildenb
 
-Ioana
