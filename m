@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0220DEE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F3B3EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:06:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4gh54Wjz3dwL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:06:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4hC1qlXz3f13
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:06:51 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cc1mrXz2ytp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cc6FFzz2ytp
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:44 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cb6hVJz4wy7;
-	Wed, 23 Aug 2023 22:03:43 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cc4jj5z4wy9;
+	Wed, 23 Aug 2023 22:03:44 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <2cb498f637e082a4af8032311fad3cae84d6aa5d.1692199324.git.christophe.leroy@csgroup.eu>
-References: <2cb498f637e082a4af8032311fad3cae84d6aa5d.1692199324.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/83xx: Fix style problems in usb.c and remove unneccessary includes from mpc83xx.h
-Message-Id: <169279175569.797584.3444196924144422566.b4-ty@ellerman.id.au>
+In-Reply-To: <e89d9927c926044e54fd056a849785f526c6414f.1692282340.git.christophe.leroy@csgroup.eu>
+References: <e89d9927c926044e54fd056a849785f526c6414f.1692282340.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/47x: Add prototype for mmu_init_secondary()
+Message-Id: <169279175576.797584.4374265621871502219.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,26 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 16 Aug 2023 17:22:16 +0200, Christophe Leroy wrote:
-> Replace printk(KERN_WARN with pr_warn(
+On Thu, 17 Aug 2023 16:25:49 +0200, Christophe Leroy wrote:
+> A W=1 build of 44x/iss476-smp_defconfig gives:
 > 
-> Remove a couple of blank lines
+> arch/powerpc/mm/nohash/44x.c:220:13: error: no previous prototype for 'mmu_init_secondary' [-Werror=missing-prototypes]
+>   220 | void __init mmu_init_secondary(int cpu)
+>       |             ^~~~~~~~~~~~~~~~~~
 > 
-> Re-align multi-line code.
-> 
-> Replace asm/io.h by linux/io.h
+> That function is called from head_4xx.S
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/83xx: Fix style problems in usb.c and remove unneccessary includes from mpc83xx.h
-      https://git.kernel.org/powerpc/c/d25f01fba71dbaa117021aed3ea85cc5476c1a5a
-[2/2] powerpc/83xx: Split usb.c
-      https://git.kernel.org/powerpc/c/5951b62ba4635881f1eb6c30e35d476871ff5d12
+[1/1] powerpc/47x: Add prototype for mmu_init_secondary()
+      https://git.kernel.org/powerpc/c/b27c1a0a4e62af1fd9d2688bf8156a5d546e4227
 
 cheers
