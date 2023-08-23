@@ -4,29 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C746EE49B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F8F5EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:16:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4vB5kJKz3fdr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:16:22 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4vh6vwWz3dcx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:16:48 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cz3frRz3cDV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4d415QQz3cHP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:08 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4RW4d40gKkz4x2L; Wed, 23 Aug 2023 22:04:08 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cz2GpGz4x3D;
-	Wed, 23 Aug 2023 22:04:03 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4d36fb2z4wy7;
+	Wed, 23 Aug 2023 22:04:07 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Linus Walleij <linus.walleij@linaro.org>
-In-Reply-To: <20230809-virt-to-phys-powerpc-v1-1-12e912a7d439@linaro.org>
-References: <20230809-virt-to-phys-powerpc-v1-1-12e912a7d439@linaro.org>
-Subject: Re: [PATCH] powerpc: Make virt_to_pfn() a static inline
-Message-Id: <169279175548.797584.16810981257080808003.b4-ty@ellerman.id.au>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Mahesh Salgaonkar <mahesh@linux.ibm.com>
+In-Reply-To: <169235811556.193557.1023625262204809514.stgit@jupiter>
+References: <169235811556.193557.1023625262204809514.stgit@jupiter>
+Subject: Re: [PATCH v9 1/2] powerpc/rtas: export rtas_error_rc() for reuse.
+Message-Id: <169279175579.797584.15043748481336876672.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +44,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci <linux-pci@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 09 Aug 2023 10:07:13 +0200, Linus Walleij wrote:
-> Making virt_to_pfn() a static inline taking a strongly typed
-> (const void *) makes the contract of a passing a pointer of that
-> type to the function explicit and exposes any misuse of the
-> macro virt_to_pfn() acting polymorphic and accepting many types
-> such as (void *), (unitptr_t) or (unsigned long) as arguments
-> without warnings.
+On Fri, 18 Aug 2023 16:59:07 +0530, Mahesh Salgaonkar wrote:
+> Also, #define descriptive names for common rtas return codes and use it
+> instead of numeric values.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Make virt_to_pfn() a static inline
-      https://git.kernel.org/powerpc/c/58b6fed89ab0f602de0d143c617c29c3d4c67429
+[1/2] powerpc/rtas: export rtas_error_rc() for reuse.
+      https://git.kernel.org/powerpc/c/e160bf64e2d3df7bf83ed41d09390a32490be6c5
+[2/2] PCI: rpaphp: Error out on busy status from get-sensor-state
+      https://git.kernel.org/powerpc/c/77583f77ed9b1452ac62caebf09b2206da10bbf9
 
 cheers
