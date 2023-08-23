@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B2C3EE49B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:06:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0220DEE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:06:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4gB75gpz3dkg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:05:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4gh54Wjz3dwL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:06:24 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cb3ZJ9z2ytp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cc1mrXz2ytp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:44 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cb2JwRz4wy4;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cb6hVJz4wy7;
 	Wed, 23 Aug 2023 22:03:43 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
-In-Reply-To: <20230725005841.28854-1-bgray@linux.ibm.com>
-References: <20230725005841.28854-1-bgray@linux.ibm.com>
-Subject: Re: (subset) [PATCH v1 0/4] Improve ptrace selftest usability
-Message-Id: <169279175563.797584.17410071728478653237.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <2cb498f637e082a4af8032311fad3cae84d6aa5d.1692199324.git.christophe.leroy@csgroup.eu>
+References: <2cb498f637e082a4af8032311fad3cae84d6aa5d.1692199324.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/83xx: Fix style problems in usb.c and remove unneccessary includes from mpc83xx.h
+Message-Id: <169279175569.797584.3444196924144422566.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,27 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 25 Jul 2023 10:58:37 +1000, Benjamin Gray wrote:
-> While trying to test changes to the breakpoint implementation in the kernel, I
-> tried to run the ptrace tests and met many unexplained skips and failures.
+On Wed, 16 Aug 2023 17:22:16 +0200, Christophe Leroy wrote:
+> Replace printk(KERN_WARN with pr_warn(
 > 
-> This series addresses the pain points of trying to run these tests and learn
-> what they are doing.
+> Remove a couple of blank lines
 > 
-> Benjamin Gray (4):
->   Documentation/powerpc: Fix ptrace request names
->   selftests/powerpc/ptrace: Explain why tests are skipped
->   selftests/powerpc/ptrace: Fix typo in pid_max search error
->   selftests/powerpc/ptrace: Declare test temporary variables as volatile
+> Re-align multi-line code.
+> 
+> Replace asm/io.h by linux/io.h
 > 
 > [...]
 
-Patch 1 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/4] Documentation/powerpc: Fix ptrace request names
-      https://git.kernel.org/powerpc/c/0e216fa576e1cdea3913fe82b7283fdfb58c5c07
+[1/2] powerpc/83xx: Fix style problems in usb.c and remove unneccessary includes from mpc83xx.h
+      https://git.kernel.org/powerpc/c/d25f01fba71dbaa117021aed3ea85cc5476c1a5a
+[2/2] powerpc/83xx: Split usb.c
+      https://git.kernel.org/powerpc/c/5951b62ba4635881f1eb6c30e35d476871ff5d12
 
 cheers
