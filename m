@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13ECBEE49A0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 05:55:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36C10EE49AE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 05:56:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BvUIc7yu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rxPKWVvB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVwRJ44BVz3bwp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 15:55:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RVwSG4rKZz3cD3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 15:55:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BvUIc7yu;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rxPKWVvB;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVwPK4JfTz2ytp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 15:53:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVwPL6xH2z2ytp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 15:53:26 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1692770005;
-	bh=6zhe36UKUmBT+aimyIqtl+Kbg4x+K5mg92VyZJAmTGQ=;
+	bh=WNSWjRhivhsPoefEDo29YmY/XDs4W+s/NXrLXMmZ1ms=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BvUIc7yu8Bnf4OJVQ9ZQODcCLVPHr6I7dhPzpW6bTrydk3rsNEzBJb8a19Cu/pANr
-	 v386anixoiJZqhhAoZ57oo7CX9Oi79tHhV6qWDMJPViAooaHLyh2jm7zIjFNfBg98u
-	 +u2agbk/My4yT/BaPko958iaxhNU7fqBYkXUjAbVPZwA70oCfq6dggDgo9S1dSj7KF
-	 xY/83C1Qh8aBB/vkmsON7GeO61epLCZDQkocAqCERn3b17GxxB/HU9IGYcQbO/w/jJ
-	 YYpWBi+Q5jJvWL/COX3rjANqL75/UbVvmdKu3BFvzwI3KoUtoK0ThAEuKgKUJuKr+h
-	 KFlqoo6E0NrKg==
+	b=rxPKWVvBGuC+ZV87tP7nFoSPj9wWNx134McNdvghzAjv25KdExaXu6eSOFqUAprtG
+	 GSlEAXEOTObctXrcXPxddfpEg1oZqKoW69sA96XexM/EW239AsQT4cA1o7kcuLbXKy
+	 PR5Lq6Z68aZvq4Az5Lhbtyvhsc0s2hT+iy0Rw8ZU7qBubUqcWDDQlY9m3WnGWofudR
+	 s7HB5NfrdteyLQ46ZQSgPgwKqDxoyXpJhD7pWeDzq3Bbb7zXapzlVvb9evFXBF2Y8P
+	 6R6kdNQcuSm62z4+33QYuBCR+7BgCqXXCMJqmCF7UxpfmlqFSiOFeoQL3pZSGQtav+
+	 SyAOpNv27AvEQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RVwPK2xWnz4x0W;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RVwPK0tlXz4wy9;
 	Wed, 23 Aug 2023 15:53:25 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 4/4] powerpc/pseries: Rework lppaca_shared_proc() to avoid DEBUG_PREEMPT
-Date: Wed, 23 Aug 2023 15:53:17 +1000
-Message-ID: <20230823055317.751786-4-mpe@ellerman.id.au>
+Subject: [PATCH 3/4] powerpc: Don't include lppaca.h in paca.h
+Date: Wed, 23 Aug 2023 15:53:16 +1000
+Message-ID: <20230823055317.751786-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230823055317.751786-1-mpe@ellerman.id.au>
 References: <20230823055317.751786-1-mpe@ellerman.id.au>
@@ -62,157 +62,125 @@ Cc: ruscur@russell.cc
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Russell Currey <ruscur@russell.cc>
+By adding a forward declaration for struct lppaca we can untangle paca.h
+and lppaca.h. Also move get_lppaca() into lppaca.h for consistency.
 
-lppaca_shared_proc() takes a pointer to the lppaca which is typically
-accessed through get_lppaca().  With DEBUG_PREEMPT enabled, this leads
-to checking if preemption is enabled, for example:
+Add includes of lppaca.h to some files that need it.
 
-  BUG: using smp_processor_id() in preemptible [00000000] code: grep/10693
-  caller is lparcfg_data+0x408/0x19a0
-  CPU: 4 PID: 10693 Comm: grep Not tainted 6.5.0-rc3 #2
-  Call Trace:
-    dump_stack_lvl+0x154/0x200 (unreliable)
-    check_preemption_disabled+0x214/0x220
-    lparcfg_data+0x408/0x19a0
-    ...
-
-This isn't actually a problem however, as it does not matter which
-lppaca is accessed, the shared proc state will be the same.
-vcpudispatch_stats_procfs_init() already works around this by disabling
-preemption, but the lparcfg code does not, erroring any time
-/proc/powerpc/lparcfg is accessed with DEBUG_PREEMPT enabled.
-
-Instead of disabling preemption on the caller side, rework
-lppaca_shared_proc() to not take a pointer and instead directly access
-the lppaca, bypassing any potential preemption checks.
-
-Fixes: f13c13a00512 ("powerpc: Stop using non-architected shared_proc field in lppaca")
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-[mpe: Rework to avoid needing a definition in paca.h and lppaca.h]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://msgid.link/20230808005317.20374-1-ruscur@russell.cc
 ---
- arch/powerpc/include/asm/lppaca.h        | 11 +++++++++--
- arch/powerpc/platforms/pseries/lpar.c    | 10 +---------
- arch/powerpc/platforms/pseries/lparcfg.c |  4 ++--
- arch/powerpc/platforms/pseries/setup.c   |  2 +-
- drivers/cpuidle/cpuidle-pseries.c        |  8 +-------
- 5 files changed, 14 insertions(+), 21 deletions(-)
-
-v2: mpe, rework based on the preceeding header untangling patches.
+ arch/powerpc/include/asm/lppaca.h         | 4 ++++
+ arch/powerpc/include/asm/paca.h           | 6 +-----
+ arch/powerpc/include/asm/paravirt.h       | 1 +
+ arch/powerpc/include/asm/plpar_wrappers.h | 1 +
+ arch/powerpc/kvm/book3s_hv_ras.c          | 1 +
+ arch/powerpc/mm/book3s64/slb.c            | 1 +
+ arch/powerpc/xmon/xmon.c                  | 1 +
+ 7 files changed, 10 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-index b6a63fa0965f..61ec2447dabf 100644
+index 27f0421188ec..b6a63fa0965f 100644
 --- a/arch/powerpc/include/asm/lppaca.h
 +++ b/arch/powerpc/include/asm/lppaca.h
-@@ -23,6 +23,7 @@
- #include <asm/types.h>
- #include <asm/mmu.h>
- #include <asm/firmware.h>
-+#include <asm/paca.h>
- 
- /*
-  * The lppaca is the "virtual processor area" registered with the hypervisor,
-@@ -105,14 +106,20 @@ struct lppaca {
-  */
- #define LPPACA_OLD_SHARED_PROC		2
- 
--static inline bool lppaca_shared_proc(struct lppaca *l)
-+#ifdef CONFIG_PPC_PSERIES
-+/*
-+ * All CPUs should have the same shared proc value, so directly access the PACA
-+ * to avoid false positives from DEBUG_PREEMPT.
-+ */
-+static inline bool lppaca_shared_proc(void)
- {
-+	struct lppaca *l = local_paca->lppaca_ptr;
-+
- 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
- 		return false;
+@@ -112,6 +112,10 @@ static inline bool lppaca_shared_proc(struct lppaca *l)
  	return !!(l->__old_status & LPPACA_OLD_SHARED_PROC);
  }
  
--#ifdef CONFIG_PPC_PSERIES
- #define get_lppaca()	(get_paca()->lppaca_ptr)
++#ifdef CONFIG_PPC_PSERIES
++#define get_lppaca()	(get_paca()->lppaca_ptr)
++#endif
++
+ /*
+  * SLB shadow buffer structure as defined in the PAPR.  The save_area
+  * contains adjacent ESID and VSID pairs for each shadowed SLB.  The
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index cb325938766a..e667d455ecb4 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -15,7 +15,6 @@
+ #include <linux/cache.h>
+ #include <linux/string.h>
+ #include <asm/types.h>
+-#include <asm/lppaca.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+ #ifdef CONFIG_PPC_BOOK3E_64
+@@ -47,14 +46,11 @@ extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
+ #define get_paca()	local_paca
  #endif
  
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 27fb656bd6ba..f2cb62148f36 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -640,16 +640,8 @@ static const struct proc_ops vcpudispatch_stats_freq_proc_ops = {
+-#ifdef CONFIG_PPC_PSERIES
+-#define get_lppaca()	(get_paca()->lppaca_ptr)
+-#endif
+-
+ #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
  
- static int __init vcpudispatch_stats_procfs_init(void)
- {
--	/*
--	 * Avoid smp_processor_id while preemptible. All CPUs should have
--	 * the same value for lppaca_shared_proc.
--	 */
--	preempt_disable();
--	if (!lppaca_shared_proc(get_lppaca())) {
--		preempt_enable();
-+	if (!lppaca_shared_proc())
- 		return 0;
--	}
--	preempt_enable();
+ struct task_struct;
+ struct rtas_args;
++struct lppaca;
  
- 	if (!proc_create("powerpc/vcpudispatch_stats", 0600, NULL,
- 					&vcpudispatch_stats_proc_ops))
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index 8acc70509520..1c151d77e74b 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -206,7 +206,7 @@ static void parse_ppp_data(struct seq_file *m)
- 	           ppp_data.active_system_procs);
+ /*
+  * Defines the layout of the paca.
+diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
+index f5ba1a3c41f8..e08513d73119 100644
+--- a/arch/powerpc/include/asm/paravirt.h
++++ b/arch/powerpc/include/asm/paravirt.h
+@@ -6,6 +6,7 @@
+ #include <asm/smp.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
++#include <asm/lppaca.h>
+ #include <asm/hvcall.h>
+ #endif
  
- 	/* pool related entries are appropriate for shared configs */
--	if (lppaca_shared_proc(get_lppaca())) {
-+	if (lppaca_shared_proc()) {
- 		unsigned long pool_idle_time, pool_procs;
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 8239c0af5eb2..fe3d0ea0058a 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -9,6 +9,7 @@
  
- 		seq_printf(m, "pool=%d\n", ppp_data.pool_num);
-@@ -560,7 +560,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 		   partition_potential_processors);
+ #include <asm/hvcall.h>
+ #include <asm/paca.h>
++#include <asm/lppaca.h>
+ #include <asm/page.h>
  
- 	seq_printf(m, "shared_processor_mode=%d\n",
--		   lppaca_shared_proc(get_lppaca()));
-+		   lppaca_shared_proc());
+ static inline long poll_pending(void)
+diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
+index ccfd96965630..82be6d87514b 100644
+--- a/arch/powerpc/kvm/book3s_hv_ras.c
++++ b/arch/powerpc/kvm/book3s_hv_ras.c
+@@ -9,6 +9,7 @@
+ #include <linux/kvm.h>
+ #include <linux/kvm_host.h>
+ #include <linux/kernel.h>
++#include <asm/lppaca.h>
+ #include <asm/opal.h>
+ #include <asm/mce.h>
+ #include <asm/machdep.h>
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+index 6956f637a38c..f2708c8629a5 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -13,6 +13,7 @@
+ #include <asm/mmu.h>
+ #include <asm/mmu_context.h>
+ #include <asm/paca.h>
++#include <asm/lppaca.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 78453b9b1ba0..6c6f90f1da94 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -58,6 +58,7 @@
+ #ifdef CONFIG_PPC64
+ #include <asm/hvcall.h>
+ #include <asm/paca.h>
++#include <asm/lppaca.h>
+ #endif
  
- #ifdef CONFIG_PPC_64S_HASH_MMU
- 	if (!radix_enabled())
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index bb0a9aeb50f9..ecea85c74c43 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -849,7 +849,7 @@ static void __init pSeries_setup_arch(void)
- 	if (firmware_has_feature(FW_FEATURE_LPAR)) {
- 		vpa_init(boot_cpuid);
- 
--		if (lppaca_shared_proc(get_lppaca())) {
-+		if (lppaca_shared_proc()) {
- 			static_branch_enable(&shared_processor);
- 			pv_spinlocks_init();
- #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index a7d33f3ee01e..14db9b7d985d 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -414,13 +414,7 @@ static int __init pseries_idle_probe(void)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		/*
--		 * Use local_paca instead of get_lppaca() since
--		 * preemption is not disabled, and it is not required in
--		 * fact, since lppaca_ptr does not need to be the value
--		 * associated to the current CPU, it can be from any CPU.
--		 */
--		if (lppaca_shared_proc(local_paca->lppaca_ptr)) {
-+		if (lppaca_shared_proc()) {
- 			cpuidle_state_table = shared_states;
- 			max_idle_state = ARRAY_SIZE(shared_states);
- 		} else {
+ #include "nonstdio.h"
 -- 
 2.41.0
 
