@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87E6EEE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:13:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 970AAEE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:13:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4qY1kF2z3gsD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:13:13 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4r42MYRz3gcP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:13:40 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cq6lkLz3c53
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cr5348z3c8c
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:56 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cq5LxTz4x2X;
-	Wed, 23 Aug 2023 22:03:55 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cr3brtz4wxQ;
+	Wed, 23 Aug 2023 22:03:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <0a667b7c2e05d3cf41ecd38f33cc334083a61c8d.1692282396.git.christophe.leroy@csgroup.eu>
-References: <0a667b7c2e05d3cf41ecd38f33cc334083a61c8d.1692282396.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] powerpc/47x: Remove early_init_mmu_47x() to fix no previous prototype
-Message-Id: <169279175576.797584.1515002714869080486.b4-ty@ellerman.id.au>
+In-Reply-To: <36a19e13025dbf17e92e832dd24150642b0e9bad.1692341499.git.christophe.leroy@csgroup.eu>
+References: <36a19e13025dbf17e92e832dd24150642b0e9bad.1692341499.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc/512x: Make mpc512x_select_reset_compat() static
+Message-Id: <169279175576.797584.9419412535329287.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Aug 2023 16:26:44 +0200, Christophe Leroy wrote:
-> 4xx/iss476-smp_defconfig leads to:
+On Fri, 18 Aug 2023 08:51:48 +0200, Christophe Leroy wrote:
+> mpc512x_select_reset_compat() is only used in the file it
+> is defined.
 > 
->   CC      arch/powerpc/mm/nohash/tlb.o
-> arch/powerpc/mm/nohash/tlb.c:322:13: error: no previous prototype for 'early_init_mmu_47x' [-Werror=missing-prototypes]
->   322 | void __init early_init_mmu_47x(void)
->       |             ^~~~~~~~~~~~~~~~~~
+> Make it static.
+> 
+> Move mpc512x_restart_init() after mpc512x_select_reset_compat().
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/47x: Remove early_init_mmu_47x() to fix no previous prototype
-      https://git.kernel.org/powerpc/c/ed05c71a574235aec3418d2b5c94f24ae84cc2db
+[1/1] powerpc/512x: Make mpc512x_select_reset_compat() static
+      https://git.kernel.org/powerpc/c/be922070d0914c6642256ceec6b7be75c0a5ddf3
 
 cheers
