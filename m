@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8304AEE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:09:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AD0BEE49B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:09:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4lG1m2sz3dF6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:09:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4lm59J3z3djh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:09:56 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cj5YhYz3c4R
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4ck37Fsz3c27
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:50 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cj44xXz4x2J;
-	Wed, 23 Aug 2023 22:03:49 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4ck1hL6z4x2K;
+	Wed, 23 Aug 2023 22:03:50 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <0aa1141e18a84d926e199093204b37ec993f0c87.1692275185.git.christophe.leroy@csgroup.eu>
-References: <0aa1141e18a84d926e199093204b37ec993f0c87.1692275185.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/8xx: Remove init_internal_rtc() to fix no previous prototype error
-Message-Id: <169279175575.797584.8768847213468834876.b4-ty@ellerman.id.au>
+In-Reply-To: <2115e3597d81e72a865820af54f0e290d0fd2b3a.1692199186.git.christophe.leroy@csgroup.eu>
+References: <2115e3597d81e72a865820af54f0e290d0fd2b3a.1692199186.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/fsl_pci: Make fsl_add_bridge() static
+Message-Id: <169279175569.797584.16230105849895300688.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Aug 2023 14:26:45 +0200, Christophe Leroy wrote:
-> A W=1 build of mpc885_ads_defconfig throws the following error:
+On Wed, 16 Aug 2023 17:19:54 +0200, Christophe Leroy wrote:
+> Since commit 905e75c46dba ("powerpc/fsl-pci: Unify pci/pcie initialization code")
+> fsl_add_bridge() is not used anymore outside of fsl_pci.c
 > 
->   CC      arch/powerpc/platforms/8xx/m8xx_setup.o
-> arch/powerpc/platforms/8xx/m8xx_setup.c:41:1: error: no previous prototype for 'init_internal_rtc' [-Werror=missing-prototypes]
->    41 | init_internal_rtc(void)
->       | ^~~~~~~~~~~~~~~~~
+> Make it static.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/8xx: Remove init_internal_rtc() to fix no previous prototype error
-      https://git.kernel.org/powerpc/c/4531f128eac356144545b833908b6ffbc0292e16
+[1/1] powerpc/fsl_pci: Make fsl_add_bridge() static
+      https://git.kernel.org/powerpc/c/6960c53c4c32865a7e79022e626aa82b64da4110
 
 cheers
