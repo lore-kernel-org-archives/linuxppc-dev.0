@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35FC6EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D87DEE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:15:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4s66Py5z3dXP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:14:34 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4sd6Gy7z3cBs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:15:01 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cw40Cwz3c8n
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cx18zlz3c12
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:01 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cw2bgnz4x2V;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cw6t87z4x2b;
 	Wed, 23 Aug 2023 22:04:00 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, Gautam Menghani <gautam@linux.ibm.com>
-In-Reply-To: <20230731115543.36991-1-gautam@linux.ibm.com>
-References: <20230731115543.36991-1-gautam@linux.ibm.com>
-Subject: Re: [PATCH v2] arch/powerpc: Remove unnecessary endian conversion code in XICS
-Message-Id: <169279175568.797584.10256881719025771730.b4-ty@ellerman.id.au>
+To: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20230609071404.425529-1-hbathini@linux.ibm.com>
+References: <20230609071404.425529-1-hbathini@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/fadump: invoke ibm,os-term with rtas_call_unlocked()
+Message-Id: <169279175576.797584.334285969180052100.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 31 Jul 2023 17:25:39 +0530, Gautam Menghani wrote:
-> Remove an unnecessary piece of code that does an endianness conversion but
-> does not use the result. The following warning was reported by Clang's
-> static analyzer:
+On Fri, 09 Jun 2023 12:44:04 +0530, Hari Bathini wrote:
+> Invoke ibm,os-term call with rtas_call_unlocked(), without using the
+> RTAS spinlock, to avoid deadlock in the unlikely event of a machine
+> crash while making an RTAS call.
 > 
-> arch/powerpc/sysdev/xics/ics-opal.c:114:2: warning: Value stored to
-> 'server' is never read [deadcode.DeadStores]
-> server = be16_to_cpu(oserver);
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] arch/powerpc: Remove unnecessary endian conversion code in XICS
-      https://git.kernel.org/powerpc/c/984b07b428994d9e83c6de9a5f1307948188fe71
+[1/1] powerpc/fadump: invoke ibm,os-term with rtas_call_unlocked()
+      https://git.kernel.org/powerpc/c/b949ee6801f4a47ae0e02845242c99af351c4d26
 
 cheers
