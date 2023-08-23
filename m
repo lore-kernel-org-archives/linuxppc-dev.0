@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B41E9EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:15:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9B58EE49B2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:15:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4t935Xzz3gqJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:15:29 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4th3QQdz3fDZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:15:56 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cx5wsDz3cCl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cy55qHz3c7C
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:02 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cx3wK5z4x3F;
-	Wed, 23 Aug 2023 22:04:01 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cy2gyGz4x2R;
+	Wed, 23 Aug 2023 22:04:02 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Geoff Levand <geoff@infradead.org>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Justin Stitt <justinstitt@google.com>
-In-Reply-To: <20230816-strncpy-arch-powerpc-platforms-ps3-repository-v1-1-88283b02fb09@google.com>
-References: <20230816-strncpy-arch-powerpc-platforms-ps3-repository-v1-1-88283b02fb09@google.com>
-Subject: Re: [PATCH] powerpc/ps3: refactor strncpy usage
-Message-Id: <169279175569.797584.351106709683075020.b4-ty@ellerman.id.au>
+To: Kajol Jain <kjain@linux.ibm.com>
+In-Reply-To: <20230729073455.7918-1-kjain@linux.ibm.com>
+References: <20230729073455.7918-1-kjain@linux.ibm.com>
+Subject: Re: [PATCH v4 00/10] Add sysfs interface files to hv_gpci device to expose system information
+Message-Id: <169279175562.797584.14623659463630712570.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>
+Cc: atrajeev@linux.vnet.ibm.com, rdunlap@infradead.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 16 Aug 2023 21:39:24 +0000, Justin Stitt wrote:
-> `strncpy` is deprecated for use on NUL-terminated destination strings [1].
-> 
-> `make_first_field()` should use similar implementation to `make_field()`
-> due to memcpy having more obvious behavior here. The end result yields
-> the same behavior as the previous `strncpy`-based implementation
-> including the NUL-padding.
+On Sat, 29 Jul 2023 13:04:45 +0530, Kajol Jain wrote:
+> The hcall H_GET_PERF_COUNTER_INFO can be used to get data related to
+> chips, dimms and system topology, by passing different counter request
+> values.
+> Patchset adds sysfs files to "/sys/devices/hv_gpci/interface/"
+> of hv_gpci pmu driver, which will expose system topology information
+> using H_GET_PERF_COUNTER_INFO hcall. The added sysfs files are
+> available for power10 and above platforms and needs root access
+> to read the data.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/ps3: refactor strncpy usage
-      https://git.kernel.org/powerpc/c/f94a84a0914841d79a38df7cc75512d88b31a0dc
+[01/10] powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor bus topology information
+        https://git.kernel.org/powerpc/c/71f1c39647d8c9d4d54a861ec81f1ff17544bcb6
+[02/10] docs: ABI: sysfs-bus-event_source-devices-hv_gpci: Document processor_bus_topology sysfs interface file
+        https://git.kernel.org/powerpc/c/9caf9e2b8bae58e39501f6fb1fc9189009538ccc
+[03/10] powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor config information
+        https://git.kernel.org/powerpc/c/1a160c2a13c66c9ad47436e73c821f3d26818733
+[04/10] docs: ABI: sysfs-bus-event_source-devices-hv_gpci: Document processor_config sysfs interface file
+        https://git.kernel.org/powerpc/c/3255171d3e861b14e4248a5c676099819cadfb6d
+[05/10] powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via virtual processor information
+        https://git.kernel.org/powerpc/c/71a7ccb478fcfe1495bcabf4972d859b24264df7
+[06/10] docs: ABI: sysfs-bus-event_source-devices-hv_gpci: Document affinity_domain_via_virtual_processor sysfs interface file
+        https://git.kernel.org/powerpc/c/cc89ff3491b61cebc90b3394eb6b36635173d0dd
+[07/10] powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via domain information
+        https://git.kernel.org/powerpc/c/a69a57cac1ec8995bb0b571dfccc3fe2f046719a
+[08/10] docs: ABI: sysfs-bus-event_source-devices-hv_gpci: Document affinity_domain_via_domain sysfs interface file
+        https://git.kernel.org/powerpc/c/ab7e991286e729b0018722591c04eb2fd31771b0
+[09/10] powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via partition information
+        https://git.kernel.org/powerpc/c/a15e0d6a6929e737f71578ed4b05531fed5a96e8
+[10/10] docs: ABI: sysfs-bus-event_source-devices-hv_gpci: Document affinity_domain_via_partition sysfs interface file
+        https://git.kernel.org/powerpc/c/8df99066940b6c82a0851f13adf653827dc524f7
 
 cheers
