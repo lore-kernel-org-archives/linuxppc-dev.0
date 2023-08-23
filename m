@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39E35EE49B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:10:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B973EE49B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:10:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4mK6pCbz3f73
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:10:25 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4mr6MCNz3fXx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:10:52 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cl2Hw7z3c5S
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cm4r77z3c3S
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:52 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cl0cM6z4x2M;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cl5wZcz4x2D;
 	Wed, 23 Aug 2023 22:03:51 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <603e1facb32608f88f40b7d7b9094adc50e7b2dc.1692349125.git.christophe.leroy@csgroup.eu>
-References: <603e1facb32608f88f40b7d7b9094adc50e7b2dc.1692349125.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/perf: Convert fsl_emb notifier to state machine callbacks
-Message-Id: <169279175579.797584.17166365496490472312.b4-ty@ellerman.id.au>
+In-Reply-To: <3d72efd39f986ee939d068af69fdce28bd600766.1691568093.git.christophe.leroy@csgroup.eu>
+References: <3d72efd39f986ee939d068af69fdce28bd600766.1691568093.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/radix: Move some functions into #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+Message-Id: <169279175547.797584.10395628134457071142.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Aug 2023 10:59:44 +0200, Christophe Leroy wrote:
->   CC      arch/powerpc/perf/core-fsl-emb.o
-> arch/powerpc/perf/core-fsl-emb.c:675:6: error: no previous prototype for 'hw_perf_event_setup' [-Werror=missing-prototypes]
->   675 | void hw_perf_event_setup(int cpu)
->       |      ^~~~~~~~~~~~~~~~~~~
+On Wed, 09 Aug 2023 10:01:43 +0200, Christophe Leroy wrote:
+> With skiboot_defconfig, Clang reports:
 > 
-> Looks like fsl_emb was completely missed by commit 3f6da3905398 ("perf:
-> Rework and fix the arch CPU-hotplug hooks")
+>   CC      arch/powerpc/mm/book3s64/radix_tlb.o
+> arch/powerpc/mm/book3s64/radix_tlb.c:419:20: error: unused function '_tlbie_pid_lpid' [-Werror,-Wunused-function]
+> static inline void _tlbie_pid_lpid(unsigned long pid, unsigned long lpid,
+>                    ^
+> arch/powerpc/mm/book3s64/radix_tlb.c:663:20: error: unused function '_tlbie_va_range_lpid' [-Werror,-Wunused-function]
+> static inline void _tlbie_va_range_lpid(unsigned long start, unsigned long end,
+>                    ^
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/perf: Convert fsl_emb notifier to state machine callbacks
-      https://git.kernel.org/powerpc/c/34daf445f82bd3a4df852bb5f1dffd792ac830a0
+[1/1] powerpc/radix: Move some functions into #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+      https://git.kernel.org/powerpc/c/4a9dd8f292efd614f0a18452e6474fe19ae17b47
 
 cheers
