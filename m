@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8027CEE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:22:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EAF1EE49B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:22:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW52H1NmQz3jP6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:22:31 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW52p1FWqz3jSl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:22:58 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dy1wV0z3c09
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dy6BR9z3dLF
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:54 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dx2H1qz4x2J;
-	Wed, 23 Aug 2023 22:04:53 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dy4jwLz4x3C;
+	Wed, 23 Aug 2023 22:04:54 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>
-In-Reply-To: <20230818050739.827851-1-vaibhav@linux.ibm.com>
-References: <20230818050739.827851-1-vaibhav@linux.ibm.com>
-Subject: Re: [PATCH] powerpc: Enable generic cpu idle-loop
-Message-Id: <169279175578.797584.3100680047837397058.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, joel@jms.id.au, fbarrat@linux.ibm.com, Xiongfeng Wang <wangxiongfeng2@huawei.com>
+In-Reply-To: <20230804080435.191196-1-wangxiongfeng2@huawei.com>
+References: <20230804080435.191196-1-wangxiongfeng2@huawei.com>
+Subject: Re: [PATCH] powerpc/powernv/pci: use pci_dev_id() to simplify the code
+Message-Id: <169279175568.797584.6217403046846078454.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,25 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Paul E. McKenney" <paulmck@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Randy Dunlap <rdunlap@infradead.org>, "Steven Rostedt \(Google\)" <rostedt@goodmis.org>, Nicholas Piggin <npiggin@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Daniel Sneddon <daniel.sneddon@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, yangyingliang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Aug 2023 10:37:37 +0530, Vaibhav Jain wrote:
-> This minor patch enables config option GENERIC_IDLE_POLL_SETUP for arch
-> powerpc. This should add support for kernel param 'nohlt'.
+On Fri, 04 Aug 2023 16:04:35 +0800, Xiongfeng Wang wrote:
+> PCI core API pci_dev_id() can be used to get the BDF number for a pci
+> device. We don't need to compose it mannually. Use pci_dev_id() to
+> simplify the code a little bit.
 > 
-> Powerpc kernel also supports another kernel boot-time param called
-> 'powersave' which can also be used to disable all cpu idle-states and
-> forces CPU to an idle-loop similar to what cpu_idle_poll() does. This
-> patch however makes powerpc kernel-parameters better aligned to the
-> generic boot-time parameters.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Enable generic cpu idle-loop
-      https://git.kernel.org/powerpc/c/0ceef6e99cc3a57f33b84dafc6df5dfb3b28278d
+[1/1] powerpc/powernv/pci: use pci_dev_id() to simplify the code
+      https://git.kernel.org/powerpc/c/fe8aa8e3379326ecb77203cae50e8e83c054aedc
 
 cheers
