@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EAF1EE49B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5219EEE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:23:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW52p1FWqz3jSl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:22:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW53K0CRHz3jWt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:23:25 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dy6BR9z3dLF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dz3Bgkz3c5K
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:55 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dy4jwLz4x3C;
-	Wed, 23 Aug 2023 22:04:54 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dz1Vz6z4x5y;
+	Wed, 23 Aug 2023 22:04:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, joel@jms.id.au, fbarrat@linux.ibm.com, Xiongfeng Wang <wangxiongfeng2@huawei.com>
-In-Reply-To: <20230804080435.191196-1-wangxiongfeng2@huawei.com>
-References: <20230804080435.191196-1-wangxiongfeng2@huawei.com>
-Subject: Re: [PATCH] powerpc/powernv/pci: use pci_dev_id() to simplify the code
-Message-Id: <169279175568.797584.6217403046846078454.b4-ty@ellerman.id.au>
+To: fbarrat@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org, Xiongfeng Wang <wangxiongfeng2@huawei.com>
+In-Reply-To: <20230804075630.186054-1-wangxiongfeng2@huawei.com>
+References: <20230804075630.186054-1-wangxiongfeng2@huawei.com>
+Subject: Re: [RFC PATCH] cxl: Use pci_find_vsec_capability() to simplify the code
+Message-Id: <169279175566.797584.17904559605848424585.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,16 +46,23 @@ Cc: linuxppc-dev@lists.ozlabs.org, yangyingliang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 04 Aug 2023 16:04:35 +0800, Xiongfeng Wang wrote:
-> PCI core API pci_dev_id() can be used to get the BDF number for a pci
-> device. We don't need to compose it mannually. Use pci_dev_id() to
-> simplify the code a little bit.
+On Fri, 04 Aug 2023 15:56:30 +0800, Xiongfeng Wang wrote:
+> PCI core add pci_find_vsec_capability() to query VSEC. We can use that
+> core API to simplify the code.
 > 
+> The only logical change is that pci_find_vsec_capability check the
+> Vendor ID before finding the VSEC.
 > 
+> PCI spec rev 5.0 says in 7.9.5.2 Vendor-Specific Header:
+>   VSEC ID - This field is a vendor-defined ID number that indicates the
+>   nature and format of the VSEC structure
+>   Software must qualify the Vendor ID before interpreting this field.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powernv/pci: use pci_dev_id() to simplify the code
-      https://git.kernel.org/powerpc/c/fe8aa8e3379326ecb77203cae50e8e83c054aedc
+[1/1] cxl: Use pci_find_vsec_capability() to simplify the code
+      https://git.kernel.org/powerpc/c/0e1cd3d9f82eb5440d32d4c0f12c65403b956cb5
 
 cheers
