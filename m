@@ -4,31 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F8F5EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:16:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58CC8EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:17:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4vh6vwWz3dcx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:16:48 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4wC0lR7z3hhY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:17:15 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4d415QQz3cHP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:08 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4RW4d40gKkz4x2L; Wed, 23 Aug 2023 22:04:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4d561B6z3cK4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:09 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4d36fb2z4wy7;
-	Wed, 23 Aug 2023 22:04:07 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4d44K0Pz4x2L;
+	Wed, 23 Aug 2023 22:04:08 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Mahesh Salgaonkar <mahesh@linux.ibm.com>
-In-Reply-To: <169235811556.193557.1023625262204809514.stgit@jupiter>
-References: <169235811556.193557.1023625262204809514.stgit@jupiter>
-Subject: Re: [PATCH v9 1/2] powerpc/rtas: export rtas_error_rc() for reuse.
-Message-Id: <169279175579.797584.15043748481336876672.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Masahiro Yamada <masahiroy@kernel.org>
+In-Reply-To: <20230806150954.394189-1-masahiroy@kernel.org>
+References: <20230806150954.394189-1-masahiroy@kernel.org>
+Subject: Re: [PATCH 1/3] powerpc: remove unneeded #include <asm/export.h>
+Message-Id: <169279175566.797584.2539796704506520702.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -44,21 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci <linux-pci@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-arch@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Aug 2023 16:59:07 +0530, Mahesh Salgaonkar wrote:
-> Also, #define descriptive names for common rtas return codes and use it
-> instead of numeric values.
+On Mon, 07 Aug 2023 00:09:52 +0900, Masahiro Yamada wrote:
+> There is no EXPORT_SYMBOL line there, hence #include <asm/export.h>
+> is unneeded.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/2] powerpc/rtas: export rtas_error_rc() for reuse.
-      https://git.kernel.org/powerpc/c/e160bf64e2d3df7bf83ed41d09390a32490be6c5
-[2/2] PCI: rpaphp: Error out on busy status from get-sensor-state
-      https://git.kernel.org/powerpc/c/77583f77ed9b1452ac62caebf09b2206da10bbf9
+[1/3] powerpc: remove unneeded #include <asm/export.h>
+      https://git.kernel.org/powerpc/c/3eb3f168e83aa7a7b8477507cf4b08b9515b4b13
+[2/3] powerpc: replace #include <asm/export.h> with #include <linux/export.h>
+      https://git.kernel.org/powerpc/c/393261828740c3ed95fc810c3f4c1018b86af7e5
+[3/3] powerpc: remove <asm/export.h>
+      https://git.kernel.org/powerpc/c/efa1f85019537ce44832cf73a6db18611e3e41cd
 
 cheers
