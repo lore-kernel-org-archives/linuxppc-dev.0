@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B46DCEE49B2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:04:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2703EE49B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:04:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4d92RpLz3cH2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:04:13 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4dg2cCxz3dH5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:04:39 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cY2QYXz2y1b
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cY2yCLz2ytp
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:41 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cX6ylMz4wxW;
-	Wed, 23 Aug 2023 22:03:40 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cW6Q5hz4wxR;
+	Wed, 23 Aug 2023 22:03:39 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>
-In-Reply-To: <20230810141947.1236730-1-arnd@kernel.org>
-References: <20230810141947.1236730-1-arnd@kernel.org>
-Subject: Re: (subset) [PATCH 00/17] -Wmissing-prototype warning fixes
-Message-Id: <169279175561.797584.8650753652386508689.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20230801044447.11275-1-aneesh.kumar@linux.ibm.com>
+References: <20230801044447.11275-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: (subset) [PATCH v4 1/2] powerpc/mm: Cleanup memory block size probing
+Message-Id: <169279175572.797584.16319542522074255631.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,26 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: foraker1@llnl.gov, Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 10 Aug 2023 16:19:18 +0200, Arnd Bergmann wrote:
-> Most of the patches I sent so far for the -Wmissing-prototype warnings
-> have made it into linux-next now. There are a few that I'm resending
-> now as nobody has picked them up, and then a number of fixes that I
-> found while test-building across all architectures rather than just the
-> ones I usually test.
+On Tue, 01 Aug 2023 10:14:46 +0530, Aneesh Kumar K.V wrote:
+> Parse the device tree in early init to find the memory block size to be
+> used by the kernel. Consolidate the memory block size device tree parsing
+> to one helper and use that on both powernv and pseries. We still want to
+> use machine-specific callback because on all machine types other than
+> powernv and pseries we continue to return MIN_MEMORY_BLOCK_SIZE.
 > 
-> The first 15 patches in this series should be uncontroversial, so
-> I expect that either a subsystem maintainer or Andrew Morton can
-> apply these directly.
+> pseries_memory_block_size used to look for the second memory
+> block (memory@x) to determine the memory_block_size value. This patch
+> changed that to look at all memory blocks and make sure we can map them all
+> correctly using the computed memory block size value.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 1 applied to powerpc/next.
 
-[06/17] macintosh/ams: mark ams_init() static
-        https://git.kernel.org/powerpc/c/cd50430ceb3598957803934068531a274349bcf9
+[1/2] powerpc/mm: Cleanup memory block size probing
+      https://git.kernel.org/powerpc/c/4d15721177d539d743fcf31d7bb376fb3b81aeb6
 
 cheers
