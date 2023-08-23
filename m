@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A032EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:19:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30BDAEE49B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:20:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4z41DBnz3j0D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:19:44 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4zZ60gvz3gZn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:20:10 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dY2KFxz3c3c
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4df2DvVz3cCT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:38 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dW1J3dz4x2F;
-	Wed, 23 Aug 2023 22:04:31 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4df0d2qz4x5l;
+	Wed, 23 Aug 2023 22:04:38 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nathan Chancellor <nathan@kernel.org>, Tom Rix <trix@redhat.com>, Nick Desaulniers <ndesaulniers@google.com>
-In-Reply-To: <20230803-ppc_tlbilxlpid-v3-1-ca84739bfd73@google.com>
-References: <20230803-ppc_tlbilxlpid-v3-1-ca84739bfd73@google.com>
-Subject: Re: [PATCH v3] powerpc/inst: add PPC_TLBILX_LPID
-Message-Id: <169279175566.797584.17891188620028353230.b4-ty@ellerman.id.au>
+To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20230810000740.23756-1-rdunlap@infradead.org>
+References: <20230810000740.23756-1-rdunlap@infradead.org>
+Subject: Re: [PATCH] powerpc/pseries: PLPKS: undo kernel-doc comment notation
+Message-Id: <169279175548.797584.6390624232158663005.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: llvm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org, kernel test robot <lkp@intel.com>
+Cc: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 03 Aug 2023 11:33:52 -0700, Nick Desaulniers wrote:
-> Clang didn't recognize the instruction tlbilxlpid. This was fixed in
-> clang-18 [0] then backported to clang-17 [1].  To support clang-16 and
-> older, rather than using that instruction bare in inline asm, add it to
-> ppc-opcode.h and use that macro as is done elsewhere for other
-> instructions.
+On Wed, 09 Aug 2023 17:07:40 -0700, Randy Dunlap wrote:
+> Don't use kernel-doc "/**" comment format for non-kernel-doc comments.
+> This prevents a kernel-doc warning:
+> 
+>   arch/powerpc/platforms/pseries/plpks.c:186: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
+>   * Label is combination of label attributes + name.
 > 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/inst: add PPC_TLBILX_LPID
-      https://git.kernel.org/powerpc/c/ae7936d232d862e5b8311180036281ffe93735b8
+[1/1] powerpc/pseries: PLPKS: undo kernel-doc comment notation
+      https://git.kernel.org/powerpc/c/506e550a7da9e995bea3bd585db591068f98b2bf
 
 cheers
