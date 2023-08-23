@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F3B3EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:06:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD17BEE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:07:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4hC1qlXz3f13
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:06:51 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4hj35Msz3fGs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:07:17 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cc6FFzz2ytp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cd3ylnz2ytp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:45 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cc4jj5z4wy9;
-	Wed, 23 Aug 2023 22:03:44 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cd1y2Qz4x0W;
+	Wed, 23 Aug 2023 22:03:45 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <e89d9927c926044e54fd056a849785f526c6414f.1692282340.git.christophe.leroy@csgroup.eu>
-References: <e89d9927c926044e54fd056a849785f526c6414f.1692282340.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/47x: Add prototype for mmu_init_secondary()
-Message-Id: <169279175576.797584.4374265621871502219.b4-ty@ellerman.id.au>
+In-Reply-To: <c8253017e355638132737ff47936e290df8738d1.1692282432.git.christophe.leroy@csgroup.eu>
+References: <c8253017e355638132737ff47936e290df8738d1.1692282432.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/4xx: Add missing includes to fix no previous prototype errors
+Message-Id: <169279175576.797584.7773494113492179967.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,20 +46,27 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd Bergmann <
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Aug 2023 16:25:49 +0200, Christophe Leroy wrote:
-> A W=1 build of 44x/iss476-smp_defconfig gives:
+On Thu, 17 Aug 2023 16:27:23 +0200, Christophe Leroy wrote:
+> A W=1 build of ppc40x_defconfig throws the followings errors:
 > 
-> arch/powerpc/mm/nohash/44x.c:220:13: error: no previous prototype for 'mmu_init_secondary' [-Werror=missing-prototypes]
->   220 | void __init mmu_init_secondary(int cpu)
->       |             ^~~~~~~~~~~~~~~~~~
-> 
-> That function is called from head_4xx.S
+>   CC      arch/powerpc/platforms/4xx/uic.o
+> arch/powerpc/platforms/4xx/uic.c:274:13: warning: no previous prototype for 'uic_init_tree' [-Wmissing-prototypes]
+>   274 | void __init uic_init_tree(void)
+>       |             ^~~~~~~~~~~~~
+> arch/powerpc/platforms/4xx/uic.c:319:14: warning: no previous prototype for 'uic_get_irq' [-Wmissing-prototypes]
+>   319 | unsigned int uic_get_irq(void)
+>       |              ^~~~~~~~~~~
+>   CC      arch/powerpc/platforms/4xx/machine_check.o
+>   CC      arch/powerpc/platforms/4xx/soc.o
+> arch/powerpc/platforms/4xx/soc.c:193:6: warning: no previous prototype for 'ppc4xx_reset_system' [-Wmissing-prototypes]
+>   193 | void ppc4xx_reset_system(char *cmd)
+>       |      ^~~~~~~~~~~~~~~~~~~
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/47x: Add prototype for mmu_init_secondary()
-      https://git.kernel.org/powerpc/c/b27c1a0a4e62af1fd9d2688bf8156a5d546e4227
+[1/1] powerpc/4xx: Add missing includes to fix no previous prototype errors
+      https://git.kernel.org/powerpc/c/7dac7cf1b407605c15d85ae885377ba0560ca4cd
 
 cheers
