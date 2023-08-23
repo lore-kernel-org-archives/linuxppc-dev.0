@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EC45EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:21:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8027CEE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:22:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW51c61T6z3hqJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:21:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW52H1NmQz3jP6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:22:31 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dw6lYmz3dKh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dy1wV0z3c09
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:54 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dw5RM5z4x5q;
-	Wed, 23 Aug 2023 22:04:52 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dx2H1qz4x2J;
+	Wed, 23 Aug 2023 22:04:53 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, Trevor Woerner <twoerner@gmail.com>
-In-Reply-To: <20230817115017.35663-1-twoerner@gmail.com>
-References: <20230817115017.35663-1-twoerner@gmail.com>
-Subject: Re: (subset) [PATCH v3 0/4] general defconfig cleanups
-Message-Id: <169279175571.797584.3366844958085026479.b4-ty@ellerman.id.au>
+To: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>
+In-Reply-To: <20230818050739.827851-1-vaibhav@linux.ibm.com>
+References: <20230818050739.827851-1-vaibhav@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: Enable generic cpu idle-loop
+Message-Id: <169279175578.797584.3100680047837397058.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,29 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org
+Cc: "Paul E. McKenney" <paulmck@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Randy Dunlap <rdunlap@infradead.org>, "Steven Rostedt \(Google\)" <rostedt@goodmis.org>, Nicholas Piggin <npiggin@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Daniel Sneddon <daniel.sneddon@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Aug 2023 07:50:10 -0400, Trevor Woerner wrote:
-> Drop config options from defconfigs whose code has been removed.
+On Fri, 18 Aug 2023 10:37:37 +0530, Vaibhav Jain wrote:
+> This minor patch enables config option GENERIC_IDLE_POLL_SETUP for arch
+> powerpc. This should add support for kernel param 'nohlt'.
 > 
-> v3:
-> While reorganizing the patches, I put the wrong commit message with the
-> CONFIG_IP_NF_TARGET_CLUSTERIP option.
-> 
-> v2:
-> Generate arch-specific patches. In v1 I organized the patches by
-> CONFIG_ option which caused some of the patches to cross architectural
-> lines. This requires cross-arch consensus before they can be applied.
-> Therefore organize the changes by architecture so each one can apply them
-> independently (or not).
+> Powerpc kernel also supports another kernel boot-time param called
+> 'powersave' which can also be used to disable all cpu idle-states and
+> forces CPU to an idle-loop similar to what cpu_idle_poll() does. This
+> patch however makes powerpc kernel-parameters better aligned to the
+> generic boot-time parameters.
 > 
 > [...]
 
-Patch 4 applied to powerpc/next.
+Applied to powerpc/next.
 
-[4/4] arch/powerpc/configs/*_defconfig cleanup
-      https://git.kernel.org/powerpc/c/455d3d38ef9d5f69c504d1af5fa2359563ea4148
+[1/1] powerpc: Enable generic cpu idle-loop
+      https://git.kernel.org/powerpc/c/0ceef6e99cc3a57f33b84dafc6df5dfb3b28278d
 
 cheers
