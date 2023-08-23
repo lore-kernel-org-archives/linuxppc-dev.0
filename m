@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 970AAEE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:13:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47BD1EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:14:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4r42MYRz3gcP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:13:40 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW4rc04X8z3hG0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:14:08 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cr5348z3c8c
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4cs6rMlz3c4M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:03:57 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cr3brtz4wxQ;
-	Wed, 23 Aug 2023 22:03:56 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4cs31yXz4x2n;
+	Wed, 23 Aug 2023 22:03:57 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <36a19e13025dbf17e92e832dd24150642b0e9bad.1692341499.git.christophe.leroy@csgroup.eu>
-References: <36a19e13025dbf17e92e832dd24150642b0e9bad.1692341499.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] powerpc/512x: Make mpc512x_select_reset_compat() static
-Message-Id: <169279175576.797584.9419412535329287.b4-ty@ellerman.id.au>
+In-Reply-To: <b8d6ae4483fcfd17524e79d803c969694a85cc02.1687428075.git.christophe.leroy@csgroup.eu>
+References: <b8d6ae4483fcfd17524e79d803c969694a85cc02.1687428075.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc/ptrace: Split gpr32_set_common
+Message-Id: <169279175565.797584.14665256369695357987.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,19 +46,20 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Aug 2023 08:51:48 +0200, Christophe Leroy wrote:
-> mpc512x_select_reset_compat() is only used in the file it
-> is defined.
+On Thu, 22 Jun 2023 12:01:23 +0200, Christophe Leroy wrote:
+> objtool report the following warning:
 > 
-> Make it static.
+>   arch/powerpc/kernel/ptrace/ptrace-view.o: warning: objtool:
+>     gpr32_set_common+0x23c (.text+0x860): redundant UACCESS disable
 > 
-> Move mpc512x_restart_init() after mpc512x_select_reset_compat().
+> gpr32_set_common() conditionnaly opens and closes UACCESS based on
+> whether kbuf point is NULL or not. This is wackelig.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/512x: Make mpc512x_select_reset_compat() static
-      https://git.kernel.org/powerpc/c/be922070d0914c6642256ceec6b7be75c0a5ddf3
+[1/1] powerpc/ptrace: Split gpr32_set_common
+      https://git.kernel.org/powerpc/c/9a32584bc108c8fe4d02fa33b16caf686e4a788a
 
 cheers
