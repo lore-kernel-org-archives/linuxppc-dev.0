@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4AC8EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:21:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EC45EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 12:21:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RW5162YVBz3jGM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:21:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RW51c61T6z3hqJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 22:21:56 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dw2s2qz3dKV
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RW4dw6lYmz3dKh
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 22:04:52 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dr4kFxz4x5m;
-	Wed, 23 Aug 2023 22:04:48 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RW4dw5RM5z4x5q;
+	Wed, 23 Aug 2023 22:04:52 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, Yuan Tan <tanyuan@tinylab.org>
-In-Reply-To: <bb7b5f9958b3e3a20f6573ff7ce7c5dc566e7e32.1690982937.git.tanyuan@tinylab.org>
-References: <bb7b5f9958b3e3a20f6573ff7ce7c5dc566e7e32.1690982937.git.tanyuan@tinylab.org>
-Subject: Re: [PATCH] powerpc: pmac32: enable serial options by default in defconfig
-Message-Id: <169279175545.797584.11700260723575503542.b4-ty@ellerman.id.au>
+To: linux-kernel@vger.kernel.org, Trevor Woerner <twoerner@gmail.com>
+In-Reply-To: <20230817115017.35663-1-twoerner@gmail.com>
+References: <20230817115017.35663-1-twoerner@gmail.com>
+Subject: Re: (subset) [PATCH v3 0/4] general defconfig cleanups
+Message-Id: <169279175571.797584.3366844958085026479.b4-ty@ellerman.id.au>
 Date: Wed, 23 Aug 2023 21:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: falcon@tinylab.org, linux@weissschuh.net, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, w@1wt.eu
+Cc: linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 02 Aug 2023 21:41:30 +0800, Yuan Tan wrote:
-> Serial is a critical feature for logging and debuging, and the other
-> architectures enable serial by default.
+On Thu, 17 Aug 2023 07:50:10 -0400, Trevor Woerner wrote:
+> Drop config options from defconfigs whose code has been removed.
 > 
-> Let's enable CONFIG_SERIAL_PMACZILOG and CONFIG_SERIAL_PMACZILOG_CONSOLE
-> by default.
+> v3:
+> While reorganizing the patches, I put the wrong commit message with the
+> CONFIG_IP_NF_TARGET_CLUSTERIP option.
 > 
+> v2:
+> Generate arch-specific patches. In v1 I organized the patches by
+> CONFIG_ option which caused some of the patches to cross architectural
+> lines. This requires cross-arch consensus before they can be applied.
+> Therefore organize the changes by architecture so each one can apply them
+> independently (or not).
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 4 applied to powerpc/next.
 
-[1/1] powerpc: pmac32: enable serial options by default in defconfig
-      https://git.kernel.org/powerpc/c/0b5e06e9cb156e7e97bfb4e1ebf6acd62497eaf5
+[4/4] arch/powerpc/configs/*_defconfig cleanup
+      https://git.kernel.org/powerpc/c/455d3d38ef9d5f69c504d1af5fa2359563ea4148
 
 cheers
