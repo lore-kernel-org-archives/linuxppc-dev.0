@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2F95C6FA8F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 17:05:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2393EC3DA6F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 17:06:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Ut9vtsAs;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GLgVzGy/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RWCJG3KZnz3dWN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 03:05:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RWCKM5hbnz3dkg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 03:05:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Ut9vtsAs;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GLgVzGy/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe5b::616; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on20616.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe5b::616])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe5b::62a; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2062a.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe5b::62a])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RWBwr1QmTz3c82
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 02:48:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RWBwr5pc9z3cBC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 02:48:12 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=JSuBD0GSa/7494/Eiz9lD8Ymc1nhJBDA15oAvUdENRj8l55kw3pP0G1AdCWWxkLVDoH9ABcNZWOdhYC0P8bbapQY3RpMUtz6waaJIQbKUF0L3889X4tGq9B/pT6PuLE9u8hjmA3UD/OOBfX1LFiGGX6t39orJSTOoregogSgWSRzPEZz+jSK8imDQjgMyQz8yelNdGEW3UlZZiCeACdXxFs400Hjci6GhZ42u5n53C3IWD87lzngmcq1JASoos8dgfk0zgZdHhLk06KRu70GQ6tZrh5Yznda+R9ba7l77kowA9t8GH3fvzhCX4am6CH5HGOmj7IWlJHsz5XipzaP8Q==
+ b=fksyCxY78VmFj9jTPOeRG7tEDr4evSjRD+2YN4hUD6k0kb9ti9gumfKpAbUQPl+/ESXI0Mpl7RF3QXZK5+PINw8GiO73Ylmn1/mRniLM3rzObSWc6p7fT3HNTOpwsIeEjIGeCCwqK5RjWE/4SYq5QGgt8SVZhg6hv5/xkQNespe0sIL6oIZIOAvncU2dzGX7PbiJ7HuW0XqfyNCQoYsyk9Dt7SITwgEUez+fyAfFec7IE826w8V+ZjEsARJ/ZpJQMrpD6Yqc5ce6gq4sXVGa/3+rxQtUpLzV0gRpMg/OiLvbDrDPVH2vjcMuYyJ7HufplxD3eIY7FuaYX8YQIm0Mqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9HNqQnpS6tKtGe02JJTfrdZny6t7WOXpQWChLYDsawY=;
- b=EE2127GWwuPI+nLhiNdq8EOTZCl7x3uzzYTIAeRtdNsa7SpVv7DVUQJ+yLBsJwhHSKY+EoBIZjpk0+Az5aNE3udbO7dDoIO6W0+dUt2WSgqzp+Fwdstkd/S3nHRRUH77ehb/hjFs7DrdTjYNdd64VuX2v6kV7sZE5dcsmRTfzpwCmMwt+7iyxl+fkKsSqVJNN/fbISIIi6k6x1cYdk8JMPwMh2apmhcnJ+Ir61q37lR1afiVfu//JcC2Zrr0WxIa5fm2yiuIEBzrpU31si6i8HtuoBlud0tdmDEkYblQZ+KlmytMjjv8TcrzIUp8iee30Rk9USEasCf3dgPoAZuARw==
+ bh=dijjnmcTwEIG43n1u0a4rcB854nzj8vKoYIf9eO0DwA=;
+ b=cmWUYjBCwV7pPkus5V076VDE8NtUaMmftez4ikWvJ4CW7AYAEjbwBvX0wrH+XrtBr0lc27jM7/WTT0uPdZd/tduA2yvVF16+7GOTCBtSnk1y37ozv1YZZLUnWBGyt3f9T4uqZG/BgPMXIPGYnXsr6c26rhERLTYQLop7GOPKHajk7Jgfbes/vUAg96ch6pMFocdh1lUEuOheXDhiLzQr97FhIN86jj+/bHGAvI3zXYTuF6r5P7dMlZ4tWIqd9T5S5yZRe1ckdUdAbRIHEO5xFv7D4fJKahVHY3ehvuK/sh93W7bR8FJ8Jxi2rKGKQFJo4fTUsExrvOLqHhEhwuU8nA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9HNqQnpS6tKtGe02JJTfrdZny6t7WOXpQWChLYDsawY=;
- b=Ut9vtsAs7THaiOFepDazS61gVv2AO9/E6mDCyMKj2Pny1frvggSk7a85BgQb2Ma6hs+zKOCv4VptaBDN8fQv9wZszpn56hmXvT6kiesl71vmNYJ9uiGhlT34bdESYGSfGXF5Frybd4uOLZlmgmwaPgTal4CCPeHyDyaQjz/8LLRCZQkRCKqDW/ZUOzI9ZyYq8N6kyQOUuLMjvNzvjhb7jY0qVhPQnLDYskEAXrJ57Wkzow/62rw5QV+jrQpES9/Ylew49VGiN/3DRodmm1+YDTI+8pA0tXfvhCSbjr9106994zQfuxZisIg4obmW1UdNJpqkqdV5flfcFjloHFfYXA==
+ bh=dijjnmcTwEIG43n1u0a4rcB854nzj8vKoYIf9eO0DwA=;
+ b=GLgVzGy/q267Fg2e7eUr4a75axKOjb8Tb30NsehpAS3pOQSDnWwdvRW2UUHmIjO61Bfro/dOtVr3rcPoGiPP8lU38QV/iskQb1q/oHJukZ/e65syS3Sbw+MsfHbGskjJpteEBvRO4NPraDf+V54Vl5Hcl93nwdy6G6yKCJyPO7KMDPNiKGQ88wXqZYBRLm6uRNOF7wNZWb+zB5ciBEmnRwyTl4gS2TrsjIo/eLoZq76RZ2N7cJZeN5xVFaCVc1/0cCfCOt+lclYPGXqav1dF55/sPgHw3AP7tmBH32MEAyK3UAJP6e6OsFC/QwjMgOsgF05zPxGPc9r97YkH2C1+2w==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
  by CY5PR12MB6346.namprd12.prod.outlook.com (2603:10b6:930:21::12) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.24; Wed, 23 Aug
- 2023 16:47:44 +0000
+ 2023 16:47:52 +0000
 Received: from LV2PR12MB5869.namprd12.prod.outlook.com
  ([fe80::5111:16e8:5afe:1da1]) by LV2PR12MB5869.namprd12.prod.outlook.com
  ([fe80::5111:16e8:5afe:1da1%6]) with mapi id 15.20.6699.020; Wed, 23 Aug 2023
- 16:47:44 +0000
+ 16:47:52 +0000
 From: Jason Gunthorpe <jgg@nvidia.com>
 To: Andy Gross <agross@kernel.org>,
 	Alim Akhtar <alim.akhtar@samsung.com>,
@@ -87,63 +87,63 @@ To: Andy Gross <agross@kernel.org>,
 	Will Deacon <will@kernel.org>,
 	Yong Wu <yong.wu@mediatek.com>,
 	Chunyan Zhang <zhang.lyra@gmail.com>
-Subject: [PATCH v7 11/24] iommu/tegra-smmu: Implement an IDENTITY domain
-Date: Wed, 23 Aug 2023 13:47:25 -0300
-Message-ID: <11-v7-de04a3217c48+15055-iommu_all_defdom_jgg@nvidia.com>
+Subject: [PATCH v7 07/24] iommu/mtk_iommu_v1: Implement an IDENTITY domain
+Date: Wed, 23 Aug 2023 13:47:21 -0300
+Message-ID: <7-v7-de04a3217c48+15055-iommu_all_defdom_jgg@nvidia.com>
 In-Reply-To: <0-v7-de04a3217c48+15055-iommu_all_defdom_jgg@nvidia.com>
 References: 
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: CH2PR20CA0008.namprd20.prod.outlook.com
- (2603:10b6:610:58::18) To LV2PR12MB5869.namprd12.prod.outlook.com
+X-ClientProxiedBy: CH2PR20CA0003.namprd20.prod.outlook.com
+ (2603:10b6:610:58::13) To LV2PR12MB5869.namprd12.prod.outlook.com
  (2603:10b6:408:176::16)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|CY5PR12MB6346:EE_
-X-MS-Office365-Filtering-Correlation-Id: e215f86c-ee99-4c72-5a01-08dba3f8aa7a
+X-MS-Office365-Filtering-Correlation-Id: 6191f347-3296-43b0-9036-08dba3f8ac4d
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	+C3eNgor5u3VzuvbmzSjtMwIIlJyTgWSHRKhCaONc5g2DJ27kq9KzyOSJDizvDTB5tID4SSo0VlFX/E1g095vPGA/I7R31XMQnjEjTn5WWP+lxUJm3sp6naeuAV5qcFcYIJZhdPcFUDeY07OPujoL91rUF8S+F9b7Uok290e0bPVHsQaWP37llL8C2gir+Y+n3kB4srtQMbXSzyWpAu4K9zpPtjHvf2RAyqrs2jopUNmkiDlhxoqS0E/DKw2KgbeGFLm86XPlzvy6xkrXN5kXiHAYYlaW91ExznS//RH19VrWKfX2Ma9CGVkmNslVep+zZpkmKdGJ4fkmsiXshgnrcSabW4+HQjE6cBcWR3XLjWpHuK9RZU3I71pSkLpiNvlOZACRDHE6gAQK8C0w/V8NU1C45eoe+cWPlaTf/2XFqdqYNo5ewGRHqlimRbCcIF9Y2dbrBIMaY3ROTr0yU3ECL0HlpsEX4I0suFGsnB5pAWFziOexumGQnJpEITa16q+kixwRxEnsZ9q+rDnaphDbIFM2sGEyF275LReUrMFVln8DmvGeMNfKyDiBYATG1Lu/JFWSbkDq1/xjxo9/DkQ4nCcnKPPW1rkWR1m9hVfsQg=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376002)(396003)(136003)(346002)(366004)(39860400002)(186009)(1800799009)(451199024)(54906003)(66476007)(66946007)(6512007)(316002)(66556008)(110136005)(8676002)(8936002)(107886003)(2616005)(4326008)(36756003)(41300700001)(921005)(478600001)(6666004)(6506007)(38100700002)(6486002)(83380400001)(7416002)(2906002)(7406005)(86362001)(5660300002)(26005);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	033gPEKOPZi2dMkERjDPoVi6jpbAKV9YvQzSQJGZzMOBx24e0D6HT0NypdN6EJh6wJa+3l23hNOkWA5Jz48CYgaPhWfIbxTE1M8UYvH29zhIIG+GLxad/tVd1cHAM+vVH7cYO6vdLOuKVlgvqYC8YL5nEPZ1vQUGoVDgsnXHQDmdUUyqZ3ZoK54cKY5YCU+G70wCE+2XLnsIvmGLpbqF/ANcOUC6yIlF/Lt/iJp5dQw//rlNCk8BGbCAMrQnFBZkoKT9C4tr+1nPCT2TKf4Fzyc1X7/A0CTGhToWEQavjTbqzCvHXP8fMGBzO6maWqNLhGmzLsxrUAHSlwY1q8QTFtWNbw1kqPGnJG7A6XFMIiEKZIRAng25/yym85YTaeuj7w/zRyzVsa4nKcW6KgPQAvo+pv9c6m3SVPLbOYbGTALsX1lzlVVMSpJb/2eRxqb//Z6WtQOlTo8QSHBGJGzbI7W1VeZYzlxtoil4AAfIbXwyIzHvCzTvrY7uequp4Zu3RIFRrslpRfhGd/tOuarAp5oYWVDqPEKSMUrf+KYZ5lGAx2Pv84U+d4Fin7sqvGhLvCWSAQpdMC18IAf1Nl4w9iEK0qvAUw4d+/jh2JWdY3FVu9F7UiFlKSK3HhTrzfOs
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376002)(396003)(136003)(346002)(366004)(39860400002)(186009)(1800799009)(451199024)(54906003)(66476007)(66946007)(6512007)(316002)(66556008)(110136005)(8676002)(8936002)(107886003)(2616005)(4326008)(36756003)(41300700001)(921005)(478600001)(6666004)(6506007)(38100700002)(6486002)(83380400001)(7416002)(2906002)(7406005)(86362001)(5660300002)(26005)(4216001);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?mKknSh9VfhZ8SzFyYFdBrftSoJkv+FV6Xb8bdY/Ynw6vLAP2j89tacakjcuN?=
- =?us-ascii?Q?mUOjEfl7jiNbd3uBS8SCTAPdvZRfjo5XtTK/EBWqNgraH5TGrlpWbQS0usiZ?=
- =?us-ascii?Q?10F2gdx9lNj+gJ7zpYbTCPpNFMICBIBv9H/xpdTgQezgqIJpZmbOU8f/DMlK?=
- =?us-ascii?Q?NuN5km2d5NEMsK33IOVeDCN6QQl9iRjsV8re8m/UncyJ6FCT+MKEN9k416CC?=
- =?us-ascii?Q?17YqJdS/sUWzR7ztduSVbRbEo83jZomqgwPg2UlFtWUva866/MOkL7ua2xu1?=
- =?us-ascii?Q?/woBBnuSClVUU7Dj1JluAQxQlA3M5sdn0qTvUr6D/Ys61UobGTXULmk5hO7x?=
- =?us-ascii?Q?nxSPv2H8cqWjy9rk+dY4t4Bd1brDZlHxYVWCw+f5ySiWmff0QRz/nCCceCMG?=
- =?us-ascii?Q?bt45hBJxq7tjXKGIT8ISW+KOn7R674nIHMHNUVn85oX0/8lCroAJS3WyBLqD?=
- =?us-ascii?Q?3qKz42cVhA7Xt2nCDYlSqP2Goj37F4XFKJdABKlH/+TGgzSYm1TzFK++jrXD?=
- =?us-ascii?Q?bzzpe43Hh4oYLfik90DLhEMK1ij3XUNJB3yez8ySft2dCv66+K8vNzAGMOD0?=
- =?us-ascii?Q?VOgoapydSQG72vwLVkbX/ym3eNi5RYHmS2eIgZcZ6JRSK3POCEy6QqCgYgJu?=
- =?us-ascii?Q?pt1hWhCY7MSTV7twQMmp5HPG68U8EVrsJzAc7P/pvuH+cP3DpprI4PKfgfvz?=
- =?us-ascii?Q?V8Sh7UuwOZiw11kH+qmZnbe7vcLZ8RBAum0TDUY7NOSDAGdou8pDqr3ZLScK?=
- =?us-ascii?Q?kPCw0aW7qpzeBZgcMcuwMcoQ/mtJ01B729OMllVduOC9K54J4qveL6ee+mec?=
- =?us-ascii?Q?VR6QDn92IlzzV3AMniVr8C3CfNuDhCRjyIDqyDIKPS5L3y+tyzElZj8lZ+sd?=
- =?us-ascii?Q?nWuyRlnpYgvjI6eKRNJJz5KpP+OYSDEV4IvzSv2DZr4PZZkJ2p8P6H2F+yJd?=
- =?us-ascii?Q?t+O84ILc22p3Olb8qz5vpe6B7AiwnfweoDVum0EXevF2tecCr03cfozIhPbs?=
- =?us-ascii?Q?08NRipNVWztdmcIhARQBYkv8Ey60OxgPJShpe/mA7NfJC3jyTbYgOmMFc9+F?=
- =?us-ascii?Q?K1Hpr4sgr2PDL64LlZO1cGxbAM+VU6DHv+w9VUH5cmv+Cwf+FLnJUhSTi7Us?=
- =?us-ascii?Q?HZVdx/JXoRUouUHUZTR8mYjJeytH6y341gkcB3xvqez5JGcWTMZFIpgCtdrN?=
- =?us-ascii?Q?XS18QMCTrL7xY8OpqmYKC3lfuYyKLhP1isq4daqbjxUwY3SK7tcYIzh1BEEK?=
- =?us-ascii?Q?6Y3kzb22gctulyWeBm6mwP6Ynhh/DW5yQjlzoiEelXzazr94atWJ7ph32atG?=
- =?us-ascii?Q?kfNlt3MDKZzNeZ8XcIqGhe3fHf8rpo2zy3A2KfkcXfWaYt0hZOJYKvpSvfzz?=
- =?us-ascii?Q?VHsIqPz47C188Wx6beg7xvXxTYk3UtIg5v0g/nZIf9yoQWZjsYTSHMlYGy8v?=
- =?us-ascii?Q?087MaNO7pknCwdSQF2H9uF0v6AZffkGZjvIByIjfFaEAs0q5ytIvhyu3Crr3?=
- =?us-ascii?Q?5bjaX2qjpC+baiYEQ7n1juhza1ENI29DP9usFv7qzH5Nb+uUGZ9Gct8cicHQ?=
- =?us-ascii?Q?TtMJpUv1xhFGO9VHxL75H/yowHEXX7Sbo/rhlRbD?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?evJTVMWrKKykVUWO7uLrApmaD9mIvR1Y+SkA0+jQXiJbeJnhrPXru4+wtZBc?=
+ =?us-ascii?Q?OJsTrtGdgFplwIHY1shFvIgzHYuWCAzx5hSEpVUGmzcSOdSi4ILPyAROVs0o?=
+ =?us-ascii?Q?D0/pIWiD5wG5NxK7qMsYVebgZUUPOKS2gAKn0mRSujIYYeHdbmtw+8On9ZJI?=
+ =?us-ascii?Q?8ypRrs9ztI/Ae3O+C5ehYPBhK6lxbFy0MVNAk1lzkMi8yivQNXwFsC2iJ3FF?=
+ =?us-ascii?Q?nI3dGqqPtmX2ie95tHs6zO7+zPgzDJAe682TiZlYmQWZdf/0uWrHXzJb+K0F?=
+ =?us-ascii?Q?ScKUrOaFyNJZ1We/1qSgHEiqfhg1l1OizpGX0/DNBLyOmm3ophqqFXGyLIcn?=
+ =?us-ascii?Q?kjFiUZNKiShcwyG3Sm31+lHKAJUlLsNGB6II1eBqd/DbqdxSFvJWQ0veXdOY?=
+ =?us-ascii?Q?RNuFh9bWCshw3FHtylbA+NEG0DXENBwrqw1l3ht2u/pwt3KkGaZNHaDIYYxF?=
+ =?us-ascii?Q?LZSMHlLalwdH1JKZgnMREP/ZZutlE2fQDLyP7Kw1OYgQQcQUbVa+f26O7Cmg?=
+ =?us-ascii?Q?eJr+g51n9m8MacerUmZRnVYMXC71WFXfEVIw++F46tiHI+P0Kjl8mEUoG1Ha?=
+ =?us-ascii?Q?yYHWdj2N567+JNrf24PXuZhMeqb9nfUgs7SDGUqYL+BCq1JbCiJMyg/K2c4z?=
+ =?us-ascii?Q?pa1LMkxqjj0aC2rSph+ba7RO+lQhQoQkAqTuSGz/1to+TgveHrX40QPaEREt?=
+ =?us-ascii?Q?1AR87eV16QyIsqlQm91oC8F1+CJ5TrvKiMrAHQEvH6Csh3efrgmglvI2F4sO?=
+ =?us-ascii?Q?ggG8uHHvD3c66kGJD3SOJNAxwTngE5Hm90bAfWW8Y+qQal/oSkpcrURXyFxZ?=
+ =?us-ascii?Q?QnglAg00ZajxKlWGQc1q4jjp1d/9KxkqvrEwvwCLEU21QIQAUQ2h3SGSdpl0?=
+ =?us-ascii?Q?27wUFnTCXckGccZAJeOjRGoLW91xI+H1mmHUpeXYECfXBE9/AYtfAbEEaBxx?=
+ =?us-ascii?Q?YhMwVkjqWhh4ITsT0a0JpH0X6jZ0Pv484fvXE6Bbm1FY1+/qIulpj0zHjORB?=
+ =?us-ascii?Q?ifBbWVFaZOSGVxAeB+c3/tsrv7bGqJBtxjWJDx9opWYu7W3G4oHyEsB42vqC?=
+ =?us-ascii?Q?rPcjplswVhLGdULl6I/GeUn0gCr2HrLKE/u3y228jcy9dp7+rOnE28sTxHIy?=
+ =?us-ascii?Q?+wU5aJFE1sRVF53jZF145wVgAN8lcrRUCq6IClorvM1Tj54+065diC8hnC2p?=
+ =?us-ascii?Q?axN9ADAGlzervqCU5FhAmdtjcJX471TlhOrYHaOqewlepCPX7/scdv4RT3tb?=
+ =?us-ascii?Q?6rKGmzqf2AotH9QtUePU8SxXQJfCw1VWEMrcBvacno9lXYlnELSgvsV/HM64?=
+ =?us-ascii?Q?e769giVIF4LLtcK/UrcHU9g5Zd+4y+P2oXqdrmZ/By1UtIVoxSXBYpxgLvyX?=
+ =?us-ascii?Q?qvrPcTlUVQ7U4qYHDehXP4uzuyEFk+zdPvrqfh6nxmSNX1bjDy51TQhEzZif?=
+ =?us-ascii?Q?6kZuCcnuSuLHR6tHLtKrWJ6FHsf0UXVz+JofhTwHdORjkKVa6bG4zLrQTNdP?=
+ =?us-ascii?Q?OmnTRN+z9Zz5g2a17DmJGhJImy9PtTBIelOyYo6WYe4saqKS2uMg0ri4297s?=
+ =?us-ascii?Q?tmxD8Tz+rpNookQBD1TxayVvc+GISLdH17COCm6F?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e215f86c-ee99-4c72-5a01-08dba3f8aa7a
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6191f347-3296-43b0-9036-08dba3f8ac4d
 X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Aug 2023 16:47:41.3519
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Aug 2023 16:47:44.4165
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Dhv+mqxOUeQBzRVqi7wsuLxXb5BpxWdCj+DLZJtRULzpC9tS9IShEvTRIVG87s1v
+X-MS-Exchange-CrossTenant-UserPrincipalName: dPnqT+su8pQfrN0Paumgb9olDTLHgL45RPVnzUwCZzMkBCrVFai69LcH8jFVfo2A
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR12MB6346
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -160,90 +160,75 @@ Cc: Thierry Reding <treding@nvidia.com>, Niklas Schnelle <schnelle@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-What tegra-smmu does during tegra_smmu_set_platform_dma() is actually
-putting the iommu into identity mode.
+What mtk does during mtk_iommu_v1_set_platform_dma() is actually putting
+the iommu into identity mode. Make this available as a proper IDENTITY
+domain.
 
-Move to the new core support for ARM_DMA_USE_IOMMU by defining
-ops->identity_domain.
+The mtk_iommu_v1_def_domain_type() from
+commit 8bbe13f52cb7 ("iommu/mediatek-v1: Add def_domain_type") explains
+this was needed to allow probe_finalize() to be called, but now the
+IDENTITY domain will do the same job so change the returned
+def_domain_type.
 
-Reviewed-by: Lu Baolu <baolu.lu@linux.intel.com>
+mkt_v1 is the only driver that returns IOMMU_DOMAIN_UNMANAGED from
+def_domain_type().  This allows the next patch to enforce an IDENTITY
+domain policy for this driver.
+
 Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
 ---
- drivers/iommu/tegra-smmu.c | 37 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 32 insertions(+), 5 deletions(-)
+ drivers/iommu/mtk_iommu_v1.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/iommu/tegra-smmu.c b/drivers/iommu/tegra-smmu.c
-index e445f80d02263b..80481e1ba561b8 100644
---- a/drivers/iommu/tegra-smmu.c
-+++ b/drivers/iommu/tegra-smmu.c
-@@ -511,23 +511,39 @@ static int tegra_smmu_attach_dev(struct iommu_domain *domain,
- 	return err;
+diff --git a/drivers/iommu/mtk_iommu_v1.c b/drivers/iommu/mtk_iommu_v1.c
+index 8a0a5e5d049f4a..cc3e7d53d33ad9 100644
+--- a/drivers/iommu/mtk_iommu_v1.c
++++ b/drivers/iommu/mtk_iommu_v1.c
+@@ -319,11 +319,27 @@ static int mtk_iommu_v1_attach_device(struct iommu_domain *domain, struct device
+ 	return 0;
  }
  
--static void tegra_smmu_set_platform_dma(struct device *dev)
-+static int tegra_smmu_identity_attach(struct iommu_domain *identity_domain,
-+				      struct device *dev)
+-static void mtk_iommu_v1_set_platform_dma(struct device *dev)
++static int mtk_iommu_v1_identity_attach(struct iommu_domain *identity_domain,
++					struct device *dev)
  {
- 	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
- 	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
--	struct tegra_smmu_as *as = to_smmu_as(domain);
--	struct tegra_smmu *smmu = as->smmu;
-+	struct tegra_smmu_as *as;
-+	struct tegra_smmu *smmu;
- 	unsigned int index;
+ 	struct mtk_iommu_v1_data *data = dev_iommu_priv_get(dev);
  
- 	if (!fwspec)
--		return;
-+		return -ENODEV;
- 
-+	if (domain == identity_domain || !domain)
-+		return 0;
-+
-+	as = to_smmu_as(domain);
-+	smmu = as->smmu;
- 	for (index = 0; index < fwspec->num_ids; index++) {
- 		tegra_smmu_disable(smmu, fwspec->ids[index], as->id);
- 		tegra_smmu_as_unprepare(smmu, as);
- 	}
+ 	mtk_iommu_v1_config(data, dev, false);
 +	return 0;
- }
- 
-+static struct iommu_domain_ops tegra_smmu_identity_ops = {
-+	.attach_dev = tegra_smmu_identity_attach,
-+};
-+
-+static struct iommu_domain tegra_smmu_identity_domain = {
-+	.type = IOMMU_DOMAIN_IDENTITY,
-+	.ops = &tegra_smmu_identity_ops,
-+};
-+
- static void tegra_smmu_set_pde(struct tegra_smmu_as *as, unsigned long iova,
- 			       u32 value)
- {
-@@ -962,11 +978,22 @@ static int tegra_smmu_of_xlate(struct device *dev,
- 	return iommu_fwspec_add_ids(dev, &id, 1);
- }
- 
-+static int tegra_smmu_def_domain_type(struct device *dev)
-+{
-+	/*
-+	 * FIXME: For now we want to run all translation in IDENTITY mode, due
-+	 * to some device quirks. Better would be to just quirk the troubled
-+	 * devices.
-+	 */
-+	return IOMMU_DOMAIN_IDENTITY;
 +}
 +
- static const struct iommu_ops tegra_smmu_ops = {
-+	.identity_domain = &tegra_smmu_identity_domain,
-+	.def_domain_type = &tegra_smmu_def_domain_type,
- 	.domain_alloc = tegra_smmu_domain_alloc,
- 	.probe_device = tegra_smmu_probe_device,
- 	.device_group = tegra_smmu_device_group,
--	.set_platform_dma_ops = tegra_smmu_set_platform_dma,
- 	.of_xlate = tegra_smmu_of_xlate,
- 	.pgsize_bitmap = SZ_4K,
- 	.default_domain_ops = &(const struct iommu_domain_ops) {
++static struct iommu_domain_ops mtk_iommu_v1_identity_ops = {
++	.attach_dev = mtk_iommu_v1_identity_attach,
++};
++
++static struct iommu_domain mtk_iommu_v1_identity_domain = {
++	.type = IOMMU_DOMAIN_IDENTITY,
++	.ops = &mtk_iommu_v1_identity_ops,
++};
++
++static void mtk_iommu_v1_set_platform_dma(struct device *dev)
++{
++	mtk_iommu_v1_identity_attach(&mtk_iommu_v1_identity_domain, dev);
+ }
+ 
+ static int mtk_iommu_v1_map(struct iommu_domain *domain, unsigned long iova,
+@@ -443,7 +459,7 @@ static int mtk_iommu_v1_create_mapping(struct device *dev, struct of_phandle_arg
+ 
+ static int mtk_iommu_v1_def_domain_type(struct device *dev)
+ {
+-	return IOMMU_DOMAIN_UNMANAGED;
++	return IOMMU_DOMAIN_IDENTITY;
+ }
+ 
+ static struct iommu_device *mtk_iommu_v1_probe_device(struct device *dev)
+@@ -578,6 +594,7 @@ static int mtk_iommu_v1_hw_init(const struct mtk_iommu_v1_data *data)
+ }
+ 
+ static const struct iommu_ops mtk_iommu_v1_ops = {
++	.identity_domain = &mtk_iommu_v1_identity_domain,
+ 	.domain_alloc	= mtk_iommu_v1_domain_alloc,
+ 	.probe_device	= mtk_iommu_v1_probe_device,
+ 	.probe_finalize = mtk_iommu_v1_probe_finalize,
 -- 
 2.41.0
 
