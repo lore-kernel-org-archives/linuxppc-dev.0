@@ -4,51 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75FEAC3DA6F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 12:13:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E01CC6FA8F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 12:29:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LgPW2usv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=e8sJYwXZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RWhmx68Wbz3cNY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 22:13:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RWj8D3v75z3cCc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 22:29:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LgPW2usv;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=e8sJYwXZ;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RWhlq3Wr0z3cQj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 22:12:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RWj7G2mJ9z2yTc
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 22:28:58 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1692879127;
-	bh=5dZ7H5AvuwD1fsfcHf5lBQCJtCjGTozA2J+MbQWvbAA=;
-	h=From:To:Subject:In-Reply-To:References:Date:From;
-	b=LgPW2usvZj4SYyetbjTTQOAcgEs/ys5F+JOd8mzc7GWm2TqG1TMiocNm32yzQWj78
-	 pwfy6MC0maZ+t4x7hZykoP650VLTUZCsG67k7FuwtSVoQ+syUFptZYPIwRLQ//Vx1E
-	 T/5pXL0FS0UosanMULHqgoDjw0Ff5g3fJyExwSldyQ2qKFxJOum1JaJovGpW54sqhO
-	 nJq7tRFZZJB7w/NZhub+742GSp9xzTRqXusnV/LcLTmFMXYsnWN+PQp3tOVrGd4nZm
-	 j6SMhqimaQOmLOE8cydhbHUIXs6wjrcNyrV+7l87CCS0HobLu1LYp+sXSXJrlWglpy
-	 LpxcfmDRB4K+A==
+	s=201909; t=1692880133;
+	bh=xHpUcn6D3KL14DU9d4bOFac6hxbKN3QlpZXRyLBlVJo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=e8sJYwXZltaSjeMGQMGsgE4jB9W/RgGGZDSZA1cJShWgO0U9FfzlAIMKPgnXyrlP7
+	 5frNF7rfn4ckJFmXsFcnGRVtDwBjx5aWW0F9nhBVdSzlTZ/ROQNN/5fTay767uNJxk
+	 ua92ZBb17XMPpeIV0IkUWL53RApiX4767qtUQ0n0EhMn/cbbhR8oHCwWw4R+pdYcKt
+	 X2gxofgYBvdTrcl8VEWfTYG4NC/dJXZ6icj4R1izxXo+ANxtNErXrvJXJE8ulFj1zK
+	 Ri/fc/nkE46OR9i3Pf8YfRCMI7cn2h16tTloiTfMWfTNK0unI9zvw9VLikwbn3bDHs
+	 /ktTamTu/w2yg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RWhlq1tTGz4wxN;
-	Thu, 24 Aug 2023 22:12:07 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RWj786VL9z4wb8;
+	Thu, 24 Aug 2023 22:28:52 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 4/4] powerpc/64s: Use POWER10 stsync barrier for wmb()
-In-Reply-To: <87fs48vdw6.fsf@mail.lhotse>
-References: <20230609100026.8946-1-npiggin@gmail.com>
- <20230609100026.8946-4-npiggin@gmail.com> <87wn07foos.fsf@mail.lhotse>
- <87ttvafuxi.fsf@mail.lhotse> <CTCUKC30VVC4.KMUHD1RN0W79@wheely>
- <87leglfmlc.fsf@mail.lhotse> <87fs48vdw6.fsf@mail.lhotse>
-Date: Thu, 24 Aug 2023 22:12:06 +1000
-Message-ID: <87cyzcvdux.fsf@mail.lhotse>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/mm: Allow ARCH_FORCE_MAX_ORDER up to 12
+Date: Thu, 24 Aug 2023 22:28:49 +1000
+Message-ID: <20230824122849.942072-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,52 +59,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> "Nicholas Piggin" <npiggin@gmail.com> writes:
->>> On Wed Jun 14, 2023 at 3:56 PM AEST, Michael Ellerman wrote:
->>>> Michael Ellerman <mpe@ellerman.id.au> writes:
->>>> > Nicholas Piggin <npiggin@gmail.com> writes:
->>>> >> The most expensive ordering for hwsync to provide is the store-load
->>>> >> barrier, because all prior stores have to be drained to the caches
->>>> >> before subsequent instructions can complete.
->>>> >>
->>>> >> stsync just orders stores which means it can just be a barrer that
->>>> >> goes down the store queue and orders draining, and does not prevent
->>>> >> completion of subsequent instructions. So it should be faster than
->>>> >> hwsync.
->>>> >>
->>>> >> Use stsync for wmb(). Older processors that don't recognise the SC
->>>> >> field should treat this as hwsync.
->>>> >
->>>> > qemu (7.1) emulating ppc64e does not :/
->>>> >
->>>> >   mpic: Setting up MPIC " OpenPIC  " version 1.2 at fe0040000, max 1 CPUs
->>>> >   mpic: ISU size: 256, shift: 8, mask: ff
->>>> >   mpic: Initializing for 256 sources
->>>> >   Oops: Exception in kernel mode, sig: 4 [#1]
->>>> ..
->>>> >
->>>> > I guess just put it behind an #ifdef 64S.
->>>>
->>>> That doesn't work because qemu emulating a G5 also doesn't accept it.
->>>>
->>>> So either we need to get qemu updated and wait a while for that to
->>>> percolate, or do some runtime patching of wmbs in the kernel >_<
->>>
->>> Gah, sorry. QEMU really should be ignoring reserved fields in
->>> instructions :(
->>
->> Yeah, it's an annoying discrepancy vs real hardware and the ISA.
->>
->>> I guess leave it out for now. Should fix QEMU but we probably also need
->>> to do patching so as not to break older QEMUs.
->>
->> I'll plan to take the first 3 patches, they seem OK as-is.
->
-> I didn't do that in the end, because patch 2 suffers from the same
-                                             ^
-                                             3
-> problem of not working on QEMU.
->
-> cheers
+Christophe reported that the change to ARCH_FORCE_MAX_ORDER to limit the
+range to 10 had broken his ability to configure hugepages:
+
+  # echo 1 > /sys/kernel/mm/hugepages/hugepages-8192kB/nr_hugepages
+  sh: write error: Invalid argument
+
+Several of the powerpc defconfigs previously set the
+ARCH_FORCE_MAX_ORDER value to 12, via the definition in
+arch/powerpc/configs/fsl-emb-nonhw.config, used by:
+
+  mpc85xx_defconfig
+  mpc85xx_smp_defconfig
+  corenet32_smp_defconfig
+  corenet64_smp_defconfig
+  mpc86xx_defconfig
+  mpc86xx_smp_defconfig
+
+Fix it by increasing the allowed range to 12 to restore the previous
+behaviour.
+
+Fixes: 358e526a1648 ("powerpc/mm: Reinstate ARCH_FORCE_MAX_ORDER ranges")
+Reported-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://msgid.link/id:8011d806-5b30-bf26-2bfe-a08c39d57e20@csgroup.eu
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Christophe, can you confirm this fixes your system?
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c831e20cf40f..8977fa73c09e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -928,7 +928,7 @@ config ARCH_FORCE_MAX_ORDER
+ 	default "6" if PPC32 && PPC_64K_PAGES
+ 	range 4 10 if PPC32 && PPC_256K_PAGES
+ 	default "4" if PPC32 && PPC_256K_PAGES
+-	range 10 10
++	range 10 12
+ 	default "10"
+ 	help
+ 	  The kernel page allocator limits the size of maximal physically
+-- 
+2.41.0
+
