@@ -4,65 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11970C27C40
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 08:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EC25C27C40
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 08:13:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Vrd5G9up;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=PiabMMQh;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RWbR45FNRz3dks
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 18:12:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RWbS15McLz3fHl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Aug 2023 18:13:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Vrd5G9up;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=PiabMMQh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=stevensd@chromium.org; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::22d; helo=mail-oi1-x22d.google.com; envelope-from=stevensd@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x22d.google.com (mail-oi1-x22d.google.com [IPv6:2607:f8b0:4864:20::22d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RWbHH0CB2z3dGQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 18:05:30 +1000 (AEST)
-Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-56a9c951aaaso2560902a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 01:05:30 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RWbHk2Zdtz3dDQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 18:05:54 +1000 (AEST)
+Received: by mail-oi1-x22d.google.com with SMTP id 5614622812f47-3a7f4f7a8easo3008793b6e.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 01:05:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1692864329; x=1693469129;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hI/ttp/wxMkRYZ+oyQ2NmS2HxwoQO77IewL5mtwNCh0=;
-        b=Vrd5G9upmFX23Dc2l1UOiVR7mwQuxLdJALTe566riReLawye0Iez9RByru+Lw1LGHs
-         +bLoUARoikkBnCqoL1flcVwqreaLS334iX1gCgyZpEjqUf218Tus3zznhtCtfSXcIQ+Z
-         YpZi1+Q5+CVa8tvqM3unr1KQ1huvUG9hP9dD4=
+        d=chromium.org; s=google; t=1692864289; x=1693469089;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=5EE+UzoRngnjehf25g1txAUD7jFYvBFO8xVG5NUnepk=;
+        b=PiabMMQhe9y2vUBAt7h+ntRdrItXl5XEmXNUAkQzHdz/5Usah2vUewJPe1DxJjyMoj
+         MPwJ8vBC0PRuHBzkM99uP/8pDt3bKa4MMVAyZvrVMT5+kHkXevDD6Xbkw9rXNNage966
+         g+94vbQfs3rPzxqPbviDDzoC4v8GyCo9zgfVo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692864329; x=1693469129;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hI/ttp/wxMkRYZ+oyQ2NmS2HxwoQO77IewL5mtwNCh0=;
-        b=CcLzyd3pqmqgE1DX/hYuTzDrhOmzDL00M8l9AZHLoxC/n3gGfjMgbundUqGNGlBbF0
-         MCe+XK0AnAGtZcjYmTo8xr7mXXkh0QYSsgxFjXKFmZzASMewm4w5jhgLBvI7IzzirbYD
-         XK0Ujv73n1pXUokRPJowolfuC5vdH9OVkxGyV8RNXOLzBOGKKmsip3YCfqlfJ2dWpPJ1
-         bSRd3z3VQQB9H13FWSqr1oUyHKz9DUGm1X1xc+Z/jXHk+HV5zKbnKk03F6wyCidMjoI7
-         XWHYznuZ9wDtw05IIy6CVmJlEA+Ar2/Lt3xu9ScuYwduTyVdc5gIeVaMLpHCz1LQHRr8
-         mgRA==
-X-Gm-Message-State: AOJu0YzjUTHa8gtqgGwMAajG3MY/PIc+Eb37DbslQTBVqsyMd37fFocc
-	JrpHortbLE2tFOWrKC11GhBt1Q==
-X-Google-Smtp-Source: AGHT+IGr4o4edi/X3Imw/dOG9514f6ovvLqJxfkblt2y6pWdfKpxCplBDdHZn5gaAedd/iurfPc6oA==
-X-Received: by 2002:a17:90b:3590:b0:267:f094:afcf with SMTP id mm16-20020a17090b359000b00267f094afcfmr11065174pjb.12.1692864328780;
-        Thu, 24 Aug 2023 01:05:28 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1692864289; x=1693469089;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=5EE+UzoRngnjehf25g1txAUD7jFYvBFO8xVG5NUnepk=;
+        b=TzZ7EV6K8Z0ScObWG3SyG3KjKqmcbMCYytUO+tt9ELbmO9iDO5jlNmdRn/g9iZe8rO
+         efRu6VBK7gNYgXUpSVU8aL4af10i89xbDiNDEHLGI2cU+ODJg9VZzj+Di4epK8Thizwv
+         pPDjrsXutCldtoB1GXX4ZheXoJwPpQOE/LN3TTG9DADOR6jLnPzjn1uj/xu/UkvKIDOo
+         xqA6OfZvQhzm4AxRmejrqBdKpxVtkJL2oS8QR8cvhpLhTQDTESC+thxCV0XkQirZnITq
+         K6qtknuyoi7oU/ICclI22wBssHcX5LPoNeh4lTvLTD29oyFJB1DMlLErwB1Btk8uFOFB
+         RY6Q==
+X-Gm-Message-State: AOJu0YyTIw8RcPLoMYOF/fXGGRWrWnhevQeT0UW8mySFBTEeSBwceMLe
+	b8vX+W+5bsR9+RYAqU7pocleHA==
+X-Google-Smtp-Source: AGHT+IHkBcWKFj3+pW5fuuiWfLnbD3ta+ABypKF47WzCDkfdw67HWPAGK/Ns2WRoKXuxgQGkt6DXAw==
+X-Received: by 2002:a05:6358:720c:b0:13c:c84b:88bb with SMTP id h12-20020a056358720c00b0013cc84b88bbmr2497118rwa.27.1692864289233;
+        Thu, 24 Aug 2023 01:04:49 -0700 (PDT)
 Received: from localhost ([2401:fa00:8f:203:515:8b2a:90c3:b79e])
-        by smtp.gmail.com with UTF8SMTPSA id g2-20020a17090adac200b0026d034f6badsm967988pjx.38.2023.08.24.01.05.25
+        by smtp.gmail.com with UTF8SMTPSA id a18-20020aa78652000000b00666e649ca46sm7014327pfo.101.2023.08.24.01.04.46
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 24 Aug 2023 01:05:28 -0700 (PDT)
+        Thu, 24 Aug 2023 01:04:48 -0700 (PDT)
 From: David Stevens <stevensd@chromium.org>
 X-Google-Original-From: David Stevens <stevensd@google.com>
 To: Sean Christopherson <seanjc@google.com>
-Subject: [PATCH v8 8/8] KVM: mmu: remove __gfn_to_pfn_memslot
-Date: Thu, 24 Aug 2023 17:04:08 +0900
-Message-ID: <20230824080408.2933205-9-stevensd@google.com>
+Subject: [PATCH v8 0/8] KVM: allow mapping non-refcounted pages
+Date: Thu, 24 Aug 2023 17:04:00 +0900
+Message-ID: <20230824080408.2933205-1-stevensd@google.com>
 X-Mailer: git-send-email 2.42.0.rc1.204.g551eb34607-goog
-In-Reply-To: <20230824080408.2933205-1-stevensd@google.com>
-References: <20230824080408.2933205-1-stevensd@google.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -82,57 +79,97 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: David Stevens <stevensd@chromium.org>
 
-All callers have been migrated to __kvm_follow_pfn.
+This patch series adds support for mapping VM_IO and VM_PFNMAP memory
+that is backed by struct pages that aren't currently being refcounted
+(e.g. tail pages of non-compound higher order allocations) into the
+guest.
 
-Signed-off-by: David Stevens <stevensd@chromium.org>
----
- virt/kvm/kvm_main.c | 33 ---------------------------------
- 1 file changed, 33 deletions(-)
+Our use case is virtio-gpu blob resources [1], which directly map host
+graphics buffers into the guest as "vram" for the virtio-gpu device.
+This feature currently does not work on systems using the amdgpu driver,
+as that driver allocates non-compound higher order pages via
+ttm_pool_alloc_page.
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index fa1848c6c84f..aebaf4a7340e 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -2728,39 +2728,6 @@ kvm_pfn_t __kvm_follow_pfn(struct kvm_follow_pfn *foll)
- }
- EXPORT_SYMBOL_GPL(__kvm_follow_pfn);
- 
--kvm_pfn_t __gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn,
--			       bool atomic, bool interruptible, bool *async,
--			       bool write_fault, bool *writable, hva_t *hva)
--{
--	kvm_pfn_t pfn;
--	struct kvm_follow_pfn foll = {
--		.slot = slot,
--		.gfn = gfn,
--		.flags = FOLL_GET,
--		.atomic = atomic,
--		.try_map_writable = !!writable,
--	};
--
--	if (write_fault)
--		foll.flags |= FOLL_WRITE;
--	if (async)
--		foll.flags |= FOLL_NOWAIT;
--	if (interruptible)
--		foll.flags |= FOLL_INTERRUPTIBLE;
--
--	pfn = __kvm_follow_pfn(&foll);
--	if (pfn == KVM_PFN_ERR_NEEDS_IO) {
--		*async = true;
--		pfn = KVM_PFN_ERR_FAULT;
--	}
--	if (hva)
--		*hva = foll.hva;
--	if (writable)
--		*writable = foll.writable;
--	return pfn;
--}
--EXPORT_SYMBOL_GPL(__gfn_to_pfn_memslot);
--
- kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
- 		      bool *writable)
- {
+First, this series replaces the __gfn_to_pfn_memslot API with a more
+extensible __kvm_faultin_pfn API. The updated API rearranges
+__gfn_to_pfn_memslot's args into a struct and where possible packs the
+bool arguments into a FOLL_ flags argument. The refactoring changes do
+not change any behavior, except as noted in the PPC change.
+
+When introduced in the refactoring, __kvm_faultin_pfn implies FOLL_GET
+to preserve existing behavior. From there, the API is made to support
+mapping non-refcounted pages by respecting the FOLL_GET flag.
+
+This series only adds support for non-refcounted pages to the x86 MMU.
+Other MMUs can likely be updated without too much difficulty, but it is
+not needed at this point. Updating other parts of KVM (e.g. pfncache) is
+not straightforward [2].
+
+[1]
+https://patchwork.kernel.org/project/dri-devel/cover/20200814024000.2485-1-gurchetansingh@chromium.org/
+[2] https://lore.kernel.org/all/ZBEEQtmtNPaEqU1i@google.com/
+
+v7 -> v8:
+ - Set access bits before releasing mmu_lock.
+ - Pass FOLL_GET on 32-bit x86 or !tdp_enabled.
+ - Refactor FOLL_GET handling, add kvm_follow_refcounted_pfn helper.
+ - Set refcounted bit on >4k pages.
+ - Add comments and apply formatting suggestions.
+ - rebase on kvm next branch.
+v6 -> v7:
+ - Replace __gfn_to_pfn_memslot with a more flexible __kvm_faultin_pfn,
+   and extend that API to support non-refcounted pages.
+v5 -> v6:
+ - rebase on kvm next branch
+ - rename gfn_to_pfn_page to gfn_to_pfn_noref
+ - fix uninitialized outparam in error case of __kvm_faultin_pfn
+ - add kvm_release_pfn_noref_clean for releasing pfn/page pair
+v4 -> v5:
+ - rebase on kvm next branch again
+v3 -> v4:
+ - rebase on kvm next branch again
+ - Add some more context to a comment in ensure_pfn_ref
+v2 -> v3:
+ - rebase on kvm next branch
+v1 -> v2:
+ - Introduce new gfn_to_pfn_page functions instead of modifying the
+   behavior of existing gfn_to_pfn functions, to make the change less
+   invasive.
+ - Drop changes to mmu_audit.c
+ - Include Nicholas Piggin's patch to avoid corrupting refcount in the
+   follow_pte case, and use it in depreciated gfn_to_pfn functions.
+ - Rebase on kvm/next
+
+David Stevens (7):
+  KVM: mmu: Introduce __kvm_follow_pfn function
+  KVM: mmu: Make __kvm_follow_pfn not imply FOLL_GET
+  KVM: x86/mmu: Migrate to __kvm_follow_pfn
+  KVM: x86/mmu: Don't pass FOLL_GET to __kvm_follow_pfn
+  KVM: arm64: Migrate to __kvm_follow_pfn
+  KVM: PPC: Migrate to __kvm_follow_pfn
+  KVM: mmu: remove __gfn_to_pfn_memslot
+
+Sean Christopherson (1):
+  KVM: Assert that a page's refcount is elevated when marking
+    accessed/dirty
+
+ arch/arm64/kvm/mmu.c                   |  25 +--
+ arch/powerpc/include/asm/kvm_book3s.h  |   2 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c    |  38 ++--
+ arch/powerpc/kvm/book3s_64_mmu_radix.c |  50 +++---
+ arch/powerpc/kvm/book3s_hv_nested.c    |   4 +-
+ arch/x86/kvm/mmu/mmu.c                 |  94 +++++++---
+ arch/x86/kvm/mmu/mmu_internal.h        |   1 +
+ arch/x86/kvm/mmu/paging_tmpl.h         |   8 +-
+ arch/x86/kvm/mmu/spte.c                |   4 +-
+ arch/x86/kvm/mmu/spte.h                |  12 +-
+ arch/x86/kvm/mmu/tdp_mmu.c             |  22 ++-
+ include/linux/kvm_host.h               |  26 +++
+ virt/kvm/kvm_main.c                    | 231 ++++++++++++++-----------
+ virt/kvm/kvm_mm.h                      |   3 +-
+ virt/kvm/pfncache.c                    |  10 +-
+ 15 files changed, 316 insertions(+), 214 deletions(-)
+
 -- 
 2.42.0.rc1.204.g551eb34607-goog
 
