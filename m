@@ -4,60 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE9FFC3DA6F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 08:03:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B485C83F17
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Aug 2023 03:55:56 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=YxGLOPca;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RXCBk1ggvz3dJ9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 18:03:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.171; helo=mail-il1-f171.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-il1-f171.google.com (mail-il1-f171.google.com [209.85.166.171])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RXjfL6k3jz3cnJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Aug 2023 13:55:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=YxGLOPca;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=schmitzmic@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RXBgV6yrKz308K
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 17:40:05 +1000 (AEST)
-Received: by mail-il1-f171.google.com with SMTP id e9e14a558f8ab-34cacab5e33so2171275ab.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 00:40:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RXZlH75p3z2yt6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2023 08:44:42 +1000 (AEST)
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-1bdbbede5d4so11971125ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 15:44:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1693003477; x=1693608277;
+        h=content-transfer-encoding:in-reply-to:mime-version:user-agent:date
+         :message-id:subject:from:references:cc:to:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+EfHZKV5Rs50FUqRYXClC9vzZD5WlxrYeYbs3IamXT4=;
+        b=YxGLOPcaOZR604IVjJRcGcoKnB33IZ0CTfYuHyWKXt+0pInUOQSMoNyJ0dS6B1KmgY
+         cxaBOMvor3UlQ6MZnz8hco99YltIQ+TVGTfUiOj3M6EtIom4aLy5Ogu10qSlU6URXk+W
+         RnRGmXEhLIg0POh+PDKptxk33OVTKsM2/52zz5494dr8R8CSNGpoqbrRI3gpmS9Q+cTN
+         hJYUsHOFyiz+AcMtmJLq8rt6PHOWgX+jhYTNJt4ghkMZ1YZYHd+UADqGIVtKxfSRzrdW
+         eHx1TWLsT9QLE3Re7SH9KzLMTXlxKvezJrH+R76CylIu77symnMHbROv+J2zJ4UP/BTK
+         7yuQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692949202; x=1693554002;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=E5r8bhhlGnXrx708tsGw6Ag8gm7AVkEO6BeDk4HD7tk=;
-        b=a6KL8WW/1ovDUeQVxxb7LORS8xVpLYKS1XYNDJvo586SUq4tK2c2RMyxzePGamdD5/
-         +1nFW9AT365hDpaOsKoj3fB9wk6UdIZlixEacsdaBaek32ai5IPZdcP2BFnbijCpORUZ
-         Mn8+HcmGY1wqe9cgNIqiCAR4RuuQxE+P2otfxIHK/Zbm90b7rhiALl/rparjFlmk2A8d
-         5jAl9FIhhAvMzhXjqV0vM+ZlMbbtdFPkjA8T1YokFVnHlNGxpt6X7TkaEM7iS4Clo5Sc
-         dLGu3JTj1gsN5jSOe8G4qf1p6Q0o7B+sS/R2uOsJAQVxi35C7wXDOeYgZ2DD21Tw42mK
-         Zc4A==
-X-Gm-Message-State: AOJu0Ywb1Ytv64ZIZbVPLievYx4up1iscxvX+W9ndbR+myfapjpaY0LE
-	zUqJSauXugHP7V2DMtH8n/Tp5pF5/LQDMDIk
-X-Google-Smtp-Source: AGHT+IHlDWtefBy+KyFemzuSxJOHKaV7QpFUDsfarYvNmrVurCg0XqteFGM7JniFXRxLWXPj49zXuA==
-X-Received: by 2002:a05:6e02:1607:b0:34b:ba9a:341 with SMTP id t7-20020a056e02160700b0034bba9a0341mr9894580ilu.32.1692949201580;
-        Fri, 25 Aug 2023 00:40:01 -0700 (PDT)
-Received: from mail-il1-f178.google.com (mail-il1-f178.google.com. [209.85.166.178])
-        by smtp.gmail.com with ESMTPSA id gm1-20020a0566382b8100b0042b3e04510asm352720jab.98.2023.08.25.00.40.00
-        for <linuxppc-dev@lists.ozlabs.org>
+        d=1e100.net; s=20221208; t=1693003477; x=1693608277;
+        h=content-transfer-encoding:in-reply-to:mime-version:user-agent:date
+         :message-id:subject:from:references:cc:to:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=+EfHZKV5Rs50FUqRYXClC9vzZD5WlxrYeYbs3IamXT4=;
+        b=V164HZ1h+PiimRRJQv445b+HbTC3bz2b6GiZZykgBLvphHmZxpjqLpILNwS2p2sX/y
+         A1qzi1azF+2dzHwR1NdanfdJiD6meGFnTpZjDub0kFvqP1TtfN9oeM3LB72xHkNeTlLO
+         1/xh1tqKGBIsFLDWmvTc5WP4okVgoumTYtz1nOpVn4QlJeacMsNrUtZpb7ORVrxLbnr1
+         EJ0yv7mjkweOfxDcPHupjPbyPTnTQxR4DChUkEUT55tDuOc7lGmuq+cD6cspOVMReC8M
+         2CvGcblf9ESKDgI8vcxfu7o7JtLWAqb0U8+xk04jdjWfygTOkIAJLaR6R5zQU1pMGyDe
+         wGiA==
+X-Gm-Message-State: AOJu0YwkmvI5RVmPLY/ZWPQQw5O/LjihC7GShPUmXwMxVwS/YFgcKqUF
+	TWHsfGnzEaFqFhLX4E6sPlU=
+X-Google-Smtp-Source: AGHT+IHfISCtSa05UGz9PT6tDA2qtVyoG70cJPjb2fBEQ6/U+mzxDHROeZB/hJ4FR5D+DwWhbVxiGA==
+X-Received: by 2002:a17:903:25d4:b0:1bd:bbc3:c87b with SMTP id jc20-20020a17090325d400b001bdbbc3c87bmr18047490plb.41.1693003477133;
+        Fri, 25 Aug 2023 15:44:37 -0700 (PDT)
+Received: from Schmitz-MacBook-Pro.local (125-236-136-221-fibre.sparkbb.co.nz. [125.236.136.221])
+        by smtp.googlemail.com with ESMTPSA id b1-20020a170902d50100b001adf6b21c77sm2280761plg.107.2023.08.25.15.44.17
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 25 Aug 2023 00:40:00 -0700 (PDT)
-Received: by mail-il1-f178.google.com with SMTP id e9e14a558f8ab-34bb72ffb1fso2179525ab.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 00:40:00 -0700 (PDT)
-X-Received: by 2002:a25:34cd:0:b0:d0b:5b6:4629 with SMTP id
- b196-20020a2534cd000000b00d0b05b64629mr19382891yba.46.1692949180028; Fri, 25
- Aug 2023 00:39:40 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230810141947.1236730-1-arnd@kernel.org> <169292577153.789945.11297239773543112051.b4-ty@oracle.com>
+        Fri, 25 Aug 2023 15:44:36 -0700 (PDT)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+References: <20230810141947.1236730-1-arnd@kernel.org>
+ <169292577153.789945.11297239773543112051.b4-ty@oracle.com>
  <3956e2a4-c545-1212-e95f-3cf61a60d6a4@gmail.com>
-In-Reply-To: <3956e2a4-c545-1212-e95f-3cf61a60d6a4@gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 25 Aug 2023 09:39:28 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWC2S330_Vb_NTHTDC=BakBsw4ouP-eFJv0erV1-jmvTQ@mail.gmail.com>
-Message-ID: <CAMuHMdWC2S330_Vb_NTHTDC=BakBsw4ouP-eFJv0erV1-jmvTQ@mail.gmail.com>
+ <CAMuHMdWC2S330_Vb_NTHTDC=BakBsw4ouP-eFJv0erV1-jmvTQ@mail.gmail.com>
+From: Michael Schmitz <schmitzmic@gmail.com>
 Subject: Re: (subset) [PATCH 00/17] -Wmissing-prototype warning fixes
-To: Michael Schmitz <schmitzmic@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <130b3b57-edb0-184d-5b5f-69b013715773@gmail.com>
+Date: Sat, 26 Aug 2023 10:44:13 +1200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:78.0)
+ Gecko/20100101 Thunderbird/78.14.0
+MIME-Version: 1.0
+In-Reply-To: <CAMuHMdWC2S330_Vb_NTHTDC=BakBsw4ouP-eFJv0erV1-jmvTQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Fri, 25 Aug 2023 18:02:24 +1000
+X-Mailman-Approved-At: Sat, 26 Aug 2023 13:54:38 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,40 +90,67 @@ Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catali
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+Hi Geert,
 
-On Fri, Aug 25, 2023 at 3:31=E2=80=AFAM Michael Schmitz <schmitzmic@gmail.c=
-om> wrote:
-> On 25/08/23 13:12, Martin K. Petersen wrote:
-> > [11/17] scsi: gvp11: remove unused gvp11_setup() function
-> >          https://git.kernel.org/mkp/scsi/c/bfaa4a0ce1bb
+Am 25.08.23 um 19:39 schrieb Geert Uytterhoeven:
+> Hi Michael,
 >
-> I somehow missed that one ...
+> On Fri, Aug 25, 2023 at 3:31=E2=80=AFAM Michael Schmitz <schmitzmic@gma=
+il.com> wrote:
+>> On 25/08/23 13:12, Martin K. Petersen wrote:
+>>> [11/17] scsi: gvp11: remove unused gvp11_setup() function
+>>>          https://git.kernel.org/mkp/scsi/c/bfaa4a0ce1bb
+>> I somehow missed that one ...
+>>
+>> The gvp11_setup() function was probably a relic from the times before
+>> module parameters.
+>>
+>> Since gvp11_xfer_mask appears to be required for some Amiga systems to=
+
+>> set the DMA mask, I'd best send a patch to add such a module parameter=
+ ...
+>>
+>> Do you know any details around the use of DMA masks for Amiga WD33C93
+>> drivers, Geert?
+> Doh, it's been a while, and I never had an affected system.
+> Probably it's needed on A2000 with an accelerator card and GVP II SCSI,=
+
+> to prevent DMA to RAM banks that do not support fast DMA cycles.
+
+Thanks, that's good enough for me.
+
+Linux 2.0 had this comment:
+
+|/* * DMA transfer mask for GVP Series II SCSI controller. * Some
+versions can only DMA into the 24 bit address space * (0->16M). Others
+can DMA into the full 32 bit address * space. The default is to only
+allow DMA into the 24 bit * address space. The "gvp11=3D0xFFFFFFFE" setup=
+
+parameter can * be supplied to force an alternate (32 bit) mask. */ |
+
+|We now handle that (since 2.6.35) through masks defined in
+gvp11_zorro_tbl[] (though I note these don't account for unaligned
+addresses such as implied by the example in the comment. Are unaligned
+DMA buffers still possible today?). Would that cover the 'A2000 with
+accelerator' case?
+|
+
+||
+
+I'm happy to send a patch if an override to the device default DMA mask
+is still necessary.
+
+(Incidentally - did you ever publish the m68k full history tree anywhere
+in git?)
+
+Cheers,
+
+=C2=A0=C2=A0=C2=A0 Michael
+
+
 >
-> The gvp11_setup() function was probably a relic from the times before
-> module parameters.
+> Gr{oetje,eeting}s,
 >
-> Since gvp11_xfer_mask appears to be required for some Amiga systems to
-> set the DMA mask, I'd best send a patch to add such a module parameter ..=
-.
+>                         Geert
 >
-> Do you know any details around the use of DMA masks for Amiga WD33C93
-> drivers, Geert?
 
-Doh, it's been a while, and I never had an affected system.
-Probably it's needed on A2000 with an accelerator card and GVP II SCSI,
-to prevent DMA to RAM banks that do not support fast DMA cycles.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
