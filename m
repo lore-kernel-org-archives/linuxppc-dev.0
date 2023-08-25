@@ -4,75 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83CB8C3DA66
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 03:40:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A5E9C3DA6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 03:47:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-03-30 header.b=xT4JwIyB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=ljBfsTIH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RX5MM02vfz3cQb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 13:40:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RX5WR5RqRz3cM3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 13:47:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-03-30 header.b=xT4JwIyB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=ljBfsTIH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 3344 seconds by postgrey-1.37 at boromir; Fri, 25 Aug 2023 12:09:29 AEST
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RX3L160GFz2ygx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 12:09:08 +1000 (AEST)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37OJEN3l010276;
-	Fri, 25 Aug 2023 01:13:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2023-03-30;
- bh=uhEjckime6bsF1xq0dmnY+LwEHiDmuGwjHJQ7hVpFpk=;
- b=xT4JwIyBXmmvopnLoTqXTVQDIyq4jGSov+rjFGn7JrEsFJ0nGwiZ57rChZOcNtxS8gnd
- 32i9D/0gBNdAu6wmrSv4Tj5XGTtiOMTcrD7d8d7sIx9zu+UBUHmYA/WieiP0xKAeu3gF
- eHe1MsKPNrAZDzygQo0FmmEXELlSaZ2xMctwoLvlgndq1xchpQqBIi92sT4g6z/NC03I
- Sq45+sJdryY0Xt3UtsdNEeUPJQQwXRC0pKx/6zSsrk8N0z228cv46+9188htxHxgrJuH
- O19AK6RPcqphkoDDRpvAZZx3qvPOulLbxkXwvTBtVM7s38ELpJEo9mWBxT45N4g00a45 fg== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3sn1yv5ft9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Aug 2023 01:13:38 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 37P03oRV035625;
-	Fri, 25 Aug 2023 01:13:37 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3sn1ywqfhw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Aug 2023 01:13:37 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37P1DVDv019787;
-	Fri, 25 Aug 2023 01:13:36 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3sn1ywqf8n-3;
-	Fri, 25 Aug 2023 01:13:36 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@kernel.org>
-Subject: Re: (subset) [PATCH 00/17] -Wmissing-prototype warning fixes
-Date: Thu, 24 Aug 2023 21:12:49 -0400
-Message-Id: <169292577153.789945.11297239773543112051.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230810141947.1236730-1-arnd@kernel.org>
-References: <20230810141947.1236730-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RX5VT6Xrvz2yhP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 13:46:57 +1000 (AEST)
+Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-26f3e26e59cso400101a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 20:46:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1692935214; x=1693540014;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=qB6+Vu7s9lxHf8Fx4gWkeSYU67OaMytC2iSqtBmoLVk=;
+        b=ljBfsTIHdj+THurnUJY9Q3Sq9IfUIi77gE/yNw2gmAC+84GWujzjx76TMozHgVEGNS
+         V7NAEiAifM6vGmPfqnlILA5xquv4H+8WoGTj6XZY11Zke7HL7k1FpP2dlyxj5Hq05gvr
+         lgA0xbVoYtxkH4VqRp82CKvB5ClKqCNMELgmv9Qwk+gPsdYgJTm1i27ooxQqxMZsYuU2
+         hYLY3W03ow77kEDE81jbZ0mqjlVf19PLhXhlkB2NoS8sgOAfgt2zoQ3T6UmwlZDAZQmS
+         EgnnoNL4ZoxSVPMEIIF/Hge284EC6EouaCacLzdJi4f6bB8czhPD6PJEZkmtV67f7t/b
+         xKYg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692935214; x=1693540014;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=qB6+Vu7s9lxHf8Fx4gWkeSYU67OaMytC2iSqtBmoLVk=;
+        b=UVOVPK/nM9paMAIxIMS8U8gxvmrS8WeLsdmzJ3KTXoPVlPDTIB0NB9bfApIx8GoDPu
+         F5zmjHHS5jVEG46la8qdnjXJrR9kTvOYJxzECEiNwYFakNK3LpR/NUF6J/pDoBpCtTN2
+         bTSrHOe7dH+ALZlPvg2aGl0fDWp09HYs+jkB+pA725/WjmMEdKIo9lb0EkfgQY6nGJmo
+         c+u78flht9lAQXzapnFxH18H9WjDEg3rHuBbZJjqNN9sUFf3Ljjni8qlMkSn8DZKRCQi
+         7QKCeQLaGHsbkXGNz8gsK9zhTAcXMCfWx5aoxd4NMFyEyGavDuxD2ow79Nr3VReAC1ih
+         MkhQ==
+X-Gm-Message-State: AOJu0Yyg8NQ24g0UV1ORDC/KopncQiyPjtScVhXswE/M4q+CTYjDoXzy
+	xJJAtonVY8w+uLqKYTx3q7c1qS2wfSJKI9/sVPw=
+X-Google-Smtp-Source: AGHT+IHK3AwqFQWMgaDzKk8ascCxkGB5tB9Avd+eUPD79D7He/OxN5Qk96BRyCrHm2z3LsdodV02Rb8pqGONulPKObU=
+X-Received: by 2002:a17:90a:7408:b0:26b:513a:30b0 with SMTP id
+ a8-20020a17090a740800b0026b513a30b0mr26760961pjg.10.1692935214239; Thu, 24
+ Aug 2023 20:46:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-08-25_01,2023-08-24_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 suspectscore=0
- malwarescore=0 spamscore=0 phishscore=0 mlxlogscore=763 adultscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2308250009
-X-Proofpoint-GUID: X2SaJXDprf48MqrqrcFkis4RNSuOroKu
-X-Proofpoint-ORIG-GUID: X2SaJXDprf48MqrqrcFkis4RNSuOroKu
-X-Mailman-Approved-At: Fri, 25 Aug 2023 13:39:10 +1000
+References: <47d66c28-1eb2-07f5-d6f9-779d675aefe8@xs4all.nl>
+ <87il9xu1ro.wl-tiwai@suse.de> <CAA+D8ANmBKMp_L2GS=Lp-saMQKja6L4E6No3yP-e=a5YQBD_jQ@mail.gmail.com>
+ <87il9xoddo.wl-tiwai@suse.de> <CAA+D8AOVEpGxO0YNeS1p+Ym86k6VP-CNQB3JmbeT7mPKg0R99A@mail.gmail.com>
+ <844ef9b6-d5e2-46a9-b7a5-7ee86a2e449c@sirena.org.uk> <CAA+D8AOnsx+7t3MrWm42waxtetL07nbKURLsh1hBx39LUDm+Zg@mail.gmail.com>
+ <CAA+D8AMriHO60SD2OqQSDMmi7wm=0MkoW6faR5nyve-j2Q5AEQ@mail.gmail.com>
+ <CAA+D8AN34-NVrgksRAG014PuHGUssTm0p-KR-HYGe+Pt8Yejxg@mail.gmail.com>
+ <87wmxk8jaq.wl-tiwai@suse.de> <ZOe74PO4S6bj/QlV@finisterre.sirena.org.uk>
+In-Reply-To: <ZOe74PO4S6bj/QlV@finisterre.sirena.org.uk>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 25 Aug 2023 11:46:43 +0800
+Message-ID: <CAA+D8AM_pqbjQaE59n6Qm5gypLb8zPAwOpJR+_ZEG89-q3B8pg@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 0/7] Add audio support in v4l2 framework
+To: Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,32 +81,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-block@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, Jonas Bonn <jonas@southpole.se>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-snps-arc@lists.infradead.org, linux-scsi@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-next@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, Masahiro Yamada <masahiroy@kernel.org>, Guenter Roeck <linux@roeck-us.net>, linux-trace-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-s390@vger
- .kernel.org, Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Bjorn Helgaas <bhelgaas@google.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-openrisc@vger.kernel.org, linux-pci@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org, linux-kbuild@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Sudip
-  Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: nicoleotsuka@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, Hans Verkuil <hverkuil@xs4all.nl>, linuxppc-dev@lists.ozlabs.org, sakari.ailus@iki.fi, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 10 Aug 2023 16:19:18 +0200, Arnd Bergmann wrote:
+On Fri, Aug 25, 2023 at 4:21=E2=80=AFAM Mark Brown <broonie@kernel.org> wro=
+te:
+>
+> On Thu, Aug 24, 2023 at 07:03:09PM +0200, Takashi Iwai wrote:
+> > Shengjiu Wang wrote:
+>
+> > > But there are several issues:
+> > > 1. Need to create sound cards.  ASRC module support multi instances, =
+then
+> > > need to create multi sound cards for each instance.
+>
+> > Hm, why can't it be multiple PCM instances instead?
+>
+> I'm having a hard time following this one too.
+>
+> > > 2. The ASRC is an entirety but with DPCM we need to separate input po=
+rt and
+> > > output port to playback substream and capture stream. Synchronous bet=
+ween
+> > > playback substream and capture substream is a problem.
+> > > How to start them and stop them at the same time.
+>
+> > This could be done by enforcing the full duplex and linking the both
+> > PCM streams, I suppose.
+>
+> > > So shall we make the decision that we can go to the V4L2 solution?
+>
+> > Honestly speaking, I don't mind much whether it's implemented in V2L4
+> > or not -- at least for the kernel part, we can reorganize / refactor
+> > things internally.  But, the biggest remaining question to me is
+> > whether this user-space interface is the most suitable one.  Is it
+> > well defined, usable and maintained for the audio applications?  Or
+> > is it meant to be a stop-gap for a specific use case?
+>
+> I'm having a really hard time summoning much enthusiasm for using v4l
+> here, it feels like this is heading down the same bodge route as DPCM
+> but directly as ABI so even harder to fix properly.  That said all the
+> ALSA APIs are really intended to be used in real time and this sounds
+> like a non real time application?  I don't fully understand what the
+> actual use case is here.
 
-> Most of the patches I sent so far for the -Wmissing-prototype warnings
-> have made it into linux-next now. There are a few that I'm resending
-> now as nobody has picked them up, and then a number of fixes that I
-> found while test-building across all architectures rather than just the
-> ones I usually test.
-> 
-> The first 15 patches in this series should be uncontroversial, so
-> I expect that either a subsystem maintainer or Andrew Morton can
-> apply these directly.
-> 
-> [...]
+Thanks for your reply.
 
-Applied to 6.6/scsi-queue, thanks!
+This asrc memory to memory (memory ->asrc->memory) case is a non
+real time use case.
 
-[07/17] scsi: qlogicpti: mark qlogicpti_info() static
-        https://git.kernel.org/mkp/scsi/c/71cc486335c4
-[11/17] scsi: gvp11: remove unused gvp11_setup() function
-        https://git.kernel.org/mkp/scsi/c/bfaa4a0ce1bb
+User fills the input buffer to the asrc module,  after conversion, then asr=
+c
+sends back the output buffer to user. So it is not a traditional ALSA playb=
+ack
+and capture case. I think it is not good to create sound card for it,  it i=
+s
+not a sound card actually.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+It is a specific use case,  there is no reference in current kernel.
+v4l2 memory to memory is the closed implementation,  v4l2 current
+support video, image, radio, tuner, touch devices, so it is not
+complicated to add support for this specific audio case.
+
+Maybe you can go through these patches first.  Because we
+had implemented the "memory -> asrc ->i2s device-> codec"
+use case in ALSA.  Now the "memory->asrc->memory" needs
+to reuse the code in asrc driver, so the first 3 patches is for refining
+the code to make it can be shared by the "memory->asrc->memory"
+driver.
+
+The main change is in the v4l2 side, A /dev/vl42-audio will be created,
+user applications only use the ioctl of v4l2 framework.
+
+Best regards
+Wang Shengjiu
