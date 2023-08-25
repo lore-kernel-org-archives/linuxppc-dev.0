@@ -4,79 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 790B7C3DA66
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 15:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F370C3DA6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 15:23:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHZFvnBr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IMIFtCw3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RXNxY6qfCz2ygq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Aug 2023 01:22:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RXNyW4spWz3dRw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Aug 2023 01:23:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHZFvnBr;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IMIFtCw3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RXNrp15jNz2ygq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2023 01:18:49 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37PF26Qq029249;
-	Fri, 25 Aug 2023 15:18:30 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RXNrq0v0cz2yh2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2023 01:18:50 +1000 (AEST)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37PFI3rR008965;
+	Fri, 25 Aug 2023 15:18:22 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=hepVXRKFiRIv4IdaE1nHxJMdgayn+XmVr4DAvmp/X/A=;
- b=iHZFvnBrgcv2yBa9a049mozeOEMp5nwifNfjvKJGjszW+8ibowUl2DbiI98hJDtgr3xW
- 9TXXE8j6saDhtZuewv1OczrcvISDzDV0PghCAMULExhbyhU10F8pfe9VP+prpAAeymqh
- 2Apfhh7LgeCaCGXA49P3LLgzfQM0/JhTvpu4/c3SwVKk4phi8sLHN3hrIJJCQ3Iszwnl
- rIC3j/PmmazcaT1ZRP+GwPeywi/jacf3KLkqypoRMcEjXAv+rUpRIU6u7VW/tOvJr5sV
- F6ejF/ceVcr39/dMucdaJZOVFvwG3llWA70CiKQZgbbU5pgy2azv7VwH9kNe6QMn2vCv fg== 
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3spxk48g0j-1
+ bh=09MNY9PiuRvnqSPglkkiSskIQIWedRRnZALkKFuLvXM=;
+ b=IMIFtCw3lOE58Ww1esklTug30UvsbO5+9/MP9YTJUN365hiQ7XHimCucT6OiridPLbiS
+ EWiou7Pc9V5GeLjbzP9JpFeRoeSNDeub9rjZLhTPsW+4r9ugt1oDBkpuV171DheNSmFp
+ /kIUkvn6IVuPONA8nqdHHSRexcwRZiA+OVeuD7YZiobQ32N72mDdXwKE3UyVTUjDo1LY
+ zJXYNYeFUOFNrpO2+UYKQNen4jGbHMwSLLh0x+sUG0KrnHgkc32JwZ0chgevVvke3drX
+ HyxUFUk4no2K5xNyfLP2bcASrBq1BQhiqWY2UjwHndonwbwx/jQSF1wUoe1Mft33nijy tg== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3spxtj804t-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Aug 2023 15:18:29 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37PDK5tR004050;
-	Fri, 25 Aug 2023 15:18:29 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3sn21s0g22-1
+	Fri, 25 Aug 2023 15:18:22 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37PFGnfT016735;
+	Fri, 25 Aug 2023 15:18:21 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3sn2288hfn-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Aug 2023 15:18:28 +0000
+	Fri, 25 Aug 2023 15:18:21 +0000
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37PFIRFO46072528
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37PFIJpG55181768
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Aug 2023 15:18:27 GMT
+	Fri, 25 Aug 2023 15:18:19 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F0D1520043;
-	Fri, 25 Aug 2023 15:18:26 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id BA19220043;
+	Fri, 25 Aug 2023 15:18:19 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E526320040;
-	Fri, 25 Aug 2023 15:18:24 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A5EA320040;
+	Fri, 25 Aug 2023 15:18:17 +0000 (GMT)
 Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.ibm.com.com (unknown [9.43.75.97])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 25 Aug 2023 15:18:24 +0000 (GMT)
+	Fri, 25 Aug 2023 15:18:17 +0000 (GMT)
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org
-Subject: [PATCH v3 5/5] powerpc/bpf: use patch_instructions()
-Date: Fri, 25 Aug 2023 20:48:10 +0530
-Message-ID: <20230825151810.164418-6-hbathini@linux.ibm.com>
+Subject: [PATCH v3 2/5] powerpc/bpf: implement bpf_arch_text_invalidate for bpf_prog_pack
+Date: Fri, 25 Aug 2023 20:48:07 +0530
+Message-ID: <20230825151810.164418-3-hbathini@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230825151810.164418-1-hbathini@linux.ibm.com>
 References: <20230825151810.164418-1-hbathini@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: zW0Gs0G3hAgvPHrma_6ZckW5s_A8oHh-
-X-Proofpoint-GUID: zW0Gs0G3hAgvPHrma_6ZckW5s_A8oHh-
+X-Proofpoint-GUID: w69WJ_0l5yW4enckGL6WzcUSANwOpf9T
+X-Proofpoint-ORIG-GUID: w69WJ_0l5yW4enckGL6WzcUSANwOpf9T
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-08-25_13,2023-08-25_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 bulkscore=0
- mlxscore=0 adultscore=0 spamscore=0 impostorscore=0 mlxlogscore=879
- lowpriorityscore=0 phishscore=0 clxscore=1015 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ mlxlogscore=938 phishscore=0 bulkscore=0 priorityscore=1501
+ lowpriorityscore=0 adultscore=0 spamscore=0 impostorscore=0 clxscore=1015
+ mlxscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2308100000 definitions=main-2308250134
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -93,90 +93,58 @@ Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Al
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the newly introduced patch_instructions() that handles patching
-multiple instructions with one call. This improves speed of exectution
-for JIT'ing bpf programs.
-
-Without this patch (on a POWER9 lpar):
-
-  # time modprobe test_bpf
-  real    2m59.681s
-  user    0m0.000s
-  sys     1m44.160s
-  #
-
-With this patch (on a POWER9 lpar):
-
-  # time modprobe test_bpf
-  real    0m5.013s
-  user    0m0.000s
-  sys     0m4.216s
-  #
+Implement bpf_arch_text_invalidate and use it to fill unused part of
+the bpf_prog_pack with trap instructions when a BPF program is freed.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/net/bpf_jit_comp.c | 30 ++++--------------------------
- 1 file changed, 4 insertions(+), 26 deletions(-)
+ arch/powerpc/net/bpf_jit_comp.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index c60d7570e05d..1e5000d18321 100644
+index 170ebf8ac0f2..7cd4cf53d61c 100644
 --- a/arch/powerpc/net/bpf_jit_comp.c
 +++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -26,28 +26,6 @@ static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
- 	memset32(area, BREAKPOINT_INSTRUCTION, size / 4);
- }
- 
--/*
-- * Patch 'len' bytes of instructions from opcode to addr, one instruction
-- * at a time. Returns addr on success. ERR_PTR(-EINVAL), otherwise.
-- */
--static void *bpf_patch_instructions(void *addr, void *opcode, size_t len, bool fill_insn)
--{
--	while (len > 0) {
--		ppc_inst_t insn = ppc_inst_read(opcode);
--		int ilen = ppc_inst_len(insn);
--
--		if (patch_instruction(addr, insn))
--			return ERR_PTR(-EINVAL);
--
--		len -= ilen;
--		addr = addr + ilen;
--		if (!fill_insn)
--			opcode = opcode + ilen;
--	}
--
--	return addr;
--}
--
- int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr)
+@@ -30,7 +30,7 @@ static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
+  * Patch 'len' bytes of instructions from opcode to addr, one instruction
+  * at a time. Returns addr on success. ERR_PTR(-EINVAL), otherwise.
+  */
+-static void *bpf_patch_instructions(void *addr, void *opcode, size_t len)
++static void *bpf_patch_instructions(void *addr, void *opcode, size_t len, bool fill_insn)
  {
- 	if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
-@@ -330,16 +308,16 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
+ 	while (len > 0) {
+ 		ppc_inst_t insn = ppc_inst_read(opcode);
+@@ -41,7 +41,8 @@ static void *bpf_patch_instructions(void *addr, void *opcode, size_t len)
  
- void *bpf_arch_text_copy(void *dst, void *src, size_t len)
- {
--	void *ret;
-+	int err;
+ 		len -= ilen;
+ 		addr = addr + ilen;
+-		opcode = opcode + ilen;
++		if (!fill_insn)
++			opcode = opcode + ilen;
+ 	}
  
- 	if (WARN_ON_ONCE(core_kernel_text((unsigned long)dst)))
+ 	return addr;
+@@ -307,7 +308,22 @@ void *bpf_arch_text_copy(void *dst, void *src, size_t len)
  		return ERR_PTR(-EINVAL);
  
  	mutex_lock(&text_mutex);
--	ret = bpf_patch_instructions(dst, src, len, false);
-+	err = patch_instructions(dst, src, len, false);
- 	mutex_unlock(&text_mutex);
- 
--	return ret;
-+	return err ? ERR_PTR(err) : dst;
- }
- 
- int bpf_arch_text_invalidate(void *dst, size_t len)
-@@ -351,7 +329,7 @@ int bpf_arch_text_invalidate(void *dst, size_t len)
- 		return -EINVAL;
- 
- 	mutex_lock(&text_mutex);
--	ret = IS_ERR(bpf_patch_instructions(dst, &insn, len, true));
-+	ret = patch_instructions(dst, &insn, len, true);
+-	ret = bpf_patch_instructions(dst, src, len);
++	ret = bpf_patch_instructions(dst, src, len, false);
++	mutex_unlock(&text_mutex);
++
++	return ret;
++}
++
++int bpf_arch_text_invalidate(void *dst, size_t len)
++{
++	u32 insn = BREAKPOINT_INSTRUCTION;
++	int ret;
++
++	if (WARN_ON_ONCE(core_kernel_text((unsigned long)dst)))
++		return -EINVAL;
++
++	mutex_lock(&text_mutex);
++	ret = IS_ERR(bpf_patch_instructions(dst, &insn, len, true));
  	mutex_unlock(&text_mutex);
  
  	return ret;
