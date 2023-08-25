@@ -4,84 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CFC3C71133
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 06:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 088ACC3DA6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 06:15:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DUx8Ju4S;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rOSan7c1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RX8mS3lSDz3cVv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 16:14:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RX8nQ2NtXz3cTK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 16:15:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DUx8Ju4S;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rOSan7c1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=name@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RX8jY63Fbz2ygx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 16:11:45 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37P65swu028546;
-	Fri, 25 Aug 2023 06:11:33 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RX8jb2Q5Jz2ygx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 16:11:47 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37P67Cw5003974;
+	Fri, 25 Aug 2023 06:11:43 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=U0v7jNIn3oQz0IQzr0PZRDKoIUVT5oQUvwSUQef7ELc=;
- b=DUx8Ju4S/A51o5RPnFkHk/2Azv2pqTM7TVJx5tabOsvB3DHblMMV4saOZwqhjQmEMRzV
- UfV9JceMg8faKGn7tV4/XxUo9Pmx9iUH457MlMDDPTiedhGK6Iz8pf1O5NjlszDKoCsW
- 9aZKwy64/2SoromXPYloFfL8gx0gLsS6S1ls4fLp6vwptnouENtaCjxngiq16ielW/Hf
- SCrRJvuZZIEm5JSHPq+W5chT7X28fTS+AWOOvVQOeJdr5KEWhehtFG2aNY2oHwFc3AKj
- uvYcYAHOmKMDIur4mEsxJgZEwNd5G6YcoJwezTmZ0Tr8V/fAIzrYDl288QCOgEkBnCwb Ag== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=dE/Or6i1TzCiES71n9nI1/TR0UqSuY2ZEP4H24E1S1A=;
+ b=rOSan7c1GG81TkulV7fpKinpWZQb1lRExDDUzhZIY/WYOoYZfOF0AfFlCgfd4EjgFzGd
+ PbI6KZSEsCWHraztW1GjErBEkk7KjgKhvdX3zi8z4m+iP2pHkUoE6BQt9VOHuryYyS52
+ z9aFccqqhHAvf8M4Hoheu4vw/hUCSk2VVhOc3DRu5h98NrJ3egk2/kVKiguZVR0H+QVL
+ EWdMcltf4FNWdKB2E5OlbpVVUJqvQN1Zd2WswaSYgo1OJazWwDi2l2p4eMDkEqUDe9h6
+ HX3iGFeZALsqZUYYwSwi1p0F1JoV1Su2M+nKIVcddfnQNeews4fc157YevwIm21ZzoKM pw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sppm30asn-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3spp0ah1kh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Aug 2023 06:11:33 +0000
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37P66B3I031184;
-	Fri, 25 Aug 2023 06:11:33 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sppm30asg-1
+	Fri, 25 Aug 2023 06:11:42 +0000
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37P69Q4W013115;
+	Fri, 25 Aug 2023 06:11:42 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3spp0ah1k8-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Aug 2023 06:11:33 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37P5CBeU010269;
-	Fri, 25 Aug 2023 06:11:32 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3sn21t5abs-1
+	Fri, 25 Aug 2023 06:11:42 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37P5cTHF018217;
+	Fri, 25 Aug 2023 06:11:41 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3sn21swa4e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Aug 2023 06:11:31 +0000
+	Fri, 25 Aug 2023 06:11:41 +0000
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37P6BTZf15008396
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37P6Bc3R9700036
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Aug 2023 06:11:29 GMT
+	Fri, 25 Aug 2023 06:11:38 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 03B7320049;
-	Fri, 25 Aug 2023 06:11:29 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7B5DE2004B;
+	Fri, 25 Aug 2023 06:11:38 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E5A0E2004D;
-	Fri, 25 Aug 2023 06:11:26 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6A9DF20040;
+	Fri, 25 Aug 2023 06:11:36 +0000 (GMT)
 Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.in.ibm.com (unknown [9.109.199.72])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 25 Aug 2023 06:11:26 +0000 (GMT)
+	Fri, 25 Aug 2023 06:11:36 +0000 (GMT)
 From: Aditya Gupta <adityag@linux.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, irogers@google.com, namhyung@kernel.org
-Subject: [PATCH 0/4] Introduce perf build subcommand
-Date: Fri, 25 Aug 2023 11:41:21 +0530
-Message-ID: <20230825061125.24312-1-adityag@linux.ibm.com>
+Subject: [PATCH 4/4] tools/perf/tests: Update probe_vfs_getname.sh script to use perf build --has
+Date: Fri, 25 Aug 2023 11:41:25 +0530
+Message-ID: <20230825061125.24312-5-adityag@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: aa1GcXspGqJlPLE35oWcI8QchDPeRk-F
-X-Proofpoint-GUID: eypVpzIXPBMLupNOKPPGsFRNpyjNvDwN
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20230825061125.24312-1-adityag@linux.ibm.com>
+References: <20230825061125.24312-1-adityag@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: InAngQ_7Urp8YnBQEEoY9nOhqenaZ3-l
+X-Proofpoint-ORIG-GUID: 5_cnxoxgDU7PkUNS7EcwToeOXvBqeUFg
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-08-25_04,2023-08-24_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- suspectscore=0 mlxlogscore=777 priorityscore=1501 impostorscore=0
- clxscore=1011 phishscore=0 mlxscore=0 adultscore=0 bulkscore=0 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ lowpriorityscore=0 suspectscore=0 spamscore=0 mlxscore=0 adultscore=0
+ priorityscore=1501 malwarescore=0 phishscore=0 clxscore=1015
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2308100000 definitions=main-2308250051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,68 +100,66 @@ Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Problem
-===========
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-Currently the presence of a feature is checked with a combination of
-perf version --build-options and greps, such as:
+In probe_vfs_getname.sh, current we use "perf record --dry-run"
+to check for libtraceevent and skip the test if perf is not
+build with libtraceevent. Change the check to use "perf build --has"
+option
 
-    perf version --build-options | grep " on .* HAVE_FEATURE"
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ tools/perf/tests/shell/lib/probe_vfs_getname.sh           | 4 ++--
+ tools/perf/tests/shell/record+probe_libc_inet_pton.sh     | 5 ++++-
+ tools/perf/tests/shell/record+script_probe_vfs_getname.sh | 5 ++++-
+ 3 files changed, 10 insertions(+), 4 deletions(-)
 
-Proposed solution
-=================
-
-As suggested by contributors in:
-https://lore.kernel.org/linux-perf-users/ZMPWk5K63tadmDlU@kernel.org/
-
-Introduce a subcommand "perf build --has", with which
-scripts can test for presence of a feature, such as:
-
-    perf build --has HAVE_FEATURE
-
-The usage of "perf version --build-options | grep" has been replaced in two
-tests, with "perf build --has" command
-
-Also, to not duplicate the same feature list at multiple places, a new global
-'supported_features' array has been introduced in builtin.h, so both commands
-'perf build --has' and 'perf version --build-options' use the same array
-
-'supported_features' feature is an array of 'struct feature_support', which
-also has the name of the feature, macro used to test it's presence, and a
-is_builtin member, which will be 0 if feature not built-in, and 1 if built-in
-
-Architectures Tested
-====================
-* x86_64
-* ppc64le
-
-Git tree
-========
-
-Git tree with this patch series applied for testing:
-https://github.com/adi-g15-ibm/linux/tree/perf-build-has
-
-Aditya Gupta (3):
-  perf build: introduce build subcommand
-  perf version: update --build-options to use 'supported_features' array
-  perf tests task_analyzer: check perf build for libtraceevent support
-
-Athira Rajeev (1):
-  tools/perf/tests: Update probe_vfs_getname.sh script to use perf build
-    --has
-
- tools/perf/Build                              |  1 +
- tools/perf/builtin-build.c                    | 94 +++++++++++++++++++
- tools/perf/builtin-version.c                  | 39 ++------
- tools/perf/builtin.h                          | 47 ++++++++++
- tools/perf/perf.c                             |  1 +
- .../perf/tests/shell/lib/probe_vfs_getname.sh |  4 +-
- .../shell/record+probe_libc_inet_pton.sh      |  5 +-
- .../shell/record+script_probe_vfs_getname.sh  |  5 +-
- tools/perf/tests/shell/test_task_analyzer.sh  |  4 +-
- 9 files changed, 163 insertions(+), 37 deletions(-)
- create mode 100644 tools/perf/builtin-build.c
-
+diff --git a/tools/perf/tests/shell/lib/probe_vfs_getname.sh b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+index bf4c1fb71c4b..a5da9f035afe 100644
+--- a/tools/perf/tests/shell/lib/probe_vfs_getname.sh
++++ b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+@@ -27,7 +27,7 @@ skip_if_no_debuginfo() {
+ # check if perf is compiled with libtraceevent support
+ skip_no_probe_record_support() {
+ 	if [ $had_vfs_getname -eq 1 ] ; then
+-		perf record --dry-run -e $1 2>&1 | grep "libtraceevent is necessary for tracepoint support" && return 2
+-		return 1
++		perf build --has libtraceevent >/dev/null && return 1
++		return 2
+ 	fi
+ }
+diff --git a/tools/perf/tests/shell/record+probe_libc_inet_pton.sh b/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
+index 89214a6d9951..0c00e94b83ff 100755
+--- a/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
++++ b/tools/perf/tests/shell/record+probe_libc_inet_pton.sh
+@@ -58,7 +58,10 @@ trace_libc_inet_pton_backtrace() {
+ 
+ 	# Check presence of libtraceevent support to run perf record
+ 	skip_no_probe_record_support "$event_name/$eventattr/"
+-	[ $? -eq 2 ] && return 2
++	if [ $? -eq 2 ]; then
++		echo "WARN: Skipping test trace_libc_inet_pton_backtrace. No libtraceevent support."
++		return 2
++	fi
+ 
+ 	perf record -e $event_name/$eventattr/ -o $perf_data ping -6 -c 1 ::1 > /dev/null 2>&1
+ 	# check if perf data file got created in above step.
+diff --git a/tools/perf/tests/shell/record+script_probe_vfs_getname.sh b/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
+index 7f664f1889d9..c7416d21fc92 100755
+--- a/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
++++ b/tools/perf/tests/shell/record+script_probe_vfs_getname.sh
+@@ -19,7 +19,10 @@ record_open_file() {
+ 	echo "Recording open file:"
+ 	# Check presence of libtraceevent support to run perf record
+ 	skip_no_probe_record_support "probe:vfs_getname*"
+-	[ $? -eq 2 ] && return 2
++	if [ $? -eq 2 ]; then
++		echo "WARN: Skipping test record_open_file. No libtraceevent support"
++		return 2
++	fi
+ 	perf record -o ${perfdata} -e probe:vfs_getname\* touch $file
+ }
+ 
 -- 
 2.41.0
 
