@@ -4,45 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B45FAC88CB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 00:10:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 819BDC88CB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 00:29:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=MrRC1d6L;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=i3hogvNy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RX0j80tjvz3cKV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 10:10:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RX1795fgtz3cCT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 10:29:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=MrRC1d6L;
+	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=i3hogvNy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=skinsburskii@linux.microsoft.com; receiver=lists.ozlabs.org)
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RX0hB2w0hz3bpd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 10:10:02 +1000 (AEST)
-Received: from skinsburskii. (c-67-170-100-148.hsd1.wa.comcast.net [67.170.100.148])
-	by linux.microsoft.com (Postfix) with ESMTPSA id AF9CE2127C80;
-	Thu, 24 Aug 2023 17:09:29 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com AF9CE2127C80
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1692922170;
-	bh=sv6DcWBBSEGmhA8F4G7aY7hVhke3+bslRKfTB+4Ii7U=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MrRC1d6L9JAZEHExoNj55zYorTOtyuAuuF6yHy3YMYISl2FaIWwzWl5k6NBjgheNg
-	 64cVkfXKIBCseKIaDIMZk19ekt6kO0bW5f0ghjV0qtDJtfqIwswpGdLb1+LndPE0Gp
-	 DTR7Mji6Q+4m0A5Ugqtc2thBSoCF3P/pD2ymgCGc=
-Date: Tue, 22 Aug 2023 14:26:43 -0700
-From: Stanislav Kinsburskii <skinsburskii@linux.microsoft.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/7] Expect immutable pointer in
- virt_to_phys/isa_virt_to_bus prototypes
-Message-ID: <20230822212643.GA24539@skinsburskii.>
-References: <168155718437.13678.714141668943813263.stgit@skinsburskii.localdomain>
- <52dd950a-e714-4ebe-a663-4e0ec6463d03@app.fastmail.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=joel.stan@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RX1696xtdz3byH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 10:29:04 +1000 (AEST)
+Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-9936b3d0286so44408566b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2023 17:29:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=jms.id.au; s=google; t=1692923337; x=1693528137;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=KQ+lJz/TPLyrlrV/oSYnL62Mlz55rOtV8U7RoZ1GqqU=;
+        b=i3hogvNywDsH/4dRHa8jmUIFUEZEmma8DKJxtMLTE7M6WYXq+W7h28hgEFzBIygw0L
+         Exsk0LeyviRcWbTmumtMwc4bEtXdDhlqsE5EhWOVpOH8ASvkL3ItGFH9iQ5GoFdjDso2
+         j0+Eeaypk6NwmtkqExDv7MGJnKIHmJStkp8Qs=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692923337; x=1693528137;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=KQ+lJz/TPLyrlrV/oSYnL62Mlz55rOtV8U7RoZ1GqqU=;
+        b=NWsfERtL24GQMxMnKnR1Q44qy4vHfnCclmvf6+jwE4Mk6zVBfxdOzkwfuutp+1TrE3
+         2WLE8mK1bpYsLZVpYFQYTbwJXEHGVOJ0y1V8rtF6Py+rCj32aufU9TncuzDX/JNFgsx6
+         MX5H2yXp/pWmewrxE3ulPqnOMfRi9y1kjZNOsstjFhvZes9QZpzWkwvX0kwSa++3sfqL
+         5nAciFF3/Hq2ZG64rC2cKoEd27hyX9kdZ4enU2eqmUW8KasNkphhznMU1TntK5uFHuIK
+         na28OYrT3KDPrus+wK23tz6VusaWvGQ/dKmoZ21X9QvalKIubq6TIbb7schalkIm5j2J
+         M7Ig==
+X-Gm-Message-State: AOJu0YxWfRJQ17vzRgxumcmzisYQyYuLgkuhwaft5FE14LKQuXnQI7Tf
+	hac3nw2CzEyfnZ4nJlXAKEkOsV+vSFk4sWTtDTY=
+X-Google-Smtp-Source: AGHT+IEBQm2ybDWfs242GQvMOdGndECAS3oJpsFSEKTjstztVum1jbBjV+xuugIR1eyJq282i++6skYK1LtzCM2S/6o=
+X-Received: by 2002:a17:906:10cd:b0:9a2:26d8:f180 with SMTP id
+ v13-20020a17090610cd00b009a226d8f180mr1860923ejv.70.1692923337283; Thu, 24
+ Aug 2023 17:28:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <52dd950a-e714-4ebe-a663-4e0ec6463d03@app.fastmail.com>
+References: <20230609100026.8946-1-npiggin@gmail.com> <20230609100026.8946-4-npiggin@gmail.com>
+ <87wn07foos.fsf@mail.lhotse> <87ttvafuxi.fsf@mail.lhotse> <CTCUKC30VVC4.KMUHD1RN0W79@wheely>
+ <87leglfmlc.fsf@mail.lhotse> <87fs48vdw6.fsf@mail.lhotse> <87cyzcvdux.fsf@mail.lhotse>
+In-Reply-To: <87cyzcvdux.fsf@mail.lhotse>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 25 Aug 2023 00:28:35 +0000
+Message-ID: <CACPK8Xeq3G2g2nY1_Wm32tB0JyfS5k+=YAjQNom3x=cc2Qs7mA@mail.gmail.com>
+Subject: Re: [PATCH 4/4] powerpc/64s: Use POWER10 stsync barrier for wmb()
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,32 +72,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Dave Hansen <dave.hansen@linux.intel.com>, Jiaxun Yang <jiaxun.yang@flygoat.com>, linux-mips@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-hexagon@vger.kernel.org, Omar Sandoval <osandov@fb.com>, Linux-Arch <linux-arch@vger.kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Helge Deller <deller@gmx.de>, x86@kernel.org, Stanislav Kinsburskii <stanislav.kinsburskii@gmail.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Cain <bcain@quicinc.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Chris Down <chris@chrisdown.name>, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, Ivan Kokshaysky <ink@
- jurassic.park.msu.ru>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 28, 2023 at 08:40:51AM +0100, Arnd Bergmann wrote:
-> On Sat, Apr 15, 2023, at 12:17, Stanislav Kinsburskii wrote:
-> > This series is aimed to address compilation warnings when a constant pointer
-> > is passed to virt_to_phys and isa_virt_to_bus functions:
+On Thu, 24 Aug 2023 at 12:12, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> > Michael Ellerman <mpe@ellerman.id.au> writes:
+> >> "Nicholas Piggin" <npiggin@gmail.com> writes:
+> >>> On Wed Jun 14, 2023 at 3:56 PM AEST, Michael Ellerman wrote:
+> >>>> Michael Ellerman <mpe@ellerman.id.au> writes:
+> >>>> > Nicholas Piggin <npiggin@gmail.com> writes:
+> >>>> >> The most expensive ordering for hwsync to provide is the store-load
+> >>>> >> barrier, because all prior stores have to be drained to the caches
+> >>>> >> before subsequent instructions can complete.
+> >>>> >>
+> >>>> >> stsync just orders stores which means it can just be a barrer that
+> >>>> >> goes down the store queue and orders draining, and does not prevent
+> >>>> >> completion of subsequent instructions. So it should be faster than
+> >>>> >> hwsync.
+> >>>> >>
+> >>>> >> Use stsync for wmb(). Older processors that don't recognise the SC
+> >>>> >> field should treat this as hwsync.
+> >>>> >
+> >>>> > qemu (7.1) emulating ppc64e does not :/
+> >>>> >
+> >>>> >   mpic: Setting up MPIC " OpenPIC  " version 1.2 at fe0040000, max 1 CPUs
+> >>>> >   mpic: ISU size: 256, shift: 8, mask: ff
+> >>>> >   mpic: Initializing for 256 sources
+> >>>> >   Oops: Exception in kernel mode, sig: 4 [#1]
+> >>>> ..
+> >>>> >
+> >>>> > I guess just put it behind an #ifdef 64S.
+> >>>>
+> >>>> That doesn't work because qemu emulating a G5 also doesn't accept it.
+> >>>>
+> >>>> So either we need to get qemu updated and wait a while for that to
+> >>>> percolate, or do some runtime patching of wmbs in the kernel >_<
+> >>>
+> >>> Gah, sorry. QEMU really should be ignoring reserved fields in
+> >>> instructions :(
+> >>
+> >> Yeah, it's an annoying discrepancy vs real hardware and the ISA.
+> >>
+> >>> I guess leave it out for now. Should fix QEMU but we probably also need
+> >>> to do patching so as not to break older QEMUs.
+> >>
+> >> I'll plan to take the first 3 patches, they seem OK as-is.
 > >
-> >   warning: passing argument 1 of ‘virt_to_phys’ discards ‘const’ 
-> > qualifier from pointer target type
-> >   warning: passing argument 1 of ‘isa_virt_to_bus’ discards ‘const’ 
-> > qualifier from pointer target type
-> >
-> > The change(s) is the same for all architectures, but it's split into a series on
-> > per-arch basis to simplify applying and testing on the maintainers side.
-> >
-> 
-> Looks all good to me. If everyone is happy with it, I'll queue it up
-> after in the asm-generic tree for 6.5, once rc1 is out.
-> 
+> > I didn't do that in the end, because patch 2 suffers from the same
+>                                              ^
+>                                              3
+> > problem of not working on QEMU.
 
-Hello Arnd,
-Is the plan to merge this series into 6.5 still on?
+Did we get a patch to fix this in to Qemu?
 
-Stanislav
+Qemu has recently developed a stable tree process, so if we had a
+backportable fix we could get it in there too.
 
->  Arnd
+Cheers,
+
+Joel
