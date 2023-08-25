@@ -4,68 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 082ACEE49AB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Aug 2023 18:55:44 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1YIoFqVN;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE9FFC3DA6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 08:03:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RVdpR2mXGz3c2k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Aug 2023 04:55:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20221208 header.b=1YIoFqVN;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2e; helo=mail-yb1-xb2e.google.com; envelope-from=hughd@google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb2e.google.com (mail-yb1-xb2e.google.com [IPv6:2607:f8b0:4864:20::b2e])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RXCBk1ggvz3dJ9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Aug 2023 18:03:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.171; helo=mail-il1-f171.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-il1-f171.google.com (mail-il1-f171.google.com [209.85.166.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RVdnP5Hvcz2yPG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2023 04:54:48 +1000 (AEST)
-Received: by mail-yb1-xb2e.google.com with SMTP id 3f1490d57ef6-d77b9d574f8so114526276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2023 11:54:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1692730485; x=1693335285;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=EC4FoWXo6SNQKwsXxt28KsctazZB0KZm2Dgg9LreMAM=;
-        b=1YIoFqVN55j3XEBWw5UYnqxvNjoz+koElbxuVIP/CJlJ0hkI9N8eMY39So2s6Zh8e0
-         lYOJwoMEQBCBGM9ObvuUJ43RLHkBTQhPIi4D2e21eC0WOzSMo3w6Pej51GXssjJncxsr
-         40V/Mu1pMG/D3T0D49sODOZIfKYGqNqFAaOkTMSHTKzO6xb16qy4PWhFgzJJXzDEWNDd
-         syAPBovHWWRT8jV5/JwCsG9j6lWmyoq166pYQYj+5LjUZx2PNOAhbu+jAuVXXYMq6btV
-         oWcKnK9p1XjuZsNocTtOJIfHWsLUDWxxgnOuAfTnpiEG8/nc/26eHsq/XlCM+fMpNl17
-         lGng==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RXBgV6yrKz308K
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 17:40:05 +1000 (AEST)
+Received: by mail-il1-f171.google.com with SMTP id e9e14a558f8ab-34cacab5e33so2171275ab.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 00:40:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692730485; x=1693335285;
-        h=mime-version:references:message-id:in-reply-to:subject:cc:to:from
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=EC4FoWXo6SNQKwsXxt28KsctazZB0KZm2Dgg9LreMAM=;
-        b=Y8n8vS3BTlv1MqsSJ8CxIJ1JXcXmcbfcg+VixRR4EcfQk2fEQdIgoshiKvYJ6sY3Zj
-         Zek9pF0gOxo6cGFfhJz7YA5zFZPz6EjQT5/nnWIjNMpgGFeiePni0UmzUtzYfOJpnDU5
-         fmTx3DVT6E/eKHetANP7l9RNfZfjw2bTqcOpucgfQhcExljipCj5lM+NpE7EpfvWREOV
-         OnzsQSmP86sEzsbP7P/sSjfxwkbaL4iD6NFXBip5TEOAO3o9nIETNi2CDL4T7d/lG5r7
-         H5ecjoZ8Cg3oUHuk1eW8hjCrrJxIVraKNxcfhyGt3pAV5Z3K4QviZQWpdtpzJF6ARZom
-         GLHg==
-X-Gm-Message-State: AOJu0YzSMtZECYDF3Mze8pHACYl1PSLYp0R2ngLiQNs8y0W8OZybZlGV
-	u3TvAyrf0YouHIniazHta0caWA==
-X-Google-Smtp-Source: AGHT+IFpHQvIMwN5WYlfI56GAofuwQT9IU67DR/OnesR0CbZe8XpbWpAMdSzZjh6aZoI7atOZrgvQQ==
-X-Received: by 2002:a81:4843:0:b0:583:2df2:35f3 with SMTP id v64-20020a814843000000b005832df235f3mr9917420ywa.1.1692730484669;
-        Tue, 22 Aug 2023 11:54:44 -0700 (PDT)
-Received: from ripple.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
-        by smtp.gmail.com with ESMTPSA id r64-20020a815d43000000b00545a08184cesm2915469ywb.94.2023.08.22.11.54.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Aug 2023 11:54:44 -0700 (PDT)
-Date: Tue, 22 Aug 2023 11:54:39 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@ripple.attlocal.net
-To: Jann Horn <jannh@google.com>
-Subject: Re: [PATCH mm-unstable] mm/khugepaged: fix collapse_pte_mapped_thp()
- versus uffd
-In-Reply-To: <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
-Message-ID: <82d294-c9b0-d7b4-71c9-cfed3925c47b@google.com>
-References: <4d31abf5-56c0-9f3d-d12f-c9317936691@google.com> <CAG48ez1XAePj5MUG8AUmnTjRLcxKre-NGYV82kB68-X8Rh6fxA@mail.gmail.com> <f2dc6d6b-c516-932-1598-a58e2afffe9a@google.com> <CAG48ez0S-RjAapaDiJ+oZXpn1vs9niWx54iqzusUScS-BYu0hw@mail.gmail.com>
+        d=1e100.net; s=20221208; t=1692949202; x=1693554002;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=E5r8bhhlGnXrx708tsGw6Ag8gm7AVkEO6BeDk4HD7tk=;
+        b=a6KL8WW/1ovDUeQVxxb7LORS8xVpLYKS1XYNDJvo586SUq4tK2c2RMyxzePGamdD5/
+         +1nFW9AT365hDpaOsKoj3fB9wk6UdIZlixEacsdaBaek32ai5IPZdcP2BFnbijCpORUZ
+         Mn8+HcmGY1wqe9cgNIqiCAR4RuuQxE+P2otfxIHK/Zbm90b7rhiALl/rparjFlmk2A8d
+         5jAl9FIhhAvMzhXjqV0vM+ZlMbbtdFPkjA8T1YokFVnHlNGxpt6X7TkaEM7iS4Clo5Sc
+         dLGu3JTj1gsN5jSOe8G4qf1p6Q0o7B+sS/R2uOsJAQVxi35C7wXDOeYgZ2DD21Tw42mK
+         Zc4A==
+X-Gm-Message-State: AOJu0Ywb1Ytv64ZIZbVPLievYx4up1iscxvX+W9ndbR+myfapjpaY0LE
+	zUqJSauXugHP7V2DMtH8n/Tp5pF5/LQDMDIk
+X-Google-Smtp-Source: AGHT+IHlDWtefBy+KyFemzuSxJOHKaV7QpFUDsfarYvNmrVurCg0XqteFGM7JniFXRxLWXPj49zXuA==
+X-Received: by 2002:a05:6e02:1607:b0:34b:ba9a:341 with SMTP id t7-20020a056e02160700b0034bba9a0341mr9894580ilu.32.1692949201580;
+        Fri, 25 Aug 2023 00:40:01 -0700 (PDT)
+Received: from mail-il1-f178.google.com (mail-il1-f178.google.com. [209.85.166.178])
+        by smtp.gmail.com with ESMTPSA id gm1-20020a0566382b8100b0042b3e04510asm352720jab.98.2023.08.25.00.40.00
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 25 Aug 2023 00:40:00 -0700 (PDT)
+Received: by mail-il1-f178.google.com with SMTP id e9e14a558f8ab-34bb72ffb1fso2179525ab.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2023 00:40:00 -0700 (PDT)
+X-Received: by 2002:a25:34cd:0:b0:d0b:5b6:4629 with SMTP id
+ b196-20020a2534cd000000b00d0b05b64629mr19382891yba.46.1692949180028; Fri, 25
+ Aug 2023 00:39:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="-1463760895-405531799-1692730484=:3162"
+References: <20230810141947.1236730-1-arnd@kernel.org> <169292577153.789945.11297239773543112051.b4-ty@oracle.com>
+ <3956e2a4-c545-1212-e95f-3cf61a60d6a4@gmail.com>
+In-Reply-To: <3956e2a4-c545-1212-e95f-3cf61a60d6a4@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 25 Aug 2023 09:39:28 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWC2S330_Vb_NTHTDC=BakBsw4ouP-eFJv0erV1-jmvTQ@mail.gmail.com>
+Message-ID: <CAMuHMdWC2S330_Vb_NTHTDC=BakBsw4ouP-eFJv0erV1-jmvTQ@mail.gmail.com>
+Subject: Re: (subset) [PATCH 00/17] -Wmissing-prototype warning fixes
+To: Michael Schmitz <schmitzmic@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Fri, 25 Aug 2023 18:02:24 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,108 +69,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, kernel list <linux-kernel@vger.kernel.org>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Yu Zhao <yuzhao@google.com>, Ira Weiny <ira.weiny@intel.com>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Steven Price <steven.price@arm.com>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Zi Yan <ziy@nvidia.com>, Huang Ying <ying.huang@intel.com>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ib
- m.com>, Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Ralph Campbell <rcampbell@nvidia.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Suren Baghdasaryan <surenb@google.com>, Vlastimil Babka <vbabka@suse.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, Linux-MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Zack Rusin <zackr@vmware.com>, Zach O'Keefe <zokeefe@google.com>, Vishal Moola <vishal.moola@gmail.com>, Minchan Kim <minchan@kernel.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@or
- acle.com>
+Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-block@vger.kernel.org, linux-mips@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, Jonas Bonn <jonas@southpole.se>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-snps-arc@lists.infradead.org, linux-scsi@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-next@vger.kernel.org, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, Masahiro Yamada <masahiroy@kernel.org>, Guenter Roeck <linux@roeck-us.net>, linux-trace-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>
+ , Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Bjorn Helgaas <bhelgaas@google.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, Arnd Bergmann <arnd@kernel.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-openrisc@vger.kernel.org, linux-pci@vger.kernel.org, linux-s390@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org, Andrew Morton <ak
+ pm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Michael,
 
----1463760895-405531799-1692730484=:3162
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+On Fri, Aug 25, 2023 at 3:31=E2=80=AFAM Michael Schmitz <schmitzmic@gmail.c=
+om> wrote:
+> On 25/08/23 13:12, Martin K. Petersen wrote:
+> > [11/17] scsi: gvp11: remove unused gvp11_setup() function
+> >          https://git.kernel.org/mkp/scsi/c/bfaa4a0ce1bb
+>
+> I somehow missed that one ...
+>
+> The gvp11_setup() function was probably a relic from the times before
+> module parameters.
+>
+> Since gvp11_xfer_mask appears to be required for some Amiga systems to
+> set the DMA mask, I'd best send a patch to add such a module parameter ..=
+.
+>
+> Do you know any details around the use of DMA masks for Amiga WD33C93
+> drivers, Geert?
 
-On Tue, 22 Aug 2023, Jann Horn wrote:
-> On Tue, Aug 22, 2023 at 4:51=E2=80=AFAM Hugh Dickins <hughd@google.com> w=
-rote:
-> > On Mon, 21 Aug 2023, Jann Horn wrote:
-> > > On Mon, Aug 21, 2023 at 9:51=E2=80=AFPM Hugh Dickins <hughd@google.co=
-m> wrote:
-> > > > Just for this case, take the pmd_lock() two steps earlier: not beca=
-use
-> > > > it gives any protection against this case itself, but because ptloc=
-k
-> > > > nests inside it, and it's the dropping of ptlock which let the bug =
-in.
-> > > > In other cases, continue to minimize the pmd_lock() hold time.
-> > >
-> > > Special-casing userfaultfd like this makes me a bit uncomfortable; bu=
+Doh, it's been a while, and I never had an affected system.
+Probably it's needed on A2000 with an accelerator card and GVP II SCSI,
+to prevent DMA to RAM banks that do not support fast DMA cycles.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
 t
-> > > I also can't find anything other than userfaultfd that would insert
-> > > pages into regions that are khugepaged-compatible, so I guess this
-> > > works?
-> >
-> > I'm as sure as I can be that it's solely because userfaultfd breaks
-> > the usual rules here (and in fairness, IIRC Andrea did ask my permissio=
-n
-> > before making it behave that way on shmem, COWing without a source page=
-).
-> >
-> > Perhaps something else will want that same behaviour in future (it's
-> > tempting, but difficult to guarantee correctness); for now, it is just
-> > userfaultfd (but by saying "_armed" rather than "_missing", I'm half-
-> > expecting uffd to add more such exceptional modes in future).
->=20
-> Hm, yeah, sounds okay. (I guess we'd also run into this if we ever
-> wanted to make it possible to reliably install PTE markers with
-> madvise() or something like that, which might be nice for allowing
-> userspace to create guard pages without unnecessary extra VMAs...)
-
-I see the mailthread has taken inspiration from your comment there,
-and veered off in that direction: but I'll ignore those futures.
-
->=20
-> > > I guess an alternative would be to use a spin_trylock() instead of th=
-e
-> > > current pmd_lock(), and if that fails, temporarily drop the page tabl=
-e
-> > > lock and then restart from step 2 with both locks held - and at that
-> > > point the page table scan should be fast since we expect it to usuall=
-y
-> > > be empty.
-> >
-> > That's certainly a good idea, if collapse on userfaultfd_armed private
-> > is anything of a common case (I doubt, but I don't know).  It may be a
-> > better idea anyway (saving a drop and retake of ptlock).
->=20
-> I was thinking it also has the advantage that it would still perform
-> okay if we got rid of the userfaultfd_armed() condition at some point
-> - though I realize that designing too much for hypothetical future
-> features is an antipattern.
->=20
-> > I gave it a try, expecting to end up with something that would lead
-> > me to say "I tried it, but it didn't work out well"; but actually it
-> > looks okay to me.  I wouldn't say I prefer it, but it seems reasonable,
-> > and no more complicated (as Peter rightly observes) than the original.
-> >
-> > It's up to you and Peter, and whoever has strong feelings about it,
-> > to choose between them: I don't mind (but I shall be sad if someone
-> > demands that I indent that comment deeper - I'm not a fan of long
-> > multi-line comments near column 80).
->=20
-> I prefer this version because it would make it easier to remove the
-> "userfaultfd_armed()" check in the future if we have to, but I guess
-> we could also always change it later if that becomes necessary, so I
-> don't really have strong feelings on it at this point.
-
-Thanks for considering them both, Jann.  I do think your trylock way,
-as in v2, is in principle superior, and we may well have good reason
-to switch over to it in future; but I find it slightly more confusing,
-so will follow your and Peter's "no strong feelings" for now, and ask
-Andrew please to take the original (implicit v1).
-
-Overriding reason: I realized overnight that v2 is not quite correct:
-I was clever enough to realize that nr_ptes needed to be reset to 0
-to get the accounting right with a recheck pass, but not clever enough
-to realize that resetting it to 0 there would likely skip the abort
-path's flush_tlb_mm(mm), when we actually had cleared entries on the
-first pass.  It needs a separate bool to decide the flush_tlb_mm(mm),
-or it needs that (ridiculously minor!) step 3 to be moved down.
-
-But rather than reworking it, please let's just go with v1 for now.
-
-Thanks,
-Hugh
----1463760895-405531799-1692730484=:3162--
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
