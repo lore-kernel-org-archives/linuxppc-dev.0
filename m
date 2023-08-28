@@ -4,35 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3DBEC83F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Aug 2023 09:08:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4012DC83F12
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Aug 2023 12:14:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RZ4VC1Ytcz3c4g
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Aug 2023 19:08:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=167.179.156.38; helo=167-179-156-38.a7b39c.syd.nbn.aussiebb.net; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
-Received: from 167-179-156-38.a7b39c.syd.nbn.aussiebb.net (167-179-156-38.a7b39c.syd.nbn.aussiebb.net [167.179.156.38])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RZ8c64kCMz3c1K
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Aug 2023 22:13:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=astralinux.ru (client-ip=217.74.38.119; helo=mail.astralinux.ru; envelope-from=adiupina@astralinux.ru; receiver=lists.ozlabs.org)
+Received: from mail.astralinux.ru (mail.astralinux.ru [217.74.38.119])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RZ4Td4FZyz2yw0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2023 19:08:02 +1000 (AEST)
-Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
-	by formenos.hmeau.com with smtp (Exim 4.94.2 #2 (Debian))
-	id 1qaYDl-008S2d-8i; Mon, 28 Aug 2023 17:07:42 +0800
-Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Mon, 28 Aug 2023 17:07:42 +0800
-Date: Mon, 28 Aug 2023 17:07:42 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: kernel test robot <lkp@intel.com>,
-	Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: crypto: powerpc/chacha20,poly1305-p10 - Add dependency on VSX
-Message-ID: <ZOxj3rFGVcRUzgwb@gondor.apana.org.au>
-References: <202308251906.SYawej6g-lkp@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RZ8bZ5lKxz2yW1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2023 22:13:28 +1000 (AEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.astralinux.ru (Postfix) with ESMTP id EF67318679C9;
+	Mon, 28 Aug 2023 15:13:22 +0300 (MSK)
+Received: from mail.astralinux.ru ([127.0.0.1])
+	by localhost (rbta-msk-vsrv-mail01.astralinux.ru [127.0.0.1]) (amavisd-new, port 10032)
+	with ESMTP id G81cKs3rJnHP; Mon, 28 Aug 2023 15:13:22 +0300 (MSK)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.astralinux.ru (Postfix) with ESMTP id 7AD351867508;
+	Mon, 28 Aug 2023 15:13:22 +0300 (MSK)
+X-Virus-Scanned: amavisd-new at astralinux.ru
+Received: from mail.astralinux.ru ([127.0.0.1])
+	by localhost (rbta-msk-vsrv-mail01.astralinux.ru [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id EARIoZ7lm7Kq; Mon, 28 Aug 2023 15:13:22 +0300 (MSK)
+Received: from rbta-msk-lt-302690.astralinux.ru (unknown [10.177.233.169])
+	by mail.astralinux.ru (Postfix) with ESMTPSA id BE91818634AE;
+	Mon, 28 Aug 2023 15:13:20 +0300 (MSK)
+From: Alexandra Diupina <adiupina@astralinux.ru>
+To: Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH v3] fsl_ucc_hdlc: process the result of hold_open()
+Date: Mon, 28 Aug 2023 15:12:35 +0300
+Message-Id: <20230828121235.13953-1-adiupina@astralinux.ru>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <896acfac-fadb-016b-20ff-a06e18edb4d9@csgroup.eu>
+References: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <202308251906.SYawej6g-lkp@intel.com>
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,65 +53,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Memory Management List <linux-mm@kvack.org>, llvm@lists.linux.dev, Danny Tsen <dtsen@linux.ibm.com>, oe-kbuild-all@lists.linux.dev
+Cc: Alexandra Diupina <adiupina@astralinux.ru>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, lvc-project@linuxtesting.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 25, 2023 at 07:44:32PM +0800, kernel test robot wrote:
->
-> All errors (new ones prefixed by >>):
-> 
->    In file included from arch/powerpc/crypto/poly1305-p10-glue.c:19:
+Process the result of hold_open() and return it from
+uhdlc_open() in case of an error
+It is necessary to pass the error code up the control flow,
+similar to a possible error in request_irq()
 
-...
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-> ae3a197e3d0bfe3 David Howells    2012-03-28  75  
-> ae3a197e3d0bfe3 David Howells    2012-03-28  76  #ifdef CONFIG_VSX
-> d1e1cf2e38def30 Anton Blanchard  2015-10-29  77  extern void enable_kernel_vsx(void);
-> ae3a197e3d0bfe3 David Howells    2012-03-28  78  extern void flush_vsx_to_thread(struct task_struct *);
-> 3eb5d5888dc68c9 Anton Blanchard  2015-10-29  79  static inline void disable_kernel_vsx(void)
-> 3eb5d5888dc68c9 Anton Blanchard  2015-10-29  80  {
-> 3eb5d5888dc68c9 Anton Blanchard  2015-10-29  81  	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
-> 3eb5d5888dc68c9 Anton Blanchard  2015-10-29  82  }
-> bd73758803c2eed Christophe Leroy 2021-03-09  83  #else
-> bd73758803c2eed Christophe Leroy 2021-03-09  84  static inline void enable_kernel_vsx(void)
-> bd73758803c2eed Christophe Leroy 2021-03-09  85  {
-> bd73758803c2eed Christophe Leroy 2021-03-09 @86  	BUILD_BUG();
-> bd73758803c2eed Christophe Leroy 2021-03-09  87  }
-> bd73758803c2eed Christophe Leroy 2021-03-09  88  
+Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
+Signed-off-by: Alexandra Diupina <adiupina@astralinux.ru>
+---
+v3: Fix the commits tree
+v2: Remove the 'rc' variable (stores the return value of the=20
+hdlc_open()) as Christophe Leroy <christophe.leroy@csgroup.eu> suggested
+ drivers/net/wan/fsl_ucc_hdlc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
----8<---
-Add dependency on VSX as otherwise the build will fail without
-it.
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdl=
+c.c
+index 47c2ad7a3e42..4164abea7725 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -731,7 +731,7 @@ static int uhdlc_open(struct net_device *dev)
+ 		napi_enable(&priv->napi);
+ 		netdev_reset_queue(dev);
+ 		netif_start_queue(dev);
+-		hdlc_open(dev);
++		return hdlc_open(dev);
+ 	}
+=20
+ 	return 0;
+--=20
+2.30.2
 
-Fixes: 161fca7e3e90 ("crypto: powerpc - Add chacha20/poly1305-p10 to Kconfig and Makefile")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202308251906.SYawej6g-lkp@intel.com/
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index f25024afdda5..7a66d7c0e6a2 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -113,7 +113,7 @@ config CRYPTO_AES_GCM_P10
- 
- config CRYPTO_CHACHA20_P10
- 	tristate "Ciphers: ChaCha20, XChacha20, XChacha12 (P10 or later)"
--	depends on PPC64 && CPU_LITTLE_ENDIAN
-+	depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
- 	select CRYPTO_SKCIPHER
- 	select CRYPTO_LIB_CHACHA_GENERIC
- 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
-@@ -127,7 +127,7 @@ config CRYPTO_CHACHA20_P10
- 
- config CRYPTO_POLY1305_P10
- 	tristate "Hash functions: Poly1305 (P10 or later)"
--	depends on PPC64 && CPU_LITTLE_ENDIAN
-+	depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
- 	select CRYPTO_HASH
- 	select CRYPTO_LIB_POLY1305_GENERIC
- 	help
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
