@@ -4,89 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21DD5C83F14
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Aug 2023 21:19:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A93D8C83F17
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Aug 2023 21:28:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZEbHQQyG;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZEbHQQyG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GjLT9wgi;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RZNjk52hRz3bwb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Aug 2023 07:19:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RZNvt0nFYz3by8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Aug 2023 07:28:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZEbHQQyG;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZEbHQQyG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GjLT9wgi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jsnitsel@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RZNhm1SXWz2xdd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 07:18:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1693257524;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=FodHUOB7sj0ZriayRa+3vwqEqhxX2ARBJWyM2p3lcBE=;
-	b=ZEbHQQyGyX4TQrbpNbbYQBzrULYs9z4H8s0szAfDSd1V9nphu/zd1u2t0ZDvju+viXcWt9
-	iZh+AZ4xBULIwun+Cz1/4PmPSCnTWbWqrdJYi7t5l9pgXqHh5/xjW6xa9DAjW2iKdPKr2w
-	+EqbTXtZErHWRBSpAsCla2ymJnHAyYU=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1693257524;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=FodHUOB7sj0ZriayRa+3vwqEqhxX2ARBJWyM2p3lcBE=;
-	b=ZEbHQQyGyX4TQrbpNbbYQBzrULYs9z4H8s0szAfDSd1V9nphu/zd1u2t0ZDvju+viXcWt9
-	iZh+AZ4xBULIwun+Cz1/4PmPSCnTWbWqrdJYi7t5l9pgXqHh5/xjW6xa9DAjW2iKdPKr2w
-	+EqbTXtZErHWRBSpAsCla2ymJnHAyYU=
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
- [209.85.219.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-55-Y8uHUT6qOuqp6Tx0b8q0Nw-1; Mon, 28 Aug 2023 17:18:42 -0400
-X-MC-Unique: Y8uHUT6qOuqp6Tx0b8q0Nw-1
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-64f41d94d16so45500306d6.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2023 14:18:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693257522; x=1693862322;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FodHUOB7sj0ZriayRa+3vwqEqhxX2ARBJWyM2p3lcBE=;
-        b=S8UR8AgoyXTGS3TyFoyWOs/D5tb3UaHSwUUF6g8LzgRGReAGVRjBj3Idpwlw72TH29
-         SMsraWfEo2o/RUnNfDBT0ky0c7FUXZirBUtvPrNPRNSFrjJ6IZssxgrONykumMtXfepi
-         3WWMlN22TEvo3t/1iBQvcwbWLU7astKTfc/VYS8VOdv2kfp1bcDnthZl2YMTlPVUJqUl
-         FXb0MAh8XFhZZL93vVjZOYQCb2hP8d+AxNu+oL7w73WIa8TQFrC0SwnNTgVOSc0EUa46
-         oDG1+n3Tm1/OnlPHKs8H8SNeZ/Z7xIYyobOK2vBfdSwm+xUYDL+3C+DrcTSbk5Yq/GO6
-         Uqug==
-X-Gm-Message-State: AOJu0YweULDFzTB3UYpYFh9/grXJGx5ZB5iOwRSR6Aez2MhF887O6qJ/
-	8ThtOF0e3Wsz5rleX6s5DdldQphaJOxlAZoM5w7UMpwnT9uVfJ/ZIaNYD92gbBsv/6Q+RLaTOaj
-	q+rvMLYYFI1lAzjiZL1GML2UDkQ==
-X-Received: by 2002:a0c:f444:0:b0:647:19b6:135a with SMTP id h4-20020a0cf444000000b0064719b6135amr29394536qvm.51.1693257522417;
-        Mon, 28 Aug 2023 14:18:42 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGHFP88UT9IzTJ8TXv+xW4YnqZau3haGE42Vmh/o6wjgQIKEglBvEtYvuI7Puclm3mw8YK0bQ==
-X-Received: by 2002:a0c:f444:0:b0:647:19b6:135a with SMTP id h4-20020a0cf444000000b0064719b6135amr29394508qvm.51.1693257522132;
-        Mon, 28 Aug 2023 14:18:42 -0700 (PDT)
-Received: from localhost (ip98-179-76-75.ph.ph.cox.net. [98.179.76.75])
-        by smtp.gmail.com with ESMTPSA id k14-20020a0cf58e000000b0064f46422ddasm2855459qvm.145.2023.08.28.14.18.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Aug 2023 14:18:41 -0700 (PDT)
-Date: Mon, 28 Aug 2023 14:18:40 -0700
-From: Jerry Snitselaar <jsnitsel@redhat.com>
-To: Jason Gunthorpe <jgg@nvidia.com>
-Subject: Re: [PATCH v7 20/24] iommu: Require a default_domain for all iommu
- drivers
-Message-ID: <55jub5vyeqqofj4wclvwk2qotlb6a5iu3darddrbzwdc7izsa2@qip6tyjmr7j2>
-References: <0-v7-de04a3217c48+15055-iommu_all_defdom_jgg@nvidia.com>
- <20-v7-de04a3217c48+15055-iommu_all_defdom_jgg@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RZNtr62qYz2xdm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 07:27:32 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37SL660l005745;
+	Mon, 28 Aug 2023 21:27:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=k3Kh7MMkYr1CEHrB6GRXXcR/guKDtu8T//hLSUINZxs=;
+ b=GjLT9wgiaG5VLr/4Cr7y+AYg4AG31XQlxQNUt/UwVzpFPTgYgrigUHAL7JYPxySKKn/M
+ 0B9KUxxn3zgy+D132Nqilwd7GH0vGWo9nIgVivxidShvxJA8A6ZNZDbaA9EyubQyNcBJ
+ oGDTTc6I0yE/1RgfbEXkqb5rwb5fcXmlCzvjmTnX8aXY0jHDyTcY6xDJW9Oe1MpSYH8B
+ NKdGoVqmCcB4E8gxHxf6ST/fBLn/5iFkMRnEDQ76lbXTK3QKMJA995HlrHkdbGaPXrV7
+ uETF6+dk4AtU8zhSPJ5Idm1ApjprLiY2CBi9DptzJ775DpDwM/3jD3aljLVPJ2ifQYzL jw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sr62paynb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Aug 2023 21:27:23 +0000
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37SLQkZh010964;
+	Mon, 28 Aug 2023 21:27:23 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sr62paykn-9
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Aug 2023 21:27:23 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37SIYBx9009966;
+	Mon, 28 Aug 2023 21:02:54 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3sqw7k62g0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Aug 2023 21:02:53 +0000
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37SL2rLQ64749858
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 28 Aug 2023 21:02:53 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5233058055;
+	Mon, 28 Aug 2023 21:02:53 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3E1CF58043;
+	Mon, 28 Aug 2023 21:02:53 +0000 (GMT)
+Received: from localhost (unknown [9.61.91.200])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 28 Aug 2023 21:02:53 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Audra Mitchell <aubaker@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] Update creation of flash_block_cache to accout for
+ potential panic
+In-Reply-To: <20230828205453.307962-1-aubaker@redhat.com>
+References: <20230828205453.307962-1-aubaker@redhat.com>
+Date: Mon, 28 Aug 2023 16:02:53 -0500
+Message-ID: <87il8yzxqa.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20-v7-de04a3217c48+15055-iommu_all_defdom_jgg@nvidia.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 2L2rQKMPGcjdpWWBjTwEHOaxfx5rB2V1
+X-Proofpoint-ORIG-GUID: 0Wl_IExJPHxVoOaaei5Evq1HkSh2qY9x
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-08-28_18,2023-08-28_04,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 clxscore=1011
+ priorityscore=1501 malwarescore=0 phishscore=0 spamscore=0 adultscore=0
+ suspectscore=0 mlxscore=0 lowpriorityscore=0 bulkscore=0 mlxlogscore=610
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2308100000
+ definitions=main-2308280181
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,83 +95,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Stuebner <heiko@sntech.de>, Matthew Rosato <mjrosato@linux.ibm.com>, Matthias Brugger <matthias.bgg@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Dmitry Osipenko <digetx@gmail.com>, Steven Price <steven.price@arm.com>, Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Samuel Holland <samuel@sholland.org>, Joerg Roedel <joro@8bytes.org>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, Andy Gross <agross@kernel.org>, Nicolin Chen <nicolinc@nvidia.com>, Yong Wu <yong.wu@mediatek.com>, Orson Zhai <orsonzhai@gmail.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Thierry Reding <treding@nvidia.com>, linux-sunxi@lists.linux.dev, Rob Clark <robdclark@gmail.com>, Kevin Tian <kevin.tian@intel.com>, Niklas Schnelle
-  <schnelle@linux.ibm.com>, linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Krishna Reddy <vdumpa@nvidia.com>, linux-mediatek@lists.infradead.org, Baolin Wang <baolin.wang@linux.alibaba.com>, linux-tegra@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Robin Murphy <robin.murphy@arm.com>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Chunyan Zhang <zhang.lyra@gmail.com>, linuxppc-dev@lists.ozlabs.org, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: aubaker@redhat.com, keescook@chromium.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, linux-hardening@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Aug 23, 2023 at 01:47:34PM -0300, Jason Gunthorpe wrote:
-> At this point every iommu driver will cause a default_domain to be
-> selected, so we can finally remove this gap from the core code.
-> 
-> The following table explains what each driver supports and what the
-> resulting default_domain will be:
-> 
->                                         ops->defaut_domain
->                     IDENTITY   DMA  PLATFORM    v      ARM32          dma-iommu  ARCH
-> amd/iommu.c             Y       Y                       N/A             either
-> apple-dart.c            Y       Y                       N/A             either
-> arm-smmu.c              Y       Y                       IDENTITY        either
-> qcom_iommu.c            G       Y                       IDENTITY        either
-> arm-smmu-v3.c           Y       Y                       N/A             either
-> exynos-iommu.c          G       Y                       IDENTITY        either
-> fsl_pamu_domain.c                       Y       Y       N/A             N/A     PLATFORM
-> intel/iommu.c           Y       Y                       N/A             either
-> ipmmu-vmsa.c            G       Y                       IDENTITY        either
-> msm_iommu.c             G                               IDENTITY        N/A
-> mtk_iommu.c             G       Y                       IDENTITY        either
-> mtk_iommu_v1.c          G                               IDENTITY        N/A
-> omap-iommu.c            G                               IDENTITY        N/A
-> rockchip-iommu.c        G       Y                       IDENTITY        either
-> s390-iommu.c                            Y       Y       N/A             N/A     PLATFORM
-> sprd-iommu.c                    Y                       N/A             DMA
-> sun50i-iommu.c          G       Y                       IDENTITY        either
-> tegra-smmu.c            G       Y                       IDENTITY        IDENTITY
-> virtio-iommu.c          Y       Y                       N/A             either
-> spapr                                   Y       Y       N/A             N/A     PLATFORM
->  * G means ops->identity_domain is used
->  * N/A means the driver will not compile in this configuration
-> 
-> ARM32 drivers select an IDENTITY default domain through either the
-> ops->identity_domain or directly requesting an IDENTIY domain through
-> alloc_domain().
-> 
-> In ARM64 mode tegra-smmu will still block the use of dma-iommu.c and
-> forces an IDENTITY domain.
-> 
-> S390 uses a PLATFORM domain to represent when the dma_ops are set to the
-> s390 iommu code.
-> 
-> fsl_pamu uses an PLATFORM domain.
-> 
-> POWER SPAPR uses PLATFORM and blocking to enable its weird VFIO mode.
-> 
-> The x86 drivers continue unchanged.
-> 
-> After this patch group->default_domain is only NULL for a short period
-> during bus iommu probing while all the groups are constituted. Otherwise
-> it is always !NULL.
-> 
-> This completes changing the iommu subsystem driver contract to a system
-> where the current iommu_domain always represents some form of translation
-> and the driver is continuously asserting a definable translation mode.
-> 
-> It resolves the confusion that the original ops->detach_dev() caused
-> around what translation, exactly, is the IOMMU performing after
-> detach. There were at least three different answers to that question in
-> the tree, they are all now clearly named with domain types.
-> 
-> Tested-by: Heiko Stuebner <heiko@sntech.de>
-> Tested-by: Niklas Schnelle <schnelle@linux.ibm.com>
-> Tested-by: Steven Price <steven.price@arm.com>
-> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Tested-by: Nicolin Chen <nicolinc@nvidia.com>
-> Reviewed-by: Lu Baolu <baolu.lu@linux.intel.com>
-> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
-> ---
->  drivers/iommu/iommu.c | 22 +++++++---------------
->  1 file changed, 7 insertions(+), 15 deletions(-)
-> 
+Audra Mitchell <aubaker@redhat.com> writes:
+> With PPC builds enabling CONFIG_HARDENED_USERCOPY, interacting with the RunTime
+> Abstraction Services (RTAS) firmware by writing to
+> /proc/powerpc/rtas/firmware_flash will end up triggering the mm/usercopy.c:101
+> assertion:
 
-Reviewed-by: Jerry Snitselaar <jsnitsel@redhat.com>
+Thanks, this was fixed already:
 
+4f3175979e62 "powerpc/rtas_flash: allow user copy to flash block cache objects"
