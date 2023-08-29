@@ -4,75 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62B7EC83F12
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Aug 2023 06:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0273C83F12
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Aug 2023 06:37:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256 header.s=mail header.b=i77dORvd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XYXotIRc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RZd4P5k65z3bVp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Aug 2023 16:36:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RZd5Q0fJmz3c27
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Aug 2023 16:37:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256 header.s=mail header.b=i77dORvd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XYXotIRc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fjasle.eu (client-ip=217.72.192.75; helo=mout.kundenserver.de; envelope-from=nicolas@fjasle.eu; receiver=lists.ozlabs.org)
-X-Greylist: delayed 955 seconds by postgrey-1.37 at boromir; Tue, 29 Aug 2023 16:34:24 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RZd1r19L0z2yts
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 16:34:10 +1000 (AEST)
-Received: from leknes.fjasle.eu ([46.142.49.30]) by mrelayeu.kundenserver.de
- (mreue108 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MHoVE-1qVyDm38PW-00Eqhu; Tue, 29 Aug 2023 08:16:56 +0200
-Received: from localhost.fjasle.eu (kirkenes.fjasle.eu [10.10.0.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by leknes.fjasle.eu (Postfix) with ESMTPS id 7DC8F3E75F;
-	Tue, 29 Aug 2023 08:16:53 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fjasle.eu; s=mail;
-	t=1693289813; bh=Tee/zKgIxi0MjayamYCOiUTorl30qi/G3fi5jQxu9uo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=i77dORvdD3FaDs5i6DL8ZDK8Unesg1yl+uxIVHscPJOTiKMcP2VspJD2G9iOvGdwt
-	 g66IuuMz7ZWJ6u7k5WjE1Y4BlJcxwiuINQexDhpLTiMQ0wsn0nnwKtN8vhCBKG0iZ5
-	 ZvRHgNWgIPsQ0q0qgSPI44uFj8TAzGUWkgXHMIw8=
-Received: by localhost.fjasle.eu (Postfix, from userid 1000)
-	id A94463949; Tue, 29 Aug 2023 08:16:52 +0200 (CEST)
-Date: Tue, 29 Aug 2023 08:16:52 +0200
-From: Nicolas Schier <nicolas@fjasle.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 0/2] kbuild: Show Kconfig fragments in "help"
-Message-ID: <ZO2NVLipjlzIh0YS@bergen.fjasle.eu>
-References: <20230825194329.gonna.911-kees@kernel.org>
- <CAK7LNATcTw+btQVri7SBA8gFbDNMYz7D2gMQaoZp9sQGFjCw8Q@mail.gmail.com>
- <87ttsjlmho.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RZd332N3Vz3bYt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 16:35:27 +1000 (AEST)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37T5Y9uF001634
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=HmYs2hE1Z9PTqCeG7TiEEcathrkvp+tOVFIDCmFNVAE=;
+ b=XYXotIRc6ibXe/otDRRVtnqd1vlhrQbkQdw4EC4+uv+EMjycyowOPKwLQik7GHXkqJfD
+ 5hI0vorzBLBWDkmgKYS8IZh5p+nFLRZlX3no+T4zykCx6IOScTkTrFND36hWhVhtP+KR
+ IcDvXAH2z4nCfYZqpIfv7mMc8M67abquRKXGnv6Obre3aapAx6pqex/m/ia6PUEePNfe
+ RuArnBKJF24b/JlGFMUVCVuq/BJJeQCMVMM4ktL8Je4QPb43vvcp9+f9Kwf5p2TW5YHM
+ dFapzNdk8Atx3lruR+9eCs/SnZI6BXVtoddMsggSyoESIpv4kg79GjRXCAdwdZc2w6iC nw== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3srv4ywur5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:24 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37T50GvR014331
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:19 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3sqvqn19eu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:18 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37T6ZGw424773344
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:16 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CBD782004D
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:16 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4EAE020043
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:16 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2023 06:35:16 +0000 (GMT)
+Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8419960595;
+	Tue, 29 Aug 2023 16:35:13 +1000 (AEST)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc/watchpoints: Disable preemption in thread_change_pc()
+Date: Tue, 29 Aug 2023 16:34:55 +1000
+Message-ID: <20230829063457.54157-2-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230829063457.54157-1-bgray@linux.ibm.com>
+References: <20230829063457.54157-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="JaIvwu+DOSVoCCpT"
-Content-Disposition: inline
-In-Reply-To: <87ttsjlmho.fsf@mail.lhotse>
-X-Operating-System: Debian GNU/Linux trixie/sid
-Jabber-ID: nicolas@jabber.no
-X-Provags-ID: V03:K1:OBnWK3wK1nt78UyoQFBURm442v+SvSoVVT7mPovCe98T1OcdBRW
- 545IdFbHubnZv1c8kyxGda2FhHOhq6S+JNQcmvQsPh86El8Z2oDObUTGZNkSYi3rBEhtPpe
- iFj+PMJcKoRUGTqyvPJRbQqi8muo/oIxULf5nsWJp9ECrUUtbCOcliu478mDcsJIYXLPwgG
- aRaGMaOKjgoTFmVfIQeAg==
-UI-OutboundReport: notjunk:1;M01:P0:nSBSSgCh6aA=;thLCeKRGORoP7Z52qbIwEOyZs8p
- s03Gq/QGaTPlQsw/arXEDUEHKjwvCW9FuCMa6k8bB1Adfem/KUX9qTptZD5/0JCFciq8zOHQc
- 7XA8GGP7m1nwYgeuQkL74TG4AWMEy3Jo1SWi0gQ3YwexBD8FOI0F3p5L4loi43P3lZhckYZZy
- GtyzJYOGIzG6pCXWZHmScrB3yQxzam8o73h4a4QMcEveRHTDDM7dI2KXHMj/wqlMLMsNzTNg6
- XG6Fpk4Fu7Ml9eZUyP4xsSoIMv8MSSlMyXNfW2ulETDOGD5FNcPRdZQVpQaTo/n4JvDRfDy25
- qEOYe23HCWHy058ABBzs4DMhXDG7614CoxlJhqC8oGf/mTplvHPRTUTmIEuHyQWoBJIDHjsMN
- IpMAiZ6bZ6ew4lJ0tSIFP/ALJNs0PMLjURbWvi90SpHJJduTbKOsXye8XQrh08cPM6PhUKbHy
- j/K7Bak/CfdwlTb1kKDU2UM32tOenQGQpPn7p+x0IFOXXzPMwNJau0mtsCdEGolpMKTt9r2L+
- o+MPmghrttrrwz/hms/mFIBxy5hMDhbkv2vjZ9kqq9AcvtTdsKIOpoSFKykM290yQoskcIK0y
- BYpbol5lyMUB26Ier6aWmd+zplSPTcRqnAS5eLU3GyOPOH5iucnDoj0H7Jlrx1Qx82SU04zUK
- n6TT4SkOZiRazU+EXVNwUt8Knp8EV8w1B0h1VMA4WrXngEwgLHKlTD8RFp3mGH87hnvNS4G4M
- +XNQ4ln6zbPl92we03M99tLssRXDgKOkBjdeGAO0YnFY2C1mT0Bc/CkkEbPS2DElDubNJSQkB
- 21sPhUY4DzKfVDb36V9O+/DUovedjQUVMPJ7yJxx+dKivX3PhbEpiyIc1s9jdCApHf1zcsmO1
- Hy1hB86IRbNXPEQ==
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: QjMYcHKWHCZ5MGH2vQhgVRn3L4mVzkD0
+X-Proofpoint-GUID: QjMYcHKWHCZ5MGH2vQhgVRn3L4mVzkD0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-08-29_03,2023-08-28_04,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
+ adultscore=0 impostorscore=0 mlxlogscore=999 malwarescore=0 bulkscore=0
+ clxscore=1015 priorityscore=1501 spamscore=0 phishscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2308100000
+ definitions=main-2308290056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,77 +94,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Kees Cook <keescook@chromium.org>, linux-kbuild@vger.kernel.org, Masahiro Yamada <masahiroy@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+thread_change_pc() uses CPU local data, so must be protected from
+swapping CPUs while it is reading the breakpoint struct.
 
---JaIvwu+DOSVoCCpT
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The error is more noticeable after 1e60f3564bad ("powerpc/watchpoints:
+Track perf single step directly on the breakpoint"), which added an
+unconditional __this_cpu_read() call in thread_change_pc(). However the
+existing __this_cpu_read() that runs if a breakpoint does need to be
+re-inserted has the same issue.
 
-On Mon 28 Aug 2023 16:17:07 GMT, Michael Ellerman wrote:
-> Masahiro Yamada <masahiroy@kernel.org> writes:
-> > On Sat, Aug 26, 2023 at 4:55=E2=80=AFAM Kees Cook <keescook@chromium.or=
-g> wrote:
-> >>
-> >> Hi,
-> >>
-> >> This is my series to show *.config targets in the "help" target so the=
-se
-> >> various topics can be more easily discoverd.
-> >>
-> >> v2:
-> >>  - split .fragment from .config to hide "internal" fragments
-> >
-> > Please do not do this churn.
->=20
-> That was my idea :}
->=20
-> > Like Randy, I did not get "why" part quiet well,
-> > but if you are eager about this,
-> > you can show help message only when the following
-> > ("# Help:" prefix for example) is found in the first line.
-> >
-> > # Help: blah blah
-> > # other comment
->=20
-> I did think of that, but wasn't sure how to do it in make.
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 
-Something like this should do it:
+---
 
-	@grep -Hnm1 -e '^# Help:' $(foreach f, $(sort $(notdir $(call configfiles,=
-*.config))), $(firstword $(call configfiles,$(f)))) | \
-	 while read loc dummy helptext; do \
-		tmp=3D"$${loc%:#}"; file=3D"$${tmp%:*}"; line=3D"$${tmp##*:}"; \
-		[ "$${line}" =3D "1" ] && \
-		  printf "  %-25s - %s\\n" "$${file##*/}" "$${helptext}"; \
-	 done
+There's probably a more idiomatic way to express this. We technically
+don't need to disable preemption for the entire function: we should only
+need to disable preemption within each loop iteration while handling the
+pointer we are working with. Each iteration itself is independent.
+---
+ arch/powerpc/kernel/hw_breakpoint.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-but this neither beautiful nor elegant it likes to be improved.
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index b8513dc3e53a..2854376870cf 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -230,13 +230,15 @@ void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs)
+ 	struct arch_hw_breakpoint *info;
+ 	int i;
+ 
++	preempt_disable();
++
+ 	for (i = 0; i < nr_wp_slots(); i++) {
+ 		struct perf_event *bp = __this_cpu_read(bp_per_reg[i]);
+ 
+ 		if (unlikely(bp && counter_arch_bp(bp)->perf_single_step))
+ 			goto reset;
+ 	}
+-	return;
++	goto out;
+ 
+ reset:
+ 	regs_set_return_msr(regs, regs->msr & ~MSR_SE);
+@@ -245,6 +247,9 @@ void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs)
+ 		__set_breakpoint(i, info);
+ 		info->perf_single_step = false;
+ 	}
++
++out:
++	preempt_enable();
+ }
+ 
+ static bool is_larx_stcx_instr(int type)
+-- 
+2.41.0
 
-Kind regards,
-Nicolas
-
---JaIvwu+DOSVoCCpT
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEh0E3p4c3JKeBvsLGB1IKcBYmEmkFAmTtjVQACgkQB1IKcBYm
-Emnu6hAAiTYwlEcuArYqUntbY96On0jGhH2Ro38eVcbugkgaGXZdG2o6LDj7+Jv1
-diCScvmsCCd0LT80ZjU8liNtsde+lqrL5XMAnELCaOMFDQPrLSp8HQ1NoPGkR3G7
-He4w0psuLoXtKYlfc5txGbe7xiXqouA0UO0p+t/LX+roPbGFNsB6801KbXfHdvQu
-NeQM/chgqVRFESOgQ15prGDNjfvhCkmPL0tnsLTWbhmvH0JPhgkwbJDyJfoTiynV
-+RSgVhYh2IF2pN9NHcWfKspTNX0oBQJQ0OZMuFUNJz0+wOebpslo4jGbKHE85XD+
-eEAJ93mWyDzA1eAoCfEb/mJqag7FWYTou+lIxSnPwdvhp21OS6wcYxp0jSjHCYGS
-bIyN/i4AGB3nGufPwyouWbu7N1ObEuT6M80sDJOla2tRCC8JpmXkMfyP6My/TZRl
-h5NPK9cirqd8HYUnayL7FUYX5jgfSgm+4G37gGHmzdPor2Ugr3QEDCUIssTyw22j
-v3EuoqJHuGTQWo80W8h07CFNgMxtW/zrq5ArTI9/N6vqtFQm6pec1WTAKC1/1pOU
-IaMdv/ZrebiU5u9QPGGL2qi4AVe8EWKMMzsaUvfVFfh19pW0KxMW4y7afFy7t+6v
-ICmnB7nhu0MM51uchAm+GjkTVLIEwVLbuq+hv8WWjpV4bfexyw8=
-=Puw/
------END PGP SIGNATURE-----
-
---JaIvwu+DOSVoCCpT--
