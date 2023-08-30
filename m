@@ -4,61 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 270DAC6FA8F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Aug 2023 08:50:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF690C6FA8F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Aug 2023 10:54:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=OXctCXRG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hdAvZ3Sq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RbJ0P2YqKz3c43
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Aug 2023 18:50:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RbLlh4p43z3c4s
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Aug 2023 20:54:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=OXctCXRG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hdAvZ3Sq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=joel.stan@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RbHzN6Nr0z2xgp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2023 18:49:36 +1000 (AEST)
-Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-99bf3f59905so692106366b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2023 01:49:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=jms.id.au; s=google; t=1693385369; x=1693990169; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=6Id0mOtcN/jBp+Q/VaNDUo1xdOQXoPuoHi26wXfM9WY=;
-        b=OXctCXRGBgtmXxdmmZYlB4RnSy0C4SgazhStydHgadaNAmdNsyH33UKtU+RQBpa7C0
-         EOG8HvvRwQLk1GvARnQ1N7D+vj7fBtFml+XrnyqPHFfWF0AAc7YpFvrxAPe+G8ZsiSRm
-         EIjQmaEzZah2Nrdp4ObQaITwJ6DjkvEEX0lMg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693385369; x=1693990169;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=6Id0mOtcN/jBp+Q/VaNDUo1xdOQXoPuoHi26wXfM9WY=;
-        b=CMNv3nVkBY8qcV5CCjd4RLeDI/0GKOEygoVGNoWEKxIDmRxgQ1Z+i1X7sK3DUtdQRF
-         tbRk4Im/jld8Csf0NaIJumUBCXzII7ai+CAFPpdB5XE0RZJ/E/g9qy0nte4yUm5uDutt
-         94W8Geb5pnS3m0iT/muTO3d0q3IQp3RqbEq39znwYxqB1ElwGpU3/Za+FXaV65NwPAPa
-         S93wx+XqIMa+CcTje6AdGMeVxvsdgTPnsxhz5TGnUSpv1DcL89KjOGkT1WxIE0WF0G7R
-         B6uhd46/DCynDux7rTXbFeC4WvhJxFkfUvLrFXNpQrZhtVj07QQbAM9YuuR25atojNRg
-         nEfg==
-X-Gm-Message-State: AOJu0YwrdBx/jfg9jgoWwsfsyD3+lpn+2dq3dwCiJ3sI0DG9GhuFmtiW
-	p8ypQEPZyEByoFlXswsNLYyks8CVuu/Yj+jX5M0=
-X-Google-Smtp-Source: AGHT+IEB+1pTenQ0UWuyJyfN9OLvVIPSS49BtWYQVY6y0VGNEnouuuAqeDmshbIfVIF90Wlq7YD5pRXYvTOmghyuMYk=
-X-Received: by 2002:a17:906:9bfa:b0:9a1:d2ef:3e3b with SMTP id
- de58-20020a1709069bfa00b009a1d2ef3e3bmr1111379ejc.38.1693385369328; Wed, 30
- Aug 2023 01:49:29 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230824064210.907266-1-mpe@ellerman.id.au>
-In-Reply-To: <20230824064210.907266-1-mpe@ellerman.id.au>
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 30 Aug 2023 08:49:17 +0000
-Message-ID: <CACPK8Xc7mpxAHXn1O=u2-UFpAY-svQeoW_Hs4cqoToyj2T6CLA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Hide empty pt_regs at base of the stack
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RbLkg6zxhz2yjD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2023 20:53:47 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37UAlxh0004676;
+	Wed, 30 Aug 2023 10:53:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=WZbNLZ6BUq5IR8IIqhAv0z7Wo4CfMYZ+rFojnZ7/+os=;
+ b=hdAvZ3SqAic6r2Bub/SbndoCT+0TIrJo+crHG7Dc6qQPHA9VOta9M0lvzcuyFNF8eaVe
+ x4VMkuRpETUsexKFSNqSBWxCC0jfCnQdYe/OS8/XAcYSxbqDphBd/IDtWHwHbf+1etiU
+ JTFkPMuCLUep6p4lIylACFeuQ+jJLS0E5aSub2VhfAeoxE/X3gL4/a9cwRVijv0N1Rxi
+ 3P+/vZ3Mc+b8d2eudpbu0J4wsjY7BNghQo+9DstdFuMoxOD9e30p+5rX2Nt+3Iicw33N
+ b5NJGNbKrFoS04zNAnCB8D4eMcJbgxvw10AkEhbcMqniMemaMC8HmoSCsleOt7e7pIoe Qw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3st4aw0317-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Aug 2023 10:53:30 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37UAmBJv005329;
+	Wed, 30 Aug 2023 10:53:30 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3st4aw030s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Aug 2023 10:53:30 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 37UA6Ebp019258;
+	Wed, 30 Aug 2023 10:53:29 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3sqxe1tnk2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Aug 2023 10:53:29 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 37UArR8e61407494
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Aug 2023 10:53:27 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B75912004B;
+	Wed, 30 Aug 2023 10:53:27 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B7CDE20043;
+	Wed, 30 Aug 2023 10:53:23 +0000 (GMT)
+Received: from saptarishi.in.ibm.com (unknown [9.43.8.96])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 30 Aug 2023 10:53:23 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Subject: [PATCH 1/4] powerpc/smp: Cache CPU has Asymmetric SMP
+Date: Wed, 30 Aug 2023 16:22:41 +0530
+Message-ID: <20230830105244.62477-2-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230830105244.62477-1-srikar@linux.vnet.ibm.com>
+References: <20230830105244.62477-1-srikar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: v-Ta_8zjOXq3bB_YeeXSJfwiY_AKl7H1
+X-Proofpoint-ORIG-GUID: DSKCAnDHWcUMyqqvUffQ3ptz5Sb-bMzW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-08-29_16,2023-08-29_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
+ mlxscore=0 suspectscore=0 malwarescore=0 mlxlogscore=999 bulkscore=0
+ spamscore=0 impostorscore=0 lowpriorityscore=0 priorityscore=1501
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2308300098
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,124 +96,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: Juergen Gross <jgross@suse.com>, Nathan Lynch <nathanl@linux.ibm.com>, Valentin Schneider <vschneid@redhat.com>, Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Paul E McKenney <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 24 Aug 2023 at 06:42, Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> A thread started via eg. user_mode_thread() runs in the kernel to begin
-> with and then may later return to userspace. While it's running in the
-> kernel it has a pt_regs at the base of its kernel stack, but that
-> pt_regs is all zeroes.
->
-> If the thread oopses in that state, it leads to an ugly stack trace with
-> a big block of zero GPRs, as reported by Joel:
->
->   Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
->   CPU: 0 PID: 1 Comm: swapper/0 Not tainted 6.5.0-rc7-00004-gf7757129e3de-dirty #3
->   Hardware name: IBM PowerNV (emulated by qemu) POWER9 0x4e1200 opal:v7.0 PowerNV
->   Call Trace:
->   [c0000000036afb00] [c0000000010dd058] dump_stack_lvl+0x6c/0x9c (unreliable)
->   [c0000000036afb30] [c00000000013c524] panic+0x178/0x424
->   [c0000000036afbd0] [c000000002005100] mount_root_generic+0x250/0x324
->   [c0000000036afca0] [c0000000020057d0] prepare_namespace+0x2d4/0x344
->   [c0000000036afd20] [c0000000020049c0] kernel_init_freeable+0x358/0x3ac
->   [c0000000036afdf0] [c0000000000111b0] kernel_init+0x30/0x1a0
->   [c0000000036afe50] [c00000000000debc] ret_from_kernel_user_thread+0x14/0x1c
->   --- interrupt: 0 at 0x0
->   NIP:  0000000000000000 LR: 0000000000000000 CTR: 0000000000000000
->   REGS: c0000000036afe80 TRAP: 0000   Not tainted  (6.5.0-rc7-00004-gf7757129e3de-dirty)
->   MSR:  0000000000000000 <>  CR: 00000000  XER: 00000000
->   CFAR: 0000000000000000 IRQMASK: 0
->   GPR00: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR12: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   GPR28: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->   NIP [0000000000000000] 0x0
->   LR [0000000000000000] 0x0
->   --- interrupt: 0
->
-> The all-zero pt_regs looks ugly and conveys no useful information, other
-> than its presence. So detect that case and just show the presence of the
-> frame by printing the interrupt marker, eg:
->
->   Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
->   CPU: 0 PID: 1 Comm: swapper/0 Not tainted 6.5.0-rc3-00126-g18e9506562a0-dirty #301
->   Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1202 0xf000005 of:SLOF,HEAD hv:linux,kvm pSeries
->   Call Trace:
->   [c000000003aabb00] [c000000001143db8] dump_stack_lvl+0x6c/0x9c (unreliable)
->   [c000000003aabb30] [c00000000014c624] panic+0x178/0x424
->   [c000000003aabbd0] [c0000000020050fc] mount_root_generic+0x250/0x324
->   [c000000003aabca0] [c0000000020057cc] prepare_namespace+0x2d4/0x344
->   [c000000003aabd20] [c0000000020049bc] kernel_init_freeable+0x358/0x3ac
->   [c000000003aabdf0] [c0000000000111b0] kernel_init+0x30/0x1a0
->   [c000000003aabe50] [c00000000000debc] ret_from_kernel_user_thread+0x14/0x1c
->   --- interrupt: 0 at 0x0
->
-> To avoid ever suppressing a valid pt_regs make sure the pt_regs has a
-> zero MSR and TRAP value, and is located at the very base of the stack.
->
-> Reported-by: Joel Stanley <joel@jms.id.au>
-> Reported-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Currently cpu feature flag is checked whenever powerpc_smt_flags gets
+called. This is an unnecessary overhead. CPU_FTR_ASYM_SMT is set based
+on the processor and all processors will either have this set or will
+have it unset.
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Hence only check for the feature flag once and cache it to be used
+subsequently. This commit will help avoid a branch in powerpc_smt_flags
 
-Thanks for the explanation and the patch.
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-> ---
->  arch/powerpc/kernel/process.c | 26 +++++++++++++++++++++++---
->  1 file changed, 23 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index b68898ac07e1..392404688cec 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -2258,6 +2258,22 @@ unsigned long __get_wchan(struct task_struct *p)
->         return ret;
->  }
->
-> +static bool empty_user_regs(struct pt_regs *regs, struct task_struct *tsk)
-> +{
-> +       unsigned long stack_page;
-> +
-> +       // A non-empty pt_regs should never have a zero MSR or TRAP value.
-> +       if (regs->msr || regs->trap)
-> +               return false;
-> +
-> +       // Check it sits at the very base of the stack
-> +       stack_page = (unsigned long)task_stack_page(tsk);
-> +       if ((unsigned long)(regs + 1) != stack_page + THREAD_SIZE)
-> +               return false;
-> +
-> +       return true;
-> +}
-> +
->  static int kstack_depth_to_print = CONFIG_PRINT_STACK_DEPTH;
->
->  void __no_sanitize_address show_stack(struct task_struct *tsk,
-> @@ -2322,9 +2338,13 @@ void __no_sanitize_address show_stack(struct task_struct *tsk,
->                         lr = regs->link;
->                         printk("%s--- interrupt: %lx at %pS\n",
->                                loglvl, regs->trap, (void *)regs->nip);
-> -                       __show_regs(regs);
-> -                       printk("%s--- interrupt: %lx\n",
-> -                              loglvl, regs->trap);
-> +
-> +                       // Detect the case of an empty pt_regs at the very base
-> +                       // of the stack and suppress showing it in full.
-> +                       if (!empty_user_regs(regs, tsk)) {
-> +                               __show_regs(regs);
-> +                               printk("%s--- interrupt: %lx\n", loglvl, regs->trap);
-> +                       }
->
->                         firstframe = 1;
->                 }
-> --
-> 2.41.0
->
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index fbbb695bae3d..c7d1484ed230 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -987,18 +987,13 @@ static int __init init_thread_group_cache_map(int cpu, int cache_property)
+ }
+ 
+ static bool shared_caches;
++static int asym_pack_flag;
+ 
+ #ifdef CONFIG_SCHED_SMT
+ /* cpumask of CPUs with asymmetric SMT dependency */
+ static int powerpc_smt_flags(void)
+ {
+-	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+-
+-	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+-		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+-		flags |= SD_ASYM_PACKING;
+-	}
+-	return flags;
++	return SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES | asym_pack_flag;
+ }
+ #endif
+ 
+@@ -1676,6 +1671,11 @@ static void __init fixup_topology(void)
+ {
+ 	int i;
+ 
++	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
++		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
++		asym_pack_flag = SD_ASYM_PACKING;
++	}
++
+ #ifdef CONFIG_SCHED_SMT
+ 	if (has_big_cores) {
+ 		pr_info("Big cores detected but using small core scheduling\n");
+-- 
+2.41.0
+
