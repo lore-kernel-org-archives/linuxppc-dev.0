@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5E02C83F29
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 04:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44C2DC83F29
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 04:11:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RbnlS4F9Zz3fXs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 14:11:00 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rbnly6qVRz3fbL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 14:11:26 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RbncN6w60z3btq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2023 14:04:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RbncP0lvDz3btq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2023 14:04:53 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RbncK5TKNz4x3D;
-	Thu, 31 Aug 2023 14:04:49 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RbncN0bM2z4x2Z;
+	Thu, 31 Aug 2023 14:04:52 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230329234308.2215833-1-mpe@ellerman.id.au>
-References: <20230329234308.2215833-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Move CPU -mtune options into Kconfig
-Message-Id: <169345455030.11824.2703955170389037894.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, andriy.shevchenko@linux.intel.com, linuxppc-dev@lists.ozlabs.org, Liang He <windhl@126.com>
+In-Reply-To: <20230322030423.1855440-1-windhl@126.com>
+References: <20230322030423.1855440-1-windhl@126.com>
+Subject: Re: [PATCH] powerpc/mpc5xxx: Add missing fwnode_handle_put()
+Message-Id: <169345455033.11824.4191703555535957836.b4-ty@ellerman.id.au>
 Date: Thu, 31 Aug 2023 14:02:30 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -45,21 +45,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 30 Mar 2023 10:43:08 +1100, Michael Ellerman wrote:
-> Currently the -mtune options are set in the Makefile, depending on what
-> the compiler supports.
+On Wed, 22 Mar 2023 11:04:23 +0800, Liang He wrote:
+> In mpc5xxx_fwnode_get_bus_frequency(), we should add
+> fwnode_handle_put() when break out of the iteration
+> fwnode_for_each_parent_node() as it will automatically
+> increase and decrease the refcounter.
 > 
-> One downside of doing it that way is that the chosen -mtune option is
-> not recorded in the .config.
 > 
-> Another downside is that if there's ever a need to do more complicated
-> logic to calculate the correct option, that gets messy in the Makefile.
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: Move CPU -mtune options into Kconfig
-      https://git.kernel.org/powerpc/c/50832720ec54c39ab189cd5e057aec1c514978ce
+[1/1] powerpc/mpc5xxx: Add missing fwnode_handle_put()
+      https://git.kernel.org/powerpc/c/b9bbbf4979073d5536b7650decd37fcb901e6556
 
 cheers
