@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D37F0C83F3D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 20:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE0CBC83F2F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 20:21:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RcCGY2pH2z3dFw
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 06:20:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tinylab.org (client-ip=43.154.54.12; helo=bg4.exmail.qq.com; envelope-from=tanyuan@tinylab.org; receiver=lists.ozlabs.org)
-Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.154.54.12])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RcCHC4FXMz3c3s
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 06:21:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tinylab.org (client-ip=43.155.65.254; helo=bg4.exmail.qq.com; envelope-from=tanyuan@tinylab.org; receiver=lists.ozlabs.org)
+Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.155.65.254])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RcCDv557Dz3bYt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2023 06:19:27 +1000 (AEST)
-X-QQ-mid: bizesmtp85t1693513066t3435cba
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RcCFV3xPXz3cDg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2023 06:19:58 +1000 (AEST)
+X-QQ-mid: bizesmtp80t1693513054tfheb4kk
 Received: from main2-ubuntu.tail147f4.ts.net ( [202.201.15.117])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Fri, 01 Sep 2023 04:17:43 +0800 (CST)
+	id ; Fri, 01 Sep 2023 04:17:31 +0800 (CST)
 X-QQ-SSF: 01200000000000907000B00A0000000
-X-QQ-FEAT: xqT8U4SkSpiS5kzWesBIBpHIwSbUohjqM3BmRDSEk5odHzMiXVEVNH9xig7LV
-	uV3YdW00d2zt2R64tanUZ5WANsF2XzZVvpAXntr5e9OJaq/AUaA0u2K5U+kw5peFg6iyCw7
-	dU6TLqEgEtIXrOTEFQs6BEjXtH0+RzNuW/+2MwqBRiTlyPcWgvl873NRgrXzaMq+oQLX6A4
-	fo0pA/24ARShHoQoMS1Q2mEEbUdUjdqLgwNJJDp8EE5yDB2HtL6ptUE6n4u512Q/Ndvrh2J
-	3Ahvgh1KUE0m8J8eB3+DtmwZkHZxkBtfAKr7oHP8sQsPds83hH/7fOl8bmH1TKnJOobhN7P
-	tfsy9R1hwfPlglgvXpciFZjACNI+U0M62grz/Cg36vKpdFbAV8=
+X-QQ-FEAT: zT6n3Y95oi2JZhQOJPJkow3+Z1z8O+aKI4VLH+g5LEAEDXda4seSdGQIPMUTJ
+	2MqnaBQTMGrp52orgxZuFCDsSVgNcRMCmODohotYW4kejOvH3DXUcKjB+CsUWTgYLVyrqDj
+	SZJZhd7AlReP2Nj/umbKaMNMutVbb0QESpSaOfm85HGE1V+fdMnh7VJVxpaqxxhljoR5biq
+	gM0BiLC8BhCw60DCjSWK6PjlURr3JmPqIGJJ4ZXheCylIF5I6IIsqj1/QpCmMIWYkR+qAth
+	xYNCq/tnRWcEKuYJcPXhiUqM99WMxMBj/g77TwWXASvPM94nROO5F1u1C0Z8flhZk6Zxtj4
+	7eklrvxyFlOYFN2mN12a+Wc3AhH4Q==
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 10146932626086328386
+X-BIZMAIL-ID: 9549962173314934248
 From: Yuan Tan <tanyuan@tinylab.org>
 To: mpe@ellerman.id.au,
 	christophe.leroy@csgroup.eu,
@@ -35,9 +35,9 @@ To: mpe@ellerman.id.au,
 	mingo@redhat.com,
 	tsbogend@alpha.franken.de,
 	hdegoede@redhat.com
-Subject: [PATCH v1 1/3] kconfig: add dependencies of POWER_RESET for mips malta
-Date: Fri,  1 Sep 2023 04:17:42 +0800
-Message-Id: <20230831201742.3177926-1-tanyuan@tinylab.org>
+Subject: [PATCH v1 0/3] Add dependencies of POWER_RESET for MIPS Malta, x86, and PowerMac.
+Date: Fri,  1 Sep 2023 04:17:27 +0800
+Message-Id: <20230831201727.3177853-1-tanyuan@tinylab.org>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -58,30 +58,45 @@ Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-MIPS Malta's power off depends on PCI, PCI_QUIRKS, and
-POWER_RESET_PIIX4_POWEROFF to work. Enable them when POWER_RESET is set
-for convenience.
+These patches is to add dependencies of POWER_RESET for MIPS Malta, x86,
+and PowerMac.
 
-Suggested-by: Zhangjin Wu <falcon@tinylab.org>
-Signed-off-by: Yuan Tan <tanyuan@tinylab.org>
+To simplify the enablement of the poweroff support, selecting the
+required options for CONFIG_POWER_RESET=y may make many people
+happyespecially when they are using a customized config (maybe
+tinyconfigbased) for a target qemu board. Without normal poweroff
+support from the kernel side, qemu will simply hang[1] there after a
+'poweroff' command, which is a very bad experience for the automatical
+tests.
+
+Currently, based on tinyconfig, it is very hard to find the exact
+poweroff options[2]. Some architectures' poweroff works well without
+any dependence, the others' poweroff options are hidden deeply, which
+make things hard.
+
+After multiple verifications, these options have been identified as the
+minimum dependencies required for poweroff to function normally.
+
+Zhangjin and I invested a significant amount of time in searching for
+the current options on these devices. We hope that this set of
+patcheswill save time for others. If community like it, we will consider
+adding dependencies for POWER_RESET on other devices.
+
 ---
- arch/mips/Kconfig | 3 +++
- 1 file changed, 3 insertions(+)
+[1]: https://lore.kernel.org/lkml/511b2f6009fb830b3f32b4be3dca99596c684fa3.1689759351.git.falcon@tinylab.org/
+[2]: https://lore.kernel.org/all/983843582e52e83fba79ad45cea6c79e1f62ec6c.1690489039.git.falcon@tinylab.org/
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index bc8421859006..1d93f3fd0552 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -547,6 +547,9 @@ config MIPS_MALTA
- 	select MIPS_L1_CACHE_SHIFT_6
- 	select MIPS_MSC
- 	select PCI_GT64XXX_PCI0
-+	select PCI if POWER_RESET
-+    select PCI_QUIRKS if POWER_RESET
-+    select POWER_RESET_PIIX4_POWEROFF if POWER_RESET
- 	select SMP_UP if SMP
- 	select SWAP_IO_SPACE
- 	select SYS_HAS_CPU_MIPS32_R1
+
+Yuan Tan (3):
+  kconfig: add dependencies of POWER_RESET for mips malta
+  kconfig: add dependencies of POWER_RESET for x86
+  kconfig: add dependencies of POWER_RESET for PowerMac
+
+ arch/mips/Kconfig                       | 3 +++
+ arch/powerpc/platforms/powermac/Kconfig | 1 +
+ arch/x86/Kconfig                        | 2 ++
+ 3 files changed, 6 insertions(+)
+
 -- 
 2.34.1
 
