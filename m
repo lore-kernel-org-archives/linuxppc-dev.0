@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 303F1C83F29
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 04:08:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6947BC83F10
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 04:09:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rbnht6TL1z3f0T
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 14:08:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RbnjP0nmpz3f5s
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 14:09:13 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RbncK47dTz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2023 14:04:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RbncL1KQgz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2023 14:04:50 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RbncK3F4lz4x3C;
-	Thu, 31 Aug 2023 14:04:49 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RbncL0Pjzz4x3F;
+	Thu, 31 Aug 2023 14:04:50 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230823044803.737175-1-mpe@ellerman.id.au>
-References: <20230823044803.737175-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] cxl: Drop unused detach_spa()
-Message-Id: <169345455029.11824.1165517689793749637.b4-ty@ellerman.id.au>
+In-Reply-To: <20230823055430.752550-1-mpe@ellerman.id.au>
+References: <20230823055430.752550-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Drop zalloc_maybe_bootmem()
+Message-Id: <169345455028.11824.5523013276138425964.b4-ty@ellerman.id.au>
 Date: Thu, 31 Aug 2023 14:02:30 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fbarrat@linux.ibm.com, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 23 Aug 2023 14:48:03 +1000, Michael Ellerman wrote:
-> Clang warns:
->   drivers/misc/cxl/native.c:272:20: error: unused function 'detach_spa' [-Werror,-Wunused-function]
+On Wed, 23 Aug 2023 15:54:30 +1000, Michael Ellerman wrote:
+> The only callers of zalloc_maybe_bootmem() are PCI setup routines. These
+> used to be called early during boot before slab setup, and also during
+> runtime due to hotplug.
 > 
-> It was created as part of some refactoring in commit 05155772f642 ("cxl:
-> Allocate and release the SPA with the AFU"), but has never been called
-> in its current form. Drop it.
+> But commit 5537fcb319d0 ("powerpc/pci: Add ppc_md.discover_phbs()")
+> moved the boot-time calls later, after slab setup, meaning there's no
+> longer any need for zalloc_maybe_bootmem(), kzalloc() can be used in all
+> cases.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] cxl: Drop unused detach_spa()
-      https://git.kernel.org/powerpc/c/fe32945203ffc8d6fed815f7ed7729219f8b0ab6
+[1/1] powerpc: Drop zalloc_maybe_bootmem()
+      https://git.kernel.org/powerpc/c/fabdb27da78afb93b0a83c0579025cb8d05c0d2d
 
 cheers
