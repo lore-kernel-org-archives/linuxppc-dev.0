@@ -4,59 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E8D9C83F37
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 19:55:23 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rPB36fpt;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A289C83F3E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Aug 2023 20:19:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RcBj60bXZz3c5Q
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 05:55:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rPB36fpt;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RcCFV3R21z3c1H
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 06:19:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tinylab.org (client-ip=43.154.54.12; helo=bg4.exmail.qq.com; envelope-from=tanyuan@tinylab.org; receiver=lists.ozlabs.org)
+Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.154.54.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RcBh85WCxz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2023 05:54:32 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8C7A962129;
-	Thu, 31 Aug 2023 19:54:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E7EC0C433C7;
-	Thu, 31 Aug 2023 19:54:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1693511669;
-	bh=4xBwQYrDYvELTUVIq5HoKyekNXLiRMNL1WiKGCIHSGE=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=rPB36fpt8aXiurhkM9PYEXHy+mON8p24DqHQ3HoO+zGOLNZtLX9v3tuvUUqk9XYfW
-	 H7NwzRTGzmDlKUHFX6S9bMDtHVn9XP2notR++pRw9OOiVN3csEEMSc71Thw+GtblCi
-	 n9HIrmiP5syeoV14aNdncQcBN6ekqOMTz0wfhVVUKwpuRhx+REzkYupEC2fttYws7U
-	 1nm2vbJ2MWU4ayRjNbU57Z9ld/CCBjWHyynV1CjzYA12KRYgZ+GerlNgycnxySXMCz
-	 52GHe7VnpoqzAJSOKcKK5ZQH3WwLUT1lJHcGibgSWe5VB7mGEoiSJRFQLoZp95M6eN
-	 b8Vb5Bmakj8tA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id D3380C595D2;
-	Thu, 31 Aug 2023 19:54:28 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-6.6-1 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87o7in1iz3.fsf@mail.lhotse>
-References: <87o7in1iz3.fsf@mail.lhotse>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <87o7in1iz3.fsf@mail.lhotse>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.6-1
-X-PR-Tracked-Commit-Id: 85a616416e9e01db0bfa92f26457e92642e2236b
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 4ad0a4c2343d3981e92df2b39fa262be62a9091a
-Message-Id: <169351166885.26416.7613414703938254596.pr-tracker-bot@kernel.org>
-Date: Thu, 31 Aug 2023 19:54:28 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RcCDt3bWvz3bYc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2023 06:19:17 +1000 (AEST)
+X-QQ-mid: bizesmtp90t1693513106tayols77
+Received: from main2-ubuntu.tail147f4.ts.net ( [202.201.15.117])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Fri, 01 Sep 2023 04:18:24 +0800 (CST)
+X-QQ-SSF: 01200000000000907000B00A0000000
+X-QQ-FEAT: 0laiA9+vjAD+dTjgZHIguMRpVXcACiRiQGF39CDjBBbmU1RPhqOWYLj6R7uve
+	0iwIOgdKTGEFfm3SNcrx1AcnKACEyRBJXHT2Y3cS1wWj3hlu4PvmvD3BwWCcdZErTAl9P7D
+	yqR/bpWpbgmK9hRg0SubA8TleklfF6Gx2vnYJp3CsWa0zTr+dla1TdMd+Tdlf1TBpyVqzXU
+	ZQCekK9QPK15yq6naSaFOTudNuJ77FNLxSxodgy4wvZowaaq/00vUlONL7BLNgKQNYzOdDW
+	cX+wskHSlItuHaNAsLb8zgvw+q/iarh/VsP9BAMPTtsBMttOW01NYd1swTWOL6rKye3x1o5
+	+rZlMseYhTz+kGioldQaVelHlGsDZTCJDan/6XIKpfBn2dsTgDFCXL88cSmiQ==
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 10361205484968947270
+From: Yuan Tan <tanyuan@tinylab.org>
+To: mpe@ellerman.id.au,
+	christophe.leroy@csgroup.eu,
+	tglx@linutronix.de,
+	mingo@redhat.com,
+	tsbogend@alpha.franken.de,
+	hdegoede@redhat.com
+Subject: [PATCH v1 3/3] kconfig: add dependencies of POWER_RESET for PowerMac
+Date: Fri,  1 Sep 2023 04:18:23 +0800
+Message-Id: <20230831201823.3178131-1-tanyuan@tinylab.org>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:tinylab.org:qybglogicsvrgz:qybglogicsvrgz5a-1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,19 +54,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linus.walleij@linaro.org, ruscur@russell.cc, linux-kernel@vger.kernel.org, zhangjialin11@huawei.com, bgray@linux.ibm.com, windhl@126.com, osandov@fb.com, tanyuan@tinylab.org, robh@kernel.org, zhengzengkai@huawei.com, aneesh.kumar@linux.ibm.com, masahiroy@kernel.org, wangxiongfeng2@huawei.com, joel@jms.id.au, u.kleine-koenig@pengutronix.de, msuchanek@suse.de, mirimmad17@gmail.com, nathanl@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de, kjain@linux.ibm.com, naveen@kernel.org, npiggin@gmail.com, ruanjinjie@huawei.com, bhelgaas@google.com, ldufour@linux.ibm.com, hbathini@linux.ibm.com, twoerner@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org, ndesaulniers@google.com, mahesh@linux.ibm.com, sourabhjain@linux.ibm.com, krzysztof.kozlowski@linaro.org, justinstitt@google.com, fbarrat@linux.ibm.com, vaibhav@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, gautam@linux.ibm.com
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, linux@weissschuh.net, falcon@tinylab.org, linuxppc-dev@lists.ozlabs.org, w@1wt.eu, Yuan Tan <tanyuan@tinylab.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Thu, 31 Aug 2023 22:42:24 +1000:
+PowerMac's power off depends on ADB_CUDA to work. Enable it when
+POWER_RESET is set for convenience.
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.6-1
+Suggested-by: Zhangjin Wu <falcon@tinylab.org>
+Signed-off-by: Yuan Tan <tanyuan@tinylab.org>
+---
+ arch/powerpc/platforms/powermac/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/4ad0a4c2343d3981e92df2b39fa262be62a9091a
-
-Thank you!
-
+diff --git a/arch/powerpc/platforms/powermac/Kconfig b/arch/powerpc/platforms/powermac/Kconfig
+index 130707ec9f99..9e633d7e8367 100644
+--- a/arch/powerpc/platforms/powermac/Kconfig
++++ b/arch/powerpc/platforms/powermac/Kconfig
+@@ -2,6 +2,7 @@
+ config PPC_PMAC
+ 	bool "Apple PowerMac based machines"
+ 	depends on PPC_BOOK3S && CPU_BIG_ENDIAN
++	select ADB_CUDA if POWER_RESET
+ 	select MPIC
+ 	select FORCE_PCI
+ 	select PPC_INDIRECT_PCI if PPC32
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.34.1
+
+
