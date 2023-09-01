@@ -4,80 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A19A8CA0FE1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 11:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C159BCA0FEC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 14:28:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=tujk+flZ;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1DPIkngr;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=tTb6ATZY;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=r9L0JRZV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rcc0G5xWbz3c5L
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Sep 2023 21:54:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RcgNw0vYdz3cD5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Sep 2023 00:28:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=tujk+flZ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1DPIkngr;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=tTb6ATZY;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=r9L0JRZV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=dkirjanov@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 599 seconds by postgrey-1.37 at boromir; Fri, 01 Sep 2023 21:16:14 AEST
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rcb7f0c4wz3bY3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2023 21:16:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RcgMt6dhPz300C
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2023 00:27:06 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 0783F2185A;
-	Fri,  1 Sep 2023 11:06:00 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id D36AA1F86C;
+	Fri,  1 Sep 2023 14:27:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1693566360; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	t=1693578422; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ddEY5hmSfZEknJMt5BoR/ARnTSJr3qAhZpAWd1WA6sQ=;
-	b=tujk+flZ+MtJfbZ24Hkdo/mLpNv2iBxplhrqI4DTvD6ardJEvbGN22FLMMCdL1JwkgG/+2
-	UtbMU0SLpsAzeGbt2SGkU+oRBWyJZMPKhiBXItouA8u5TvNXsAjaTVWGhDEKTmWJafBmr+
-	mvr9HU7Gna1Lx42+GAwrO4n0IKjZfYI=
+	bh=QETxACuLG117Ppkadvcn1KtVg/Yq0288OgnzhzA/ULk=;
+	b=tTb6ATZYkM5FNNeKaXMkOL4QJI48iFJt1y+xae4e6Sni0Qo27M2NlefCoxXCM+ZPwuj5tY
+	r6xiCRU9xE1ETGEIZu5/kgrkooxMs/C9oh6EIsNPIXVUeTWz4BFtm8DB8Ne72nR4yY5uHC
+	CKnY5HhPDRktVXU0PL1grEur0ikDxHE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1693566360;
+	s=susede2_ed25519; t=1693578422;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ddEY5hmSfZEknJMt5BoR/ARnTSJr3qAhZpAWd1WA6sQ=;
-	b=1DPIkngrFTwgdEMkgQz8P5Y0/tY0WRXCjjRLeZLK4EnAC4eVNM1mjOjg5Xf9+aZecC2jQu
-	62xXsGSJRgmApRAA==
+	bh=QETxACuLG117Ppkadvcn1KtVg/Yq0288OgnzhzA/ULk=;
+	b=r9L0JRZVYTtkWaU2SguMwkS3pjaoQE7s9J2buuvT1wa6t0fpg65RTcSNZfXNjZynX0yed+
+	2ppvNK3qFb4vS+CA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AAA8F13582;
-	Fri,  1 Sep 2023 11:05:59 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8E69913A12;
+	Fri,  1 Sep 2023 14:27:02 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id ODsjJ5fF8WREdQAAMHmgww
-	(envelope-from <dkirjanov@suse.de>); Fri, 01 Sep 2023 11:05:59 +0000
-Message-ID: <7b8be7bd-baf2-15c0-2a0c-ddf64839a451@suse.de>
-Date: Fri, 1 Sep 2023 14:05:59 +0300
+	id WKLZIbb08WQGYAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Fri, 01 Sep 2023 14:27:02 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	arnd@arndb.de,
+	deller@gmx.de
+Subject: [PATCH 1/4] arch/powerpc: Remove trailing whitespaces
+Date: Fri,  1 Sep 2023 16:16:33 +0200
+Message-ID: <20230901142659.31787-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230901142659.31787-1-tzimmermann@suse.de>
+References: <20230901142659.31787-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH v3] fsl_ucc_hdlc: process the result of hold_open()
-Content-Language: en-US
-To: =?UTF-8?B?0JDQu9C10LrRgdCw0L3QtNGA0LAg0JTRjtC/0LjQvdCw?=
- <adiupina@astralinux.ru>, Jakub Kicinski <kuba@kernel.org>,
- Zhao Qiang <qiang.zhao@nxp.com>
-References: <896acfac-fadb-016b-20ff-a06e18edb4d9@csgroup.eu>
- <20230828121235.13953-1-adiupina@astralinux.ru>
- <20230828123849.69466f0a@kernel.org>
- <977826f0-3289-53bd-b3f6-90977a4e0ca0@astralinux.ru>
-From: Denis Kirjanov <dkirjanov@suse.de>
-In-Reply-To: <977826f0-3289-53bd-b3f6-90977a4e0ca0@astralinux.ru>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 01 Sep 2023 21:54:06 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,30 +83,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lvc-project@linuxtesting.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, Thomas Zimmermann <tzimmermann@suse.de>, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Fix coding style. No functional changes.
 
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ arch/powerpc/include/asm/machdep.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-On 9/1/23 13:48, Александра Дюпина wrote:
-> Thanks for the review!
-> 
-> 28.08.2023 22:38, Jakub Kicinski пишет:
->> Don't you have to undo all the things done prior to hdlc_open()?
-> Yes, it looks like I really need to undo everything that was done before hdlc_open().
-> But the question arose - would it be enough to call the uhdlc_close(dev) function?
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 4f6e7d7ee388..933465ed4c43 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -10,7 +10,7 @@
+ #include <linux/export.h>
+ 
+ struct pt_regs;
+-struct pci_bus;	
++struct pci_bus;
+ struct device_node;
+ struct iommu_table;
+ struct rtc_time;
+@@ -78,8 +78,8 @@ struct machdep_calls {
+ 	unsigned char 	(*nvram_read_val)(int addr);
+ 	void		(*nvram_write_val)(int addr, unsigned char val);
+ 	ssize_t		(*nvram_write)(char *buf, size_t count, loff_t *index);
+-	ssize_t		(*nvram_read)(char *buf, size_t count, loff_t *index);	
+-	ssize_t		(*nvram_size)(void);		
++	ssize_t		(*nvram_read)(char *buf, size_t count, loff_t *index);
++	ssize_t		(*nvram_size)(void);
+ 	void		(*nvram_sync)(void);
+ 
+ 	/* Exception handlers */
+@@ -102,9 +102,9 @@ struct machdep_calls {
+ 	 */
+ 	long	 	(*feature_call)(unsigned int feature, ...);
+ 
+-	/* Get legacy PCI/IDE interrupt mapping */ 
++	/* Get legacy PCI/IDE interrupt mapping */
+ 	int		(*pci_get_legacy_ide_irq)(struct pci_dev *dev, int channel);
+-	
++
+ 	/* Get access protection for /dev/mem */
+ 	pgprot_t	(*phys_mem_access_prot)(struct file *file,
+ 						unsigned long pfn,
+-- 
+2.41.0
 
-looks like it is.
-
-> In addition, it seems to me and my colleagues that a call to hdlc_close(dev) should be added to the uhdlc_close() function, similar to the 
-
-yes, take a look at the comment for hdlc_close()
-
-following functions:
-> 1. drivers/net/wan/n2.c (n2_close function)
-> 2. drivers/net/wan/pc300too.c (pc300_close function)
-> 3. drivers/net/wan/pci200syn.c (pci200_close function)
-> 4. drivers/net/wan/wanxl.c (wanxl_close function)
-> Tell me, please, are we wrong?
-> 
