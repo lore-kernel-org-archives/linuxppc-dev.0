@@ -4,78 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CA43EB8FDE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 14:46:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E349AC83F2D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 14:49:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Hz0oTOjf;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=g54dXVU8;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=olI2MpDR;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RglYZ5PLyz3c9n
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 00:46:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rglct24Y6z3c4r
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 00:49:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Hz0oTOjf;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=g54dXVU8;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=olI2MpDR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RglXY0g6pz2yVw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2023 00:45:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694011517; x=1725547517;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=HKIKo8gJxS6xNqAxkMxzWOKQ5+W7pcHDwu58cyKSvBQ=;
-  b=Hz0oTOjfhcmUQcasiN4RHXWA8vpEEyoPDt8ct4YUwWgaWeECfZ5wqCxK
-   jdu/EX7YMwgAU+n9oHAs4GLU2Oe+yncgVTBnrUUg86QC6WkEOM5+JJkdD
-   XARTp6eUYyh/S1w7n6oEFcRMKa0IsqAWi3fUmx5+oEoJDxLCqSwHf0ATi
-   0lWAa/XqNTTst62dVTm7PxYT/VMPWdHawGe00pyOCPZCQN3tKVQMKlKbB
-   +3PcevGxV5R37in8WvZLu6DteI+0ttifFPhXTZXz79YwMMmt52DoCWZRT
-   LCPmE0QAQkla6Rmfd7/IOsbZ6cCOAxEdjJhU8q80xJ9B5Bu+QPfpAkjcq
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10825"; a="357393656"
-X-IronPort-AV: E=Sophos;i="6.02,232,1688454000"; 
-   d="scan'208";a="357393656"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2023 07:45:10 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10825"; a="770777884"
-X-IronPort-AV: E=Sophos;i="6.02,232,1688454000"; 
-   d="scan'208";a="770777884"
-Received: from lmgabald-mobl2.amr.corp.intel.com (HELO [10.212.242.149]) ([10.212.242.149])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2023 07:45:09 -0700
-Message-ID: <d0d30ad4-7837-b0c4-39f4-3e317e35a41b@intel.com>
-Date: Wed, 6 Sep 2023 07:45:09 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rglbs5rWqz2yD6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2023 00:48:09 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 8DC601F74C;
+	Wed,  6 Sep 2023 14:48:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1694011684; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8aaAz+vsYOeQGMWGQXGbY9byeUAKGEp9znJt6iNq3jk=;
+	b=g54dXVU8m1XrISNH1YiTnCuCt0Q4neVzNm45tvEY+WEzvLbBKcPGTs5+fwnu2nLcHxoOkG
+	1cBT/zBu6VmJAtLGOcw606wawDgYGxzk1yxnG2y2YGF/QA493rBG+k7RR2tpyk3jDYGUEv
+	AR7gyg51RPGj05qJp6WaeFG50JFy2mg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1694011684;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8aaAz+vsYOeQGMWGQXGbY9byeUAKGEp9znJt6iNq3jk=;
+	b=olI2MpDR5RuTmdxDI7fbtJOfMUEuQ6K1m/LI4CG+tbfVD0OoDiT/CWlGrHIdOysFq2tUQJ
+	fbFCcX5ltaf2MVBA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4D22B1346C;
+	Wed,  6 Sep 2023 14:48:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id 0HrpESSR+GSNSgAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Wed, 06 Sep 2023 14:48:04 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	arnd@arndb.de,
+	deller@gmx.de
+Subject: [PATCH v2 4/5] arch/powerpc: Remove file parameter from phys_mem_access_prot code
+Date: Wed,  6 Sep 2023 16:35:05 +0200
+Message-ID: <20230906144801.25297-5-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230906144801.25297-1-tzimmermann@suse.de>
+References: <20230906144801.25297-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH 3/8] arch/x86: Remove sentinel elem from ctl_table arrays
-Content-Language: en-US
-To: j.granados@samsung.com, Luis Chamberlain <mcgrof@kernel.org>,
- willy@infradead.org, josh@joshtriplett.org, Kees Cook
- <keescook@chromium.org>, Iurii Zaikin <yzaikin@google.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, Guo Ren <guoren@kernel.org>
-References: <20230906-jag-sysctl_remove_empty_elem_arch-v1-0-3935d4854248@samsung.com>
- <20230906-jag-sysctl_remove_empty_elem_arch-v1-3-3935d4854248@samsung.com>
-From: Dave Hansen <dave.hansen@intel.com>
-In-Reply-To: <20230906-jag-sysctl_remove_empty_elem_arch-v1-3-3935d4854248@samsung.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,30 +83,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, Thomas Zimmermann <tzimmermann@suse.de>, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/6/23 03:03, Joel Granados via B4 Relay wrote:
-> This commit comes at the tail end of a greater effort to remove the
-> empty elements at the end of the ctl_table arrays (sentinels) which
-> will reduce the overall build time size of the kernel and run time
-> memory bloat by ~64 bytes per sentinel (further information Link :
-> https://lore.kernel.org/all/ZO5Yx5JFogGi%2FcBo@bombadil.infradead.org/)
-> 
-> Remove sentinel element from sld_sysctl and itmt_kern_table.
+Remove 'file' parameter from struct machdep_calls.phys_mem_access_prot
+and its implementation in pci_phys_mem_access_prot(). The file is not
+used on PowerPC. By removing it, a later patch can simplify fbdev's
+mmap code, which uses phys_mem_access_prot() on PowerPC.
 
-There's a *LOT* of content to read for a reviewer to figure out what's
-going on here between all the links.  I would have appreciated one more
-sentence here, maybe:
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ arch/powerpc/include/asm/book3s/pgtable.h | 10 ++++++++--
+ arch/powerpc/include/asm/machdep.h        |  3 +--
+ arch/powerpc/include/asm/nohash/pgtable.h | 10 ++++++++--
+ arch/powerpc/include/asm/pci.h            |  4 +---
+ arch/powerpc/kernel/pci-common.c          |  3 +--
+ arch/powerpc/mm/mem.c                     |  8 ++++----
+ 6 files changed, 23 insertions(+), 15 deletions(-)
 
-	This is now safe because the sysctl registration code
-	(register_sysctl()) implicitly uses ARRAY_SIZE() in addition
-	to checking for a sentinel.
+diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
+index d18b748ea3ae..84e36a572641 100644
+--- a/arch/powerpc/include/asm/book3s/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/pgtable.h
+@@ -20,9 +20,15 @@ extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 				 pte_t *ptep, pte_t entry, int dirty);
+ 
++extern pgprot_t __phys_mem_access_prot(unsigned long pfn, unsigned long size,
++				       pgprot_t vma_prot);
++
+ struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
++static inline pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++					    unsigned long size, pgprot_t vma_prot)
++{
++	return __phys_mem_access_prot(pfn, size, vma_prot);
++}
+ #define __HAVE_PHYS_MEM_ACCESS_PROT
+ 
+ void __update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t *ptep);
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 933465ed4c43..d31a5ec1550d 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -106,8 +106,7 @@ struct machdep_calls {
+ 	int		(*pci_get_legacy_ide_irq)(struct pci_dev *dev, int channel);
+ 
+ 	/* Get access protection for /dev/mem */
+-	pgprot_t	(*phys_mem_access_prot)(struct file *file,
+-						unsigned long pfn,
++	pgprot_t	(*phys_mem_access_prot)(unsigned long pfn,
+ 						unsigned long size,
+ 						pgprot_t vma_prot);
+ 
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index a6caaaab6f92..90366b0b3ad9 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -246,9 +246,15 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
+ 
+ #define pgprot_writecombine pgprot_noncached_wc
+ 
++extern pgprot_t __phys_mem_access_prot(unsigned long pfn, unsigned long size,
++				       pgprot_t vma_prot);
++
+ struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
++static inline pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++					    unsigned long size, pgprot_t vma_prot)
++{
++	return __phys_mem_access_prot(pfn, size, vma_prot);
++}
+ #define __HAVE_PHYS_MEM_ACCESS_PROT
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 289f1ec85bc5..34ed4d51c546 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -104,9 +104,7 @@ extern void of_scan_pci_bridge(struct pci_dev *dev);
+ extern void of_scan_bus(struct device_node *node, struct pci_bus *bus);
+ extern void of_rescan_bus(struct device_node *node, struct pci_bus *bus);
+ 
+-struct file;
+-extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
+-					 unsigned long pfn,
++extern pgprot_t	pci_phys_mem_access_prot(unsigned long pfn,
+ 					 unsigned long size,
+ 					 pgprot_t prot);
+ 
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index e88d7c9feeec..73f12a17e572 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -521,8 +521,7 @@ int pci_iobar_pfn(struct pci_dev *pdev, int bar, struct vm_area_struct *vma)
+  * PCI device, it tries to find the PCI device first and calls the
+  * above routine
+  */
+-pgprot_t pci_phys_mem_access_prot(struct file *file,
+-				  unsigned long pfn,
++pgprot_t pci_phys_mem_access_prot(unsigned long pfn,
+ 				  unsigned long size,
+ 				  pgprot_t prot)
+ {
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 8b121df7b08f..03aadf657d15 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -34,18 +34,18 @@ unsigned long long memory_limit;
+ unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
+ EXPORT_SYMBOL(empty_zero_page);
+ 
+-pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-			      unsigned long size, pgprot_t vma_prot)
++pgprot_t __phys_mem_access_prot(unsigned long pfn, unsigned long size,
++				pgprot_t vma_prot)
+ {
+ 	if (ppc_md.phys_mem_access_prot)
+-		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
++		return ppc_md.phys_mem_access_prot(pfn, size, vma_prot);
+ 
+ 	if (!page_is_ram(pfn))
+ 		vma_prot = pgprot_noncached(vma_prot);
+ 
+ 	return vma_prot;
+ }
+-EXPORT_SYMBOL(phys_mem_access_prot);
++EXPORT_SYMBOL(__phys_mem_access_prot);
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ static DEFINE_MUTEX(linear_mapping_mutex);
+-- 
+2.42.0
 
-That needs to be more prominent _somewhere_.  Maybe here, or maybe in
-the cover letter, but _somewhere_.
-
-That said, feel free to add this to the two x86 patches:
-
-Acked-by: Dave Hansen <dave.hansen@linux.intel.com> # for x86
