@@ -4,50 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CB33EB8FAD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 03:39:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD9D3EB8FA5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 08:02:06 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Pb4lNhvG;
+	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=8aX8Ngai;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RgSm06KS9z3cGC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 13:39:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tinylab.org (client-ip=43.154.54.12; helo=bg4.exmail.qq.com; envelope-from=tanyuan@tinylab.org; receiver=lists.ozlabs.org)
-Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.154.54.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RgZbJ54R6z3cCb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 18:02:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Pb4lNhvG;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=8aX8Ngai;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=softfail (domain owner discourages use of this host) smtp.mailfrom=suse.cz (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=vbabka@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RfNXZ6RK9z2xpw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2023 19:25:22 +1000 (AEST)
-X-QQ-mid: bizesmtpipv602t1693819483twsc
-Received: from [IPV6:2001:da8:c000:3005:b045:d ( [255.215.175.9])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 04 Sep 2023 17:24:40 +0800 (CST)
-X-QQ-SSF: 00200000000000907000000A0000000
-X-QQ-FEAT: 7Lv6dviieSQfCZLBi/a43AThgeMmumc/FRF+5kcPPikz9PbH07YcxZjiLC6zq
-	SHbLoRbO5a1oMvOnfOf+VtMJdWuaPUX39IAqpMHfLDmkAldg7RJh0YKWCHqK1k5vKKlpDgB
-	Y/zvjHgn3hs/o1zkUjUgncAYcHUeiFYZcofsGPZNROAbqNGM52+dm82oBN7oBUSNkeQs3qh
-	1EuNJ0S4TjWVdLCu9DQftvlLVHlK7/yeQ1tV0f9giopq9Ylj1hg+xMmTWeBAagWnOL7JsRp
-	e0Q0Cq2bJl3RueMwwZ7pgD1oA2WvR2NfNyBvNJVGSguXe/nkU0XMss2mDi0qHV6ViOUfzHN
-	YYWKbvf5OmR6cJKPwmqzdbuCnoZIqX5V09jPNnHT+Qx+cAewVI=
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 1055148611417415568
-Message-ID: <55C9BDEDAB4E0B76+838dbd4f-425d-4f2e-94ee-f2bc3092ae13@tinylab.org>
-Date: Mon, 4 Sep 2023 17:24:41 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RgZZL1Blkz2xpm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2023 18:01:14 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 9201222407;
+	Wed,  6 Sep 2023 08:00:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1693987258; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Th6i3Ci6XMV5czHwHHRQpy4WXZpYK1vSc4mKPzvASOU=;
+	b=Pb4lNhvGotAuMduqcxpX1veGfBW2fSsxbs9Pu7MCDvZuKYqbhIBY10E+hTUliKOLBUS8xT
+	IScFwkZq92rxWtvku6iqGuFuVgR5lDAVbkoOihu7XH0KTBnfaYqyy4A7lldnkADZSSK6sy
+	waSNnkdND+zVot6yoT1DyeMpgGyp2zc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1693987258;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Th6i3Ci6XMV5czHwHHRQpy4WXZpYK1vSc4mKPzvASOU=;
+	b=8aX8Ngai6ZtyQlD2914oRoaCD9456/pp3O+p6YtiEHc05I1uh8Iu/T2mBUnSMDxI5k/fIo
+	p/VLTw2WkzUAHvBQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8ACD11346C;
+	Wed,  6 Sep 2023 08:00:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id 2QG0ILkx+GRiVwAAMHmgww
+	(envelope-from <vbabka@suse.cz>); Wed, 06 Sep 2023 08:00:57 +0000
+Message-ID: <bcefb739-b45c-8349-8010-ac137ab61c29@suse.cz>
+Date: Wed, 6 Sep 2023 10:00:56 +0200
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] kconfig: add dependencies of POWER_RESET for mips
- malta
-Content-Language: en-GB
-To: =?UTF-8?Q?Philippe_Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
- mpe@ellerman.id.au, christophe.leroy@csgroup.eu, tglx@linutronix.de,
- mingo@redhat.com, tsbogend@alpha.franken.de, hdegoede@redhat.com
-References: <cover.1693535514.git.tanyuan@tinylab.org>
- <1c17f017d6c837ef887d08bd2f85102df3fbc17c.1693535514.git.tanyuan@tinylab.org>
- <915a9e2d-36ea-4a74-7b1b-9688f215b6f1@linaro.org>
-From: Yuan Tan <tanyuan@tinylab.org>
-In-Reply-To: <915a9e2d-36ea-4a74-7b1b-9688f215b6f1@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtpipv:tinylab.org:qybglogicsvrgz:qybglogicsvrgz5a-1
-X-Mailman-Approved-At: Wed, 06 Sep 2023 13:38:46 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH gmem FIXUP] mm, compaction: make testing
+ mapping_unmovable() safe
+To: Sean Christopherson <seanjc@google.com>
+References: <20230901082025.20548-2-vbabka@suse.cz>
+ <ZPfAL0D95AwXD9tg@google.com>
+Content-Language: en-US
+From: Vlastimil Babka <vbabka@suse.cz>
+In-Reply-To: <ZPfAL0D95AwXD9tg@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,49 +84,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, linux@weissschuh.net, falcon@tinylab.org, linuxppc-dev@lists.ozlabs.org, w@1wt.eu
+Cc: kvm@vger.kernel.org, david@redhat.com, yu.c.zhang@linux.intel.com, linux-mips@vger.kernel.org, linux-mm@kvack.org, pbonzini@redhat.com, chao.p.peng@linux.intel.com, linux-riscv@lists.infradead.org, isaku.yamahata@gmail.com, paul@paul-moore.com, anup@brainfault.org, chenhuacai@kernel.org, jmorris@namei.org, willy@infradead.org, wei.w.wang@intel.com, tabba@google.com, jarkko@kernel.org, serge@hallyn.com, mail@maciej.szmigiero.name, aou@eecs.berkeley.edu, michael.roth@amd.com, ackerleytng@google.com, paul.walmsley@sifive.com, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, qperret@google.com, linux-kernel@vger.kernel.org, oliver.upton@linux.dev, linux-security-module@vger.kernel.org, palmer@dabbelt.com, kvm-riscv@lists.infradead.org, maz@kernel.org, linux-fsdevel@vger.kernel.org, liam.merwick@oracle.com, akpm@linux-foundation.org, vannapurve@google.com, linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 9/6/23 01:56, Sean Christopherson wrote:
+> On Fri, Sep 01, 2023, Vlastimil Babka wrote:
+>> As Kirill pointed out, mapping can be removed under us due to
+>> truncation. Test it under folio lock as already done for the async
+>> compaction / dirty folio case. To prevent locking every folio with
+>> mapping to do the test, do it only for unevictable folios, as we can
+>> expect the unmovable mapping folios are also unevictable - it is the
+>> case for guest memfd folios.
+> 
+> Rather than expect/assume that unmovable mappings are always unevictable, how about
+> requiring that?  E.g. either through a VM_WARN_ON in mapping_set_unmovable(), or by
+> simply having that helper forcefully set AS_UNEVICTABLE as well.
 
-On 9/4/2023 3:40 PM, Philippe Mathieu-Daudé wrote:
-> Hi,
->
-> On 1/9/23 04:42, Yuan Tan wrote:
->> MIPS Malta's power off depends on PCI, PCI_QUIRKS, and
->> POWER_RESET_PIIX4_POWEROFF to work. Enable them when POWER_RESET is set
->> for convenience.
->>
->> Suggested-by: Zhangjin Wu <falcon@tinylab.org>
->> Signed-off-by: Yuan Tan <tanyuan@tinylab.org>
->> ---
->>   arch/mips/Kconfig | 3 +++
->>   1 file changed, 3 insertions(+)
->>
->> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
->> index bc8421859006..13bacbd05125 100644
->> --- a/arch/mips/Kconfig
->> +++ b/arch/mips/Kconfig
->> @@ -547,6 +547,9 @@ config MIPS_MALTA
->>       select MIPS_L1_CACHE_SHIFT_6
->>       select MIPS_MSC
->>       select PCI_GT64XXX_PCI0
->> +    select PCI if POWER_RESET
->> +    select PCI_QUIRKS if POWER_RESET
->> +    select POWER_RESET_PIIX4_POWEROFF if POWER_RESET
->>       select SMP_UP if SMP
->>       select SWAP_IO_SPACE
->>       select SYS_HAS_CPU_MIPS32_R1
->
-> Shouldn't we also update the _defconfig files?
->
-Sorry, in my last email, I forgot to reply to all. So I am now resending 
-this email.
-
-In malta_defconfig, PCI and POWER_RESET_PIIX4_POWEROFF have already been 
-set and PCI_QUIRKS is also selected by FSL_PCI [=n].
-
-So shutdown and reboot with malta_defconfig is working and there is no 
-need to update the malta_defconfig 🙂
-
+Yeah I guess we could make the helper do that, with a comment, as gmem is
+the only user right now. And if in the future somebody has case where it
+makes sense to have unmovable without unevictable, we can discuss what to do
+about it then.
