@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8CF5EB8FAD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 09:31:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F2C6EB8FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 12:10:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=t1ywYpjT;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y2ltyVw5;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=lrw3bSBC;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KXOEyvnW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RgcZq4F4Xz3c8c
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 19:31:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rgh632g3Bz2ytJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Sep 2023 22:10:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=t1ywYpjT;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y2ltyVw5;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=lrw3bSBC;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KXOEyvnW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RgcYs3N0cz2xm6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2023 19:30:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rgh513PYSz2yQL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2023 22:09:41 +1000 (AEST)
 Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-	by smtp-out2.suse.de (Postfix) with ESMTP id 2B8C720292;
-	Wed,  6 Sep 2023 09:30:54 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTP id 7C21822425;
+	Wed,  6 Sep 2023 12:09:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1693992654; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	t=1694002177; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XjnQopGq/uLFLC5cC5K58nxffVQJcRXw+uVRmEAntTc=;
-	b=t1ywYpjTXP5YD617quxeXYS6qPb8fIP9CKa7m0ngnlx/f1XCgESkTM3H47JG7MS6cmS0Il
-	+wuvIVKqAqxS2t8VNQbtpDXAFrupcLrY1wPMTFzunWB29N74swOrSCH86qZkaqu+FGpqsk
-	ECOJ2OJZLmjGv0Ua+qgYXGmuZRPOawI=
+	bh=POC+WMTqqjATWBgKEWTz6msplurqu/mxnJy1Ka2dUjY=;
+	b=lrw3bSBCTbfDALXwuQ5X3grIn0Oo9uZrP685QuhcBB95Vr+hQKTSH9P4u/pgViTLomj1Ey
+	lqJWjzUVE4I20zMDNdxGdwmK7StgP1lEteZRU6drvii4rg7Sp+b6kngiqWjH6gHAui+fQV
+	X+rmtXwYZHQfeUHu3Lmv/LKoRt6WUOk=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1693992654;
+	s=susede2_ed25519; t=1694002177;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XjnQopGq/uLFLC5cC5K58nxffVQJcRXw+uVRmEAntTc=;
-	b=y2ltyVw5f0oYhqxj6NloN3roDOsXZzXyFXlB/Ak160k0U3fX4QHwtWr4TZ1zprcOHPxGEh
-	IsJE6jBNUJrDB0Aw==
+	bh=POC+WMTqqjATWBgKEWTz6msplurqu/mxnJy1Ka2dUjY=;
+	b=KXOEyvnWFtOqA0knbyYFLjdfIUvKlzHJ2fTaIqDaF8MFCU6S5KqvvvagKr3hNgZ9XhyZKt
+	92fTQS1MaSSGdkBw==
 Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by relay2.suse.de (Postfix) with ESMTPS id 10D8C2C143;
-	Wed,  6 Sep 2023 09:30:54 +0000 (UTC)
-Date: Wed, 6 Sep 2023 11:30:52 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: nathanl@linux.ibm.com
-Subject: Re: [PATCH RFC 0/2] powerpc/pseries: new character devices for RTAS
- functions
-Message-ID: <20230906093052.GY8826@kitsune.suse.cz>
+	by relay2.suse.de (Postfix) with ESMTP id 121942C142;
+	Wed,  6 Sep 2023 12:09:36 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>
+Subject: [PATCH RFC] powerpc/rtas: Make it possible to disable sys_rtas
+Date: Wed,  6 Sep 2023 14:08:46 +0200
+Message-ID: <20230906120855.28331-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230822-papr-sys_rtas-vs-lockdown-v1-0-932623cf3c7b@linux.ibm.com>
 References: <20230822-papr-sys_rtas-vs-lockdown-v1-0-932623cf3c7b@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230822-papr-sys_rtas-vs-lockdown-v1-0-932623cf3c7b@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,73 +71,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gcwilson@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, tyreld@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, tyreld@linux.ibm.com, gcwilson@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Additional patch suggestion to go with the rtas devices:
 
-On Tue, Aug 22, 2023 at 04:33:38PM -0500, Nathan Lynch via B4 Relay wrote:
-> This is a proposal for adding chardev-based access to a select subset
-> of RTAS functions on the pseries platform.
-> 
-> The problem: important platform features are enabled on Linux VMs
-> through the powerpc-specific rtas() syscall in combination with
-> writeable mappings of /dev/mem. In typical usage, this is encapsulated
-> behind APIs provided by the librtas library. This paradigm is
-> incompatible with lockdown, which prohibits /dev/mem access.
-> 
-> The solution I'm working on is to add a small pseries-specific
-> "driver" for each functional area, exposing the relevant features to
-> user space in ways that are compatible with lockdown. In most of these
-> areas, I believe it's possible to change librtas to prefer the new
-> chardev interfaces without disrupting existing users.
+-----------------------------------------------------------------------
 
-thanks for the driver.
+With most important rtas functions available through different
+interfaces the sys_rtas interface can be disabled completely.
 
-> 
-> I've broken down the affected functions into the following areas and
-> priorities:
-> 
-> High priority:
-> * VPD retrieval.
-> * System parameters: retrieval and update.
-> 
-> Medium priority:
-> * Platform dump retrieval.
-> * Light path diagnostics (get/set-dynamic-indicator,
->   get-dynamic-sensor-state, get-indices).
-> 
-> Low priority (may never happen):
-> * Error injection: would have to be carefully restricted.
-> * Physical attestation: no known users.
-> * LPAR perftools: no known users.
-> 
-> Out of scope:
-> * DLPAR (configure-connector et al): involves device tree updates
->   which must be handled entirely in-kernel for lockdown. This is the
->   object of a separate effort.
-> 
-> See https://github.com/ibm-power-utilities/librtas/issues/29 for more
-> details.
-> 
-> In this RFC, I've included a single driver for VPD retrieval. Clients
-> use ioctl() to obtain a file descriptor-based handle for the VPD they
-> want. I think this could be a good model for the other areas too, but
-> I'd like to get opinions on it.
+Do not remove it for now to make it possible to run older versions of
+userspace tools that don't support other interfaces.
 
-The call has parameters so it cannot be reasonably done with sysfs or
-similar.
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/kernel/rtas.c     | 2 ++
+ arch/powerpc/platforms/Kconfig | 9 +++++++++
+ 2 files changed, 11 insertions(+)
 
-The paramater is string which is unweildy with ioctl, and netlink has
-helpers for getting strings into and out of messages without garbage
-pointers nad crashes. However, netlink does not have permissions, and
-setting permissions for the different platform features available
-through rtas is desirable.
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index eddc031c4b95..5854a8bb5731 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -1684,6 +1684,7 @@ noinstr struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log
+ 	return NULL;
+ }
+ 
++#ifdef PPC_RTAS_SYSCALL
+ /*
+  * The sys_rtas syscall, as originally designed, allows root to pass
+  * arbitrary physical addresses to RTAS calls. A number of RTAS calls
+@@ -1893,6 +1894,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 
+ 	return 0;
+ }
++#endif
+ 
+ static void __init rtas_function_table_init(void)
+ {
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 1fd253f92a77..9563e38188d5 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -150,6 +150,15 @@ config RTAS_FLASH
+ 	tristate "Firmware flash interface"
+ 	depends on PPC64 && RTAS_PROC
+ 
++config RTAS_SYSCALL
++	bool "Legacy syscall interface to RTAS"
++	depends on PPC_RTAS
++	default y
++	help
++	  Enables support for the legacy sys_rtas interface. Calls that need to
++	  pass data buffers use /dev/mem directly which is not compatible with
++	  lockdown. For now some tools still need this interface to work.
++
+ config MMIO_NVRAM
+ 	bool
+ 
+-- 
+2.41.0
 
-Then this is as good as it gets with the kernel facilities Linux
-provides.
-
-Thanks
-
-Michal
