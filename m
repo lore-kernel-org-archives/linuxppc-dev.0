@@ -4,84 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65153EC8743
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 16:47:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E38F7EC8747
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 16:53:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LG596ImA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qHX4mCbJ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RhQC75NJ4z3c4t
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 02:47:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RhQLH3C62z3c2x
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 02:53:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LG596ImA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qHX4mCbJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RhQ9B2W9Hz3by8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2023 02:45:49 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 387Gcepl017838;
-	Thu, 7 Sep 2023 16:45:42 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RhQKL1zBPz3bxS
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2023 02:52:53 +1000 (AEST)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 387Ge3ak032728;
+	Thu, 7 Sep 2023 16:52:48 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=8NCEenIz4r2UKrEQ70zyStFNCacpwhopcw91ojoVq5A=;
- b=LG596ImA8AexAv/r0RWMwxJW8BXwFBCm+6ohmKaANLnommpuwqcg76royDnXnFDjyDVb
- bgnbu53HGlUbmgD+pwFf6D1api1bueoAOf3VHKdM5dY+2BCnD2xoPGK8AySqoLDtimA7
- qIhSyZGKmb/PVxd5/Fv4uRlWgiR4jMaNIm5KRxGnHjJUKujXc5zLe+Gdhbk3bbQKpiPO
- Lps41ocDmxv3zqX19zxTInvtMgJBn6JPEmTZy/m7rEpJpV5bk3XZV5xfacbrj79pkM5X
- QwgSujZM6pKw5rBMdvl/wk0hDmWB+q2yxMVHdd0nze3ZVfm3yomQ81z0jx0CAw3ebDsG 3w== 
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=MwW+kQNNDgImek+nfpa4eK6m7WTkbvAxkwhoaDFUxr4=;
+ b=qHX4mCbJJ650FoWbdzaPE98gWKuWX73UmZpBa4sorKR7ocn8q/OBnv6nc2cvoUG3+rMj
+ 31coyhpsOg8TXpriuIDgYkZz57bJbsYvNkpmwcY5BGnbsr5Ef0i6FTk+1EGVzpv9sP4V
+ rqj72IUBkNzrAl65RpOG4U9Of4qp4teLDJefl0zsartw6+NYwAfDiDk0xR/V1GZST7BU
+ LFOk5+u4V2ILYk1gTkPhZuwSMLpcEt3/oq1pUpjhhK4vro+fFOQNgVU7Laa7zNitqn3+
+ 90qAgx4R+Bgi8f3q/7tyRKM+nnywIMX7+Must/JtOE7VOHs6eS3BoaI1wlwzyITuslpO 1A== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sygy8ad35-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3syhdd1vha-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 16:45:41 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 387GdJi6019557;
-	Thu, 7 Sep 2023 16:45:41 GMT
+	Thu, 07 Sep 2023 16:52:47 +0000
+Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 387GgK9U004347;
+	Thu, 7 Sep 2023 16:52:47 GMT
 Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sygy8ad2d-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3syhdd1vgu-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 16:45:41 +0000
+	Thu, 07 Sep 2023 16:52:47 +0000
 Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 387F0CDv001667;
-	Thu, 7 Sep 2023 16:45:39 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3svfct5hfa-1
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 387F0CHg001667;
+	Thu, 7 Sep 2023 16:52:46 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3svfct5k77-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 16:45:39 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 387GjakZ24445450
+	Thu, 07 Sep 2023 16:52:46 +0000
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 387Gqjph60162420
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 7 Sep 2023 16:45:36 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6A4AF20040;
-	Thu,  7 Sep 2023 16:45:36 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E864D2004E;
-	Thu,  7 Sep 2023 16:45:33 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.9.102])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  7 Sep 2023 16:45:33 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        irogers@google.com, namhyung@kernel.org
-Subject: [V2 1/2] tools/perf: Add text_end to "struct dso" to save .text section size
-Date: Thu,  7 Sep 2023 22:15:28 +0530
-Message-Id: <20230907164529.36222-1-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
+	Thu, 7 Sep 2023 16:52:45 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EB2C058065;
+	Thu,  7 Sep 2023 16:52:44 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D5ABE58052;
+	Thu,  7 Sep 2023 16:52:44 +0000 (GMT)
+Received: from localhost (unknown [9.41.178.242])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  7 Sep 2023 16:52:44 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
+Subject: Re: [PATCH RFC] powerpc/rtas: Make it possible to disable sys_rtas
+In-Reply-To: <20230907160134.GZ8826@kitsune.suse.cz>
+References: <20230822-papr-sys_rtas-vs-lockdown-v1-0-932623cf3c7b@linux.ibm.com>
+ <20230906120855.28331-1-msuchanek@suse.de>
+ <87bkefw0ws.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+ <20230907160134.GZ8826@kitsune.suse.cz>
+Date: Thu, 07 Sep 2023 11:52:44 -0500
+Message-ID: <878r9ivsbn.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: uZVYabNP_ZL7oVYMq1PJ2vLFGISBDMfw
-X-Proofpoint-ORIG-GUID: e9s7VFdQOELmA_fh51avVCK5s2rQ7ZRr
+X-Proofpoint-ORIG-GUID: 42skg5C0a2oHAAtJ8oozye09ChG1OzdC
+X-Proofpoint-GUID: Psyvk6vp4DbDZRtmDuc8SuV3700ifWAY
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-09-07_08,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- mlxlogscore=999 phishscore=0 mlxscore=0 lowpriorityscore=0 suspectscore=0
- spamscore=0 adultscore=0 malwarescore=0 bulkscore=0 priorityscore=1501
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
+ spamscore=0 impostorscore=0 malwarescore=0 suspectscore=0 adultscore=0
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 mlxlogscore=429
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2308100000 definitions=main-2309070147
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,114 +99,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, Disha Goel <disgoel@linux.ibm.com>, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: gcwilson@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, tyreld@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update "struct dso" to include new member "text_end".
-This new field will represent the offset for end of text
-section for a dso. For elf, this value is derived as:
-sh_size (Size of section in byes) + sh_offset (Section file
-offst) of the elf header for text.
+Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+> On Wed, Sep 06, 2023 at 02:34:59PM -0500, Nathan Lynch wrote:
+>> Michal Suchanek <msuchanek@suse.de> writes:
+>>=20
+>> > Additional patch suggestion to go with the rtas devices:
+>> >
+>> > -----------------------------------------------------------------------
+>> >
+>> > With most important rtas functions available through different
+>> > interfaces the sys_rtas interface can be disabled completely.
+>> >
+>> > Do not remove it for now to make it possible to run older versions of
+>> > userspace tools that don't support other interfaces.
+>>=20
+>> Thanks. I hope making sys_rtas on/off-configurable will make sense
+>> eventually, and I expect this series to get us closer to that. But to me
+>> it seems too early and too coarse. A kernel built with RTAS_SYSCALL=3Dn =
+is
+>> not something I'd want to support or run in production soon. It would
+>> break too many known use cases, and likely some unknown ones as well.
+>
+> There are about 3 known use cases that absolutely need access by other
+> means than sys_rtas to work with lockdown, and about other 3 that would
+> work either way.
 
-For bfd, this value is derived as:
-1. For PE file,
-section->size + ( section->vma - dso->text_offset)
-2. Other cases:
-section->filepos (file position) + section->size (size of
-section)
+How do you figure that? I count 11 librtas APIs that use work areas (and
+therefore /dev/mem) that are definitely broken under lockdown. Maybe a
+couple of them are unused.
 
-To resolve the address from a sample, perf looks at the
-DSO maps. In case of address from a kernel module, there
-were some address found to be not resolved. This was
-observed while running perf test for "Object code reading".
-Though the ip falls beteen the start address of the loaded
-module (perf map->start ) and end address ( perf map->end),
-it was unresolved.
+> That's not so staggering that it could not be implemented in the kernel
+> from the start.
+> How long it will take for the known userspace users to catch up is
+> anotehr questio but again it's something that can be addressed.
+>
+> Making it possible to turn off sys_rtas will make it easier to uncover
+> the not yet known cases.
 
-Example:
+This is also true of making the configuration more granular than on or
+off. You would be free to disallow all calls if desired.
 
-    Reading object code for memory address: 0xc008000007f0142c
-    File is: /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko
-    On file address is: 0x1114cc
-    Objdump command is: objdump -z -d --start-address=0x11142c --stop-address=0x1114ac /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko
-    objdump read too few bytes: 128
-    test child finished with -1
+> What people want to support depends a lot on what is converted, and also
+> the situation of the distribution in question. Fast-rollong
+> distributions may want only the new interface quite soon, and so may
+> distributions that are starting development of new release.
+>
+> All this makes sense only if there is a plan to discontinue sys_rtas
+> entirely. For the simple calls that don't need data buffers it's still
+> usable.
 
-Here, module is loaded at:
-    # cat /proc/modules | grep xfs
-    xfs 2228224 3 - Live 0xc008000007d00000
+I don't understand. How would it remain usable for the simple calls if
+it can be completely disabled?
 
-From objdump for xfs module, text section is:
-    text 0010f7bc  0000000000000000 0000000000000000 000000a0 2**4
+>> It could be more useful in the near term to construct a configurable
+>> list of RTAS functions that sys_rtas is allowed to expose.
+>
+> If we really need this level of datail I guess it is too early.
 
-Here the offset for 0xc008000007f0142c ie  0x112074 falls out
-.text section which is up to 0x10f7bc.
-
-In this case for module, the address 0xc008000007e11fd4 is pointing
-to stub instructions. This address range represents the module stubs
-which is allocated on module load and hence is not part of DSO offset.
-
-To identify such  address, which falls out of text
-section and within module end, added the new field "text_end" to
-"struct dso".
-
-Reported-by: Disha Goel <disgoel@linux.ibm.com>
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
----
-Changelog:
- v1 -> v2:
- Added text_end for bfd also by updating dso__load_bfd_symbols
- as suggested by Adrian.
-
- tools/perf/util/dso.h        | 1 +
- tools/perf/util/symbol-elf.c | 4 +++-
- tools/perf/util/symbol.c     | 2 ++
- 3 files changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
-index b41c9782c754..70fe0fe69bef 100644
---- a/tools/perf/util/dso.h
-+++ b/tools/perf/util/dso.h
-@@ -181,6 +181,7 @@ struct dso {
- 	u8		 rel;
- 	struct build_id	 bid;
- 	u64		 text_offset;
-+	u64		 text_end;
- 	const char	 *short_name;
- 	const char	 *long_name;
- 	u16		 long_name_len;
-diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
-index 95e99c332d7e..9e7eeaf616b8 100644
---- a/tools/perf/util/symbol-elf.c
-+++ b/tools/perf/util/symbol-elf.c
-@@ -1514,8 +1514,10 @@ dso__load_sym_internal(struct dso *dso, struct map *map, struct symsrc *syms_ss,
- 	}
- 
- 	if (elf_section_by_name(runtime_ss->elf, &runtime_ss->ehdr, &tshdr,
--				".text", NULL))
-+				".text", NULL)) {
- 		dso->text_offset = tshdr.sh_addr - tshdr.sh_offset;
-+		dso->text_end = tshdr.sh_offset + tshdr.sh_size;
-+	}
- 
- 	if (runtime_ss->opdsec)
- 		opddata = elf_rawdata(runtime_ss->opdsec, NULL);
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 3f36675b7c8f..f25e4e62cf25 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -1733,8 +1733,10 @@ int dso__load_bfd_symbols(struct dso *dso, const char *debugfile)
- 			/* PE symbols can only have 4 bytes, so use .text high bits */
- 			dso->text_offset = section->vma - (u32)section->vma;
- 			dso->text_offset += (u32)bfd_asymbol_value(symbols[i]);
-+			dso->text_end = (section->vma - dso->text_offset) + section->size;
- 		} else {
- 			dso->text_offset = section->vma - section->filepos;
-+			dso->text_end = section->filepos + section->size;
- 		}
- 	}
- 
--- 
-2.31.1
-
+I'm not sure we do, like I said it's just an idea at this point.
