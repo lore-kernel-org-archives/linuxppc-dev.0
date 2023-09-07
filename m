@@ -4,86 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE40EC874B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 17:19:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B216EC8742
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 17:20:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m3Bjkyye;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=zP/xuzxa;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rR29qpV+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RhQw21lcJz3dFg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 03:19:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RhQwz4rlyz3dD1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 03:20:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m3Bjkyye;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=zP/xuzxa;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rR29qpV+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RhQvr3mTYz3dF1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2023 03:19:20 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out2.suse.de (Postfix) with ESMTP id E52F71F7AB;
+	Thu,  7 Sep 2023 17:19:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1694107148; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6DTTBcxZxx2+0NlMD3L5gVt6o3uH4fSxQ8xU9A1Qtgs=;
+	b=zP/xuzxa8CG4UJUz6dq8raZGILPN0wqt2MPIyPcRzMi27wg+JMxkJ3G7UBJ59u2X4UHs9J
+	y7exoOAfmIXUMG+XE37+By+5gu1iwU/FQ9ObfPF4B8NH33M5Oi6EwU6WG3kj2mwx9vR3y8
+	PBE4ZJJXsk5cCpAYtOmWlxbTmduPWd4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1694107148;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6DTTBcxZxx2+0NlMD3L5gVt6o3uH4fSxQ8xU9A1Qtgs=;
+	b=rR29qpV+SE1U5AeH6ml7KVMTw+D4FbsE1ds90dHLWiOgNGm9Nmc4N36CX75XT4bOxyNfll
+	dzwcDq1nvNbZArDA==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RhQsY0tFPz3cLV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2023 03:17:20 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 387GcfHP032220;
-	Thu, 7 Sep 2023 17:17:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=5NNMF+fu6ffvmnhNyLZ9O7ef5xUtHi40ru+IwCQfc0k=;
- b=m3BjkyyeeRN8rHkTtW/SoBSMwRZiPYembobgJ1Z77vZubOfoGc9S6rQJ7QUxw5mZiWHI
- /+/4GIIy4dn5qX7UwESjeNTI27Ioanen3rsdQBL/ZCvQEvf04KXYHrUPYWrGcnz4j1BO
- xFlKZMWcH5cfiCgEnhhmhhr7TX6FLlvHwV7JFDzgi5ewLUBX99EGbwkNc8dephQPuxL1
- ek31bctLrvJfP1VLobNoeOr4vQZVaBRNKwekKwmj5m8v464z2HdntveRemmSSM69EOTZ
- h0Q50rFHiIK/MUg3BiHzcLe7mdmdUPUVo1sH3NdHBOq+2ENgrLohk90Q9wxE9inYmMjD Nw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3syfcunx64-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 17:17:05 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 387H6jhL019505;
-	Thu, 7 Sep 2023 17:17:04 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3syfcunx5j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 17:17:04 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 387GB43A006611;
-	Thu, 7 Sep 2023 17:17:03 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3svgvkw6vv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 17:17:03 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 387HFjcF60162304
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 7 Sep 2023 17:15:45 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9F3D32004B;
-	Thu,  7 Sep 2023 17:15:45 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2576620040;
-	Thu,  7 Sep 2023 17:15:43 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.9.102])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  7 Sep 2023 17:15:42 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        irogers@google.com, namhyung@kernel.org
-Subject: [PATCH 0/3] Fix for shellcheck issues with version "0.6"
-Date: Thu,  7 Sep 2023 22:45:37 +0530
-Message-Id: <20230907171540.36736-1-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 1Xu-GhhzzET37QLetqtrs3uFI6wtU22k
-X-Proofpoint-GUID: ZMBVyPGTmsizCfu2q_rMgrI7dlJRNzrq
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by relay2.suse.de (Postfix) with ESMTPS id AEE442C142;
+	Thu,  7 Sep 2023 17:19:08 +0000 (UTC)
+Date: Thu, 7 Sep 2023 19:19:07 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Nathan Lynch <nathanl@linux.ibm.com>
+Subject: Re: [PATCH RFC] powerpc/rtas: Make it possible to disable sys_rtas
+Message-ID: <20230907171907.GC8826@kitsune.suse.cz>
+References: <20230822-papr-sys_rtas-vs-lockdown-v1-0-932623cf3c7b@linux.ibm.com>
+ <20230906120855.28331-1-msuchanek@suse.de>
+ <87bkefw0ws.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+ <20230907160134.GZ8826@kitsune.suse.cz>
+ <878r9ivsbn.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-07_09,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- impostorscore=0 adultscore=0 clxscore=1015 phishscore=0 mlxlogscore=999
- mlxscore=0 bulkscore=0 lowpriorityscore=0 spamscore=0 suspectscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309070152
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <878r9ivsbn.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,52 +77,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, root <root@ltcden13-lp4.aus.stglabs.ibm.com>
+Cc: gcwilson@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, tyreld@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: root <root@ltcden13-lp4.aus.stglabs.ibm.com>
+On Thu, Sep 07, 2023 at 11:52:44AM -0500, Nathan Lynch wrote:
+> Michal Suchánek <msuchanek@suse.de> writes:
+> > On Wed, Sep 06, 2023 at 02:34:59PM -0500, Nathan Lynch wrote:
+> >> Michal Suchanek <msuchanek@suse.de> writes:
+> >> 
+> >> > Additional patch suggestion to go with the rtas devices:
+> >> >
+> >> > -----------------------------------------------------------------------
+> >> >
+> >> > With most important rtas functions available through different
+> >> > interfaces the sys_rtas interface can be disabled completely.
+> >> >
+> >> > Do not remove it for now to make it possible to run older versions of
+> >> > userspace tools that don't support other interfaces.
+> >> 
+> >> Thanks. I hope making sys_rtas on/off-configurable will make sense
+> >> eventually, and I expect this series to get us closer to that. But to me
+> >> it seems too early and too coarse. A kernel built with RTAS_SYSCALL=n is
+> >> not something I'd want to support or run in production soon. It would
+> >> break too many known use cases, and likely some unknown ones as well.
+> >
+> > There are about 3 known use cases that absolutely need access by other
+> > means than sys_rtas to work with lockdown, and about other 3 that would
+> > work either way.
+> 
+> How do you figure that? I count 11 librtas APIs that use work areas (and
+> therefore /dev/mem) that are definitely broken under lockdown. Maybe a
+> couple of them are unused.
 
-shellcheck was run on perf tool shell scripts s a pre-requisite
-to include a build option for shellcheck discussed here:
-https://www.spinics.net/lists/linux-perf-users/msg25553.html
+I am referring to this list of known uses:
 
-And fixes were added for the coding/formatting issues in
-two patchsets:
-https://lore.kernel.org/linux-perf-users/20230613164145.50488-1-atrajeev@linux.vnet.ibm.com/
-https://lore.kernel.org/linux-perf-users/20230709182800.53002-1-atrajeev@linux.vnet.ibm.com/
+https://github.com/ibm-power-utilities/librtas/issues/29
 
-Three additional issues are observed with shellcheck "0.6" and
-this patchset covers those. With this patchset,
+rtas_get_vpd is used by lsvpd (through libvpd and librtas)
+rtas_platform_dump and rtas_get_indices is used by ppc64-diag
+rtas_cfg_connector is used by powerpc-utils and is planned to be
+replaced by in-kernel solution
 
-# for F in $(find tests/shell/ -perm -o=x -name '*.sh'); do shellcheck -S warning $F; done
-# echo $?
-0
+That covers the complex cases.
 
-Athira Rajeev (3):
-  tests/shell: Fix shellcheck SC1090 to handle the location of sourced
-    files
-  tests/shell: Fix shellcheck issues in tests/shell/stat+shadow_stat.sh
-    tetscase
-  tests/shell: Fix shellcheck warnings for SC2153 in multiple scripts
+rtas_set_sysparm is used by ppc64-diag and powerpc-utils
+rtas_set_dynamic_indicator, rtas_get_dynamic_sensor are used by
+ppc64-diag (related to rtas_get_indices)
+rtas_errinjct + open/close are used by powerpc-utils
 
- tools/perf/tests/shell/coresight/asm_pure_loop.sh            | 4 ++++
- tools/perf/tests/shell/coresight/memcpy_thread_16k_10.sh     | 4 ++++
- tools/perf/tests/shell/coresight/thread_loop_check_tid_10.sh | 4 ++++
- tools/perf/tests/shell/coresight/thread_loop_check_tid_2.sh  | 4 ++++
- tools/perf/tests/shell/coresight/unroll_loop_thread_10.sh    | 4 ++++
- tools/perf/tests/shell/probe_vfs_getname.sh                  | 2 ++
- tools/perf/tests/shell/record+probe_libc_inet_pton.sh        | 2 ++
- tools/perf/tests/shell/record+script_probe_vfs_getname.sh    | 2 ++
- tools/perf/tests/shell/record.sh                             | 1 +
- tools/perf/tests/shell/stat+csv_output.sh                    | 1 +
- tools/perf/tests/shell/stat+csv_summary.sh                   | 4 ++--
- tools/perf/tests/shell/stat+shadow_stat.sh                   | 4 ++--
- tools/perf/tests/shell/stat+std_output.sh                    | 1 +
- tools/perf/tests/shell/test_intel_pt.sh                      | 1 +
- tools/perf/tests/shell/trace+probe_vfs_getname.sh            | 1 +
- 15 files changed, 35 insertions(+), 4 deletions(-)
+That's the simple cases.
 
--- 
-2.31.1
+Additional discussion here https://github.com/linuxppc/issues/issues/252
 
+> > That's not so staggering that it could not be implemented in the kernel
+> > from the start.
+> > How long it will take for the known userspace users to catch up is
+> > anotehr questio but again it's something that can be addressed.
+> >
+> > Making it possible to turn off sys_rtas will make it easier to uncover
+> > the not yet known cases.
+> 
+> This is also true of making the configuration more granular than on or
+> off. You would be free to disallow all calls if desired.
+> 
+> > What people want to support depends a lot on what is converted, and also
+> > the situation of the distribution in question. Fast-rollong
+> > distributions may want only the new interface quite soon, and so may
+> > distributions that are starting development of new release.
+> >
+> > All this makes sense only if there is a plan to discontinue sys_rtas
+> > entirely. For the simple calls that don't need data buffers it's still
+> > usable.
+> 
+> I don't understand. How would it remain usable for the simple calls if
+> it can be completely disabled?
+
+Either the goal is to completely remove sys_rtas, and then an option for
+disabling it is helpful for uncovering unexpected problems. Or thre
+isn't a goal of sys_rtas removal, and then there is no point in having
+an option to disable it, and it can be used for calls that don't need
+buffers indefinitely.
+
+Thanks
+
+Michal
