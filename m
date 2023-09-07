@@ -4,81 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D8B9EC873E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 16:46:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65153EC8743
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Sep 2023 16:47:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a1nO/hAW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LG596ImA;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RhQBB5KGZz3c5C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 02:46:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RhQC75NJ4z3c4t
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 02:47:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a1nO/hAW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LG596ImA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RhQ9B1z1xz3bxS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RhQ9B2W9Hz3by8
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2023 02:45:49 +1000 (AEST)
 Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 387Gchk3017994;
-	Thu, 7 Sep 2023 16:45:43 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 387Gcepl017838;
+	Thu, 7 Sep 2023 16:45:42 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=Pvrn9AmGzmJM5Eqnf/RzG8rYCfF3vmMqlngUuIcbBEw=;
- b=a1nO/hAWK6wF0FkRY8qlLl5Mnk7vSN89n0V5QWTQu2xtIuruhFi0dzXJ1CTD2AUSOi3a
- hzlU8V618wRg2RYIdnTkUHxGlkuqSOQ3aJyWfhIr/ze84KFiztDf2Wn70SCr/b6qZptU
- SPsE5zu0EYzTx6uKu56MqcdFd/1EgoqTEcCEvDjEDlgLtQOpjaziIAZAHQwGzGmtKirz
- +9SM5Zj+IGeLEQ629b26ktY3EeEVSsfOWvZ6xxaKzdRmLeLrcuhqGZs97GUVMC83VfXI
- SgzdIm4uoHTWFlgZAqFsdfnsPA0K0u/t8KoK1JTQOVG+/b9iIqt1W8OjTJepVhx5MrLb ow== 
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=8NCEenIz4r2UKrEQ70zyStFNCacpwhopcw91ojoVq5A=;
+ b=LG596ImA8AexAv/r0RWMwxJW8BXwFBCm+6ohmKaANLnommpuwqcg76royDnXnFDjyDVb
+ bgnbu53HGlUbmgD+pwFf6D1api1bueoAOf3VHKdM5dY+2BCnD2xoPGK8AySqoLDtimA7
+ qIhSyZGKmb/PVxd5/Fv4uRlWgiR4jMaNIm5KRxGnHjJUKujXc5zLe+Gdhbk3bbQKpiPO
+ Lps41ocDmxv3zqX19zxTInvtMgJBn6JPEmTZy/m7rEpJpV5bk3XZV5xfacbrj79pkM5X
+ QwgSujZM6pKw5rBMdvl/wk0hDmWB+q2yxMVHdd0nze3ZVfm3yomQ81z0jx0CAw3ebDsG 3w== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sygy8ad44-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 16:45:43 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 387GdbG8022796;
-	Thu, 7 Sep 2023 16:45:42 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sygy8ad3w-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 Sep 2023 16:45:42 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 387FM3Uv001614;
-	Thu, 7 Sep 2023 16:45:42 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3svfct5hfk-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sygy8ad35-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Thu, 07 Sep 2023 16:45:41 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 387Gjd7C23855768
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 387GdJi6019557;
+	Thu, 7 Sep 2023 16:45:41 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3sygy8ad2d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 07 Sep 2023 16:45:41 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 387F0CDv001667;
 	Thu, 7 Sep 2023 16:45:39 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3svfct5hfa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 07 Sep 2023 16:45:39 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 387GjakZ24445450
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 7 Sep 2023 16:45:36 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 363AE20043;
-	Thu,  7 Sep 2023 16:45:39 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BFB6020040;
+	by IMSVA (Postfix) with ESMTP id 6A4AF20040;
 	Thu,  7 Sep 2023 16:45:36 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E864D2004E;
+	Thu,  7 Sep 2023 16:45:33 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.9.102])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  7 Sep 2023 16:45:36 +0000 (GMT)
+	Thu,  7 Sep 2023 16:45:33 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
         irogers@google.com, namhyung@kernel.org
-Subject: [V2 2/2] tools/perf/tests: Fix object code reading to skip address that falls out of text section
-Date: Thu,  7 Sep 2023 22:15:29 +0530
-Message-Id: <20230907164529.36222-2-atrajeev@linux.vnet.ibm.com>
+Subject: [V2 1/2] tools/perf: Add text_end to "struct dso" to save .text section size
+Date: Thu,  7 Sep 2023 22:15:28 +0530
+Message-Id: <20230907164529.36222-1-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20230907164529.36222-1-atrajeev@linux.vnet.ibm.com>
-References: <20230907164529.36222-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: UtAwaBShcro13XtNZhSjVJT0rMsfFUis
-X-Proofpoint-ORIG-GUID: -OTo03DPzw7Ob1bvkHnT5Wv_46pkI3Rm
+X-Proofpoint-GUID: uZVYabNP_ZL7oVYMq1PJ2vLFGISBDMfw
+X-Proofpoint-ORIG-GUID: e9s7VFdQOELmA_fh51avVCK5s2rQ7ZRr
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-09-07_08,2023-09-05_01,2023-05-22_02
@@ -102,8 +98,28 @@ Cc: atrajeev@linux.vnet.ibm.com, Disha Goel <disgoel@linux.ibm.com>, kjain@linux
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The testcase "Object code reading" fails in somecases
-for "fs_something" sub test as below:
+Update "struct dso" to include new member "text_end".
+This new field will represent the offset for end of text
+section for a dso. For elf, this value is derived as:
+sh_size (Size of section in byes) + sh_offset (Section file
+offst) of the elf header for text.
+
+For bfd, this value is derived as:
+1. For PE file,
+section->size + ( section->vma - dso->text_offset)
+2. Other cases:
+section->filepos (file position) + section->size (size of
+section)
+
+To resolve the address from a sample, perf looks at the
+DSO maps. In case of address from a kernel module, there
+were some address found to be not resolved. This was
+observed while running perf test for "Object code reading".
+Though the ip falls beteen the start address of the loaded
+module (perf map->start ) and end address ( perf map->end),
+it was unresolved.
+
+Example:
 
     Reading object code for memory address: 0xc008000007f0142c
     File is: /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko
@@ -112,80 +128,80 @@ for "fs_something" sub test as below:
     objdump read too few bytes: 128
     test child finished with -1
 
-This can alo be reproduced when running perf record with
-workload that exercises fs_something() code. In the test
-setup, this is exercising xfs code since root is xfs.
-
-    # perf record ./a.out
-    # perf report -v |grep "xfs.ko"
-      0.76% a.out /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko  0xc008000007de5efc B [k] xlog_cil_commit
-      0.74% a.out  /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko  0xc008000007d5ae18 B [k] xfs_btree_key_offset
-      0.74% a.out  /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko  0xc008000007e11fd4 B [k] 0x0000000000112074
-
-Here addr "0xc008000007e11fd4" is not resolved. since this is a
-kernel module, its offset is from the DSO. Xfs module is loaded
-at 0xc008000007d00000
-
-   # cat /proc/modules | grep xfs
+Here, module is loaded at:
+    # cat /proc/modules | grep xfs
     xfs 2228224 3 - Live 0xc008000007d00000
 
-And size is 0x220000. So its loaded between  0xc008000007d00000
-and 0xc008000007f20000. From objdump, text section is:
+From objdump for xfs module, text section is:
     text 0010f7bc  0000000000000000 0000000000000000 000000a0 2**4
 
-Hence perf captured ip maps to 0x112074 which is:
-( ip - start of module ) + a0
+Here the offset for 0xc008000007f0142c ie  0x112074 falls out
+.text section which is up to 0x10f7bc.
 
-This offset 0x112074 falls out .text section which is up to 0x10f7bc
 In this case for module, the address 0xc008000007e11fd4 is pointing
 to stub instructions. This address range represents the module stubs
 which is allocated on module load and hence is not part of DSO offset.
 
-To address this issue in "object code reading", skip the sample if
-address falls out of text section and is within the module end.
-Use the "text_end" member of "struct dso" to do this check.
-
-To address this issue in "perf report", exploring an option of
-having stubs range as part of the /proc/kallsyms, so that perf
-report can resolve addresses in stubs range
-
-However this patch uses text_end to skip the stub range for
-Object code reading testcase.
+To identify such  address, which falls out of text
+section and within module end, added the new field "text_end" to
+"struct dso".
 
 Reported-by: Disha Goel <disgoel@linux.ibm.com>
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
 Changelog:
  v1 -> v2:
- Updated comment to add description on which arch has stub and
- reason for skipping as suggested by Adrian
+ Added text_end for bfd also by updating dso__load_bfd_symbols
+ as suggested by Adrian.
 
- tools/perf/tests/code-reading.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ tools/perf/util/dso.h        | 1 +
+ tools/perf/util/symbol-elf.c | 4 +++-
+ tools/perf/util/symbol.c     | 2 ++
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/tools/perf/tests/code-reading.c b/tools/perf/tests/code-reading.c
-index ed3815163d1b..3cf6c2d42416 100644
---- a/tools/perf/tests/code-reading.c
-+++ b/tools/perf/tests/code-reading.c
-@@ -269,6 +269,18 @@ static int read_object_code(u64 addr, size_t len, u8 cpumode,
- 	if (addr + len > map__end(al.map))
- 		len = map__end(al.map) - addr;
+diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
+index b41c9782c754..70fe0fe69bef 100644
+--- a/tools/perf/util/dso.h
++++ b/tools/perf/util/dso.h
+@@ -181,6 +181,7 @@ struct dso {
+ 	u8		 rel;
+ 	struct build_id	 bid;
+ 	u64		 text_offset;
++	u64		 text_end;
+ 	const char	 *short_name;
+ 	const char	 *long_name;
+ 	u16		 long_name_len;
+diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
+index 95e99c332d7e..9e7eeaf616b8 100644
+--- a/tools/perf/util/symbol-elf.c
++++ b/tools/perf/util/symbol-elf.c
+@@ -1514,8 +1514,10 @@ dso__load_sym_internal(struct dso *dso, struct map *map, struct symsrc *syms_ss,
+ 	}
  
-+	/*
-+	 * Some architectures (ex: powerpc) have stubs (trampolines) in kernel
-+	 * modules to manage long jumps. Check if the ip offset falls in stubs
-+	 * sections for kernel modules. And skip module address after text end
-+	 */
-+	if (strstr(dso->long_name, ".ko")) {
-+		if (al.addr > dso->text_end) {
-+			pr_debug("skipping the module address %#"PRIx64" after text end\n", al.addr);
-+			goto out;
-+		}
+ 	if (elf_section_by_name(runtime_ss->elf, &runtime_ss->ehdr, &tshdr,
+-				".text", NULL))
++				".text", NULL)) {
+ 		dso->text_offset = tshdr.sh_addr - tshdr.sh_offset;
++		dso->text_end = tshdr.sh_offset + tshdr.sh_size;
 +	}
-+
- 	/* Read the object code using perf */
- 	ret_len = dso__data_read_offset(dso, maps__machine(thread__maps(thread)),
- 					al.addr, buf1, len);
+ 
+ 	if (runtime_ss->opdsec)
+ 		opddata = elf_rawdata(runtime_ss->opdsec, NULL);
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 3f36675b7c8f..f25e4e62cf25 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -1733,8 +1733,10 @@ int dso__load_bfd_symbols(struct dso *dso, const char *debugfile)
+ 			/* PE symbols can only have 4 bytes, so use .text high bits */
+ 			dso->text_offset = section->vma - (u32)section->vma;
+ 			dso->text_offset += (u32)bfd_asymbol_value(symbols[i]);
++			dso->text_end = (section->vma - dso->text_offset) + section->size;
+ 		} else {
+ 			dso->text_offset = section->vma - section->filepos;
++			dso->text_end = section->filepos + section->size;
+ 		}
+ 	}
+ 
 -- 
 2.31.1
 
