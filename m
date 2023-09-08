@@ -4,62 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3358FEE800C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 14:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 359AFEE800E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 14:22:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JLjRtQ/J;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JLjRtQ/J;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ESaIA1M2;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I2Uc0qea;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RhywW4w7tz3cTW
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Sep 2023 00:21:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rhyxc43YSz3cPS
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Sep 2023 00:22:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JLjRtQ/J;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JLjRtQ/J;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ESaIA1M2;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I2Uc0qea;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=piliu@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rhytc2B5hz3c7Q
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2023 00:20:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rhytg2hL7z3cBr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2023 00:20:10 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1694182802;
+	s=mimecast20190719; t=1694182808;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=TxX3RwZm8DvnVUsWP87/50R/IGSVy55DFt8/VVMyPyw=;
-	b=JLjRtQ/JlzW37/CYHm/qPWGQCZNP+4wewDh4ZpNhhGJZLTF9UR8piFb1NUfF7gUZvGFpqz
-	j6tz3yGRJX7iPr4Wp2/b4mzwJOqCaWigybZ52NcTaptg/jHdhJwwz1cK0xB8ieNeFvY5Su
-	ftWdDPS+vbNwqhQ/BBg9JWFsAKoqgUc=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Hbw5LcVAhn/MF5vOS6EegrWEmv1/qJLDPF4qVdxgL4s=;
+	b=ESaIA1M2VtUqTJdKfF+HsOr21ajWO7mQmzpMTRsikbT/oPbU/YdvWrPYX4zfcqP/T7XDwY
+	LeO8mt5D4qSAVVORhFHTmqQAdYctq1tRiuKLxqGEtqO//K7PWNlPUcdZ+1GEOla4CePTEw
+	WqGbVIxsEGEeBL8+zvJVMGCN3p88yPk=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1694182802;
+	s=mimecast20190719; t=1694182809;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=TxX3RwZm8DvnVUsWP87/50R/IGSVy55DFt8/VVMyPyw=;
-	b=JLjRtQ/JlzW37/CYHm/qPWGQCZNP+4wewDh4ZpNhhGJZLTF9UR8piFb1NUfF7gUZvGFpqz
-	j6tz3yGRJX7iPr4Wp2/b4mzwJOqCaWigybZ52NcTaptg/jHdhJwwz1cK0xB8ieNeFvY5Su
-	ftWdDPS+vbNwqhQ/BBg9JWFsAKoqgUc=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Hbw5LcVAhn/MF5vOS6EegrWEmv1/qJLDPF4qVdxgL4s=;
+	b=I2Uc0qeaTqh1qBtJ5/Wczw728EkQozFCMON1IyWmtmWqSNvrYgh+dw0Kybe4B1EAyQdZcT
+	voATQXmSWexJw+lKl3MovVp1SMlxQ1xAQFLBOoSweAZwi3V4moQbI25wmVjTlothrAPhEf
+	1twIt3HJiCpGCIoVbfHf307NEjX/NLU=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-681-j19lGPS5OQupQRvxOvyggw-1; Fri, 08 Sep 2023 10:19:56 -0400
-X-MC-Unique: j19lGPS5OQupQRvxOvyggw-1
+ us-mta-595-iwkDyBT4P6yBxF6jM0_Z8w-1; Fri, 08 Sep 2023 10:20:05 -0400
+X-MC-Unique: iwkDyBT4P6yBxF6jM0_Z8w-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 12EDC101A529;
-	Fri,  8 Sep 2023 14:19:55 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1959D81652B;
+	Fri,  8 Sep 2023 14:20:05 +0000 (UTC)
 Received: from piliu.users.ipa.redhat.com (unknown [10.72.120.3])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id B40852026D2B;
-	Fri,  8 Sep 2023 14:19:50 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id B68EB2026D2B;
+	Fri,  8 Sep 2023 14:20:00 +0000 (UTC)
 From: Pingfan Liu <piliu@redhat.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv5 0/3] enable nr_cpus for powerpc
-Date: Fri,  8 Sep 2023 22:19:38 +0800
-Message-Id: <20230908141941.13660-1-piliu@redhat.com>
+Subject: [PATCHv5 2/3] powerpc/setup: Handle the case when boot_cpuid greater than nr_cpus
+Date: Fri,  8 Sep 2023 22:19:40 +0800
+Message-Id: <20230908141941.13660-3-piliu@redhat.com>
+In-Reply-To: <20230908141941.13660-1-piliu@redhat.com>
+References: <20230908141941.13660-1-piliu@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
 X-Mimecast-Spam-Score: 0
@@ -81,22 +85,14 @@ Cc: Baoquan He <bhe@redhat.com>, Pingfan Liu <piliu@redhat.com>, kexec@lists.inf
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It is a long time since my last v4 [1].
+If the boot_cpuid is smaller than nr_cpus, it requires extra effort to
+ensure the boot_cpu is in cpu_present_mask. This can be achieved by
+reserving the last quota for the boot cpu.
 
-The code has undergone great changes. The paca[] array has been
-reorganized and indexed by paca_ptrs[], which dramatically decreases the
-memory consumption even if there are many unpresent cpus in the middle.
+Note: the restriction on nr_cpus will be lifted with more effort in the
+next patch
 
-However, reordering the logical cpu numbers can further decrease the
-size of paca_ptrs[] in the kdump case. So I keep [1/3], which
-rotate-shifts the cpu's sequence number in the device tree to obtain the
-logical cpu id.
-
-Patch [2-3/3] make efforts to decrease the nr_cpus to be less than or
-equal to two.
-
-[1]: https://lore.kernel.org/linuxppc-dev/1520829790-14029-1-git-send-email-kernelfans@gmail.com/
-
+Signed-off-by: Pingfan Liu <piliu@redhat.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -106,18 +102,71 @@ Cc: Baoquan He <bhe@redhat.com>
 Cc: Ming Lei <ming.lei@redhat.com>
 Cc: kexec@lists.infradead.org
 To: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/setup-common.c | 25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
 
-Pingfan Liu (3):
-  powerpc/setup: Loosen the mapping between cpu logical id and its seq
-    in dt
-  powerpc/setup: Handle the case when boot_cpuid greater than nr_cpus
-  powerpc/setup: alloc extra paca_ptrs to hold boot_cpuid
-
- arch/powerpc/kernel/paca.c         |  10 +--
- arch/powerpc/kernel/prom.c         |  26 ++++---
- arch/powerpc/kernel/setup-common.c | 106 ++++++++++++++++++++++++-----
- 3 files changed, 111 insertions(+), 31 deletions(-)
-
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index a07af8de6674..58a988c64dd2 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -456,8 +456,8 @@ struct interrupt_server_node {
+ void __init smp_setup_cpu_maps(void)
+ {
+ 	struct device_node *dn;
+-	int shift = 0, cpu = 0;
+-	int j, nthreads = 1;
++	int terminate, shift = 0, cpu = 0;
++	int j, bt_thread = 0, nthreads = 1;
+ 	int len;
+ 	struct interrupt_server_node *intserv_node, *n;
+ 	struct list_head *bt_node, head;
+@@ -520,6 +520,7 @@ void __init smp_setup_cpu_maps(void)
+ 			for (j = 0 ; j < nthreads; j++) {
+ 				if (be32_to_cpu(intserv[j]) == boot_cpu_hwid) {
+ 					bt_node = &intserv_node->node;
++					bt_thread = j;
+ 					found_boot_cpu = true;
+ 					/*
+ 					 * Record the round-shift between dt
+@@ -539,11 +540,21 @@ void __init smp_setup_cpu_maps(void)
+ 	/* Select the primary thread, the boot cpu's slibing, as the logic 0 */
+ 	list_add_tail(&head, bt_node);
+ 	pr_info("the round shift between dt seq and the cpu logic number: %d\n", shift);
++	terminate = nr_cpu_ids;
+ 	list_for_each_entry(intserv_node, &head, node) {
+ 
++		j = 0;
++		/* Choose a start point to cover the boot cpu */
++		if (nr_cpu_ids - 1 < bt_thread) {
++			/*
++			 * The processor core puts assumption on the thread id,
++			 * not to breach the assumption.
++			 */
++			terminate = nr_cpu_ids - 1;
++		}
+ 		avail = intserv_node->avail;
+ 		nthreads = intserv_node->len / sizeof(int);
+-		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
++		for (; j < nthreads && cpu < terminate; j++) {
+ 			set_cpu_present(cpu, avail);
+ 			set_cpu_possible(cpu, true);
+ 			cpu_to_phys_id[cpu] = be32_to_cpu(intserv_node->intserv[j]);
+@@ -551,6 +562,14 @@ void __init smp_setup_cpu_maps(void)
+ 			    j, cpu, be32_to_cpu(intserv[j]));
+ 			cpu++;
+ 		}
++		/* Online the boot cpu */
++		if (nr_cpu_ids - 1 < bt_thread) {
++			set_cpu_present(bt_thread, avail);
++			set_cpu_possible(bt_thread, true);
++			cpu_to_phys_id[bt_thread] = be32_to_cpu(intserv_node->intserv[bt_thread]);
++			DBG("    thread %d -> cpu %d (hard id %d)\n",
++			    bt_thread, bt_thread, be32_to_cpu(intserv[bt_thread]));
++		}
+ 	}
+ 
+ 	list_for_each_entry_safe(intserv_node, n, &head, node) {
 -- 
 2.31.1
 
