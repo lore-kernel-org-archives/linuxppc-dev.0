@@ -4,78 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ACF9EE8013
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 15:36:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82F1EEE8018
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Sep 2023 15:49:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=W2k9XkOe;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NN8Z7r6K;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rj0Z85K7xz3dG7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Sep 2023 01:36:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rj0sR6qpJz3c47
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Sep 2023 01:49:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=W2k9XkOe;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NN8Z7r6K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rj0YB4sMjz3c47
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2023 01:35:10 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 388FM9qo016467;
-	Fri, 8 Sep 2023 15:34:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=/qBSFSgTr6TmenTwiZmSNb3/mHfNsOO1jh1mDXHSQhU=;
- b=W2k9XkOezKxBKza3fZl7Hzfk0snxi1bB/iJKVoyXhW2xqjmNZvcqd7VMjfnQDIxNrRhP
- i11rFG0MTEy6mFY1Zw7AJEu2C53DW/t59is6+gWkCWL8z5PjCO5ib4DuQvPdOcAqDcJp
- EKKKjyGlGxzjEp5mRCOUhJrAYbowsvg1d1bi+bdaTZa9FYXkI3oe70PtPcYNvXE4Un+j
- TRIOtWh+EB1PQww6V7kns8XmyrNmuGkfLIRvNJHtyAltyG8GWShGpPaUAk5Nu0rAXEGg
- Jlx3kZApkiSBvjfVvybUa3Fist+n8VrKdHUVcd/vZhNzHS/nr8oIirdy+KcrKmvpunvc 0Q== 
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t066qr8nn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 08 Sep 2023 15:34:47 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 388EQeIV006668;
-	Fri, 8 Sep 2023 15:31:01 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3svgvm4dj6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 08 Sep 2023 15:31:01 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 388FV0YW6226446
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 8 Sep 2023 15:31:00 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 485D85805C;
-	Fri,  8 Sep 2023 15:30:57 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A94DD5805F;
-	Fri,  8 Sep 2023 15:30:56 +0000 (GMT)
-Received: from rhel-laptop.ibm.com (unknown [9.61.45.202])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  8 Sep 2023 15:30:56 +0000 (GMT)
-From: gjoyce@linux.vnet.ibm.com
-To: linux-block@vger.kernel.org, axboe@kernel.dk, jarkko@kernel.org
-Subject: [PATCH v7 0/3 RESEND] generic and PowerPC SED Opal keystore
-Date: Fri,  8 Sep 2023 10:30:53 -0500
-Message-Id: <20230908153056.3503975-1-gjoyce@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.39.3
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: -D5pmrqQBMKL2xXDLTxef_G2K9Evm43l
-X-Proofpoint-ORIG-GUID: -D5pmrqQBMKL2xXDLTxef_G2K9Evm43l
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rj0rR0c7Kz2xwD
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2023 01:48:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694188103; x=1725724103;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=7lZwzD4Jl1j1hHG9SxEpqmUzote7v9725kYKuPdquWo=;
+  b=NN8Z7r6KDHsUQqeDfLmspeBkomDR2CDGr4lD4Bjx5qU3qO/0gGXdFvDQ
+   R13ILWsZavL8jd0kSfL5ifNo+XKxeTnW+5iMowivmbdry+0nISCsnB/CD
+   pZrIpCQ3JIiZwMKv51ZEqc68GsUTLNffJRZ+SJXbtMxpi2PGK3qWWY35d
+   CsBy9gjAQjJxjONr97W/kdvB2nNnrh4Zw/TTX+qqJCkfFXPCQ9TACJ1iJ
+   ZR289Hbtrwdgudak4W8nG7j3ieagD+Q69K2S9DA/1F5IIQlZzJ0zjb0sH
+   UIzSo8dvblMgfAZKI54qXRqYU/U1m8JIUVesmfd24gJp+1PfPe7znuX+W
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10827"; a="444113426"
+X-IronPort-AV: E=Sophos;i="6.02,237,1688454000"; 
+   d="scan'208";a="444113426"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2023 08:48:15 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10827"; a="719194428"
+X-IronPort-AV: E=Sophos;i="6.02,237,1688454000"; 
+   d="scan'208";a="719194428"
+Received: from lkp-server01.sh.intel.com (HELO 59b3c6e06877) ([10.239.97.150])
+  by orsmga006.jf.intel.com with ESMTP; 08 Sep 2023 08:48:12 -0700
+Received: from kbuild by 59b3c6e06877 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1qediM-0002PR-2W;
+	Fri, 08 Sep 2023 15:48:10 +0000
+Date: Fri, 8 Sep 2023 23:47:36 +0800
+From: kernel test robot <lkp@intel.com>
+To: Pingfan Liu <piliu@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCHv5 1/3] powerpc/setup: Loosen the mapping between cpu
+ logical id and its seq in dt
+Message-ID: <202309082357.FUmBMhC4-lkp@intel.com>
+References: <20230908141941.13660-2-piliu@redhat.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-08_12,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- spamscore=0 suspectscore=0 malwarescore=0 phishscore=0 clxscore=1015
- mlxscore=0 bulkscore=0 impostorscore=0 priorityscore=1501 adultscore=0
- mlxlogscore=730 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309080143
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230908141941.13660-2-piliu@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,87 +71,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gjoyce@linux.vnet.ibm.com, nayna@linux.ibm.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: Baoquan He <bhe@redhat.com>, Pingfan Liu <piliu@redhat.com>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Ming Lei <ming.lei@redhat.com>, Wen Xiong <wenxiong@linux.ibm.com>, oe-kbuild-all@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+Hi Pingfan,
 
-This patchset extends the capabilites incorporated into for-6.6/block
-(https://git.kernel.dk/cgit/linux/commit/?h=for-6.6/block&id=3bfeb61256643281ac4be5b8a57e9d9da3db4335) by allowing the SED Opal key to be seeded into
-the keyring from a secure permanent keystore.
+kernel test robot noticed the following build errors:
 
-It has gone through numerous rounds of review and all comments/suggetions
-have been addressed. The reviews have covered all relevant areas including
-reviews by block and keyring developers as well as the SED Opal
-maintainer. The last patchset submission has not solicited any responses
-in the six weeks since it was last distributed. The changes are
-generally useful and ready for inclusion.
+[auto build test ERROR on powerpc/fixes]
+[also build test ERROR on linus/master v6.5 next-20230908]
+[cannot apply to powerpc/next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-TCG SED Opal is a specification from The Trusted Computing Group
-that allows self encrypting storage devices (SED) to be locked at
-power on and require an authentication key to unlock the drive.
+url:    https://github.com/intel-lab-lkp/linux/commits/Pingfan-Liu/powerpc-setup-Loosen-the-mapping-between-cpu-logical-id-and-its-seq-in-dt/20230908-222430
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+patch link:    https://lore.kernel.org/r/20230908141941.13660-2-piliu%40redhat.com
+patch subject: [PATCHv5 1/3] powerpc/setup: Loosen the mapping between cpu logical id and its seq in dt
+config: powerpc-allnoconfig (https://download.01.org/0day-ci/archive/20230908/202309082357.FUmBMhC4-lkp@intel.com/config)
+compiler: powerpc-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230908/202309082357.FUmBMhC4-lkp@intel.com/reproduce)
 
-Generic functions have been defined for accessing SED Opal keys.
-The generic functions are defined as weak so that they may be superseded
-by keystore specific versions.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202309082357.FUmBMhC4-lkp@intel.com/
 
-PowerPC/pseries versions of these functions provide read/write access
-to SED Opal keys in the PLPKS keystore.
+All errors (new ones prefixed by >>):
 
-The SED block driver has been modified to read the SED Opal
-keystore to populate a key in the SED Opal keyring. Changes to the
-SED Opal key will be written to the SED Opal keystore.
-
-Changelog
-v7:	- rebased to for-6.5/block
-
-v6:     - squashed two commits (suggested by Andrew Donnellan)
-
-v5:     - updated to reflect changes in PLPKS API
-
-v4:
-        - scope reduced to cover just SED Opal keys
-        - base SED Opal keystore is now in SED block driver
-        - removed use of enum to indicate type
-        - refactored common code into common function that read and
-          write use
-        - removed cast to void
-        - added use of SED Opal keystore functions to SED block driver
-
-v3:
-        - No code changes, but per reviewer requests, adding additional
-          mailing lists(keyring, EFI) for wider review.
-
-v2:
-        - Include feedback from Gregory Joyce, Eric Richter and
-          Murilo Opsfelder Araujo.
-        - Include suggestions from Michael Ellerman.
-        - Moved a dependency from generic SED code to this patchset.
-          This patchset now builds of its own.
+   arch/powerpc/kernel/prom.c: In function 'early_init_dt_scan_cpus':
+   arch/powerpc/kernel/prom.c:365:44: error: lvalue required as left operand of assignment
+     365 |                                 nr_cpu_ids = nthreads;
+         |                                            ^
+   arch/powerpc/kernel/prom.c: At top level:
+>> arch/powerpc/kernel/prom.c:79:23: error: 'boot_cpu_count' defined but not used [-Werror=unused-variable]
+      79 | static int __initdata boot_cpu_count;
+         |                       ^~~~~~~~~~~~~~
+   cc1: all warnings being treated as errors
 
 
+vim +/boot_cpu_count +79 arch/powerpc/kernel/prom.c
 
-Greg Joyce (3):
-  block:sed-opal: SED Opal keystore
-  block: sed-opal: keystore access for SED Opal keys
-  powerpc/pseries: PLPKS SED Opal keystore support
+c1e53367dab15e Srikar Dronamraju      2021-04-15  70  
+9b6b563c0d2d25 Paul Mackerras         2005-10-06  71  #ifdef CONFIG_PPC64
+28897731318dc8 Olof Johansson         2006-04-12  72  int __initdata iommu_is_off;
+9b6b563c0d2d25 Paul Mackerras         2005-10-06  73  int __initdata iommu_force_on;
+cf00a8d18b9a1c Paul Mackerras         2005-10-31  74  unsigned long tce_alloc_start, tce_alloc_end;
+cd3db0c4ca3d23 Benjamin Herrenschmidt 2010-07-06  75  u64 ppc64_rma_size;
+e13d23a404f2e6 Laurent Dufour         2022-11-10  76  unsigned int boot_cpu_node_count __ro_after_init;
+9b6b563c0d2d25 Paul Mackerras         2005-10-06  77  #endif
+03bf469add176a Benjamin Herrenschmidt 2011-05-11  78  static phys_addr_t first_memblock_size;
+7ac87abb8166b9 Matt Evans             2011-05-25 @79  static int __initdata boot_cpu_count;
+9b6b563c0d2d25 Paul Mackerras         2005-10-06  80  
 
- arch/powerpc/platforms/pseries/Kconfig        |   6 +
- arch/powerpc/platforms/pseries/Makefile       |   1 +
- .../powerpc/platforms/pseries/plpks_sed_ops.c | 114 ++++++++++++++++++
- block/Kconfig                                 |   1 +
- block/Makefile                                |   2 +-
- block/sed-opal-key.c                          |  24 ++++
- block/sed-opal.c                              |  18 ++-
- include/linux/sed-opal-key.h                  |  15 +++
- 8 files changed, 178 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/plpks_sed_ops.c
- create mode 100644 block/sed-opal-key.c
- create mode 100644 include/linux/sed-opal-key.h
-
-
-base-commit: 1341c7d2ccf42ed91aea80b8579d35bc1ea381e2
 -- 
-gjoyce@linux.vnet.ibm.com
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
