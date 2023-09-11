@@ -4,71 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA853EE57DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 10:32:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4988EE57DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 13:11:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gdZph2Gi;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gdZph2Gi;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bqwWs5cq;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gCN6aoBH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkjhw24yZz3c7Q
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 20:32:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RknD62Ckhz3cCS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 23:11:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gdZph2Gi;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gdZph2Gi;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bqwWs5cq;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gCN6aoBH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkjgv5qSvz30Q4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 20:31:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1694428310;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=scL+PN7rvFW0rRtuvyrop8LP1MAlxFU5fgMf6KSanRA=;
-	b=gdZph2GiQL+olU3AsRE3qpoTTwM1AVLIAHdd57DqJoDmYtPczBqmls0dm8c+n2fXmFpIlV
-	2PkvBY5XcJSgqpTFhUgszTZgBx5IJjPfts1Ghyt/s2RwoPlKv0lT1nb/iS4R91jAJmZ6kx
-	KeZNoZmgkL1lL8rW7W8vZtk9itpaBGg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1694428310;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=scL+PN7rvFW0rRtuvyrop8LP1MAlxFU5fgMf6KSanRA=;
-	b=gdZph2GiQL+olU3AsRE3qpoTTwM1AVLIAHdd57DqJoDmYtPczBqmls0dm8c+n2fXmFpIlV
-	2PkvBY5XcJSgqpTFhUgszTZgBx5IJjPfts1Ghyt/s2RwoPlKv0lT1nb/iS4R91jAJmZ6kx
-	KeZNoZmgkL1lL8rW7W8vZtk9itpaBGg=
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-630-bOa0vEtiPUa0zpz8zjb7vQ-1; Mon, 11 Sep 2023 06:31:44 -0400
-X-MC-Unique: bOa0vEtiPUa0zpz8zjb7vQ-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RknC70QYcz2ygq
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 23:10:42 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 662A5382254A;
-	Mon, 11 Sep 2023 10:31:44 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.35])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 4FB1F40C200A;
-	Mon, 11 Sep 2023 10:31:42 +0000 (UTC)
-Date: Mon, 11 Sep 2023 18:31:39 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 2/3] vmcore: allow fadump to export vmcore even if
- is_kdump_kernel() is false
-Message-ID: <ZP7si3UMVpPfYV+w@MiWiFi-R3L-srv>
-References: <20230905183604.568996-1-hbathini@linux.ibm.com>
- <20230905183604.568996-2-hbathini@linux.ibm.com>
- <8734zltc6z.fsf@mail.lhotse>
+	by smtp-out2.suse.de (Postfix) with ESMTPS id C55AB1F8A6;
+	Mon, 11 Sep 2023 13:10:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1694437838; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SQtqPTO6zowJiMP7f/KbQAZIhFJEInYimmVKJDBEpdg=;
+	b=bqwWs5cq53W9DRAIRi/zY8VbRvkwiNS1i7gx1aMnEXcJuf4sxkdI73WiHAqtXCc12Ulsfd
+	Q20dCTf4yg+Z3MyUF6d1qRZziS0FzyRgnjlVQAjMW510n8b87QKRE0LPtDF43wBQHQC882
+	D7csaZrtRok02oeUvZJChNzOgMD0q8o=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1694437838;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SQtqPTO6zowJiMP7f/KbQAZIhFJEInYimmVKJDBEpdg=;
+	b=gCN6aoBHxkH05NjVEyxOkbuoEmr6Am1TDXSMu7XMsUMczyyDxLKdp7XI9gHTNrdhvwfK/U
+	JWthC4eG8eFSKJAw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8292113AD1;
+	Mon, 11 Sep 2023 13:10:38 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id wAH8Hs4R/2SCIwAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Mon, 11 Sep 2023 13:10:38 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	arnd@arndb.de,
+	deller@gmx.de
+Subject: [PATCH v3 1/5] fbdev: Avoid file argument in fb_pgprotect()
+Date: Mon, 11 Sep 2023 15:08:31 +0200
+Message-ID: <20230911131033.27745-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230911131033.27745-1-tzimmermann@suse.de>
+References: <20230911131033.27745-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8734zltc6z.fsf@mail.lhotse>
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.1
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,96 +83,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Kexec-ml <kexec@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>, Sourabh Jain <sourabhjain@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Dave Young <dyoung@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, Thomas Zimmermann <tzimmermann@suse.de>, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 09/11/23 at 05:13pm, Michael Ellerman wrote:
-> Hari Bathini <hbathini@linux.ibm.com> writes:
-> > Currently, is_kdump_kernel() returns true when elfcorehdr_addr is set.
-> > While elfcorehdr_addr is set for kexec based kernel dump mechanism,
-> > alternate dump capturing methods like fadump [1] also set it to export
-> > the vmcore. Since, is_kdump_kernel() is used to restrict resources in
-> > crash dump capture kernel and such restrictions are not desirable for
-> > fadump, allow is_kdump_kernel() to be defined differently for fadump
-> > case. With that change, include is_fadump_active() check in functions
-> > is_vmcore_usable() & vmcore_unusable() to be able to export vmcore for
-> > fadump case too.
-> ...
-> > diff --git a/include/linux/crash_dump.h b/include/linux/crash_dump.h
-> > index 0f3a656293b0..de8a9fabfb6f 100644
-> > --- a/include/linux/crash_dump.h
-> > +++ b/include/linux/crash_dump.h
-> > @@ -50,6 +50,7 @@ void vmcore_cleanup(void);
-> >  #define vmcore_elf64_check_arch(x) (elf_check_arch(x) || vmcore_elf_check_arch_cross(x))
-> >  #endif
-> >  
-> > +#ifndef is_kdump_kernel
-> >  /*
-> >   * is_kdump_kernel() checks whether this kernel is booting after a panic of
-> >   * previous kernel or not. This is determined by checking if previous kernel
-> > @@ -64,6 +65,19 @@ static inline bool is_kdump_kernel(void)
-> >  {
-> >  	return elfcorehdr_addr != ELFCORE_ADDR_MAX;
-> >  }
-> > +#endif
-> > +
-> > +#ifndef is_fadump_active
-> > +/*
-> > + * If f/w assisted dump capturing mechanism (fadump), instead of kexec based
-> > + * dump capturing mechanism (kdump) is exporting the vmcore, then this function
-> > + * will be defined in arch specific code to return true, when appropriate.
-> > + */
-> > +static inline bool is_fadump_active(void)
-> > +{
-> > +	return false;
-> > +}
-> > +#endif
-> >  
-> >  /* is_vmcore_usable() checks if the kernel is booting after a panic and
-> >   * the vmcore region is usable.
-> > @@ -75,7 +89,8 @@ static inline bool is_kdump_kernel(void)
-> >  
-> >  static inline int is_vmcore_usable(void)
-> >  {
-> > -	return is_kdump_kernel() && elfcorehdr_addr != ELFCORE_ADDR_ERR ? 1 : 0;
-> > +	return (is_kdump_kernel() || is_fadump_active())
-> > +		&& elfcorehdr_addr != ELFCORE_ADDR_ERR ? 1 : 0;
-> >  }
-> >  
-> >  /* vmcore_unusable() marks the vmcore as unusable,
-> > @@ -84,7 +99,7 @@ static inline int is_vmcore_usable(void)
-> >  
-> >  static inline void vmcore_unusable(void)
-> >  {
-> > -	if (is_kdump_kernel())
-> > +	if (is_kdump_kernel() || is_fadump_active())
-> >  		elfcorehdr_addr = ELFCORE_ADDR_ERR;
-> >  }
-> 
-> I think it would be cleaner to decouple is_vmcore_usable() and
-> vmcore_usable() from is_kdump_kernel().
-> 
-> ie, make them operate solely based on the value of elforehdr_addr:
-> 
-> static inline int is_vmcore_usable(void)
-> {
-> 	elfcorehdr_addr != ELFCORE_ADDR_ERR && \
-> 		elfcorehdr_addr != ELFCORE_ADDR_MAX;
+Only PowerPC's fb_pgprotect() needs the file argument, although
+the implementation does not use it. Pass NULL to the internal
+helper in preparation of further updates. A later patch will remove
+the file parameter from fb_pgprotect().
 
-Agree. I fell into the blind corner of thinking earlier. Above change
-is better.
+While at it, replace the shift operation with PHYS_PFN().
 
-> }
-> 
-> static inline void vmcore_unusable(void)
-> {
-> 	elfcorehdr_addr = ELFCORE_ADDR_ERR;
-> }
-> 
-> 
-> Then all we need on powerpc is a way to override is_kdump_kernel().
-> 
-> cheers
-> 
+Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ arch/powerpc/include/asm/fb.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/fb.h b/arch/powerpc/include/asm/fb.h
+index 5f1a2e5f76548..61e3b8806db69 100644
+--- a/arch/powerpc/include/asm/fb.h
++++ b/arch/powerpc/include/asm/fb.h
+@@ -9,7 +9,12 @@
+ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 				unsigned long off)
+ {
+-	vma->vm_page_prot = phys_mem_access_prot(file, off >> PAGE_SHIFT,
++	/*
++	 * PowerPC's implementation of phys_mem_access_prot() does
++	 * not use the file argument. Set it to NULL in preparation
++	 * of later updates to the interface.
++	 */
++	vma->vm_page_prot = phys_mem_access_prot(NULL, PHYS_PFN(off),
+ 						 vma->vm_end - vma->vm_start,
+ 						 vma->vm_page_prot);
+ }
+-- 
+2.42.0
 
