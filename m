@@ -4,54 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FE00EE57DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 07:17:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AF2EEE7FF4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 07:20:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RkdMQ6lN0z3cRg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 17:17:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.208.47; helo=mail-ed1-f47.google.com; envelope-from=jirislaby@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-f47.google.com (mail-ed1-f47.google.com [209.85.208.47])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RkdQx04GRz3cDV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 17:20:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 314 seconds by postgrey-1.37 at boromir; Mon, 11 Sep 2023 17:19:57 AEST
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RkdLw2LYrz2yDM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 17:16:55 +1000 (AEST)
-Received: by mail-ed1-f47.google.com with SMTP id 4fb4d7f45d1cf-52a23227567so5218033a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 00:16:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694416611; x=1695021411;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=pifjIYv6Hyk5rsiSFmdRIaR5tzpXVSFZgH+NJpSIZKo=;
-        b=j4T1wNrlzaRrUp6XD4e5unldU84jOWLBod/M3y9IsLWWVSq4KOJh+gUOjZvH7+upuW
-         1IGEQOxR4jL3ChmDQekVQtVccXMyFjINRhsivA3752Vz+dtFKBmqzf4A2Qn315fv8eff
-         gYHEVcA7C1K/aEBbGMSDyFg+4WPB4p++PFE6v/HapgpUKvyUklvu+OAiMsQuK6OlqCzK
-         IY4nF8Wp2e4mUwrE5jGdD8b0jogcrlN1AOOKdCX+Ghprn1vwgHjCkYsso1mN3Rhnvss7
-         9d8wmbQarRPyJBkQw+IitEYDBvL/N/zFSxgv7ttCRGGNjfBwr6+vg/CsSQ4Js1Cb4Pds
-         nKPQ==
-X-Gm-Message-State: AOJu0YwKXAU2XEkgyfuPepUz87jYLtAZ9EFvBngqzflyYZVJqQCeP5FM
-	KeCWfUjptN/Zipb+ROpuB8M=
-X-Google-Smtp-Source: AGHT+IF8WwlA+cjc7QZ3b7ObgufEBSdtFZ7KGlJIYi0Vw11q+BUCebVWj2pxlmXKlPh+iGDNpddDFw==
-X-Received: by 2002:a17:906:31d8:b0:9a5:b814:8254 with SMTP id f24-20020a17090631d800b009a5b8148254mr6660837ejf.24.1694416611007;
-        Mon, 11 Sep 2023 00:16:51 -0700 (PDT)
-Received: from [192.168.1.58] (185-219-167-24-static.vivo.cz. [185.219.167.24])
-        by smtp.gmail.com with ESMTPSA id x1-20020a170906134100b009926928d486sm4848237ejb.35.2023.09.11.00.16.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Sep 2023 00:16:50 -0700 (PDT)
-Message-ID: <9a3ed34a-10f2-c778-501e-8be600dce167@kernel.org>
-Date: Mon, 11 Sep 2023 09:16:49 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH] tty: hvc: remove set but unused variable
-Content-Language: en-US
-To: Bo Liu <liubo03@inspur.com>, gregkh@linuxfoundation.org
-References: <20230908061726.2641-1-liubo03@inspur.com>
-From: Jiri Slaby <jirislaby@kernel.org>
-In-Reply-To: <20230908061726.2641-1-liubo03@inspur.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RkdQP3w67z2xdZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 17:19:56 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id F1E481A135A;
+	Mon, 11 Sep 2023 09:14:38 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B9D4B1A1380;
+	Mon, 11 Sep 2023 09:14:38 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 30A171820F56;
+	Mon, 11 Sep 2023 15:14:37 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl: imx-pcm-rpmsg: Add SNDRV_PCM_INFO_BATCH flag
+Date: Mon, 11 Sep 2023 14:38:07 +0800
+Message-Id: <1694414287-13291-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,19 +53,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 08. 09. 23, 8:17, Bo Liu wrote:
-> The local variable vdev in hvcs_destruct_port() is set
-> but not used. Remove the variable and related code.
-> 
-> Signed-off-by: Bo Liu <liubo03@inspur.com>
+The rpmsg pcm device is a device which should support
+double buffering.
 
-Reviewed-by: Jiri Slaby <jirislaby@kernel.org>
+Found this issue with pipewire. When there is no
+SNDRV_PCM_INFO_BATCH flag in driver, the pipewire will
+set headroom to be zero, and because rpmsg pcm device
+don't support residue report, when the latency setting
+is small, the "delay" always larger than "target" in
+alsa-pcm.c, that reading next period data is not
+scheduled on time.
 
+With SNDRV_PCM_INFO_BATCH flag in driver, the pipewire
+will select a smaller period size for device, then
+the task of reading next period data will be scheduled
+on time.
+
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/imx-pcm-rpmsg.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sound/soc/fsl/imx-pcm-rpmsg.c b/sound/soc/fsl/imx-pcm-rpmsg.c
+index d63782b8bdef..bb736d45c9e0 100644
+--- a/sound/soc/fsl/imx-pcm-rpmsg.c
++++ b/sound/soc/fsl/imx-pcm-rpmsg.c
+@@ -19,6 +19,7 @@
+ static struct snd_pcm_hardware imx_rpmsg_pcm_hardware = {
+ 	.info = SNDRV_PCM_INFO_INTERLEAVED |
+ 		SNDRV_PCM_INFO_BLOCK_TRANSFER |
++		SNDRV_PCM_INFO_BATCH |
+ 		SNDRV_PCM_INFO_MMAP |
+ 		SNDRV_PCM_INFO_MMAP_VALID |
+ 		SNDRV_PCM_INFO_NO_PERIOD_WAKEUP |
 -- 
-js
-suse labs
+2.34.1
 
