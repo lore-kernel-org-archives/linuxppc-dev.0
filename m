@@ -4,78 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1FE8EE3F28
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:10:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44FBBEE3F37
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 21:37:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=PPR3Ahs7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=leLQOR+7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlZT16sj8z3dW0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 06:10:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlcPG51bgz3cPC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 07:37:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=PPR3Ahs7;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=leLQOR+7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050:0:465::202; helo=mout-p-202.mailbox.org; envelope-from=erhard_f@mailbox.org; receiver=lists.ozlabs.org)
-Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [IPv6:2001:67c:2050:0:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mgamail.intel.com; envelope-from=sohil.mehta@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 12 Sep 2023 04:04:44 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlZS30p7Xz3cN6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 06:09:35 +1000 (AEST)
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4RlZRm1yq8z9spL;
-	Tue, 12 Sep 2023 22:09:24 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1694549364;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=5CTaseLYOsDjBEddHRSS1kLR/MtlG0vJlK7mZIYlxMk=;
-	b=PPR3Ahs7fgYzEWryZmgagw7s7mLptcmMjGoVq22Ezcl83SPOjapP8y9UMN309tY7DYZool
-	WotDqKJzxnRlA5A8uWplR5vN/Kjdj3WQn+23Aa9tFuCrBBG14HjSdhgkSwz6deK5z1u2iH
-	MCpYl3E8WIFBrUXm9v5cQuxLu6mP86MarUbCB7+Pjtn6HLtTteTvqJ+tyCH4T3Xv5Ee2Tr
-	C0TbPe05VHCNGh/q3FzMfW3ud1pvV4X7gvj8JwhNVpIE3jjd9Kz9wti/DjVDv8FLWwD0gJ
-	QqYqv7B9rFdthY+upXNshBbPNe5iLFceaR+fM6zuLMHq1wnJ1FQ1zxn3PuiE5w==
-Date: Tue, 12 Sep 2023 22:09:20 +0200
-From: Erhard Furtner <erhard_f@mailbox.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: KASAN debug kernel fails to boot at early stage when
- CONFIG_SMP=y is set (kernel 6.5-rc5, PowerMac G4 3,6)
-Message-ID: <20230912220920.64a9ac3c@yea>
-In-Reply-To: <453090a5-0d01-40ee-50a5-794c8f0f1f95@csgroup.eu>
-References: <20230811014845.1bf6771d@yea>
-	<20230814192748.56525c82@yea>
-	<6d710a2b-5cac-9f0a-cd30-0ad18172932b@csgroup.eu>
-	<20230815220156.5c234b52@yea>
-	<0876e754-7bee-ec61-4e3c-c0ee08d59d87@csgroup.eu>
-	<20230817203202.2b4c273c@yea>
-	<87y1i9clf2.fsf@mail.lhotse>
-	<20230818111641.7f680ce7@yea>
-	<fcdf2bf7-0834-b27f-4d24-28e05815ee6f@csgroup.eu>
-	<20230818182316.79303545@yea>
-	<5ea3302e-0fb1-1670-e4b6-adba5115ab94@csgroup.eu>
-	<20230824020015.78733931@yea>
-	<87jztkvfid.fsf@mail.lhotse>
-	<20230828011758.3b7b9daf@yea>
-	<1085cc49-b5e8-0aa5-dc97-ec4a100463b5@csgroup.eu>
-	<20230901004417.631dc019@yea>
-	<b9671cd2-9cad-c5d9-dd94-8b39f67e29b4@csgroup.eu>
-	<20230903230635.5751b620@yea>
-	<438d8790-8a55-2f36-4ef0-2fddcb39edae@csgroup.eu>
-	<c0891617-43b9-5b56-2c51-69eec81e3b48@csgroup.eu>
-	<20230912021147.57c85033@yea>
-	<22f67fc2-ae70-bbc7-ca2a-dffbf62731f3@csgroup.eu>
-	<20230912175941.0fca47bb@yea>
-	<453090a5-0d01-40ee-50a5-794c8f0f1f95@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RkvkN6ftvz30P0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 04:04:44 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694455485; x=1725991485;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=kxCm8IPxO4Adx3HaWS72d7S3asKhB+RqeSR07UfgL5Q=;
+  b=leLQOR+7asKb1BCOi6UNmld0MqvkiEeoMHWCBrl0o2p46JH+hVefetbx
+   /YF2EWwk5iMqDu+Tb5y5qiFiCn4SDCmAB0PfpcZYNIlMg+djmmgAPExuV
+   3tc5pSdOl/ZehPlHk3WfmigxIY+naMbg9X17/ML8x359KHVf6kCBYNDtg
+   b5TwZfmlkoMtr9DzNgTr4abZTlWqmeX9C9gVEE6swWFqfwgwNdpqVbbtU
+   JhpGbzlZ08UsTY0S6m/N52+zLWDrQgzCNZoS5gdKndVZFNdQ1ZmeZtaTm
+   p4ChGM9WhfcDg2FwmImpmfp9weVknpIrF92b25Co8KE0uc74GOqozc85T
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="368416950"
+X-IronPort-AV: E=Sophos;i="6.02,244,1688454000"; 
+   d="scan'208";a="368416950"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 11:03:27 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="808905950"
+X-IronPort-AV: E=Sophos;i="6.02,244,1688454000"; 
+   d="scan'208";a="808905950"
+Received: from sohilmeh.sc.intel.com ([172.25.103.65])
+  by fmsmga008.fm.intel.com with ESMTP; 11 Sep 2023 11:03:26 -0700
+From: Sohil Mehta <sohil.mehta@intel.com>
+To: linux-kernel@vger.kernel.org,
+	linux-api@vger.kernel.org,
+	linux-arch@vger.kernel.org
+Subject: [PATCH 0/2] arch: Sync all syscall tables with 2 newly added system calls
+Date: Mon, 11 Sep 2023 18:02:08 +0000
+Message-Id: <20230911180210.1060504-1-sohil.mehta@intel.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 636a533f3eb030c4528
-X-MBO-RS-META: yd7wong3i1uxkxwaxsdjkw75mjr6ruxx
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Wed, 13 Sep 2023 07:36:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,92 +68,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+  Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Sohil Mehta <sohil.mehta@intel.com>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@
+ intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 12 Sep 2023 17:39:10 +0000
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+6.6-rc1 has added support for 2 new system calls:
+[1] fchmodat2()
+[2] x86-specific map_shadow_stack()
 
-> Ah ok, maybe your CPU only has 4 BATs and they are all used, following 
-> change would tell us.
-> 
-> diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-> index 850783cfa9c7..bd26767edce7 100644
-> --- a/arch/powerpc/mm/book3s32/mmu.c
-> +++ b/arch/powerpc/mm/book3s32/mmu.c
-> @@ -86,6 +86,7 @@ int __init find_free_bat(void)
->   		if (!(bat[1].batu & 3))
->   			return b;
->   	}
-> +	pr_err("NO FREE BAT (%d)\n", n);
->   	return -1;
->   }
-> 
-> Or you have 8 BATs in which case it's an alignment problem, you need to 
-> increase CONFIG_DATA_SHIFT to 23, for that you need CONFIG_ADVANCED and 
-> CONFIG_DATA_SHIFT_BOOL
+This series mainly synchronizes the syscall tables arcoss the core kernel and
+tools to reflect the recent updates.
 
-Applied all your patches. According to the output my G4 DP seems to have 8 BATs. Now I get the following output on screen before the freeze:
+For fchmodat2(), it fixes the missing entries in the tools directory.
 
-printk: bootconsole [udbg0] enabled
-Total memory = 2048MB; using 4096kB for hash table
-mapin_ram:125
-mmu_mapin_ram:170 0 30000000 1400000 2000000
-__mmu_mapin_ram:147 0 1400000
-__mmu_mapin_ram:156 1400000
-__mmu_mapin_ram:147 1400000 30000000
-NO FREE BAT (8)
-__mmu_mapin_ram:156 20000000
-__mapin_ram_chunk:107 20000000 30000000
-__mapin_ram_chunk:117
-mapin_ram:134
-kasan_mmu_init:132
-kasan_mmu_init:135 0
-kasan_mmu_init:140
-ioremap() called early from btext_map+0x64/0xdc. Use early_ioremap() instead
-Linux version 6.6.0-rc1-PMacG4-dirty (root@T1000) (gcc (Gentoo 12.3.1_p20230526 p2) 12.3.1 20230526, GNU ld (Gentoo 2.40 p7) 2.40.0) #5 SMP Tue Sep 12 16:50:47 CEST 2023
-kasan_init_region: c0000000 30000000 f8000000 fe000000
-NO FREE BAT (8)
-kasan_init_region: loop f8000000 fe000000
+For map_shadow_stack(), it reserves the syscall across the board. Since
+map_shadow_stack() is x86 specific for now, it is marked as a conditional
+syscall in sys_ni.c. Adding it to the syscall tables of other architectures is
+harmless and would return ENOSYS when exercised.
 
+Reserving arch-specific syscall numbers in the tables of all architectures is
+good practice and would help avoid future conflicts.
 
-So I set CONFIG_DATA_SHIFT=23 as suggested but then I only get:
+[1]: https://lore.kernel.org/lkml/20230824-frohlocken-vorabend-725f6fdaad50@brauner/
+[2]: https://lore.kernel.org/lkml/20230830234752.19858-1-dave.hansen@linux.intel.com/
 
-printk: bootconsole [udbg0] enabled
-Total memory = 2048MB; using 4096kB for hash table
-mapin_ram:125
-mmu_mapin_ram:170 0 30000000 1400000 2000000
-__mmu_mapin_ram:147 0 1400000
-__mmu_mapin_ram:156 1400000
-__mmu_mapin_ram:147 1400000 30000000
-NO FREE BAT (8)
-__mmu_mapin_ram:156 20000000
-__mapin_ram_chunk:107 20000000 30000000
-__mapin_ram_chunk:117
-mapin_ram:134
-kasan_mmu_init:132
-kasan_mmu_init:135 0
-kasan_mmu_init:140
+Sohil Mehta (2):
+  tools headers UAPI: Sync fchmodat2() syscall table entries
+  arch: Reserve map_shadow_stack() syscall number for all architectures
+
+ arch/alpha/kernel/syscalls/syscall.tbl              | 1 +
+ arch/arm/tools/syscall.tbl                          | 1 +
+ arch/arm64/include/asm/unistd.h                     | 2 +-
+ arch/arm64/include/asm/unistd32.h                   | 2 ++
+ arch/ia64/kernel/syscalls/syscall.tbl               | 1 +
+ arch/m68k/kernel/syscalls/syscall.tbl               | 1 +
+ arch/microblaze/kernel/syscalls/syscall.tbl         | 1 +
+ arch/mips/kernel/syscalls/syscall_n32.tbl           | 1 +
+ arch/mips/kernel/syscalls/syscall_n64.tbl           | 1 +
+ arch/mips/kernel/syscalls/syscall_o32.tbl           | 1 +
+ arch/parisc/kernel/syscalls/syscall.tbl             | 1 +
+ arch/powerpc/kernel/syscalls/syscall.tbl            | 1 +
+ arch/s390/kernel/syscalls/syscall.tbl               | 1 +
+ arch/sh/kernel/syscalls/syscall.tbl                 | 1 +
+ arch/sparc/kernel/syscalls/syscall.tbl              | 1 +
+ arch/x86/entry/syscalls/syscall_32.tbl              | 1 +
+ arch/xtensa/kernel/syscalls/syscall.tbl             | 1 +
+ include/uapi/asm-generic/unistd.h                   | 5 ++++-
+ tools/include/uapi/asm-generic/unistd.h             | 8 +++++++-
+ tools/perf/arch/mips/entry/syscalls/syscall_n64.tbl | 2 ++
+ tools/perf/arch/powerpc/entry/syscalls/syscall.tbl  | 2 ++
+ tools/perf/arch/s390/entry/syscalls/syscall.tbl     | 2 ++
+ tools/perf/arch/x86/entry/syscalls/syscall_64.tbl   | 2 ++
+ 23 files changed, 37 insertions(+), 3 deletions(-)
 
 
-With btext_unmap() left in place in init_32.c I only get:
+base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
+-- 
+2.34.1
 
-printk: bootconsole [udbg0] enabled
-Total memory = 2048MB; using 4096kB for hash table
-mapin_ram:125
-mmu_mapin_ram:170 0 30000000 1400000 2000000
-__mmu_mapin_ram:147 0 1400000
-__mmu_mapin_ram:156 1400000
-__mmu_mapin_ram:147 1400000 30000000
-NO FREE BAT (8)
-__mmu_mapin_ram:156 20000000
-__mapin_ram_chunk:107 20000000 30000000
-__mapin_ram_chunk:117
-mapin_ram:134
-btext_unmap:129
-
-Hope the output sheds at least some light on what's going wrong!
-
-Regards,
-Erhard
