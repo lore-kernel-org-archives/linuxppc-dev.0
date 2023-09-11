@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C63AEE7FF4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 13:12:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE091EE7FF4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 13:13:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=mSW0q6ME;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1vgu7+3t;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=NXQHlmbM;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JCHgcAtx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RknF23vBdz3cnW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 23:12:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RknFz1xtCz3cDg
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 23:13:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=mSW0q6ME;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1vgu7+3t;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=NXQHlmbM;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JCHgcAtx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RknC715trz30PJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 23:10:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RknC96g0Hz2ygq
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 23:10:45 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 1C6C81F8B3;
-	Mon, 11 Sep 2023 13:10:40 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 7646421850;
+	Mon, 11 Sep 2023 13:10:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1694437840; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1694437839; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jV/rHFCKWKhe5o/Dlji+h0tSxNvEv9pGQp8HF0qfFsw=;
-	b=mSW0q6MEj1KPMzPB3d033smSU/+7P1DQZVJqlxl4zkjcvaNs0tKzMPrs+l0BU4UwLspSEz
-	dPPl6Og7wtUn0CnjdgtL8nIdW8oOgLfPq0SNe2p+1ylQv9frtr6w0t6HLCjs9CiOGppeLM
-	Yg90LmS9KjNGcMjrbiE+VLEQtoXug14=
+	bh=zC+JZGsYXsje+yxOPTqCSn4MX7oGHygyObBUu1WbhrA=;
+	b=NXQHlmbMHYPOXM6/Q/wl/QPcZG0WBva+XMfJ3bI8zPZR0ux8x966yv6JXD7NlSTCOQklTa
+	932HKLit7W3e7hcuwCJ8sc5x6KRlq+PhBRrREvJgCoo1V1dGXQ5h7PnTiS4OLTxVn3gu1O
+	Rx1xh4EvrS13FZCYRWs2QwstnFhPB3k=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1694437840;
+	s=susede2_ed25519; t=1694437839;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jV/rHFCKWKhe5o/Dlji+h0tSxNvEv9pGQp8HF0qfFsw=;
-	b=1vgu7+3tLZznWqsP9qfvBNfnUnK3VaR8QMmFTtpI2YuFLcX8K/kILGi/DxpMWvVMqpVEQC
-	D8E9OsoTutCCHgBQ==
+	bh=zC+JZGsYXsje+yxOPTqCSn4MX7oGHygyObBUu1WbhrA=;
+	b=JCHgcAtxoFB/ZbPa6EOWzeOMrMPLp/0P8whX9d/BfwDeq0tnkGwyxy4nr08KjBixgKrfEu
+	Rcaq/Y+WU3OamAAw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C895F13780;
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2DC1513AD1;
 	Mon, 11 Sep 2023 13:10:39 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id 0AuGL88R/2SCIwAAMHmgww
+	id ALk3Cs8R/2SCIwAAMHmgww
 	(envelope-from <tzimmermann@suse.de>); Mon, 11 Sep 2023 13:10:39 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: mpe@ellerman.id.au,
@@ -64,9 +64,9 @@ To: mpe@ellerman.id.au,
 	christophe.leroy@csgroup.eu,
 	arnd@arndb.de,
 	deller@gmx.de
-Subject: [PATCH v3 5/5] arch/powerpc: Call internal __phys_mem_access_prot() in fbdev code
-Date: Mon, 11 Sep 2023 15:08:35 +0200
-Message-ID: <20230911131033.27745-6-tzimmermann@suse.de>
+Subject: [PATCH v3 3/5] arch/powerpc: Remove trailing whitespaces
+Date: Mon, 11 Sep 2023 15:08:33 +0200
+Message-ID: <20230911131033.27745-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20230911131033.27745-1-tzimmermann@suse.de>
 References: <20230911131033.27745-1-tzimmermann@suse.de>
@@ -87,32 +87,49 @@ Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Call __phys_mem_access_prot() from the fbdev mmap helper
-pgprot_framebuffer(). Allows to avoid the file argument of NULL.
+Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- arch/powerpc/include/asm/fb.h | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ arch/powerpc/include/asm/machdep.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/fb.h b/arch/powerpc/include/asm/fb.h
-index 3cecf14d51de8..c0c5d1df7ad1e 100644
---- a/arch/powerpc/include/asm/fb.h
-+++ b/arch/powerpc/include/asm/fb.h
-@@ -8,12 +8,7 @@ static inline pgprot_t pgprot_framebuffer(pgprot_t prot,
- 					  unsigned long vm_start, unsigned long vm_end,
- 					  unsigned long offset)
- {
--	/*
--	 * PowerPC's implementation of phys_mem_access_prot() does
--	 * not use the file argument. Set it to NULL in preparation
--	 * of later updates to the interface.
--	 */
--	return phys_mem_access_prot(NULL, PHYS_PFN(offset), vm_end - vm_start, prot);
-+	return __phys_mem_access_prot(PHYS_PFN(offset), vm_end - vm_start, prot);
- }
- #define pgprot_framebuffer pgprot_framebuffer
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 4f6e7d7ee3883..933465ed4c432 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -10,7 +10,7 @@
+ #include <linux/export.h>
  
+ struct pt_regs;
+-struct pci_bus;	
++struct pci_bus;
+ struct device_node;
+ struct iommu_table;
+ struct rtc_time;
+@@ -78,8 +78,8 @@ struct machdep_calls {
+ 	unsigned char 	(*nvram_read_val)(int addr);
+ 	void		(*nvram_write_val)(int addr, unsigned char val);
+ 	ssize_t		(*nvram_write)(char *buf, size_t count, loff_t *index);
+-	ssize_t		(*nvram_read)(char *buf, size_t count, loff_t *index);	
+-	ssize_t		(*nvram_size)(void);		
++	ssize_t		(*nvram_read)(char *buf, size_t count, loff_t *index);
++	ssize_t		(*nvram_size)(void);
+ 	void		(*nvram_sync)(void);
+ 
+ 	/* Exception handlers */
+@@ -102,9 +102,9 @@ struct machdep_calls {
+ 	 */
+ 	long	 	(*feature_call)(unsigned int feature, ...);
+ 
+-	/* Get legacy PCI/IDE interrupt mapping */ 
++	/* Get legacy PCI/IDE interrupt mapping */
+ 	int		(*pci_get_legacy_ide_irq)(struct pci_dev *dev, int channel);
+-	
++
+ 	/* Get access protection for /dev/mem */
+ 	pgprot_t	(*phys_mem_access_prot)(struct file *file,
+ 						unsigned long pfn,
 -- 
 2.42.0
 
