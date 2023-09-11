@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDEE4EE57DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 19:05:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9097EE57DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 19:06:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkx4Q2X10z3dgD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 05:05:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkx542N0Lz3dlv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 05:06:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkx2V36Zgz3cCc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 05:03:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkx2Y2gj2z3cGv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 05:03:49 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Rkx2C4pPsz9vQp;
-	Mon, 11 Sep 2023 21:03:31 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4Rkx2D2DjSz9vQx;
+	Mon, 11 Sep 2023 21:03:32 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id uku5ec4MmWeY; Mon, 11 Sep 2023 21:03:31 +0200 (CEST)
+	with ESMTP id PiYdjTbvmM6N; Mon, 11 Sep 2023 21:03:32 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Rkx275b9qz9vQx;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Rkx275Qmjz9vQw;
 	Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 97FF48B786;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9042E8B787;
 	Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id vM88laUTJyTY; Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
+	with ESMTP id 88Pi_4G6CqMN; Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.38])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 037728B794;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EED0B8B786;
 	Mon, 11 Sep 2023 21:03:26 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38BJ3IVm3544229
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38BJ3H5l3544205
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 11 Sep 2023 21:03:19 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38BJ3I7t3544228;
 	Mon, 11 Sep 2023 21:03:18 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38BJ3Ho53544203;
+	Mon, 11 Sep 2023 21:03:17 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 11/19] powerpc/nohash: Replace #ifdef CONFIG_44x by IS_ENABLED(CONFIG_44x) in pgtable.h
-Date: Mon, 11 Sep 2023 21:03:17 +0200
-Message-ID: <f07191faa5c2779b685d69fea4c7aa58e70d30ff.1694443576.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 05/19] powerpc: Deduplicate prototypes of ptep_set_access_flags() and phys_mem_access_prot()
+Date: Mon, 11 Sep 2023 21:03:11 +0200
+Message-ID: <d938ea610d07225a33fe5b8f6539548a90dc3c0a.1694443576.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1694443576.git.christophe.leroy@csgroup.eu>
 References: <cover.1694443576.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1694458987; l=1052; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Si0OchHJrbm/nH/U6mN90JH5OHgoPjui5966JYi+3Kg=; b=z4nHTzMbzgUVzGuh2zmwAsi0W/CRHBkP9WEyEMEhyLWnGBpyX2J/qEST2w2MASqMgSWa+cfEt iTngMLFJFb/BIbMLDj/dx29TOIlCNLsra4VqHz8+bwZdTE7ftigDWbP
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1694458986; l=3011; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=hV24awO1k2ITaiMZFdoSXDaSkZhmyt2kjzbXnNeJWss=; b=/1irJg/NBuaxzbKLPAK5ePLvqsFt6J3NgmDqAOA5kRNWTjTUthXiuhFNQ0olWoR45LtNhp2K9 cIQOiSDMUKqBrKw0MrhqmiiOGPcI4w8d4SkxSiJNlSfYhZ+m0BHcO2X
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,40 +71,87 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No need of a #ifdef, use IS_ENABLED(CONFIG_44x)
+Prototypes of ptep_set_access_flags() and phys_mem_access_prot() are identical
+for book3s and nohash.
+
+Deduplicate them.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/book3s/pgtable.h |  9 ---------
+ arch/powerpc/include/asm/nohash/pgtable.h | 10 ----------
+ arch/powerpc/include/asm/pgtable.h        | 10 ++++++++++
+ 3 files changed, 10 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index be8bca42bdce..a74476de1ef6 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -9,9 +9,7 @@
- #include <linux/threads.h>
- #include <asm/mmu.h>			/* For sub-arch specific PPC_PIN_SIZE */
- 
--#ifdef CONFIG_44x
- extern int icache_44x_need_flush;
--#endif
- 
- #endif /* __ASSEMBLY__ */
- 
-@@ -229,10 +227,9 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
- 
- 	*p = __pte(new);
- 
--#ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
-+	if (IS_ENABLED(CONFIG_44x) && (old & _PAGE_USER) && (old & _PAGE_EXEC))
- 		icache_44x_need_flush = 1;
--#endif
-+
- 	return old;
- }
+diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
+index 3b7bd36a2321..6f4578daea6c 100644
+--- a/arch/powerpc/include/asm/book3s/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/pgtable.h
+@@ -9,15 +9,6 @@
  #endif
+ 
+ #ifndef __ASSEMBLY__
+-#define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+-extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+-				 pte_t *ptep, pte_t entry, int dirty);
+-
+-struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
+-#define __HAVE_PHYS_MEM_ACCESS_PROT
+-
+ void __update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t *ptep);
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index c721478c5934..5b6647fb398b 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -207,11 +207,6 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 		mb();
+ }
+ 
+-
+-#define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+-extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+-				 pte_t *ptep, pte_t entry, int dirty);
+-
+ /*
+  * Macro to mark a page protection value as "uncacheable".
+  */
+@@ -240,11 +235,6 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
+ 
+ #define pgprot_writecombine pgprot_noncached_wc
+ 
+-struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
+-#define __HAVE_PHYS_MEM_ACCESS_PROT
+-
+ #ifdef CONFIG_HUGETLB_PAGE
+ static inline int hugepd_ok(hugepd_t hpd)
+ {
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index d0ee46de248e..bcdbdeda65d3 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -110,6 +110,16 @@ void mark_initmem_nx(void);
+ static inline void mark_initmem_nx(void) { }
+ #endif
+ 
++#define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
++int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
++			  pte_t *ptep, pte_t entry, int dirty);
++
++struct file;
++pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++			      unsigned long size, pgprot_t vma_prot);
++#define __HAVE_PHYS_MEM_ACCESS_PROT
++
++
+ /*
+  * When used, PTE_FRAG_NR is defined in subarch pgtable.h
+  * so we are sure it is included when arriving here.
 -- 
 2.41.0
 
