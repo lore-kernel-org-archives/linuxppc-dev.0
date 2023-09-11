@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03A3FEE57DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 19:08:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9C1BC71153
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 19:08:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkx7l3rGrz3cHf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 05:08:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkx8G45dsz3cF1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 05:08:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkx2v5rwZz3dCs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 05:04:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkx303LXRz3dDq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 05:04:12 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Rkx2K0hWkz9vRq;
-	Mon, 11 Sep 2023 21:03:37 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4Rkx2L5W74z9vRB;
+	Mon, 11 Sep 2023 21:03:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jH8O5lc_9Mjb; Mon, 11 Sep 2023 21:03:37 +0200 (CEST)
+	with ESMTP id Hyu7e_x9JGzO; Mon, 11 Sep 2023 21:03:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Rkx276fJTz9vRB;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Rkx276fSFz9vRl;
 	Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9A2BC8B7AD;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A3CDD8B79E;
 	Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id FEEyZljjmxlL; Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
+	with ESMTP id 2REp59r1a2-c; Mon, 11 Sep 2023 21:03:27 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.38])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 19CDC8B79E;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 111EB8B799;
 	Mon, 11 Sep 2023 21:03:26 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38BJ3H5e3544196
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38BJ3J5o3544249
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 11 Sep 2023 21:03:17 +0200
+	Mon, 11 Sep 2023 21:03:19 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38BJ3HpH3544195;
-	Mon, 11 Sep 2023 21:03:17 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38BJ3Jq23544248;
+	Mon, 11 Sep 2023 21:03:19 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 03/19] powerpc/40x: Remove stale PTE_ATOMIC_UPDATES macro
-Date: Mon, 11 Sep 2023 21:03:09 +0200
-Message-ID: <3decc02a589d43172f4b7b59e88f3f5ec9c4bcda.1694443576.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 16/19] powerpc/nohash: Refactor ptep_test_and_clear_young()
+Date: Mon, 11 Sep 2023 21:03:22 +0200
+Message-ID: <7dcbcac14c8c2c4e433e51508a715259d841a7b8.1694443576.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1694443576.git.christophe.leroy@csgroup.eu>
 References: <cover.1694443576.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1694458986; l=1072; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=QzJlyIFHJpgKsl8CqBCBYJcP1k7K6NnlZ/rdWkTGY04=; b=2bNpGH3pE6odsTLKccPy01AC9YqiMAVC+NDxvfq4QK/eXYjqUETVH9J92RqEqt+SYjq+2X75N qnTH2F1JvTqB7ACb9L3euA0/Xl8A6AXU2ckRN9NUek0D8TOA1uO/62D
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1694458987; l=3614; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Y/C63pFT1rMMjtE9mWYVj4ITK7GX+xPbgdK4F4ZXVbk=; b=1DxDRkG5HuwclQeqm3w1ftfZ2EfQa1Tvizf16pk/cJUjMeoJKctxE2KGoR5wJs1CiA72k+B9y +fiPYF6qxMbBx8JcBRfUEK4Ej5tqAEXOozJVLSJKB752fZt2j+3+j2X
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,35 +71,98 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-40x TLB handlers were reworked by commit 2c74e2586bb9 ("powerpc/40x:
-Rework 40x PTE access and TLB miss") to not require PTE_ATOMIC_UPDATES
-anymore.
+Remove ptep_test_and_clear_young() macro, make
+__ptep_test_and_clear_young() common to nohash/32 and nohash/64
+and change it to become ptep_test_and_clear_young()
 
-Then commit 4e1df545e2fa ("powerpc/pgtable: Drop PTE_ATOMIC_UPDATES")
-removed all code related to PTE_ATOMIC_UPDATES.
-
-Remove left over PTE_ATOMIC_UPDATES macro.
-
-Fixes: 2c74e2586bb9 ("powerpc/40x: Rework 40x PTE access and TLB miss")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/pte-40x.h | 3 ---
- 1 file changed, 3 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 11 -----------
+ arch/powerpc/include/asm/nohash/64/pgtable.h | 19 +------------------
+ arch/powerpc/include/asm/nohash/pgtable.h    | 11 +++++++++++
+ 3 files changed, 12 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-index 6fe46e754556..0b4e5f8ce3e8 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-@@ -69,9 +69,6 @@
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index de51f78449a0..b7605000bd91 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -164,17 +164,6 @@ static inline void pmd_clear(pmd_t *pmdp)
+ 	*pmdp = __pmd(0);
+ }
  
- #define _PTE_NONE_MASK	0
- 
--/* Until my rework is finished, 40x still needs atomic PTE updates */
--#define PTE_ATOMIC_UPDATES	1
+-#define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+-					      unsigned long addr, pte_t *ptep)
+-{
+-	unsigned long old;
+-	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
+-	return (old & _PAGE_ACCESSED) != 0;
+-}
+-#define ptep_test_and_clear_young(__vma, __addr, __ptep) \
+-	__ptep_test_and_clear_young((__vma)->vm_mm, __addr, __ptep)
 -
- #define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
- #define _PAGE_BASE	(_PAGE_BASE_NC)
+ #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+ 				       pte_t *ptep)
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index e8bbc6ec1084..56041036fa34 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -145,22 +145,6 @@ static inline void p4d_set(p4d_t *p4dp, unsigned long val)
+ 	*p4dp = __p4d(val);
+ }
  
+-static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+-					      unsigned long addr, pte_t *ptep)
+-{
+-	unsigned long old;
+-
+-	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
+-	return (old & _PAGE_ACCESSED) != 0;
+-}
+-#define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-#define ptep_test_and_clear_young(__vma, __addr, __ptep)		   \
+-({									   \
+-	int __r;							   \
+-	__r = __ptep_test_and_clear_young((__vma)->vm_mm, __addr, __ptep); \
+-	__r;								   \
+-})
+-
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
+@@ -178,8 +162,7 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ #define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
+ #define ptep_clear_flush_young(__vma, __address, __ptep)		\
+ ({									\
+-	int __young = __ptep_test_and_clear_young((__vma)->vm_mm, __address, \
+-						  __ptep);		\
++	int __young = ptep_test_and_clear_young(__vma, __address, __ptep);\
+ 	__young;							\
+ })
+ 
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 21f232d2e34f..2b043b72f642 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -69,6 +69,17 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
+ }
+ #endif
+ 
++static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
++					    unsigned long addr, pte_t *ptep)
++{
++	unsigned long old;
++
++	old = pte_update(vma->vm_mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
++
++	return (old & _PAGE_ACCESSED) != 0;
++}
++#define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
++
+ /* Generic accessors to PTE bits */
+ #ifndef pte_mkwrite_novma
+ static inline pte_t pte_mkwrite_novma(pte_t pte)
 -- 
 2.41.0
 
