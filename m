@@ -4,84 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 992E6EE7FF4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 05:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67FDFEE7FF4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 05:37:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pSA9Hybv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dssHz3hr;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkb1M1cn5z3c3H
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 15:31:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rkb8R0Ymmz3cB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Sep 2023 15:37:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pSA9Hybv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dssHz3hr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkb0N4jFVz30fk;
-	Mon, 11 Sep 2023 15:30:43 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38B58sex019506;
-	Mon, 11 Sep 2023 05:30:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=/apmyYlDFcp9QzOO9NRRrWiQUrCwuIqBtIy16R70c2Q=;
- b=pSA9Hybv0ds0WHG7vHLjn3wr3Lo3fS/yukiH9uGUS5LRc00oWlXQnEhDjr8LcXWnFyJ5
- sHvmHUw+4sSruSi2sBEfdtsDa7n+wCFh1GzXArBhPNjRCrprPhsYuanXsl59VGybkuKm
- hs359vTkj4ku5vLURSp/LnUkdKUYiDnt5Lf/XUQW8ryB0mY7CHSlX8gIeIdzIeD5WJNj
- bjH2da7T5lOpLgjt1oYaFhn+B5Gg9lC3hmgkezZI1J1GgpajI+AteB7T21GEsoNyJNaQ
- NXAVoaC0J+bNT92VoL77Y3OiVSox5TTZ2FGhG5n4ZCNugITdm/TUMCzN0OQO8KGIXNiS JA== 
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t1m3p8jpu-5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rkb7P6SQKz2yN3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2023 15:36:49 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38B5X9iA010461;
+	Mon, 11 Sep 2023 05:36:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=powS5HRcXLqTXorjnWFvAJPdjtsxApYzkCpUjdalHkw=;
+ b=dssHz3hr9nkE0YH26co5ag+j7kwWQS11Z9hLtGEKLLSwReGow4OvsueHRlHXElwhRLJa
+ a/UlyGLlczdoLioDlc3JDdGZsPwfeD07P1gu7xz5+aOrsi1pcK9/VOgNGac5q47sa8OW
+ 6BjqtXZ3HV+/c4CdeNqAfnlCrMUffl2YBRZiICeaX8uIcMBMqMUSD7SOng9uAIhykCEZ
+ 2VEOb6h1UZO/FM+bSVRzSTgL49x89cvVZ4bg17evJ0AKcEitwWrsQznL7+0cZYRlrcOF
+ hELo2Ja1wHaefPBZrtVYrCtqLnn2NaEa4m79y4Tfm1ih+My+4iBm4qEnAgdaAkkkcflF Jw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t1vuf84su-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Sep 2023 05:30:37 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38B3qOZu024103;
-	Mon, 11 Sep 2023 05:01:47 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3t131sr9ep-1
+	Mon, 11 Sep 2023 05:36:33 +0000
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38B5Z4OQ018621;
+	Mon, 11 Sep 2023 05:36:32 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t1vuf84pg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Sep 2023 05:01:47 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38B51iCo44040736
+	Mon, 11 Sep 2023 05:36:31 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38B4KF8j012083;
+	Mon, 11 Sep 2023 05:36:30 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t13dy8adx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 11 Sep 2023 05:36:30 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38B5aShV12452538
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 11 Sep 2023 05:01:44 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B32FB20043;
-	Mon, 11 Sep 2023 05:01:44 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1459220040;
-	Mon, 11 Sep 2023 05:01:43 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.122.71])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 11 Sep 2023 05:01:42 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.700.6\))
-Subject: Re: [PATCH V5 3/3] skiboot: Update IMC PMU node names for power10
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <f45ca55e-7d63-451a-9763-d3a6b8196179@arbab-laptop>
-Date: Mon, 11 Sep 2023 10:31:31 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <7B2C376F-4326-4C79-9EEA-FD1EC2E677FC@linux.vnet.ibm.com>
-References: <20230717032431.33778-1-atrajeev@linux.vnet.ibm.com>
- <20230717032431.33778-3-atrajeev@linux.vnet.ibm.com>
- <f45ca55e-7d63-451a-9763-d3a6b8196179@arbab-laptop>
-To: Reza Arbab <arbab@linux.ibm.com>
-X-Mailer: Apple Mail (2.3731.700.6)
+	Mon, 11 Sep 2023 05:36:28 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3EE8F20040;
+	Mon, 11 Sep 2023 05:36:28 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4F4672004B;
+	Mon, 11 Sep 2023 05:36:25 +0000 (GMT)
+Received: from li-34d1fccc-27cd-11b2-a85c-c167793e56f7.ibm.com.com (unknown [9.171.42.194])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 11 Sep 2023 05:36:25 +0000 (GMT)
+From: Aboorva Devarajan <aboorvad@linux.vnet.ibm.com>
+To: aboorvad@linux.vnet.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        rmclure@linux.ibm.com, arnd@arndb.de, joel@jms.id.au, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, pratik.r.sampat@gmail.com
+Subject: [RFC v3 0/2] CPU-Idle latency selftest framework
+Date: Mon, 11 Sep 2023 11:06:18 +0530
+Message-Id: <20230911053620.87973-1-aboorvad@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.39.3
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: AXw5x_VqzSfQgLQ0MVDjax1DmsAabdra
-X-Proofpoint-GUID: AXw5x_VqzSfQgLQ0MVDjax1DmsAabdra
+X-Proofpoint-ORIG-GUID: AiFXolyQq-kRKwtTnFsqmHKmO7onNZs3
+X-Proofpoint-GUID: IQT2pzrBtztzNQKqj3s3CiDyfYKy0bGM
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-11_02,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 spamscore=0
- clxscore=1015 impostorscore=0 priorityscore=1501 malwarescore=0
- phishscore=0 mlxlogscore=999 suspectscore=0 lowpriorityscore=0
- adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309110046
+ definitions=2023-09-11_03,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 mlxscore=0
+ suspectscore=0 adultscore=0 clxscore=1015 phishscore=0 bulkscore=0
+ impostorscore=0 spamscore=0 lowpriorityscore=0 malwarescore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309110051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,90 +97,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, =?utf-8?Q?Dan_Hor=C3=A1k?= <dan@danny.cz>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, skiboot@lists.ozlabs.org, Disha Goel <disgoel@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: sshegde@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Changelog: v2 -> v3
 
+* Minimal code refactoring
+* Rebased on v6.6-rc1
 
-> On 10-Aug-2023, at 3:28 AM, Reza Arbab <arbab@linux.ibm.com> wrote:
->=20
-> On Mon, Jul 17, 2023 at 08:54:31AM +0530, Athira Rajeev wrote:
->> @@ -408,14 +469,129 @@ static void disable_unavailable_units(struct =
-dt_node *dev)
->> avl_vec =3D (0xffULL) << 56;
->> }
->>=20
->> - for (i =3D 0; i < ARRAY_SIZE(nest_pmus); i++) {
->> - if (!(PPC_BITMASK(i, i) & avl_vec)) {
->> - /* Check if the device node exists */
->> - target =3D dt_find_by_name_before_addr(dev, nest_pmus[i]);
->> - if (!target)
->> - continue;
->> - /* Remove the device node */
->> - dt_free(target);
->> + if (proc_gen =3D=3D proc_gen_p9) {
->> + for (i =3D 0; i < ARRAY_SIZE(nest_pmus_p9); i++) {
->> + if (!(PPC_BITMASK(i, i) & avl_vec)) {
->=20
-> I think all these PPC_BITMASK(i, i) can be changed to PPC_BIT(i).
+RFC v1: 
+https://lore.kernel.org/all/20210611124154.56427-1-psampat@linux.ibm.com/
 
-Hi Reza,
+RFC v2:
+https://lore.kernel.org/all/20230828061530.126588-2-aboorvad@linux.vnet.ibm.com/
 
-Thanks for reviewing the changes.
-Yes. I will add the change in next version
+Other related RFC:
+https://lore.kernel.org/all/20210430082804.38018-1-psampat@linux.ibm.com/
 
-Thanks
-Athira
->=20
->> + /* Check if the device node exists */
->> + target =3D dt_find_by_name_before_addr(dev, nest_pmus_p9[i]);
->> + if (!target)
->> + continue;
->> + /* Remove the device node */
->> + dt_free(target);
->> + }
->> + }
->> + } else if (proc_gen =3D=3D proc_gen_p10) {
->> + int val;
->> + char name[8];
->> +
->> + for (i =3D 0; i < 11; i++) {
->> + if (!(PPC_BITMASK(i, i) & avl_vec)) {
->> + /* Check if the device node exists */
->> + target =3D dt_find_by_name_before_addr(dev, nest_pmus_p10[i]);
->> + if (!target)
->> + continue;
->> + /* Remove the device node */
->> + dt_free(target);
->> + }
->> + }
->> +
->> + for (i =3D 35; i < 41; i++) {
->> + if (!(PPC_BITMASK(i, i) & avl_vec)) {
->> + /* Check if the device node exists for phb */
->> + for (j =3D 0; j < 3; j++) {
->> + snprintf(name, sizeof(name), "phb%d_%d", (i-35), j);
->> + target =3D dt_find_by_name_before_addr(dev, name);
->> + if (!target)
->> + continue;
->> + /* Remove the device node */
->> + dt_free(target);
->> + }
->> + }
->> + }
->> +
->> + for (i =3D 41; i < 58; i++) {
->> + if (!(PPC_BITMASK(i, i) & avl_vec)) {
->> + /* Check if the device node exists */
->> + target =3D dt_find_by_name_before_addr(dev, nest_pmus_p10[i]);
->> + if (!target)
->> + continue;
->> + /* Remove the device node */
->> + dt_free(target);
->> + }
->> + }
->=20
-> --=20
-> Reza Arbab
+Userspace selftest:
+https://lkml.org/lkml/2020/9/2/356
+
+----
+
+A kernel module + userspace driver to estimate the wakeup latency
+caused by going into stop states. The motivation behind this program is
+to find significant deviations behind advertised latency and residency
+values.
+
+The patchset measures latencies for two kinds of events. IPIs and Timers
+As this is a software-only mechanism, there will be additional latencies
+of the kernel-firmware-hardware interactions. To account for that, the
+program also measures a baseline latency on a 100 percent loaded CPU
+and the latencies achieved must be in view relative to that.
+
+To achieve this, we introduce a kernel module and expose its control
+knobs through the debugfs interface that the selftests can engage with.
+
+The kernel module provides the following interfaces within
+/sys/kernel/debug/powerpc/latency_test/ for,
+
+IPI test:
+    ipi_cpu_dest = Destination CPU for the IPI
+    ipi_cpu_src = Origin of the IPI
+    ipi_latency_ns = Measured latency time in ns
+Timeout test:
+    timeout_cpu_src = CPU on which the timer to be queued
+    timeout_expected_ns = Timer duration
+    timeout_diff_ns = Difference of actual duration vs expected timer
+
+Sample output is as follows:
+
+# --IPI Latency Test---
+# Baseline Avg IPI latency(ns): 2720
+# Observed Avg IPI latency(ns) - State snooze: 2565
+# Observed Avg IPI latency(ns) - State stop0_lite: 3856
+# Observed Avg IPI latency(ns) - State stop0: 3670
+# Observed Avg IPI latency(ns) - State stop1: 3872
+# Observed Avg IPI latency(ns) - State stop2: 17421
+# Observed Avg IPI latency(ns) - State stop4: 1003922
+# Observed Avg IPI latency(ns) - State stop5: 1058870
+#
+# --Timeout Latency Test--
+# Baseline Avg timeout diff(ns): 1435
+# Observed Avg timeout diff(ns) - State snooze: 1709
+# Observed Avg timeout diff(ns) - State stop0_lite: 2028
+# Observed Avg timeout diff(ns) - State stop0: 1954
+# Observed Avg timeout diff(ns) - State stop1: 1895
+# Observed Avg timeout diff(ns) - State stop2: 14556
+# Observed Avg timeout diff(ns) - State stop4: 873988
+# Observed Avg timeout diff(ns) - State stop5: 959137
+
+Aboorva Devarajan (2):
+  powerpc/cpuidle: cpuidle wakeup latency based on IPI and timer events
+  powerpc/selftest: Add support for cpuidle latency measurement
+
+ arch/powerpc/Kconfig.debug                    |  10 +
+ arch/powerpc/kernel/Makefile                  |   1 +
+ arch/powerpc/kernel/test_cpuidle_latency.c    | 154 ++++++
+ tools/testing/selftests/powerpc/Makefile      |   1 +
+ .../powerpc/cpuidle_latency/.gitignore        |   2 +
+ .../powerpc/cpuidle_latency/Makefile          |   6 +
+ .../cpuidle_latency/cpuidle_latency.sh        | 443 ++++++++++++++++++
+ .../powerpc/cpuidle_latency/settings          |   1 +
+ 8 files changed, 618 insertions(+)
+ create mode 100644 arch/powerpc/kernel/test_cpuidle_latency.c
+ create mode 100644 tools/testing/selftests/powerpc/cpuidle_latency/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/cpuidle_latency/Makefile
+ create mode 100755 tools/testing/selftests/powerpc/cpuidle_latency/cpuidle_latency.sh
+ create mode 100644 tools/testing/selftests/powerpc/cpuidle_latency/settings
+
+-- 
+2.25.1
 
