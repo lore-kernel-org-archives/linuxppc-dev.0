@@ -4,57 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37A51EE3F0C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 18:55:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0D38EE3F29
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 21:05:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AQbfl2VA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=hQnWWRxk;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlXnx5LjCz3dGr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 04:55:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rlbhj2HBdz3dR8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 07:05:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AQbfl2VA;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=hQnWWRxk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=xm+6=e4=robh_at_kernel.org=rob@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlXn00fkLz3c7Q
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 04:54:11 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id DEC8961342;
-	Tue, 12 Sep 2023 18:54:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 823B5C433C7;
-	Tue, 12 Sep 2023 18:54:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1694544849;
-	bh=TXiuRN+fe9222gKISsn8I4Nogbg3rIgI0SbpBvdFjlg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AQbfl2VAFMXprI20AyydmsAr0WY8B0+CRGiMAJBjHuM7zSB08TgOI39lOlAx4tapU
-	 SAr8+vpjsNuFUeyxhdDsGrxFGTGdtpVOQxdNr4Td1zvJiZnOs96WFm9JRZ3JUGuWAJ
-	 fzNqrnCeVj73z7hV9uCGgWxPMXMvvEXmqZeB0p0qfEOwtTjqgcfHJwKZhz722LgOz1
-	 7N5gtqy7r3WoNRVv7/FN3geOzhHRldS2I5I6QZVjnI+HfBMQIswdDyHZ/5d6indzNa
-	 bSX/C78catM28TBZV7Q4ac0dpeVTMDC2LWq7gfdCfrIC7Q1ou6Wk/pO1Z/hKqMJ1oL
-	 wfD6zTM+4J/YA==
-Received: (nullmailer pid 1225743 invoked by uid 1000);
-	Tue, 12 Sep 2023 18:54:05 -0000
-Date: Tue, 12 Sep 2023 13:54:05 -0500
-From: Rob Herring <robh@kernel.org>
-To: Conor Dooley <conor@kernel.org>
-Subject: Re: [PATCH v5 25/31] dt-bindings: net: Add the Lantiq PEF2256
- E1/T1/J1 framer
-Message-ID: <20230912185405.GA1165807-robh@kernel.org>
-References: <20230912081527.208499-1-herve.codina@bootlin.com>
- <20230912101444.225809-1-herve.codina@bootlin.com>
- <20230912-overplay-donated-080eb97803d6@spud>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rlbgk3KRhz3cTZ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 07:04:48 +1000 (AEST)
+Received: by mail-yb1-xb2a.google.com with SMTP id 3f1490d57ef6-d8032efa2bfso374248276.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 14:04:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694552683; x=1695157483; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Vn/+r9lrRj3XCF0f1OgbLrVWHe/dDEBlspgHejgs8pM=;
+        b=hQnWWRxkXhZvNcNWLw3XZiUpk+gtyPUz6g86qOC8bZGMyGIWJ+U6YlQYCGC2cXNHIF
+         bECpBzKHCpgckfqUL0DQWNCK5N/ye3TKxul6H2FpS7f+oP6/ZVlhVqlHKv78ywmEto+S
+         C/52IfyP++zegPQ/mECL+FNcy9Kz0As43Aq25DnQSBGM3Aa+VfiQwQzxgkJLFu7Wn6UV
+         IbmcjT8GNQ/d+6I9NPzO8il8nWWlK+hFO/holRdB5WAeWww9rPFMJr5Hz6lNWl9yqsnQ
+         f6u+NMA4fWqww4uF4MnZZt0yr4sdoVbGQGSuX232pZs1zcnB3/K0zX6VZS0guBVSAMDY
+         TNfw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694552683; x=1695157483;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Vn/+r9lrRj3XCF0f1OgbLrVWHe/dDEBlspgHejgs8pM=;
+        b=gcDAbsqQE98NaW6sw7ghZwp+oXjm8iqnHB2KyHoaxV6ROebrsL+lSBL6x4X97Jt3Ri
+         34cC7WURxzolaFMSevtowFAEOE7TKOXnRefZLyBdzH/p3SvwHP7ZQK4oLXvRGYBsMZRv
+         DifYOHO60oTEx9mcsOnfVb+8BuXK2ndlS/swLvzsCwgqoz0NFp0o1AZQosl/jQwfo50t
+         FIT3vhSKVkQIZ/5Mzravrw5a7UuwZnX9iZelMyzJDsrY0crmAvOM8KwvaAIpRprsVMOU
+         7PoSVnzj293RtHbBM0b0nxPq5impllHwoYqeM5KThEJb2y6aYrbfXfnp4u2n0UqkhHjV
+         Z1Og==
+X-Gm-Message-State: AOJu0Yzpc0vCXFLQRjVqaXLLCRgnKyoPOJGUInEc/KEnfBMRa9obDP5X
+	sGnJbhltxZqYG7fG7PW4EJ2Ch4hLv0UEKmGrc4AdEA==
+X-Google-Smtp-Source: AGHT+IGQDuLaoE4eOyZT+Z8hNNsgfwvWorKJwQ3GNnopbwgh3VM6Y+HWcMTMFBMaepKaqB0s4OiEEYQ95/LJVmcUlZY=
+X-Received: by 2002:a25:aa6f:0:b0:d78:414d:1910 with SMTP id
+ s102-20020a25aa6f000000b00d78414d1910mr4091514ybi.25.1694552683091; Tue, 12
+ Sep 2023 14:04:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230912-overplay-donated-080eb97803d6@spud>
+References: <20230912081527.208499-1-herve.codina@bootlin.com>
+ <20230912101505.225899-1-herve.codina@bootlin.com> <CACRpkdbxdMZt4E1SF1v9as-jw=TpvS1mk2TQqAgywMBLbKaNoA@mail.gmail.com>
+ <71761f94-14ea-4e2a-a079-c74dfa32387a@sirena.org.uk>
+In-Reply-To: <71761f94-14ea-4e2a-a079-c74dfa32387a@sirena.org.uk>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 12 Sep 2023 23:04:24 +0200
+Message-ID: <CACRpkdbZK8GUgOcLA2D=7nDejK9cT=bxwP+HcC0GOKr-0yCJ4w@mail.gmail.com>
+Subject: Re: [PATCH v5 28/31] pinctrl: Add support for the Lantic PEF2256 pinmux
+To: Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,119 +77,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Herve Codina <herve.codina@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.c
- om>, Simon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Herve Codina <herve.codina@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Simon Horman <horms@kernel.org>, lin
+ uxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 12, 2023 at 07:13:32PM +0100, Conor Dooley wrote:
-> Yo,
-> 
-> I'm not au fait enough with this to leave particularly meaningful
-> comments, so just some minor ones for you.
-> 
-> On Tue, Sep 12, 2023 at 12:14:44PM +0200, Herve Codina wrote:
-> > The Lantiq PEF2256 is a framer and line interface component designed to
-> > fulfill all required interfacing between an analog E1/T1/J1 line and the
-> > digital PCM system highway/H.100 bus.
-> > 
-> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-> > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> 
-> Missing a co-developed-by?
+On Tue, Sep 12, 2023 at 4:31=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
+te:
+> On Tue, Sep 12, 2023 at 01:04:56PM +0200, Linus Walleij wrote:
+> > On Tue, Sep 12, 2023 at 12:15=E2=80=AFPM Herve Codina <herve.codina@boo=
+tlin.com> wrote:
+>
+> > > +/* SPDX-License-Identifier: GPL-2.0 */
+> > > +/*
+>
+> > I think SPDX mandates that you start the tag with C99 comments
+>
+> > // SPDX-License-Identifier: GPL-2.0-only
+>
+> Not for headers, they should use C style since they might be included in
+> contexts where C++ isn't supported.
 
-Whomever sends the patch should have the last Sob.
+Oh right. Thanks Mark!
 
-> 
-> > ---
-> >  .../bindings/net/lantiq,pef2256.yaml          | 214 ++++++++++++++++++
-> >  1 file changed, 214 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
-> > 
-> > diff --git a/Documentation/devicetree/bindings/net/lantiq,pef2256.yaml b/Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
-> > new file mode 100644
-> > index 000000000000..c4f21678bf6a
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/net/lantiq,pef2256.yaml
-> > @@ -0,0 +1,214 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/net/lantiq,pef2256.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: Lantiq PEF2256
-> > +
-> > +maintainers:
-> > +  - Herve Codina <herve.codina@bootlin.com>
-> > +
-> > +description:
-> > +  The Lantiq PEF2256, also known as Infineon PEF2256 or FALC56, is a framer and
-> > +  line interface component designed to fulfill all required interfacing between
-> > +  an analog E1/T1/J1 line and the digital PCM system highway/H.100 bus.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    items:
-> > +      - const: lantiq,pef2256
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  clocks:
-> > +    items:
-> > +      - description: Master clock
-> 
-> My OCD is rather upset by the inconsistent capitalisation used here :/
-> 
-> > +      - description: System Clock Receive
-> > +      - description: System Clock Transmit
-> > +
-> > +  clock-names:
-> > +    items:
-> > +      - const: mclk
-> > +      - const: sclkr
-> > +      - const: sclkx
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  reset-gpios:
-> > +    description:
-> > +      GPIO used to reset the device.
-> > +    maxItems: 1
-> > +
-> > +  pinctrl:
-> > +    $ref: /schemas/pinctrl/pinctrl.yaml#
-> > +    additionalProperties: false
-> > +
-> > +    patternProperties:
-> > +      '-pins$':
-> > +        type: object
-> > +        $ref: /schemas/pinctrl/pinmux-node.yaml#
-> > +        additionalProperties: false
-> > +
-> > +        properties:
-> > +          pins:
-> > +            enum: [ RPA, RPB, RPC, RPD, XPA, XPB, XPC, XPD ]
-> > +
-> > +          function:
-> > +            enum: [ SYPR, RFM, RFMB, RSIGM, RSIG, DLR, FREEZE, RFSP, LOS,
-> > +                    SYPX, XFMS, XSIG, TCLK, XMFB, XSIGM, DLX, XCLK, XLT,
-> > +                    GPI, GPOH, GPOL ]
-> > +
-> > +        required:
-> > +          - pins
-> > +          - function
-> > +
-> > +  lantiq,data-rate-bps:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    enum: [2048000, 4096000, 8192000, 16384000]
-> 
-> -kBps is a standard suffix, would it be worth using that instead here?
-> What you have would fit as even multiples.
-> Otherwise Rob, should dt-schema grow -bps as a standard suffix?
-
-Yeah, I think that makes sense. I've added it now.
-
-Rob
+Yours,
+Linus Walleij
