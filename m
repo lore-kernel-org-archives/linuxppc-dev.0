@@ -4,52 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1BD4EE3F20
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:02:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1FE8EE3F28
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:10:31 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=PPR3Ahs7;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlZHR6hB5z3ddY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 06:02:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nefkom.net (client-ip=212.18.0.10; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlZGq6rzcz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 06:01:39 +1000 (AEST)
-Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
-	by mail-out.m-online.net (Postfix) with ESMTP id 4RlZGT6RWJz1sCHB;
-	Tue, 12 Sep 2023 22:01:21 +0200 (CEST)
-Received: from localhost (dynscan1.mnet-online.de [192.168.6.68])
-	by mail.m-online.net (Postfix) with ESMTP id 4RlZGS6ZMTz1qqlW;
-	Tue, 12 Sep 2023 22:01:20 +0200 (CEST)
-X-Virus-Scanned: amavis at mnet-online.de
-Received: from mail.mnet-online.de ([192.168.8.182])
- by localhost (dynscan1.mail.m-online.net [192.168.6.68]) (amavis, port 10024)
- with ESMTP id 5XmMrTpGkowr; Tue, 12 Sep 2023 22:01:18 +0200 (CEST)
-X-Auth-Info: /CYuj1d8CSY9w7emKuNdoE8IT8M85oBonNI0rYcXkSZzjRPMJKll2vkUZB6/Y2QA
-Received: from igel.home (unknown [62.216.205.103])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlZT16sj8z3dW0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 06:10:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=PPR3Ahs7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050:0:465::202; helo=mout-p-202.mailbox.org; envelope-from=erhard_f@mailbox.org; receiver=lists.ozlabs.org)
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [IPv6:2001:67c:2050:0:465::202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.mnet-online.de (Postfix) with ESMTPSA;
-	Tue, 12 Sep 2023 22:01:18 +0200 (CEST)
-Received: by igel.home (Postfix, from userid 1000)
-	id DB4D52C12A1; Tue, 12 Sep 2023 22:01:02 +0200 (CEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: "Liam R. Howlett" <Liam.Howlett@Oracle.com>
-Subject: Re: [PATCH v2 1/2] maple_tree: Disable mas_wr_append() when other
- readers are possible
-In-Reply-To: <20230912190929.54kxm7wyws7pgcsv@revolver> (Liam R. Howlett's
-	message of "Tue, 12 Sep 2023 15:09:29 -0400")
-References: <20230819004356.1454718-1-Liam.Howlett@oracle.com>
-	<20230819004356.1454718-2-Liam.Howlett@oracle.com>
-	<87bkeotin8.fsf@igel.home> <87edj3b6me.fsf@igel.home>
-	<20230912190929.54kxm7wyws7pgcsv@revolver>
-X-Yow: I always have fun because I'm out of my mind!!!
-Date: Tue, 12 Sep 2023 22:01:02 +0200
-Message-ID: <8734zjb1q9.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlZS30p7Xz3cN6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 06:09:35 +1000 (AEST)
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4RlZRm1yq8z9spL;
+	Tue, 12 Sep 2023 22:09:24 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1694549364;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5CTaseLYOsDjBEddHRSS1kLR/MtlG0vJlK7mZIYlxMk=;
+	b=PPR3Ahs7fgYzEWryZmgagw7s7mLptcmMjGoVq22Ezcl83SPOjapP8y9UMN309tY7DYZool
+	WotDqKJzxnRlA5A8uWplR5vN/Kjdj3WQn+23Aa9tFuCrBBG14HjSdhgkSwz6deK5z1u2iH
+	MCpYl3E8WIFBrUXm9v5cQuxLu6mP86MarUbCB7+Pjtn6HLtTteTvqJ+tyCH4T3Xv5Ee2Tr
+	C0TbPe05VHCNGh/q3FzMfW3ud1pvV4X7gvj8JwhNVpIE3jjd9Kz9wti/DjVDv8FLWwD0gJ
+	QqYqv7B9rFdthY+upXNshBbPNe5iLFceaR+fM6zuLMHq1wnJ1FQ1zxn3PuiE5w==
+Date: Tue, 12 Sep 2023 22:09:20 +0200
+From: Erhard Furtner <erhard_f@mailbox.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: KASAN debug kernel fails to boot at early stage when
+ CONFIG_SMP=y is set (kernel 6.5-rc5, PowerMac G4 3,6)
+Message-ID: <20230912220920.64a9ac3c@yea>
+In-Reply-To: <453090a5-0d01-40ee-50a5-794c8f0f1f95@csgroup.eu>
+References: <20230811014845.1bf6771d@yea>
+	<20230814192748.56525c82@yea>
+	<6d710a2b-5cac-9f0a-cd30-0ad18172932b@csgroup.eu>
+	<20230815220156.5c234b52@yea>
+	<0876e754-7bee-ec61-4e3c-c0ee08d59d87@csgroup.eu>
+	<20230817203202.2b4c273c@yea>
+	<87y1i9clf2.fsf@mail.lhotse>
+	<20230818111641.7f680ce7@yea>
+	<fcdf2bf7-0834-b27f-4d24-28e05815ee6f@csgroup.eu>
+	<20230818182316.79303545@yea>
+	<5ea3302e-0fb1-1670-e4b6-adba5115ab94@csgroup.eu>
+	<20230824020015.78733931@yea>
+	<87jztkvfid.fsf@mail.lhotse>
+	<20230828011758.3b7b9daf@yea>
+	<1085cc49-b5e8-0aa5-dc97-ec4a100463b5@csgroup.eu>
+	<20230901004417.631dc019@yea>
+	<b9671cd2-9cad-c5d9-dd94-8b39f67e29b4@csgroup.eu>
+	<20230903230635.5751b620@yea>
+	<438d8790-8a55-2f36-4ef0-2fddcb39edae@csgroup.eu>
+	<c0891617-43b9-5b56-2c51-69eec81e3b48@csgroup.eu>
+	<20230912021147.57c85033@yea>
+	<22f67fc2-ae70-bbc7-ca2a-dffbf62731f3@csgroup.eu>
+	<20230912175941.0fca47bb@yea>
+	<453090a5-0d01-40ee-50a5-794c8f0f1f95@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-MBO-RS-ID: 636a533f3eb030c4528
+X-MBO-RS-META: yd7wong3i1uxkxwaxsdjkw75mjr6ruxx
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,22 +87,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org, maple-tree@lists.infradead.org, linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sep 12 2023, Liam R. Howlett wrote:
+On Tue, 12 Sep 2023 17:39:10 +0000
+Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 
-> * Andreas Schwab <schwab@linux-m68k.org> [230912 14:15]:
->> Any news?  This is still broken.
->
-> I have a proposed fix.  I seem to have caused a pre-existing problem to
-> show up.  Please see if the attached works for you, and I'll send it
-> to a lot of people.
+> Ah ok, maybe your CPU only has 4 BATs and they are all used, following 
+> change would tell us.
+> 
+> diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+> index 850783cfa9c7..bd26767edce7 100644
+> --- a/arch/powerpc/mm/book3s32/mmu.c
+> +++ b/arch/powerpc/mm/book3s32/mmu.c
+> @@ -86,6 +86,7 @@ int __init find_free_bat(void)
+>   		if (!(bat[1].batu & 3))
+>   			return b;
+>   	}
+> +	pr_err("NO FREE BAT (%d)\n", n);
+>   	return -1;
+>   }
+> 
+> Or you have 8 BATs in which case it's an alignment problem, you need to 
+> increase CONFIG_DATA_SHIFT to 23, for that you need CONFIG_ADVANCED and 
+> CONFIG_DATA_SHIFT_BOOL
 
-Thanks, it fixes the issue for me (tested both 6.5 and 6.6-rc1).
+Applied all your patches. According to the output my G4 DP seems to have 8 BATs. Now I get the following output on screen before the freeze:
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
-"And now for something completely different."
+printk: bootconsole [udbg0] enabled
+Total memory = 2048MB; using 4096kB for hash table
+mapin_ram:125
+mmu_mapin_ram:170 0 30000000 1400000 2000000
+__mmu_mapin_ram:147 0 1400000
+__mmu_mapin_ram:156 1400000
+__mmu_mapin_ram:147 1400000 30000000
+NO FREE BAT (8)
+__mmu_mapin_ram:156 20000000
+__mapin_ram_chunk:107 20000000 30000000
+__mapin_ram_chunk:117
+mapin_ram:134
+kasan_mmu_init:132
+kasan_mmu_init:135 0
+kasan_mmu_init:140
+ioremap() called early from btext_map+0x64/0xdc. Use early_ioremap() instead
+Linux version 6.6.0-rc1-PMacG4-dirty (root@T1000) (gcc (Gentoo 12.3.1_p20230526 p2) 12.3.1 20230526, GNU ld (Gentoo 2.40 p7) 2.40.0) #5 SMP Tue Sep 12 16:50:47 CEST 2023
+kasan_init_region: c0000000 30000000 f8000000 fe000000
+NO FREE BAT (8)
+kasan_init_region: loop f8000000 fe000000
+
+
+So I set CONFIG_DATA_SHIFT=23 as suggested but then I only get:
+
+printk: bootconsole [udbg0] enabled
+Total memory = 2048MB; using 4096kB for hash table
+mapin_ram:125
+mmu_mapin_ram:170 0 30000000 1400000 2000000
+__mmu_mapin_ram:147 0 1400000
+__mmu_mapin_ram:156 1400000
+__mmu_mapin_ram:147 1400000 30000000
+NO FREE BAT (8)
+__mmu_mapin_ram:156 20000000
+__mapin_ram_chunk:107 20000000 30000000
+__mapin_ram_chunk:117
+mapin_ram:134
+kasan_mmu_init:132
+kasan_mmu_init:135 0
+kasan_mmu_init:140
+
+
+With btext_unmap() left in place in init_32.c I only get:
+
+printk: bootconsole [udbg0] enabled
+Total memory = 2048MB; using 4096kB for hash table
+mapin_ram:125
+mmu_mapin_ram:170 0 30000000 1400000 2000000
+__mmu_mapin_ram:147 0 1400000
+__mmu_mapin_ram:156 1400000
+__mmu_mapin_ram:147 1400000 30000000
+NO FREE BAT (8)
+__mmu_mapin_ram:156 20000000
+__mapin_ram_chunk:107 20000000 30000000
+__mapin_ram_chunk:117
+mapin_ram:134
+btext_unmap:129
+
+Hope the output sheds at least some light on what's going wrong!
+
+Regards,
+Erhard
