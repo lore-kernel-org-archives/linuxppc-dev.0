@@ -4,70 +4,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC15CCA0ECA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 10:31:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71D44CA0EC3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 10:57:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KT6XLojr;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=RkkuMbxW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlKcw3McXz3dnQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:31:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlLBh5DFPz3cN3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:57:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KT6XLojr;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=RkkuMbxW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::61d; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on2061d.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e19::61d])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlKGh5cRQz3dGY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 20:15:40 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 21263FF806;
-	Tue, 12 Sep 2023 10:15:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1694513738;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2rmpbiyyG+VRGBxxXhvBP1gXPCfN/f7OEp1w0ylonws=;
-	b=KT6XLojrblu6zOnjuIJIcq7kblOLEdHq8eqsL6kIEWMRRg9MHgMPou8jIr8U6OVmiPZZr1
-	8iINLGdnhxyzznUdLnZyirY7IVG+Jt07CLfvxQ4A9sc9mYAfbQaJvkCgZOvNIP5TU9m3Yn
-	ZP6bGU4VmroA+I/fPhu8HNnB3ZwSfcpw9Bu2Gk/asqBVd+jVv26yrTIink+Hlxeezj3NAU
-	EI9SKnhY9VhrNxOsYeM6AeBBkRKxSN4Q7ex8jeQGxS0fylWUtwsp3fub6zl653UP7M7SUl
-	ut5LBrfHfwWDOvQpIqNDzntixgXCXxFYEMgq87MOMY/zQaqmCVNL5j7jmiF4hg==
-From: Herve Codina <herve.codina@bootlin.com>
-To: Herve Codina <herve.codina@bootlin.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Lee Jones <lee@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH v5 31/31] net: wan: fsl_qmc_hdlc: Add framer support
-Date: Tue, 12 Sep 2023 12:15:33 +0200
-Message-ID: <20230912101533.225968-1-herve.codina@bootlin.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230912081527.208499-1-herve.codina@bootlin.com>
-References: <20230912081527.208499-1-herve.codina@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlL9g6D79z3072
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 20:56:22 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=RM0hoaUuWkRtcw0sUzhhkuDtkC4xCJJYwf9vkY345h8NZf7qTn8SVhRrxsh/7F6iN0UsB72f5uoipCszgabl4SgIFb/ydOVgzncjFDKCOM9toxNAT/+sLteNs09sKasoetfw+efu7iOtLMMxO2YmVXMYKT61bhqrPscLMdnbk2AjMqcp+S/dt2UMSYuJYxUZ8a2iTWpO7rw5f0ijFeL5RHCWIlCewOqgYF2agOnQytLXtai3Qs6CW1NBxPTbr7mrqheSwld2pwqjGP0P0OBkWQ3s+AkgvMyaN+5BvDxL+xjvQ0h5sbdR2jsjkTe3TwO7km5sh0K3DA4zROa5mWeJDA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=aTRG70Mr+ApUPLxskYyycg4dLds0sbPYjxM8ackewkc=;
+ b=RPv5Hi1kbxfBQ6TILwqm95hrcTBCXQzWSoeoU2UFSO/EAx11DPy+kL8K6irMAaFu2hfXClOvtg2FPTJyZ3jf4kaff1u7ejrL3DaP/VGuPXzkmv70ySDUqt7aqdjbRzDWoHcxPheOk5FQVzNkrvNhCRYewW0S6tJKaQ0DLQn2CvoGpPck63uDanLDDluObhzO56b2OdXmnKcZItn6VZoc4EzVW7K6EBcSasMtMfNvHCWb4cYt0KdmySUomuz03bR6xcGgdTBMD859IUf/2Ip3VczjVVrCJuejbwCi5/ysuPYAFi77nkkp1GyPSm261mf3+WL0I4or9z6M/lUkQZqldg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=aTRG70Mr+ApUPLxskYyycg4dLds0sbPYjxM8ackewkc=;
+ b=RkkuMbxWQ3oYFwpl3ZYmxdD8/d+2yZw0wDJR/Pz0HVfumlP31tqVtXWwhfWCIXtylB21TJ5hd7XTStT7XLsvs8RtVtk5mmYfcz9obvwPxmgufDPnPCCv7cTIN8nx4GF2CHchMR++F5LWYEsSRTzvRlG5/P/ykBtiyLGG5Fs5H6yejRnjk4dsPLoOlK2816OcLqmWdZpguK3O+Vq3t/lTsuLBC4eGuFyf9nynGD3GX2uvLqlYgVZhPbMg4Yagt19qGZ05J7/HJYpUE0xKHrsqckMoOKpY0u/p2YTWkYAvW1RvRqecTqxJ37pyPdrSs0oqOdQSKmIPoKSZJmixE1rwgQ==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PR0P264MB2273.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:169::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6768.37; Tue, 12 Sep
+ 2023 10:56:01 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::2820:d3a6:1cdf:c60e]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::2820:d3a6:1cdf:c60e%7]) with mapi id 15.20.6768.036; Tue, 12 Sep 2023
+ 10:56:01 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: "Liam R. Howlett" <Liam.Howlett@oracle.com>, Andrew Morton
+	<akpm@linux-foundation.org>
+Subject: WARN: Interrupts were enabled early [bisected cfeb6ae8bcb9
+ ("maple_tree: disable mas_wr_append() when other readers are possible")]
+Thread-Topic: WARN: Interrupts were enabled early [bisected cfeb6ae8bcb9
+ ("maple_tree: disable mas_wr_append() when other readers are possible")]
+Thread-Index: AQHZ5We4ALEPBRjj9E2YFxQ2agYoYg==
+Date: Tue, 12 Sep 2023 10:56:01 +0000
+Message-ID: <a981d84d-e2aa-a4dd-ad11-d7ac1a814e5e@csgroup.eu>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|PR0P264MB2273:EE_
+x-ms-office365-filtering-correlation-id: a8c703c5-bace-481a-75d5-08dbb37eda8d
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  9GrUMIZJbyt7pQuvne+hner0hT3Jx9+Nc7Jima3KSRYSqcrIPgKQNDkY43YOFqjkbw1O5/oRCXD5S1Sg8K1bfpPoShyVLuoXsJkzOj5IPaTQ7iE39lBvTWhM8UTUhV7gkht35fIrTSXrzVHRFRLd4r47YUgMLj26dhbVNxMTcgR4tyHWt7PwkN6Qno1S8KezSzPVDIyK93EH8caANiEo2owtfcE1aY78c7lqcW5BkVbaRC+vjJF7+UI3ZUsm6g1WChps3nqaGtLSRpGy1Rb2CLsLg1OElLYR+EwBsgCmR/vzdHb1C7uV3RQuWfXu36FTZkJTa8o5IKhHiMuue1EVodzAGad7anwuQ14lPJdQe24aURdsJt6hNCWXXb6SGReqvuz7PUN2Z7WafB73yTGjJ+vxq3vuyYzetY9AQfkWh5WLib1o1njpaXyeaQ22q3frKCVOueM7scxum8kaOREs5Cc/ztBMBhXM4rVkLjE6bsaKXwb5nAF0JUzpLxJYYmJuuEDmuX+IZlqJYq+4F5W1h9022HSbHDBLpL6cg65Aq7VKGyBDMFOYAMV9plHMwrBHTZa0GC+B5+buQGe2hJ7UcZUcMjwsXe4Rsg9aq4hhp6zseZXQFt9ZGmAlU+WTdbmYnqtrOAPW7fnbAtNCGL/oifRCRLZKNCLlwo0HpANmZcGLBxq8aycrGc/DbJDz4Jht
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(346002)(39860400002)(396003)(376002)(366004)(136003)(1800799009)(186009)(451199024)(316002)(41300700001)(71200400001)(66446008)(76116006)(64756008)(91956017)(66556008)(66946007)(110136005)(38070700005)(38100700002)(66476007)(122000001)(478600001)(36756003)(45080400002)(54906003)(2906002)(31696002)(86362001)(5660300002)(44832011)(26005)(8676002)(4326008)(8936002)(2616005)(83380400001)(31686004)(6512007)(6506007)(6486002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?dzV3K1Ryd1JGSXVtMEtkUlFNbEdaL1RITmY1SEdocHRzMWlIMkNwMFk0dVFw?=
+ =?utf-8?B?dS9nYzIvOUpLbzN4dlAvd1VyL2ZHNFFaNkxqc0tTSHhHYlphSHBvK3d4cTdW?=
+ =?utf-8?B?YmRIYVg4dDE1SUU3eTY4cmZvVDlQc1hWMEZYMzVKTU1Vcys5TE9tZVgrL3lx?=
+ =?utf-8?B?d1pwV05DVlRqYWFZbFFZdGRCZGZ2bi9wbS80R3M4VFRZTzZ5dXdzQm9CSEFo?=
+ =?utf-8?B?bXJXZGs4U0syMjlUZlMza3R4c0lyVFljM3hIakJOU0h6Y213YWg1di9lRWIw?=
+ =?utf-8?B?RGlOckloT1h4S1Q2VjBVVzVWdWQ0dFB6QUduK3IrdE5BVG9IQ2JZZXovLzlG?=
+ =?utf-8?B?eHE1TXNIWU1uSEY2bXhQMEpzUFNuUjM5MGxZZ2xkUmo2ZXlla01iUXR2UFdW?=
+ =?utf-8?B?djRQZkc2Q3FuVUh0VHlBOCtyUTU2WUVvVmV6d1pBUUZJc2o0Kzc5SVpvdEkv?=
+ =?utf-8?B?ZjRsWWdIMEEvTnJValZ1ZWtlc01RZnZIUFJyUWsxMkdpdnVjTzFxZ2RtWVRz?=
+ =?utf-8?B?a0NuYXp0aXE1WFFja0UzdlZuUkV2aDFjU0JLUEpLUDUzS1FzdE90cENObjY0?=
+ =?utf-8?B?LzlwdFRBZllvNUxHNU1CSnA2Q1U4aWM2WTk4N1Jja1RpZDJJL0hNbmVuaVJ2?=
+ =?utf-8?B?U2VLYW0wNTZLMG9LL09yK2lKdUkrR2dHRHoxZWhtdTAyaE5iZ3p2d3lXbzBo?=
+ =?utf-8?B?N1FITFlKRXlmQkFpeUpxZ21VNG9ZdUR3Nitkbi9JdmkzRkJoMXlTa1psQSs5?=
+ =?utf-8?B?Q1RiRzQ4a0dYMmd2aXc0M0dWaE4zejFaRVpkS0Zjell6VmtCY3ZYQWthVlVl?=
+ =?utf-8?B?ZWRaYWlzQUFJSFJ4WnFtUlkxT1dONW12UHdyeHNjUkhLZEdPbnlXSHlBa2J0?=
+ =?utf-8?B?b0pTUEZ6RkdJWW9CcFZGa2dhWVEzRElQZnIwWGxGOVlrbEh6UEtaZmNDRHpV?=
+ =?utf-8?B?eTM5aXdoOXpvYVlWWGdsTW5Tc01McmFFR0NMNlhWeUNDbjZvS2lEbXhZRlJz?=
+ =?utf-8?B?M3BXRXEyVzg1U0VVV3U3U3J6aVFTTEZZd2hTVjVqTW56cFdLNzdLUEdZRlBa?=
+ =?utf-8?B?SjBORjRhUjVQZVpZZURjWWN6ejB5dDB3S05qekNpNU52UHhpeTk0RVR5UStK?=
+ =?utf-8?B?QzB0M3RzYkE3MkNWL01uR2JjSlMwMS93TnM4MDJlUTNNVDJBMHVwUFlBTWpJ?=
+ =?utf-8?B?cmNPaUpoMkNJVlBHKzdidldWR29jdElsWi9TTDBvM0FkVkpXdWlOWnNGcEV5?=
+ =?utf-8?B?aEw0TkcyMnI3MUIvbFZzd3VXUERvNElGWmRIKzBsaUlwbjFMMlQyTVJ2NVFF?=
+ =?utf-8?B?VG9KeEJCdXdLWGVpM1ZFUENuRkhTOEpuUHBxV3lJSG53aWpxaHU0c1ZORkdT?=
+ =?utf-8?B?dy9BQnFNd0xSbzJkT0g4NVVRaEJOVWFmbjk5KzNtTzJDWEx2UnVGZSsxSVQv?=
+ =?utf-8?B?cVRGTmo5SGgvRjRLSHA0aVJNZmFXdnl0RUFSS3lBdHhGQTNTTjhmdi9SZ21n?=
+ =?utf-8?B?OEY5ZTN6ajlwVHVLT3VnWEtuT3RPV1NTcDJKREx3YysrY0JJcXFxRzhYTnJ4?=
+ =?utf-8?B?ZFBkNHUxUkYyK0ZockJnaEJhcHUxWUgrTXpuajFwK2VGWHdSN2Ntd0ZFNkZ6?=
+ =?utf-8?B?M0Y3eDAremo5OVpmcFhRT3hYSlNOL0d3bVlFTWtKRUQwMU4vWGpvVmxaQVZ3?=
+ =?utf-8?B?OWZPNzNSVE8rZDIxb0hHb3F0U0svUTF6Nm9HMGRTN1AyVHJ3OWJmSmNxeC8r?=
+ =?utf-8?B?NzdPQ0FQUFQyeDkxY2VWRXhBRVdOcUhsZnQvcUo4aWFKNUpnQVBOK200WUJM?=
+ =?utf-8?B?MWpMN0pvZ05yMVh6SFFKd3pNbTJBeVlGUUFqTHVqcVo0bm4zWXRoMm85MlJa?=
+ =?utf-8?B?dnhPdmZ1MXhnaHMrYkhudEcwd1BWRkRhYjZNT3RiUzNBcWtTUzd2UWZOTDVF?=
+ =?utf-8?B?YWxvWUg4VTZGWXIxanIrMGY3d2tCMGs5bUhjYXFIejJoN3k1LzlqRU1Hakl6?=
+ =?utf-8?B?SGNobEtXZlRiakpXM2dyTFI1Y0tKb1BHcjFCUlJQL1NvYXJXNFhTR0dwVTFv?=
+ =?utf-8?B?Nm9HcmF3dHhnVnZWTVhiMmt0VThvaVdzS0llOGd6S3ZrblRsZzg1cUVpRUtP?=
+ =?utf-8?Q?Cm71UkR55QQ2TEDQYETyf0QyM?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <C4913BE6BD70C248B8A646216DFE90D5@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: a8c703c5-bace-481a-75d5-08dbb37eda8d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Sep 2023 10:56:01.7011
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 4RcH7v6uqCroHPjvc/3XN8GHqJGcx8Tash7rH+I7DvoCo7CrayZlXPT6cv1kyPJeXfjd0YDoperUaRrbkaf/t2ixNv4KaR7pYUhMKSMIKRI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB2273
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,371 +134,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Simon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add framer support in the fsl_qmc_hdlc driver in order to be able to
-signal carrier changes to the network stack based on the framer status
-Also use this framer to provide information related to the E1/T1 line
-interface on IF_GET_IFACE and configure the line interface according to
-IF_IFACE_{E1,T1} information.
-
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/net/wan/fsl_qmc_hdlc.c | 239 ++++++++++++++++++++++++++++++++-
- 1 file changed, 235 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/wan/fsl_qmc_hdlc.c b/drivers/net/wan/fsl_qmc_hdlc.c
-index 24f466fa48b1..e5982766ff71 100644
---- a/drivers/net/wan/fsl_qmc_hdlc.c
-+++ b/drivers/net/wan/fsl_qmc_hdlc.c
-@@ -8,6 +8,7 @@
-  */
- 
- #include <linux/dma-mapping.h>
-+#include <linux/framer/framer.h>
- #include <linux/hdlc.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -27,6 +28,9 @@ struct qmc_hdlc {
- 	struct device *dev;
- 	struct qmc_chan *qmc_chan;
- 	struct net_device *netdev;
-+	struct framer *framer;
-+	spinlock_t carrier_lock; /* Protect carrier detection */
-+	struct notifier_block nb;
- 	bool is_crc32;
- 	spinlock_t tx_lock; /* Protect tx descriptors */
- 	struct qmc_hdlc_desc tx_descs[8];
-@@ -40,6 +44,195 @@ static inline struct qmc_hdlc *netdev_to_qmc_hdlc(struct net_device *netdev)
- 	return dev_to_hdlc(netdev)->priv;
- }
- 
-+static int qmc_hdlc_framer_set_carrier(struct qmc_hdlc *qmc_hdlc)
-+{
-+	struct framer_status framer_status;
-+	unsigned long flags;
-+	int ret;
-+
-+	if (!qmc_hdlc->framer)
-+		return 0;
-+
-+	spin_lock_irqsave(&qmc_hdlc->carrier_lock, flags);
-+
-+	ret = framer_get_status(qmc_hdlc->framer, &framer_status);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "get framer status failed (%d)\n", ret);
-+		goto end;
-+	}
-+	if (framer_status.link_is_on)
-+		netif_carrier_on(qmc_hdlc->netdev);
-+	else
-+		netif_carrier_off(qmc_hdlc->netdev);
-+
-+end:
-+	spin_unlock_irqrestore(&qmc_hdlc->carrier_lock, flags);
-+	return ret;
-+}
-+
-+static int qmc_hdlc_framer_notifier(struct notifier_block *nb, unsigned long action,
-+				    void *data)
-+{
-+	struct qmc_hdlc *qmc_hdlc = container_of(nb, struct qmc_hdlc, nb);
-+	int ret;
-+
-+	if (action != FRAMER_EVENT_STATUS)
-+		return NOTIFY_DONE;
-+
-+	ret = qmc_hdlc_framer_set_carrier(qmc_hdlc);
-+	return ret ? NOTIFY_DONE : NOTIFY_OK;
-+}
-+
-+static int qmc_hdlc_framer_start(struct qmc_hdlc *qmc_hdlc)
-+{
-+	struct framer_status framer_status;
-+	int ret;
-+
-+	if (!qmc_hdlc->framer)
-+		return 0;
-+
-+	ret = framer_power_on(qmc_hdlc->framer);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "framer power-on failed (%d)\n", ret);
-+		return ret;
-+	}
-+
-+	/* Be sure that get_status is supported */
-+	ret = framer_get_status(qmc_hdlc->framer, &framer_status);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "get framer status failed (%d)\n", ret);
-+		goto framer_power_off;
-+	}
-+
-+	qmc_hdlc->nb.notifier_call = qmc_hdlc_framer_notifier;
-+	ret = framer_notifier_register(qmc_hdlc->framer, &qmc_hdlc->nb);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "framer notifier register failed (%d)\n", ret);
-+		goto framer_power_off;
-+	}
-+
-+	return 0;
-+
-+framer_power_off:
-+	framer_power_off(qmc_hdlc->framer);
-+	return ret;
-+}
-+
-+static void qmc_hdlc_framer_stop(struct qmc_hdlc *qmc_hdlc)
-+{
-+	if (!qmc_hdlc->framer)
-+		return;
-+
-+	framer_notifier_unregister(qmc_hdlc->framer, &qmc_hdlc->nb);
-+	framer_power_off(qmc_hdlc->framer);
-+}
-+
-+static int qmc_hdlc_framer_set_iface(struct qmc_hdlc *qmc_hdlc, int if_iface,
-+				     const te1_settings *te1)
-+{
-+	struct framer_config config;
-+	int ret;
-+
-+	if (!qmc_hdlc->framer)
-+		return 0;
-+
-+	ret = framer_get_config(qmc_hdlc->framer, &config);
-+	if (ret)
-+		return ret;
-+
-+	switch (if_iface) {
-+	case IF_IFACE_E1:
-+		config.iface = FRAMER_IFACE_E1;
-+		break;
-+	case IF_IFACE_T1:
-+		config.iface = FRAMER_IFACE_T1;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	switch (te1->clock_type) {
-+	case CLOCK_DEFAULT:
-+		/* Keep current value */
-+		break;
-+	case CLOCK_EXT:
-+		config.clock_type = FRAMER_CLOCK_EXT;
-+		break;
-+	case CLOCK_INT:
-+		config.clock_type = FRAMER_CLOCK_INT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	config.line_clock_rate = te1->clock_rate;
-+
-+	return framer_set_config(qmc_hdlc->framer, &config);
-+}
-+
-+static int qmc_hdlc_framer_get_iface(struct qmc_hdlc *qmc_hdlc, int *if_iface, te1_settings *te1)
-+{
-+	struct framer_config config;
-+	int ret;
-+
-+	if (!qmc_hdlc->framer) {
-+		*if_iface = IF_IFACE_E1;
-+		return 0;
-+	}
-+
-+	ret = framer_get_config(qmc_hdlc->framer, &config);
-+	if (ret)
-+		return ret;
-+
-+	switch (config.iface) {
-+	case FRAMER_IFACE_E1:
-+		*if_iface = IF_IFACE_E1;
-+		break;
-+	case FRAMER_IFACE_T1:
-+		*if_iface = IF_IFACE_T1;
-+		break;
-+	}
-+
-+	if (!te1)
-+		return 0; /* Only iface type requested */
-+
-+	switch (config.clock_type) {
-+	case FRAMER_CLOCK_EXT:
-+		te1->clock_type = CLOCK_EXT;
-+		break;
-+	case FRAMER_CLOCK_INT:
-+		te1->clock_type = CLOCK_INT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	te1->clock_rate = config.line_clock_rate;
-+	return 0;
-+}
-+
-+static int qmc_hdlc_framer_init(struct qmc_hdlc *qmc_hdlc)
-+{
-+	int ret;
-+
-+	if (!qmc_hdlc->framer)
-+		return 0;
-+
-+	ret = framer_init(qmc_hdlc->framer);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "framer init failed (%d)\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static void qmc_hdlc_framer_exit(struct qmc_hdlc *qmc_hdlc)
-+{
-+	if (!qmc_hdlc->framer)
-+		return;
-+
-+	framer_exit(qmc_hdlc->framer);
-+}
-+
- static int qmc_hdlc_recv_queue(struct qmc_hdlc *qmc_hdlc, struct qmc_hdlc_desc *desc, size_t size);
- 
- #define QMC_HDLC_RX_ERROR_FLAGS (QMC_RX_FLAG_HDLC_OVF | \
-@@ -313,6 +506,12 @@ static int qmc_hdlc_set_iface(struct qmc_hdlc *qmc_hdlc, int if_iface, const te1
- 
- 	qmc_hdlc->slot_map = te1->slot_map;
- 
-+	ret = qmc_hdlc_framer_set_iface(qmc_hdlc, if_iface, te1);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "framer set iface failed %d\n", ret);
-+		return ret;
-+	}
-+
- 	return 0;
- }
- 
-@@ -320,11 +519,16 @@ static int qmc_hdlc_ioctl(struct net_device *netdev, struct if_settings *ifs)
- {
- 	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
- 	te1_settings te1;
-+	int ret;
- 
- 	switch (ifs->type) {
- 	case IF_GET_IFACE:
--		ifs->type = IF_IFACE_E1;
- 		if (ifs->size < sizeof(te1)) {
-+			/* Retrieve type only */
-+			ret = qmc_hdlc_framer_get_iface(qmc_hdlc, &ifs->type, NULL);
-+			if (ret)
-+				return ret;
-+
- 			if (!ifs->size)
- 				return 0; /* only type requested */
- 
-@@ -334,6 +538,11 @@ static int qmc_hdlc_ioctl(struct net_device *netdev, struct if_settings *ifs)
- 
- 		memset(&te1, 0, sizeof(te1));
- 
-+		/* Retrieve info from framer */
-+		ret = qmc_hdlc_framer_get_iface(qmc_hdlc, &ifs->type, &te1);
-+		if (ret)
-+			return ret;
-+
- 		/* Update slot_map */
- 		te1.slot_map = qmc_hdlc->slot_map;
- 
-@@ -367,10 +576,17 @@ static int qmc_hdlc_open(struct net_device *netdev)
- 	int ret;
- 	int i;
- 
--	ret = hdlc_open(netdev);
-+	ret = qmc_hdlc_framer_start(qmc_hdlc);
- 	if (ret)
- 		return ret;
- 
-+	ret = hdlc_open(netdev);
-+	if (ret)
-+		goto framer_stop;
-+
-+	/* Update carrier */
-+	qmc_hdlc_framer_set_carrier(qmc_hdlc);
-+
- 	chan_param.mode = QMC_HDLC;
- 	/* HDLC_MAX_MRU + 4 for the CRC
- 	 * HDLC_MAX_MRU + 4 + 8 for the CRC and some extraspace needed by the QMC
-@@ -420,6 +636,8 @@ static int qmc_hdlc_open(struct net_device *netdev)
- 	}
- hdlc_close:
- 	hdlc_close(netdev);
-+framer_stop:
-+	qmc_hdlc_framer_stop(qmc_hdlc);
- 	return ret;
- }
- 
-@@ -455,6 +673,7 @@ static int qmc_hdlc_close(struct net_device *netdev)
- 	}
- 
- 	hdlc_close(netdev);
-+	qmc_hdlc_framer_stop(qmc_hdlc);
- 	return 0;
- }
- 
-@@ -503,6 +722,7 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
- 
- 	qmc_hdlc->dev = &pdev->dev;
- 	spin_lock_init(&qmc_hdlc->tx_lock);
-+	spin_lock_init(&qmc_hdlc->carrier_lock);
- 
- 	qmc_hdlc->qmc_chan = devm_qmc_chan_get_bychild(qmc_hdlc->dev, np);
- 	if (IS_ERR(qmc_hdlc->qmc_chan)) {
-@@ -531,10 +751,19 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	qmc_hdlc->framer = devm_framer_optional_get(qmc_hdlc->dev, "fsl,framer");
-+	if (IS_ERR(qmc_hdlc->framer))
-+		return PTR_ERR(qmc_hdlc->framer);
-+
-+	ret = qmc_hdlc_framer_init(qmc_hdlc);
-+	if (ret)
-+		return ret;
-+
- 	qmc_hdlc->netdev = alloc_hdlcdev(qmc_hdlc);
- 	if (!qmc_hdlc->netdev) {
- 		dev_err(qmc_hdlc->dev, "failed to alloc hdlc dev\n");
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto framer_exit;
- 	}
- 
- 	hdlc = dev_to_hdlc(qmc_hdlc->netdev);
-@@ -550,11 +779,12 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
- 	}
- 
- 	platform_set_drvdata(pdev, qmc_hdlc);
--
- 	return 0;
- 
- free_netdev:
- 	free_netdev(qmc_hdlc->netdev);
-+framer_exit:
-+	qmc_hdlc_framer_exit(qmc_hdlc);
- 	return ret;
- }
- 
-@@ -564,6 +794,7 @@ static int qmc_hdlc_remove(struct platform_device *pdev)
- 
- 	unregister_hdlc_device(qmc_hdlc->netdev);
- 	free_netdev(qmc_hdlc->netdev);
-+	qmc_hdlc_framer_exit(qmc_hdlc);
- 
- 	return 0;
- }
--- 
-2.41.0
-
+SGksDQoNCldpdGggcG1hYzMyX2RlZmNvbmZpZyBvbiBRRU1VIEkgZ2V0IHRoZSBmb2xsb3dpbmcg
+V0FSTiB3aXRoIDYuNi1yYzENCg0KQmlzZWN0ZWQgdG8gY2ZlYjZhZThiY2I5ICgibWFwbGVfdHJl
+ZTogZGlzYWJsZSBtYXNfd3JfYXBwZW5kKCkgd2hlbiANCm90aGVyIHJlYWRlcnMgYXJlIHBvc3Np
+YmxlIikNCg0KSSBoYXZlIGFic29sdXRlbHkgbm8gaWRlYSB3aGF0IGl0IGNhbiBiZSwgZG8geW91
+ID8NCg0KLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tDQpJbnRlcnJ1cHRzIHdl
+cmUgZW5hYmxlZCBlYXJseQ0KV0FSTklORzogQ1BVOiAwIFBJRDogMCBhdCBpbml0L21haW4uYzo5
+OTIgc3RhcnRfa2VybmVsKzB4NGQ4LzB4NWMwDQpNb2R1bGVzIGxpbmtlZCBpbjoNCkNQVTogMCBQ
+SUQ6IDAgQ29tbTogc3dhcHBlciBOb3QgdGFpbnRlZCA2LjYuMC1yYzEgIzQ4MA0KSGFyZHdhcmUg
+bmFtZTogUG93ZXJNYWMzLDEgNzQwMCAweGMwMjA5IFBvd2VyTWFjDQpOSVA6ICBjMGE2MDUyYyBM
+UjogYzBhNjA1MmMgQ1RSOiAwMDAwMDAwMA0KUkVHUzogYzBjNGRlZTAgVFJBUDogMDcwMCAgIE5v
+dCB0YWludGVkICAoNi42LjAtcmMxKQ0KTVNSOiAgMDAwMjkwMzIgPEVFLE1FLElSLERSLFJJPiAg
+Q1I6IDI0MDAwMjgyICBYRVI6IDIwMDAwMDAwDQoNCkdQUjAwOiBjMGE2MDUyYyBjMGM0ZGZhMCBj
+MGI5MjU4MCAwMDAwMDAxZCBjMGI5ZDEyOCAwMDAwMDAwMSBjMGI5ZDE0OCANCjNmZmZmZGZmDQpH
+UFIwODogYzBiYTgwZjAgMDAwMDAwMDAgMDAwMDAwMDAgM2ZmZmZlMDAgNDQwMDAyODIgMDAwMDAw
+MDAgMDAwMDAwMDAgDQowMTk5YWJmOA0KR1BSMTY6IDAxOTliMGEwIDdmZGU3ZmE0IDdmYzVhYzBj
+IDAwMDAwMGJiIDQxMDAwMDAwIDAxYzY5MGM4IGMwYjkyMDE0IA0KYzA5YjRiY2MNCkdQUjI0OiBj
+MGM1NTIyMCBjMGFjMDAwMCAwMDAwMDAwMCBlZmZmOTEwOSBlZmZmOTEwMCAwMDAwMDAwYSBjMGM2
+ZDAwMCANCmMwYjkyMGEwDQpOSVAgW2MwYTYwNTJjXSBzdGFydF9rZXJuZWwrMHg0ZDgvMHg1YzAN
+CkxSIFtjMGE2MDUyY10gc3RhcnRfa2VybmVsKzB4NGQ4LzB4NWMwDQpDYWxsIFRyYWNlOg0KW2Mw
+YzRkZmEwXSBbYzBhNjA1MmNdIHN0YXJ0X2tlcm5lbCsweDRkOC8weDVjMCAodW5yZWxpYWJsZSkN
+CltjMGM0ZGZmMF0gWzAwMDAzNTQwXSAweDM1NDANCkNvZGU6IDQ4MDAzN2IxIDQ4MDIzYzA1IDRi
+YWI4OGNkIDkwNjIwMjYwIDQ4MDEzOWU5IDRiNjU3Y2NkIDdkMjAwMGE2IA0KNzEyOTgwMDAgNDFh
+MjAwMTQgM2M2MGMwOWEgMzg2M2I3ODggNGI1ZTljY2QgPDBmZTAwMDAwPiAzOTIwMDAwMCANCjk5
+MzgwMDA4IDdkMjAwMGE2DQotLS1bIGVuZCB0cmFjZSAwMDAwMDAwMDAwMDAwMDAwIF0tLS0NCg0K
+Q2hyaXN0b3BoZQ0K
