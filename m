@@ -4,57 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22411CA0EC3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 09:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 414CACA0ECA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 09:52:54 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ueMO6ien;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=K+nnYXVg;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlJk63CRSz3c8W
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 19:50:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlJmN42sgz3cHN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 19:52:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ueMO6ien;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=K+nnYXVg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlJj56yGyz3c3q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 19:50:01 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 813C3616B6;
-	Tue, 12 Sep 2023 09:49:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 229BCC43395;
-	Tue, 12 Sep 2023 09:49:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1694512196;
-	bh=iIW7ciGWybIARozzfiRHtOz95Ez3pQ72Bb9zv5s25O4=;
-	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
-	b=ueMO6ienw+FxLK4joCzSYY6ODFNbmyw2ZVZS4SLV+q0gdsvP13kQPbNMeRxiYaIex
-	 R1tbQO6X4qyb1TOHjTIu8mC1/LYRzfJSV1/FnKongdVWOUbVgrEVumBuw7jiIHfVm4
-	 5ajfx+/abCKX3IW0w2UHNVUWFp9+InyfR8w/j5CLy0I0B87ZRTqmBlcIGaq/ZIyMAD
-	 PyzPRwlIvc1DMQnL4u5vC4j9RnME2dZ7+U1vTsMJYyff3UHoUjKCB7ESPG6T8yPDa4
-	 5IMFWYvqr9Yvxt5YO5BW5Xoj2OgibYec9P7rt77g3nUUlfiMgAHEHs0rUY5eKiM48Y
-	 W5WCiv25FzynQ==
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 12 Sep 2023 12:49:52 +0300
-Message-Id: <CVGUFUEQVCHS.37OA20PNG9EVB@suppilovahvero>
-Subject: Re: [PATCH] integrity: powerpc: Do not select CA_MACHINE_KEYRING
-From: "Jarkko Sakkinen" <jarkko@kernel.org>
-To: =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, "Nayna"
- <nayna@linux.vnet.ibm.com>
-X-Mailer: aerc 0.14.0
-References: <20230907165224.32256-1-msuchanek@suse.de>
- <20230907173232.GD8826@kitsune.suse.cz>
- <92e23f29-1a16-54da-48d1-59186158e923@linux.vnet.ibm.com>
- <20230912074116.GL8826@kitsune.suse.cz>
-In-Reply-To: <20230912074116.GL8826@kitsune.suse.cz>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlJlS40Zyz3c58
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 19:52:03 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 5A722240009;
+	Tue, 12 Sep 2023 09:39:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1694512320;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ScPjzuZaLLYh2lcosF7mjC3LbbKogbqWDUhQ8RkAceU=;
+	b=K+nnYXVgVTeIYLV1BYZk8yVPM7a2nPu/2JA6GWMyyv0Za8enlurHjBH7plSt2lkrUaQgFx
+	0f+eic3JBBgKxtWXmU15F2NOL2ZoHFXm8dROGgnxxRWdTKbO53xzFHJjRrH2cKPixxWiIQ
+	X0H50mqA/O7gee/qxhpcScSAQrz6oC5amb4tHHTsy3EQ30w3liig4hh60CmVmm0cSjrsOm
+	3+A4lbr4FIsGWAyRl0hBgn4ip8FNO3Untij7ggUFAU3Q5C3z+B+ux/Tq3eCFHsmlxJXwfW
+	EQItj5FZbLmxsodLOd0QDPWT6RUBUWUp7yQWKgN05HapEUcrPwoojI25LbtKJQ==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Lee Jones <lee@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH v5 07/31] dt-bindings: soc: fsl: cpm_qe: cpm1-scc-qmc: Add 'additionalProperties: false' in child nodes
+Date: Tue, 12 Sep 2023 10:14:58 +0200
+Message-ID: <20230912081527.208499-8-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230912081527.208499-1-herve.codina@bootlin.com>
+References: <20230912081527.208499-1-herve.codina@bootlin.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,56 +79,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Nayna Jain <nayna@linux.ibm.com>, James Morris <jmorris@namei.org>, Mimi Zohar <zohar@linux.ibm.com>, linux-kernel@vger.kernel.org, joeyli <jlee@suse.com>, linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Serge E.
- Hallyn" <serge@hallyn.com>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Simon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue Sep 12, 2023 at 10:41 AM EEST, Michal Such=C3=A1nek wrote:
-> On Mon, Sep 11, 2023 at 11:39:38PM -0400, Nayna wrote:
-> >=20
-> > On 9/7/23 13:32, Michal Such=C3=A1nek wrote:
-> > > Adding more CC's from the original patch, looks like get_maintainers =
-is
-> > > not that great for this file.
-> > >=20
-> > > On Thu, Sep 07, 2023 at 06:52:19PM +0200, Michal Suchanek wrote:
-> > > > No other platform needs CA_MACHINE_KEYRING, either.
-> > > >=20
-> > > > This is policy that should be decided by the administrator, not Kco=
-nfig
-> > > > dependencies.
-> >=20
-> > We certainly agree that flexibility is important. However, in this case=
-,
-> > this also implies that we are expecting system admins to be security
-> > experts. As per our understanding, CA based infrastructure(PKI) is the
-> > standard to be followed and not the policy decision. And we can only sp=
-eak
-> > for Power.
-> >=20
-> > INTEGRITY_CA_MACHINE_KEYRING ensures that we always have CA signed leaf
-> > certs.
->
-> And that's the problem.
->
-> From a distribution point of view there are two types of leaf certs:
->
->  - leaf certs signed by the distribution CA which need not be imported
->    because the distribution CA cert is enrolled one way or another
->  - user generated ad-hoc certificates that are not signed in any way,
->    and enrolled by the user
->
-> The latter are vouched for by the user by enrolling the certificate, and
-> confirming that they really want to trust this certificate. Enrolling
-> user certificates is vital for usability or secure boot. Adding extra
-> step of creating a CA certificate stored on the same system only
-> complicates things with no added benefit.
+Additional properties in child node should not be allowed.
 
-This all comes down to the generic fact that kernel should not
-proactively define what it *expects* sysadmins.
+Prevent them adding 'additionalProperties: false'
 
-CA based infrastructure like anything is a policy decision not
-a decision to be enforced by kernel.
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ .../devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml     | 1 +
+ 1 file changed, 1 insertion(+)
 
-BR, Jarkko
+diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
+index 450a0354cb1d..82d9beb48e00 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
+@@ -64,6 +64,7 @@ patternProperties:
+     description:
+       A channel managed by this controller
+     type: object
++    additionalProperties: false
+ 
+     properties:
+       reg:
+-- 
+2.41.0
+
