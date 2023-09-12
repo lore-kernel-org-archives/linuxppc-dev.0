@@ -4,62 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 165B3EE3F0C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 18:52:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEBA2EE3F0F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 19:23:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fCX2jURP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b+rGIeot;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlXkx3JXyz3dRY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 04:52:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlYQl3VpSz3dH6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 05:23:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fCX2jURP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b+rGIeot;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlXjt2j3lz3d85
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 04:51:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694544690; x=1726080690;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=m4ArRUJq81IoQwOUurgDTOz0S2e8/xwn1JxXLNRgGXc=;
-  b=fCX2jURPXh+D4Pu2Wx+2qzizVwp+CdF0wDaJuS1lOhDvHcfSLmFkx4hM
-   3s8xmsIi9sFlSBCtY/gU9cZJAjl6wgDRgU8ug5SjGGyqOsIRJDjxVh4L0
-   syE826JuXNDI56MnlWGiziA7tatS/nGYJpbrO0rqjDE4JculSTN7404dX
-   oAWyusSA3RBU0EZ0frWSsBaN3QH3h3KQV/MYRXjMRZJ3089Ykw7k2zRTV
-   y5epdjU8eb/L8NgcgnQ06Rh4qBH7R2x3ZbvgFfxEb0ML4ZqE5N5SMOZCo
-   SkA9DS2fat1tbmTbyvfKRiKaGEDKfHBnTtWGHQ1uSjKFicj+1QH9yutK4
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10831"; a="382272927"
-X-IronPort-AV: E=Sophos;i="6.02,141,1688454000"; 
-   d="scan'208";a="382272927"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Sep 2023 11:51:16 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10831"; a="887041629"
-X-IronPort-AV: E=Sophos;i="6.02,141,1688454000"; 
-   d="scan'208";a="887041629"
-Received: from lkp-server02.sh.intel.com (HELO 47e905db7d2b) ([10.239.97.151])
-  by fmsmga001.fm.intel.com with ESMTP; 12 Sep 2023 11:50:45 -0700
-Received: from kbuild by 47e905db7d2b with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1qg8Tf-00008v-17;
-	Tue, 12 Sep 2023 18:51:11 +0000
-Date: Wed, 13 Sep 2023 02:50:29 +0800
-From: kernel test robot <lkp@intel.com>
-To: Pingfan Liu <piliu@redhat.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCHv6 1/3] powerpc/setup: Loosen the mapping between cpu
- logical id and its seq in dt
-Message-ID: <202309130232.N2REwHBv-lkp@intel.com>
-References: <20230911131855.40738-2-piliu@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230911131855.40738-2-piliu@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlYPj0YcNz3dGS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 05:22:32 +1000 (AEST)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38CJKReI027902;
+	Tue, 12 Sep 2023 19:22:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=wWnLfUaBsk8/9XZq7ZQH7mewYkodHLrDkdq6gKH9nHs=;
+ b=b+rGIeotYwJ5mm+tN5Cg3Mvkl+ATz7Iwb3w7/mN+KOnolFN67Z3rNdqMH6TebkCJms/D
+ juB77jj9kdSVl8cQORe+9OacFjlBnRTWD/W2vwnlwsQ2jmOXEo+vhEaDv+h4fbgae2FL
+ KojfLqUQ4L6uc78RWLDMdwTDnmjZJSofYqK41V3DS+rMq2Bm15ImsVLVCoacAp8+A0Uc
+ 4QFyDgMtGExEkiHg0vmVAiPdCBJuQk8v1WecfWt3k4hj1nYk1eO5jDmkWbl1JR2CIZqM
+ 0Q42ej1ks0lqYnOQsSs5FOM3UC/UIbaXAlzmSviuQPTU1R+SmRkd19m5tgPn/rX9twco hw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t2x24r0xe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Sep 2023 19:22:24 +0000
+Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38CJLjsN032516;
+	Tue, 12 Sep 2023 19:22:24 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t2x24r0xa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Sep 2023 19:22:24 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38CIOmoM002779;
+	Tue, 12 Sep 2023 19:22:23 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t14hkweur-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Sep 2023 19:22:23 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38CJMMEN41353628
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 12 Sep 2023 19:22:22 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 42AC758059;
+	Tue, 12 Sep 2023 19:22:22 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E074058058;
+	Tue, 12 Sep 2023 19:22:20 +0000 (GMT)
+Received: from li-f45666cc-3089-11b2-a85c-c57d1a57929f.watson.ibm.com (unknown [9.31.99.213])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 12 Sep 2023 19:22:20 +0000 (GMT)
+Message-ID: <afba92bc2961c758d34ab340de207beb0a3b84b0.camel@linux.ibm.com>
+Subject: Re: [PATCH] integrity: powerpc: Do not select CA_MACHINE_KEYRING
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Jarkko Sakkinen <jarkko@kernel.org>,
+        Michal =?ISO-8859-1?Q?Such=E1nek?=
+	 <msuchanek@suse.de>,
+        Nayna <nayna@linux.vnet.ibm.com>
+Date: Tue, 12 Sep 2023 15:22:20 -0400
+In-Reply-To: <CVGUFUEQVCHS.37OA20PNG9EVB@suppilovahvero>
+References: <20230907165224.32256-1-msuchanek@suse.de>
+	 <20230907173232.GD8826@kitsune.suse.cz>
+	 <92e23f29-1a16-54da-48d1-59186158e923@linux.vnet.ibm.com>
+	 <20230912074116.GL8826@kitsune.suse.cz>
+	 <CVGUFUEQVCHS.37OA20PNG9EVB@suppilovahvero>
+Content-Type: text/plain; charset="ISO-8859-15"
+X-Mailer: Evolution 3.28.5 (3.28.5-22.el8) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 3IPyqn1Wmos6pu4cDwBz0Ld8z88iSZJL
+X-Proofpoint-ORIG-GUID: Hba6BnrVByWDG4ASRxD3uNw2IT8kyZ52
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-12_18,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ impostorscore=0 suspectscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 malwarescore=0 adultscore=0 mlxlogscore=997
+ phishscore=0 bulkscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2308100000 definitions=main-2309120160
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,42 +104,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, Pingfan Liu <piliu@redhat.com>, llvm@lists.linux.dev, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Ming Lei <ming.lei@redhat.com>, Wen Xiong <wenxiong@linux.ibm.com>, oe-kbuild-all@lists.linux.dev
+Cc: Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Nayna Jain <nayna@linux.ibm.com>, James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org, joeyli <jlee@suse.com>, linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Serge E. Hallyn" <serge@hallyn.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Pingfan,
+On Tue, 2023-09-12 at 12:49 +0300, Jarkko Sakkinen wrote:
+> On Tue Sep 12, 2023 at 10:41 AM EEST, Michal Suchánek wrote:
+> > On Mon, Sep 11, 2023 at 11:39:38PM -0400, Nayna wrote:
+> > > 
+> > > On 9/7/23 13:32, Michal Suchánek wrote:
+> > > > Adding more CC's from the original patch, looks like get_maintainers is
+> > > > not that great for this file.
+> > > > 
+> > > > On Thu, Sep 07, 2023 at 06:52:19PM +0200, Michal Suchanek wrote:
+> > > > > No other platform needs CA_MACHINE_KEYRING, either.
+> > > > > 
+> > > > > This is policy that should be decided by the administrator, not Kconfig
+> > > > > dependencies.
+> > > 
+> > > We certainly agree that flexibility is important. However, in this case,
+> > > this also implies that we are expecting system admins to be security
+> > > experts. As per our understanding, CA based infrastructure(PKI) is the
+> > > standard to be followed and not the policy decision. And we can only speak
+> > > for Power.
+> > > 
+> > > INTEGRITY_CA_MACHINE_KEYRING ensures that we always have CA signed leaf
+> > > certs.
+> >
+> > And that's the problem.
+> >
+> > From a distribution point of view there are two types of leaf certs:
+> >
+> >  - leaf certs signed by the distribution CA which need not be imported
+> >    because the distribution CA cert is enrolled one way or another
+> >  - user generated ad-hoc certificates that are not signed in any way,
+> >    and enrolled by the user
+> >
+> > The latter are vouched for by the user by enrolling the certificate, and
+> > confirming that they really want to trust this certificate. Enrolling
+> > user certificates is vital for usability or secure boot. Adding extra
+> > step of creating a CA certificate stored on the same system only
+> > complicates things with no added benefit.
+> 
+> This all comes down to the generic fact that kernel should not
+> proactively define what it *expects* sysadmins.
+> 
+> CA based infrastructure like anything is a policy decision not
+> a decision to be enforced by kernel.
 
-kernel test robot noticed the following build errors:
+Secure boot requires a signature chain of trust.  IMA extends the
+secure and trusted boot concepts to the kernel. Missing from that
+signature chain of trust is the ability of allowing the end
+machine/system owner to load other certificates without recompiling the
+kernel. The introduction of the machine keyring was to address this.
 
-[auto build test ERROR on powerpc/fixes]
-[also build test ERROR on linus/master v6.6-rc1 next-20230912]
-[cannot apply to powerpc/next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+I'm not questioning the end user's intent on loading local or third
+party keys via the normal mechanisms. If the existing mechanism(s) for
+loading local or third party keys were full-proof, then loading a
+single certificate, self-signed or not, would be fine. However, that
+isn't the reality.  The security of the two-stage approach is simply
+not equivalent to loading a single certificate.  Documentation could
+help the end user/system owner to safely create (and manage) separate
+certificate signing and code signing certs.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Pingfan-Liu/powerpc-setup-Loosen-the-mapping-between-cpu-logical-id-and-its-seq-in-dt/20230911-213042
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
-patch link:    https://lore.kernel.org/r/20230911131855.40738-2-piliu%40redhat.com
-patch subject: [PATCHv6 1/3] powerpc/setup: Loosen the mapping between cpu logical id and its seq in dt
-config: powerpc-randconfig-r032-20230912 (https://download.01.org/0day-ci/archive/20230913/202309130232.N2REwHBv-lkp@intel.com/config)
-compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project.git 4a5ac14ee968ff0ad5d2cc1ffa0299048db4c88a)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230913/202309130232.N2REwHBv-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202309130232.N2REwHBv-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> ld.lld: error: undefined symbol: boot_cpu_hwid
-   >>> referenced by setup-common.c:0 (arch/powerpc/kernel/setup-common.c:0)
-   >>>               arch/powerpc/kernel/setup-common.o:(smp_setup_cpu_maps) in archive vmlinux.a
-   >>> referenced by setup-common.c:0 (arch/powerpc/kernel/setup-common.c:0)
-   >>>               arch/powerpc/kernel/setup-common.o:(smp_setup_cpu_maps) in archive vmlinux.a
+Unlike UEFI based systems, PowerVM defines two variables trustedcadb
+and moduledb, for storing certificate signing and code signing
+certificates respectively.  First the certs on the trustedcadb are
+loaded and then the ones on moduledb are loaded.
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+thanks,
+
+Mimi
+
