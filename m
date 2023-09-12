@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 414CACA0ECA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 09:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA511CA0ECA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 10:11:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=K+nnYXVg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ORpXVav/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlJmN42sgz3cHN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 19:52:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlK9r6dVwz3cNl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:11:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=K+nnYXVg;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ORpXVav/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlJlS40Zyz3c58
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 19:52:03 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 5A722240009;
-	Tue, 12 Sep 2023 09:39:57 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlK8t0nLZz3c5j
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 20:10:36 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id E1B7040003;
+	Tue, 12 Sep 2023 10:10:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1694512320;
+	t=1694513431;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ScPjzuZaLLYh2lcosF7mjC3LbbKogbqWDUhQ8RkAceU=;
-	b=K+nnYXVgVTeIYLV1BYZk8yVPM7a2nPu/2JA6GWMyyv0Za8enlurHjBH7plSt2lkrUaQgFx
-	0f+eic3JBBgKxtWXmU15F2NOL2ZoHFXm8dROGgnxxRWdTKbO53xzFHJjRrH2cKPixxWiIQ
-	X0H50mqA/O7gee/qxhpcScSAQrz6oC5amb4tHHTsy3EQ30w3liig4hh60CmVmm0cSjrsOm
-	3+A4lbr4FIsGWAyRl0hBgn4ip8FNO3Untij7ggUFAU3Q5C3z+B+ux/Tq3eCFHsmlxJXwfW
-	EQItj5FZbLmxsodLOd0QDPWT6RUBUWUp7yQWKgN05HapEUcrPwoojI25LbtKJQ==
+	bh=e9HcidEq+A9xaDn4cDf1UskGOrMSLdgPTMn8dmPNgNc=;
+	b=ORpXVav/8v2nGgIh1dhRskAUabjXdDfQkWSO1dPfulthcfojOC1x3Se99trJUjBUSLjazj
+	cZXt26HWVi8pA5p3xDR83S9/uTZzIcqKh66BH98cuE5TBUpTPboObIHEgt3e8m/ztRcZ+f
+	/zB4fS+cnSvIs3mDXIbEoIeHW2UGP7h5v/ZSpOD87nOMzEqoSgxdEKEY6qdUGSC0neU5eb
+	9tiYOYBGCBTReAwTV4JDfrYAaEIHACZqzjKK9zeeXeOsj9HoPQ4sAXzZYi7F9xzo9LxMyu
+	1t1ygsOzh0UTT1ABmjnoE/Yi9M/KRTvWe2VmQXD2MrlYNbvRnzyqCsnqK6E/Cg==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	"David S. Miller" <davem@davemloft.net>,
@@ -59,9 +59,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Nicolin Chen <nicoleotsuka@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH v5 07/31] dt-bindings: soc: fsl: cpm_qe: cpm1-scc-qmc: Add 'additionalProperties: false' in child nodes
-Date: Tue, 12 Sep 2023 10:14:58 +0200
-Message-ID: <20230912081527.208499-8-herve.codina@bootlin.com>
+Subject: [PATCH v5 08/31] dt-bindings: soc: fsl: cpm_qe: cpm1-scc-qmc: Add support for QMC HDLC
+Date: Tue, 12 Sep 2023 12:10:18 +0200
+Message-ID: <20230912101018.225246-1-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230912081527.208499-1-herve.codina@bootlin.com>
 References: <20230912081527.208499-1-herve.codina@bootlin.com>
@@ -83,27 +83,51 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Thomas Petazzoni <t
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Additional properties in child node should not be allowed.
+The QMC (QUICC mutichannel controller) is a controller present in some
+PowerQUICC SoC such as MPC885.
+The QMC HDLC uses the QMC controller to transfer HDLC data.
 
-Prevent them adding 'additionalProperties: false'
+Additionally, a framer can be connected to the QMC HDLC.
+If present, this framer is the interface between the TDM bus used by the
+QMC HDLC and the E1/T1 line.
+The QMC HDLC can use this framer to get information about the E1/T1 line
+and configure the E1/T1 line.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- .../devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml     | 1 +
- 1 file changed, 1 insertion(+)
+ .../bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml   | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
-index 450a0354cb1d..82d9beb48e00 100644
+index 82d9beb48e00..b5073531f3f1 100644
 --- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
 +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
-@@ -64,6 +64,7 @@ patternProperties:
-     description:
-       A channel managed by this controller
-     type: object
-+    additionalProperties: false
+@@ -101,6 +101,16 @@ patternProperties:
+           Channel assigned Rx time-slots within the Rx time-slots routed by the
+           TSA to this cell.
  
-     properties:
-       reg:
++      compatible:
++        const: fsl,qmc-hdlc
++
++      fsl,framer:
++        $ref: /schemas/types.yaml#/definitions/phandle
++        description:
++          phandle to the framer node. The framer is in charge of an E1/T1 line
++          interface connected to the TDM bus. It can be used to get the E1/T1 line
++          status such as link up/down.
++
+     required:
+       - reg
+       - fsl,tx-ts-mask
+@@ -159,5 +169,8 @@ examples:
+             fsl,operational-mode = "hdlc";
+             fsl,tx-ts-mask = <0x00000000 0x0000ff00>;
+             fsl,rx-ts-mask = <0x00000000 0x0000ff00>;
++
++            compatible = "fsl,qmc-hdlc";
++            fsl,framer = <&framer>;
+         };
+     };
 -- 
 2.41.0
 
