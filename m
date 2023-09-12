@@ -4,125 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71D44CA0EC3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 10:57:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97F23CA0ECF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 11:11:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=RkkuMbxW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fpTh+3gK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlLBh5DFPz3cN3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:57:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlLWX1jbpz3dDK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 21:11:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=RkkuMbxW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fpTh+3gK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::61d; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on2061d.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e19::61d])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlLVX3JtTz30dt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 21:11:00 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4RlLVW4yCMz4x5h
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 21:10:59 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4RlLVW4ph8z4x5F; Tue, 12 Sep 2023 21:10:59 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fpTh+3gK;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlL9g6D79z3072
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 20:56:22 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RM0hoaUuWkRtcw0sUzhhkuDtkC4xCJJYwf9vkY345h8NZf7qTn8SVhRrxsh/7F6iN0UsB72f5uoipCszgabl4SgIFb/ydOVgzncjFDKCOM9toxNAT/+sLteNs09sKasoetfw+efu7iOtLMMxO2YmVXMYKT61bhqrPscLMdnbk2AjMqcp+S/dt2UMSYuJYxUZ8a2iTWpO7rw5f0ijFeL5RHCWIlCewOqgYF2agOnQytLXtai3Qs6CW1NBxPTbr7mrqheSwld2pwqjGP0P0OBkWQ3s+AkgvMyaN+5BvDxL+xjvQ0h5sbdR2jsjkTe3TwO7km5sh0K3DA4zROa5mWeJDA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=aTRG70Mr+ApUPLxskYyycg4dLds0sbPYjxM8ackewkc=;
- b=RPv5Hi1kbxfBQ6TILwqm95hrcTBCXQzWSoeoU2UFSO/EAx11DPy+kL8K6irMAaFu2hfXClOvtg2FPTJyZ3jf4kaff1u7ejrL3DaP/VGuPXzkmv70ySDUqt7aqdjbRzDWoHcxPheOk5FQVzNkrvNhCRYewW0S6tJKaQ0DLQn2CvoGpPck63uDanLDDluObhzO56b2OdXmnKcZItn6VZoc4EzVW7K6EBcSasMtMfNvHCWb4cYt0KdmySUomuz03bR6xcGgdTBMD859IUf/2Ip3VczjVVrCJuejbwCi5/ysuPYAFi77nkkp1GyPSm261mf3+WL0I4or9z6M/lUkQZqldg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
- dkim=pass header.d=csgroup.eu; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=aTRG70Mr+ApUPLxskYyycg4dLds0sbPYjxM8ackewkc=;
- b=RkkuMbxWQ3oYFwpl3ZYmxdD8/d+2yZw0wDJR/Pz0HVfumlP31tqVtXWwhfWCIXtylB21TJ5hd7XTStT7XLsvs8RtVtk5mmYfcz9obvwPxmgufDPnPCCv7cTIN8nx4GF2CHchMR++F5LWYEsSRTzvRlG5/P/ykBtiyLGG5Fs5H6yejRnjk4dsPLoOlK2816OcLqmWdZpguK3O+Vq3t/lTsuLBC4eGuFyf9nynGD3GX2uvLqlYgVZhPbMg4Yagt19qGZ05J7/HJYpUE0xKHrsqckMoOKpY0u/p2YTWkYAvW1RvRqecTqxJ37pyPdrSs0oqOdQSKmIPoKSZJmixE1rwgQ==
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
- by PR0P264MB2273.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:169::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6768.37; Tue, 12 Sep
- 2023 10:56:01 +0000
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::2820:d3a6:1cdf:c60e]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::2820:d3a6:1cdf:c60e%7]) with mapi id 15.20.6768.036; Tue, 12 Sep 2023
- 10:56:01 +0000
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: "Liam R. Howlett" <Liam.Howlett@oracle.com>, Andrew Morton
-	<akpm@linux-foundation.org>
-Subject: WARN: Interrupts were enabled early [bisected cfeb6ae8bcb9
- ("maple_tree: disable mas_wr_append() when other readers are possible")]
-Thread-Topic: WARN: Interrupts were enabled early [bisected cfeb6ae8bcb9
- ("maple_tree: disable mas_wr_append() when other readers are possible")]
-Thread-Index: AQHZ5We4ALEPBRjj9E2YFxQ2agYoYg==
-Date: Tue, 12 Sep 2023 10:56:01 +0000
-Message-ID: <a981d84d-e2aa-a4dd-ad11-d7ac1a814e5e@csgroup.eu>
-Accept-Language: fr-FR, en-US
-Content-Language: fr-FR
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=csgroup.eu;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: MRZP264MB2988:EE_|PR0P264MB2273:EE_
-x-ms-office365-filtering-correlation-id: a8c703c5-bace-481a-75d5-08dbb37eda8d
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info:  9GrUMIZJbyt7pQuvne+hner0hT3Jx9+Nc7Jima3KSRYSqcrIPgKQNDkY43YOFqjkbw1O5/oRCXD5S1Sg8K1bfpPoShyVLuoXsJkzOj5IPaTQ7iE39lBvTWhM8UTUhV7gkht35fIrTSXrzVHRFRLd4r47YUgMLj26dhbVNxMTcgR4tyHWt7PwkN6Qno1S8KezSzPVDIyK93EH8caANiEo2owtfcE1aY78c7lqcW5BkVbaRC+vjJF7+UI3ZUsm6g1WChps3nqaGtLSRpGy1Rb2CLsLg1OElLYR+EwBsgCmR/vzdHb1C7uV3RQuWfXu36FTZkJTa8o5IKhHiMuue1EVodzAGad7anwuQ14lPJdQe24aURdsJt6hNCWXXb6SGReqvuz7PUN2Z7WafB73yTGjJ+vxq3vuyYzetY9AQfkWh5WLib1o1njpaXyeaQ22q3frKCVOueM7scxum8kaOREs5Cc/ztBMBhXM4rVkLjE6bsaKXwb5nAF0JUzpLxJYYmJuuEDmuX+IZlqJYq+4F5W1h9022HSbHDBLpL6cg65Aq7VKGyBDMFOYAMV9plHMwrBHTZa0GC+B5+buQGe2hJ7UcZUcMjwsXe4Rsg9aq4hhp6zseZXQFt9ZGmAlU+WTdbmYnqtrOAPW7fnbAtNCGL/oifRCRLZKNCLlwo0HpANmZcGLBxq8aycrGc/DbJDz4Jht
-x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(346002)(39860400002)(396003)(376002)(366004)(136003)(1800799009)(186009)(451199024)(316002)(41300700001)(71200400001)(66446008)(76116006)(64756008)(91956017)(66556008)(66946007)(110136005)(38070700005)(38100700002)(66476007)(122000001)(478600001)(36756003)(45080400002)(54906003)(2906002)(31696002)(86362001)(5660300002)(44832011)(26005)(8676002)(4326008)(8936002)(2616005)(83380400001)(31686004)(6512007)(6506007)(6486002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?dzV3K1Ryd1JGSXVtMEtkUlFNbEdaL1RITmY1SEdocHRzMWlIMkNwMFk0dVFw?=
- =?utf-8?B?dS9nYzIvOUpLbzN4dlAvd1VyL2ZHNFFaNkxqc0tTSHhHYlphSHBvK3d4cTdW?=
- =?utf-8?B?YmRIYVg4dDE1SUU3eTY4cmZvVDlQc1hWMEZYMzVKTU1Vcys5TE9tZVgrL3lx?=
- =?utf-8?B?d1pwV05DVlRqYWFZbFFZdGRCZGZ2bi9wbS80R3M4VFRZTzZ5dXdzQm9CSEFo?=
- =?utf-8?B?bXJXZGs4U0syMjlUZlMza3R4c0lyVFljM3hIakJOU0h6Y213YWg1di9lRWIw?=
- =?utf-8?B?RGlOckloT1h4S1Q2VjBVVzVWdWQ0dFB6QUduK3IrdE5BVG9IQ2JZZXovLzlG?=
- =?utf-8?B?eHE1TXNIWU1uSEY2bXhQMEpzUFNuUjM5MGxZZ2xkUmo2ZXlla01iUXR2UFdW?=
- =?utf-8?B?djRQZkc2Q3FuVUh0VHlBOCtyUTU2WUVvVmV6d1pBUUZJc2o0Kzc5SVpvdEkv?=
- =?utf-8?B?ZjRsWWdIMEEvTnJValZ1ZWtlc01RZnZIUFJyUWsxMkdpdnVjTzFxZ2RtWVRz?=
- =?utf-8?B?a0NuYXp0aXE1WFFja0UzdlZuUkV2aDFjU0JLUEpLUDUzS1FzdE90cENObjY0?=
- =?utf-8?B?LzlwdFRBZllvNUxHNU1CSnA2Q1U4aWM2WTk4N1Jja1RpZDJJL0hNbmVuaVJ2?=
- =?utf-8?B?U2VLYW0wNTZLMG9LL09yK2lKdUkrR2dHRHoxZWhtdTAyaE5iZ3p2d3lXbzBo?=
- =?utf-8?B?N1FITFlKRXlmQkFpeUpxZ21VNG9ZdUR3Nitkbi9JdmkzRkJoMXlTa1psQSs5?=
- =?utf-8?B?Q1RiRzQ4a0dYMmd2aXc0M0dWaE4zejFaRVpkS0Zjell6VmtCY3ZYQWthVlVl?=
- =?utf-8?B?ZWRaYWlzQUFJSFJ4WnFtUlkxT1dONW12UHdyeHNjUkhLZEdPbnlXSHlBa2J0?=
- =?utf-8?B?b0pTUEZ6RkdJWW9CcFZGa2dhWVEzRElQZnIwWGxGOVlrbEh6UEtaZmNDRHpV?=
- =?utf-8?B?eTM5aXdoOXpvYVlWWGdsTW5Tc01McmFFR0NMNlhWeUNDbjZvS2lEbXhZRlJz?=
- =?utf-8?B?M3BXRXEyVzg1U0VVV3U3U3J6aVFTTEZZd2hTVjVqTW56cFdLNzdLUEdZRlBa?=
- =?utf-8?B?SjBORjRhUjVQZVpZZURjWWN6ejB5dDB3S05qekNpNU52UHhpeTk0RVR5UStK?=
- =?utf-8?B?QzB0M3RzYkE3MkNWL01uR2JjSlMwMS93TnM4MDJlUTNNVDJBMHVwUFlBTWpJ?=
- =?utf-8?B?cmNPaUpoMkNJVlBHKzdidldWR29jdElsWi9TTDBvM0FkVkpXdWlOWnNGcEV5?=
- =?utf-8?B?aEw0TkcyMnI3MUIvbFZzd3VXUERvNElGWmRIKzBsaUlwbjFMMlQyTVJ2NVFF?=
- =?utf-8?B?VG9KeEJCdXdLWGVpM1ZFUENuRkhTOEpuUHBxV3lJSG53aWpxaHU0c1ZORkdT?=
- =?utf-8?B?dy9BQnFNd0xSbzJkT0g4NVVRaEJOVWFmbjk5KzNtTzJDWEx2UnVGZSsxSVQv?=
- =?utf-8?B?cVRGTmo5SGgvRjRLSHA0aVJNZmFXdnl0RUFSS3lBdHhGQTNTTjhmdi9SZ21n?=
- =?utf-8?B?OEY5ZTN6ajlwVHVLT3VnWEtuT3RPV1NTcDJKREx3YysrY0JJcXFxRzhYTnJ4?=
- =?utf-8?B?ZFBkNHUxUkYyK0ZockJnaEJhcHUxWUgrTXpuajFwK2VGWHdSN2Ntd0ZFNkZ6?=
- =?utf-8?B?M0Y3eDAremo5OVpmcFhRT3hYSlNOL0d3bVlFTWtKRUQwMU4vWGpvVmxaQVZ3?=
- =?utf-8?B?OWZPNzNSVE8rZDIxb0hHb3F0U0svUTF6Nm9HMGRTN1AyVHJ3OWJmSmNxeC8r?=
- =?utf-8?B?NzdPQ0FQUFQyeDkxY2VWRXhBRVdOcUhsZnQvcUo4aWFKNUpnQVBOK200WUJM?=
- =?utf-8?B?MWpMN0pvZ05yMVh6SFFKd3pNbTJBeVlGUUFqTHVqcVo0bm4zWXRoMm85MlJa?=
- =?utf-8?B?dnhPdmZ1MXhnaHMrYkhudEcwd1BWRkRhYjZNT3RiUzNBcWtTUzd2UWZOTDVF?=
- =?utf-8?B?YWxvWUg4VTZGWXIxanIrMGY3d2tCMGs5bUhjYXFIejJoN3k1LzlqRU1Hakl6?=
- =?utf-8?B?SGNobEtXZlRiakpXM2dyTFI1Y0tKb1BHcjFCUlJQL1NvYXJXNFhTR0dwVTFv?=
- =?utf-8?B?Nm9HcmF3dHhnVnZWTVhiMmt0VThvaVdzS0llOGd6S3ZrblRsZzg1cUVpRUtP?=
- =?utf-8?Q?Cm71UkR55QQ2TEDQYETyf0QyM?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <C4913BE6BD70C248B8A646216DFE90D5@FRAP264.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4RlLVW0wwDz4x3G;
+	Tue, 12 Sep 2023 21:10:58 +1000 (AEST)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38CB8cpe014308;
+	Tue, 12 Sep 2023 11:10:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : reply-to : references : content-type : in-reply-to
+ : content-transfer-encoding : mime-version; s=pp1;
+ bh=nAFdfzek5QkiuKZxcG7gQzkyH1a2p2SbjMnA86/JyoY=;
+ b=fpTh+3gK4rlRYHQ5TCW+p6mtECYJmapLISdRhQlVFKxXB3fS6Dv5lqb9A0o/VnQs2Ibe
+ qqaWQHGNWBVYEzpioTcI/Kpk1dHl946nOG00fu/yLKLBdHoGQhrBDL6lLt5HAVSkKXRi
+ Mo5JJdPGc0Uwo2WT+i+9aMX9E01WKE4EQDemVNdIObgEbyQmdK1g8kK6BYfU3TsGSsTI
+ kxZwTJiM9YIt64X9Q7PNB4l3iIC3CrOJLPb6Hzo1h523WIGOODTGsRDHNLeK/Q/m3Xiw
+ M+f8yCD0QS6AyI67A9Y8lWkZ87L1W9GIw0gDhRJeyKcJ3k6QXKUr0W1rHhYdKYNx+L27 JQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t2p73h27x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Sep 2023 11:10:54 +0000
+Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38CB92Ye015691;
+	Tue, 12 Sep 2023 11:10:53 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t2p73h276-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Sep 2023 11:10:53 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38C8magk002724;
+	Tue, 12 Sep 2023 11:05:52 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t14hktctm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Sep 2023 11:05:52 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38CB5mhV14942850
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 12 Sep 2023 11:05:49 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DA3BC20043;
+	Tue, 12 Sep 2023 11:05:48 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1887220040;
+	Tue, 12 Sep 2023 11:05:47 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.109.248.226])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 12 Sep 2023 11:05:46 +0000 (GMT)
+Date: Tue, 12 Sep 2023 16:35:44 +0530
+From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+To: Pingfan Liu <kernelfans@gmail.com>
+Subject: Re: [RFC PATCH] powerpc: Make crashing cpu to be discovered first in
+ kdump kernel.
+Message-ID: <r4zz7mcq4r2drutkgohxo6nm4dh2pgxkqy42fgzjan6pzyz6yz@jcwucxw6lipm>
+References: <169402313576.1071869.18233618318394691773.stgit@jupiter>
+ <CAFgQCTtKUMxi_8PnX1iK1TSi7Zp8qkKEtoGnQRuPUUaZF+rbdA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAFgQCTtKUMxi_8PnX1iK1TSi7Zp8qkKEtoGnQRuPUUaZF+rbdA@mail.gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: V1HwEs6sY_JOc8MI7BY5SH78I4XmsoDK
+X-Proofpoint-GUID: 8NSqnpgng7Bk3lhnbl7_sKkLl2Cn7oHR
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-X-OriginatorOrg: csgroup.eu
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: a8c703c5-bace-481a-75d5-08dbb37eda8d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Sep 2023 10:56:01.7011
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 4RcH7v6uqCroHPjvc/3XN8GHqJGcx8Tash7rH+I7DvoCo7CrayZlXPT6cv1kyPJeXfjd0YDoperUaRrbkaf/t2ixNv4KaR7pYUhMKSMIKRI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB2273
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-12_09,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
+ lowpriorityscore=0 malwarescore=0 bulkscore=0 spamscore=0 suspectscore=0
+ mlxscore=0 clxscore=1015 phishscore=0 priorityscore=1501 impostorscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309120092
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -134,32 +115,180 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: mahesh@linux.ibm.com
+Cc: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>, Baoquan He <bhe@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Wen Xiong <wenxiong@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Dave Young <dyoung@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SGksDQoNCldpdGggcG1hYzMyX2RlZmNvbmZpZyBvbiBRRU1VIEkgZ2V0IHRoZSBmb2xsb3dpbmcg
-V0FSTiB3aXRoIDYuNi1yYzENCg0KQmlzZWN0ZWQgdG8gY2ZlYjZhZThiY2I5ICgibWFwbGVfdHJl
-ZTogZGlzYWJsZSBtYXNfd3JfYXBwZW5kKCkgd2hlbiANCm90aGVyIHJlYWRlcnMgYXJlIHBvc3Np
-YmxlIikNCg0KSSBoYXZlIGFic29sdXRlbHkgbm8gaWRlYSB3aGF0IGl0IGNhbiBiZSwgZG8geW91
-ID8NCg0KLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tDQpJbnRlcnJ1cHRzIHdl
-cmUgZW5hYmxlZCBlYXJseQ0KV0FSTklORzogQ1BVOiAwIFBJRDogMCBhdCBpbml0L21haW4uYzo5
-OTIgc3RhcnRfa2VybmVsKzB4NGQ4LzB4NWMwDQpNb2R1bGVzIGxpbmtlZCBpbjoNCkNQVTogMCBQ
-SUQ6IDAgQ29tbTogc3dhcHBlciBOb3QgdGFpbnRlZCA2LjYuMC1yYzEgIzQ4MA0KSGFyZHdhcmUg
-bmFtZTogUG93ZXJNYWMzLDEgNzQwMCAweGMwMjA5IFBvd2VyTWFjDQpOSVA6ICBjMGE2MDUyYyBM
-UjogYzBhNjA1MmMgQ1RSOiAwMDAwMDAwMA0KUkVHUzogYzBjNGRlZTAgVFJBUDogMDcwMCAgIE5v
-dCB0YWludGVkICAoNi42LjAtcmMxKQ0KTVNSOiAgMDAwMjkwMzIgPEVFLE1FLElSLERSLFJJPiAg
-Q1I6IDI0MDAwMjgyICBYRVI6IDIwMDAwMDAwDQoNCkdQUjAwOiBjMGE2MDUyYyBjMGM0ZGZhMCBj
-MGI5MjU4MCAwMDAwMDAxZCBjMGI5ZDEyOCAwMDAwMDAwMSBjMGI5ZDE0OCANCjNmZmZmZGZmDQpH
-UFIwODogYzBiYTgwZjAgMDAwMDAwMDAgMDAwMDAwMDAgM2ZmZmZlMDAgNDQwMDAyODIgMDAwMDAw
-MDAgMDAwMDAwMDAgDQowMTk5YWJmOA0KR1BSMTY6IDAxOTliMGEwIDdmZGU3ZmE0IDdmYzVhYzBj
-IDAwMDAwMGJiIDQxMDAwMDAwIDAxYzY5MGM4IGMwYjkyMDE0IA0KYzA5YjRiY2MNCkdQUjI0OiBj
-MGM1NTIyMCBjMGFjMDAwMCAwMDAwMDAwMCBlZmZmOTEwOSBlZmZmOTEwMCAwMDAwMDAwYSBjMGM2
-ZDAwMCANCmMwYjkyMGEwDQpOSVAgW2MwYTYwNTJjXSBzdGFydF9rZXJuZWwrMHg0ZDgvMHg1YzAN
-CkxSIFtjMGE2MDUyY10gc3RhcnRfa2VybmVsKzB4NGQ4LzB4NWMwDQpDYWxsIFRyYWNlOg0KW2Mw
-YzRkZmEwXSBbYzBhNjA1MmNdIHN0YXJ0X2tlcm5lbCsweDRkOC8weDVjMCAodW5yZWxpYWJsZSkN
-CltjMGM0ZGZmMF0gWzAwMDAzNTQwXSAweDM1NDANCkNvZGU6IDQ4MDAzN2IxIDQ4MDIzYzA1IDRi
-YWI4OGNkIDkwNjIwMjYwIDQ4MDEzOWU5IDRiNjU3Y2NkIDdkMjAwMGE2IA0KNzEyOTgwMDAgNDFh
-MjAwMTQgM2M2MGMwOWEgMzg2M2I3ODggNGI1ZTljY2QgPDBmZTAwMDAwPiAzOTIwMDAwMCANCjk5
-MzgwMDA4IDdkMjAwMGE2DQotLS1bIGVuZCB0cmFjZSAwMDAwMDAwMDAwMDAwMDAwIF0tLS0NCg0K
-Q2hyaXN0b3BoZQ0K
+On 2023-09-11 21:23:42 Mon, Pingfan Liu wrote:
+> Hi Mahesh,
+> 
+> I am not quite sure about fdt, so I skip that part, and leave some
+> comments from the kexec view.
+> 
+> On Thu, Sep 7, 2023 at 1:59 AM Mahesh Salgaonkar <mahesh@linux.ibm.com> wrote:
+> >
+> > The kernel boot parameter 'nr_cpus=' allows one to specify number of
+> > possible cpus in the system. In the normal scenario the first cpu (cpu0)
+> > that shows up is the boot cpu and hence it gets covered under nr_cpus
+> > limit.
+> >
+> > But this assumption is broken in kdump scenario where kdump kernel after a
+> > crash can boot up on an non-zero boot cpu. The paca structure allocation
+> > depends on value of nr_cpus and is indexed using logical cpu ids. The cpu
+> > discovery code brings up the cpus as they appear sequentially on device
+> > tree and assigns logical cpu ids starting from 0. This definitely becomes
+> > an issue if boot cpu id > nr_cpus. When this occurs it results into
+> >
+> > In past there were proposals to fix this by making changes to cpu discovery
+> > code to identify non-zero boot cpu and map it to logical cpu 0. However,
+> > the changes were very invasive, making discovery code more complicated and
+> > risky.
+> >
+> > Considering that the non-zero boot cpu scenario is more specific to kdump
+> > kernel, limiting the changes in panic/crash kexec path would probably be a
+> > best approach to have.
+> >
+> > Hence proposed change is, in crash kexec path, move the crashing cpu's
+> > device node to the first position under '/cpus' node, which will make the
+> > crashing cpu to be discovered as part of the first core in kdump kernel.
+> >
+> > In order to accommodate boot cpu for the case where boot_cpuid > nr_cpu_ids,
+> > align up the nr_cpu_ids to SMT threads in early_init_dt_scan_cpus(). This
+> > will allow kdump kernel to work with nr_cpus=X where X will be aligned up
+> > in multiple of SMT threads per core.
+> >
+> > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/kexec.h  |    1
+> >  arch/powerpc/kernel/prom.c        |   13 ++++
+> >  arch/powerpc/kexec/core_64.c      |  128 +++++++++++++++++++++++++++++++++++++
+> >  arch/powerpc/kexec/file_load_64.c |    2 -
+> >  4 files changed, 143 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+> > index a1ddba01e7d13..f5a6f4a1b8eb0 100644
+> > --- a/arch/powerpc/include/asm/kexec.h
+> > +++ b/arch/powerpc/include/asm/kexec.h
+> > @@ -144,6 +144,7 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image);
+> >  int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
+> >                         unsigned long initrd_load_addr,
+> >                         unsigned long initrd_len, const char *cmdline);
+> > +int add_node_props(void *fdt, int node_offset, const struct device_node *dn);
+> >  #endif /* CONFIG_PPC64 */
+> >
+> >  #endif /* CONFIG_KEXEC_FILE */
+> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> > index 0b5878c3125b1..c2d4f55042d72 100644
+> > --- a/arch/powerpc/kernel/prom.c
+> > +++ b/arch/powerpc/kernel/prom.c
+> > @@ -322,6 +322,9 @@ static void __init check_cpu_feature_properties(unsigned long node)
+> >         }
+> >  }
+> >
+> > +/* align addr on a size boundary - adjust address up */
+> > +#define _ALIGN_UP(addr, size)   (((addr)+((size)-1))&(~((typeof(addr))(size)-1)))
+> > +
+> >  static int __init early_init_dt_scan_cpus(unsigned long node,
+> >                                           const char *uname, int depth,
+> >                                           void *data)
+> > @@ -348,6 +351,16 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+> >
+> >         nthreads = len / sizeof(int);
+> >
+> > +       /*
+> > +        * Align nr_cpu_ids to correct SMT value. This will help us to allocate
+> > +        * pacas correctly to accomodate boot_cpu != 0 scenario e.g. in kdump
+> > +        * kernel the boot cpu can be any cpu between 0 through nthreads.
+> > +        */
+> > +       if (nr_cpu_ids % nthreads) {
+> > +               nr_cpu_ids = _ALIGN_UP(nr_cpu_ids, nthreads);
+> 
+> It is better to use set_nr_cpu_ids(), which can hide the difference of
+> nr_cpus_ids under different kernel configuration.
+
+Yup, I have fixed that in RFC v2 at https://lore.kernel.org/linuxppc-dev/169426331903.1523857.16489366285648613217.stgit@jupiter/
+
+> 
+> > +               pr_info("Aligned nr_cpus to SMT=%d, nr_cpu_ids = %d\n", nthreads, nr_cpu_ids);
+> > +       }
+> > +
+> >         /*
+> >          * Now see if any of these threads match our boot cpu.
+> >          * NOTE: This must match the parsing done in smp_setup_cpu_maps.
+> > +
+[...]
+> >  /* too late to fail here */
+> >  void default_machine_kexec(struct kimage *image)
+> >  {
+> > @@ -341,6 +455,20 @@ void default_machine_kexec(struct kimage *image)
+> >                 printk("kexec: Unshared all shared pages.\n");
+> >         }
+> >
+> > +       /*
+> > +        * Move the crashing cpus FDT node as the first node under /cpus node.
+> > +        * This will make the core (where crashing cpu belongs) to
+> > +        * automatically become first core to show up in kdump kernel and
+> > +        * crashing cpu as boot cpu within first n threads of that core.
+> > +        *
+> > +        * Currently this will work with kexec_file_load only.
+> > +        *
+> > +        * XXX: For kexec_load, change is required in kexec tool to exclude FDT
+> > +        * segment from purgatory checksum check.
+> > +        */
+> > +       if (image->type == KEXEC_TYPE_CRASH && image->file_mode)
+> > +               move_crashing_cpu(image);
+> > +
+> 
+> Could "kexec -e" have the same logic? Then nr_cpus can work for both
+> "kexec -p" and "kexec -e".
+
+I see that for normal kexec path we always migrate to reboot_cpus
+(which is by default is logical cpu 0) before kexec'ing into new kernel.
+Hence, the 3rd hunk of this patch which aligns up nr_cpu_ids to nthreads
+is enough to support nr_cpus.
+
+However, if someone chooses to change reboot_cpu other than 0, either
+through reboot_cpu= kernel parameter or by
+"echo cpunum > /sys/kernel/reboot/cpu", then kexec -e will need to move
+reboot_cpus fdt node to first position for nr_cpus to work.
+
+Simple way to confirm this is:
+
+$ kexec -l <vmlinux> --initrd=<initrd> --command-line="... nr_cpus=8"
+$ echo 8 > /sys/kernel/reboot/cpu
+$ kexec -e
+
+Kexec kernel fails to boot.
+
+Will work on changes to make kexec -e to work for nr_cpus in v3.
+
+Thanks for your review.
+-Mahesh.
+
+> 
+> Thanks,
+> 
+> Pingfan
+> 
+> >         paca_ptrs[kexec_paca.paca_index] = &kexec_paca;
+> >
+> >         setup_paca(&kexec_paca);
+> > diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+> > index 110d28bede2a7..42d55a19454a7 100644
+> > --- a/arch/powerpc/kexec/file_load_64.c
+> > +++ b/arch/powerpc/kexec/file_load_64.c
+> > @@ -1027,7 +1027,7 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image)
+> >   *
+> >   * Returns 0 on success, negative errno on error.
+> >   */
+> > -static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
+> > +int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
+> >  {
+> >         int ret = 0;
+> >         struct property *pp;
+> >
+> >
+
+-- 
+Mahesh J Salgaonkar
