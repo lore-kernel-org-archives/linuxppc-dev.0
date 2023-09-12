@@ -4,33 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86441CD5BDD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 15:24:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FC87CA0ECA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 10:51:28 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=dd5w+V1Y;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rqlny054Jz3cVp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Sep 2023 01:24:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RqlnK5nC3z2ysD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2023 01:24:03 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 38JFGXnW031198;
-	Tue, 19 Sep 2023 10:16:33 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 38JFGUOK031195;
-	Tue, 19 Sep 2023 10:16:30 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 19 Sep 2023 10:16:30 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Peter Lafreniere <peter@n8pjl.ca>
-Subject: Re: [PATCH 0/7] arch/*: config: Remove ReiserFS from defconfig
-Message-ID: <20230919151630.GO19790@gate.crashing.org>
-References: <20230918175529.19011-1-peter@n8pjl.ca> <20230918234108.GN19790@gate.crashing.org> <20230919000026.7409-1-peter@n8pjl.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230919000026.7409-1-peter@n8pjl.ca>
-User-Agent: Mutt/1.4.2.3i
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlL3z3q01z3cJg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 20:51:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=dd5w+V1Y;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b31; helo=mail-yb1-xb31.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlL312DQqz303l
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 20:50:35 +1000 (AEST)
+Received: by mail-yb1-xb31.google.com with SMTP id 3f1490d57ef6-d7ba4c5f581so4744588276.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2023 03:50:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694515830; x=1695120630; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=x1zhy1UCOP1ljrKVhLiacaxWhwvSH+VCp0kMLxhoeYk=;
+        b=dd5w+V1Yt1/5LPeUuJPx2eMHv9361E1MTJbzBfGDwgJ4ga7YRsdvbYkXrGAhGIIecN
+         ZcCzDFLrRTDIzGf1sZpcC67trdu99IkurlRgn+DgyAsq8vT0oXvJolGA3quNWpaRSUfq
+         k3wQANeMsswj+6r6yYXi8oxjtgcew0xYkVuPtzTLlKCqnlyU6gilfJhnAz++O3qvk4Bt
+         r/XgF62rTw7FjNUV+nZjijofj650bF9Fk5Y0yVAOV4ysTm5rPmp3UONScMYs5NblaHU2
+         T/CD1FxjCRjZlG/MDYECxh9wbG7NkpnMnQn8rP56rapqdqYAht8LlpYaM54DeTntwIWE
+         0/kw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694515830; x=1695120630;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=x1zhy1UCOP1ljrKVhLiacaxWhwvSH+VCp0kMLxhoeYk=;
+        b=Ue0QXscjSzo6NlLMqz8Kpp0JWDBZmwYv3m9DgJhoZ+i/3LaboRbmhkVYkHjgDMQrw0
+         u44LRQV75lH4bcbyWHeaofoY7G1BB2sBupH2LuRRpjjP7AcrtEutnQC44IP45g+zktzr
+         3WTWnF7OJliauhg3SjqwERH2mm71KhQCcqM9OvDoiHNLTuhEEz+JBemroWrs52rSJZS1
+         aya7EE9zklFHqtEiVRC2ChBcLSdPCc/tLKiGwLKPWziLiRX5QeuGLaTuEc1Ot4qODCsd
+         ehR3615YUh4ttcnuwfqBg9uEmMdUz3w/sXAOPKJdSqi25i9vKciEu7CG9i3YJvhWTLR1
+         Hb4Q==
+X-Gm-Message-State: AOJu0Yy5SllTeOe1LezkfypK5R6fTGuQEunP3NtOPZ95ddXKe5lWfYg8
+	o5QAamzJNULdcZZ81tt6UWAZebXeWOQLluImUQdxpA==
+X-Google-Smtp-Source: AGHT+IF07zf9UK//ddp32dWpF4Y9JXdGQlakVWNajAly9WIIg0061on0AU2876ifTbnQDu3Gsm2uIBLaneAG2d7vX6I=
+X-Received: by 2002:a5b:d05:0:b0:d78:98f:4aa1 with SMTP id y5-20020a5b0d05000000b00d78098f4aa1mr12462208ybp.7.1694515830489;
+ Tue, 12 Sep 2023 03:50:30 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230912081527.208499-1-herve.codina@bootlin.com> <20230912101458.225870-1-herve.codina@bootlin.com>
+In-Reply-To: <20230912101458.225870-1-herve.codina@bootlin.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 12 Sep 2023 12:50:18 +0200
+Message-ID: <CACRpkdYFuqQYhB7dOnRnUo8kfRiVZFzYBQuWCpEPLLKVSzKkJg@mail.gmail.com>
+Subject: Re: [PATCH v5 27/31] net: wan: framer: Add support for the Lantiq
+ PEF2256 framer
+To: Herve Codina <herve.codina@bootlin.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,32 +75,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-m68k@vger.kernel.org, tsbogend@alpha.franken.de, jack@suse.cz, reiserfs-devel@vger.kernel.org, linux-sh@vger.kernel.org, linux@armlinux.org.uk, richard.henderson@linaro.org, linux-um@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, richard@nod.at, ink@jurassic.park.msu.ru, linux-alpha@vger.kernel.org, geert@linux-m68k.org, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, anton.ivanov@cambridgegreys.com
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Simon Horman <horms@kernel.org>, linuxppc-de
+ v@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 19, 2023 at 12:00:34AM +0000, Peter Lafreniere wrote:
-> On Monday, September 18th, 2023 at 19:41, Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> > On Mon, Sep 18, 2023 at 05:56:09PM +0000, Peter Lafreniere wrote:
-> > 
-> > > ReiserFS has been considered deprecated for 19 months since commit
-> > > eb103a51640e ("reiserfs: Deprecate reiserfs"). However, there are
-> > > several architectures that still build it into their defconfig kernels.
-> > > 
-> > > As ReiserFS will be removed in 2025, delete all ReiserFS-related options
-> > > from defconfig files before the filesystem's removal.
-> > 
-> > 
-> > This is essentially equivalent to deleting the filesystem now. Why do
-> > this? Is there such a hurry?
-> 
-> This is not equivalent to deleting the filesystem. The filesystem can still
-> be configured into kernels, and few distros use a defconfig kernel anyway.
+On Tue, Sep 12, 2023 at 12:15=E2=80=AFPM Herve Codina <herve.codina@bootlin=
+.com> wrote:
 
-Most people who compile kernels use defconfigs though.  Distros are a
-tiny minority if you look at builds.
+> The Lantiq PEF2256 is a framer and line interface component designed to
+> fulfill all required interfacing between an analog E1/T1/J1 line and the
+> digital PCM system highway/H.100 bus.
+>
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Again: why do you want this?
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-
-Segher
+Yours,
+Linus Walleij
