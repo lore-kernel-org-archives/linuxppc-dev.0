@@ -4,56 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89F40EE3F00
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 17:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F65FEE3F09
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Sep 2023 18:17:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ithTbuEX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IR/OMxa+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RlWYt6YLgz3cP3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 03:59:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlWyB1P5zz3dDJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 04:17:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ithTbuEX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IR/OMxa+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=xm+6=e4=robh_at_kernel.org=rob@kernel.org; receiver=lists.ozlabs.org)
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlWXy1mz8z3c1V
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 03:58:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlWxD6Ds0z3bxL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 04:16:16 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 48931B81F65;
-	Tue, 12 Sep 2023 17:58:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2528FC433C7;
-	Tue, 12 Sep 2023 17:58:33 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 518AFB81D36;
+	Tue, 12 Sep 2023 18:16:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13FEEC433C8;
+	Tue, 12 Sep 2023 18:16:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1694541516;
-	bh=JEv/PdS67apPPBjdgQMt1j8LrthrJDQTeiNjt0wyv5c=;
+	s=k20201202; t=1694542573;
+	bh=jh5T5UyTegwwkeivH1ZRwP9K8owrs1S2MNDdSEDICis=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ithTbuEXHG9CuKyDzU3aAaCHAG1P5uJ5YZbd/qweVdrPAF5pV7q7RtR/HDfMyoDOP
-	 H822WkrV5CX4Fq+iFeCsXJMz6BnLIRGwSZYcP9aLlnEZn+VGPTqWZwMDnA/4VTCMhL
-	 RLWVZq784lcSovlKvyvzkikfqvqSPOGJ2kBqOc4ciFw49KfsGmoqipaSJf7O28ZeN6
-	 Ec3DP2VTHfvStE6eYO90HFNMGgq5SSVEeaOppqUqVhAZP+STV1pZJ398noPJDUdqFX
-	 fLqH+2Mch4T41Qw/5FTmWDbezjrCBXuiZlwAyQ23NO0J1w9sN0D4Ywp4Vq4VtwwhJR
-	 pREO8HFu0mPfA==
-Received: (nullmailer pid 998213 invoked by uid 1000);
-	Tue, 12 Sep 2023 17:58:32 -0000
-Date: Tue, 12 Sep 2023 12:58:32 -0500
+	b=IR/OMxa+L/bn1llX2o1lzvlA23d6gd9+e4J/5n+gNZUlkl5qVwDFTgM229ZQ02Ic2
+	 VfRf2BmYijB+VI6390vsTYIKDqeKXxto/q8crI/8TX8BxRjVK/RUxqRQZilOMBwi+/
+	 2fYTPQIZB1wTptoIp/d6wiYH90WyhiRSdC5dtgSD0m37vpG/N/W97GXw0N/vMZlYMP
+	 +zgqa/euRQfMYKkLwNBcIl87bdS28ZoeNUALmlv+5W5iYWqfRfXzFSKBu82MyvXjGe
+	 4763B2z9gcCo2GD81Pa9cpgRE6z/q+0LRRpwbwuP5VcbDgpxxk7CpQ3EK+b4M3EHyG
+	 HiyoyYLJ1g78Q==
+Received: (nullmailer pid 1126678 invoked by uid 1000);
+	Tue, 12 Sep 2023 18:16:08 -0000
+Date: Tue, 12 Sep 2023 13:16:08 -0500
 From: Rob Herring <robh@kernel.org>
 To: Herve Codina <herve.codina@bootlin.com>
 Subject: Re: [PATCH v5 06/31] dt-bindings: soc: fsl: cpm_qe: cpm1-scc-qmc:
  Fix example property name
-Message-ID: <20230912175832.GA995540-robh@kernel.org>
+Message-ID: <20230912181608.GA1111902-robh@kernel.org>
 References: <20230912081527.208499-1-herve.codina@bootlin.com>
  <20230912081527.208499-7-herve.codina@bootlin.com>
+ <20230912175832.GA995540-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230912081527.208499-7-herve.codina@bootlin.com>
+In-Reply-To: <20230912175832.GA995540-robh@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,54 +71,23 @@ Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 12, 2023 at 10:14:57AM +0200, Herve Codina wrote:
-> The given example mentions the 'fsl,mode' property whereas the
-> correct property name, the one described, is 'fsl,operational-mode'.
+On Tue, Sep 12, 2023 at 12:58:32PM -0500, Rob Herring wrote:
+> On Tue, Sep 12, 2023 at 10:14:57AM +0200, Herve Codina wrote:
+> > The given example mentions the 'fsl,mode' property whereas the
+> > correct property name, the one described, is 'fsl,operational-mode'.
+> > 
+> > Fix the example to use the correct property name.
+> > 
+> > Fixes: a9b121327c93 ("dt-bindings: soc: fsl: cpm_qe: Add QMC controller")
+> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > ---
+> >  .../bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml           | 6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
-> Fix the example to use the correct property name.
-> 
-> Fixes: a9b121327c93 ("dt-bindings: soc: fsl: cpm_qe: Add QMC controller")
-> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-> ---
->  .../bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml           | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+> I have this same fix in my tree, but you missed something. Please add 
+> additionalProperties or unevaluatedProperties to the child node schema 
+> so that this error is flagged.
 
-I have this same fix in my tree, but you missed something. Please add 
-additionalProperties or unevaluatedProperties to the child node schema 
-so that this error is flagged.
+NM, I see the next patch now.
 
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
-> index ec888f48cac8..450a0354cb1d 100644
-> --- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
-> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
-> @@ -137,7 +137,7 @@ examples:
->          channel@16 {
->              /* Ch16 : First 4 even TS from all routed from TSA */
->              reg = <16>;
-> -            fsl,mode = "transparent";
-> +            fsl,operational-mode = "transparent";
->              fsl,reverse-data;
->              fsl,tx-ts-mask = <0x00000000 0x000000aa>;
->              fsl,rx-ts-mask = <0x00000000 0x000000aa>;
-> @@ -146,7 +146,7 @@ examples:
->          channel@17 {
->              /* Ch17 : First 4 odd TS from all routed from TSA */
->              reg = <17>;
-> -            fsl,mode = "transparent";
-> +            fsl,operational-mode = "transparent";
->              fsl,reverse-data;
->              fsl,tx-ts-mask = <0x00000000 0x00000055>;
->              fsl,rx-ts-mask = <0x00000000 0x00000055>;
-> @@ -155,7 +155,7 @@ examples:
->          channel@19 {
->              /* Ch19 : 8 TS (TS 8..15) from all routed from TSA */
->              reg = <19>;
-> -            fsl,mode = "hdlc";
-> +            fsl,operational-mode = "hdlc";
->              fsl,tx-ts-mask = <0x00000000 0x0000ff00>;
->              fsl,rx-ts-mask = <0x00000000 0x0000ff00>;
->          };
-> -- 
-> 2.41.0
-> 
+Acked-by: Rob Herring <robh@kernel.org>
