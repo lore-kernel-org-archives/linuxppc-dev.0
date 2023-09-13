@@ -4,74 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E100CA5509
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 08:37:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F099CA5512
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 09:12:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sigma-star.at header.i=@sigma-star.at header.a=rsa-sha256 header.s=google header.b=okpTwTVP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uNRdoHOM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rlv2p4zJVz3cC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 18:37:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlvqG3K4Dz3cNY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 19:12:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=sigma-star.at header.i=@sigma-star.at header.a=rsa-sha256 header.s=google header.b=okpTwTVP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uNRdoHOM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sigma-star.at (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=david@sigma-star.at; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.granados.samsung.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rlv1n4QRRz2yVQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 18:36:27 +1000 (AEST)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-401b3ea0656so68948225e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 01:36:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sigma-star.at; s=google; t=1694594184; x=1695198984; darn=lists.ozlabs.org;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uolj6bycuQLgVCoKuVx7OW6O8ol63jhVI8+H9GWvM7E=;
-        b=okpTwTVPoWo0nMIeH4sE/eQt3AcP0sWNkQ2M20JUMeCBd6WP5x32/i4Q81nz4eJdHW
-         Hh/Ue3o7x9uSQvSMxGW7Mxmpg84zpA++lJgcJ1eWT4XbGp8ccbXw6ddEs7pVWhDNGP0/
-         BuXjDMEBJyL8cRFBnqtW+ZGXB3SYoOwcGT9uMRS/C60D1Ygv1I0VD4xKl8yTP3Hg10Rk
-         hExTuwJS9bH1TSfajyB/WRE+eQVSj2ygnUIqYF8A8EtZN2dT63bH1c7KrjKFy+mZFXYA
-         Y3LGIXEN1EtWynVRyWvO5We1bIShqA0LI3dDAC4gmLonaZ4o2uL6YrWqGDno7FrbZrSX
-         cuQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694594184; x=1695198984;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=uolj6bycuQLgVCoKuVx7OW6O8ol63jhVI8+H9GWvM7E=;
-        b=htRv7tD7nhX+oWUhXFiT3TuxRXuMvOJZLtx/N5fmieDkF3KNlEyDRyveVuI1rsinEM
-         fEwPoylJkDhFeGu3lrgCHl5CkipAg1cNcYtFTnqJG2jz+jKFLVYy1P6sDE9TgYO9Ho2H
-         3g0WSOkH7AYKn5/ydUj43OL5hH4Ga9nTq+PiQ+uZ/i8GOeg5saEGv21Mh7WtFty7POvG
-         GFaKyucTb7PtmG9fcHiaDtoq3TpBW+n4BiJ1yWC5BINQ+4lnyuAiGOc1Jpsa5l3ysaWE
-         WIbxIh7e6huvt6Zp75UTlmYX4uRtqbVXDsynQhHhVFZqhp4dnsNrqDTUmXx5ZWwSP7p+
-         TBmg==
-X-Gm-Message-State: AOJu0Yyo1qZWzn8QReUczqWoL6/GrxLw/v8GVYlYlJlPs5DdvQfZmBiF
-	/rSNaAk+VGCT9FK2IxIcjXM2eQ==
-X-Google-Smtp-Source: AGHT+IGXZEXOiBFL14tbu7JB9wJiL81o7SR10ExAo1isVi5iswnBwwcoSwfHQtzWGjeJP8MxZaq/dw==
-X-Received: by 2002:a05:600c:2159:b0:402:f503:6d1b with SMTP id v25-20020a05600c215900b00402f5036d1bmr1463747wml.0.1694594183662;
-        Wed, 13 Sep 2023 01:36:23 -0700 (PDT)
-Received: from smtpclient.apple (clnet-p106-198.ikbnet.co.at. [83.175.106.198])
-        by smtp.gmail.com with ESMTPSA id y17-20020adff151000000b0031c5dda3aedsm14955606wro.95.2023.09.13.01.36.22
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 13 Sep 2023 01:36:23 -0700 (PDT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.700.6\))
-Subject: Re: [PATCH v2 1/3] crypto: mxs-dcp: Add support for hardware provided
- keys
-From: David Gstir <david@sigma-star.at>
-In-Reply-To: <CVH49V57VE6R.2488KOQMR5AKQ@suppilovahvero>
-Date: Wed, 13 Sep 2023 10:36:11 +0200
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <F2794F55-D63B-448D-B954-C3C25E0B474D@sigma-star.at>
-References: <20230912111115.24274-1-david@sigma-star.at>
- <20230912111115.24274-2-david@sigma-star.at>
- <CVH49V57VE6R.2488KOQMR5AKQ@suppilovahvero>
-To: Jarkko Sakkinen <jarkko@kernel.org>
-X-Mailer: Apple Mail (2.3731.700.6)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlvpG1nB5z30NP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 19:11:34 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 0166A61871;
+	Wed, 13 Sep 2023 09:11:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 950DBC433C8;
+	Wed, 13 Sep 2023 09:11:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1694596290;
+	bh=H3CwHEhNAyk3n0UEs1hZGB7AhfptCwREoqm5y63roFw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=uNRdoHOM4Yy9XfI0S4sYj9kdaC7LNMOK9NsSNCJ2QaOJN3NAg41eArEg9vdpIPeO2
+	 jRejQzWuJcEGHJ3Z+BrJaaHm/TYbXsaNJ8y+1No37kaY/NXSPVLRNmLhD2pafcVuJp
+	 eDxGqPPW+2WJOkZ9+WJdneYd52dtWk5xg+sKiySZxiyaq/i9uac+L7PmyGHqNE8BTp
+	 kyhRDDkg+l8JooozVeUPPvNuBppDrekDV/1BBGj8uxlw/eZZLYkBo4lM+wFh8Vvf/q
+	 Fs1W4tZ1qjML4CxWegQ2k3O37VHHzhq4j8YZV4HweKF7r9nVJv/amgSLV1Z8BwoyJO
+	 Rsw1vcuckhsaw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 750A5CA5512;
+	Wed, 13 Sep 2023 09:11:30 +0000 (UTC)
+From: Joel Granados via B4 Relay <devnull+j.granados.samsung.com@kernel.org>
+Date: Wed, 13 Sep 2023 11:10:55 +0200
+Subject: [PATCH v2 1/8] S390: Remove now superfluous sentinel elem from
+ ctl_table arrays
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id:  <20230913-jag-sysctl_remove_empty_elem_arch-v2-1-d1bd13a29bae@samsung.com>
+References:  <20230913-jag-sysctl_remove_empty_elem_arch-v2-0-d1bd13a29bae@samsung.com>
+In-Reply-To:  <20230913-jag-sysctl_remove_empty_elem_arch-v2-0-d1bd13a29bae@samsung.com>
+To: Luis Chamberlain <mcgrof@kernel.org>, willy@infradead.org, 
+ josh@joshtriplett.org, Kees Cook <keescook@chromium.org>, 
+ Iurii Zaikin <yzaikin@google.com>, Heiko Carstens <hca@linux.ibm.com>, 
+ Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, 
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
+ Russell King <linux@armlinux.org.uk>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, 
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
+ Paul Walmsley <paul.walmsley@sifive.com>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Guo Ren <guoren@kernel.org>, 
+ Alexey Gladkov <legion@kernel.org>
+X-Mailer: b4 0.13-dev-86aa5
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3546;
+ i=j.granados@samsung.com; h=from:subject:message-id;
+ bh=8t5/t1UjTEoh22RD6/LMKGBxaNMtKZTo1ZzOcM0O9Sw=;
+ b=owEB7QES/pANAwAKAbqXzVK3lkFPAcsmYgBlAXy+z4yFdhLr6WiP8tCwA73LCgzUl2LQiBp3e
+ 8KfCXp5Hk+JAbMEAAEKAB0WIQSuRwlXJeYxJc7LJ5C6l81St5ZBTwUCZQF8vgAKCRC6l81St5ZB
+ T39XC/9Mr0P1F54PQlvniX0Mim7ddNKhNbGsP6rW1ZMhAbdUlffUIxwQ8UlkH15xP2veXT1xfkX
+ O7XQyq0gSlQFWR0PyvUepJ1bFb/hnmYZkJH5zaSQIAz3rHfdAc0f0ubHWxtHjtNYWyRsbREJMCS
+ /gl6GTsxm3eY252GIpPraCKkT8N0yU+z1nyUtDQRFMJB/zvLQ5muqx+kotHeDESp4flWjMH53WG
+ O7DYFpGOicrA6I7m/qCMlW206LeXYlKG1zChV+MCe9MZW+3ZGUavN0fdFH6B9YNji2Nb0ajxYyB
+ GgHX/gnRkpzdcFfP3o+f4EZ+BvRXYX1ZEWuBoc1RwOjYJActxmszhoc8il1vppycayQbRHi84nS
+ VTw9RvfEpqqh+M/1xHFqen11ims6drclhmBdD2ehR/Tu49WqDnCKYzkyldsuZ0KqCnZybNrBtKa
+ l75k/c45RHjB2Wz4IFls7jNHsNIScK2oeV1y2vSx4XZtkSG1l9v0PgnkyPwZ6z9aoOAwA=
+X-Developer-Key: i=j.granados@samsung.com; a=openpgp;
+ fpr=F1F8E46D30F0F6C4A45FF4465895FAAC338C6E77
+X-Endpoint-Received:  by B4 Relay for j.granados@samsung.com/default with auth_id=70
+X-Original-From: Joel Granados <j.granados@samsung.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,104 +100,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Herbert Xu <herbert@gondor.apana.org.au>, Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, James Morris <jmorris@namei.org>, NXP Linux Team <linux-imx@nxp.com>, James Bottomley <jejb@linux.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>, "Paul E. McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, sigma star Kernel Team <upstream+dcp@sigma-star.at>, "Steven Rostedt \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, linux-arm-kernel@lists.infradead.org, Paul Moore <paul@paul-moore.com>, linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org" 
- <linux-kernel@vger.kernel.org>, Li Yang <leoyang.li@nxp.com>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, "David S. Miller" <davem@davemloft.net>
+Reply-To: j.granados@samsung.com
+Cc: Joel Granados <j.granados@samsung.com>, linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Jarkko,
+From: Joel Granados <j.granados@samsung.com>
 
-thanks for the review!
+This commit comes at the tail end of a greater effort to remove the
+empty elements at the end of the ctl_table arrays (sentinels) which will
+reduce the overall build time size of the kernel and run time memory
+bloat by ~64 bytes per sentinel (further information Link :
+https://lore.kernel.org/all/ZO5Yx5JFogGi%2FcBo@bombadil.infradead.org/)
 
-> On 12.09.2023, at 19:32, Jarkko Sakkinen <jarkko@kernel.org> wrote:
->=20
-> On Tue Sep 12, 2023 at 2:11 PM EEST, David Gstir wrote:
+Remove the sentinel element from appldata_table, s390dbf_table,
+topology_ctl_table, cmm_table and page_table_sysctl. Reduced the memory
+allocation in appldata_register_ops by 1 effectively removing the
+sentinel from ops->ctl_table.
 
-[...]
+This removal is safe because register_sysctl_sz and register_sysctl use
+the array size in addition to checking for the sentinel.
 
->> - /* Payload contains the key. */
->> - desc->control0 |=3D MXS_DCP_CONTROL0_PAYLOAD_KEY;
->> + if (key_referenced) {
->> + /* Set OTP key bit to select the key via KEY_SELECT. */
->> + desc->control0 |=3D MXS_DCP_CONTROL0_OTP_KEY;
->> + } else {
->> + /* Payload contains the key. */
->> + desc->control0 |=3D MXS_DCP_CONTROL0_PAYLOAD_KEY;
->> + }
->=20
-> Remove curly braces (coding style).
+Tested-by: Alexander Gordeev <agordeev@linux.ibm.com>
+Acked-by: Heiko Carstens <hca@linux.ibm.com>
+Signed-off-by: Joel Granados <j.granados@samsung.com>
+---
+ arch/s390/appldata/appldata_base.c | 6 ++----
+ arch/s390/kernel/debug.c           | 3 +--
+ arch/s390/kernel/topology.c        | 3 +--
+ arch/s390/mm/cmm.c                 | 3 +--
+ arch/s390/mm/pgalloc.c             | 3 +--
+ 5 files changed, 6 insertions(+), 12 deletions(-)
 
-Will fix that and all similar cases for v3.
+diff --git a/arch/s390/appldata/appldata_base.c b/arch/s390/appldata/appldata_base.c
+index 3b0994625652..872a644b1fd1 100644
+--- a/arch/s390/appldata/appldata_base.c
++++ b/arch/s390/appldata/appldata_base.c
+@@ -62,8 +62,7 @@ static struct ctl_table appldata_table[] = {
+ 		.procname	= "interval",
+ 		.mode		= S_IRUGO | S_IWUSR,
+ 		.proc_handler	= appldata_interval_handler,
+-	},
+-	{ },
++	}
+ };
+ 
+ /*
+@@ -351,8 +350,7 @@ int appldata_register_ops(struct appldata_ops *ops)
+ 	if (ops->size > APPLDATA_MAX_REC_SIZE)
+ 		return -EINVAL;
+ 
+-	/* The last entry must be an empty one */
+-	ops->ctl_table = kcalloc(2, sizeof(struct ctl_table), GFP_KERNEL);
++	ops->ctl_table = kcalloc(1, sizeof(struct ctl_table), GFP_KERNEL);
+ 	if (!ops->ctl_table)
+ 		return -ENOMEM;
+ 
+diff --git a/arch/s390/kernel/debug.c b/arch/s390/kernel/debug.c
+index a85e0c3e7027..150e2bfff0b3 100644
+--- a/arch/s390/kernel/debug.c
++++ b/arch/s390/kernel/debug.c
+@@ -977,8 +977,7 @@ static struct ctl_table s390dbf_table[] = {
+ 		.maxlen		= sizeof(int),
+ 		.mode		= S_IRUGO | S_IWUSR,
+ 		.proc_handler	= s390dbf_procactive,
+-	},
+-	{ }
++	}
+ };
+ 
+ static struct ctl_table_header *s390dbf_sysctl_header;
+diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
+index 68adf1de8888..9dcfac416669 100644
+--- a/arch/s390/kernel/topology.c
++++ b/arch/s390/kernel/topology.c
+@@ -635,8 +635,7 @@ static struct ctl_table topology_ctl_table[] = {
+ 		.procname	= "topology",
+ 		.mode		= 0644,
+ 		.proc_handler	= topology_ctl_handler,
+-	},
+-	{ },
++	}
+ };
+ 
+ static int __init topology_init(void)
+diff --git a/arch/s390/mm/cmm.c b/arch/s390/mm/cmm.c
+index f47515313226..8937aa7090b3 100644
+--- a/arch/s390/mm/cmm.c
++++ b/arch/s390/mm/cmm.c
+@@ -331,8 +331,7 @@ static struct ctl_table cmm_table[] = {
+ 		.procname	= "cmm_timeout",
+ 		.mode		= 0644,
+ 		.proc_handler	= cmm_timeout_handler,
+-	},
+-	{ }
++	}
+ };
+ 
+ #ifdef CONFIG_CMM_IUCV
+diff --git a/arch/s390/mm/pgalloc.c b/arch/s390/mm/pgalloc.c
+index 07fc660a24aa..e8cecd31715f 100644
+--- a/arch/s390/mm/pgalloc.c
++++ b/arch/s390/mm/pgalloc.c
+@@ -29,8 +29,7 @@ static struct ctl_table page_table_sysctl[] = {
+ 		.proc_handler	= proc_dointvec_minmax,
+ 		.extra1		= SYSCTL_ZERO,
+ 		.extra2		= SYSCTL_ONE,
+-	},
+-	{ }
++	}
+ };
+ 
+ static int __init page_table_register_sysctl(void)
 
-
->> +static int mxs_dcp_aes_setrefkey(struct crypto_skcipher *tfm, const =
-u8 *key,
->> + unsigned int len)
->> +{
->> + struct dcp_async_ctx *actx =3D crypto_skcipher_ctx(tfm);
->> +
->> + if (len !=3D DCP_PAES_KEYSIZE)
->> + return -EINVAL;
->> +
->> + switch (key[0]) {
->> + case DCP_PAES_KEY_SLOT0:
->> + case DCP_PAES_KEY_SLOT1:
->> + case DCP_PAES_KEY_SLOT2:
->> + case DCP_PAES_KEY_SLOT3:
->> + case DCP_PAES_KEY_UNIQUE:
->> + case DCP_PAES_KEY_OTP:
->> + memcpy(actx->key, key, len);
->> + break;
->=20
-> I don't understand why the "commit" is split into two parts
-> (memcpy and assignments in different code blocks). You should
-> probably rather:
->=20
-> switch (key[0]) {
-> case DCP_PAES_KEY_SLOT0:
-> case DCP_PAES_KEY_SLOT1:
-> case DCP_PAES_KEY_SLOT2:
-> case DCP_PAES_KEY_SLOT3:
-> case DCP_PAES_KEY_UNIQUE:
-> case DCP_PAES_KEY_OTP:
-> memcpy(actx->key, key, len);
-> actx->key_len =3D len;
-> actx->refkey =3D true;
-> return 0;
->=20
-> default:
-> return -EINVAL;
-> }
-> }
->=20
-> Or alternatively you can move all operations after the switch-case
-> statement. IMHO, any state change is better to put into a singular
-> location.
-
-Makes sense. I=E2=80=99ll change that.
-
-
->> diff --git a/include/soc/fsl/dcp.h b/include/soc/fsl/dcp.h
->> new file mode 100644
->> index 000000000000..df6678ee10a1
->> --- /dev/null
->> +++ b/include/soc/fsl/dcp.h
->> @@ -0,0 +1,19 @@
->> +/* SPDX-License-Identifier: GPL-2.0-only */
->> +/*
->> + * Copyright (C) 2021 sigma star gmbh
->> + * Authors: David Gstir <david@sigma-star.at>
->> + *          Richard Weinberger <richard@sigma-star.at>
->=20
-> Git already has author-field and commit can have co-developed-by so
-> this is totally obsolete.
-
-Also noted for v3.
-
-Thanks,
-- David
-
---
-sigma star gmbh | Eduard-Bodem-Gasse 6, 6020 Innsbruck, Austria
-UID/VAT Nr: ATU 66964118 | FN: 374287y
+-- 
+2.30.2
 
