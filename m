@@ -4,147 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3421EDEC56
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 14:06:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E14F3EDEC6A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 14:43:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=rieAkzLi;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YGMCHCaS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rm2LW1208z3hsc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 00:06:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rm39f2sCMz3gXk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 00:43:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=rieAkzLi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YGMCHCaS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe59::622; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on20622.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe59::622])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 73753 seconds by postgrey-1.37 at boromir; Thu, 14 Sep 2023 00:42:58 AEST
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rm1sY3T09z3cPY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 23:44:47 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=BdfWhfwnMYMA29pvAdzXcwG+s/CRtTYW85Hlm52KAmwQHaoyczTvVUVjplb7x4+Y0pLK9wwZrRqmc3DijNmbuBr+G5eVOC15AQ7kL50e/uSpQMRGtfMGwNZjnryW0o9AIEQJgjjV42HpC8X7CPdPT4txAnoacXJlrere5avyTB1OxyTsp5PkkClkT42Y9IKA3n5lqqH4+ncszzOi7fq4LnugVN5zBOv6FVOQjKJBMv1JbypolnAHdXTInDp+4eenzaLvrz38bnIWTyzmYeyQLrFi81MsA1jR36153SGVrzZyhVjiutbSsF2YUjp72NUE7XSyLLQ5Ztw3zSBQBq8GGg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=D6Ofy76OXliDxwzhRI9xEl+1qYy6y1CGVSch+HBiSNs=;
- b=XHpemJQN2fz70QN8UXTiCf10n937AMg0ZoR08z1WHxTUa2dk3Yl+OwIevxfGtDlL1AN0MJLyOuJPW9PMjnxqsJvahSSg8pk3lch5cBoQmXg2AUMFI0Fu7C8N8Kiq5+wpvgTo41BpBI//xlciM5B7odeaVexap9tvhjnfrSPe+BeI4YP96wg6goa1t9tlBYcQfK99lGjDK4fkAvpVh2Br6Bo0sjFn19bWcZVzB9WyMmLDYw4wEoWu6GN5wvY4oIMwzAvpOGhB0hsnR4KQLMiA2j/ukJxOWue8uEWCjF4e5CQKLry5x+Kg4EeXI9vFImtsmnEB+HuX7stev/g9+2A4Dg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=D6Ofy76OXliDxwzhRI9xEl+1qYy6y1CGVSch+HBiSNs=;
- b=rieAkzLiUXEYLWcajSyceV+K0O7c+AMXANdrCkuxUviUrhN5OoNFOy2bJ+5tmM/TCoy5wF8iBvOGIfNP0bWCyuOVIT+N2O3QMO1C9yOvJ3+AbVkfDCpZhTifUadQ9Xymz2dM/i701YOPSQ+4Xq1eJLfQ+vWBYUN6rWFMpWmzv8wrG5Mf7/KvRPhyI3d3YJe/Qs5cJtGoc3txDRfZDVUJiqu51pmCq+s4JMsb3/xn0pYDsfrOAkB3Oy2B3dAKjReofBmWDGSwjAeoS+3EPeUCp61V8E4t9NN+V516Dnr5IC05wa0aNaveAJ97rgChkfiYplOHIGcLTUAwsttpdGsYog==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
- by SJ2PR12MB7848.namprd12.prod.outlook.com (2603:10b6:a03:4ca::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6768.31; Wed, 13 Sep
- 2023 13:44:13 +0000
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::faf:4cd0:ae27:1073]) by LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::faf:4cd0:ae27:1073%6]) with mapi id 15.20.6768.036; Wed, 13 Sep 2023
- 13:44:13 +0000
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Andy Gross <agross@kernel.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	iommu@lists.linux.dev,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Joerg Roedel <joro@8bytes.org>,
-	Kevin Tian <kevin.tian@intel.com>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-mediatek@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org,
-	linux-sunxi@lists.linux.dev,
-	linux-tegra@vger.kernel.org,
-	Russell King <linux@armlinux.org.uk>,
-	linuxppc-dev@lists.ozlabs.org,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Matthew Rosato <mjrosato@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Rob Clark <robdclark@gmail.com>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Krishna Reddy <vdumpa@nvidia.com>,
-	Chen-Yu Tsai <wens@csie.org>,
-	Will Deacon <will@kernel.org>,
-	Yong Wu <yong.wu@mediatek.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>
-Subject: [PATCH v8 08/24] iommu: Reorganize iommu_get_default_domain_type() to respect def_domain_type()
-Date: Wed, 13 Sep 2023 10:43:41 -0300
-Message-ID: <8-v8-81230027b2fa+9d-iommu_all_defdom_jgg@nvidia.com>
-In-Reply-To: <0-v8-81230027b2fa+9d-iommu_all_defdom_jgg@nvidia.com>
-References: 
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MN2PR03CA0016.namprd03.prod.outlook.com
- (2603:10b6:208:23a::21) To LV2PR12MB5869.namprd12.prod.outlook.com
- (2603:10b6:408:176::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rm38f2TZqz2xdp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 00:42:58 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by sin.source.kernel.org (Postfix) with ESMTPS id 40757CE22B4;
+	Wed, 13 Sep 2023 14:42:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 904A6C433C8;
+	Wed, 13 Sep 2023 14:42:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1694616173;
+	bh=ghmd2vE6l3/YQAYcdHB/Auew4n3efVE8LafRtaXbVHc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YGMCHCaS7LV+IgxR8JwzA2LNP/JAobSO7VFWJqFuLotcrNli1S/nHKVzF//aJ2S6V
+	 oyTmUUNwYQcB2nInr2C8Ez39iVMQmhLWasrm56DXWToBj15FazV/Kl6X9Oqd98l7vq
+	 xYCSySPKPtfqvA4b/JjwavRqFP6IGhDc7F3DFnWpvbrbrOP/iHL2RUh7HiB9Nfi1ae
+	 OAv6grpPZpsAP5EFZJg6+L0GXuBVZ6JskfXUivQah7NoYp1WtIsK8dxArv+axEEnrs
+	 p+KoYbQrGGzwtNfTaPkj8pd6Rp9GlH1mROzy40I5zjPv5zmvE+yp4nzsVVzTdwFELZ
+	 0zorZ83mPn+fA==
+Date: Wed, 13 Sep 2023 15:42:45 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>
+Subject: Re: [PATCH v5 08/31] dt-bindings: soc: fsl: cpm_qe: cpm1-scc-qmc:
+ Add support for QMC HDLC
+Message-ID: <20230913-unruly-recite-7dbbbd7e63e0@spud>
+References: <20230912081527.208499-1-herve.codina@bootlin.com>
+ <20230912101018.225246-1-herve.codina@bootlin.com>
+ <20230912-capable-stash-c7a3e33078ac@spud>
+ <20230913092640.76934b31@bootlin.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|SJ2PR12MB7848:EE_
-X-MS-Office365-Filtering-Correlation-Id: 28eb189c-13f7-48dc-1c48-08dbb45f83c4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	Tcv5gVnU6USzb28nl9ewZ3CEVwlikFUu3fvT91p1ll4iW8qv8BDWSkA+/VCcjY4q70qB8rVOkMc20dMnsuwXsm1i4hY2KOZn1FiAxpJRn3dbdEJA7q4x1iFPAE4qpyoAa8aSk7C50+H2+BQgbTTVTfca0kdpreJ2IMrl2KEezqEy0u3dHZChDghoC7dc9qlBCBrh4cEI+b1U1+QOUdPilrel8VcWaWwDIr6H8tTQ5TImk1MWUsKq28AzBaNqiaeX89RJjH1XzRTXBqH5sf7rA0KVojmk+cFNzRD45xwwAHl7CP/gtPAH6PHzZ8WigEDn0Ep1SafTZ1uLHG0PUSIwIB8gHAt8r2scvQXQvQMxxuwgf2aP456cbfP0AW8TlLbAXdLypEccKIbOeduETziz6FqN1auQC3rbxjLKuKHJqq2YWwh08vNaq71l2qAxBw6e27vWC5S60lEqm7qI8qkRipZIpGLqgW8EZuz67mA4Gb+DHKrlxjOjRv3fSCCKv3Thq5X1Zkvi4XQF0uKqNGvIucAU4fhEBkI7lJY/Lg3ebCEWTEwXD3tsjcypuAw/PNsuq38uoMlAgmr4oBYdxOL+1RAAfxV1JHDTP5AoOfj7wo3epdGGZPd2H7MuYy5+ic4u
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376002)(366004)(136003)(346002)(39860400002)(396003)(1800799009)(186009)(451199024)(83380400001)(86362001)(6512007)(921005)(66946007)(110136005)(2616005)(478600001)(107886003)(6666004)(38100700002)(6506007)(6486002)(26005)(316002)(4326008)(54906003)(66476007)(8936002)(66556008)(41300700001)(36756003)(8676002)(5660300002)(2906002)(7406005)(7416002)(4216001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?anVoQ2RvmrtP1At7tyMX6O5/KDs79v1kvoOka7JjllVT4fZyqgJQg60lNyIi?=
- =?us-ascii?Q?pBCz8hWnhd9Z2WEqCHGZLQcLybNTrUIhnFO18YeAQ1XmPyOak3dvA/xD9zSj?=
- =?us-ascii?Q?gxiqsgdVs2j9OsJVe/9cIotBacsfhXLjfxzQZCuEVA6O9mhr9fAnRBZoywP4?=
- =?us-ascii?Q?f1XspqtdS0PdTJO1+MY57mEtu8pBOJdoOpboz+oyh3ORBg6riIlNb5Hypxt7?=
- =?us-ascii?Q?yIxk8zYhPQ3M7sXSyZJay98eSjCtFR4TQ+lOicvhHNhKVB1YRjTuIWyyqmHv?=
- =?us-ascii?Q?QxbUqXaYwzedg8HUsajtyemfTR6ow2ZAAruy0tTPclqRYDh4jMyF/Zm1nWGc?=
- =?us-ascii?Q?Mn3CWrwL0DphJYMSV1kGsS9+fqLj/KKT8s03DPMCcIoZjB64OVhsJc+z/Ngw?=
- =?us-ascii?Q?Q/EFohXUgKoW1NI9hdiUzNzoF96ObybMTaBlArkbl9Uhm51GWR7jjyvPMswu?=
- =?us-ascii?Q?mhzDu/UxCDcEzXDbwpDGzrMzCF9sNnBiYQtUbO9SsA/w4CkWokEF3cNw4Hmy?=
- =?us-ascii?Q?WYTRmAYiOBsGqcM+f66W12HVCgY6o2ZKp52O1NZU7WQCXi1eckJon7mfaQ9p?=
- =?us-ascii?Q?jO+cZHUYeb9jID7ghgaoaXmDb+cHaa8dBTsxMe0oTAPlaFtVxV03THeM0Trd?=
- =?us-ascii?Q?48wiozPxWNRB8giBtas0oipxUn6NwcweTrAXnVfeNQ+ndQNThz/vB43hFJJw?=
- =?us-ascii?Q?DkaVi7muq9rctaScUaj1x7tTqrIJyKvcfnMBM1fRLx4Z0btjbZ59AR5z0KKr?=
- =?us-ascii?Q?GXjsBhXU/FPCf2q8c5QiqTDLUEAdwFLm8WsnDtITUR2TG9Xx5WgflRjh4Qw2?=
- =?us-ascii?Q?NUfbytYb3IUE5uAsGpjStF1+3vjUmNKgPoYI9/utlMKKuQDIEaupKX2kxjAK?=
- =?us-ascii?Q?Nd/+9192bx4mldOW8847dCjmQKB4InnCwcMtT+4UCPW1mcnMTz+YKIOwNreb?=
- =?us-ascii?Q?P9wiUMBDFBUdCcK6yLtdZkMnTj4AhTjnBn+RTJAWzjKpwVmCX+KQIK7OYFB+?=
- =?us-ascii?Q?py62pR372gRyjqi4CX5PbvD/xoblNtufpHHFIGE9n37wjeibgOxY3E1Xiviv?=
- =?us-ascii?Q?YZr/wlFrrzlMOrjbfQV+HMR/XyTaSjGoP3fETEavlFZUoyOnh9gCunppf961?=
- =?us-ascii?Q?C/+PeentDxx1x3vJowUcKKKrrG1tH5IgmOv8BJtTy/ykhQhdqvjJIhEzFZyE?=
- =?us-ascii?Q?PEnX+/gi2GfjqNYpQMSB7kRt5Zz5cMENq8Brx0s9g/8ujhsSNWcnKDFkh07Q?=
- =?us-ascii?Q?yQVqE0/79Zx2NKy48jmkRxzWEZt5EGE52DzHm8KxoNeNkoqENhPaibJs18/K?=
- =?us-ascii?Q?gzkBxcwtCGx5KV4Z/WoNytU3gEDjN32+l1Msl3mVuQLA75DIcwqX13T1fOfv?=
- =?us-ascii?Q?ukz6oUcWYyJVK96nOfJi1qhmNFg8BHK+KdPsjPGvf27HnWyHYWpFG7ikqqNo?=
- =?us-ascii?Q?1iDMP07gfn/3f+Uy/2FmvvtOSS2HR3PRkVPl5mZCL5uXksybZA8LLhQKgI0X?=
- =?us-ascii?Q?QW+FVF6cq7sMYymamxqIJs0DGKQ1cTbd9cFVytXBepNuAWn52jxpdk3v6qTh?=
- =?us-ascii?Q?1ScChtKmsA5i2wnikXw3Fwyd+wb0ZXW8m2SKqsos?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 28eb189c-13f7-48dc-1c48-08dbb45f83c4
-X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Sep 2023 13:44:13.0210
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7ACI664wuzRC+iDoUZHmfDHYveirBHLfklWojAcw76UcuF/pZI7Bo8zIqEgHHsJ2
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB7848
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="D/KR2KGuouPtsCp2"
+Content-Disposition: inline
+In-Reply-To: <20230913092640.76934b31@bootlin.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -156,189 +67,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thierry Reding <treding@nvidia.com>, Niklas Schnelle <schnelle@linux.ibm.com>, Jerry Snitselaar <jsnitsel@redhat.com>, Steven Price <steven.price@arm.com>, Nicolin Chen <nicolinc@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, Lu Baolu <baolu.lu@linux.intel.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, Si
+ mon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Except for dart (which forces IOMMU_DOMAIN_DMA) every driver returns 0 or
-IDENTITY from ops->def_domain_type().
 
-The drivers that return IDENTITY have some kind of good reason, typically
-that quirky hardware really can't support anything other than IDENTITY.
+--D/KR2KGuouPtsCp2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Arrange things so that if the driver says it needs IDENTITY then
-iommu_get_default_domain_type() either fails or returns IDENTITY.  It will
-not ignore the driver's override to IDENTITY.
+On Wed, Sep 13, 2023 at 09:26:40AM +0200, Herve Codina wrote:
+> Hi Conor,
+>=20
+> On Tue, 12 Sep 2023 18:21:58 +0100
+> Conor Dooley <conor@kernel.org> wrote:
+>=20
+> > On Tue, Sep 12, 2023 at 12:10:18PM +0200, Herve Codina wrote:
+> > > The QMC (QUICC mutichannel controller) is a controller present in some
+> > > PowerQUICC SoC such as MPC885.
+> > > The QMC HDLC uses the QMC controller to transfer HDLC data.
+> > >=20
+> > > Additionally, a framer can be connected to the QMC HDLC.
+> > > If present, this framer is the interface between the TDM bus used by =
+the
+> > > QMC HDLC and the E1/T1 line.
+> > > The QMC HDLC can use this framer to get information about the E1/T1 l=
+ine
+> > > and configure the E1/T1 line.
+> > >=20
+> > > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > > ---
+> > >  .../bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml   | 13 +++++++++++=
+++
+> > >  1 file changed, 13 insertions(+)
+> > >=20
+> > > diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm=
+1-scc-qmc.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-=
+scc-qmc.yaml
+> > > index 82d9beb48e00..b5073531f3f1 100644
+> > > --- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-q=
+mc.yaml
+> > > +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-q=
+mc.yaml
+> > > @@ -101,6 +101,16 @@ patternProperties:
+> > >            Channel assigned Rx time-slots within the Rx time-slots ro=
+uted by the
+> > >            TSA to this cell.
+> > > =20
+> > > +      compatible:
+> > > +        const: fsl,qmc-hdlc
+> > > +
+> > > +      fsl,framer:
+> > > +        $ref: /schemas/types.yaml#/definitions/phandle
+> > > +        description:
+> > > +          phandle to the framer node. The framer is in charge of an =
+E1/T1 line
+> > > +          interface connected to the TDM bus. It can be used to get =
+the E1/T1 line
+> > > +          status such as link up/down. =20
+> >=20
+> > Sounds like this fsl,framer property should depend on the compatible
+> > being present, no?
+>=20
+> Well from the implementation point of view, only the QMC HDLC driver uses=
+ this
+> property.
+>=20
+> From the hardware description point of view, this property means that the=
+ time slots
+> handled by this channel are connected to the framer. So I think it makes =
+sense for
+> any channel no matter the compatible (even if compatible is not present).
+>=20
+> Should I change and constraint the fsl,framer property to the compatible =
+presence ?
+> If so, is the following correct for this contraint ?
+>    --- 8< ---
+>    dependencies:
+>      - fsl,framer: [ compatible ];
+>    --- 8< ---
 
-Split the function into two steps, reducing the group device list to the
-driver's def_domain_type() and the untrusted flag.
+The regular sort of
+if:
+	compatible:
+		contains:
+			const: foo
+then:
+	required:
+		- fsl,framer
+would fit the bill, no?
 
-Then compute the result based on those two reduced variables. Fully reject
-combining untrusted with IDENTITY.
+--D/KR2KGuouPtsCp2
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Remove the debugging print on the iommu_group_store_type() failure path,
-userspace should not be able to trigger kernel prints.
+-----BEGIN PGP SIGNATURE-----
 
-This makes the next patch cleaner that wants to force IDENTITY always for
-ARM_IOMMU because there is no support for DMA.
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZQHKZQAKCRB4tDGHoIJi
+0jE/AP0awmyeu05CVKleLo13y3Fjt4HP0do7dEhQGNt4rxVmsAEAtTdqxGH2EmC6
+3WhT1AVUi21kX6VzpxFlrQiNmHgB/A4=
+=zHjw
+-----END PGP SIGNATURE-----
 
-Reviewed-by: Jerry Snitselaar <jsnitsel@redhat.com>
-Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
----
- drivers/iommu/iommu.c | 117 ++++++++++++++++++++++++++++--------------
- 1 file changed, 79 insertions(+), 38 deletions(-)
-
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 0e13e566581c21..9188eae61e929e 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -1718,19 +1718,6 @@ struct iommu_group *fsl_mc_device_group(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(fsl_mc_device_group);
- 
--static int iommu_get_def_domain_type(struct device *dev)
--{
--	const struct iommu_ops *ops = dev_iommu_ops(dev);
--
--	if (dev_is_pci(dev) && to_pci_dev(dev)->untrusted)
--		return IOMMU_DOMAIN_DMA;
--
--	if (ops->def_domain_type)
--		return ops->def_domain_type(dev);
--
--	return 0;
--}
--
- static struct iommu_domain *
- __iommu_group_alloc_default_domain(const struct bus_type *bus,
- 				   struct iommu_group *group, int req_type)
-@@ -1740,6 +1727,23 @@ __iommu_group_alloc_default_domain(const struct bus_type *bus,
- 	return __iommu_domain_alloc(bus, req_type);
- }
- 
-+/*
-+ * Returns the iommu_ops for the devices in an iommu group.
-+ *
-+ * It is assumed that all devices in an iommu group are managed by a single
-+ * IOMMU unit. Therefore, this returns the dev_iommu_ops of the first device
-+ * in the group.
-+ */
-+static const struct iommu_ops *group_iommu_ops(struct iommu_group *group)
-+{
-+	struct group_device *device =
-+		list_first_entry(&group->devices, struct group_device, list);
-+
-+	lockdep_assert_held(&group->mutex);
-+
-+	return dev_iommu_ops(device->dev);
-+}
-+
- /*
-  * req_type of 0 means "auto" which means to select a domain based on
-  * iommu_def_domain_type or what the driver actually supports.
-@@ -1820,40 +1824,77 @@ static int iommu_bus_notifier(struct notifier_block *nb,
- 	return 0;
- }
- 
--/* A target_type of 0 will select the best domain type and cannot fail */
-+/*
-+ * Combine the driver's chosen def_domain_type across all the devices in a
-+ * group. Drivers must give a consistent result.
-+ */
-+static int iommu_get_def_domain_type(struct iommu_group *group,
-+				     struct device *dev, int cur_type)
-+{
-+	const struct iommu_ops *ops = group_iommu_ops(group);
-+	int type;
-+
-+	if (!ops->def_domain_type)
-+		return cur_type;
-+
-+	type = ops->def_domain_type(dev);
-+	if (!type || cur_type == type)
-+		return cur_type;
-+	if (!cur_type)
-+		return type;
-+
-+	dev_err_ratelimited(
-+		dev,
-+		"IOMMU driver error, requesting conflicting def_domain_type, %s and %s, for devices in group %u.\n",
-+		iommu_domain_type_str(cur_type), iommu_domain_type_str(type),
-+		group->id);
-+
-+	/*
-+	 * Try to recover, drivers are allowed to force IDENITY or DMA, IDENTITY
-+	 * takes precedence.
-+	 */
-+	if (type == IOMMU_DOMAIN_IDENTITY)
-+		return type;
-+	return cur_type;
-+}
-+
-+/*
-+ * A target_type of 0 will select the best domain type. 0 can be returned in
-+ * this case meaning the global default should be used.
-+ */
- static int iommu_get_default_domain_type(struct iommu_group *group,
- 					 int target_type)
- {
--	int best_type = target_type;
-+	struct device *untrusted = NULL;
- 	struct group_device *gdev;
--	struct device *last_dev;
-+	int driver_type = 0;
- 
- 	lockdep_assert_held(&group->mutex);
--
- 	for_each_group_device(group, gdev) {
--		unsigned int type = iommu_get_def_domain_type(gdev->dev);
-+		driver_type = iommu_get_def_domain_type(group, gdev->dev,
-+							driver_type);
- 
--		if (best_type && type && best_type != type) {
--			if (target_type) {
--				dev_err_ratelimited(
--					gdev->dev,
--					"Device cannot be in %s domain\n",
--					iommu_domain_type_str(target_type));
--				return -1;
--			}
--
--			dev_warn(
--				gdev->dev,
--				"Device needs domain type %s, but device %s in the same iommu group requires type %s - using default\n",
--				iommu_domain_type_str(type), dev_name(last_dev),
--				iommu_domain_type_str(best_type));
--			return 0;
--		}
--		if (!best_type)
--			best_type = type;
--		last_dev = gdev->dev;
-+		if (dev_is_pci(gdev->dev) && to_pci_dev(gdev->dev)->untrusted)
-+			untrusted = gdev->dev;
- 	}
--	return best_type;
-+
-+	if (untrusted) {
-+		if (driver_type && driver_type != IOMMU_DOMAIN_DMA) {
-+			dev_err_ratelimited(
-+				untrusted,
-+				"Device is not trusted, but driver is overriding group %u to %s, refusing to probe.\n",
-+				group->id, iommu_domain_type_str(driver_type));
-+			return -1;
-+		}
-+		driver_type = IOMMU_DOMAIN_DMA;
-+	}
-+
-+	if (target_type) {
-+		if (driver_type && target_type != driver_type)
-+			return -1;
-+		return target_type;
-+	}
-+	return driver_type;
- }
- 
- static void iommu_group_do_probe_finalize(struct device *dev)
--- 
-2.42.0
-
+--D/KR2KGuouPtsCp2--
