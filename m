@@ -4,119 +4,156 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43153EE0211
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 22:03:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1D7EEE0212
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 22:56:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=TC8iZr1V;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YEurNPVJ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RmDx11hh1z3d7t
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 08:03:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RmG6H12MLz3cVd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 08:56:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=TC8iZr1V;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YEurNPVJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe02::604; helo=eur01-db5-obe.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com (mail-db5eur01on0604.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe02::604])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mgamail.intel.com; envelope-from=sohil.mehta@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RmDvx0wflz2xm6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 08:02:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rm9b45D95z2xpm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 05:32:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694633569; x=1726169569;
+  h=message-id:date:subject:to:cc:references:from:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=sv2ZOI4KS5k14Q/HzSB/7FUFyb2Mcwqcx+UfMAMzlQs=;
+  b=YEurNPVJOFJmcG9oeryMXsMVYfCaHGq3eggoa/+VD+gQglE0dqPd5w5j
+   BcELxKJ25bhZwfZ89lhmp4cm3oGHp4oV/958xcRFsN7+2eIHLG+ffa99f
+   LfQZ/KdaUkuSrva7Cyuq7hOJGxuBVygh7WvCd9iJlPkq6TDXRAPWwXe/f
+   6q4hIP0658ETcIcrODyfNZaJR1PdzmkbMTtOocKPxBbtT4VBzWCjyI2Ql
+   gxASYECrdYajadDutU3QmoKaLjS5/Un7aAtuGGIrpmYRQqIYzk07tDRaF
+   tktPlNIf17bBeabvM4zBQgQbe9mM1FlzrFOzCYeA0Pe7yTwdFi3rRrxr3
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10832"; a="409722036"
+X-IronPort-AV: E=Sophos;i="6.02,144,1688454000"; 
+   d="scan'208";a="409722036"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Sep 2023 12:32:39 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10832"; a="887455380"
+X-IronPort-AV: E=Sophos;i="6.02,144,1688454000"; 
+   d="scan'208";a="887455380"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by fmsmga001.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 13 Sep 2023 12:32:07 -0700
+Received: from fmsmsx601.amr.corp.intel.com (10.18.126.81) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.32; Wed, 13 Sep 2023 12:32:36 -0700
+Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.32 via Frontend Transport; Wed, 13 Sep 2023 12:32:36 -0700
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (104.47.58.102)
+ by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.32; Wed, 13 Sep 2023 12:32:36 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RGgwN3bZT2nvdwHiHVQq4qSS3+SZ7wCU3pQIFRhh/gI863gcV7Pmmo5lA6bsCBjd1xBwCy3bGGG4YeONkYqKzR2yGAwPZxhtsuLDQ06maXDpWZVMR/Ja/SXtnX0IMKRyIore121k+JYWnczr94WOLTpe6457Mrgsbp9clE8nVnGMCnupDykpvSth9qP6x9x7wP9Gz3OAMpUJQ9YfkiLATaEDajMJghV8061XkCxb/gqhfy/jIxQaXaOLh5zqSXIGe73lQl/nggIm4lXR4zD6GBf3/JvZL0/IsvnKWzQDnpivtZ4a1N0KK1qrb41R+uRuo7Ued0Xm/zIWR6OpkXp7yw==
+ b=Ys/1qAPrW1/d7RY+QTuvUXBoUUtAiXRJGupnGJ1m1tZ6N3M31Qnd89YlGJhSh1Gt6suWnmYaHepuZvXEo/iMw6/3XczWqdxhL8yOAvVC6EHzw3efD+O8TqG2QV+fiEhLGh7pWBef/9ie7+pNYLG64nSmP2w96pmzLpAKyJSAlwqJzWaSZ7IpbCWrJBL12VNCBqDHPmaW/Vang0/jnie1YYPBL0rKR2V417rO9XOmwlulFcv/NE9DHuWdcNPWhNmmLmzFLH3jezLa2d2VHJJHSuxFxlHsEDXvDFgWlEdEd7SNQo97/MdiskiH6jbkCOgfkWUo+4NP4cR4O2bvcf+oAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=dbMzda2NQ1JzH3Btrwq0WIO/fngxccAjDf6vA+aD57Y=;
- b=M9ShVZeVp99gxeHh1AMh9ehAOgqF0dX6cUReHZe4yz97CCJIi9fw3lJGZDYqxdvN4EAQQbovojm7VSV2Br0il9rrnFSa8+3Bc4merGYcjFGIT21tkjCUVW5dj4jUmSB84UPs969d5venAh+/HHKdAe4FyBwdUPjZwoP5M5WeHWCNr95GZgYLIPtWUTH9dDyeD2IjFWkEEbldWhICRhZ8QzC6WnvlcCqUNGpdOyXR1ezfhPwEXkHjADY9jIrxoHnXJxAl9FrQr2A+G96aZ43x6bA7tniT5YgztoCnVlpbvtHSbVKXPkbM+YDlDHQU8UhMNwIKfa4vHIHIDd0kQQlHqg==
+ bh=9m0GWY9kbjleiRQtywmPTjEIeRzkh7hrqkoxfsyBsU4=;
+ b=M05rkiBmKpGnPNIUckfVUegSYF+XVWqC4Mb5qqjhkfNIBKJ76lqXw75YTqIUZWYLZoBjC4LvzTyQqnurNwcGymGfIrSHtyEPmI5gsLx4uUAzesL3bkDEZ+sthIpNKugc+nJYtKWJj7D92LqMtYf8ArH+W2960vy95EPCAw82opdadHI++jeJgCzAH/GQCZquVbGWYnrpl/hYiylIvCO3JFxvn+TbdTgEb5E7HPC0zmVPSYSzPvm0QRMrIa+6vH/2M78iwtEeBFy8ATHEZTEfhGexatq1dYXn92nEHuJFzjTKQ99B4aevcBGoercdH3wAXlKEswAmHz0r2AlTZCQwxA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dbMzda2NQ1JzH3Btrwq0WIO/fngxccAjDf6vA+aD57Y=;
- b=TC8iZr1VhrGHm95bqAG4CcF2O1XwG5BB/rUrxc07oCm6IJaFfFSQIx7wq2acfZP556K5xL30S7qPREf95nWrJ1nINwlqc5tYQHAlEvWVYalCTP5Rf0Tp6unV7voseVYslGYICUSZma+AxmM5L6pG+qO2WF1t9xV/HPq0IaiHLGU=
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM0PR04MB6452.eurprd04.prod.outlook.com (2603:10a6:208:16d::21)
- by PA4PR04MB9366.eurprd04.prod.outlook.com (2603:10a6:102:2a9::8) with
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from BYAPR11MB3320.namprd11.prod.outlook.com (2603:10b6:a03:18::25)
+ by DS0PR11MB8051.namprd11.prod.outlook.com (2603:10b6:8:121::19) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6768.34; Wed, 13 Sep
- 2023 22:02:11 +0000
-Received: from AM0PR04MB6452.eurprd04.prod.outlook.com
- ([fe80::568a:57ee:35b5:e454]) by AM0PR04MB6452.eurprd04.prod.outlook.com
- ([fe80::568a:57ee:35b5:e454%3]) with mapi id 15.20.6792.019; Wed, 13 Sep 2023
- 22:02:11 +0000
-Date: Thu, 14 Sep 2023 01:02:06 +0300
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-To: Sean Anderson <sean.anderson@seco.com>
-Subject: Re: [PATCH v14 00/15] phy: Add support for Lynx 10G SerDes
-Message-ID: <20230913220206.ht66go3bmaqvp2r5@skbuf>
-References: <c2f928d2-25f6-0e31-9ab3-9d585968df1b@seco.com>
- <20230522150010.q5zndfwcuvrb6pg2@skbuf>
- <22a28a6f-2c84-a6b1-bb57-a269af34c993@seco.com>
- <20230610222123.mzmfjx7zfw4nh2lo@skbuf>
- <c702e2b6-cb0f-4ac9-86fe-a220284d45aa@seco.com>
- <20230612163353.dwouatvqbuo6h4ea@skbuf>
- <1dd01fe2-08a8-ec2f-1184-a58b2f55ba85@seco.com>
- <20230613142754.wr5njtjo4tbloqwu@skbuf>
- <20230810102631.bvozjer3t67r67iy@skbuf>
- <b1df425f-1ea4-0465-674c-25f3ed9b73d4@seco.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b1df425f-1ea4-0465-674c-25f3ed9b73d4@seco.com>
-X-ClientProxiedBy: AS4P190CA0068.EURP190.PROD.OUTLOOK.COM
- (2603:10a6:20b:656::28) To AM0PR04MB6452.eurprd04.prod.outlook.com
- (2603:10a6:208:16d::21)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.19; Wed, 13 Sep
+ 2023 19:32:34 +0000
+Received: from BYAPR11MB3320.namprd11.prod.outlook.com
+ ([fe80::5e34:ee45:c5e8:59d0]) by BYAPR11MB3320.namprd11.prod.outlook.com
+ ([fe80::5e34:ee45:c5e8:59d0%7]) with mapi id 15.20.6768.036; Wed, 13 Sep 2023
+ 19:32:34 +0000
+Message-ID: <d87ba824-1216-a25a-cd78-e0213bab511a@intel.com>
+Date: Wed, 13 Sep 2023 12:32:31 -0700
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH 0/2] arch: Sync all syscall tables with 2 newly added
+ system calls
+Content-Language: en-US
+To: <linux-kernel@vger.kernel.org>, <linux-api@vger.kernel.org>,
+	<linux-arch@vger.kernel.org>
+References: <20230911180210.1060504-1-sohil.mehta@intel.com>
+From: Sohil Mehta <sohil.mehta@intel.com>
+In-Reply-To: <20230911180210.1060504-1-sohil.mehta@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: BYAPR11CA0084.namprd11.prod.outlook.com
+ (2603:10b6:a03:f4::25) To BYAPR11MB3320.namprd11.prod.outlook.com
+ (2603:10b6:a03:18::25)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM0PR04MB6452:EE_|PA4PR04MB9366:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7bc96ce8-4a98-40ee-817c-08dbb4a514a8
-X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
+X-MS-TrafficTypeDiagnostic: BYAPR11MB3320:EE_|DS0PR11MB8051:EE_
+X-MS-Office365-Filtering-Correlation-Id: cf966e60-8b5c-4973-b5fa-08dbb4902ddc
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:  HEY3lbNzjEbtgniOXLgwH2j4j5pY/dzrGVgV5qljbT5Zl9153Ld3eUO+Js5tW2Wzfx0iSY859G0clxJ4Wt/YN0XR0qzeLtc+l9cFc1fZpc1OW7ChCxponvZtKCxzaChMu9izaB3AlkxzGQXChCeGQv1+KMqSBIFf+4cRTZM2vxb4rRJfCWEf+//o3nG2IJyQdrXSrzOSA7RAPFWh0ZpEEMrIjsFKPFqryBgz4hyf9ME+240FSIKfkjozXkOiX3IRDZVeZqjc8oToh7+SlznmUHj9kitLMlDckUe/Ezw23ONFNvnXxBaQecADDQVKMUJIMtYzQDfibu1Bi0daxQFxuAHaDe1RJKmej0R9gHjxmglRkkpRXyfn5dXMZdInuJo0OvWqa2n3yADt0Rltt2gGiTLXsKwq9RJAkYrhz60I3YRwCR+uv+8yY2S76lyEjG4d59PpD+bvhB0pu/awS9oLJM4j5iYkqPqalE+56T3f9asdrFdidrRndhL4YcC65NXhLtLxJxuFQ5lCNjmkOk1ukMgP/DtaXWzfHuR/pNN6QRI=
-X-Forefront-Antispam-Report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6452.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(7916004)(136003)(376002)(39860400002)(366004)(346002)(396003)(1800799009)(186009)(451199024)(6486002)(6506007)(6512007)(9686003)(6666004)(83380400001)(86362001)(33716001)(38100700002)(1076003)(26005)(44832011)(54906003)(7416002)(66556008)(66476007)(6916009)(41300700001)(316002)(66946007)(2906002)(8936002)(4326008)(8676002)(966005)(478600001)(5660300002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 7SnVRoMlz4UR192Ds1dL9pe7f6gMrWNHiy2e0xEeZ7MnHJUv0ska/Wa8DNk4mZfMFNEppygYnJlbWm5R/ProUjdlVg59ikG+likeA5YqbymciFDZkAhSNH73yfbuCJpMClEnOL8qXCO2fsr3ArzvwIo/uEi9w3nyv0YgiZjfZP45GKXz7Id8P2Igo7Ha7zIhQ9OwF9UkipEVb92TJzSxwcVxRcHWEw7klZ67dbIU1uM7zxwjExgJro9QG1U2qzYkFfY/775CxxAgeNYQFqRzAh/dfLvkEXFM8e6CLVPzZCAnbxX+XXj2riljaq2tn2mdnaivw35YZWjxPLrAM5azIjZUjPr5tF4MZZnU7I8wfxlJz9e44FfslSBMfpqZqs6Q/ygMGj91FdAOyCz4CBpnNbdW0sPqXN9L4tjojYIszRGLH57CFLM8hZrBjMnnaqCu8bUj81O+m1vp2TSZeYH2f9F/JoA4lh1BmjvWbPaHmJfdHHlwGPM0Nju3oxDcHrM1eQvz9WtTu2w0yt+5vU6IFA0Yqc2lW9pDz8orZkTgQJ5iaz2Esyzdvo1Y2RUzsCrSGG7McRcij8hDBnBcw7qnP1EOr+q1SyS+llfLpY2meSIsAhMYk71FDUDNVWrOojW/
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR11MB3320.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(396003)(366004)(346002)(376002)(39860400002)(451199024)(1800799009)(186009)(316002)(53546011)(54906003)(6666004)(66476007)(66946007)(66556008)(44832011)(478600001)(6512007)(966005)(6486002)(6506007)(31686004)(41300700001)(8936002)(8676002)(4326008)(5660300002)(26005)(36756003)(82960400001)(38100700002)(2906002)(2616005)(7406005)(7416002)(86362001)(31696002)(7366002)(4744005)(45980500001)(43740500002);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:  =?us-ascii?Q?LabR4Dopp/SGYX9L4Zg4esSLwVUSlGrznrlcezHGiqwvc1bcpWdbfCELqFGX?=
- =?us-ascii?Q?svWmYyQxVTNauVgxOjfGXNJhEJ4WeOozoShs1AakQaRDH4H55GMkHYDtp/r2?=
- =?us-ascii?Q?LtgKCujxykT15Oh+rNM7LaRyCvClNJQnChLNV6LQqkALk60LSLgVbpmCreJZ?=
- =?us-ascii?Q?cBPCYelwWonbuKYZ9EcCNeUOpVjqEPlCxbQjdIV6QClFVbawmwWN2BnqhxYH?=
- =?us-ascii?Q?g4/uDD6WYxOAl+19FJz+HfBoRVyQdbP6uO46lVaLrR+Pc8+XY/AnwymRENlp?=
- =?us-ascii?Q?8XFBt7fFb/mq+/dgMW6pv/RqJHoixTGj6CLffV7RxIfuyewc5q1wycMqaFWr?=
- =?us-ascii?Q?R8yrrV+OfZvU54/h9tU0EBionlIag7UL1umrYKwcFpozC6QyxpVinyYLba+v?=
- =?us-ascii?Q?XyJy92R4uieaju4cDE2O/DHzW09H78wFNHzC9f6i2pAG5wnQaJl+d7Ew7GG6?=
- =?us-ascii?Q?T1Afmk45ThcztXvSnan3HoPc2qnkmNbSEZ0pB2lZX/ul1KO/n0otL1hYqHow?=
- =?us-ascii?Q?1KlxAVjbzP0Un3MvBnS++onyY5IDllTWyyYFeHDM5+gRza2CctB5JyvdcOQI?=
- =?us-ascii?Q?tzL9wYD8Piuj1RALppQ7YscTzqwsSWGLqmn1lyL8R/AI3XxqqqSfvSXNdMsV?=
- =?us-ascii?Q?DVHmLC+o52cTv5x4njxqd0s+54jRyVL8Q4YlRSfbEyQYqAj2YUb4zJGQu17I?=
- =?us-ascii?Q?nv+N7R5K5XB0mQn8N68HnBR8wcaOwAjhSuC8wiZA4urdyHQPFTpP+Npp2EZ/?=
- =?us-ascii?Q?rOI+ZMAj6peetRvoi0u6Nkgvspspnj5UGA/ucNaLaUWa7aw/PA/fxRC3XGGP?=
- =?us-ascii?Q?+FLD8J2Wb/X2gTZ1RMwnLeFC3GXblli0stooOLiJM/HK1lM1Wr0cFh88FZoN?=
- =?us-ascii?Q?46b1nQ+upa0xmf8Mg3g5zeYNvOhfgoPX870KB6m6TQ0s1T17zd+UR29XadEM?=
- =?us-ascii?Q?gRUMhuhqeutBXYB0uI8+rvjqxE+htSsTBU9lNtwReMfMyzJaaqbLetkG8jLy?=
- =?us-ascii?Q?yXIG6byIBkq4/rcOXllemSvM6E8YTaOFQa3eQ7+gzj79S7N1ll/Asv/slKSE?=
- =?us-ascii?Q?Tp4wiEkNc/z/d2xtzgJz0ch3JVpzQj7dT6Mhqo98swx+0A+5G6xf7WiGgsVG?=
- =?us-ascii?Q?AyyLp8kDFSG+lXxrub0T546Bfv7ofcf9PqhKbljnP0wyXg1udB4C6Q5hqDfa?=
- =?us-ascii?Q?sdJ3jBDiqRJBigMSZ/etgD/Hi9ALNQ7tXG7Htk9sgj2hI0kbK/vmAStV1d9f?=
- =?us-ascii?Q?rgHJhVeQwUNgkupJqjrHMBYqaSzKIahNNmQdJavp00r5ZZadHfHTtThvDXPt?=
- =?us-ascii?Q?lz0fy9OcoDZMoxWejiKIch7WHuqYtCgzV5bWsGxwfmpyM54OgiZBLCa7eARV?=
- =?us-ascii?Q?WNu79PCJns4sfcWTReZg+NyBs9atg5q8Ey1EIKC8ngLGBIFIJe1uQhM81rbd?=
- =?us-ascii?Q?fcqJTDp4SS8iww6p0PkswGj5D5f3vB8z+1DH6raHupAwwpJ5aWYcJKCCsrih?=
- =?us-ascii?Q?MFmfi73mbQMvS2LKjVwia/Cv4LmeeIoWcNmg51xhSdkWqWLkd0bXmZjQcpyo?=
- =?us-ascii?Q?Yirs2biIjDDS4ytASmiNIcA2RfT6Z6mekh2qIsM2hqSI8NoXSah8dF2DX2rm?=
- =?us-ascii?Q?IA=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7bc96ce8-4a98-40ee-817c-08dbb4a514a8
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6452.eurprd04.prod.outlook.com
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eVFmOWJSbFVGSFJoUVpxZW50OTZ0a09keWs2b29YWEpvU3luUlR6ZGprZHha?=
+ =?utf-8?B?ejJFNzc3cm5EbWViMlc2SE43WXhVRmxKc21scmN1ZHZNRFIyMUJPMVp6QW9Q?=
+ =?utf-8?B?bXQ0Z0FUZ0dNa3NCR0xSZGtZNnBJd21VeUptdmtqeXlMb3ZVNjIyRW1nRHJH?=
+ =?utf-8?B?R0ZCRzhuSWZxclpsOEtpcG9oaVl5ZHJ6cERGRWQrZjhmM2lYS1NMVmJBRW94?=
+ =?utf-8?B?enVmUXR2anVnN2VGTTlKNkJ3M0tqb0RSeTgxbk0vZ1lZZVdSZytWWE9tRGtQ?=
+ =?utf-8?B?MVBLb2VjaFNMSWNnWlpmV3JqeGVKd2pUU09ST2gwQ05TRWpNUkNvU1NGWkdN?=
+ =?utf-8?B?bVZkUzgzM002NmptUjB5K1prTkpRZjREeVpac0NmYUNJeUd4TXlmU2k2Nzdw?=
+ =?utf-8?B?N25VYUcvOXMyWHZzVStTeXV2SXE1NEhDbjY5UCtYUm9QOGFBZ2NVYzZIRDFJ?=
+ =?utf-8?B?OHhsOW9MdzYxYmphUldObS9kM2hncHJOODE4OXVpditWb0o0Sm82WVhVZXJ0?=
+ =?utf-8?B?ZURnRXhyb1BvUk8wMnJmdzBmaHZIeE1JZG9xa2NMQWRES2grV29LSGt2Q1d4?=
+ =?utf-8?B?NEVIRGt0OGZsZ0VXcUZlNExJZHMwcjN6bGxkTTJTb0lOUkFaUDRkTmttQUtk?=
+ =?utf-8?B?WEV2Z3NpaVJFYTZwMmtweEJvdlEwOG9yWlY5QzFNQU0yclFSeW9KV3lYc1hk?=
+ =?utf-8?B?U2NrRllaSG5KdlpWd1ZIQW9kSXpZMWZlbGdkN3FkTXRhanVYSDl6VnNQRDlG?=
+ =?utf-8?B?aHg2UU94QU1STDdyTFhQdFlob0V0elFod3NDUmpzR29LYk81UTFzak1PeldY?=
+ =?utf-8?B?eUZ2WDdQQjNIbW1zdUtIVTNtNC9yeTB0MURyT1lMdnAvYjR0ZmxwS0ZKaHJE?=
+ =?utf-8?B?eU0xZ0xEMUIrNlpNK3JNTEVDS2FxeE56N0lMa1p5T3hvc2UzUUZmbVR1TzNX?=
+ =?utf-8?B?WHJkVXhVUzk1eUNYSFNFVitQVnZOblY1WTVnejJiYm1RQWxDSStNZkVoU2RF?=
+ =?utf-8?B?SlZBRkhieCs3OWtDZ0phakZva3JmOUR0dDVMMmpGRi9DdmNRK2NGZm1mdzZn?=
+ =?utf-8?B?RisxMEozRGtQRjF4TmFSYXAreEFiQTF1OVh1QklBVnNLN1k1dGN5aTN6ZzZu?=
+ =?utf-8?B?RnVZMjVSNUEyODNqQTdYMlNVRkRLeWZ1ZDNnV1BuekNmMHBZYUd2NHpOYk9P?=
+ =?utf-8?B?OFVaS2VHanBRYmJjRVpEL2gyRk9PZDA2dXAyMmJtMmFEMkxEeGZwWHFFSEpk?=
+ =?utf-8?B?YUtIUWxvcDNJekdPVU84SklIZldycDhsVUg2c3JEZ1k4WmdVeVNtN3o5ZWVQ?=
+ =?utf-8?B?M0RMZTRwQkdUNUhhUnRvcVB2NzVCMXlJMml5SWxGRTRUbEhPSllJYkhBMVFC?=
+ =?utf-8?B?dHZBSEUvQjAvcmdaM1E5QkRFZ09MTTYvQW9QQTgzaEVZWG1YUUJrSXZWZHJQ?=
+ =?utf-8?B?Vmsvc1BiNUVybkhRTThTcmVFd05LUTVtcSt3enNuajZKK0s2STNwSkgrY2lk?=
+ =?utf-8?B?VkpBYnNKZnZZN1lScndjOE1GaU1EdDNhTXB1RVlqeU9rcis0MU5WaDQzRitG?=
+ =?utf-8?B?U3BPU1JuL2RnZHVWOHhtbmd5dVRoYThuakFVdUpxQUhWZ0Z6ZTVRT3QrajlQ?=
+ =?utf-8?B?V1JXWEs0aFZvTFVLdHh1djRvQks3N3pOWXZoMlFtU0R4NEJmYzNuYjNxZ2c5?=
+ =?utf-8?B?WW9RcjdpT0NoemszT1JMbFpYYlZVeThRRDVPb1FwVEpnckpkZ0ZLZnFMdTg5?=
+ =?utf-8?B?NDB5NTdwM1JSTFVucm81d0F3SnZMMDh3ay9Yd2dJMVY0aDBJK0cvZWZBZ1p3?=
+ =?utf-8?B?TW9hZTV5TEZnVllpYUIxOUI0MEJVUXp3RzdiK2cxNEZ5dW1WdEREcVB0Smoy?=
+ =?utf-8?B?eVRMMDhCRkFYZ0JPZWZma3lobnE4ZDBBaHQ2MVdDYlE1ZWxKczd1NFVqSFFR?=
+ =?utf-8?B?d1RUd28wRjVYRWlhZk5jbTdUcGxKUUVuLzNUdDU3SWlLTGUwQk9CVjU0bnda?=
+ =?utf-8?B?RVVUQmRPUzltR0xhY2VvbHNTd0VsY1JUeDU0S2JiNGNqRXBYK1RlVkVaaUZJ?=
+ =?utf-8?B?Y3RpQm9aL0ZXSlUxWGpGZytCWkNFQXoxeXJpUVpWa0lhSmYyK1dWYWFOcm1U?=
+ =?utf-8?Q?FavxtYagoz9I+2Myih8qGdR0u?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: cf966e60-8b5c-4973-b5fa-08dbb4902ddc
+X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3320.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Sep 2023 22:02:11.4900
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Sep 2023 19:32:34.2042
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6ofDbZiMr5gOXKhLXWv7w6zOT+zfsWSfmdStNCesBAyo3FsdNy067Tb3OFsAyrDXEQidrS+t5kacqcwn/XIlUA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR04MB9366
+X-MS-Exchange-CrossTenant-UserPrincipalName: O1POVjq9Ehxvaw3ntgM7i6dbcl0tnOWvqpnOMrJXm9HlCUjPU3g5AGNqh42Cqh5KCykfgu2poWBU8ZGE5xkNrQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB8051
+X-OriginatorOrg: intel.com
+X-Mailman-Approved-At: Thu, 14 Sep 2023 08:54:57 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,37 +165,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?utf-8?B?RmVybuKUnMOtbmRleg==?= Rojas <noltari@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Michael Turquette <mturquette@baylibre.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Jonas Gorski <jonas.gorski@gmail.com>, linux-phy@lists.infradead.org, linux-clk@vger.kernel.org, Kishon Vijay Abraham I <kishon@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, linux-doc@vger.kernel.org, Camelia Alexandra Groza <camelia.groza@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@kernel.org>, linuxppc-dev@lists.ozlabs.org, Li Yang <leoyang.li@nxp.com>, Vinod Koul <vkoul@kernel.org>, Shawn Guo <shawnguo@kernel.org>
+Cc: Mark
+ Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max
+ Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will
+ Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori
+ Sato <ysato@users.sourceforge.jp>, Helge
+ Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei
+ Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas
+ Piggin <npiggin@gmail.com>, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul
+ Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung
+ Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal
+ Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sean,
+On 9/11/2023 11:02 AM, Sohil Mehta wrote:
+> Sohil Mehta (2):
+>   tools headers UAPI: Sync fchmodat2() syscall table entries
 
-On Thu, Aug 10, 2023 at 03:58:36PM -0400, Sean Anderson wrote:
-> I can look into doing this. It will be in my free time, so it will
-> likely be a bit before I can update this series.
+I now see a patch by Arnaldo that does something similar:
+https://lore.kernel.org/lkml/ZP8bE7aXDBu%2Fdrak@kernel.org/
 
-I was expecting you'd ask some clarification questions about the RCW
-override procedure that I've informally described over email, so I guess
-you haven't spent any more time on this.
+Also, it states that:
 
-I'm letting you know that very soon, I will have to start my work on
-porting the backplane driver posted here:
-https://patchwork.kernel.org/project/netdevbpf/cover/20230817150644.3605105-1-vladimir.oltean@nxp.com/
-to the Lynx 10G SoCs. And for that, I need a SerDes driver as a base :)
+"The tools/perf/check-headers.sh script, part of the tools/ build
+process, points out changes in the original files.
 
-I was wondering how inclined are you to respond positively to the
-feedback that the lynx-10g driver should have a look and feel as close
-as possible to lynx-28g, given that they're very similar.
+So its important not to touch the copies in tools/ when doing changes in
+the original kernel headers, that will be done later, when
+check-headers.sh inform about the change to the perf tools hackers."
 
-Because internally within NXP, we do have a version of the lynx-10g
-driver which is contemporary with lynx-28g from mainline, but we didn't
-publish it because protocol changes didn't work (for the same reason
-that they don't work with your driver). With that driver, you can think
-of the feedback about the similar look and feel as being "implicitly applied"
-(being written by the same author), so I'm starting to consider more and
-more seriously the option of basing my work on that instead of your v14
-(on which I'd need to spend extra time to modify the dt-bindings with PCCRs,
-concept of lane groups, concept of PLL CCF driver, etc).
+I was unaware of this and therefore I'll drop all the tools/ related
+changes from this series.
 
-What are your thoughts?
+Sohil
