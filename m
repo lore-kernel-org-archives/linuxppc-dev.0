@@ -4,57 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6372EDEC63
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 14:40:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC632EE01E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 17:00:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h0mv2ujn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cPc5I0ZL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rm3661zpXz3fbW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 00:40:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rm6Cm0Kd6z3c7s
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 03:00:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h0mv2ujn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cPc5I0ZL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rm35848r5z3cCv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 00:39:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rm6Bm4gZ2z3bfK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 03:00:00 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 2A1E8B81F26;
-	Wed, 13 Sep 2023 14:39:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C64A7C433C8;
-	Wed, 13 Sep 2023 14:39:43 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTPS id 4E8D0CE23CB;
+	Wed, 13 Sep 2023 16:59:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89ACFC433C8;
+	Wed, 13 Sep 2023 16:59:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1694615989;
-	bh=RJoIfCcg3Gqvlc6Pv3L0lR4WCeRLMrROYaRGXX3uIAw=;
+	s=k20201202; t=1694624397;
+	bh=BnteqCpF/CAUK7DK9U9Ghtfp5dt4d9MfOz2/eAS/u7s=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=h0mv2ujnNPBV1QjbllewX4FCxcYj7UIsM7RYsumCnJYKKZxxARRvsgTPkchtVUrOG
-	 Rml9dusWCC3tOaFcBAlQZ+HyhFi21PQ2icCnZXU3YytqIFh6XOGdkU+3kNu8TwDyhB
-	 WJRDtBek5vWld2P/ShKcBo1SVBdzlme7UdBJijsO2e7k/u1AEtQ98HIez9iAnnMUp4
-	 WtYw87YW09XXT8g6GAGAFdOQxLYlJqVfeq92qL/KbAHqYFGZFctKtSpKUUK5BmqQUq
-	 W6tyh/Uvo62Cr0+7zVDD/qfL/7JXV4Zt19ttI2wt2FXW7Ioi+S8Uq74Ra8HfNT3oE4
-	 dbw/bY7nHM5AQ==
-Date: Wed, 13 Sep 2023 15:39:41 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 25/31] dt-bindings: net: Add the Lantiq PEF2256
- E1/T1/J1 framer
-Message-ID: <20230913-faceless-sloppy-9c408191630a@spud>
+	b=cPc5I0ZLysgdFaSm9d3iPjGsHib6No1WDfTfDNmZ8EJftw2ukgPJqbdTvFwfII6h5
+	 XsjFCfQwy0hAhvcNI/zC1jAxOZx+xj3WkJy3PnXdFgBaTdKUmzEXfr8r119FUpA9ws
+	 uEyzFAjE2f/LP5rj9F/N4Be4pbP/BK9uPoheaZ2R88lgsiTu9NUbtgyaz2XOX1oPZT
+	 eklyhY3ZUUL2hQtxVd/re7fFxkttitCrig5ohr9Pm1WOgM5lChR8UOojrbVvjicS9G
+	 gipMxf05N4nYGfN5v5g6bWOTb7T8iOMYlMWHXGVTPRzp+C5LHyalJK3Qgj/yIop80d
+	 GuvQxVLkJ3wdg==
+Date: Wed, 13 Sep 2023 17:59:48 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>
+Subject: Re: [PATCH v5 24/31] net: wan: Add framer framework support
+Message-ID: <e3245053-1d4c-4ee3-9e03-8a6ca54e26d1@sirena.org.uk>
 References: <20230912081527.208499-1-herve.codina@bootlin.com>
- <20230912101444.225809-1-herve.codina@bootlin.com>
- <20230912-overplay-donated-080eb97803d6@spud>
- <20230912185405.GA1165807-robh@kernel.org>
+ <20230912101436.225781-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="f/ltRk1gE1+sCzTa"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="3d4xnD0OBUXwj5Mp"
 Content-Disposition: inline
-In-Reply-To: <20230912185405.GA1165807-robh@kernel.org>
+In-Reply-To: <20230912101436.225781-1-herve.codina@bootlin.com>
+X-Cookie: Use extra care when cleaning on stairs.
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,39 +64,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Herve Codina <herve.codina@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.c
- om>, Simon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Simon Horman <horms@kernel.org>, li
+ nuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---f/ltRk1gE1+sCzTa
+--3d4xnD0OBUXwj5Mp
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Sep 12, 2023 at 01:54:05PM -0500, Rob Herring wrote:
-> > > +  lantiq,data-rate-bps:
-> > > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > +    enum: [2048000, 4096000, 8192000, 16384000]
-> >=20
-> > -kBps is a standard suffix, would it be worth using that instead here?
-> > What you have would fit as even multiples.
-> > Otherwise Rob, should dt-schema grow -bps as a standard suffix?
+On Tue, Sep 12, 2023 at 12:14:36PM +0200, Herve Codina wrote:
+> A framer is a component in charge of an E1/T1 line interface.
+> Connected usually to a TDM bus, it converts TDM frames to/from E1/T1
+> frames. It also provides information related to the E1/T1 line.
 >=20
-> Yeah, I think that makes sense. I've added it now.
+> The framer framework provides a set of APIs for the framer drivers
+> (framer provider) to create/destroy a framer and APIs for the framer
+> users (framer consumer) to obtain a reference to the framer, and
+> use the framer.
 
-Cool, thanks!
+If people are fine with this could we perhaps get it applied on a branch
+with a tag?  That way we could cut down the size of the series a little
+and I could apply the generic ASoC bit too, neither of the two patches
+have any dependency on the actual hardware.
 
---f/ltRk1gE1+sCzTa
+--3d4xnD0OBUXwj5Mp
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZQHJrQAKCRB4tDGHoIJi
-0iNbAQCQvNI/6rj3MUcE4cZYQRwXdY48ReUFl3upkSIAwL59UwEA5YVuiJyYj+pl
-y+M6tf6hogZBT32WxEtJnwijye97rQw=
-=lb0d
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmUB6oMACgkQJNaLcl1U
+h9C6Xgf/eVzH2ZK88zsRlmvtdc+p6XZjgKPJFkUlIhE9Ma70SkaA+GvjpzFrSISC
+0oFzEllaNXg3QA5Dql2eFFYQgtr5ubist5gEg7ySisIk/3GFEx1+bOqfE8Hd0wxS
+EOmSRrnORoEywUsp1tI/CIh6s+FkPAwH0ZLtXwvWiKeWjQc8q9wKDnqqahC84N6Q
+NESewhcaX2cQNfQXdyKGrnV9RVVSaVml3mQ4OvcjG21+FFq8IFvmn1HuLyhzj7ka
+ACjNRWS9xgBsIqVyOOaYB2Ji62cf+WK4/DJig11BI34n9N7Tnbi80+kb0JX/WVno
+ncpqIK4/jpD4JNn+BxeAIiICNG0cQw==
+=nBcU
 -----END PGP SIGNATURE-----
 
---f/ltRk1gE1+sCzTa--
+--3d4xnD0OBUXwj5Mp--
