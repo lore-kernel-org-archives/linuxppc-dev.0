@@ -4,91 +4,120 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB92ACA5517
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 09:18:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA49BCA5537
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 10:28:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PRyNez8O;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=OBr8CnAq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rlvym34Bjz3dX4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 19:18:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RlxWL08q5z3bTP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Sep 2023 20:28:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PRyNez8O;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=OBr8CnAq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+j.granados.samsung.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe1e::621; helo=eur01-he1-obe.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com (mail-he1eur01on0621.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe1e::621])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlvpL59Z2z3bTn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 19:11:38 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 66A04B82257;
-	Wed, 13 Sep 2023 09:11:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C6B92C433B8;
-	Wed, 13 Sep 2023 09:11:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1694596290;
-	bh=RibUDN9R+mVe2Lz6B7/1/Dio8c9tfQM7q2jS6jar4RM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=PRyNez8Os2r73tRnPuMkOsNStqVtl6GUBe6Dtb4wua2O3Z2WQDaETz0xSqQNi0+ZV
-	 k2J0Xhph6ulihlVMPwEtUV2BhzROmRMIgvZhoiby/ePvz1kzvaOq8PGLsXVJIjYS2c
-	 EiE6iQYMTpD1X1viQDoQEQvVUz5uB9EZIQw5DF2iYLn2CFh+6K6qJqyXAmpkeEU/dh
-	 gzJX1VlKpU12g3dzx78JvFg99ONL1+sghX3CBQ2fQN2kaRBTHw4Q/yzIWAilVs06EX
-	 uEUVoRY60WHnICf2u7H/R3oV7Sqnk+gSe27Xv/CilA2UYLUBl3yPoUjspuVD7WsiHI
-	 x6nRiaIdPIfow==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADEC5CA5518;
-	Wed, 13 Sep 2023 09:11:30 +0000 (UTC)
-From: Joel Granados via B4 Relay <devnull+j.granados.samsung.com@kernel.org>
-Date: Wed, 13 Sep 2023 11:10:57 +0200
-Subject: [PATCH v2 3/8] arch/x86: Remove now superfluous sentinel elem from
- ctl_table arrays
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RlxVL0Pnpz3bT8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 20:27:51 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Jd19UXReXam92t36ElGICJ3//hmYGn0vftw9/DR9VvGesFkW3lltgxRB8UaG2b/+YCkNFBZjx35bgI1HDkKm9OHke4jqwhh2HXd0i5IFyOgwcBJDeMSBuBJrUdDrZnJo2uEOFk7HvxDB0UoNQv96lYTmazGOwogirDk2QvlT20ECob9qavEPMckd+2vZ0Bs3iWSOJHUjRxMUTPlqFUanBZv9/EvBPFZoPUYCIoYk1rTaJcdzYQVMEeQ05QSVCYGaeNukmXuMdpDjWLpPkwlOHRkC0gtROF4vIsF0cEV2WSJTQ7VmXfu8Hy7IY3qJJFilO5CIc/TPo1jh+mU76NxlrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=5tQdiu0x5kU+1CLi1MumrJfpwumomnH0TkPRLQ9Bt/s=;
+ b=B8wnFWhfKSh7SmiPvcpzSku1DfizBi+0rg75FHnlaFl2HMzUxEHanSQ3i9/ca27GBfH5aeODDI3hQcM3y7eX0+VmMGP4wtBrfNoswsKvuQmdp6jD6HNy0xm1oANCS989rcvVIvE/r+7Kb1Gpj7OuVFaOn6jn5hPMGvFtkoNvRZQ17JbLPZkhBdnpjQCvFqkx9ee34KBq4v+3n8IJtej0Nkx3pql5GY0CusVGFefgfTO9cWf2/i96GGN+re7qqfOggJsMzK0NPzhWQpiUW9l95u6NRYlh2B+SVmy5m8I1e7iX1uU+FDc4Tdm9cTM9IIbNtMKpbmbSrLNS3d5ND4VYxg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5tQdiu0x5kU+1CLi1MumrJfpwumomnH0TkPRLQ9Bt/s=;
+ b=OBr8CnAqOZTAF+lhpUCDUnU9n/+TnnMgWMW9qRE48c+TdDVxxHHgEUq0U+ihjuuc7uHFC0i252MuArmh9kZftxzS0g9YENLI1sFdew/jsPbfh4ob0kKHd2oCetGwmHACj4EPh2RBNLI4MH/4Qpr0V+wN+TxEz33rp2n6ZgTVFsc=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from DB9PR04MB9498.eurprd04.prod.outlook.com (2603:10a6:10:360::21)
+ by AM9PR04MB7554.eurprd04.prod.outlook.com (2603:10a6:20b:2da::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.19; Wed, 13 Sep
+ 2023 10:27:29 +0000
+Received: from DB9PR04MB9498.eurprd04.prod.outlook.com
+ ([fe80::cda8:5cad:29b6:3c96]) by DB9PR04MB9498.eurprd04.prod.outlook.com
+ ([fe80::cda8:5cad:29b6:3c96%7]) with mapi id 15.20.6745.034; Wed, 13 Sep 2023
+ 10:27:29 +0000
+From: Chancel Liu <chancel.liu@nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	shawnguo@kernel.org,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	alsa-devel@alsa-project.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] ASoC: imx-rpmsg: Set ignore_pmdown_time for dai_link
+Date: Wed, 13 Sep 2023 18:26:56 +0800
+Message-Id: <20230913102656.2966757-1-chancel.liu@nxp.com>
+X-Mailer: git-send-email 2.25.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2PR02CA0006.apcprd02.prod.outlook.com
+ (2603:1096:4:194::8) To DB9PR04MB9498.eurprd04.prod.outlook.com
+ (2603:10a6:10:360::21)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id:  <20230913-jag-sysctl_remove_empty_elem_arch-v2-3-d1bd13a29bae@samsung.com>
-References:  <20230913-jag-sysctl_remove_empty_elem_arch-v2-0-d1bd13a29bae@samsung.com>
-In-Reply-To:  <20230913-jag-sysctl_remove_empty_elem_arch-v2-0-d1bd13a29bae@samsung.com>
-To: Luis Chamberlain <mcgrof@kernel.org>, willy@infradead.org, 
- josh@joshtriplett.org, Kees Cook <keescook@chromium.org>, 
- Iurii Zaikin <yzaikin@google.com>, Heiko Carstens <hca@linux.ibm.com>, 
- Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
- Russell King <linux@armlinux.org.uk>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, 
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
- Paul Walmsley <paul.walmsley@sifive.com>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, Guo Ren <guoren@kernel.org>, 
- Alexey Gladkov <legion@kernel.org>
-X-Mailer: b4 0.13-dev-86aa5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1714;
- i=j.granados@samsung.com; h=from:subject:message-id;
- bh=/mE3FCrO8N9N5ocA17o8WorvC+93ienB9ASm3953JX0=;
- b=owEB7QES/pANAwAKAbqXzVK3lkFPAcsmYgBlAXy+P6IyIJVAiVruEBhUNPQKqpELjF18dzfN2
- Sau5oc9p9+JAbMEAAEKAB0WIQSuRwlXJeYxJc7LJ5C6l81St5ZBTwUCZQF8vgAKCRC6l81St5ZB
- TzOGC/wKtjbMwVyYSrKGZCdpsS8BeR6Sb+Sw1O/9MDzjfyeDErxvdriTX+K97uSfafn9EC9VkE4
- 3+Dp5zJgbrSjxpxaY2pQf/y4ZqY0JxZ0XcLRBRaXvXHA4u/m2ZyMGMCFwXPcQ0TxgJJaeL7z1M2
- e0gVVu0zh/JY3KgtFwL3m+F2xqoPO5vSfr0CQMtxeGtoCRzB7GaeJOZKfjaNfg9MTQ9pd97hzBv
- IUrCdqoOJomMpsFaPQH7XD/nTx/PznAIXJTILEYG3Q5+bJd8wNgyEu2FJqYY5PJrl4XgVS1lxo1
- kU6vP6K1K5MEB4/41nrGXYIbQaG5xcCKIJ6aaIe5MI7VPHkPALZYq34tMa04Rb6q1qZlNVGmgln
- zZrnVgpFSoN7JFJig1ruKLb7yTIGrMX/dyYqV4XGkG5Tf7fyvC4WTycYJB590I/V2P9s9jSr8xv
- 9FPq+RexsVQK5qYHFtthR/GrgPD5lrwWhuEzkCp0GM7f7Kh9f4hEAmQ+CxP14FEa65FCw=
-X-Developer-Key: i=j.granados@samsung.com; a=openpgp;
- fpr=F1F8E46D30F0F6C4A45FF4465895FAAC338C6E77
-X-Endpoint-Received:  by B4 Relay for j.granados@samsung.com/default with auth_id=70
-X-Original-From: Joel Granados <j.granados@samsung.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DB9PR04MB9498:EE_|AM9PR04MB7554:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4a2b6d4c-62f8-4de2-aa72-08dbb4440802
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	k9NJxvfZN6xOU3xO/qRAqBWZV9qS9vJFfgT4Agkq6YeBt7oVFQFfcziIpgGrYMjcbD8qdLKg67KxgZ72ofEcMBeEheAKnFGmVm6peJcOMNN2uISKEjfSJY7NJnsE3psegHgG1hYa4kVjw4MsgCpM/r4xHUktVfxfahupjMm5Olkhqoi7/I2liR3AALCPPlx8NPw5lLzRD3JByGjNx12Uql+LNql6eGf76OksdWKHAv7q1PhUBp4fNZzSHkVVuFu5VAKW7e1UdKGK/CWQuePPGBcdT8p5mKOpdaOgmNJF9mTbkoiFMuMi0OQV41GrAs6kttgoc2nLXF6lRw18lP+2M/WJLtQ6mFWDVBHU1dzsxdmYM9aYAZpuFGsvp+uJSoSUAvo1Mdwfyfpo3BcoAOVD/1hvXixGJjcXQsFhG47ui/AkMPzHDxTwr3/kowdZyXwknDz825dAnlVAOGbkrUtitqzG8JDfKyaF7gPdcjaYglVJPWiiFA6pzk3WHzCcby0t8zBhm1N7P46gti3bf3kjTFz8yhzyJ/OLreDz8U3TIgZbj3z0kGeI5F6CrPChu2vOaXxqqX/zd2POREeYmmSVVLuSG4JiNEef6sMgTJhK/xLbU6zj8937IcAflG5d2SAykfAd5Qz7cZVo7AK1QPiZOA==
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB9498.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(39860400002)(376002)(366004)(346002)(396003)(136003)(451199024)(186009)(1800799009)(7416002)(2906002)(44832011)(5660300002)(8936002)(41300700001)(4326008)(8676002)(66556008)(66476007)(26005)(66946007)(316002)(478600001)(6506007)(6486002)(6666004)(6512007)(1076003)(2616005)(52116002)(83380400001)(36756003)(921005)(38350700002)(38100700002)(86362001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?OXpnQeYVH/Nohn8KYkrOK9ZTC9DTIKIADllLAc6WBbAGa5hiPGFAb6LGa5Wx?=
+ =?us-ascii?Q?CHXgy1RRv79ui2JBmTFnTmVCpS7kvZZjw+qN1+e6SsIYJmz88/8HlGZbLH0V?=
+ =?us-ascii?Q?nkouzFSrpv9RjdHTZO0yX4iAxHErf9Hm/AwptkF7xmSw5dhGewmVYRy9eUcp?=
+ =?us-ascii?Q?aTlEOiJd/g2dR5XFily1hfEVeEPXcGVR4/vSsCFtRj3Rgbc73m8zC2GlP104?=
+ =?us-ascii?Q?HtmotHRqSesT3zbNlDHT468fXxfzPGZpe2tZHXu4IfjuamaarGXn6Ub8MTnV?=
+ =?us-ascii?Q?BWsdqa3ndpcCLdhVJPFeOZOlyr+ta+UdXuk0rGIUpiifzMy7vvfgPfSn9Spi?=
+ =?us-ascii?Q?PCmHIT3KdV+6LiXZwHKu6oq3aHcW7YHHjaSms398VSGax2AHommh+TuK3vTN?=
+ =?us-ascii?Q?lRimY5k0ufEWRiFMYXePtEpCfslDUJhIBi1oZnzQNOvQ6Kajt2iI2Meqv24P?=
+ =?us-ascii?Q?Ka21jitpA68UkSvim6ShjBCK5oOsP7Y7GJTK2mJIDSqoy7QebZvQNVTIUEvF?=
+ =?us-ascii?Q?GNrXQLGpZtmX12vv5Wadme/VZaX58eEWAxbY6cTDUV+dDzcRAAqJhLijIt5D?=
+ =?us-ascii?Q?/v4Z2RJSHjw89idLKkgElT3dGLTG3u/yEwq3+4mVnG1ZlWDknqnaGU0OM1cT?=
+ =?us-ascii?Q?PJ8ZYqeg8Ear0CANs4nJdvxdUvW96DHgBCPvDgeAqcZ+OioV0896RNRbbCQ7?=
+ =?us-ascii?Q?/9uMiFXjvbs+5Ik1ns2/mC0q/OOkR6ARmVOya5XeJJPzYsgicKyKfOZDNrDf?=
+ =?us-ascii?Q?2q8fXJftS9YlWNFcC63mQMKxShx3d2MAfnW7lB9IQhcvScemN14SFaEgdO/Z?=
+ =?us-ascii?Q?hhwQ4q0RY9GRkVYqcTse9RsI+7q7Hv2bTSR6XHGHSvL6g8Y06r8qdO+R6c5g?=
+ =?us-ascii?Q?MUlPj+PRg4vYWQBv6TxT2k+Qh0JNSA1UIzvptmxYduC/RgwduIOpKor1Cymp?=
+ =?us-ascii?Q?bABBMk29dVOnt7jhnbltaJGswEZOVNpWTXwMzcISyYAGfq1j1ipZmUixUO86?=
+ =?us-ascii?Q?tuccTFNZPxhxvD2SmFYTeDOComoUWlxdX2qVZmSiFIq4KQZI7W7pwF95USYM?=
+ =?us-ascii?Q?MJ8rw30KXwWtzzP0iEvl84Eu591d8Fun/K3KFzEJXL1Id0p2i23JtSAcTiNd?=
+ =?us-ascii?Q?ivUJO1EnXI7EfiapSnsLvFuDFkFbZBSnhzQ9LJwKa1oQpssq+2V2/G6bMstD?=
+ =?us-ascii?Q?I8TbJrcong1q27ZYaBR6vinjOx7DGJydJLYFrhTODNSnbLwbGY4T2Bnbw3/Q?=
+ =?us-ascii?Q?guPf9JsxvhTR7yhOzI8NjQtsiSsHffpQrGpytnTSg/2Plkgvm4FRtjx6OBys?=
+ =?us-ascii?Q?Jv+OMYP8kTjdQfVwJEbfFIEceUGyQe3WNVr5Vari7gqxJR/wztCG2nlOExZC?=
+ =?us-ascii?Q?qTbDd7RbHSsWpmxgsSGmFFhN3/REIBCy+srs7gzigj7BVv0mlp5LlZWLL170?=
+ =?us-ascii?Q?KHJ1qnh/46DCYlFM8V75clpFgwfc7DjqotMkaiUyOClgjLEw7+6gKPnrv3di?=
+ =?us-ascii?Q?ixv/cCAybz4WQGUjzPvhSk/HiAXdQVAds7XQGw6A5rhrVAGBoUdgL0Zeqa6M?=
+ =?us-ascii?Q?K/NuoxtsriD+1GgCPEgJbOxUGqGvmRtC1ALcz+He?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4a2b6d4c-62f8-4de2-aa72-08dbb4440802
+X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB9498.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Sep 2023 10:27:29.1287
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: oT3tiGkVCx7+zsgFPXlsekbNhedJl8Ub9J33OvPt9Hp6GJDX5En6LLmVALee6T5sXIh1CDbiNKK6yQqycm++hg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB7554
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,60 +129,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: j.granados@samsung.com
-Cc: Joel Granados <j.granados@samsung.com>, linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org
+Cc: Chancel Liu <chancel.liu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Joel Granados <j.granados@samsung.com>
+i.MX rpmsg sound cards work on codec slave mode. MCLK will be disabled
+by CPU DAI driver in hw_free(). Some codec requires MCLK present at
+power up/down sequence. So need to set ignore_pmdown_time to power down
+codec immediately before MCLK is turned off.
 
-This commit comes at the tail end of a greater effort to remove the
-empty elements at the end of the ctl_table arrays (sentinels) which
-will reduce the overall build time size of the kernel and run time
-memory bloat by ~64 bytes per sentinel (further information Link :
-https://lore.kernel.org/all/ZO5Yx5JFogGi%2FcBo@bombadil.infradead.org/)
+Take WM8962 as an example, if MCLK is disabled before DAPM power down
+playback stream, FIFO error will arise in WM8962 which will have bad
+impact on playback next.
 
-Remove sentinel element from sld_sysctl and itmt_kern_table. This
-removal is safe because register_sysctl_init and register_sysctl
-implicitly use the array size in addition to checking for the sentinel.
-
-Reviewed-by: Ingo Molnar <mingo@kernel.org>
-Acked-by: Dave Hansen <dave.hansen@linux.intel.com> # for x86
-Signed-off-by: Joel Granados <j.granados@samsung.com>
+Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
 ---
- arch/x86/kernel/cpu/intel.c | 3 +--
- arch/x86/kernel/itmt.c      | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ sound/soc/fsl/imx-rpmsg.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index be4045628fd3..e63391b82624 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -1015,8 +1015,7 @@ static struct ctl_table sld_sysctls[] = {
- 		.proc_handler	= proc_douintvec_minmax,
- 		.extra1         = SYSCTL_ZERO,
- 		.extra2         = SYSCTL_ONE,
--	},
--	{}
-+	}
- };
+diff --git a/sound/soc/fsl/imx-rpmsg.c b/sound/soc/fsl/imx-rpmsg.c
+index 3c7b95db2eac..b578f9a32d7f 100644
+--- a/sound/soc/fsl/imx-rpmsg.c
++++ b/sound/soc/fsl/imx-rpmsg.c
+@@ -89,6 +89,14 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
+ 			    SND_SOC_DAIFMT_NB_NF |
+ 			    SND_SOC_DAIFMT_CBC_CFC;
  
- static int __init sld_mitigate_sysctl_init(void)
-diff --git a/arch/x86/kernel/itmt.c b/arch/x86/kernel/itmt.c
-index ee4fe8cdb857..5f2ccff38297 100644
---- a/arch/x86/kernel/itmt.c
-+++ b/arch/x86/kernel/itmt.c
-@@ -73,8 +73,7 @@ static struct ctl_table itmt_kern_table[] = {
- 		.proc_handler	= sched_itmt_update_handler,
- 		.extra1		= SYSCTL_ZERO,
- 		.extra2		= SYSCTL_ONE,
--	},
--	{}
-+	}
- };
- 
- static struct ctl_table_header *itmt_sysctl_header;
-
++	/*
++	 * i.MX rpmsg sound cards work on codec slave mode. MCLK will be
++	 * disabled by CPU DAI driver in hw_free(). Some codec requires MCLK
++	 * present at power up/down sequence. So need to set ignore_pmdown_time
++	 * to power down codec immediately before MCLK is turned off.
++	 */
++	data->dai.ignore_pmdown_time = 1;
++
+ 	/* Optional codec node */
+ 	ret = of_parse_phandle_with_fixed_args(np, "audio-codec", 0, 0, &args);
+ 	if (ret) {
 -- 
-2.30.2
+2.25.1
 
