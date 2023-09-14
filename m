@@ -4,57 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62E77EEAA7B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 23:11:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65AE7EEAA7A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 23:20:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bYXB29BM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=eDOq5fct;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RmtNf0Rdqz3dLc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 09:11:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RmtbW71s4z3cNH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 09:20:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bYXB29BM;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=eDOq5fct;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mgamail.intel.com; envelope-from=sohil.mehta@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--ackerleytng.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3cjudzqskdg8npxreyrlgattbbtyr.pbzyvahkccp-qriyvfgf.bmynof.bet@flex--ackerleytng.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rmmp364Czz3c03
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 04:59:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694717964; x=1726253964;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=pceMbNIsdo4RORvgoEGhTgk0j8EFv/tAosFUlFWx7lE=;
-  b=bYXB29BM8YEaGe+vRZSKZOo7YGYvB0vpXCBC3w4wczVgP1g629y/ec7p
-   WH9VG3FANiRBBYOxnBTS6pK8N3GaEulRELhZ+NAemLq1vh6/YgL7ff2h2
-   JvxWUAgmsLehJH9GV9567aA6ZdQwhkW6wsbcQ4PxX/IdXSVXSta/PKpGo
-   U163nTBIg19M5CTqKjj2pNfT/ttT/y4pf0pneSszbFDHdbHMSbSQNtp4m
-   qVZcVwnwQ7hxT7roJYUrObSCoyi+NdxeYMPIDnRkMWStnodFDnRYAc4jY
-   XHmRrkvPYTwbO6ukrj9Tr3OzeLR8GLnLOoUiU7ccKgiBsAEdK986sWECr
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="369344809"
-X-IronPort-AV: E=Sophos;i="6.02,146,1688454000"; 
-   d="scan'208";a="369344809"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Sep 2023 11:59:15 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="991489713"
-X-IronPort-AV: E=Sophos;i="6.02,146,1688454000"; 
-   d="scan'208";a="991489713"
-Received: from sohilmeh.sc.intel.com ([172.25.103.65])
-  by fmsmga006.fm.intel.com with ESMTP; 14 Sep 2023 11:59:14 -0700
-From: Sohil Mehta <sohil.mehta@intel.com>
-To: linux-api@vger.kernel.org,
-	linux-arch@vger.kernel.org
-Subject: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for all architectures
-Date: Thu, 14 Sep 2023 18:58:03 +0000
-Message-Id: <20230914185804.2000497-1-sohil.mehta@intel.com>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 15 Sep 2023 09:07:30 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RmtZT0ccSz2yt0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 09:19:43 +1000 (AEST)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-59b5d4a8242so19600947b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 16:19:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1694733577; x=1695338377; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4dPufiPQCtPzWz5WHSfvhHWIcWm8zH/JZg221REQo40=;
+        b=eDOq5fctMJiTxFkGiSjrwKTfVkCg+718WZV/5XAYHLv5DagKa5S6FXa3Kq8RT6NvdE
+         FM98VAvqpqviSvcGN1S1Ptd3hU1RaRZ3pGaPVLYw1SlNMNcrMcYf/Zl8LmnEjEXeRhlh
+         G3K8S8ZZDPBu1GiwSDJ4KjBDM5dGZR28kLPmELXLgQ+tm/OGIQ+FPdyY9iRZljFk6eoM
+         njprnfJNS0mHJx7b6NlUW8DDYpPPTj7VLLNdMAnS/AWZ4Ri9AGc/HuA/oAn7gUr1bxl3
+         8XHfBVVLaWQo0vnSEqY0pfyibqyTE9Dr2A6BhBsLGrH/TU5I6erbRTzmeyCsJ7j9oPcj
+         v1Tg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694733577; x=1695338377;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4dPufiPQCtPzWz5WHSfvhHWIcWm8zH/JZg221REQo40=;
+        b=UNZUMqYmrUPgNpQirF45S5Zm/volI15FMBQUY3MZk6HN66yX6bopJ5iFZcIpt1e2kl
+         5qGQKceeBGJakoWpCMAmYbfv2c2MHZQXJzmutDwugBx8KaNHA6xYQnEyrOVA2CThiI0B
+         IW+y+Bftz9dfzVBTWUfoZxQ9ZOklPAnooZ5KWTRCKCZUTrkopT/Yaxf9wqhC9hZYGs6d
+         nVeyLcNgj/8DxS3N+r7SS4widCoEaZ3N5lqyCuDnJCyqWTQCzqc7tJrvQLI4311BwSjY
+         M7wQiWJRjsFljHi9P6ERv5WN2j738uhZA8UyvmTxsWw6pkEw3CSe8Jc1HkYFj+Oel8Og
+         afXQ==
+X-Gm-Message-State: AOJu0YwfRmaVN9/QjQNSGSENRxVR7FSfadww6YOxxp04QCgWbW7XLVsf
+	9pI9cBJS8EeZoOPVCYBt/n6YknTmmvnUArBYdw==
+X-Google-Smtp-Source: AGHT+IGXEzZPfzBJslkSHoMTui4zDBSgnXtUGummxt07D80J/zY1rCAlKy2IgGo0zSECxNr/ULgwmLbLuPQoPz0S1A==
+X-Received: from ackerleytng-ctop.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:13f8])
+ (user=ackerleytng job=sendgmr) by 2002:a25:aa83:0:b0:d77:984e:c770 with SMTP
+ id t3-20020a25aa83000000b00d77984ec770mr158034ybi.5.1694733576882; Thu, 14
+ Sep 2023 16:19:36 -0700 (PDT)
+Date: Thu, 14 Sep 2023 23:19:34 +0000
+In-Reply-To: <ZQNN2AyDJ8dF0/6D@google.com>
+Mime-Version: 1.0
+References: <ZOO782YGRY0YMuPu@google.com> <diqzttsiu67n.fsf@ackerleytng-ctop.c.googlers.com>
+ <ZQNN2AyDJ8dF0/6D@google.com>
+Message-ID: <diqzv8ccjqbd.fsf@ackerleytng-ctop.c.googlers.com>
+Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+From: Ackerley Tng <ackerleytng@google.com>
+To: Sean Christopherson <seanjc@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,241 +75,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com
- >, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Sohil Mehta <sohil.mehta@intel.com>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>,
-  Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: kvm@vger.kernel.org, david@redhat.com, yu.c.zhang@linux.intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org, chao.p.peng@linux.intel.com, linux-riscv@lists.infradead.org, isaku.yamahata@gmail.com, paul@paul-moore.com, maz@kernel.org, chenhuacai@kernel.org, jmorris@namei.org, willy@infradead.org, wei.w.wang@intel.com, tabba@google.com, jarkko@kernel.org, serge@hallyn.com, mail@maciej.szmigiero.name, aou@eecs.berkeley.edu, vbabka@suse.cz, michael.roth@amd.com, paul.walmsley@sifive.com, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, qperret@google.com, liam.merwick@oracle.com, linux-mips@vger.kernel.org, oliver.upton@linux.dev, linux-security-module@vger.kernel.org, palmer@dabbelt.com, kvm-riscv@lists.infradead.org, anup@brainfault.org, linux-fsdevel@vger.kernel.org, pbonzini@redhat.com, akpm@linux-foundation.org, vannapurve@google.com, linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
-recently added support for map_shadow_stack() but it is limited to x86
-only for now. There is a possibility that other architectures (namely,
-arm64 and RISC-V), that are implementing equivalent support for shadow
-stacks, might need to add support for it.
+Sean Christopherson <seanjc@google.com> writes:
 
-Independent of that, reserving arch-specific syscall numbers in the
-syscall tables of all architectures is good practice and would help
-avoid future conflicts. map_shadow_stack() is marked as a conditional
-syscall in sys_ni.c. Adding it to the syscall tables of other
-architectures is harmless and would return ENOSYS when exercised.
+> On Mon, Aug 28, 2023, Ackerley Tng wrote:
+>> Sean Christopherson <seanjc@google.com> writes:
+>> >> If we track struct kvm with the inode, then I think (a), (b) and (c) can
+>> >> be independent of the refcounting method. What do you think?
+>> >
+>> > No go.  Because again, the inode (physical memory) is coupled to the virtual machine
+>> > as a thing, not to a "struct kvm".  Or more concretely, the inode is coupled to an
+>> > ASID or an HKID, and there can be multiple "struct kvm" objects associated with a
+>> > single ASID.  And at some point in the future, I suspect we'll have multiple KVM
+>> > objects per HKID too.
+>> >
+>> > The current SEV use case is for the migration helper, where two KVM objects share
+>> > a single ASID (the "real" VM and the helper).  I suspect TDX will end up with
+>> > similar behavior where helper "VMs" can use the HKID of the "real" VM.  For KVM,
+>> > that means multiple struct kvm objects being associated with a single HKID.
+>> >
+>> > To prevent use-after-free, KVM "just" needs to ensure the helper instances can't
+>> > outlive the real instance, i.e. can't use the HKID/ASID after the owning virtual
+>> > machine has been destroyed.
+>> >
+>> > To put it differently, "struct kvm" is a KVM software construct that _usually_,
+>> > but not always, is associated 1:1 with a virtual machine.
+>> >
+>> > And FWIW, stashing the pointer without holding a reference would not be a complete
+>> > solution, because it couldn't guard against KVM reusing a pointer.  E.g. if a
+>> > struct kvm was unbound and then freed, KVM could reuse the same memory for a new
+>> > struct kvm, with a different ASID/HKID, and get a false negative on the rebinding
+>> > check.
+>> 
+>> I agree that inode (physical memory) is coupled to the virtual machine
+>> as a more generic concept.
+>> 
+>> I was hoping that in the absence of CC hardware providing a HKID/ASID,
+>> the struct kvm pointer could act as a representation of the "virtual
+>> machine". You're definitely right that KVM could reuse a pointer and so
+>> that idea doesn't stand.
+>> 
+>> I thought about generating UUIDs to represent "virtual machines" in the
+>> absence of CC hardware, and this UUID could be transferred during
+>> intra-host migration, but this still doesn't take host userspace out of
+>> the TCB. A malicious host VMM could just use the migration ioctl to copy
+>> the UUID to a malicious dumper VM, which would then pass checks with a
+>> gmem file linked to the malicious dumper VM. This is fine for HKID/ASIDs
+>> because the memory is encrypted; with UUIDs there's no memory
+>> encryption.
+>
+> I don't understand what problem you're trying to solve.  I don't see a need to
+> provide a single concrete representation/definition of a "virtual machine".  E.g.
+> there's no need for a formal definition to securely perform intrahost migration,
+> KVM just needs to ensure that the migration doesn't compromise guest security,
+> functionality, etc.
+>
+> That gets a lot more complex if the target KVM instance (module, not "struct kvm")
+> is a different KVM, e.g. when migrating to a different host.  Then there needs to
+> be a way to attest that the target is trusted and whatnot, but that still doesn't
+> require there to be a formal definition of a "virtual machine".
+>
+>> Circling back to the original topic, was associating the file with
+>> struct kvm at gmem file creation time meant to constrain the use of the
+>> gmem file to one struct kvm, or one virtual machine, or something else?
+>
+> It's meant to keep things as simple as possible (relatively speaking).  A 1:1
+> association between a KVM instance and a gmem instance means we don't have to
+> worry about the edge cases and oddities I pointed out earlier in this thread.
+>
 
-Note, map_shadow_stack() was assigned #453 during the merge process
-since #452 was taken by fchmodat2().
+I looked through this thread again and re-read the edge cases and
+oddities that was pointed out earlier (last paragraph at [1]) and I
+think I understand better, and I have just one last clarification.
 
-For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
-syscall tables.
+It was previously mentioned that binding on creation time simplifies the
+lifecycle of memory:
 
-For Alpha, map_shadow_stack() takes up #563 as Alpha still diverges from
-the common syscall numbering system in the other architectures.
+"(a) prevent a different VM from *ever* binding to the gmem instance" [1]
 
-Link: https://lore.kernel.org/lkml/20230515212255.GA562920@debug.ba.rivosinc.com/
-Link: https://lore.kernel.org/lkml/b402b80b-a7c6-4ef0-b977-c0f5f582b78a@sirena.org.uk/
+Does this actually mean
 
-Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
----
-v2:
-- Skip syscall table changes to tools/. They will be handled separetely by the
-  perf folks.
-- Map Powerpc to sys_ni_syscall (Rick Edgecombe)
----
- arch/alpha/kernel/syscalls/syscall.tbl      | 1 +
- arch/arm/tools/syscall.tbl                  | 1 +
- arch/arm64/include/asm/unistd.h             | 2 +-
- arch/arm64/include/asm/unistd32.h           | 2 ++
- arch/ia64/kernel/syscalls/syscall.tbl       | 1 +
- arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
- arch/microblaze/kernel/syscalls/syscall.tbl | 1 +
- arch/mips/kernel/syscalls/syscall_n32.tbl   | 1 +
- arch/mips/kernel/syscalls/syscall_n64.tbl   | 1 +
- arch/mips/kernel/syscalls/syscall_o32.tbl   | 1 +
- arch/parisc/kernel/syscalls/syscall.tbl     | 1 +
- arch/powerpc/kernel/syscalls/syscall.tbl    | 1 +
- arch/s390/kernel/syscalls/syscall.tbl       | 1 +
- arch/sh/kernel/syscalls/syscall.tbl         | 1 +
- arch/sparc/kernel/syscalls/syscall.tbl      | 1 +
- arch/x86/entry/syscalls/syscall_32.tbl      | 1 +
- arch/xtensa/kernel/syscalls/syscall.tbl     | 1 +
- include/uapi/asm-generic/unistd.h           | 5 ++++-
- 18 files changed, 22 insertions(+), 2 deletions(-)
+"prevent a different struct kvm from *ever* binding to this gmem file"
 
-diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
-index ad37569d0507..6e8479c96e65 100644
---- a/arch/alpha/kernel/syscalls/syscall.tbl
-+++ b/arch/alpha/kernel/syscalls/syscall.tbl
-@@ -492,3 +492,4 @@
- 560	common	set_mempolicy_home_node		sys_ni_syscall
- 561	common	cachestat			sys_cachestat
- 562	common	fchmodat2			sys_fchmodat2
-+563	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
-index c572d6c3dee0..6d494dfbf5e4 100644
---- a/arch/arm/tools/syscall.tbl
-+++ b/arch/arm/tools/syscall.tbl
-@@ -466,3 +466,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
-index bd77253b62e0..6a28fb91b85d 100644
---- a/arch/arm64/include/asm/unistd.h
-+++ b/arch/arm64/include/asm/unistd.h
-@@ -39,7 +39,7 @@
- #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
- #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
- 
--#define __NR_compat_syscalls		453
-+#define __NR_compat_syscalls		454
- #endif
- 
- #define __ARCH_WANT_SYS_CLONE
-diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
-index 78b68311ec81..a201d842ec82 100644
---- a/arch/arm64/include/asm/unistd32.h
-+++ b/arch/arm64/include/asm/unistd32.h
-@@ -911,6 +911,8 @@ __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
- __SYSCALL(__NR_cachestat, sys_cachestat)
- #define __NR_fchmodat2 452
- __SYSCALL(__NR_fchmodat2, sys_fchmodat2)
-+#define __NR_map_shadow_stack 453
-+__SYSCALL(__NR_map_shadow_stack, sys_map_shadow_stack)
- 
- /*
-  * Please add new compat syscalls above this comment and update
-diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
-index 83d8609aec03..be02ce9d376f 100644
---- a/arch/ia64/kernel/syscalls/syscall.tbl
-+++ b/arch/ia64/kernel/syscalls/syscall.tbl
-@@ -373,3 +373,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-index 259ceb125367..bee2d2f7f82c 100644
---- a/arch/m68k/kernel/syscalls/syscall.tbl
-+++ b/arch/m68k/kernel/syscalls/syscall.tbl
-@@ -452,3 +452,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
-index a3798c2637fd..09eda7ed91b0 100644
---- a/arch/microblaze/kernel/syscalls/syscall.tbl
-+++ b/arch/microblaze/kernel/syscalls/syscall.tbl
-@@ -458,3 +458,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
-index 152034b8e0a0..3c02cc3886ca 100644
---- a/arch/mips/kernel/syscalls/syscall_n32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
-@@ -391,3 +391,4 @@
- 450	n32	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	n32	cachestat			sys_cachestat
- 452	n32	fchmodat2			sys_fchmodat2
-+453	n32	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
-index cb5e757f6621..aa9ed6a7cb48 100644
---- a/arch/mips/kernel/syscalls/syscall_n64.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
-@@ -367,3 +367,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	n64	cachestat			sys_cachestat
- 452	n64	fchmodat2			sys_fchmodat2
-+453	n64	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-index 1a646813afdc..756f6feb21c2 100644
---- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-@@ -440,3 +440,4 @@
- 450	o32	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	o32	cachestat			sys_cachestat
- 452	o32	fchmodat2			sys_fchmodat2
-+453	o32	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
-index e97c175b56f9..c80eedbe0170 100644
---- a/arch/parisc/kernel/syscalls/syscall.tbl
-+++ b/arch/parisc/kernel/syscalls/syscall.tbl
-@@ -451,3 +451,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index 20e50586e8a2..87a54acf8346 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -539,3 +539,4 @@
- 450 	nospu	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_ni_syscall
-diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-index 0122cc156952..22249c07e556 100644
---- a/arch/s390/kernel/syscalls/syscall.tbl
-+++ b/arch/s390/kernel/syscalls/syscall.tbl
-@@ -455,3 +455,4 @@
- 450  common	set_mempolicy_home_node	sys_set_mempolicy_home_node	sys_set_mempolicy_home_node
- 451  common	cachestat		sys_cachestat			sys_cachestat
- 452  common	fchmodat2		sys_fchmodat2			sys_fchmodat2
-+453  common	map_shadow_stack	sys_map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index e90d585c4d3e..5ccfe6fbb6b1 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -455,3 +455,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index 4ed06c71c43f..b2d664edebdd 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -498,3 +498,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-index 2d0b1bd866ea..743a7ef5a4b9 100644
---- a/arch/x86/entry/syscalls/syscall_32.tbl
-+++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -457,3 +457,4 @@
- 450	i386	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	i386	cachestat		sys_cachestat
- 452	i386	fchmodat2		sys_fchmodat2
-+453	i386	map_shadow_stack	sys_map_shadow_stack
-diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
-index fc1a4f3c81d9..94e6bcc2bec7 100644
---- a/arch/xtensa/kernel/syscalls/syscall.tbl
-+++ b/arch/xtensa/kernel/syscalls/syscall.tbl
-@@ -423,3 +423,4 @@
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
- 451	common	cachestat			sys_cachestat
- 452	common	fchmodat2			sys_fchmodat2
-+453	common	map_shadow_stack		sys_map_shadow_stack
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index abe087c53b4b..203ae30d7761 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -823,8 +823,11 @@ __SYSCALL(__NR_cachestat, sys_cachestat)
- #define __NR_fchmodat2 452
- __SYSCALL(__NR_fchmodat2, sys_fchmodat2)
- 
-+#define __NR_map_shadow_stack 453
-+__SYSCALL(__NR_map_shadow_stack, sys_map_shadow_stack)
-+
- #undef __NR_syscalls
--#define __NR_syscalls 453
-+#define __NR_syscalls 454
- 
- /*
-  * 32 bit systems traditionally used different
--- 
-2.34.1
+?
 
+If so, then binding on creation
+
++ Makes the gmem *file* (and just not the bindings xarray) the binding
+  between struct kvm and the file.
++ Simplifies the KVM-userspace contract to "this gmem file can only be
+  used with this struct kvm"
+
+Binding on creation doesn't offer any way to block the contents of the
+inode from being used with another "virtual machine" though, since we
+can have more than one gmem file pointing to the same inode, and the
+other gmem file is associated with another struct kvm. (And a strut kvm
+isn't associated 1:1 with a virtual machine [2])
+
+The point about an inode needing to be coupled to a virtual machine as a
+thing [2] led me to try to find a single concrete representation of a
+"virtual machine".
+
+Is locking inode contents to a "virtual machine" outside the scope of
+gmem? If so, then it is fine to bind on creation time, use a VM ioctl
+over a system ioctl, and the method of refcounting in gmem v12 is okay.
+
+[1] https://lore.kernel.org/lkml/ZNKv9ul2I7A4V7IF@google.com/
+[2] https://lore.kernel.org/lkml/ZOO782YGRY0YMuPu@google.com/
+
+> <snip>
