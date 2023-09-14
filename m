@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C566EE0217
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 01:58:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B28AEE0213
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 01:59:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=ytwnopYJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=axl1EC0J;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RmL8d4cY9z3dF6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 11:58:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RmL9j6g8Nz3dDy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 11:59:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=ytwnopYJ;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=axl1EC0J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3hmgczqykdccvhdqmfjrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3h2gczqykdcgwierngksskpi.gsqpmrybttg-hizpmwxw.sdpefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RmL4w4f3xz300q
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 11:55:44 +1000 (AEST)
-Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-58d9e327d3aso6069817b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 18:55:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RmL4y382tz3bTn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 11:55:46 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-d7fd4c23315so544265276.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2023 18:55:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1694656542; x=1695261342; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1694656544; x=1695261344; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=ipMZPiP5QxzJYr8+L2XHaFOQ2agfNk5lTTsPLIZe0Eo=;
-        b=ytwnopYJEu76G+INh4VtNlXKTg6j4GFBv0ZfMI9REE5CtJWHP8j7RvQqfxN8lGoq4r
-         YawfeSYp1HDEFKhNi+EFn6aVHaWFOYPRiIEiqfWjsIL1vv6D7/gPLWtUbenf0mQaXnQN
-         pAIIdL03g43HaAdSqTmCpcWyq3h+zHFWQxElK41/uYXfgypMSdsumG/xAggFLqQlBYxI
-         XQfR0LfaxDhxJqXIQoaqtNYC15u2IeVjwiWctITnM6O0alf9Hmx+gALVi3UPkwiaYFeQ
-         loTGUChVm/nxxS/Iyr85PJ5AkQetIZYEj1bdhef2GVEAgXSCnFmYbhX8wwPiZ63XhV2V
-         5qqA==
+        bh=5olfKKfAgOBEIWorNeGA6oMvbpwHV/k+KeYKQRUdq04=;
+        b=axl1EC0JTYnMQHtT/MWO7/QkcJGXgGp7lw+Ow/LgG/Z+g62nG1M0TwXetgJv3c3zyA
+         jL4wsV4rK6VbXnawrD9T+9xl/mN3wsGFFOLfqCxDkR1zVKm2BPTpYh6M//pFkhKCGG5I
+         aOHELyN7o7wcn986/UHnNbdUrvebAtvKIqzLI4UOqvpU25csdWGbIq/vWPD659q/k1Bl
+         izb0GSq64rGlZPsNKxFWtwOv+FpUkOuoCmca3sH4P4EFb3Gw5Oy4qdMJJKhv0N9aApRn
+         1LxN/urzbN5gtsH8ymZ1W87iVuoFx5L5tn84TG3BDEl3DY1TTHprELnZUnLbjR5rsmbL
+         kY4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694656542; x=1695261342;
+        d=1e100.net; s=20230601; t=1694656544; x=1695261344;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ipMZPiP5QxzJYr8+L2XHaFOQ2agfNk5lTTsPLIZe0Eo=;
-        b=pCimLDP01CmZEuUsCfqGg4bpqW9MEJtvH4x3yARZwMYRqorhEbM7GKUL48fTIpWxM5
-         yk4fgON4vmGX5E+mSoaWldv3EHjwzY/i90x1SyPtBmDQbw9YlKCVh8yWifWk5KgwPtK8
-         +W/PG795A2LXo7cjn1qID4emDjhcn+lLftDvlWm/3dIs0y1DfbQi8ygn2ozb7T2QgnR2
-         znvDTstXOp/2qcEALSD5QoPuCfVSKtqEAL+1geBiljOTub0kQSQq+973vYN45pjfvFBJ
-         ntwbGv15csFOYW8yFUsY85Q9zzgFXHmZJnm4FiYrQ+UXHJEA8Rdd0DZp2oM7t9+uxjB+
-         Kz1A==
-X-Gm-Message-State: AOJu0YxCGqEjpvMGyz25ukDXQy7CIVGU2VKE6kfx5omQUmQCtIy61GW9
-	HueYlFN7awwqPZu0Y57zEpec5FTklIo=
-X-Google-Smtp-Source: AGHT+IHZ9maMkZbk/mDeS4QG3cCYdpuky8EXqvBvcYXtjkjg3bX1mPxWKIK7RZclMdxYQ1SdoMO1l2xcItw=
+        bh=5olfKKfAgOBEIWorNeGA6oMvbpwHV/k+KeYKQRUdq04=;
+        b=QsGj/Q1gDLJ2FQp9JCusylZb41J+JbnVqM5JSPXvB5wiFGWmbDhMg73EaSnVP/yndx
+         wodPKenQ/BTy7qaoQzscUqWM3B/nkXFKdS0Ym3Vk81c3cefCf43mIXSmBcGZsnzWMFBF
+         jhYyT+6xVHwLYXzQEi0RWe5zrGdCMrJ1Ae98OcgnyVI0iEJebBQ/F7nWwP4cxdqceWXw
+         55SjfXJzCwQHeYtZnKj4zA9vSHGbFI+QCRubNuJgb+BfEpr4tTSI+EAwUSsOcTUpV/3f
+         Hy6AWFVdyMU5U/v8flDdoBjq1lAyYrXd141SbyIrw2mRqrkXZBC55rb34gTs580b6Cu5
+         AeBA==
+X-Gm-Message-State: AOJu0YzsVFEHA3b4RgTNRLn7ViXkbzjTNvW8pnj2yWJEYmBNLdQLnlBg
+	5z8SgEzPHWOE3SMPf1OTkh+O3WweZbk=
+X-Google-Smtp-Source: AGHT+IFAWDIKY3pID0CrDZgtjj2bXptPteu0k42w51y6Ps+oH46knUj2OnzhEQTEbd0IbAu5MzXei5K4JBI=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a05:690c:b0a:b0:59b:ebe0:9fd6 with SMTP id
- cj10-20020a05690c0b0a00b0059bebe09fd6mr14465ywb.6.1694656542028; Wed, 13 Sep
- 2023 18:55:42 -0700 (PDT)
-Date: Wed, 13 Sep 2023 18:55:01 -0700
+ (user=seanjc job=sendgmr) by 2002:a05:6902:684:b0:d81:8e4d:b681 with SMTP id
+ i4-20020a056902068400b00d818e4db681mr15248ybt.12.1694656543919; Wed, 13 Sep
+ 2023 18:55:43 -0700 (PDT)
+Date: Wed, 13 Sep 2023 18:55:02 -0700
 In-Reply-To: <20230914015531.1419405-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20230914015531.1419405-1-seanjc@google.com>
 X-Mailer: git-send-email 2.42.0.283.g2d96d420d3-goog
-Message-ID: <20230914015531.1419405-4-seanjc@google.com>
-Subject: [RFC PATCH v12 03/33] KVM: PPC: Drop dead code related to KVM_ARCH_WANT_MMU_NOTIFIER
+Message-ID: <20230914015531.1419405-5-seanjc@google.com>
+Subject: [RFC PATCH v12 04/33] KVM: PPC: Return '1' unconditionally for KVM_CAP_SYNC_MMU
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>, 
@@ -88,51 +88,37 @@ Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Assert that both KVM_ARCH_WANT_MMU_NOTIFIER and CONFIG_MMU_NOTIFIER are
-defined when KVM is enabled, and return '1' unconditionally for the
-CONFIG_KVM_BOOK3S_HV_POSSIBLE=n path.  All flavors of PPC support for KVM
-select MMU_NOTIFIER, and KVM_ARCH_WANT_MMU_NOTIFIER is unconditionally
-defined by arch/powerpc/include/asm/kvm_host.h.
+Advertise that KVM's MMU is synchronized with the primary MMU for all
+flavors of PPC KVM support, i.e. advertise that the MMU is synchronized
+when CONFIG_KVM_BOOK3S_HV_POSSIBLE=y but the VM is not using hypervisor
+mode (a.k.a. PR VMs).  PR VMs, via kvm_unmap_gfn_range_pr(), do the right
+thing for mmu_notifier invalidation events, and more tellingly, KVM
+returns '1' for KVM_CAP_SYNC_MMU when CONFIG_KVM_BOOK3S_HV_POSSIBLE=n
+and CONFIG_KVM_BOOK3S_PR_POSSIBLE=y, i.e. KVM already advertises a
+synchronized MMU for PR VMs, just not when CONFIG_KVM_BOOK3S_HV_POSSIBLE=y.
 
-Effectively dropping use of KVM_ARCH_WANT_MMU_NOTIFIER will simplify a
-future cleanup to turn KVM_ARCH_WANT_MMU_NOTIFIER into a Kconfig, i.e.
-will allow combining all of the
-
-  #if defined(CONFIG_MMU_NOTIFIER) && defined(KVM_ARCH_WANT_MMU_NOTIFIER)
-
-checks into a single
-
-  #ifdef CONFIG_KVM_GENERIC_MMU_NOTIFIER
-
-without having to worry about PPC's "bare" usage of
-KVM_ARCH_WANT_MMU_NOTIFIER.
-
+Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/powerpc/kvm/powerpc.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/kvm/powerpc.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 7197c8256668..b0a512ede764 100644
+index b0a512ede764..8d3ec483bc2b 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -632,12 +632,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		break;
+@@ -635,11 +635,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ #if !defined(CONFIG_MMU_NOTIFIER) || !defined(KVM_ARCH_WANT_MMU_NOTIFIER)
+ 		BUILD_BUG();
  #endif
- 	case KVM_CAP_SYNC_MMU:
-+#if !defined(CONFIG_MMU_NOTIFIER) || !defined(KVM_ARCH_WANT_MMU_NOTIFIER)
-+		BUILD_BUG();
-+#endif
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 		r = hv_enabled;
--#elif defined(KVM_ARCH_WANT_MMU_NOTIFIER)
--		r = 1;
- #else
--		r = 0;
-+		r = 1;
- #endif
+-#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-		r = hv_enabled;
+-#else
+ 		r = 1;
+-#endif
  		break;
  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	case KVM_CAP_PPC_HTAB_FD:
 -- 
 2.42.0.283.g2d96d420d3-goog
 
