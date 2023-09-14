@@ -4,65 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFE37EEAA40
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 14:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A4EFEEAA7B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 23:09:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=w1cB3UVe;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rYiR5HRf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rmfcj300rz3cN3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 00:20:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RmtLC5Wghz3cHd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 09:09:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=w1cB3UVe;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rYiR5HRf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3jxydzqykdpyqcylhaemmejc.amkjglsvnna-bctjgqrq.mxjyzq.mpe@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rmfbk4ywBz3c2D
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 00:20:01 +1000 (AEST)
-Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-d8186d705a9so1257619276.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 07:20:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1694701199; x=1695305999; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=OinN3M2z4I/Qg8aCda0iI1MRdyz332KlEPPYu5muKwI=;
-        b=w1cB3UVevpj1o+dTt/KT8fCwRQTsIwv4HewO940j2MuwOOY3ptGrdbG7LBQ4aghhKr
-         477vi+SqaHFGkfxN23UrtIdwdLQZLcnvy2APdyXRhfVPZHy5c03mWwE1do1VjpYnfhSn
-         k2xkSHZdbxpr3pPu7IWCK1HTsIp0XF9Txiv6Vqph6wsBV41oTg8gM0A6nVCO/CyoYUdO
-         3n7FNvGI8FN8UQf51cuOjOvSbVf9wvTFyviFoWTe32gYGsQqF/KvJP6dSy73Zl9pVPrc
-         1t9VN3s333LUFfbUYQEIW1EgrMeaU8gZx4cBxZ0+F/U5shsToNzv/TUEPnfa/UYP50Mz
-         NdjA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694701199; x=1695305999;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=OinN3M2z4I/Qg8aCda0iI1MRdyz332KlEPPYu5muKwI=;
-        b=XPu1SddZKNgALrlah3BgFUHWKXk76lUmeWrK/cnpPsmkTCXCfrz2qUtqg3GolOZfII
-         5PXlXJQVitBxvHgdBztjiHvPQgffmhEEWeHg8k59fC7XtvieoT/JsMelV1efATiXPuMq
-         OabxmaH65T/lDGtg/BZJhs2JYOoaJrr6C/NyLbaOVTkIJNYY4t2xGZoVJSr+VnO7Unuj
-         Iznn5pfIdAADgql4wLeyDAaMJYeWpaL7oVQbj6L5UoIBwXujZXDASixZHzDMxiqVQ0G5
-         YN2LalLamZAAD3XOe1wsR3JM7vuP3w6aKltFWfyBGi6sl461icfU2vGc8dRp6gs4QjiO
-         klmA==
-X-Gm-Message-State: AOJu0YzX20Kr+y7FUIvojjm8xCW7fsegs6SwrNU4AtAukCnK75nYXw/r
-	5qn5gRK8jKnvwPpQ4eareYJgGwrAoY0=
-X-Google-Smtp-Source: AGHT+IEn69IOl2rxglDVCjXW4KTdScyqCw6tLi48MQpyb+nW1MjRKbjq1lfqPgEextp+IedkDxkiKrdOCXU=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:e6c4:0:b0:d78:f45:d7bd with SMTP id
- d187-20020a25e6c4000000b00d780f45d7bdmr129688ybh.4.1694701199053; Thu, 14 Sep
- 2023 07:19:59 -0700 (PDT)
-Date: Thu, 14 Sep 2023 07:19:57 -0700
-In-Reply-To: <54d3e6bf-d374-caa5-0920-bb2fe3b7595c@linux.intel.com>
-Mime-Version: 1.0
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-3-seanjc@google.com>
- <54d3e6bf-d374-caa5-0920-bb2fe3b7595c@linux.intel.com>
-Message-ID: <ZQMWjbt/SzKvag2K@google.com>
-Subject: Re: [RFC PATCH v12 02/33] KVM: Use gfn instead of hva for mmu_notifier_retry
-From: Sean Christopherson <seanjc@google.com>
-To: Binbin Wu <binbin.wu@linux.intel.com>
-Content-Type: text/plain; charset="us-ascii"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rmc5N0LGJz3bhp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 22:27:04 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1694694421;
+	bh=IKd/xoLaYMNT3G43ojUHtX33LcBflkrUDAX5TgQ89VQ=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=rYiR5HRfpS/tMJ5vZ04WGHK5tqlEmN3zl7YBnuBIj4iDXvSjRcMk3Bm1xQR4G2xqA
+	 ch/6vWdPHmOC2BUMMk4XX30GKkFETwPb6UKi6HR3vSS9M+ZGF48pqFYfp4X0b6Xnoc
+	 3IT8Xs1CRfVJWHkXJOg3XffMJXWhIzBrBfe0rLT/1FOwmVJNKXhzU+07wARKckah+G
+	 1nYEufulJtii1DdLYzWI+dlftci66s6CJLfGerDALqoTxKf5zQo5DIOqkNkz913pHl
+	 hiwkYuo8iIaiLSkIq8iYXaa9BldBulkzz3WoyK+kyoqd71CY/sNwj3K8X+Pby7L5LJ
+	 Ni+zJOD6zygLg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rmc544Ldlz4wxN;
+	Thu, 14 Sep 2023 22:26:48 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>, "Mehta, Sohil"
+ <sohil.mehta@intel.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, "linux-api@vger.kernel.org"
+ <linux-api@vger.kernel.org>
+Subject: Re: [PATCH 2/2] arch: Reserve map_shadow_stack() syscall number for
+ all architectures
+In-Reply-To: <8b7106881fa227a64b4e951c6b9240a7126ac4a2.camel@intel.com>
+References: <20230911180210.1060504-1-sohil.mehta@intel.com>
+ <20230911180210.1060504-3-sohil.mehta@intel.com>
+ <8b7106881fa227a64b4e951c6b9240a7126ac4a2.camel@intel.com>
+Date: Thu, 14 Sep 2023 22:26:47 +1000
+Message-ID: <871qf17xfc.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Fri, 15 Sep 2023 09:07:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,70 +66,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@orac
- le.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "irogers@google.com" <irogers@google.com>, "dalias@libc.org" <dalias@libc.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "alexander.shishkin@linux.intel.com" <alexander.shishkin@linux.intel.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "James.Bottomley@HansenPartnership.com" <James.Bottomley@HansenPartnership.com>, "jcmvbkbc@gmail.com" <jcmvbkbc@gmail.com>, "schwab@linux-m68k.org" <schwab@linux-m68k.org>, "hpa@zytor.com" <hpa@zytor.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, "will@kernel.org" <will@kernel.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "gor@linux.ibm.com" <gor@linux.ibm.com>, "ysato@users.sourceforge.jp" <ysato@users.sourceforg
+ e.jp>, "deller@gmx.de" <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "geert@linux-m68k.org" <geert@linux-m68k.org>, "lukas.bulwahn@gmail.com" <lukas.bulwahn@gmail.com>, "mattst88@gmail.com" <mattst88@gmail.com>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "ebiederm@xmission.com" <ebiederm@xmission.com>, "arnd@arndb.de" <arnd@arndb.de>, "brgerst@gmail.com" <brgerst@gmail.com>, "hca@linux.ibm.com" <hca@linux.ibm.com>, "richard.henderson@linaro.org" <richard.henderson@linaro.org>, "acme@kernel.org" <acme@kernel.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, "broonie@kernel.org" <broonie@kernel.org>, "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>, "npiggin@gmail.com" <npiggin@gmail.com>, "Lutomirski, Andy" <luto@kernel.org>, "glaubitz@physik.fu-berlin.de" <glaubitz@physik.fu-berlin.de>, "namhyung@kern
+ el.org" <namhyung@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "debug@rivosinc.com" <debug@rivosinc.com>, "chris@zankel.net" <chris@zankel.net>, "monstr@monstr.eu" <monstr@monstr.eu>, "tsbogend@alpha.franken.de" <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "rmclure@linux.ibm.com" <rmclure@linux.ibm.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "Hunter, Adrian" <adrian.hunter@intel.com>, "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>, "slyich@gmail.com" <slyich@gmail.com>, "svens@linux.ibm.com" <svens@linux.ibm.com>, "jolsa@kernel.org" <jolsa@kernel.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "bp@alien8.de" <bp@alien8.de>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "davem@davemloft.net" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 14, 2023, Binbin Wu wrote:
-> 
-> On 9/14/2023 9:55 AM, Sean Christopherson wrote:
-> > +void kvm_mmu_invalidate_end(struct kvm *kvm)
-> >   {
-> >   	/*
-> >   	 * This sequence increase will notify the kvm page fault that
-> > @@ -833,6 +848,13 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
-> >   	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
-> >   	 */
-> >   	kvm->mmu_invalidate_in_progress--;
-> > +
-> > +	/*
-> > +	 * Assert that at least one range must be added between start() and
-> > +	 * end().  Not adding a range isn't fatal, but it is a KVM bug.
-> > +	 */
-> > +	WARN_ON_ONCE(kvm->mmu_invalidate_in_progress &&
-> > +		     kvm->mmu_invalidate_range_start == INVALID_GPA);
-> Should the check happen before the decrease of kvm->mmu_invalidate_in_progress?
-> Otherwise, KVM calls kvm_mmu_invalidate_begin(), then kvm_mmu_invalidate_end()
-> the check will not take effect.
+"Edgecombe, Rick P" <rick.p.edgecombe@intel.com> writes:
+> On Mon, 2023-09-11 at 18:02 +0000, Sohil Mehta wrote:
+>> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl
+>> b/arch/powerpc/kernel/syscalls/syscall.tbl
+>> index 20e50586e8a2..2767b8a42636 100644
+>> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
+>> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+>> @@ -539,3 +539,4 @@
+>> =C2=A0450=C2=A0=C2=A0=C2=A0=C2=A0nospu=C2=A0=C2=A0=C2=A0set_mempolicy_ho=
+me_node=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0sys_set_mempol=
+icy_hom
+>> e_node
+>> =C2=A0451=C2=A0=C2=A0=C2=A0=C2=A0common=C2=A0=C2=A0cachestat=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0sys_cachestat
+>> =C2=A0452=C2=A0=C2=A0=C2=A0=C2=A0common=C2=A0=C2=A0fchmodat2=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0sys_fchmodat2
+>> +453=C2=A0=C2=A0=C2=A0=C2=A0common=C2=A0=C2=A0map_shadow_stack=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0sys_map_shadow_stack
+>
+> I noticed in powerpc, the not implemented syscalls are manually mapped
+> to sys_ni_syscall. It also has some special extra sys_ni_syscall()
+> implementation bits to handle both ARCH_HAS_SYSCALL_WRAPPER and
+> !ARCH_HAS_SYSCALL_WRAPPER. So wondering if it might need special
+> treatment. Did you see those parts?
 
-Indeed.  I'm pretty sure I added this code, not sure what I was thinking.  There's
-no reason to check mmu_invalidate_in_progress, it's not like KVM allows
-mmu_invalidate_in_progress to go negative.  The comment is also a bit funky.  I'll
-post a fixup patch to make it look like this (assuming I'm not forgetting a subtle
-reason for guarding the check with the in-progress flag):
+I don't think it needs any special treatment. It's processed by the same
+script as other arches (scripts/syscalltbl.sh). So if there's no compat
+or native entry it will default to sys_ni_syscall.
 
-	/*
-	 * Assert that at least one range was added between start() and end().
-	 * Not adding a range isn't fatal, but it is a KVM bug.
-	 */
-	WARN_ON_ONCE(kvm->mmu_invalidate_range_start == INVALID_GPA);
+I think it's just habit/historical that we always spell out sys_ni_syscall.
 
-Regarding kvm->mmu_invalidate_in_progress, this would be a good opportunity to
-move the BUG_ON() into the common end(), e.g. as is, an end() without a start()
-from something other than the generic mmu_notifier would go unnoticed.  And I
-_think_ we can replace the BUG_ON() with a KVM_BUG_ON() without putting the
-kernel at risk.  E.g.
-
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dd948276e5d6..54480655bcce 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -870,6 +870,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm)
-         * in conjunction with the smp_rmb in mmu_invalidate_retry().
-         */
-        kvm->mmu_invalidate_in_progress--;
-+       KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
- 
-        /*
-         * Assert that at least one range was added between start() and end().
-@@ -905,8 +906,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-         */
-        if (wake)
-                rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
--
--       BUG_ON(kvm->mmu_invalidate_in_progress < 0);
- }
- 
- static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
-
+cheers
