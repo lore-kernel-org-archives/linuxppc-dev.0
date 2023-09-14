@@ -4,57 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37371EEAA62
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 18:46:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CD99EEAA65
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 19:13:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=b7yR++Mw;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Zhh9mXIg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=z7eqw7NN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RmmWM5RCMz3dKJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 04:46:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rmn5v5bTtz3cGb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 05:13:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=b7yR++Mw;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Zhh9mXIg;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=z7eqw7NN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 373 seconds by postgrey-1.37 at boromir; Fri, 15 Sep 2023 04:44:57 AEST
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3d1sdzqykdaiugcpleiqqing.eqonkpwzrre-fgxnkuvu.q1ncdu.qti@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RmmTP5Hjtz3c7s
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 04:44:57 +1000 (AEST)
-From: John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1694716738;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=FJW0TuhSdXUv9FTqZdQkgamZVGooxW5FNHg4lshg/t0=;
-	b=b7yR++MwVrSn/oZyZAiFtiEqhu8NcXqsYfx3rC/XpO4EZC4l5KrgdrtxsgqwvyuxTMaR7k
-	oSdj9dUk7NFQ+BFfCloJuU548l879b5L9FheE1cQ3gTo3ltCq2YlPCl/dNESytplQ3xBI5
-	sqMc5zikJ/QWSA41fnYP+BMaNx6vgjH9hLhc4B/5h+/MVluHgK13bFvOLvDkM2wBTqGkgz
-	+Ax3E/cSzbm5VKAVC4asblEB+O0hFtsLIA9tJM8v3WBEcFwIRqIZ6JnK2Nt+I9VEVRecXz
-	2l1SEH/EGbna5YRWcFOtxN9XVe9HF3CeDUYBPgarRCC5BW8nw4VNiyBRU61ItQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1694716738;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=FJW0TuhSdXUv9FTqZdQkgamZVGooxW5FNHg4lshg/t0=;
-	b=Zhh9mXIgjMHMUzh4F4Pe2Bl3bw4SjfghqkK66A25GbHwssWjWIzB0B37CiHQnHnWaU8Y2k
-	8Rclrpq4v1Rb1JBQ==
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH tty v1 47/74] serial: pmac_zilog: Use port lock wrappers
-Date: Thu, 14 Sep 2023 20:44:04 +0206
-Message-Id: <20230914183831.587273-48-john.ogness@linutronix.de>
-In-Reply-To: <20230914183831.587273-1-john.ogness@linutronix.de>
-References: <20230914183831.587273-1-john.ogness@linutronix.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rmn4z4g0Nz3c9x
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 05:12:18 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-d818fb959f4so1324252276.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 12:12:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1694718736; x=1695323536; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=SYBWSie1WcKieNCkM5oJg6niwnE6sJx6iHmmYDkBNI4=;
+        b=z7eqw7NN1AxTk1wPYODNA5C4tiF4c2bIaVLRy49ejtCQW/j074ZWukjEUGnlpPxvhZ
+         Ow2sGjgm8LUpYDQGLfWoy2LZa+6/LHNr4+uCjUEAqo+2R1Qsf3ZcUkhx0UcsCV6XyksM
+         nWE7hQBGggY7JjaJ9+EHIKKdiJJs9jK/Z7krUs5SYefJV16l5N98JlfZ7jnQbMLz3v0X
+         /Xn4HvPW/QODisSVq5GPL5400dtEz8VUPskzGqB0vxn6PCt9osnou4dFuaWfZwdKpoab
+         mzM/B5irsgTqe9KRoOJCI1wXz2CDCXmvZ1h3qtZEbM5ROO5kEAVYIQpKTnP6YeyuudDm
+         SONg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694718736; x=1695323536;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=SYBWSie1WcKieNCkM5oJg6niwnE6sJx6iHmmYDkBNI4=;
+        b=JIXG8SSpwUoTpGzZXQmtDtRW/c2sHx+tKF8lXkBThoCSNnlaZXaKwME+C3nhicr7KS
+         DsUKHjAdqLGD7iucaGuCpRDmunradYqsGe4vVzzCVIo9W1+yJIkecSMUZQaHfYsq5MTs
+         6wDJ6SbUSfO23g4XLkbKjurINT4o5qnpYzSwzZJyBiIJnhLEJlOhM7/wjcwLbKzt40fF
+         nKxN0P/DiM1nyAqyBoq2d4OLLHy3N6kFslecSGgcEMe6lXNktHEEa1nVplMXhbdUBGkx
+         +fwuwfcSKbG/qXVufuf7P+shH7biKywSpfHrO9D5XpFiJxrQf0usvuE71BuNuOyzWYuO
+         2GZw==
+X-Gm-Message-State: AOJu0YwsCyku7hgLlXNdtGfpNEla1MW0EYN22soROoP4nDdUAx/T3IQ7
+	8Vj/BvxkfUFHXQNdcqAuwfhExV0WM2k=
+X-Google-Smtp-Source: AGHT+IEbiNaBi+bbmiwHYIoXYm8wvREABvNIqLAChDCxgGMZnU/PhXOjKBEoc76witsZv+IRa9HvnC8Otog=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a25:bc7:0:b0:d77:fb4e:d85e with SMTP id
+ 190-20020a250bc7000000b00d77fb4ed85emr138869ybl.6.1694718735743; Thu, 14 Sep
+ 2023 12:12:15 -0700 (PDT)
+Date: Thu, 14 Sep 2023 12:12:14 -0700
+In-Reply-To: <253965df-6d80-bbfd-ab01-f9e69b274bf3@quicinc.com>
+Mime-Version: 1.0
+References: <diqzttsiu67n.fsf@ackerleytng-ctop.c.googlers.com> <253965df-6d80-bbfd-ab01-f9e69b274bf3@quicinc.com>
+Message-ID: <ZQNbDt6vqwC4gZmi@google.com>
+Subject: Re: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+From: Sean Christopherson <seanjc@google.com>
+To: Elliot Berman <quic_eberman@quicinc.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,237 +74,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-serial@vger.kernel.org, =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@kernel.org>
+Cc: kvm@vger.kernel.org, david@redhat.com, yu.c.zhang@linux.intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org, chao.p.peng@linux.intel.com, linux-riscv@lists.infradead.org, isaku.yamahata@gmail.com, paul@paul-moore.com, maz@kernel.org, chenhuacai@kernel.org, jmorris@namei.org, willy@infradead.org, wei.w.wang@intel.com, tabba@google.com, jarkko@kernel.org, serge@hallyn.com, mail@maciej.szmigiero.name, aou@eecs.berkeley.edu, vbabka@suse.cz, michael.roth@amd.com, Ackerley Tng <ackerleytng@google.com>, paul.walmsley@sifive.com, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, qperret@google.com, liam.merwick@oracle.com, linux-mips@vger.kernel.org, oliver.upton@linux.dev, linux-security-module@vger.kernel.org, palmer@dabbelt.com, kvm-riscv@lists.infradead.org, anup@brainfault.org, linux-fsdevel@vger.kernel.org, pbonzini@redhat.com, akpm@linux-foundation.org, vannapurve@google.com, linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Mon, Aug 28, 2023, Elliot Berman wrote:
+> I had a 3rd question that's related to how to wire the gmem up to a virtual
+> machine:
+> 
+> I learned of a usecase to implement copy-on-write for gmem. The premise
+> would be to have a "golden copy" of the memory that multiple virtual
+> machines can map in as RO. If a virtual machine tries to write to those
+> pages, they get copied to a virtual machine-specific page that isn't shared
+> with other VMs. How do we track those pages?
 
-When a serial port is used for kernel console output, then all
-modifications to the UART registers which are done from other contexts,
-e.g. getty, termios, are interference points for the kernel console.
+The answer is going to be gunyah specific, because gmem itself isn't designed to
+provide a virtualization layer ("virtual" in the virtual memory sense, not in the
+virtual machine sense).  Like any other CoW implementation, the RO page would need
+to be copied to a different physical page, and whatever layer translates gfns
+to physical pages would need to be updated.  E.g. in gmem terms, allocate a new
+gmem page/instance and update the gfn=>gmem[offset] translation in KVM/gunyah.
 
-So far this has been ignored and the printk output is based on the
-principle of hope. The rework of the console infrastructure which aims to
-support threaded and atomic consoles, requires to mark sections which
-modify the UART registers as unsafe. This allows the atomic write function
-to make informed decisions and eventually to restore operational state. It
-also allows to prevent the regular UART code from modifying UART registers
-while printk output is in progress.
+For VMA-based memory, that translation happens in the primary MMU, and is largely
+transparent to KVM (or any other secondary MMU).  E.g. the primary MMU works with
+the backing store (if necessary) to allocate a new page and do the copy, notifies
+secondary MMUs, zaps the old PTE(s), and then installs the new PTE(s).  KVM/gunyah
+just needs to react to the mmu_notifier event, e.g. zap secondary MMU PTEs, and
+then KVM/gunyah naturally gets the new, writable page/PTE when following the host
+virtual address, e.g. via gup().
 
-All modifications of UART registers are guarded by the UART port lock,
-which provides an obvious synchronization point with the console
-infrastructure.
+The downside of eliminating the middle-man (primary MMU) from gmem is that the
+"owner" (KVM or gunyah) is now responsible for these types of operations.  For some
+things, e.g. page migration, it's actually easier in some ways, but for CoW it's
+quite a bit more work for KVM/gunyah because KVM/gunyah now needs to do things
+that were previously handled by the primary MMU.
 
-To avoid adding this functionality to all UART drivers, wrap the
-spin_[un]lock*() invocations for uart_port::lock into helper functions
-which just contain the spin_[un]lock*() invocations for now. In a
-subsequent step these helpers will gain the console synchronization
-mechanisms.
+In KVM, assuming no additional support in KVM, doing CoW would mean modifying
+memslots to redirect the gfn from the RO page to the writable page.  For a variety
+of reasons, that would be _extremely_ expensive in KVM, but still possible.  If
+there were a strong use case for supporting CoW with KVM+gmem, then I suspect that
+we'd probably implement new KVM uAPI of some form to provide reasonable performance.
 
-Converted with coccinelle. No functional change.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/tty/serial/pmac_zilog.c | 52 ++++++++++++++++-----------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index 13668ffdb1e7..c8bf08c19c64 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -246,9 +246,9 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
- #endif /* USE_CTRL_O_SYSRQ */
- 		if (uap->port.sysrq) {
- 			int swallow;
--			spin_unlock(&uap->port.lock);
-+			uart_port_unlock(&uap->port);
- 			swallow = uart_handle_sysrq_char(&uap->port, ch);
--			spin_lock(&uap->port.lock);
-+			uart_port_lock(&uap->port);
- 			if (swallow)
- 				goto next_char;
- 		}
-@@ -435,7 +435,7 @@ static irqreturn_t pmz_interrupt(int irq, void *dev_id)
- 	uap_a = pmz_get_port_A(uap);
- 	uap_b = uap_a->mate;
- 
--	spin_lock(&uap_a->port.lock);
-+	uart_port_lock(&uap_a->port);
- 	r3 = read_zsreg(uap_a, R3);
- 
- 	/* Channel A */
-@@ -456,14 +456,14 @@ static irqreturn_t pmz_interrupt(int irq, void *dev_id)
- 		rc = IRQ_HANDLED;
- 	}
-  skip_a:
--	spin_unlock(&uap_a->port.lock);
-+	uart_port_unlock(&uap_a->port);
- 	if (push)
- 		tty_flip_buffer_push(&uap->port.state->port);
- 
- 	if (!uap_b)
- 		goto out;
- 
--	spin_lock(&uap_b->port.lock);
-+	uart_port_lock(&uap_b->port);
- 	push = false;
- 	if (r3 & (CHBEXT | CHBTxIP | CHBRxIP)) {
- 		if (!ZS_IS_OPEN(uap_b)) {
-@@ -481,7 +481,7 @@ static irqreturn_t pmz_interrupt(int irq, void *dev_id)
- 		rc = IRQ_HANDLED;
- 	}
-  skip_b:
--	spin_unlock(&uap_b->port.lock);
-+	uart_port_unlock(&uap_b->port);
- 	if (push)
- 		tty_flip_buffer_push(&uap->port.state->port);
- 
-@@ -497,9 +497,9 @@ static inline u8 pmz_peek_status(struct uart_pmac_port *uap)
- 	unsigned long flags;
- 	u8 status;
- 	
--	spin_lock_irqsave(&uap->port.lock, flags);
-+	uart_port_lock_irqsave(&uap->port, &flags);
- 	status = read_zsreg(uap, R0);
--	spin_unlock_irqrestore(&uap->port.lock, flags);
-+	uart_port_unlock_irqrestore(&uap->port, flags);
- 
- 	return status;
- }
-@@ -685,7 +685,7 @@ static void pmz_break_ctl(struct uart_port *port, int break_state)
- 	else
- 		clear_bits |= SND_BRK;
- 
--	spin_lock_irqsave(&port->lock, flags);
-+	uart_port_lock_irqsave(port, &flags);
- 
- 	new_reg = (uap->curregs[R5] | set_bits) & ~clear_bits;
- 	if (new_reg != uap->curregs[R5]) {
-@@ -693,7 +693,7 @@ static void pmz_break_ctl(struct uart_port *port, int break_state)
- 		write_zsreg(uap, R5, uap->curregs[R5]);
- 	}
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_port_unlock_irqrestore(port, flags);
- }
- 
- #ifdef CONFIG_PPC_PMAC
-@@ -865,18 +865,18 @@ static void pmz_irda_reset(struct uart_pmac_port *uap)
- {
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&uap->port.lock, flags);
-+	uart_port_lock_irqsave(&uap->port, &flags);
- 	uap->curregs[R5] |= DTR;
- 	write_zsreg(uap, R5, uap->curregs[R5]);
- 	zssync(uap);
--	spin_unlock_irqrestore(&uap->port.lock, flags);
-+	uart_port_unlock_irqrestore(&uap->port, flags);
- 	msleep(110);
- 
--	spin_lock_irqsave(&uap->port.lock, flags);
-+	uart_port_lock_irqsave(&uap->port, &flags);
- 	uap->curregs[R5] &= ~DTR;
- 	write_zsreg(uap, R5, uap->curregs[R5]);
- 	zssync(uap);
--	spin_unlock_irqrestore(&uap->port.lock, flags);
-+	uart_port_unlock_irqrestore(&uap->port, flags);
- 	msleep(10);
- }
- 
-@@ -896,9 +896,9 @@ static int pmz_startup(struct uart_port *port)
- 	 * initialize the chip
- 	 */
- 	if (!ZS_IS_CONS(uap)) {
--		spin_lock_irqsave(&port->lock, flags);
-+		uart_port_lock_irqsave(port, &flags);
- 		pwr_delay = __pmz_startup(uap);
--		spin_unlock_irqrestore(&port->lock, flags);
-+		uart_port_unlock_irqrestore(port, flags);
- 	}	
- 	sprintf(uap->irq_name, PMACZILOG_NAME"%d", uap->port.line);
- 	if (request_irq(uap->port.irq, pmz_interrupt, IRQF_SHARED,
-@@ -921,9 +921,9 @@ static int pmz_startup(struct uart_port *port)
- 		pmz_irda_reset(uap);
- 
- 	/* Enable interrupt requests for the channel */
--	spin_lock_irqsave(&port->lock, flags);
-+	uart_port_lock_irqsave(port, &flags);
- 	pmz_interrupt_control(uap, 1);
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_port_unlock_irqrestore(port, flags);
- 
- 	return 0;
- }
-@@ -933,7 +933,7 @@ static void pmz_shutdown(struct uart_port *port)
- 	struct uart_pmac_port *uap = to_pmz(port);
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&port->lock, flags);
-+	uart_port_lock_irqsave(port, &flags);
- 
- 	/* Disable interrupt requests for the channel */
- 	pmz_interrupt_control(uap, 0);
-@@ -948,19 +948,19 @@ static void pmz_shutdown(struct uart_port *port)
- 		pmz_maybe_update_regs(uap);
- 	}
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_port_unlock_irqrestore(port, flags);
- 
- 	/* Release interrupt handler */
- 	free_irq(uap->port.irq, uap);
- 
--	spin_lock_irqsave(&port->lock, flags);
-+	uart_port_lock_irqsave(port, &flags);
- 
- 	uap->flags &= ~PMACZILOG_FLAG_IS_OPEN;
- 
- 	if (!ZS_IS_CONS(uap))
- 		pmz_set_scc_power(uap, 0);	/* Shut the chip down */
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_port_unlock_irqrestore(port, flags);
- }
- 
- /* Shared by TTY driver and serial console setup.  The port lock is held
-@@ -1247,7 +1247,7 @@ static void pmz_set_termios(struct uart_port *port, struct ktermios *termios,
- 	struct uart_pmac_port *uap = to_pmz(port);
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&port->lock, flags);	
-+	uart_port_lock_irqsave(port, &flags);	
- 
- 	/* Disable IRQs on the port */
- 	pmz_interrupt_control(uap, 0);
-@@ -1259,7 +1259,7 @@ static void pmz_set_termios(struct uart_port *port, struct ktermios *termios,
- 	if (ZS_IS_OPEN(uap))
- 		pmz_interrupt_control(uap, 1);
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_port_unlock_irqrestore(port, flags);
- }
- 
- static const char *pmz_type(struct uart_port *port)
-@@ -1896,7 +1896,7 @@ static void pmz_console_write(struct console *con, const char *s, unsigned int c
- 	struct uart_pmac_port *uap = &pmz_ports[con->index];
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&uap->port.lock, flags);
-+	uart_port_lock_irqsave(&uap->port, &flags);
- 
- 	/* Turn of interrupts and enable the transmitter. */
- 	write_zsreg(uap, R1, uap->curregs[1] & ~TxINT_ENAB);
-@@ -1908,7 +1908,7 @@ static void pmz_console_write(struct console *con, const char *s, unsigned int c
- 	write_zsreg(uap, R1, uap->curregs[1]);
- 	/* Don't disable the transmitter. */
- 
--	spin_unlock_irqrestore(&uap->port.lock, flags);
-+	uart_port_unlock_irqrestore(&uap->port, flags);
- }
- 
- /*
--- 
-2.39.2
-
+But I highly doubt we'll ever do that, because one of core tenets of KVM+gmem is
+to isolate guest memory from the rest of the world, and especially from host
+userspace, and that just doesn't mesh well with CoW'd memory being shared across
+multiple VMs.
