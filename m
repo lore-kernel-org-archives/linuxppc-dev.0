@@ -4,48 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08DEEEEAA44
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 13:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89D61EEAA49
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 14:35:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VaujRNU3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DstQJ4b9;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rmf4G21L7z3cHH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Sep 2023 23:56:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RmfxB1R8pz3dFB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 00:35:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VaujRNU3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DstQJ4b9;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rmfw85DSzz3cGM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 00:34:16 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rmf3H23bRz3c2D
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2023 23:55:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1694699721;
-	bh=o8o8jDofRoRgnbHKjb0mJYlD6JP64jWv24MHd3G+E18=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=VaujRNU3E1mvPJuHTcqi+E9b6y79P1bwqG1kLKW6Z/63d6I/cu5i/xfCT2uoKOyIp
-	 zwZKbxDg7hOweWhfBcnX5v6eBw4OT5y0BfGUYQJu7vMz55GzyV3Onwl166xAD8nls+
-	 tUtZ3xJoL9sGJEFl7aN+E+T0vQLEgfg0UxPQvlxXxYzk80Fkh9CkzHflMK6SqziP8e
-	 Eug+BJtKs7+oyAXbFTv8yrDe7L6SGRxvM1oIuatUcwsd+Ch1oOueolt0prVt7wY9xq
-	 GSvfJZWSOd2uSeUeKCZ16TOWVWjacQvygU/a4y30qoJbBaH51BNTWwdnaFTT4nGTgA
-	 YJRb2lgJfsEkA==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rmf3D6xLrz4wxf;
-	Thu, 14 Sep 2023 23:55:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Gray <bgray@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/dexcr: Move HASHCHK trap handler
-In-Reply-To: <20230825014910.488822-1-bgray@linux.ibm.com>
-References: <20230825014910.488822-1-bgray@linux.ibm.com>
-Date: Thu, 14 Sep 2023 23:55:18 +1000
-Message-ID: <87o7i47tbt.fsf@mail.lhotse>
+	by sin.source.kernel.org (Postfix) with ESMTPS id 2243BCE2703;
+	Thu, 14 Sep 2023 14:34:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC3CCC433C7;
+	Thu, 14 Sep 2023 14:34:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1694702051;
+	bh=9S7VIQV7YxfxsrOKvFr7Zd7ehjJmNmiY2E7KkfD5TvE=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=DstQJ4b9OBCNoWWvU0xCDU0aEnvcxyudZYIHGCRUJJqqLg9y5HoR9sxwszcOI1gT1
+	 /O7mQOKgCgZ5xjBIENcYxyK3jGoeG3+lNsLRRgWEcHn3n2cHtcazZe/y3O3PTQxIDp
+	 LRn5qXgvuSq5+gMhkYzbdyqrekN2kAbfakpk4z837Y+S6aWXrexkLndqe0v6zbIxc9
+	 TaGkX3OwtCobkBWY1L4Ex0n5YAeAJvQONPlAPOTXpzp1YKSDZuYVQsMfVuMXtzCxM4
+	 L16OaTA/vFhMyMYFYOgofXD+3xncI3VZSTTvuuEjfQ9SIcoG3wdXG/PexvJG1m/+ju
+	 eKmfkqGAgvP/g==
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
+ alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, Chancel Liu <chancel.liu@nxp.com>
+In-Reply-To: <20230913102656.2966757-1-chancel.liu@nxp.com>
+References: <20230913102656.2966757-1-chancel.liu@nxp.com>
+Subject: Re: [PATCH v2] ASoC: imx-rpmsg: Set ignore_pmdown_time for
+ dai_link
+Message-Id: <169470204840.386807.4356692554775825839.b4-ty@kernel.org>
+Date: Thu, 14 Sep 2023 15:34:08 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-034f2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,111 +67,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Benjamin Gray <bgray@linux.ibm.com>, ruscur@russell.cc
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Benjamin Gray <bgray@linux.ibm.com> writes:
-> To determine if a trap was caused by a HASHCHK instruction, we inspect
-> the user instruction that triggered the trap. However this may sleep
-> if the page needs to be faulted in.
+On Wed, 13 Sep 2023 18:26:56 +0800, Chancel Liu wrote:
+> i.MX rpmsg sound cards work on codec slave mode. MCLK will be disabled
+> by CPU DAI driver in hw_free(). Some codec requires MCLK present at
+> power up/down sequence. So need to set ignore_pmdown_time to power down
+> codec immediately before MCLK is turned off.
+> 
+> Take WM8962 as an example, if MCLK is disabled before DAPM power down
+> playback stream, FIFO error will arise in WM8962 which will have bad
+> impact on playback next.
+> 
+> [...]
 
-It would be good to include the output from the might_sleep() check that
-failed.
+Applied to
 
-And I think this was found by syzkaller? If so we should say so.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-cheers
+Thanks!
 
-> Move the HASHCHK handler logic to after we allow IRQs, which is fine
-> because we are only interested in HASHCHK if it's a user space trap.
->
-> Fixes: 5bcba4e6c13f ("powerpc/dexcr: Handle hashchk exception")
-> Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/traps.c | 56 ++++++++++++++++++++++++-------------
->  1 file changed, 36 insertions(+), 20 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index f5ce282dc4b8..32b5e841ea97 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1512,23 +1512,11 @@ static void do_program_check(struct pt_regs *regs)
->  			return;
->  		}
->  
-> -		if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE) && user_mode(regs)) {
-> -			ppc_inst_t insn;
-> -
-> -			if (get_user_instr(insn, (void __user *)regs->nip)) {
-> -				_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-> -				return;
-> -			}
-> -
-> -			if (ppc_inst_primary_opcode(insn) == 31 &&
-> -			    get_xop(ppc_inst_val(insn)) == OP_31_XOP_HASHCHK) {
-> -				_exception(SIGILL, regs, ILL_ILLOPN, regs->nip);
-> -				return;
-> -			}
-> +		/* User mode considers other cases after enabling IRQs */
-> +		if (!user_mode(regs)) {
-> +			_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
-> +			return;
->  		}
-> -
-> -		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
-> -		return;
->  	}
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->  	if (reason & REASON_TM) {
-> @@ -1561,16 +1549,44 @@ static void do_program_check(struct pt_regs *regs)
->  
->  	/*
->  	 * If we took the program check in the kernel skip down to sending a
-> -	 * SIGILL. The subsequent cases all relate to emulating instructions
-> -	 * which we should only do for userspace. We also do not want to enable
-> -	 * interrupts for kernel faults because that might lead to further
-> -	 * faults, and loose the context of the original exception.
-> +	 * SIGILL. The subsequent cases all relate to user space, such as
-> +	 * emulating instructions which we should only do for user space. We
-> +	 * also do not want to enable interrupts for kernel faults because that
-> +	 * might lead to further faults, and loose the context of the original
-> +	 * exception.
->  	 */
->  	if (!user_mode(regs))
->  		goto sigill;
->  
->  	interrupt_cond_local_irq_enable(regs);
->  
-> +	/*
-> +	 * (reason & REASON_TRAP) is mostly handled before enabling IRQs,
-> +	 * except get_user_instr() can sleep so we cannot reliably inspect the
-> +	 * current instruction in that context. Now that we know we are
-> +	 * handling a user space trap and can sleep, we can check if the trap
-> +	 * was a hashchk failure.
-> +	 */
-> +	if (reason & REASON_TRAP) {
-> +		if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE)) {
-> +			ppc_inst_t insn;
-> +
-> +			if (get_user_instr(insn, (void __user *)regs->nip)) {
-> +				_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-> +				return;
-> +			}
-> +
-> +			if (ppc_inst_primary_opcode(insn) == 31 &&
-> +			    get_xop(ppc_inst_val(insn)) == OP_31_XOP_HASHCHK) {
-> +				_exception(SIGILL, regs, ILL_ILLOPN, regs->nip);
-> +				return;
-> +			}
-> +		}
-> +
-> +		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
-> +		return;
-> +	}
-> +
->  	/* (reason & REASON_ILLEGAL) would be the obvious thing here,
->  	 * but there seems to be a hardware bug on the 405GP (RevD)
->  	 * that means ESR is sometimes set incorrectly - either to
-> -- 
-> 2.41.0
+[1/1] ASoC: imx-rpmsg: Set ignore_pmdown_time for dai_link
+      commit: fac58baf8fcfcd7481e8f6d60206ce2a47c1476c
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
