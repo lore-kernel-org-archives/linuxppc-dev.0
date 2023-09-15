@@ -4,100 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7771EEE3F2E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 06:17:45 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cGz5+VOy;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E23FEE3F2F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 06:39:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn3rm0s9Tz3dJp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 16:17:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cGz5+VOy;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn3ps0JWYz3bwb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:16:05 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Rn3ph2RY1z4wy1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:15:56 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4Rn3ph2L31z4wxc; Fri, 15 Sep 2023 16:15:56 +1000 (AEST)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cGz5+VOy;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn4Kd5l44z3dHP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 16:39:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Rn3pg3r8Xz4wxh;
-	Fri, 15 Sep 2023 16:15:55 +1000 (AEST)
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38F6B1aS005416;
-	Fri, 15 Sep 2023 06:15:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=NzBv1SKpFMmCuIoCQLdKb6Amql42t9pJqhlOz3qYI8Y=;
- b=cGz5+VOyOfin/v4Dp354+MuIfOoWVlwQ1eG8aXBIZGeLuNX5Jhv5MKa55CCbyHWKP1Z7
- 6qi44KMqC9X486r12G9u/S8f0+SlQbc/Ai0Oxkn8CcvuGln09N1oRi3HbR/13yf1fSox
- aibqTb2aEHaND7lA3x6Bb/ZPlDC1N0PSZi4KPW6dGfIS272trkmE/kcFJGqVrPVd6EQn
- A4E3cyCIWajeUWsYAfwz8dNdHmZ2H46dmO9TiiDZNAxNNUaK3+M8VXgHoFp4kOBpuJdR
- yw91YeUFscUREyOjNhuhtEvNmyJWzXij7Gqz/SenjtsH50SmJ/kku9zPCRjJDl/p8xef Tg== 
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t4h3p11s0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 Sep 2023 06:15:50 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38F5ErME002932;
-	Fri, 15 Sep 2023 06:15:49 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t14hmgqt2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 Sep 2023 06:15:49 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38F6Fj0s41419218
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 15 Sep 2023 06:15:46 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E4FC120040;
-	Fri, 15 Sep 2023 06:15:45 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D477B20043;
-	Fri, 15 Sep 2023 06:15:44 +0000 (GMT)
-Received: from [9.203.106.137] (unknown [9.203.106.137])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 15 Sep 2023 06:15:44 +0000 (GMT)
-Message-ID: <7542676d-d9f4-50e9-5324-f916c2472258@linux.ibm.com>
-Date: Fri, 15 Sep 2023 11:45:43 +0530
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
-Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>,
-        Aditya Gupta <adityag@linux.ibm.com>, linuxppc-dev@ozlabs.org
-References: <20230911091409.415662-1-adityag@linux.ibm.com>
- <87v8cc7uva.fsf@mail.lhotse>
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <87v8cc7uva.fsf@mail.lhotse>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: mgGoaATgNU_efj8eA-y9MMpBrYgRxkeZ
-X-Proofpoint-ORIG-GUID: mgGoaATgNU_efj8eA-y9MMpBrYgRxkeZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-15_05,2023-09-14_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
- mlxscore=0 malwarescore=0 adultscore=0 clxscore=1011 lowpriorityscore=0
- spamscore=0 phishscore=0 suspectscore=0 priorityscore=1501 mlxlogscore=865
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2308100000
- definitions=main-2309150053
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn4K43vybz3bqW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:38:47 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 71D0D200AA6;
+	Fri, 15 Sep 2023 08:38:44 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 38EF0200AAA;
+	Fri, 15 Sep 2023 08:38:44 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id A2C6B180222B;
+	Fri, 15 Sep 2023 14:38:42 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: imx-audmix: Fix return error with devm_clk_get()
+Date: Fri, 15 Sep 2023 14:02:11 +0800
+Message-Id: <1694757731-18308-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,33 +52,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The devm_clk_get() can return -EPROBE_DEFER error,
+modify the error code to be -EINVAL is not correct, which
+cause the -EPROBE_DEFER error is not correctly handled.
 
+This patch is to fix the return error code.
 
-On 14/09/23 6:52 pm, Michael Ellerman wrote:
-> Aditya Gupta <adityag@linux.ibm.com> writes:
->> Presently, while reading a vmcore, makedumpfile uses
->> `cur_cpu_spec.mmu_features` to decide whether the crashed system had
->> RADIX MMU or not.
->>
->> Currently, makedumpfile fails to get the `cur_cpu_spec` symbol (unless
->> a vmlinux is passed with the `-x` flag to makedumpfile), and hence
->> assigns offsets and shifts (such as pgd_offset_l4) incorrecly considering
->> MMU to be hash MMU.
->>
->> Add `cur_cpu_spec` symbol and offset of `mmu_features` in the
->> `cpu_spec` struct, to VMCOREINFO, so that the symbol address and offset
->> is accessible to makedumpfile, without needing the vmlinux file
-> 
-> This looks fine.
-> 
-> Seems like cpu_features would be needed or at least pretty useful too?
+Fixes: b86ef5367761 ("ASoC: fsl: Add Audio Mixer machine driver")
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/imx-audmix.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Yeah. Would be nice to have access to that, to accurately identify the
-kind of system vmcore was generated for.
+diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
+index 0b58df56f4da..aeb81aa61184 100644
+--- a/sound/soc/fsl/imx-audmix.c
++++ b/sound/soc/fsl/imx-audmix.c
+@@ -315,7 +315,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 	if (IS_ERR(priv->cpu_mclk)) {
+ 		ret = PTR_ERR(priv->cpu_mclk);
+ 		dev_err(&cpu_pdev->dev, "failed to get DAI mclk1: %d\n", ret);
+-		return -EINVAL;
++		return ret;
+ 	}
+ 
+ 	priv->audmix_pdev = audmix_pdev;
+-- 
+2.34.1
 
-Thanks
-Hari
