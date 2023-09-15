@@ -4,66 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8A33EE6447
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 08:40:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03CE5EE644C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 10:01:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=B60VTpXE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PKpIyJXf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn70v4TDJz3dDt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 18:39:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn8qF3t0lz3dGk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 20:01:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=B60VTpXE;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PKpIyJXf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn6zz4zSFz3c2Z
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 18:39:10 +1000 (AEST)
-Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-52a1ce52ef4so2296214a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 01:39:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1694767146; x=1695371946; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dcJ0YF656Gqyw4TwkIVu38nmGFD+TIOI6rP0TNwnO88=;
-        b=B60VTpXEurNjwB4Ma+Qbvm4aj/QUuzWKnd7/7iyvCEuoKODCC+Awivk3SPR+cpidDP
-         KlORyzmEnCaMXpOeMrG0iF/sps1QIZSoqZjjcGtuC34sW8x93TkZslShwIQfK/57UDXS
-         ojUeKwCHZJDx9D87hVfS+BLg++UYy7X1n1Zt+Mm+Mb37eth7xjJQ+WY8KYPeHclu0Blg
-         8MF3oi9y9KXHy5Y0qZiUgKK6YL6RK6qEP/EFMWRJiAfevCYsX5UHwE5IGLnTl7956CMG
-         wZoD3v9WhQkQPVMo26vi2GvojFNSDSqsxpSyI15hN9ioCZmpRZ+rdytkV9xOxhI4w3p1
-         TzQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694767146; x=1695371946;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dcJ0YF656Gqyw4TwkIVu38nmGFD+TIOI6rP0TNwnO88=;
-        b=ppuYp7wAG59DCpn0y0pcID/1c6MTcIObVPiKIdyQJu2UsCCfy3xgu6O7KProiZO0oc
-         T3M8u4DL2qE9IKMBVIy2TkYGj6bylOsHpSY6o6tqmIZEa15//WYASrHPdBH1dvoHHkHf
-         cYD0Vbm7ztvtCjrUIxfPpWn53YZ8aszzO+5njwNkM76HCsbPXA4d0Q7LbL8Ddpw67c8B
-         rGyk/V85mFp1uRp3Q8IFyxkq2xUdyMlSWEgC7mRUi2QGa8UJBzBHShWuRw0zvfgArItO
-         F37RWlCUtwQu09/aPFxhRRQrw95+agGrdPXVKeDDBtsBkG4Imao7ZDWPiltgaZTMo9vh
-         vgEg==
-X-Gm-Message-State: AOJu0YxqqkaNhfqdal/mwz8nCGkalDUQY5a0/I7+7Hjpmz3AKIfuigdv
-	Pm2X9Az7yDPUiavBYMf70m1CqjG7zPpdN1cdUMs=
-X-Google-Smtp-Source: AGHT+IFqWx5uj2DHjRauIvxPCOhENMc7x02MgQj1RmKhG/d1C1fdZNN3IRf0HXHut2+w8tXTNZoGQcO6LcoXjI6pYko=
-X-Received: by 2002:aa7:cd57:0:b0:52d:212d:78e8 with SMTP id
- v23-20020aa7cd57000000b0052d212d78e8mr847795edw.34.1694767146186; Fri, 15 Sep
- 2023 01:39:06 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn00M62Ljz3cJW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 13:24:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1694748242;
+	bh=6XG3B0FzXsmvZoKkkhm5wOJHB7Zd1TpS1JWjBGpTusE=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=PKpIyJXfdhJr2Sk2XiFpR9ouUJal5nD2tBGYvkTi+yQRsa9ZIvCgirZ5+6besrqBL
+	 UlCTRNeIti/3HlXKC5s/hNh/zWDyp0CAj38ooZCtURDec0zV29n1q0vvHWP8LzC/8u
+	 j+BMCh8sirKL/ZLOdFgRYAJwTicvGuLLCgCMve6s4NNE6G+YTeu3xI1X+6WSPiiUmJ
+	 53dID1WgSubZVw/xkbEC18yiNd+dsH+sCiTIMfNZ4C0SAAbyPBEWD+PT1gDHirRJ7I
+	 e1Oe/pJXxiN5V+sroGp3Ed6zutx8sxe3J/0iaG/Wx6C4lA/ghdRZcbu2waY0Piauup
+	 ceLVj/+K8GSVw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rn0045DDWz4wxR;
+	Fri, 15 Sep 2023 13:23:48 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sohil Mehta <sohil.mehta@intel.com>, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for
+ all architectures
+In-Reply-To: <20230914185804.2000497-1-sohil.mehta@intel.com>
+References: <20230914185804.2000497-1-sohil.mehta@intel.com>
+Date: Fri, 15 Sep 2023 13:23:43 +1000
+Message-ID: <878r986rwg.fsf@mail.lhotse>
 MIME-Version: 1.0
-References: <1694757731-18308-1-git-send-email-shengjiu.wang@nxp.com>
-In-Reply-To: <1694757731-18308-1-git-send-email-shengjiu.wang@nxp.com>
-From: Daniel Baluta <daniel.baluta@gmail.com>
-Date: Fri, 15 Sep 2023 11:38:54 +0300
-Message-ID: <CAEnQRZAU01qbeVjcEVnL0emc3ovo+NSs_N5=xUB2fVaswnjVqg@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: imx-audmix: Fix return error with devm_clk_get()
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-Mailman-Approved-At: Fri, 15 Sep 2023 20:00:57 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,20 +60,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, Xiubo.Lee@gmail.com, shengjiu.wang@gmail.com, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com, broonie@kernel.org, festevam@gmail.com, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com
+ >, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Sohil Mehta <sohil.mehta@intel.com>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>,
+  Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Sep 15, 2023 at 9:38=E2=80=AFAM Shengjiu Wang <shengjiu.wang@nxp.co=
-m> wrote:
+Sohil Mehta <sohil.mehta@intel.com> writes:
+> commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
+> recently added support for map_shadow_stack() but it is limited to x86
+> only for now. There is a possibility that other architectures (namely,
+> arm64 and RISC-V), that are implementing equivalent support for shadow
+> stacks, might need to add support for it.
 >
-> The devm_clk_get() can return -EPROBE_DEFER error,
-> modify the error code to be -EINVAL is not correct, which
-> cause the -EPROBE_DEFER error is not correctly handled.
+> Independent of that, reserving arch-specific syscall numbers in the
+> syscall tables of all architectures is good practice and would help
+> avoid future conflicts. map_shadow_stack() is marked as a conditional
+> syscall in sys_ni.c. Adding it to the syscall tables of other
+> architectures is harmless and would return ENOSYS when exercised.
 >
-> This patch is to fix the return error code.
+> Note, map_shadow_stack() was assigned #453 during the merge process
+> since #452 was taken by fchmodat2().
 >
-> Fixes: b86ef5367761 ("ASoC: fsl: Add Audio Mixer machine driver")
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
+> syscall tables.
 
-Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
+Mapping it to sys_map_shadow_stack() would work fine, but I'm happy with
+sys_ni_syscall as I don't see powerpc implementing map_shadow_stack()
+any time soon.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
