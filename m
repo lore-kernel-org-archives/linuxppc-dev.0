@@ -4,51 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B9A5EE6428
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 07:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8A33EE6447
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 08:40:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lxTpMv/M;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=B60VTpXE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn5N36002z3cRn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 17:26:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn70v4TDJz3dDt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 18:39:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lxTpMv/M;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=B60VTpXE;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn5M352ysz3bwX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 17:25:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1694762734;
-	bh=AaT+Zd5A+u64/jZniFM2Hfp9z5ZX8DVUs5Jk9m7d9J8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=lxTpMv/MD/jC11s2upB8FzLsS7hAoDNJTH9BYMPSJhnRvlKts1RGzbHXQ4+14yaNA
-	 3/7vXyisYcev6W7Xy9vcVG6BM+rn3Qhof1+JUWTZFmDTAHGhxV/mDjSxM+89aSTOne
-	 ctESIfeqCXLrqzlOvrXJOKS87qAkU0SDUzkz6eyKcd36wBLiU1fmLxW41G8Tp9/jzq
-	 nBTYFoGZyeILYg3MWKI76aD/DYMu5NX4b3YUlHEqbmSc07sF4EvHPMl9HjR1lzdJxF
-	 nsVLzUxJA/ro8VVQte2SmLQNb5QMjV30mDKeCmIJbMRlm7onvDMzIG0Q7XmPu3tXsO
-	 qga/WMC5Xv9oQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rn5M22HYpz4wxg;
-	Fri, 15 Sep 2023 17:25:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin
- <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/82xx: Select FSL_SOC
-In-Reply-To: <c481fa91-0cfb-1c19-2da7-cf768bc56aea@csgroup.eu>
-References: <7ab513546148ebe33ddd4b0ea92c7bfd3cce3ad7.1694705016.git.christophe.leroy@csgroup.eu>
- <87led86zaq.fsf@mail.lhotse>
- <c481fa91-0cfb-1c19-2da7-cf768bc56aea@csgroup.eu>
-Date: Fri, 15 Sep 2023 17:25:27 +1000
-Message-ID: <875y4b7va0.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn6zz4zSFz3c2Z
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 18:39:10 +1000 (AEST)
+Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-52a1ce52ef4so2296214a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 01:39:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1694767146; x=1695371946; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dcJ0YF656Gqyw4TwkIVu38nmGFD+TIOI6rP0TNwnO88=;
+        b=B60VTpXEurNjwB4Ma+Qbvm4aj/QUuzWKnd7/7iyvCEuoKODCC+Awivk3SPR+cpidDP
+         KlORyzmEnCaMXpOeMrG0iF/sps1QIZSoqZjjcGtuC34sW8x93TkZslShwIQfK/57UDXS
+         ojUeKwCHZJDx9D87hVfS+BLg++UYy7X1n1Zt+Mm+Mb37eth7xjJQ+WY8KYPeHclu0Blg
+         8MF3oi9y9KXHy5Y0qZiUgKK6YL6RK6qEP/EFMWRJiAfevCYsX5UHwE5IGLnTl7956CMG
+         wZoD3v9WhQkQPVMo26vi2GvojFNSDSqsxpSyI15hN9ioCZmpRZ+rdytkV9xOxhI4w3p1
+         TzQQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694767146; x=1695371946;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dcJ0YF656Gqyw4TwkIVu38nmGFD+TIOI6rP0TNwnO88=;
+        b=ppuYp7wAG59DCpn0y0pcID/1c6MTcIObVPiKIdyQJu2UsCCfy3xgu6O7KProiZO0oc
+         T3M8u4DL2qE9IKMBVIy2TkYGj6bylOsHpSY6o6tqmIZEa15//WYASrHPdBH1dvoHHkHf
+         cYD0Vbm7ztvtCjrUIxfPpWn53YZ8aszzO+5njwNkM76HCsbPXA4d0Q7LbL8Ddpw67c8B
+         rGyk/V85mFp1uRp3Q8IFyxkq2xUdyMlSWEgC7mRUi2QGa8UJBzBHShWuRw0zvfgArItO
+         F37RWlCUtwQu09/aPFxhRRQrw95+agGrdPXVKeDDBtsBkG4Imao7ZDWPiltgaZTMo9vh
+         vgEg==
+X-Gm-Message-State: AOJu0YxqqkaNhfqdal/mwz8nCGkalDUQY5a0/I7+7Hjpmz3AKIfuigdv
+	Pm2X9Az7yDPUiavBYMf70m1CqjG7zPpdN1cdUMs=
+X-Google-Smtp-Source: AGHT+IFqWx5uj2DHjRauIvxPCOhENMc7x02MgQj1RmKhG/d1C1fdZNN3IRf0HXHut2+w8tXTNZoGQcO6LcoXjI6pYko=
+X-Received: by 2002:aa7:cd57:0:b0:52d:212d:78e8 with SMTP id
+ v23-20020aa7cd57000000b0052d212d78e8mr847795edw.34.1694767146186; Fri, 15 Sep
+ 2023 01:39:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <1694757731-18308-1-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <1694757731-18308-1-git-send-email-shengjiu.wang@nxp.com>
+From: Daniel Baluta <daniel.baluta@gmail.com>
+Date: Fri, 15 Sep 2023 11:38:54 +0300
+Message-ID: <CAEnQRZAU01qbeVjcEVnL0emc3ovo+NSs_N5=xUB2fVaswnjVqg@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: imx-audmix: Fix return error with devm_clk_get()
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,28 +75,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, Xiubo.Lee@gmail.com, shengjiu.wang@gmail.com, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com, broonie@kernel.org, festevam@gmail.com, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 15/09/2023 =C3=A0 02:43, Michael Ellerman a =C3=A9crit=C2=A0:
->> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
->>> It used to be impossible to select CONFIG_CPM2 without selecting
->>> CONFIG_FSL_SOC at the same time because CONFIG_CPM2 was dependent
->>> on CONFIG_8260 and CONFIG_8260 was selecting CONFIG_FSL_SOC.
->>>
->>> But after commit eb5aa2137275 ("powerpc/82xx: Remove CONFIG_8260
->>> and CONFIG_8272") CONFIG_CPM2 depends on CONFIG_MPC82xx instead
->>                                             ^
->>                                             CONFIG_PPC_82xx
->>=20
->> All the references to CONFIG_MPC82xx should be CONFIG_PPC_82xx right?
->> I can update when applying.
+On Fri, Sep 15, 2023 at 9:38=E2=80=AFAM Shengjiu Wang <shengjiu.wang@nxp.co=
+m> wrote:
 >
-> Ah right, I mixed things up. This is CONFIG_PPC_82xx, CONFIG_PPC_8xx,=20
-> CONFIG_PPC_83xx and CONFIG_PPC_MPC512x
+> The devm_clk_get() can return -EPROBE_DEFER error,
+> modify the error code to be -EINVAL is not correct, which
+> cause the -EPROBE_DEFER error is not correctly handled.
+>
+> This patch is to fix the return error code.
+>
+> Fixes: b86ef5367761 ("ASoC: fsl: Add Audio Mixer machine driver")
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Thanks.
-
-cheers
+Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
