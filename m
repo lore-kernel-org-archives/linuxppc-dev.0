@@ -4,64 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7667DEE6457
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 14:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D82E3CD37AA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 21:06:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=e6bzjZ5i;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Ao+/0aMm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RnGjZ6GtJz3dFF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Sep 2023 00:27:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RnRZ61kzdz3dDr
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Sep 2023 07:06:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=e6bzjZ5i;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Ao+/0aMm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3imkezqykdj0pb7kg9dlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::c49; helo=mail-oo1-xc49.google.com; envelope-from=3gccezqykdogcokxtmqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc49.google.com (mail-oo1-xc49.google.com [IPv6:2607:f8b0:4864:20::c49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RnGhZ5yYRz3cD5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2023 00:26:21 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-d8153284d6eso2682114276.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 07:26:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RnRY96H0Pz3bbW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2023 07:05:32 +1000 (AEST)
+Received: by mail-oo1-xc49.google.com with SMTP id 006d021491bc7-5733fc73957so3695880eaf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 14:05:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1694787978; x=1695392778; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1694811929; x=1695416729; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=n3wwM0IxTv36mTuzbjanMwII1EwyeoxiFmog5O5ddM4=;
-        b=e6bzjZ5ipSNEhNqHxP1U8Hj3NX3W6ehv2tDrP8IuoBqgJyyvN+gl2bHHrVswRT217e
-         fBUfTbxL8cXXmFS/EPqDqccvGV8bQJpUDtwRjMEM75px/8pIqykm4rRqiPvB0KnPTtfw
-         Mi5NbSk9eaSO9+TYWblZyuEmgtCYCuCpHg7iPEXoRUadcAfqrXWBhmT+x0B2rdRyNjsD
-         Kh7cLVr+2r/iF6tDYsI9UepNf1pGRnkwni3tinnZmINd1znMOgzL1n75VePHpFqikVPB
-         oQR2adUifnxJEjRjspmASQPIpJj4KgI6x9G7/CSnsJVAsAZ9k6r2m2jtlCO1g6qwCjM4
-         VKXQ==
+        bh=yleJC+7YBNlUjlYVNZzM9vt9cQFuPW3G+hVjyHJnwaw=;
+        b=Ao+/0aMmIfYTa5EQViSctF6XPWZg4qQIQ9mtcjgyJ95CPUJBtpA4FeojsnKJa0QuPr
+         kTdqP66D9/qL6kbCxpRG8I2EtA+u5P5K7CONuvGGJW+1LO0k1W8J6VLDjWIJzQeFn+IA
+         SdTnzdh+YE+6WNtwtBY9JFGQ4gEAhXSVaLcS+10rUyyAG3voHwciDQdcLlptTMvtHk87
+         dg5kNnTW9Hb9J9Py/hjI95Z+v07H8UZWcBnGCgKMsbZewao9zmGF7E+sCwUY+qLdVRnO
+         Mn9BDjTNyrRGF6a6SoLzOVLgjup01+tg21dUu1LI++JCOuGPbFZUjgG7HVeZ7dwot9qA
+         /GFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694787978; x=1695392778;
+        d=1e100.net; s=20230601; t=1694811929; x=1695416729;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=n3wwM0IxTv36mTuzbjanMwII1EwyeoxiFmog5O5ddM4=;
-        b=k7KzP4QnxNBmD0rzr/Q/EAR70QC3kgjEGotN9SKgGkfrM2EvJ3lznktdunkvX1bSzz
-         GIicYr4cAvezBGzhFo/TmTv0JsFr+/+aRheGZdQTikNLBAWyfLHavCJTloFk88ydRjHy
-         26LiDixc+tOIajNA3RXJhPEyEpn3k+xJeNeX/LFBbT8axyOjGvC4vHWYPP1eMpAB56EF
-         nbOe/9dnw3TCpF1xw7Db+IUUNa48QJUW8lkB1lyxK5dsNjQrztRFn/GpkeZKpyLn6w9L
-         rz/3C7tVxfTUZkhqwpM3hWFaMN8MM0fTOBWg9saE1p6f8AvgZXxmi15ONJbVyilSMRrZ
-         X19A==
-X-Gm-Message-State: AOJu0YxZXEAjeYigQNA+piRIdvE77YbaPhsu4G1Wpq4t5Mycao/IcCEV
-	yJXoVYCzrOuVboOJBiVVde6hTAk+e2s=
-X-Google-Smtp-Source: AGHT+IEtd+ZFiwjGOxGj1IwoYm6uY+zMlhHeo3LWWwltDCF+cgsfqNfOOXS7Bflkew1pSHX6ZJTGM/96YR0=
+        bh=yleJC+7YBNlUjlYVNZzM9vt9cQFuPW3G+hVjyHJnwaw=;
+        b=qh3S04ofAYb3SRLb/S+JW1cV3IQbhFsr4z9rxwUBLAJOH2gajOc7rDcDY78aaJa+Cu
+         GfW8FK2Rk5XDNnHiT4N33D1LHOjecu9ZlILAjG7wHQM6lz+dTRsY72lsdvLHYWqY+8Zw
+         +SJ1W1EVVUVoMiO1ebKVt2i31oveMNLs3YaKLIsdBFe/RhvQiOyOKzN/4OFtaFA/T7cX
+         Kw9MjQH8Sdjofj/J9qsXduelfUg4nsDpkby58M4XvdWtOEdVHwBhDgcvop9JI74qo+B1
+         +dPt52xq+dSY8xznqyOCMYkZ4kp1U5v+IL0pUcJGujXkxfULrrogijJpWqf+Nv/N/CKS
+         HMqQ==
+X-Gm-Message-State: AOJu0YwksvvbVAw2Voqz/kil52oBk2XHTv+uqI/ruTT19EkKKzhS+l55
+	OWbSGOgJYywhMb2PnMZ21q9PLs32cCQ=
+X-Google-Smtp-Source: AGHT+IF9PpTOkzcgimAJrduyF4qwfWt2KP5EbzIhLTMy/s4gm21Ep/5FIgTjRytGlNZlubXZjpDBAQBvLB0=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a25:bc8:0:b0:d80:eb4:9ca with SMTP id
- 191-20020a250bc8000000b00d800eb409camr37310ybl.0.1694787978719; Fri, 15 Sep
- 2023 07:26:18 -0700 (PDT)
-Date: Fri, 15 Sep 2023 07:26:16 -0700
-In-Reply-To: <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
+ (user=seanjc job=sendgmr) by 2002:a4a:2c02:0:b0:571:1762:7718 with SMTP id
+ o2-20020a4a2c02000000b0057117627718mr908496ooo.1.1694811929595; Fri, 15 Sep
+ 2023 14:05:29 -0700 (PDT)
+Date: Fri, 15 Sep 2023 14:05:27 -0700
+In-Reply-To: <d4166c97-6ab3-89a2-eb12-f492f7521f69@intel.com>
 Mime-Version: 1.0
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-19-seanjc@google.com>
- <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
-Message-ID: <ZQRpiOd1DNDDJQ3r@google.com>
-Subject: Re: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for private memory
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-2-seanjc@google.com>
+ <d4166c97-6ab3-89a2-eb12-f492f7521f69@intel.com>
+Message-ID: <ZQTHF3J+6FXwRx98@google.com>
+Subject: Re: [RFC PATCH v12 01/33] KVM: Tweak kvm_hva_range and hva_handler_t
+ to allow reusing for gfn ranges
 From: Sean Christopherson <seanjc@google.com>
-To: Yan Zhao <yan.y.zhao@intel.com>
+To: Xiaoyao Li <xiaoyao.li@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,65 +80,32 @@ Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Sep 15, 2023, Yan Zhao wrote:
-> On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
-> ....
-> > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> > +					      struct kvm_page_fault *fault)
-> > +{
-> > +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-> > +				      PAGE_SIZE, fault->write, fault->exec,
-> > +				      fault->is_private);
-> > +}
-> > +
-> > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> > +				   struct kvm_page_fault *fault)
-> > +{
-> > +	int max_order, r;
-> > +
-> > +	if (!kvm_slot_can_be_private(fault->slot)) {
-> > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-> > +			     &max_order);
-> > +	if (r) {
-> > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > +		return r;
-> > +	}
-> > +
-> > +	fault->max_level = min(kvm_max_level_for_order(max_order),
-> > +			       fault->max_level);
-> > +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
-> > +
-> > +	return RET_PF_CONTINUE;
-> > +}
-> > +
-> >  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
-> >  {
-> >  	struct kvm_memory_slot *slot = fault->slot;
-> > @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
-> >  			return RET_PF_EMULATE;
-> >  	}
-> >  
-> > +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
-> In patch 21,
-> fault->is_private is set as:
-> 	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
-> then, the inequality here means memory attribute has been updated after
-> last check.
-> So, why an exit to user space for converting is required instead of a mere retry?
+On Fri, Sep 15, 2023, Xiaoyao Li wrote:
+> On 9/14/2023 9:54 AM, Sean Christopherson wrote:
+> > Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
+> > that the structure can be used to handle notifications that operate on gfn
+> > context, i.e. that aren't tied to a host virtual address.
+> > 
+> > Practically speaking, this is a nop for 64-bit kernels as the only
+> > meaningful change is to store start+end as u64s instead of unsigned longs.
+> > 
+> > Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >   virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
+> >   1 file changed, 19 insertions(+), 15 deletions(-)
+> > 
+> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> > index 486800a7024b..0524933856d4 100644
+> > --- a/virt/kvm/kvm_main.c
+> > +++ b/virt/kvm/kvm_main.c
+> > @@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+> >   	return container_of(mn, struct kvm, mmu_notifier);
+> >   }
+> > -typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
+> > +typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
 > 
-> Or, is it because how .is_private is assigned in patch 21 is subjected to change
-> in future? 
+> Is it worth mentioning the rename of it as well in changelog?
 
-This.  Retrying on SNP or TDX would hang the guest.  I suppose we could special
-case VMs where .is_private is derived from the memory attributes, but the
-SW_PROTECTED_VM type is primary a development vehicle at this point.  I'd like to
-have it mimic SNP/TDX as much as possible; performance is a secondary concern.
-
-E.g. userspace needs to be prepared for "spurious" exits due to races on SNP and
-TDX, which this can theoretically exercise.  Though the window is quite small so
-I doubt that'll actually happen in practice; which of course also makes it less
-important to retry instead of exiting.
+Meh, I suppose.  At some point, we do have to assume a certain level of code
+literacy though :-)
