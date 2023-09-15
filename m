@@ -4,144 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C663CEE3F2E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 06:16:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7771EEE3F2E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 06:17:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YI1ctg89;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cGz5+VOy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn3qq1Sr0z3cRk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 16:16:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn3rm0s9Tz3dJp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 16:17:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YI1ctg89;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cGz5+VOy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mgamail.intel.com; envelope-from=yan.y.zhao@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 66 seconds by postgrey-1.37 at boromir; Fri, 15 Sep 2023 16:16:00 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn3ps0JWYz3bwb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:16:05 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Rn3ph2RY1z4wy1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:15:56 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4Rn3ph2L31z4wxc; Fri, 15 Sep 2023 16:15:56 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cGz5+VOy;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn3pm0HgPz3bwb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:15:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694758560; x=1726294560;
-  h=date:from:to:cc:subject:message-id:reply-to:references:
-   in-reply-to:mime-version;
-  bh=HZMbCZelhu36ygYyynRyqeUx95U5zs8SUE7ZZO1LmY4=;
-  b=YI1ctg89QVLUXKx9cLEdKEC6BLORC9eRoUfOse6TZAk7jX3GGeqLOrxp
-   6dweyj5r95INrUjlIFm1NEG9gSDMXl5CDqK4X3fSxA+DrOgH1BOqW4A/T
-   KJv20WPpDYR4J5oN9UIb9rq0GBD6OAcTj7SAyIgYRzDgJ+BIqtsq4Sbz5
-   CBOb4knKdq99Q6ZKbjo5x/2PgcpB8W2XQfuEZgH5owmhW0k6xpyPVcg+e
-   h18xiiVT03eUOMZTmzV8uS/2Mi0VRiGVs8tPo4XoYruhsIO+/4QWKlr1R
-   axg2ukqIA8h4JdT8xurcV8SG6NSjuLt9Zgn5c7C5+rfhNE5MpJZNuzmT4
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="445627424"
-X-IronPort-AV: E=Sophos;i="6.02,148,1688454000"; 
-   d="scan'208";a="445627424"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Sep 2023 23:08:08 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="744842944"
-X-IronPort-AV: E=Sophos;i="6.02,148,1688454000"; 
-   d="scan'208";a="744842944"
-Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
-  by orsmga002.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 14 Sep 2023 23:08:07 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32; Thu, 14 Sep 2023 23:08:07 -0700
-Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32 via Frontend Transport; Thu, 14 Sep 2023 23:08:07 -0700
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.168)
- by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.32; Thu, 14 Sep 2023 23:08:07 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UFhyF/HZyVlvjh8N18MdKVcxgoU0y6fYpky+ymsCBme+tRht1HvMfZE570L7aIGt4gwIxksMZ7S04tZ5uGFuP48KwpxHl25hFLMriOehW48m+pAF9AiVhIfwx7TkJRSHHyDuCyGb6qDOerUr/S2hAghoqXdXaytu5SORzzoi0Ug2OWlnf25iVEB5t01g7nrzEhlDJ5ELy9U/GqCApD/qN4lEIy3dbH8wDcNNDWbAJ+JfpLMO6ZyVQiy8tDe7dJjfEfqnv6zrSl0coo05qaeth7CHWqrHFCRXNXBplwYhtHYm9tAectdeocvKxe7QNsaF38cHln60PIHsvNqA/7Iq2g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=cpu28DmXm6A1XkXBryuH7hR7TnWPAtI5Us2qwoMSvw8=;
- b=kNcUModrGUmHPINpDBTFNnILZRyp4nwjBKDXsV6gjAt4gvR+6aDW4D2RYhs2oI8lTRDqmz2Dvzy+4udOWX2aSpqccLQ9EtkzhEptA8Fmv9ld8OFoZYZeI8NoZazk9ybwhJh+b0XhjMWfCfFW5ipzC2c8eXgo05hlMPyatuwiFyyDKD7WDby31c/f2eMwTK6FeIn5w9/L63cr3R17grVjPL0AjvqWVuh6N0xwnvmww8YW42MEEQCwmG6m/NebzcJd6ycLcZ+oqohhLaUbUcTJOAPDEP5uxiz8KDwXejpbH39ZtHWyPyBeAVb5xnMeMEcRoPd/cgAzrUgjgjYaq+/+5A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from DS7PR11MB5966.namprd11.prod.outlook.com (2603:10b6:8:71::6) by
- BN9PR11MB5242.namprd11.prod.outlook.com (2603:10b6:408:133::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.21; Fri, 15 Sep
- 2023 06:08:04 +0000
-Received: from DS7PR11MB5966.namprd11.prod.outlook.com
- ([fe80::5e79:2d52:51e:f602]) by DS7PR11MB5966.namprd11.prod.outlook.com
- ([fe80::5e79:2d52:51e:f602%6]) with mapi id 15.20.6768.029; Fri, 15 Sep 2023
- 06:08:04 +0000
-Date: Fri, 15 Sep 2023 13:40:00 +0800
-From: Yan Zhao <yan.y.zhao@intel.com>
-To: Sean Christopherson <seanjc@google.com>
-Subject: Re: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for
- private memory
-Message-ID: <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
-References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-19-seanjc@google.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20230914015531.1419405-19-seanjc@google.com>
-X-ClientProxiedBy: SI2PR02CA0050.apcprd02.prod.outlook.com
- (2603:1096:4:196::11) To DS7PR11MB5966.namprd11.prod.outlook.com
- (2603:10b6:8:71::6)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Rn3pg3r8Xz4wxh;
+	Fri, 15 Sep 2023 16:15:55 +1000 (AEST)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38F6B1aS005416;
+	Fri, 15 Sep 2023 06:15:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=NzBv1SKpFMmCuIoCQLdKb6Amql42t9pJqhlOz3qYI8Y=;
+ b=cGz5+VOyOfin/v4Dp354+MuIfOoWVlwQ1eG8aXBIZGeLuNX5Jhv5MKa55CCbyHWKP1Z7
+ 6qi44KMqC9X486r12G9u/S8f0+SlQbc/Ai0Oxkn8CcvuGln09N1oRi3HbR/13yf1fSox
+ aibqTb2aEHaND7lA3x6Bb/ZPlDC1N0PSZi4KPW6dGfIS272trkmE/kcFJGqVrPVd6EQn
+ A4E3cyCIWajeUWsYAfwz8dNdHmZ2H46dmO9TiiDZNAxNNUaK3+M8VXgHoFp4kOBpuJdR
+ yw91YeUFscUREyOjNhuhtEvNmyJWzXij7Gqz/SenjtsH50SmJ/kku9zPCRjJDl/p8xef Tg== 
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t4h3p11s0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Sep 2023 06:15:50 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38F5ErME002932;
+	Fri, 15 Sep 2023 06:15:49 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t14hmgqt2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Sep 2023 06:15:49 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38F6Fj0s41419218
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 15 Sep 2023 06:15:46 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E4FC120040;
+	Fri, 15 Sep 2023 06:15:45 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D477B20043;
+	Fri, 15 Sep 2023 06:15:44 +0000 (GMT)
+Received: from [9.203.106.137] (unknown [9.203.106.137])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 15 Sep 2023 06:15:44 +0000 (GMT)
+Message-ID: <7542676d-d9f4-50e9-5324-f916c2472258@linux.ibm.com>
+Date: Fri, 15 Sep 2023 11:45:43 +0530
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR11MB5966:EE_|BN9PR11MB5242:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2565bab3-13d1-47da-6156-08dbb5b21f53
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: S+zDc2lULBJdvPOkh2FPKWDoTr5B51mLcT74DEhoUXqG8yYN80NbHvB8ZYEkc8cf7X7tX75g6pIQp4K/AL5OCSxTpaZNbj5er3wQP99E4wZTXsrGRg5YCAXPYye8UdGI6zjFpnr55b0gVgFYj6FmTchWPbxO5k29b2z8It7TDX8dfnjgkmhy9n5hwggUxBbmdJzy18DFNEoLscEpl75dPODbZy9M+60YIqMu4U+enKDnp3hcbUeOPifLcocTVmE+Yt8cF2Jd7WoNJYczK6LbW5utZKRO7yl2e03GdzSdofb+Y5qx6zisWOk/50PhyadhjTuNqPAejIFlKx0j1ss0gBah6ntVXOCusL2TyJsiMW4wRrWWlQ3Sfeppy1fk4IbQesmc7XtUfL522hOdT8Wiln20TQRTgkdjbm5m557yQIdcq4xOX/Did/czTPBuEFiSVhBVkWV82uWD4pIgw9TXZFhkgUetNQmSeIhZLbXnruDHY2CF80thYfvvx+GdIfvrowMLDlK/S4M2jSNC30yyagtHjf9OFATUKy709Qgu6CkXo89btOazrOwQhtjjmMKs
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR11MB5966.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(396003)(346002)(39860400002)(366004)(376002)(451199024)(1800799009)(186009)(6506007)(6486002)(7416002)(7406005)(6512007)(2906002)(26005)(66556008)(3450700001)(5660300002)(38100700002)(66476007)(316002)(8676002)(4326008)(41300700001)(8936002)(6916009)(54906003)(66946007)(82960400001)(6666004)(478600001)(86362001)(83380400001);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?oGkly7Efjpo2HEAbxPMZ4aGaRk5erelMBtYaeumhRSf4JPCcurMCNUlhg6XS?=
- =?us-ascii?Q?rR03HAnPXj0TXpRj6S5dCtd9r2fZHRsEZrCNvvh4od2lCl9b0lTcKhKs5L5T?=
- =?us-ascii?Q?vGdOizc0+Bb9ThdIj19RlqORbIW7tNqOnSwuu+GkyXRUz+RjjgvZtvH0HMtG?=
- =?us-ascii?Q?1nqnOgV4aSBAJi4J7QDjZCHKSA34Rnly+gc+2ARRYA9ihvbjk43QxxQRa0as?=
- =?us-ascii?Q?H4Khy39GIXg/rL/EUmC6OQQUBsbGJhdXrfnALvOE339+qenGJS0TD6g4N8sz?=
- =?us-ascii?Q?FFo7rHn+Z/fLfvACJobHwdbiit/APLktfaLTShYpl/aITPD4abUXeLNzb2gj?=
- =?us-ascii?Q?a1w88RH4bHeLOWtbtixiwS1mYr09WDxzFuaMNfxYYmK4S2rjuSvxAkUyYcab?=
- =?us-ascii?Q?9/o6FjexIl0lP+Yj37fGg/jcdiDt6lU/IKLagqRQvUJ33ULbO7u6dWCLO89L?=
- =?us-ascii?Q?Bju9PhWKAbrEod6tC0/rn4abWlVCQ44TVg2qPXYdQndBa6Gh5bdOMB13dfU5?=
- =?us-ascii?Q?+omdo1Afi2bEQ8GF4BLtQb0e4l44o3jX43Y4CBWVD9TinfYHX1cGUILcxdWr?=
- =?us-ascii?Q?bHoLWouNRfzuN1kU11hwKP1xi9fTmDkT2wnfaZU+Al1/2Ud0RHqh6t4bmgCg?=
- =?us-ascii?Q?0WtgrewIRrjHgQYjHDN9FdCu7/ha+Q9nR69xbrCyJ+ctDJlj9cq3I3aEyK8m?=
- =?us-ascii?Q?YoOxA42ph6t331rDokxzABFOas+fJKbADCfrxC4NpOdBh7cxU2UdMokWPUXa?=
- =?us-ascii?Q?jexYETkzp8NV5X9EW7iFP30CKoZC1fpyY969hN69zjhWrOKLL2Rsk0LANxUC?=
- =?us-ascii?Q?xjuFyKpecKlBLcvfrFRBVR7VS1i212OHf6qK24rnTHZCKoOcSfoabZOHUxXo?=
- =?us-ascii?Q?yh85Npo/kTOW7HzVlJgjwu5bmYaEA6mA0LD3tJxB2faWz5lJ7kWat+P9GRde?=
- =?us-ascii?Q?MLEirzmJPCTi+ZKo8leXrRC+ttG2joFcRHg114jxmSBgg0PWQA+Rn+kmj0u2?=
- =?us-ascii?Q?4qURY/EVoGDdPuVZwDm+GxoRAruzKwDrzpuw5QVr1IdpkCkxGvXmIZnUTj8p?=
- =?us-ascii?Q?atWkBapA8ihG8/PXz/IVOqwnNKaY4AfQttxv1Vp5j+GjsKabo3IplExvObGn?=
- =?us-ascii?Q?kY5UZu5DAJuH6eNOpXCk/gFw2VSeYKZER9eztJPRuZ7Hhh+HpFUdWvR9xkE4?=
- =?us-ascii?Q?KNlovuUmfpSLj+IdIiJ025QnXHeT728U4ppH1cXl8Bq4cJf5jk6HGPsTnsjj?=
- =?us-ascii?Q?P+9GymwmG0UFmWCgVww2wzZ7U8h4OS7Xp9vFjSU9MC3pNNlsDwJtS5PfN9SC?=
- =?us-ascii?Q?LiELTa9f0zFLnfZY/IIsWbENc1d2ar13W3PuwXetj100K6LccieSIln8lv1h?=
- =?us-ascii?Q?1YBwPObMB1bYptkBMDuoV5WruEdMGzT6xDvF2JBjIXeSoNtTq6B5C68dQ8YI?=
- =?us-ascii?Q?NhWBBlpJiT/miwAlrVpOzicMpQ9eAWLItd3n+auG63KRdn+IQ1peEcb4nSrd?=
- =?us-ascii?Q?6UEGqT3MjD7LtckP/0+O3PH/7/eVwGgR/nVg4Cg/1t6t4XpCVJ/zAwADOPz2?=
- =?us-ascii?Q?gKG2iP58jk+EdSvqLD+fHoD4iw1lAqQt+g0sN2p3?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2565bab3-13d1-47da-6156-08dbb5b21f53
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR11MB5966.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2023 06:08:04.0409
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 3BqdQQt6ZGtrfK54GbYMi54+OeE95wRqXTESwBFb5sP4OU+uWGKyzzSwlaywaLAnTI3P5b9sVJMBR7ffdEqLyQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR11MB5242
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
+Content-Language: en-US
+To: Michael Ellerman <mpe@ellerman.id.au>,
+        Aditya Gupta <adityag@linux.ibm.com>, linuxppc-dev@ozlabs.org
+References: <20230911091409.415662-1-adityag@linux.ibm.com>
+ <87v8cc7uva.fsf@mail.lhotse>
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <87v8cc7uva.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: mgGoaATgNU_efj8eA-y9MMpBrYgRxkeZ
+X-Proofpoint-ORIG-GUID: mgGoaATgNU_efj8eA-y9MMpBrYgRxkeZ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-15_05,2023-09-14_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
+ mlxscore=0 malwarescore=0 adultscore=0 clxscore=1011 lowpriorityscore=0
+ spamscore=0 phishscore=0 suspectscore=0 priorityscore=1501 mlxlogscore=865
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2308100000
+ definitions=main-2309150053
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -153,76 +109,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Yan Zhao <yan.y.zhao@intel.com>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox
- \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E.
- Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
-....
-> +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> +					      struct kvm_page_fault *fault)
-> +{
-> +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-> +				      PAGE_SIZE, fault->write, fault->exec,
-> +				      fault->is_private);
-> +}
-> +
-> +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> +				   struct kvm_page_fault *fault)
-> +{
-> +	int max_order, r;
-> +
-> +	if (!kvm_slot_can_be_private(fault->slot)) {
-> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> +		return -EFAULT;
-> +	}
-> +
-> +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-> +			     &max_order);
-> +	if (r) {
-> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> +		return r;
-> +	}
-> +
-> +	fault->max_level = min(kvm_max_level_for_order(max_order),
-> +			       fault->max_level);
-> +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
-> +
-> +	return RET_PF_CONTINUE;
-> +}
-> +
->  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
->  {
->  	struct kvm_memory_slot *slot = fault->slot;
-> @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
->  			return RET_PF_EMULATE;
->  	}
->  
-> +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
-In patch 21,
-fault->is_private is set as:
-	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
-then, the inequality here means memory attribute has been updated after
-last check.
-So, why an exit to user space for converting is required instead of a mere retry?
 
-Or, is it because how .is_private is assigned in patch 21 is subjected to change
-in future? 
 
-> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> +		return -EFAULT;
-> +	}
-> +
-> +	if (fault->is_private)
-> +		return kvm_faultin_pfn_private(vcpu, fault);
-> +
->  	async = false;
->  	fault->pfn = __gfn_to_pfn_memslot(slot, fault->gfn, false, false, &async,
->  					  fault->write, &fault->map_writable,
-> @@ -7184,6 +7255,19 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
->  }
->  
- 
+On 14/09/23 6:52 pm, Michael Ellerman wrote:
+> Aditya Gupta <adityag@linux.ibm.com> writes:
+>> Presently, while reading a vmcore, makedumpfile uses
+>> `cur_cpu_spec.mmu_features` to decide whether the crashed system had
+>> RADIX MMU or not.
+>>
+>> Currently, makedumpfile fails to get the `cur_cpu_spec` symbol (unless
+>> a vmlinux is passed with the `-x` flag to makedumpfile), and hence
+>> assigns offsets and shifts (such as pgd_offset_l4) incorrecly considering
+>> MMU to be hash MMU.
+>>
+>> Add `cur_cpu_spec` symbol and offset of `mmu_features` in the
+>> `cpu_spec` struct, to VMCOREINFO, so that the symbol address and offset
+>> is accessible to makedumpfile, without needing the vmlinux file
+> 
+> This looks fine.
+> 
+> Seems like cpu_features would be needed or at least pretty useful too?
+
+Yeah. Would be nice to have access to that, to accurately identify the
+kind of system vmcore was generated for.
+
+Thanks
+Hari
