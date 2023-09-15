@@ -4,92 +4,144 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2DCCEE3F01
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 05:44:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C663CEE3F2E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 06:16:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a4u1XY3n;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YI1ctg89;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn3612YrTz3dT5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 15:44:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn3qq1Sr0z3cRk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 16:16:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a4u1XY3n;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YI1ctg89;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mgamail.intel.com; envelope-from=yan.y.zhao@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 66 seconds by postgrey-1.37 at boromir; Fri, 15 Sep 2023 16:16:00 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn32l1Txwz3dDw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 15:41:18 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38F5bOtD030502;
-	Fri, 15 Sep 2023 05:41:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=naHUU4wRwGM9UNMMdOsyb4IqX3+G0QafCNF1Hr2qT/0=;
- b=a4u1XY3nHiUxpQtTlgB9FDtEwxCVKXU1hQZ4lWEPmf4GqEchc7+r97J4jYnM1Xb71PGc
- 54Jsoz9XjGdP9k9snmrGpb5DIqADZ2XZ5Tq+5Iw4ZIlj/lnXoEaMXVbzwje1aC+khaOx
- QVYl96qIh01Qw4juDTKBon0HntJuzPwI6lfV0lbhBNjpUbLvBjBvC8YpD8D+eScUPTxf
- 5KA1LLTk9jHq77vd3RknDi5J9K3UHZkufBb5xXD8+j+RP5JV5ShlWPIEHV6DUPfPPbbk
- 0jcKEjRYQFg4x255Al9SfIu7cX3KyIsCGJ9oSdRV3oBhdDLXrakvCaIWcurdKOiAva+f rA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t4gwngu2f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 Sep 2023 05:41:10 +0000
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38F5bOCW030550;
-	Fri, 15 Sep 2023 05:40:04 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t4gwngs68-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 Sep 2023 05:40:04 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38F4xrqi022728;
-	Fri, 15 Sep 2023 05:38:48 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t141p8kn8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 Sep 2023 05:38:48 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38F5cjd018285242
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 15 Sep 2023 05:38:45 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B05082004D;
-	Fri, 15 Sep 2023 05:38:45 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A788A20049;
-	Fri, 15 Sep 2023 05:38:43 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.67.213])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 15 Sep 2023 05:38:43 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.700.6\))
-Subject: Re: [PATCH V3 2/2] tools/perf/tests: Fix object code reading to skip
- address that falls out of text section
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <d4bf783c-191a-a80b-8001-3597c634e814@intel.com>
-Date: Fri, 15 Sep 2023 11:08:31 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <29D39955-4006-4C6F-8681-BB0E966AB39D@linux.vnet.ibm.com>
-References: <20230915052412.2643-1-atrajeev@linux.vnet.ibm.com>
- <20230915052412.2643-2-atrajeev@linux.vnet.ibm.com>
- <d4bf783c-191a-a80b-8001-3597c634e814@intel.com>
-To: Adrian Hunter <adrian.hunter@intel.com>
-X-Mailer: Apple Mail (2.3731.700.6)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: plMH7mJER6eenCkaP_slGm76Uw9dZf-C
-X-Proofpoint-ORIG-GUID: 4_-Zoc0-qa2jC7omLhDxbAthHBVnDKPH
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-15_05,2023-09-14_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- impostorscore=0 spamscore=0 bulkscore=0 lowpriorityscore=0 malwarescore=0
- mlxscore=0 priorityscore=1501 phishscore=0 adultscore=0 clxscore=1015
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309150049
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn3pm0HgPz3bwb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 16:15:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694758560; x=1726294560;
+  h=date:from:to:cc:subject:message-id:reply-to:references:
+   in-reply-to:mime-version;
+  bh=HZMbCZelhu36ygYyynRyqeUx95U5zs8SUE7ZZO1LmY4=;
+  b=YI1ctg89QVLUXKx9cLEdKEC6BLORC9eRoUfOse6TZAk7jX3GGeqLOrxp
+   6dweyj5r95INrUjlIFm1NEG9gSDMXl5CDqK4X3fSxA+DrOgH1BOqW4A/T
+   KJv20WPpDYR4J5oN9UIb9rq0GBD6OAcTj7SAyIgYRzDgJ+BIqtsq4Sbz5
+   CBOb4knKdq99Q6ZKbjo5x/2PgcpB8W2XQfuEZgH5owmhW0k6xpyPVcg+e
+   h18xiiVT03eUOMZTmzV8uS/2Mi0VRiGVs8tPo4XoYruhsIO+/4QWKlr1R
+   axg2ukqIA8h4JdT8xurcV8SG6NSjuLt9Zgn5c7C5+rfhNE5MpJZNuzmT4
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="445627424"
+X-IronPort-AV: E=Sophos;i="6.02,148,1688454000"; 
+   d="scan'208";a="445627424"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Sep 2023 23:08:08 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="744842944"
+X-IronPort-AV: E=Sophos;i="6.02,148,1688454000"; 
+   d="scan'208";a="744842944"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+  by orsmga002.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 14 Sep 2023 23:08:07 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.32; Thu, 14 Sep 2023 23:08:07 -0700
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.32 via Frontend Transport; Thu, 14 Sep 2023 23:08:07 -0700
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.168)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.32; Thu, 14 Sep 2023 23:08:07 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UFhyF/HZyVlvjh8N18MdKVcxgoU0y6fYpky+ymsCBme+tRht1HvMfZE570L7aIGt4gwIxksMZ7S04tZ5uGFuP48KwpxHl25hFLMriOehW48m+pAF9AiVhIfwx7TkJRSHHyDuCyGb6qDOerUr/S2hAghoqXdXaytu5SORzzoi0Ug2OWlnf25iVEB5t01g7nrzEhlDJ5ELy9U/GqCApD/qN4lEIy3dbH8wDcNNDWbAJ+JfpLMO6ZyVQiy8tDe7dJjfEfqnv6zrSl0coo05qaeth7CHWqrHFCRXNXBplwYhtHYm9tAectdeocvKxe7QNsaF38cHln60PIHsvNqA/7Iq2g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=cpu28DmXm6A1XkXBryuH7hR7TnWPAtI5Us2qwoMSvw8=;
+ b=kNcUModrGUmHPINpDBTFNnILZRyp4nwjBKDXsV6gjAt4gvR+6aDW4D2RYhs2oI8lTRDqmz2Dvzy+4udOWX2aSpqccLQ9EtkzhEptA8Fmv9ld8OFoZYZeI8NoZazk9ybwhJh+b0XhjMWfCfFW5ipzC2c8eXgo05hlMPyatuwiFyyDKD7WDby31c/f2eMwTK6FeIn5w9/L63cr3R17grVjPL0AjvqWVuh6N0xwnvmww8YW42MEEQCwmG6m/NebzcJd6ycLcZ+oqohhLaUbUcTJOAPDEP5uxiz8KDwXejpbH39ZtHWyPyBeAVb5xnMeMEcRoPd/cgAzrUgjgjYaq+/+5A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com (2603:10b6:8:71::6) by
+ BN9PR11MB5242.namprd11.prod.outlook.com (2603:10b6:408:133::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.21; Fri, 15 Sep
+ 2023 06:08:04 +0000
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::5e79:2d52:51e:f602]) by DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::5e79:2d52:51e:f602%6]) with mapi id 15.20.6768.029; Fri, 15 Sep 2023
+ 06:08:04 +0000
+Date: Fri, 15 Sep 2023 13:40:00 +0800
+From: Yan Zhao <yan.y.zhao@intel.com>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for
+ private memory
+Message-ID: <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
+References: <20230914015531.1419405-1-seanjc@google.com>
+ <20230914015531.1419405-19-seanjc@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230914015531.1419405-19-seanjc@google.com>
+X-ClientProxiedBy: SI2PR02CA0050.apcprd02.prod.outlook.com
+ (2603:1096:4:196::11) To DS7PR11MB5966.namprd11.prod.outlook.com
+ (2603:10b6:8:71::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR11MB5966:EE_|BN9PR11MB5242:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2565bab3-13d1-47da-6156-08dbb5b21f53
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: S+zDc2lULBJdvPOkh2FPKWDoTr5B51mLcT74DEhoUXqG8yYN80NbHvB8ZYEkc8cf7X7tX75g6pIQp4K/AL5OCSxTpaZNbj5er3wQP99E4wZTXsrGRg5YCAXPYye8UdGI6zjFpnr55b0gVgFYj6FmTchWPbxO5k29b2z8It7TDX8dfnjgkmhy9n5hwggUxBbmdJzy18DFNEoLscEpl75dPODbZy9M+60YIqMu4U+enKDnp3hcbUeOPifLcocTVmE+Yt8cF2Jd7WoNJYczK6LbW5utZKRO7yl2e03GdzSdofb+Y5qx6zisWOk/50PhyadhjTuNqPAejIFlKx0j1ss0gBah6ntVXOCusL2TyJsiMW4wRrWWlQ3Sfeppy1fk4IbQesmc7XtUfL522hOdT8Wiln20TQRTgkdjbm5m557yQIdcq4xOX/Did/czTPBuEFiSVhBVkWV82uWD4pIgw9TXZFhkgUetNQmSeIhZLbXnruDHY2CF80thYfvvx+GdIfvrowMLDlK/S4M2jSNC30yyagtHjf9OFATUKy709Qgu6CkXo89btOazrOwQhtjjmMKs
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR11MB5966.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(396003)(346002)(39860400002)(366004)(376002)(451199024)(1800799009)(186009)(6506007)(6486002)(7416002)(7406005)(6512007)(2906002)(26005)(66556008)(3450700001)(5660300002)(38100700002)(66476007)(316002)(8676002)(4326008)(41300700001)(8936002)(6916009)(54906003)(66946007)(82960400001)(6666004)(478600001)(86362001)(83380400001);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?oGkly7Efjpo2HEAbxPMZ4aGaRk5erelMBtYaeumhRSf4JPCcurMCNUlhg6XS?=
+ =?us-ascii?Q?rR03HAnPXj0TXpRj6S5dCtd9r2fZHRsEZrCNvvh4od2lCl9b0lTcKhKs5L5T?=
+ =?us-ascii?Q?vGdOizc0+Bb9ThdIj19RlqORbIW7tNqOnSwuu+GkyXRUz+RjjgvZtvH0HMtG?=
+ =?us-ascii?Q?1nqnOgV4aSBAJi4J7QDjZCHKSA34Rnly+gc+2ARRYA9ihvbjk43QxxQRa0as?=
+ =?us-ascii?Q?H4Khy39GIXg/rL/EUmC6OQQUBsbGJhdXrfnALvOE339+qenGJS0TD6g4N8sz?=
+ =?us-ascii?Q?FFo7rHn+Z/fLfvACJobHwdbiit/APLktfaLTShYpl/aITPD4abUXeLNzb2gj?=
+ =?us-ascii?Q?a1w88RH4bHeLOWtbtixiwS1mYr09WDxzFuaMNfxYYmK4S2rjuSvxAkUyYcab?=
+ =?us-ascii?Q?9/o6FjexIl0lP+Yj37fGg/jcdiDt6lU/IKLagqRQvUJ33ULbO7u6dWCLO89L?=
+ =?us-ascii?Q?Bju9PhWKAbrEod6tC0/rn4abWlVCQ44TVg2qPXYdQndBa6Gh5bdOMB13dfU5?=
+ =?us-ascii?Q?+omdo1Afi2bEQ8GF4BLtQb0e4l44o3jX43Y4CBWVD9TinfYHX1cGUILcxdWr?=
+ =?us-ascii?Q?bHoLWouNRfzuN1kU11hwKP1xi9fTmDkT2wnfaZU+Al1/2Ud0RHqh6t4bmgCg?=
+ =?us-ascii?Q?0WtgrewIRrjHgQYjHDN9FdCu7/ha+Q9nR69xbrCyJ+ctDJlj9cq3I3aEyK8m?=
+ =?us-ascii?Q?YoOxA42ph6t331rDokxzABFOas+fJKbADCfrxC4NpOdBh7cxU2UdMokWPUXa?=
+ =?us-ascii?Q?jexYETkzp8NV5X9EW7iFP30CKoZC1fpyY969hN69zjhWrOKLL2Rsk0LANxUC?=
+ =?us-ascii?Q?xjuFyKpecKlBLcvfrFRBVR7VS1i212OHf6qK24rnTHZCKoOcSfoabZOHUxXo?=
+ =?us-ascii?Q?yh85Npo/kTOW7HzVlJgjwu5bmYaEA6mA0LD3tJxB2faWz5lJ7kWat+P9GRde?=
+ =?us-ascii?Q?MLEirzmJPCTi+ZKo8leXrRC+ttG2joFcRHg114jxmSBgg0PWQA+Rn+kmj0u2?=
+ =?us-ascii?Q?4qURY/EVoGDdPuVZwDm+GxoRAruzKwDrzpuw5QVr1IdpkCkxGvXmIZnUTj8p?=
+ =?us-ascii?Q?atWkBapA8ihG8/PXz/IVOqwnNKaY4AfQttxv1Vp5j+GjsKabo3IplExvObGn?=
+ =?us-ascii?Q?kY5UZu5DAJuH6eNOpXCk/gFw2VSeYKZER9eztJPRuZ7Hhh+HpFUdWvR9xkE4?=
+ =?us-ascii?Q?KNlovuUmfpSLj+IdIiJ025QnXHeT728U4ppH1cXl8Bq4cJf5jk6HGPsTnsjj?=
+ =?us-ascii?Q?P+9GymwmG0UFmWCgVww2wzZ7U8h4OS7Xp9vFjSU9MC3pNNlsDwJtS5PfN9SC?=
+ =?us-ascii?Q?LiELTa9f0zFLnfZY/IIsWbENc1d2ar13W3PuwXetj100K6LccieSIln8lv1h?=
+ =?us-ascii?Q?1YBwPObMB1bYptkBMDuoV5WruEdMGzT6xDvF2JBjIXeSoNtTq6B5C68dQ8YI?=
+ =?us-ascii?Q?NhWBBlpJiT/miwAlrVpOzicMpQ9eAWLItd3n+auG63KRdn+IQ1peEcb4nSrd?=
+ =?us-ascii?Q?6UEGqT3MjD7LtckP/0+O3PH/7/eVwGgR/nVg4Cg/1t6t4XpCVJ/zAwADOPz2?=
+ =?us-ascii?Q?gKG2iP58jk+EdSvqLD+fHoD4iw1lAqQt+g0sN2p3?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2565bab3-13d1-47da-6156-08dbb5b21f53
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR11MB5966.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2023 06:08:04.0409
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3BqdQQt6ZGtrfK54GbYMi54+OeE95wRqXTESwBFb5sP4OU+uWGKyzzSwlaywaLAnTI3P5b9sVJMBR7ffdEqLyQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR11MB5242
+X-OriginatorOrg: intel.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,123 +153,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, maddy@linux.ibm.com, Disha Goel <disgoel@linux.ibm.com>, kjain@linux.ibm.com, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Namhyung Kim <namhyung@kernel.org>, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Yan Zhao <yan.y.zhao@intel.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox
+ \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E.
+ Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
+....
+> +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> +					      struct kvm_page_fault *fault)
+> +{
+> +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
+> +				      PAGE_SIZE, fault->write, fault->exec,
+> +				      fault->is_private);
+> +}
+> +
+> +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> +				   struct kvm_page_fault *fault)
+> +{
+> +	int max_order, r;
+> +
+> +	if (!kvm_slot_can_be_private(fault->slot)) {
+> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> +		return -EFAULT;
+> +	}
+> +
+> +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
+> +			     &max_order);
+> +	if (r) {
+> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> +		return r;
+> +	}
+> +
+> +	fault->max_level = min(kvm_max_level_for_order(max_order),
+> +			       fault->max_level);
+> +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
+> +
+> +	return RET_PF_CONTINUE;
+> +}
+> +
+>  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+>  {
+>  	struct kvm_memory_slot *slot = fault->slot;
+> @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+>  			return RET_PF_EMULATE;
+>  	}
+>  
+> +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
+In patch 21,
+fault->is_private is set as:
+	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
+then, the inequality here means memory attribute has been updated after
+last check.
+So, why an exit to user space for converting is required instead of a mere retry?
 
+Or, is it because how .is_private is assigned in patch 21 is subjected to change
+in future? 
 
-> On 15-Sep-2023, at 10:56 AM, Adrian Hunter <adrian.hunter@intel.com> =
-wrote:
->=20
-> On 15/09/23 08:24, Athira Rajeev wrote:
->> The testcase "Object code reading" fails in somecases
->> for "fs_something" sub test as below:
->>=20
->>    Reading object code for memory address: 0xc008000007f0142c
->>    File is: /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko
->>    On file address is: 0x1114cc
->>    Objdump command is: objdump -z -d --start-address=3D0x11142c =
---stop-address=3D0x1114ac /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko
->>    objdump read too few bytes: 128
->>    test child finished with -1
->>=20
->> This can alo be reproduced when running perf record with
->> workload that exercises fs_something() code. In the test
->> setup, this is exercising xfs code since root is xfs.
->>=20
->>    # perf record ./a.out
->>    # perf report -v |grep "xfs.ko"
->>      0.76% a.out /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko  =
-0xc008000007de5efc B [k] xlog_cil_commit
->>      0.74% a.out  /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko  =
-0xc008000007d5ae18 B [k] xfs_btree_key_offset
->>      0.74% a.out  /lib/modules/6.5.0-rc3+/kernel/fs/xfs/xfs.ko  =
-0xc008000007e11fd4 B [k] 0x0000000000112074
->>=20
->> Here addr "0xc008000007e11fd4" is not resolved. since this is a
->> kernel module, its offset is from the DSO. Xfs module is loaded
->> at 0xc008000007d00000
->>=20
->>   # cat /proc/modules | grep xfs
->>    xfs 2228224 3 - Live 0xc008000007d00000
->>=20
->> And size is 0x220000. So its loaded between  0xc008000007d00000
->> and 0xc008000007f20000. =46rom objdump, text section is:
->>    text 0010f7bc  0000000000000000 0000000000000000 000000a0 2**4
->>=20
->> Hence perf captured ip maps to 0x112074 which is:
->> ( ip - start of module ) + a0
->>=20
->> This offset 0x112074 falls out .text section which is up to 0x10f7bc
->> In this case for module, the address 0xc008000007e11fd4 is pointing
->> to stub instructions. This address range represents the module stubs
->> which is allocated on module load and hence is not part of DSO =
-offset.
->>=20
->> To address this issue in "object code reading", skip the sample if
->> address falls out of text section and is within the module end.
->> Use the "text_end" member of "struct dso" to do this check.
->>=20
->> To address this issue in "perf report", exploring an option of
->> having stubs range as part of the /proc/kallsyms, so that perf
->> report can resolve addresses in stubs range
->>=20
->> However this patch uses text_end to skip the stub range for
->> Object code reading testcase.
->>=20
->> Reported-by: Disha Goel <disgoel@linux.ibm.com>
->> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->> Tested-by: Disha Goel<disgoel@linux.ibm.com>
->> Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
->> ---
->> Changelog:
->> v2 -> v3:
->> Used strtailcmp in comparison for module check and added Reviewed-by
->> from Adrian, Tested-by from Disha.
->>=20
->> v1 -> v2:
->> Updated comment to add description on which arch has stub and
->> reason for skipping as suggested by Adrian
->>=20
->> tools/perf/tests/code-reading.c | 10 ++++++++++
->> 1 file changed, 10 insertions(+)
->>=20
->> diff --git a/tools/perf/tests/code-reading.c =
-b/tools/perf/tests/code-reading.c
->> index ed3815163d1b..45334d26058e 100644
->> --- a/tools/perf/tests/code-reading.c
->> +++ b/tools/perf/tests/code-reading.c
->> @@ -269,6 +269,16 @@ static int read_object_code(u64 addr, size_t =
-len, u8 cpumode,
->> if (addr + len > map__end(al.map))
->> len =3D map__end(al.map) - addr;
->>=20
->> + /*
->> +  * Some architectures (ex: powerpc) have stubs (trampolines) in =
-kernel
->> +  * modules to manage long jumps. Check if the ip offset falls in =
-stubs
->> +  * sections for kernel modules. And skip module address after text =
-end
->> +  */
->> + if (!strtailcmp(dso->long_name, ".ko") && al.addr > dso->text_end) =
-{
->> + pr_debug("skipping the module address %#"PRIx64" after text end\n", =
-al.addr);
->> + goto out;
->=20
-> Double indent
-
-My bad, addressed in V4
-
-Athira
->=20
->> + }
->> +
->> /* Read the object code using perf */
->> ret_len =3D dso__data_read_offset(dso, =
-maps__machine(thread__maps(thread)),
->> al.addr, buf1, len);
-
-
+> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> +		return -EFAULT;
+> +	}
+> +
+> +	if (fault->is_private)
+> +		return kvm_faultin_pfn_private(vcpu, fault);
+> +
+>  	async = false;
+>  	fault->pfn = __gfn_to_pfn_memslot(slot, fault->gfn, false, false, &async,
+>  					  fault->write, &fault->map_writable,
+> @@ -7184,6 +7255,19 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
+>  }
+>  
+ 
