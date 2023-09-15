@@ -4,51 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03CE5EE644C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 10:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEC87EE6455
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 10:42:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PKpIyJXf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OqGPtx9r;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn8qF3t0lz3dGk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 20:01:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rn9kV2RyYz3cVK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Sep 2023 20:42:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PKpIyJXf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OqGPtx9r;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::234; helo=mail-oi1-x234.google.com; envelope-from=herbertx@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x234.google.com (mail-oi1-x234.google.com [IPv6:2607:f8b0:4864:20::234])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn00M62Ljz3cJW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 13:24:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1694748242;
-	bh=6XG3B0FzXsmvZoKkkhm5wOJHB7Zd1TpS1JWjBGpTusE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=PKpIyJXfdhJr2Sk2XiFpR9ouUJal5nD2tBGYvkTi+yQRsa9ZIvCgirZ5+6besrqBL
-	 UlCTRNeIti/3HlXKC5s/hNh/zWDyp0CAj38ooZCtURDec0zV29n1q0vvHWP8LzC/8u
-	 j+BMCh8sirKL/ZLOdFgRYAJwTicvGuLLCgCMve6s4NNE6G+YTeu3xI1X+6WSPiiUmJ
-	 53dID1WgSubZVw/xkbEC18yiNd+dsH+sCiTIMfNZ4C0SAAbyPBEWD+PT1gDHirRJ7I
-	 e1Oe/pJXxiN5V+sroGp3Ed6zutx8sxe3J/0iaG/Wx6C4lA/ghdRZcbu2waY0Piauup
-	 ceLVj/+K8GSVw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rn0045DDWz4wxR;
-	Fri, 15 Sep 2023 13:23:48 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sohil Mehta <sohil.mehta@intel.com>, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for
- all architectures
-In-Reply-To: <20230914185804.2000497-1-sohil.mehta@intel.com>
-References: <20230914185804.2000497-1-sohil.mehta@intel.com>
-Date: Fri, 15 Sep 2023 13:23:43 +1000
-Message-ID: <878r986rwg.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rn9jW0Cn1z3bbW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 20:41:49 +1000 (AEST)
+Received: by mail-oi1-x234.google.com with SMTP id 5614622812f47-3a9f87adfe1so1234741b6e.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2023 03:41:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1694774507; x=1695379307; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1gzWd4qQtjOfUKs0FGdp1XK/HuGB/Tuv7F6Nb03IR5k=;
+        b=OqGPtx9rcCV1DRaWZGlSPlq2o2t79odzAQLSKKPMd0q1IeP+CA9UHOByoi/wwzXsSw
+         QxlVt/LzDlI55utc2IsZr11giCfo2DVxcBU+i5XgZh1G5ZzRMa9t1UlLp9z7yo0IipUL
+         vp6M5Ny/56lXcFTMyP/qfnY7b2orlwM+6Eq9QXW4txA3WGPSQqMTFmxsAphEGXPNrpeP
+         9sJEb+Q9E19N5fvFp47VTa0QejHD38bo8iV2r9E7voQMjzKsszKKVFyLYTCqkEZbZwZl
+         y7A9XJuOt4f6Io7W20NxlJ0/vF5GwkP0eNip/yeFz6l2HQqGfkvWpMZh0RH1ioVtYUwf
+         Llmw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694774507; x=1695379307;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1gzWd4qQtjOfUKs0FGdp1XK/HuGB/Tuv7F6Nb03IR5k=;
+        b=T5nZ1W54ctrJT/EnY0VJre4QMpFTIR6MSj5i/A71okraVi9PRvyMn5dpdltTUZgWdR
+         w9Wc8k8rzhlRgFeMVFVVoWGlBCZGiXAP9yaZpA8bcL08XetJ66E4Byd6upjkHj7LNBhE
+         ReFcYdcHEJGnfkPoY41yL2Z3DmuEF21NwVaQ4hESQGQ/JF2GRjF4CxVnQ2uEUDmkVMh8
+         yfIr42v65/WaLlLVOStB8DhKKOaUHqsidV0VipBZiCy8CiKMy/HYarv2/AtpUUB8BGzS
+         csNfmzEuBllanE/GlQTOHeOGG1UmB6FPVsXoqTlKUxiye7M6oLH2Rh/pEzIhRBULiETT
+         zN0Q==
+X-Gm-Message-State: AOJu0Yx5yCNqyOZ+bdJWvDABOR7J2ln470ngeq5eh0Z9tJ8A5g0JT13S
+	/4cjAmq14c4anBf2Ew+6UWo=
+X-Google-Smtp-Source: AGHT+IFpe8AfKuunKz52MX2dRnnLDy5CuQB9pEFA4YsZtIk2oHpgiy3Q5oOFA1QV6fA7kOMFhhXn4w==
+X-Received: by 2002:a05:6808:3bc:b0:3a9:3079:9547 with SMTP id n28-20020a05680803bc00b003a930799547mr1223527oie.30.1694774506732;
+        Fri, 15 Sep 2023 03:41:46 -0700 (PDT)
+Received: from gondor.apana.org.au ([2404:c804:1b2a:5507:c00a:8aff:fe00:b003])
+        by smtp.gmail.com with ESMTPSA id e5-20020a62ee05000000b006889664aa6csm2734052pfi.5.2023.09.15.03.41.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 Sep 2023 03:41:46 -0700 (PDT)
+Date: Fri, 15 Sep 2023 18:41:45 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Danny Tsen <dtsen@linux.ibm.com>
+Subject: Re: [PATCH v2] crypto: vmx: Improved AES/XTS performance of 6-way
+ unrolling for ppc.
+Message-ID: <ZQQ06U7LEgoZMSY6@gondor.apana.org.au>
+References: <20230830134911.179765-1-dtsen@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Mailman-Approved-At: Fri, 15 Sep 2023 20:00:57 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230830134911.179765-1-dtsen@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,35 +79,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com
- >, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Sohil Mehta <sohil.mehta@intel.com>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>,
-  Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: dtsen@us.ibm.com, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, appro@cryptogams.org, linux-crypto@vger.kernel.org, ltcgcw@linux.vnet.ibm.com, leitao@debian.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sohil Mehta <sohil.mehta@intel.com> writes:
-> commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
-> recently added support for map_shadow_stack() but it is limited to x86
-> only for now. There is a possibility that other architectures (namely,
-> arm64 and RISC-V), that are implementing equivalent support for shadow
-> stacks, might need to add support for it.
->
-> Independent of that, reserving arch-specific syscall numbers in the
-> syscall tables of all architectures is good practice and would help
-> avoid future conflicts. map_shadow_stack() is marked as a conditional
-> syscall in sys_ni.c. Adding it to the syscall tables of other
-> architectures is harmless and would return ENOSYS when exercised.
->
-> Note, map_shadow_stack() was assigned #453 during the merge process
-> since #452 was taken by fchmodat2().
->
-> For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
-> syscall tables.
+On Wed, Aug 30, 2023 at 09:49:11AM -0400, Danny Tsen wrote:
+> Improve AES/XTS performance of 6-way unrolling for PowerPC up
+> to 17% with tcrypt.  This is done by using one instruction,
+> vpermxor, to replace xor and vsldoi.
+> 
+> The same changes were applied to OpenSSL code and a pull request was
+> submitted.
+> 
+> This patch has been tested with the kernel crypto module tcrypt.ko and
+> has passed the selftest.  The patch is also tested with
+> CONFIG_CRYPTO_MANAGER_EXTRA_TESTS enabled.
+> 
+> Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
+> ---
+>  drivers/crypto/vmx/aesp8-ppc.pl | 141 +++++++++++++++++++++-----------
+>  1 file changed, 92 insertions(+), 49 deletions(-)
 
-Mapping it to sys_map_shadow_stack() would work fine, but I'm happy with
-sys_ni_syscall as I don't see powerpc implementing map_shadow_stack()
-any time soon.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
-cheers
+Patch applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
