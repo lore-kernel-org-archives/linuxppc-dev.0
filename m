@@ -4,40 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82C0DCD13DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 22:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC654CD13DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 22:51:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=n8pjl.ca header.i=@n8pjl.ca header.a=rsa-sha256 header.s=protonmail2 header.b=XDyAGqfx;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=n8pjl.ca header.i=@n8pjl.ca header.a=rsa-sha256 header.s=protonmail2 header.b=isfSMEg+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RqKkg65h9z3dCt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 08:50:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RqKlf3k0vz3cgD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 08:51:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=n8pjl.ca header.i=@n8pjl.ca header.a=rsa-sha256 header.s=protonmail2 header.b=XDyAGqfx;
+	dkim=pass (2048-bit key; secure) header.d=n8pjl.ca header.i=@n8pjl.ca header.a=rsa-sha256 header.s=protonmail2 header.b=isfSMEg+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=n8pjl.ca (client-ip=185.70.43.21; helo=mail-4321.protonmail.ch; envelope-from=peter@n8pjl.ca; receiver=lists.ozlabs.org)
-Received: from mail-4321.protonmail.ch (mail-4321.protonmail.ch [185.70.43.21])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=n8pjl.ca (client-ip=185.70.43.27; helo=mail-4327.protonmail.ch; envelope-from=peter@n8pjl.ca; receiver=lists.ozlabs.org)
+Received: from mail-4327.protonmail.ch (mail-4327.protonmail.ch [185.70.43.27])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RqCCp4zvxz3byH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 03:56:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RqCDJ1Pv3z301f
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 03:57:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=n8pjl.ca;
-	s=protonmail2; t=1695059779; x=1695318979;
-	bh=KDmGL0149HMvYz0D68P8rK9iJncYI66ZFd51OEaftAc=;
-	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
-	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=XDyAGqfxs1IhZyrSbs3kXmWVIDtAAGsbXg/jRzsX7fuS5Oxw4QNBzYWsvFGPZ+ksw
-	 S5Zcze4DfsU+j4F71vMZOBVGe3BZKYabMh1wfnbZ2ABquD3iq/MryJ0VB04GGHqRW3
-	 gnQBHdLwQI3E7N3+pV5UgFQGhEjTazGFHroCb4KlhwP9A18gG508T7Pqs5jbffIgxO
-	 cUkXsv81IXGY6O6u6TWRNYFNwN9rAhwcn1b7zAnxuUbHTSaeD2idJu0SKxFygNCYtF
-	 S9e7CJc5qlz+kEo5lV3WyEyT1tOTgZkgAyKcyZB3b18aHv/xFJwzM9+FJT8sFeXCTe
-	 SfZ1idLrRGTVw==
-Date: Mon, 18 Sep 2023 17:56:09 +0000
-To: reiserfs-devel@vger.kernel.org
+	s=protonmail2; t=1695059810; x=1695319010;
+	bh=yq9UeYmObYCyPMoyaq+syuS2UL6T+9qzJZIQZU7xrf8=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=isfSMEg+MN3XaiC8OKEvlCwLd382bQjD0+6gN0cdEJpc2AY3GpGF0C07JPDj184xi
+	 AzxEyp5A+AzfT8gJ+zDcTjS7FgaOb46a3pLSxAQj9rrY7AYr24obTzqcJ9V+rAHUnk
+	 JhU02KE7HE2m/x4xcmM0g1dDH+SZ5cMJ9Hj7g22MNBpDkFzazSpN+bpcethD6JNRMl
+	 FsmndLyZJ3EOC98vDNYIxXnwUtAbD0thcRgRRiDCyTizuaioyQjEt/1L+6DHDqths1
+	 CeEdzRdMch2+CVBFX2JSFeNa2fL73vztsawH0BWsrCrqPwnNzENAmzF8/kmJPj7f8o
+	 SqQwDGJI+7P8g==
+Date: Mon, 18 Sep 2023 17:56:43 +0000
+To: linuxppc-dev@lists.ozlabs.org
 From: Peter Lafreniere <peter@n8pjl.ca>
-Subject: [PATCH 0/7] arch/*: config: Remove ReiserFS from defconfig
-Message-ID: <20230918175529.19011-1-peter@n8pjl.ca>
+Subject: [PATCH 2/7] arch: powerpc: remove ReiserFS from defconfig
+Message-ID: <20230918175529.19011-3-peter@n8pjl.ca>
+In-Reply-To: <20230918175529.19011-1-peter@n8pjl.ca>
+References: <20230918175529.19011-1-peter@n8pjl.ca>
 Feedback-ID: 53133685:user:proton
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -54,64 +57,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tsbogend@alpha.franken.de, jack@suse.cz, linux-sh@vger.kernel.org, ink@jurassic.park.msu.ru, richard@nod.at, linux-um@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, geert@linux-m68k.org, Peter Lafreniere <peter@n8pjl.ca>, linux-alpha@vger.kernel.org, linux@armlinux.org.uk, johannes@sipsolutions.net, richard.henderson@linaro.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, anton.ivanov@cambridgegreys.com
+Cc: jack@suse.cz, reiserfs-devel@vger.kernel.org, Peter Lafreniere <peter@n8pjl.ca>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ReiserFS has been considered deprecated for 19 months since commit
-eb103a51640e ("reiserfs: Deprecate reiserfs"). However, there are
-several architectures that still build it into their defconfig kernels.
+ReiserFS has been deprecated for a year and a half, yet is still built
+as part of a defconfig kernel.
 
-As ReiserFS will be removed in 2025, delete all ReiserFS-related options
-from defconfig files before the filesystem's removal.
+According to commit eb103a51640e ("reiserfs: Deprecate reiserfs"), the
+filesystem is slated to be removed in 2025. Remove it from the defconfig
+profiles now, as part of its deprecation process.
 
-The series is intended to be approved/rejected on an arch-by-arch basis.
-No patch is dependant upon another in the series.
-
-See discussion originating in,
-Link: https://lore.kernel.org/linux-um/20230918125744.4342-1-peter@n8pjl.ca=
-/
-
-Peter Lafreniere (7):
-  arch: um: remove ReiserFS from defconfig
-  arch: powerpc: remove ReiserFS from defconfig
-  arch: sh: remove ReiserFS from defconfig
-  arch: mips: remove ReiserFS from defconfig
-  arch: m68k: remove ReiserFS from defconfig
-  arch: arm: remove ReiserFS from defconfig
-  arch: alpha: remove ReiserFS from defconfig
-
- arch/alpha/configs/defconfig                | 1 -
- arch/arm/configs/pxa_defconfig              | 4 ----
- arch/m68k/configs/amiga_defconfig           | 1 -
- arch/m68k/configs/apollo_defconfig          | 1 -
- arch/m68k/configs/atari_defconfig           | 1 -
- arch/m68k/configs/bvme6000_defconfig        | 1 -
- arch/m68k/configs/hp300_defconfig           | 1 -
- arch/m68k/configs/mac_defconfig             | 1 -
- arch/m68k/configs/multi_defconfig           | 1 -
- arch/m68k/configs/mvme147_defconfig         | 1 -
- arch/m68k/configs/mvme16x_defconfig         | 1 -
- arch/m68k/configs/q40_defconfig             | 1 -
- arch/m68k/configs/sun3_defconfig            | 1 -
- arch/m68k/configs/sun3x_defconfig           | 1 -
- arch/mips/configs/fuloong2e_defconfig       | 1 -
- arch/mips/configs/jazz_defconfig            | 4 ----
- arch/mips/configs/lemote2f_defconfig        | 3 ---
- arch/mips/configs/malta_defconfig           | 5 -----
- arch/mips/configs/malta_kvm_defconfig       | 5 -----
- arch/mips/configs/maltaup_xpa_defconfig     | 5 -----
- arch/mips/configs/rm200_defconfig           | 4 ----
+Signed-off-by: Peter Lafreniere <peter@n8pjl.ca>
+---
  arch/powerpc/configs/44x/sam440ep_defconfig | 1 -
  arch/powerpc/configs/g5_defconfig           | 4 ----
  arch/powerpc/configs/ppc64e_defconfig       | 4 ----
  arch/powerpc/configs/ppc6xx_defconfig       | 5 -----
- arch/sh/configs/landisk_defconfig           | 1 -
- arch/sh/configs/titan_defconfig             | 1 -
- arch/um/configs/i386_defconfig              | 1 -
- arch/um/configs/x86_64_defconfig            | 1 -
- 29 files changed, 62 deletions(-)
+ 4 files changed, 14 deletions(-)
 
+diff --git a/arch/powerpc/configs/44x/sam440ep_defconfig b/arch/powerpc/con=
+figs/44x/sam440ep_defconfig
+index 51499ee6366b..2479ab62d12f 100644
+--- a/arch/powerpc/configs/44x/sam440ep_defconfig
++++ b/arch/powerpc/configs/44x/sam440ep_defconfig
+@@ -78,7 +78,6 @@ CONFIG_EXT2_FS_XATTR=3Dy
+ CONFIG_EXT2_FS_POSIX_ACL=3Dy
+ CONFIG_EXT4_FS=3Dy
+ CONFIG_EXT4_FS_POSIX_ACL=3Dy
+-CONFIG_REISERFS_FS=3Dy
+ CONFIG_AUTOFS_FS=3Dy
+ CONFIG_ISO9660_FS=3Dy
+ CONFIG_JOLIET=3Dy
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_de=
+fconfig
+index 71d9d112c0b6..9215bed53291 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -202,10 +202,6 @@ CONFIG_EXT2_FS_SECURITY=3Dy
+ CONFIG_EXT4_FS=3Dy
+ CONFIG_EXT4_FS_POSIX_ACL=3Dy
+ CONFIG_EXT4_FS_SECURITY=3Dy
+-CONFIG_REISERFS_FS=3Dy
+-CONFIG_REISERFS_FS_XATTR=3Dy
+-CONFIG_REISERFS_FS_POSIX_ACL=3Dy
+-CONFIG_REISERFS_FS_SECURITY=3Dy
+ CONFIG_XFS_FS=3Dm
+ CONFIG_XFS_POSIX_ACL=3Dy
+ CONFIG_FS_DAX=3Dy
+diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/p=
+pc64e_defconfig
+index 624c371ffcc3..4c05f4e4d505 100644
+--- a/arch/powerpc/configs/ppc64e_defconfig
++++ b/arch/powerpc/configs/ppc64e_defconfig
+@@ -175,10 +175,6 @@ CONFIG_EXT2_FS_SECURITY=3Dy
+ CONFIG_EXT4_FS=3Dy
+ CONFIG_EXT4_FS_POSIX_ACL=3Dy
+ CONFIG_EXT4_FS_SECURITY=3Dy
+-CONFIG_REISERFS_FS=3Dy
+-CONFIG_REISERFS_FS_XATTR=3Dy
+-CONFIG_REISERFS_FS_POSIX_ACL=3Dy
+-CONFIG_REISERFS_FS_SECURITY=3Dy
+ CONFIG_JFS_FS=3Dy
+ CONFIG_JFS_POSIX_ACL=3Dy
+ CONFIG_JFS_SECURITY=3Dy
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/p=
+pc6xx_defconfig
+index eaf3273372a9..f279703425d4 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -954,11 +954,6 @@ CONFIG_EXT4_FS=3Dy
+ CONFIG_EXT4_FS_POSIX_ACL=3Dy
+ CONFIG_EXT4_FS_SECURITY=3Dy
+ CONFIG_JBD2_DEBUG=3Dy
+-CONFIG_REISERFS_FS=3Dm
+-CONFIG_REISERFS_PROC_INFO=3Dy
+-CONFIG_REISERFS_FS_XATTR=3Dy
+-CONFIG_REISERFS_FS_POSIX_ACL=3Dy
+-CONFIG_REISERFS_FS_SECURITY=3Dy
+ CONFIG_JFS_FS=3Dm
+ CONFIG_JFS_POSIX_ACL=3Dy
+ CONFIG_JFS_SECURITY=3Dy
 --=20
 2.42.0
 
