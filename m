@@ -4,37 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A9A4C46CA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 09:40:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96F3ECD37B0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 10:15:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rq0CX75cWz3cb8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 19:40:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rq0zp22Zqz3cby
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 20:15:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.137.81; helo=weierstrass.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from weierstrass.telenet-ops.be (weierstrass.telenet-ops.be [195.130.137.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rq0Bx716Sz2yGv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 19:40:07 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=14;SR=0;TI=SMTPD_---0VsKThJJ_1695029998;
-Received: from 30.240.112.49(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VsKThJJ_1695029998)
-          by smtp.aliyun-inc.com;
-          Mon, 18 Sep 2023 17:40:00 +0800
-Message-ID: <e486db16-d36d-9e14-4f10-dc755c0ef97d@linux.alibaba.com>
-Date: Mon, 18 Sep 2023 17:39:58 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rq0z9701Qz2yhP
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 20:14:59 +1000 (AEST)
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
+	by weierstrass.telenet-ops.be (Postfix) with ESMTPS id 4Rq0z23N0Hz4wxqm
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 12:14:54 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:9622:9b2f:73fd:43ad])
+	by baptiste.telenet-ops.be with bizsmtp
+	id nNEr2A00d4u9dj801NEr9R; Mon, 18 Sep 2023 12:14:53 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1qiBGw-003wYZ-LZ;
+	Mon, 18 Sep 2023 12:14:51 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1qiBHH-006GjX-FP;
+	Mon, 18 Sep 2023 12:14:51 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg Ungerer <gerg@linux-m68k.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH v2 2/2] powerpc: Replace GPL 2.0+ README.legal boilerplate with SPDX
+Date: Mon, 18 Sep 2023 12:14:44 +0200
+Message-Id: <d91725ff1ed5d4b6ba42474e2ebfeebe711cba23.1695031668.git.geert@linux-m68k.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1695031668.git.geert@linux-m68k.org>
+References: <cover.1695031668.git.geert@linux-m68k.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.14.0
-Content-Language: en-US
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-Subject: Questions: Should kernel panic when PCIe fatal error occurs?
-To: "lenb@kernel.org" <lenb@kernel.org>,
- "james.morse@arm.com" <james.morse@arm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, "bp@alien8.de" <bp@alien8.de>,
- mahesh@linux.ibm.com, bhelgaas@google.com,
- Jonathan Cameron <Jonathan.Cameron@Huawei.com>, gregkh@linuxfoundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,110 +57,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Shuai Xue <xueshuai@linux.alibaba.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-spdx@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, all folks,
+Upstream Linux never had a "README.legal" file, but it was present
+in early source releases of Linux/m68k.  It contained a simple copyright
+notice and a link to a version of the "COPYING" file that predated the
+addition of the "only valid GPL version is v2" clause.
 
-Error reporting and recovery are one of the important features of PCIe, and
-the kernel has been supporting them since version 2.6, 17 years ago.
-I am very curious about the expected behavior of the software.
-I first recap the error classification and then list my questions bellow it.
+Get rid of the references to non-existent files by replacing the
+boilerplate with SPDX license identifiers.
 
-## Recap: Error classification
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+v2:
+  - s/existant/existent/.
+---
+ arch/powerpc/kernel/ptrace/ptrace.c | 5 +----
+ arch/powerpc/kernel/signal.c        | 5 +----
+ arch/powerpc/kernel/signal.h        | 7 ++-----
+ 3 files changed, 4 insertions(+), 13 deletions(-)
 
-- Fatal Errors
-
-Fatal errors are uncorrectable error conditions which render the particular
-Link and related hardware unreliable. For Fatal errors, a reset of the
-components on the Link may be required to return to reliable operation.
-Platform handling of Fatal errors, and any efforts to limit the effects of
-these errors, is platform implementation specific. (PCIe 6.0.1, sec
-6.2.2.2.1 Fatal Errors).
-
-- Non-Fatal Errors
-
-Non-fatal errors are uncorrectable errors which cause a particular
-transaction to be unreliable but the Link is otherwise fully functional.
-Isolating Non-fatal from Fatal errors provides Requester/Receiver logic in
-a device or system management software the opportunity to recover from the
-error without resetting the components on the Link and disturbing other
-transactions in progress. Devices not associated with the transaction in
-error are not impacted by the error.  (PCIe 6.0.1, sec 6.2.2.2.1 Non-Fatal
-Errors).
-
-## What the kernel do?
-
-The Linux kernel supports both the OS native and firmware first modes in
-AER and DPC drivers. The error recovery API is defined in `struct
-pci_error_handlers`, and the recovery process is performed in several
-stages in pcie_do_recovery(). One main difference in handling PCIe errors
-is that the kernel only resets the link when a fatal error is detected.
-
-## Questions
-
-1. Should kernel panic when fatal errors occur without AER recovery?
-
-IMHO, the answer is NO. The AER driver handles both fatal and non-fatal
-errors, and I have not found any panic changes in the recovery path in OS
-native mode.
-
-As far as I know, on many X86 platforms, struct `acpi_hest_generic_status::error_severity`
-is set as CPER_SEV_FATAL in firmware first mode. As a result, kernel will
-panic immediately in ghes_proc() when fatal AER errors occur, and there
-is no chance to handle the error and perform recovery in AER driver.
-
-For fatal and non-fatal errors, struct `acpi_hest_generic_status::error_severity`
-should as CPER_SEV_RECOVERABLE, and struct `acpi_hest_generic_data::error_severity`
-should reflect its real severity. Then, the kernel is equivalent to handling
-PCIe errors in Firmware first mode as it does in OS native mode.
-Please correct me if I am wrong.
-
-However, I have changed my mind on this issue as I encounter a case where
-a error propagation is detected due to fatal DLLP (Data Link Protocol
-Error) error. A DLLP error occurred in the Compute node, causing the
-node to panic because `struct acpi_hest_generic_status::error_severity` was
-set as CPER_SEV_FATAL. However, data corruption was still detected in the
-storage node by CRC.
-
-2. Should kernel panic when AER recovery failed?
-
-This question is actually a TODO that was added when the AER driver was
-first upstreamed 17 years ago, and it is still relevant today. The kernel
-does not proactively panic regardless of the error types occurring in OS
-native mode. The DLLP error propagation case indicates that the kernel
-might should panic when recovery failed?
-
-3. Should DPC be enabled by default to contain fatal and non-fatal error?
-
-According to the PCIe specification, DPC halts PCIe traffic below a
-Downstream Port after an unmasked uncorrectable error is detected at or
-below the Port, avoiding the potential spread of any data corruption.
-
-The kernel configures DPC to be triggered only on ERR_FATAL. Literally
-speaking, only fatal error have the potential spread of any data
-corruption? In addition, the AER Severity is programable by the
-Uncorrectable Error Severity Register (Offset 0Ch in PCIe AER cap). If a
-default fatal error, e.g. DLLP, set as non-fatal, DPC will not be
-triggered.
-
-
-Looking forward to any comments and reply :)
-
-Thank you.
-
-Best Regards,
-Shuai
-
-
-[1] https://github.com/torvalds/linux/commit/6c2b374d74857e892080ee726184ec1d15e7d4e4#diff-fea64904d30501b59d2e948189bbedc476fc270ed4c15e4ae29d7f0efd06771aR438
-
-
-
-
-
-
-
-
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 5d7a72b41ae71158..727ed4a145451356 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  *  PowerPC version
+  *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+@@ -9,10 +10,6 @@
+  *
+  * Modified by Cort Dougan (cort@hq.fsmlabs.com)
+  * and Paul Mackerras (paulus@samba.org).
+- *
+- * This file is subject to the terms and conditions of the GNU General
+- * Public License.  See the file README.legal in the main directory of
+- * this archive for more details.
+  */
+ 
+ #include <linux/regset.h>
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 68a91e553e14cea2..aa17e62f37547a79 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -1,12 +1,9 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  * Common signal handling code for both 32 and 64 bits
+  *
+  *    Copyright (c) 2007 Benjamin Herrenschmidt, IBM Corporation
+  *    Extracted from signal_32.c and signal_64.c
+- *
+- * This file is subject to the terms and conditions of the GNU General
+- * Public License.  See the file README.legal in the main directory of
+- * this archive for more details.
+  */
+ 
+ #include <linux/resume_user_mode.h>
+diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
+index a429c57ed4331805..58ecea1cdc27ae80 100644
+--- a/arch/powerpc/kernel/signal.h
++++ b/arch/powerpc/kernel/signal.h
+@@ -1,10 +1,7 @@
+-/*
++/* SPDX-License-Identifier: GPL-2.0-or-later
++ *
+  *    Copyright (c) 2007 Benjamin Herrenschmidt, IBM Corporation
+  *    Extracted from signal_32.c and signal_64.c
+- *
+- * This file is subject to the terms and conditions of the GNU General
+- * Public License.  See the file README.legal in the main directory of
+- * this archive for more details.
+  */
+ 
+ #ifndef _POWERPC_ARCH_SIGNAL_H
+-- 
+2.34.1
 
