@@ -4,65 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8864CD37B0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 15:53:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83C86C46CA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 16:04:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=YOHxziA2;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=fEa5iDqP;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rq8Tr3wbbz3c9m
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 01:53:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rq8k31BzZz3cLR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 02:04:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=YOHxziA2;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=fEa5iDqP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=3sxiizqykdh4ugcpleiqqing.eqonkpwzrre-fgxnkuvu.q1ncdu.qti@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com [IPv6:2607:f8b0:4864:20::54a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f32; helo=mail-qv1-xf32.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf32.google.com (mail-qv1-xf32.google.com [IPv6:2607:f8b0:4864:20::f32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rq8Sr3hBdz3bYc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 01:52:44 +1000 (AEST)
-Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-56fb25fdf06so3096579a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 08:52:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rq8j4222dz30f9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 02:03:18 +1000 (AEST)
+Received: by mail-qv1-xf32.google.com with SMTP id 6a1803df08f44-65631aa8b93so21218506d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 09:03:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1695052362; x=1695657162; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2U3xsG0fg5xdFpPmP8zowhEzmg+gfxwbZh9hlXMaF+c=;
-        b=YOHxziA2kFNU2U0t9GSRRy7R+URP2IXjfTFWNhT0E0jOv2oc5iQfhZ3OxsXQeVAZIr
-         3yrGR5X7TG9A5JaRYcX013PYc9Zq4vnEU29M98ZYJsJS2s71gEQ1GWjak80TUTsOYjCU
-         HpfOfehT/zAEygfr2laicMJM7vhVLDCWmzldIhVE1rGyq5SIxKXwqdHl7npycIqeUvK5
-         Mct0SDJhk0oG6Vow3kHk+dwF0XFNhL1ZbKQDACqrPNLUK+p3JmTIg8tzW2S1yPyz4QhO
-         NSpYKzwVVxh14fypGgMLpVXv1+yJaewKI9qX4ZjpZdkuLnHrZcdnHA7YSRCZas2+54Zx
-         CHFA==
+        d=ziepe.ca; s=google; t=1695052995; x=1695657795; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=1AtaBW2SsBllDiJ99v10Ny7HNDE5iUEtI8mOBYM/rVQ=;
+        b=fEa5iDqPg5Uw3Rv1t7np19+/Oj7ZnluwU1MW3uVcYwKDyMiQ4tVP9oSV3LPvrpXa7A
+         M+LlmCaRqX0tlPTLFeG6oetDeybXE7dHXEkPy7sVTcOu3k+HVyTjbUQmjNQvG27sRiO4
+         vudfKGZ8ikV+uRS0O5mCkQ2xzz25KjY/NRiUEs6AA2OlQytGoA34hddNuZKEHxd24yui
+         HlNP8FoWCTPkgwOtc6UqRdmCO6/Z4Na5LHZNpVdfGNfK4mJiIimiGwkEaNR6bG4U3FE/
+         BKeeG90D03924bj3P3WCNnluyA9FwdFRbJrom2KwOCWsRofpBZxZ9u78XQrv5PtWlr8j
+         j1ZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695052362; x=1695657162;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2U3xsG0fg5xdFpPmP8zowhEzmg+gfxwbZh9hlXMaF+c=;
-        b=ndy5Q8LEcGp83ar7doxkqmL5giW4IPH7rNNLy6enPS4DwQPxqRMekPdbLyAvK/EJiJ
-         YsmgtxBLkfiRysc3NS6flUbEZ27Ahu/2zJvjGmAWXodK8t9k5L6udbP0Bp4F+ikLpJc/
-         G/u4sjsSPLj8R1zyYp12igj48Fus0mut+XphRf08hvljLlnMIUbIaiGrjVi7OdnCTH+S
-         SsmxuLPwsnj3pqctmLwm/JI87XBm6CPXlutEj6tut0Ml10WT2PUYWFeniSspDcXo5m/Y
-         u0MUQckE7BrZNy+wItFwf5HfC5LBKwsshkGCwYNlMouaKFgB5+T0KoLLWuLc6W1nw76p
-         3okA==
-X-Gm-Message-State: AOJu0YxQcjLWWhmEh3mB0CiYiwoKoLozND5fZDd3zhWfZJIlqY6s1xkL
-	8TOl4Hk1BaLSQcqDaAZlzuoqESksOQk=
-X-Google-Smtp-Source: AGHT+IGgNS2Vz9a89mB0wnbmpqOo9ipRBHkgWDp+LBnX1+UB/D0eQmGLqC9so7UJgprSn2d6kzcCXv9BIzw=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a17:903:41c2:b0:1c1:fbec:bc39 with SMTP id
- u2-20020a17090341c200b001c1fbecbc39mr210522ple.4.1695052361665; Mon, 18 Sep
- 2023 08:52:41 -0700 (PDT)
-Date: Mon, 18 Sep 2023 08:52:40 -0700
-In-Reply-To: <20230918152946.GJ13795@ziepe.ca>
-Mime-Version: 1.0
-References: <20230916003118.2540661-1-seanjc@google.com> <20230916003118.2540661-7-seanjc@google.com>
- <20230918152946.GJ13795@ziepe.ca>
-Message-ID: <ZQhySMjmuyW2Czas@google.com>
-Subject: Re: [PATCH 06/26] KVM: Drop CONFIG_KVM_VFIO and just look at KVM+VFIO
-From: Sean Christopherson <seanjc@google.com>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Content-Type: text/plain; charset="us-ascii"
+        d=1e100.net; s=20230601; t=1695052995; x=1695657795;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1AtaBW2SsBllDiJ99v10Ny7HNDE5iUEtI8mOBYM/rVQ=;
+        b=Okm5swuPetXePVmDqL4jZQ0MmpaWaDoRu6cjfDdW1qMoR7MI5Vi7cg9HKYYd0SFktg
+         q3OB9nKXcvhoEzlrAqEfx2LKP8MlB+jmWUc4UoCzQWudegn4DLt02IBIgNzwIp/qGF/e
+         Xzpp5e2yF7nusgTyzDjC8id2SpAyJ/+7cnZPsh5JbVHKxNj7ulv1r7p7eYjx0aj6WKY/
+         PG+tjLr1SBARVXLShvugF7CxGwYzVI9EkMqxcwzL+UlfrFQaxjtZxyY5Y1RbTjUs5Fzh
+         2qTYHiXfiU882xPKeP3VP9C4G2a2yPic21/KIelRE7fhVWogu0hA6/7ik21I5JU58LNa
+         3O1Q==
+X-Gm-Message-State: AOJu0YxBrJehUeUudluKUDj2UYz0ITlmLtfGt6FYSL+eQF9AbTfdb9g7
+	gOzy1MM6ouYqOQkohRATDWmoDw==
+X-Google-Smtp-Source: AGHT+IH/YnREI891cZLYoBidRStzCIsQeTayS2VX/iNCJzxAWIRbDBhzALGmOqWbEj1DKL9seHAlIw==
+X-Received: by 2002:a0c:eacf:0:b0:655:78f5:bef7 with SMTP id y15-20020a0ceacf000000b0065578f5bef7mr9471806qvp.21.1695052995341;
+        Mon, 18 Sep 2023 09:03:15 -0700 (PDT)
+Received: from ziepe.ca (hlfxns017vw-142-68-26-201.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.68.26.201])
+        by smtp.gmail.com with ESMTPSA id u20-20020a0cdd14000000b006581e82a628sm989437qvk.134.2023.09.18.09.02.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Sep 2023 09:03:14 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.95)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1qiGiA-0005k6-DG;
+	Mon, 18 Sep 2023 13:02:58 -0300
+Date: Mon, 18 Sep 2023 13:02:58 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: [PATCH 05/26] vfio: KVM: Pass get/put helpers from KVM to VFIO,
+ don't do circular lookup
+Message-ID: <20230918160258.GL13795@ziepe.ca>
+References: <20230916003118.2540661-1-seanjc@google.com>
+ <20230916003118.2540661-6-seanjc@google.com>
+ <20230918152110.GI13795@ziepe.ca>
+ <ZQhxpesyXeG+qbS6@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZQhxpesyXeG+qbS6@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,53 +90,48 @@ Cc: x86@kernel.org, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 18, 2023, Jason Gunthorpe wrote:
-> On Fri, Sep 15, 2023 at 05:30:58PM -0700, Sean Christopherson wrote:
-> > Drop KVM's KVM_VFIO Kconfig, and instead compile in VFIO support if
-> > and only if VFIO itself is enabled.  Similar to the recent change to have
-> > VFIO stop looking at HAVE_KVM, compiling in support for talking to VFIO
-> > just because the architecture supports VFIO is nonsensical.
+On Mon, Sep 18, 2023 at 08:49:57AM -0700, Sean Christopherson wrote:
+> On Mon, Sep 18, 2023, Jason Gunthorpe wrote:
+> > On Fri, Sep 15, 2023 at 05:30:57PM -0700, Sean Christopherson wrote:
+> > > Explicitly pass KVM's get/put helpers to VFIO when attaching a VM to
+> > > VFIO instead of having VFIO do a symbol lookup back into KVM.  Having both
+> > > KVM and VFIO do symbol lookups increases the overall complexity and places
+> > > an unnecessary dependency on KVM (from VFIO) without adding any value.
+> > > 
+> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > > ---
+> > >  drivers/vfio/vfio.h      |  2 ++
+> > >  drivers/vfio/vfio_main.c | 74 +++++++++++++++++++---------------------
+> > >  include/linux/vfio.h     |  4 ++-
+> > >  virt/kvm/vfio.c          |  9 +++--
+> > >  4 files changed, 47 insertions(+), 42 deletions(-)
 > > 
-> > This fixes a bug where RISC-V doesn't select KVM_VFIO, i.e. would silently
-> > fail to do connect KVM and VFIO, even though RISC-V supports VFIO.  The
-> > bug is benign as the only driver in all of Linux that actually uses the
-> > KVM reference provided by VFIO is KVM-GT, which is x86/Intel specific.
+> > I don't mind this, but Christoph had disliked my prior attempt to do
+> > this with function pointers..
+> > 
+> > The get can be inlined, IIRC, what about putting a pointer to the put
+> > inside the kvm struct?
 > 
-> Hmm, I recall that all the S390 drivers need it as well.
-> 
-> static int vfio_ap_mdev_open_device(struct vfio_device *vdev)
-> {
->         struct ap_matrix_mdev *matrix_mdev =
->                 container_of(vdev, struct ap_matrix_mdev, vdev);
-> 
->         if (!vdev->kvm)
->                 return -EINVAL;
-> 
->         return vfio_ap_mdev_set_kvm(matrix_mdev, vdev->kvm);
+> That wouldn't allow us to achieve our goal, which is to hide the details of
+> "struct kvm" from VFIO (and the rest of the kernel).
 
-Ah, I missed that the KVM reference was routed through VFIO in that case.
+> What's the objection to handing VFIO a function pointer?
 
-> I wonder if we should be making the VFIO drivers that need the kvm to
-> ask for it? 'select CONFIG_NEED_VFIO_KVM' or something?
+Hmm, looks like it was this thread:
 
-I wondered the same thing, if only to make it easier to track which drivers actually
-end up interacting directly with KVM.
+ https://lore.kernel.org/r/0-v1-33906a626da1+16b0-vfio_kvm_no_group_jgg@nvidia.com
 
-> Regardless, I fully agree with getting rid of the arch flag.
+Your rational looks a little better to me.
+
+> > The the normal kvm get/put don't have to exported symbols at all?
 > 
-> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> 
-> > --- a/virt/kvm/Makefile.kvm
-> > +++ b/virt/kvm/Makefile.kvm
-> > @@ -6,7 +6,9 @@
-> >  KVM ?= ../../../virt/kvm
-> >  
-> >  kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
-> > -kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
-> > +ifdef CONFIG_VFIO
-> > +kvm-y += $(KVM)/vfio.o
-> > +endif
-> 
-> I wonder if kvm-m magically works in kbuild so you don't need the ifdef?
+> The export of kvm_get_kvm_safe() can go away (I forgot to do that in this series),
+> but kvm_get_kvm() will hang around as it's needed by KVM sub-modules (PPC and x86),
+> KVMGT (x86), and drivers/s390/crypto/vfio_ap_ops.c (no idea what to call that beast).
 
-Yeah, that should work, no idea why I added the ifdef.
+My thought would be to keep it as an inline, there should be some way
+to do that without breaking your desire to hide the bulk of the kvm
+struct content. Like put the refcount as the first element in the
+struct and just don't ifdef it away?.
+
+Jason
