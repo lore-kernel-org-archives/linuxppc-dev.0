@@ -4,52 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E1E1CD13CF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Sep 2023 20:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32394CD13CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 01:54:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=IXsxl80L;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hMf7Jcsm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rpfw25jWtz3cCg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 06:41:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rpnt65vTdz3cNN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Sep 2023 11:54:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=IXsxl80L;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hMf7Jcsm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rpft51jkcz2xpx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 06:39:25 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 5DDEC60C4A;
-	Sun, 17 Sep 2023 20:39:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21EB5C433C9;
-	Sun, 17 Sep 2023 20:39:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1694983161;
-	bh=Ic4I248YwH676AjREz0MjYhDcUHg4J3jXSV+p38T/yo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IXsxl80LKGd9+CGrKxeZwqElHtT8kP+3TD20NCJxzEWaj6MhXm0z1Iw95sIRsR4l6
-	 rFbD8Kddn48+fLmbB6f0KlemQtWCFqTa6MAPM8AeiPjB9fqpw0QvLwP5aiJUxOHfu5
-	 EK9c6XZW5Axy3Yf7VNI5CyN6RrXImygc+QQMVzLc=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Subject: [PATCH 5.15 422/511] perf vendor events: Drop some of the JSON/events for power10 platform
-Date: Sun, 17 Sep 2023 21:14:09 +0200
-Message-ID: <20230917191123.965168646@linuxfoundation.org>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20230917191113.831992765@linuxfoundation.org>
-References: <20230917191113.831992765@linuxfoundation.org>
-User-Agent: quilt/0.67
-X-stable: review
-X-Patchwork-Hint: ignore
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rpns83pNKz3c3g
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 11:54:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1695002044; x=1726538044;
+  h=date:from:to:cc:subject:message-id;
+  bh=V6ZYBE5+ZiEIHSHMJCDYESjIcA3/5sSi0qHUswQNiDc=;
+  b=hMf7JcsmJSUrcbDJdzKxvUEtPn6/ogXOyegCfNl6n2zxqEE6+UtPqRwa
+   0T23CKel3eCKuHPbEvjq0pCrBsqMN/c13e3qf9BNfEnxEuMXZauTtJfdy
+   VfzzJi37LqaZGGMixCRRUJK81rZyJaudFZY0K0I+RH4UBYeBlX6Sw7b6P
+   x4y0+aXs8i/N5jyz5hVclznpPMKJ1ftXBIBmLNm6X8RgiXhev/xUsztHE
+   d26cLHSOJ4tV9zHRuYjic7DPcgfTYv6hIzzcw4KyUrz7tw41cOKDuShcq
+   vvzF8JYaWd62EhfzmOdGKDkyVwXp7iWrIQPwkcequJVz7IDqiLYHLhMnn
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10836"; a="358961789"
+X-IronPort-AV: E=Sophos;i="6.02,155,1688454000"; 
+   d="scan'208";a="358961789"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2023 18:53:57 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10836"; a="860873424"
+X-IronPort-AV: E=Sophos;i="6.02,155,1688454000"; 
+   d="scan'208";a="860873424"
+Received: from lkp-server02.sh.intel.com (HELO 9ef86b2655e5) ([10.239.97.151])
+  by fmsmga002.fm.intel.com with ESMTP; 17 Sep 2023 18:53:56 -0700
+Received: from kbuild by 9ef86b2655e5 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1qi3SU-0005cs-2N;
+	Mon, 18 Sep 2023 01:53:54 +0000
+Date: Mon, 18 Sep 2023 09:53:06 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS
+ f62b34b2c9b793a23afd472ca2fece44e95231d8
+Message-ID: <202309180904.Jht9xy1m-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,145 +66,179 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Ian Rogers <irogers@google.com>, Athira Rajeev <atrajeev@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev, Arnaldo Carvalho de Melo <acme@redhat.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>, Disha Goel <disgoel@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-5.15-stable review patch.  If anyone has any objections, please let me know.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: f62b34b2c9b793a23afd472ca2fece44e95231d8  Automatic merge of 'master' into merge (2023-09-16 21:01)
 
-------------------
+elapsed time: 724m
 
-From: Kajol Jain <kjain@linux.ibm.com>
+configs tested: 155
+configs skipped: 2
 
-[ Upstream commit e104df97b8dcfbab2e42de634b99bf03f0805d85 ]
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Drop some of the JSON/events for power10 platform due to counter
-data mismatch.
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20230917   gcc  
+arc                           tb10x_defconfig   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                       netwinder_defconfig   clang
+arm                   randconfig-001-20230917   gcc  
+arm                           sama5_defconfig   gcc  
+arm                        vexpress_defconfig   clang
+arm                         wpcm450_defconfig   gcc  
+arm64                            allmodconfig   gcc  
+arm64                             allnoconfig   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   clang
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20230917   gcc  
+i386         buildonly-randconfig-002-20230917   gcc  
+i386         buildonly-randconfig-003-20230917   gcc  
+i386         buildonly-randconfig-004-20230917   gcc  
+i386         buildonly-randconfig-005-20230917   gcc  
+i386         buildonly-randconfig-006-20230917   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                  randconfig-006-20230917   gcc  
+i386                  randconfig-011-20230917   gcc  
+i386                  randconfig-012-20230917   gcc  
+i386                  randconfig-013-20230917   gcc  
+i386                  randconfig-014-20230917   gcc  
+i386                  randconfig-015-20230917   gcc  
+i386                  randconfig-016-20230917   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                        allyesconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20230917   gcc  
+m68k                             alldefconfig   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                             allmodconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                            ar7_defconfig   gcc  
+mips                         bigsur_defconfig   gcc  
+mips                           jazz_defconfig   gcc  
+mips                     loongson1b_defconfig   gcc  
+nios2                            alldefconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+openrisc                         alldefconfig   gcc  
+openrisc                         allmodconfig   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+openrisc                    or1ksim_defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   gcc  
+powerpc                       holly_defconfig   gcc  
+powerpc                     kmeter1_defconfig   clang
+powerpc                     tqm8555_defconfig   gcc  
+powerpc                      tqm8xx_defconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                    nommu_virt_defconfig   clang
+riscv                 randconfig-001-20230917   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                              allnoconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                  randconfig-001-20230917   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sh                               j2_defconfig   gcc  
+sh                 kfr2r09-romimage_defconfig   gcc  
+sh                           se7712_defconfig   gcc  
+sh                   secureedge5410_defconfig   gcc  
+sh                           sh2007_defconfig   gcc  
+sh                            shmin_defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                       sparc64_defconfig   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-001-20230917   gcc  
+x86_64       buildonly-randconfig-002-20230917   gcc  
+x86_64       buildonly-randconfig-003-20230917   gcc  
+x86_64       buildonly-randconfig-004-20230917   gcc  
+x86_64       buildonly-randconfig-005-20230917   gcc  
+x86_64       buildonly-randconfig-006-20230917   gcc  
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20230917   gcc  
+x86_64                randconfig-002-20230917   gcc  
+x86_64                randconfig-003-20230917   gcc  
+x86_64                randconfig-004-20230917   gcc  
+x86_64                randconfig-005-20230917   gcc  
+x86_64                randconfig-006-20230917   gcc  
+x86_64                randconfig-011-20230917   gcc  
+x86_64                randconfig-012-20230917   gcc  
+x86_64                randconfig-013-20230917   gcc  
+x86_64                randconfig-014-20230917   gcc  
+x86_64                randconfig-015-20230917   gcc  
+x86_64                randconfig-016-20230917   gcc  
+x86_64                randconfig-071-20230917   gcc  
+x86_64                randconfig-072-20230917   gcc  
+x86_64                randconfig-073-20230917   gcc  
+x86_64                randconfig-074-20230917   gcc  
+x86_64                randconfig-075-20230917   gcc  
+x86_64                randconfig-076-20230917   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa                            allnoconfig   gcc  
+xtensa                           allyesconfig   gcc  
 
-Fixes: 32daa5d7899e0343 ("perf vendor events: Initial JSON/events list for power10 platform")
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Cc: Disha Goel <disgoel@linux.ibm.com>
-Cc: Ian Rogers <irogers@google.com>
-Cc: Kajol Jain <kjain@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: https://lore.kernel.org/r/20230814112803.1508296-2-kjain@linux.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- .../arch/powerpc/power10/floating_point.json           |  7 -------
- tools/perf/pmu-events/arch/powerpc/power10/marked.json | 10 ----------
- tools/perf/pmu-events/arch/powerpc/power10/others.json |  5 -----
- .../perf/pmu-events/arch/powerpc/power10/pipeline.json | 10 ----------
- .../pmu-events/arch/powerpc/power10/translation.json   |  5 -----
- 5 files changed, 37 deletions(-)
- delete mode 100644 tools/perf/pmu-events/arch/powerpc/power10/floating_point.json
-
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/floating_point.json b/tools/perf/pmu-events/arch/powerpc/power10/floating_point.json
-deleted file mode 100644
-index 54acb55e2c8c6..0000000000000
---- a/tools/perf/pmu-events/arch/powerpc/power10/floating_point.json
-+++ /dev/null
-@@ -1,7 +0,0 @@
--[
--  {
--    "EventCode": "0x4016E",
--    "EventName": "PM_THRESH_NOT_MET",
--    "BriefDescription": "Threshold counter did not meet threshold."
--  }
--]
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/marked.json b/tools/perf/pmu-events/arch/powerpc/power10/marked.json
-index 131f8d0e88317..f2436fc5537ce 100644
---- a/tools/perf/pmu-events/arch/powerpc/power10/marked.json
-+++ b/tools/perf/pmu-events/arch/powerpc/power10/marked.json
-@@ -19,11 +19,6 @@
-     "EventName": "PM_MRK_BR_TAKEN_CMPL",
-     "BriefDescription": "Marked Branch Taken instruction completed."
-   },
--  {
--    "EventCode": "0x20112",
--    "EventName": "PM_MRK_NTF_FIN",
--    "BriefDescription": "The marked instruction became the oldest in the pipeline before it finished. It excludes instructions that finish at dispatch."
--  },
-   {
-     "EventCode": "0x2C01C",
-     "EventName": "PM_EXEC_STALL_DMISS_OFF_CHIP",
-@@ -64,11 +59,6 @@
-     "EventName": "PM_L1_ICACHE_MISS",
-     "BriefDescription": "Demand instruction cache miss."
-   },
--  {
--    "EventCode": "0x30130",
--    "EventName": "PM_MRK_INST_FIN",
--    "BriefDescription": "marked instruction finished. Excludes instructions that finish at dispatch. Note that stores always finish twice since the address gets issued to the LSU and the data gets issued to the VSU."
--  },
-   {
-     "EventCode": "0x34146",
-     "EventName": "PM_MRK_LD_CMPL",
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/others.json b/tools/perf/pmu-events/arch/powerpc/power10/others.json
-index e691041ee8678..36c5bbc64c3be 100644
---- a/tools/perf/pmu-events/arch/powerpc/power10/others.json
-+++ b/tools/perf/pmu-events/arch/powerpc/power10/others.json
-@@ -29,11 +29,6 @@
-     "EventName": "PM_DISP_SS0_2_INSTR_CYC",
-     "BriefDescription": "Cycles in which Superslice 0 dispatches either 1 or 2 instructions."
-   },
--  {
--    "EventCode": "0x1F15C",
--    "EventName": "PM_MRK_STCX_L2_CYC",
--    "BriefDescription": "Cycles spent in the nest portion of a marked Stcx instruction. It starts counting when the operation starts to drain to the L2 and it stops counting when the instruction retires from the Instruction Completion Table (ICT) in the Instruction Sequencing Unit (ISU)."
--  },
-   {
-     "EventCode": "0x10066",
-     "EventName": "PM_ADJUNCT_CYC",
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/pipeline.json b/tools/perf/pmu-events/arch/powerpc/power10/pipeline.json
-index 449f57e8ba6af..799893c56f32b 100644
---- a/tools/perf/pmu-events/arch/powerpc/power10/pipeline.json
-+++ b/tools/perf/pmu-events/arch/powerpc/power10/pipeline.json
-@@ -194,11 +194,6 @@
-     "EventName": "PM_TLBIE_FIN",
-     "BriefDescription": "TLBIE instruction finished in the LSU. Two TLBIEs can finish each cycle. All will be counted."
-   },
--  {
--    "EventCode": "0x3D058",
--    "EventName": "PM_SCALAR_FSQRT_FDIV_ISSUE",
--    "BriefDescription": "Scalar versions of four floating point operations: fdiv,fsqrt (xvdivdp, xvdivsp, xvsqrtdp, xvsqrtsp)."
--  },
-   {
-     "EventCode": "0x30066",
-     "EventName": "PM_LSU_FIN",
-@@ -269,11 +264,6 @@
-     "EventName": "PM_IC_MISS_CMPL",
-     "BriefDescription": "Non-speculative instruction cache miss, counted at completion."
-   },
--  {
--    "EventCode": "0x4D050",
--    "EventName": "PM_VSU_NON_FLOP_CMPL",
--    "BriefDescription": "Non-floating point VSU instructions completed."
--  },
-   {
-     "EventCode": "0x4D052",
-     "EventName": "PM_2FLOP_CMPL",
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/translation.json b/tools/perf/pmu-events/arch/powerpc/power10/translation.json
-index 3e47b804a0a8f..961e2491e73f6 100644
---- a/tools/perf/pmu-events/arch/powerpc/power10/translation.json
-+++ b/tools/perf/pmu-events/arch/powerpc/power10/translation.json
-@@ -4,11 +4,6 @@
-     "EventName": "PM_MRK_START_PROBE_NOP_CMPL",
-     "BriefDescription": "Marked Start probe nop (AND R0,R0,R0) completed."
-   },
--  {
--    "EventCode": "0x20016",
--    "EventName": "PM_ST_FIN",
--    "BriefDescription": "Store finish count. Includes speculative activity."
--  },
-   {
-     "EventCode": "0x20018",
-     "EventName": "PM_ST_FWD",
 -- 
-2.40.1
-
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
