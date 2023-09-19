@@ -4,52 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC1EACD54AC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 10:08:06 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=l982ROFM;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A030CCD54B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 10:19:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rqcmj3Rzyz3cJN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 20:08:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=l982ROFM;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rqd1w2NXtz3cVy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 20:19:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rqcll6LpLz3c9N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 20:07:15 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4Rqcll5dtMz4xNj; Tue, 19 Sep 2023 20:07:15 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1695118035;
-	bh=EG4yywphNOcFKEleUbrLwZC/DLnpAynwhHRc5auN+Bg=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=l982ROFME9DhkKEs2ppYKRK0p0D8MCWs/wd8ECBdgVrqnV4T+oE/B/M+TIMtUKAAM
-	 MczlhCUbmq9KGcfyee8Ono+uGUKedljAOmDqbSjCWTMlFFYSHtotnaHjWJHlDqdSeF
-	 eN0pSKFADnrV0KNBQutUl5lwK2znZ7pBLf9XUZdfMnt2ATBXfZwLYqcDLN91mK0F6U
-	 E2YjwjGfRVt0ESYbUk6JiQoEajXJEHLE+m47P525xVDWfgxTaPC3N/dVAclItnjrZu
-	 KmbF4Gub9xVfxa/12YQtVrtDtPjcER7dlnnFcPuWt1wYqYpzcKsoYMPMBNRAIOly1F
-	 +gCAr+5Cq+yhw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rqcll4gZqz4xDB;
-	Tue, 19 Sep 2023 20:07:15 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Aditya Gupta <adityag@linux.ibm.com>
-Subject: Re: [PATCH] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
-In-Reply-To: <7wyh7samvysbs5t3uo5txdxxf3kn4dh3ydgkwjwfvewayyi4ej@n6jbmivlnshz>
-References: <20230911091409.415662-1-adityag@linux.ibm.com>
- <87v8cc7uva.fsf@mail.lhotse>
- <7wyh7samvysbs5t3uo5txdxxf3kn4dh3ydgkwjwfvewayyi4ej@n6jbmivlnshz>
-Date: Tue, 19 Sep 2023 20:07:15 +1000
-Message-ID: <87led2tr1o.fsf@mail.lhotse>
-MIME-Version: 1.0
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rqd1J2Z4dz2yW4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 20:18:59 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A9A191A07B0;
+	Tue, 19 Sep 2023 12:18:55 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 72F7A1A0313;
+	Tue, 19 Sep 2023 12:18:55 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id E62CA1820F58;
+	Tue, 19 Sep 2023 18:18:53 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	matuszpd@gmail.com
+Subject: [PATCH] ASoC: fsl_sai: Don't disable bitclock for i.MX8MP
+Date: Tue, 19 Sep 2023 17:42:13 +0800
+Message-Id: <1695116533-23287-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,37 +53,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Aditya Gupta <adityag@linux.ibm.com> writes:
-> On Thu, Sep 14, 2023 at 11:22:01PM +1000, Michael Ellerman wrote:
->> Aditya Gupta <adityag@linux.ibm.com> writes:
->> > Presently, while reading a vmcore, makedumpfile uses
->> > `cur_cpu_spec.mmu_features` to decide whether the crashed system had
->> > RADIX MMU or not.
->> >
->> > Currently, makedumpfile fails to get the `cur_cpu_spec` symbol (unless
->> > a vmlinux is passed with the `-x` flag to makedumpfile), and hence
->> > assigns offsets and shifts (such as pgd_offset_l4) incorrecly considering
->> > MMU to be hash MMU.
->> >
->> > Add `cur_cpu_spec` symbol and offset of `mmu_features` in the
->> > `cpu_spec` struct, to VMCOREINFO, so that the symbol address and offset
->> > is accessible to makedumpfile, without needing the vmlinux file
->> 
->> This looks fine.
->> 
->> Seems like cpu_features would be needed or at least pretty useful too?
->> 
->> cheers
->
-> Sure, that can be added too, to the vmcoreinfo. Not sure if it's used now, but
-> sure it can help to identify features in makedumpfile.
->
-> Will add it, in next version.
+On i.MX8MP, the BCE and TERE bit are binding with mclk
+enablement, if BCE and TERE are cleared the MCLK also be
+disabled on output pin, that cause the external codec (wm8960)
+in wrong state.
 
-Please do it in a separate commit to the mmu_features :)
+Codec (wm8960) is using the mclk to generate PLL clock,
+if mclk is disabled before disabling PLL, the codec (wm8960)
+won't generate bclk and frameclk when sysclk switch to
+MCLK source in next test case.
 
-cheers
+The test case:
+$aplay -r44100 test1.wav (PLL source)
+$aplay -r48000 test2.wav (MCLK source)
+aplay: pcm_write:2127: write error: Input/output error
+
+Fixes: 269f399dc19f ("ASoC: fsl_sai: Disable bit clock with transmitter")
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_sai.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 1e4020fae05a..8a9a30dd31e2 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -710,10 +710,15 @@ static void fsl_sai_config_disable(struct fsl_sai *sai, int dir)
+ {
+ 	unsigned int ofs = sai->soc_data->reg_offset;
+ 	bool tx = dir == TX;
+-	u32 xcsr, count = 100;
++	u32 xcsr, count = 100, mask;
++
++	if (sai->soc_data->mclk_with_tere && sai->mclk_direction_output)
++		mask = FSL_SAI_CSR_TERE;
++	else
++		mask = FSL_SAI_CSR_TERE | FSL_SAI_CSR_BCE;
+ 
+ 	regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
+-			   FSL_SAI_CSR_TERE | FSL_SAI_CSR_BCE, 0);
++			   mask, 0);
+ 
+ 	/* TERE will remain set till the end of current frame */
+ 	do {
+-- 
+2.34.1
+
