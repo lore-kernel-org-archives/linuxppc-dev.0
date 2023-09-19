@@ -4,62 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98556CD54AB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 09:03:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9EEECE79A9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 15:59:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TcoCRBVQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=n8pjl.ca header.i=@n8pjl.ca header.a=rsa-sha256 header.s=protonmail2 header.b=JLWZQZuH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RqbLZ04D0z3cQx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 19:03:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RqmZb3pvxz3cBQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Sep 2023 01:59:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TcoCRBVQ;
+	dkim=pass (2048-bit key; secure) header.d=n8pjl.ca header.i=@n8pjl.ca header.a=rsa-sha256 header.s=protonmail2 header.b=JLWZQZuH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.93; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 19 Sep 2023 19:02:58 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=n8pjl.ca (client-ip=185.70.43.23; helo=mail-4323.proton.ch; envelope-from=peter@n8pjl.ca; receiver=lists.ozlabs.org)
+X-Greylist: delayed 79351 seconds by postgrey-1.37 at boromir; Wed, 20 Sep 2023 01:58:58 AEST
+Received: from mail-4323.proton.ch (mail-4323.proton.ch [185.70.43.23])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RqbKZ0n62z30Jc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 19:02:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1695114178; x=1726650178;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=3lbpMHnCnN4tgBMsnlxIOe9ua6EYGffh/u6hevJylxY=;
-  b=TcoCRBVQBq4TiCgXSITIusAKFVL7gQd80YPImsp+T514IbMRzC/GiYgG
-   TlTDyVUa+JLcQe8rczEOigiLpS4EenG6xKIuqUE/mCToXbj1+N5IeEwmQ
-   kPDb5JsmdGcEO1hsjWdaOeNRL/ndyC7cRi/bHEL34+nUS8OH5PAB+TIMy
-   ktes8L23Ri9Wruhy+235cFUdUW9NpSyp5rMKGc5tymtQiBomvSe494i6U
-   bOrjgjjl3RwsqADL0+piRrirnCyWLpLwN9uSLCy5SXe5uYCcQmcbqCL5/
-   MoIG9gG1a5yNwzxdpkA2iWU9Pg0MLiR/rkEMael4BFGjEORdQYsZpPsAX
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10837"; a="377201143"
-X-IronPort-AV: E=Sophos;i="6.02,159,1688454000"; 
-   d="scan'208";a="377201143"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Sep 2023 02:01:47 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10837"; a="695833326"
-X-IronPort-AV: E=Sophos;i="6.02,159,1688454000"; 
-   d="scan'208";a="695833326"
-Received: from binbinwu-mobl.ccr.corp.intel.com (HELO [10.238.8.84]) ([10.238.8.84])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Sep 2023 02:01:36 -0700
-Message-ID: <e397d30c-c6af-e68f-d18e-b4e3739c5389@linux.intel.com>
-Date: Tue, 19 Sep 2023 17:01:31 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RqmYZ1nTlz30NP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2023 01:58:57 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=n8pjl.ca;
+	s=protonmail2; t=1695139129; x=1695398329;
+	bh=iQ70sqOuWy3+EASwFa0/309PrDQXmYm3GtUvJiKCnbc=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=JLWZQZuHawh1kmZgERsEMV6LqT29GcKLho21jKqkgPF1sD5uLFx8MbQaN34J1I4p7
+	 m4P68h8x4rYi2/a7K1ML+IcH+b1egMO9vVMZujHDO931fFajAvsXbs1p61rP5VH2aU
+	 lfrbBRzXdoQl6hLJE/IyC7na/C0Px9G2LsB6odzXoj4TX4AGzH9v8z/HrpIcLfJ+Bn
+	 77XAFrVcZvKoHBnmYVNTIfvfyWjli4k4Dr3fcc67nkjaKIoVsn029amWaWUYG2mke/
+	 lcqdwSK9XpRY//BoHx1XHXdR9A3Ld7auTD+jhwsmMkmewEIWzNcmdzujAE444Ounxy
+	 2CVfqDCByas5Q==
+Date: Tue, 19 Sep 2023 15:58:41 +0000
+To: segher@kernel.crashing.org
+From: Peter Lafreniere <peter@n8pjl.ca>
+Subject: Re: [PATCH 0/7] arch/*: config: Remove ReiserFS from defconfig
+Message-ID: <20230919155832.4179-1-peter@n8pjl.ca>
+In-Reply-To: <20230919151630.GO19790@gate.crashing.org>
+References: <20230918175529.19011-1-peter@n8pjl.ca> <20230918234108.GN19790@gate.crashing.org> <20230919000026.7409-1-peter@n8pjl.ca> <20230919151630.GO19790@gate.crashing.org>
+Feedback-ID: 53133685:user:proton
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Subject: Re: [RFC PATCH v12 14/33] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-To: Sean Christopherson <seanjc@google.com>
-References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-15-seanjc@google.com>
-From: Binbin Wu <binbin.wu@linux.intel.com>
-In-Reply-To: <20230914015531.1419405-15-seanjc@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,94 +57,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@orac
- le.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: linux-m68k@vger.kernel.org, tsbogend@alpha.franken.de, jack@suse.cz, reiserfs-devel@vger.kernel.org, linux-sh@vger.kernel.org, linux@armlinux.org.uk, richard.henderson@linaro.org, linux-um@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, richard@nod.at, ink@jurassic.park.msu.ru, peter@n8pjl.ca, linux-alpha@vger.kernel.org, geert@linux-m68k.org, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, anton.ivanov@cambridgegreys.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Sep 19, 2023 at 11:16, Segher Boessenkool wrote:
+>=20
+> On Tue, Sep 19, 2023 at 12:00:34AM +0000, Peter Lafreniere wrote:
+>=20
+> > On Monday, September 18th, 2023 at 19:41, Segher Boessenkool segher@ker=
+nel.crashing.org wrote:
+> >=20
+> > > On Mon, Sep 18, 2023 at 05:56:09PM +0000, Peter Lafreniere wrote:
+> > >=20
+> > > > ReiserFS has been considered deprecated for 19 months since commit
+> > > > eb103a51640e ("reiserfs: Deprecate reiserfs"). However, there are
+> > > > several architectures that still build it into their defconfig kern=
+els.
+> > > >=20
+> > > > As ReiserFS will be removed in 2025, delete all ReiserFS-related op=
+tions
+> > > > from defconfig files before the filesystem's removal.
+> > >=20
+> > > This is essentially equivalent to deleting the filesystem now. Why do
+> > > this? Is there such a hurry?
+> >=20
+> > This is not equivalent to deleting the filesystem. The filesystem can s=
+till
+> > be configured into kernels, and few distros use a defconfig kernel anyw=
+ay.
+>=20
+>=20
+> Most people who compile kernels use defconfigs though. Distros are a
+> tiny minority if you look at builds.
+>=20
+> Again: why do you want this?
+>=20
 
+Because the filesystem is deprecated and rarely used. Those who do use Reis=
+erFS
+should migrate away from it or get ready to stop upgrading their kernels so=
+on.
 
-On 9/14/2023 9:55 AM, Sean Christopherson wrote:
-[...]
-> +
-> +static void kvm_gmem_invalidate_begin(struct kvm_gmem *gmem, pgoff_t start,
-> +				      pgoff_t end)
-> +{
-> +	struct kvm_memory_slot *slot;
-> +	struct kvm *kvm = gmem->kvm;
-> +	unsigned long index;
-> +	bool flush = false;
-> +
-> +	KVM_MMU_LOCK(kvm);
-> +
-> +	kvm_mmu_invalidate_begin(kvm);
-> +
-> +	xa_for_each_range(&gmem->bindings, index, slot, start, end - 1) {
-> +		pgoff_t pgoff = slot->gmem.pgoff;
-> +
-> +		struct kvm_gfn_range gfn_range = {
-> +			.start = slot->base_gfn + max(pgoff, start) - pgoff,
-> +			.end = slot->base_gfn + min(pgoff + slot->npages, end) - pgoff,
-> +			.slot = slot,
-> +			.may_block = true,
-> +		};
-> +
-> +		flush |= kvm_mmu_unmap_gfn_range(kvm, &gfn_range);
-> +	}
-> +
-> +	if (flush)
-> +		kvm_flush_remote_tlbs(kvm);
-> +
-> +	KVM_MMU_UNLOCK(kvm);
-> +}
-> +
-> +static void kvm_gmem_invalidate_end(struct kvm_gmem *gmem, pgoff_t start,
-> +				    pgoff_t end)
-> +{
-> +	struct kvm *kvm = gmem->kvm;
-> +
-> +	KVM_MMU_LOCK(kvm);
-> +	if (xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT))
-> +		kvm_mmu_invalidate_end(kvm);
-kvm_mmu_invalidate_begin() is called unconditionally in 
-kvm_gmem_invalidate_begin(),
-but kvm_mmu_invalidate_end() is not here.
-This makes the kvm_gmem_invalidate_{begin, end}() calls asymmetric.
+This removal from defconfig:
 
+ 1) Serves as a reminder to those that use the fs that they should take the
+    above actions, but with the filesystem staying available should they ne=
+ed
+    it.
 
-> +	KVM_MMU_UNLOCK(kvm);
-> +}
-> +
-> +static long kvm_gmem_punch_hole(struct inode *inode, loff_t offset, loff_t len)
-> +{
-> +	struct list_head *gmem_list = &inode->i_mapping->private_list;
-> +	pgoff_t start = offset >> PAGE_SHIFT;
-> +	pgoff_t end = (offset + len) >> PAGE_SHIFT;
-> +	struct kvm_gmem *gmem;
-> +
-> +	/*
-> +	 * Bindings must stable across invalidation to ensure the start+end
-> +	 * are balanced.
-> +	 */
-> +	filemap_invalidate_lock(inode->i_mapping);
-> +
-> +	list_for_each_entry(gmem, gmem_list, entry) {
-> +		kvm_gmem_invalidate_begin(gmem, start, end);
-> +		kvm_gmem_invalidate_end(gmem, start, end);
-> +	}
-Why to loop for each gmem in gmem_list here?
+ 2) Stops building an obsolete and largely-unused filesystem unnecessarily.
+    Some hobbyist targets like m68k and alpha may prefer to keep all filesy=
+stems
+    available until total removal, but others like arm and UML have no need=
+ for
+    ReiserFS to be built unless specifically configured.
 
-IIUIC, offset is the offset according to the inode, it is only 
-meaningful to the
-inode passed in, i.e, it is only meaningful to the gmem binding with the 
-inode,
-not others.
+ 3) Arguably simplifies the removal of the filesystem when that takes place=
+.
+    This point is admittedly quite weak.
 
+ 4) Has to happen someday, unless someone steps up and volunteers to mainta=
+in
+    the fs. I don't find it worthwhile, but you can if you'd like. Perhaps =
+work
+    towards removal will cause a user to step forward and keep their belove=
+d
+    filesystem around?
 
-> +
-> +	filemap_invalidate_unlock(inode->i_mapping);
-> +
-> +	return 0;
-> +}
-> +
-[...]
+ 5) Doesn't actually remove support for the filesystem whatsoever. I can't
+    emphasize this enough: users who build their own kernel and maintain a
+    niche filesystem like ReiserFS should know how to flip a Kconfig switch=
+.
+
+>=20
+> Segher
+
+Cheers,
+Peter
+
