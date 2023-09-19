@@ -4,60 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75D69CD3440
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 06:44:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 498FFCD54A9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 09:18:18 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MlxigwKu;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RqXG3601lz3cTd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 16:44:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.182; helo=mail-yw1-f182.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RqbgD5mq0z3c2b
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Sep 2023 19:18:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MlxigwKu;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RqXFV6mr5z2yW6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 16:44:14 +1000 (AEST)
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-59c0442a359so43199637b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 23:44:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695105851; x=1695710651;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kAmWc6PGNbz/v7P4Pzb+X6jxKjTax8yaPXnsgZKZYbo=;
-        b=nlqhLdvxKbcnitghaKgThcZtGBlOnLfR9vsmd63ohR7rsIr805VPM7OsbPchvnqhw3
-         CksQybsijOdoO7NAaHLIzFDN5nMDezyfVnAYOHx21V67MThpQh4aeoanRgVDGAZjtneM
-         0RNH41z1lnciYFH70klGW57sN/Po5SVMRZd3FrbYBWTg9MI7xPqT4iIwKvEnHEIwaZmI
-         P5fazuiBl3FAukyXGKHT+R+jzOS0/sHjWPtY3MIy3PmyTo0S+k0TouCe3lNR5bSqjgeB
-         /ZbR7czLQi7NLd0H8LkftG3kYx8O4n1GRzsSbaDC/5SKpeY9GXOmCV5l8Ght25S+A+g1
-         KTeQ==
-X-Gm-Message-State: AOJu0YysxlDS+qoYnKxwOcB4y2qETcTWMY+XrLXI9bHPL+KpEHEgKdd0
-	D4D/KyJcq0vfP//BOPl1Qm/76IW8999cIw==
-X-Google-Smtp-Source: AGHT+IGCigN5e4NQ3ZIo2yonkqxIq4Ugu5qSnhhfpwmHbFY1nFQoxsfnu3UBl93ZzST7KxkDj0JQqw==
-X-Received: by 2002:a81:7b88:0:b0:59b:54b5:7d66 with SMTP id w130-20020a817b88000000b0059b54b57d66mr12701831ywc.34.1695105851261;
-        Mon, 18 Sep 2023 23:44:11 -0700 (PDT)
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com. [209.85.128.179])
-        by smtp.gmail.com with ESMTPSA id f128-20020a0ddc86000000b005929fd6a6c7sm3046607ywe.41.2023.09.18.23.44.10
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 Sep 2023 23:44:10 -0700 (PDT)
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-59bbdb435bfso52614897b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2023 23:44:10 -0700 (PDT)
-X-Received: by 2002:a81:d352:0:b0:59b:cfe1:bcf1 with SMTP id
- d18-20020a81d352000000b0059bcfe1bcf1mr10748173ywl.44.1695105850445; Mon, 18
- Sep 2023 23:44:10 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1695031668.git.geert@linux-m68k.org> <d91725ff1ed5d4b6ba42474e2ebfeebe711cba23.1695031668.git.geert@linux-m68k.org>
- <87h6nqlxli.fsf@mail.lhotse>
-In-Reply-To: <87h6nqlxli.fsf@mail.lhotse>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 19 Sep 2023 08:43:58 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdW6=wnOjT7qG4tHvc5X4JAJkkHMnVDsQ-dKM6i3FKyWWw@mail.gmail.com>
-Message-ID: <CAMuHMdW6=wnOjT7qG4tHvc5X4JAJkkHMnVDsQ-dKM6i3FKyWWw@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] powerpc: Replace GPL 2.0+ README.legal boilerplate
- with SPDX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RqbfB4phKz2ytG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 19:17:22 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Rqbf94LwCz4x5m
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2023 19:17:21 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4Rqbf94DZQz4x5j; Tue, 19 Sep 2023 19:17:21 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MlxigwKu;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Rqbf91vGwz4x09;
+	Tue, 19 Sep 2023 19:17:20 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38J97UYx021838;
+	Tue, 19 Sep 2023 09:17:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=lYtQzxO7vZLtkwijp3Rra+6OuS2XFzjWbwp76i65g4Q=;
+ b=MlxigwKuhOoc6qEKyMwXlIM8zEDZMYFWzFVrjeoliOon4BJSoMemBNeSdnd7SNNhO17O
+ 4HaYNsrl4ijYdIH7nlhdFrGW9e09qtlq+SziCFUkxddS6AkxPc8VilibD0XSnDIjdYvA
+ FgmlXdgEuAGh5h77md9OQNt73JQY+ickyWcpJrjjuaXlSMg4qYxBXPgp5M5X83KULISw
+ rmbS3UrObzAH5MAoSvplycn+ZdxgqEkJN1jAMSItjfDhCW33fkeuEeF7wC+R83u8Mbzz
+ G4kSIinhqeipp2ynQSRoqrc0FoWcqqK4SzxAeA5E8GeQD6Zi51O1aaYS9k87ET7OJJYP Aw== 
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t78gr0mdd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 Sep 2023 09:17:18 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38J80btL016432;
+	Tue, 19 Sep 2023 09:17:17 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3t5sd1t8nf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 Sep 2023 09:17:17 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38J9HEfY23265852
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 19 Sep 2023 09:17:15 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DB8FF2004E;
+	Tue, 19 Sep 2023 09:17:14 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 80B4020043;
+	Tue, 19 Sep 2023 09:17:13 +0000 (GMT)
+Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.ibm.com (unknown [9.109.199.72])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 19 Sep 2023 09:17:13 +0000 (GMT)
+Date: Tue, 19 Sep 2023 14:47:11 +0530
+From: Aditya Gupta <adityag@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
+Message-ID: <vypicgtriqlikpzoxqmojm4ung755nvgvwb7fthjzfyh2uznod@rabazeoqhg2t>
+References: <20230911091409.415662-1-adityag@linux.ibm.com>
+ <A4BD07EC-C0B1-4957-9201-35C15706F40B@linux.ibm.com>
+ <87sf7g7uu7.fsf@mail.lhotse>
+ <E74C5EA6-8720-47D5-ABD4-5AC6CE38BAE7@linux.ibm.com>
+ <87fs3g6xt3.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fs3g6xt3.fsf@mail.lhotse>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: hnEwEuxJ-Bup9sW1HC15IKD2uSP82rag
+X-Proofpoint-GUID: hnEwEuxJ-Bup9sW1HC15IKD2uSP82rag
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-19_03,2023-09-18_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ clxscore=1015 phishscore=0 adultscore=0 spamscore=0 malwarescore=0
+ mlxlogscore=999 priorityscore=1501 mlxscore=0 impostorscore=0 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309190076
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,43 +107,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Nicholas Piggin <npiggin@gmail.com>, linux-spdx@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Greg Ungerer <gerg@linux-m68k.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org, Sachin Sant <sachinp@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+Hello mpe,
 
-On Tue, Sep 19, 2023 at 4:13=E2=80=AFAM Michael Ellerman <mpe@ellerman.id.a=
-u> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> > Upstream Linux never had a "README.legal" file, but it was present
-> > in early source releases of Linux/m68k.  It contained a simple copyrigh=
-t
-> > notice and a link to a version of the "COPYING" file that predated the
-> > addition of the "only valid GPL version is v2" clause.
+On Fri, Sep 15, 2023 at 11:16:08AM +1000, Michael Ellerman wrote:
+> Sachin Sant <sachinp@linux.ibm.com> writes:
+> >> On 14-Sep-2023, at 6:52 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >> 
+> >> Sachin Sant <sachinp@linux.ibm.com> writes:
+> >>>> On 11-Sep-2023, at 2:44 PM, Aditya Gupta <adityag@linux.ibm.com> wrote:
+> >>>> 
+> >>>> Presently, while reading a vmcore, makedumpfile uses
+> >>>> `cur_cpu_spec.mmu_features` to decide whether the crashed system had
+> >>>> RADIX MMU or not.
+> >>>> 
+> >>>> Currently, makedumpfile fails to get the `cur_cpu_spec` symbol (unless
+> >>>> a vmlinux is passed with the `-x` flag to makedumpfile), and hence
+> >>>> assigns offsets and shifts (such as pgd_offset_l4) incorrecly considering
+> >>>> MMU to be hash MMU.
+> >>>> 
+> >>>> Add `cur_cpu_spec` symbol and offset of `mmu_features` in the
+> >>>> `cpu_spec` struct, to VMCOREINFO, so that the symbol address and offset
+> >>>> is accessible to makedumpfile, without needing the vmlinux file
+> >>>> 
+> >>>> Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
+> >>>> ---
+> >>> 
+> >>> Thanks for the patch. With this patch applied (along with makedumpfile changes)
+> >>> I am able to capture vmcore against a kernel which contains commit 8dc9a0ad0c3e
+> >> 
+> >> I can't find that commit? Was just wondering if it should be referenced
+> >> in the commit message.
+> >> 
 > >
-> > Get rid of the references to non-existent files by replacing the
-> > boilerplate with SPDX license identifiers.
+> > My bad, I copied that commit id from the email when I first reported this issue
+> > against linux-next.
 > >
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->
-> LGTM.
->
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> > The commit should be 
+> > 368a0590d954: (powerpc/book3s64/vmemmap: switch radix to use a
+> > different vmemmap handling function)
+> 
+> OK thanks.
+> 
+> Aditya, can you please rephrase the commit message to mention how that
+> commit broke the previous behaviour.
 
-Can you please take it through the PPC tree?
-Thanks!
+Offsets were being wrongly assigned, in makedumpfile, in Radix MMU case (unless
+-x vmlinux was passed to makedumpfile, which generally isn't the case)
 
-Gr{oetje,eeting}s,
+That was happening even before the '368a0590d954' commit mentioned, it's just
+that we hit the issue now, since with above commit, we needed to use those
+offsets for page traversal, in makedumpfile. And those offsets were incorrecly
+assigned, and hence page traversal failed.
 
-                        Geert
+For the offsets/shifts to be correctly assigned in makedumpfile,
+`cur_cpu_spec.mmu_features` needs to be exported in VMCOREINFO by kernel.
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+> 
+> Also I don't know what pgd_offset_l4 is?
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Sure, I will try to explain with more context in commit description in next
+version, or directly mention the particular shifts that was wrong.
+
+In makedumpfile, it is the offset of pgdir from the kernel pgd, for a given
+virtual address
+
+It is same as what the `pgd_index` function returns, in the powerpc
+kernel source.
+
+> 
+> cheers
+
+Thanks
+
