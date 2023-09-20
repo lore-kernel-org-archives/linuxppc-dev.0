@@ -4,96 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2A71CE79D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Sep 2023 14:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28392CE79DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Sep 2023 14:34:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNy/LsCd;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=f/9GjGYX;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RrLQ232Bsz3c1Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 00:24:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RrLdK3RHMz3cbT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 00:34:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNy/LsCd;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=f/9GjGYX;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2001:4860:4864:20::35; helo=mail-oa1-x35.google.com; envelope-from=keescook@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com [IPv6:2001:4860:4864:20::35])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrLP13hdQz2ymM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 00:23:33 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4RrLNy3qZVz4xNq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 00:23:30 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4RrLNy3n0fz4xMC; Thu, 21 Sep 2023 00:23:30 +1000 (AEST)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNy/LsCd;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4RrLNy0NHzz4xM7;
-	Thu, 21 Sep 2023 00:23:29 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38KE8Rjv023043;
-	Wed, 20 Sep 2023 14:23:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : content-type : in-reply-to :
- mime-version; s=pp1; bh=4aE2SLoygx07GBR/lTFAmg/RClnb4J5raV/Poy84coA=;
- b=sNy/LsCdgqIP20mXyYhqbntTLJ/xUtLYR85Jeq3qgGO/1NHatzw0C7nMNOGavGJ3X66c
- cy+d8sJ2h9BvawSL2xTZ+WJCUaeAVt5YAw3ndBROiGeZUSDFXlNvtP3ozV8fNQYstIs2
- XZLyfLUhMsaLgNsjJycuUxobeBNnl6hilVmQexxy+bR8KEdZ8SKal5RdSsCRYTlWGR6v
- bX7MaEuxUvckxVnWkGlMRKUknBKTcfpcBl2O5HWOOyWFRWL3RXsdXYevEBJSPuNzPjVb
- NH0fAcY13dB3EjzuxYT+t5WHiGkCsANkux9bz0wirXlIZfgo9G8kL0ku5b6ZZaMG+09K sw== 
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t7ydwnk9e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Sep 2023 14:23:26 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38KDUmlC010122;
-	Wed, 20 Sep 2023 14:23:26 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3t5rwke7pd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Sep 2023 14:23:25 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38KENNes14352992
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 20 Sep 2023 14:23:23 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1653520040;
-	Wed, 20 Sep 2023 14:23:23 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3BD3E20043;
-	Wed, 20 Sep 2023 14:23:21 +0000 (GMT)
-Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.ibm.com (unknown [9.171.39.62])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 20 Sep 2023 14:23:20 +0000 (GMT)
-Date: Wed, 20 Sep 2023 19:53:16 +0530
-From: Aditya Gupta <adityag@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2 1/2] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
-Message-ID: <qja6dkvqkcgxjxmgjo4cu6rpa7zvcgnvwa3gxux3f3sjpenejx@7dfbbykea3fw>
-References: <20230920105706.853626-1-adityag@linux.ibm.com>
- <87y1h1vy53.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrLcL2CWmz2yPq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 00:33:20 +1000 (AEST)
+Received: by mail-oa1-x35.google.com with SMTP id 586e51a60fabf-1d651ab1d77so4017221fac.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2023 07:33:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1695220392; x=1695825192; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=R0M1U7qooz1MSsev8bUf20ajQA/cHs54guIocLK69iQ=;
+        b=f/9GjGYXdCx9eSn3daXzJRx1leAONwF+WEEhw9z1zo8HtPjAfSYp7yf+3SCuP41Cj4
+         PyE608GRZz23AT4INBzb0Si6RwQAL91BikgpvRiyqLGnlQOPfBF6Mi/67wJb27KvecfV
+         qPEkxqB5ISHcqOpKbtCOgWJ6GuuoVvhcm5j2g=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695220392; x=1695825192;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=R0M1U7qooz1MSsev8bUf20ajQA/cHs54guIocLK69iQ=;
+        b=Fj+BFmLhcUzALJvQyDAdbqkRz1W7xnyFAHYs2LLlj75KMDkSK/eDyJe/qH17F8sRTw
+         7vXGdHgm/0Uzw/vaS9+wKZWoj1Ey/GAErlSC62VUfYiAacxShattaEbs8QTpEPV/6R04
+         dazoDNlabew0gmHaaD+Ek642KQnDm6iekJoAG2B/oDbJ9CU0UFN56KUdbqjqKEGqDBiY
+         aBz4W2SFqzw7qbviWBHMI701yDMEsx9Xb1lv61gwVgWMAUPul9wPp92h8/JEypBk3/a8
+         nup9tdMNvPcl8EeC8+AVnUcklUfCvYmaZ1fEiO4UA1lOMEVAN5bBOi79NoJ+74Ue8akr
+         h3kQ==
+X-Gm-Message-State: AOJu0Yzy8sBqTfzLWroMh//Gn5ciO8gpOpEJ6FQVoiAohmXziMpYUEt6
+	PrW7J5qZZ6uE14WztpdlPTjxYw==
+X-Google-Smtp-Source: AGHT+IHnG2fdejIvfQiUN3o+flnl539Mq0RwoAuzUXucWVFbeZV6npGQfTNnuQS5wk243vtr8CwbVA==
+X-Received: by 2002:a05:6870:8926:b0:1be:f4b3:7f49 with SMTP id i38-20020a056870892600b001bef4b37f49mr2879591oao.23.1695220392694;
+        Wed, 20 Sep 2023 07:33:12 -0700 (PDT)
+Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id t13-20020a63954d000000b00564be149a15sm9614073pgn.65.2023.09.20.07.33.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 20 Sep 2023 07:33:12 -0700 (PDT)
+Date: Wed, 20 Sep 2023 07:33:11 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Justin Stitt <justinstitt@google.com>
+Subject: Re: [PATCH] i2c: replace deprecated strncpy
+Message-ID: <202309200732.29C44010F6@keescook>
+References: <20230920-strncpy-drivers-i2c-busses-i2c-powermac-c-v1-1-0a3e9a107f8a@google.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87y1h1vy53.fsf@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: b_Wr2NPN1duhzdEuPpriAVKNfwwApVmZ
-X-Proofpoint-ORIG-GUID: b_Wr2NPN1duhzdEuPpriAVKNfwwApVmZ
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
-MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-20_05,2023-09-20_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
- priorityscore=1501 suspectscore=0 phishscore=0 adultscore=0 bulkscore=0
- mlxlogscore=999 lowpriorityscore=0 mlxscore=0 clxscore=1015
- impostorscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2308100000 definitions=main-2309200115
+In-Reply-To: <20230920-strncpy-drivers-i2c-busses-i2c-powermac-c-v1-1-0a3e9a107f8a@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,79 +74,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org, Sachin Sant <sachinp@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: Andi Shyti <andi.shyti@kernel.org>, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 20, 2023 at 05:45:36PM +0530, Aneesh Kumar K.V wrote:
-> Aditya Gupta <adityag@linux.ibm.com> writes:
+On Wed, Sep 20, 2023 at 11:07:35AM +0000, Justin Stitt wrote:
+> `strncpy` is deprecated for use on NUL-terminated destination strings [1].
 > 
-> > Since below commit, address mapping for vmemmap has changed for Radix
-> > MMU, where address mapping is stored in kernel page table itself,
-> > instead of earlier used 'vmemmap_list'.
-> >
-> >     commit 368a0590d954 ("powerpc/book3s64/vmemmap: switch radix to use
-> >     a different vmemmap handling function")
-> >
-> > Hence with upstream kernel, in case of Radix MMU, makedumpfile fails to do
-> > address translation for vmemmap addresses, as it depended on vmemmap_list,
-> > which can now be empty.
-> >
-> > While fixing the address translation in makedumpfile, it was identified
-> > that currently makedumpfile cannot distinguish between Hash MMU and
-> > Radix MMU, unless VMLINUX is passed with -x flag to makedumpfile.
-> > And hence fails to assign offsets and shifts correctly (such as in L4 to
-> > PGDIR offset calculation in makedumpfile).
-> >
-> > For getting the MMU, makedumpfile uses `cur_cpu_spec.mmu_features`.
-> >
-> > Add `cur_cpu_spec` symbol and offset of `mmu_features` in the
-> > `cpu_spec` struct, to VMCOREINFO, so that makedumpfile can assign the
-> > offsets correctly, without needing a VMLINUX.
-> >
-> > Fixes: 368a0590d954 ("powerpc/book3s64/vmemmap: switch radix to use a different vmemmap handling function")
-> > Reported-by: Sachin Sant <sachinp@linux.ibm.com>
-> > Tested-by: Sachin Sant <sachinp@linux.ibm.com>
-> > Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
-> >
-> > ---
-> > Corresponding makedumpfile patches to fix address translation, in Radix
-> > MMU case:
-> >
-> > Link: https://lore.kernel.org/kexec/B5F0F00E-F2B1-47D7-A143-5683D10DC29A@linux.ibm.com/T/#t
-> > ---
-> > ---
-> >  arch/powerpc/kexec/core.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-> > index de64c7962991..369b8334a4f0 100644
-> > --- a/arch/powerpc/kexec/core.c
-> > +++ b/arch/powerpc/kexec/core.c
-> > @@ -63,6 +63,8 @@ void arch_crash_save_vmcoreinfo(void)
-> >  #ifndef CONFIG_NUMA
-> >  	VMCOREINFO_SYMBOL(contig_page_data);
-> >  #endif
-> > +	VMCOREINFO_SYMBOL(cur_cpu_spec);
-> > +	VMCOREINFO_OFFSET(cpu_spec, mmu_features);
-> >  #if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
-> >  	VMCOREINFO_SYMBOL(vmemmap_list);
-> >  	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
-> >
+> We should prefer more robust and less ambiguous string interfaces.
 > 
-> That implies we now have to be careful when updating MMU_FTR_* #defines.
-> It is not bad considering other hacks we do in crash to identify kernel
-> changes tied to version number. But i am wondering if there another way
-> to identify radix vs hash?
+> `info.type` is expected to be NUL-terminated judging by its use in
+> `i2c_new_client_device()` wherein it is used to populate `client->name`:
+> |	strscpy(client->name, info->type, sizeof(client->name));
 > 
+> NUL-padding is not required and even if it was, `client` is already
+> zero-initialized.
+> 
+> Considering the two points from above, a suitable replacement is
+> `strscpy` [2] due to the fact that it guarantees NUL-termination on the
+> destination buffer without unnecessarily NUL-padding.
+> 
+> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
+> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
+> Link: https://github.com/KSPP/linux/issues/90
+> Cc: linux-hardening@vger.kernel.org
+> Signed-off-by: Justin Stitt <justinstitt@google.com>
 
-I could not find another way to get any other flag for RADIX vs HASH in
-makedumpfile. And currently I don't know of any other way.
+Looks like a straight replacement. Thanks!
 
-Both makedumpfile and crash look for '0x40' flag set in
-'cur_cpu_spec.mmu_features', so only requirement for 'MMU_FTR_TYPE_RADIX' is to
-be '0x40', or we will need to change the value accordingly in the tools.
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-Thanks,
-- Aditya Gupta
-
+-- 
+Kees Cook
