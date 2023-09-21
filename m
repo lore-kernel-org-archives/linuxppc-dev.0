@@ -4,59 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 941B6E71090
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 16:12:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E43BEE7D0A4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 18:08:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KbFe+/1+;
+	dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=R/GMDO51;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rs0lz6Qb3z3cTJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 02:12:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rs3L32dDmz3cDg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 04:08:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KbFe+/1+;
+	dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=R/GMDO51;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rs0ky1wxjz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 02:11:22 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 4A26960B4E;
-	Thu, 21 Sep 2023 16:11:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AC20DC61180;
-	Thu, 21 Sep 2023 16:11:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695312678;
-	bh=Eyeuwkdvq7wj2OJOY9cYSl5PSXvzc5QooICACs47Ay0=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=KbFe+/1+bnHzJb3unGZKZOcamjzg2sv7W+jeOYvXiAHQYh8XuZ+s2JIx0+JK9uAVy
-	 Gf5jbHsfjiV5DAHW4EYfw2DIz3uESCdmM0X19+lRnBFFKiD5zsEHmFquHxS/HHHMme
-	 uT0JdIWpiLiEEhs6rJ6G6UMGHVq2M5huHC9YpUJqHoHzOmuz2fI2p4VnKfNsgd2WHy
-	 2SRkpjkmjYS3xsAKF/4r5niLd95jRcgBfbOw6uUPXJEQXtnQkxtAzL0Q9ksmD2ZOd5
-	 Dkzkn/R8FYi/oSsOMvmIbod+3CpfoQbzzwDT02Anuwn1c7yWcGty0O7JFa0XJMDapP
-	 34bDM+GJ3MI+A==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 9A18AC41671;
-	Thu, 21 Sep 2023 16:11:18 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-6.6-2 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <875y43oo5q.fsf@mail.lhotse>
-References: <875y43oo5q.fsf@mail.lhotse>
-X-PR-Tracked-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-X-PR-Tracked-Message-Id: <875y43oo5q.fsf@mail.lhotse>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.6-2
-X-PR-Tracked-Commit-Id: c3f4309693758b13fbb34b3741c2e2801ad28769
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 7bdfc1af0a5af34b3c9620a2023d2ea00fd77b57
-Message-Id: <169531267862.30941.14483156173324200251.pr-tracker-bot@kernel.org>
-Date: Thu, 21 Sep 2023 16:11:18 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wanadoo.fr (client-ip=80.12.242.15; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=lists.ozlabs.org)
+Received: from smtp.smtpout.orange.fr (smtp-15.smtpout.orange.fr [80.12.242.15])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rs3K10bFHz3cDR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 04:07:30 +1000 (AEST)
+Received: from [192.168.1.18] ([86.243.2.178])
+	by smtp.orange.fr with ESMTPA
+	id jNxxqrngYWkeLjNxxqqZsH; Thu, 21 Sep 2023 19:59:57 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
+	s=t20230301; t=1695319197;
+	bh=Jy4yrl1sGF1TARfomG4wY5m/s9IFzHDGcTcBivxyLOM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=R/GMDO51rXJCXspAXvO6D8ktPA7l4Cx6HvaJdkZ8Jib3GXRDdbTES4LcpDgC1K7Gy
+	 iVPWNtSbjmHKqo27fko5suLlO8XEsvvqR8vaHgFl1siAMZXjb9QQoN8SrACQCN+Uka
+	 06feaIThbzixPjiv5gEQRKcrFxrB2KKFpsHzVwLuknGXDvGzlM5QOV4MMEUqXpv+Ix
+	 pqPRGgCm+XTHqccjHWC1VD7YP3EMA+C9eIudi8SxwJTcm4tg/XUDvFhFLqPmM5hzxV
+	 Z4pT92e+AY0LLgp0kFM3cmzinTsjrtqbsVTq9WpXRMnJS9d540YGM62kakloKgds/A
+	 3oaNWLWsLoWFQ==
+X-ME-Helo: [192.168.1.18]
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Thu, 21 Sep 2023 19:59:57 +0200
+X-ME-IP: 86.243.2.178
+Message-ID: <925da248-f582-6dd5-57ab-0fadc4e84f9e@wanadoo.fr>
+Date: Thu, 21 Sep 2023 19:59:51 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH 1/1] PCI: layerscape-ep: set 64-bit DMA mask
+To: Frank Li <Frank.Li@nxp.com>, Minghuan Lian <minghuan.Lian@nxp.com>,
+ Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>,
+ =?UTF-8?Q?Krzysztof_Wilczy=c5=84ski?= <kw@linux.com>,
+ Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ "open list:PCI DRIVER FOR FREESCALE LAYERSCAPE"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:PCI DRIVER FOR FREESCALE LAYERSCAPE" <linux-pci@vger.kernel.org>,
+ "moderated list:PCI DRIVER FOR FREESCALE LAYERSCAPE"
+ <linux-arm-kernel@lists.infradead.org>,
+ open list <linux-kernel@vger.kernel.org>
+References: <20230921153702.3281289-1-Frank.Li@nxp.com>
+Content-Language: fr, en-US
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+In-Reply-To: <20230921153702.3281289-1-Frank.Li@nxp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,19 +70,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kjain@linux.ibm.com, naveen@kernel.org, linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, bgray@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: imx@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Thu, 21 Sep 2023 19:45:21 +1000:
+Le 21/09/2023 à 17:37, Frank Li a écrit :
+> From: Guanhua Gao <guanhua.gao@nxp.com>
+> 
+> Set DMA mask and coherent DMA mask to enable 64-bit addressing.
+> 
+> Signed-off-by: Guanhua Gao <guanhua.gao@nxp.com>
+> Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+> Signed-off-by: Frank Li <Frank.Li@nxp.com>
+> ---
+>   drivers/pci/controller/dwc/pci-layerscape-ep.c | 5 +++++
+>   1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> index de4c1758a6c33..6fd0dea38a32c 100644
+> --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> @@ -249,6 +249,11 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
+>   
+>   	pcie->big_endian = of_property_read_bool(dev->of_node, "big-endian");
+>   
+> +	/* set 64-bit DMA mask and coherent DMA mask */
+> +	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64)))
+> +		if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32)))
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.6-2
+As stated in [1], dma_set_mask() with a 64-bit mask will never
+fail if dev->dma_mask is non-NULL.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/7bdfc1af0a5af34b3c9620a2023d2ea00fd77b57
+So, if it fails, the 32 bits case will also fail for the same reason.
+There is no need for the 2nd test.
 
-Thank you!
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+See [1] for Christoph Hellwig comment about it.
+
+CJ
+
+
+[1]: https://lkml.org/lkml/2021/6/7/398
+
+> +			return -EIO;
+> +
+>   	platform_set_drvdata(pdev, pcie);
+>   
+>   	ret = dw_pcie_ep_init(&pci->ep);
+
