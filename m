@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D43AE706FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:27:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E4A0E706FA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:28:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RrqnR6vwkz3dTq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:27:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rrqny645pz3dg8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:28:22 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrqlK6FvGz3c5k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:26:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrqlL2C9qz3c5k
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:26:06 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RrqlK455Tz4xNq;
-	Thu, 21 Sep 2023 19:26:05 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RrqlL144hz4xP9;
+	Thu, 21 Sep 2023 19:26:06 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>
-In-Reply-To: <20230825055601.360083-1-kjain@linux.ibm.com>
-References: <20230825055601.360083-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/perf/hv-24x7: Update domain value check
-Message-Id: <169528828843.872767.14831793424287961680.b4-ty@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>
+In-Reply-To: <20230913134129.2782088-1-naveen@kernel.org>
+References: <20230913134129.2782088-1-naveen@kernel.org>
+Subject: Re: [PATCH] powerpc: Fix build issue with LD_DEAD_CODE_DATA_ELIMINATION and FTRACE_MCOUNT_USE_PATCHABLE_FUNCTION_ENTRY
+Message-Id: <169528828845.872767.17985585791799048051.b4-ty@ellerman.id.au>
 Date: Thu, 21 Sep 2023 19:24:48 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, Krishan Gopal Sarawast <krishang@linux.vnet.ibm.com>, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 25 Aug 2023 11:26:01 +0530, Kajol Jain wrote:
-> Valid domain value is in range 1 to HV_PERF_DOMAIN_MAX.
-> Current code has check for domain value greater than or
-> equal to HV_PERF_DOMAIN_MAX. But the check for domain value 0
-> is missing.
-> Fix this issue by adding check for domain value 0.
+On Wed, 13 Sep 2023 19:11:29 +0530, Naveen N Rao wrote:
+> We recently added support for -fpatchable-function-entry and it is
+> enabled by default on ppc32 (ppc64 needs gcc v13.1.0). When building the
+> kernel for ppc32 and also enabling CONFIG_LD_DEAD_CODE_DATA_ELIMINATION,
+> we see the below build error with older gcc versions:
+>   powerpc-linux-gnu-ld: init/main.o(__patchable_function_entries): error: need linked-to section for --gc-sections
 > 
+> This error is thrown since __patchable_function_entries section would be
+> garbage collected with --gc-sections since it does not reference any
+> other kept sections. This has subsequently been fixed with:
+>   https://sourceware.org/git/?p=binutils-gdb.git;a=commitdiff;h=b7d072167715829eed0622616f6ae0182900de3e
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/perf/hv-24x7: Update domain value check
-      https://git.kernel.org/powerpc/c/4ff3ba4db5943cac1045e3e4a3c0463ea10f6930
+[1/1] powerpc: Fix build issue with LD_DEAD_CODE_DATA_ELIMINATION and FTRACE_MCOUNT_USE_PATCHABLE_FUNCTION_ENTRY
+      https://git.kernel.org/powerpc/c/60d77ed24bb3068c0837fe45b8921b0a6598829d
 
 cheers
