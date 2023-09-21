@@ -4,76 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64B12CD4F2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 07:55:35 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=QyJ6PgR9;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A8BDCD4F2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 07:57:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsPhP6H9sz3dmD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:55:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=QyJ6PgR9;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::22b; helo=mail-oi1-x22b.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsPgQ2ycWz3cbS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 17:54:40 +1000 (AEST)
-Received: by mail-oi1-x22b.google.com with SMTP id 5614622812f47-3a707bc2397so235795b6e.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 00:54:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1695369277; x=1695974077; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=mChtpslVRDtABUDMXlRNyI2zcTWp8b7v1J11sWjz5UU=;
-        b=QyJ6PgR9Ve42nKDErPgqhlxOW/bmSHQ4o3A9i85xVCZze8/Loe185etxQ+AXglSBCo
-         Bk7OZyEvazfUZU4GRIf0g1Ju2qiWRHSEZ7MiUTrsj396keyTE89lBGvIfWhQjaTSYexS
-         1kR9OqxYfu5qnoDMPzdW412np7irrt5l1AV7E+WpyZFBNmw9Ac/aGpAphSeEnhbvB5aF
-         uknyIYzIOWxG/89tQ4ssG2wZ8CGWmaZ5OTWrTKkToDaK38HA7Yk8PIbI0wSxCB2hD6rA
-         7L9jLwvRhllVUgw9qpHuKgju3MjQhQFyK3X85yvqrsEuV8SFFQ50rWZpRuEvNs24VgMy
-         B/rw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695369277; x=1695974077;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mChtpslVRDtABUDMXlRNyI2zcTWp8b7v1J11sWjz5UU=;
-        b=FPA8+VvIdJ9atLGCUUpl64aDzU++dOehHrABPs0QVGd4+5Pihl8OMELUz0PJR+u4rj
-         qX7+zK/r0Lmm6c+E3yp/FXfmK0vKwF8H0v631/Kb2dsZmL6RPTWkosr7nxseSoQ7SjQU
-         y+BebZciM/yy0fULvWg45JyMEy2LV8jxrwLTdiiKPSvdJLnCYdqyvFSFNc9zeZOMgdV2
-         vky2KroMgjmbHjPeqa84lJI3eTHBMo17/SUDS0PtAte74Am69Rrt5hyxvj97qrrsne2c
-         ObCdTlqIpgZgnGJEdjMo2Br+urxV+2VDZQQ5PpVjqdXzOR/SIjjCWXWNIK7tde6FVEgt
-         uFJw==
-X-Gm-Message-State: AOJu0Yw2F64fi1eM60rNlCfFdP2EIzS/qZxkugG5zyZZ8C1hnoO1fWBJ
-	NuLxFv2XV7P1GgbtqNVMdga+9g==
-X-Google-Smtp-Source: AGHT+IGqQ4SE81KpOPQycLdX+PpQiCkrykKUFjbltxRe8gku3+WZ7tAnJ+OrDpFpcSdrC4r4spkfyg==
-X-Received: by 2002:a05:6358:ee94:b0:143:688f:dc03 with SMTP id il20-20020a056358ee9400b00143688fdc03mr8397488rwb.2.1695369277251;
-        Fri, 22 Sep 2023 00:54:37 -0700 (PDT)
-Received: from [10.84.155.178] ([203.208.167.146])
-        by smtp.gmail.com with ESMTPSA id y19-20020aa78053000000b0066684d8115bsm2666191pfm.178.2023.09.22.00.54.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Sep 2023 00:54:36 -0700 (PDT)
-Message-ID: <6db7e7e0-4db6-f742-436b-1f4d8ae4e490@bytedance.com>
-Date: Fri, 22 Sep 2023 15:54:23 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.15.1
-Subject: Re: [PATCH v1 8/8] arm64: hugetlb: Fix set_huge_pte_at() to work with
- all swap entries
-Content-Language: en-US
-To: Ryan Roberts <ryan.roberts@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RsPkL6YwQz3dkY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:57:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 430 seconds by postgrey-1.37 at boromir; Fri, 22 Sep 2023 02:28:09 AEST
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rs16K63JQz3c5j
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 02:28:08 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 177461763;
+	Thu, 21 Sep 2023 09:21:33 -0700 (PDT)
+Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A068D3F59C;
+	Thu, 21 Sep 2023 09:20:51 -0700 (PDT)
+From: Ryan Roberts <ryan.roberts@arm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Mike Kravetz <mike.kravetz@oracle.com>,
+	Muchun Song <muchun.song@linux.dev>,
+	SeongJae Park <sj@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Lorenzo Stoakes <lstoakes@gmail.com>,
+	Anshuman Khandual <anshuman.khandual@arm.com>,
+	Peter Xu <peterx@redhat.com>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Qi Zheng <zhengqi.arch@bytedance.com>
+Subject: [PATCH v1 7/8] arm64: hugetlb: Convert set_huge_pte_at() to take vma
+Date: Thu, 21 Sep 2023 17:20:06 +0100
+Message-Id: <20230921162007.1630149-8-ryan.roberts@arm.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20230921162007.1630149-1-ryan.roberts@arm.com>
 References: <20230921162007.1630149-1-ryan.roberts@arm.com>
- <20230921162007.1630149-9-ryan.roberts@arm.com>
- <217bb956-b9f6-1057-914b-436d4c775a8b@bytedance.com>
- <3358e732-8df9-4408-8249-384b102f5d75@arm.com>
-From: Qi Zheng <zhengqi.arch@bytedance.com>
-In-Reply-To: <3358e732-8df9-4408-8249-384b102f5d75@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 22 Sep 2023 17:56:48 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,144 +69,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Helge Deller <deller@gmx.de>, Christoph Hellwig <hch@infradead.org>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, linux-parisc@vger.kernel.org, Muchun Song <muchun.song@linux.dev>, linux-kernel@vger.kernel
- .org, stable@vger.kernel.org, Uladzislau Rezki <urezki@gmail.com>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-s390@vger.kernel.org, Ryan Roberts <ryan.roberts@arm.com>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ryan,
+In order to fix a bug, arm64 needs access to the vma inside it's
+implementation of set_huge_pte_at(). Provide for this by converting the
+mm parameter to be a vma. Any implementations that require the mm can
+access it via vma->vm_mm.
 
-On 2023/9/22 15:40, Ryan Roberts wrote:
-> On 22/09/2023 03:54, Qi Zheng wrote:
->> Hi Ryan,
->>
->> On 2023/9/22 00:20, Ryan Roberts wrote:
->>> When called with a swap entry that does not embed a PFN (e.g.
->>> PTE_MARKER_POISONED or PTE_MARKER_UFFD_WP), the previous implementation
->>> of set_huge_pte_at() would either cause a BUG() to fire (if
->>> CONFIG_DEBUG_VM is enabled) or cause a dereference of an invalid address
->>> and subsequent panic.
->>>
->>> arm64's huge pte implementation supports multiple huge page sizes, some
->>> of which are implemented in the page table with contiguous mappings. So
->>> set_huge_pte_at() needs to work out how big the logical pte is, so that
->>> it can also work out how many physical ptes (or pmds) need to be
->>> written. It does this by grabbing the folio out of the pte and querying
->>> its size.
->>>
->>> However, there are cases when the pte being set is actually a swap
->>> entry. But this also used to work fine, because for huge ptes, we only
->>> ever saw migration entries and hwpoison entries. And both of these types
->>> of swap entries have a PFN embedded, so the code would grab that and
->>> everything still worked out.
->>>
->>> But over time, more calls to set_huge_pte_at() have been added that set
->>> swap entry types that do not embed a PFN. And this causes the code to go
->>> bang. The triggering case is for the uffd poison test, commit
->>> 99aa77215ad0 ("selftests/mm: add uffd unit test for UFFDIO_POISON"),
->>> which sets a PTE_MARKER_POISONED swap entry. But review shows there are
->>> other places too (PTE_MARKER_UFFD_WP).
->>>
->>> So the root cause is due to commit 18f3962953e4 ("mm: hugetlb: kill
->>> set_huge_swap_pte_at()"), which aimed to simplify the interface to the
->>> core code by removing set_huge_swap_pte_at() (which took a page size
->>> parameter) and replacing it with calls to set_huge_swap_pte_at() where
->>> the size was inferred from the folio, as descibed above. While that
->>> commit didn't break anything at the time,
->>
->> If it didn't break anything at that time, then shouldn't the Fixes tag
->> be added to this commit?
->>
->>> it did break the interface
->>> because it couldn't handle swap entries without PFNs. And since then new
->>> callers have come along which rely on this working.
->>
->> So the Fixes tag should be added only to the commit that introduces the
->> first new callers?
-> 
-> Well I guess it's a matter of point of view; My view is that 18f3962953e4 is the
-> buggy change because it broke the interface to not be able to handle swap
-> entries which do not contain PFNs. The fact that there were no callers that used
-> the interface in this way at the time of the commit is irrelevant in my view.
+This commit makes the required arm64 modifications. Separate commits
+update the other arches and core code, before the actual bug is fixed in
+arm64.
 
-I understand your point of view.
+No behavioral changes intended.
 
-But IIUC, the Fixes tag is used to indicate the version that needs to
-backport, but the version where the commit 18f3962953e4 is located
-does not need to backport this bugfix patch.
+Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
+---
+ arch/arm64/include/asm/hugetlb.h | 2 +-
+ arch/arm64/mm/hugetlbpage.c      | 5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-> But I already added 2 fixes tags; one for the buggy commit, and the other for
-> the commit containing the new user of the interface.
+diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+index f43a38ac1779..efc9025b9d27 100644
+--- a/arch/arm64/include/asm/hugetlb.h
++++ b/arch/arm64/include/asm/hugetlb.h
+@@ -27,7 +27,7 @@ static inline void arch_clear_hugepage_flags(struct page *page)
+ pte_t arch_make_huge_pte(pte_t entry, unsigned int shift, vm_flags_t flags);
+ #define arch_make_huge_pte arch_make_huge_pte
+ #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
+-extern void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++extern void set_huge_pte_at(struct vm_area_struct *vma, unsigned long addr,
+ 			    pte_t *ptep, pte_t pte);
+ #define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
+ extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
+index 9c52718ea750..844832511c1e 100644
+--- a/arch/arm64/mm/hugetlbpage.c
++++ b/arch/arm64/mm/hugetlbpage.c
+@@ -248,9 +248,10 @@ static inline struct folio *hugetlb_swap_entry_to_folio(swp_entry_t entry)
+ 	return page_folio(pfn_to_page(swp_offset_pfn(entry)));
+ }
+ 
+-void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++void set_huge_pte_at(struct vm_area_struct *vma, unsigned long addr,
+ 			    pte_t *ptep, pte_t pte)
+ {
++	struct mm_struct *mm = vma->vm_mm;
+ 	size_t pgsize;
+ 	int i;
+ 	int ncontig;
+@@ -571,5 +572,5 @@ pte_t huge_ptep_modify_prot_start(struct vm_area_struct *vma, unsigned long addr
+ void huge_ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep,
+ 				  pte_t old_pte, pte_t pte)
+ {
+-	set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
++	set_huge_pte_at(vma, addr, ptep, pte);
+ }
+-- 
+2.25.1
 
-I think 2 fixes tags will cause inconvenience to the maintainers.
-
-Thanks,
-Qi
-
-> 
->>
->> Other than that, LGTM.
-> 
-> Thanks!
-> 
->>
->> Thanks,
->> Qi
->>
->>>
->>> Now that we have modified the set_huge_pte_at() interface to pass the
->>> vma, we can extract the huge page size from it and fix this issue.
->>>
->>> I'm tagging the commit that added the uffd poison feature, since that is
->>> what exposed the problem, as well as the original change that broke the
->>> interface. Hopefully this is valuable for people doing bisect.
->>>
->>> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
->>> Fixes: 18f3962953e4 ("mm: hugetlb: kill set_huge_swap_pte_at()")
->>> Fixes: 8a13897fb0da ("mm: userfaultfd: support UFFDIO_POISON for hugetlbfs")
->>> ---
->>>    arch/arm64/mm/hugetlbpage.c | 17 +++--------------
->>>    1 file changed, 3 insertions(+), 14 deletions(-)
->>>
->>> diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
->>> index 844832511c1e..a08601a14689 100644
->>> --- a/arch/arm64/mm/hugetlbpage.c
->>> +++ b/arch/arm64/mm/hugetlbpage.c
->>> @@ -241,13 +241,6 @@ static void clear_flush(struct mm_struct *mm,
->>>        flush_tlb_range(&vma, saddr, addr);
->>>    }
->>>    -static inline struct folio *hugetlb_swap_entry_to_folio(swp_entry_t entry)
->>> -{
->>> -    VM_BUG_ON(!is_migration_entry(entry) && !is_hwpoison_entry(entry));
->>> -
->>> -    return page_folio(pfn_to_page(swp_offset_pfn(entry)));
->>> -}
->>> -
->>>    void set_huge_pte_at(struct vm_area_struct *vma, unsigned long addr,
->>>                    pte_t *ptep, pte_t pte)
->>>    {
->>> @@ -258,13 +251,10 @@ void set_huge_pte_at(struct vm_area_struct *vma,
->>> unsigned long addr,
->>>        unsigned long pfn, dpfn;
->>>        pgprot_t hugeprot;
->>>    -    if (!pte_present(pte)) {
->>> -        struct folio *folio;
->>> -
->>> -        folio = hugetlb_swap_entry_to_folio(pte_to_swp_entry(pte));
->>> -        ncontig = num_contig_ptes(folio_size(folio), &pgsize);
->>> +    ncontig = num_contig_ptes(huge_page_size(hstate_vma(vma)), &pgsize);
->>>    -        for (i = 0; i < ncontig; i++, ptep++)
->>> +    if (!pte_present(pte)) {
->>> +        for (i = 0; i < ncontig; i++, ptep++, addr += pgsize)
->>>                set_pte_at(mm, addr, ptep, pte);
->>>            return;
->>>        }
->>> @@ -274,7 +264,6 @@ void set_huge_pte_at(struct vm_area_struct *vma, unsigned
->>> long addr,
->>>            return;
->>>        }
->>>    -    ncontig = find_num_contig(mm, addr, ptep, &pgsize);
->>>        pfn = pte_pfn(pte);
->>>        dpfn = pgsize >> PAGE_SHIFT;
->>>        hugeprot = pte_pgprot(pte);
-> 
