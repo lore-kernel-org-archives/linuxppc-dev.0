@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A847E706FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:28:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80B7EE706F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:29:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RrqpV26msz3djt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:28:50 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rrqq31s0kz3dD3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:29:19 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrqlM25pwz3c5k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:26:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrqpW6PVDz3cTZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:28:51 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RrqlG1X3wz4x5K;
-	Thu, 21 Sep 2023 19:26:02 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RrqpW44ZDz4x5k;
+	Thu, 21 Sep 2023 19:28:51 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
-In-Reply-To: <20230829063457.54157-1-bgray@linux.ibm.com>
-References: <20230829063457.54157-1-bgray@linux.ibm.com>
-Subject: Re: [PATCH 0/3] Fix preemption errors in watchpoints
-Message-Id: <169528828844.872767.7469796002349483809.b4-ty@ellerman.id.au>
-Date: Thu, 21 Sep 2023 19:24:48 +1000
+To: linuxppc-dev@lists.ozlabs.org, Jordan Niethe <jniethe5@gmail.com>
+In-Reply-To: <20230914030600.16993-1-jniethe5@gmail.com>
+References: <20230914030600.16993-1-jniethe5@gmail.com>
+Subject: Re: [PATCH v5 00/11] KVM: PPC: Nested APIv2 guest support
+Message-Id: <169528846875.874757.8861595746180557787.b4-ty@ellerman.id.au>
+Date: Thu, 21 Sep 2023 19:27:48 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -42,28 +42,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: mikey@neuling.org, sbhat@linux.ibm.com, kvm@vger.kernel.org, amachhiw@linux.vnet.ibm.com, gautam@linux.ibm.com, npiggin@gmail.com, David.Laight@ACULAB.COM, kvm-ppc@vger.kernel.org, sachinp@linux.ibm.com, vaibhav@linux.ibm.com, kconsul@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 29 Aug 2023 16:34:54 +1000, Benjamin Gray wrote:
-> When enabling debug config options relating to preemption, several bugs
-> appear in the kernel log. With this series applied, the breakpoint code
-> no longer prints bugs when running the powerpc/ptrace selftests.
-> 
-> Benjamin Gray (3):
->   powerpc/watchpoints: Disable preemption in thread_change_pc()
->   powerpc/watchpoint: Disable pagefaults when getting user instruction
->   powerpc/watchpoints: Annotate atomic context in more places
+On Thu, 14 Sep 2023 13:05:49 +1000, Jordan Niethe wrote:
+> A nested-HV API for PAPR has been developed based on the KVM-specific
+> nested-HV API that is upstream in Linux/KVM and QEMU. The PAPR API had
+> to break compatibility to accommodate implementation in other
+> hypervisors and partitioning firmware. The existing KVM-specific API
+> will be known as the Nested APIv1 and the PAPR API will be known as the
+> Nested APIv2.
 > 
 > [...]
 
-Applied to powerpc/fixes.
+Applied to powerpc/topic/ppc-kvm.
 
-[1/3] powerpc/watchpoints: Disable preemption in thread_change_pc()
-      https://git.kernel.org/powerpc/c/cc879ab3ce39bc39f9b1d238b283f43a5f6f957d
-[2/3] powerpc/watchpoint: Disable pagefaults when getting user instruction
-      https://git.kernel.org/powerpc/c/3241f260eb830d27d09cc604690ec24533fdb433
-[3/3] powerpc/watchpoints: Annotate atomic context in more places
-      https://git.kernel.org/powerpc/c/27646b2e02b096a6936b3e3b6ba334ae20763eab
+[01/11] KVM: PPC: Always use the GPR accessors
+        https://git.kernel.org/powerpc/c/0e85b7df9cb0c65f840109159ef6754c783e07a0
+[02/11] KVM: PPC: Introduce FPR/VR accessor functions
+        https://git.kernel.org/powerpc/c/52425a3b3c11cec58cf66e4c897fc1504f3911a9
+[03/11] KVM: PPC: Rename accessor generator macros
+        https://git.kernel.org/powerpc/c/2a64bc673133346a7a3bd163f2e6048bd1788727
+[04/11] KVM: PPC: Use accessors for VCPU registers
+        https://git.kernel.org/powerpc/c/7028ac8d174f28220f0e2de0cb3346cd3c31976d
+[05/11] KVM: PPC: Use accessors for VCORE registers
+        https://git.kernel.org/powerpc/c/c8ae9b3c6e7f22a4b71e42edb0fc3942aa7a7c42
+[06/11] KVM: PPC: Book3S HV: Use accessors for VCPU registers
+        https://git.kernel.org/powerpc/c/ebc88ea7a6ad0ea349df9c765357d3aa4e662aa9
+[07/11] KVM: PPC: Book3S HV: Introduce low level MSR accessor
+        https://git.kernel.org/powerpc/c/6de2e837babb411cfb3cdb570581c3a65576ddaf
+[08/11] KVM: PPC: Add helper library for Guest State Buffers
+        https://git.kernel.org/powerpc/c/6ccbbc33f06adaf79acde18571c6543ad1cb4be6
+[09/11] KVM: PPC: Book3s HV: Hold LPIDs in an unsigned long
+        https://git.kernel.org/powerpc/c/dfcaacc8f970c6b4ea4e32d2186f2bea4a1d5255
+[10/11] KVM: PPC: Add support for nestedv2 guests
+        https://git.kernel.org/powerpc/c/19d31c5f115754c369c0995df47479c384757f82
+[11/11] docs: powerpc: Document nested KVM on POWER
+        https://git.kernel.org/powerpc/c/476652297f94a2e5e5ef29e734b0da37ade94110
 
 cheers
