@@ -4,30 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80B7EE706F8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:29:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0B67E706FA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:33:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rrqq31s0kz3dD3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:29:19 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RrqwC46GTz3dCy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:33:47 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrqpW6PVDz3cTZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:28:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rrqvh09H6z2ymM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:33:20 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4Rrqvg4v4qz4xPL; Thu, 21 Sep 2023 19:33:19 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4RrqpW44ZDz4x5k;
-	Thu, 21 Sep 2023 19:28:51 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rrqvg46KSz4wy6;
+	Thu, 21 Sep 2023 19:33:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Jordan Niethe <jniethe5@gmail.com>
-In-Reply-To: <20230914030600.16993-1-jniethe5@gmail.com>
-References: <20230914030600.16993-1-jniethe5@gmail.com>
-Subject: Re: [PATCH v5 00/11] KVM: PPC: Nested APIv2 guest support
-Message-Id: <169528846875.874757.8861595746180557787.b4-ty@ellerman.id.au>
-Date: Thu, 21 Sep 2023 19:27:48 +1000
+To: linuxppc-dev@ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>
+In-Reply-To: <20230911091409.415662-1-adityag@linux.ibm.com>
+References: <20230911091409.415662-1-adityag@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
+Message-Id: <169528860032.876432.12152654406988174161.b4-ty@ellerman.id.au>
+Date: Thu, 21 Sep 2023 19:30:00 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -42,43 +44,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, sbhat@linux.ibm.com, kvm@vger.kernel.org, amachhiw@linux.vnet.ibm.com, gautam@linux.ibm.com, npiggin@gmail.com, David.Laight@ACULAB.COM, kvm-ppc@vger.kernel.org, sachinp@linux.ibm.com, vaibhav@linux.ibm.com, kconsul@linux.vnet.ibm.com
+Cc: Hari Bathini <hbathini@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Sep 2023 13:05:49 +1000, Jordan Niethe wrote:
-> A nested-HV API for PAPR has been developed based on the KVM-specific
-> nested-HV API that is upstream in Linux/KVM and QEMU. The PAPR API had
-> to break compatibility to accommodate implementation in other
-> hypervisors and partitioning firmware. The existing KVM-specific API
-> will be known as the Nested APIv1 and the PAPR API will be known as the
-> Nested APIv2.
+On Mon, 11 Sep 2023 14:44:09 +0530, Aditya Gupta wrote:
+> Presently, while reading a vmcore, makedumpfile uses
+> `cur_cpu_spec.mmu_features` to decide whether the crashed system had
+> RADIX MMU or not.
+> 
+> Currently, makedumpfile fails to get the `cur_cpu_spec` symbol (unless
+> a vmlinux is passed with the `-x` flag to makedumpfile), and hence
+> assigns offsets and shifts (such as pgd_offset_l4) incorrecly considering
+> MMU to be hash MMU.
 > 
 > [...]
 
-Applied to powerpc/topic/ppc-kvm.
+Applied to powerpc/next.
 
-[01/11] KVM: PPC: Always use the GPR accessors
-        https://git.kernel.org/powerpc/c/0e85b7df9cb0c65f840109159ef6754c783e07a0
-[02/11] KVM: PPC: Introduce FPR/VR accessor functions
-        https://git.kernel.org/powerpc/c/52425a3b3c11cec58cf66e4c897fc1504f3911a9
-[03/11] KVM: PPC: Rename accessor generator macros
-        https://git.kernel.org/powerpc/c/2a64bc673133346a7a3bd163f2e6048bd1788727
-[04/11] KVM: PPC: Use accessors for VCPU registers
-        https://git.kernel.org/powerpc/c/7028ac8d174f28220f0e2de0cb3346cd3c31976d
-[05/11] KVM: PPC: Use accessors for VCORE registers
-        https://git.kernel.org/powerpc/c/c8ae9b3c6e7f22a4b71e42edb0fc3942aa7a7c42
-[06/11] KVM: PPC: Book3S HV: Use accessors for VCPU registers
-        https://git.kernel.org/powerpc/c/ebc88ea7a6ad0ea349df9c765357d3aa4e662aa9
-[07/11] KVM: PPC: Book3S HV: Introduce low level MSR accessor
-        https://git.kernel.org/powerpc/c/6de2e837babb411cfb3cdb570581c3a65576ddaf
-[08/11] KVM: PPC: Add helper library for Guest State Buffers
-        https://git.kernel.org/powerpc/c/6ccbbc33f06adaf79acde18571c6543ad1cb4be6
-[09/11] KVM: PPC: Book3s HV: Hold LPIDs in an unsigned long
-        https://git.kernel.org/powerpc/c/dfcaacc8f970c6b4ea4e32d2186f2bea4a1d5255
-[10/11] KVM: PPC: Add support for nestedv2 guests
-        https://git.kernel.org/powerpc/c/19d31c5f115754c369c0995df47479c384757f82
-[11/11] docs: powerpc: Document nested KVM on POWER
-        https://git.kernel.org/powerpc/c/476652297f94a2e5e5ef29e734b0da37ade94110
+[1/1] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
+      https://git.kernel.org/powerpc/c/7135b921b32966d7602ede396b7286d372aee63f
 
 cheers
