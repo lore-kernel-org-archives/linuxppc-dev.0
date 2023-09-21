@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26CEDE706FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:35:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB6CCE706FB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:35:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rrqxn69xGz3f0C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:35:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RrqyK2J1nz3fFT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:35:37 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rrqvk6SYJz3cF2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:33:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rrqvn48Bxz3cRR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:33:25 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rrqvj0M5wz4xPc;
-	Thu, 21 Sep 2023 19:33:21 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rrqvl1R3Dz4xPd;
+	Thu, 21 Sep 2023 19:33:23 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: alsa-devel@alsa-project.org, Julia Lawall <Julia.Lawall@inria.fr>
-In-Reply-To: <20230907095521.14053-1-Julia.Lawall@inria.fr>
-References: <20230907095521.14053-1-Julia.Lawall@inria.fr>
-Subject: Re: [PATCH 00/11] add missing of_node_put
-Message-Id: <169528860030.876432.17353767421208248949.b4-ty@ellerman.id.au>
+To: christophe.leroy@csgroup.eu, Yuan Tan <tanyuan@tinylab.org>
+In-Reply-To: <cover.1694685860.git.tanyuan@tinylab.org>
+References: <cover.1694685860.git.tanyuan@tinylab.org>
+Subject: Re: (subset) [PATCH v3 0/3] Kconfig: Add dependencies of POWER_RESET for pmac32
+Message-Id: <169528860031.876432.1342566431743164769.b4-ty@ellerman.id.au>
 Date: Thu, 21 Sep 2023 19:30:00 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,19 +42,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pm@vger.kernel.org, netdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Amit Kucheria <amitk@kernel.org>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mediatek@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-mmc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-media@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: falcon@tinylab.org, linux@weissschuh.net, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, w@1wt.eu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 07 Sep 2023 11:55:10 +0200, Julia Lawall wrote:
-> Add of_node_put on a break out of an of_node loop.
+On Thu, 14 Sep 2023 18:09:55 +0800, Yuan Tan wrote:
+> These patches are to add dependencies of POWER_RESET for pmac32.
 > 
+> As I have to use "savedefconfig" on the latest branch of different
+> architectures, I am sending separate patches for each architecture in v3.
+> 
+> To simplify the enablement of the poweroff support, selecting the
+> required options for CONFIG_POWER_RESET=y may make many people happy
+> especially when they are using a customized config (maybe tinyconfig
+> based) for a target qemu board. Without normal poweroff support from the
+> kernel side, qemu will simply hang[1] there after a 'poweroff' command,
+> which is a very bad experience for the automatical tests.
+> 
+> [...]
 
-Patches 3 and 6 applied to powerpc/next.
+Patches 2 and 3 applied to powerpc/next.
 
-[03/11] powerpc/powermac: add missing of_node_put
-        https://git.kernel.org/powerpc/c/a59e9eb25216eb1dc99e14fc31b76aa648d79540
-[06/11] powerpc/kexec_file: add missing of_node_put
-        https://git.kernel.org/powerpc/c/06b627c1236216ac1239c5e1afcc75359af3fb72
+[2/3] Kconfig: Add dependencies of POWER_RESET for pmac32
+      https://git.kernel.org/powerpc/c/a3ef2fef198c25c1d9ac6ff89fd50230e9507207
+[3/3] powerpc/config: Simplify pmac32_defconfig
+      https://git.kernel.org/powerpc/c/f84b727d132c39c70208503e60149af6dd5a217f
 
 cheers
