@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59CC3CD4F2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 07:57:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97FC8CD4F2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 07:58:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsPks67M7z3dnc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:57:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RsPlN2GQwz3f8b
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:58:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rs16L0tF7z3cC3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 02:28:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rs16L0w1kz3cC7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 02:28:09 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ECB2D1713;
-	Thu, 21 Sep 2023 09:21:05 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EE7B51758;
+	Thu, 21 Sep 2023 09:21:14 -0700 (PDT)
 Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 811AA3F59C;
-	Thu, 21 Sep 2023 09:20:24 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 82D213F59C;
+	Thu, 21 Sep 2023 09:20:33 -0700 (PDT)
 From: Ryan Roberts <ryan.roberts@arm.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
@@ -48,9 +48,9 @@ To: Catalin Marinas <catalin.marinas@arm.com>,
 	Peter Xu <peterx@redhat.com>,
 	Axel Rasmussen <axelrasmussen@google.com>,
 	Qi Zheng <zhengqi.arch@bytedance.com>
-Subject: [PATCH v1 1/8] parisc: hugetlb: Convert set_huge_pte_at() to take vma
-Date: Thu, 21 Sep 2023 17:20:00 +0100
-Message-Id: <20230921162007.1630149-2-ryan.roberts@arm.com>
+Subject: [PATCH v1 3/8] riscv: hugetlb: Convert set_huge_pte_at() to take vma
+Date: Thu, 21 Sep 2023 17:20:02 +0100
+Message-Id: <20230921162007.1630149-4-ryan.roberts@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230921162007.1630149-1-ryan.roberts@arm.com>
 References: <20230921162007.1630149-1-ryan.roberts@arm.com>
@@ -77,7 +77,7 @@ implementation of set_huge_pte_at(). Provide for this by converting the
 mm parameter to be a vma. Any implementations that require the mm can
 access it via vma->vm_mm.
 
-This commit makes the required parisc modifications. Separate commits
+This commit makes the required riscv modifications. Separate commits
 update the other arches and core code, before the actual bug is fixed in
 arm64.
 
@@ -85,40 +85,41 @@ No behavioral changes intended.
 
 Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 ---
- arch/parisc/include/asm/hugetlb.h | 2 +-
- arch/parisc/mm/hugetlbpage.c      | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/riscv/include/asm/hugetlb.h | 2 +-
+ arch/riscv/mm/hugetlbpage.c      | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/parisc/include/asm/hugetlb.h b/arch/parisc/include/asm/hugetlb.h
-index f7f078c2872c..29ba631862c5 100644
---- a/arch/parisc/include/asm/hugetlb.h
-+++ b/arch/parisc/include/asm/hugetlb.h
-@@ -5,7 +5,7 @@
- #include <asm/page.h>
+diff --git a/arch/riscv/include/asm/hugetlb.h b/arch/riscv/include/asm/hugetlb.h
+index 34e24f078cc1..be1ac8582bc2 100644
+--- a/arch/riscv/include/asm/hugetlb.h
++++ b/arch/riscv/include/asm/hugetlb.h
+@@ -17,7 +17,7 @@ void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, unsigned long sz);
  
  #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
--void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
-+void set_huge_pte_at(struct vm_area_struct *vma, unsigned long addr,
- 		     pte_t *ptep, pte_t pte);
+-void set_huge_pte_at(struct mm_struct *mm,
++void set_huge_pte_at(struct vm_area_struct *vma,
+ 		     unsigned long addr, pte_t *ptep, pte_t pte);
  
  #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
-diff --git a/arch/parisc/mm/hugetlbpage.c b/arch/parisc/mm/hugetlbpage.c
-index a8a1a7c1e16e..fc5e1ad8e5e8 100644
---- a/arch/parisc/mm/hugetlbpage.c
-+++ b/arch/parisc/mm/hugetlbpage.c
-@@ -139,10 +139,10 @@ static void __set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
- 	purge_tlb_entries_huge(mm, addr_start);
+diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
+index 96225a8533ad..7cdbf0960772 100644
+--- a/arch/riscv/mm/hugetlbpage.c
++++ b/arch/riscv/mm/hugetlbpage.c
+@@ -177,11 +177,12 @@ pte_t arch_make_huge_pte(pte_t entry, unsigned int shift, vm_flags_t flags)
+ 	return entry;
  }
  
--void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
-+void set_huge_pte_at(struct vm_area_struct *vma, unsigned long addr,
- 		     pte_t *ptep, pte_t entry)
+-void set_huge_pte_at(struct mm_struct *mm,
++void set_huge_pte_at(struct vm_area_struct *vma,
+ 		     unsigned long addr,
+ 		     pte_t *ptep,
+ 		     pte_t pte)
  {
--	__set_huge_pte_at(mm, addr, ptep, entry);
-+	__set_huge_pte_at(vma->vm_mm, addr, ptep, entry);
- }
++	struct mm_struct *mm = vma->vm_mm;
+ 	int i, pte_num;
  
- 
+ 	if (!pte_napot(pte)) {
 -- 
 2.25.1
 
