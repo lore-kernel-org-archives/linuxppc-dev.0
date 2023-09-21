@@ -4,66 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D95B2CD4937
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Sep 2023 23:45:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A91B1CD495E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 06:56:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=cc/D8HFX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=axwPVhFN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RrZsl1WmGz3cF2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:45:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RrmR46rtVz3cC3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 16:56:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=cc/D8HFX;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=axwPVhFN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=38imlzqykdfuf1xa6z3bb381.zb985ahkccz-01i85fgf.bm8xyf.be3@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrZrj3rqRz2ysC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 09:44:51 +1000 (AEST)
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1c4375c1406so2860945ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2023 16:44:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RrmQ31v8cz3by6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 16:55:52 +1000 (AEST)
+Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-570a432468bso1207835a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2023 23:55:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1695253489; x=1695858289; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=YMbatuEIGrWsTlMlK7Tk6yapZGH8kwO0Z4+wG56Y3PQ=;
-        b=cc/D8HFXhwvZvrzFr5z6F/6428N1iolyg6jHERUr8AAQ+mFR4OKAEddPOfiHqB35uE
-         qJ0rc6EXWQtcbzoQzRq9KNfTeSvFtN+wLDSgPfMLuxdJDPUSPgjSoegeXTwaNw34wFXM
-         WNQStj9HSziaKr9TEu0sZ+f6mE6owaIn8ycfG8bpqSjXiCL0NaGMPPzE4FlZQYlt9DKO
-         a7RZ1P0+cp47r7asGh1iWxv1FIqkq4+k4KfrrgaGE+wHH1PrxpWrHCmoL12jEtqQ3JGS
-         QqPGXNhHUPX4fGCp4ng5ePVBQIPXiVgew+345l5blWa+LipXJ8WMX/DNITdr6ytjpn+R
-         f/CA==
+        d=gmail.com; s=20230601; t=1695279348; x=1695884148; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1bVL+jGs6sqP7VG1dEZazWMAPQBBD+mX9InFJhTfc4M=;
+        b=axwPVhFNjHE2nBndElm9sDGFQNFo7x8l2NToaBnkvv6O8OV3tjLkqkz6GTBSLpuAAk
+         lQRk03JbC0Tn2Yxg2rOKyPJroQlwMSLzwHV+8/TU9eBP98SS/eeBweDDNR7ARYlGCOAg
+         gsJN8lN2X5v/4vusnpXK15hScqubmZtsSOLQPNzRR+7d6OfGd7cTV1+O3du6XtIoATGN
+         CLOZxDtSNTBFusRUiyGRHD98ZYWcVKiD+24QQwOrBrSOEa/byPRIu3PD/sGRE815Ss33
+         3PI5SDLS05kzXRMhfaAplmGSIL3ZUe6tzb0RSIXu5LThbeZRb2YacMruQg4bEe/uCE3g
+         gIhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695253489; x=1695858289;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YMbatuEIGrWsTlMlK7Tk6yapZGH8kwO0Z4+wG56Y3PQ=;
-        b=VEcnQGwwsNtFZ+ii7ASOKM4mQa3uU4ZZc4U/bLK8pSBiQBlofoWDIz5TC8EbLZBsNZ
-         +r4SyLjqMdgyzwoinARL3KUX9tnQMMRDCAUhBttiSHcn7kpeFN9t/jlKruZUmmHyN8hf
-         ERyRyDnLOtkRFhUPKPVaGZUdnB2b9SOqETz4sxoPyKdG3awnKWlPTwB1SoXQdo21tJNP
-         jnhBhzgE6rDKnwRQJZSwZP7aen4P/jWToCoTzWiDWU1EITpk7E6dQh9OkSfTTNJPv/DG
-         1Tdoc7LKY5ZdtH9FIgbaR+bHUCWVFI6N09k4ltpxqtpXEFdzeNYDxTYeYxGEu2j3AwkF
-         vVkA==
-X-Gm-Message-State: AOJu0YwJiBfrIo4s6FkYvaMPPq1BUQoZeV1HDRir03F7m3amlnNTjW3y
-	mpTuZAF7Lv87HG21ZGWUagdIlOry6vg=
-X-Google-Smtp-Source: AGHT+IHQbG7yFE9jJPEUI1XKEjcd5Hn7eouqEyZetIlWhAmmYx1Ip3XqohOdLN8YNlfaQrxQ5DSfhNksAYI=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a17:903:22d0:b0:1ae:6895:cb96 with SMTP id
- y16-20020a17090322d000b001ae6895cb96mr56298plg.5.1695253488829; Wed, 20 Sep
- 2023 16:44:48 -0700 (PDT)
-Date: Wed, 20 Sep 2023 16:44:47 -0700
-In-Reply-To: <20230918163647.m6bjgwusc7ww5tyu@amd.com>
-Mime-Version: 1.0
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-15-seanjc@google.com>
- <20230918163647.m6bjgwusc7ww5tyu@amd.com>
-Message-ID: <ZQuD77vlBiSU/PE4@google.com>
-Subject: Re: [RFC PATCH v12 14/33] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-From: Sean Christopherson <seanjc@google.com>
-To: Michael Roth <michael.roth@amd.com>
-Content-Type: text/plain; charset="us-ascii"
+        d=1e100.net; s=20230601; t=1695279348; x=1695884148;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1bVL+jGs6sqP7VG1dEZazWMAPQBBD+mX9InFJhTfc4M=;
+        b=KjtoCrK9UClLhcCQzcr9GfLuV/gQbouk+zl2UFohrJZbT/caALj7QrEabbK21z/NGk
+         NPxrsBavKOBZO4zFTrDkZO6CXsb50LwBRxIByxUNrAGjyIcZKFOqGK03mQt7ru3cOEUM
+         EDywLQgeWrNkUo8VY5vQ6GjqxKkWbjx02uhEoKk2zUdK1ZfdML0lxbS2t0r1bWi0B3mK
+         PckAo8VBj7xjlHXIK9ppEz1p4B6Ojsxd687X9hXsv8xdNl8dkYAtRgEPxRMc5DSle42T
+         Y77MEuQb/Upkmd2ffOzVfsy7BIOKtWo8ruWXyifNxYfU0mVIpQ0ZXtF4VfqTO11nt31s
+         xNNg==
+X-Gm-Message-State: AOJu0YyAspzhhBz5QHZ7R+7EzDE4j1ykA21geWEOuTogvPKGoLJUw9sf
+	vdhK/0VImwC1PmAygMaoz80jLLuReJR9OuPNUYs=
+X-Google-Smtp-Source: AGHT+IFVBrCouVQWwD+e2QYzdo6XT481j2Idi0aW4ihmGivrnNEgvLCRqXRTybpDG6APLo336LaCnJUTntu6YTFsRW0=
+X-Received: by 2002:a17:90b:1482:b0:276:6be8:8bfe with SMTP id
+ js2-20020a17090b148200b002766be88bfemr7106957pjb.23.1695279348052; Wed, 20
+ Sep 2023 23:55:48 -0700 (PDT)
+MIME-Version: 1.0
+References: <1695202370-24678-1-git-send-email-shengjiu.wang@nxp.com>
+ <1695202370-24678-10-git-send-email-shengjiu.wang@nxp.com> <fbedcbf1-d925-47d6-b9fb-c9e15263c117@xs4all.nl>
+In-Reply-To: <fbedcbf1-d925-47d6-b9fb-c9e15263c117@xs4all.nl>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 21 Sep 2023 14:55:36 +0800
+Message-ID: <CAA+D8APyNGFSry1GUv6TOW0nKYHKSwQd5bTcRNuT7cu0Xf8eUA@mail.gmail.com>
+Subject: Re: [RFC PATCH v4 09/11] media: uapi: Add V4L2_CID_USER_IMX_ASRC_RATIO_MOD
+ control
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,203 +77,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, 
- Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, broonie@kernel.org, sakari.ailus@iki.fi, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 18, 2023, Michael Roth wrote:
-> > +static long kvm_gmem_punch_hole(struct inode *inode, loff_t offset, loff_t len)
-> > +{
-> > +	struct list_head *gmem_list = &inode->i_mapping->private_list;
-> > +	pgoff_t start = offset >> PAGE_SHIFT;
-> > +	pgoff_t end = (offset + len) >> PAGE_SHIFT;
-> > +	struct kvm_gmem *gmem;
+On Wed, Sep 20, 2023 at 6:19=E2=80=AFPM Hans Verkuil <hverkuil@xs4all.nl> w=
+rote:
+>
+> On 20/09/2023 11:32, Shengjiu Wang wrote:
+> > The input clock and output clock may not be the accurate
+> > rate as the sample rate, there is some drift, so the convert
+> > ratio of i.MX ASRC module need to be changed according to
+> > actual clock rate.
+> >
+> > Add V4L2_CID_USER_IMX_ASRC_RATIO_MOD control for user to
+> > adjust the ratio.
+> >
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > ---
+> >  Documentation/userspace-api/media/v4l/control.rst | 5 +++++
+> >  drivers/media/v4l2-core/v4l2-ctrls-defs.c         | 1 +
+> >  include/uapi/linux/v4l2-controls.h                | 1 +
+> >  3 files changed, 7 insertions(+)
+> >
+> > diff --git a/Documentation/userspace-api/media/v4l/control.rst b/Docume=
+ntation/userspace-api/media/v4l/control.rst
+> > index 4463fce694b0..2bc175900a34 100644
+> > --- a/Documentation/userspace-api/media/v4l/control.rst
+> > +++ b/Documentation/userspace-api/media/v4l/control.rst
+> > @@ -318,6 +318,11 @@ Control IDs
+> >      depending on particular custom controls should check the driver na=
+me
+> >      and version, see :ref:`querycap`.
+> >
+> > +.. _v4l2-audio-imx:
 > > +
-> > +	/*
-> > +	 * Bindings must stable across invalidation to ensure the start+end
-> > +	 * are balanced.
-> > +	 */
-> > +	filemap_invalidate_lock(inode->i_mapping);
+> > +``V4L2_CID_USER_IMX_ASRC_RATIO_MOD``
+> > +    sets the rasampler ratio modifier of i.MX asrc module.
+>
+> rasampler -> resampler (I think?)
+>
+> This doesn't document at all what the type of the control is or how to in=
+terpret it.
+>
 > > +
-> > +	list_for_each_entry(gmem, gmem_list, entry) {
-> > +		kvm_gmem_invalidate_begin(gmem, start, end);
-> 
-> In v11 we used to call truncate_inode_pages_range() here to drop filemap's
-> reference on the folio. AFAICT the folios are only getting free'd upon
-> guest shutdown without this. Was this on purpose?
+> >  Applications can enumerate the available controls with the
+> >  :ref:`VIDIOC_QUERYCTRL` and
+> >  :ref:`VIDIOC_QUERYMENU <VIDIOC_QUERYCTRL>` ioctls, get and set a
+> > diff --git a/drivers/media/v4l2-core/v4l2-ctrls-defs.c b/drivers/media/=
+v4l2-core/v4l2-ctrls-defs.c
+> > index 8696eb1cdd61..16f66f66198c 100644
+> > --- a/drivers/media/v4l2-core/v4l2-ctrls-defs.c
+> > +++ b/drivers/media/v4l2-core/v4l2-ctrls-defs.c
+> > @@ -1242,6 +1242,7 @@ const char *v4l2_ctrl_get_name(u32 id)
+> >       case V4L2_CID_COLORIMETRY_CLASS:        return "Colorimetry Contr=
+ols";
+> >       case V4L2_CID_COLORIMETRY_HDR10_CLL_INFO:               return "H=
+DR10 Content Light Info";
+> >       case V4L2_CID_COLORIMETRY_HDR10_MASTERING_DISPLAY:      return "H=
+DR10 Mastering Display";
+> > +     case V4L2_CID_USER_IMX_ASRC_RATIO_MOD:                  return "A=
+SRC RATIO MOD";
+>
+> Let's stay consistent with the other control names:
+>
+> "ASRC Ratio Modifier"
+>
+> But if this is a driver specific control, then this doesn't belong here.
+>
+> Driver specific controls are defined in the driver itself, including this
+> description.
+>
+> Same for the control documentation: if it is driver specific, then that
+> typically is documented either in a driver-specific public header, or
+> possibly in driver-specific documentation (Documentation/admin-guide/medi=
+a/).
+>
+> But is this imx specific? Wouldn't other similar devices need this?
 
-Nope, I just spotted this too.  And then after scratching my head for a few minutes,
-wondering if I was having an -ENOCOFFEE moment, I finally read your mail.  *sigh*
+It is imx specific.
 
-Looking at my reflog history, I'm pretty sure I deleted the wrong line when
-removing the truncation from kvm_gmem_error_page().
+Does this mean that I need to create a header file in include/uapi/linux
+folder to put this definition?  I just hesitate if this is necessary.
 
-> > +		kvm_gmem_invalidate_end(gmem, start, end);
-> > +	}
-> > +
-> > +	filemap_invalidate_unlock(inode->i_mapping);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static long kvm_gmem_allocate(struct inode *inode, loff_t offset, loff_t len)
-> > +{
-> > +	struct address_space *mapping = inode->i_mapping;
-> > +	pgoff_t start, index, end;
-> > +	int r;
-> > +
-> > +	/* Dedicated guest is immutable by default. */
-> > +	if (offset + len > i_size_read(inode))
-> > +		return -EINVAL;
-> > +
-> > +	filemap_invalidate_lock_shared(mapping);
-> 
-> We take the filemap lock here, but not for
-> kvm_gmem_get_pfn()->kvm_gmem_get_folio(). Is it needed there as well?
+There is folder Documentation/userspace-api/media/drivers/ for drivers
+Should this document in this folder, not in the
+Documentation/admin-guide/media/?
 
-No, we specifically do not want to take a rwsem when faulting in guest memory.
-Callers of kvm_gmem_get_pfn() *must* guard against concurrent invalidations via
-mmu_invalidate_seq and friends.
-
-> > +	/*
-> > +	 * For simplicity, require the offset into the file and the size of the
-> > +	 * memslot to be aligned to the largest possible page size used to back
-> > +	 * the file (same as the size of the file itself).
-> > +	 */
-> > +	if (!kvm_gmem_is_valid_size(offset, flags) ||
-> > +	    !kvm_gmem_is_valid_size(size, flags))
-> > +		goto err;
-> 
-> I needed to relax this check for SNP. KVM_GUEST_MEMFD_ALLOW_HUGEPAGE
-> applies to entire gmem inode, so it makes sense for userspace to enable
-> hugepages if start/end are hugepage-aligned, but QEMU will do things
-> like map overlapping regions for ROMs and other things on top of the
-> GPA range that the gmem inode was originally allocated for. For
-> instance:
-> 
->   692500@1689108688.696338:kvm_set_user_memory AddrSpace#0 Slot#0 flags=0x4 gpa=0x0 size=0x80000000 ua=0x7fbf5be00000 ret=0 restricted_fd=19 restricted_offset=0x0
->   692500@1689108688.699802:kvm_set_user_memory AddrSpace#0 Slot#1 flags=0x4 gpa=0x100000000 size=0x380000000 ua=0x7fbfdbe00000 ret=0 restricted_fd=19 restricted_offset=0x80000000
->   692500@1689108688.795412:kvm_set_user_memory AddrSpace#0 Slot#0 flags=0x0 gpa=0x0 size=0x0 ua=0x7fbf5be00000 ret=0 restricted_fd=19 restricted_offset=0x0
->   692500@1689108688.795550:kvm_set_user_memory AddrSpace#0 Slot#0 flags=0x4 gpa=0x0 size=0xc0000 ua=0x7fbf5be00000 ret=0 restricted_fd=19 restricted_offset=0x0
->   692500@1689108688.796227:kvm_set_user_memory AddrSpace#0 Slot#6 flags=0x4 gpa=0x100000 size=0x7ff00000 ua=0x7fbf5bf00000 ret=0 restricted_fd=19 restricted_offset=0x100000
-> 
-> Because of that the KVM_SET_USER_MEMORY_REGIONs for non-THP-aligned GPAs
-> will fail. Maybe instead it should be allowed, and kvm_gmem_get_folio()
-> should handle the alignment checks on a case-by-case and simply force 4k
-> for offsets corresponding to unaligned bindings?
-
-Yeah, I wanted to keep the code simple, but disallowing small bindings/memslots
-is probably going to be a deal-breaker.  Even though I'm skeptical that QEMU
-_needs_ to play these games for SNP guests, not playing nice will make it all
-but impossible to use guest_memfd for regular VMs.
-
-And the code isn't really any more complex, so long as we punt on allowing
-hugepages on interior sub-ranges.
-
-Compile-tested only, but this?
-
----
- virt/kvm/guest_mem.c | 54 ++++++++++++++++++++++----------------------
- 1 file changed, 27 insertions(+), 27 deletions(-)
-
-diff --git a/virt/kvm/guest_mem.c b/virt/kvm/guest_mem.c
-index a819367434e9..dc12e38211df 100644
---- a/virt/kvm/guest_mem.c
-+++ b/virt/kvm/guest_mem.c
-@@ -426,20 +426,6 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags,
- 	return err;
- }
- 
--static bool kvm_gmem_is_valid_size(loff_t size, u64 flags)
--{
--	if (size < 0 || !PAGE_ALIGNED(size))
--		return false;
--
--#ifdef CONFIG_TRANSPARENT_HUGEPAGE
--	if ((flags & KVM_GUEST_MEMFD_ALLOW_HUGEPAGE) &&
--	    !IS_ALIGNED(size, HPAGE_PMD_SIZE))
--		return false;
--#endif
--
--	return true;
--}
--
- int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
- {
- 	loff_t size = args->size;
-@@ -452,9 +438,15 @@ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
- 	if (flags & ~valid_flags)
- 		return -EINVAL;
- 
--	if (!kvm_gmem_is_valid_size(size, flags))
-+	if (size < 0 || !PAGE_ALIGNED(size))
- 		return -EINVAL;
- 
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+	if ((flags & KVM_GUEST_MEMFD_ALLOW_HUGEPAGE) &&
-+	    !IS_ALIGNED(size, HPAGE_PMD_SIZE))
-+		return false;
-+#endif
-+
- 	return __kvm_gmem_create(kvm, size, flags, kvm_gmem_mnt);
- }
- 
-@@ -462,7 +454,7 @@ int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
- 		  unsigned int fd, loff_t offset)
- {
- 	loff_t size = slot->npages << PAGE_SHIFT;
--	unsigned long start, end, flags;
-+	unsigned long start, end;
- 	struct kvm_gmem *gmem;
- 	struct inode *inode;
- 	struct file *file;
-@@ -481,16 +473,9 @@ int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
- 		goto err;
- 
- 	inode = file_inode(file);
--	flags = (unsigned long)inode->i_private;
- 
--	/*
--	 * For simplicity, require the offset into the file and the size of the
--	 * memslot to be aligned to the largest possible page size used to back
--	 * the file (same as the size of the file itself).
--	 */
--	if (!kvm_gmem_is_valid_size(offset, flags) ||
--	    !kvm_gmem_is_valid_size(size, flags))
--		goto err;
-+	if (offset < 0 || !PAGE_ALIGNED(offset))
-+		return -EINVAL;
- 
- 	if (offset + size > i_size_read(inode))
- 		goto err;
-@@ -591,8 +576,23 @@ int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
- 	page = folio_file_page(folio, index);
- 
- 	*pfn = page_to_pfn(page);
--	if (max_order)
--		*max_order = compound_order(compound_head(page));
-+	if (!max_order)
-+		goto success;
-+
-+	*max_order = compound_order(compound_head(page));
-+	if (!*max_order)
-+		goto success;
-+
-+	/*
-+	 * For simplicity, allow mapping a hugepage if and only if the entire
-+	 * binding is compatible, i.e. don't bother supporting mapping interior
-+	 * sub-ranges with hugepages (unless userspace comes up with a *really*
-+	 * strong use case for needing hugepages within unaligned bindings).
-+	 */
-+	if (!IS_ALIGNED(slot->gmem.pgoff, 1ull << *max_order) ||
-+	    !IS_ALIGNED(slot->npages, 1ull << *max_order))
-+		*max_order = 0;
-+success:
- 	r = 0;
- 
- out_unlock:
-
-base-commit: bc1a54ee393e0574ea422525cf0b2f1e768e38c5
--- 
-
+Best regards
+Wang shengjiu
+>
+> >       default:
+> >               return NULL;
+> >       }
+> > diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4=
+l2-controls.h
+> > index c3604a0a3e30..b1c319906d12 100644
+> > --- a/include/uapi/linux/v4l2-controls.h
+> > +++ b/include/uapi/linux/v4l2-controls.h
+> > @@ -162,6 +162,7 @@ enum v4l2_colorfx {
+> >  /* The base for the imx driver controls.
+> >   * We reserve 16 controls for this driver. */
+> >  #define V4L2_CID_USER_IMX_BASE                       (V4L2_CID_USER_BA=
+SE + 0x10b0)
+> > +#define V4L2_CID_USER_IMX_ASRC_RATIO_MOD     (V4L2_CID_USER_IMX_BASE +=
+ 0)
+> >
+> >  /*
+> >   * The base for the atmel isc driver controls.
+>
+> Regards,
+>
+>         Hans
