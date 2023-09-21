@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98DCCE706FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F5E4E706FB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 09:34:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rrqwk2QMCz3dR4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:34:14 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RrqxG6xMwz3dmK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Sep 2023 19:34:42 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rrqvh1bQlz2ymM
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rrqvh58WDz2ymM
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:33:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rrqvh0PtKz4xPQ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rrqvh3Y4kz4xPX;
 	Thu, 21 Sep 2023 19:33:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
-In-Reply-To: <20230830044238.578840-1-bgray@linux.ibm.com>
-References: <20230830044238.578840-1-bgray@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/configs: Set more PPC debug configs
-Message-Id: <169528860034.876432.10198531512850599576.b4-ty@ellerman.id.au>
+To: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Kexec-ml <kexec@lists.infradead.org>, Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20230912082950.856977-1-hbathini@linux.ibm.com>
+References: <20230912082950.856977-1-hbathini@linux.ibm.com>
+Subject: Re: [PATCH v3 1/2] vmcore: remove dependency with is_kdump_kernel() for exporting vmcore
+Message-Id: <169528860033.876432.15480467889695445457.b4-ty@ellerman.id.au>
 Date: Thu, 21 Sep 2023 19:30:00 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Dave Young <dyoung@redhat.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Baoquan He <bhe@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 30 Aug 2023 14:42:38 +1000, Benjamin Gray wrote:
-> Add more config options that wouldn't be done by the generic debug
-> config in kernel/configs/debug.config
-> 
-> CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG
-> 	Adds an initialized check on each (cpu|mmu)_has_feature()
-> 
-> CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-> 	Adds some extra checks around IRQ mask manipulation
+On Tue, 12 Sep 2023 13:59:49 +0530, Hari Bathini wrote:
+> Currently, is_kdump_kernel() returns true when elfcorehdr_addr is set.
+> While elfcorehdr_addr is set for kexec based kernel dump mechanism,
+> alternate dump capturing methods like fadump [1] also set it to export
+> the vmcore. Since, is_kdump_kernel() is used to restrict resources in
+> crash dump capture kernel and such restrictions may not be desirable
+> for fadump, allow is_kdump_kernel() to be defined differently for such
+> scenarios. With this, is_kdump_kernel() could be false while vmcore is
+> usable. So, remove unnecessary dependency with is_kdump_kernel(), for
+> exporting vmcore.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/configs: Set more PPC debug configs
-      https://git.kernel.org/powerpc/c/ff25ad0aa280012eda5699713a9f0b468a1d6e4e
+[1/2] vmcore: remove dependency with is_kdump_kernel() for exporting vmcore
+      https://git.kernel.org/powerpc/c/86328b338c3996b814417dd68e3f899a1a649059
+[2/2] powerpc/fadump: make is_kdump_kernel() return false when fadump is active
+      https://git.kernel.org/powerpc/c/b098f1c32365304633077d73e4ae21c72d4241b3
 
 cheers
