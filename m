@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64903CD4846
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:13:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FCCBCD4846
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:14:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uVVau97g;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=b/it0RRK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rsf400NjFz3dLP
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 03:13:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rsf4y5dWGz3dll
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 03:14:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uVVau97g;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=b/it0RRK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e83::61a; helo=nam02-dm3-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
 Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2061a.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e83::61a])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rsdy70pPMz3cJl
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rsdy74jbHz3cKW
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 03:08:15 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WExkSUM56iaoSaj9otrqhkDNs8g9C0Sw0iHU8EC+EeoF8vlo44GRd7oissm4k1MbMfTgnDDTKJnFeDUP601sRSGgtXBrzRZjghcOuyVCPfKDpVHEkt2iuEeHHfH8aWeKWYqinOb5xW+eFw88LbgLjI06MmNu2bSFcnR0SXgDRlnZrAVR+PMAAzBROy1qAvyLfLrzBFldrDXqSjZ1mVVL1CXeTl3KbfvQiquq1Zb5+4CY4FgfIjMMXNdm8v4cHGBo7KRmX6eS4Aip6q3aPRsWNvjvyAWiSo072O6NTKZpZYEE5M9NJp3mcIJvbSIPskZvE6d92gGEbc8sKa6sR+FQaA==
+ b=jZtx3aur0cggV6hDgM2wVNSGO4cUxz5d5+8g83HkRwslxeGtpUUYO3lJFP7SkDoAtM9Lf3qmT2GczFr33Dmo4IcSwu+OAJEM4m8Mxi9C6teOKJWoeq+SQNhPIBIPwGO8JSH94gRZOWjPX+0F993yWFcDk/m3p5hQI2KP7EgVusz/VYxmGMmsmdMpG6x/R8vgyY2ylwUKxewUtoyaiGh+xQgKjVbem0k48vHHedizgjbddZeVN3Re+hTGikxf5VLABDbJ/VMBEmNzivOIZqun2eJ8ntAtKFSCMe3xuAOpa6Vmb5rq/XjptOmpQaXlPRfgbOSo5xVcJQ9u/DqFz94rrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Jr/5KfPoaUuyX/C6S7jT78l1e3DHs14ebOVrB52vXx4=;
- b=f2mxAvXwssVJRiCv2koBj20fGt8HkEmQDDKWvJsxqZWvDii8+sJqZ9ILUuK2yd+elh/7E3DbNAA1REEUz2hc21mXNkZ9ZB53IhticDY+t0O+PalUKhXpfhos8Y7eHgPi2kKoEFVciQKN9ej55XXCMeiXihPz1Lx+z7EBbe9Dk0LvEm7XBmQ2OTFD/DaAXu2ox12vzxXrc5UVKLp8h6yMZIr8Zb8B5TlmHO37t25FBiuvAHCG8a8vOiv84+XRArR5NCb5j8XnBLAdhExrMfUYaiZW28v4rWdUvG7tGb+yRBSq9WzTsr5xhWL4HWC6eMTLvm/CwYXWWIhGNv+quGuYwg==
+ bh=v4DsCX1rU4U3aGM0/1fQpNOzPmGEM4a2jCpb6axFjkg=;
+ b=RG2BGA7rI1YGIBFKfzqHVNvXXpIkCy7zB+oZgnx+nvI0y3DsA0/j9O3Nu1GNGl7GdQxEQcsKZahy7Wldgn/iGyMZNbld2P2R7iI7uzRvSpvohZQ04fvifAhAJg5EAUnfTSj39Qt/6qTBh/DZJYuxm0dk3m9ufmyE1XcpGrgzcJqaPSs+i/mFdne7uqxzYX/ER2E4zFyVstLjlBqnn6EnvRQkqSBipYhg45EKaWokzbJiQG48/8dlkEeHojImDMTT367C5Pz09c4QbzV+9HEAyFUmjYcMPUg8HBXLDTNo8w3QzqF4oc78A4s/lLqEQHH03zgvnZAZd+6OQscPwJD34w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Jr/5KfPoaUuyX/C6S7jT78l1e3DHs14ebOVrB52vXx4=;
- b=uVVau97gSToz2NAylJ/GfNOEk84efyh7nIJsZ+LaSavaIWxS87xUWVOIiwnmvOm/st2u5IHSnnWAE6jBN9fYo+5TVrenfnze+xjyS8kVMsoukEeDBkdQOLMOx11dpfXul8p5OIvN1lR2pK+Fxp/ak/N9Kc0Xp5O5/YRkQYpK/lD1I3lSRwHh7yRZNoQSNY3ZxFFXTA0ZbTtx8vSzVgGKb2Gky57wA2G1d26HPKTxedV4wPEA/jpGKueRYA0Xz6fgQzxcbMhRiJRix31O3w/HFbERYuQR4y3/9qFLAg6gB9Z64nvExUktXkCjmuuGW0lwpBbjbENZgWd+oFJ6OfpdWg==
+ bh=v4DsCX1rU4U3aGM0/1fQpNOzPmGEM4a2jCpb6axFjkg=;
+ b=b/it0RRK9qhQd2vAAgJBUGPUdIq1vqAK7HfGGvuaILrXKwvBx0bFCZ5glgdd7IlpljzkWwGXDagmRFOmynPM+n49wV7EvGkaXJmdLXxT6DbtuPgKaC19oF6pH58t9z9D+gLPbrnV0DH/WXZ8KnguMDNHk9Nec9QGmvmEDDevjQGFk0YeMsXC5NNiBo6wBUf9SgU8mdgF9f7UfVnuKTde1YKu4O5i2HUHilfo5Y/DIvyXMNXAJCROSnhA9NyzSjo4ctSq5tNoFbxR35m+oUzoRREV4pKLAf3twiMNCW8t/xth8x/CqH3f+qkETbIL7igBje9pud+cs2CP9Gk1D0FO6Q==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
@@ -64,63 +64,63 @@ To: Alyssa Rosenzweig <alyssa@rosenzweig.io>,
 	Robin Murphy <robin.murphy@arm.com>,
 	Sven Peter <sven@svenpeter.dev>,
 	Will Deacon <will@kernel.org>
-Subject: [PATCH 8/8] iommu/dart: Call apple_dart_finalize_domain() as part of alloc_paging()
-Date: Fri, 22 Sep 2023 14:07:59 -0300
-Message-ID: <8-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
+Subject: [PATCH 6/8] iommu/dart: Move the blocked domain support to a global static
+Date: Fri, 22 Sep 2023 14:07:57 -0300
+Message-ID: <6-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
 In-Reply-To: <0-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
 References: 
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: YQBPR01CA0041.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:c01:2::13) To LV2PR12MB5869.namprd12.prod.outlook.com
+X-ClientProxiedBy: YQBPR01CA0069.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:2::41) To LV2PR12MB5869.namprd12.prod.outlook.com
  (2603:10b6:408:176::16)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|LV3PR12MB9188:EE_
-X-MS-Office365-Filtering-Correlation-Id: 358646d3-3923-4b76-ddcf-08dbbb8e7a68
+X-MS-Office365-Filtering-Correlation-Id: bcdcb14b-fc2e-43c8-165e-08dbbb8e7a83
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	LrlUM4cwssPclYgBnaWlPyV8uKn1JqWai4Ot2F+HLet7LImCye8skeOxwpXw9MoiUKtd8K27pnP78PpvLViUUCmmfKDJo6cRJLXFbB2FBEnsu1jAxR04weRITJIboJL1+sz9BTppeMEI4sbPAkI+uWjQJs3YMX8/txND0RBy8uANkXmbne3d4n1D6F9wS1egb2Sj91WAKQJ1MYUHEOFJ8p6dBEhbgjGxkRi2sY6byOnFORVkNZBZC7oPvn3fWuj5VFgcs6fxPgQX+ZzX8NMhzFNVqOUwANcGjwmGqH5VSwZWJ6WzGk3tyD8rRk5isr/34zF4kBOuaHEVyFiF6pjflJCUPIuAb8ocHOCTebNRJq4E+9nfkT6fnw0K9gPNNs3HCTEjifzoiT1x9gBC0b3QuULs7YSpJuakbXFSZBUTbp7L70pTmIpDhQ9J49hRHSq4g4Ei0C8/cIxbRcIIsrrVk0KX+zWqLRhz9n/IVuJ2fscdqoXGwHXlgci2HqKXC+83/l9uwEgppOD5rL1OH6+uRHoxGJOKkKmB4IsYMy1rJj1u5//l3+2L7dhqFam+imempK2ym7I537KHY7NtVzn3t+BDsWK5DETcBbO2+ckRs+hbmucqM+KIjkiM59yhixIzoRlY16iRnTb2xuGXEfRWoRFpCOHjODft/6yeTTTDo0w=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(366004)(396003)(376002)(39860400002)(346002)(47660400002)(186009)(1800799009)(451199024)(921005)(26005)(8936002)(2616005)(8676002)(7416002)(83380400001)(2906002)(36756003)(86362001)(6486002)(6506007)(478600001)(6666004)(5660300002)(38100700002)(6512007)(66946007)(110136005)(41300700001)(66556008)(316002)(66476007)(4216001)(46800400005);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	Y+lcqJ0ZQ6z+Ykf4WCEQBvaRGn8MDKUf93vh69gUz3WBcVaPWmbOiI0TNqJhbfp6Ovq9EyvNgjfT7Nd1gy/U0y0Yn/T7VTLbLk8VL1yQGUejw6ULHfp+boU1WlK23O+CjFGbtSrMsd86XMLiG0kA0g8wgGecaCN8d52fBZkr+VvvomO39dROpwTxouU1fsvsxoEGScXq2KNrsa/AGtV8jsQj4xOFSMtJbk0tG31vqIER0pQ1A/2O+jv96XBXhabw0GLL0rZZkBdp7BGE/YLsP7kEWrhkjyEXRGJIvG0b/QXk3/UW1joAAO2aE2ZjjkqBg/GOy3/95HZfIbViRZblPmiF6l5+RNHYqNkJq0hFtrJOYtgzQAFZufRMHLmlX2wpYwyqAv7eQVUxJScic5H+ClhFlYpD4A76+b/79j+DzEbu/p6sxRAN6tw7WHe685KTkpJYpg4SnXvXiQzJxWKRTZby/Kc+UEav/tgdrfvnE7yE8gdj0OsffizfP+2Ua5enh2lGKeNKTOE4cFQvFWYQWLWCfhkJDIhv91X9V4x1+04spUvXO/zqnCsZbEVM2R8kG2uAb3ytW39FMa0tUqs3SpcVNZ3MsITuvDLz/PyuBeXzZlA8SMQRFpjNYZGdiZcA
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(366004)(396003)(376002)(39860400002)(346002)(186009)(1800799009)(451199024)(921005)(26005)(8936002)(2616005)(8676002)(15650500001)(7416002)(83380400001)(2906002)(36756003)(86362001)(6486002)(6506007)(478600001)(6666004)(5660300002)(38100700002)(6512007)(66946007)(110136005)(41300700001)(66556008)(316002)(66476007)(4216001);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?huNYxPONj2sdNNWT5TW25TTi1k+mnMlTWBQMpBm5OunvMdr2Ldosacs7CFzr?=
- =?us-ascii?Q?SDfrQr5bzeKIqB+87kOXMR2bibIXwJYZuU8NLeri14yYtguD+AYhrDH+z61M?=
- =?us-ascii?Q?yvN3XHuN2JeUDVmBxfOi9HLZiMUSjx+KDd4h/AUM1JV3ywurnoxOd6Si7U9J?=
- =?us-ascii?Q?W2wYosAKD0w7wV6beBJ0T77I51QcJOyC32I5S2o7II/MvBGtWFkZkG9G88VJ?=
- =?us-ascii?Q?ffqwMHDgveL7kY5HNVQCVH0QP5tiyFYO2Ig1JUZJO2/Yj8iffLcjgmbWZv7V?=
- =?us-ascii?Q?MGzohHzeV11YL7qWoPsFR3o4Bm4e7kn0EbTkNRAVok+dDzYsrrQyBnLpiq5F?=
- =?us-ascii?Q?6A1dTz4Z/AmE1lBCYeilLEncFMJgAzafYC/P9uT85p8t+BUvj2pV6lsWfa+4?=
- =?us-ascii?Q?y8Ok0dZR1wMRnkrOwDEfnjNz6LY2UBsTDmTA3AJueJyU8QhNRBjLa6TvbwyE?=
- =?us-ascii?Q?yjTLbNY2u9Bpt9qO/DDpjefYFs5h30WhTwmidaA9CYxI6z1X89IOJVTDz2/9?=
- =?us-ascii?Q?IoHL0qYWaZTmnJljNn7EpdGS7yWTUw7SRIRBCElKl0IywmXNq81vuBss0dsf?=
- =?us-ascii?Q?CyrL/0G7mUE3hcFvFxlsdfZwvFs+9/eXYAAZtu4riwzGKBAi/bNg2r0H0bAR?=
- =?us-ascii?Q?FWRH0BtCKoYCvy3cgKySTetNC9QpP8t/vEKYVnParZ+Zi24uiWHzJsMGISWG?=
- =?us-ascii?Q?mzuYU5rO1meOKrWN3ZxkKdGQDSbe1UYUcQV1jCbabdzoQ8Vi6O1wqBszj2Ge?=
- =?us-ascii?Q?iCvpkGQFTuYw3Y8rMeQRps6S7JPj0QkmOl5ZO9XYMDMBs0g93LEiYKQOoWbc?=
- =?us-ascii?Q?+7qbREa4G00xDfgKnuA7aYzj6gtDmOBIqxXI925BzzkcKXqrvfpeU/m6iy9c?=
- =?us-ascii?Q?ZeiUOvyJft+u5pnKQ0pAXS7sNkVxg7riD/xNKnZCuBh7RXnBxPoS8TDr3dEz?=
- =?us-ascii?Q?6CtzDjWeDjKYFDOwlhNUH31q1hSBKvVuMiGNNupzL+2MyVNSTt7IXwC6+4zR?=
- =?us-ascii?Q?61t6w3lcDbKpuaMe6DIvwg0CmbG6m179NifsRf2ezY+rZ2XJLZ8MlyJ+8NUx?=
- =?us-ascii?Q?gjJ/xZbxfy6V/oT/SHXDjYI9DI4k92ksM6fqpllrwrvJGPYtT43M02Wmv5lq?=
- =?us-ascii?Q?K8ZATeJ7GMpCBToIQ3BWYEYrCXz53642pG+Hgvafm5Dwm5PVjpxsLoAKAlA8?=
- =?us-ascii?Q?O39DaP+qEnRRHWXQsPT70kgrTGwtk9bpy+Dm2z2Cf/yE4Nm6fEga/+XG4p6I?=
- =?us-ascii?Q?Bt8dwnfRu3oPDMUdL3SixC9+KPFaKPAkGORp+hLmWyCq7jIHS/0MpRBgP4+D?=
- =?us-ascii?Q?DT67EZ7luJB6PsZcxsEElSNguBOmH4tNJEkrnUklUBadt41b/3ueq952/M5G?=
- =?us-ascii?Q?0yMbd+N4xHgS9kVOmGyvGrNMrmCZLpS9WYeTNbl0tICUJ9+1iTyigyRlxAi5?=
- =?us-ascii?Q?zvizjGCO2s333qz/I2EQmy+xTeXQ/hF/7nHs7sOUyoOfBiLOnCDCR3yR5NBI?=
- =?us-ascii?Q?elr3LT154pMnykZlpGNdUstmOo+y6t5AjkyBI3acPF3AHX7VRpgbbxxgQwUo?=
- =?us-ascii?Q?DTRBjstolbVOcHrKOq3RC7QmkX92p89Z7rQlIMvj?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?c+IXxHSrsjIkhxq3AABijW7mH0une5z4vu9Tp7m1B0WjGflw7mr9TTrUWidr?=
+ =?us-ascii?Q?psOPOgdImX4cumFxvxYfA54qf3Hlum5CECP8EQGRnsvTURmKCXxt/VGhDrpE?=
+ =?us-ascii?Q?+L8ojWN+2Q2vt6sk0cjfTnbY9GtlnI9bzuYNYocillr/e3TpqkDE9Yalwl9N?=
+ =?us-ascii?Q?HjY4QJ9fAKDn+ON0xKIV8L3oSkbk8LclHZ/Y/J2+IWwnhCBlJrbBOj82jXjz?=
+ =?us-ascii?Q?mNVNvtn3APn6axr+TS2iqdeQwqfzno6G7d+b8FiRLdRNzRWohLHmM2Ldx5ay?=
+ =?us-ascii?Q?155uDxFBLjKvMT6P/etCAkvp3YnR+zyX7Yt8VXeQeO7dq2XT0eX25jyPKcLI?=
+ =?us-ascii?Q?wnjMKSxGwLtV17kTe+z0ezeDx9ih+L/medCdfwuvqrgcyZQQDYZqeriIUXHT?=
+ =?us-ascii?Q?Op2unWbWaRXxowwUcClRewtwe9hMpbSna/uAg12+NIx+Un0ctbc8eLcslPHB?=
+ =?us-ascii?Q?2yTwmrEyB4FFe8DDul1+4O+skQZHhdqg1gFMXTYpjJ2Q3bWTkvQL1fZaN3HA?=
+ =?us-ascii?Q?58dxW64xaBWOWhUFTrR6CoPc8aFZ4CqbsTrINNkytcQukxAx/x05jo9yT9bZ?=
+ =?us-ascii?Q?tdJ2lGr2YFZG2EZuapWPf5M86XdC0UAiVTM/7iZfok/MW6h2NSHv1KQ8pPIv?=
+ =?us-ascii?Q?7qTWF19cEJexMjXShzHa3aawXWGHMGJz40NMYFxWbp+d54DiZfO/WW9G1KoR?=
+ =?us-ascii?Q?iYjzvwpx6Ca8uEEzobpFsL8K293YJhde/1x42RgJwnqmoNwLuK/lXGM7EOBk?=
+ =?us-ascii?Q?mPA1iZtBazr0iH0bMYUNBeEbhDGOYZDUJ8QInYH8q1RWEcOkJbNoXKYxwmJI?=
+ =?us-ascii?Q?q8DGvVkEZF5foBR8ZlpbP37ATe7LPvTw+in8NObvTXA5+NFITiPkQaFOPmHT?=
+ =?us-ascii?Q?4EEpFb/MMZI1RCqzwXv7gZFt0nTaEwc6VmaE2xyMkhLdZItF5XBRVzpyu/2I?=
+ =?us-ascii?Q?1RoW5zfhAH9YcgTIMCllK+DSKGxOcl09h4Q6SOvJm78GfTC2BdVavTiTi2tJ?=
+ =?us-ascii?Q?tVT86Yb+y5EeuVAvxeFgwt0yTQhZXVg2A44w23KkuyxUFSzJcd4dxnyO39Pc?=
+ =?us-ascii?Q?wl5wcDw9yPn5CNNw7aKViy3dtKVlv44m3qqRvcCytYjh3SQSaNPUsnPgKe5H?=
+ =?us-ascii?Q?R+ItxuyVKBtDzRnL+GCKh++w/WbNFQYbu59bmbWmmIjTiWU7ablttUnpxoaD?=
+ =?us-ascii?Q?3zxkBuX+vR4lZ7/Z0FqTdIKf+dKlxmHGD9IvuG7rU7s4esrs6UQ02tDHf40s?=
+ =?us-ascii?Q?9A8zwI9z7Xkm3GKuVXJa/Hs6jrxFFr4ptreLPg/WYlXmTECAK+BIg7/6N3QM?=
+ =?us-ascii?Q?w8oCoN+DDNORC6uP5DjoasAoLFVTmVhyxwdwlJPax7p5p6SBnMHnAdce1clO?=
+ =?us-ascii?Q?FVl+e7qB+RfdgeeukAiZiS42fI0ZHNcGDHdQiikKZZs9OZhX6UI/grEehdZk?=
+ =?us-ascii?Q?yWR9+m99x7RoKUYSQR4NYmbBWJBv6r+Jq8bclPvC0p+vlyLizhsXwjOMAulb?=
+ =?us-ascii?Q?z+6QBKOvfmdM/ZxyrV3tGVSaM47IMlnjuGopwGduFpoQVbH4tOcUXr008iRm?=
+ =?us-ascii?Q?RT5XAooBMmJOpat6htEejEXjW2JC0JZ/1/D5P9kU?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 358646d3-3923-4b76-ddcf-08dbbb8e7a68
+X-MS-Exchange-CrossTenant-Network-Message-Id: bcdcb14b-fc2e-43c8-165e-08dbbb8e7a83
 X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 17:08:01.8313
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 17:08:02.0163
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ktZx81BdhJ22qR03UztPUUL5bCjCPm/SfTEIU8DgJO3s0HhkfL7Eu3078qBTX5zA
+X-MS-Exchange-CrossTenant-UserPrincipalName: ULXqMQOWDnW+Ke5GW4hIpfnz/ONZG0YvUWMUWTzPtS9MKj1IhNkdR7zGNLFVO6kG
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9188
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -136,81 +136,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In many cases the dev argument will now be !NULL so we should use it to
-finalize the domain at allocation.
-
-Make apple_dart_finalize_domain() accept the correct type.
+Move to the new static global for blocked domains. Move the blocked
+specific code to apple_dart_attach_dev_blocked().
 
 Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
 ---
- drivers/iommu/apple-dart.c | 26 ++++++++++++++++++--------
- 1 file changed, 18 insertions(+), 8 deletions(-)
+ drivers/iommu/apple-dart.c | 36 ++++++++++++++++++++++++++----------
+ 1 file changed, 26 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/iommu/apple-dart.c b/drivers/iommu/apple-dart.c
-index 62efe0aa056f60..2c1832e357c7c6 100644
+index 424f779ccc34df..376f4c5461e8f7 100644
 --- a/drivers/iommu/apple-dart.c
 +++ b/drivers/iommu/apple-dart.c
-@@ -568,10 +568,9 @@ apple_dart_setup_translation(struct apple_dart_domain *domain,
- 	stream_map->dart->hw->invalidate_tlb(stream_map);
- }
- 
--static int apple_dart_finalize_domain(struct iommu_domain *domain,
-+static int apple_dart_finalize_domain(struct apple_dart_domain *dart_domain,
- 				      struct apple_dart_master_cfg *cfg)
- {
--	struct apple_dart_domain *dart_domain = to_dart_domain(domain);
- 	struct apple_dart *dart = cfg->stream_maps[0].dart;
- 	struct io_pgtable_cfg pgtbl_cfg;
- 	int ret = 0;
-@@ -597,16 +596,17 @@ static int apple_dart_finalize_domain(struct iommu_domain *domain,
- 		.iommu_dev = dart->dev,
- 	};
- 
--	dart_domain->pgtbl_ops =
--		alloc_io_pgtable_ops(dart->hw->fmt, &pgtbl_cfg, domain);
-+	dart_domain->pgtbl_ops = alloc_io_pgtable_ops(dart->hw->fmt, &pgtbl_cfg,
-+						      &dart_domain->domain);
- 	if (!dart_domain->pgtbl_ops) {
- 		ret = -ENOMEM;
- 		goto done;
- 	}
- 
--	domain->pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
--	domain->geometry.aperture_start = 0;
--	domain->geometry.aperture_end = (dma_addr_t)DMA_BIT_MASK(dart->ias);
-+	dart_domain->domain.pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
-+	dart_domain->domain.geometry.aperture_start = 0;
-+	dart_domain->domain.geometry.aperture_end =
-+		(dma_addr_t)DMA_BIT_MASK(dart->ias);
- 
- 	dart_domain->finalized = true;
- 
-@@ -661,7 +661,7 @@ static int apple_dart_attach_dev_paging(struct iommu_domain *domain,
- 	if (cfg->stream_maps[0].dart->force_bypass)
+@@ -675,10 +675,6 @@ static int apple_dart_attach_dev(struct iommu_domain *domain,
+ 		for_each_stream_map(i, cfg, stream_map)
+ 			apple_dart_setup_translation(dart_domain, stream_map);
+ 		break;
+-	case IOMMU_DOMAIN_BLOCKED:
+-		for_each_stream_map(i, cfg, stream_map)
+-			apple_dart_hw_disable_dma(stream_map);
+-		break;
+ 	default:
  		return -EINVAL;
+ 	}
+@@ -710,6 +706,30 @@ static struct iommu_domain apple_dart_identity_domain = {
+ 	.ops = &apple_dart_identity_ops,
+ };
  
--	ret = apple_dart_finalize_domain(domain, cfg);
-+	ret = apple_dart_finalize_domain(dart_domain, cfg);
- 	if (ret)
- 		return ret;
++static int apple_dart_attach_dev_blocked(struct iommu_domain *domain,
++					 struct device *dev)
++{
++	struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
++	struct apple_dart_stream_map *stream_map;
++	int i;
++
++	if (cfg->stream_maps[0].dart->force_bypass)
++		return -EINVAL;
++
++	for_each_stream_map(i, cfg, stream_map)
++		apple_dart_hw_disable_dma(stream_map);
++	return 0;
++}
++
++static const struct iommu_domain_ops apple_dart_blocked_ops = {
++	.attach_dev = apple_dart_attach_dev_blocked,
++};
++
++static struct iommu_domain apple_dart_blocked_domain = {
++	.type = IOMMU_DOMAIN_BLOCKED,
++	.ops = &apple_dart_blocked_ops,
++};
++
+ static struct iommu_device *apple_dart_probe_device(struct device *dev)
+ {
+ 	struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
+@@ -739,8 +759,7 @@ static struct iommu_domain *apple_dart_domain_alloc(unsigned int type)
+ {
+ 	struct apple_dart_domain *dart_domain;
  
-@@ -757,6 +757,16 @@ static struct iommu_domain *apple_dart_domain_alloc_paging(struct device *dev)
+-	if (type != IOMMU_DOMAIN_DMA && type != IOMMU_DOMAIN_UNMANAGED &&
+-	    type != IOMMU_DOMAIN_BLOCKED)
++	if (type != IOMMU_DOMAIN_DMA && type != IOMMU_DOMAIN_UNMANAGED)
+ 		return NULL;
+ 
+ 	dart_domain = kzalloc(sizeof(*dart_domain), GFP_KERNEL);
+@@ -749,10 +768,6 @@ static struct iommu_domain *apple_dart_domain_alloc(unsigned int type)
  
  	mutex_init(&dart_domain->init_lock);
  
-+	if (dev) {
-+		struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
-+		int ret;
-+
-+		ret = apple_dart_finalize_domain(dart_domain, cfg);
-+		if (ret) {
-+			kfree(dart_domain);
-+			return ERR_PTR(ret);
-+		}
-+	}
+-	/* no need to allocate pgtbl_ops or do any other finalization steps */
+-	if (type == IOMMU_DOMAIN_BLOCKED)
+-		dart_domain->finalized = true;
+-
  	return &dart_domain->domain;
  }
  
+@@ -966,6 +981,7 @@ static void apple_dart_get_resv_regions(struct device *dev,
+ 
+ static const struct iommu_ops apple_dart_iommu_ops = {
+ 	.identity_domain = &apple_dart_identity_domain,
++	.blocked_domain = &apple_dart_blocked_domain,
+ 	.domain_alloc = apple_dart_domain_alloc,
+ 	.probe_device = apple_dart_probe_device,
+ 	.release_device = apple_dart_release_device,
 -- 
 2.42.0
 
