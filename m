@@ -4,55 +4,122 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B245EE6FE32
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 14:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D901CD4847
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:09:08 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=PcxJsW/C;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsYpd226Zz3cl7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 00:01:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsYp06QD5z3cBx
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 00:00:53 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 80004DA7;
-	Fri, 22 Sep 2023 07:00:57 -0700 (PDT)
-Received: from [10.57.65.11] (unknown [10.57.65.11])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 64D7F3F67D;
-	Fri, 22 Sep 2023 07:00:14 -0700 (PDT)
-Message-ID: <57e2c03e-41e8-476b-b86a-e0217500a885@arm.com>
-Date: Fri, 22 Sep 2023 15:00:12 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] mm: hugetlb: Add huge page size param to
- set_huge_pte_at()
-Content-Language: en-GB
-To: Alexandre Ghiti <alex@ghiti.fr>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, Arnd Bergmann <arnd@arndb.de>,
- Mike Kravetz <mike.kravetz@oracle.com>, Muchun Song <muchun.song@linux.dev>,
- SeongJae Park <sj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Uladzislau Rezki <urezki@gmail.com>, Christoph Hellwig <hch@infradead.org>,
- Lorenzo Stoakes <lstoakes@gmail.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>, Peter Xu <peterx@redhat.com>,
- Axel Rasmussen <axelrasmussen@google.com>,
- Qi Zheng <zhengqi.arch@bytedance.com>
-References: <20230922115804.2043771-1-ryan.roberts@arm.com>
- <20230922115804.2043771-2-ryan.roberts@arm.com>
- <e098a287-36dc-3e66-6be7-f908729e91d4@ghiti.fr>
-From: Ryan Roberts <ryan.roberts@arm.com>
-In-Reply-To: <e098a287-36dc-3e66-6be7-f908729e91d4@ghiti.fr>
-Content-Type: text/plain; charset=UTF-8
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rsdz66m8kz3ck5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 03:09:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=PcxJsW/C;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e83::61b; helo=nam02-dm3-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2061b.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e83::61b])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rsdy54ZFtz3cKW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 03:08:11 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Jy516PQEpmDCwtxd0rihMYIgGYgClLUmbyDNH3VB+TcjypDOKxRiI+bpMs6e/zXAvKxE7jcXeJ3nnw8rWSzqSpLZNUl7derhVMZmQ6emrHoKN4mPy3E2AGNTHkcR+U+W6uA5nItuGC7mZxdyUeTybFqkMoi5CJX/Oapieve3Y6sLWrwUQ8UI54345wvtSVRgvPqjp33isQISp25Qz/VMbLcIsoYXr/WhLK1nCbP6WM1TpP8ozIA4DquVa7haGYIlWzXpIedR0PVAxHZ9vPwpN2JF3w9jiSojPmLPWfkLZwF8pLpWzHN7Gmt8MZHCp+tI4CCC7BJiQpx1v2JRmeuR+w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=mCegSzVYXOvxHKPCB6hdzD9DQrV2f6EahQmZY/5ccxs=;
+ b=hJx+ouo+Xmx6V31F/SEhOfFZhrxDRyVhlbMaOpumCYGzai1CZyX39NVzIOvkTTtJhsuOToCUt5yQ8H1VJaeXb+receMeBb4hikGB9DXO6fK+0l5aLWKhtuyIYtMXkaDohgosCpWYMMr0XJO4NfgHP9OAKC4qeRPQoUhhhK4SlXHdYT5hLudNakRVC1NyjaQow2BvRbNvqZaNzQgRLP2/wyobULH5a2igsh7lbdAii+63P4P+i2CDtTlJ41+9rS8xqGrijqvJBq8yKeAJjudBCPHR5h+pwcbwx8Go0IgBxu1OtS+UfQhDNaHV46tPNANai2INk09xluwVFsW/qkTJIA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=mCegSzVYXOvxHKPCB6hdzD9DQrV2f6EahQmZY/5ccxs=;
+ b=PcxJsW/CvIwE3uzzgV3n1PEwUVRnLM/U8xPJIlGRWId4N5qabU4xfrRh1BFF+RvVjCgav8oZmc+wENkyfppxzsdb67pr4baY/dG6ySXh4WQBWjy/1AHnvvt9QFfgIbfyEWoB+GVnuGl4brzDkkgzV5vpQS5OLxS+geWz8kHNfWU3RM72WQ5KHV+qn/mu8MvmxT+9UPWWfTql0nAjxPRW2FlibqpF0wLaOXYLz541BA1pgGQS06umMrsr0JD1rhZY7hWhi3QI1e1nZ2bX8GQdI4cpv/q0LLXJXvrMvYh7aAgYzLQI9MVJGQkNBDqMSTIlrkd3UkFxzE6oYrYWeVjMgQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
+ by LV3PR12MB9188.namprd12.prod.outlook.com (2603:10b6:408:19b::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.23; Fri, 22 Sep
+ 2023 17:08:01 +0000
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::faf:4cd0:ae27:1073]) by LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::faf:4cd0:ae27:1073%6]) with mapi id 15.20.6792.026; Fri, 22 Sep 2023
+ 17:08:01 +0000
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+	asahi@lists.linux.dev,
+	Lu Baolu <baolu.lu@linux.intel.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	iommu@lists.linux.dev,
+	Joerg Roedel <joro@8bytes.org>,
+	Kevin Tian <kevin.tian@intel.com>,
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Hector Martin <marcan@marcan.st>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Sven Peter <sven@svenpeter.dev>,
+	Will Deacon <will@kernel.org>
+Subject: [PATCH 0/8] iommu: Convert dart & iommufd to the new domain_alloc_paging()
+Date: Fri, 22 Sep 2023 14:07:51 -0300
+Message-ID: <0-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: YQBPR0101CA0327.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:6c::7) To LV2PR12MB5869.namprd12.prod.outlook.com
+ (2603:10b6:408:176::16)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|LV3PR12MB9188:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1f658ab8-9b96-44f4-f877-08dbbb8e7a1e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	kZMcI+ZgG1tQUTzRO0xICUU60nFpGxH5YzXtM4HC74+UrCexRx5bqj9DZR76L9V3pf4PEhZCX5X13OvVDA/E7DsrR6bcyCkn/UvlA1xP0Kr0qTicBb5vkTEwusCySjaEFkSoUM4g/Oyh8+tygYS+aB7rzAH73Iw/P0tpq8LRnvCztpuQA8B6TJSf443krC6Lhtb4PjjSsLQpgJFJZisQG57LRlGdbb1pGntRMpBscavhyY3mYXrOTB0m3WhQ4iRIZgwk8Mu2JOuaIl+A0hzLWG5J/DhYmtRLOe56DbTH2tL8tevZ8T12Mx+1CvqjhSbOdC1XfSD8a+OWTW4Oa6LUeIrtshuru2W2Vw1/CMmkCZnbEoIAAMN3VxGC7qigBV0fFeqoOPhtC4Yv08h3MZH5wdj/xEHoT8CXNXm9yH6wZ0PhtxaFZWoSNGAz0QOr/Ds8eWHAP7VtPDmUGYRoZTZHF5V1kAHiI2bLSZhPuSIVqQKCoGPq9L0jKgCRiSG/i6eEh/ifvG+BdBiVWamAOntsEsMlgqLh/qS3324g1ejDDKOVICM+PhxH0rVuGNvaGPyh8cJntKLEbahjJfqOB5bUq9sr+It8sSVcmUE/zKcMO9wuJFUjv37CfpgBP1RKUQwj
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(366004)(396003)(376002)(39860400002)(346002)(186009)(1800799009)(451199024)(921005)(26005)(8936002)(2616005)(8676002)(7416002)(83380400001)(2906002)(36756003)(86362001)(6486002)(6506007)(478600001)(6666004)(5660300002)(38100700002)(6512007)(66946007)(110136005)(41300700001)(66556008)(316002)(66476007)(4216001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?kydm7pRd4ElUGcqwzas/k/+TQ2eVXlC1p5I8DK9Wa7LXjr45ZpcMcYEl4plN?=
+ =?us-ascii?Q?bez+uTW/B4R95M+MU6n+UD9UNAYee9lmXE70Xr+I2H7vcqFQq/OzGaScyjKU?=
+ =?us-ascii?Q?jydppsJfEq7vFBWQ9H21U87aM2sN4lZaDoSkldRUTFMWfd6JuQQ1/nQRsrA3?=
+ =?us-ascii?Q?Rnc4R7dIvc/RLiRIOOE90L5y+F6qmWIBzIFRN0KdtZk2v16E5cMoSkEbLr41?=
+ =?us-ascii?Q?r6bTPPZBMr9mqyoTRnO5qw0PwGP1NpGGxlRiM0lEyJIqm+RK2FZ52okbNyOE?=
+ =?us-ascii?Q?rfv1h8dqyGsPln0Qt+S9E2oAucgZuRkVFkSK5Nx9sgtTMFo6Q9LudOKhMFfV?=
+ =?us-ascii?Q?CzIgF32L32liutxcH9bDrdjiBa/FUqbthex7yFmfsbSocJczSDeHOyADFdi3?=
+ =?us-ascii?Q?AKYLbSeyhl9800YZkhqMEbi6gIJmeFmlEn0kYVLnrQfn/ZMPSRrfQyM1BZQ9?=
+ =?us-ascii?Q?9Bez7dLyVoxXMytvDsc7A9ub+xaJ3PbWVgBsmKZU9CPEf6yi6EjSFMvDYW9Y?=
+ =?us-ascii?Q?D9rJJ2I7A/mWQPEL59rk0FlacjqBvCsFDe+wZvVVNOnlvdEsG9/i+3I50D68?=
+ =?us-ascii?Q?RHEodtTsmLOodqcaLSttQBwWecqHr2wwlEUzKHTWHLIoQU7nPHcwav+RcUX/?=
+ =?us-ascii?Q?5pQijHK6Sobr13JyvOIZd3Y/oEAlRzLpIXruke7O6g7c6Z5yHrQKhU/AWEIE?=
+ =?us-ascii?Q?NRhhcPp/oTpgBhewIsDvFzbSfV4/uyAdbVuw6IwOi7r2FJIOwnYPRJl6blyC?=
+ =?us-ascii?Q?624Kz+f1DAdIRd1bw87fU3LS+VMGT2G85ilIOnl1x9CUUWVDfkzqEI7bvucZ?=
+ =?us-ascii?Q?Xrk0zucYEQ5rog7g7SYyH5AsbsQBNFlN1b8Iz2kaml0VZ/EXjnQAj2xIyBPD?=
+ =?us-ascii?Q?nZy9LK40fyK1O7GDqKQ73YdJfa5k/kv3bJ5n4BmsPf1Bo353e9f8uaLk3Ey1?=
+ =?us-ascii?Q?uqg4ksj59YEIaGr9OZs5+dpSpQtFy8SRGruR/rnjZAzrEmCApEIwodQPiP9P?=
+ =?us-ascii?Q?rGAf6pR72CqXDlCb2CZBbYcPf9KKVkRSDXj2HKZhv/ztIep4aX3d16j9ZuoP?=
+ =?us-ascii?Q?aMmc4Quova9ZF+BJHwC3phgRj8yFZmBcb6Sk6TswBDDOpNwkkGT7pKDhYQu7?=
+ =?us-ascii?Q?3xI8YQHyV60m82o6X9aCOlbMYSzS0u8nZKZDFGys9d24YQJy2l0a8YlSowRF?=
+ =?us-ascii?Q?tWKDbYWfZ/UWwcgbxo+izfde7uj7o9D2MfmG9kcoZ70Y1JAPXokZoi2T/qmh?=
+ =?us-ascii?Q?ShlPVkv+Fk4+inMSaRs8WO2LtrTZeO4sUAg9PB/jcPt6WCOlsVITLZUn7GGS?=
+ =?us-ascii?Q?TQ8lkwLi5egTMadO2v+Zhoq54VRT0c7dqQZsjQBQLHhRFKc1Ggu32gsocxh2?=
+ =?us-ascii?Q?8Ql3ZaT59wKLz52TweCCMsfK6Q/Q3PT9DgOzAh030I3ZSPp1dOtaDCl2otEl?=
+ =?us-ascii?Q?2UUVKGpwDPDdnwGueCu3LGjuwnCjbPAZkvsG58fwm3kuauAFgj1JhvzYdJWR?=
+ =?us-ascii?Q?aqkso5YfuPOgW/3LdW+qmg7FLJQq7qLxLlqWcZHDPLp4rKWBy6Y2fxvMYECs?=
+ =?us-ascii?Q?hdGITXtRnxGudHxGVxk4z/WQhMgjNzTkg40UMWiI?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1f658ab8-9b96-44f4-f877-08dbbb8e7a1e
+X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 17:08:01.3252
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: D4WVpLDNEG8y3zAi4GsPHDHSQKQc+HbZmDUg0puJWYjVcNIUdsatt8Uf/96CtPdr
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9188
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,706 +131,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 22/09/2023 14:33, Alexandre Ghiti wrote:
-> On 22/09/2023 13:58, Ryan Roberts wrote:
->> In order to fix a bug, arm64 needs to be told the size of the huge page
->> for which the pte is being set in set_huge_pte_at(). Provide for this by
->> adding an `unsigned long sz` parameter to the function. This follows the
->> same pattern as huge_pte_clear().
->>
->> This commit makes the required interface modifications to the core mm as
->> well as all arches that implement this function (arm64, parisc, powerpc,
->> riscv, s390, sparc). The actual arm64 bug will be fixed in a separate
->> commit.
->>
->> No behavioral changes intended.
->>
->> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
->> Cc: <stable@vger.kernel.org> # 6.5+
->> ---
->>   arch/arm64/include/asm/hugetlb.h              |  2 +-
->>   arch/arm64/mm/hugetlbpage.c                   |  6 ++-
->>   arch/parisc/include/asm/hugetlb.h             |  2 +-
->>   arch/parisc/mm/hugetlbpage.c                  |  2 +-
->>   .../include/asm/nohash/32/hugetlb-8xx.h       |  3 +-
->>   arch/powerpc/mm/book3s64/hugetlbpage.c        |  5 ++-
->>   arch/powerpc/mm/book3s64/radix_hugetlbpage.c  |  3 +-
->>   arch/powerpc/mm/nohash/8xx.c                  |  3 +-
->>   arch/powerpc/mm/pgtable.c                     |  3 +-
->>   arch/riscv/include/asm/hugetlb.h              |  3 +-
->>   arch/riscv/mm/hugetlbpage.c                   |  3 +-
->>   arch/s390/include/asm/hugetlb.h               |  6 ++-
->>   arch/s390/mm/hugetlbpage.c                    |  8 +++-
->>   arch/sparc/include/asm/hugetlb.h              |  6 ++-
->>   arch/sparc/mm/hugetlbpage.c                   |  8 +++-
->>   include/asm-generic/hugetlb.h                 |  2 +-
->>   include/linux/hugetlb.h                       |  6 ++-
->>   mm/damon/vaddr.c                              |  3 +-
->>   mm/hugetlb.c                                  | 43 +++++++++++--------
->>   mm/migrate.c                                  |  7 ++-
->>   mm/rmap.c                                     | 23 +++++++---
->>   mm/vmalloc.c                                  |  2 +-
->>   22 files changed, 100 insertions(+), 49 deletions(-)
->>
->> diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
->> index f43a38ac1779..2ddc33d93b13 100644
->> --- a/arch/arm64/include/asm/hugetlb.h
->> +++ b/arch/arm64/include/asm/hugetlb.h
->> @@ -28,7 +28,7 @@ pte_t arch_make_huge_pte(pte_t entry, unsigned int shift,
->> vm_flags_t flags);
->>   #define arch_make_huge_pte arch_make_huge_pte
->>   #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
->>   extern void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> -                pte_t *ptep, pte_t pte);
->> +                pte_t *ptep, pte_t pte, unsigned long sz);
->>   #define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
->>   extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
->>                         unsigned long addr, pte_t *ptep,
->> diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
->> index 9c52718ea750..a7f8c8db3425 100644
->> --- a/arch/arm64/mm/hugetlbpage.c
->> +++ b/arch/arm64/mm/hugetlbpage.c
->> @@ -249,7 +249,7 @@ static inline struct folio
->> *hugetlb_swap_entry_to_folio(swp_entry_t entry)
->>   }
->>     void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> -                pte_t *ptep, pte_t pte)
->> +                pte_t *ptep, pte_t pte, unsigned long sz)
->>   {
->>       size_t pgsize;
->>       int i;
->> @@ -571,5 +571,7 @@ pte_t huge_ptep_modify_prot_start(struct vm_area_struct
->> *vma, unsigned long addr
->>   void huge_ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long
->> addr, pte_t *ptep,
->>                     pte_t old_pte, pte_t pte)
->>   {
->> -    set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->> +    unsigned long psize = huge_page_size(hstate_vma(vma));
-> 
-> 
-> Does this sequence "huge_page_size(hstate_vma(vma))" work for a THP backed vma?
+Continue converting drivers to the new interface. Introduce
+ops->blocked_domain to hold the global static BLOCKED domain and convert
+all drivers supporting BLOCKED to use it.
 
-No - it only works for hugetlb vmas.
+This makes it trivial for dart and iommufd to convert over to
+domain_alloc_paging().
 
-> Or are we sure that THP paths won't call set_huge_pte_at()?
+There are six drivers remaining:
 
-Yes sure; the "huge_pte" stuff is exclusively for hugetlb. THP uses the standard
-infrastructure and only applies to PMD.
+drivers/iommu/amd/iommu.c:      .domain_alloc = amd_iommu_domain_alloc,
+drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c:    .domain_alloc           = arm_smmu_domain_alloc,
+drivers/iommu/arm/arm-smmu/arm-smmu.c:  .domain_alloc           = arm_smmu_domain_alloc,
+drivers/iommu/fsl_pamu_domain.c:        .domain_alloc   = fsl_pamu_domain_alloc,
+drivers/iommu/intel/iommu.c:    .domain_alloc           = intel_iommu_domain_alloc,
+drivers/iommu/virtio-iommu.c:   .domain_alloc           = viommu_domain_alloc,
 
-> 
-> Thanks,
-> 
-> Alex
-> 
-> 
->> +
->> +    set_huge_pte_at(vma->vm_mm, addr, ptep, pte, psize);
->>   }
->> diff --git a/arch/parisc/include/asm/hugetlb.h
->> b/arch/parisc/include/asm/hugetlb.h
->> index f7f078c2872c..72daacc472a0 100644
->> --- a/arch/parisc/include/asm/hugetlb.h
->> +++ b/arch/parisc/include/asm/hugetlb.h
->> @@ -6,7 +6,7 @@
->>     #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
->>   void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> -             pte_t *ptep, pte_t pte);
->> +             pte_t *ptep, pte_t pte, unsigned long sz);
->>     #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
->>   pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
->> diff --git a/arch/parisc/mm/hugetlbpage.c b/arch/parisc/mm/hugetlbpage.c
->> index a8a1a7c1e16e..a9f7e21f6656 100644
->> --- a/arch/parisc/mm/hugetlbpage.c
->> +++ b/arch/parisc/mm/hugetlbpage.c
->> @@ -140,7 +140,7 @@ static void __set_huge_pte_at(struct mm_struct *mm,
->> unsigned long addr,
->>   }
->>     void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> -             pte_t *ptep, pte_t entry)
->> +             pte_t *ptep, pte_t entry, unsigned long sz)
->>   {
->>       __set_huge_pte_at(mm, addr, ptep, entry);
->>   }
->> diff --git a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
->> b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
->> index de092b04ee1a..92df40c6cc6b 100644
->> --- a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
->> +++ b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
->> @@ -46,7 +46,8 @@ static inline int check_and_get_huge_psize(int shift)
->>   }
->>     #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
->> -void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->> pte_t pte);
->> +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->> +             pte_t pte, unsigned long sz);
->>     #define __HAVE_ARCH_HUGE_PTE_CLEAR
->>   static inline void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
->> diff --git a/arch/powerpc/mm/book3s64/hugetlbpage.c
->> b/arch/powerpc/mm/book3s64/hugetlbpage.c
->> index 3bc0eb21b2a0..5a2e512e96db 100644
->> --- a/arch/powerpc/mm/book3s64/hugetlbpage.c
->> +++ b/arch/powerpc/mm/book3s64/hugetlbpage.c
->> @@ -143,11 +143,14 @@ pte_t huge_ptep_modify_prot_start(struct vm_area_struct
->> *vma,
->>   void huge_ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long
->> addr,
->>                     pte_t *ptep, pte_t old_pte, pte_t pte)
->>   {
->> +    unsigned long psize;
->>         if (radix_enabled())
->>           return radix__huge_ptep_modify_prot_commit(vma, addr, ptep,
->>                                  old_pte, pte);
->> -    set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->> +
->> +    psize = huge_page_size(hstate_vma(vma));
->> +    set_huge_pte_at(vma->vm_mm, addr, ptep, pte, psize);
->>   }
->>     void __init hugetlbpage_init_defaultsize(void)
->> diff --git a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
->> b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
->> index 17075c78d4bc..35fd2a95be24 100644
->> --- a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
->> +++ b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
->> @@ -47,6 +47,7 @@ void radix__huge_ptep_modify_prot_commit(struct
->> vm_area_struct *vma,
->>                        pte_t old_pte, pte_t pte)
->>   {
->>       struct mm_struct *mm = vma->vm_mm;
->> +    unsigned long psize = huge_page_size(hstate_vma(vma));
->>         /*
->>        * POWER9 NMMU must flush the TLB after clearing the PTE before
->> @@ -58,5 +59,5 @@ void radix__huge_ptep_modify_prot_commit(struct
->> vm_area_struct *vma,
->>           atomic_read(&mm->context.copros) > 0)
->>           radix__flush_hugetlb_page(vma, addr);
->>   -    set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->> +    set_huge_pte_at(vma->vm_mm, addr, ptep, pte, psize);
->>   }
->> diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
->> index dbbfe897455d..a642a7929892 100644
->> --- a/arch/powerpc/mm/nohash/8xx.c
->> +++ b/arch/powerpc/mm/nohash/8xx.c
->> @@ -91,7 +91,8 @@ static int __ref __early_map_kernel_hugepage(unsigned long
->> va, phys_addr_t pa,
->>       if (new && WARN_ON(pte_present(*ptep) && pgprot_val(prot)))
->>           return -EINVAL;
->>   -    set_huge_pte_at(&init_mm, va, ptep, pte_mkhuge(pfn_pte(pa >>
->> PAGE_SHIFT, prot)));
->> +    set_huge_pte_at(&init_mm, va, ptep,
->> +            pte_mkhuge(pfn_pte(pa >> PAGE_SHIFT, prot)), psize);
->>         return 0;
->>   }
->> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
->> index 3f86fd217690..3ba9fe411604 100644
->> --- a/arch/powerpc/mm/pgtable.c
->> +++ b/arch/powerpc/mm/pgtable.c
->> @@ -288,7 +288,8 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
->>   }
->>     #if defined(CONFIG_PPC_8xx)
->> -void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->> pte_t pte)
->> +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->> +             pte_t pte, unsigned long sz)
->>   {
->>       pmd_t *pmd = pmd_off(mm, addr);
->>       pte_basic_t val;
->> diff --git a/arch/riscv/include/asm/hugetlb.h b/arch/riscv/include/asm/hugetlb.h
->> index 34e24f078cc1..4c5b0e929890 100644
->> --- a/arch/riscv/include/asm/hugetlb.h
->> +++ b/arch/riscv/include/asm/hugetlb.h
->> @@ -18,7 +18,8 @@ void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
->>     #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
->>   void set_huge_pte_at(struct mm_struct *mm,
->> -             unsigned long addr, pte_t *ptep, pte_t pte);
->> +             unsigned long addr, pte_t *ptep, pte_t pte,
->> +             unsigned long sz);
->>     #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
->>   pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
->> diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
->> index 96225a8533ad..e4a2ace92dbe 100644
->> --- a/arch/riscv/mm/hugetlbpage.c
->> +++ b/arch/riscv/mm/hugetlbpage.c
->> @@ -180,7 +180,8 @@ pte_t arch_make_huge_pte(pte_t entry, unsigned int shift,
->> vm_flags_t flags)
->>   void set_huge_pte_at(struct mm_struct *mm,
->>                unsigned long addr,
->>                pte_t *ptep,
->> -             pte_t pte)
->> +             pte_t pte,
->> +             unsigned long sz)
->>   {
->>       int i, pte_num;
->>   diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
->> index f07267875a19..deb198a61039 100644
->> --- a/arch/s390/include/asm/hugetlb.h
->> +++ b/arch/s390/include/asm/hugetlb.h
->> @@ -16,6 +16,8 @@
->>   #define hugepages_supported()            (MACHINE_HAS_EDAT1)
->>     void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> +             pte_t *ptep, pte_t pte, unsigned long sz);
->> +void __set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->>                pte_t *ptep, pte_t pte);
->>   pte_t huge_ptep_get(pte_t *ptep);
->>   pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
->> @@ -65,7 +67,7 @@ static inline int huge_ptep_set_access_flags(struct
->> vm_area_struct *vma,
->>       int changed = !pte_same(huge_ptep_get(ptep), pte);
->>       if (changed) {
->>           huge_ptep_get_and_clear(vma->vm_mm, addr, ptep);
->> -        set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->> +        __set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->>       }
->>       return changed;
->>   }
->> @@ -74,7 +76,7 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct
->> *mm,
->>                          unsigned long addr, pte_t *ptep)
->>   {
->>       pte_t pte = huge_ptep_get_and_clear(mm, addr, ptep);
->> -    set_huge_pte_at(mm, addr, ptep, pte_wrprotect(pte));
->> +    __set_huge_pte_at(mm, addr, ptep, pte_wrprotect(pte));
->>   }
->>     static inline pte_t mk_huge_pte(struct page *page, pgprot_t pgprot)
->> diff --git a/arch/s390/mm/hugetlbpage.c b/arch/s390/mm/hugetlbpage.c
->> index c718f2a0de94..297a6d897d5a 100644
->> --- a/arch/s390/mm/hugetlbpage.c
->> +++ b/arch/s390/mm/hugetlbpage.c
->> @@ -142,7 +142,7 @@ static void clear_huge_pte_skeys(struct mm_struct *mm,
->> unsigned long rste)
->>           __storage_key_init_range(paddr, paddr + size - 1);
->>   }
->>   -void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> +void __set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->>                pte_t *ptep, pte_t pte)
->>   {
->>       unsigned long rste;
->> @@ -163,6 +163,12 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long
->> addr,
->>       set_pte(ptep, __pte(rste));
->>   }
->>   +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> +             pte_t *ptep, pte_t pte, unsigned long sz)
->> +{
->> +    __set_huge_pte_at(mm, addr, ptep, pte);
->> +}
->> +
->>   pte_t huge_ptep_get(pte_t *ptep)
->>   {
->>       return __rste_to_pte(pte_val(*ptep));
->> diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
->> index 0a26cca24232..c714ca6a05aa 100644
->> --- a/arch/sparc/include/asm/hugetlb.h
->> +++ b/arch/sparc/include/asm/hugetlb.h
->> @@ -14,6 +14,8 @@ extern struct pud_huge_patch_entry __pud_huge_patch,
->> __pud_huge_patch_end;
->>     #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
->>   void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> +             pte_t *ptep, pte_t pte, unsigned long sz);
->> +void __set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->>                pte_t *ptep, pte_t pte);
->>     #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
->> @@ -32,7 +34,7 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct
->> *mm,
->>                          unsigned long addr, pte_t *ptep)
->>   {
->>       pte_t old_pte = *ptep;
->> -    set_huge_pte_at(mm, addr, ptep, pte_wrprotect(old_pte));
->> +    __set_huge_pte_at(mm, addr, ptep, pte_wrprotect(old_pte));
->>   }
->>     #define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
->> @@ -42,7 +44,7 @@ static inline int huge_ptep_set_access_flags(struct
->> vm_area_struct *vma,
->>   {
->>       int changed = !pte_same(*ptep, pte);
->>       if (changed) {
->> -        set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->> +        __set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->>           flush_tlb_page(vma, addr);
->>       }
->>       return changed;
->> diff --git a/arch/sparc/mm/hugetlbpage.c b/arch/sparc/mm/hugetlbpage.c
->> index d7018823206c..b432500c13a5 100644
->> --- a/arch/sparc/mm/hugetlbpage.c
->> +++ b/arch/sparc/mm/hugetlbpage.c
->> @@ -328,7 +328,7 @@ pte_t *huge_pte_offset(struct mm_struct *mm,
->>       return pte_offset_huge(pmd, addr);
->>   }
->>   -void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> +void __set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->>                pte_t *ptep, pte_t entry)
->>   {
->>       unsigned int nptes, orig_shift, shift;
->> @@ -364,6 +364,12 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long
->> addr,
->>                       orig_shift);
->>   }
->>   +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> +             pte_t *ptep, pte_t entry, unsigned long sz)
->> +{
->> +    __set_huge_pte_at(mm, addr, ptep, entry);
->> +}
->> +
->>   pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
->>                     pte_t *ptep)
->>   {
->> diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
->> index 4da02798a00b..6dcf4d576970 100644
->> --- a/include/asm-generic/hugetlb.h
->> +++ b/include/asm-generic/hugetlb.h
->> @@ -76,7 +76,7 @@ static inline void hugetlb_free_pgd_range(struct mmu_gather
->> *tlb,
->>     #ifndef __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
->>   static inline void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> -        pte_t *ptep, pte_t pte)
->> +        pte_t *ptep, pte_t pte, unsigned long sz)
->>   {
->>       set_pte_at(mm, addr, ptep, pte);
->>   }
->> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
->> index 5b2626063f4f..a30686e649f7 100644
->> --- a/include/linux/hugetlb.h
->> +++ b/include/linux/hugetlb.h
->> @@ -984,7 +984,9 @@ static inline void huge_ptep_modify_prot_commit(struct
->> vm_area_struct *vma,
->>                           unsigned long addr, pte_t *ptep,
->>                           pte_t old_pte, pte_t pte)
->>   {
->> -    set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
->> +    unsigned long psize = huge_page_size(hstate_vma(vma));
->> +
->> +    set_huge_pte_at(vma->vm_mm, addr, ptep, pte, psize);
->>   }
->>   #endif
->>   @@ -1173,7 +1175,7 @@ static inline pte_t huge_ptep_clear_flush(struct
->> vm_area_struct *vma,
->>   }
->>     static inline void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> -                   pte_t *ptep, pte_t pte)
->> +                   pte_t *ptep, pte_t pte, unsigned long sz)
->>   {
->>   }
->>   diff --git a/mm/damon/vaddr.c b/mm/damon/vaddr.c
->> index 4c81a9dbd044..cf8a9fc5c9d1 100644
->> --- a/mm/damon/vaddr.c
->> +++ b/mm/damon/vaddr.c
->> @@ -341,13 +341,14 @@ static void damon_hugetlb_mkold(pte_t *pte, struct
->> mm_struct *mm,
->>       bool referenced = false;
->>       pte_t entry = huge_ptep_get(pte);
->>       struct folio *folio = pfn_folio(pte_pfn(entry));
->> +    unsigned long psize = huge_page_size(hstate_vma(vma));
->>         folio_get(folio);
->>         if (pte_young(entry)) {
->>           referenced = true;
->>           entry = pte_mkold(entry);
->> -        set_huge_pte_at(mm, addr, pte, entry);
->> +        set_huge_pte_at(mm, addr, pte, entry, psize);
->>       }
->>     #ifdef CONFIG_MMU_NOTIFIER
->> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
->> index ba6d39b71cb1..52d26072dfda 100644
->> --- a/mm/hugetlb.c
->> +++ b/mm/hugetlb.c
->> @@ -4980,7 +4980,7 @@ static bool is_hugetlb_entry_hwpoisoned(pte_t pte)
->>     static void
->>   hugetlb_install_folio(struct vm_area_struct *vma, pte_t *ptep, unsigned long
->> addr,
->> -              struct folio *new_folio, pte_t old)
->> +              struct folio *new_folio, pte_t old, unsigned long sz)
->>   {
->>       pte_t newpte = make_huge_pte(vma, &new_folio->page, 1);
->>   @@ -4988,7 +4988,7 @@ hugetlb_install_folio(struct vm_area_struct *vma,
->> pte_t *ptep, unsigned long add
->>       hugepage_add_new_anon_rmap(new_folio, vma, addr);
->>       if (userfaultfd_wp(vma) && huge_pte_uffd_wp(old))
->>           newpte = huge_pte_mkuffd_wp(newpte);
->> -    set_huge_pte_at(vma->vm_mm, addr, ptep, newpte);
->> +    set_huge_pte_at(vma->vm_mm, addr, ptep, newpte, sz);
->>       hugetlb_count_add(pages_per_huge_page(hstate_vma(vma)), vma->vm_mm);
->>       folio_set_hugetlb_migratable(new_folio);
->>   }
->> @@ -5065,7 +5065,7 @@ int copy_hugetlb_page_range(struct mm_struct *dst,
->> struct mm_struct *src,
->>           } else if (unlikely(is_hugetlb_entry_hwpoisoned(entry))) {
->>               if (!userfaultfd_wp(dst_vma))
->>                   entry = huge_pte_clear_uffd_wp(entry);
->> -            set_huge_pte_at(dst, addr, dst_pte, entry);
->> +            set_huge_pte_at(dst, addr, dst_pte, entry, sz);
->>           } else if (unlikely(is_hugetlb_entry_migration(entry))) {
->>               swp_entry_t swp_entry = pte_to_swp_entry(entry);
->>               bool uffd_wp = pte_swp_uffd_wp(entry);
->> @@ -5080,18 +5080,18 @@ int copy_hugetlb_page_range(struct mm_struct *dst,
->> struct mm_struct *src,
->>                   entry = swp_entry_to_pte(swp_entry);
->>                   if (userfaultfd_wp(src_vma) && uffd_wp)
->>                       entry = pte_swp_mkuffd_wp(entry);
->> -                set_huge_pte_at(src, addr, src_pte, entry);
->> +                set_huge_pte_at(src, addr, src_pte, entry, sz);
->>               }
->>               if (!userfaultfd_wp(dst_vma))
->>                   entry = huge_pte_clear_uffd_wp(entry);
->> -            set_huge_pte_at(dst, addr, dst_pte, entry);
->> +            set_huge_pte_at(dst, addr, dst_pte, entry, sz);
->>           } else if (unlikely(is_pte_marker(entry))) {
->>               pte_marker marker = copy_pte_marker(
->>                   pte_to_swp_entry(entry), dst_vma);
->>                 if (marker)
->>                   set_huge_pte_at(dst, addr, dst_pte,
->> -                        make_pte_marker(marker));
->> +                        make_pte_marker(marker), sz);
->>           } else {
->>               entry = huge_ptep_get(src_pte);
->>               pte_folio = page_folio(pte_page(entry));
->> @@ -5145,7 +5145,7 @@ int copy_hugetlb_page_range(struct mm_struct *dst,
->> struct mm_struct *src,
->>                       goto again;
->>                   }
->>                   hugetlb_install_folio(dst_vma, dst_pte, addr,
->> -                              new_folio, src_pte_old);
->> +                              new_folio, src_pte_old, sz);
->>                   spin_unlock(src_ptl);
->>                   spin_unlock(dst_ptl);
->>                   continue;
->> @@ -5166,7 +5166,7 @@ int copy_hugetlb_page_range(struct mm_struct *dst,
->> struct mm_struct *src,
->>               if (!userfaultfd_wp(dst_vma))
->>                   entry = huge_pte_clear_uffd_wp(entry);
->>   -            set_huge_pte_at(dst, addr, dst_pte, entry);
->> +            set_huge_pte_at(dst, addr, dst_pte, entry, sz);
->>               hugetlb_count_add(npages, dst);
->>           }
->>           spin_unlock(src_ptl);
->> @@ -5184,7 +5184,8 @@ int copy_hugetlb_page_range(struct mm_struct *dst,
->> struct mm_struct *src,
->>   }
->>     static void move_huge_pte(struct vm_area_struct *vma, unsigned long old_addr,
->> -              unsigned long new_addr, pte_t *src_pte, pte_t *dst_pte)
->> +              unsigned long new_addr, pte_t *src_pte, pte_t *dst_pte,
->> +              unsigned long sz)
->>   {
->>       struct hstate *h = hstate_vma(vma);
->>       struct mm_struct *mm = vma->vm_mm;
->> @@ -5202,7 +5203,7 @@ static void move_huge_pte(struct vm_area_struct *vma,
->> unsigned long old_addr,
->>           spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
->>         pte = huge_ptep_get_and_clear(mm, old_addr, src_pte);
->> -    set_huge_pte_at(mm, new_addr, dst_pte, pte);
->> +    set_huge_pte_at(mm, new_addr, dst_pte, pte, sz);
->>         if (src_ptl != dst_ptl)
->>           spin_unlock(src_ptl);
->> @@ -5259,7 +5260,7 @@ int move_hugetlb_page_tables(struct vm_area_struct *vma,
->>           if (!dst_pte)
->>               break;
->>   -        move_huge_pte(vma, old_addr, new_addr, src_pte, dst_pte);
->> +        move_huge_pte(vma, old_addr, new_addr, src_pte, dst_pte, sz);
->>       }
->>         if (shared_pmd)
->> @@ -5337,7 +5338,8 @@ static void __unmap_hugepage_range(struct mmu_gather
->> *tlb, struct vm_area_struct
->>               if (pte_swp_uffd_wp_any(pte) &&
->>                   !(zap_flags & ZAP_FLAG_DROP_MARKER))
->>                   set_huge_pte_at(mm, address, ptep,
->> -                        make_pte_marker(PTE_MARKER_UFFD_WP));
->> +                        make_pte_marker(PTE_MARKER_UFFD_WP),
->> +                        sz);
->>               else
->>                   huge_pte_clear(mm, address, ptep, sz);
->>               spin_unlock(ptl);
->> @@ -5371,7 +5373,8 @@ static void __unmap_hugepage_range(struct mmu_gather
->> *tlb, struct vm_area_struct
->>           if (huge_pte_uffd_wp(pte) &&
->>               !(zap_flags & ZAP_FLAG_DROP_MARKER))
->>               set_huge_pte_at(mm, address, ptep,
->> -                    make_pte_marker(PTE_MARKER_UFFD_WP));
->> +                    make_pte_marker(PTE_MARKER_UFFD_WP),
->> +                    sz);
->>           hugetlb_count_sub(pages_per_huge_page(h), mm);
->>           page_remove_rmap(page, vma, true);
->>   @@ -5676,7 +5679,7 @@ static vm_fault_t hugetlb_wp(struct mm_struct *mm,
->> struct vm_area_struct *vma,
->>           hugepage_add_new_anon_rmap(new_folio, vma, haddr);
->>           if (huge_pte_uffd_wp(pte))
->>               newpte = huge_pte_mkuffd_wp(newpte);
->> -        set_huge_pte_at(mm, haddr, ptep, newpte);
->> +        set_huge_pte_at(mm, haddr, ptep, newpte, huge_page_size(h));
->>           folio_set_hugetlb_migratable(new_folio);
->>           /* Make the old page be freed below */
->>           new_folio = old_folio;
->> @@ -5972,7 +5975,7 @@ static vm_fault_t hugetlb_no_page(struct mm_struct *mm,
->>        */
->>       if (unlikely(pte_marker_uffd_wp(old_pte)))
->>           new_pte = huge_pte_mkuffd_wp(new_pte);
->> -    set_huge_pte_at(mm, haddr, ptep, new_pte);
->> +    set_huge_pte_at(mm, haddr, ptep, new_pte, huge_page_size(h));
->>         hugetlb_count_add(pages_per_huge_page(h), mm);
->>       if ((flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED)) {
->> @@ -6261,7 +6264,8 @@ int hugetlb_mfill_atomic_pte(pte_t *dst_pte,
->>           }
->>             _dst_pte = make_pte_marker(PTE_MARKER_POISONED);
->> -        set_huge_pte_at(dst_mm, dst_addr, dst_pte, _dst_pte);
->> +        set_huge_pte_at(dst_mm, dst_addr, dst_pte, _dst_pte,
->> +                huge_page_size(h));
->>             /* No need to invalidate - it was non-present before */
->>           update_mmu_cache(dst_vma, dst_addr, dst_pte);
->> @@ -6412,7 +6416,7 @@ int hugetlb_mfill_atomic_pte(pte_t *dst_pte,
->>       if (wp_enabled)
->>           _dst_pte = huge_pte_mkuffd_wp(_dst_pte);
->>   -    set_huge_pte_at(dst_mm, dst_addr, dst_pte, _dst_pte);
->> +    set_huge_pte_at(dst_mm, dst_addr, dst_pte, _dst_pte, huge_page_size(h));
->>         hugetlb_count_add(pages_per_huge_page(h), dst_mm);
->>   @@ -6598,7 +6602,7 @@ long hugetlb_change_protection(struct vm_area_struct
->> *vma,
->>               else if (uffd_wp_resolve)
->>                   newpte = pte_swp_clear_uffd_wp(newpte);
->>               if (!pte_same(pte, newpte))
->> -                set_huge_pte_at(mm, address, ptep, newpte);
->> +                set_huge_pte_at(mm, address, ptep, newpte, psize);
->>           } else if (unlikely(is_pte_marker(pte))) {
->>               /* No other markers apply for now. */
->>               WARN_ON_ONCE(!pte_marker_uffd_wp(pte));
->> @@ -6623,7 +6627,8 @@ long hugetlb_change_protection(struct vm_area_struct *vma,
->>               if (unlikely(uffd_wp))
->>                   /* Safe to modify directly (none->non-present). */
->>                   set_huge_pte_at(mm, address, ptep,
->> -                        make_pte_marker(PTE_MARKER_UFFD_WP));
->> +                        make_pte_marker(PTE_MARKER_UFFD_WP),
->> +                        psize);
->>           }
->>           spin_unlock(ptl);
->>       }
->> diff --git a/mm/migrate.c b/mm/migrate.c
->> index b7fa020003f3..2053b54556ca 100644
->> --- a/mm/migrate.c
->> +++ b/mm/migrate.c
->> @@ -243,7 +243,9 @@ static bool remove_migration_pte(struct folio *folio,
->>     #ifdef CONFIG_HUGETLB_PAGE
->>           if (folio_test_hugetlb(folio)) {
->> -            unsigned int shift = huge_page_shift(hstate_vma(vma));
->> +            struct hstate *h = hstate_vma(vma);
->> +            unsigned int shift = huge_page_shift(h);
->> +            unsigned long psize = huge_page_size(h);
->>                 pte = arch_make_huge_pte(pte, shift, vma->vm_flags);
->>               if (folio_test_anon(folio))
->> @@ -251,7 +253,8 @@ static bool remove_migration_pte(struct folio *folio,
->>                                  rmap_flags);
->>               else
->>                   page_dup_file_rmap(new, true);
->> -            set_huge_pte_at(vma->vm_mm, pvmw.address, pvmw.pte, pte);
->> +            set_huge_pte_at(vma->vm_mm, pvmw.address, pvmw.pte, pte,
->> +                    psize);
->>           } else
->>   #endif
->>           {
->> diff --git a/mm/rmap.c b/mm/rmap.c
->> index ec7f8e6c9e48..9f795b93cf40 100644
->> --- a/mm/rmap.c
->> +++ b/mm/rmap.c
->> @@ -1480,6 +1480,7 @@ static bool try_to_unmap_one(struct folio *folio, struct
->> vm_area_struct *vma,
->>       struct mmu_notifier_range range;
->>       enum ttu_flags flags = (enum ttu_flags)(long)arg;
->>       unsigned long pfn;
->> +    unsigned long hsz = 0;
->>         /*
->>        * When racing against e.g. zap_pte_range() on another cpu,
->> @@ -1511,6 +1512,9 @@ static bool try_to_unmap_one(struct folio *folio, struct
->> vm_area_struct *vma,
->>            */
->>           adjust_range_if_pmd_sharing_possible(vma, &range.start,
->>                                &range.end);
->> +
->> +        /* We need the huge page size for set_huge_pte_at() */
->> +        hsz = huge_page_size(hstate_vma(vma));
->>       }
->>       mmu_notifier_invalidate_range_start(&range);
->>   @@ -1628,7 +1632,8 @@ static bool try_to_unmap_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>               pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
->>               if (folio_test_hugetlb(folio)) {
->>                   hugetlb_count_sub(folio_nr_pages(folio), mm);
->> -                set_huge_pte_at(mm, address, pvmw.pte, pteval);
->> +                set_huge_pte_at(mm, address, pvmw.pte, pteval,
->> +                        hsz);
->>               } else {
->>                   dec_mm_counter(mm, mm_counter(&folio->page));
->>                   set_pte_at(mm, address, pvmw.pte, pteval);
->> @@ -1820,6 +1825,7 @@ static bool try_to_migrate_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>       struct mmu_notifier_range range;
->>       enum ttu_flags flags = (enum ttu_flags)(long)arg;
->>       unsigned long pfn;
->> +    unsigned long hsz = 0;
->>         /*
->>        * When racing against e.g. zap_pte_range() on another cpu,
->> @@ -1855,6 +1861,9 @@ static bool try_to_migrate_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>            */
->>           adjust_range_if_pmd_sharing_possible(vma, &range.start,
->>                                &range.end);
->> +
->> +        /* We need the huge page size for set_huge_pte_at() */
->> +        hsz = huge_page_size(hstate_vma(vma));
->>       }
->>       mmu_notifier_invalidate_range_start(&range);
->>   @@ -2020,7 +2029,8 @@ static bool try_to_migrate_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>               pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
->>               if (folio_test_hugetlb(folio)) {
->>                   hugetlb_count_sub(folio_nr_pages(folio), mm);
->> -                set_huge_pte_at(mm, address, pvmw.pte, pteval);
->> +                set_huge_pte_at(mm, address, pvmw.pte, pteval,
->> +                        hsz);
->>               } else {
->>                   dec_mm_counter(mm, mm_counter(&folio->page));
->>                   set_pte_at(mm, address, pvmw.pte, pteval);
->> @@ -2044,7 +2054,8 @@ static bool try_to_migrate_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>                 if (arch_unmap_one(mm, vma, address, pteval) < 0) {
->>                   if (folio_test_hugetlb(folio))
->> -                    set_huge_pte_at(mm, address, pvmw.pte, pteval);
->> +                    set_huge_pte_at(mm, address, pvmw.pte,
->> +                            pteval, hsz);
->>                   else
->>                       set_pte_at(mm, address, pvmw.pte, pteval);
->>                   ret = false;
->> @@ -2058,7 +2069,8 @@ static bool try_to_migrate_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>               if (anon_exclusive &&
->>                   page_try_share_anon_rmap(subpage)) {
->>                   if (folio_test_hugetlb(folio))
->> -                    set_huge_pte_at(mm, address, pvmw.pte, pteval);
->> +                    set_huge_pte_at(mm, address, pvmw.pte,
->> +                            pteval, hsz);
->>                   else
->>                       set_pte_at(mm, address, pvmw.pte, pteval);
->>                   ret = false;
->> @@ -2090,7 +2102,8 @@ static bool try_to_migrate_one(struct folio *folio,
->> struct vm_area_struct *vma,
->>               if (pte_uffd_wp(pteval))
->>                   swp_pte = pte_swp_mkuffd_wp(swp_pte);
->>               if (folio_test_hugetlb(folio))
->> -                set_huge_pte_at(mm, address, pvmw.pte, swp_pte);
->> +                set_huge_pte_at(mm, address, pvmw.pte, swp_pte,
->> +                        hsz);
->>               else
->>                   set_pte_at(mm, address, pvmw.pte, swp_pte);
->>               trace_set_migration_pte(address, pte_val(swp_pte),
->> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> index ef8599d394fd..a3fedb3ee0db 100644
->> --- a/mm/vmalloc.c
->> +++ b/mm/vmalloc.c
->> @@ -111,7 +111,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
->> unsigned long end,
->>               pte_t entry = pfn_pte(pfn, prot);
->>                 entry = arch_make_huge_pte(entry, ilog2(size), 0);
->> -            set_huge_pte_at(&init_mm, addr, pte, entry);
->> +            set_huge_pte_at(&init_mm, addr, pte, entry, size);
->>               pfn += PFN_DOWN(size);
->>               continue;
->>           }
+The follows the "Make default_domain's mandatory" series
+
+Jason Gunthorpe (8):
+  iommu: Move IOMMU_DOMAIN_BLOCKED global statics to ops->blocked_domain
+  iommu/vt-d: Update the definition of the blocking domain
+  iommu/vt-d: Use ops->blocked_domain
+  iommufd: Convert to alloc_domain_paging()
+  iommu/dart: Use static global identity domains
+  iommu/dart: Move the blocked domain support to a global static
+  iommu/dart: Convert to domain_alloc_paging()
+  iommu/dart: Call apple_dart_finalize_domain() as part of
+    alloc_paging()
+
+ arch/powerpc/kernel/iommu.c      |   9 +--
+ drivers/iommu/apple-dart.c       | 124 ++++++++++++++++++++-----------
+ drivers/iommu/intel/iommu.c      |   7 +-
+ drivers/iommu/iommu.c            |   2 +
+ drivers/iommu/iommufd/selftest.c |  11 +--
+ include/linux/iommu.h            |   3 +
+ 6 files changed, 91 insertions(+), 65 deletions(-)
+
+
+base-commit: 494e0fef6db2e604bca0fc552d92b760b6e25d10
+-- 
+2.42.0
 
