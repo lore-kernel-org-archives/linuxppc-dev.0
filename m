@@ -4,61 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED7ECCD4F49
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 10:13:05 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=u9Ta/PHx;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98455CD4F58
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 10:38:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsSl44RG7z3dJ1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 20:13:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=u9Ta/PHx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=wsa@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RsTHv0f8bz3dwT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 20:38:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org)
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::222])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsSk51L2Hz3cRd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 20:12:13 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 0CA5B6224B;
-	Fri, 22 Sep 2023 10:12:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8DD1C433C7;
-	Fri, 22 Sep 2023 10:12:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695377528;
-	bh=KTp3+5YEfk8OXMEq9FRYbmvHCPYkW/LfzyG6e8jyrmE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=u9Ta/PHxFGYtdvyR7EyjbHhgY2PgupOINSohq8W3l1y2ntQltHwu0DFxjAxonBPT3
-	 j+A0gQaDzt+PaotHTBPHV10x7An3Gqxx4qdSFjsJWuFjln8X4f/3/34GTehDaGU0jh
-	 kYqssWzWSbSJfuTLNCxPyTaGGKnJHcegK5wcHIaXlWU6aE9j8VDt1kvluhd/2Le6a2
-	 VGgnpL6DQAMQMhSsAZ5Kf7HGutE7W/yUIDTEj8mqPJGe8Lc5nNbStG5/CWh1MNnYV6
-	 oroHipTH3ZVFkWBTIwNe6oXwzVDu4iolSrelgg6/AK41pCq+7WeOMRE9sUbh0lEG/n
-	 TUROSSffqfMPA==
-Date: Fri, 22 Sep 2023 12:12:05 +0200
-From: Wolfram Sang <wsa@kernel.org>
-To: Justin Stitt <justinstitt@google.com>
-Subject: Re: [PATCH] i2c: replace deprecated strncpy
-Message-ID: <ZQ1odR+4bLWrxn0h@shikoro>
-Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
-	Justin Stitt <justinstitt@google.com>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-References: <20230920-strncpy-drivers-i2c-busses-i2c-powermac-c-v1-1-0a3e9a107f8a@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsTHK47wSz3dD9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 20:37:31 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 85F6740004;
+	Fri, 22 Sep 2023 10:37:08 +0000 (UTC)
+Message-ID: <6d686c54-078d-8d71-d4e2-c754cf92c557@ghiti.fr>
+Date: Fri, 22 Sep 2023 12:37:07 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="9cBeMkCN/aqfYfhG"
-Content-Disposition: inline
-In-Reply-To: <20230920-strncpy-drivers-i2c-busses-i2c-powermac-c-v1-1-0a3e9a107f8a@google.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v3 08/13] riscv: extend execmem_params for generated code
+ allocations
+Content-Language: en-US
+To: Mike Rapoport <rppt@kernel.org>, linux-kernel@vger.kernel.org
+References: <20230918072955.2507221-1-rppt@kernel.org>
+ <20230918072955.2507221-9-rppt@kernel.org>
+From: Alexandre Ghiti <alex@ghiti.fr>
+In-Reply-To: <20230918072955.2507221-9-rppt@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-GND-Sasl: alex@ghiti.fr
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,61 +44,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andi Shyti <andi.shyti@kernel.org>, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Song Liu <song@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, =?UTF-8?B?QmrDtnJuIFTDtnBl?= =?UTF-8?Q?l?= <bjorn@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org
+ >, Luis Chamberlain <mcgrof@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Mike,
 
---9cBeMkCN/aqfYfhG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 18/09/2023 09:29, Mike Rapoport wrote:
+> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+>
+> The memory allocations for kprobes and BPF on RISC-V are not placed in
+> the modules area and these custom allocations are implemented with
+> overrides of alloc_insn_page() and  bpf_jit_alloc_exec().
+>
+> Slightly reorder execmem_params initialization to support both 32 and 64
+> bit variants, define EXECMEM_KPROBES and EXECMEM_BPF ranges in
+> riscv::execmem_params and drop overrides of alloc_insn_page() and
+> bpf_jit_alloc_exec().
+>
+> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> ---
+>   arch/riscv/kernel/module.c         | 21 ++++++++++++++++++++-
+>   arch/riscv/kernel/probes/kprobes.c | 10 ----------
+>   arch/riscv/net/bpf_jit_core.c      | 13 -------------
+>   3 files changed, 20 insertions(+), 24 deletions(-)
+>
+> diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
+> index 343a0edfb6dd..31505ecb5c72 100644
+> --- a/arch/riscv/kernel/module.c
+> +++ b/arch/riscv/kernel/module.c
+> @@ -436,20 +436,39 @@ int apply_relocate_add(Elf_Shdr *sechdrs, const char *strtab,
+>   	return 0;
+>   }
+>   
+> -#if defined(CONFIG_MMU) && defined(CONFIG_64BIT)
+> +#ifdef CONFIG_MMU
+>   static struct execmem_params execmem_params __ro_after_init = {
+>   	.ranges = {
+>   		[EXECMEM_DEFAULT] = {
+>   			.pgprot = PAGE_KERNEL,
+>   			.alignment = 1,
+>   		},
+> +		[EXECMEM_KPROBES] = {
+> +			.pgprot = PAGE_KERNEL_READ_EXEC,
+> +			.alignment = 1,
+> +		},
+> +		[EXECMEM_BPF] = {
+> +			.pgprot = PAGE_KERNEL,
+> +			.alignment = 1,
 
-On Wed, Sep 20, 2023 at 11:07:35AM +0000, Justin Stitt wrote:
-> `strncpy` is deprecated for use on NUL-terminated destination strings [1].
->=20
-> We should prefer more robust and less ambiguous string interfaces.
->=20
-> `info.type` is expected to be NUL-terminated judging by its use in
-> `i2c_new_client_device()` wherein it is used to populate `client->name`:
-> |	strscpy(client->name, info->type, sizeof(client->name));
->=20
-> NUL-padding is not required and even if it was, `client` is already
-> zero-initialized.
->=20
-> Considering the two points from above, a suitable replacement is
-> `strscpy` [2] due to the fact that it guarantees NUL-termination on the
-> destination buffer without unnecessarily NUL-padding.
->=20
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strn=
-cpy-on-nul-terminated-strings [1]
-> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.h=
-tml [2]
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
 
-Added "powermac: " to $subject and applied to for-next, thanks!
+Not entirely sure it is the same alignment (sorry did not go through the 
+entire series), but if it is, the alignment above ^ is not the same that 
+is requested by our current bpf_jit_alloc_exec() implementation which is 
+PAGE_SIZE.
 
 
---9cBeMkCN/aqfYfhG
-Content-Type: application/pgp-signature; name="signature.asc"
+> +		},
+>   	},
+>   };
+>   
+>   struct execmem_params __init *execmem_arch_params(void)
+>   {
+> +#ifdef CONFIG_64BIT
+>   	execmem_params.ranges[EXECMEM_DEFAULT].start = MODULES_VADDR;
+>   	execmem_params.ranges[EXECMEM_DEFAULT].end = MODULES_END;
+> +#else
+> +	execmem_params.ranges[EXECMEM_DEFAULT].start = VMALLOC_START;
+> +	execmem_params.ranges[EXECMEM_DEFAULT].end = VMALLOC_END;
+> +#endif
+> +
+> +	execmem_params.ranges[EXECMEM_KPROBES].start = VMALLOC_START;
+> +	execmem_params.ranges[EXECMEM_KPROBES].end = VMALLOC_END;
+> +
+> +	execmem_params.ranges[EXECMEM_BPF].start = BPF_JIT_REGION_START;
+> +	execmem_params.ranges[EXECMEM_BPF].end = BPF_JIT_REGION_END;
+>   
+>   	return &execmem_params;
+>   }
+> diff --git a/arch/riscv/kernel/probes/kprobes.c b/arch/riscv/kernel/probes/kprobes.c
+> index 2f08c14a933d..e64f2f3064eb 100644
+> --- a/arch/riscv/kernel/probes/kprobes.c
+> +++ b/arch/riscv/kernel/probes/kprobes.c
+> @@ -104,16 +104,6 @@ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+>   	return 0;
+>   }
+>   
+> -#ifdef CONFIG_MMU
+> -void *alloc_insn_page(void)
+> -{
+> -	return  __vmalloc_node_range(PAGE_SIZE, 1, VMALLOC_START, VMALLOC_END,
+> -				     GFP_KERNEL, PAGE_KERNEL_READ_EXEC,
+> -				     VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
+> -				     __builtin_return_address(0));
+> -}
+> -#endif
+> -
+>   /* install breakpoint in text */
+>   void __kprobes arch_arm_kprobe(struct kprobe *p)
+>   {
+> diff --git a/arch/riscv/net/bpf_jit_core.c b/arch/riscv/net/bpf_jit_core.c
+> index 7b70ccb7fec3..c8a758f0882b 100644
+> --- a/arch/riscv/net/bpf_jit_core.c
+> +++ b/arch/riscv/net/bpf_jit_core.c
+> @@ -218,19 +218,6 @@ u64 bpf_jit_alloc_exec_limit(void)
+>   	return BPF_JIT_REGION_SIZE;
+>   }
+>   
+> -void *bpf_jit_alloc_exec(unsigned long size)
+> -{
+> -	return __vmalloc_node_range(size, PAGE_SIZE, BPF_JIT_REGION_START,
+> -				    BPF_JIT_REGION_END, GFP_KERNEL,
+> -				    PAGE_KERNEL, 0, NUMA_NO_NODE,
+> -				    __builtin_return_address(0));
+> -}
+> -
+> -void bpf_jit_free_exec(void *addr)
+> -{
+> -	return vfree(addr);
+> -}
+> -
+>   void *bpf_arch_text_copy(void *dst, void *src, size_t len)
+>   {
+>   	int ret;
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmUNaHUACgkQFA3kzBSg
-KbZm7RAAk1/spyitaQbYe3PLY8H0wGpdmUP+Yo6vjUIH/2oT5BZDL5XJev83mjnd
-GTIDBPXPr1YAK+qpPahs0BNLIVkE8qBXeQMyCfj7LJJcmnvvXuCjoUeyIGtciqLt
-y6tOXNy0PwN1KDKW2tE48CsY28VJeFJcXF/ZgGOcx+/FeWz6Fh4A+10fVnaPLPl5
-J2iYBxmmrUT/heLsa0WDpuImW/k4iw37gLaEYIYjNlguYES0HgOe3zwQVGmzO38z
-xN3CZNr1vFQYqI8hCcZtFayOD50W5YHN88pMbEQC7WJc8Uij0fjdoWLwGLPxSfzn
-9noJZkQXGnA7nr+jBM1A4X6uXywLFPacbcHYjcMHeePljzthLhrOuJOJCd96p0IF
-F4ckvd8AnRt0q3tXiracT+PnkXWlKGrREIkkxfdJ7L4OWTAzVQbRmcceXjO4+zac
-fWW/rnNblvanTac8r7gU0AtVSavJqCnRawLvOeiVxJcNUxSr8IX1w5GMnOkWXT+V
-YN9OP4iVcFFM8GEC3mbY49YOeO2z+4H79BjwXpef2lfYu6zYrDfYpgkMvrGjRXaZ
-Wp/V5GE1bXbWi3uQhe6F9ruU07xz1ZOEfnW6gVtTt6whyi6g1AksJHCHTcpF0Sna
-BIErf242wmZ6BSNpB/a60OXqcovC9Z1xQeXMUUzvdHIuUXZEZ7s=
-=8uVT
------END PGP SIGNATURE-----
+Otherwise, you can add:
 
---9cBeMkCN/aqfYfhG--
+Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+
+Thanks,
+
+Alex
+
