@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B217CCD4847
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:12:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64903CD4846
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 17:13:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=nAUa3Utn;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uVVau97g;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rsf312YwVz3df9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 03:12:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rsf400NjFz3dLP
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 03:13:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=nAUa3Utn;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uVVau97g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e83::61b; helo=nam02-dm3-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2061b.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e83::61b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e83::61a; helo=nam02-dm3-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2061a.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e83::61a])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rsdy70ppdz3cKW
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rsdy70pPMz3cJl
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 03:08:15 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RWLyDMUIeFegoDjesUxNrqfNdj2jGkHWACIBfZNA6mn639ykjYRmN7Z2VvRqK32Fq2a7EGu4YNEq7NX68ZqxRKAG9VkgXoO1ndGkvoi5Q4UV9SEoSsH7kSyQtQywK4It8tcuYpBMMramixQxc/UCpUqGzQVn0qAfgPRJOwuPcQoxwDWtfQmMxXmS+Eh7v2rgj0Vnq7hbomsCe0p+UEBsnCxVw0MS6cd4s8AnjW15uxUqhR7ACRmAjqAuag/M+AqLMNrmLSKp71btpve1uSa0Ag2wkep/Q5lzJuVcl0Zilj+aBofLUEqgkW02BIWmO2I8+mAR7g7oCj4Mksdy6j6NJQ==
+ b=WExkSUM56iaoSaj9otrqhkDNs8g9C0Sw0iHU8EC+EeoF8vlo44GRd7oissm4k1MbMfTgnDDTKJnFeDUP601sRSGgtXBrzRZjghcOuyVCPfKDpVHEkt2iuEeHHfH8aWeKWYqinOb5xW+eFw88LbgLjI06MmNu2bSFcnR0SXgDRlnZrAVR+PMAAzBROy1qAvyLfLrzBFldrDXqSjZ1mVVL1CXeTl3KbfvQiquq1Zb5+4CY4FgfIjMMXNdm8v4cHGBo7KRmX6eS4Aip6q3aPRsWNvjvyAWiSo072O6NTKZpZYEE5M9NJp3mcIJvbSIPskZvE6d92gGEbc8sKa6sR+FQaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=6f/F+3oX3DVdv7ukFG5Ga5zY2EAmoCSYx8EULKevBPs=;
- b=FWQJeMuZJzqN1DQI87tXeKXUEaWynubTXDMVospHIIXLrEvXehaLsv8ucb74zki/lM15rhlPkOjbSj3TTfy7rVxpDm3ZDufjaWNpCQHdrxGRYQnTgoDUmW+QFZmg5JlK/kB8y+7+1HM1Befg+B+UJCGUGp+1bnk0jtD4Pw/qRNo5Ro8RhHhFB8yRtO9R1RvsIee47PY33jFRn+LLXn5tZUEUTwcy21SSWse8eLdfVh+LFEC/vXqg8hGMZiyV/0fekgHmPkInD5enOcgisDEBWQGsKzjrLSsudGCFVxJJckFmzBKX5u8/VwnWRFuUFzOzsrEnNraxofEjBYV8pP6/SA==
+ bh=Jr/5KfPoaUuyX/C6S7jT78l1e3DHs14ebOVrB52vXx4=;
+ b=f2mxAvXwssVJRiCv2koBj20fGt8HkEmQDDKWvJsxqZWvDii8+sJqZ9ILUuK2yd+elh/7E3DbNAA1REEUz2hc21mXNkZ9ZB53IhticDY+t0O+PalUKhXpfhos8Y7eHgPi2kKoEFVciQKN9ej55XXCMeiXihPz1Lx+z7EBbe9Dk0LvEm7XBmQ2OTFD/DaAXu2ox12vzxXrc5UVKLp8h6yMZIr8Zb8B5TlmHO37t25FBiuvAHCG8a8vOiv84+XRArR5NCb5j8XnBLAdhExrMfUYaiZW28v4rWdUvG7tGb+yRBSq9WzTsr5xhWL4HWC6eMTLvm/CwYXWWIhGNv+quGuYwg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=6f/F+3oX3DVdv7ukFG5Ga5zY2EAmoCSYx8EULKevBPs=;
- b=nAUa3UtnId/+206QHbkfIoXoanJbF9vXiJCjw+4kjiouW7obdLqCV7Vz4vf1PqXd43CVCYQLwBZAneXaY9rPw25OpTixFJv9lyljh/oRzRKp49ShUX9db9hwj4K8xCPs2IlfEk/EcMFo+v3nkVJe82+P7CFvGPtKkhJDp38adWQ7yjMW14iNwugiFHGvnahGR1RSJr+y9cuhRU9hWsDBt4fOpVpLKXRwFkKl4VyWPmwb7K9jQTgBVXq+vvKbBFnR6aSb0evPgiB5Vb4mX/MZ+l8eMNuFUoiBlMDO9PEfb3d7OT0aFYVKKkZ9jKl0h5Gin6lzGjI5um58tPB6mPXOsg==
+ bh=Jr/5KfPoaUuyX/C6S7jT78l1e3DHs14ebOVrB52vXx4=;
+ b=uVVau97gSToz2NAylJ/GfNOEk84efyh7nIJsZ+LaSavaIWxS87xUWVOIiwnmvOm/st2u5IHSnnWAE6jBN9fYo+5TVrenfnze+xjyS8kVMsoukEeDBkdQOLMOx11dpfXul8p5OIvN1lR2pK+Fxp/ak/N9Kc0Xp5O5/YRkQYpK/lD1I3lSRwHh7yRZNoQSNY3ZxFFXTA0ZbTtx8vSzVgGKb2Gky57wA2G1d26HPKTxedV4wPEA/jpGKueRYA0Xz6fgQzxcbMhRiJRix31O3w/HFbERYuQR4y3/9qFLAg6gB9Z64nvExUktXkCjmuuGW0lwpBbjbENZgWd+oFJ6OfpdWg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
@@ -64,63 +64,63 @@ To: Alyssa Rosenzweig <alyssa@rosenzweig.io>,
 	Robin Murphy <robin.murphy@arm.com>,
 	Sven Peter <sven@svenpeter.dev>,
 	Will Deacon <will@kernel.org>
-Subject: [PATCH 4/8] iommufd: Convert to alloc_domain_paging()
-Date: Fri, 22 Sep 2023 14:07:55 -0300
-Message-ID: <4-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
+Subject: [PATCH 8/8] iommu/dart: Call apple_dart_finalize_domain() as part of alloc_paging()
+Date: Fri, 22 Sep 2023 14:07:59 -0300
+Message-ID: <8-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
 In-Reply-To: <0-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
 References: 
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: YQXP288CA0034.CANP288.PROD.OUTLOOK.COM
- (2603:10b6:c00:41::45) To LV2PR12MB5869.namprd12.prod.outlook.com
+X-ClientProxiedBy: YQBPR01CA0041.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:2::13) To LV2PR12MB5869.namprd12.prod.outlook.com
  (2603:10b6:408:176::16)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|LV3PR12MB9188:EE_
-X-MS-Office365-Filtering-Correlation-Id: 309ec585-3499-4ffc-4000-08dbbb8e7a6b
+X-MS-Office365-Filtering-Correlation-Id: 358646d3-3923-4b76-ddcf-08dbbb8e7a68
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	QDr5g9LMUbokCpafY/IdOfkR1rDjdalo/JgjIgwGf+uBzg/BLPtHJn+fofdlIclLBxMqUAvHqRcitAXgjT4OJFNzuHf7bfRv7LH3CqM/g5L8oC0mKDIP38TUQspjB/RVdoiFsDYmh7HshKdgcVlFJqnFmBhSshImgy/3K1WdGPVuAUtiiQA7C178bKk5VR+wPzeoVWKIel8FgRbF+GEOX0dknEhwlhLsoe9icO9mOED6UmtQtW3X1lzCmiP1fIPcv2bFw1GKGSiFOCwf0o5S1DyIRR5iaTRjMg4mAadgyltqK4XT4YGblpT4TlV4RUSoycE9DZZ3QEdtgD0MH/uuaHtaUPvWRn+iwlNxSujgKjibO9shydG3wmqL9hoc6LzFvrYqgukCZiCf3YxxGneBYGCsNhI4mnntfxYa7znWp/Ac3gMoJwnGFIw8zhIC310Mhpwe//j+ejRPvF5w22VhFwV3ZWq8QAduF18Wk6+YcCX6G6Zj1+0TwiOur15EuLBwdpQm+3oQdRxrcLJ9BucXRymimRLx2rjL2T0LVOkYQcDnrWMR+exb5Ok9Nfy7NFn9QJOh8MwxRYmYwpI1g4Kl7HD7Ia6AaV4OfECCvXDfUsfQrD5O33HYV+fs7Pvf4FFp
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(366004)(396003)(376002)(39860400002)(346002)(186009)(1800799009)(451199024)(921005)(26005)(8936002)(2616005)(8676002)(7416002)(83380400001)(2906002)(36756003)(86362001)(6486002)(6506007)(478600001)(6666004)(5660300002)(38100700002)(6512007)(66946007)(110136005)(41300700001)(66556008)(316002)(66476007)(4216001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	LrlUM4cwssPclYgBnaWlPyV8uKn1JqWai4Ot2F+HLet7LImCye8skeOxwpXw9MoiUKtd8K27pnP78PpvLViUUCmmfKDJo6cRJLXFbB2FBEnsu1jAxR04weRITJIboJL1+sz9BTppeMEI4sbPAkI+uWjQJs3YMX8/txND0RBy8uANkXmbne3d4n1D6F9wS1egb2Sj91WAKQJ1MYUHEOFJ8p6dBEhbgjGxkRi2sY6byOnFORVkNZBZC7oPvn3fWuj5VFgcs6fxPgQX+ZzX8NMhzFNVqOUwANcGjwmGqH5VSwZWJ6WzGk3tyD8rRk5isr/34zF4kBOuaHEVyFiF6pjflJCUPIuAb8ocHOCTebNRJq4E+9nfkT6fnw0K9gPNNs3HCTEjifzoiT1x9gBC0b3QuULs7YSpJuakbXFSZBUTbp7L70pTmIpDhQ9J49hRHSq4g4Ei0C8/cIxbRcIIsrrVk0KX+zWqLRhz9n/IVuJ2fscdqoXGwHXlgci2HqKXC+83/l9uwEgppOD5rL1OH6+uRHoxGJOKkKmB4IsYMy1rJj1u5//l3+2L7dhqFam+imempK2ym7I537KHY7NtVzn3t+BDsWK5DETcBbO2+ckRs+hbmucqM+KIjkiM59yhixIzoRlY16iRnTb2xuGXEfRWoRFpCOHjODft/6yeTTTDo0w=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(366004)(396003)(376002)(39860400002)(346002)(47660400002)(186009)(1800799009)(451199024)(921005)(26005)(8936002)(2616005)(8676002)(7416002)(83380400001)(2906002)(36756003)(86362001)(6486002)(6506007)(478600001)(6666004)(5660300002)(38100700002)(6512007)(66946007)(110136005)(41300700001)(66556008)(316002)(66476007)(4216001)(46800400005);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?3LV3Dc3Jx7kdR/dUZHVgYVV2AtBPm3I+cuxg1b6sPbj+gGSVw0X2kHZ09qbo?=
- =?us-ascii?Q?QH/ZTgcV2bOUqFMCaQcG1X1E86fhEry0304hVkDQk9jH87E1dGWAeCOb3+pk?=
- =?us-ascii?Q?8qRNJENA+VE3P1dKtVP2KL5popkGPCMx0sUSwl9VlBHIy8jayqP5bbte4bTx?=
- =?us-ascii?Q?QKoxX92yCQMWYDO0jV0ayc4DcF29gnPtYPAsY0FkrOy08huchotXh7jUbmhb?=
- =?us-ascii?Q?gnYHzJz2w+zZpLjrn85PihogE1kURPAS3cI6fNerudzMrjBRsDANDYGxfOUu?=
- =?us-ascii?Q?3yqK5T319H1b3syfmMlEQ1hIbOc4rUHXX76wypSh6RrcC1W4tt34KRMYIaK7?=
- =?us-ascii?Q?GGVnFknpdG0CE8OIATEZQSg0K4xmLQOUsWiZHlRj9ouqEkRhvec40vKeK7R3?=
- =?us-ascii?Q?RG7ZklV4RCCFzk8JdhKhIXEa+pyT+PbWcaQZ9jbab/9lUwdbxc32ddYIrpGP?=
- =?us-ascii?Q?xJecd8h63UFfN5XISr6SLJU2QIp7RRPUxt1hpBP2TJ6e8N66cucQrA49P2h+?=
- =?us-ascii?Q?zZOXzFI0pOST4Br/cD/vDJan/styD4xO8vojK1h+ZHQKkuXCjKbGCpRVfkLh?=
- =?us-ascii?Q?MzKaIvZKVSHkhWNc41XJzq+0xoZENlQ8WWeHiyNwtETD+1zron3G7+NbeQQl?=
- =?us-ascii?Q?EFjr/If51uLByRoVQOm7wH4az7sKcUIr+uytPgzlCG4KHgop2EcWu+umVhRl?=
- =?us-ascii?Q?IWTz6Aqv2r/RqywYZpQzxy9WAgexjmea2lGPJQDLaIMRW6Df+7S53aPxfvfT?=
- =?us-ascii?Q?7lWBXjJKIR6AsyyeC24d1i26TLXjp8giNOBg6qH2mll8QE7ihDYDTtCS0Rlf?=
- =?us-ascii?Q?XZlqA3XwGB0g8hSPS5WQHU4dOHVJ5oajU/mE+Pv87lGgu4LFYSK1TkTpWc2T?=
- =?us-ascii?Q?Zkt9vZgK7FM92Sl92DEfMVIyOmTbffzHJwzpGq2roe+g/o/Y59inE8dQsRT8?=
- =?us-ascii?Q?uaSg9LZSNeOu4zvD3pv7TfH8xSdsegQmVoJzUAa9+JJogeY65oBs9nCUymw1?=
- =?us-ascii?Q?Vgaelr0Abz+4KrlluQvZWQf+wkkRZ8iK68sZhOznFj7AAru9sdn2HBMn6Rpw?=
- =?us-ascii?Q?P1mk8v2BtzokMbaWtXab7SbyZQcizzXnWIDkUEaUA4yc4JA95YM7VPI+QLoR?=
- =?us-ascii?Q?CSdwka0mR+XjKIPgK+k2O2QxVyIkm5UG48dDkGXNN8Z3JWxbui7I3j628jVy?=
- =?us-ascii?Q?VtRS80umx/QndA/3UAtRCmJmE4yGw5gwRa5DFRvZiCRYZu988YPQnJEDlrZD?=
- =?us-ascii?Q?aJv5fsd+gkPulJq7IyS3iuqYQneZufGEtXyd0IkbgBKUuh0v3n/my64PQLVI?=
- =?us-ascii?Q?nsum/3kO2tUiRn41cPHwCzcqZxBKDtjDo2yc97XvlAo4INLPFdBWyN5roxLx?=
- =?us-ascii?Q?yWZFWbyQQMoYE6BQQL5pjBtev3fa5ysgZQQDLUXq1gPg/WvxexCPzN77uURA?=
- =?us-ascii?Q?Oyug8AjYnOgwU9DV/+B4QOKdj3HVTcc8wcZfv9kOxgjWgAMJoHJM3NJmDKXy?=
- =?us-ascii?Q?DHnHBXwR54OAGg0LRv7bflnhdzzL/4cTndqag3urYZL5iDEkov/Nm9uTdXmq?=
- =?us-ascii?Q?m5lL950k5BjS8e/nDrz1+pSUWpO6W/6z6wWBO9Ze?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?huNYxPONj2sdNNWT5TW25TTi1k+mnMlTWBQMpBm5OunvMdr2Ldosacs7CFzr?=
+ =?us-ascii?Q?SDfrQr5bzeKIqB+87kOXMR2bibIXwJYZuU8NLeri14yYtguD+AYhrDH+z61M?=
+ =?us-ascii?Q?yvN3XHuN2JeUDVmBxfOi9HLZiMUSjx+KDd4h/AUM1JV3ywurnoxOd6Si7U9J?=
+ =?us-ascii?Q?W2wYosAKD0w7wV6beBJ0T77I51QcJOyC32I5S2o7II/MvBGtWFkZkG9G88VJ?=
+ =?us-ascii?Q?ffqwMHDgveL7kY5HNVQCVH0QP5tiyFYO2Ig1JUZJO2/Yj8iffLcjgmbWZv7V?=
+ =?us-ascii?Q?MGzohHzeV11YL7qWoPsFR3o4Bm4e7kn0EbTkNRAVok+dDzYsrrQyBnLpiq5F?=
+ =?us-ascii?Q?6A1dTz4Z/AmE1lBCYeilLEncFMJgAzafYC/P9uT85p8t+BUvj2pV6lsWfa+4?=
+ =?us-ascii?Q?y8Ok0dZR1wMRnkrOwDEfnjNz6LY2UBsTDmTA3AJueJyU8QhNRBjLa6TvbwyE?=
+ =?us-ascii?Q?yjTLbNY2u9Bpt9qO/DDpjefYFs5h30WhTwmidaA9CYxI6z1X89IOJVTDz2/9?=
+ =?us-ascii?Q?IoHL0qYWaZTmnJljNn7EpdGS7yWTUw7SRIRBCElKl0IywmXNq81vuBss0dsf?=
+ =?us-ascii?Q?CyrL/0G7mUE3hcFvFxlsdfZwvFs+9/eXYAAZtu4riwzGKBAi/bNg2r0H0bAR?=
+ =?us-ascii?Q?FWRH0BtCKoYCvy3cgKySTetNC9QpP8t/vEKYVnParZ+Zi24uiWHzJsMGISWG?=
+ =?us-ascii?Q?mzuYU5rO1meOKrWN3ZxkKdGQDSbe1UYUcQV1jCbabdzoQ8Vi6O1wqBszj2Ge?=
+ =?us-ascii?Q?iCvpkGQFTuYw3Y8rMeQRps6S7JPj0QkmOl5ZO9XYMDMBs0g93LEiYKQOoWbc?=
+ =?us-ascii?Q?+7qbREa4G00xDfgKnuA7aYzj6gtDmOBIqxXI925BzzkcKXqrvfpeU/m6iy9c?=
+ =?us-ascii?Q?ZeiUOvyJft+u5pnKQ0pAXS7sNkVxg7riD/xNKnZCuBh7RXnBxPoS8TDr3dEz?=
+ =?us-ascii?Q?6CtzDjWeDjKYFDOwlhNUH31q1hSBKvVuMiGNNupzL+2MyVNSTt7IXwC6+4zR?=
+ =?us-ascii?Q?61t6w3lcDbKpuaMe6DIvwg0CmbG6m179NifsRf2ezY+rZ2XJLZ8MlyJ+8NUx?=
+ =?us-ascii?Q?gjJ/xZbxfy6V/oT/SHXDjYI9DI4k92ksM6fqpllrwrvJGPYtT43M02Wmv5lq?=
+ =?us-ascii?Q?K8ZATeJ7GMpCBToIQ3BWYEYrCXz53642pG+Hgvafm5Dwm5PVjpxsLoAKAlA8?=
+ =?us-ascii?Q?O39DaP+qEnRRHWXQsPT70kgrTGwtk9bpy+Dm2z2Cf/yE4Nm6fEga/+XG4p6I?=
+ =?us-ascii?Q?Bt8dwnfRu3oPDMUdL3SixC9+KPFaKPAkGORp+hLmWyCq7jIHS/0MpRBgP4+D?=
+ =?us-ascii?Q?DT67EZ7luJB6PsZcxsEElSNguBOmH4tNJEkrnUklUBadt41b/3ueq952/M5G?=
+ =?us-ascii?Q?0yMbd+N4xHgS9kVOmGyvGrNMrmCZLpS9WYeTNbl0tICUJ9+1iTyigyRlxAi5?=
+ =?us-ascii?Q?zvizjGCO2s333qz/I2EQmy+xTeXQ/hF/7nHs7sOUyoOfBiLOnCDCR3yR5NBI?=
+ =?us-ascii?Q?elr3LT154pMnykZlpGNdUstmOo+y6t5AjkyBI3acPF3AHX7VRpgbbxxgQwUo?=
+ =?us-ascii?Q?DTRBjstolbVOcHrKOq3RC7QmkX92p89Z7rQlIMvj?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 309ec585-3499-4ffc-4000-08dbbb8e7a6b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 358646d3-3923-4b76-ddcf-08dbbb8e7a68
 X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 17:08:01.8067
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 17:08:01.8313
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 3wQlBrkEwVa3nRIR0D17LYlCQ66pkwEOENAPFGzD0S6eh1m+mdi5BGSrp/xE6+JZ
+X-MS-Exchange-CrossTenant-UserPrincipalName: ktZx81BdhJ22qR03UztPUUL5bCjCPm/SfTEIU8DgJO3s0HhkfL7Eu3078qBTX5zA
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9188
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -136,49 +136,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move the global static blocked domain to the ops and convert the unmanaged
-domain to domain_alloc_paging.
+In many cases the dev argument will now be !NULL so we should use it to
+finalize the domain at allocation.
+
+Make apple_dart_finalize_domain() accept the correct type.
 
 Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
 ---
- drivers/iommu/iommufd/selftest.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/iommu/apple-dart.c | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/iommu/iommufd/selftest.c b/drivers/iommu/iommufd/selftest.c
-index fb981ba97c4e87..ee607984709102 100644
---- a/drivers/iommu/iommufd/selftest.c
-+++ b/drivers/iommu/iommufd/selftest.c
-@@ -141,16 +141,10 @@ static void *mock_domain_hw_info(struct device *dev, u32 *length, u32 *type)
- 	return info;
+diff --git a/drivers/iommu/apple-dart.c b/drivers/iommu/apple-dart.c
+index 62efe0aa056f60..2c1832e357c7c6 100644
+--- a/drivers/iommu/apple-dart.c
++++ b/drivers/iommu/apple-dart.c
+@@ -568,10 +568,9 @@ apple_dart_setup_translation(struct apple_dart_domain *domain,
+ 	stream_map->dart->hw->invalidate_tlb(stream_map);
  }
  
--static struct iommu_domain *mock_domain_alloc(unsigned int iommu_domain_type)
-+static struct iommu_domain *mock_domain_alloc_paging(struct device *dev)
+-static int apple_dart_finalize_domain(struct iommu_domain *domain,
++static int apple_dart_finalize_domain(struct apple_dart_domain *dart_domain,
+ 				      struct apple_dart_master_cfg *cfg)
  {
- 	struct mock_iommu_domain *mock;
+-	struct apple_dart_domain *dart_domain = to_dart_domain(domain);
+ 	struct apple_dart *dart = cfg->stream_maps[0].dart;
+ 	struct io_pgtable_cfg pgtbl_cfg;
+ 	int ret = 0;
+@@ -597,16 +596,17 @@ static int apple_dart_finalize_domain(struct iommu_domain *domain,
+ 		.iommu_dev = dart->dev,
+ 	};
  
--	if (iommu_domain_type == IOMMU_DOMAIN_BLOCKED)
--		return &mock_blocking_domain;
--
--	if (iommu_domain_type != IOMMU_DOMAIN_UNMANAGED)
--		return NULL;
--
- 	mock = kzalloc(sizeof(*mock), GFP_KERNEL);
- 	if (!mock)
- 		return NULL;
-@@ -295,10 +289,11 @@ static const struct iommu_ops mock_ops = {
- 	 * because it is zero.
- 	 */
- 	.default_domain = &mock_blocking_domain,
-+	.blocked_domain = &mock_blocking_domain,
- 	.owner = THIS_MODULE,
- 	.pgsize_bitmap = MOCK_IO_PAGE_SIZE,
- 	.hw_info = mock_domain_hw_info,
--	.domain_alloc = mock_domain_alloc,
-+	.domain_alloc_paging = mock_domain_alloc_paging,
- 	.capable = mock_domain_capable,
- 	.device_group = generic_device_group,
- 	.probe_device = mock_probe_device,
+-	dart_domain->pgtbl_ops =
+-		alloc_io_pgtable_ops(dart->hw->fmt, &pgtbl_cfg, domain);
++	dart_domain->pgtbl_ops = alloc_io_pgtable_ops(dart->hw->fmt, &pgtbl_cfg,
++						      &dart_domain->domain);
+ 	if (!dart_domain->pgtbl_ops) {
+ 		ret = -ENOMEM;
+ 		goto done;
+ 	}
+ 
+-	domain->pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
+-	domain->geometry.aperture_start = 0;
+-	domain->geometry.aperture_end = (dma_addr_t)DMA_BIT_MASK(dart->ias);
++	dart_domain->domain.pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
++	dart_domain->domain.geometry.aperture_start = 0;
++	dart_domain->domain.geometry.aperture_end =
++		(dma_addr_t)DMA_BIT_MASK(dart->ias);
+ 
+ 	dart_domain->finalized = true;
+ 
+@@ -661,7 +661,7 @@ static int apple_dart_attach_dev_paging(struct iommu_domain *domain,
+ 	if (cfg->stream_maps[0].dart->force_bypass)
+ 		return -EINVAL;
+ 
+-	ret = apple_dart_finalize_domain(domain, cfg);
++	ret = apple_dart_finalize_domain(dart_domain, cfg);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -757,6 +757,16 @@ static struct iommu_domain *apple_dart_domain_alloc_paging(struct device *dev)
+ 
+ 	mutex_init(&dart_domain->init_lock);
+ 
++	if (dev) {
++		struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
++		int ret;
++
++		ret = apple_dart_finalize_domain(dart_domain, cfg);
++		if (ret) {
++			kfree(dart_domain);
++			return ERR_PTR(ret);
++		}
++	}
+ 	return &dart_domain->domain;
+ }
+ 
 -- 
 2.42.0
 
