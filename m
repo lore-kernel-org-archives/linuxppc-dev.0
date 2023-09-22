@@ -4,71 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 239BCE7D0C2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 02:52:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F339DE7D0C9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 04:30:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lN30A9ly;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=VlLuyN0y;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsGyz5ZcJz3cX7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 12:52:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RsK7S3TCdz3ccc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 14:30:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lN30A9ly;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=VlLuyN0y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:7e1b::623; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on20623.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e1b::623])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsGxy2sbwz3cDg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 12:51:48 +1000 (AEST)
-Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-577fb90bb76so1009322a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2023 19:51:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1695351104; x=1695955904; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EYkrqB9uA7M+0eOAqW1r8qSkknHUZhDVrIi/aSlq6T8=;
-        b=lN30A9lyP2dY6fCXtr8UVJCY6FziwPResgzlLbK/Rhlt+yjhNACSUSd3ylbWjyCBki
-         2DTdxWrxibmnYuDuG6lXtlrZQ7Xr+KUt6CTaExbEhiKFEHUEqL3/krvWT2V/yaQYGJmD
-         +EpbQhkYU9fgynOlRjtTCtqT1nDgvvBB8aSKi0capQrANxlmZtap4oxSnKkqlSOKAXoS
-         qoBAABfewPO5ROPcVdjBskWTTZVNibMNmhAPpO0RUuQUrMOF5SMj2C+kB+qT7L+K7Dmj
-         ckRjuk66FlXj2sk6TqbIB5XkhUAMmmmsnzHcO/hFvGWDcoZVb+ty912A9NA8Mclguvat
-         avBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695351104; x=1695955904;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=EYkrqB9uA7M+0eOAqW1r8qSkknHUZhDVrIi/aSlq6T8=;
-        b=BB37yx2yBcACO+xOPvM19RbOXLjSkwCfBJ8hs8dOJqIrWYNmtO1qCXzINR/zfNqVIE
-         Ut4AHjGWventD7wLCe+qChqqf1EhGBZIa3+yCqoU0xZqUlhHQcHSFiwA3wiZyqrEpcNj
-         ybg7K1Uf+ko+Wzu7C869UUuXdZtDl01LzxF+qBdR94r7ZAa6DnhdQzc+b0pzhljm8ReP
-         zNHQI03mi+zHYSRmKvbPrHx4PM0lszVODqDEDb4bTgdLpl+Mq9Pfc8ctjR5N9FasC4xq
-         0GgqZErTZs5o1+iffxaoC624jHi94gkJfYlSVvdtMvfuuWu8BywgLKogZSHRM+F/dds5
-         b9KA==
-X-Gm-Message-State: AOJu0YwZudgYXAowTMFiwDrPJy48DBmO2k6jpxWhYEmNFgJdSjOfKs9g
-	SzjO2fX+keVn0ievnGoEGYepKoCxudu5GMC5u/uPfbqmXek=
-X-Google-Smtp-Source: AGHT+IGtiz5wXyrbAhyFg8avb8jX5ymjFN23gqRi0pY8tk76E77xHmkQsY5RA8geWyon6mrn/RqdLparfr1kcZjp+nY=
-X-Received: by 2002:a17:90b:19cb:b0:276:cd68:6081 with SMTP id
- nm11-20020a17090b19cb00b00276cd686081mr5418829pjb.40.1695351103836; Thu, 21
- Sep 2023 19:51:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsK6T0gdVz3bP4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 14:29:19 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=fIrY/v1vmG4R/C8F9oOcpRAMNazU0fJ5C9w4H88SiXDDTPKFLX1hDgsHkggzS1p8SkaRu8KwbpUCezerMouLacRmNbA7MNDZGa4grt5GatLhkbl6StogNbMNio6I0djFghhQBDi4gdGnBf2HdXYkwhXp8QVkMc82EemaF1uJm27zyNupnCjuULfeOD6u+pkXDfjw2kTCflPl6nXzbUKn+aTi9C27XKLsFQbXoHaibppyZy3juNGS9+e0LrQEGK16n91JEE8SD+WSJ/l7SEG6A0d0xZeyKVC78htjwAHMwxl3N8+9LiK1TYAGMV/CXFiCS6eysCsVjgittUY/Ldt73w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ch0fIy8u8ZzKD9dw6NfdlEgvdYMI3x8irCe6QTsdiEI=;
+ b=D7i39q61muuBz4F2TKw8gksm+EHXNncyi/QXqO4ON71mOPQitRNas6Ho7qGS4bQmYpAzitsixwsAfS/Lkvi2awp1QCKhi/B5Yn6NIN8J/nOBJShPGWUD9EP/zbftVAbMjK/5v0jUxDuDUB6B6ATJt/dm9naPIxG7JkmYpYPlyR6af2zOHSrKERwu6/bPssRBZfJJhWNf01nyLlSdmukI3pGEuVbbowFu3KcnL4Fh2fn0RnRjdgAVurC8PrLP0TBWtGh5BjLZDoGe8D4OY/pTm7nY96xFbXGfF/+MlK3fvBfstASixqigiEsIjsUm9bG/c1eeMPespms6DcSyfsdHIQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ch0fIy8u8ZzKD9dw6NfdlEgvdYMI3x8irCe6QTsdiEI=;
+ b=VlLuyN0yLobAu9Q6AJhRPjiFactcunRp7s0BIn1W1wDJi4Q3Jl26EAg5+qESkj69ianvnjUXabLI2tugp+xReNxXHxWeLOdZJWLgmsQhfdT0KsSlNenazfOdan4baYYnyDRBbc9q2NaWlbRm1vIEDcIiK2rcPQty06cD+KXaxB4=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM6PR04MB4838.eurprd04.prod.outlook.com (2603:10a6:20b:4::16)
+ by AS8PR04MB8851.eurprd04.prod.outlook.com (2603:10a6:20b:42e::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.20; Fri, 22 Sep
+ 2023 04:28:57 +0000
+Received: from AM6PR04MB4838.eurprd04.prod.outlook.com
+ ([fe80::1774:e25f:f99:aca2]) by AM6PR04MB4838.eurprd04.prod.outlook.com
+ ([fe80::1774:e25f:f99:aca2%4]) with mapi id 15.20.6792.026; Fri, 22 Sep 2023
+ 04:28:56 +0000
+From: Frank Li <Frank.Li@nxp.com>
+To: christophe.jaillet@wanadoo.fr
+Subject: [PATCH v2 1/1] PCI: layerscape-ep: set 64-bit DMA mask
+Date: Fri, 22 Sep 2023 00:28:36 -0400
+Message-Id: <20230922042836.3311689-1-Frank.Li@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: PH7PR17CA0016.namprd17.prod.outlook.com
+ (2603:10b6:510:324::19) To AM6PR04MB4838.eurprd04.prod.outlook.com
+ (2603:10a6:20b:4::16)
 MIME-Version: 1.0
-References: <1695202370-24678-1-git-send-email-shengjiu.wang@nxp.com>
- <1695202370-24678-10-git-send-email-shengjiu.wang@nxp.com>
- <fbedcbf1-d925-47d6-b9fb-c9e15263c117@xs4all.nl> <CAA+D8APyNGFSry1GUv6TOW0nKYHKSwQd5bTcRNuT7cu0Xf8eUA@mail.gmail.com>
- <5292ce53-643e-44f0-b2cc-cb66efee9712@xs4all.nl> <CAA+D8AMZN59uTRs2sOrSeVb5AGopTzurNVCTNwJOVPahfEXd+w@mail.gmail.com>
- <2d44d574-08e5-4db3-87d9-5d12657f8935@xs4all.nl>
-In-Reply-To: <2d44d574-08e5-4db3-87d9-5d12657f8935@xs4all.nl>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 22 Sep 2023 10:51:32 +0800
-Message-ID: <CAA+D8AN+Uz+3CN9BnD5R_gp5opD1v-D8FBjANRpGrH43Ac2tdg@mail.gmail.com>
-Subject: Re: [RFC PATCH v4 09/11] media: uapi: Add V4L2_CID_USER_IMX_ASRC_RATIO_MOD
- control
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM6PR04MB4838:EE_|AS8PR04MB8851:EE_
+X-MS-Office365-Filtering-Correlation-Id: 705c4718-dbc7-470d-0730-08dbbb246f47
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	gEnN5iZ3hfrZVgq0qL+t+CWfkapi/9ziOccaFx6xHJ2TFlbZaM25Y19xOeNyIUbrRrtk+AY9viyVyG/KYbJmHxP9jHPKec0RZIatVcV/C+rlzFb2f0vISbkiMGrbjda8AiwhvZk2Tj9iKRUW5oSUObMDuFxeHgAIz3sOdWXe7LilTUgKskybb8V7OfYIuNK8+m3Gz192DbW2l42ALtPIOrto8qJfsaYHP7D+PaJxh3RKtncdYXxAmZXOMwnrPuiayPl1Uima2SSu3gpe8sBGTGJ1mhzVwJYaAGOhX28H+zxyHoxdBwi8lRKv+NLQHHaKtDkH6ZoOE41n+qoLtzJNUDKsW+LID81DbsSYoQQ0UwXwT+znxZn2xkZ93OQAHpC/ItpRzC5iZepAatt7ssUuMgDvfsM+6DrbFjTH6AcC5qq4npz7XoNmjMIuY6wd5FqUWLuYSx1a00G6zj+y6dX8gd5dB46I54cUMpyVhwqbFpwx6CeYSDDgY5RTzH0LPSJkfwlLfvuwtyVrcKx0ABqARZIZYsDhBy4I5BPUL1sCrWyV7vS4y8ul09CKAOQqF56K04R8VhoxTUqNDAOepuSNc17bHwWVifSnFh/UW85pD8JQrPhctNoLrz1ntZxooSnm3MnjUWDoM+bhW58hLjjmvGOUo38sab1AMSirtURS2BY=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM6PR04MB4838.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(396003)(136003)(366004)(39860400002)(376002)(1800799009)(451199024)(186009)(6666004)(38350700002)(38100700002)(1076003)(6512007)(2616005)(86362001)(7416002)(4326008)(36756003)(5660300002)(8936002)(2906002)(6506007)(66476007)(66946007)(66556008)(6486002)(52116002)(6916009)(41300700001)(316002)(26005)(478600001)(8676002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?WNcGkH5YfBpfyFMsHSCfaCh/tt0QnQyrp5v7z8+sMU5o17lGJrKjstxf5PWG?=
+ =?us-ascii?Q?VcpB/ssdWamagxNdqts83OqZEKL3Ck3SfIo2432ZL7KoQwzLnVKgxnJ8FycE?=
+ =?us-ascii?Q?dz/ycGNB5Q3NL0ifR4YAJWUQ5+vwDbY+JG9KGyYpCL+d0wF8VromGHVYac2k?=
+ =?us-ascii?Q?hftLwwZBEEX2sLbGcLoRzYEw/c1DygDStnf9nVq+5NpZuD2D/4LiPo8QyKJp?=
+ =?us-ascii?Q?OPH7RQeUhXEdakFdc4lpvoSf5+IAZaUSCJcVBw9co1QgRmazvaNcAVLHlug8?=
+ =?us-ascii?Q?khcohfX5jm7XQFsAAyULhipVziwCkXqN64unEzyaVPvLwyJm523/2cdx+pOI?=
+ =?us-ascii?Q?YfAr2tuPebEpmDu2OTXRKE1TovERZ+gyvLEhrzTwYWO0I19AdQ2emiUwoD0/?=
+ =?us-ascii?Q?K87aR2AYe21sX/7lfHBMbPXBBibOikyJQ8umW7rdfB40ldGPFmMkh6TR18PJ?=
+ =?us-ascii?Q?s19IPehqNFi7TLJkVZdrhyLj5mQkrBSMz4TPbe47n3TuK5XFGBrpECsnQgxs?=
+ =?us-ascii?Q?WqLdhfmHNvBDDunqMh591piBNRQQY7jSmPCOmEOrtdNrFzBdpeukiCK0UbTR?=
+ =?us-ascii?Q?BqTKIjdRk4eY2hUebsh1EabWTzOxDVfQCBBa12YrQio4HzuKvlEHUKARtkHg?=
+ =?us-ascii?Q?2sUsrNO9TtwDeMh5jSUUKBnzHLg25cjrb6cW5nAcBGSpbu+EhggavQ3raIaY?=
+ =?us-ascii?Q?+M6ERn03Hie7rTKiQNwbp1vbeCnOm/2KqooUlEnYj6xQ3e3JH4POFYEWgXZ2?=
+ =?us-ascii?Q?1+Ok36MqB24CCynpBaN2QthZRZM8XCeTw4AE7DKSCI3MVwwAERrQGkE2cbYv?=
+ =?us-ascii?Q?FVO4IOf9MgOz/CWPWOklDMn0HXz/bUp3PO9cV4c2ZARaU1mr3y40VuWu1f6u?=
+ =?us-ascii?Q?+Csgaa5Wbyltr7uIplL2FI7iHKt7v5HmzEA/bSpW3ZUR46+SCHozpdwIOrlk?=
+ =?us-ascii?Q?sDw9Nmj/3FD1qeib31dR7X0IXW5xTWnpFbzEoCEJmiW1PONifKP8t1Rt65R3?=
+ =?us-ascii?Q?/ggHZEhNX0LnU3gMmvxSteZYt5Yq23djdeaCwLfUZEDnnz0f2SGjy0QCYkAZ?=
+ =?us-ascii?Q?HHAWGuG8Yjyn8k0lC7b8Lm2YNFx/rb4av6bRrLP0Q+hP/Fa1bLZOJsq+h/yP?=
+ =?us-ascii?Q?dkgzwgT7K0VKOOh+bxB0Nr70AMTO3VQQ4tZoCCDVqAuV2wtmQz1rCO8Vo0fH?=
+ =?us-ascii?Q?hsM7CwfmwkdeFAfgwN33V3LE7hQQSmormJIM4hqz1SJz5ayO5RQAK1Zi4ADm?=
+ =?us-ascii?Q?yO6mTyZ3k/k/Vtv8aYDdnWrPJhbw0/H4RjGwgbh9gibdVqdSj5+7h1Ocv3QH?=
+ =?us-ascii?Q?HNTVJmUrTsNmdt7ZejS4mAux141ffvPihcXWQOhXAnoTbqmgsVHe9RBU/zbr?=
+ =?us-ascii?Q?yFj3/OIFVpNiwWskR7cy57+mQqCTiiMuhrEwCJfJ2WhzIQ/xL2jdcerhtJS3?=
+ =?us-ascii?Q?gew6kR+hiSNvv4DeuoiyaJZ2TmWqKsIXmM3BeQMiixHpUaCh11JDvya5hiEh?=
+ =?us-ascii?Q?9e5aN+Qui/8LamMZO7eBpcM2toSORGFDaNnIH0F3JWe7YO29lAOZ5WYAwGks?=
+ =?us-ascii?Q?3ZtBiP+AbhEyw4wIlko=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 705c4718-dbc7-470d-0730-08dbbb246f47
+X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB4838.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 04:28:56.7340
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7hXAINvKAJocNDMqZ+KTdEDkY9Tqr2Qk6orHWU9L/aFISryKpBuviqoBPWRA6QnKNgQ9W5oDIQ/zmzNcJC86Jg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8851
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,244 +116,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, broonie@kernel.org, sakari.ailus@iki.fi, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
+Cc: kw@linux.com, imx@lists.linux.dev, linux-pci@vger.kernel.org, lpieralisi@kernel.org, Frank.li@nxp.com, linux-kernel@vger.kernel.org, hch@infradead.org, minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org, robh@kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 21, 2023 at 10:09=E2=80=AFPM Hans Verkuil <hverkuil@xs4all.nl> =
-wrote:
->
-> On 21/09/2023 13:13, Shengjiu Wang wrote:
-> > On Thu, Sep 21, 2023 at 3:11=E2=80=AFPM Hans Verkuil <hverkuil@xs4all.n=
-l> wrote:
-> >>
-> >> On 21/09/2023 08:55, Shengjiu Wang wrote:
-> >>> On Wed, Sep 20, 2023 at 6:19=E2=80=AFPM Hans Verkuil <hverkuil@xs4all=
-.nl> wrote:
-> >>>>
-> >>>> On 20/09/2023 11:32, Shengjiu Wang wrote:
-> >>>>> The input clock and output clock may not be the accurate
-> >>>>> rate as the sample rate, there is some drift, so the convert
-> >>>>> ratio of i.MX ASRC module need to be changed according to
-> >>>>> actual clock rate.
-> >>>>>
-> >>>>> Add V4L2_CID_USER_IMX_ASRC_RATIO_MOD control for user to
-> >>>>> adjust the ratio.
-> >>>>>
-> >>>>> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> >>>>> ---
-> >>>>>  Documentation/userspace-api/media/v4l/control.rst | 5 +++++
-> >>>>>  drivers/media/v4l2-core/v4l2-ctrls-defs.c         | 1 +
-> >>>>>  include/uapi/linux/v4l2-controls.h                | 1 +
-> >>>>>  3 files changed, 7 insertions(+)
-> >>>>>
-> >>>>> diff --git a/Documentation/userspace-api/media/v4l/control.rst b/Do=
-cumentation/userspace-api/media/v4l/control.rst
-> >>>>> index 4463fce694b0..2bc175900a34 100644
-> >>>>> --- a/Documentation/userspace-api/media/v4l/control.rst
-> >>>>> +++ b/Documentation/userspace-api/media/v4l/control.rst
-> >>>>> @@ -318,6 +318,11 @@ Control IDs
-> >>>>>      depending on particular custom controls should check the drive=
-r name
-> >>>>>      and version, see :ref:`querycap`.
-> >>>>>
-> >>>>> +.. _v4l2-audio-imx:
-> >>>>> +
-> >>>>> +``V4L2_CID_USER_IMX_ASRC_RATIO_MOD``
-> >>>>> +    sets the rasampler ratio modifier of i.MX asrc module.
-> >>>>
-> >>>> rasampler -> resampler (I think?)
-> >>>>
-> >>>> This doesn't document at all what the type of the control is or how =
-to interpret it.
-> >>>>
-> >>>>> +
-> >>>>>  Applications can enumerate the available controls with the
-> >>>>>  :ref:`VIDIOC_QUERYCTRL` and
-> >>>>>  :ref:`VIDIOC_QUERYMENU <VIDIOC_QUERYCTRL>` ioctls, get and set a
-> >>>>> diff --git a/drivers/media/v4l2-core/v4l2-ctrls-defs.c b/drivers/me=
-dia/v4l2-core/v4l2-ctrls-defs.c
-> >>>>> index 8696eb1cdd61..16f66f66198c 100644
-> >>>>> --- a/drivers/media/v4l2-core/v4l2-ctrls-defs.c
-> >>>>> +++ b/drivers/media/v4l2-core/v4l2-ctrls-defs.c
-> >>>>> @@ -1242,6 +1242,7 @@ const char *v4l2_ctrl_get_name(u32 id)
-> >>>>>       case V4L2_CID_COLORIMETRY_CLASS:        return "Colorimetry C=
-ontrols";
-> >>>>>       case V4L2_CID_COLORIMETRY_HDR10_CLL_INFO:               retur=
-n "HDR10 Content Light Info";
-> >>>>>       case V4L2_CID_COLORIMETRY_HDR10_MASTERING_DISPLAY:      retur=
-n "HDR10 Mastering Display";
-> >>>>> +     case V4L2_CID_USER_IMX_ASRC_RATIO_MOD:                  retur=
-n "ASRC RATIO MOD";
-> >>>>
-> >>>> Let's stay consistent with the other control names:
-> >>>>
-> >>>> "ASRC Ratio Modifier"
-> >>>>
-> >>>> But if this is a driver specific control, then this doesn't belong h=
-ere.
-> >>>>
-> >>>> Driver specific controls are defined in the driver itself, including=
- this
-> >>>> description.
-> >>>>
-> >>>> Same for the control documentation: if it is driver specific, then t=
-hat
-> >>>> typically is documented either in a driver-specific public header, o=
-r
-> >>>> possibly in driver-specific documentation (Documentation/admin-guide=
-/media/).
-> >>>>
-> >>>> But is this imx specific? Wouldn't other similar devices need this?
-> >>>
-> >>> It is imx specific.
-> >>
-> >> Why? I'm not opposed to this, but I wonder if you looked at datasheets=
- of
-> >> similar devices from other vendors: would they use something similar?
-> >
-> > I tried to find some datasheets for other vendors, but failed to find t=
-hem.
-> > So I don't know how they implement this part.
-> >
-> > Ratio modification on i.MX is to modify the configured ratio.
-> > For example, the input rate is 44.1kHz,  output rate is 48kHz,
-> > configured ratio =3D 441/480,   the ratio modification is to modify
-> > the fractional part of (441/480) with small steps.  because the
-> > input clock or output clock has drift in the real hardware.
-> > The ratio modification is signed value, it is added to configured
-> > ratio.
-> >
-> > In our case, we have some sysfs interface for user to get the
-> > clock from input audio device and output audio device, user
-> > need to calculate the ratio dynamically , then configure the
-> > modification to driver
->
-> So this ratio modifier comes into play when either the audio input
-> or audio output (or both) are realtime audio inputs/outputs where
-> the sample rate is not a perfect 44.1 or 48 kHz, but slightly different?
+From: Guanhua Gao <guanhua.gao@nxp.com>
 
-yes.
+Set DMA mask and coherent DMA mask to enable 64-bit addressing.
 
->
-> If you would use this resampler to do offline resampling (i.e. resample
-> a 44.1 kHz wav file to a 48 kHz wav file), then this wouldn't be needed,
-> correct?
+Signed-off-by: Guanhua Gao <guanhua.gao@nxp.com>
+Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+Signed-off-by: Frank Li <Frank.Li@nxp.com>
+---
 
-yes.
+Notes:
+    change from v1 to v2
+    - Remove 32bit DMA mask set.
 
->
-> When dealing with realtime audio, userspace will know how to get the
-> precise sample rate, but that is out-of-scope of this driver. Here
-> you just need a knob to slightly tweak the resampling ratio.
->
-> If my understanding is correct, then I wonder if it is such a good
-> idea to put the rate into the v4l2_audio_format: it really has nothing
-> to do with the audio format as it is stored in memory.
->
-> What if you would drop that 'rate' field and instead create just a single
-> control for the resampling ratio. This can use struct v4l2_fract to repre=
-sent
-> a fraction. It would be more work since v4l2_fract is currently not suppo=
-rted
-> for controls, but it is not hard to add support for that (just a bit tedi=
-ous)
-> and I actually think this might be a perfect solution.
->
-> That way userspace can quite precisely tweak the ratio on the fly, and
-> it is a generic solution as well instead of mediatek specific.
->
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-(rate, channel, format) are the basic parameters for audio stream.
-For example, if there is decoder/encoder requirement, the rate field is
-still needed,  I think the rate shouldn't be removed.
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+index de4c1758a6c33..026bf08611e13 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -249,6 +249,11 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
+ 
+ 	pcie->big_endian = of_property_read_bool(dev->of_node, "big-endian");
+ 
++	/* set 64-bit DMA mask and coherent DMA mask */
++	ret = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
++	if (ret)
++		return ret;
++
+ 	platform_set_drvdata(pdev, pcie);
+ 
+ 	ret = dw_pcie_ep_init(&pci->ep);
+-- 
+2.34.1
 
-tweak ratio is not always needed by use case. As you said, for
-file to file conversion, it is not needed, so keeping 'rate' is necessary.
-
-best regards
-wang shengjiu
-
-> Regards,
->
->         Hans
->
-> >
-> > May be other vendors has similar implementation. or make
-> > the definition be generic is an option.
-> >
-> > best regards
-> > wang shengjiu
-> >
-> >>
-> >> And the very short description you gave in the commit log refers to in=
-put
-> >> and output clock: how would userspace know those clock frequencies? In
-> >> other words, what information does userspace need in order to set this
-> >> control correctly? And is that information actually available? How wou=
-ld
-> >> you use this control?
-> >>
-> >> I don't really understand how this is supposed to be used.
-> >>
-> >>>
-> >>> Does this mean that I need to create a header file in include/uapi/li=
-nux
-> >>> folder to put this definition?  I just hesitate if this is necessary.
-> >>
-> >> Yes, put it there. There are some examples of this already:
-> >>
-> >> include/uapi/linux/aspeed-video.h
-> >> include/uapi/linux/max2175.h
-> >>
-> >>>
-> >>> There is folder Documentation/userspace-api/media/drivers/ for driver=
-s
-> >>> Should this document in this folder, not in the
-> >>> Documentation/admin-guide/media/?
-> >>
-> >> Yes, you are correct. For the headers above, the corresponding documen=
-tation
-> >> is in:
-> >>
-> >> Documentation/userspace-api/media/drivers/aspeed-video.rst
-> >> Documentation/userspace-api/media/drivers/max2175.rst
-> >>
-> >> So you have some examples as reference.
-> >>
-> >> Frankly, what is in admin-guide and in userspace-api is a bit random, =
-it
-> >> probably could use a cleanup.
-> >>
-> >> Regards,
-> >>
-> >>         Hans
-> >>
-> >>>
-> >>> Best regards
-> >>> Wang shengjiu
-> >>>>
-> >>>>>       default:
-> >>>>>               return NULL;
-> >>>>>       }
-> >>>>> diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linu=
-x/v4l2-controls.h
-> >>>>> index c3604a0a3e30..b1c319906d12 100644
-> >>>>> --- a/include/uapi/linux/v4l2-controls.h
-> >>>>> +++ b/include/uapi/linux/v4l2-controls.h
-> >>>>> @@ -162,6 +162,7 @@ enum v4l2_colorfx {
-> >>>>>  /* The base for the imx driver controls.
-> >>>>>   * We reserve 16 controls for this driver. */
-> >>>>>  #define V4L2_CID_USER_IMX_BASE                       (V4L2_CID_USE=
-R_BASE + 0x10b0)
-> >>>>> +#define V4L2_CID_USER_IMX_ASRC_RATIO_MOD     (V4L2_CID_USER_IMX_BA=
-SE + 0)
-> >>>>>
-> >>>>>  /*
-> >>>>>   * The base for the atmel isc driver controls.
-> >>>>
-> >>>> Regards,
-> >>>>
-> >>>>         Hans
-> >>
->
