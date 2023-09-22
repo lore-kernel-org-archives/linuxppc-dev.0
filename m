@@ -4,36 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C557ACD4846
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 16:42:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DEA2CE7AB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 19:46:57 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P4ZZPqOm;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsdN22b98z3cjq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 02:42:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsdMR0DF5z2yPq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 02:41:35 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0B4B2DA7;
-	Fri, 22 Sep 2023 09:41:40 -0700 (PDT)
-Received: from [10.57.65.11] (unknown [10.57.65.11])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 43E173F67D;
-	Fri, 22 Sep 2023 09:40:58 -0700 (PDT)
-Message-ID: <32052cb7-91f1-461d-a226-2cd2fcf34ad2@arm.com>
-Date: Fri, 22 Sep 2023 17:40:56 +0100
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RsjTC6mGCz3cgZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 05:46:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P4ZZPqOm;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsjSC2rqZz3c9n
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 05:46:03 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id AABF0CE24D0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 19:45:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95394C433A9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 19:45:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1695411957;
+	bh=Z73INrp+tUCDrn3nt/IznNU60OcEzvbVv581pkRDXlE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=P4ZZPqOmhipnrgdjc5Cicuv4gwGoR5ahpSW6RraPJhB2FOCevSoVAq7M03SUqbiJq
+	 K7C83A8rvE9vTWF2PZ5kYCMKgg3G1IVvpRh+NW3hqCEKgBE5APzZ0p6is/9D0IzpXy
+	 L4KFq+qRrX7Nsl9X/FVhceTOut8PENgISZ7V9Hgc0n17gQFch+sOZHm06uwoEbBMFg
+	 bdQku4DZghgBK/X1clycJXNjGfpUaVv8cK0r9G/b2uMU+jMiHYfIm/lqjl9v/3n8cS
+	 tduJT5OdwlLHx5IjPVmN9jiMNIWgStlkcTXysI9oJM3ogbUGEUzRoqqQuRZPSge2DG
+	 XwBXMnxxa/mIQ==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-503f39d3236so4420669e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 12:45:57 -0700 (PDT)
+X-Gm-Message-State: AOJu0Yw0wwlgOdWWtZNp1eJqbMQdGRLjqgqQYkiSFp/W1egsMP0MZBsT
+	FrCoOBdkOJeTTwIB1H8GkGiy7POs383Vt7wxng==
+X-Google-Smtp-Source: AGHT+IEyL15UWPDOOifALHGXr9zT3PFp6EFjcQQ6N5sRMKjOVNVOEvEhKETlB6KYvfp58mdiyeysUyZjSt5CkUaQLB8=
+X-Received: by 2002:a19:651e:0:b0:503:18c5:6833 with SMTP id
+ z30-20020a19651e000000b0050318c56833mr310830lfb.61.1695411955742; Fri, 22 Sep
+ 2023 12:45:55 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] arm64: hugetlb: Fix set_huge_pte_at() to work with
- all swap entries
-Content-Language: en-GB
-To: Will Deacon <will@kernel.org>
-References: <20230922115804.2043771-1-ryan.roberts@arm.com>
- <20230922115804.2043771-3-ryan.roberts@arm.com>
- <20230922161404.GA23332@willie-the-truck>
-From: Ryan Roberts <ryan.roberts@arm.com>
-In-Reply-To: <20230922161404.GA23332@willie-the-truck>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20230922075913.422435-1-herve.codina@bootlin.com>
+ <20230922075913.422435-26-herve.codina@bootlin.com> <169538601225.2919383.2942072541503354871.robh@kernel.org>
+ <20230922154546.4ca18b6f@bootlin.com>
+In-Reply-To: <20230922154546.4ca18b6f@bootlin.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 22 Sep 2023 14:45:43 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqJTruTExc=uHCPCp3q-fo+fB-wAJ-ggPpHpWcHSoGALdw@mail.gmail.com>
+Message-ID: <CAL_JsqJTruTExc=uHCPCp3q-fo+fB-wAJ-ggPpHpWcHSoGALdw@mail.gmail.com>
+Subject: Re: [PATCH v6 25/30] dt-bindings: net: Add the Lantiq PEF2256
+ E1/T1/J1 framer
+To: Herve Codina <herve.codina@bootlin.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,114 +70,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Helge Deller <deller@gmx.de>, Christoph Hellwig <hch@infradead.org>, Axel Rasmussen <axelrasmussen@google.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>, Anshuman Khandual <anshuman.khandual@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-arm-kernel@lists.infradead.org, SeongJae Park <sj@kernel.org>, Lorenzo Stoakes <lstoakes@gmail.com>, linux-parisc@vger.kernel.org, Muchun Song <muchun.song@linux.dev>, linux-kernel@vge
- r.kernel.org, stable@vger.kernel.org, Uladzislau Rezki <urezki@gmail.com>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Takashi Iwai <tiwai@suse.com>, Eric Dumazet <edumazet@google.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Li Yang <leoyang.li@nxp.com>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wan g <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Jaroslav Kysela <perex@perex.cz>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Simon Horman <horms@kernel.org>, li
+ nuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 22/09/2023 17:14, Will Deacon wrote:
-> On Fri, Sep 22, 2023 at 12:58:04PM +0100, Ryan Roberts wrote:
->> When called with a swap entry that does not embed a PFN (e.g.
->> PTE_MARKER_POISONED or PTE_MARKER_UFFD_WP), the previous implementation
->> of set_huge_pte_at() would either cause a BUG() to fire (if
->> CONFIG_DEBUG_VM is enabled) or cause a dereference of an invalid address
->> and subsequent panic.
->>
->> arm64's huge pte implementation supports multiple huge page sizes, some
->> of which are implemented in the page table with multiple contiguous
->> entries. So set_huge_pte_at() needs to work out how big the logical pte
->> is, so that it can also work out how many physical ptes (or pmds) need
->> to be written. It previously did this by grabbing the folio out of the
->> pte and querying its size.
->>
->> However, there are cases when the pte being set is actually a swap
->> entry. But this also used to work fine, because for huge ptes, we only
->> ever saw migration entries and hwpoison entries. And both of these types
->> of swap entries have a PFN embedded, so the code would grab that and
->> everything still worked out.
->>
->> But over time, more calls to set_huge_pte_at() have been added that set
->> swap entry types that do not embed a PFN. And this causes the code to go
->> bang. The triggering case is for the uffd poison test, commit
->> 99aa77215ad0 ("selftests/mm: add uffd unit test for UFFDIO_POISON"),
->> which causes a PTE_MARKER_POISONED swap entry to be set, coutesey of
->> commit 8a13897fb0da ("mm: userfaultfd: support UFFDIO_POISON for
->> hugetlbfs") - added in v6.5-rc7. Although review shows that there are
->> other call sites that set PTE_MARKER_UFFD_WP (which also has no PFN),
->> these don't trigger on arm64 because arm64 doesn't support UFFD WP.
->>
->> Arguably, the root cause is really due to commit 18f3962953e4 ("mm:
->> hugetlb: kill set_huge_swap_pte_at()"), which aimed to simplify the
->> interface to the core code by removing set_huge_swap_pte_at() (which
->> took a page size parameter) and replacing it with calls to
->> set_huge_pte_at() where the size was inferred from the folio, as
->> descibed above. While that commit didn't break anything at the time, it
->> did break the interface because it couldn't handle swap entries without
->> PFNs. And since then new callers have come along which rely on this
->> working. But given the brokeness is only observable after commit
->> 8a13897fb0da ("mm: userfaultfd: support UFFDIO_POISON for hugetlbfs"),
->> that one gets the Fixes tag.
->>
->> Now that we have modified the set_huge_pte_at() interface to pass the
->> huge page size in the previous patch, we can trivially fix this issue.
->>
->> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
->> Fixes: 8a13897fb0da ("mm: userfaultfd: support UFFDIO_POISON for hugetlbfs")
->> Cc: <stable@vger.kernel.org> # 6.5+
->> ---
->>  arch/arm64/mm/hugetlbpage.c | 17 +++--------------
->>  1 file changed, 3 insertions(+), 14 deletions(-)
->>
->> diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
->> index a7f8c8db3425..13fd592228b1 100644
->> --- a/arch/arm64/mm/hugetlbpage.c
->> +++ b/arch/arm64/mm/hugetlbpage.c
->> @@ -241,13 +241,6 @@ static void clear_flush(struct mm_struct *mm,
->>  	flush_tlb_range(&vma, saddr, addr);
->>  }
->>  
->> -static inline struct folio *hugetlb_swap_entry_to_folio(swp_entry_t entry)
->> -{
->> -	VM_BUG_ON(!is_migration_entry(entry) && !is_hwpoison_entry(entry));
->> -
->> -	return page_folio(pfn_to_page(swp_offset_pfn(entry)));
->> -}
->> -
->>  void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->>  			    pte_t *ptep, pte_t pte, unsigned long sz)
->>  {
->> @@ -257,13 +250,10 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->>  	unsigned long pfn, dpfn;
->>  	pgprot_t hugeprot;
->>  
->> -	if (!pte_present(pte)) {
->> -		struct folio *folio;
->> -
->> -		folio = hugetlb_swap_entry_to_folio(pte_to_swp_entry(pte));
->> -		ncontig = num_contig_ptes(folio_size(folio), &pgsize);
->> +	ncontig = num_contig_ptes(sz, &pgsize);
->>  
->> -		for (i = 0; i < ncontig; i++, ptep++)
->> +	if (!pte_present(pte)) {
->> +		for (i = 0; i < ncontig; i++, ptep++, addr += pgsize)
->>  			set_pte_at(mm, addr, ptep, pte);
-> 
-> Our set_pte_at() doesn't use 'addr' for anything and the old code didn't
-> even bother to increment it here! I'm fine adding that, but it feels
-> unrelated to the issue which this patch is actually fixing.
+On Fri, Sep 22, 2023 at 8:46=E2=80=AFAM Herve Codina <herve.codina@bootlin.=
+com> wrote:
+>
+> Hi Rob,
+>
+> On Fri, 22 Sep 2023 07:33:32 -0500
+> Rob Herring <robh@kernel.org> wrote:
+>
+> > On Fri, 22 Sep 2023 09:59:00 +0200, Herve Codina wrote:
+> > > The Lantiq PEF2256 is a framer and line interface component designed =
+to
+> > > fulfill all required interfacing between an analog E1/T1/J1 line and =
+the
+> > > digital PCM system highway/H.100 bus.
+> > >
+> > > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > > Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> > > ---
+> > >  .../bindings/net/lantiq,pef2256.yaml          | 214 ++++++++++++++++=
+++
+> > >  1 file changed, 214 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/net/lantiq,pef2=
+256.yaml
+> > >
+> >
+> > My bot found errors running 'make DT_CHECKER_FLAGS=3D-m dt_binding_chec=
+k'
+> > on your patch (DT_CHECKER_FLAGS is new in v5.13):
+> >
+> > yamllint warnings/errors:
+> >
+> > dtschema/dtc warnings/errors:
+> > /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings=
+/net/lantiq,pef2256.yaml: properties:lantiq,data-rate-bps: '$ref' should no=
+t be valid under {'const': '$ref'}
+> >       hint: Standard unit suffix properties don't need a type $ref
+> >       from schema $id: http://devicetree.org/meta-schemas/core.yaml#
+> >
+>
+> The '-bps' suffix was added recently in
+> https://github.com/devicetree-org/dt-schema/
+> commit 033d0b1 ("Add '-bps' as a standard unit suffix for bits per second=
+")
+>
+> This commit is not yet present in any dt-schema release.
+>
+> Should I update my patch (ie. removing $ref) right now even if this updat=
+e will
+> make the last dt-schema release not happy ?
 
-True. I agree its not strictly necessary and will presumably be optimized out.
-But I'm not sure that having knowledge that the implementation doesn't use it is
-a good reason not to call the interface correctly. I'll leave it as I've done it
-if that's ok.
+Yes. I will spin a release soon as well.
 
-> 
-> Either way:
-> 
-> Acked-by: Will Deacon <will@kernel.org>
-
-Thanks!
-
-> 
-> Will
-
+Rob
