@@ -4,58 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AC00CD4F2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 08:37:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A786FCD4F2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 08:38:24 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jAgmSUGb;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsQcv18zdz3hFX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 18:37:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1198 seconds by postgrey-1.37 at boromir; Fri, 22 Sep 2023 18:14:47 AEST
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RsQdq2HZzz3f2K
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 18:38:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jAgmSUGb;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsQL81wxpz3hf6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 18:24:48 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4RsQL81VX7z4wy0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 18:24:48 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4RsQL81FtBz4wxd; Fri, 22 Sep 2023 18:24:48 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jAgmSUGb;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsQ6b0N95z3ht6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 18:14:46 +1000 (AEST)
-Received: from relay9-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::229])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 3045CD3FD8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 07:54:50 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 51B81FF809;
-	Fri, 22 Sep 2023 07:54:21 +0000 (UTC)
-Message-ID: <7bbceed4-c5f6-42d4-5d94-060032b73385@ghiti.fr>
-Date: Fri, 22 Sep 2023 09:54:21 +0200
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4RsQL73Lmtz4wxc;
+	Fri, 22 Sep 2023 18:24:47 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38M88s3u011322;
+	Fri, 22 Sep 2023 08:24:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : content-type : in-reply-to :
+ mime-version; s=pp1; bh=BCXwk4RDeveyWsOue/VqEz27/VuSn8Fa02EhRNYbGrU=;
+ b=jAgmSUGbqTY+yGejsoubii3lGv9O1z41/J2qeFs2bbVW24eWil4JUhJySHvcIKSCcnAE
+ PIoGxAjBlT2/0rNcsS0NroNxHUOtrNl+OH/Hd9Lw1jWRFqMkj70RSF3TWBqlQ+JbQXAN
+ +0MNuxHiNHiShmkvEo1LHSsu0fNO6UWrn9R1SSPwBDYc37VbaKdhl2NUL5wt500FSkQe
+ 2zAkDuRpej6IMn79aNh6bwDkG+W4GOkkSwknUxbOJCua6J34+ACoLIBgPK7DIU989sSl
+ rmPxN+baOZFV1hqfY5FidGGcVtvk0xfpWcMuub94z5UWhLXDl+oPsCzjvrVRQyEx23cW EA== 
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3t94u5kja2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 22 Sep 2023 08:24:43 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38M7bEXG029422;
+	Fri, 22 Sep 2023 08:24:42 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3t8tsnwv9d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 22 Sep 2023 08:24:42 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38M8Oa0U18416188
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 22 Sep 2023 08:24:38 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D559820043;
+	Fri, 22 Sep 2023 08:24:36 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 709032004E;
+	Fri, 22 Sep 2023 08:24:35 +0000 (GMT)
+Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.ibm.com (unknown [9.109.199.72])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri, 22 Sep 2023 08:24:35 +0000 (GMT)
+Date: Fri, 22 Sep 2023 13:54:32 +0530
+From: Aditya Gupta <adityag@linux.ibm.com>
+To: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
+Message-ID: <tvtxp64m4o4fuwudywzuqhrpkas3gwhjekd2n4vtzr5gh4aine@rpwuivzqmutj>
+References: <20230911091409.415662-1-adityag@linux.ibm.com>
+ <169528860032.876432.12152654406988174161.b4-ty@ellerman.id.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <169528860032.876432.12152654406988174161.b4-ty@ellerman.id.au>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: MFFunqXvkmGrq75yMqs1LaXPdfqvbfhG
+X-Proofpoint-ORIG-GUID: MFFunqXvkmGrq75yMqs1LaXPdfqvbfhG
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Subject: Re: [PATCH v1 3/8] riscv: hugetlb: Convert set_huge_pte_at() to take
- vma
-Content-Language: en-US
-To: Ryan Roberts <ryan.roberts@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, Arnd Bergmann <arnd@arndb.de>,
- Mike Kravetz <mike.kravetz@oracle.com>, Muchun Song <muchun.song@linux.dev>,
- SeongJae Park <sj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Uladzislau Rezki <urezki@gmail.com>, Christoph Hellwig <hch@infradead.org>,
- Lorenzo Stoakes <lstoakes@gmail.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>, Peter Xu <peterx@redhat.com>,
- Axel Rasmussen <axelrasmussen@google.com>,
- Qi Zheng <zhengqi.arch@bytedance.com>
-References: <20230921162007.1630149-1-ryan.roberts@arm.com>
- <20230921162007.1630149-4-ryan.roberts@arm.com>
-From: Alexandre Ghiti <alex@ghiti.fr>
-In-Reply-To: <20230921162007.1630149-4-ryan.roberts@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-GND-Sasl: alex@ghiti.fr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-09-22_06,2023-09-21_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ mlxlogscore=552 spamscore=0 suspectscore=0 clxscore=1011 bulkscore=0
+ impostorscore=0 phishscore=0 lowpriorityscore=0 malwarescore=0
+ adultscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2309220066
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,75 +105,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev@ozlabs.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ryan,
+On Thu, Sep 21, 2023 at 07:30:00PM +1000, Michael Ellerman wrote:
+> On Mon, 11 Sep 2023 14:44:09 +0530, Aditya Gupta wrote:
+> > Presently, while reading a vmcore, makedumpfile uses
+> > `cur_cpu_spec.mmu_features` to decide whether the crashed system had
+> > RADIX MMU or not.
+> > 
+> > Currently, makedumpfile fails to get the `cur_cpu_spec` symbol (unless
+> > a vmlinux is passed with the `-x` flag to makedumpfile), and hence
+> > assigns offsets and shifts (such as pgd_offset_l4) incorrecly considering
+> > MMU to be hash MMU.
+> > 
+> > [...]
+> 
+> Applied to powerpc/next.
+> 
+> [1/1] powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
+>       https://git.kernel.org/powerpc/c/7135b921b32966d7602ede396b7286d372aee63f
+> 
+> cheers
 
-On 21/09/2023 18:20, Ryan Roberts wrote:
-> In order to fix a bug, arm64 needs access to the vma inside it's
-> implementation of set_huge_pte_at(). Provide for this by converting the
-> mm parameter to be a vma. Any implementations that require the mm can
-> access it via vma->vm_mm.
->
-> This commit makes the required riscv modifications. Separate commits
-> update the other arches and core code, before the actual bug is fixed in
-> arm64.
->
-> No behavioral changes intended.
->
-> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
-> ---
->   arch/riscv/include/asm/hugetlb.h | 2 +-
->   arch/riscv/mm/hugetlbpage.c      | 3 ++-
->   2 files changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/hugetlb.h b/arch/riscv/include/asm/hugetlb.h
-> index 34e24f078cc1..be1ac8582bc2 100644
-> --- a/arch/riscv/include/asm/hugetlb.h
-> +++ b/arch/riscv/include/asm/hugetlb.h
-> @@ -17,7 +17,7 @@ void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
->   		    pte_t *ptep, unsigned long sz);
->   
->   #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
-> -void set_huge_pte_at(struct mm_struct *mm,
-> +void set_huge_pte_at(struct vm_area_struct *vma,
->   		     unsigned long addr, pte_t *ptep, pte_t pte);
->   
->   #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
-> diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
-> index 96225a8533ad..7cdbf0960772 100644
-> --- a/arch/riscv/mm/hugetlbpage.c
-> +++ b/arch/riscv/mm/hugetlbpage.c
-> @@ -177,11 +177,12 @@ pte_t arch_make_huge_pte(pte_t entry, unsigned int shift, vm_flags_t flags)
->   	return entry;
->   }
->   
-> -void set_huge_pte_at(struct mm_struct *mm,
-> +void set_huge_pte_at(struct vm_area_struct *vma,
->   		     unsigned long addr,
->   		     pte_t *ptep,
->   		     pte_t pte)
->   {
-> +	struct mm_struct *mm = vma->vm_mm;
->   	int i, pte_num;
->   
->   	if (!pte_napot(pte)) {
-
-
-You can add:
-
-Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
-
-I realize that we may have the same issue with our contig pte 
-implementation (called napot in riscv) as we don't handle swap/migration 
-entries at all. So I guess we need something similar, and I'll implement 
-it (unless you want to do it of course, but I guess it's easier for me 
-to test). One (maybe stupid) question though: wouldn't it be possible to 
-extract the contig pte size from the value of ptep instead of using a vma?
-
-Thanks,
-
-Alex
-
+Thanks for the update
