@@ -4,61 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DEA2CE7AB8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Sep 2023 19:46:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 980FFCE7A88
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 16:25:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P4ZZPqOm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XbZg7GgD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RsjTC6mGCz3cgZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 05:46:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RtDyV0YJZz3cbY
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Sep 2023 02:25:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P4ZZPqOm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XbZg7GgD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RsjSC2rqZz3c9n
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2023 05:46:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RtDxT1WCrz2yLr
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2023 02:24:45 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id AABF0CE24D0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 19:45:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95394C433A9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 19:45:57 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTP id 53F84B80092;
+	Sat, 23 Sep 2023 16:24:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C213C433C8;
+	Sat, 23 Sep 2023 16:24:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695411957;
-	bh=Z73INrp+tUCDrn3nt/IznNU60OcEzvbVv581pkRDXlE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=P4ZZPqOmhipnrgdjc5Cicuv4gwGoR5ahpSW6RraPJhB2FOCevSoVAq7M03SUqbiJq
-	 K7C83A8rvE9vTWF2PZ5kYCMKgg3G1IVvpRh+NW3hqCEKgBE5APzZ0p6is/9D0IzpXy
-	 L4KFq+qRrX7Nsl9X/FVhceTOut8PENgISZ7V9Hgc0n17gQFch+sOZHm06uwoEbBMFg
-	 bdQku4DZghgBK/X1clycJXNjGfpUaVv8cK0r9G/b2uMU+jMiHYfIm/lqjl9v/3n8cS
-	 tduJT5OdwlLHx5IjPVmN9jiMNIWgStlkcTXysI9oJM3ogbUGEUzRoqqQuRZPSge2DG
-	 XwBXMnxxa/mIQ==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-503f39d3236so4420669e87.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2023 12:45:57 -0700 (PDT)
-X-Gm-Message-State: AOJu0Yw0wwlgOdWWtZNp1eJqbMQdGRLjqgqQYkiSFp/W1egsMP0MZBsT
-	FrCoOBdkOJeTTwIB1H8GkGiy7POs383Vt7wxng==
-X-Google-Smtp-Source: AGHT+IEyL15UWPDOOifALHGXr9zT3PFp6EFjcQQ6N5sRMKjOVNVOEvEhKETlB6KYvfp58mdiyeysUyZjSt5CkUaQLB8=
-X-Received: by 2002:a19:651e:0:b0:503:18c5:6833 with SMTP id
- z30-20020a19651e000000b0050318c56833mr310830lfb.61.1695411955742; Fri, 22 Sep
- 2023 12:45:55 -0700 (PDT)
+	s=k20201202; t=1695486280;
+	bh=LPa0vOpCN9uFCJLwT0Mv83PIALUPvGiZjoSaYDcpsJE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XbZg7GgD8+BmM0EbIou3DUcf1HdG1quOywXNpDmhicICfIw73rq/zzU/h/vI/qZDp
+	 XFUEPcYb9UPuknO3UuH9df8jDX6Y2cSrJ80wg4ZDDFpWgi05sPMcC4MzWe2C0cyCeu
+	 nP6/UDcZM95kD65En58LM92KcpcWG3KRH0guTPfrV4zfxxO4soUJ8uiNt0flLBa+d0
+	 BLkPfitclvMDS0vd51IsKv7CF8IIIdzK9/P0gBrSPMYS98N2ZZq1Bne2bq5a34spi2
+	 CfuytAh2slWgJP4aWqKBet8FSXiJNiOrIpHAN1uhuJKdaS5HEKlew5LP5bm2Q0OAmM
+	 QvG1TNKlGHcFw==
+Date: Sat, 23 Sep 2023 19:23:40 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Alexandre Ghiti <alex@ghiti.fr>
+Subject: Re: [PATCH v3 08/13] riscv: extend execmem_params for generated code
+ allocations
+Message-ID: <20230923162340.GM3303@kernel.org>
+References: <20230918072955.2507221-1-rppt@kernel.org>
+ <20230918072955.2507221-9-rppt@kernel.org>
+ <6d686c54-078d-8d71-d4e2-c754cf92c557@ghiti.fr>
 MIME-Version: 1.0
-References: <20230922075913.422435-1-herve.codina@bootlin.com>
- <20230922075913.422435-26-herve.codina@bootlin.com> <169538601225.2919383.2942072541503354871.robh@kernel.org>
- <20230922154546.4ca18b6f@bootlin.com>
-In-Reply-To: <20230922154546.4ca18b6f@bootlin.com>
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 22 Sep 2023 14:45:43 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqJTruTExc=uHCPCp3q-fo+fB-wAJ-ggPpHpWcHSoGALdw@mail.gmail.com>
-Message-ID: <CAL_JsqJTruTExc=uHCPCp3q-fo+fB-wAJ-ggPpHpWcHSoGALdw@mail.gmail.com>
-Subject: Re: [PATCH v6 25/30] dt-bindings: net: Add the Lantiq PEF2256
- E1/T1/J1 framer
-To: Herve Codina <herve.codina@bootlin.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6d686c54-078d-8d71-d4e2-c754cf92c557@ghiti.fr>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,61 +61,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Takashi Iwai <tiwai@suse.com>, Eric Dumazet <edumazet@google.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Li Yang <leoyang.li@nxp.com>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wan g <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Jaroslav Kysela <perex@perex.cz>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Simon Horman <horms@kernel.org>, li
- nuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kerne
+ l.org>, =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Sep 22, 2023 at 8:46=E2=80=AFAM Herve Codina <herve.codina@bootlin.=
-com> wrote:
->
-> Hi Rob,
->
-> On Fri, 22 Sep 2023 07:33:32 -0500
-> Rob Herring <robh@kernel.org> wrote:
->
-> > On Fri, 22 Sep 2023 09:59:00 +0200, Herve Codina wrote:
-> > > The Lantiq PEF2256 is a framer and line interface component designed =
-to
-> > > fulfill all required interfacing between an analog E1/T1/J1 line and =
-the
-> > > digital PCM system highway/H.100 bus.
-> > >
-> > > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-> > > Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > > ---
-> > >  .../bindings/net/lantiq,pef2256.yaml          | 214 ++++++++++++++++=
-++
-> > >  1 file changed, 214 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/net/lantiq,pef2=
-256.yaml
-> > >
-> >
-> > My bot found errors running 'make DT_CHECKER_FLAGS=3D-m dt_binding_chec=
-k'
-> > on your patch (DT_CHECKER_FLAGS is new in v5.13):
-> >
-> > yamllint warnings/errors:
-> >
-> > dtschema/dtc warnings/errors:
-> > /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings=
-/net/lantiq,pef2256.yaml: properties:lantiq,data-rate-bps: '$ref' should no=
-t be valid under {'const': '$ref'}
-> >       hint: Standard unit suffix properties don't need a type $ref
-> >       from schema $id: http://devicetree.org/meta-schemas/core.yaml#
-> >
->
-> The '-bps' suffix was added recently in
-> https://github.com/devicetree-org/dt-schema/
-> commit 033d0b1 ("Add '-bps' as a standard unit suffix for bits per second=
-")
->
-> This commit is not yet present in any dt-schema release.
->
-> Should I update my patch (ie. removing $ref) right now even if this updat=
-e will
-> make the last dt-schema release not happy ?
+On Fri, Sep 22, 2023 at 12:37:07PM +0200, Alexandre Ghiti wrote:
+> Hi Mike,
+> 
+> On 18/09/2023 09:29, Mike Rapoport wrote:
+> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> > 
+> > The memory allocations for kprobes and BPF on RISC-V are not placed in
+> > the modules area and these custom allocations are implemented with
+> > overrides of alloc_insn_page() and  bpf_jit_alloc_exec().
+> > 
+> > Slightly reorder execmem_params initialization to support both 32 and 64
+> > bit variants, define EXECMEM_KPROBES and EXECMEM_BPF ranges in
+> > riscv::execmem_params and drop overrides of alloc_insn_page() and
+> > bpf_jit_alloc_exec().
+> > 
+> > Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> > ---
+> >   arch/riscv/kernel/module.c         | 21 ++++++++++++++++++++-
+> >   arch/riscv/kernel/probes/kprobes.c | 10 ----------
+> >   arch/riscv/net/bpf_jit_core.c      | 13 -------------
+> >   3 files changed, 20 insertions(+), 24 deletions(-)
+> > 
+> > diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
+> > index 343a0edfb6dd..31505ecb5c72 100644
+> > --- a/arch/riscv/kernel/module.c
+> > +++ b/arch/riscv/kernel/module.c
+> > @@ -436,20 +436,39 @@ int apply_relocate_add(Elf_Shdr *sechdrs, const char *strtab,
+> >   	return 0;
+> >   }
+> > -#if defined(CONFIG_MMU) && defined(CONFIG_64BIT)
+> > +#ifdef CONFIG_MMU
+> >   static struct execmem_params execmem_params __ro_after_init = {
+> >   	.ranges = {
+> >   		[EXECMEM_DEFAULT] = {
+> >   			.pgprot = PAGE_KERNEL,
+> >   			.alignment = 1,
+> >   		},
+> > +		[EXECMEM_KPROBES] = {
+> > +			.pgprot = PAGE_KERNEL_READ_EXEC,
+> > +			.alignment = 1,
+> > +		},
+> > +		[EXECMEM_BPF] = {
+> > +			.pgprot = PAGE_KERNEL,
+> > +			.alignment = 1,
+> 
+> 
+> Not entirely sure it is the same alignment (sorry did not go through the
+> entire series), but if it is, the alignment above ^ is not the same that is
+> requested by our current bpf_jit_alloc_exec() implementation which is
+> PAGE_SIZE.
+ 
+This literally translates vmalloc() in alloc_insn_page() to a set of
+parameters, so "1" comes from there. And using alignment of 1 with
+vmalloc() implicitly sets it to PAGE_SIZE.
 
-Yes. I will spin a release soon as well.
+> > +		},
+> >   	},
+> >   };
+> >   struct execmem_params __init *execmem_arch_params(void)
+> >   {
+> > +#ifdef CONFIG_64BIT
+> >   	execmem_params.ranges[EXECMEM_DEFAULT].start = MODULES_VADDR;
+> >   	execmem_params.ranges[EXECMEM_DEFAULT].end = MODULES_END;
+> > +#else
+> > +	execmem_params.ranges[EXECMEM_DEFAULT].start = VMALLOC_START;
+> > +	execmem_params.ranges[EXECMEM_DEFAULT].end = VMALLOC_END;
+> > +#endif
+> > +
+> > +	execmem_params.ranges[EXECMEM_KPROBES].start = VMALLOC_START;
+> > +	execmem_params.ranges[EXECMEM_KPROBES].end = VMALLOC_END;
+> > +
+> > +	execmem_params.ranges[EXECMEM_BPF].start = BPF_JIT_REGION_START;
+> > +	execmem_params.ranges[EXECMEM_BPF].end = BPF_JIT_REGION_END;
+> >   	return &execmem_params;
+> >   }
+> > diff --git a/arch/riscv/kernel/probes/kprobes.c b/arch/riscv/kernel/probes/kprobes.c
+> > index 2f08c14a933d..e64f2f3064eb 100644
+> > --- a/arch/riscv/kernel/probes/kprobes.c
+> > +++ b/arch/riscv/kernel/probes/kprobes.c
+> > @@ -104,16 +104,6 @@ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+> >   	return 0;
+> >   }
+> > -#ifdef CONFIG_MMU
+> > -void *alloc_insn_page(void)
+> > -{
+> > -	return  __vmalloc_node_range(PAGE_SIZE, 1, VMALLOC_START, VMALLOC_END,
+> > -				     GFP_KERNEL, PAGE_KERNEL_READ_EXEC,
+> > -				     VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
+> > -				     __builtin_return_address(0));
+> > -}
+> > -#endif
+> > -
+> >   /* install breakpoint in text */
+> >   void __kprobes arch_arm_kprobe(struct kprobe *p)
+> >   {
+> > diff --git a/arch/riscv/net/bpf_jit_core.c b/arch/riscv/net/bpf_jit_core.c
+> > index 7b70ccb7fec3..c8a758f0882b 100644
+> > --- a/arch/riscv/net/bpf_jit_core.c
+> > +++ b/arch/riscv/net/bpf_jit_core.c
+> > @@ -218,19 +218,6 @@ u64 bpf_jit_alloc_exec_limit(void)
+> >   	return BPF_JIT_REGION_SIZE;
+> >   }
+> > -void *bpf_jit_alloc_exec(unsigned long size)
+> > -{
+> > -	return __vmalloc_node_range(size, PAGE_SIZE, BPF_JIT_REGION_START,
+> > -				    BPF_JIT_REGION_END, GFP_KERNEL,
+> > -				    PAGE_KERNEL, 0, NUMA_NO_NODE,
+> > -				    __builtin_return_address(0));
+> > -}
+> > -
+> > -void bpf_jit_free_exec(void *addr)
+> > -{
+> > -	return vfree(addr);
+> > -}
+> > -
+> >   void *bpf_arch_text_copy(void *dst, void *src, size_t len)
+> >   {
+> >   	int ret;
+> 
+> 
+> Otherwise, you can add:
+> 
+> Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+> 
+> Thanks,
+> 
+> Alex
+> 
+> 
 
-Rob
+-- 
+Sincerely yours,
+Mike.
