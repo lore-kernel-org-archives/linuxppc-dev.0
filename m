@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69861CD4857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C63FCD548D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:40:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWrW0m3Yz3fYM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:39:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWsB1PnFz3gnn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:40:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWh42cmfz3dDM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWh83gcVz3dFq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:39 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWgG0X5Kz9v96;
-	Mon, 25 Sep 2023 20:31:54 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWgH2Px2z9v8b;
+	Mon, 25 Sep 2023 20:31:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wCcg7OJWBk2P; Mon, 25 Sep 2023 20:31:54 +0200 (CEST)
+	with ESMTP id zuGxqSeSAKpG; Mon, 25 Sep 2023 20:31:55 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg121Bzz9v9K;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg121Xdz9v9N;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 401A28B78D;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3FA2B8B78C;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id U6_-eeiQqF7o; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
+	with ESMTP id UXIBdFUunA0Z; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7D9748B7A0;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 941D48B7AA;
 	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVZRE1499215
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVZeL1499211
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Mon, 25 Sep 2023 20:31:35 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVZn21499214;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVZ6t1499210;
 	Mon, 25 Sep 2023 20:31:35 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 21/37] powerpc: Implement and use pgprot_nx()
-Date: Mon, 25 Sep 2023 20:31:35 +0200
-Message-ID: <5993a7a097e989af1c97fc4a6c011fefc67dbe6e.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 20/37] powerpc/e500: Simplify pte_mkexec()
+Date: Mon, 25 Sep 2023 20:31:34 +0200
+Message-ID: <cdc822322fe2ff4b0f5ecfde71d09d950b1c7557.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666675; l=1951; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Myjr2uo2qQ8RVR2JXltovj8e4N8IQOT9rjimV169OuU=; b=1ca0ns+jGZ/voOX8ueH1WtHlBUTvfwxGkXBRNHvT4MX6HTEMmfTrdVFe3OUj3a4rzMefbwwLj evM3kk1kr5LAwYi9yMOR3jn/9aNjqaogQrfOs/N1ZYTzLAb+TU64rNZ
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666675; l=1294; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=lE6x5RKLWYndImQ33yMD27EEu4QttXIO1wd8YRJM0Ys=; b=H0uD/d+hCCHzmdashYa34GY4VaZi+fKPrYKWu8CZ/XDokKEIA6nUDlyf0JU8DbdIEB4iK1GlF Sq/8FU0xLZGC42KsFJ2Cyl7Jmix6g/b+9Y2r+TjWgY4UAqngZxF/CGx
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,61 +71,36 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ioremap_page_range() calls pgprot_nx() vmap() and vmap_pfn()
-clear execute permission by calling pgprot_nx().
-
-When pgprot_nx() is not defined it falls back to a nop.
-
-Implement it for powerpc then use it in early_ioremap_range().
-
-Then the call to pte_exprotect() can be removed from ioremap_prot().
+Commit b6cb20fdc273 ("powerpc/book3e: Fix set_memory_x() and
+set_memory_nx()") implemented a more elaborated version of
+pte_mkwrite() suitable for both kernel and user pages. That was
+needed because set_memory_x() was using pte_mkwrite(). But since
+commit a4c182ecf335 ("powerpc/set_memory: Avoid spinlock recursion
+in change_page_attr()") pte_mkwrite() is not used anymore by
+set_memory_x() so pte_mkwrite() can be simplified as it is only
+used for user pages.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/pgtable.h | 6 ++++++
- arch/powerpc/mm/ioremap.c          | 5 ++---
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/nohash/pte-e500.h | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 966e7c5119f6..2bfb7dd3b49e 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -71,6 +71,12 @@ static inline pgprot_t pte_pgprot(pte_t pte)
- 	return __pgprot(pte_flags);
- }
+diff --git a/arch/powerpc/include/asm/nohash/pte-e500.h b/arch/powerpc/include/asm/nohash/pte-e500.h
+index d8924cbd61e4..99288e26b6b0 100644
+--- a/arch/powerpc/include/asm/nohash/pte-e500.h
++++ b/arch/powerpc/include/asm/nohash/pte-e500.h
+@@ -115,10 +115,7 @@ static inline pte_t pte_mkuser(pte_t pte)
  
-+static inline pgprot_t pgprot_nx(pgprot_t prot)
-+{
-+	return pte_pgprot(pte_exprotect(__pte(pgprot_val(prot))));
-+}
-+#define pgprot_nx pgprot_nx
-+
- #ifndef pmd_page_vaddr
- static inline const void *pmd_page_vaddr(pmd_t pmd)
+ static inline pte_t pte_mkexec(pte_t pte)
  {
-diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
-index 705e8e8ffde4..d5159f205380 100644
---- a/arch/powerpc/mm/ioremap.c
-+++ b/arch/powerpc/mm/ioremap.c
-@@ -50,8 +50,7 @@ void __iomem *ioremap_prot(phys_addr_t addr, size_t size, unsigned long flags)
- 	if (pte_write(pte))
- 		pte = pte_mkdirty(pte);
+-	if (pte_val(pte) & _PAGE_BAP_UR)
+-		return __pte((pte_val(pte) & ~_PAGE_BAP_SX) | _PAGE_BAP_UX);
+-	else
+-		return __pte((pte_val(pte) & ~_PAGE_BAP_UX) | _PAGE_BAP_SX);
++	return __pte((pte_val(pte) & ~_PAGE_BAP_SX) | _PAGE_BAP_UX);
+ }
+ #define pte_mkexec pte_mkexec
  
--	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
--	pte = pte_exprotect(pte);
-+	/* we don't want to let _PAGE_USER leak out */
- 	pte = pte_mkprivileged(pte);
- 
- 	if (iowa_is_active())
-@@ -66,7 +65,7 @@ int early_ioremap_range(unsigned long ea, phys_addr_t pa,
- 	unsigned long i;
- 
- 	for (i = 0; i < size; i += PAGE_SIZE) {
--		int err = map_kernel_page(ea + i, pa + i, prot);
-+		int err = map_kernel_page(ea + i, pa + i, pgprot_nx(prot));
- 
- 		if (WARN_ON_ONCE(err))  /* Should clean up */
- 			return err;
 -- 
 2.41.0
 
