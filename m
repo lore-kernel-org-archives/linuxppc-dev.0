@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D638CD4853
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9221CD4857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:35:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWkL239Dz3f8v
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:34:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWkt3M2bz3fHj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:35:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWgK3MGgz3cWp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:31:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWgN3xwVz3c33
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:00 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWg23ys8z9vB3;
-	Mon, 25 Sep 2023 20:31:42 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWg30lhdz9v6s;
+	Mon, 25 Sep 2023 20:31:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gm2YNQbS0yuz; Mon, 25 Sep 2023 20:31:42 +0200 (CEST)
+	with ESMTP id Jiyx4mkuoTU2; Mon, 25 Sep 2023 20:31:43 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg05ZpLz9v6s;
-	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg10llSz9v7N;
+	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BADC68B7AD;
-	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 141E88B78C;
+	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8FtEjI7eRIpO; Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
+	with ESMTP id cGC4RhTZrh_3; Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 58E858B78D;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 62F5B8B790;
 	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVXcl1499179
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVYNt1499199
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 20:31:33 +0200
+	Mon, 25 Sep 2023 20:31:34 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVXKl1499178;
-	Mon, 25 Sep 2023 20:31:33 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVYgC1499198;
+	Mon, 25 Sep 2023 20:31:34 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 12/37] powerpc/nohash: Refactor pte_update()
-Date: Mon, 25 Sep 2023 20:31:26 +0200
-Message-ID: <e01cb630cad42f645915ce7702d23985241b71fc.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 17/37] powerpc/nohash: Deduplicate ptep_set_wrprotect() and ptep_get_and_clear()
+Date: Mon, 25 Sep 2023 20:31:31 +0200
+Message-ID: <ffe46edecdabce915e2d1a4b79a3b2ab770f2248.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666674; l=5130; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=xkkBzed2zZJkZITyMdV9FKsj7P96yTZeDIXATjlEXm8=; b=3iEbmq8633PTNmPLX7/okHtSNW/snXwvx2AZniFSj27Pj5cCnCChTz1l+DonMya3H033LpjIt xGfeHboEKnrBbyBDd0Hhz8LCBbHwey51C3C47DK/AgYJyj0+tOBIAM6
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666675; l=3551; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=UwJY7kIn36EgPdbQz+ruitzz1rwjNd+yo0YQOtGn4lU=; b=U6VBapDSROaGI37mKrolmbDt6g8DHAhjGNXyTEJz8NcuoKFGgPjyBYfPK6dQpD99eDxsHgQB8 AHFbBW1BcQzAhx/wMxfoXw6r33jOZ/AW1P8CFGZDJ2JO9/JeBTFL1iR
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,157 +71,105 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pte_update() is similar.
+ptep_set_wrprotect() and ptep_get_and_clear are identical for
+nohash/32 and nohash/64.
 
-Take the nohash/32 version which works on nohash/64 and add the debug
-call to assert_pte_locked() which is only on nohash/64.
+Make them common.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 33 ---------------
- arch/powerpc/include/asm/nohash/64/pgtable.h | 17 --------
- arch/powerpc/include/asm/nohash/pgtable.h    | 42 ++++++++++++++++++++
- 3 files changed, 42 insertions(+), 50 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 16 ----------------
+ arch/powerpc/include/asm/nohash/64/pgtable.h | 15 ---------------
+ arch/powerpc/include/asm/nohash/pgtable.h    | 16 ++++++++++++++++
+ 3 files changed, 16 insertions(+), 31 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index a74476de1ef6..ae7f3c8afd4f 100644
+index b7605000bd91..0be464af4cb1 100644
 --- a/arch/powerpc/include/asm/nohash/32/pgtable.h
 +++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -9,8 +9,6 @@
- #include <linux/threads.h>
- #include <asm/mmu.h>			/* For sub-arch specific PPC_PIN_SIZE */
- 
--extern int icache_44x_need_flush;
--
- #endif /* __ASSEMBLY__ */
- 
- #define PTE_INDEX_SIZE	PTE_SHIFT
-@@ -203,37 +201,6 @@ static inline void pmd_clear(pmd_t *pmdp)
+@@ -164,22 +164,6 @@ static inline void pmd_clear(pmd_t *pmdp)
  	*pmdp = __pmd(0);
  }
  
--/*
-- * PTE updates. This function is called whenever an existing
-- * valid PTE is updated. This does -not- include set_pte_at()
-- * which nowadays only sets a new PTE.
-- *
-- * Depending on the type of MMU, we may need to use atomic updates
-- * and the PTE may be either 32 or 64 bit wide. In the later case,
-- * when using atomic updates, only the low part of the PTE is
-- * accessed atomically.
-- *
-- * In addition, on 44x, we also maintain a global flag indicating
-- * that an executable user mapping was modified, which is needed
-- * to properly flush the virtually tagged instruction cache of
-- * those implementations.
-- */
--#ifndef pte_update
--static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
--				     unsigned long clr, unsigned long set, int huge)
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+-static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+-				       pte_t *ptep)
 -{
--	pte_basic_t old = pte_val(*p);
--	pte_basic_t new = (old & ~(pte_basic_t)clr) | set;
+-	return __pte(pte_update(mm, addr, ptep, ~0, 0, 0));
+-}
 -
--	*p = __pte(new);
--
--	if (IS_ENABLED(CONFIG_44x) && (old & _PAGE_USER) && (old & _PAGE_EXEC))
--		icache_44x_need_flush = 1;
--
--	return old;
+-#define __HAVE_ARCH_PTEP_SET_WRPROTECT
+-#ifndef ptep_set_wrprotect
+-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+-				      pte_t *ptep)
+-{
+-	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
 -}
 -#endif
 -
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
- static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- 					      unsigned long addr, pte_t *ptep)
+ #ifndef __ptep_set_access_flags
+ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   pte_t *ptep, pte_t entry,
 diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index f5a8e8a9dba4..b149a39f2685 100644
+index 56041036fa34..dc6e35c3a53f 100644
 --- a/arch/powerpc/include/asm/nohash/64/pgtable.h
 +++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -171,23 +171,6 @@ static inline void p4d_set(p4d_t *p4dp, unsigned long val)
+@@ -145,13 +145,6 @@ static inline void p4d_set(p4d_t *p4dp, unsigned long val)
  	*p4dp = __p4d(val);
  }
  
--/* Atomic PTE updates */
--static inline unsigned long pte_update(struct mm_struct *mm,
--				       unsigned long addr,
--				       pte_t *ptep, unsigned long clr,
--				       unsigned long set,
--				       int huge)
+-#define __HAVE_ARCH_PTEP_SET_WRPROTECT
+-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+-				      pte_t *ptep)
 -{
--	unsigned long old = pte_val(*ptep);
--	*ptep = __pte((old & ~clr) | set);
--
--	/* huge pages use the old page table lock */
--	if (!huge)
--		assert_pte_locked(mm, addr);
--
--	return old;
+-	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
 -}
 -
- static inline int pte_young(pte_t pte)
+ #define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
+ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 					   unsigned long addr, pte_t *ptep)
+@@ -166,14 +159,6 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 	__young;							\
+ })
+ 
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+-static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+-				       unsigned long addr, pte_t *ptep)
+-{
+-	unsigned long old = pte_update(mm, addr, ptep, ~0UL, 0, 0);
+-	return __pte(old);
+-}
+-
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+ 			     pte_t * ptep)
  {
- 	return pte_val(pte) & _PAGE_ACCESSED;
 diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 3d684b500fe6..bd5c3a4baabd 100644
+index 2b043b72f642..7e810a84ac15 100644
 --- a/arch/powerpc/include/asm/nohash/pgtable.h
 +++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -2,6 +2,11 @@
- #ifndef _ASM_POWERPC_NOHASH_PGTABLE_H
- #define _ASM_POWERPC_NOHASH_PGTABLE_H
+@@ -80,6 +80,22 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
+ }
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
  
-+#ifndef __ASSEMBLY__
-+static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
-+				     unsigned long clr, unsigned long set, int huge);
-+#endif
-+
- #if defined(CONFIG_PPC64)
- #include <asm/nohash/64/pgtable.h>
- #else
-@@ -18,6 +23,43 @@
- 
- #ifndef __ASSEMBLY__
- 
-+extern int icache_44x_need_flush;
-+
-+/*
-+ * PTE updates. This function is called whenever an existing
-+ * valid PTE is updated. This does -not- include set_pte_at()
-+ * which nowadays only sets a new PTE.
-+ *
-+ * Depending on the type of MMU, we may need to use atomic updates
-+ * and the PTE may be either 32 or 64 bit wide. In the later case,
-+ * when using atomic updates, only the low part of the PTE is
-+ * accessed atomically.
-+ *
-+ * In addition, on 44x, we also maintain a global flag indicating
-+ * that an executable user mapping was modified, which is needed
-+ * to properly flush the virtually tagged instruction cache of
-+ * those implementations.
-+ */
-+#ifndef pte_update
-+static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
-+				     unsigned long clr, unsigned long set, int huge)
++#ifndef ptep_set_wrprotect
++static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
++				      pte_t *ptep)
 +{
-+	pte_basic_t old = pte_val(*p);
-+	pte_basic_t new = (old & ~(pte_basic_t)clr) | set;
-+
-+	*p = __pte(new);
-+
-+	if (IS_ENABLED(CONFIG_44x) && (old & _PAGE_USER) && (old & _PAGE_EXEC))
-+		icache_44x_need_flush = 1;
-+
-+	/* huge pages use the old page table lock */
-+	if (!huge)
-+		assert_pte_locked(mm, addr);
-+
-+	return old;
++	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
 +}
 +#endif
++#define __HAVE_ARCH_PTEP_SET_WRPROTECT
++
++static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++				       pte_t *ptep)
++{
++	return __pte(pte_update(mm, addr, ptep, ~0UL, 0, 0));
++}
++#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
 +
  /* Generic accessors to PTE bits */
- #ifndef pte_write
- static inline int pte_write(pte_t pte)
+ #ifndef pte_mkwrite_novma
+ static inline pte_t pte_mkwrite_novma(pte_t pte)
 -- 
 2.41.0
 
