@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C122CCD4857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C39ECD4857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:38:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWnh3kdVz3dn9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:37:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWpN0pR6z3dF7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:38:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWgk3RpDz3clX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWgp16ljz3cmS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:21 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWg81GPFz9v53;
-	Mon, 25 Sep 2023 20:31:48 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWg94R7Qz9v8l;
+	Mon, 25 Sep 2023 20:31:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bb5OnT154Klb; Mon, 25 Sep 2023 20:31:48 +0200 (CEST)
+	with ESMTP id X6_RiI_MVFjC; Mon, 25 Sep 2023 20:31:49 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg11RKlz9v8l;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg11TYfz9v6d;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 297B48B78C;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C5D68B78D;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id cUptVpPZHDql; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
+	with ESMTP id MvXyXpjrBuNq; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B5FC8B79E;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 95BA08B7AB;
 	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVXN11499183
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVXAv1499163
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 20:31:34 +0200
+	Mon, 25 Sep 2023 20:31:33 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVXLi1499182;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVX4W1499162;
 	Mon, 25 Sep 2023 20:31:33 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 13/37] powerpc/nohash: Refactor checking of no-change in pte_update()
-Date: Mon, 25 Sep 2023 20:31:27 +0200
-Message-ID: <076563e611c2b51036686a8d378bfd5ef1726341.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 08/37] powerpc/nohash: Remove {pte/pmd}_protnone()
+Date: Mon, 25 Sep 2023 20:31:22 +0200
+Message-ID: <a50c1a19828a8eced82cbcc5c61754b667037d21.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666674; l=2126; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=p5ytnpgPn5IRxm6fsCWGPJWttaZhRdH4cRGH2fJc71c=; b=T3dZv/BwV8PDj7RvAELx9Hw6TyHMaBTjcUNSB5KWSddKrLFuYytH/V7XXgsmxlLzel3nydmna 7HH/jnjTzHDA+oUTS2UBErMUzHqTnITqVgSTwBHcH3WnIwzH7s/epbg
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666674; l=1403; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=frJnHMudykDKuyMsR4TbIV7G7snC+XFESYdDeFBdnmU=; b=cZOZra5GhZpf0aoItuyIX/3196Kl+AlyJV+QPl/RScbwLmU98omD8cy/p27zJI8h/0h5+ODSC 2xC7p5pZ69oCAwRA2j14CBwHg0LxLQ5uelFzvfY+S8cihxSHgLqKV9d
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,65 +71,44 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On nohash/64, a few callers of pte_update() check if there is
-really a change in order to avoid an unnecessary write.
+Only book3s/64 selects ARCH_SUPPORTS_NUMA_BALANCING so
+CONFIG_NUMA_BALANCING can't be selected on nohash targets.
 
-Refactor that inside pte_update().
+Remove pte_protnone() and pmd_protnone().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/64/pgtable.h | 9 ---------
- arch/powerpc/include/asm/nohash/pgtable.h    | 3 +++
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/nohash/pgtable.h | 17 -----------------
+ 1 file changed, 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index b149a39f2685..cba08a62c52c 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -181,8 +181,6 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- {
- 	unsigned long old;
- 
--	if (!pte_young(*ptep))
--		return 0;
- 	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
- 	return (old & _PAGE_ACCESSED) != 0;
- }
-@@ -198,10 +196,6 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 				      pte_t *ptep)
- {
--
--	if ((pte_val(*ptep) & _PAGE_RW) == 0)
--		return;
--
- 	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
- }
- 
-@@ -209,9 +203,6 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep)
- {
--	if ((pte_val(*ptep) & _PAGE_RW) == 0)
--		return;
--
- 	pte_update(mm, addr, ptep, _PAGE_RW, 0, 1);
- }
- 
 diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index bd5c3a4baabd..8adaacbbdd1d 100644
+index a9056f4fad48..ab26af2b421a 100644
 --- a/arch/powerpc/include/asm/nohash/pgtable.h
 +++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -47,6 +47,9 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
- 	pte_basic_t old = pte_val(*p);
- 	pte_basic_t new = (old & ~(pte_basic_t)clr) | set;
+@@ -35,23 +35,6 @@ static inline bool pte_hashpte(pte_t pte)	{ return false; }
+ static inline bool pte_ci(pte_t pte)		{ return pte_val(pte) & _PAGE_NO_CACHE; }
+ static inline bool pte_exec(pte_t pte)		{ return pte_val(pte) & _PAGE_EXEC; }
  
-+	if (new == old)
-+		return old;
-+
- 	*p = __pte(new);
- 
- 	if (IS_ENABLED(CONFIG_44x) && (old & _PAGE_USER) && (old & _PAGE_EXEC))
+-#ifdef CONFIG_NUMA_BALANCING
+-/*
+- * These work without NUMA balancing but the kernel does not care. See the
+- * comment in include/linux/pgtable.h . On powerpc, this will only
+- * work for user pages and always return true for kernel pages.
+- */
+-static inline int pte_protnone(pte_t pte)
+-{
+-	return pte_present(pte) && !pte_user(pte);
+-}
+-
+-static inline int pmd_protnone(pmd_t pmd)
+-{
+-	return pte_protnone(pmd_pte(pmd));
+-}
+-#endif /* CONFIG_NUMA_BALANCING */
+-
+ static inline int pte_present(pte_t pte)
+ {
+ 	return pte_val(pte) & _PAGE_PRESENT;
 -- 
 2.41.0
 
