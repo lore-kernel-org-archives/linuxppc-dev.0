@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1EFCCD4857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:43:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE793CD4857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:43:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWw34tkhz3fZb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:42:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWwc3K0Tz3hZx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:43:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWhV33m4z3dM5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWhZ5Fdcz3dVF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:33:02 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWgN2dBMz9v9n;
-	Mon, 25 Sep 2023 20:32:00 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWgP2zhyz9tlk;
+	Mon, 25 Sep 2023 20:32:01 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id V692qp74eYgB; Mon, 25 Sep 2023 20:32:00 +0200 (CEST)
+	with ESMTP id fyCSMTZh-3Qo; Mon, 25 Sep 2023 20:32:01 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg460DTz9tlk;
-	Mon, 25 Sep 2023 20:31:44 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg51s0Kz9v8B;
+	Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CA4F68B7A9;
-	Mon, 25 Sep 2023 20:31:44 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3B2DE8B763;
+	Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id ExC5wiofn3Xg; Mon, 25 Sep 2023 20:31:44 +0200 (CEST)
+	with ESMTP id ZkekK_SlgARD; Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 486A18B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4A0BC8B78C;
 	Mon, 25 Sep 2023 20:31:44 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVbBE1499268
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVZNv1499228
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 20:31:37 +0200
+	Mon, 25 Sep 2023 20:31:35 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVb221499267;
-	Mon, 25 Sep 2023 20:31:37 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVZT31499227;
+	Mon, 25 Sep 2023 20:31:35 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 34/37] powerpc/32s: Introduce _PAGE_READ and remove _PAGE_USER
-Date: Mon, 25 Sep 2023 20:31:48 +0200
-Message-ID: <b7702dd5a041ec59055ed2880f4952e94c087a2e.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 24/37] powerpc: Rely on address instead of pte_user()
+Date: Mon, 25 Sep 2023 20:31:38 +0200
+Message-ID: <c778dad89fad07727c31717a9c62f45357c29ebc.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666676; l=14501; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=yZFI8Kr59tjfuc3nMnBN3+e6lXlAH/wprV0PenXjj+o=; b=CdsqWY/3ssgRkhpYfWjZoOBFl8ATak9hMHrztsseSuo3Ph3WPAc07w2A5/zpx2bARgew926oo 2wtbvoA2kiPDhkgm75xjrFeSb+5UPhhveNUDw4V9UCkYt/kbJBIsWV8
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666675; l=6826; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=AG/C1wK4MgYRRJL1LBTuq/tg9aJmNrUXNeX46APsBrs=; b=7AXFVSitzYUSzUC90v1Ln68vJ1sBzKXZAqD1n4fere9XxzSE6HGOdk6TY70KTosm8DRwmdYY2 E60cZe0Uw90DcY96vaZCbFVo95QjdNagUvnSeVFkk+rWnO9qAZ+hH9O
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,358 +71,191 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 603 MMU, TLB missed are handled by SW and there are separated
-DTLB and ITLB. It is therefore possible to implement execute-only
-protection by not loading DTLB when read access is not permitted.
+pte_user() may return 'false' when a user page is PAGE_NONE.
 
-To do that, _PAGE_READ flag is needed but there is no bit available
-for it in PTE. On the other hand the only real use of _PAGE_USER is
-to implement PAGE_NONE by clearing _PAGE_USER.
+In that case it is still a user page and needs to be handled
+as such. So use is_kernel_addr() instead.
 
-As _PAGE_NONE can also be implemented by clearing _PAGE_READ, remove
-_PAGE_USER and add _PAGE_READ. Then use the virtual address to know
-whether user rights or kernel rights are to be used.
+And remove "user" text from ptdump as ptdump only dumps
+kernel tables.
 
-With that change, 603 MMU now honors execute-only protection.
-
-For hash (604) MMU it is more tricky because hash table is common to
-load/store and execute. Nevertheless it is still possible to check
-whether _PAGE_READ is set before loading hash table for a load/store
-access. At least it can't be read unless it is executed first.
+Note: no change done for book3s/64 which still has it
+'priviledge' bit.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 48 ++++-----------
- arch/powerpc/kernel/head_book3s_32.S         | 61 +++++++++++---------
- arch/powerpc/mm/book3s32/hash_low.S          | 22 ++++---
- 3 files changed, 60 insertions(+), 71 deletions(-)
+ arch/powerpc/include/asm/nohash/pgtable.h |  2 +-
+ arch/powerpc/mm/book3s32/mmu.c            |  4 ++--
+ arch/powerpc/mm/nohash/e500.c             |  2 +-
+ arch/powerpc/mm/pgtable.c                 | 22 +++++++++++-----------
+ arch/powerpc/mm/ptdump/8xx.c              |  5 -----
+ arch/powerpc/mm/ptdump/shared.c           |  5 -----
+ 6 files changed, 15 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 480ad6b4fd6f..244621c88510 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -20,7 +20,7 @@
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 9619beae4454..200f2dbf48e2 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -58,7 +58,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
  
- #define _PAGE_PRESENT	0x001	/* software: pte contains a translation */
- #define _PAGE_HASHPTE	0x002	/* hash_page has made an HPTE for this pte */
--#define _PAGE_USER	0x004	/* usermode access allowed */
-+#define _PAGE_READ	0x004	/* software: read access allowed */
- #define _PAGE_GUARDED	0x008	/* G: prohibit speculative access */
- #define _PAGE_COHERENT	0x010	/* M: enforce memory coherence (SMP systems) */
- #define _PAGE_NO_CACHE	0x020	/* I: cache inhibit */
-@@ -28,11 +28,9 @@
- #define _PAGE_DIRTY	0x080	/* C: page changed */
- #define _PAGE_ACCESSED	0x100	/* R: page referenced */
- #define _PAGE_EXEC	0x200	/* software: exec allowed */
--#define _PAGE_RW	0x400	/* software: user write access allowed */
-+#define _PAGE_WRITE	0x400	/* software: user write access allowed */
- #define _PAGE_SPECIAL	0x800	/* software: Special page */
+ 	*p = __pte(new);
  
--#define _PAGE_WRITE	_PAGE_RW
--
- #ifdef CONFIG_PTE_64BIT
- /* We never clear the high word of the pte */
- #define _PTE_NONE_MASK	(0xffffffff00000000ULL | _PAGE_HASHPTE)
-@@ -44,26 +42,13 @@
- #define _PMD_PRESENT_MASK (PAGE_MASK)
- #define _PMD_BAD	(~PAGE_MASK)
+-	if (IS_ENABLED(CONFIG_44x) && (old & _PAGE_USER) && (old & _PAGE_EXEC))
++	if (IS_ENABLED(CONFIG_44x) && !is_kernel_addr(addr) && (old & _PAGE_EXEC))
+ 		icache_44x_need_flush = 1;
  
--/* We borrow the _PAGE_USER bit to store the exclusive marker in swap PTEs. */
--#define _PAGE_SWP_EXCLUSIVE	_PAGE_USER
-+/* We borrow the _PAGE_READ bit to store the exclusive marker in swap PTEs. */
-+#define _PAGE_SWP_EXCLUSIVE	_PAGE_READ
- 
- /* And here we include common definitions */
- 
--#define _PAGE_KERNEL_RO		0
--#define _PAGE_KERNEL_ROX	(_PAGE_EXEC)
--#define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW)
--#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
--
- #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
- 
--#ifndef __ASSEMBLY__
--
--static inline bool pte_user(pte_t pte)
--{
--	return pte_val(pte) & _PAGE_USER;
--}
--#endif /* __ASSEMBLY__ */
--
- /*
-  * Location of the PFN in the PTE. Most 32-bit platforms use the same
-  * as _PAGE_SHIFT here (ie, naturally aligned).
-@@ -99,20 +84,7 @@ static inline bool pte_user(pte_t pte)
- #define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
- #define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_COHERENT)
- 
--/*
-- * Permission masks used to generate the __P and __S table.
-- *
-- * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
-- *
-- * Write permissions imply read permissions for now.
-- */
--#define PAGE_NONE	__pgprot(_PAGE_BASE)
--#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
--#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_EXEC)
--#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
--#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
--#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
--#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
-+#include <asm/pgtable-masks.h>
- 
- /* Permission masks used for kernel mappings */
- #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
-@@ -408,12 +380,16 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
+ 	/* huge pages use the old page table lock */
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index 850783cfa9c7..d1041c946ce2 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -127,7 +127,7 @@ static void setibat(int index, unsigned long virt, phys_addr_t phys,
+ 	wimgxpp = (flags & _PAGE_COHERENT) | (_PAGE_EXEC ? BPP_RX : BPP_XX);
+ 	bat[0].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
+ 	bat[0].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
+-	if (flags & _PAGE_USER)
++	if (!is_kernel_addr(virt))
+ 		bat[0].batu |= 1;	/* Vp = 1 */
  }
  
- /* Generic accessors to PTE bits */
-+static inline bool pte_read(pte_t pte)
-+{
-+	return !!(pte_val(pte) & _PAGE_READ);
-+}
-+
- static inline bool pte_write(pte_t pte)
- {
- 	return !!(pte_val(pte) & _PAGE_WRITE);
- }
+@@ -280,7 +280,7 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
+ 	wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
+ 	bat[1].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
+ 	bat[1].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
+-	if (flags & _PAGE_USER)
++	if (!is_kernel_addr(virt))
+ 		bat[1].batu |= 1; 	/* Vp = 1 */
+ 	if (flags & _PAGE_GUARDED) {
+ 		/* G bit must be zero in IBATs */
+diff --git a/arch/powerpc/mm/nohash/e500.c b/arch/powerpc/mm/nohash/e500.c
+index 40a4e69ae1a9..5b7d7a932bfd 100644
+--- a/arch/powerpc/mm/nohash/e500.c
++++ b/arch/powerpc/mm/nohash/e500.c
+@@ -122,7 +122,7 @@ static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+ 		TLBCAM[index].MAS7 = (u64)phys >> 32;
  
--static inline int pte_read(pte_t pte)		{ return 1; }
- static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
- static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
- static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
-@@ -448,10 +424,10 @@ static inline bool pte_ci(pte_t pte)
- static inline bool pte_access_permitted(pte_t pte, bool write)
+ 	/* Below is unlikely -- only for large user pages or similar */
+-	if (pte_user(__pte(flags))) {
++	if (!is_kernel_addr(virt)) {
+ 		TLBCAM[index].MAS3 |= MAS3_UR;
+ 		TLBCAM[index].MAS3 |= (flags & _PAGE_EXEC) ? MAS3_UX : 0;
+ 		TLBCAM[index].MAS3 |= (flags & _PAGE_RW) ? MAS3_UW : 0;
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 3f86fd217690..781a68c69c2f 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -46,13 +46,13 @@ static inline int is_exec_fault(void)
+  * and we avoid _PAGE_SPECIAL and cache inhibited pte. We also only do that
+  * on userspace PTEs
+  */
+-static inline int pte_looks_normal(pte_t pte)
++static inline int pte_looks_normal(pte_t pte, unsigned long addr)
  {
- 	/*
--	 * A read-only access is controlled by _PAGE_USER bit.
-+	 * A read-only access is controlled by _PAGE_READ bit.
- 	 * We have _PAGE_READ set for WRITE and EXECUTE
+ 
+ 	if (pte_present(pte) && !pte_special(pte)) {
+ 		if (pte_ci(pte))
+ 			return 0;
+-		if (pte_user(pte))
++		if (!is_kernel_addr(addr))
+ 			return 1;
+ 	}
+ 	return 0;
+@@ -79,11 +79,11 @@ static struct folio *maybe_pte_to_folio(pte_t pte)
+  * support falls into the same category.
+  */
+ 
+-static pte_t set_pte_filter_hash(pte_t pte)
++static pte_t set_pte_filter_hash(pte_t pte, unsigned long addr)
+ {
+ 	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+-	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
+-				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
++	if (pte_looks_normal(pte, addr) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
++					     cpu_has_feature(CPU_FTR_NOEXECUTE))) {
+ 		struct folio *folio = maybe_pte_to_folio(pte);
+ 		if (!folio)
+ 			return pte;
+@@ -97,7 +97,7 @@ static pte_t set_pte_filter_hash(pte_t pte)
+ 
+ #else /* CONFIG_PPC_BOOK3S */
+ 
+-static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
++static pte_t set_pte_filter_hash(pte_t pte, unsigned long addr) { return pte; }
+ 
+ #endif /* CONFIG_PPC_BOOK3S */
+ 
+@@ -105,7 +105,7 @@ static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+  * instead we "filter out" the exec permission for non clean pages.
+  */
+-static inline pte_t set_pte_filter(pte_t pte)
++static inline pte_t set_pte_filter(pte_t pte, unsigned long addr)
+ {
+ 	struct folio *folio;
+ 
+@@ -113,10 +113,10 @@ static inline pte_t set_pte_filter(pte_t pte)
+ 		return pte;
+ 
+ 	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
+-		return set_pte_filter_hash(pte);
++		return set_pte_filter_hash(pte, addr);
+ 
+ 	/* No exec permission in the first place, move on */
+-	if (!pte_exec(pte) || !pte_looks_normal(pte))
++	if (!pte_exec(pte) || !pte_looks_normal(pte, addr))
+ 		return pte;
+ 
+ 	/* If you set _PAGE_EXEC on weird pages you're on your own */
+@@ -200,7 +200,7 @@ void set_ptes(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+ 	 * this context might not have been activated yet when this
+ 	 * is called.
  	 */
--	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
-+	if (!pte_present(pte) || !pte_read(pte))
- 		return false;
+-	pte = set_pte_filter(pte);
++	pte = set_pte_filter(pte, addr);
  
- 	if (write && !pte_write(pte))
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index 615d429d7bd1..c1d89764dd22 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -412,10 +412,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
- 	. = INTERRUPT_INST_TLB_MISS_603
- InstructionTLBMiss:
- /*
-- * r0:	scratch
-+ * r0:	userspace flag (later scratch)
-  * r1:	linux style pte ( later becomes ppc hardware pte )
-  * r2:	ptr to linux-style pte
-- * r3:	scratch
-+ * r3:	fault address
-  */
- 	/* Get PTE (linux-style) and check access */
- 	mfspr	r3,SPRN_IMISS
-@@ -424,12 +424,13 @@ InstructionTLBMiss:
- 	cmplw	0,r1,r3
- #endif
- 	mfspr	r2, SPRN_SDR1
--	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC | _PAGE_USER
-+	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
- 	rlwinm	r2, r2, 28, 0xfffff000
- #ifdef CONFIG_MODULES
-+	li	r0, 3
- 	bgt-	112f
- 	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
--	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
-+	li	r0, 0
- 	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
- #endif
- 112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
-@@ -437,13 +438,15 @@ InstructionTLBMiss:
- 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
- 	beq-	InstructionAddressInvalid	/* return if no mapping */
- 	rlwimi	r2,r3,22,20,29		/* insert next 10 bits of address */
--	lwz	r0,0(r2)		/* get linux-style pte */
--	andc.	r1,r1,r0		/* check access & ~permission */
-+	lwz	r2,0(r2)		/* get linux-style pte */
-+	andc.	r1,r1,r2		/* check access & ~permission */
- 	bne-	InstructionAddressInvalid /* return if access not permitted */
- 	/* Convert linux-style PTE to low word of PPC-style PTE */
--	rlwimi	r0,r0,32-2,31,31	/* _PAGE_USER -> PP lsb */
-+#ifdef CONFIG_MODULES
-+	rlwimi	r2, r0, 0, 31, 31	/* userspace ? -> PP lsb */
-+#endif
- 	ori	r1, r1, 0xe06		/* clear out reserved bits */
--	andc	r1, r0, r1		/* PP = user? 1 : 0 */
-+	andc	r1, r2, r1		/* PP = user? 1 : 0 */
- BEGIN_FTR_SECTION
- 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
- END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
-@@ -478,38 +481,38 @@ InstructionAddressInvalid:
- 	. = INTERRUPT_DATA_LOAD_TLB_MISS_603
- DataLoadTLBMiss:
- /*
-- * r0:	scratch
-+ * r0:	userspace flag (later scratch)
-  * r1:	linux style pte ( later becomes ppc hardware pte )
-  * r2:	ptr to linux-style pte
-- * r3:	scratch
-+ * r3:	fault address
-  */
- 	/* Get PTE (linux-style) and check access */
- 	mfspr	r3,SPRN_DMISS
- 	lis	r1, TASK_SIZE@h		/* check if kernel address */
- 	cmplw	0,r1,r3
- 	mfspr	r2, SPRN_SDR1
--	li	r1, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_USER
-+	li	r1, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_READ
- 	rlwinm	r2, r2, 28, 0xfffff000
-+	li	r0, 3
- 	bgt-	112f
- 	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
--	li	r1, _PAGE_PRESENT | _PAGE_ACCESSED
-+	li	r0, 0
- 	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
- 112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
- 	lwz	r2,0(r2)		/* get pmd entry */
- 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
- 	beq-	DataAddressInvalid	/* return if no mapping */
- 	rlwimi	r2,r3,22,20,29		/* insert next 10 bits of address */
--	lwz	r0,0(r2)		/* get linux-style pte */
--	andc.	r1,r1,r0		/* check access & ~permission */
-+	lwz	r2,0(r2)		/* get linux-style pte */
-+	andc.	r1,r1,r2		/* check access & ~permission */
- 	bne-	DataAddressInvalid	/* return if access not permitted */
- 	/* Convert linux-style PTE to low word of PPC-style PTE */
--	rlwinm	r1,r0,32-9,30,30	/* _PAGE_WRITE -> PP msb */
--	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
--	rlwimi	r1,r0,32-3,24,24	/* _PAGE_WRITE -> _PAGE_DIRTY */
--	rlwimi	r0,r0,32-1,31,31	/* _PAGE_USER -> PP lsb */
-+	rlwinm	r1,r2,32-9,30,30	/* _PAGE_WRITE -> PP msb */
-+	rlwimi	r2,r0,0,30,31		/* userspace ? -> PP */
-+	rlwimi	r1,r2,32-3,24,24	/* _PAGE_WRITE -> _PAGE_DIRTY */
- 	xori	r1,r1,_PAGE_DIRTY	/* clear dirty when not rw */
- 	ori	r1,r1,0xe04		/* clear out reserved bits */
--	andc	r1,r0,r1		/* PP = user? rw? 1: 3: 0 */
-+	andc	r1,r2,r1		/* PP = user? rw? 1: 3: 0 */
- BEGIN_FTR_SECTION
- 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
- END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
-@@ -558,34 +561,35 @@ DataAddressInvalid:
- 	. = INTERRUPT_DATA_STORE_TLB_MISS_603
- DataStoreTLBMiss:
- /*
-- * r0:	scratch
-+ * r0:	userspace flag (later scratch)
-  * r1:	linux style pte ( later becomes ppc hardware pte )
-  * r2:	ptr to linux-style pte
-- * r3:	scratch
-+ * r3:	fault address
-  */
- 	/* Get PTE (linux-style) and check access */
- 	mfspr	r3,SPRN_DMISS
- 	lis	r1, TASK_SIZE@h		/* check if kernel address */
- 	cmplw	0,r1,r3
- 	mfspr	r2, SPRN_SDR1
--	li	r1, _PAGE_RW | _PAGE_DIRTY | _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_USER
-+	li	r1, _PAGE_RW | _PAGE_DIRTY | _PAGE_PRESENT | _PAGE_ACCESSED
- 	rlwinm	r2, r2, 28, 0xfffff000
-+	li	r0, 3
- 	bgt-	112f
- 	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
--	li	r1, _PAGE_RW | _PAGE_DIRTY | _PAGE_PRESENT | _PAGE_ACCESSED
-+	li	r0, 0
- 	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
- 112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
- 	lwz	r2,0(r2)		/* get pmd entry */
- 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
- 	beq-	DataAddressInvalid	/* return if no mapping */
- 	rlwimi	r2,r3,22,20,29		/* insert next 10 bits of address */
--	lwz	r0,0(r2)		/* get linux-style pte */
--	andc.	r1,r1,r0		/* check access & ~permission */
-+	lwz	r2,0(r2)		/* get linux-style pte */
-+	andc.	r1,r1,r2		/* check access & ~permission */
- 	bne-	DataAddressInvalid	/* return if access not permitted */
- 	/* Convert linux-style PTE to low word of PPC-style PTE */
--	rlwimi	r0,r0,32-2,31,31	/* _PAGE_USER -> PP lsb */
-+	rlwimi	r2,r0,0,31,31		/* userspace ? -> PP lsb */
- 	li	r1,0xe06		/* clear out reserved bits & PP msb */
--	andc	r1,r0,r1		/* PP = user? 1: 0 */
-+	andc	r1,r2,r1		/* PP = user? 1: 0 */
- BEGIN_FTR_SECTION
- 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
- END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
-@@ -690,6 +694,7 @@ hash_page_dsi:
- 	mfsrr0	r5
- 	mfsrr1	r9
- 	rlwinm	r3, r3, 32 - 15, _PAGE_WRITE	/* DSISR_STORE -> _PAGE_WRITE */
-+	ori	r3, r3, _PAGE_PRESENT | _PAGE_READ
- 	bl	hash_page
- 	mfspr	r10, SPRN_SPRG_THREAD
- 	restore_regs_thread r10
-@@ -699,7 +704,7 @@ hash_page_isi:
- 	mr	r11, r10
- 	mfspr	r10, SPRN_SPRG_THREAD
- 	save_regs_thread	r10
--	li	r3, 0
-+	li	r3, _PAGE_PRESENT | _PAGE_EXEC
- 	lwz	r4, SRR0(r10)
- 	lwz	r9, SRR1(r10)
- 	bl	hash_page
-diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
-index acb0584c174c..4ed0efd03db5 100644
---- a/arch/powerpc/mm/book3s32/hash_low.S
-+++ b/arch/powerpc/mm/book3s32/hash_low.S
-@@ -36,8 +36,9 @@
+ 	/* Perform the setting of the PTE */
+ 	arch_enter_lazy_mmu_mode();
+@@ -301,7 +301,7 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_
+ 	 */
+ 	VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
  
- /*
-  * Load a PTE into the hash table, if possible.
-- * The address is in r4, and r3 contains an access flag:
-- * _PAGE_WRITE (0x400) if a write.
-+ * The address is in r4, and r3 contains required access flags:
-+ *   - For ISI: _PAGE_PRESENT | _PAGE_EXEC
-+ *   - For DSI: _PAGE_PRESENT | _PAGE_READ | _PAGE_WRITE if a write.
-  * r9 contains the SRR1 value, from which we use the MSR_PR bit.
-  * SPRG_THREAD contains the physical address of the current task's thread.
-  *
-@@ -67,12 +68,16 @@ _GLOBAL(hash_page)
- 	lis	r0, TASK_SIZE@h		/* check if kernel address */
- 	cmplw	0,r4,r0
- 	mfspr	r8,SPRN_SPRG_THREAD	/* current task's THREAD (phys) */
--	ori	r3,r3,_PAGE_USER|_PAGE_PRESENT /* test low addresses as user */
- 	lwz	r5,PGDIR(r8)		/* virt page-table root */
- 	blt+	112f			/* assume user more likely */
- 	lis	r5,swapper_pg_dir@ha	/* if kernel address, use */
-+	andi.	r0,r9,MSR_PR		/* Check usermode */
- 	addi	r5,r5,swapper_pg_dir@l	/* kernel page table */
--	rlwimi	r3,r9,32-12,29,29	/* MSR_PR -> _PAGE_USER */
-+#ifdef CONFIG_SMP
-+	bne-	.Lhash_page_out		/* return if usermode */
-+#else
-+	bnelr-
-+#endif
- 112:	tophys(r5, r5)
- #ifndef CONFIG_PTE_64BIT
- 	rlwimi	r5,r4,12,20,29		/* insert top 10 bits of address */
-@@ -307,12 +312,15 @@ Hash_msk = (((1 << Hash_bits) - 1) * 64)
- __REF
- _GLOBAL(create_hpte)
- 	/* Convert linux-style PTE (r5) to low word of PPC-style PTE (r8) */
-+	lis	r0, TASK_SIZE@h
-+	rlwinm	r5,r5,0,~3		/* Clear PP bits */
-+	cmplw	r4,r0
- 	rlwinm	r8,r5,32-9,30,30	/* _PAGE_WRITE -> PP msb */
- 	rlwinm	r0,r5,32-6,30,30	/* _PAGE_DIRTY -> PP msb */
- 	and	r8,r8,r0		/* writable if _RW & _DIRTY */
--	rlwimi	r5,r5,32-1,30,30	/* _PAGE_USER -> PP msb */
--	rlwimi	r5,r5,32-2,31,31	/* _PAGE_USER -> PP lsb */
--	ori	r8,r8,0xe04		/* clear out reserved bits */
-+	bge-	1f			/* Kernelspace ? Skip */
-+	ori	r5,r5,3			/* Userspace ? PP = 3 */
-+1:	ori	r8,r8,0xe04		/* clear out reserved bits */
- 	andc	r8,r5,r8		/* PP = user? (rw&dirty? 1: 3): 0 */
- BEGIN_FTR_SECTION
- 	rlwinm	r8,r8,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
+-	pte = set_pte_filter(pte);
++	pte = set_pte_filter(pte, addr);
+ 
+ 	val = pte_val(pte);
+ 
+diff --git a/arch/powerpc/mm/ptdump/8xx.c b/arch/powerpc/mm/ptdump/8xx.c
+index fac932eb8f9a..b5c79b11ea3c 100644
+--- a/arch/powerpc/mm/ptdump/8xx.c
++++ b/arch/powerpc/mm/ptdump/8xx.c
+@@ -20,11 +20,6 @@ static const struct flag_info flag_array[] = {
+ #endif
+ 		.set	= "huge",
+ 		.clear	= "    ",
+-	}, {
+-		.mask	= _PAGE_SH,
+-		.val	= 0,
+-		.set	= "user",
+-		.clear	= "    ",
+ 	}, {
+ 		.mask	= _PAGE_RO | _PAGE_NA,
+ 		.val	= 0,
+diff --git a/arch/powerpc/mm/ptdump/shared.c b/arch/powerpc/mm/ptdump/shared.c
+index f884760ca5cf..5ff101654c45 100644
+--- a/arch/powerpc/mm/ptdump/shared.c
++++ b/arch/powerpc/mm/ptdump/shared.c
+@@ -11,11 +11,6 @@
+ 
+ static const struct flag_info flag_array[] = {
+ 	{
+-		.mask	= _PAGE_USER,
+-		.val	= _PAGE_USER,
+-		.set	= "user",
+-		.clear	= "    ",
+-	}, {
+ 		.mask	= _PAGE_RW,
+ 		.val	= 0,
+ 		.set	= "r ",
 -- 
 2.41.0
 
