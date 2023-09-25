@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E59ECD4857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:41:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 395EDCD54B9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:42:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWtm0k64z3fQ7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:41:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWvJ6wGCz3fWJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:42:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWhL6mwjz3dJ6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWhQ4Q3tz3cgv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:54 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWgL1H8Pz9v9N;
-	Mon, 25 Sep 2023 20:31:58 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWgM3pX0z9v9j;
+	Mon, 25 Sep 2023 20:31:59 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IPQbXrAP4KBd; Mon, 25 Sep 2023 20:31:58 +0200 (CEST)
+	with ESMTP id 9TtPeBUEddv5; Mon, 25 Sep 2023 20:31:59 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg12Wflz9v9p;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg13KgYz9vB0;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 52D428B78D;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E4E38B78C;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Ice6QaI7JaIx; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
+	with ESMTP id 4XDR92aCY4_D; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 932CD8B7A9;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2843E8B763;
 	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVYc81499207
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVWs81499147
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 20:31:35 +0200
+	Mon, 25 Sep 2023 20:31:32 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVY9Y1499206;
-	Mon, 25 Sep 2023 20:31:34 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVWZJ1499146;
+	Mon, 25 Sep 2023 20:31:32 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 19/37] powerpc/nohash: Refactor __ptep_set_access_flags()
-Date: Mon, 25 Sep 2023 20:31:33 +0200
-Message-ID: <e296885df46289d3e5f4cb51efeefe593f76ef24.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 04/37] powerpc: Remove pte_ERROR()
+Date: Mon, 25 Sep 2023 20:31:18 +0200
+Message-ID: <bec9eb973ecc1cba091e5c9201d877a7797f3242.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666675; l=3503; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=GQ0/DYaX0gwK87V/+BgDwtKJXzY9yJiuS0RRcinUoIc=; b=WrkJRIn+h/a+K/hjpZgOF9jHOHqeda4Q7SJD2Ex8egWbsmAhwbsVz56/GQ1mgcjgmecV8sI9F Zkqdwx2GzqaBYnmMZg05JIEYyzFP6PdeYodSaaYtvtOlh4F6VwfgBxu
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666673; l=2814; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=0iRDDaJAZUOOG/M74fC2b4GEx/x1LliUht7vW/+DgBc=; b=cjklOQcnpTsmDa0bNDee8JGn4XZRvNH/V/U4SQXJn2UO+2LJdejWXQvVrhybm9KNPWwjZUXa1 GxnbmS7mJxDAaEpV47d4sL2YZXekqq7D0Ez3jHSKqmT7RH5oIsR0aSw
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,100 +71,72 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-nohash/32 version of __ptep_set_access_flags() does the same
-as nohash/64 version, the only difference is that nohash/32
-version is more complete and uses pte_update().
+pte_ERROR() is used neither in powerpc code nor in common mm code.
 
-Make it common and remove the nohash/64 version.
+Remove it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 16 ----------------
- arch/powerpc/include/asm/nohash/64/pgtable.h | 15 ---------------
- arch/powerpc/include/asm/nohash/pgtable.h    | 17 +++++++++++++++++
- 3 files changed, 17 insertions(+), 31 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 3 ---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 2 --
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 3 ---
+ arch/powerpc/include/asm/nohash/64/pgtable.h | 2 --
+ 4 files changed, 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 481594097f46..9164a9e41b02 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -161,22 +161,6 @@ static inline void pmd_clear(pmd_t *pmdp)
- 	*pmdp = __pmd(0);
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 9b13eb14e21b..543c3691839b 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -224,9 +224,6 @@ void unmap_kernel_page(unsigned long va);
+ /* Bits to mask out from a PGD to get to the PUD page */
+ #define PGD_MASKED_BITS		0
+ 
+-#define pte_ERROR(e) \
+-	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
+-		(unsigned long long)pte_val(e))
+ #define pgd_ERROR(e) \
+ 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ /*
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 5c497c862d75..7c4ad1e03a49 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1014,8 +1014,6 @@ static inline pmd_t *pud_pgtable(pud_t pud)
+ 	return (pmd_t *)__va(pud_val(pud) & ~PUD_MASKED_BITS);
  }
  
--#ifndef __ptep_set_access_flags
--static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
--					   pte_t *ptep, pte_t entry,
--					   unsigned long address,
--					   int psize)
--{
--	unsigned long set = pte_val(entry) &
--			    (_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
--	int huge = psize > mmu_virtual_psize ? 1 : 0;
--
--	pte_update(vma->vm_mm, address, ptep, 0, set, huge);
--
--	flush_tlb_page(vma, address);
--}
--#endif
--
- /*
-  * Note that on Book E processors, the pmd contains the kernel virtual
-  * (lowmem) address of the pte page.  The physical address is less useful
+-#define pte_ERROR(e) \
+-	pr_err("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
+ #define pmd_ERROR(e) \
+ 	pr_err("%s:%d: bad pmd %08lx.\n", __FILE__, __LINE__, pmd_val(e))
+ #define pud_ERROR(e) \
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index f99c53a5f184..868aecbec8d1 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -55,9 +55,6 @@ extern int icache_44x_need_flush;
+ 
+ #define USER_PTRS_PER_PGD	(TASK_SIZE / PGDIR_SIZE)
+ 
+-#define pte_ERROR(e) \
+-	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
+-		(unsigned long long)pte_val(e))
+ #define pgd_ERROR(e) \
+ 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ 
 diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index b59fbf754f82..36b9bad428cc 100644
+index eb6891e34cbd..8083c04a1e6d 100644
 --- a/arch/powerpc/include/asm/nohash/64/pgtable.h
 +++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -159,21 +159,6 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 	__young;							\
- })
+@@ -269,8 +269,6 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 	flush_tlb_page(vma, address);
+ }
  
--/* Set the dirty and/or accessed bits atomically in a linux PTE */
--static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
--					   pte_t *ptep, pte_t entry,
--					   unsigned long address,
--					   int psize)
--{
--	unsigned long bits = pte_val(entry) &
--		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
--
--	unsigned long old = pte_val(*ptep);
--	*ptep = __pte(old | bits);
--
--	flush_tlb_page(vma, address);
--}
--
+-#define pte_ERROR(e) \
+-	pr_err("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
  #define pmd_ERROR(e) \
  	pr_err("%s:%d: bad pmd %08lx.\n", __FILE__, __LINE__, pmd_val(e))
  #define pgd_ERROR(e) \
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 464eb771db82..1493f0b09ae9 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -102,6 +102,23 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- 	pte_update(mm, addr, ptep, ~0UL, 0, 0);
- }
- 
-+/* Set the dirty and/or accessed bits atomically in a linux PTE */
-+#ifndef __ptep_set_access_flags
-+static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
-+					   pte_t *ptep, pte_t entry,
-+					   unsigned long address,
-+					   int psize)
-+{
-+	unsigned long set = pte_val(entry) &
-+			    (_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-+	int huge = psize > mmu_virtual_psize ? 1 : 0;
-+
-+	pte_update(vma->vm_mm, address, ptep, 0, set, huge);
-+
-+	flush_tlb_page(vma, address);
-+}
-+#endif
-+
- /* Generic accessors to PTE bits */
- #ifndef pte_mkwrite_novma
- static inline pte_t pte_mkwrite_novma(pte_t pte)
 -- 
 2.41.0
 
