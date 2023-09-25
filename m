@@ -4,73 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 400F9CE7A95
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 09:57:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23A57CE7A94
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 10:29:05 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=LVvprKIV;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJGD64wKz3dlj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 19:57:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJy75MJ7z3cTZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 20:29:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=LVvprKIV;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.197; helo=relay5-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvJD9711Yz3cmf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 19:56:09 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qkiJa-0007m3-Nw; Mon, 25 Sep 2023 11:55:42 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qkiJT-008pyb-Sh; Mon, 25 Sep 2023 11:55:35 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qkiJT-004dkN-HQ; Mon, 25 Sep 2023 11:55:35 +0200
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Joel Stanley <joel@jms.id.au>,
-	Li Yang <leoyang.li@nxp.com>,
-	Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Hitomi Hasegawa <hasegawa-hitomi@fujitsu.com>,
-	Huisong Li <lihuisong@huawei.com>,
-	Krzysztof Halasa <khalasa@piap.pl>,
-	Karol Gugala <kgugala@antmicro.com>,
-	Mateusz Holenko <mholenko@antmicro.com>,
-	Gabriel Somlo <gsomlo@gmail.com>,
-	Yinbo Zhu <zhuyinbo@loongson.cn>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Andy Gross <agross@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Shang XiaoJing <shangxiaojing@huawei.com>,
-	Muhammad Usama Anjum <usama.anjum@collabora.com>,
-	Rob Herring <robh@kernel.org>,
-	Nishanth Menon <nm@ti.com>,
-	Santosh Shilimkar <ssantosh@kernel.org>,
-	Michal Simek <michal.simek@amd.com>
-Subject: [PATCH 00/40] soc: Convert to platform remove callback returning void
-Date: Mon, 25 Sep 2023 11:54:51 +0200
-Message-Id: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.40.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvJx82JTdz3c5V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 20:28:10 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 0A3201C0002;
+	Mon, 25 Sep 2023 10:27:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1695637685;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=CtO8T+sDShN7p7U0G6qKR0fuN42cZzhkfeW3eGEM+Oc=;
+	b=LVvprKIVChYwTJzlxBd2ZNYXBHm9J7hWY1K7wpTo7zgvqzqBZGISmFtj5OfIFjje66P6S6
+	HlEwH3l0nVjpj8nD5vuMQ04HpzK0kR9ZM/U4jh0pWSEMRb4F5bMp+1A6JeZwWYC3nZTpNn
+	/U6LnsAPSh0QZnEt3y0Lr0BoJp0UQrIcws9zjf3FD4NOdCmt44AIAujr+TSxw3+AlvXtxH
+	hfW+hGSVKZ+Hawd0vhvwNMVNosgsJYz2ky2HPFjrWkgsQ6PX7giQJvvsZAQmr4u96kgbX/
+	2NKS6FPh8EB5P2zy/eURoCGbCNJb1KY9NL1nF8B1faIJpM3bP2F6JtT1GYIe7w==
+Date: Mon, 25 Sep 2023 12:27:58 +0200
+From: Herve Codina <herve.codina@bootlin.com>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v6 08/30] dt-bindings: soc: fsl: cpm_qe: cpm1-scc-qmc:
+ Add support for QMC HDLC
+Message-ID: <20230925122758.43963736@bootlin.com>
+In-Reply-To: <5b804a1a-6bfd-429d-ad84-696b7ecef72d@linaro.org>
+References: <20230922075913.422435-1-herve.codina@bootlin.com>
+	<20230922075913.422435-9-herve.codina@bootlin.com>
+	<5efae150-3d92-81b8-5c25-68846d27132e@linaro.org>
+	<20230925101703.1bf083f1@bootlin.com>
+	<5b804a1a-6bfd-429d-ad84-696b7ecef72d@linaro.org>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6687; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=rvB7bVgDAAktE8ghXihTFoFKKAYdQUIGJrvcbwXNFWY=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlEVg/wR4H5DL2toQ7evPAUcXpi7TAsGaDNcnrq TRp5k8KakmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRFYPwAKCRCPgPtYfRL+ TifcB/0aVr05FQYrvmmOz1wL8CNQPEXMLJDWDJwAPDWD03L+gmmVu9DcaPQGH8bvpuCcydz+p1o V/BaCnfCvkvvHiLuLEDeBVXlwTU5zvYgAOQXvgDv/aN8uQi0AoraoBDwW9AivvN5EH7FD5WRs8P 1cFuO04fWjfAlUSZtqcR2N8j/LjZ2of4+tkEI/ioZloR5NxUsOZeIfIjKxpLIbokBrOh50O7qm4 Yf31fGMug9dQZpggaTF93CLXkvp40lqu3JS5qh6g44+WSCDHAGpyIOPo+9XbyFVvZ82JzZXQmcp BQx5Tmjduzc+iKsziqmcFWP7m6WRqdCmjFtU9ZKeNC35WVUT
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,146 +64,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Zev Weiss <zev@bewilderbeest.net>, Alim Akhtar <alim.akhtar@samsung.com>, linux-riscv@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-aspeed@lists.ozlabs.org, Ruan Jinjie <ruanjinjie@huawei.com>, linux-rockchip@lists.infradead.org, Yang Yingliang <yangyingliang@huawei.com>, Nick Alcock <nick.alcock@oracle.com>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, linux-mediatek@lists.infradead.org, loongarch@lists.linux.dev, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Andrew Jeffery <andrew@aj.id.au>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, zhang songyi <zhang.songyi@zte.com.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, Si
+ mon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+On Mon, 25 Sep 2023 10:21:15 +0200
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-this series converts all platform drivers below drivers/soc to use
-.remove_new(). The motivation is to get rid of an integer return code
-that is (mostly) ignored by the platform driver core and error prone on
-the driver side.
+> On 25/09/2023 10:17, Herve Codina wrote:
+> > Hi Krzysztof,
+> > 
+> > On Sat, 23 Sep 2023 19:39:49 +0200
+> > Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+> >   
+> >> On 22/09/2023 09:58, Herve Codina wrote:  
+> >>> The QMC (QUICC mutichannel controller) is a controller present in some
+> >>> PowerQUICC SoC such as MPC885.
+> >>> The QMC HDLC uses the QMC controller to transfer HDLC data.
+> >>>
+> >>> Additionally, a framer can be connected to the QMC HDLC.
+> >>> If present, this framer is the interface between the TDM bus used by the
+> >>> QMC HDLC and the E1/T1 line.
+> >>> The QMC HDLC can use this framer to get information about the E1/T1 line
+> >>> and configure the E1/T1 line.
+> >>>
+> >>> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> >>> ---
+> >>>  .../soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml      | 24 +++++++++++++++++++
+> >>>  1 file changed, 24 insertions(+)
+> >>>
+> >>> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
+> >>> index 82d9beb48e00..61dfd5ef7407 100644
+> >>> --- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
+> >>> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
+> >>> @@ -101,6 +101,27 @@ patternProperties:
+> >>>            Channel assigned Rx time-slots within the Rx time-slots routed by the
+> >>>            TSA to this cell.
+> >>>  
+> >>> +      compatible:
+> >>> +        const: fsl,qmc-hdlc    
+> >>
+> >> Why this is not a device/SoC specific compatible?  
+> > 
+> > This compatible is present in a QMC channel.
+> > The parent node (the QMC itself) contains a compatible with device/SoC:
+> > --- 8< ---
+> >   compatible:
+> >     items:
+> >       - enum:
+> >           - fsl,mpc885-scc-qmc
+> >           - fsl,mpc866-scc-qmc
+> >       - const: fsl,cpm1-scc-qmc
+> > --- 8< ---
+> > 
+> > At the child level (ie QMC channel), I am not sure that adding device/SoC
+> > makes sense. This compatible indicates that the QMC channel is handled by
+> > the QMC HDLC driver.
+> > At this level, whatever the device/SoC, we have to be QMC compliant.
+> > 
+> > With these details, do you still think I need to change the child (channel)
+> > compatible ?  
+> 
+> From OS point of view, you have a driver binding to this child-level
+> compatible. How do you enforce Linux driver binding based on parent
+> compatible? I looked at your next patch and I did not see it.
 
-See commit 5c5a7680e67b ("platform: Provide a remove callback that
-returns no value") for an extended explanation and the eventual goal.
+We do not need to have the child driver binding based on parent.
+We have to ensure that the child handles a QMC channel and the parent provides
+a QMC channel.
 
-As there is no single maintainer team for drivers/soc, I suggest the
-individual maintainers to pick up "their" patches. There are no
-interdependencies between the patches, so that should work fine. As
-there are still quite a few drivers to convert in other areas than
-drivers/soc, I'm happy about every patch that makes it in and there is
-no need for further coordination.  So even if there is a merge conflict
-with one patch until you apply or a subject prefix is suboptimal, please
-don't let you stop by negative feedback for other patches (unless it
-applies to "your" patches, too, of course).
+A QMC controller (parent) has to implement the QMC API (include/soc/fsl/qe/qmc.h)
+and a QMC channel driver (child) has to use the QMC API.
 
-Best regards and thanks for considering,
-Uwe
+Best regards,
+Hervé
 
-Uwe Kleine-König (40):
-  soc/aspeed: aspeed-lpc-ctrl: Convert to platform remove callback
-    returning void
-  soc/aspeed: aspeed-lpc-snoop: Convert to platform remove callback
-    returning void
-  soc/aspeed: aspeed-p2a-ctrl: Convert to platform remove callback
-    returning void
-  soc/aspeed: aspeed-uart-routing: Convert to platform remove callback
-    returning void
-  soc/fsl: dpaa2-console: Convert to platform remove callback returning
-    void
-  soc/fsl: cpm: qmc: Convert to platform remove callback returning void
-  soc/fsl: cpm: tsa: Convert to platform remove callback returning void
-  soc/fujitsu: a64fx-diag: Convert to platform remove callback returning
-    void
-  soc/hisilicon: kunpeng_hccs: Convert to platform remove callback
-    returning void
-  soc/ixp4xx: ixp4xx-npe: Convert to platform remove callback returning
-    void
-  soc/ixp4xx: ixp4xx-qmgr: Convert to platform remove callback returning
-    void
-  soc/litex: litex_soc_ctrl: Convert to platform remove callback
-    returning void
-  soc/loongson: loongson2_guts: Convert to platform remove callback
-    returning void
-  soc/mediatek: mtk-devapc: Convert to platform remove callback
-    returning void
-  soc/mediatek: mtk-mmsys: Convert to platform remove callback returning
-    void
-  soc/microchip: mpfs-sys-controller: Convert to platform remove
-    callback returning void
-  soc/pxa: ssp: Convert to platform remove callback returning void
-  soc/qcom: icc-bwmon: Convert to platform remove callback returning
-    void
-  soc/qcom: llcc-qcom: Convert to platform remove callback returning
-    void
-  soc/qcom: ocmem: Convert to platform remove callback returning void
-  soc/qcom: pmic_glink: Convert to platform remove callback returning
-    void
-  soc/qcom: qcom_aoss: Convert to platform remove callback returning
-    void
-  soc/qcom: qcom_gsbi: Convert to platform remove callback returning
-    void
-  soc/qcom: qcom_stats: Convert to platform remove callback returning
-    void
-  soc/qcom: rmtfs_mem: Convert to platform remove callback returning
-    void
-  soc/qcom: smem: Convert to platform remove callback returning void
-  soc/qcom: smp2p: Convert to platform remove callback returning void
-  soc/qcom: smsm: Convert to platform remove callback returning void
-  soc/qcom: socinfo: Convert to platform remove callback returning void
-  soc/rockchip: io-domain: Convert to platform remove callback returning
-    void
-  soc/samsung: exynos-chipid: Convert to platform remove callback
-    returning void
-  soc/tegra: cbb: tegra194-cbb: Convert to platform remove callback
-    returning void
-  soc/ti: k3-ringacc: Convert to platform remove callback returning void
-  soc/ti: knav_dma: Convert to platform remove callback returning void
-  soc/ti: knav_qmss_queue: Convert to platform remove callback returning
-    void
-  soc/ti: pm33xx: Convert to platform remove callback returning void
-  soc/ti: pruss: Convert to platform remove callback returning void
-  soc/ti: smartreflex: Convert to platform remove callback returning
-    void
-  soc/ti: wkup_m3_ipc: Convert to platform remove callback returning
-    void
-  soc/xilinx: zynqmp_power: Convert to platform remove callback
-    returning void
-
- drivers/soc/aspeed/aspeed-lpc-ctrl.c        | 6 ++----
- drivers/soc/aspeed/aspeed-lpc-snoop.c       | 6 ++----
- drivers/soc/aspeed/aspeed-p2a-ctrl.c        | 6 ++----
- drivers/soc/aspeed/aspeed-uart-routing.c    | 6 ++----
- drivers/soc/fsl/dpaa2-console.c             | 6 ++----
- drivers/soc/fsl/qe/qmc.c                    | 6 ++----
- drivers/soc/fsl/qe/tsa.c                    | 5 ++---
- drivers/soc/fujitsu/a64fx-diag.c            | 6 ++----
- drivers/soc/hisilicon/kunpeng_hccs.c        | 6 ++----
- drivers/soc/ixp4xx/ixp4xx-npe.c             | 6 ++----
- drivers/soc/ixp4xx/ixp4xx-qmgr.c            | 5 ++---
- drivers/soc/litex/litex_soc_ctrl.c          | 5 ++---
- drivers/soc/loongson/loongson2_guts.c       | 6 ++----
- drivers/soc/mediatek/mtk-devapc.c           | 6 ++----
- drivers/soc/mediatek/mtk-mmsys.c            | 6 ++----
- drivers/soc/microchip/mpfs-sys-controller.c | 6 ++----
- drivers/soc/pxa/ssp.c                       | 6 ++----
- drivers/soc/qcom/icc-bwmon.c                | 6 ++----
- drivers/soc/qcom/llcc-qcom.c                | 5 ++---
- drivers/soc/qcom/ocmem.c                    | 6 ++----
- drivers/soc/qcom/pmic_glink.c               | 6 ++----
- drivers/soc/qcom/qcom_aoss.c                | 6 ++----
- drivers/soc/qcom/qcom_gsbi.c                | 6 ++----
- drivers/soc/qcom/qcom_stats.c               | 6 ++----
- drivers/soc/qcom/rmtfs_mem.c                | 6 ++----
- drivers/soc/qcom/smem.c                     | 6 ++----
- drivers/soc/qcom/smp2p.c                    | 6 ++----
- drivers/soc/qcom/smsm.c                     | 6 ++----
- drivers/soc/qcom/socinfo.c                  | 6 ++----
- drivers/soc/rockchip/io-domain.c            | 6 ++----
- drivers/soc/samsung/exynos-chipid.c         | 6 ++----
- drivers/soc/tegra/cbb/tegra194-cbb.c        | 6 ++----
- drivers/soc/ti/k3-ringacc.c                 | 5 ++---
- drivers/soc/ti/knav_dma.c                   | 6 ++----
- drivers/soc/ti/knav_qmss_queue.c            | 5 ++---
- drivers/soc/ti/pm33xx.c                     | 5 ++---
- drivers/soc/ti/pruss.c                      | 6 ++----
- drivers/soc/ti/smartreflex.c                | 5 ++---
- drivers/soc/ti/wkup_m3_ipc.c                | 6 ++----
- drivers/soc/xilinx/zynqmp_power.c           | 6 ++----
- 40 files changed, 80 insertions(+), 152 deletions(-)
-
-base-commit: 8fff9184d1b5810dca5dd1a02726d4f844af88fc
--- 
-2.40.1
-
+> 
+> Best regards,
+> Krzysztof
+> 
