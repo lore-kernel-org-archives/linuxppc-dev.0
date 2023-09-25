@@ -4,48 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64377CE7A81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 09:49:16 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=8bytes.org header.i=@8bytes.org header.a=rsa-sha256 header.s=default header.b=GA2roFK1;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60060CE7A81
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 09:56:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJ4B5RdPz3cST
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 19:49:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=8bytes.org header.i=@8bytes.org header.a=rsa-sha256 header.s=default header.b=GA2roFK1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 388 seconds by postgrey-1.37 at boromir; Mon, 25 Sep 2023 19:48:19 AEST
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJ374jLZz2yh7
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 19:48:18 +1000 (AEST)
-Received: from 8bytes.org (pd9fe9df8.dip0.t-ipconnect.de [217.254.157.248])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJDL01sWz3dGw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 19:56:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 77E231A21FF;
-	Mon, 25 Sep 2023 11:41:39 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=8bytes.org;
-	s=default; t=1695634900;
-	bh=NxrKhr6WG806XBJKBm2IQBKy1pD2rNt9qo9c3PhenPs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=GA2roFK14T/HQ96iZoC9nQCcCo2VMXnhAiD8ufn22sBjj4nGQjiI9eN19UQ841ll3
-	 tvmwuAznroYnlkDSX8YTdeSVvZ5KpTzjXvuSOcVi3oi86ErBR5VUYuyHP/MA5BOWAU
-	 2wX/3AeQvi06bRFniHUSbxMlOYWJVwrevTN+8G/rCRuZXK0/Oah1SMzErVPnQM/e2T
-	 NUJCJaJ6P7HXKFeguW86oDlRl/R1XGiBrT/L/fsslL6xPva/C12AXKWxwIS06iDf1G
-	 mjJRMv3x6qjDMx6PAdu3wlyXUnjfaKVtb3KqzO0YfjGfzBDGWx9Kyiat+OEkROq8qK
-	 VOyZFET5SBvfw==
-Date: Mon, 25 Sep 2023 11:41:38 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Jason Gunthorpe <jgg@nvidia.com>
-Subject: Re: [PATCH v8 00/24] iommu: Make default_domain's mandatory
-Message-ID: <ZRFV0vxoexLu-CWJ@8bytes.org>
-References: <0-v8-81230027b2fa+9d-iommu_all_defdom_jgg@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvJCj6rq6z3c3r
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 19:55:44 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1qkiJV-0007mR-LL; Mon, 25 Sep 2023 11:55:37 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1qkiJV-008pyw-7U; Mon, 25 Sep 2023 11:55:37 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1qkiJU-004dko-UR; Mon, 25 Sep 2023 11:55:36 +0200
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>
+Subject: [PATCH 07/40] soc/fsl: cpm: tsa: Convert to platform remove callback returning void
+Date: Mon, 25 Sep 2023 11:54:58 +0200
+Message-Id: <20230925095532.1984344-8-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
+References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0-v8-81230027b2fa+9d-iommu_all_defdom_jgg@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1726; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=eIuwBQKxvMu1FI84lx/swtTa9hFNjHXOr6M8QJPy0WA=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlEVhH9CZ2hQKgImN9WjTkQ3iRo1V+LMO8M+F0y jbaF1GCabqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRFYRwAKCRCPgPtYfRL+ Th7AB/4+hD7+cFdG8f9bqHr0Vm21pZY/sJ0j6fNfFD+lJSk6zY4N5qfSlbuMRHcKpUsD8+Pbjrg EK6RebOZM8bsEubYcfLNJSH9ZHwIisw7EntAnsNpjHuDc2IXXUJTd5kA6doq6IhzkgDQ7xTD6Q1 bx5dnriRfZz8B2ZERpkD9YqqVRK4V3Jpe54sSPt3TtDNVKk3+wbqQDcBjlmHjST4dSJy21/UDiT 5y4g8tcKSv4ECxtMASk8gIuMXjNCWK+YHcrwEATMaRXz73ipCx0Qbvrx8mUAwlEHV4eqQBvhyeL GtBfvB6Ahq6pCei4odfB4YG5gVmNZ5TxvKTrneUQJiZ/ftQy
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,37 +59,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Stuebner <heiko@sntech.de>, Matthew Rosato <mjrosato@linux.ibm.com>, Jerry Snitselaar <jsnitsel@redhat.com>, Matthias Brugger <matthias.bgg@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Dmitry Osipenko <digetx@gmail.com>, Steven Price <steven.price@arm.com>, Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Samuel Holland <samuel@sholland.org>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, Andy Gross <agross@kernel.org>, Nicolin Chen <nicolinc@nvidia.com>, Yong Wu <yong.wu@mediatek.com>, Orson Zhai <orsonzhai@gmail.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Thierry Reding <treding@nvidia.com>, linux-sunxi@lists.linux.dev, Rob Clark <robdclark@gmail.com>, Kevin Tian <kevin.tian@intel.com>, Niklas 
- Schnelle <schnelle@linux.ibm.com>, linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Krishna Reddy <vdumpa@nvidia.com>, linux-mediatek@lists.infradead.org, Baolin Wang <baolin.wang@linux.alibaba.com>, linux-tegra@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Robin Murphy <robin.murphy@arm.com>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Chunyan Zhang <zhang.lyra@gmail.com>, linuxppc-dev@lists.ozlabs.org, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 13, 2023 at 10:43:33AM -0300, Jason Gunthorpe wrote:
-> Jason Gunthorpe (24):
->   iommu: Add iommu_ops->identity_domain
->   iommu: Add IOMMU_DOMAIN_PLATFORM
->   powerpc/iommu: Setup a default domain and remove set_platform_dma_ops
->   iommu: Add IOMMU_DOMAIN_PLATFORM for S390
->   iommu/fsl_pamu: Implement a PLATFORM domain
->   iommu/tegra-gart: Remove tegra-gart
->   iommu/mtk_iommu_v1: Implement an IDENTITY domain
->   iommu: Reorganize iommu_get_default_domain_type() to respect
->     def_domain_type()
->   iommu: Allow an IDENTITY domain as the default_domain in ARM32
->   iommu/exynos: Implement an IDENTITY domain
->   iommu/tegra-smmu: Implement an IDENTITY domain
->   iommu/tegra-smmu: Support DMA domains in tegra
->   iommu/omap: Implement an IDENTITY domain
->   iommu/msm: Implement an IDENTITY domain
->   iommu: Remove ops->set_platform_dma_ops()
->   iommu/qcom_iommu: Add an IOMMU_IDENTITIY_DOMAIN
->   iommu/ipmmu: Add an IOMMU_IDENTITIY_DOMAIN
->   iommu/mtk_iommu: Add an IOMMU_IDENTITIY_DOMAIN
->   iommu/sun50i: Add an IOMMU_IDENTITIY_DOMAIN
->   iommu: Require a default_domain for all iommu drivers
->   iommu: Add __iommu_group_domain_alloc()
->   iommu: Add ops->domain_alloc_paging()
->   iommu: Convert simple drivers with DOMAIN_DMA to domain_alloc_paging()
->   iommu: Convert remaining simple drivers to domain_alloc_paging()
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new() which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
 
-Applied, thanks.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/soc/fsl/qe/tsa.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index 3646153117b3..3f9981335590 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -706,7 +706,7 @@ static int tsa_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int tsa_remove(struct platform_device *pdev)
++static void tsa_remove(struct platform_device *pdev)
+ {
+ 	struct tsa *tsa = platform_get_drvdata(pdev);
+ 	int i;
+@@ -729,7 +729,6 @@ static int tsa_remove(struct platform_device *pdev)
+ 			clk_put(tsa->tdm[i].l1rclk_clk);
+ 		}
+ 	}
+-	return 0;
+ }
+ 
+ static const struct of_device_id tsa_id_table[] = {
+@@ -744,7 +743,7 @@ static struct platform_driver tsa_driver = {
+ 		.of_match_table = of_match_ptr(tsa_id_table),
+ 	},
+ 	.probe = tsa_probe,
+-	.remove = tsa_remove,
++	.remove_new = tsa_remove,
+ };
+ module_platform_driver(tsa_driver);
+ 
+-- 
+2.40.1
+
