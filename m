@@ -4,53 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB29DCE7A88
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Sep 2023 16:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA623CE7AAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 17:38:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kdX7uAUn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=mGP9/qPb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RtF2y3t4gz3cV3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Sep 2023 02:29:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvVTt1VCDz3c3g
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 03:38:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kdX7uAUn;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=mGP9/qPb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3z8urzqykdggykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RtF225V9nz2yGW
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2023 02:28:42 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 99BF6B80092;
-	Sat, 23 Sep 2023 16:28:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98403C433C7;
-	Sat, 23 Sep 2023 16:28:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695486519;
-	bh=RqAizeoAgpyrjTuWTc3EPt+00fz0GKOYt3wgiu3ilxI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=kdX7uAUn5A/nOh6b98KyxWdk9fFgHiJgriB/fwuK77YQxwt85ckYKTY9t3fBf62wY
-	 OdfH5+weEeIpqZEmVKOTk/M6qPAq6DbFmu80HRazp/dQJOGu5Fdotg7Z2IUrfIcHFK
-	 CzwEzww+QWurkfb1eX0LPowGymg+QANEOY5nujQK9DRlmOgfq/CMbzYwknq+dY7tnp
-	 PeA7IOMb8Twk1q2cqZZhCdVsAByDQXH6HWv6/P0+r3F48yu28WNKT0AH75egCCxIj0
-	 rSO4bYh3+oBADB8dkFnn9uQPpZxQXif883hCwsCk2af3dw5oO2O8+odTCE6fZmVuyX
-	 JCGFYC8Rtz+ZQ==
-Date: Sat, 23 Sep 2023 19:27:42 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v3 09/13] powerpc: extend execmem_params for kprobes
- allocations
-Message-ID: <20230923162742.GO3303@kernel.org>
-References: <20230918072955.2507221-1-rppt@kernel.org>
- <20230918072955.2507221-10-rppt@kernel.org>
- <1cb41761-29d0-5d33-b7c1-0ca3acaa810d@csgroup.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1cb41761-29d0-5d33-b7c1-0ca3acaa810d@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvVSr3jj4z3byL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 03:37:47 +1000 (AEST)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-5a1d352a86dso12107417b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 10:37:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1695663464; x=1696268264; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4OSNJSuzGEyn2eFVxut8UHIn8mk8UoHB1vJTBDeWUjg=;
+        b=mGP9/qPbX07ArWSsQQ6oKlCSREzzGAuQAEm8v7sopCKysgzMpFo+kz2ymVFBwE4ANG
+         86Xtzq1ETJ+yRw8XTkYfqHqL/2iXc1T0eV959k6Cm9UoyWiFDKbk4+SBRxPMCH7lvt9i
+         eqN5YqoBS1nhw33lx9U3+/E5FIbAxPi7HSHf6SW/FxO6K8Ua6NHyIq2gVZ0TcjjNUJiJ
+         OpvES/pmfStgcbsWDeFzOb7RiTq1PGdkJQmJfv0PSKptHjivB7vCyzsi0di2uIs3kOvA
+         sa/sDUqNPKiY1PnfRG9YA6llRsRpTotWLtjvcVlG9MyRnUqe1Isrfax48MFyWH+1rrtL
+         vYDQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695663464; x=1696268264;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4OSNJSuzGEyn2eFVxut8UHIn8mk8UoHB1vJTBDeWUjg=;
+        b=X8V2Eo/wXSc54Ndv3udFYXPq6n+K95Jblo7tApiPv9oHdzkd9egPzRDZ+D+TEBJkYy
+         6Oh7wNAXgjDX+0UCBGHBoKA4CZawC3kqGMcRdpMbUIrgCnCC9ZnzD8vx9Snhcjy2QQIQ
+         TfSTur43uTBNYmL8QcpCrgtY4MUcrp3NxxmCL2VvN35+7L/MpjDNWuxXmK94WUzr9V72
+         Q7g7HAQu1QyY1+NYYuqljdPnbZAvtQC87WVye7czVCvZ8k8GcGzO5O66V8cXIXpTh55I
+         /orx3kav50ThJcnhr0V/uJB5Z2vB5ZPzXJahsS/x7bm7V9HGSuH5ae3PXogoNB9W38RE
+         jZQw==
+X-Gm-Message-State: AOJu0Yy2R+Qpzyn8T+MT+8v+2K1dRYXiXKPH7mdf6i/mV3WR7zerW/uT
+	xNd1vwV0TM2cfoWkCSh6Nk0nQ/t1T0M=
+X-Google-Smtp-Source: AGHT+IFbdNqdQBINXaKsxLFNsbPAlNsb64v79jTXlms6OpZDsyyWIMsDvfLKOISLOkUltg3c0KbHgHQxQwM=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a25:abac:0:b0:d81:fc08:29ea with SMTP id
+ v41-20020a25abac000000b00d81fc0829eamr67094ybi.2.1695663463860; Mon, 25 Sep
+ 2023 10:37:43 -0700 (PDT)
+Date: Mon, 25 Sep 2023 10:37:42 -0700
+In-Reply-To: <ZQuahXpq2fy8rMDV@yzhao56-desk.sh.intel.com>
+Mime-Version: 1.0
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-12-seanjc@google.com>
+ <ZQP6ZqXH81V24Lj/@yzhao56-desk.sh.intel.com> <ZQtdZmJ3SekURjiQ@google.com> <ZQuahXpq2fy8rMDV@yzhao56-desk.sh.intel.com>
+Message-ID: <ZRHFZmaa/6HQnZD1@google.com>
+Subject: Re: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
+From: Sean Christopherson <seanjc@google.com>
+To: Yan Zhao <yan.y.zhao@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,111 +74,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, "x86@kernel.org" <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Song Liu <song@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Nadav Amit <nadav.amit@gmail.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, "linux-trace-kernel@vger.kernel.org" <linux-trace-kernel@vger.kernel.org>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, Thomas Gleixner <tglx@linutronix.de>, "bpf@vger.kernel.org" <bpf@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@list
- s.infradead.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, Puranjay Mohan <puranjay12@gmail.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Kent Overstreet <kent.overstreet@linux.dev>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>, "linux-modules@vger.kernel.org" <linux-modules@vger.kernel.org>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Paul Moore <paul@paul-moore.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, James Morris <jmorris@namei.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@orac
+ le.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
+On Thu, Sep 21, 2023, Yan Zhao wrote:
+> On Wed, Sep 20, 2023 at 02:00:22PM -0700, Sean Christopherson wrote:
+> > On Fri, Sep 15, 2023, Yan Zhao wrote:
+> > > On Wed, Sep 13, 2023 at 06:55:09PM -0700, Sean Christopherson wrote:
+> > > > +/* Set @attributes for the gfn range [@start, @end). */
+> > > > +static int kvm_vm_set_mem_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+> > > > +				     unsigned long attributes)
+> > > > +{
+> > > > +	struct kvm_mmu_notifier_range pre_set_range = {
+> > > > +		.start = start,
+> > > > +		.end = end,
+> > > > +		.handler = kvm_arch_pre_set_memory_attributes,
+> > > > +		.on_lock = kvm_mmu_invalidate_begin,
+> > > > +		.flush_on_ret = true,
+> > > > +		.may_block = true,
+> > > > +	};
+> > > > +	struct kvm_mmu_notifier_range post_set_range = {
+> > > > +		.start = start,
+> > > > +		.end = end,
+> > > > +		.arg.attributes = attributes,
+> > > > +		.handler = kvm_arch_post_set_memory_attributes,
+> > > > +		.on_lock = kvm_mmu_invalidate_end,
+> > > > +		.may_block = true,
+> > > > +	};
+> > > > +	unsigned long i;
+> > > > +	void *entry;
+> > > > +	int r = 0;
+> > > > +
+> > > > +	entry = attributes ? xa_mk_value(attributes) : NULL;
+> > > Also here, do we need to get existing attributes of a GFN first ?
+> > 
+> > No?  @entry is the new value that will be set for all entries.  This line doesn't
+> > touch the xarray in any way.  Maybe I'm just not understanding your question.
+> Hmm, I thought this interface was to allow users to add/remove an attribute to a GFN
+> rather than overwrite all attributes of a GFN. Now I think I misunderstood the intention.
+> 
+> But I wonder if there is a way for users to just add one attribute, as I don't find
+> ioctl like KVM_GET_MEMORY_ATTRIBUTES for users to get current attributes and then to
+> add/remove one based on that. e.g. maybe in future, KVM wants to add one attribute in
+> kernel without being told by userspace ?
 
-On Fri, Sep 22, 2023 at 10:32:46AM +0000, Christophe Leroy wrote:
-> Hi Mike,
-> 
-> Le 18/09/2023 à 09:29, Mike Rapoport a écrit :
-> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> > 
-> > powerpc overrides kprobes::alloc_insn_page() to remove writable
-> > permissions when STRICT_MODULE_RWX is on.
-> > 
-> > Add definition of EXECMEM_KRPOBES to execmem_params to allow using the
-> > generic kprobes::alloc_insn_page() with the desired permissions.
-> > 
-> > As powerpc uses breakpoint instructions to inject kprobes, it does not
-> > need to constrain kprobe allocations to the modules area and can use the
-> > entire vmalloc address space.
-> 
-> I don't understand what you mean here. Does it mean kprobe allocation 
-> doesn't need to be executable ? I don't think so based on the pgprot you 
-> set.
-> 
-> On powerpc book3s/32, vmalloc space is not executable. Only modules 
-> space is executable. X/NX cannot be set on a per page basis, it can only 
-> be set on a 256 Mbytes segment basis.
-> 
-> See commit c49643319715 ("powerpc/32s: Only leave NX unset on segments 
-> used for modules") and 6ca055322da8 ("powerpc/32s: Use dedicated segment 
-> for modules with STRICT_KERNEL_RWX") and 7bee31ad8e2f ("powerpc/32s: Fix 
-> is_module_segment() when MODULES_VADDR is defined").
-> 
-> So if your intention is still to have an executable kprobes, then you 
-> can't use vmalloc address space.
+The plan is that memory attributes will be 100% userspace driven, i.e. that KVM
+will never add its own attributes.  That's why there is (currently) no
+KVM_GET_MEMORY_ATTRIBUTES, the intended usage model is that userspace is fully
+responsible for managing attributes, and so should never need to query information
+that it already knows.  If there's a compelling case for getting attributes then
+we could certainly add such an ioctl(), but I hope we never need to add a GET
+because that likely means we've made mistakes along the way.
 
-Right, and I've fixed the KPROBES range to uses the same range as MODULES.
-The commit message is stale and I need to update it.
- 
-> Christophe
-> 
-> > 
-> > Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
-> > ---
-> >   arch/powerpc/kernel/kprobes.c | 14 --------------
-> >   arch/powerpc/kernel/module.c  | 11 +++++++++++
-> >   2 files changed, 11 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > index 62228c7072a2..14c5ddec3056 100644
-> > --- a/arch/powerpc/kernel/kprobes.c
-> > +++ b/arch/powerpc/kernel/kprobes.c
-> > @@ -126,20 +126,6 @@ kprobe_opcode_t *arch_adjust_kprobe_addr(unsigned long addr, unsigned long offse
-> >   	return (kprobe_opcode_t *)(addr + offset);
-> >   }
-> >   
-> > -void *alloc_insn_page(void)
-> > -{
-> > -	void *page;
-> > -
-> > -	page = execmem_text_alloc(EXECMEM_KPROBES, PAGE_SIZE);
-> > -	if (!page)
-> > -		return NULL;
-> > -
-> > -	if (strict_module_rwx_enabled())
-> > -		set_memory_rox((unsigned long)page, 1);
-> > -
-> > -	return page;
-> > -}
-> > -
-> >   int arch_prepare_kprobe(struct kprobe *p)
-> >   {
-> >   	int ret = 0;
-> > diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-> > index 824d9541a310..bf2c62aef628 100644
-> > --- a/arch/powerpc/kernel/module.c
-> > +++ b/arch/powerpc/kernel/module.c
-> > @@ -95,6 +95,9 @@ static struct execmem_params execmem_params __ro_after_init = {
-> >   		[EXECMEM_DEFAULT] = {
-> >   			.alignment = 1,
-> >   		},
-> > +		[EXECMEM_KPROBES] = {
-> > +			.alignment = 1,
-> > +		},
-> >   		[EXECMEM_MODULE_DATA] = {
-> >   			.alignment = 1,
-> >   		},
-> > @@ -135,5 +138,13 @@ struct execmem_params __init *execmem_arch_params(void)
-> >   
-> >   	range->pgprot = prot;
-> >   
-> > +	execmem_params.ranges[EXECMEM_KPROBES].start = VMALLOC_START;
-> > +	execmem_params.ranges[EXECMEM_KPROBES].start = VMALLOC_END;
-> > +
-> > +	if (strict_module_rwx_enabled())
-> > +		execmem_params.ranges[EXECMEM_KPROBES].pgprot = PAGE_KERNEL_ROX;
-> > +	else
-> > +		execmem_params.ranges[EXECMEM_KPROBES].pgprot = PAGE_KERNEL_EXEC;
-> > +
-> >   	return &execmem_params;
-> >   }
-
--- 
-Sincerely yours,
-Mike.
+Giving userspace full control of attributes allows for a simpler uAPI, e.g. if
+userspace doesn't have full control, then setting or clearing bits requires a RMW
+operation, which means creating a more complex ioctl().  That's why its a straight
+SET operation and not an OR type operation.
