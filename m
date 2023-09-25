@@ -4,54 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BB8ECE7A8C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 15:56:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96B34CD4853
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:32:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvSD61pwhz3ccK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 01:56:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWgY24N9z3cjj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:32:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvSCT24bkz300q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 01:56:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWfz3CNpz3bbW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:31:36 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvSCK6vZ7z9v2F;
-	Mon, 25 Sep 2023 17:55:57 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWfs4Kffz9v6d;
+	Mon, 25 Sep 2023 20:31:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HsMsA_o4T0Gr; Mon, 25 Sep 2023 17:55:57 +0200 (CEST)
+	with ESMTP id g1Bwo-01aFyw; Mon, 25 Sep 2023 20:31:33 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvSCK6BKgz9v26;
-	Mon, 25 Sep 2023 17:55:57 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWfs3bWkz9tlk;
+	Mon, 25 Sep 2023 20:31:33 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D11C98B78D;
-	Mon, 25 Sep 2023 17:55:57 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7747F8B78F;
+	Mon, 25 Sep 2023 20:31:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id dXB25KsCgd1Q; Mon, 25 Sep 2023 17:55:57 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BA5FE8B763;
-	Mon, 25 Sep 2023 17:55:57 +0200 (CEST)
+	with ESMTP id OtojgACLAepN; Mon, 25 Sep 2023 20:31:33 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CC0B8B78D;
+	Mon, 25 Sep 2023 20:31:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PFtqF51492430
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVQi91499133
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 17:55:53 +0200
+	Mon, 25 Sep 2023 20:31:26 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PFtqAq1492429;
-	Mon, 25 Sep 2023 17:55:52 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVQiB1499132;
+	Mon, 25 Sep 2023 20:31:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/85xx: Fix math emulation exception
-Date: Mon, 25 Sep 2023 17:55:51 +0200
-Message-ID: <066caa6d9480365da9b8ed83692d7101e10ac5f8.1695657339.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 01/37] powerpc/8xx: Fix pte_access_permitted() for PAGE_NONE
+Date: Mon, 25 Sep 2023 20:31:15 +0200
+Message-ID: <57bcfbe578e43123f9ed73e040229b80f1ad56ec.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
+In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
+References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695657351; l=1257; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Gqvr+bgJ0qNPYaA9Xdu3Ijfr4pVH9xgAqrxOwYJYMRo=; b=GF/CoTj6pH3Yre2nZ2Qp4226FjxjCrH3E05eJ5fFZbxts/VvBDggdp/NjLgEaqcPx/Yfcsoaj 7IwwMSgV9q1CeuyAVOQMW4VpzhghoqsoAOBACtaQMTEr2ysIQHlEKZM
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666673; l=1818; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=M2JgmQqLaXUrWMSQR0xS2yGPPvvt6c2beQiqatkN/4M=; b=wwh31rtd+zE22+SRLclidoAJFyQ/rW2L8bp3bnsFk3ajPlwlKHaxGmKdsvpbJyD886FQL0uH7 sXBBbr+g7cCAlpAVry5h7FbYFbSJPAJdDvJD3vKJbGq3xG6u+CtiTQi
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,38 +71,53 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Booting mpc85xx_defconfig kernel on QEMU leads to:
+On 8xx, PAGE_NONE is handled by setting _PAGE_NA instead of clearing
+_PAGE_USER.
 
-Bad trap at PC: fe9bab0, SR: 2d000, vector=800
-awk[82]: unhandled trap (5) at 0 nip fe9bab0 lr fe9e01c code 5 in libc-2.27.so[fe5a000+17a000]
-awk[82]: code: 3aa00000 3a800010 4bffe03c 9421fff0 7ca62b78 38a00000 93c10008 83c10008
-awk[82]: code: 38210010 4bffdec8 9421ffc0 7c0802a6 <fc00048e> d8010008 4815190d 93810030
-Trace/breakpoint trap
-WARNING: no useful console
+But then pte_user() returns 1 also for PAGE_NONE.
 
-This is because allthough CONFIG_MATH_EMULATION is selected,
-Exception 800 calls unknown_exception().
+As _PAGE_NA prevent reads, add a specific version of pte_read()
+that returns 0 when _PAGE_NA is set instead of always returning 1.
 
-Call emulation_assist_interrupt() instead.
-
+Fixes: 351750331fc1 ("powerpc/mm: Introduce _PAGE_NA")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_85xx.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h | 7 +++++++
+ arch/powerpc/include/asm/nohash/pgtable.h    | 2 ++
+ 2 files changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/kernel/head_85xx.S b/arch/powerpc/kernel/head_85xx.S
-index 97e9ea0c7297..0f1641a31250 100644
---- a/arch/powerpc/kernel/head_85xx.S
-+++ b/arch/powerpc/kernel/head_85xx.S
-@@ -395,7 +395,7 @@ interrupt_base:
- #ifdef CONFIG_PPC_FPU
- 	FP_UNAVAILABLE_EXCEPTION
- #else
--	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, unknown_exception)
-+	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, emulation_assist_interrupt)
- #endif
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index 21f681ee535a..e6fe1d5731f2 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -94,6 +94,13 @@ static inline pte_t pte_wrprotect(pte_t pte)
  
- 	/* System Call Interrupt */
+ #define pte_wrprotect pte_wrprotect
+ 
++static inline int pte_read(pte_t pte)
++{
++	return (pte_val(pte) & _PAGE_RO) != _PAGE_NA;
++}
++
++#define pte_read pte_read
++
+ static inline int pte_write(pte_t pte)
+ {
+ 	return !(pte_val(pte) & _PAGE_RO);
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 56ea48276356..c721478c5934 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -25,7 +25,9 @@ static inline int pte_write(pte_t pte)
+ 	return pte_val(pte) & _PAGE_RW;
+ }
+ #endif
++#ifndef pte_read
+ static inline int pte_read(pte_t pte)		{ return 1; }
++#endif
+ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
 -- 
 2.41.0
 
