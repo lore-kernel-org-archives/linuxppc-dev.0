@@ -4,125 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E25D5CE7A81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 11:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C442CE7A94
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 11:43:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=UtvSzIEP;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Zo4jiR3G;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvKwB2nmbz3dNM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 21:12:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvLbd0B3Rz3cms
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 21:43:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=UtvSzIEP;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Zo4jiR3G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:7e1b::60b; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2060b.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e1b::60b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7eab::622; helo=nam11-co1-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on20622.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eab::622])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvKtB4KGcz3c4M
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 21:10:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvLZS15rwz3cmH
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 21:42:05 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RWj5VRNYi1Ubn1EoSnv5McFkN8azhtdoJ3clI7eLE1NOHf/URaayddenNTkF5vWWFaPaJd1er0rrYVtWV0+lt2kRCnm2ZKmSkNluG2AOHrN1YUQYNLNnt+sjomZKjgHjjfEmBRRRGOM6Jij8l4RVEC48YoinEjdIjdPjplkq9/elrGyofr+dw0EG+WHaUogiepS+j6M6eKNtwaWlaXL077duzaAX2FN9quB49dZ33bPKvxwd//Tx342zT/DTfs2Cf7c0dfp521INQPvmB6X8iLlmqDS6qW6Vd1jgXEBiBzy7yQ/Tg4NAMwS9eD70S9DOMUGGDHRkrlGQroVWL+J/7g==
+ b=A4jHDevfeONZ8dOfM84zQR3RrFSoruPZM5xrKHYzA60G1KP3M3ldPkAA7eYsy7RonMeLrYCnEneB9C6avEvMZgU3UMO3VTOB3kuN3YzoA+i//i1aQ/wcRlWWk5rQC+ob6ymDSFvG67s34ZUzlWwHNw+WlSQZtDGQl/2H8/RXZlikiIuQcpD5W5jN/cg4UPZrsJ6rApQiKOBsOtuTEAzAjbs9fxkjYStFgZU/P+KqCVPYcn/mGcNiOZKQ4sNpPPTNInQyrzsoSe+JF84+TPlpDro17qtecZX8a3PSNH/XgN/k7nDPsvGEj+yqovM+77VwDvx61ta3+a6U3WdCVIWx5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=PI4uIdIkV9AyG0puYfKz4ztIaAoslrT9fpFWHeY2n3M=;
- b=Ao+vol1bSAmLTreHQgAmRCNJyrVNykwL0n7fyTgTUxAFREKV7jhO/QCua4MUlqKzI16x4XEEPyFUiRKUM0htQ8m4zNLWLrAdL7qGaizmC1EXf/bFJqE5JC+IhoiirS5NoNm9GPWsAhFAvrvdXEh1hdm9xjSLkqHF/niug7aw+EEyQWPZB3jy7pLNiKFY9IZCZFRz1zdxKsBdi+UJvhqf7bKGDYjyUAFajXdHJ1eOZRdiBT6cZRewmjerDNUKJ38GnP+mOMzsjfIXAlreNHqYRtggxwkHcAjlrlfoB8ibAkNIWfhye5xhpYE8um3Olp2oLEgB7yKe7U/PIbDT5UbtrQ==
+ bh=FAWWGBvaKqUouRbkKajgoHVy69zRAixjUVwPCCiQk8k=;
+ b=OHhVFNXERFaFOcI8ZoI9igEugqC5V9nYZAIFT2HujI7jxmS1epATJQMdj8jvdrFaDBk02xmcDVWkGP2q29PfMdDNYvXxg5UGLnvlAxq7exnVxzCHArQqA84eDg0HWOl75/rielluVsxjoc3rdmhcZBb6i4Q6/3KKxaPSu/4m9bXYkt8+dVn/uhtjTfeg9DEyr8JvVnJ12dH+iepi61m+fK/eX/P/ruqHI6kSw8uYlmI32nRJAaaMGmiOaKpWdJCuFzTZ/uChVMGt/Q5QWKo02OEhGWK4lN2fDMP8WxHmbV6GCdHR9e3SU2MupSzKw9HFbqCnjaBPr6pF16ikwi7Nyw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=PI4uIdIkV9AyG0puYfKz4ztIaAoslrT9fpFWHeY2n3M=;
- b=UtvSzIEPcPKJiHH8UBLoGELYNzywXhgBBaGT80DTUn0lwtPuZND6OZRyvSN3MIcGB6BqBOQW6eLpBhtzDGLn4YpiYt0KYuSlrVp/EW/F5x0PYjk3gfNu72SyKwaD3SEa6SBSiWIf38pjKjQjyTy8BCYNdgGyJ69pa8HpI17GzGQ=
+ bh=FAWWGBvaKqUouRbkKajgoHVy69zRAixjUVwPCCiQk8k=;
+ b=Zo4jiR3Gani0YSTBE7bwgdhPYYdQufaL+D6NuHS2mEksMma6Dx4DQFD3ahq4gL+llL/BCye0N0snS6B9k4/2ZvzWgwMKKHB4UEYLKkknj0wWq6lnvx0Fdd1YTcD7mJBdA3g824/DudjjzyWH/x/oWjPNvjIThKpqvOzFZQsxRXAcZqtGo/PAXsHxP0JBC8M7I9zJphjqrS0wQlgQ9WDI6zqmGRz43IoahFh40WAnekoKHvuPCs+j18P065b4jcwdmBEB56nGA5LB1BXUP5u+qWggsVcqR0yWgi26NkgO3W4MY7LUFRF8/AWJLQr8iBz8s5XlaVAF0hB/+8KwDSGq4A==
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from DB9PR04MB9498.eurprd04.prod.outlook.com (2603:10a6:10:360::21)
- by DBBPR04MB7884.eurprd04.prod.outlook.com (2603:10a6:10:1f2::11) with
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
+ by BN9PR12MB5354.namprd12.prod.outlook.com (2603:10b6:408:103::22) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.28; Mon, 25 Sep
- 2023 11:10:17 +0000
-Received: from DB9PR04MB9498.eurprd04.prod.outlook.com
- ([fe80::51f9:b8d2:7ddd:c74f]) by DB9PR04MB9498.eurprd04.prod.outlook.com
- ([fe80::51f9:b8d2:7ddd:c74f%6]) with mapi id 15.20.6813.027; Mon, 25 Sep 2023
- 11:10:16 +0000
-From: Chancel Liu <chancel.liu@nxp.com>
-To: lgirdwood@gmail.com,
-	broonie@kernel.org,
-	robh+dt@kernel.org,
-	krzysztof.kozlowski+dt@linaro.org,
-	conor+dt@kernel.org,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	shawnguo@kernel.org,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	alsa-devel@alsa-project.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 1/2] ASoC: dt-bindings: fsl_rpmsg: List DAPM endpoints ignoring system suspend
-Date: Mon, 25 Sep 2023 19:09:45 +0800
-Message-Id: <20230925110946.3156100-1-chancel.liu@nxp.com>
-X-Mailer: git-send-email 2.25.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI1PR02CA0023.apcprd02.prod.outlook.com
- (2603:1096:4:1f4::19) To DB9PR04MB9498.eurprd04.prod.outlook.com
- (2603:10a6:10:360::21)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.21; Mon, 25 Sep
+ 2023 11:41:44 +0000
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::faf:4cd0:ae27:1073]) by LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::faf:4cd0:ae27:1073%6]) with mapi id 15.20.6792.026; Mon, 25 Sep 2023
+ 11:41:44 +0000
+Date: Mon, 25 Sep 2023 08:41:42 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Baolu Lu <baolu.lu@linux.intel.com>
+Subject: Re: [PATCH 3/8] iommu/vt-d: Use ops->blocked_domain
+Message-ID: <20230925114142.GU13733@nvidia.com>
+References: <3-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
+ <ad9644a2-e8a6-d0fa-ad55-f4e0564c39a0@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ad9644a2-e8a6-d0fa-ad55-f4e0564c39a0@linux.intel.com>
+X-ClientProxiedBy: MN2PR19CA0028.namprd19.prod.outlook.com
+ (2603:10b6:208:178::41) To LV2PR12MB5869.namprd12.prod.outlook.com
+ (2603:10b6:408:176::16)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB9PR04MB9498:EE_|DBBPR04MB7884:EE_
-X-MS-Office365-Filtering-Correlation-Id: e90646e2-6d6a-470a-f9b9-08dbbdb7ff47
+X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|BN9PR12MB5354:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3c3767a9-3947-409d-1681-08dbbdbc6491
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	C59mhd3rGIjNzXfeK6SNPJL0GTDqg6SQNc0SKdk8iAuyAJd/IeXjV0lerT7bILTrMq/Q63ffoJJAmcIgzzdH/LcJbhkreSIqEOesva1jq5Nx3TcaZq+/Z5QViNUk288+NXj+4Y/sbLWmU0CsSGZKRL207Er0kKqsYjUiWJhB4UZr1iUWt/swVr2C0yq8oyNiSyHNNuGjzoYSxjX99EQitkMJ4vYRoEtPqyLDZ0sia7KmuX2aVPe31Qm6xXBKaHyhadkF4kJOK6pTn77IwJKOkgcTr3a0ub6xIgHg9IbylpZmsPJswlA0R0nJfeAMG5/ynmMRESuQkTDyUXcXnOlYcYQstAkJhStA0QkC8PZugSLAdjXG+2nYnfAcu137rOKNHqdX14xxmjXdp1sIOk/Wx8sa99OCRJoK4WapzDwGiYWUy+97X/Txqocdfhu2Ea6COT/PjrpKQj2KIEvjsgWo8tpJzKGM9uIfN8V2QG+oQZ03/qvfUTy/Nun4/xwDIQ2c/6iTAwv1bGGE2+DRuii13zgu6LTfMgx0NjwBDgB7PaeLBh4ne7MVuXA2J8+p+1ylwW5n/JL942WHrDo4WwJmoiMk581nI6VRbt7TEkjzV7QoNAKZ0TyJIZnpLlodBowT+ZNOoGJUn2lGmFTALKsB2Q==
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB9498.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(346002)(39860400002)(376002)(366004)(396003)(230922051799003)(1800799009)(186009)(451199024)(6506007)(52116002)(6512007)(6666004)(1076003)(2616005)(66476007)(86362001)(66946007)(66556008)(6486002)(478600001)(38100700002)(38350700002)(921005)(83380400001)(2906002)(7416002)(8936002)(8676002)(4326008)(36756003)(15650500001)(316002)(5660300002)(41300700001)(44832011)(26005);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	HOoZwpCUSZRZu9Eg9Qtmzltec8LrnTZEerpnrRuJlCEfnAPr3vTE4ovdxvsAfqffslGgKMU4WgdDU+VJB7nCverrtWeorrXWztvLBP4TDn2n7MXD/5/sYFDvv4Qlr9qvaKiyu+F1XSCuVrEX6foZrCJPtMQMCqgnlyeL7+/ZF7X9uMaLhBx8VlqVcC5YFt/fsml62Xb0Jj3WCcBmfNR9oTLfGVqy3ORzT6z9PYDpNCiYxkRpz0Dwzfhax6yN36YOXLa7nWE/eQ4zcXhTSHDBBJPDerceoh1rcgvVol+5J66Ay2FE2nZkq4FFizCeSFSGR2I6FOK+TDGBCFLf1qSbeS9TQpK7NmBv+55AmuuLt0YpIyXHaoFGePpMc82t0MM5PKn/ur1jK11cVbsHODa7GtndBtzZO4TmY7R7DQl4Qfu7crgqvgu54Hd/HVXBZga2oJSvLODsiMqaxF2qnZVtviy0UJ7LPEzzLsrZo5BiMh7XOa1xCe6HC3jjelksEp1IyYJTqvcfnsUnU0YD7v7e3PTV8V20AX8pyJYQGdjUvHYEXWXLWzxe1spd9FCOW0LF
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(136003)(376002)(366004)(396003)(39860400002)(230922051799003)(186009)(1800799009)(451199024)(38100700002)(33656002)(86362001)(36756003)(8936002)(6486002)(8676002)(2906002)(5660300002)(4326008)(6506007)(66946007)(4744005)(66476007)(2616005)(6512007)(83380400001)(478600001)(54906003)(66556008)(1076003)(15650500001)(26005)(316002)(6916009)(53546011)(41300700001)(7416002);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?Qr5kSPlv5BemCjZD4v2K1E4uJjBvj31h9TKjN9+TGm4XvYdTqCeTx1+ecM5T?=
- =?us-ascii?Q?kSi2CpaG/43Y/86vd/VlWzYFV0cKrDRs6B2FCfzICmaqgqIKsR7V0rfxxx08?=
- =?us-ascii?Q?1H+ZjzRzmfyvBFxm1mJqJ33AKk17xKOAr/r0oZw7acEvrUG0rhNOhVSfd64e?=
- =?us-ascii?Q?JAaysHKgaFBXHvtRoVaQ8nV4j93XdSPtxXo/9ABGZ/xnJ+0DgnviDuVVgzek?=
- =?us-ascii?Q?z+fgeRdkMxhLcmwTX7Jiv/3ysyPSl9pH0WXMG4bEnhQ0CVVjfZUZo7umYHYQ?=
- =?us-ascii?Q?FVu5HsoK/+M1VDdFdj/i6vBd/WH+3GbsVfzwkEBE15nidblpTmzGYubSsE0Q?=
- =?us-ascii?Q?oZrC0wgZGlCu4faPQMgPPah86t/HQvXcvq608FbU6muUbkkzM2IScHQ+ohUQ?=
- =?us-ascii?Q?DzVfmBrX1iP0a/7sPJy9L+Y3771xdWCHoWGyTlE7f8KXg7X6kLq/gPb9zHbj?=
- =?us-ascii?Q?2LOgaMYmG4BBGH9mfpplI1qmGnfKURhUhwC9bb2lGFq5J8F7PKtNNimytw5v?=
- =?us-ascii?Q?TlfGhUoJodohSKK1/tuusqCUKHbfV3xjbAT6cUdW2YEbBXME+AeIoZMV+mjT?=
- =?us-ascii?Q?S8jYJzdW4Q1A2CSAOGyBm/W7K2mcro6sgn/z5f9sogS/LD29zkiaeKdaMDKT?=
- =?us-ascii?Q?HQvmleZ868hjFaAghzJqUMwX/xPB+SRPci3PgYezygTdHshji2mGqDcLPzjH?=
- =?us-ascii?Q?JkyMLl8UvUTvk5BtSgIIGjaXTJj0tILu1jViKXQwuivuAP5b12pVOg9Ci0+i?=
- =?us-ascii?Q?56ZemChAAd/AlpaqC9SmL9oLBztyuqBYCivBf0TI+zRLvH3XqtmzBT2AJfM6?=
- =?us-ascii?Q?Eb5PiLfVc5cYZCOhn/1Pf1G9SOrZdaq1+aLy6yBbY1bN3zgRhz0UtCgSNzxr?=
- =?us-ascii?Q?bWyCA05QJCfCyn2xWa264ypaHLHEg4n+FdgSx8kH4wVRiU2P7x5xmz/KFK6J?=
- =?us-ascii?Q?sARNL6cHPiNWCNUsnGXTsBmOYZB1WcqGaaT4FCxtHNm2aH8bDcDHR5JlDD/n?=
- =?us-ascii?Q?73roJUrnGXCQL556IFq5EFcui52JOtqHm78TpEUPBfOEHkaJLTX4E0YZCcpI?=
- =?us-ascii?Q?Gd4SHhP3sfsKHNRFX3p27FsAhZGPyDpOQR1/prnVDv8FACXx03LFRBbaw3o7?=
- =?us-ascii?Q?4qN3sfZtbdbXhtJ7TSztvZObbCnryN4KSbG6iUrf4QdFzcjnAN0tOeFyHIPD?=
- =?us-ascii?Q?wR9ZusaPDAtcAamdYdYdHILMB+p0WmGcf8HIxBcfXT+7fRDmoJbFrVOxegYq?=
- =?us-ascii?Q?XfIpEcC2gjCT5BmI5sqkyG6U3dnHnyAHUwJLXyjR1cTI9EFab4PwFLaglTbq?=
- =?us-ascii?Q?HEprEU0yROFRtCVpqP7YX0n2wjmdv5Kg5Edetb2y71eU9ZJTf224sRM9/BmM?=
- =?us-ascii?Q?iS0H91BcBYID3DyZlcjc9ojV/l1oxH52zWUHWaRuzqLchYlcgxq6gsweLoUk?=
- =?us-ascii?Q?E6n99sgO+qc3GAdw3aB55bp3u/DZe1dwlnmBM2WpAdioPDkFPI1EP84iS4f3?=
- =?us-ascii?Q?KegwSh55fh+TMmeTh9MbCDFGx16HWp2IT8dVcqcm5zU498NhmMQyMtJck7fE?=
- =?us-ascii?Q?5clEkm8b6oXfBdAEBV8gl/TG867wLob6ic5qdO8G?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e90646e2-6d6a-470a-f9b9-08dbbdb7ff47
-X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB9498.eurprd04.prod.outlook.com
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?3lkeN8gD3/RXGx4Cx60ugfnkkleX8G8LApTbd4F577yryOdYJ6ucVRd54ddP?=
+ =?us-ascii?Q?eS7YesViJeR0tzVuCFHUZYH2YGgUu46X2jNkgKs8vC+pNDdeYFz2AmJjUMcO?=
+ =?us-ascii?Q?xMNB8nuRCDlxAuCvUrsoBHdH2efvGWTm1EvSNIujojwxYFkQjIQq08Kav1Ei?=
+ =?us-ascii?Q?FVArkr5uHOrbIhL0olLpai2dPKOo93tBCYjeUf6HhtFA+6cB0Sgis17p92kI?=
+ =?us-ascii?Q?nG/bnW2nY7ssPOk7Ub+/qKDfqPzWL6mMXhITQD2sqZbOWtih+dmj87Jv8aZq?=
+ =?us-ascii?Q?0aK7zd/smpFYXV0zki4eNkgHKWfCyRXMw5drCzJfTuMgxLA+tLjCAZ/DeK1I?=
+ =?us-ascii?Q?vvm6xJcn4W1z1SB50SUq4GmNbNrdw9WHJurpUHQGwFi5GFbEL0//dMOcALpi?=
+ =?us-ascii?Q?oYf2FjEa+guJs3SwS4K+pDxMibqS1+rQdeF1uy2fl98T+9Ry6TzoitSjXzdz?=
+ =?us-ascii?Q?ywz/Mm7vpKsgVwzUx9eladyV+8vZbC9DdAjHsXfQbpnpClWJyHEBRn7f1Pi3?=
+ =?us-ascii?Q?bjwBixI+61+xeLADpH+R78jouJVRFGR+CnFe3NKTLcN6LFibH9nWeC0FeTml?=
+ =?us-ascii?Q?Gr2QzIa66El63JP4ySevoy9ZoZHcWoXiHPrxqksmX2o1juaeDhv7Hxv1WLqR?=
+ =?us-ascii?Q?hv/9wMyTDMGWgenH0/B//EL6dLuKIv5X2ftF0axPTCCjD5R2trB9cedIA6r8?=
+ =?us-ascii?Q?nHW7yX314IwCY6cuaz6JSrtUEeS62dO4lqq9x/r7StBjmjBqMfLAkSWmHBX3?=
+ =?us-ascii?Q?zyOQzF+dimCu8KIobEVjwu+SYcst4Cz69zFgk018UIBhff6gr92vVU3Fl51+?=
+ =?us-ascii?Q?mSC1RHHv7/2GOx4eVZSnKjqczvBqTuk+ElxxJ4fzNB1hSRKgJgCjXJL+LLai?=
+ =?us-ascii?Q?iti/8SxYnGX4/bUoqqNzNU4046/hjVtrX7G7Uc2ewhwEDXalJUZttBxzmRbP?=
+ =?us-ascii?Q?bEOILexaYxRtHzIy0ijBHmWxw06KPPklfjrNVOydwuvVbzKtOIUbs+bUZibY?=
+ =?us-ascii?Q?cmjP819ihSOE1H5VYlpq1K4LkvjYPbpcl3UPsrwGbwGvbpnIZxA5VzdPdvbQ?=
+ =?us-ascii?Q?98AW1NJEWS8TBoA3WvICa9hZ6AX1lvXZG9gWu2WbOUTeccM5QfsD0HMbCpSk?=
+ =?us-ascii?Q?2d4x6GN3p72JHxtiWS/bcuMIxhhBZJbkg5fpf1CElrEVozM6ACju7rFWghJp?=
+ =?us-ascii?Q?B242gsdmclutqxHpB3UJdu/oVOEWVCZVt8fsbMiW4kjX6W+obVADv3nAb5ES?=
+ =?us-ascii?Q?ohQsnvxpuxL/tMpC6KnML8rqa+q6JLKVW60tJU4rB2eOuv+T9DrkkYAhzDp0?=
+ =?us-ascii?Q?viJ6kcAHyzAYatPUoeqJMgbluuYPAt6IG6JIZ1mNQRIqrhyetO7sqtdR5NcB?=
+ =?us-ascii?Q?rJTyI03hy1ci7M9g/YXtfVFvkg5qqS6b9+x1bnew41pLCshUYdis4IoKrP+M?=
+ =?us-ascii?Q?HPEvhX1jwT0k0V5b3VwpsUM/rSq+ITjVQX6+KYPSdkvOR9+K3pXfnFAIrpoQ?=
+ =?us-ascii?Q?ftyp9yIunZDcdYvNNiHEnDes2vlfDrMUFIEqR6NmlHS66itoq3NxbkVUqoAY?=
+ =?us-ascii?Q?3sBWB3VRyHayaw928Sk=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3c3767a9-3947-409d-1681-08dbbdbc6491
+X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2023 11:10:16.5136
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2023 11:41:44.3287
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hGflbsOZg+xOQecSoXbMQK2jsJy0xvAVUiaMpkiI9D7Dp+amvyh2FThd0/zN34FB6A6ux0Ghyh0PpbXhid5yPA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR04MB7884
+X-MS-Exchange-CrossTenant-UserPrincipalName: DTMxeE49Lb7yqGx6jfn5+R9ogGYHoCIeuBgUmQ312r1dOOvhQeGpB8z46Nw7WDPL
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR12MB5354
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -134,55 +119,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Chancel Liu <chancel.liu@nxp.com>
+Cc: linux-arm-kernel@lists.infradead.org, Kevin Tian <kevin.tian@intel.com>, Will Deacon <will@kernel.org>, Sven Peter <sven@svenpeter.dev>, linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>, Hector Martin <marcan@marcan.st>, Nicholas Piggin <npiggin@gmail.com>, Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux.dev, asahi@lists.linux.dev, David Woodhouse <dwmw2@infradead.org>, Alyssa Rosenzweig <alyssa@rosenzweig.io>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a property to list DAPM endpoints which mark paths between these
-endpoints should not be disabled when system enters in suspend state.
+On Mon, Sep 25, 2023 at 10:29:52AM +0800, Baolu Lu wrote:
+> On 9/23/23 1:07 AM, Jason Gunthorpe wrote:
+> > Trivially migrate to the ops->blocked_domain for the existing global
+> > static.
+> > 
+> > Signed-off-by: Jason Gunthorpe<jgg@nvidia.com>
+> > ---
+> >   drivers/iommu/intel/iommu.c | 3 +--
+> >   1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> Reviewed-by: Lu Baolu <baolu.lu@linux.intel.com>
+> 
+> P.S. We can further do the same thing to the identity domain. I will
+> clean it up after all patches are landed.
 
-LPA means low power audio case. On asymmetric multiprocessor, there are
-Cortex-A core and Cortex-M core, Linux is running on Cortex-A core,
-RTOS or other OS is running on Cortex-M core. The audio hardware
-devices can be controlled by Cortex-M. LPA can be explained as a
-mechanism that Cortex-A allocates a large buffer and fill audio data,
-then Cortex-A can enter into suspend for the purpose of power saving.
-Cortex-M continues to play the sound during suspend phase of Cortex-A.
-When the data in buffer is consumed, Cortex-M will trigger the Cortex-A
-to wakeup to fill data. LPA requires some audio paths still enabled
-when Cortex-A enters into suspend.
+I looked at that, and it is not trivial..
 
-Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
----
- .../devicetree/bindings/sound/fsl,rpmsg.yaml      | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Both the Intel and virtio-iommu drivers create an "identity" domain
+out of a paging domain and pass that off as a true "identity"
+domain. So neither can set the global static since the determination
+is at runtime..
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml b/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml
-index 188f38baddec..d8fd17615bf2 100644
---- a/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml
-+++ b/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml
-@@ -91,6 +91,21 @@ properties:
-       - rpmsg-audio-channel
-       - rpmsg-micfil-channel
- 
-+  fsl,lpa-widgets:
-+    $ref: /schemas/types.yaml#/definitions/non-unique-string-array
-+    description: |
-+      A list of DAPM endpoints which mark paths between these endpoints should
-+      not be disabled when system enters in suspend state. LPA means low power
-+      audio case. On asymmetric multiprocessor, there are Cortex-A core and
-+      Cortex-M core, Linux is running on Cortex-A core, RTOS or other OS is
-+      running on Cortex-M core. The audio hardware devices can be controlled by
-+      Cortex-M. LPA can be explained as a mechanism that Cortex-A allocates a
-+      large buffer and fill audio data, then Cortex-A can enter into suspend
-+      for the purpose of power saving. Cortex-M continues to play the sound
-+      during suspend phase of Cortex-A. When the data in buffer is consumed,
-+      Cortex-M will trigger the Cortex-A to wakeup to fill data. LPA requires
-+      some audio paths still enabled when Cortex-A enters into suspend.
-+
- required:
-   - compatible
- 
--- 
-2.25.1
+What I was thinking about doing is consolidating that code so that the
+core logic is the thing turning a paging domain into an identity
+domain.
 
+Jason
