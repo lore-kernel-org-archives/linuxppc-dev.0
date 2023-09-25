@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C24ACD4857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:38:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7439ACD4857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:39:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWpv6ZXfz3dFZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:38:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvWqR08JJz3dDM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:38:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWgt2tnWz3cnZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWgx42FBz3dCd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:32:29 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWgB4BDmz9v6d;
-	Mon, 25 Sep 2023 20:31:50 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWgC5Qxbz9v73;
+	Mon, 25 Sep 2023 20:31:51 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7gh6P-1qF3oe; Mon, 25 Sep 2023 20:31:50 +0200 (CEST)
+	with ESMTP id XP1NIboUrpY4; Mon, 25 Sep 2023 20:31:51 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg11ZHjz9v8v;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg11g0Qz9v96;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 32BBF8B790;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 352F18B78C;
 	Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id v7F8ZKbPl6Dl; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
+	with ESMTP id thqRf4leUuYh; Mon, 25 Sep 2023 20:31:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 74C608B79C;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6AF1F8B798;
 	Mon, 25 Sep 2023 20:31:40 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVXgf1499167
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVWGN1499143
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 20:31:33 +0200
+	Mon, 25 Sep 2023 20:31:32 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVXEP1499166;
-	Mon, 25 Sep 2023 20:31:33 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVWpu1499140;
+	Mon, 25 Sep 2023 20:31:32 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 09/37] powerpc/nohash: Refactor declaration of {map/unmap}_kernel_page()
-Date: Mon, 25 Sep 2023 20:31:23 +0200
-Message-ID: <7fec5f3288cf0d0eac61b1b3f48c3ea54eb80cad.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 03/37] powerpc/40x: Remove stale PTE_ATOMIC_UPDATES macro
+Date: Mon, 25 Sep 2023 20:31:17 +0200
+Message-ID: <f061db5857fcd748f84a6707aad01754686ce97e.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666674; l=3056; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=74UwaaMH04ujta7XH+ONjo0l1oOFOl+HKRAnrkXYv/M=; b=u4AptwQvpm6zoY/cZ3KR0UJ0lGehG3/U+SZ7B/f1CPS+IWSeKow3JZEnfZXlJ8L9f3l2fzb9p n2S2/GNimtuBmSiLGCHsafQRskGyetot4ilRdv7LfAe4BOawKaWkTVz
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666673; l=1072; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=QzJlyIFHJpgKsl8CqBCBYJcP1k7K6NnlZ/rdWkTGY04=; b=KXA8UmfkVw98I/ST6XfVJhH5q28AppXOLiLcKG7KpooW8csI3Gyya89/QKcTGeXKk0simgBic /urEaPqMfSQBq88DVpiJTUaYCCOdPe2jbCX7YO1na40r3u1chSXcTcU
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,75 +71,35 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-map_kernel_page() and unmap_kernel_page() have the same prototypes
-on nohash/32 and nohash/64, keep only one declaration.
+40x TLB handlers were reworked by commit 2c74e2586bb9 ("powerpc/40x:
+Rework 40x PTE access and TLB miss") to not require PTE_ATOMIC_UPDATES
+anymore.
 
+Then commit 4e1df545e2fa ("powerpc/pgtable: Drop PTE_ATOMIC_UPDATES")
+removed all code related to PTE_ATOMIC_UPDATES.
+
+Remove left over PTE_ATOMIC_UPDATES macro.
+
+Fixes: 2c74e2586bb9 ("powerpc/40x: Rework 40x PTE access and TLB miss")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 8 --------
- arch/powerpc/include/asm/nohash/64/pgtable.h | 2 --
- arch/powerpc/include/asm/nohash/pgtable.h    | 3 +++
- arch/powerpc/mm/nohash/book3e_pgtable.c      | 2 +-
- 4 files changed, 4 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pte-40x.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index c8311ee08811..26289e4e767c 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -58,14 +58,6 @@ extern int icache_44x_need_flush;
- #define pgd_ERROR(e) \
- 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+index 6fe46e754556..0b4e5f8ce3e8 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+@@ -69,9 +69,6 @@
  
--#ifndef __ASSEMBLY__
--
--int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
--void unmap_kernel_page(unsigned long va);
--
--#endif /* !__ASSEMBLY__ */
--
--
- /*
-  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
-  * value (for now) on others, from where we can start layout kernel
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index dee3fc654d40..f5a8e8a9dba4 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -309,8 +309,6 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- /* We borrow MSB 56 (LSB 7) to store the exclusive marker in swap PTEs. */
- #define _PAGE_SWP_EXCLUSIVE	0x80
+ #define _PTE_NONE_MASK	0
  
--int map_kernel_page(unsigned long ea, unsigned long pa, pgprot_t prot);
--void unmap_kernel_page(unsigned long va);
- extern int __meminit vmemmap_create_mapping(unsigned long start,
- 					    unsigned long page_size,
- 					    unsigned long phys);
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index ab26af2b421a..3d684b500fe6 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -242,5 +242,8 @@ static inline int pud_huge(pud_t pud)
- #define is_hugepd(hpd)		(hugepd_ok(hpd))
- #endif
+-/* Until my rework is finished, 40x still needs atomic PTE updates */
+-#define PTE_ATOMIC_UPDATES	1
+-
+ #define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
+ #define _PAGE_BASE	(_PAGE_BASE_NC)
  
-+int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
-+void unmap_kernel_page(unsigned long va);
-+
- #endif /* __ASSEMBLY__ */
- #endif
-diff --git a/arch/powerpc/mm/nohash/book3e_pgtable.c b/arch/powerpc/mm/nohash/book3e_pgtable.c
-index b80fc4a91a53..1c5e4ecbebeb 100644
---- a/arch/powerpc/mm/nohash/book3e_pgtable.c
-+++ b/arch/powerpc/mm/nohash/book3e_pgtable.c
-@@ -71,7 +71,7 @@ static void __init *early_alloc_pgtable(unsigned long size)
-  * map_kernel_page adds an entry to the ioremap page table
-  * and adds an entry to the HPT, possibly bolting it
-  */
--int __ref map_kernel_page(unsigned long ea, unsigned long pa, pgprot_t prot)
-+int __ref map_kernel_page(unsigned long ea, phys_addr_t pa, pgprot_t prot)
- {
- 	pgd_t *pgdp;
- 	p4d_t *p4dp;
 -- 
 2.41.0
 
