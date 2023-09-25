@@ -4,44 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60060CE7A81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 09:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BF00CE7A97
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 09:56:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJDL01sWz3dGw
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 19:56:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvJDr6jX0z3dLD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 19:56:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvJCj6rq6z3c3r
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvJCj6twNz3c40
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2023 19:55:44 +1000 (AEST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1qkiJV-0007mR-LL; Mon, 25 Sep 2023 11:55:37 +0200
+	id 1qkiJV-0007m8-Cv; Mon, 25 Sep 2023 11:55:37 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1qkiJV-008pyw-7U; Mon, 25 Sep 2023 11:55:37 +0200
+	id 1qkiJU-008pyq-OI; Mon, 25 Sep 2023 11:55:36 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1qkiJU-004dko-UR; Mon, 25 Sep 2023 11:55:36 +0200
+	id 1qkiJU-004dkg-FO; Mon, 25 Sep 2023 11:55:36 +0200
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>
-Subject: [PATCH 07/40] soc/fsl: cpm: tsa: Convert to platform remove callback returning void
-Date: Mon, 25 Sep 2023 11:54:58 +0200
-Message-Id: <20230925095532.1984344-8-u.kleine-koenig@pengutronix.de>
+To: Li Yang <leoyang.li@nxp.com>
+Subject: [PATCH 05/40] soc/fsl: dpaa2-console: Convert to platform remove callback returning void
+Date: Mon, 25 Sep 2023 11:54:56 +0200
+Message-Id: <20230925095532.1984344-6-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
 References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1726; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=eIuwBQKxvMu1FI84lx/swtTa9hFNjHXOr6M8QJPy0WA=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlEVhH9CZ2hQKgImN9WjTkQ3iRo1V+LMO8M+F0y jbaF1GCabqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRFYRwAKCRCPgPtYfRL+ Th7AB/4+hD7+cFdG8f9bqHr0Vm21pZY/sJ0j6fNfFD+lJSk6zY4N5qfSlbuMRHcKpUsD8+Pbjrg EK6RebOZM8bsEubYcfLNJSH9ZHwIisw7EntAnsNpjHuDc2IXXUJTd5kA6doq6IhzkgDQ7xTD6Q1 bx5dnriRfZz8B2ZERpkD9YqqVRK4V3Jpe54sSPt3TtDNVKk3+wbqQDcBjlmHjST4dSJy21/UDiT 5y4g8tcKSv4ECxtMASk8gIuMXjNCWK+YHcrwEATMaRXz73ipCx0Qbvrx8mUAwlEHV4eqQBvhyeL GtBfvB6Ahq6pCei4odfB4YG5gVmNZ5TxvKTrneUQJiZ/ftQy
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1777; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=ukbBE4jqLaAnZb877ktWYcrAFTDTf2PsCWS9tyemGBY=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlEVhFHEx0VdTwDi2rACcmeVnHEypdmd2pNmHks r+lH4Ry9/2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRFYRQAKCRCPgPtYfRL+ TtIiCAC4R9nAgiMQjZCO/5mU/wf/nxEoTUTdqBt9lg3RdO1EreAHM8m6nzWChfYjPYnGbXHCu2F xnamcdNoXIrA8tW/PV/NM0V64iORJrkB6NzJrJuXBQMFukJhZCyFb8mnAulb0/SbErp9TR4YCKr M5ndH4LGJTuU72C5O/Ys+VdvqmbOkpK72KL7YUwJzIJ8+2Brq7Dnfs+7OMpiJKjdPGgOXOT+xd1 Zb4EqJj//MO3kK7l3JXb+ODqcAB8y6VCo6SF1S6gXgM56CWsD6X9Ir2KK5dlGewOROHZnmkUgnc F7w1Wc2uTSx8ajFcnQQo1/hMhbjQQDGVh6DCnCZ9TztZq/bU
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -77,38 +75,35 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/soc/fsl/qe/tsa.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/soc/fsl/dpaa2-console.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-index 3646153117b3..3f9981335590 100644
---- a/drivers/soc/fsl/qe/tsa.c
-+++ b/drivers/soc/fsl/qe/tsa.c
-@@ -706,7 +706,7 @@ static int tsa_probe(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/soc/fsl/dpaa2-console.c b/drivers/soc/fsl/dpaa2-console.c
+index 1dca693b6b38..6dbc77db7718 100644
+--- a/drivers/soc/fsl/dpaa2-console.c
++++ b/drivers/soc/fsl/dpaa2-console.c
+@@ -300,12 +300,10 @@ static int dpaa2_console_probe(struct platform_device *pdev)
+ 	return error;
  }
  
--static int tsa_remove(struct platform_device *pdev)
-+static void tsa_remove(struct platform_device *pdev)
+-static int dpaa2_console_remove(struct platform_device *pdev)
++static void dpaa2_console_remove(struct platform_device *pdev)
  {
- 	struct tsa *tsa = platform_get_drvdata(pdev);
- 	int i;
-@@ -729,7 +729,6 @@ static int tsa_remove(struct platform_device *pdev)
- 			clk_put(tsa->tdm[i].l1rclk_clk);
- 		}
- 	}
+ 	misc_deregister(&dpaa2_mc_console_dev);
+ 	misc_deregister(&dpaa2_aiop_console_dev);
+-
 -	return 0;
  }
  
- static const struct of_device_id tsa_id_table[] = {
-@@ -744,7 +743,7 @@ static struct platform_driver tsa_driver = {
- 		.of_match_table = of_match_ptr(tsa_id_table),
- 	},
- 	.probe = tsa_probe,
--	.remove = tsa_remove,
-+	.remove_new = tsa_remove,
+ static const struct of_device_id dpaa2_console_match_table[] = {
+@@ -322,7 +320,7 @@ static struct platform_driver dpaa2_console_driver = {
+ 		   .of_match_table = dpaa2_console_match_table,
+ 		   },
+ 	.probe = dpaa2_console_probe,
+-	.remove = dpaa2_console_remove,
++	.remove_new = dpaa2_console_remove,
  };
- module_platform_driver(tsa_driver);
+ module_platform_driver(dpaa2_console_driver);
  
 -- 
 2.40.1
