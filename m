@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 815B0CD548D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:49:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 135C8CD548D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:49:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvX3R1jRcz3jFh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:49:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvX3x5TsTz3jJH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:49:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWjS4Ndbz3dmQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:33:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWjY0Pdqz3dnX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:33:52 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWgg22v1z9vBg;
-	Mon, 25 Sep 2023 20:32:15 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWgh37Jpz9vC5;
+	Mon, 25 Sep 2023 20:32:16 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id abZkoF-TUBSo; Mon, 25 Sep 2023 20:32:15 +0200 (CEST)
+	with ESMTP id 7G5mQMR17wbr; Mon, 25 Sep 2023 20:32:16 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg62Xqjz9v8R;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg64Bf2z9vCc;
 	Mon, 25 Sep 2023 20:31:46 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 53BFC8B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8C2D08B763;
 	Mon, 25 Sep 2023 20:31:46 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id fe2BxJRTFoZO; Mon, 25 Sep 2023 20:31:46 +0200 (CEST)
+	with ESMTP id xlGRWuv3aVVO; Mon, 25 Sep 2023 20:31:46 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 51C468B792;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 57AB38B79C;
 	Mon, 25 Sep 2023 20:31:44 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVaxJ1499232
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVaPu1499240
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Mon, 25 Sep 2023 20:31:36 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVa171499231;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVa2j1499239;
 	Mon, 25 Sep 2023 20:31:36 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 25/37] powerpc: Refactor permission masks used for __P/__S table and kernel memory flags
-Date: Mon, 25 Sep 2023 20:31:39 +0200
-Message-ID: <d31b59efcdb38e675479563307af891aeadf6ec9.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 27/37] powerpc/64s: Use generic permission masks
+Date: Mon, 25 Sep 2023 20:31:41 +0200
+Message-ID: <d37a418de52e2c950cad6797e81663b56991366f.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666675; l=2192; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=SjqCn21A8OsRLFGLUdcgy2f8XlbTrW9A1aEPdpzsh+w=; b=9B0eUrfkWMGK91SorUCHG1n2jUdEJI2iNnT+Wi/BXz4GzexK4UEb5gp553xOVAOy++adrkuY3 aDtEfUTPaMLA6qJVBbhQHPAQ+Al51HInH73edftT7zb3CWw6CVQCiyO
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666676; l=2332; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=EQ4/fSxzPa+g2RB/3NHok+UdHRmxPzQbgo9j+zlTkHw=; b=RpjUdXu0r4rpXpK18aOBnQxPV+zFo4kHfVIsBSAsSbNawe7LNjXcNWQ3uOdO8Y+IiUQe6ZMKa 52WVnPAof6+B4ghLgFcsR30PE9RdIHudZGGoUH/c0uc+9dlV1SdzG0a
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,62 +71,59 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Prepare a common version of the permission masks that will be based
-on _PAGE_NA, _PAGE_RO, _PAGE_ROX, _PAGE_RW, _PAGE_RWX that will be
-defined in platform specific headers in later patches.
+book3s64 need specific masks because it needs _PAGE_PRIVILEGED
+for PAGE_NONE.
 
-Put them in a new header pgtable-masks.h which will be included by
-platforms.
-
-And prepare a common version of flags used for mapping kernel memory
-that will be based on _PAGE_RO, _PAGE_ROX, _PAGE_RW, _PAGE_RWX that
-will be defined in platform specific headers.
-
-Put them in unless _PAGE_KERNEL_RO is already defined so that platform
-specific definitions can be dismantled one by one.
+book3s64 already has _PAGE_RW and _PAGE_RWX.
+So add _PAGE_NA, _PAGE_RO and _PAGE_ROX and remove specific
+permission masks.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/pgtable-masks.h | 30 ++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
- create mode 100644 arch/powerpc/include/asm/pgtable-masks.h
+Not sure why it needs _PAGE_PRIVILEGED as it also have _PAGE_READ
+and _PAGE_READ is not set on PAGE_NONE.
+---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-masks.h b/arch/powerpc/include/asm/pgtable-masks.h
-new file mode 100644
-index 000000000000..808a3b9e8fc0
---- /dev/null
-+++ b/arch/powerpc/include/asm/pgtable-masks.h
-@@ -0,0 +1,30 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_PGTABLE_MASKS_H
-+#define _ASM_POWERPC_PGTABLE_MASKS_H
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index c3b921769ece..0fd12bdc7b5e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -17,6 +17,9 @@
+ #define _PAGE_EXEC		0x00001 /* execute permission */
+ #define _PAGE_WRITE		0x00002 /* write access allowed */
+ #define _PAGE_READ		0x00004	/* read access allowed */
++#define _PAGE_NA		_PAGE_PRIVILEGED
++#define _PAGE_RO		_PAGE_READ
++#define _PAGE_ROX		(_PAGE_READ | _PAGE_EXEC)
+ #define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
+ #define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
+ #define _PAGE_PRIVILEGED	0x00008 /* kernel access only */
+@@ -136,21 +139,8 @@
+ #define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
+ #define _PAGE_BASE	(_PAGE_BASE_NC)
+ 
+-/* Permission masks used to generate the __P and __S table,
+- *
+- * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
+- *
+- * Write permissions imply read permissions for now (we could make write-only
+- * pages on BookE but we don't bother for now). Execute permission control is
+- * possible on platforms that define _PAGE_EXEC
+- */
+-#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
+-#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_EXEC)
+-#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_READ)
+-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
+-#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
+-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
++#include <asm/pgtable-masks.h>
 +
-+#ifndef _PAGE_NA
-+#define _PAGE_NA	0
-+#define _PAGE_RO	_PAGE_READ
-+#define _PAGE_ROX	(_PAGE_READ | _PAGE_EXEC)
-+#define _PAGE_RW	(_PAGE_READ | _PAGE_WRITE)
-+#define _PAGE_RWX	(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
-+#endif
-+
-+/* Permission flags for kernel mappings */
-+#ifndef _PAGE_KERNEL_RO
-+#define _PAGE_KERNEL_RO		_PAGE_RO
-+#define _PAGE_KERNEL_ROX	_PAGE_ROX
-+#define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY)
-+#define _PAGE_KERNEL_RWX	(_PAGE_RWX | _PAGE_DIRTY)
-+#endif
-+
-+/* Permission masks used to generate the __P and __S table */
-+#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_NA)
-+#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
-+#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RWX)
-+#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_RO)
-+#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_ROX)
-+#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_RO)
-+#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_ROX)
-+
-+#endif /* _ASM_POWERPC_PGTABLE_MASKS_H */
+ /* Radix only, Hash uses PAGE_READONLY_X + execute-only pkey instead */
+ #define PAGE_EXECONLY	__pgprot(_PAGE_BASE | _PAGE_EXEC)
+ 
 -- 
 2.41.0
 
