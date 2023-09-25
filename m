@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C97C2CD4857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:48:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67E0ECD4857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Sep 2023 18:48:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvX2P40srz3hd8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:48:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RvX2w1BZ4z3ccb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 04:48:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWjK20XVz3cnV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:33:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvWjP0JpYz3dB3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 04:33:44 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4RvWgd1N9Pz9vBQ;
-	Mon, 25 Sep 2023 20:32:13 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4RvWgf5qYVz9vBd;
+	Mon, 25 Sep 2023 20:32:14 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id a_ig0qg1M75u; Mon, 25 Sep 2023 20:32:13 +0200 (CEST)
+	with ESMTP id eIN-HgKFLGKg; Mon, 25 Sep 2023 20:32:14 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg543K3z9vBx;
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4RvWg55gVvz9vCF;
 	Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 875B18B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id BF3BC8B763;
 	Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 0oZXEeFob9fs; Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
+	with ESMTP id Y7ZLTfexy5js; Mon, 25 Sep 2023 20:31:45 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.137])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5CE7D8B7A7;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 54B8F8B799;
 	Mon, 25 Sep 2023 20:31:44 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVaA71499252
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 38PIVbP71499264
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 25 Sep 2023 20:31:36 +0200
+	Mon, 25 Sep 2023 20:31:37 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVa5v1499251;
-	Mon, 25 Sep 2023 20:31:36 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 38PIVbff1499263;
+	Mon, 25 Sep 2023 20:31:37 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 30/37] powerpc/e500: Introduce _PAGE_READ and remove _PAGE_USER
-Date: Mon, 25 Sep 2023 20:31:44 +0200
-Message-ID: <0849ab6bf7ae2af23f94b0457fa40d0ea3983fe4.1695659959.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 33/37] powerpc/32s: Add _PAGE_WRITE to supplement _PAGE_RW
+Date: Mon, 25 Sep 2023 20:31:47 +0200
+Message-ID: <5798782869fe4d2698f104948dabd17657b89395.1695659959.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666676; l=6056; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=+yAU856OIxw+JvcrrlMBmiWVWQ85xnwsaQE3DVUWpKI=; b=cCBZ8XFteq1dmzjy9TDdpTKvw0JXcU0cmvWXqTRbr6Ny5aAlko3Js1X2nH6btsfykt8POmlT8 Va4u5VQnPp5Cy0H2NqCYEzd3uVegjIWW1wmrRIhatejhMvHQia7Mtyt
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1695666676; l=6489; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=w8lCMn6fQrKFUDciAu4k+9qWlzo84meF29r7KmIvWGM=; b=WZ9W8sVKqmGxVulTsX1UFYzcUMQzqw5SfB925cZyY9UJdKyut/GJfLjNw0P+JszcEgv4mkP1X 00h9pNCKurNDgHGfs3f7yJQu1uD9AoW6T4IMPvEHI5iznlT+IPccokx
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,156 +71,156 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-e500 MMU has 6 page protection bits:
-- R, W, X for supervisor
-- R, W, X for user
+Several places, _PAGE_RW maps to write permission and don't
+always imply read. To make it more clear, do as book3s/64 in
+commit c7d54842deb1 ("powerpc/mm: Use _PAGE_READ to indicate
+Read access") and use _PAGE_WRITE when more relevant.
 
-It means that it can support X without R.
-
-To do that, _PAGE_READ flag is needed.
-
-With 32 bits PTE there is no bit available for it in PTE. On the
-other hand the only real use of _PAGE_USER is to implement PAGE_NONE
-by clearing _PAGE_USER. As _PAGE_NONE can also be implemented by
-clearing _PAGE_READ, remove _PAGE_USER and add _PAGE_READ. Move
-_PAGE_PRESENT into bit 30 so that _PAGE_READ can match SR bit.
-
-With 64 bits PTE _PAGE_USER is already the combination of SR and UR
-so all we need to do is to rename it _PAGE_READ.
+For the time being _PAGE_WRITE is equivalent to _PAGE_RW but that
+will change when _PAGE_READ gets added in following patches.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/pte-85xx.h | 22 ++++---------------
- arch/powerpc/include/asm/nohash/pte-e500.h    | 20 ++++++++---------
- arch/powerpc/kernel/head_85xx.S               | 10 ++++-----
- 3 files changed, 18 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 15 ++++++++++++---
+ arch/powerpc/kernel/head_book3s_32.S         |  6 +++---
+ arch/powerpc/mm/book3s32/hash_low.S          | 12 ++++++------
+ arch/powerpc/mm/book3s32/mmu.c               |  2 +-
+ 4 files changed, 22 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-85xx.h b/arch/powerpc/include/asm/nohash/32/pte-85xx.h
-index 462acf69e302..653a342d3b25 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-85xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-85xx.h
-@@ -17,9 +17,9 @@
- */
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 80505915c77c..480ad6b4fd6f 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -31,6 +31,8 @@
+ #define _PAGE_RW	0x400	/* software: user write access allowed */
+ #define _PAGE_SPECIAL	0x800	/* software: Special page */
  
- /* Definitions for FSL Book-E Cores */
--#define _PAGE_PRESENT	0x00001	/* S: PTE contains a translation */
--#define _PAGE_USER	0x00002	/* S: User page (maps to UR) */
--#define _PAGE_RW	0x00004	/* S: Write permission (SW) */
-+#define _PAGE_READ	0x00001	/* H: Read permission (SR) */
-+#define _PAGE_PRESENT	0x00002	/* S: PTE contains a translation */
-+#define _PAGE_WRITE	0x00004	/* S: Write permission (SW) */
- #define _PAGE_DIRTY	0x00008	/* S: Page dirty */
- #define _PAGE_EXEC	0x00010	/* H: SX permission */
- #define _PAGE_ACCESSED	0x00020	/* S: Page referenced */
-@@ -31,13 +31,6 @@
- #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
- #define _PAGE_SPECIAL	0x00800 /* S: Special page */
- 
--#define _PAGE_WRITE	_PAGE_RW
--
--#define _PAGE_KERNEL_RO		0
--#define _PAGE_KERNEL_ROX	_PAGE_EXEC
--#define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW)
--#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
--
- /* No page size encoding in the linux PTE */
- #define _PAGE_PSIZE		0
- 
-@@ -63,14 +56,7 @@
- #define _PAGE_BASE	(_PAGE_BASE_NC)
- #endif
- 
--/* Permission masks used to generate the __P and __S table */
--#define PAGE_NONE	__pgprot(_PAGE_BASE)
--#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
--#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_EXEC)
--#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
--#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
--#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
--#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
-+#include <asm/pgtable-masks.h>
- 
- #endif /* __KERNEL__ */
- #endif /*  _ASM_POWERPC_NOHASH_32_PTE_FSL_85xx_H */
-diff --git a/arch/powerpc/include/asm/nohash/pte-e500.h b/arch/powerpc/include/asm/nohash/pte-e500.h
-index b775c7d465a4..31d2c3ea7df8 100644
---- a/arch/powerpc/include/asm/nohash/pte-e500.h
-+++ b/arch/powerpc/include/asm/nohash/pte-e500.h
-@@ -48,14 +48,19 @@
- 
- /* "Higher level" linux bit combinations */
- #define _PAGE_EXEC		(_PAGE_BAP_SX | _PAGE_BAP_UX) /* .. and was cache cleaned */
--#define _PAGE_RW		(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write permission */
-+#define _PAGE_READ		(_PAGE_BAP_SR | _PAGE_BAP_UR) /* User read permission */
-+#define _PAGE_WRITE		(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write permission */
++#define _PAGE_WRITE	_PAGE_RW
 +
- #define _PAGE_KERNEL_RW		(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
- #define _PAGE_KERNEL_RO		(_PAGE_BAP_SR)
- #define _PAGE_KERNEL_RWX	(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY | _PAGE_BAP_SX)
- #define _PAGE_KERNEL_ROX	(_PAGE_BAP_SR | _PAGE_BAP_SX)
--#define _PAGE_USER		(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
- 
--#define _PAGE_WRITE	_PAGE_RW
-+#define _PAGE_NA	0
-+#define _PAGE_RO	_PAGE_READ
-+#define _PAGE_ROX	(_PAGE_READ | _PAGE_BAP_UX)
-+#define _PAGE_RW	(_PAGE_READ | _PAGE_WRITE)
-+#define _PAGE_RWX	(_PAGE_READ | _PAGE_WRITE | _PAGE_BAP_UX)
- 
- #define _PAGE_SPECIAL	_PAGE_SW0
- 
-@@ -90,14 +95,7 @@
- #define _PAGE_BASE	(_PAGE_BASE_NC)
- #endif
- 
--/* Permission masks used to generate the __P and __S table */
--#define PAGE_NONE	__pgprot(_PAGE_BASE)
--#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
--#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_BAP_UX)
--#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
--#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_BAP_UX)
--#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
--#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_BAP_UX)
-+#include <asm/pgtable-masks.h>
- 
- #ifndef __ASSEMBLY__
- static inline pte_t pte_mkexec(pte_t pte)
-diff --git a/arch/powerpc/kernel/head_85xx.S b/arch/powerpc/kernel/head_85xx.S
-index 594756a62c8e..3739d5a281a7 100644
---- a/arch/powerpc/kernel/head_85xx.S
-+++ b/arch/powerpc/kernel/head_85xx.S
-@@ -485,10 +485,10 @@ END_BTB_FLUSH_SECTION
- 	 */
- 	mfspr	r12,SPRN_ESR
  #ifdef CONFIG_PTE_64BIT
--	li	r13,_PAGE_PRESENT
-+	li	r13,_PAGE_PRESENT|_PAGE_BAP_SR
- 	oris	r13,r13,_PAGE_ACCESSED@h
- #else
--	li	r13,_PAGE_PRESENT|_PAGE_ACCESSED
-+	li	r13,_PAGE_PRESENT|_PAGE_READ|_PAGE_ACCESSED
- #endif
- 	rlwimi	r13,r12,11,29,29
+ /* We never clear the high word of the pte */
+ #define _PTE_NONE_MASK	(0xffffffff00000000ULL | _PAGE_HASHPTE)
+@@ -347,7 +349,7 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
+ {
+-	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
++	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
+ }
  
-@@ -783,15 +783,15 @@ BEGIN_MMU_FTR_SECTION
- 	mtspr	SPRN_MAS7, r10
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+@@ -406,7 +408,11 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
+ }
+ 
+ /* Generic accessors to PTE bits */
+-static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
++static inline bool pte_write(pte_t pte)
++{
++	return !!(pte_val(pte) & _PAGE_WRITE);
++}
++
+ static inline int pte_read(pte_t pte)		{ return 1; }
+ static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
+ static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
+@@ -469,7 +475,7 @@ static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
+ /* Generic modifiers for PTE bits */
+ static inline pte_t pte_wrprotect(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_RW);
++	return __pte(pte_val(pte) & ~_PAGE_WRITE);
+ }
+ 
+ static inline pte_t pte_exprotect(pte_t pte)
+@@ -499,6 +505,9 @@ static inline pte_t pte_mkpte(pte_t pte)
+ 
+ static inline pte_t pte_mkwrite_novma(pte_t pte)
+ {
++	/*
++	 * write implies read, hence set both
++	 */
+ 	return __pte(pte_val(pte) | _PAGE_RW);
+ }
+ 
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index 6764b98ca360..615d429d7bd1 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -503,9 +503,9 @@ DataLoadTLBMiss:
+ 	andc.	r1,r1,r0		/* check access & ~permission */
+ 	bne-	DataAddressInvalid	/* return if access not permitted */
+ 	/* Convert linux-style PTE to low word of PPC-style PTE */
+-	rlwinm	r1,r0,32-9,30,30	/* _PAGE_RW -> PP msb */
++	rlwinm	r1,r0,32-9,30,30	/* _PAGE_WRITE -> PP msb */
+ 	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
+-	rlwimi	r1,r0,32-3,24,24	/* _PAGE_RW -> _PAGE_DIRTY */
++	rlwimi	r1,r0,32-3,24,24	/* _PAGE_WRITE -> _PAGE_DIRTY */
+ 	rlwimi	r0,r0,32-1,31,31	/* _PAGE_USER -> PP lsb */
+ 	xori	r1,r1,_PAGE_DIRTY	/* clear dirty when not rw */
+ 	ori	r1,r1,0xe04		/* clear out reserved bits */
+@@ -689,7 +689,7 @@ hash_page_dsi:
+ 	mfdar	r4
+ 	mfsrr0	r5
+ 	mfsrr1	r9
+-	rlwinm	r3, r3, 32 - 15, _PAGE_RW	/* DSISR_STORE -> _PAGE_RW */
++	rlwinm	r3, r3, 32 - 15, _PAGE_WRITE	/* DSISR_STORE -> _PAGE_WRITE */
+ 	bl	hash_page
+ 	mfspr	r10, SPRN_SPRG_THREAD
+ 	restore_regs_thread r10
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index 8b804e1a9fa4..acb0584c174c 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -37,7 +37,7 @@
+ /*
+  * Load a PTE into the hash table, if possible.
+  * The address is in r4, and r3 contains an access flag:
+- * _PAGE_RW (0x400) if a write.
++ * _PAGE_WRITE (0x400) if a write.
+  * r9 contains the SRR1 value, from which we use the MSR_PR bit.
+  * SPRG_THREAD contains the physical address of the current task's thread.
+  *
+@@ -113,15 +113,15 @@ _GLOBAL(hash_page)
+ 	lwarx	r6,0,r8			/* get linux-style pte, flag word */
+ #ifdef CONFIG_PPC_KUAP
+ 	mfsrin	r5,r4
+-	rlwinm	r0,r9,28,_PAGE_RW	/* MSR[PR] => _PAGE_RW */
+-	rlwinm	r5,r5,12,_PAGE_RW	/* Ks => _PAGE_RW */
++	rlwinm	r0,r9,28,_PAGE_WRITE	/* MSR[PR] => _PAGE_WRITE */
++	rlwinm	r5,r5,12,_PAGE_WRITE	/* Ks => _PAGE_WRITE */
+ 	andc	r5,r5,r0		/* Ks & ~MSR[PR] */
+-	andc	r5,r6,r5		/* Clear _PAGE_RW when Ks = 1 && MSR[PR] = 0 */
++	andc	r5,r6,r5		/* Clear _PAGE_WRITE when Ks = 1 && MSR[PR] = 0 */
+ 	andc.	r5,r3,r5		/* check access & ~permission */
  #else
--	li	r10, (_PAGE_EXEC | _PAGE_PRESENT)
-+	li	r10, (_PAGE_EXEC | _PAGE_READ)
- 	mr	r13, r11
- 	rlwimi	r10, r11, 31, 29, 29	/* extract _PAGE_DIRTY into SW */
- 	and	r12, r11, r10
--	andi.	r10, r11, _PAGE_USER	/* Test for _PAGE_USER */
-+	mcrf	cr0, cr5		/* Test for user page */
- 	slwi	r10, r12, 1
- 	or	r10, r10, r12
- 	rlwinm	r10, r10, 0, ~_PAGE_EXEC	/* Clear SX on user pages */
--	iseleq	r12, r12, r10
-+	isellt	r12, r10, r12
- 	rlwimi	r13, r12, 0, 20, 31	/* Get RPN from PTE, merge w/ perms */
- 	mtspr	SPRN_MAS3, r13
+ 	andc.	r5,r3,r6		/* check access & ~permission */
  #endif
+-	rlwinm	r0,r3,32-3,24,24	/* _PAGE_RW access -> _PAGE_DIRTY */
++	rlwinm	r0,r3,32-3,24,24	/* _PAGE_WRITE access -> _PAGE_DIRTY */
+ 	ori	r0,r0,_PAGE_ACCESSED|_PAGE_HASHPTE
+ #ifdef CONFIG_SMP
+ 	bne-	.Lhash_page_out		/* return if access not permitted */
+@@ -307,7 +307,7 @@ Hash_msk = (((1 << Hash_bits) - 1) * 64)
+ __REF
+ _GLOBAL(create_hpte)
+ 	/* Convert linux-style PTE (r5) to low word of PPC-style PTE (r8) */
+-	rlwinm	r8,r5,32-9,30,30	/* _PAGE_RW -> PP msb */
++	rlwinm	r8,r5,32-9,30,30	/* _PAGE_WRITE -> PP msb */
+ 	rlwinm	r0,r5,32-6,30,30	/* _PAGE_DIRTY -> PP msb */
+ 	and	r8,r8,r0		/* writable if _RW & _DIRTY */
+ 	rlwimi	r5,r5,32-1,30,30	/* _PAGE_USER -> PP msb */
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index d1041c946ce2..06bf0972792d 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -277,7 +277,7 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
+ 	/* Do DBAT first */
+ 	wimgxpp = flags & (_PAGE_WRITETHRU | _PAGE_NO_CACHE
+ 			   | _PAGE_COHERENT | _PAGE_GUARDED);
+-	wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
++	wimgxpp |= (flags & _PAGE_WRITE)? BPP_RW: BPP_RX;
+ 	bat[1].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
+ 	bat[1].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
+ 	if (!is_kernel_addr(virt))
 -- 
 2.41.0
 
