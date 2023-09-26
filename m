@@ -4,87 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73078E7F12C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 21:30:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8479BE7F13D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 22:03:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=permerror header.d=jannau.net header.i=@jannau.net header.a=rsa-sha1 header.s=fm1 header.b=kKw7XbpC;
-	dkim=permerror header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha1 header.s=i47b949f6.fm2 header.b=KUzo3ljM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hrnDU6sY;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RwCZQ6YKxz3cF1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Sep 2023 07:30:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RwDK40rTsz3cGJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Sep 2023 08:03:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=jannau.net header.i=@jannau.net header.a=rsa-sha256 header.s=fm1 header.b=kKw7XbpC;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=i47b949f6.fm2 header.b=KUzo3ljM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hrnDU6sY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=jannau.net (client-ip=64.147.123.18; helo=wnew4-smtp.messagingengine.com; envelope-from=janne@jannau.net; receiver=lists.ozlabs.org)
-Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com [64.147.123.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bergner@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rw8Q40Y6Rz3c2X
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2023 05:07:40 +1000 (AEST)
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
-	by mailnew.west.internal (Postfix) with ESMTP id CAFE22B00139;
-	Tue, 26 Sep 2023 15:07:36 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute2.internal (MEProxy); Tue, 26 Sep 2023 15:07:38 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jannau.net; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm1; t=1695755256; x=1695758856; bh=YD
-	o6eC1pWX0Zqv0pmi3rbnqY8yGcQr0MnMkqXd/VPtI=; b=kKw7XbpCvCn0lQQ+1a
-	PIuZkUm0Zdt8RikObUsnEVPxGANMOMKYIcn7A4evrXGmPtBi5yFlMGB9ScK0Jkoq
-	BRZA9vF9eqcPTEZxKErOVLU66Cj9BN0b5NyblhYD2shc5Hy05sik2UvpPFVRffO/
-	G1BmJY6lw1/mTwABgCa742MSY4NwAAb0l1IMBZG+n6SxrF7G5xY0xo1SylltEhYr
-	1jd0j88tpIB6rWzEUniTN61hsdCH/0qt5Q6bImSI6YJfYIJqRIQRNT/CqsD97yiQ
-	2gAYnr86NIw4srks3xINBNTRopFDUKslwzDNUbSpG8hBX/xdvqRTn6AG63Wt25SZ
-	0dnQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:sender:subject
-	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=i47b949f6.fm2; t=1695755256; x=1695758856; bh=YDo
-	6eC1pWX0Zqv0pmi3rbnqY8yGcQr0MnMkqXd/VPtI=; b=KUzo3ljMHtKyWqfmbfD
-	jEd0ZKci1dVDcAiE+X9HFaV+fgIxuM/+98NOUwqh6cevLfKap7z6rqYblgrArXZn
-	0lX7ZSD6c3mUDkt7If+fhdqmsaYv1c6Qg/tdLXKQVMblRg0ZvXjQtL11gXNaJft9
-	6T9OSDdvqsiUpucn1jqQiVVd19MN0IBX0rM1/YvWelPskVIXVsfl0/BSxECr/grv
-	uj9b0Y2jfyoOS72nL+t4Y95/1p6Q58H9AYOMfNLo1qMDPmyP5Et4Az9JZCCJ1GWB
-	tVs40pj9/Y5Bx0SHHKgi/2D5MRIkc7Se9mEA7x7zxo9dQyfMJvtyfe8+fiRTUyk7
-	HMA==
-X-ME-Sender: <xms:9isTZbzzlr4WTTr5f1w19zE5_0GM08wF6QcGsaUrhh6DiMZyDLPBpg>
-    <xme:9isTZTTLhsZj74fNnAPOCriAIeVkBLrON_5rx5afVk0nyKTfua86LPyVmOZQUq0kj
-    3eFN_G3W43hZZJ2GVg>
-X-ME-Received: <xmr:9isTZVWVRQVzn_Rr87HULypiW1tzs5fQdTECk3T6wC-REOUQDFq7CFQMzg2skK7Fwvn8haesbhLb4bAfjBwxR4reKu72JGDurw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvjedrtddtgddutdegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtjeenucfhrhhomheplfgrnhhn
-    vgcuifhruhhnrghuuceojhesjhgrnhhnrghurdhnvghtqeenucggtffrrghtthgvrhhnpe
-    fgvdffveelgedujeeffeehheekheelheefgfejffeftedugeethfeuudefheefteenucev
-    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehjrghnnhgvse
-    hjrghnnhgruhdrnhgvth
-X-ME-Proxy: <xmx:9isTZVhfCmg2lkKqKMcbtqKHdUbKP7HQ1HoGwvLcKXoVO5dgzwbrAA>
-    <xmx:9isTZdBsdw97CdD73Jk_YyTJYMvqBKubBULSbJIWjcICj8L87vjpnQ>
-    <xmx:9isTZeLQQhJiA2aIdTk6NLOD8-Flrs-g_wUp2McpDzRyttPL8u2lKw>
-    <xmx:-CsTZXR0BDwR-7loYryqP26ZjBMxC1haNwEXKM4xg9Y7HXrc9ph8FlOnEaQ>
-Feedback-ID: i47b949f6:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 26 Sep 2023 15:07:34 -0400 (EDT)
-Date: Tue, 26 Sep 2023 21:07:33 +0200
-From: Janne Grunau <j@jannau.net>
-To: Jason Gunthorpe <jgg@nvidia.com>
-Subject: Re: [PATCH 8/8] iommu/dart: Call apple_dart_finalize_domain() as
- part of alloc_paging()
-Message-ID: <ZRMr9SK3F85WGXE7@robin>
-References: <0-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
- <8-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RwDHz3JvLz2yD7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2023 08:02:39 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38QLnYC9021734;
+	Tue, 26 Sep 2023 22:02:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : to : cc : from : subject : content-type :
+ content-transfer-encoding; s=pp1;
+ bh=zZB0dYUR3FFVNmHrxi9HQc22uG3RrL+fhXjXqsYEZiw=;
+ b=hrnDU6sYSrDJR9uVrEze/U4yIj2DuSNzTAEZe4PC3SBiEZxVYmrBdvwG3hpFbZebh0Iu
+ BbFDF4AzmZvn+2XQEzD/2iIhVlhc+hPsh6kQInrNoKPkUqrg966jupfLb5DIIlr1wzLj
+ y9lTID71M2kLSwUfd9XQISyyQAtXibueOXIsjXVP0/+z/fq3speynzlJXhIcthqG1ZoN
+ wnIdUfexsGKubD9xH+lnt8atVb1j9NOYFqQwWVErHTtTqnKvYgwC8CjRkeO7RY1tRpus
+ CVKF5XMGFjlyRK/wHIhgX0iqQrO//lhkVT+SESJR0g3JVZFCaiCRiJSn49qUefi2GRB3 Bg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tc7hw07sd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 26 Sep 2023 22:02:30 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38QLx22g014239;
+	Tue, 26 Sep 2023 22:02:30 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tc7hw07qj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 26 Sep 2023 22:02:29 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38QK3o16030753;
+	Tue, 26 Sep 2023 22:02:27 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tacjjxa79-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 26 Sep 2023 22:02:27 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38QM2QDj54133134
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 26 Sep 2023 22:02:26 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 996525805B;
+	Tue, 26 Sep 2023 22:02:26 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C502C58059;
+	Tue, 26 Sep 2023 22:02:25 +0000 (GMT)
+Received: from [9.61.104.45] (unknown [9.61.104.45])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 26 Sep 2023 22:02:25 +0000 (GMT)
+Message-ID: <fd879f60-3f0b-48d1-bfa1-6d337768207e@linux.ibm.com>
+Date: Tue, 26 Sep 2023 17:02:25 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <8-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com>
-X-Mailman-Approved-At: Wed, 27 Sep 2023 07:27:38 +1000
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: Peter Bergner <bergner@linux.ibm.com>
+Subject: [PATCH] uapi/auxvec: Define AT_HWCAP3 and AT_HWCAP4 aux vector,
+ entries
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: gO_5ccXBsh6B5i09S1LfJSWkSowyQdRR
+X-Proofpoint-ORIG-GUID: h-kAgeXMqo_4QcCKYyxNVFZtgAGCP97Z
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-09-26_15,2023-09-26_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 bulkscore=0 priorityscore=1501
+ suspectscore=0 mlxscore=0 impostorscore=0 spamscore=0 clxscore=1011
+ mlxlogscore=999 malwarescore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2309180000 definitions=main-2309260189
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,91 +98,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, Kevin Tian <kevin.tian@intel.com>, Will Deacon <will@kernel.org>, Sven Peter <sven@svenpeter.dev>, linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>, Hector Martin <marcan@marcan.st>, Nicholas Piggin <npiggin@gmail.com>, Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux.dev, asahi@lists.linux.dev, David Woodhouse <dwmw2@infradead.org>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: GNU C Library <libc-alpha@sourceware.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Sep 22, 2023 at 02:07:59PM -0300, Jason Gunthorpe wrote:
-> In many cases the dev argument will now be !NULL so we should use it to
-> finalize the domain at allocation.
-> 
-> Make apple_dart_finalize_domain() accept the correct type.
-> 
-> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
-> ---
->  drivers/iommu/apple-dart.c | 26 ++++++++++++++++++--------
->  1 file changed, 18 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/iommu/apple-dart.c b/drivers/iommu/apple-dart.c
-> index 62efe0aa056f60..2c1832e357c7c6 100644
-> --- a/drivers/iommu/apple-dart.c
-> +++ b/drivers/iommu/apple-dart.c
-> @@ -568,10 +568,9 @@ apple_dart_setup_translation(struct apple_dart_domain *domain,
->  	stream_map->dart->hw->invalidate_tlb(stream_map);
->  }
->  
-> -static int apple_dart_finalize_domain(struct iommu_domain *domain,
-> +static int apple_dart_finalize_domain(struct apple_dart_domain *dart_domain,
->  				      struct apple_dart_master_cfg *cfg)
->  {
-> -	struct apple_dart_domain *dart_domain = to_dart_domain(domain);
->  	struct apple_dart *dart = cfg->stream_maps[0].dart;
->  	struct io_pgtable_cfg pgtbl_cfg;
->  	int ret = 0;
-> @@ -597,16 +596,17 @@ static int apple_dart_finalize_domain(struct iommu_domain *domain,
->  		.iommu_dev = dart->dev,
->  	};
->  
-> -	dart_domain->pgtbl_ops =
-> -		alloc_io_pgtable_ops(dart->hw->fmt, &pgtbl_cfg, domain);
-> +	dart_domain->pgtbl_ops = alloc_io_pgtable_ops(dart->hw->fmt, &pgtbl_cfg,
-> +						      &dart_domain->domain);
->  	if (!dart_domain->pgtbl_ops) {
->  		ret = -ENOMEM;
->  		goto done;
->  	}
->  
-> -	domain->pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
-> -	domain->geometry.aperture_start = 0;
-> -	domain->geometry.aperture_end = (dma_addr_t)DMA_BIT_MASK(dart->ias);
-> +	dart_domain->domain.pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
-> +	dart_domain->domain.geometry.aperture_start = 0;
-> +	dart_domain->domain.geometry.aperture_end =
-> +		(dma_addr_t)DMA_BIT_MASK(dart->ias);
->  
->  	dart_domain->finalized = true;
->  
-> @@ -661,7 +661,7 @@ static int apple_dart_attach_dev_paging(struct iommu_domain *domain,
->  	if (cfg->stream_maps[0].dart->force_bypass)
->  		return -EINVAL;
->  
-> -	ret = apple_dart_finalize_domain(domain, cfg);
-> +	ret = apple_dart_finalize_domain(dart_domain, cfg);
->  	if (ret)
->  		return ret;
->  
-> @@ -757,6 +757,16 @@ static struct iommu_domain *apple_dart_domain_alloc_paging(struct device *dev)
->  
->  	mutex_init(&dart_domain->init_lock);
->  
-> +	if (dev) {
-> +		struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
-> +		int ret;
-> +
-> +		ret = apple_dart_finalize_domain(dart_domain, cfg);
-> +		if (ret) {
-> +			kfree(dart_domain);
-> +			return ERR_PTR(ret);
-> +		}
-> +	}
->  	return &dart_domain->domain;
->  }
->  
-> -- 
-> 2.42.0
+The powerpc toolchain keeps a copy of the HWCAP bit masks in our TCB for fast
+access by our __builtin_cpu_supports built-in function.  The TCB space for
+the HWCAP entries - which are created in pairs - is an ABI extension, so
+waiting to create the space for HWCAP3 and HWCAP4 until we need them is
+problematical, given distro unwillingness to apply ABI modifying patches
+to distro point releases.  Define AT_HWCAP3 and AT_HWCAP4 in the generic
+uapi header so they can be used in GLIBC to reserve space in the powerpc
+TCB for their future use.
 
-Reviewed-by: Janne Grunau <j@jannau.net>
+I scanned both the Linux and GLIBC source codes looking for unused AT_*
+values and 29 and 30 did not seem to be used, so they are what I went
+with.  If anyone sees a problem with using those specific values, I'm
+amenable to using other values, just let me know what would be better.
 
-best regards
+Peter
 
-Janne
+
+Signed-off-by: Peter Bergner <bergner@linux.ibm.com>
+---
+ include/uapi/linux/auxvec.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/uapi/linux/auxvec.h b/include/uapi/linux/auxvec.h
+index 6991c4b8ab18..cc61cb9b3e9a 100644
+--- a/include/uapi/linux/auxvec.h
++++ b/include/uapi/linux/auxvec.h
+@@ -32,6 +32,8 @@
+ #define AT_HWCAP2 26	/* extension of AT_HWCAP */
+ #define AT_RSEQ_FEATURE_SIZE	27	/* rseq supported feature size */
+ #define AT_RSEQ_ALIGN		28	/* rseq allocation alignment */
++#define AT_HWCAP3 29	/* extension of AT_HWCAP */
++#define AT_HWCAP4 30	/* extension of AT_HWCAP */
+ 
+ #define AT_EXECFN  31	/* filename of program */
+ 
+-- 
+2.39.3
+
