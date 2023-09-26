@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93F80E7D24B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 08:09:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22C01E7E62F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 13:00:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cA2N1EB/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=b+Ypagne;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RvspQ1M7xz3dDK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 18:09:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rw0Fx45D6z3c2K
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Sep 2023 23:00:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cA2N1EB/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=b+Ypagne;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RvsnR2q2kz3bbW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 18:08:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rw0Dv6wMkz3bV2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2023 22:59:11 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id EACEF6130D;
-	Tue, 26 Sep 2023 08:08:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78BFDC43391;
-	Tue, 26 Sep 2023 08:08:22 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id ED792CE1391;
+	Tue, 26 Sep 2023 12:59:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AC51C433C8;
+	Tue, 26 Sep 2023 12:59:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695715704;
-	bh=aH7ozQDhP9+rq7B4jdXLYIVBH8NAT/Xa3VrnhdITKYM=;
+	s=k20201202; t=1695733147;
+	bh=PU0fWrPi2wnyXnpIwY9YIk3MU1KBxKDqXRUb7dlII4M=;
 	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=cA2N1EB/lkUXDBj7skkCBPE9ET93tY348x5+OtyzW0VOVK3FNkYS/qnQKMpn8NfAt
-	 SDZeYQGbg8TwoZQ4S2gkmzcY1E5vpWwHCrqFWMJ12/8W3m6B81YzX6NWdUE2lFC+io
-	 7Y4RWyuyhQeHVaNVV93n8gqs21mY/Ip1VPtW6J+dhY1U59P9ZQQ7uF157qc9GxqVif
-	 nNMo6gK/TfS1KAUv3KjsD65+RzGeF1LXwQFsiooPbYAux7uZd0cJCri2BRJMAoVkI0
-	 a7B3WJU+ufJ5mWC1Z6IwhWl9KkZJF4ik/IJX5FFFMAB8RmBAkF2WMDaSkVBLRT2xn1
-	 ye1yKzgOK+/aQ==
+	b=b+YpagnepcbUHx80T7k3ml7KCb3JhFC31t8LW9vdMVJk/kcJ5IWDTxpS9u61qoXzE
+	 2kXBApS+UwtcgzL4CeoYqjXb0atf/X2582EqKA7bZbuaXzptBxPVdqG2LmTiJRmJLt
+	 dEtD099OPi6qilVxVuJ+dlS+9D/2Nh8j+78QtRi9DabSCTCVXqbA5vUoJKNg93hjWm
+	 RmmF1zjt3dEybUn1HgY8zR4LwekJgQcq2yexzKaoYuVJv3V4tPW2xJcDHSJ6EL5dz1
+	 NY3Wba5i5N7PlxOGWGzplO+FDF2m78r/BZ2MsjCmyZMpc6N3uNXnay5fWP5ebW5Thc
+	 YTihssY+1phMg==
 From: Mark Brown <broonie@kernel.org>
 To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
  nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, matuszpd@gmail.com, 
- Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <1695116533-23287-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1695116533-23287-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Don't disable bitclock for i.MX8MP
-Message-Id: <169571570223.2520438.2470473456796299214.b4-ty@kernel.org>
-Date: Tue, 26 Sep 2023 10:08:22 +0200
+ linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
+In-Reply-To: <1695202992-24864-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1695202992-24864-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl-asoc-card: use integer type for fll_id and
+ pll_id
+Message-Id: <169573314495.2623437.8401087365242286082.b4-ty@kernel.org>
+Date: Tue, 26 Sep 2023 14:59:04 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -66,16 +66,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 19 Sep 2023 17:42:13 +0800, Shengjiu Wang wrote:
-> On i.MX8MP, the BCE and TERE bit are binding with mclk
-> enablement, if BCE and TERE are cleared the MCLK also be
-> disabled on output pin, that cause the external codec (wm8960)
-> in wrong state.
+On Wed, 20 Sep 2023 17:43:12 +0800, Shengjiu Wang wrote:
+> As the pll_id and pll_id can be zero (WM8960_SYSCLK_AUTO)
+> with the commit 2bbc2df46e67 ("ASoC: wm8960: Make automatic the
+> default clocking mode")
 > 
-> Codec (wm8960) is using the mclk to generate PLL clock,
-> if mclk is disabled before disabling PLL, the codec (wm8960)
-> won't generate bclk and frameclk when sysclk switch to
-> MCLK source in next test case.
+> Then the machine driver will skip to call set_sysclk() and set_pll()
+> for codec, when the sysclk rate is different with what wm8960 read
+> at probe, the output sound frequency is wrong.
 > 
 > [...]
 
@@ -85,8 +83,8 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: fsl_sai: Don't disable bitclock for i.MX8MP
-      commit: 197c53c8ecb34f2cd5922f4bdcffa8f701a134eb
+[1/1] ASoC: fsl-asoc-card: use integer type for fll_id and pll_id
+      commit: 2b21207afd06714986a3d22442ed4860ba4f9ced
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
