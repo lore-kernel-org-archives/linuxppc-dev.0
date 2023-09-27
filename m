@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58FD9E7F153
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Sep 2023 03:17:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02A3FE7F154
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Sep 2023 03:23:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M9F8SVk0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PuEhOM7h;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RwMGq621Zz3cmD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Sep 2023 13:17:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RwMQ84nsfz3ccW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Sep 2023 13:23:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M9F8SVk0;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PuEhOM7h;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RwMFm4FNfz2yV3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2023 13:16:12 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38R3CPAZ003049;
-	Wed, 27 Sep 2023 03:16:05 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RwMP86WrKz2yV3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2023 13:22:36 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38R3Ce2X019410;
+	Wed, 27 Sep 2023 03:22:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : mime-version : content-transfer-encoding; s=pp1;
  bh=w2EqPHVFSkf0ck6ikXkJ/mF2FdyRv28foeZP31FQoKE=;
- b=M9F8SVk09ihkG8MerhZodMmD8hXx9KX+N7+tExG8Z0LSO29AFnCNOfg11t8NssMz4Wnb
- 1EF6KFafoa5pIA9MNe2koZGclIfeGwWkbvHUwSrDZYwb2F8oWgvETp6T4BroWjkLTfbY
- DiX/mxzOcGRMESmlga0Vb85rlwKEGsLoMiFLZlgzPaU/365MDHFPk0UWYZR5vTp7my5E
- Pev6hqQkKQoyMi37HTW1yaGKu9URhA5LC3xWY7y/EWfDS+vLq8tB6Lw0R8ZzWwCRViDy
- VTlyY2o1y3pfnpiy2kK2KL0xViDf6yXmWkMUBb/6MoeOq+BrXetKviio/OtQyclztvvw ZA== 
+ b=PuEhOM7hm5hYQsJVq20kqPd0d8en2gJ8KGvTF/7A1Znu4yksbJRHjCL+5NAAk66yZBCE
+ cZSI9qj+CBNsyX61tWm6f1oOAS/G43oPSsa2vWdqyghlsejWQsGrtJ3NOubFJADb7Yyz
+ UWzteCwI2wgajFh+CkQEgVFOe6a6R+pZo4MSgSv5NV44FWI+5L/cTMDG40WqyacgiZdw
+ aaJEhSbfIQHzNbEruOLZmX+M3FhV+FIrJczLomtTukE51rYILh9uYUToT22AFTj4Tlpw
+ VYZmW70Dgow5MihdabmJQPVFeBFEkbK+tSLnPsU2pVN7E1vzvt1HRp4S+C76rVjkAz2d 9g== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tcc9e824a-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tcc9a064a-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 27 Sep 2023 03:16:05 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38R3G4Fv012573;
-	Wed, 27 Sep 2023 03:16:04 GMT
+	Wed, 27 Sep 2023 03:22:30 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38R3F6eT026143;
+	Wed, 27 Sep 2023 03:22:29 GMT
 Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tcc9e8244-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tcc9a063v-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 27 Sep 2023 03:16:04 +0000
+	Wed, 27 Sep 2023 03:22:29 +0000
 Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38R2jlol008126;
-	Wed, 27 Sep 2023 03:16:04 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3taaqyghy1-1
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38R2xnbp008150;
+	Wed, 27 Sep 2023 03:22:28 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3taaqygjwx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 27 Sep 2023 03:16:04 +0000
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38R3G20427787656
+	Wed, 27 Sep 2023 03:22:28 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38R3MLJv44826900
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 27 Sep 2023 03:16:02 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4573588B2;
-	Wed, 27 Sep 2023 03:16:02 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4DAE588AF;
-	Wed, 27 Sep 2023 03:16:01 +0000 (GMT)
+	Wed, 27 Sep 2023 03:22:21 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 37ADD5857A;
+	Wed, 27 Sep 2023 03:02:45 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BA56858576;
+	Wed, 27 Sep 2023 03:02:33 +0000 (GMT)
 Received: from localhost.ibm.com (unknown [9.67.66.34])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 27 Sep 2023 03:16:01 +0000 (GMT)
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 27 Sep 2023 03:02:33 +0000 (GMT)
 From: Haren Myneni <haren@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [PATCH] powerpc/pseries/vas: Migration suspend waits for no in-progress open windows
-Date: Tue, 26 Sep 2023 20:15:58 -0700
-Message-Id: <20230927031558.759396-1-haren@linux.ibm.com>
+Date: Tue, 26 Sep 2023 20:02:30 -0700
+Message-Id: <20230927030230.757986-1-haren@linux.ibm.com>
 X-Mailer: git-send-email 2.26.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: PpNthFB9AebVBLkbusrNu1owthF_D90Y
-X-Proofpoint-GUID: -adOGKRPFILkXNlBKkIfwyIlOJIaSXZ1
+X-Proofpoint-ORIG-GUID: UCFcvzdv3zXe2do0YdmBSzdMimG7sUOp
+X-Proofpoint-GUID: sXg5gzdzPuacaNrwOsEjSyjxj1Q0zY7U
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-09-26_19,2023-09-26_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 phishscore=0
- malwarescore=0 bulkscore=0 impostorscore=0 spamscore=0 lowpriorityscore=0
- mlxlogscore=999 adultscore=0 priorityscore=1501 mlxscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2309180000
- definitions=main-2309270024
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ mlxlogscore=999 spamscore=0 clxscore=1015 bulkscore=0 lowpriorityscore=0
+ adultscore=0 impostorscore=0 priorityscore=1501 phishscore=0 mlxscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2309270024
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
