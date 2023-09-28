@@ -4,49 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8881FCE7AF9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 03:55:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44DCBCE7B04
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 07:08:04 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kBn8KKVW;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rx0436hZcz3cbs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 13:54:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.46; helo=mail-io1-f46.google.com; envelope-from=namhyung@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-io1-f46.google.com (mail-io1-f46.google.com [209.85.166.46])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rx4Lp3Lvrz3cb5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 17:08:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kBn8KKVW;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.200; helo=relay7-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rx03T0zvtz307h
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 13:54:27 +1000 (AEST)
-Received: by mail-io1-f46.google.com with SMTP id ca18e2360f4ac-79fa2dbd793so373072539f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2023 20:54:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695873264; x=1696478064;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=6ffh5AuBADYvsfT7a3KQemhZt061Q+/YJzr1xF3hsJY=;
-        b=kzFB9a0nnBqfuiBj/jelWqGsvxnlhCXv0wEripiPB90dDA6+JFnrZ/srE0afdixsg9
-         bClB/uLG0u865reffUp1QBUU2hBuEWkWn1I4oVyfiSSPl+GVG5+3eibzEmVo1VrsoqXh
-         O+AX9b9pfhawFYzluaHuoXjiQHL5xxXUs74VkEShHbB1DtW+nQ0dfFgng+n9a2ijzKdS
-         CWbb2d9gSdadaE21YtlDVqhM8e+w33tN/dX31kPHJ3kZpBY/T8sFZwDUOLTEXl5aURG/
-         +F7d//dsCu8sTHjhY7Jv9S+sRsPBGHWx8I7Ror4aON5qHF9EOGt4zNjr0CY7U2c4wR6v
-         ftcw==
-X-Gm-Message-State: AOJu0Yyry5CmByXExjyeqdM18vQCEcjKbahKvTZI24GgKq9zaeMeQbdM
-	eyPcR90bIw6WjRMoA3syaWCZVlW77NzPU9asy84=
-X-Google-Smtp-Source: AGHT+IHejStbeE558odE76K+o5Iv15QNsvtUJIfzQ0Z7pMMjVunz5I/JAr4eiOxxtAhfmjJ1B52foGpUDGi3P1LgrkU=
-X-Received: by 2002:a5e:8804:0:b0:791:1e87:b47e with SMTP id
- l4-20020a5e8804000000b007911e87b47emr49195ioj.15.1695873263829; Wed, 27 Sep
- 2023 20:54:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rx4Kq3Nl9z3bP4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 17:07:10 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 2B2272000A;
+	Thu, 28 Sep 2023 07:07:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1695884827;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x+RB2ITbfqKP6mO7lXP9MlFfW3RztOHoR8uJSPHnXIA=;
+	b=kBn8KKVWRt6Su9WLKqr7PygD7rtl5q9DnOvm52upIFF1kzZSvOUo21kTOPgSX+vR+irwl1
+	f9pe1jdzcypO7aNuY+AYlDIL6xwgfx+N/N08VR+qNd/1fkpUJpwuUdi1phBS3toHzU0y+b
+	2kd1TPjzrfeOeTWBDXDZpSWZpF9eR7iyp6gmwISbPbQ0nCyCcY3GEnX0kc0TwT3hsgPds1
+	tmv70GoSpCOBRMNG0VFATDvLxWmA7Ok06N7hdisCg0iQS1nwuKiYXhVcVCjNzFNgqsxbvB
+	bMPKKDGY7TIL0vSJHYhIQpdixzUgR0WEsZR67oPxkYNvYDREbZuNA9URXQrKgw==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH v7 01/30] soc: fsl: cpm1: tsa: Fix __iomem addresses declaration
+Date: Thu, 28 Sep 2023 09:06:19 +0200
+Message-ID: <20230928070652.330429-2-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230928070652.330429-1-herve.codina@bootlin.com>
+References: <20230928070652.330429-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-References: <20230907171540.36736-1-atrajeev@linux.vnet.ibm.com>
- <e5e806c3-da4a-8672-9c8e-6c341c6bd27d@linux.ibm.com> <11B32809-962E-4632-95FD-EAF07EE04D1D@linux.vnet.ibm.com>
-In-Reply-To: <11B32809-962E-4632-95FD-EAF07EE04D1D@linux.vnet.ibm.com>
-From: Namhyung Kim <namhyung@kernel.org>
-Date: Wed, 27 Sep 2023 20:54:12 -0700
-Message-ID: <CAM9d7cgtBCHZWt1h8jZj1k1VuJUvGXjmXuXBmE-4sZXW_inzPA@mail.gmail.com>
-Subject: Re: [PATCH 0/3] Fix for shellcheck issues with version "0.6"
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,52 +78,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, kajoljain <kjain@linux.ibm.com>, Adrian Hunter <adrian.hunter@intel.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, root <root@ltcden13-lp4.aus.stglabs.ibm.com>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Simon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 26, 2023 at 9:29=E2=80=AFPM Athira Rajeev
-<atrajeev@linux.vnet.ibm.com> wrote:
->
->
->
-> > On 25-Sep-2023, at 1:34 PM, kajoljain <kjain@linux.ibm.com> wrote:
-> >
-> >
-> >
-> > On 9/7/23 22:45, Athira Rajeev wrote:
-> >> From: root <root@ltcden13-lp4.aus.stglabs.ibm.com>
-> >>
-> >> shellcheck was run on perf tool shell scripts s a pre-requisite
-> >> to include a build option for shellcheck discussed here:
-> >> https://www.spinics.net/lists/linux-perf-users/msg25553.html
-> >>
-> >> And fixes were added for the coding/formatting issues in
-> >> two patchsets:
-> >> https://lore.kernel.org/linux-perf-users/20230613164145.50488-1-atraje=
-ev@linux.vnet.ibm.com/
-> >> https://lore.kernel.org/linux-perf-users/20230709182800.53002-1-atraje=
-ev@linux.vnet.ibm.com/
-> >>
-> >> Three additional issues are observed with shellcheck "0.6" and
-> >> this patchset covers those. With this patchset,
-> >>
-> >> # for F in $(find tests/shell/ -perm -o=3Dx -name '*.sh'); do shellche=
-ck -S warning $F; done
-> >> # echo $?
-> >> 0
-> >>
-> >
-> > Patchset looks good to me.
-> >
-> > Reviewed-by: Kajol Jain <kjain@linux.ibm.com>
-> >
-> > Thanks,
-> > Kajol Jain
-> >
->
-> Hi Namhyunbg,
->
-> Can you please check for this patchset also
+Running sparse (make C=1) on tsa.c raises a lot of warning such as:
+  --- 8< ---
+  warning: incorrect type in assignment (different address spaces)
+     expected void *[noderef] si_regs
+     got void [noderef] __iomem *
+  --- 8< ---
 
-Sure, it's applied to perf-tools-next, thanks!
+Indeed, some variable were declared 'type *__iomem var' instead of
+'type __iomem *var'.
+
+Use the correct declaration to remove these warnings.
+
+Fixes: 1d4ba0b81c1c ("soc: fsl: cpm1: Add support for TSA")
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ drivers/soc/fsl/qe/tsa.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index 3646153117b3..e0527b9efd05 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -98,9 +98,9 @@
+ #define TSA_SIRP	0x10
+ 
+ struct tsa_entries_area {
+-	void *__iomem entries_start;
+-	void *__iomem entries_next;
+-	void *__iomem last_entry;
++	void __iomem *entries_start;
++	void __iomem *entries_next;
++	void __iomem *last_entry;
+ };
+ 
+ struct tsa_tdm {
+@@ -117,8 +117,8 @@ struct tsa_tdm {
+ 
+ struct tsa {
+ 	struct device *dev;
+-	void *__iomem si_regs;
+-	void *__iomem si_ram;
++	void __iomem *si_regs;
++	void __iomem *si_ram;
+ 	resource_size_t si_ram_sz;
+ 	spinlock_t	lock;
+ 	int tdms; /* TSA_TDMx ORed */
+@@ -135,27 +135,27 @@ static inline struct tsa *tsa_serial_get_tsa(struct tsa_serial *tsa_serial)
+ 	return container_of(tsa_serial, struct tsa, serials[tsa_serial->id]);
+ }
+ 
+-static inline void tsa_write32(void *__iomem addr, u32 val)
++static inline void tsa_write32(void __iomem *addr, u32 val)
+ {
+ 	iowrite32be(val, addr);
+ }
+ 
+-static inline void tsa_write8(void *__iomem addr, u32 val)
++static inline void tsa_write8(void __iomem *addr, u32 val)
+ {
+ 	iowrite8(val, addr);
+ }
+ 
+-static inline u32 tsa_read32(void *__iomem addr)
++static inline u32 tsa_read32(void __iomem *addr)
+ {
+ 	return ioread32be(addr);
+ }
+ 
+-static inline void tsa_clrbits32(void *__iomem addr, u32 clr)
++static inline void tsa_clrbits32(void __iomem *addr, u32 clr)
+ {
+ 	tsa_write32(addr, tsa_read32(addr) & ~clr);
+ }
+ 
+-static inline void tsa_clrsetbits32(void *__iomem addr, u32 clr, u32 set)
++static inline void tsa_clrsetbits32(void __iomem *addr, u32 clr, u32 set)
+ {
+ 	tsa_write32(addr, (tsa_read32(addr) & ~clr) | set);
+ }
+@@ -313,7 +313,7 @@ static u32 tsa_serial_id2csel(struct tsa *tsa, u32 serial_id)
+ static int tsa_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
+ 			 u32 count, u32 serial_id)
+ {
+-	void *__iomem addr;
++	void __iomem *addr;
+ 	u32 left;
+ 	u32 val;
+ 	u32 cnt;
+-- 
+2.41.0
+
