@@ -4,52 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84B53CE7B17
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 10:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E090E732C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 12:19:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C07hz1x9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T+6oXt6v;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rx8gm1GSJz3cjk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 20:23:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RxCG76y99z3dCR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 22:19:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C07hz1x9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T+6oXt6v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=vkoul@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::935; helo=mail-ua1-x935.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-x935.google.com (mail-ua1-x935.google.com [IPv6:2607:f8b0:4864:20::935])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rx5GT2nKyz2ytV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 17:49:21 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id D8092B81A6E;
-	Thu, 28 Sep 2023 07:49:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87A57C433C8;
-	Thu, 28 Sep 2023 07:49:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695887357;
-	bh=Gs6aFP7wkoeloUPjh3P+7ZqWXKrUV+lmRvPOXvjf8Ds=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=C07hz1x9ZBOot13NmBg/w+8/7UOMHZqam5kdmBhRs0FIMx+p817yeI0/AwYqADdFf
-	 LyROsByfc7udfgvzO+iVFxt40scEHqiTsEuBV2anPvz2pvOqA5rNaglngGFVYkDqNi
-	 8llzR1bKPikKnXdUU/UiExt0M1sNhonfI2Tg9VWZ4Ep2jjWHYlWMlubIYLpGAoPemh
-	 /llBuONh0YVRMZh24Aia4Qvo0KfHmtLVm+XDoqoKF4CTK02whHvixcoVQ+egWgMk7x
-	 FTO4SCB3n9ecoNHU2OdnjDnT9Gq59BrqP6Jgw3zOEG+2pLxraJj4zpxQ8BtWBKRvcG
-	 KuqZYg3uAID5g==
-Date: Thu, 28 Sep 2023 13:19:13 +0530
-From: Vinod Koul <vkoul@kernel.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 00/59] dma: Convert to platform remove callback returning
- void
-Message-ID: <ZRUv+WgkovPotwIr@matsya>
-References: <20230919133207.1400430-1-u.kleine-koenig@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxBHR5DJFz3c2K;
+	Thu, 28 Sep 2023 21:35:29 +1000 (AEST)
+Received: by mail-ua1-x935.google.com with SMTP id a1e0cc1a2514c-7afc13d58c6so706544241.1;
+        Thu, 28 Sep 2023 04:35:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1695900924; x=1696505724; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=c3oHHfr+yAdtkrxVkV3qE0VFTbMzK/MU2TZf7sFiWp8=;
+        b=T+6oXt6v2MSyhH8uwxwQm6bcIcRFljgCAKTBm0siFjuFM4mUYGri8U5PvQLGQX+eJ9
+         FgoaumwMeEKYR5ZEd+HHY7xtCsMOJIt0rlBsYCEzJP6hNE0cXeoiHxGVMt0xfmsDGL5Y
+         m0RIeYaA82Z57WlxBHd4sPRiH/vYacg9cBRZmS0bvyFL9c2GMdFirBiS1wzI5GxU1b2V
+         wTk7qNuwbzTO/u3FAr8K5Trc1Ao8807xuPtQyGJnjDL/PxMyBEjqEanKQ2JiI7oCLDpa
+         ppx41GHFwdcsc2OGHOBOmzZWzANCWsUNffTIXg33k20Edica3+NSslhgxe771IN4qJmx
+         L5JA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695900924; x=1696505724;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=c3oHHfr+yAdtkrxVkV3qE0VFTbMzK/MU2TZf7sFiWp8=;
+        b=M3TO5cfGLel5mke2GQ5PXwzb2tnweQtTXQO6rfaJVHKPlhvOmx9phIIckGPWVqLRdt
+         yokEbCrg2as60XwKz+7eSOHND4GXALF3lNGTSeW+bdNwvoCytfZRNEhZAvWs/9RcWNQb
+         /VaVCp7f0Ds5jrUhW9oJP5vMLQcpVUsNdvKIMOSepxC3PELn8qWTn4Pn7UuuLqdrjVgd
+         Mw/3JcDQZI6QZ0sb3H/tLYU/SwQSOXcnexViluSZrC0+0xEy4+QVNDUzINloJhliXOPM
+         bAAFHnkLSu+asnTOW5wJb/gaMjjWd+/9bWP8Gdyb6Y4+KkPJ6iVd1Q6t1hBQqsyFPFH/
+         s4ew==
+X-Gm-Message-State: AOJu0YxueF9u/z7y25w0nwRYmMy7rYw2Hq+P+1KuUP0IqMw1Q188C/xB
+	B3Y9pcd8ZUDDUK7q1ighw8ZQk9l0ul+mPbFBhkg=
+X-Google-Smtp-Source: AGHT+IHhHz7xARweFavd1XDLqmOlGZR89qjTYiX4UH69lO2YZAJePIkqF9BJYGYmOq/G1/CVWLpaXpMDMsrrAqgyB+o=
+X-Received: by 2002:a67:ec16:0:b0:452:63b7:2f6d with SMTP id
+ d22-20020a67ec16000000b0045263b72f6dmr830755vso.34.1695900924494; Thu, 28 Sep
+ 2023 04:35:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230919133207.1400430-1-u.kleine-koenig@pengutronix.de>
-X-Mailman-Approved-At: Thu, 28 Sep 2023 20:21:23 +1000
+References: <20230928110554.34758-1-jlayton@kernel.org> <20230928110554.34758-3-jlayton@kernel.org>
+In-Reply-To: <20230928110554.34758-3-jlayton@kernel.org>
+From: Amir Goldstein <amir73il@gmail.com>
+Date: Thu, 28 Sep 2023 14:35:13 +0300
+Message-ID: <CAOQ4uxjSrgGr+6UOs4ADGYCderpQ7hAaPjNmB1DExAPLQQsHSg@mail.gmail.com>
+Subject: Re: [PATCH 87/87] fs: move i_blocks up a few places in struct inode
+To: Jeff Layton <jlayton@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Thu, 28 Sep 2023 22:14:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,44 +76,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-msm@vger.kernel.org, Brian Xu <brian.xu@amd.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Paul Cercueil <paul@crapouillou.net>, Biju Das <biju.das.jz@bp.renesas.com>, Chen-Yu Tsai <wens@csie.org>, Laxman Dewangan <ldewangan@nvidia.com>, Chunyan Zhang <zhang.lyra@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>, Stefan Roese <sr@denx.de>, Fabio Estevam <festevam@gmail.com>, Swati Agarwal <swati.agarwal@amd.com>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, Rob Herring <robh@kernel.org>, Peter Korsgaard <peter@korsgaard.com>, Lars-Peter Clausen <lars@metafoo.de>, Florian Fainelli <florian.fainelli@broadcom.com>, Samuel Holland <samuel@sholland.org>, Green Wan <green.wan@sifive.com>, Viresh Kumar <vireshk@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, Sinan Kaya <okaya@kernel.org>, Ludovic Desroches <ludovic.desroches@microchip.com>, Peter Ujfalusi <peter.ujfalu
- si@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Zhang Wei <zw@zh-kernel.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, Andy Gross <agross@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, NXP Linux Team <linux-imx@nxp.com>, ye xingchen <ye.xingchen@zte.com.cn>, Olivier Dautricourt <olivierdautricourt@gmail.com>, Yangtao Li <frank.li@vivo.com>, Eugeniy Paltsev <Eugeniy.Paltsev@synopsys.com>, Patrice Chotard <patrice.chotard@foss.st.com>, linux-tegra@vger.kernel.org, Kees Cook <keescook@chromium.org>, Sven Peter <sven@svenpeter.dev>, Ray Jui <rjui@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sean Wang <sean.wang@mediatek.com>, linux-actions@lists.infradead.org, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liu Shixin <liushixin2@huawei.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, Baolin Wang <baolin.wang@
- linux.alibaba.com>, Orson Zhai <orsonzhai@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Raj Kumar Rampelli <raj.kumar.rampelli@amd.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Michal Simek <michal.simek@amd.com>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Harini Katakam <harini.katakam@amd.com>, Lizhi Hou <lizhi.hou@amd.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Scott Branden <sbranden@broadcom.com>, Shawn Guo <shawnguo@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Hector Martin <marcan@marcan.st>, linux-mips@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Konrad Dybcio <konrad.dybcio@linaro.org>, linux-sunxi@lists.linux.dev, Thierry Reding <thierry.reding@gmail.com>, asahi@lists.linux.dev, kernel@pengutronix.de, Pavel Machek <pavel@denx.de>, dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>, Daniel Mack <daniel@z
- onque.org>, Hien Huynh <hien.huynh.px@renesas.com>
+Cc: Latchesar Ionkov <lucho@ionkov.net>, Konstantin Komarov <almaz.alexandrovich@paragon-software.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Darrick J. Wong" <djwong@kernel.org>, Anders Larsen <al@alarsen.net>, Carlos Llamas <cmllamas@google.com>, Andrii Nakryiko <andrii@kernel.org>, Mattia Dongili <malattia@linux.it>, Hugh Dickins <hughd@google.com>, John Johansen <john.johansen@canonical.com>, Yonghong Song <yonghong.song@linux.dev>, Alexander Gordeev <agordeev@linux.ibm.com>, Christoph Hellwig <hch@lst.de>, Mike Marshall <hubcap@omnibond.com>, Paulo Alcantara <pc@manguebit.com>, linux-xfs@vger.kernel.org, James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, devel@lists.orangefs.org, Shyam Prasad N <sprasad@microsoft.com>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Eric Van Hensbergen <ericvh@kernel.org>, Suren Baghdasaryan <surenb@google.com
+ >, Trond Myklebust <trond.myklebust@hammerspace.com>, Anton Altaparmakov <anton@tuxera.com>, Christian Brauner <brauner@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Smalley <stephen.smalley.work@gmail.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Ronnie Sahlberg <lsahlber@redhat.com>, Sergey Senozhatsky <senozhatsky@chromium.org>, =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>, Chuck Lever <chuck.lever@oracle.com>, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, Jan Kara <jack@suse.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Dave Kleikamp <shaggy@kernel.org>, linux-mm@kvack.org, Joel Fernandes <joel@joelfernandes.org>, Eric Dumazet <edumazet@google.com>, Stanislav Fomichev <sdf@google.com>, linux-s390@vger.kernel.org, linux-nilfs@vger.kernel.org, Paul Moore <paul@paul-moore.com>, Leon Romanovsky <leo
+ n@kernel.org>, John Fastabend <john.fastabend@gmail.com>, Luis Chamberlain <mcgrof@kernel.org>, codalist@coda.cs.cmu.edu, Iurii Zaikin <yzaikin@google.com>, Namjae Jeon <linkinjeon@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>, Todd Kjos <tkjos@android.com>, Vasily Gorbik <gor@linux.ibm.com>, selinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>, Yue Hu <huyue2@coolpad.com>, Jaegeuk Kim <jaegeuk@kernel.org>, Martijn Coenen <maco@android.com>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Hao Luo <haoluo@google.com>, Tony Luck <tony.luck@intel.com>, Theodore Ts'o <tytso@mit.edu>, Nicolas Pitre <nico@fluxnic.net>, linux-ntfs-dev@lists.sourceforge.net, Muchun Song <muchun.song@linux.dev>, linux-f2fs-devel@lists.sourceforge.net, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, gfs2@lists.linux.dev, Eric Biederman <ebiederm@xmission.com>, Anna Schumaker <anna@kernel.org>, Brad Warrum <bwarrum@linux.ibm.com>, Mike Kra
+ vetz <mike.kravetz@oracle.com>, linux-efi@vger.kernel.org, Martin Brandenburg <martin@omnibond.com>, ocfs2-devel@lists.linux.dev, Alexei Starovoitov <ast@kernel.org>, platform-driver-x86@vger.kernel.org, Chris Mason <clm@fb.com>, linux-mtd@lists.infradead.org, linux-hardening@vger.kernel.org, Marc Dionne <marc.dionne@auristor.com>, Jiri Slaby <jirislaby@kernel.org>, linux-afs@lists.infradead.org, Ian Kent <raven@themaw.net>, Naohiro Aota <naohiro.aota@wdc.com>, Daniel Borkmann <daniel@iogearbox.net>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, coda@cs.cmu.edu, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, Ilya Dryomov <idryomov@gmail.com>, Paolo Abeni <pabeni@redhat.com>, "Serge E. Hallyn" <serge@hallyn.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, autofs@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Mark Gross <markgross@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, Eric Paris <ep
+ aris@parisplace.org>, ceph-devel@vger.kernel.org, Gao Xiang <xiang@kernel.org>, Jan Harkes <jaharkes@cs.cmu.edu>, linux-nfs@vger.kernel.org, linux-ext4@vger.kernel.org, Olga Kornievskaia <kolga@netapp.com>, Song Liu <song@kernel.org>, samba-technical@lists.samba.org, Steve French <sfrench@samba.org>, Jeremy Kerr <jk@ozlabs.org>, netdev@vger.kernel.org, Bob Peterson <rpeterso@redhat.com>, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, ntfs3@lists.linux.dev, linux-erofs@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Chandan Babu R <chandan.babu@oracle.com>, jfs-discussion@lists.sourceforge.net, Jan Kara <jack@suse.cz>, Neil Brown <neilb@suse.de>, Dominique Martinet <asmadeus@codewreck.org>, Christian Schoenebeck <linux_oss@crudebyte.com>, Bob Copeland <me@bobcopeland.com>, KP Singh <kpsingh@kernel.org>, linux-unionfs@vger.kernel.org, David Howells <dhowells@redhat.com>, Joseph Qi <joseph.qi@linux.alibaba.com>, Andreas Dilger <adilger.kernel@dilger.ca>, Mikulas Patocka
+  <mikulas@artax.karlin.mff.cuni.cz>, Ard Biesheuvel <ardb@kernel.org>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Andreas Gruenbacher <agruenba@redhat.com>, Richard Weinberger <richard@nod.at>, Mark Fasheh <mark@fasheh.com>, Dai Ngo <Dai.Ngo@oracle.com>, Jason Gunthorpe <jgg@ziepe.ca>, linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Salah Triki <salah.triki@gmail.com>, Evgeniy Dushistov <dushistov@mail.ru>, linux-cifs@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Chao Yu <chao@kernel.org>, apparmor@lists.ubuntu.com, Josef Bacik <josef@toxicpanda.com>, Tom Talpey <tom@talpey.com>, Hans de Goede <hdegoede@redhat.com>, "Tigran A. Aivazian" <aivazian.tigran@gmail.com>, David Sterba <dsterba@suse.com>, Xiubo Li <xiubli@redhat.com>, Ryusuke Konishi <konishi.ryusuke@gmail.com>, Johannes Thumshirn <jth@kernel.org>, Ritu Agarwal <rituagar@linux.ibm.com>, Luis de Bethencourt <luisbg@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, v9fs@lists.linux.dev, David S
+ terba <dsterba@suse.cz>, linux-security-module@vger.kernel.org, Jeffle Xu <jefflexu@linux.alibaba.com>, Phillip Lougher <phillip@squashfs.org.uk>, Johannes Berg <johannes@sipsolutions.net>, Sungjong Seo <sj1557.seo@samsung.com>, David Woodhouse <dwmw2@infradead.org>, linux-karma-devel@lists.sourceforge.net, linux-btrfs@vger.kernel.org, Joel Becker <jlbec@evilplan.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 19-09-23, 15:31, Uwe Kleine-König wrote:
-> Hello,
-> 
-> this series convert nearly all platform drivers below drivers/dma to use
-> .remove_new(). The motivation is to get rid of an integer return code
-> that is (mostly) ignored by the platform driver core and error prone on
-> the driver side.
+On Thu, Sep 28, 2023 at 2:06=E2=80=AFPM Jeff Layton <jlayton@kernel.org> wr=
+ote:
+>
+> The recent change to use discrete integers instead of struct timespec64
+> in struct inode shaved 8 bytes off of it, but it also moves the i_lock
+> into the previous cacheline, away from the fields that it protects.
+>
+> Move i_blocks up above the i_lock, which moves the new 4 byte hole to
+> just after the timestamps, without changing the size of the structure.
+>
 
-I have applied this, with change of subsystem to dmaengine: xxx
-> 
-> See commit 5c5a7680e67b ("platform: Provide a remove callback that
-> returns no value") for an extended explanation and the eventual goal.
-> 
-> There are 4 drivers I didn't convert in this series:
-> 
-> 	drivers/dma/milbeaut-hdmac.c
-> 	drivers/dma/milbeaut-xdmac.c
-> 	drivers/dma/uniphier-mdmac.c
-> 	drivers/dma/uniphier-xdmac.c
-> 
-> These all might return early in .remove() if dmaengine_terminate_sync()
-> fails. I only looked deeper into the first one, and this shows exactly
-> the error that is easy to make with .remove() returning an int: When
-> returning early from .remove(), some cleanup (here:
-> dma_async_device_unregister()) is skipped. So the dma device stays
-> known, but the device is still unregistered and the devm allocated stuff
-> (here e.g. *mdev) is freed. So it can probably easily happen, that
-> something tries to use the dma device and this will likely result in an
-> oops.
+Instead of creating an implicit hole, can you please move i_generation
+to fill the 4 bytes hole.
 
-We should convert these too, thanks for your work for the conversion
+It makes sense in the same cache line with i_ino and I could
+use the vacant 4 bytes hole above i_fsnotify_mask to expand the
+mask to 64bit (the 32bit event mask space is running out).
 
--- 
-~Vinod
+Thanks,
+Amir.
+
+> Signed-off-by: Jeff Layton <jlayton@kernel.org>
+> ---
+>  include/linux/fs.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index de902ff2938b..3e0fe0f52e7c 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -677,11 +677,11 @@ struct inode {
+>         u32                     i_atime_nsec;
+>         u32                     i_mtime_nsec;
+>         u32                     i_ctime_nsec;
+> +       blkcnt_t                i_blocks;
+>         spinlock_t              i_lock; /* i_blocks, i_bytes, maybe i_siz=
+e */
+>         unsigned short          i_bytes;
+>         u8                      i_blkbits;
+>         u8                      i_write_hint;
+> -       blkcnt_t                i_blocks;
+>
+>  #ifdef __NEED_I_SIZE_ORDERED
+>         seqcount_t              i_size_seqcount;
+> --
+> 2.41.0
+>
