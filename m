@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A02CE732D1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 13:30:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D9B1E732D1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 13:31:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=McrTLgHD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XAmlR43N;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RxDr9577Mz3df2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 23:30:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RxDs707rwz3dv4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 23:31:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=McrTLgHD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XAmlR43N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.granados.samsung.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=devnull+j.granados.samsung.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxDcp75QWz3c5c
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 23:20:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxDcq1wNNz3c4y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 23:20:43 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 1E1BA61CD6;
+	by sin.source.kernel.org (Postfix) with ESMTP id 681E5CE21D7;
 	Thu, 28 Sep 2023 13:20:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 40FAAC4E75A;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7D24DC3278F;
 	Thu, 28 Sep 2023 13:20:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1695907237;
-	bh=pdmmOE3H0wl7JFnvUs0cXne6T7FXMEXGOOHMgYRq81A=;
+	bh=ZUiksl6W6uAlLzfzmV82mN2ZY2mOo2/OdWLFk3qByI8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=McrTLgHDanDgnZWCaB/eneBszGhElISFiQo6HjDYeW3/iQ7vK4TEsIr9rCVBFP7VV
-	 jJrpav4wOkhdr9+H0n9dA07uVfAIbW4bu7uDORQLms5gr2BVHM95p8nhjbshPidbcm
-	 oGKfzbqnNsfNHDx8xl4r04xNGUmbWlrXE+3JrTurNRAyLwAQPDcUD4TVwX1my9st6c
-	 myBX24/Y3sM0TgM9G24BHP2iiYSVWJw7WofK5uW4U8Q4ncZokrEmf/BuZ0/5xBI+ax
-	 JcQkdY9Cq2AxLm0PimNb5cKLGQPe5VlDOtR7vbZgHrx72JdJLBoL1XloPEp/OtMHBM
-	 qxf6Ws66a3HNQ==
+	b=XAmlR43N6LnlJWcxBRfJ4bGYX3efFf3VyDERCl9d9561sagPAB7JBOqTCKHhzbBws
+	 Co5bW1LR04BRjXSzgqgigGnspcMgU7Ay7e7Dswa57sw5pcE6eLuRpRmV0qB9dyFpJo
+	 ePxhk5Q1d+Wg4yRBouhE37dS8A8LHGsGW/jjgvFD4QC1wFaogI1GXyCa0PQV4OCVRC
+	 NjTSXs4ab4JtUkPvyk3A/6ypSj1z8UEtEd2jT17geAa3bVI7XSijzJ/y7ZPKJM3mfw
+	 JCFOFie1GX3MB32wgsEqQ9dPhxu5u+5L3oj+Gz6KUuq2yEeQEVLF6JScdvZYV7FKaD
+	 tL3TGuj7xNI7w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26E4FE732D1;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65ACDE732D0;
 	Thu, 28 Sep 2023 13:20:37 +0000 (UTC)
 From: Joel Granados via B4 Relay <devnull+j.granados.samsung.com@kernel.org>
-Date: Thu, 28 Sep 2023 15:21:37 +0200
-Subject: [PATCH 12/15] fw loader: Remove the now superfluous sentinel
- element from ctl_table array
+Date: Thu, 28 Sep 2023 15:21:40 +0200
+Subject: [PATCH 15/15] intel drm: Remove now superfluous sentinel element
+ from ctl_table array
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Message-Id: =?utf-8?q?=3C20230928-jag-sysctl=5Fremove=5Fempty=5Felem=5Fdrive?=
- =?utf-8?q?rs-v1-12-e59120fca9f9=40samsung=2Ecom=3E?=
+ =?utf-8?q?rs-v1-15-e59120fca9f9=40samsung=2Ecom=3E?=
 References:  <20230928-jag-sysctl_remove_empty_elem_drivers-v1-0-e59120fca9f9@samsung.com>
 In-Reply-To:  <20230928-jag-sysctl_remove_empty_elem_drivers-v1-0-e59120fca9f9@samsung.com>
 To: Luis Chamberlain <mcgrof@kernel.org>, willy@infradead.org, 
@@ -80,18 +80,18 @@ To: Luis Chamberlain <mcgrof@kernel.org>, willy@infradead.org,
  Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, 
  David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>
 X-Mailer: b4 0.13-dev-86aa5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1099;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1010;
  i=j.granados@samsung.com; h=from:subject:message-id;
- bh=IR+b7PptXcF/Oyt7GII4OytQxFoRCLXOyY8FOTQVz/s=;
- b=owEB7QES/pANAwAKAbqXzVK3lkFPAcsmYgBlFX3fTo3kXpUY6L3nYABmnsBNawGT28Z3SlPam
- YfpaY395dKJAbMEAAEKAB0WIQSuRwlXJeYxJc7LJ5C6l81St5ZBTwUCZRV93wAKCRC6l81St5ZB
- T8TaC/9cDBQVLZYH4Fdmw6vKuueXYd7pABhWuZZOmPgU8kP984zBWEF8yAPOxtCqZKnUQVkYDT9
- waw5OPrbtH7Cj5Ljs6zW7XQjbeHOXi/mCJnfxYKOJYgP46vtfuBJLls3tXnVd1YYOnCm9RWYr37
- JtU0m7McLmcwBDou77zQKrmFA2NQLgVPt8w+q+UgXo1XKtCuiLSu3G9pqUkcUZWNbDt2slckrdI
- D3PL+UVlpD9hz7SXyy4dbOqOMMBH5GNGZ+jLrM00pLwb1cKDqFFmIS9/6YCc7Mi2SXUpAaICEdw
- 296JfYljQ93faYsdJfS/vz1mP0qOl8oxlwNN3MB/zLBT51rkA4CkBz3o7Uc2UHMNA+XvKjpEsB0
- YT/Sex/r1M8Rs2guSZE0bqzXIpOmgF/aIgLP6mpRS4H7kVLn7641YhjsAGpapmRxcwDowR1yYks
- LUkw71CcusI5v074k5FRJK5s8cHeKcBUgr/I21329k6u29vxMfRVdPlR/ZQILG6HhQqHg=
+ bh=Z9ZtfK3DEA99EXZ7fr8sV5mKU3DvB0mjVyvX0TU3lCI=;
+ b=owEB7QES/pANAwAKAbqXzVK3lkFPAcsmYgBlFX3gFlneS4Mf90CaCbyJH1c7W29aNmmDMi/fY
+ CLHmU/OGzqJAbMEAAEKAB0WIQSuRwlXJeYxJc7LJ5C6l81St5ZBTwUCZRV94AAKCRC6l81St5ZB
+ T+SdC/9jFG0RUkuS7dLpAVcMO6D7jlVD+ZtX/jfu+rwthZV8WGVLtJ8kcAR7BPdgAWXivaJ86Dp
+ P8HoauS68D0RI9Rl9X/gHaLDOKz2eejqJOE8LOTNyc5oeWYoHn33YzNJbhBnz6UoWV0vUdddE34
+ GRQqY6MKoVxUSV4CWxcsjFchdIDzBQiMIwUqspGaJghb9FT9hzSCLfXyl5vJzx8A+y2J8mT49k2
+ Zu4B/1iFwUdke4OebC6tbh93+vu6byFilf9UV3QNKYcRyJ5GGOmA8VWdq1U89/l+7ecOpeI+39E
+ VAvGXaumDhZWUpNQ1QcR6XhGrFL3IBE/XkZwVuXcVyY6NfbR19/0xgBykkluiUglYLyjlLnmfcl
+ 5XmrIaXdLBsIKU3e2gt+wdTGHqGSyzFDdbp0RF2kkLOO1GnpNivaGGSl8okOViY6fb1bAGKWSZM
+ FhB8ybdTYNi+IqN7tj+lwciJDUGicuxAJy3KGeA8aLCwF3Lo29sNp5FS7A428ifTZoZbQ=
 X-Developer-Key: i=j.granados@samsung.com; a=openpgp;
  fpr=F1F8E46D30F0F6C4A45FF4465895FAAC338C6E77
 X-Endpoint-Received:  by B4 Relay for j.granados@samsung.com/default with auth_id=70
@@ -120,27 +120,27 @@ will reduce the overall build time size of the kernel and run time
 memory bloat by ~64 bytes per sentinel (further information Link :
 https://lore.kernel.org/all/ZO5Yx5JFogGi%2FcBo@bombadil.infradead.org/)
 
-Remove sentinel from firmware_config_table
+Remove sentinel from oa_table
 
 Signed-off-by: Joel Granados <j.granados@samsung.com>
 ---
- drivers/base/firmware_loader/fallback_table.c | 3 +--
+ drivers/gpu/drm/i915/i915_perf.c | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/base/firmware_loader/fallback_table.c b/drivers/base/firmware_loader/fallback_table.c
-index e5ac098d0742..968aef19e118 100644
---- a/drivers/base/firmware_loader/fallback_table.c
-+++ b/drivers/base/firmware_loader/fallback_table.c
-@@ -43,8 +43,7 @@ static struct ctl_table firmware_config_table[] = {
- 		.proc_handler   = proc_douintvec_minmax,
- 		.extra1		= SYSCTL_ZERO,
- 		.extra2		= SYSCTL_ONE,
--	},
--	{ }
+diff --git a/drivers/gpu/drm/i915/i915_perf.c b/drivers/gpu/drm/i915/i915_perf.c
+index 04bc1f4a1115..97ef6d2ad037 100644
+--- a/drivers/gpu/drm/i915/i915_perf.c
++++ b/drivers/gpu/drm/i915/i915_perf.c
+@@ -4895,8 +4895,7 @@ static struct ctl_table oa_table[] = {
+ 	 .proc_handler = proc_dointvec_minmax,
+ 	 .extra1 = SYSCTL_ZERO,
+ 	 .extra2 = &oa_sample_rate_hard_limit,
+-	 },
+-	{}
 +	}
  };
  
- static struct ctl_table_header *firmware_config_sysct_table_header;
+ static u32 num_perf_groups_per_gt(struct intel_gt *gt)
 
 -- 
 2.30.2
