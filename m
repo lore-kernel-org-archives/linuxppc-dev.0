@@ -4,92 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54580E743C8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Sep 2023 22:26:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3153E743D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 00:32:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ez/Uh1km;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ez/Uh1km;
+	dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=LW+N+dK0;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RxSkw6Tjyz3cbx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 08:26:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RxWX60tBKz3cbL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 10:32:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ez/Uh1km;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ez/Uh1km;
+	dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=LW+N+dK0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dim-sum.org (client-ip=81.187.240.206; helo=chowmein.spicy.dim-sum.org; envelope-from=drw@dim-sum.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 355 seconds by postgrey-1.37 at boromir; Thu, 28 Sep 2023 23:00:02 AEST
+Received: from chowmein.spicy.dim-sum.org (chowmein.spicy.dim-sum.org [81.187.240.206])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxSd92GQ8z3cVy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2023 08:21:49 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1695939706;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=yJlZv5KfytnzZmRqZMI7mLTWvvegYQeNtr0CrdJHxrc=;
-	b=Ez/Uh1kmKg7MrjRNPCLulA36pOVjQ5gy+yOz1Jj2F1p7YDVNjgYUbnohzK5m8M6UMihyZI
-	5Nir5HLf1gp7t9/HQZBBB6HClzl4nxU3aSfeXGRqbjnDrAU/ebPMJyYLmqfB83zPhdfkUg
-	YN8894ftLye1JsVY6MxPTN61qhGbvyI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1695939706;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=yJlZv5KfytnzZmRqZMI7mLTWvvegYQeNtr0CrdJHxrc=;
-	b=Ez/Uh1kmKg7MrjRNPCLulA36pOVjQ5gy+yOz1Jj2F1p7YDVNjgYUbnohzK5m8M6UMihyZI
-	5Nir5HLf1gp7t9/HQZBBB6HClzl4nxU3aSfeXGRqbjnDrAU/ebPMJyYLmqfB83zPhdfkUg
-	YN8894ftLye1JsVY6MxPTN61qhGbvyI=
-Received: from mail-io1-f71.google.com (mail-io1-f71.google.com
- [209.85.166.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-125-UrSVPgWuOlqBXMpVCDukwg-1; Thu, 28 Sep 2023 18:21:45 -0400
-X-MC-Unique: UrSVPgWuOlqBXMpVCDukwg-1
-Received: by mail-io1-f71.google.com with SMTP id ca18e2360f4ac-780addd7382so1693225439f.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 15:21:44 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695939704; x=1696544504;
-        h=content-transfer-encoding:mime-version:organization:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=yJlZv5KfytnzZmRqZMI7mLTWvvegYQeNtr0CrdJHxrc=;
-        b=QjATh0Rvd10k50Lals9BgzvWem5SAExqIeoqULUC9ObUbvn1rowMOOl4TN5JVlNH6a
-         CHSiBXodbjtROke6B8Zt0lMKHFk4m4Ib2dxBsP+JLTjM2Pub4j9pqFABD+jY7Q76pELI
-         XF08MaT6fMufRB6t60gXzGqRPmft7fkTod+WNTShBxSn0lXxRLnuH9L1y575ib1mPphD
-         df2O71H9sJgQmbH7vuXWr3JcqH2CQvL8M+V5XbLHQ/Yg+TlNd+HE1RSKlW2lx7NOZVsW
-         5WXct911w+/bZ+uWnPIofgwoFegsMfHI8HSbB/qnIgnvE7tT1J+jQc3TSPjTIMpHv1o4
-         asAA==
-X-Gm-Message-State: AOJu0YyfcwKxQYItvybDVgrAnM+rb2352Q+/6etwqbfqc60Lbg1gyM02
-	vZG5uKZFMsecQPQLKUIe176yew5yadNI6YEfWNLKfUvJqvuRozB/INFKQxqltU6l8XFfS5bjS9c
-	NJwaWic2ZW7oyqXeHRxaGSqG6HQ==
-X-Received: by 2002:a5e:9e09:0:b0:795:8805:1378 with SMTP id i9-20020a5e9e09000000b0079588051378mr2451933ioq.9.1695939704273;
-        Thu, 28 Sep 2023 15:21:44 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGAEb9IDAtgYjj6uLy0BK3ZEot+uDPg45XlWdcKZXMCg89/F3JSTuwB2CMQYAcH0oVDsnNUFw==
-X-Received: by 2002:a5e:9e09:0:b0:795:8805:1378 with SMTP id i9-20020a5e9e09000000b0079588051378mr2451906ioq.9.1695939703976;
-        Thu, 28 Sep 2023 15:21:43 -0700 (PDT)
-Received: from redhat.com ([38.15.60.12])
-        by smtp.gmail.com with ESMTPSA id t23-20020a02c497000000b0042b10d42c90sm4610172jam.113.2023.09.28.15.21.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Sep 2023 15:21:42 -0700 (PDT)
-Date: Thu, 28 Sep 2023 16:21:05 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Sean Christopherson <seanjc@google.com>
-Subject: Re: [PATCH 02/26] vfio: Move KVM get/put helpers to colocate it
- with other KVM related code
-Message-ID: <20230928162105.2e347cd5.alex.williamson@redhat.com>
-In-Reply-To: <20230916003118.2540661-3-seanjc@google.com>
-References: <20230916003118.2540661-1-seanjc@google.com>
-	<20230916003118.2540661-3-seanjc@google.com>
-Organization: Red Hat
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxD8y1wdMz300f
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 23:00:02 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=dim-sum.org;
+	s=chowmein; t=1695905638;
+	bh=nlqMPIPQ2nk7liNiI2T4ncccE2lWWB2ZxXWUinb+ev4=;
+	h=Date:From:To:Subject:From;
+	b=LW+N+dK0BUu7anVf8h5vL/e2dOCa1s68aki9pyyG7LUpJ6kWMtmbaP1FH6EWJEjsp
+	 oQPRFwUP5KKUietfQx5xIsQBbfRx2rU2OLXPvkLS6ai+iWn6AbQXoyGrzG+q6CUQv/
+	 KURLeewI7p1NAFCDJe09swkGHTbVTScaL6iSd03WKtK7Tx4AQ/tdSP0YHkEAtf2C4w
+	 Q7MsahxOlpyM5BXxe0Df90BjwgVtNX8v4vC4KA5wUTD5EcSWWxW57U/RpTcIiT+kjB
+	 otB92qp6Nl7nRU2LOQd8a0gk0GlK78O/5pTZ519XPJBQksG3W75ksjodWzMvUNw/5K
+	 X/WvlktSg4v+Q==
+Received: from dim-sum.org (b.8.4.f.1.4.e.f.f.f.1.5.6.4.c.e.4.1.0.0.9.9.f.f.0.b.8.0.1.0.0.2.ip6.arpa [IPv6:2001:8b0:ff99:14:ec46:51ff:fe41:f48b])
+	by chowmein.spicy.dim-sum.org (Postfix) with ESMTPS id DF6F4E00036
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 13:53:56 +0100 (BST)
+Date: Thu, 28 Sep 2023 13:53:55 +0100
+From: Dan Whitehouse <drw@dim-sum.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Kernel Panic 6.5.0-1 PPC
+Message-ID: <ZRV3Y3g2fTvE91Zs@dim-sum.org>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailman-Approved-At: Fri, 29 Sep 2023 10:31:49 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,147 +56,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Harald Freudenberger <freude@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Halil Pasic <pasic@linux.ibm.com>, Andrew Thornton <andrewth@google.com>, Ingo Molnar <mingo@redhat.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Jason Herne <jjherne@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Venkatesh Srinivas <venkateshs@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley 
- <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Tony Krowiak <akrowiak@linux.ibm.com>, Anish Ghulati <aghulati@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-perf-users@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 15 Sep 2023 17:30:54 -0700
-Sean Christopherson <seanjc@google.com> wrote:
+Hi, 
+I'm running Debian on an old Powermac (32-bit PPC G4).
+I'm seeing kernel panics with 6.5.0-1.
+Everything seems to be fine with:
 
-> Move the definitions of vfio_device_get_kvm_safe() and vfio_device_put_kvm()
-> down in vfio_main.c to colocate them with other KVM-specific functions,
-> e.g. to allow wrapping them all with a single CONFIG_KVM check.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  drivers/vfio/vfio_main.c | 104 +++++++++++++++++++--------------------
->  1 file changed, 52 insertions(+), 52 deletions(-)
+Linux powermac-g4 6.4.0-4-powerpc #1 Debian 6.4.13-1 (2023-08-31) ppc
+GNU/Linux
 
+ 0.000000] MSR:    00009032 <EE,ME,IR,DR,RI>  CR:  48024242  XER:  00000000
+    0.000000]
+    0.000000] GPR00: c0b29234 c13fde60 c12f3580 c12f3580 c12f3580 c13fde74 0000
+cc0 00000000
+    0.000000] GPR08: 00000000 00009032 00000000 00000000 28024242 00000000 0000
+000 00000004
+    0.000000] GPR16: 02d159f4 00000000 02d1515c c00f6d38 00000000 00000004 0000
+cc0 00000000
+    0.000000] GPR24: c12f398c c0b29704 00000001 00000003 c12f3580 c1305080 c12f
+5cc c12f3580
+    0.000000] NIP [c0b28e4c] __schedule+0x364/0x920
+    0.000000] LR [c0b29234] __schedule+0x74c/0x920
+    0.000000] --- interrupt: 900
+    0.000000] [c13fdeb0] [c0b29704] __cond_resched+0x40/060
+    0.000000] [c13fdec0] [c0b2b5f0] mutex_lock_killable+0x24/0x74
+    0.000000] [c13fdee0] [c02c3930] pcpu_alloc+0x54c/0x798
+    0.000000] [c13fdf50] [c00f6d38] alloc_desc.irsa.0+0x60/0x174
+    0.000000] [c13fdf80] [c1199c58] early_irq_init+0x70/0x9c
+    0.000000] [c13fdfa0] [c1183abc] start_kernel+0x4e4/0x640
+    0.000000] [c13fdff0] [00003540] 0x3540
+    0.000000] Code: 7d2a01a4 4c00012c 4bffff28 7c0802a6 90010004 60000000 9421f
+e0 7c0802a6 3d20c141 93e1001c 90010024 83e9c294 <943f1ff0> 7fe1fb78 48b24909 80
+10000
+    0.000000] ---[ end trace 0000000000000000 ]---
+    0.000000]
+    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
+    0.000000] ---[ end Kernel panic - not syncing: Attempted to kill the idle t
+ask! ]---
 
-Reviewed-by: Alex Williamson <alex.williamson@redhat.com>
+-- 
+Dan Whitehouse
 
- 
-> diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
-> index 80e39f7a6d8f..6368eed7b7b2 100644
-> --- a/drivers/vfio/vfio_main.c
-> +++ b/drivers/vfio/vfio_main.c
-> @@ -381,58 +381,6 @@ void vfio_unregister_group_dev(struct vfio_device *device)
->  }
->  EXPORT_SYMBOL_GPL(vfio_unregister_group_dev);
->  
-> -#if IS_ENABLED(CONFIG_KVM)
-> -void vfio_device_get_kvm_safe(struct vfio_device *device, struct kvm *kvm)
-> -{
-> -	void (*pfn)(struct kvm *kvm);
-> -	bool (*fn)(struct kvm *kvm);
-> -	bool ret;
-> -
-> -	lockdep_assert_held(&device->dev_set->lock);
-> -
-> -	if (!kvm)
-> -		return;
-> -
-> -	pfn = symbol_get(kvm_put_kvm);
-> -	if (WARN_ON(!pfn))
-> -		return;
-> -
-> -	fn = symbol_get(kvm_get_kvm_safe);
-> -	if (WARN_ON(!fn)) {
-> -		symbol_put(kvm_put_kvm);
-> -		return;
-> -	}
-> -
-> -	ret = fn(kvm);
-> -	symbol_put(kvm_get_kvm_safe);
-> -	if (!ret) {
-> -		symbol_put(kvm_put_kvm);
-> -		return;
-> -	}
-> -
-> -	device->put_kvm = pfn;
-> -	device->kvm = kvm;
-> -}
-> -
-> -void vfio_device_put_kvm(struct vfio_device *device)
-> -{
-> -	lockdep_assert_held(&device->dev_set->lock);
-> -
-> -	if (!device->kvm)
-> -		return;
-> -
-> -	if (WARN_ON(!device->put_kvm))
-> -		goto clear;
-> -
-> -	device->put_kvm(device->kvm);
-> -	device->put_kvm = NULL;
-> -	symbol_put(kvm_put_kvm);
-> -
-> -clear:
-> -	device->kvm = NULL;
-> -}
-> -#endif
-> -
->  /* true if the vfio_device has open_device() called but not close_device() */
->  static bool vfio_assert_device_open(struct vfio_device *device)
->  {
-> @@ -1354,6 +1302,58 @@ bool vfio_file_enforced_coherent(struct file *file)
->  }
->  EXPORT_SYMBOL_GPL(vfio_file_enforced_coherent);
->  
-> +#if IS_ENABLED(CONFIG_KVM)
-> +void vfio_device_get_kvm_safe(struct vfio_device *device, struct kvm *kvm)
-> +{
-> +	void (*pfn)(struct kvm *kvm);
-> +	bool (*fn)(struct kvm *kvm);
-> +	bool ret;
-> +
-> +	lockdep_assert_held(&device->dev_set->lock);
-> +
-> +	if (!kvm)
-> +		return;
-> +
-> +	pfn = symbol_get(kvm_put_kvm);
-> +	if (WARN_ON(!pfn))
-> +		return;
-> +
-> +	fn = symbol_get(kvm_get_kvm_safe);
-> +	if (WARN_ON(!fn)) {
-> +		symbol_put(kvm_put_kvm);
-> +		return;
-> +	}
-> +
-> +	ret = fn(kvm);
-> +	symbol_put(kvm_get_kvm_safe);
-> +	if (!ret) {
-> +		symbol_put(kvm_put_kvm);
-> +		return;
-> +	}
-> +
-> +	device->put_kvm = pfn;
-> +	device->kvm = kvm;
-> +}
-> +
-> +void vfio_device_put_kvm(struct vfio_device *device)
-> +{
-> +	lockdep_assert_held(&device->dev_set->lock);
-> +
-> +	if (!device->kvm)
-> +		return;
-> +
-> +	if (WARN_ON(!device->put_kvm))
-> +		goto clear;
-> +
-> +	device->put_kvm(device->kvm);
-> +	device->put_kvm = NULL;
-> +	symbol_put(kvm_put_kvm);
-> +
-> +clear:
-> +	device->kvm = NULL;
-> +}
-> +#endif
-> +
->  static void vfio_device_file_set_kvm(struct file *file, struct kvm *kvm)
->  {
->  	struct vfio_device_file *df = file->private_data;
-
+GPG: 3AA4 369C 86E1 4939 D420  AB25 D0DC 7BDD CA92 AD2E
+Telephone: +44(0)203 0955088
