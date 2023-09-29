@@ -4,88 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F4FFE743DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 03:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBF09E743DE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 04:12:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=g9ZRsYoy;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OxmuzcsQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XcK3Wm+7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RxbG35BDfz3cdd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 13:20:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RxcQ23Sk9z3cgG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 14:12:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=g9ZRsYoy;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OxmuzcsQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XcK3Wm+7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=piliu@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxbF03Q7cz3cGv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2023 13:19:46 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1695957583;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=UykpZJmeyPI4JTRsPXGJ9I1irxHeGjy+W1ttfAslUsU=;
-	b=g9ZRsYoyqR+u36J1326napcMPk698WYHT3n68EtiqJwBOo7qzUrawZdfC6YUnPqVTt4OY+
-	qOrXNbkigbaRUPQlq7EOTnTFWVAszgDuLVBKuiZd6DblMQQjXyRZyrNLWM+VB0JVIfhON0
-	vhrqBapObVdR1cNdNqYtlSFEoQIA9vE=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1695957584;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=UykpZJmeyPI4JTRsPXGJ9I1irxHeGjy+W1ttfAslUsU=;
-	b=OxmuzcsQW7y9vsb3SJb055m+VgYl5bE8KKPD1Zn+Fmx0uhq4+LlhIOK5unA+0jd+jSC5pR
-	7fZsxxZWg5IkO2pfq6zKieKa0kiHEG9JXN/bR6DjoCccDFruQSk0OAkJmSvKdycYfcxAic
-	s3us/TL4J4qCzV2uOEd1/LtZUmwdtKM=
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
- [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-657-8XVOhOKbMN6Jyo7a4vFAdQ-1; Thu, 28 Sep 2023 23:19:39 -0400
-X-MC-Unique: 8XVOhOKbMN6Jyo7a4vFAdQ-1
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-417f9e1def0so208055241cf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2023 20:19:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695957579; x=1696562379;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=UykpZJmeyPI4JTRsPXGJ9I1irxHeGjy+W1ttfAslUsU=;
-        b=jYjHsxbJci63H+0xoylTey4FKJtai/3gD3z9msnuciELUNOGXWHr9bsA8aIDvWvSPD
-         hzDcH4TOvU3UF0N16gJq1IODC/bcLojEMI4frHYFyKH7mdi03AyIr0JR0AYOWSzFMw/a
-         /qh0duNvtcvIDr+760gwxQ6wBmGY9Jq+acp2N4spsMyprQYN+i13UTzLPb4J24MSqBty
-         Z/L/8TymVYuVhpcdpcEGnRQJeprC2Ap56ARVT2gNkzbFZdqTu9mJLbnkgAOFUWhiNkPu
-         7egjKXP5RjSXkIwX5cGI0Sdrko5N1fWe+20uyWLEftlDNVl3XYBc+KQoA98B3B4dMDod
-         azzQ==
-X-Gm-Message-State: AOJu0YyKl+PxnuYzKQj2qhwkgk5D6p7YafeCATCiMaXlsyN/A6d5Utu3
-	Lqzpk4jOSUkfEZbG3spxlPbqggmqg0RHIi8rootnGHtKwMvPm7r0gQBN+55ibBLm/W9nV1l2B21
-	TXjKbdgR4wbWPDbwkEFW+p+rMn1Oj6lbiHcW5rD9qDw==
-X-Received: by 2002:a05:622a:8c:b0:40f:ce6d:775e with SMTP id o12-20020a05622a008c00b0040fce6d775emr4000944qtw.42.1695957578992;
-        Thu, 28 Sep 2023 20:19:38 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGfB18pBrA1jY1RU14klA5ihc066BEoR2Ze1+sGoa2bef+DqO4dIwyoFI82AZYErEAsjlLh3UNEB6wWodFUd8w=
-X-Received: by 2002:a05:622a:8c:b0:40f:ce6d:775e with SMTP id
- o12-20020a05622a008c00b0040fce6d775emr4000922qtw.42.1695957578581; Thu, 28
- Sep 2023 20:19:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxcP25rDCz3cCl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2023 14:11:50 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38T3o43w026372;
+	Fri, 29 Sep 2023 04:11:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=M2f2NQKR6R4c9td5psaqQEO+kGrjwqhUC34sVvQoxjA=;
+ b=XcK3Wm+7C8aJHIp1lb+AoXQeluMU02MwWau3yM/lllN5L8a9K5xO2KYCl47ZsQ2Ib2n/
+ 4b9zHjrYooKad58Q8HEO2qqjGiATp/HF2fZJedZ6Xs8MYIf0z4AxV161CIIOyWPqrtwd
+ p3EGGPByJi/O+Bkg3zx1PJFScAr7fEsBKm1uVLMfjj13aie/mguy5v/zArHgWJqc+0aQ
+ JGkfOH+fBCaQvF8Xu34F7wOuHr0qdh5gK07VAVhodhfpwe4L3asxUND/5C8ga9O1EWlJ
+ DAD9RMPrmVqMpdj+UiahWJ4QqGASS7o32eTq0lECJ5ESM6KdgXCKDfNZGF1vM6CBQgLO Pg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tdq130ggt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 Sep 2023 04:11:43 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38T3qpon032647;
+	Fri, 29 Sep 2023 04:11:43 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tdq130ggg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 Sep 2023 04:11:43 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38T48LFs011010;
+	Fri, 29 Sep 2023 04:11:41 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3tabum1t30-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 Sep 2023 04:11:41 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38T4BcrN27460208
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 29 Sep 2023 04:11:38 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 75F2820040;
+	Fri, 29 Sep 2023 04:11:38 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 69D1320043;
+	Fri, 29 Sep 2023 04:11:36 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.86.96])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 29 Sep 2023 04:11:36 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        irogers@google.com, namhyung@kernel.org
+Subject: [PATCH 0/3] Fix for shellcheck issues with latest scripts in tests/shell
+Date: Fri, 29 Sep 2023 09:41:30 +0530
+Message-Id: <20230929041133.95355-1-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: aYRU7Cg5iEc2xuyjV5SdntdTVISwMopf
+X-Proofpoint-ORIG-GUID: wJ17ls0aQAKV0fftG4sMOXPvrynT1J5R
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-References: <20230925075348.16654-1-piliu@redhat.com> <20230925075348.16654-3-piliu@redhat.com>
- <BL3PR15MB54581456FAB1CF28C9F761B4F0C1A@BL3PR15MB5458.namprd15.prod.outlook.com>
-In-Reply-To: <BL3PR15MB54581456FAB1CF28C9F761B4F0C1A@BL3PR15MB5458.namprd15.prod.outlook.com>
-From: Pingfan Liu <piliu@redhat.com>
-Date: Fri, 29 Sep 2023 11:19:27 +0800
-Message-ID: <CAF+s44RfOZ3U5Ny4L7M2vhVWC+2t8SRJsP6Rgqyz_apAZUVDGg@mail.gmail.com>
-Subject: Re: [PATCHv7 2/4] powerpc/setup: Loosen the mapping between cpu
- logical id and its seq in dt
-To: Wen Xiong <wenxiong@us.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-09-29_01,2023-09-28_03,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
+ bulkscore=0 spamscore=0 mlxscore=0 adultscore=0 lowpriorityscore=0
+ phishscore=0 mlxlogscore=794 clxscore=1015 impostorscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2309290034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,296 +95,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, "kexec@lists.infradead.org" <kexec@lists.infradead.org>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Ming Lei <ming.lei@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Sep 29, 2023 at 4:36=E2=80=AFAM Wen Xiong <wenxiong@us.ibm.com> wro=
-te:
->
-> Hi Pingfan,
->
-> +               avail =3D intserv_node->avail;
-> +               nthreads =3D intserv_node->len / sizeof(int);
-> +               for (j =3D 0; j < nthreads && cpu < nr_cpu_ids; j++) {
->                         set_cpu_present(cpu, avail);
->                         set_cpu_possible(cpu, true);
-> -                       cpu_to_phys_id[cpu] =3D be32_to_cpu(intserv[j]);
-> +                       cpu_to_phys_id[cpu] =3D be32_to_cpu(intserv_node-=
->intserv[j]);
-> +                       DBG("    thread %d -> cpu %d (hard id %d)\n",
-> +                           j, cpu, be32_to_cpu(intserv[j]));
->
-> Intserv is not defined. Should "be32_to_cpu(intserv_node->intserv[j])?
+shellcheck was run on perf tool shell scripts as a pre-requisite
+to include a build option for shellcheck discussed here:
+https://www.spinics.net/lists/linux-perf-users/msg25553.html
 
-Yes, thanks. Sorry that I did not turn on the DBG macro and not catch this =
-bug.
+And fixes were added for the coding/formatting issues in
+two patchsets:
+https://lore.kernel.org/linux-perf-users/20230613164145.50488-1-atrajeev@linux.vnet.ibm.com/
+https://lore.kernel.org/linux-perf-users/20230709182800.53002-1-atrajeev@linux.vnet.ibm.com/
 
-Thanks,
+Three additional issues were observed and fixes are part of:
+https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.git/log/?h=perf-tools-next
 
-Pingfan
->                         cpu++;
->                 }
-> +       }
->
-> -----Original Message-----
-> From: Pingfan Liu <piliu@redhat.com>
-> Sent: Monday, September 25, 2023 2:54 AM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: Pingfan Liu <piliu@redhat.com>; Michael Ellerman <mpe@ellerman.id.au>=
-; Nicholas Piggin <npiggin@gmail.com>; Christophe Leroy <christophe.leroy@c=
-sgroup.eu>; Mahesh Salgaonkar <mahesh@linux.ibm.com>; Wen Xiong <wenxiong@u=
-s.ibm.com>; Baoquan He <bhe@redhat.com>; Ming Lei <ming.lei@redhat.com>; ke=
-xec@lists.infradead.org
-> Subject: [EXTERNAL] [PATCHv7 2/4] powerpc/setup: Loosen the mapping betwe=
-en cpu logical id and its seq in dt
->
-> *** Idea ***
-> For kexec -p, the boot cpu can be not the cpu0, this causes the problem o=
-f allocating memory for paca_ptrs[]. However, in theory, there is no requir=
-ement to assign cpu's logical id as its present sequence in the device tree=
-. But there is something like cpu_first_thread_sibling(), which makes assum=
-ption on the mapping inside a core. Hence partially loosening the mapping, =
-i.e. unbind the mapping of core while keep the mapping inside a core.
->
-> *** Implement ***
-> At this early stage, there are plenty of memory to utilize. Hence, this p=
-atch allocates interim memory to link the cpu info on a list, then reorder =
-cpus by changing the list head. As a result, there is a rotate shift betwee=
-n the sequence number in dt and the cpu logical number.
->
-> *** Result ***
-> After this patch, a boot-cpu's logical id will always be mapped into the =
-range [0,threads_per_core).
->
-> Besides this, at this phase, all threads in the boot core are forced to b=
-e onlined. This restriction will be lifted in a later patch with extra effo=
-rt.
->
-> Signed-off-by: Pingfan Liu <piliu@redhat.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Wen Xiong <wenxiong@us.ibm.com>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: Ming Lei <ming.lei@redhat.com>
-> Cc: kexec@lists.infradead.org
-> To: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/prom.c         | 25 +++++----
->  arch/powerpc/kernel/setup-common.c | 87 +++++++++++++++++++++++-------
->  2 files changed, 85 insertions(+), 27 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c inde=
-x ec82f5bda908..87272a2d8c10 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -76,7 +76,9 @@ u64 ppc64_rma_size;
->  unsigned int boot_cpu_node_count __ro_after_init;  #endif  static phys_a=
-ddr_t first_memblock_size;
-> +#ifdef CONFIG_SMP
->  static int __initdata boot_cpu_count;
-> +#endif
->
->  static int __init early_parse_mem(char *p)  { @@ -331,8 +333,7 @@ static=
- int __init early_init_dt_scan_cpus(unsigned long node,
->         const __be32 *intserv;
->         int i, nthreads;
->         int len;
-> -       int found =3D -1;
-> -       int found_thread =3D 0;
-> +       bool found =3D false;
->
->         /* We are scanning "cpu" nodes only */
->         if (type =3D=3D NULL || strcmp(type, "cpu") !=3D 0) @@ -355,8 +35=
-6,15 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->         for (i =3D 0; i < nthreads; i++) {
->                 if (be32_to_cpu(intserv[i]) =3D=3D
->                         fdt_boot_cpuid_phys(initial_boot_params)) {
-> -                       found =3D boot_cpu_count;
-> -                       found_thread =3D i;
-> +                       /*
-> +                        * always map the boot-cpu logical id into the
-> +                        * range of [0, thread_per_core)
-> +                        */
-> +                       boot_cpuid =3D i;
-> +                       found =3D true;
-> +                       /* This works around the hole in paca_ptrs[]. */
-> +                       if (nr_cpu_ids < nthreads)
-> +                               set_nr_cpu_ids(nthreads);
->                 }
->  #ifdef CONFIG_SMP
->                 /* logical cpu id is always 0 on UP kernels */ @@ -365,14=
- +373,13 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->         }
->
->         /* Not the boot CPU */
-> -       if (found < 0)
-> +       if (!found)
->                 return 0;
->
-> -       DBG("boot cpu: logical %d physical %d\n", found,
-> -           be32_to_cpu(intserv[found_thread]));
-> -       boot_cpuid =3D found;
-> +       DBG("boot cpu: logical %d physical %d\n", boot_cpuid,
-> +           be32_to_cpu(intserv[boot_cpuid]));
->
-> -       boot_cpu_hwid =3D be32_to_cpu(intserv[found_thread]);
-> +       boot_cpu_hwid =3D be32_to_cpu(intserv[boot_cpuid]);
->
->         /*
->          * PAPR defines "logical" PVR values for cpus that diff --git a/a=
-rch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index 1b19a9815672..f6d32324b5a5 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -36,6 +36,7 @@
->  #include <linux/of_platform.h>
->  #include <linux/hugetlb.h>
->  #include <linux/pgtable.h>
-> +#include <linux/list.h>
->  #include <asm/io.h>
->  #include <asm/paca.h>
->  #include <asm/processor.h>
-> @@ -425,6 +426,13 @@ static void __init cpu_init_thread_core_maps(int tpc=
-)
->
->  u32 *cpu_to_phys_id =3D NULL;
->
-> +struct interrupt_server_node {
-> +       struct list_head node;
-> +       bool    avail;
-> +       int     len;
-> +       __be32 *intserv;
-> +};
-> +
->  /**
->   * setup_cpu_maps - initialize the following cpu maps:
->   *                  cpu_possible_mask
-> @@ -446,11 +454,16 @@ u32 *cpu_to_phys_id =3D NULL;  void __init smp_setu=
-p_cpu_maps(void)  {
->         struct device_node *dn;
-> -       int cpu =3D 0;
-> -       int nthreads =3D 1;
-> +       int shift =3D 0, cpu =3D 0;
-> +       int j, nthreads =3D 1;
-> +       int len;
-> +       struct interrupt_server_node *intserv_node, *n;
-> +       struct list_head *bt_node, head;
-> +       bool avail, found_boot_cpu =3D false;
->
->         DBG("smp_setup_cpu_maps()\n");
->
-> +       INIT_LIST_HEAD(&head);
->         cpu_to_phys_id =3D memblock_alloc(nr_cpu_ids * sizeof(u32),
->                                         __alignof__(u32));
->         if (!cpu_to_phys_id)
-> @@ -460,7 +473,6 @@ void __init smp_setup_cpu_maps(void)
->         for_each_node_by_type(dn, "cpu") {
->                 const __be32 *intserv;
->                 __be32 cpu_be;
-> -               int j, len;
->
->                 DBG("  * %pOF...\n", dn);
->
-> @@ -480,29 +492,68 @@ void __init smp_setup_cpu_maps(void)
->                         }
->                 }
->
-> -               nthreads =3D len / sizeof(int);
-> -
-> -               for (j =3D 0; j < nthreads && cpu < nr_cpu_ids; j++) {
-> -                       bool avail;
-> +               avail =3D of_device_is_available(dn);
-> +               if (!avail)
-> +                       avail =3D !of_property_match_string(dn,
-> +                                       "enable-method", "spin-table");
->
-> -                       DBG("    thread %d -> cpu %d (hard id %d)\n",
-> -                           j, cpu, be32_to_cpu(intserv[j]));
->
-> -                       avail =3D of_device_is_available(dn);
-> -                       if (!avail)
-> -                               avail =3D !of_property_match_string(dn,
-> -                                               "enable-method", "spin-ta=
-ble");
-> +               intserv_node =3D memblock_alloc(sizeof(struct interrupt_s=
-erver_node) + len,
-> +                                       __alignof__(u32));
-> +               if (!intserv_node)
-> +                       panic("%s: Failed to allocate %zu bytes align=3D0=
-x%zx\n",
-> +                               __func__,
-> +                               sizeof(struct interrupt_server_node) + le=
-n,
-> +                               __alignof__(u32));
-> +               intserv_node->intserv =3D (__be32 *)((char *)intserv_node=
- +
-> +                                               sizeof(struct interrupt_s=
-erver_node));
-> +               intserv_node->len =3D len;
-> +               memcpy(intserv_node->intserv, intserv, len);
-> +               intserv_node->avail =3D avail;
-> +               INIT_LIST_HEAD(&intserv_node->node);
-> +               list_add_tail(&intserv_node->node, &head);
-> +
-> +               if (!found_boot_cpu) {
-> +                       nthreads =3D len / sizeof(int);
-> +                       for (j =3D 0 ; j < nthreads; j++) {
-> +                               if (be32_to_cpu(intserv[j]) =3D=3D boot_c=
-pu_hwid) {
-> +                                       bt_node =3D &intserv_node->node;
-> +                                       found_boot_cpu =3D true;
-> +                                       /*
-> +                                        * Record the round-shift between=
- dt
-> +                                        * seq and cpu logical number
-> +                                        */
-> +                                       shift =3D cpu - j;
-> +                                       break;
-> +                               }
-> +
-> +                               cpu++;
-> +                       }
-> +               }
->
-> +       }
-> +       cpu =3D 0;
-> +       list_del_init(&head);
-> +       /* Select the primary thread, the boot cpu's slibing, as the logi=
-c 0 */
-> +       list_add_tail(&head, bt_node);
-> +       pr_info("the round shift between dt seq and the cpu logic number:=
- %d\n", shift);
-> +       list_for_each_entry(intserv_node, &head, node) {
-> +
-> +               avail =3D intserv_node->avail;
-> +               nthreads =3D intserv_node->len / sizeof(int);
-> +               for (j =3D 0; j < nthreads && cpu < nr_cpu_ids; j++) {
->                         set_cpu_present(cpu, avail);
->                         set_cpu_possible(cpu, true);
-> -                       cpu_to_phys_id[cpu] =3D be32_to_cpu(intserv[j]);
-> +                       cpu_to_phys_id[cpu] =3D be32_to_cpu(intserv_node-=
->intserv[j]);
-> +                       DBG("    thread %d -> cpu %d (hard id %d)\n",
-> +                           j, cpu, be32_to_cpu(intserv[j]));
->                         cpu++;
->                 }
-> +       }
->
-> -               if (cpu >=3D nr_cpu_ids) {
-> -                       of_node_put(dn);
-> -                       break;
-> -               }
-> +       list_for_each_entry_safe(intserv_node, n, &head, node) {
-> +               len =3D sizeof(struct interrupt_server_node) + intserv_no=
-de->len;
-> +               memblock_free(intserv_node, len);
->         }
->
->         /* If no SMT supported, nthreads is forced to 1 */
-> --
-> 2.31.1
->
+With recent commits in perf, other three issues are observed.
+shellcheck version: 0.6.0
+
+With this patchset:
+
+for F in $(find tests/shell/ -perm -o=x -name '*.sh'); do shellcheck -S warning $F; done
+echo $?
+0
+
+The changes are with recent commits ( which is mentioned in each patch)
+for ock_contention, record_sideband and test_arm_coresight testcases.
+The changes are made on top of:
+https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.git/log/?h=perf-tools-next
+
+Athira Rajeev (3):
+  perf tests test_arm_coresight: Fix the shellcheck warning in latest
+    test_arm_coresight.sh
+  tools/perf/tests Ignore the shellcheck SC2046 warning in
+    lock_contentio
+  tools/perf/tests: Fix shellcheck warning in record_sideband.sh test
+
+ tools/perf/tests/shell/lock_contention.sh    | 1 +
+ tools/perf/tests/shell/record_sideband.sh    | 2 +-
+ tools/perf/tests/shell/test_arm_coresight.sh | 4 ++--
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
+-- 
+2.31.1
 
