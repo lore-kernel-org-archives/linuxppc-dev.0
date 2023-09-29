@@ -4,52 +4,126 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D37AEE7F156
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 10:54:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB077E7F154
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 11:25:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j3Z7MPGX;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=G5sQVv5D;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RxnK73Rkyz3cgK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 20:54:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rxp1G25Nzz3ccP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 21:25:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j3Z7MPGX;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=G5sQVv5D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::61b; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on2061b.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e19::61b])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxlXJ6Fh5z300f;
-	Fri, 29 Sep 2023 19:33:36 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 2FAEC61E8C;
-	Fri, 29 Sep 2023 09:33:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D9F8C433C8;
-	Fri, 29 Sep 2023 09:32:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1695980011;
-	bh=5rEQjJQmUmhQcZE/S/zbC0z+O4aP1HcivNZvR+uMTdw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=j3Z7MPGXgH3qxJhUlGKswKaevoMz5lRlYfLKv517rB572Uft036HOzVnh6y+Fta2y
-	 IoP7pRk6lJWa27fv+jFujIlmXsGfS+YQww12NsbvPCYDl6f8XCPE+CtURkcHaeicsG
-	 yrkS/+0BXoBXAhDuBIWkGS4iWyGcgZc4uj5K1I6XTsFJQGfVSUCd06bbdxYUiSeitY
-	 kWvaORdHP4IXSdIX2Ck5PihMbYV+j7YqPan4YQc6tbETcfSrUPTc518VDuKuEt3jeG
-	 gYpsCzcJzJ2TfBOID0I9Ah10OPTMXVGJPcaLChcuIuOHlJVeXlo8F4Hi+JnhGg6W4h
-	 6HAwcZKgDftHQ==
-Date: Fri, 29 Sep 2023 11:32:49 +0200
-From: Christian Brauner <brauner@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 87/87] fs: move i_blocks up a few places in struct inode
-Message-ID: <20230929-keimt-umspannen-bfd12d2c2033@brauner>
-References: <20230928110554.34758-1-jlayton@kernel.org>
- <20230928110554.34758-3-jlayton@kernel.org>
- <CAHk-=wij_42Q9WHY898r-gugmT5c-1JJKRh3C+nTUd1hc1aeqQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rxp0G0nq7z3c1H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2023 21:24:28 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=nd95XyPKqMpkaNh+Pv2jGqmXlruoGDHzkFpj+ZDigFz5fHUTikbJP5hHsXJ+H/h0ZS9DxCL8x7ALLstB4jFDjRPiUM11S11qyXhyVMuJf965QQGmqbPDdiay5DsnBeJhO6MJiZqWZLuyC9NELCNbttII5yxMp7aTP2rjEwwQd1JU9IaFwlBCkZSw/L5UxReppd3aeAJOOWx0d97oVRyjtaW/Ld8lb878wyVa+1ZoBZnLYa2MusDQe8RpRBP3SW4AJ/AW30ej5CLCztSpOaQNI0ca2A9LTv79uNgblTz1bw+PVy1wzhMXDGowzIKUuTQC9uuUnuwQWzhAk8LQjIjZ5Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/z2rCrqQMYzQh9okOEmnVvarqCp6Yx9ylQb39908zwM=;
+ b=DDMH1+uGPlzTiSk+eZ6TV82ylQCUvO+Z+5tyN0fucznS1Oa36gPEVQ98bCF/qp7riH9V0qPUqk75kSnSYhczg39d4QA4uLgO/lXvInC7CGDUcjlAW7xbKcRdndGSEO2IlIcfSxcX3zOEzdZ5Te91j7g3b/YiHXbO2fn5JuTXgvrTCrV9KIfr1QBG6ckWOfVpKK0yxh2zK91H5t+HMwK341qT4w6TuQRjiuXvLuZFXafkSKNtVzo62kFsjTnXWNcKIkAoJe46C/X6ZiBoE9VEQrpui1Im8xp4G49smnhL0t8tFm0g2oLCpfQOmcgwENX6sGCo9uaCPGjV/vSmzdCeDQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/z2rCrqQMYzQh9okOEmnVvarqCp6Yx9ylQb39908zwM=;
+ b=G5sQVv5DrgzpsA++WEpWa4UFLNOZhAbTjY7W5KbZxAFmijspkL5tWtZyjhd/3bwtZL2sjg3or8k+lPN2rYamMt8vK7Rm9PcMEYET0kyOVAD+aH0vt+vHpT/Ac7u/zSINC91NV65s8tvjSgCYpvC/B5JiaYWdnuPTEITQ4lQdE7wOfKNSeIFGmV1Dbe5QTGLHVa4UxIXkLpMRq0WRu3AftrGgFiwyi24foui9ASb7R7Qjzz49bFJFz+zGChncM85Jw2KdqlWfcOj4vGeDdcuVI3e0u3tCvwFWM/BazbvGTuTEWDALpdj15YudpCnxL2iX237JStbb6k8LR9/EcZArqg==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by MR1P264MB3170.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:3b::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.28; Fri, 29 Sep
+ 2023 11:24:06 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::27df:697c:bd7d:774f]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::27df:697c:bd7d:774f%6]) with mapi id 15.20.6838.024; Fri, 29 Sep 2023
+ 11:24:06 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Dan Whitehouse <drw@dim-sum.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Kernel Panic 6.5.0-1 PPC
+Thread-Topic: Kernel Panic 6.5.0-1 PPC
+Thread-Index: AQHZ8mxuvcSx4z2as0mUTuzFVvr/YrAxqg4A
+Date: Fri, 29 Sep 2023 11:24:06 +0000
+Message-ID: <2d5d9c82-427e-9384-3ffe-fddf6e1d4d8a@csgroup.eu>
+References: <ZRV3Y3g2fTvE91Zs@dim-sum.org>
+In-Reply-To: <ZRV3Y3g2fTvE91Zs@dim-sum.org>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|MR1P264MB3170:EE_
+x-ms-office365-filtering-correlation-id: cfc0e078-670c-4d37-3cf7-08dbc0de97a2
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  +LE88yySNOL3BZhWFx4sXLXsW8fqybyMqp4NHumEct2NkDRHB0v6AEOltyIxoM8AKW2oqRFcDTpWFmsCD5ToNTCjLWvqSmYhgHbinhtthKto91wQYZjyAIsM4H0O2QU9SGah4VjhnLdsnUWZgqXvwzMOWDOMUgJj8oPcOUYgofgaJVtfPEWdCnuugQrAEvkKm+akzirolWGZ78uTy6QImxu/DyMgfFeOO58cB6QVNhsxgF7vVyEywDMBOZRCzaj7gZPfs/TK2TQPhRXSjktlZXs11dnRjuJqi6gihEKApdrPJnudz1zRTUI7Q0K/+kjsOF97uON+7HuEeFkjTDXjoJ3Xyp023dVy/47KOFo0BUKPZ+foxXt+HGFK6X69FY/sKsP6PjQC9q422kLjtk71R17NNHKM/kxbyGYbBLSjgODbNh1OAXZmRPoV84NNPZdkIyjNs5vI3NBWaMbis5bnYEQPjiLdYy1G33DF0isc4kMtwnp0i34x3lB6EvMfemTicKsK1TqCM/PjCXcMqeSfA+9z8bg1WzqRWnmDGIE1ESQNTtpeDoGIVsOV6qLCGpUr1LycPuFIV4JUd3puoB9GzuUm4+tdFRjkmTqtD8B3JuXU11uVJwSMs/WZ2T8rLK5SRqI8O6yR/XDf78MwrViOGdwekYIOq0HtwBXVfXEHcXs=
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(136003)(346002)(39850400004)(366004)(396003)(376002)(230922051799003)(64100799003)(1800799009)(451199024)(186009)(83380400001)(26005)(66574015)(86362001)(31696002)(36756003)(122000001)(110136005)(38070700005)(38100700002)(76116006)(64756008)(91956017)(66476007)(66446008)(66556008)(66946007)(41300700001)(5660300002)(8676002)(316002)(6486002)(8936002)(966005)(31686004)(44832011)(2906002)(2616005)(478600001)(6506007)(6512007)(71200400001)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?NmdIYVNjZ3Q2ODQzeWlrN0NyQWEvM2tTejF1TSt2SytWNnJYVVZNemdXa3hQ?=
+ =?utf-8?B?enVEeEpLU1VrSy9qcWl2R1o5WFVoRVl3T1hVY2F5T2dPWlBUUGtaYktOcDN6?=
+ =?utf-8?B?amRHRFRSOFJQVkdZd2poUjFuWmU0OFA5cGpSdzR4bldQZnd0bS9zZVhlOHRl?=
+ =?utf-8?B?dlc4aU13b2dkazFtNldvNE5CWEoydkxxVjhrcWl2SkVMSHlLRkhoK3JmRnJm?=
+ =?utf-8?B?SEZmUGlXb2hPN2pRZ3EwL0JscTFPYXZtT2oxWWdBTVFsejVMSGtweEV0d296?=
+ =?utf-8?B?TmpnSjRJUEE2WnRWc1dxMTJGZ2NVM2x2bTNESWNIT1lMaWgvTzJBMDZKM1J0?=
+ =?utf-8?B?KzAyRCtINVVMVUUyKzhXWHpTaU1ScGd6d3VOeEhmVHZsak9HbDl3VStNOUth?=
+ =?utf-8?B?aTl5NnROTVhpWjQva09Wekt6MHQ4cWdSb3hWODRXWkZ6OWNCeFRvamVZQ0JP?=
+ =?utf-8?B?dE5xWUVWbG82eURRZ1haYjdQd1F1ZnRKcmdFc3FUdXZ3Wmg2TndtMmJNZi8x?=
+ =?utf-8?B?d0xuL1lzRmU5K08vWG5ubUdWajJaUFNwL3N5RUhnMWlCeWptN0lKbEhJQUxq?=
+ =?utf-8?B?TENGcjNCSzNSeUN2QW5nWHJ1Nk1NdDRjZ2gwbGJOcXlZSCtPNVp6K1Z0SW8r?=
+ =?utf-8?B?d3Z1M0orbVNhY2dBL0habnN0NzB5S2tIQjFOV3ZiTllLOVhpVFJlMTlMTW9Q?=
+ =?utf-8?B?MHFUR04zbzlDV1RTdlR3TzJxSFJydUxrZndnamJDUFcvSVRpNlZpaXZIZVZN?=
+ =?utf-8?B?YWpJMlArQldDNDQzdWZ6cEpPL1VneDFlQXRDTFFSQzc5ZUh5Qyt4TXVsMFNs?=
+ =?utf-8?B?bEFIRFQxOFlFVVQrQlZrdGhyM2R5bkxKcCt5WVVTLzRyT2s3cWYzamc2cEYy?=
+ =?utf-8?B?aU9oQm8vTldIYklxc1VaUVphRS82SjQrMmRGTmJFZ2k5RXBFd0s3SmdHYnN0?=
+ =?utf-8?B?WXFXY2lZc3p5MGtwQm9QaTZSaFZVN3VnYVdMV0JsRTFDZGpnVUJpZ1pHZyts?=
+ =?utf-8?B?cDI0N2pXUUFEM09aaldndEZwTmpMUWNnZUVUTlVJT0NPanNRR1dpQVJjZXpt?=
+ =?utf-8?B?cStIbHg5bVlNdGowNkl2b2hCay9neDZzRk05dWxTa0tmSmRCdVBXRmFpaWox?=
+ =?utf-8?B?QUpQc0Z2UnJkcnIwUjRqR2l1R1d5bmwveEgzTm9DbnFaY3o1aHFLU29lNmNn?=
+ =?utf-8?B?aDd3dkF5elRmUUgxS01zYzFLc256eHlPcllUTi9LR1l4S0xqT0lkSGxSSC8y?=
+ =?utf-8?B?U0s5N012ZS9IR2VCOHVPYXdHUlNndWtNSU1uQXM1L2NGZXhUM1ZYUGVlWUl4?=
+ =?utf-8?B?eEFPV2FjMTM5VHJpUFdPUE1UMmVBeFhCbG1oMHUybkZUbC91Qy9vU2tXMkMr?=
+ =?utf-8?B?ZldhbUdtY3RkMFFrVVJwZHc1SnJManU3TFdLRTh3dXd2cGhESTNkS3diMGM4?=
+ =?utf-8?B?QUNNRExUbWlPZHhoSldlLzZCaUZ1dy9VODgwdnhSMWVmWGhubmY0K0oxRlRD?=
+ =?utf-8?B?R1JweU9JbkZMOVE4TTYyR0dYM29mSUxKQkhIZ3d1c2tZUXhscW5aSi8rZmgv?=
+ =?utf-8?B?SnZsT283UlhLdGR1UUlZQTVtbHhtcUJYek5JNyttWXBrTmxHa3U2RVZ5aEZs?=
+ =?utf-8?B?UmowL3JkeUt1YVVEQ3hVZmFKY0FiSWNmcTlLNzhHejJodFBxU0tZZnRXRG9i?=
+ =?utf-8?B?aDcvR2JUL3ZxbEdlVzNnMUNsa3VvUzV5bVE2N2tLTGc1Y01RTCtCWDV3QjRl?=
+ =?utf-8?B?WlFVaks5Y1JIVHBCMXZOc3Y0MnNGc0oxUWo0dnVTWVUyUmVWZlQ5bERCUVI4?=
+ =?utf-8?B?cFgzZjFZUVIyZW5PK0tJSHF4MFNjV3NORWMxMTd6eC9kNkxQTmRBQVlaWG94?=
+ =?utf-8?B?aGtWeEZsZkkvSEU0S3pGZUsrSjkraTdnOE9HbnZLb1ROZXZrMTdqR0M4dUdI?=
+ =?utf-8?B?NHhRSXVWa0dBWS9RRTN3alV0VTRFcWZheFJuYUNGbWNlbDI2Myt0UDBMTmM3?=
+ =?utf-8?B?UVhOL3l2Vi9oMHc3K0ZoQlpOa0FVTzFQRklaaWErNTFnV2FiSzFudHN6Q3lU?=
+ =?utf-8?B?b0t2d1N4RjdyM3dtWFFpa1dUdThLNU51QmlxMTQ1SFNyK0EzWkxLU29TTzBF?=
+ =?utf-8?B?U2hxWkxuazVhVlk1bVNDYlQ2K3NLWXpaTHVyMnhzNW5oTUw1UU5UNzNta3cr?=
+ =?utf-8?B?SkE9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <E413F42325F13C4CAE2DBBC84E8AABE8@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAHk-=wij_42Q9WHY898r-gugmT5c-1JJKRh3C+nTUd1hc1aeqQ@mail.gmail.com>
-X-Mailman-Approved-At: Fri, 29 Sep 2023 20:53:15 +1000
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: cfc0e078-670c-4d37-3cf7-08dbc0de97a2
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Sep 2023 11:24:06.1876
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: Y5e34gEUVDvE4xYQkfLjFCMXroPlw/aV1Tt2/I7GsAz835SjAg0JyU8hv0/VGbXnC6CqPXi3346Icfd+bTI4DOOalQvkNRsF+HqToKmtCPc=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MR1P264MB3170
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,39 +135,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Latchesar Ionkov <lucho@ionkov.net>, Konstantin Komarov <almaz.alexandrovich@paragon-software.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Darrick J. Wong" <djwong@kernel.org>, Anders Larsen <al@alarsen.net>, Carlos Llamas <cmllamas@google.com>, Andrii Nakryiko <andrii@kernel.org>, Mattia Dongili <malattia@linux.it>, Hugh Dickins <hughd@google.com>, John Johansen <john.johansen@canonical.com>, Yonghong Song <yonghong.song@linux.dev>, Alexander Gordeev <agordeev@linux.ibm.com>, Christoph Hellwig <hch@lst.de>, Mike Marshall <hubcap@omnibond.com>, Paulo Alcantara <pc@manguebit.com>, linux-xfs@vger.kernel.org, James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, devel@lists.orangefs.org, Shyam Prasad N <sprasad@microsoft.com>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Eric Van Hensbergen <ericvh@kernel.org>, Suren Baghdasaryan <surenb@google.com
- >, Trond Myklebust <trond.myklebust@hammerspace.com>, Anton Altaparmakov <anton@tuxera.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Smalley <stephen.smalley.work@gmail.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Ronnie Sahlberg <lsahlber@redhat.com>, Sergey Senozhatsky <senozhatsky@chromium.org>, Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>, Chuck Lever <chuck.lever@oracle.com>, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, Jan Kara <jack@suse.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.org, Dave Kleikamp <shaggy@kernel.org>, samba-technical@lists.samba.org, linux-mm@kvack.org, Joel Fernandes <joel@joelfernandes.org>, Eric Dumazet <edumazet@google.com>, Stanislav Fomichev <sdf@google.com>, linux-s390@vger.kernel.org, linux-nilfs@vger.kernel.org, Paul Moore <paul@paul-moore.com>, Leon Romanovsky <leon@kernel.org>, John Fastabend <john.fastabend@gmail.com>, 
- Luis Chamberlain <mcgrof@kernel.org>, codalist@coda.cs.cmu.edu, Iurii Zaikin <yzaikin@google.com>, Namjae Jeon <linkinjeon@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>, Todd Kjos <tkjos@android.com>, Vasily Gorbik <gor@linux.ibm.com>, selinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>, Yue Hu <huyue2@coolpad.com>, Jaegeuk Kim <jaegeuk@kernel.org>, Martijn Coenen <maco@android.com>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Hao Luo <haoluo@google.com>, Tony Luck <tony.luck@intel.com>, Theodore Ts'o <tytso@mit.edu>, Nicolas Pitre <nico@fluxnic.net>, linux-ntfs-dev@lists.sourceforge.net, Muchun Song <muchun.song@linux.dev>, linux-f2fs-devel@lists.sourceforge.net, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, gfs2@lists.linux.dev, Eric Biederman <ebiederm@xmission.com>, Anna Schumaker <anna@kernel.org>, Brad Warrum <bwarrum@linux.ibm.com>, Mike Kravetz <mike.kravetz@oracle.com>, linux-efi@vger.kernel.org,
-  Martin Brandenburg <martin@omnibond.com>, ocfs2-devel@lists.linux.dev, Alexei Starovoitov <ast@kernel.org>, platform-driver-x86@vger.kernel.org, Chris Mason <clm@fb.com>, linux-mtd@lists.infradead.org, linux-hardening@vger.kernel.org, Marc Dionne <marc.dionne@auristor.com>, Jiri Slaby <jirislaby@kernel.org>, linux-afs@lists.infradead.org, Ian Kent <raven@themaw.net>, Naohiro Aota <naohiro.aota@wdc.com>, Daniel Borkmann <daniel@iogearbox.net>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, coda@cs.cmu.edu, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, Ilya Dryomov <idryomov@gmail.com>, Paolo Abeni <pabeni@redhat.com>, "Serge E. Hallyn" <serge@hallyn.com>, Christian Schoenebeck <linux_oss@crudebyte.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, autofs@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Mark Gross <markgross@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, Eric Paris <eparis@paris
- place.org>, ceph-devel@vger.kernel.org, Gao Xiang <xiang@kernel.org>, Jan Harkes <jaharkes@cs.cmu.edu>, linux-nfs@vger.kernel.org, linux-ext4@vger.kernel.org, Olga Kornievskaia <kolga@netapp.com>, Song Liu <song@kernel.org>, Jeff Layton <jlayton@kernel.org>, Steve French <sfrench@samba.org>, Jeremy Kerr <jk@ozlabs.org>, netdev@vger.kernel.org, Bob Peterson <rpeterso@redhat.com>, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, ntfs3@lists.linux.dev, linux-erofs@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Chandan Babu R <chandan.babu@oracle.com>, jfs-discussion@lists.sourceforge.net, Jan Kara <jack@suse.cz>, Neil Brown <neilb@suse.de>, Dominique Martinet <asmadeus@codewreck.org>, Amir Goldstein <amir73il@gmail.com>, Bob Copeland <me@bobcopeland.com>, KP Singh <kpsingh@kernel.org>, linux-unionfs@vger.kernel.org, David Howells <dhowells@redhat.com>, Joseph Qi <joseph.qi@linux.alibaba.com>, Andreas Dilger <adilger.kernel@dilger.ca>, Mikulas Patocka <mikulas@artax.karli
- n.mff.cuni.cz>, Ard Biesheuvel <ardb@kernel.org>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Andreas Gruenbacher <agruenba@redhat.com>, Richard Weinberger <richard@nod.at>, Mark Fasheh <mark@fasheh.com>, Dai Ngo <Dai.Ngo@oracle.com>, Jason Gunthorpe <jgg@ziepe.ca>, linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Salah Triki <salah.triki@gmail.com>, Evgeniy Dushistov <dushistov@mail.ru>, linux-cifs@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Chao Yu <chao@kernel.org>, apparmor@lists.ubuntu.com, Josef Bacik <josef@toxicpanda.com>, Tom Talpey <tom@talpey.com>, Hans de Goede <hdegoede@redhat.com>, "Tigran A. Aivazian" <aivazian.tigran@gmail.com>, David Sterba <dsterba@suse.com>, Xiubo Li <xiubli@redhat.com>, Ryusuke Konishi <konishi.ryusuke@gmail.com>, Johannes Thumshirn <jth@kernel.org>, Ritu Agarwal <rituagar@linux.ibm.com>, Luis de Bethencourt <luisbg@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, v9fs@lists.linux.dev, David Sterba <dsterba@suse.c
- z>, linux-security-module@vger.kernel.org, Jeffle Xu <jefflexu@linux.alibaba.com>, Phillip Lougher <phillip@squashfs.org.uk>, Johannes Berg <johannes@sipsolutions.net>, Sungjong Seo <sj1557.seo@samsung.com>, David Woodhouse <dwmw2@infradead.org>, linux-karma-devel@lists.sourceforge.net, linux-btrfs@vger.kernel.org, Joel Becker <jlbec@evilplan.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 28, 2023 at 10:41:34AM -0700, Linus Torvalds wrote:
-> On Thu, 28 Sept 2023 at 04:06, Jeff Layton <jlayton@kernel.org> wrote:
-> >
-> > Move i_blocks up above the i_lock, which moves the new 4 byte hole to
-> > just after the timestamps, without changing the size of the structure.
-> 
-> I'm sure others have mentioned this, but 'struct inode' is marked with
-> __randomize_layout, so the actual layout may end up being very
-> different.
-> 
-> I'm personally not convinced the whole structure randomization is
-> worth it - it's easy enough to figure out for any distro kernel since
-> the seed has to be the same across machines for modules to work, so
-> even if the seed isn't "public", any layout is bound to be fairly
-> easily discoverable.
-> 
-> So the whole randomization only really works for private kernel
-> builds, and it adds this kind of pain where "optimizing" the structure
-> layout is kind of pointless depending on various options.
-> 
-> I certainly *hope* no distro enables that pointless thing, but it's a worry.
-
-They don't last we checked. Just last cycle we moved stuff in struct
-file around to optimize things and we explicitly said we don't give a
-damn about struct randomization. Anyone who enables this will bleed
-performance pretty badly, I would reckon.
+DQoNCkxlIDI4LzA5LzIwMjMgw6AgMTQ6NTMsIERhbiBXaGl0ZWhvdXNlIGEgw6ljcml0wqA6DQo+
+IFtWb3VzIG5lIHJlY2V2ZXogcGFzIHNvdXZlbnQgZGUgY291cnJpZXJzIGRlIGRyd0BkaW0tc3Vt
+Lm9yZy4gRD9jb3V2cmV6IHBvdXJxdW9pIGNlY2kgZXN0IGltcG9ydGFudCA/IGh0dHBzOi8vYWth
+Lm1zL0xlYXJuQWJvdXRTZW5kZXJJZGVudGlmaWNhdGlvbiBdDQo+IA0KPiBIaSwNCj4gSSdtIHJ1
+bm5pbmcgRGViaWFuIG9uIGFuIG9sZCBQb3dlcm1hYyAoMzItYml0IFBQQyBHNCkuDQo+IEknbSBz
+ZWVpbmcga2VybmVsIHBhbmljcyB3aXRoIDYuNS4wLTEuDQo+IEV2ZXJ5dGhpbmcgc2VlbXMgdG8g
+YmUgZmluZSB3aXRoOg0KPiANCj4gTGludXggcG93ZXJtYWMtZzQgNi40LjAtNC1wb3dlcnBjICMx
+IERlYmlhbiA2LjQuMTMtMSAoMjAyMy0wOC0zMSkgcHBjDQo+IEdOVS9MaW51eA0KDQpDYW4geW91
+IHRyeSBwYXRjaCBhdCANCmh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcHJvamVjdC9saW51
+eC1tbS9wYXRjaC8yMDIzMDkxNTE3NDQ0NC4yODM1MzA2LTEtTGlhbS5Ib3dsZXR0QG9yYWNsZS5j
+b20vDQoNCklmIGl0IGRvZXNuJ3QgZml4IHlvdXIgcHJvYmxlbSwgcGxlYXNlIHByb3ZpZGUgdGhl
+IGJlZ2luaW5nIG9mIHRoZSBPb3BzLg0KDQo+IA0KPiAgIDAuMDAwMDAwXSBNU1I6ICAgIDAwMDA5
+MDMyIDxFRSxNRSxJUixEUixSST4gIENSOiAgNDgwMjQyNDIgIFhFUjogIDAwMDAwMDAwDQo+ICAg
+ICAgMC4wMDAwMDBdDQo+ICAgICAgMC4wMDAwMDBdIEdQUjAwOiBjMGIyOTIzNCBjMTNmZGU2MCBj
+MTJmMzU4MCBjMTJmMzU4MCBjMTJmMzU4MCBjMTNmZGU3NCAwMDAwDQo+IGNjMCAwMDAwMDAwMA0K
+PiAgICAgIDAuMDAwMDAwXSBHUFIwODogMDAwMDAwMDAgMDAwMDkwMzIgMDAwMDAwMDAgMDAwMDAw
+MDAgMjgwMjQyNDIgMDAwMDAwMDAgMDAwMA0KPiAwMDAgMDAwMDAwMDQNCj4gICAgICAwLjAwMDAw
+MF0gR1BSMTY6IDAyZDE1OWY0IDAwMDAwMDAwIDAyZDE1MTVjIGMwMGY2ZDM4IDAwMDAwMDAwIDAw
+MDAwMDA0IDAwMDANCj4gY2MwIDAwMDAwMDAwDQo+ICAgICAgMC4wMDAwMDBdIEdQUjI0OiBjMTJm
+Mzk4YyBjMGIyOTcwNCAwMDAwMDAwMSAwMDAwMDAwMyBjMTJmMzU4MCBjMTMwNTA4MCBjMTJmDQo+
+IDVjYyBjMTJmMzU4MA0KPiAgICAgIDAuMDAwMDAwXSBOSVAgW2MwYjI4ZTRjXSBfX3NjaGVkdWxl
+KzB4MzY0LzB4OTIwDQo+ICAgICAgMC4wMDAwMDBdIExSIFtjMGIyOTIzNF0gX19zY2hlZHVsZSsw
+eDc0Yy8weDkyMA0KPiAgICAgIDAuMDAwMDAwXSAtLS0gaW50ZXJydXB0OiA5MDANCj4gICAgICAw
+LjAwMDAwMF0gW2MxM2ZkZWIwXSBbYzBiMjk3MDRdIF9fY29uZF9yZXNjaGVkKzB4NDAvMDYwDQo+
+ICAgICAgMC4wMDAwMDBdIFtjMTNmZGVjMF0gW2MwYjJiNWYwXSBtdXRleF9sb2NrX2tpbGxhYmxl
+KzB4MjQvMHg3NA0KPiAgICAgIDAuMDAwMDAwXSBbYzEzZmRlZTBdIFtjMDJjMzkzMF0gcGNwdV9h
+bGxvYysweDU0Yy8weDc5OA0KPiAgICAgIDAuMDAwMDAwXSBbYzEzZmRmNTBdIFtjMDBmNmQzOF0g
+YWxsb2NfZGVzYy5pcnNhLjArMHg2MC8weDE3NA0KPiAgICAgIDAuMDAwMDAwXSBbYzEzZmRmODBd
+IFtjMTE5OWM1OF0gZWFybHlfaXJxX2luaXQrMHg3MC8weDljDQo+ICAgICAgMC4wMDAwMDBdIFtj
+MTNmZGZhMF0gW2MxMTgzYWJjXSBzdGFydF9rZXJuZWwrMHg0ZTQvMHg2NDANCj4gICAgICAwLjAw
+MDAwMF0gW2MxM2ZkZmYwXSBbMDAwMDM1NDBdIDB4MzU0MA0KPiAgICAgIDAuMDAwMDAwXSBDb2Rl
+OiA3ZDJhMDFhNCA0YzAwMDEyYyA0YmZmZmYyOCA3YzA4MDJhNiA5MDAxMDAwNCA2MDAwMDAwMCA5
+NDIxZg0KPiBlMCA3YzA4MDJhNiAzZDIwYzE0MSA5M2UxMDAxYyA5MDAxMDAyNCA4M2U5YzI5NCA8
+OTQzZjFmZjA+IDdmZTFmYjc4IDQ4YjI0OTA5IDgwDQo+IDEwMDAwDQo+ICAgICAgMC4wMDAwMDBd
+IC0tLVsgZW5kIHRyYWNlIDAwMDAwMDAwMDAwMDAwMDAgXS0tLQ0KPiAgICAgIDAuMDAwMDAwXQ0K
+PiAgICAgIDAuMDAwMDAwXSBLZXJuZWwgcGFuaWMgLSBub3Qgc3luY2luZzogQXR0ZW1wdGVkIHRv
+IGtpbGwgdGhlIGlkbGUgdGFzayENCj4gICAgICAwLjAwMDAwMF0gLS0tWyBlbmQgS2VybmVsIHBh
+bmljIC0gbm90IHN5bmNpbmc6IEF0dGVtcHRlZCB0byBraWxsIHRoZSBpZGxlIHQNCj4gYXNrISBd
+LS0tDQo+IA0KPiAtLQ0KPiBEYW4gV2hpdGVob3VzZQ0KPiANCj4gR1BHOiAzQUE0IDM2OUMgODZF
+MSA0OTM5IEQ0MjAgIEFCMjUgRDBEQyA3QkREIENBOTIgQUQyRQ0KPiBUZWxlcGhvbmU6ICs0NCgw
+KTIwMyAwOTU1MDg4DQo=
