@@ -4,117 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20B5BE71D20
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 12:15:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 802C8E71D3D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 14:03:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=KJZLKPUX;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=AFYNkKpS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rxq7Z5475z3ckh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 22:15:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RxsX171nTz3cnB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Sep 2023 00:03:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=KJZLKPUX;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=AFYNkKpS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=j.granados@samsung.com; receiver=lists.ozlabs.org)
 Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rxq6Z5Db2z3cjy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2023 22:15:02 +1000 (AEST)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230929121452euoutp015a6105e043c6903a24b28d4b4b217ba8~JXaOukA_q0847108471euoutp01S;
-	Fri, 29 Sep 2023 12:14:52 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230929121452euoutp015a6105e043c6903a24b28d4b4b217ba8~JXaOukA_q0847108471euoutp01S
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RxsW04Vwhz3cF2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Sep 2023 00:02:50 +1000 (AEST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230929140240euoutp01afe66b9e4e0ffa1bcecba49359025df5~JY4WWDxoK3251532515euoutp01d;
+	Fri, 29 Sep 2023 14:02:40 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230929140240euoutp01afe66b9e4e0ffa1bcecba49359025df5~JY4WWDxoK3251532515euoutp01d
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1695989692;
-	bh=Mom1/fyOUmOVuOQ+PmCi85/qSNk2f9N499eF11GQ+Tc=;
+	s=mail20170921; t=1695996160;
+	bh=Btrm8Ac8d2kEpEoRPdLI6EsuqjId3rLOgFjkXf4LLYQ=;
 	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=KJZLKPUXlfesrJ/y4S5EYpMquQAdhJ6hBirKRoOzEXmnhHade3/Jh/fbusw4kxXEX
-	 Yr37D8o0BvK+QI9tM6VdOKrFgIpuFa2xKUBLJ2qiIkEhQP1ANcFQLvvv9PxHknbA4f
-	 XQMxTXAZ5Ux3Wu+rMTsVWlSfPDDCZeYzgXh5auVM=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-	eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-	20230929121451eucas1p2a7e7e18a5a15c683a238ba4654f8397f~JXaOZzpIM0273802738eucas1p2Q;
-	Fri, 29 Sep 2023 12:14:51 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-	eusmges1new.samsung.com (EUCPMTA) with SMTP id 0C.15.42423.BBFB6156; Fri, 29
-	Sep 2023 13:14:51 +0100 (BST)
+	b=AFYNkKpSlDSLgKTy1BFqKkjzrxsiEUyok/P+wi9niUPxPhYWD9cBsK1yjoUw/noIU
+	 XMR9yFl90mqqjH9tb/YgNMjRvuGUqinn8j+EtI2Bt9enmbe4U3pQT008WX8/SYh93R
+	 gdC2CWgh1OKveRJVjaffdbYgq7tqctX33NWhJz6Y=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+	eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+	20230929140239eucas1p1917c6db31ae8d968a725d3a0824c4271~JY4WG4bVE1493514935eucas1p1Q;
+	Fri, 29 Sep 2023 14:02:39 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+	eusmges2new.samsung.com (EUCPMTA) with SMTP id B7.4B.11320.FF8D6156; Fri, 29
+	Sep 2023 15:02:39 +0100 (BST)
 Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
 	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-	20230929121450eucas1p1d1a7bc0ee3fa33c4f52984e2a106c7fe~JXaNbUkgg1521115211eucas1p1O;
-	Fri, 29 Sep 2023 12:14:50 +0000 (GMT)
+	20230929140239eucas1p100707358803bb5652bd2e506e93dfaf3~JY4VkDryJ1519215192eucas1p12;
+	Fri, 29 Sep 2023 14:02:39 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
 	eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-	20230929121450eusmtrp25645b9bc156f69c7b11e1d51dfe5f1de~JXaNYJmB41537015370eusmtrp2U;
-	Fri, 29 Sep 2023 12:14:50 +0000 (GMT)
-X-AuditID: cbfec7f2-a3bff7000002a5b7-79-6516bfbbe54a
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-	eusmgms1.samsung.com (EUCPMTA) with SMTP id A5.51.10549.ABFB6156; Fri, 29
-	Sep 2023 13:14:50 +0100 (BST)
+	20230929140239eusmtrp20681390d79a16dcf189beecae65e74a3~JY4VidnSl1185111851eusmtrp2b;
+	Fri, 29 Sep 2023 14:02:39 +0000 (GMT)
+X-AuditID: cbfec7f4-993ff70000022c38-bd-6516d8ffe5ca
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+	eusmgms1.samsung.com (EUCPMTA) with SMTP id 3B.14.10549.EF8D6156; Fri, 29
+	Sep 2023 15:02:39 +0100 (BST)
 Received: from CAMSVWEXC02.scsc.local (unknown [106.1.227.72]) by
-	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-	20230929121450eusmtip155061490e2c9660bc8fd18ead32730b8~JXaNDlSRH1908319083eusmtip1A;
-	Fri, 29 Sep 2023 12:14:50 +0000 (GMT)
+	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20230929140238eusmtip2c25894434db9fa8e8bfc2867c15761a4~JY4VOmMMj3161831618eusmtip2F;
+	Fri, 29 Sep 2023 14:02:38 +0000 (GMT)
 Received: from localhost (106.210.248.178) by CAMSVWEXC02.scsc.local
 	(2002:6a01:e348::6a01:e348) with Microsoft SMTP Server (TLS) id 15.0.1497.2;
-	Fri, 29 Sep 2023 13:14:50 +0100
-Date: Fri, 29 Sep 2023 14:15:58 +0200
+	Fri, 29 Sep 2023 15:02:38 +0100
+Date: Fri, 29 Sep 2023 16:03:47 +0200
 From: Joel Granados <j.granados@samsung.com>
 To: Wei Liu <wei.liu@kernel.org>
 Subject: Re: [PATCH 14/15] hyper-v/azure: Remove now superfluous sentinel
  element from ctl_table array
-Message-ID: <20230929121558.pvsbbnxlijawaioz@localhost>
+Message-ID: <20230929140347.dzpk5xfdfkxrcln7@localhost>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="3qlh5qneoyp3rgzw"
+	protocol="application/pgp-signature"; boundary="pe36q5lo2npaavkw"
 Content-Disposition: inline
 In-Reply-To: <ZRWbGDlXCS4t8tMf@liuwe-devbox-debian-v2>
 X-Originating-IP: [106.210.248.178]
 X-ClientProxiedBy: CAMSVWEXC01.scsc.local (2002:6a01:e347::6a01:e347) To
 	CAMSVWEXC02.scsc.local (2002:6a01:e348::6a01:e348)
-X-Brightmail-Tracker: H4sIAAAAAAAAA2WTe0xTZxjG951z6CkE2LE4+VKMW1DUeIHhEN6Egc655MQ51IXoZma0wxMw
-	o61pZSrZMojcUblYBAqEAoMWOi5BKBcVTN24i0yYAnIf6gZMhSEClbLCwc1k//2e5/2e93KS
-	IyRF/bRYeEp2hlPIJMHOAhvK0DDXvv16/Rru/as526HpQS4BC8kNNPzYNEzAoiGJhMy7ERTU
-	RZQjqEsrFkDXi2cCKKmNJOBRwwgNF/JKBXC/ioWMxGsEaDtLEQz9JobcbgMB6WlNCDJ7dsDT
-	rLVwM8fSTyOHtngpdBguW8GovpIG1Xw+CSlJzwXQWZspgOjsWgSPjZcoiH9QLYC2vEs0mF6a
-	rUDbaCagO/ERgriEaAQNmjUwazJZwY2hUQQzrRMIUgpcIWs6hQTdRBYJ9er7NOSn60ho1C4I
-	QF9yHOpVP5Fwq1VlscyhEHlxjobb5b0EmGYtg19WXCF272Q7uz5lTfPJiM0I+5ViKwp7CLYv
-	vwaxN2c0FFuj7qdZTXkIW1sbTrPXdFvYvBt/EuxCrCfbO+7DlhfFCthZXQLJJubeQgffPWrz
-	4Uku+NS3nMLN94RNUMdkGHH6lehcb53RKgxFMXHIWogZD5wTk07EIRuhiNEhPDCmpngxjXDs
-	RRXNi78RXuzUC15HqsqqSb6gRTi7OJ7695XROIB4UWkRWYvUUoRiXPDFtG5iiQXMNnx3oo9c
-	4tXMe9jQH7Y8g2RK3sbPftdZLRUcmCD8yxP1csCO8cKF7ZU0z6twc/roclOSOYcji0os04QW
-	dsJas3DJtmY88dhcAsWvuh7PlrWurP09bqnoJXiOs8Xtsc4878U/t9WRPDvgscYKmue1eLEm
-	e/nLYOYKwvXm5zQv9AgXhL9Y6eSNI7pGVxIf4ck/8silhTBjj7v/WsXvaY+TDakrth2OiRLx
-	rzdi/cAElYjWq9+4TP3GZer/LuPtbVhzfUrwP3srLsgZJ3n2wSUlzygNoouQIxeilAZySncZ
-	d9ZVKZEqQ2SBrgFyaTmy/HWt5sapapQ1NulqRIQQGdEGS3ikTN+BxJRMLuOcV9sNPxRxIruT
-	kvOhnEJ+XBESzCmNyElIOTvabfVpDhAxgZIz3Dccd5pTvK4SQmtxGOFhe95vy+f+Ow7mB9yK
-	feK0OC2MTj1he3o+ele+/Ijbg8371C4bnDzCa+zLmn8oncFjs45DUw45+48NzURt4qLuJeTb
-	mePfyiz0vwP7pjdpdku1Pa0Htqq8JL4jmaNVAR9sbup2s844FLQ/o+OeWL25ePJed/ThwWl/
-	U8KM7yEJvXEvIXbYU5/llXzAttiUJDXrglrqbg+PBoSsi93pq++aNfiJ1z0fzHk1HN5SOnhY
-	VHDj6xrNsYwKlyOhu7wffjH8iaff4LjM8bvjj586vpLb0LbekzP61UURCcW5gV9+ZVD49+9x
-	/yxquqxC9VA72Gf4+J078rzUy9LDMQNH3Zsv7B87G+5MKYMk7ltIhVLyD88kKJzwBAAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA2WTe1BUVRzHOffu3l0oxutCeCJmRAgkqIUFFn4YoJk6V62pLI2pEDe4gQUs
-	7bJoNE6YEG95BAjLo+WxgCCIIM/hNZgLDUwY4IokjhDY8I5RkUdQC1uTM/33ne93vp/f+Z05
-	h08KVihz/unQcFYWKgm2oow4vRvdo6+1dJixThenbKHnThEB6+kaHpT0jBHwV0MaCXn90Rxo
-	j65F0J5dRcHQkwUKqltiCJjUjPPgQvFVCrSNDOSm1hFQNngVwYPb5lA03EBATnYPgry7zjCf
-	bwFthTqeSgp9iSFwq+EiFyYq63mQsaomITPtDwoGW/IoiP2hBcHDrmQOJN5poqCvOJkHa083
-	uFDWvUHAcOokgoSUWAQalRksr61xofXBBIKl3lkEmaVCyH+cSUL5bD4JHUotD9Q55SR0l61T
-	UFntBx0ZV0jo7M3QWRuREJO0woMbtSMErC3rBj+9/j2xT8wMDh1l1lbTEZMb9QuHuX75LsHc
-	Uzcjpm1JxWGalaM8RlWrYFpazvOYunJ7prh1imDW492YkRkvprYinmKWy1NIJrWoE7278yOh
-	p0yqCGctg6TycC+rj0XgLBR5gNDZ1UMocnH33eMstnL09gxgg09HsDJH71PCoNKRNk7YquBs
-	4swMGYWi6QRkyMe0K26saSITkBFfQKsRLpxLp/SBBb72+DZXr03wn9qELV9ALyJcN8nqC/UI
-	F8VOczYDDm2Dk7KHiU1N0a/i/tl75KY2pS1xw2gUb7NA0tXbcHKnnmpCB+Gbvyu3Csa0O778
-	cz1PT80l8G/TlZQ+2I5/ypnYmkDSEVgdf01X4Ov0S7hsg79pG9JueHolhaM/qTVerun9Z4Nz
-	+NH6Q5SKTJTPkJTPkJT/kfS2PR7emPq/7YBLC2dIvfbC1dULHBXiVSBTViEPCQyRi4RySYhc
-	ERoo9JeG1CLdu2/QrNQ1oYLpRWEXIvioC72sa47XVN5C5pxQaShrZWo89quAFRgHSL6KZGVS
-	P5kimJV3IbHuGtNI8xf8pbpPFBruJ3JzEotc3TycxB5uLlY7jA+HxUkEdKAknP2CZcNY2b89
-	gm9oHkVcOCG5VOXwoV+k8oo22fr5UV6jvP+Qt5fg7aVPD64lxfgUDyzYG/me2t2ubb35urHT
-	8dixb2IC1KU2b/04sC1L80mbytc7zoc77mC224flSg6U85tzAzQeBjt7lMQ5x/KqkjnTLyXb
-	Zw3eX/r2nYR9dt/ZhDs+ai7Ym34ktfHE4HpJQRyX8owYOTmnOPBBaVegyS7bF29M27l/puye
-	8uqY7xtwq+hejmg6c2nH/sTCgSyHxqR586V89cnZ+69YmFj3VDqU3v/8PWqock+1pX+v2eib
-	ZzzFZxeOnp89dHCJa2Py3NeHmzW7fCLemFA8MSg6fizWNitzUWtXcsQaH7NzSdk7yPoXYCuO
-	PEgisidlcsnfXJsG0YwEAAA=
-X-CMS-MailID: 20230929121450eucas1p1d1a7bc0ee3fa33c4f52984e2a106c7fe
+X-Brightmail-Tracker: H4sIAAAAAAAAA2VTfUxTVxzNfe/1vcpAn8jgBvwoqEtArcJQf3GwzMXF55Zs+0OXZdE4Im+g
+	k9a1osyFpG6IAuNbptQyih20ilSsWNsqQljkY2XaDZDa0c0PmE7q0A3kS9pRH24m+++c8zvn
+	3t+5yRWTwX1MuHinbC+vkCXtjqIDKHPr+PUVPmcov8rSHAPtvScJmCppZeC79tsE+MzFJGiu
+	Z1FwJcuE4MrxOhq6R4ZoMNoOETDQeoeBr3RnabhxkYMTRecJ0HedRXCrJxxOOs0ElB9vR6C5
+	GQd/VsyHxqrp87Ry6MxLA4e5QAT9tRcYODpRTUJZ8SMaumwaGg5X2hD83pJPQV6vhYZOXT4D
+	k6NeEejbvAQ4iwYQ5BYeRtCqDYWxyUkRXL7Vj+CJ3YOgrEYKFcNlJBg8FSQ0qW8wUF1uIKFN
+	P0VDrXE7NB09Q0Kz/ei05D0Ah74eZ+B7k4uAybHpi0cbSok3VnNd3e9wkxMliDuh+oniGk7d
+	JLi+aiviGp9oKc6qdjOc1pTO2WwHGe68IYbTXf6D4KZy1nCuwUTOdDqH5sYMhSRXdLIZvb/o
+	o4CEZH73zn28YuXrHwekTvV0MnvyQjJs6kuECk2wuUgsxmw8truoXBQgDmYNCNfd/oUUyDDC
+	/d+4kED+RriwZ4TJRbOeJZ4aymdceoRbXEPkv67GQ6OEQC4gPJllof0Ril2Kq358+ixOs8vx
+	dU8f6cchrASb3SrGHyBZ4xw8dNcg8g/msan46j014cdB7FpsvVbKCHgu7ijvp/yYZDPwzz4d
+	4W9BshFY7xX75VnsGvxgvJASVl2Mx+rttIAz8Q8NrmfLYTY7EDcN6kjhBTZg00OF4JmHH7Q1
+	zNScj33Wyhl/KcJN3keMQGoRrjk4Qgiu13BWd/9MYj1+fP/5obOx8+FcYc/ZuMR8bEYOwkey
+	gwX3K7j2Vw9VhBarX2imfqGZ+r9mgrwcay/9Rf9PXoZrqgZJASdio3GI0iLmNArj05VpKbwy
+	TsbvlyqT0pTpshTpDnmaCU1/Oru3bdiC9A8eS1sQIUYtaMl0+E59rQOFUzK5jI8KCcp2hPLB
+	QclJnx/gFfLtivTdvLIFRYipqLCgZYkdO4LZlKS9/Kc8v4dXPJ8S4lnhKiK549K7czJdsU2b
+	E6wSWFldsXDJwIL6Hs02Yr7U+mWCalm0s6JwaWCRJPBbzcVoLnZXKKrMXNvR5RqOL35c/dm6
+	6PwvHLGbblfGuWtydW7TvdlUnoob3/CWZPmHjQVvFp/IOdf8akaJzyt5e4Hnk9H6/N9y+8Ii
+	txgt7ZGS4qp8e99lIuLMqSn39uGSI3clPZHuuDvhg4sGN5bFd/Z2uuVOi2jze/vtAatliaVV
+	AdckWze9XBA24jhfWZAa4vDoJyJXZO/6QLa+F8uPiUUJzID0XMzdgc77iqW79oGje0lcYHf+
+	pvJS27qr8HCVL3lz/LYtmpe2beg1bb3YdW5hSupiT10UpUxNio0hFcqkfwAu818d7wQAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA2WTe1BUVRzHPfde7l1osBsgXomE1rCGcGEXWH8oOE5TebEam2oiqYQdvAEF
+	u7QLaozNrMMb46XgwALGI1iUWgxkEUQgmpYt3iKIiA0Q4rAyIqmwvJZ225qc6b/P+f7O73N+
+	c+YcHu6wQrrwoqXxnFwqieGTdkS3qev3XRujzpzP6VIC9DcrMFg/o6PgO/0kBhvaPBxK+pMJ
+	aEuuR9BW+AMJN57Mk6BpScHgrm6KgqTKOhJGmlgozm3AQD1Uh2Bi2AUqRrUYFBXqEZTcEsGD
+	Ule4Vm72lcmg53QsDGizbWC6tpGC/JUqHAryHpIw1FJCQtq3LQhmOrMIOH3zCgk9lVkUrC6Z
+	bEDdZcJgNPcugsycNAS6Mmcwrq7aQOvENILF7jkEBdUCKH1cgEPNXCkO7aoRCqqKanDoUq+T
+	UKsJg/b873Ho6M43R6ZESPlmmYKf68cwWDWaD166fBbb788O3XiLXV05g9hi5SDBXr5wC2PH
+	q5oRe22xjGCbVXcotqw+gW1pOUWxDTWebGXrLMauZ4jZsftBbP3FDJI11uTgbG5FB3rXLVQQ
+	KJclxHPuUTJFfBD/YyGIBMIAEIj8AgRC392f7hH58733BR7lYqKPcXLvfeGCqLyNQiIuw+lE
+	+oMsQomMdCay5TG0H7NWU4RnIjueA12FGKUuj7AWXJkfHw/bWNmRWRvJJK2bFhCjHjUQ1kUj
+	Yp70dZGWXQTtwZT3rlEWJmkvpn9uHLewE+3OaO8oKUsDTmueZbI6rFpHOor55Z4Ks7A9vZtp
+	7jtLWa3FGPOHoZa0Fp5jfi2a/nsmnD7GXDVqzFaemZ9n1CaeJbalxYxhOeefsXcwxkvdpJW/
+	Zh6tz6Bc5Kh6yqR6yqT6z2SNPZlR0yz2v/hVprr8Pm7lIEajmSfKEHUROXEJitjIWIVQoJDE
+	KhKkkYIIWWw9Mj98rW654Qo6b1gQdCKMhzrRS+bOqUu1A8iFkMqkHN/JPnXAmXOwPyr5KpGT
+	y8LkCTGcohP5m68xD3fZEiEz/yJpfJhQ7OMv9BMH+PgHiH35W+2D49IlDnSkJJ77guPiOPm/
+	fRjP1kWJvT7m7zWett+0zS2s1TdaLAmX8ju0IvEKb0kxnHrkfTjhEdBYEGwzFvLC58qXw3m9
+	mZSkP5Tu+XDQePwTvZuBVSr+zA5+7zN9xF6N4WD6eRgfF82l73FOSlE/2tRmu7m3tqrVveWV
+	mPYU92L7N+I9xlOnUqJ3vsjfu91QeP3tn9w2IrWGukB1yDMHZq+uh8xo8u0mpX1RDxeGFnlf
+	em0xnNQfvj7ptJJ2mNt6aOLA2lTSIb9z98q3nTzlGtrkPZ+0Xp24Vqm6/U7yphzhbVHAjn4M
+	iO2c3cF+m4Ijv7l6f4CTF9xnRnc5bP7o3LzuzeWCqqadxzOZwdd6shu64voWm0gPgk8ooiRC
+	T1yukPwF2ZBtso0EAAA=
+X-CMS-MailID: 20230929140239eucas1p100707358803bb5652bd2e506e93dfaf3
 X-Msg-Generator: CA
 X-RootMTR: 20230928152622eucas1p20ca3dd701247895e232e59fb84e33e1f
 X-EPHeader: CA
@@ -141,7 +141,7 @@ Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, Steve Wahl <steve.wahl@hpe.com>, Joo
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---3qlh5qneoyp3rgzw
+--pe36q5lo2npaavkw
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -149,6 +149,11 @@ Content-Transfer-Encoding: quoted-printable
 On Thu, Sep 28, 2023 at 03:26:16PM +0000, Wei Liu wrote:
 > Please change the prefix to "Drivers: hv:" in the subject line in the
 > two patches.
+I'll change the commit message for the 14/15 patch from "hyper-v/azure"
+to "Drivers: hv:". But I only see one patch that needs this. Which is
+the other one?
+
+best
 >=20
 > On Thu, Sep 28, 2023 at 03:21:39PM +0200, Joel Granados via B4 Relay wrot=
 e:
@@ -180,8 +185,6 @@ e:
 > > +	}
 >=20
 > Please keep the comma at the end.
-My V2 will have this.
-
 >=20
 > >  };
 > > =20
@@ -195,22 +198,22 @@ My V2 will have this.
 
 Joel Granados
 
---3qlh5qneoyp3rgzw
+--pe36q5lo2npaavkw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQGzBAABCgAdFiEErkcJVyXmMSXOyyeQupfNUreWQU8FAmUWv/0ACgkQupfNUreW
-QU+whgv+InxnpA/bTntZv2zXmVfPlCF5wQv1v2Pr8xRi1bqKD131BW2w2KHwG/lQ
-4nA4DNk4RBgJc9QG5vsJFBnULGy0FyMqYh75isB+3byS1FqVcbm4sDAYLgNTc/E8
-JYKQcBsnUIO3H2bwRKLC+PD8PpU1uhT96k+4Y0qXW7YI4CXsixf9194xOXrmMJDN
-vUckHh5HbmM5M38c4/I+91DEVZxbT6ucuxpGH9peNO6R0SExi9fH6R22WqC6Vbdq
-eGFsS5X2OYcG6wIpqmqTSY+hA4BRP3uXlEqJddoVz7HirrCwoIvkniDOxdLaikiC
-Vwb1mr4T/Hw3weIEzXdih8v2/ZCXdOhA0v4Aasme6jd6c+JLQN/3BqwXHCzbTwWL
-npF+7w2a2v4P3XjX3nIcTk/Y7IiY5wsnptjwc43D9NX1DG6hw/q2NB3Crkm6M3ek
-D48OTTGHZEMLidLgAORqIWlAD/Ta2wxaQHe6L5iU+VWYky7mdXjXUaId/qvNocqV
-E1CKZWSN
-=tJ3K
+iQGzBAABCgAdFiEErkcJVyXmMSXOyyeQupfNUreWQU8FAmUW2UEACgkQupfNUreW
+QU+ZyQv9HSXCGinIOipdlVjAjwhhj6RTSXKmVOPKYpS5Rg7aN0U82HzUpe/YGUvE
+dEkLD50b0Mo5onU0fxk7PxAo7caRLYwpTki5RqjceH1a3DgPuH0jozn4rbxb10ym
+v0B/fxvdHH9rxasac48TToOUPvqcbelPpQ59h7PEj84QwcYkd7pV6Wt7elbOt2fI
+w8dfe8vvnNXGLquYe0hqGv7c6TGjOXwY06dTtga5LzmalTp0IMELfKNebRsWhhPQ
+gsL9i6erlZUN75ZmgZM+YMnhEcEQwRFxapO1r2nENKMoWHNKglPIZ8BHfkZnXy48
+HCo5Kt8JZ1E1XArWKL6N58dcSyWJx2U9aMXC7Ugl8WWKDGuW3W9+v/1uxuxE7Bsi
+wfooQe5Df/UjY3wvmdcooleqJ8NFjWgv7/pU0i/WXS2dxzUB9VF27Ghgj9sRNY7V
+IUGRM7apb2US7rjwyn1DuDn4A+iO4ZRBH1tZr3RtnIigP9fboAI8E3+sEIhdL0FX
+R517c3qf
+=7vL7
 -----END PGP SIGNATURE-----
 
---3qlh5qneoyp3rgzw--
+--pe36q5lo2npaavkw--
