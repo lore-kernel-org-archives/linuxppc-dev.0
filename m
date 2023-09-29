@@ -4,48 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A74CDE71D32
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 13:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01A0DE728CA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 17:24:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=mgl1IifJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D6oTKkYZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rxrcy2Lz3z3chV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Sep 2023 23:22:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rxy061Zxbz3cjV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Sep 2023 03:24:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=mgl1IifJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D6oTKkYZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dim-sum.org (client-ip=81.187.240.206; helo=chowmein.spicy.dim-sum.org; envelope-from=drw@dim-sum.org; receiver=lists.ozlabs.org)
-Received: from chowmein.spicy.dim-sum.org (chowmein.spicy.dim-sum.org [81.187.240.206])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rxrbx0v3wz3cF2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2023 23:22:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=dim-sum.org;
-	s=chowmein; t=1695993716;
-	bh=oy6AVVpEg7iwd+GF9uQtYCLqub7+UeyQbHra/88RnWY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=mgl1IifJj7nphiHkxJfhbIMXjAGwoTJheZ9p95YanB7nBEhXJDmk4c/2JjWTxsFab
-	 uKrntZhpHQwupVZ32vuEoKrMrl2RcBpU3oi77J4dAuOFQJWCou0w6r2lNTbfM+lGev
-	 j9/y86+2oNbwtotu1TFgZ16Xx5aO7EQnN22YDoN7T2uwtgFZF7LCL6bfmh+zYIz5tj
-	 qDNGEvzAyWLva4fXEs9LH+/S/XMj5v/LPCybJHIRDN2SU0K0DPvLzsW195898bhgna
-	 5dkJjW+DQG60EDsHAppMeIHMzgQ5GZEDBkaRJpSrgxo6cgIvKzK2IjCCahqcYTx2ib
-	 XOnrg+rv8evTA==
-Received: from dim-sum.org (b.8.4.f.1.4.e.f.f.f.1.5.6.4.c.e.4.1.0.0.9.9.f.f.0.b.8.0.1.0.0.2.ip6.arpa [IPv6:2001:8b0:ff99:14:ec46:51ff:fe41:f48b])
-	by chowmein.spicy.dim-sum.org (Postfix) with ESMTPS id 9708BE00036;
-	Fri, 29 Sep 2023 14:21:56 +0100 (BST)
-Date: Fri, 29 Sep 2023 14:21:55 +0100
-From: Dan Whitehouse <drw@dim-sum.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: Kernel Panic 6.5.0-1 PPC
-Message-ID: <ZRbPc7w9DU3dG1jb@dim-sum.org>
-References: <ZRV3Y3g2fTvE91Zs@dim-sum.org>
- <2d5d9c82-427e-9384-3ffe-fddf6e1d4d8a@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rxxz440S2z3cMH
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Sep 2023 03:23:59 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38TH6oo3011615;
+	Fri, 29 Sep 2023 17:23:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Mb4kmc7EVYbPBjhuTHuXPbo8ckLWRALejMOraCIvCFI=;
+ b=D6oTKkYZasYt47QUWeLyWuvGlyKu4MUTDoYLCOBlu1/co//RFp5uqopfeM2/+UoTLv3k
+ 9/Rlx7iCTKVJCMocQsztMxG7b13QmMPzUCjRZUR2G+ZSZ+3FxfMQN5Cl6E1hd1KU8JeA
+ kK3I1IEwYW7qob3fUqY6/U7sfNND36+rIAQtNs+BlQHMd2nteGjizHubXNiZjmgI7qh1
+ j1ho6F3ERQeX/bwv5XQCsj+THaJXnkOJjZTP8idvoE/w3rO7YMtaOyI6UNARGtuJxMav
+ tzC9AM5Ca/oEbWFrWpOZveKDfkg54jzh0/nCCVuDkwPxqy4Aojd3lv15PY+Vy7DbQe89 Kw== 
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3te2fkgpb5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 Sep 2023 17:23:50 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 38TGmr7I008185;
+	Fri, 29 Sep 2023 17:23:49 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3taar06juq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 Sep 2023 17:23:49 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 38THNk9f29819160
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 29 Sep 2023 17:23:46 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 64C082004E;
+	Fri, 29 Sep 2023 17:23:46 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B85CF20040;
+	Fri, 29 Sep 2023 17:23:44 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.101.140])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 29 Sep 2023 17:23:44 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 2/2] powerpc/platforms/pseries: Remove unused r0 in the hcall tracing code
+Date: Fri, 29 Sep 2023 22:53:37 +0530
+Message-Id: <20230929172337.7906-2-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20230929172337.7906-1-atrajeev@linux.vnet.ibm.com>
+References: <20230929172337.7906-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2d5d9c82-427e-9384-3ffe-fddf6e1d4d8a@csgroup.eu>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 0gF0xL9wTBNEyeJaTSJxCa2-y91H627G
+X-Proofpoint-ORIG-GUID: 0gF0xL9wTBNEyeJaTSJxCa2-y91H627G
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-09-29_15,2023-09-28_03,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 spamscore=0
+ suspectscore=0 priorityscore=1501 mlxscore=0 lowpriorityscore=0
+ adultscore=0 bulkscore=0 phishscore=0 clxscore=1015 mlxlogscore=846
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2309290147
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,16 +89,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, kjain@linux.ibm.com, Naveen N Rao <naveen@kernel.org>, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thanks Christophe, I'll give that a try over the weekend if I get a
-chance, and I'll also let the Debian devs know if they've not spotted
-this yet.
+In the plpar_hcall trace code, currently we use r0
+to store the ORed result of r4. But this value is not
+used subsequently in the code. Hence remove this unused
+save to r0 in plpar_hcall and plpar_hcall9
 
+Suggested-by: Naveen N Rao <naveen@kernel.org>
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hvCall.S | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+index 2addf2ea03f0..2b0cac6fb61f 100644
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -184,8 +184,6 @@ _GLOBAL_TOC(plpar_hcall)
+ plpar_hcall_trace:
+ 	HCALL_INST_PRECALL(R5)
+ 
+-	mr	r0,r4
+-
+ 	mr	r4,r5
+ 	mr	r5,r6
+ 	mr	r6,r7
+@@ -295,8 +293,6 @@ _GLOBAL_TOC(plpar_hcall9)
+ plpar_hcall9_trace:
+ 	HCALL_INST_PRECALL(R5)
+ 
+-	mr	r0,r4
+-
+ 	mr	r4,r5
+ 	mr	r5,r6
+ 	mr	r6,r7
 -- 
-Dan Whitehouse
+2.39.3
 
-GPG: 3AA4 369C 86E1 4939 D420  AB25 D0DC 7BDD CA92 AD2E
-Telephone: +44(0)203 0955088
