@@ -4,54 +4,136 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECDABE776CB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 22:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BA09E776CB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 22:52:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YOzaTs8x;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YJeHe/bs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rzx603qBRz3vX7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 09:51:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rzx6y6P4hz3vct
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 09:52:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YOzaTs8x;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YJeHe/bs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=ansuelsmth@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rzx503lDQz3c8D
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 09:51:00 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 7CCE4CE1366;
-	Mon,  2 Oct 2023 22:50:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C30AC433C7;
-	Mon,  2 Oct 2023 22:50:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1696287057;
-	bh=/OqHkpnCr2yp1sDRAdjhGT7oMqmIEUALgDHapbczbmI=;
-	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
-	b=YOzaTs8xV30AkpqZbykvhJSF0mNTVlgNrJdaZuah8iyObs6eMafbHTI/hNig4dWQX
-	 vrC2a+GKlGOLBX6HK26gDeMOht2XNo+CNdwjXs5srCzTgdOfpbbQUUJDqTUYD0tuXj
-	 5Ogpu/QrdP84k1KW44KYcZ484+H0U8gegEkBVgqLEnbrUOc4eqSG0slsHEIvnlad3P
-	 Z56UeZDV+NpTwaI3LNFfV23LROuNH6PrMrmZQyTOgf4na/6gwlG+gzXU8XkYhLdzKb
-	 7UXnUl6BPmy6BcW3oSUZm6y9Paqwl5OjOF2Z6r/UPVGqTS98/289KlB2V8IYDupALH
-	 TqzvT1Mi7RhWQ==
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 03 Oct 2023 01:50:43 +0300
-Message-Id: <CVYBKLX6LJR4.22G72LXAHW77W@seitikki>
-Subject: Re: [PATCH v3 1/3] crypto: mxs-dcp: Add support for hardware
- provided keys
-From: "Jarkko Sakkinen" <jarkko@kernel.org>
-To: "David Gstir" <david@sigma-star.at>
-X-Mailer: aerc 0.14.0
-References: <20230918141826.8139-1-david@sigma-star.at>
- <20230918141826.8139-2-david@sigma-star.at>
- <CVS3NIJ8OO6Y.2C6GJ9OBR6COC@suppilovahvero>
- <88FFAB6B-10A8-4732-A901-50859E22352D@sigma-star.at>
-In-Reply-To: <88FFAB6B-10A8-4732-A901-50859E22352D@sigma-star.at>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Rzksr17Rbz2xTR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 02:10:39 +1100 (AEDT)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-405505b07dfso18801635e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Oct 2023 08:10:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1696259435; x=1696864235; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ow78hAE0yIyUemUyYOBz3q9ywNhxcPT95anou49aj54=;
+        b=YJeHe/bsqUyasd4rlodO6ABkzeqryo3fH53eRhYfLjij7n3153vE1dZZi7Ta0rIl9H
+         MhPP+EY8ydK0dIinKRVCpOOZei8roTkx5hOjEpvJAuOD9ClffaYic6O26v985bnO1Mw8
+         BYavnNwcw0lSuwnjGAlqCfuwhKLUCqjyy7E7yFN6as3wCnGjQeg79WPWWqOJ4EbNVAWQ
+         XBVynL0UYIU3OdoPIPJLhIqgHCyI3xiJtyTbaO+YM+Fqp7NtyhTgJVj43TfraDW4mN67
+         fFOAcuB9B14rgjjXIen6R+gZ4NX2mF3/U0O+nMDiBWgHHmxkXwZoyMQyxlX6phtjSM8J
+         +Xlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696259435; x=1696864235;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ow78hAE0yIyUemUyYOBz3q9ywNhxcPT95anou49aj54=;
+        b=ZGIril4v59v8nUnvIDmZP44eRyYuZ0Z1U4o+VgLANc7Qp4E9NXktNYTstvvlFLHMsR
+         d7A2ZnM7TzKALEdodOXq8+2fQh4hL3qwiy/4f9qUtTX2Mr6hO3UqazWLYhIURmNQ9VEy
+         S5I/X8/XScCbAFLFA3tThD/1Psw6S2f1IU8zqAMKS1VNDhWUqcOfxhNNpqQ2Oh6Pqz1/
+         sZE5M9lyygNI8Xekn5FiXmjseCgCawb/sGQbO+KlDUG5WDYMd21Ydg+j5OJ4y+PsXIHv
+         YgU1mHroHN0m/GORv7+rhdIVTUO4dJ8KcgDEoK3LSq7mp9dX9brS4vSED04iTo3rV2CN
+         Djog==
+X-Gm-Message-State: AOJu0YzlTK8b6loB7emsM2l9yhljwgLxOM6BBPBANM0zZaZv0bJzpSNe
+	vD1jVNpT6SUZ7ZszIT/b+Mo=
+X-Google-Smtp-Source: AGHT+IER54DFWa7vQIFTj6+iJgsPdY5/GDB29GHbGeIgWOfOFDfcvPSoorLgTOCTW0kTjVMyBnWZcA==
+X-Received: by 2002:a05:600c:4991:b0:401:b92f:eec5 with SMTP id h17-20020a05600c499100b00401b92feec5mr10163374wmp.9.1696259434455;
+        Mon, 02 Oct 2023 08:10:34 -0700 (PDT)
+Received: from localhost.localdomain (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
+        by smtp.googlemail.com with ESMTPSA id t15-20020a1c770f000000b00406408dc788sm7421565wmi.44.2023.10.02.08.10.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Oct 2023 08:10:32 -0700 (PDT)
+From: Christian Marangi <ansuelsmth@gmail.com>
+To: Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Wolfgang Grandegger <wg@grandegger.com>,
+	Marc Kleine-Budde <mkl@pengutronix.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Chris Snook <chris.snook@gmail.com>,
+	Raju Rangoju <rajur@chelsio.com>,
+	Jeroen de Borst <jeroendb@google.com>,
+	Praveen Kaligineedi <pkaligineedi@google.com>,
+	Shailend Chand <shailend@google.com>,
+	Douglas Miller <dougmill@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Dany Madden <danymadden@us.ibm.com>,
+	Thomas Falcon <tlfalcon@linux.ibm.com>,
+	Tariq Toukan <tariqt@nvidia.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Jose Abreu <joabreu@synopsys.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Krzysztof Halasa <khalasa@piap.pl>,
+	Kalle Valo <kvalo@kernel.org>,
+	Jeff Johnson <quic_jjohnson@quicinc.com>,
+	Gregory Greenman <gregory.greenman@intel.com>,
+	Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>,
+	Intel Corporation <linuxwwan@intel.com>,
+	Chiranjeevi Rapolu <chiranjeevi.rapolu@linux.intel.com>,
+	Liu Haijun <haijun.liu@mediatek.com>,
+	M Chetan Kumar <m.chetan.kumar@linux.intel.com>,
+	Ricardo Martinez <ricardo.martinez@linux.intel.com>,
+	Loic Poulain <loic.poulain@linaro.org>,
+	Sergey Ryazanov <ryazanov.s.a@gmail.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Christian Marangi <ansuelsmth@gmail.com>,
+	Yuanjun Gong <ruc_gongyuanjun@163.com>,
+	Wei Fang <wei.fang@nxp.com>,
+	Alex Elder <elder@linaro.org>,
+	Simon Horman <horms@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Bailey Forrest <bcf@google.com>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Junfeng Guo <junfeng.guo@intel.com>,
+	Ziwei Xiao <ziweixiao@google.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Rushil Gupta <rushilg@google.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Yuri Karpov <YKarpov@ispras.ru>,
+	Zhengchao Shao <shaozhengchao@huawei.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Zheng Zengkai <zhengzengkai@huawei.com>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Lee Jones <lee@kernel.org>,
+	Dawei Li <set_pte_at@outlook.com>,
+	Hans de Goede <hdegoede@redhat.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	Anjaneyulu <pagadala.yesu.anjaneyulu@intel.com>,
+	linux-rdma@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-can@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-arm-kernel@lists.infradead.org,
+	ath10k@lists.infradead.org,
+	linux-wireless@vger.kernel.org
+Subject: [net-next PATCH 1/4] netdev: replace simple napi_schedule_prep/__napi_schedule to napi_schedule
+Date: Mon,  2 Oct 2023 17:10:20 +0200
+Message-Id: <20231002151023.4054-1-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.40.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 03 Oct 2023 09:51:27 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,78 +145,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Herbert Xu <herbert@gondor.apana.org.au>, Jonathan
- Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, James
- Morris <jmorris@namei.org>, NXP Linux Team <linux-imx@nxp.com>, James Bottomley <jejb@linux.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>, "Paul E.
- McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, sigma star Kernel Team <upstream+dcp@sigma-star.at>, "Steven Rostedt
- \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, linux-arm-kernel@lists.infradead.org, Paul Moore <paul@paul-moore.com>, linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Li
- Yang <leoyang.li@nxp.com>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, "David S.
- Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed Sep 27, 2023 at 9:25 AM EEST, David Gstir wrote:
-> Jarkko,
->
-> > On 25.09.2023, at 17:22, Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> >=20
-> > On Mon Sep 18, 2023 at 5:18 PM EEST, David Gstir wrote:
-> >> DCP is capable to performing AES with hardware-bound keys.
-> >> These keys are not stored in main memory and are therefore not directl=
-y
-> >> accessible by the operating system.
-> >>=20
-> >> So instead of feeding the key into DCP, we need to place a
-> >> reference to such a key before initiating the crypto operation.
-> >> Keys are referenced by a one byte identifiers.
-> >=20
-> > Not sure what the action of feeding key into DCP even means if such
-> > action does not exists.
-> >=20
-> > What you probably would want to describe here is how keys get created
-> > and how they are referenced by the kernel.
-> >=20
-> > For the "use" part please try to avoid academic paper style long
-> > expression starting with "we" pronomine.
-> >=20
-> > So the above paragraph would normalize into "The keys inside DCP
-> > are referenced by one byte identifier". Here of course would be
-> > for the context nice to know what is this set of DCP keys. E.g.
-> > are total 256 keys or some subset?
-> >=20
-> > When using too much prose there can be surprsingly little digestable
-> > information, thus this nitpicking.
->
-> Thanks for reviewing that in detail! I=E2=80=99ll rephrase the commit
-> messages on all patches to get rid of the academic paper style.
->
->
-> >=20
-> >> DCP supports 6 different keys: 4 slots in the secure memory area,
-> >> a one time programmable key which can be burnt via on-chip fuses
-> >> and an unique device key.
-> >>=20
-> >> Using these keys is restricted to in-kernel users that use them as bui=
-lding
-> >> block for other crypto tools such as trusted keys. Allowing userspace
-> >> (e.g. via AF_ALG) to use these keys to crypt or decrypt data is a secu=
-rity
-> >> risk, because there is no access control mechanism.
-> >=20
-> > Unless this patch has anything else than trusted keys this should not
-> > be an open-ended sentence. You want to say roughly that DCP hardware
-> > keys are implemented for the sake to implement trusted keys support,
-> > and exactly and only that.
-> >=20
-> > This description also lacks actions taken by the code changes below,
-> > which is really the beef of any commit description.
->
-> You=E2=80=99re right. I=E2=80=99ll add that.
+Replace drivers that still use napi_schedule_prep/__napi_schedule
+with napi_schedule helper as it does the same exact check and call.
 
-Yup, I'm just doing my part of the job, as I'm expected to do it :-)
-Thanks for understanding.
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/net/ethernet/ni/nixge.c     | 3 +--
+ drivers/net/ethernet/wiznet/w5100.c | 4 ++--
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-> Thanks,
-> - David
+diff --git a/drivers/net/ethernet/ni/nixge.c b/drivers/net/ethernet/ni/nixge.c
+index 97f4798f4b42..f71a4f8bbb89 100644
+--- a/drivers/net/ethernet/ni/nixge.c
++++ b/drivers/net/ethernet/ni/nixge.c
+@@ -755,8 +755,7 @@ static irqreturn_t nixge_rx_irq(int irq, void *_ndev)
+ 		cr &= ~(XAXIDMA_IRQ_IOC_MASK | XAXIDMA_IRQ_DELAY_MASK);
+ 		nixge_dma_write_reg(priv, XAXIDMA_RX_CR_OFFSET, cr);
+ 
+-		if (napi_schedule_prep(&priv->napi))
+-			__napi_schedule(&priv->napi);
++		napi_schedule(&priv->napi);
+ 		goto out;
+ 	}
+ 	if (!(status & XAXIDMA_IRQ_ALL_MASK)) {
+diff --git a/drivers/net/ethernet/wiznet/w5100.c b/drivers/net/ethernet/wiznet/w5100.c
+index 341ee2f249fd..5613fd6a9f0a 100644
+--- a/drivers/net/ethernet/wiznet/w5100.c
++++ b/drivers/net/ethernet/wiznet/w5100.c
+@@ -930,8 +930,8 @@ static irqreturn_t w5100_interrupt(int irq, void *ndev_instance)
+ 
+ 		if (priv->ops->may_sleep)
+ 			queue_work(priv->xfer_wq, &priv->rx_work);
+-		else if (napi_schedule_prep(&priv->napi))
+-			__napi_schedule(&priv->napi);
++		else
++			napi_schedule(&priv->napi)
+ 	}
+ 
+ 	return IRQ_HANDLED;
+-- 
+2.40.1
 
-BR, Jarkko
