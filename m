@@ -4,69 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7D1BE776C6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 21:46:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7895DE776CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 22:58:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=philpotter-co-uk.20230601.gappssmtp.com header.i=@philpotter-co-uk.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=kpgVsyL1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YPx5MEwF;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4RzvfX3np4z3vb3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 08:46:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4RzxFf1Hn9z3vZq
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 09:58:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=philpotter-co-uk.20230601.gappssmtp.com header.i=@philpotter-co-uk.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=kpgVsyL1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YPx5MEwF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=philpotter.co.uk (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=phil@philpotter.co.uk; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RzvdZ0MyJz3cB6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 08:45:35 +1100 (AEDT)
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-406618d080eso2485515e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Oct 2023 14:45:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=philpotter-co-uk.20230601.gappssmtp.com; s=20230601; t=1696283130; x=1696887930; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3dA79LkNYU7asBXwt/uQxW8bheOGwedQNE5Z+nFIVT0=;
-        b=kpgVsyL1FZz7pVKhAFtPCp5Z2QC0Fhte+EN+1xHjMAeEp7mOsLYo6zOWAA3PNBOHmz
-         gKBznB2FwlaxSVnL/SvpieJn+agfLlcItTBmFBw3/TJkpNnAydDkVOsp15r8+VgtBbeJ
-         9CxUfKHjE+2nZsZ2oZGSaKgaIEGheHrJZoCavXc2gY4DaN+hk8k3UX5p0TMPn/M9myjn
-         vyBWncHiZtYORWAUw165aHCTLLgkDGpXLAzYzxj5zP7Ah6uDIORVs7ns/yhm8bUToSJA
-         3VgC3pWIQTqlx+pWqsVJOJ4vZawp4X9n+Yt2RDd2dQaX9p2GZ8hbLBG6kP0FsPcXjnLg
-         TY+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696283130; x=1696887930;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=3dA79LkNYU7asBXwt/uQxW8bheOGwedQNE5Z+nFIVT0=;
-        b=vnWweO5OEw82OZAH4Ua0Xb5LWuLCgjvLAPfOuVjM3qqdZE4cqwyH/4wWczC5Kxeprq
-         rlgOWRACzdU/RBZv1zQtzjuYVq7KhH0nMbdH/LT11qXu7IAfFM2H7N/g854lMVhcmGKd
-         Gt+yUfE4grnLWZhKnnlvwaR01G1Q9UTp+V6VoJUV8Js6dEnP0dIRKG7jAZejCawUZ7hN
-         ro/k4EqVC/3Gwx2ZSeSDjb4X7lTaAEKqhwe8+1jKrFlKzQpAVMcWV+95DUE62ZWeLDYM
-         7s4Bxsf6kqBhSwTQGkJwmvZ89SS5pAEQ0irN+gGrj9nfM/IxcYyZ9hoEFgaWWj6zld/b
-         ufMQ==
-X-Gm-Message-State: AOJu0Yzv+qO+T43V64Ual9lqHlgE22mdM2PLrl3BL/EAP8OvAiUdGvc4
-	GOeWwtOEQaXyIQZymZmXl6A31Q==
-X-Google-Smtp-Source: AGHT+IFQqDHrxS5nLVVcz3uYz3zBoh8PRAUblObfkXMiu+127hGE3d4cKV4jcsCeAwYclm/ssvuz7g==
-X-Received: by 2002:a1c:6a05:0:b0:404:757e:c5ba with SMTP id f5-20020a1c6a05000000b00404757ec5bamr10282866wmc.26.1696283130281;
-        Mon, 02 Oct 2023 14:45:30 -0700 (PDT)
-Received: from localhost.localdomain (3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.6.1.f.d.0.b.8.0.1.0.0.2.ip6.arpa. [2001:8b0:df16::3])
-        by smtp.gmail.com with ESMTPSA id a11-20020a05600c2d4b00b004065daba6casm7974630wmg.46.2023.10.02.14.45.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Oct 2023 14:45:29 -0700 (PDT)
-From: Phillip Potter <phil@philpotter.co.uk>
-To: devnull+j.granados.samsung.com@kernel.org
-Subject: Re: [PATCH v2 01/15] cdrom: Remove now superfluous sentinel element from ctl_table array
-Date: Mon,  2 Oct 2023 22:45:28 +0100
-Message-ID: <20231002214528.15529-1-phil@philpotter.co.uk>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231002-jag-sysctl_remove_empty_elem_drivers-v2-1-02dd0d46f71e@samsung.com>
-References: <20231002-jag-sysctl_remove_empty_elem_drivers-v2-1-02dd0d46f71e@samsung.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RzwRY63n3z3c7s
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 09:22:01 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 7867BCE12DC;
+	Mon,  2 Oct 2023 22:21:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFC12C433C8;
+	Mon,  2 Oct 2023 22:21:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1696285314;
+	bh=CGV3l4m1Fsxjo5KVleucQ9ACIj7qp3IjWnhkCyY4rZo=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=YPx5MEwF/HCg5A6rfAedz2iYizSQOXr/9gtMzV+E2dlwiqJvuiHqVp6YRtAwC9ZlS
+	 iOAwE9rZIHCPbdG0ZKTqccGsZvdmJOo/00bYzDZF8QdQBQe94QFgEyvtBE9hUE1ZhX
+	 FPhADmeOCjSVgRUmxviHjBL7ROHTUtdiWaeb4uQfNFQMva2lL3M61UoF3ATuxEMgMo
+	 Uj/iFCrNIKmeNh9SROF1KxJx/VsHoXbgWm43eAwiShXr57QIf5n+H60C5Q59nRGkQM
+	 Fnuq18MhzNA8vdaj3zP3dQsTNCYa/h7xuzPe+Ktf6dcjXsvZ3NikpBFsjOaB3zpmQy
+	 FO3A4oVVbVVRw==
+Date: Mon, 2 Oct 2023 15:21:42 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Christian Marangi <ansuelsmth@gmail.com>
+Subject: Re: [net-next PATCH 1/4] netdev: replace simple
+ napi_schedule_prep/__napi_schedule to napi_schedule
+Message-ID: <20231002152142.4e8e2cfb@kernel.org>
+In-Reply-To: <20231002151023.4054-1-ansuelsmth@gmail.com>
+References: <20231002151023.4054-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Tue, 03 Oct 2023 09:51:27 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,48 +60,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: j.granados@samsung.com, Jason@zx2c4.com, rafael@kernel.org, joonas.lahtinen@linux.intel.com, clemens@ladisch.de, linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org, phil@philpotter.co.uk, song@kernel.org, edumazet@google.com, kys@microsoft.com, jirislaby@kernel.org, russell.h.weight@intel.com, wei.liu@kernel.org, sstabellini@kernel.org, minyard@acm.org, leon@kernel.org, linux-rdma@vger.kernel.org, airlied@gmail.com, steve.wahl@hpe.com, decui@microsoft.com, willy@infradead.org, jgg@ziepe.ca, linux-serial@vger.kernel.org, dgilbert@interlog.com, kuba@kernel.org, pabeni@redhat.com, intel-gfx@lists.freedesktop.org, keescook@chromium.org, arnd@arndb.de, haiyangz@microsoft.com, josh@joshtriplett.org, jani.nikula@linux.intel.com, linux-raid@vger.kernel.org, rodrigo.vivi@intel.com, xen-devel@lists.xenproject.org, openipmi-developer@lists.sourceforge.net, jgross@suse.com, tvrtko.ursulin@linux.intel.com, tytso@mit.edu, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, gregk
- h@linuxfoundation.org, dsahern@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, sudipm.mukherjee@gmail.com, oleksandr_tyshchenko@epam.com, mcgrof@kernel.org, robinmholt@gmail.com, daniel@ffwll.ch, netdev@vger.kernel.org, jejb@linux.ibm.com, davem@davemloft.net
+Cc: Andrew Lunn <andrew@lunn.ch>, Sergey Ryazanov <ryazanov.s.a@gmail.com>, Ziwei Xiao <ziweixiao@google.com>, Chris Snook <chris.snook@gmail.com>, Rick Lindsley <ricklind@linux.ibm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, linux-kernel@vger.kernel.org, Krzysztof Halasa <khalasa@piap.pl>, Eric Dumazet <edumazet@google.com>, Lee Jones <lee@kernel.org>, Dany Madden <danymadden@us.ibm.com>, Gregory Greenman <gregory.greenman@intel.com>, Zhengchao Shao <shaozhengchao@huawei.com>, Chiranjeevi Rapolu <chiranjeevi.rapolu@linux.intel.com>, Dawei Li <set_pte_at@outlook.com>, Intel Corporation <linuxwwan@intel.com>, Rob Herring <robh@kernel.org>, Jeroen de Borst <jeroendb@google.com>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Haren Myneni <haren@linux.ibm.com>, linux-stm32@st-md-mailman.stormreply.com, Rushil Gupta <rushilg@google.com>, Jason Gunthorpe <jgg@ziepe.ca>, Thomas Falcon <tlfalcon@linux.ibm.com>, Jos
+ e Abreu <joabreu@synopsys.com>, Alex Elder <elder@linaro.org>, linux-wireless@vger.kernel.org, Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>, Wolfgang Grandegger <wg@grandegger.com>, Nick Child <nnac123@linux.ibm.com>, Simon Horman <horms@kernel.org>, Liu Haijun <haijun.liu@mediatek.com>, Kalle Valo <kvalo@kernel.org>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>, Bailey Forrest <bcf@google.com>, Nicholas Piggin <npiggin@gmail.com>, linux-can@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Yuanjun Gong <ruc_gongyuanjun@163.com>, Shailend Chand <shailend@google.com>, Marc Kleine-Budde <mkl@pengutronix.de>, Benjamin Berg <benjamin.berg@intel.com>, M Chetan Kumar <m.chetan.kumar@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Yuri Karpov <YKarpov@ispras.ru>, linux-arm-kernel@lists.infradead.org, Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>, Ricardo Martinez <ricardo.martinez@linux.intel.com>, Loic Poulain <loic.poulai
+ n@linaro.org>, Zheng Zengkai <zhengzengkai@huawei.com>, netdev@vger.kernel.org, Anjaneyulu <pagadala.yesu.anjaneyulu@intel.com>, linuxppc-dev@lists.ozlabs.org, Douglas Miller <dougmill@linux.ibm.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Tariq Toukan <tariqt@nvidia.com>, Junfeng Guo <junfeng.guo@intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Raju Rangoju <rajur@chelsio.com>, Praveen Kaligineedi <pkaligineedi@google.com>, Johannes Berg <johannes@sipsolutions.net>, ath10k@lists.infradead.org, Jeff Johnson <quic_jjohnson@quicinc.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> From: Joel Granados <j.granados@samsung.com>
->
-> This commit comes at the tail end of a greater effort to remove the
-> empty elements at the end of the ctl_table arrays (sentinels) which
-> will reduce the overall build time size of the kernel and run time
-> memory bloat by ~64 bytes per sentinel (further information Link :
-> https://lore.kernel.org/all/ZO5Yx5JFogGi%2FcBo@bombadil.infradead.org/)
->
-> Remove sentinel element from cdrom_table
->
-> Signed-off-by: Joel Granados <j.granados@samsung.com>
-> ---
->  drivers/cdrom/cdrom.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-> index cc2839805983..a5e07270e0d4 100644
-> --- a/drivers/cdrom/cdrom.c
-> +++ b/drivers/cdrom/cdrom.c
-> @@ -3655,7 +3655,6 @@ static struct ctl_table cdrom_table[] = {
->  		.mode		= 0644,
->  		.proc_handler	= cdrom_sysctl_handler
->  	},
-> -	{ }
->  };
->  static struct ctl_table_header *cdrom_sysctl_header;
->
->
-> -- 
-> 2.30.2
+On Mon,  2 Oct 2023 17:10:20 +0200 Christian Marangi wrote:
+>  			queue_work(priv->xfer_wq, &priv->rx_work);
+> -		else if (napi_schedule_prep(&priv->napi))
+> -			__napi_schedule(&priv->napi);
+> +		else
+> +			napi_schedule(&priv->napi)
 
-
-Hi Joel,
-
-Looks good to me, many thanks. I'll send on for inclusion.
-
-Reviewed-by: Phillip Potter <phil@philpotter.co.uk>
-
-Regards,
-Phil
+Missing semi-colon, please make sure each patch builds cleanly 
+with allmodconfig.
+-- 
+pw-bot: cr
