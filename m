@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A803DE784A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 11:32:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C027E784A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 11:33:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t8eQLWHy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hf74GqEV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Rzf2G2l4cz3vYf
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 22:32:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Rzf3D0N3Tz3vc4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Oct 2023 22:33:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t8eQLWHy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hf74GqEV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+j.granados.samsung.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4RzdyT6vw1z3cP7
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4RzdyV0BJSz3cST
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Oct 2023 22:29:21 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 030DD60E88;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 350D560E92;
 	Mon,  2 Oct 2023 11:29:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 0AEE9C433B8;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3B2E0C116A4;
 	Mon,  2 Oct 2023 11:29:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1696246157;
-	bh=YTd+W/HJJzt1g+AotSrQmZSQ/u4v4LR76hzUk9+8KRY=;
+	bh=YhBddSwaCSPLAaFDo+/JwRMeEqAWhYOpGz8YevBnfPM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=t8eQLWHy0x9yNcAeYoiq3u/17r0Fsj0jLO/922mjKowsWcFf+75qeFzU1gn5X+IgO
-	 jYBuJ9EePK9gcf6rm91bxqi5oJA5mfSJGaF+JCh/8ByuZw/vdZdI4zBna/kfihS8AI
-	 9HMGhp650xt+NNRAkAC+m0v3NkT/Uxb4qlVk6HEf4NkiuSptjmrV3IBk+bGBHN7GBS
-	 m68QMmle0GFzWbXH1NGW9NBBfKniS2uzYqAZzGxZm/9189ik/1htRX4OT6pDYV14+s
-	 +8XPmujmnz19k9UO5LOfKAqEpxhvskIzF90mJh+LlPfyp8HOw6ha+lMNAjKMiexaAW
-	 3Q6sC2KCJX6Bw==
+	b=hf74GqEVFqfLw3F5qGhBq5bov1q9UAhguToYQBzzAfqBqUchaXwMR1gpYQdfrW3dE
+	 5yobqKdV3/QEpN+MYXpTviIQtYKJ0d3uszOmWShXB+fFDqsJUp9gzN3vFcFkgXvr8m
+	 Ttkn4TR8BEtdkCUyXqhUDOkT6VLJ90zF+a9+NCe2UCX+5KIfulK9VgRNl0kfo99jr0
+	 IaaP0NOKoE4Uu962+cebD9tfbWwM25JFWQwpT92VVxUTqAGQgGOgB80UNisFMiXT/s
+	 k92HVlQ10FGDag+YRRISFExlBwrHOFjX8viGcG8L28c34wj8b6EMek2lXl26k6Fs5t
+	 9uXWPCz+3Yxuw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5C24E784A4;
-	Mon,  2 Oct 2023 11:29:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B624E784AC;
+	Mon,  2 Oct 2023 11:29:17 +0000 (UTC)
 From: Joel Granados via B4 Relay <devnull+j.granados.samsung.com@kernel.org>
-Date: Mon, 02 Oct 2023 13:30:39 +0200
-Subject: [PATCH v3 4/7] x86/vdso: Remove now superfluous sentinel element
- from ctl_table array
+Date: Mon, 02 Oct 2023 13:30:41 +0200
+Subject: [PATCH v3 6/7] powerpc: Remove now superfluous sentinel element
+ from ctl_table arrays
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20231002-jag-sysctl_remove_empty_elem_arch-v3-4-606da2840a7a@samsung.com>
+Message-Id:  <20231002-jag-sysctl_remove_empty_elem_arch-v3-6-606da2840a7a@samsung.com>
 References:  <20231002-jag-sysctl_remove_empty_elem_arch-v3-0-606da2840a7a@samsung.com>
 In-Reply-To:  <20231002-jag-sysctl_remove_empty_elem_arch-v3-0-606da2840a7a@samsung.com>
 To: Luis Chamberlain <mcgrof@kernel.org>, willy@infradead.org, 
@@ -70,18 +70,18 @@ To: Luis Chamberlain <mcgrof@kernel.org>, willy@infradead.org,
  Christophe Leroy <christophe.leroy@csgroup.eu>, Guo Ren <guoren@kernel.org>, 
  Alexey Gladkov <legion@kernel.org>
 X-Mailer: b4 0.13-dev-86aa5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1052;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1565;
  i=j.granados@samsung.com; h=from:subject:message-id;
- bh=cvzMuUejqMQP+BGPAXWnJqy+jCdRUm5VfxRP0+Qgc7g=;
- b=owEB7QES/pANAwAKAbqXzVK3lkFPAcsmYgBlGqoT7g4+JWiQV8k/61XdOPQ2RonRomvKi5kxu
- mRiOWMGwOuJAbMEAAEKAB0WIQSuRwlXJeYxJc7LJ5C6l81St5ZBTwUCZRqqEwAKCRC6l81St5ZB
- TzjdC/9fKc+Cn6prbqpjfusVIp8cAMfZKAPr4G3moB2aTF1BnakvXHfY7Wf9qwA/bzZeofKl7SL
- M1RA2NsVoOzzKzIwtzVeR1Kgk1eRKiCCLRhMJRzoIhlnBR3/jLV5ygVGxnehDO9QwyxuPBS7bH/
- n6q/KD3vIeim+dgRREVJhCB0KtJ0kkl7dDm9c+iXNgXuxzcE79yiM1ljMw3v887zH5IUulV62vj
- 7u/dB2tzjJS5b8Nv8RHdLNWr41UUEXu34VNBYbeAZQ0IKyBb4NGS2n96ZuxpwbLIri3BIYaC8Tw
- SU3xeiJ2N98pVOgDSYA1ZcpyFFPmKSCPDBeaJ48w3mkpLW6BwYvYb2F6lqwTUzDKfNhkti7+nOK
- UnZy656UxYdqQ+D5YLCSK8yHkWSvy87yo/DFL3YDErBvdoUZftuyxuV1jvPf50fO8rFalb9YQ1N
- E9YxTE4f+PYvGFKRxMLF+jQGebqh+zmc2AcJX/3ETJb6Hcl/7hAJXaAHf8nsOaWQ0Wxcw=
+ bh=KuV8vOJx81rEwsc5jJ+bbCdW5iZFLCnNJ5xlBjey6xs=;
+ b=owEB7QES/pANAwAKAbqXzVK3lkFPAcsmYgBlGqoUNBAj237epiMRWZjBh+ubamCISZESZIKcM
+ v4wF3DSn2OJAbMEAAEKAB0WIQSuRwlXJeYxJc7LJ5C6l81St5ZBTwUCZRqqFAAKCRC6l81St5ZB
+ T/E4C/sH83tQjgttVLdKVarCnL42oaqUSOJFHysd1DsiW9k53qQQnsAXlsVqmHce59si1viwYD1
+ sH8kJoCQVu5ZL6u9tnTirs/zK4lZGplOB1GmJ9G2GrDQ7BixLBRmvacBDYUehYBA7tw3zGUd7FE
+ 0us2Q0Ofke+qX+Aq9JR+UVjqxUoqi03EaBLXuFErDsGsAmhooB6D4ZI0rVHGdk22B9ACXaGfasi
+ NvOx99FDQTiP3JolHAsOZjSYq4Oy/YDI5UDS0ERDATzQqvFlImM4MgIualdQl5wQHhfPnBjJJhR
+ dnwS5MzD0E++5583ev51gUpQKRjAalnsN6549TOd2IdupjmILcpEaqD/tyIjjqcawm8ZLXpCGbX
+ 6Y9Qv8eSDL/Odbt+5yhXaeyHFpDsMB4SR9yDDiFgefg0A4DkcGiVGGn2Qm7iKkEY3A1fcz9QUZN
+ YU/lcI5cnxARaCSGzjd+XwLHFHFyTjzB9ZJErDjBhYnwzz/H7M0JxdT3nEQwaAGkTTnZI=
 X-Developer-Key: i=j.granados@samsung.com; a=openpgp;
  fpr=F1F8E46D30F0F6C4A45FF4465895FAAC338C6E77
 X-Endpoint-Received:  by B4 Relay for j.granados@samsung.com/default with auth_id=70
@@ -110,27 +110,40 @@ will reduce the overall build time size of the kernel and run time
 memory bloat by ~64 bytes per sentinel (further information Link :
 https://lore.kernel.org/all/ZO5Yx5JFogGi%2FcBo@bombadil.infradead.org/)
 
-Remove sentinel element from abi_table2. This removal is safe because
-register_sysctl implicitly uses ARRAY_SIZE() in addition to checking for
-the sentinel.
+Remove sentinel from powersave_nap_ctl_table and nmi_wd_lpm_factor_ctl_table.
+This removal is safe because register_sysctl implicitly uses ARRAY_SIZE()
+in addition to checking for the sentinel.
 
 Signed-off-by: Joel Granados <j.granados@samsung.com>
 ---
- arch/x86/entry/vdso/vdso32-setup.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/kernel/idle.c                | 1 -
+ arch/powerpc/platforms/pseries/mobility.c | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/arch/x86/entry/vdso/vdso32-setup.c b/arch/x86/entry/vdso/vdso32-setup.c
-index f3b3cacbcbb0..76e4e74f35b5 100644
---- a/arch/x86/entry/vdso/vdso32-setup.c
-+++ b/arch/x86/entry/vdso/vdso32-setup.c
-@@ -67,7 +67,6 @@ static struct ctl_table abi_table2[] = {
- 		.extra1		= SYSCTL_ZERO,
- 		.extra2		= SYSCTL_ONE,
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index b1c0418b25c8..30b56c67fa61 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -105,7 +105,6 @@ static struct ctl_table powersave_nap_ctl_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= proc_dointvec,
  	},
 -	{}
  };
  
- static __init int ia32_binfmt_init(void)
+ static int __init
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 0161226d8fec..1798f0f14d58 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -61,7 +61,6 @@ static struct ctl_table nmi_wd_lpm_factor_ctl_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= proc_douintvec_minmax,
+ 	},
+-	{}
+ };
+ 
+ static int __init register_nmi_wd_lpm_factor_sysctl(void)
 
 -- 
 2.30.2
