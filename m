@@ -4,72 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 157B1E75459
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:34:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46026E75459
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:36:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=G4p7ZSrQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=srXfPsAw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=EcUcSEYh;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RLb5bJfz3cVd
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:34:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RPH6fH7z3vwj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:36:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=G4p7ZSrQ;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=srXfPsAw;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=EcUcSEYh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=ansuelsmth@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.26; helo=wnew1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from wnew1-smtp.messagingengine.com (wnew1-smtp.messagingengine.com [64.147.123.26])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0Fgl2Bv4z2ysB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 22:18:41 +1100 (AEDT)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-40566f8a093so7475875e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2023 04:18:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1696331917; x=1696936717; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:subject:cc
-         :to:from:date:message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=dRmt6j5dxjz0MCUrCJcyD2cXKQxyJFJdm8ATGNw+KGc=;
-        b=G4p7ZSrQYLxb5Ps2VBvu83M6m441EVxQiebrcM9+b5SnfNskie6afsIqiFQ4a/QpbJ
-         8KTmcs7TwvXXDPw8ojnCCU/TOsnEoPycUc6EhjzWl5QuaK5nNILshFCTJD5Pfj4B0dQ+
-         RIYzU50vHohym9rd1iG7JAQLQlWW3FbvJ9OdbRyDmZsrKmWi0siT8/2BGypLCDclq0l1
-         Ak72TrNj3O5FVOCnVffuBAi1eGFpwbn9ZxJFSKeqVisOk/DX+tppcY6GRzEMOdFGEEAy
-         sJgCUDE4Vm3QKZArIbdKUjRC31pR4L5h1iQ3UuJwhHOYQ8nnLfYVTsiKCaerxMp0ZoqO
-         noLw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696331917; x=1696936717;
-        h=in-reply-to:content-disposition:mime-version:references:subject:cc
-         :to:from:date:message-id:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dRmt6j5dxjz0MCUrCJcyD2cXKQxyJFJdm8ATGNw+KGc=;
-        b=SKdQobWiLkN2mqYjYMUART+AKbj+FuLw7mmOAe0nkD8a5QQpETlcRTWIDBzsMnLyPy
-         1m8sAXJaRN11JI7sxUcbe0a8S0hiI/lq04fVHps9P/iJpHSMva/oZavIS2SZ3sN7L/uF
-         xovDIHGXEFgwt1/16Ks2gHV+9Wux24ysiV8po+1Qh0K4Pm6rwByH9r73MvvXT8AmLpMo
-         jCe54/9UWVoEfQt0I12jYzFpzSxYw94F2KRksJSP2pliRmKteCNl3zwUEXhqlmw+fw5d
-         Endamzy76BuJmsYuI5GNonzBcIQwuJTnO1L5YRwu7K2z1X/NDaHwJGKSU5dr73Y0YOJo
-         sEgw==
-X-Gm-Message-State: AOJu0YypO3u0BxGFf9KcAZsjqW9rCgV0Bc8y83EIzd6q46Y8SGJKfGOe
-	VnLtTxZ0e4PYrBP74wEWSDA=
-X-Google-Smtp-Source: AGHT+IFLbiLzMIjYq17N9d6C9xhiAG+ijgYatVYbYzZACplv9aboPtXUhqao5fQwPpvl9QyVVVJ1HA==
-X-Received: by 2002:a7b:ce89:0:b0:402:f07c:4b48 with SMTP id q9-20020a7bce89000000b00402f07c4b48mr11269565wmj.28.1696331917146;
-        Tue, 03 Oct 2023 04:18:37 -0700 (PDT)
-Received: from Ansuel-xps. (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
-        by smtp.gmail.com with ESMTPSA id y24-20020a05600c365800b0040652e8ca13sm9195716wmq.43.2023.10.03.04.18.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Oct 2023 04:18:36 -0700 (PDT)
-Message-ID: <651bf88c.050a0220.3a982.31fc@mx.google.com>
-X-Google-Original-Message-ID: <ZRv4iZmOuLubYSiN@Ansuel-xps.>
-Date: Tue, 3 Oct 2023 13:18:33 +0200
-From: Christian Marangi <ansuelsmth@gmail.com>
-To: Marc Kleine-Budde <mkl@pengutronix.de>
-Subject: Re: [net-next PATCH 3/4] netdev: replace napi_reschedule with
- napi_schedule
-References: <20231002151023.4054-1-ansuelsmth@gmail.com>
- <20231002151023.4054-3-ansuelsmth@gmail.com>
- <20231003-living-seltzer-172ea6aec629-mkl@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0P8P0323z3bpd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 03:55:32 +1100 (AEDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+	by mailnew.west.internal (Postfix) with ESMTP id 66DFB2B0020A;
+	Tue,  3 Oct 2023 12:55:24 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute5.internal (MEProxy); Tue, 03 Oct 2023 12:55:28 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm1; t=1696352123; x=1696359323; bh=bM
+	N3ahYNWDfnd39aNSh3WGWAh25s8Cnm4TD3ZVFC+Qc=; b=srXfPsAwKo7LL9NfzZ
+	ZItCto4wxQFdX2Ds/QUIfXcIE68COCFLlMXykreKXi75ko4ATOQbJvAGslC8kSuZ
+	wNtj+47ZX6iCzbpT1jEuOXWHD5ZyBGvYKs+pUETvCJ12NkEnZHiweqIjRI/yWhc4
+	ljwntdK0mND7A0Gn/3Kr9JCfJNZ7rf9F0CsEXEY1SoniFgkPLZD+FrezdVP+3dDZ
+	YdgCxQKY8bSbX6+YutOAJhlELThomcIbwa/alKeicNv4Wq/40uqjQlOx89o6mYX3
+	OFOWaLXQExfvNxdFGryYmNJ+5/4yKUy33Vsz/t+SC68okj9ywHR1yme0w/ZQ3NV0
+	a3eA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm2; t=1696352123; x=1696359323; bh=bMN3ahYNWDfnd
+	39aNSh3WGWAh25s8Cnm4TD3ZVFC+Qc=; b=EcUcSEYhWMQwyrhir+g5g31Hgm39M
+	EWL5N9E+aQSymOo0iJYm4k87C7EHcOKm4X0omB5xbtPFD+TX575loxNOIqJUOh9e
+	qI0jdEqmGjyZmbUF0LagoGQAe2phUR+4BpXikHJ6Emd8nLjqKisBsNo2lVR3IIiG
+	r6BoDO4JV+BIxq02KEwDaj8OqpfPhPpVQB5Vc2EJEcjsVRqVRKwYXurljWVWHgoz
+	DCuFq+Os6TmEtMV18PFTi15Zso9YytX7/ZjKbu1QnVAPti01It3iIOyQ7K8aiB59
+	oAUwH8ZTZHa01rpn6ANpn/SsKh2cmMiED/QK5nDTh6LKCYWxdMS74zwEg==
+X-ME-Sender: <xms:eUccZb5jpCQ1L_VpEXS5ffys7UxBL4kr8p_8cxQFdFQzA4W3bfYYug>
+    <xme:eUccZQ5IuUrlgYNty4cvwj_liKVUdhmTFjrzWMhhA-4hKFU9WkVrNtm4G3JcCCE4J
+    TABzdnOVnI8NnaEhXk>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvkedrfeejgdduhecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
+    gvrhhnpeevhfffledtgeehfeffhfdtgedvheejtdfgkeeuvefgudffteettdekkeeufeeh
+    udenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
+    enucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:eUccZSea6M-vbkLWtRlxBrICjW4w3maEXJlLBg6BGEg3iRNBOmQH5g>
+    <xmx:eUccZcIYYLMtmvgNXBhbyezZbbau0FaCohP0oM2XsGnvgv9bQ5csoA>
+    <xmx:eUccZfKaRAEmGGd6jK5cgyNwVkQ4mbICOjMLM_AmPXyMEvFnrCgzKg>
+    <xmx:e0ccZZRPPQXF-lklqyo6OsUpfMBJpzzJniuMs7wduw3grDX6cmvMcz1mfdA>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 48524B60089; Tue,  3 Oct 2023 12:55:21 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-958-g1b1b911df8-fm-20230927.002-g1b1b911d
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231003-living-seltzer-172ea6aec629-mkl@pengutronix.de>
+Message-Id: <231994b0-ca11-4347-8d93-ce66fdbe3d25@app.fastmail.com>
+In-Reply-To: <487836fc-7c9f-2662-66a4-fa5e3829cf6b@intel.com>
+References: <20230914185804.2000497-1-sohil.mehta@intel.com>
+ <487836fc-7c9f-2662-66a4-fa5e3829cf6b@intel.com>
+Date: Tue, 03 Oct 2023 18:54:59 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Sohil Mehta" <sohil.mehta@intel.com>, linux-api@vger.kernel.org,
+ Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for all
+ architectures
+Content-Type: text/plain
 X-Mailman-Approved-At: Wed, 04 Oct 2023 05:32:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,35 +96,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Sergey Ryazanov <ryazanov.s.a@gmail.com>, Ziwei Xiao <ziweixiao@google.com>, Chris Snook <chris.snook@gmail.com>, Rick Lindsley <ricklind@linux.ibm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Lee Jones <lee@kernel.org>, Dany Madden <danymadden@us.ibm.com>, Gregory Greenman <gregory.greenman@intel.com>, Zhengchao Shao <shaozhengchao@huawei.com>, Chiranjeevi Rapolu <chiranjeevi.rapolu@linux.intel.com>, Dawei Li <set_pte_at@outlook.com>, Intel Corporation <linuxwwan@intel.com>, Rob Herring <robh@kernel.org>, Jeroen de Borst <jeroendb@google.com>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Haren Myneni <haren@linux.ibm.com>, linux-stm32@st-md-mailman.stormreply.com, Rushil Gupta <rushilg@google.com>, Jason Gunthorpe <jgg@ziepe.ca>, Thomas Falcon <tlfalcon@linux.ibm.com>, Jose Abreu <joabreu@synopsys.com>, Alex
-  Elder <elder@linaro.org>, linux-wireless@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>, Wolfgang Grandegger <wg@grandegger.com>, Nick Child <nnac123@linux.ibm.com>, Simon Horman <horms@kernel.org>, Liu Haijun <haijun.liu@mediatek.com>, Kalle Valo <kvalo@kernel.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Bailey Forrest <bcf@google.com>, Nicholas Piggin <npiggin@gmail.com>, linux-can@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Yuanjun Gong <ruc_gongyuanjun@163.com>, Shailend Chand <shailend@google.com>, Krzysztof Halasa <khalasa@piap.pl>, Benjamin Berg <benjamin.berg@intel.com>, M Chetan Kumar <m.chetan.kumar@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Yuri Karpov <YKarpov@ispras.ru>, linux-arm-kernel@lists.infradead.org, Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>, Ricardo Martinez <ricardo.martinez@linux.intel.com>, Loic Poulain <loic.poulain@linar
- o.org>, Zheng Zengkai <zhengzengkai@huawei.com>, netdev@vger.kernel.org, Anjaneyulu <pagadala.yesu.anjaneyulu@intel.com>, linuxppc-dev@lists.ozlabs.org, Douglas Miller <dougmill@linux.ibm.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Tariq Toukan <tariqt@nvidia.com>, Junfeng Guo <junfeng.guo@intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Raju Rangoju <rajur@chelsio.com>, Praveen Kaligineedi <pkaligineedi@google.com>, Johannes Berg <johannes@sipsolutions.net>, ath10k@lists.infradead.org, Jeff Johnson <quic_jjohnson@quicinc.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.co
+ m>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel
+ .org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 03, 2023 at 09:16:33AM +0200, Marc Kleine-Budde wrote:
-> On 02.10.2023 17:10:22, Christian Marangi wrote:
-> > Now that napi_schedule return a bool, we can drop napi_reschedule that
-> > does the same exact function. The function comes from a very old commit
-> > bfe13f54f502 ("ibm_emac: Convert to use napi_struct independent of struct
-> > net_device") and the purpose is actually deprecated in favour of
-> > different logic.
-> > 
-> > Convert every user of napi_reschedule to napi_schedule.
-> > 
-> > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> > ---
-> >  drivers/infiniband/ulp/ipoib/ipoib_ib.c                |  4 ++--
-> >  drivers/net/can/dev/rx-offload.c                       |  2 +-
-> 
-> Acked-by: Marc Kleine-Budde # for can/dev/rx-offload.c
+On Tue, Oct 3, 2023, at 18:35, Sohil Mehta wrote:
+> On 9/14/2023 11:58 AM, Sohil Mehta wrote:
+>> commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
+>> recently added support for map_shadow_stack() but it is limited to x86
+>> only for now. There is a possibility that other architectures (namely,
+>> arm64 and RISC-V), that are implementing equivalent support for shadow
+>> stacks, might need to add support for it.
+>> 
+>> Independent of that, reserving arch-specific syscall numbers in the
+>> syscall tables of all architectures is good practice and would help
+>> avoid future conflicts. map_shadow_stack() is marked as a conditional
+>> syscall in sys_ni.c. Adding it to the syscall tables of other
+>> architectures is harmless and would return ENOSYS when exercised.
+>> 
+>> Note, map_shadow_stack() was assigned #453 during the merge process
+>> since #452 was taken by fchmodat2().
+>> 
+>> For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
+>> syscall tables.
+>> 
+>> For Alpha, map_shadow_stack() takes up #563 as Alpha still diverges from
+>> the common syscall numbering system in the other architectures.
+>> 
+>> Link: https://lore.kernel.org/lkml/20230515212255.GA562920@debug.ba.rivosinc.com/
+>> Link: https://lore.kernel.org/lkml/b402b80b-a7c6-4ef0-b977-c0f5f582b78a@sirena.org.uk/
+>> 
+>> Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
+>> ---
+>
+> Gentle ping...
+>
+> Are there any additional comments? It applies cleanly on 6.6-rc4.
+>
+> Or does it seem ready to be merged? It has the following
+> acknowledgements until now:
+>
+> Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+>
 
-Just to make sure can I use the correct tag: (you didn't include the
-mail)
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 
-Acked-by: Marc Kleine-Budde <mkl@pengutronix.de> # for can/dev/rx-offload.c
+If you like, I can pick this up for 6.7 through the asm-generic
+tree. If you think this should be part of 6.6, I would suggest
+to merge it through the tree that originally contained the
+syscall code.
 
-?
-
--- 
-	Ansuel
+      Arnd
