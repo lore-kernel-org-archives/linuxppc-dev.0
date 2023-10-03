@@ -4,154 +4,158 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08507E7545E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB29EE7545F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:37:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PLqbLe7V;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=S42YtOLA;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RNG4b6Dz3cl9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:35:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RQJ1fYnz3w0G
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:37:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PLqbLe7V;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=S42YtOLA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mgamail.intel.com; envelope-from=sohil.mehta@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=sohil.mehta@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Wed, 04 Oct 2023 04:19:54 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0Njs43q6z2yW2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 03:35:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0PhV21gxz3bwL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 04:19:53 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1696350962; x=1727886962;
+  t=1696353595; x=1727889595;
   h=message-id:date:subject:to:cc:references:from:
    in-reply-to:content-transfer-encoding:mime-version;
-  bh=cWKZD+SyDVCIZphXjh9ZrSmuS5EZAvAJ5rfGF7TIGUo=;
-  b=PLqbLe7VH2wtWomA9VAx587Q/80ND7OMshwtUZWKFLz18KR+I/RGvTNW
-   UlaPpSHI6uBuT2nVB8CiN8AZpVI+a0G3IGQ8TftonTbg2zaz/e3njqYto
-   gfMRyawRptAvatukLDXc3KJkover2Q8nLTzoBtwPp1yeifLlkUgKCT5zw
-   34eoKfRo9hBi9M8ticeuexMv/5r48ICU0EASCYQyv+AW4zpnuJwJDEFy6
-   RHKJX0AlrjesDvxfjVAL2TFm8sGlaOAJvpSJMPF/xqYupXXUPrhSbmPTH
-   aRULTuIZancilDMjernhVUljfIntLgRNCGs5ErkHrgsST0IVglz7nzSvU
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10852"; a="386790585"
+  bh=TV4tT2V17d7qWSr3I0MvZaUDlAEecGq65son8QtJwkQ=;
+  b=S42YtOLAYke9FtHssZjl9s3eHzuy8a/folkXosh3hLWurjQ/bQXxM0yN
+   U8Xk4OcO3lgSHp31F8fqZLeZArl8X3mXjkSEhyEVvt5/tK69wYSB86GCX
+   cl7MnTLzr72dp9yKDOjCjrd6A2YX78sRcetApWqc0HTjef0jvn3w7MIqv
+   0NPDqizkTf/NZpwDMFik1RhdvkH3Cr+RAmZFsWmsnNIREJDHoquzylgGp
+   HMeJ/Y/U+nA7XtL3u5fsCgARCFvF3UzC8hGo3igfu4eTPWmnSVp1CR+66
+   nsUE8jy3PENTdPvv4Jx+NM4GNK7XF/7PpzmvYqX7iNA3kGo7InhxO/to1
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10852"; a="4497587"
 X-IronPort-AV: E=Sophos;i="6.03,197,1694761200"; 
-   d="scan'208";a="386790585"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Oct 2023 09:35:53 -0700
+   d="scan'208";a="4497587"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Oct 2023 10:18:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10852"; a="727675517"
+X-IronPort-AV: E=McAfee;i="6600,9927,10852"; a="894577911"
 X-IronPort-AV: E=Sophos;i="6.03,197,1694761200"; 
-   d="scan'208";a="727675517"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
-  by orsmga006.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 03 Oct 2023 09:35:49 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+   d="scan'208";a="894577911"
+Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
+  by fmsmga001.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 03 Oct 2023 10:17:16 -0700
+Received: from fmsmsx603.amr.corp.intel.com (10.18.126.83) by
+ fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32; Tue, 3 Oct 2023 09:35:46 -0700
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ 15.1.2507.32; Tue, 3 Oct 2023 10:18:39 -0700
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32 via Frontend Transport; Tue, 3 Oct 2023 09:35:46 -0700
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.169)
- by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ 15.1.2507.32 via Frontend Transport; Tue, 3 Oct 2023 10:18:39 -0700
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (104.47.66.45) by
+ edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.32; Tue, 3 Oct 2023 09:35:46 -0700
+ 15.1.2507.32; Tue, 3 Oct 2023 10:18:38 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=e0PGrRo5qLwx9wEoziiJgM43nkiZlKnJGQO0ehlRpmnLjQJkO+trNw4CNQ2n9EYp+V5HpW56ykmmXvXHOQALmbTgXPy0xpiCXQhI0AYaDY3m8JYKl2xa8V6mu+CejjzSkZiqbgJggsxfjWipaUhBMF01xV8/l0T9m9kTqZKhHKJObq3GJdOJYAVbhUBUQEvDmAC3v6WNrn6BCTecHdx1zeTwqXVzu8XlaGiQwWEJsR8D4EMDrzhAprw9iTr4HYdo5WdSR/B5jA0dn0wQqQgnT0oihvJgculb4rQcwyGDJg+WIsKclt/UtZa5ekP0xgQOpjd1KLH8CcSRFfR8Tl955Q==
+ b=ElTv4hC33Op8SY6d5uJnIHHTnfx2Of/ijwKAIq3rHQ0q/S7JgoJqQIpAnAGoZLg7TkxcbRVxn2aUQy7Wxl9kRA7TC56UiM7nKdBy0ZAPYYPAhbEdY3x/g8NWGL+AC3RHhATIHjaQw2zwkUnByE5BgZznBoUgeL8qeqJrDKr1quj1lX2UTnCx5sc7E50LzLZUIfRaq4KF5wNXgwM+rWZTYOlogxQOr31iqYqg0XnrMdJtcOyNKCxhpOKa1GuJtxjk6mKaYmwr1D3S5CmESBUCY16yWfb1I9W/nkuLJjopSbyG4dZ2CI01MT29ROCO1Y3HZdN5mrlYON7LHEMg5icQdQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HuUdaP5CJww3Y5MPnHxz2DcfK1pB88n7p8zmeHivxQE=;
- b=MUYFuz+xAVLbyw5c6ncfGFmVrx+oBFPZulBCh/LUFeV+KY5eLWjZ8OHRMlVLR2NOBaKY77rLVAk/x9LzJ2n0F9GQ26/TZQ94QsYMz9gpuM+QV+7r58g7JP3IxSHteapwyRIHWOl4sGAl1euIt5XhzRfZRre69Lcp4qswjQP7J7Rp4fYZe2UpTjTu7EMRUguFz/M7pVD9xBPX2wB7XmJfaot2R8WVJYUFxpItkfLA/gcVncqxa3WyiFUuG00sWiRIlKyGzvx6UL/H/8q3u1p7LPAzNpe2AvaHr/imFuLOGqVPfor6tRR/kmNCBuiv8KqL8EjDHmnN48aU9e5AAVnIsQ==
+ bh=Y+Lg5vJhRl04YigVbhQ9FbGTryCygmyMQS/JBnGV7ts=;
+ b=PvM7ETTiqgzl81WVMt8zdpkHPd6ySYQgwhttLtGJKlHFnGO/kLXDFEJHsngBnms8CbSn5qf5IpGkuZePGWtxRienJBHv+LI2o29BJDROpInhPOKcgPrRMXrwX9B3w0f86gYeGnuRASw3cz/qr3SDit/IExiz6ul0D7vNOPG1gfALLzERn9MkVkZUtgL6/MNiVR/OjVMW7Bb6BdJCGIgXBAxu6rKJCDSOaVy6Kfiqtgf+O1o2WLQf/oCGGSoF1k7aIoMWwXmzH0qDJGB7ygK5obtL37+s+PyQE49kJBSiXGgrfM4hKQZrWVGOtHqQa0MT0xvKVVq4SaUIihRx5ZHwpQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
 Received: from BYAPR11MB3320.namprd11.prod.outlook.com (2603:10b6:a03:18::25)
- by SJ2PR11MB8347.namprd11.prod.outlook.com (2603:10b6:a03:544::18) with
+ by MW5PR11MB5881.namprd11.prod.outlook.com (2603:10b6:303:19d::14) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.33; Tue, 3 Oct
- 2023 16:35:43 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.28; Tue, 3 Oct
+ 2023 17:18:36 +0000
 Received: from BYAPR11MB3320.namprd11.prod.outlook.com
  ([fe80::5e34:ee45:c5e8:59d0]) by BYAPR11MB3320.namprd11.prod.outlook.com
  ([fe80::5e34:ee45:c5e8:59d0%7]) with mapi id 15.20.6838.028; Tue, 3 Oct 2023
- 16:35:43 +0000
-Message-ID: <487836fc-7c9f-2662-66a4-fa5e3829cf6b@intel.com>
-Date: Tue, 3 Oct 2023 09:35:33 -0700
+ 17:18:36 +0000
+Message-ID: <622b95d8-f8ad-5bd4-0145-d6aed2e3c07d@intel.com>
+Date: Tue, 3 Oct 2023 10:18:20 -0700
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
  Thunderbird/102.15.1
 Subject: Re: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for
  all architectures
-To: <linux-api@vger.kernel.org>, <linux-arch@vger.kernel.org>, Arnd Bergmann
-	<arnd@arndb.de>
-References: <20230914185804.2000497-1-sohil.mehta@intel.com>
 Content-Language: en-US
+To: Arnd Bergmann <arnd@arndb.de>, <linux-api@vger.kernel.org>, Linux-Arch
+	<linux-arch@vger.kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>,
+	"Ingo Molnar" <mingo@redhat.com>
+References: <20230914185804.2000497-1-sohil.mehta@intel.com>
+ <487836fc-7c9f-2662-66a4-fa5e3829cf6b@intel.com>
+ <231994b0-ca11-4347-8d93-ce66fdbe3d25@app.fastmail.com>
 From: Sohil Mehta <sohil.mehta@intel.com>
-In-Reply-To: <20230914185804.2000497-1-sohil.mehta@intel.com>
+In-Reply-To: <231994b0-ca11-4347-8d93-ce66fdbe3d25@app.fastmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BY5PR04CA0006.namprd04.prod.outlook.com
- (2603:10b6:a03:1d0::16) To BYAPR11MB3320.namprd11.prod.outlook.com
- (2603:10b6:a03:18::25)
+X-ClientProxiedBy: BYAPR08CA0063.namprd08.prod.outlook.com
+ (2603:10b6:a03:117::40) To BL0PR11MB3313.namprd11.prod.outlook.com
+ (2603:10b6:208:60::26)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR11MB3320:EE_|SJ2PR11MB8347:EE_
-X-MS-Office365-Filtering-Correlation-Id: 23356520-43ba-4f40-b7c9-08dbc42ec9b8
+X-MS-TrafficTypeDiagnostic: BYAPR11MB3320:EE_|MW5PR11MB5881:EE_
+X-MS-Office365-Filtering-Correlation-Id: 529268fb-ca70-459e-dbff-08dbc434c5bd
 X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: pY87qHJZ67+oRnav3o2AiN3F4lj7p+5LpxqvgFJ6mv5y/QDr47JGErj9t69XeAWGiNR3zdTClRbM+EzsAdunfMONmj/r/wUC9Vt4U67KlJIXvubyPAz1A7VX78T+9eSDErmRXoRytu+8haRBsGK/KZF24q2dfl9PT1gPN0vOYOGLUHBM3OM2SCsGH1QJHn+FbUW9CB3ulpnTwKMlLa1eAFK9y404a4wDBg5XkKLLLvNip2Z5Dt5EgCFCbnoeQuS/g0YqMRCSbedZL7VJPTqabZbvgtKCsePdB4xTofCLuzKO45NYWMFQuHFiOvJvRPbhvx8dZwudh7xSsg1Nge++G5FrCiGGSc5WikFkW96GSvkpqlunzofuUM7dRyzwSM7pbpv/CcZG/MGxuP0sa/xSkoVBqzTpKgim4CjQFzpkrGxN6yYbjghWGwiYYeIVBjKEih4freUiIFr5T1lMrtadk91q0zK/p+1KnRIyJw9Se8qG0ctR6q1f030g+JgUJeaILb2+guvRmJWt6s15+E2q5ZSEbdaS1NL+SnzmsduEn7jugEkMV7BR2a6Y3ZuFvQQNcFzfxi1unVRxa75CpVZtCqJPMEoTWWS6u3Y/vM/lRHIqAd3OHJXzdsPODJo+oQSWRkzHr3Z9vCbtnsPtXok3mWd7NvUH3yfLiFBZfJ4pGxc=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR11MB3320.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376002)(136003)(346002)(39860400002)(366004)(396003)(230922051799003)(1800799009)(451199024)(186009)(64100799003)(2616005)(82960400001)(5660300002)(26005)(6666004)(8676002)(4326008)(8936002)(86362001)(31686004)(478600001)(31696002)(966005)(6486002)(38100700002)(66556008)(66946007)(66476007)(6916009)(54906003)(316002)(7366002)(7416002)(7406005)(53546011)(2906002)(6512007)(30864003)(6506007)(83380400001)(36756003)(41300700001)(44832011)(45980500001)(43740500002);DIR:OUT;SFP:1102;
+X-Microsoft-Antispam-Message-Info: cBzB1oBGG76jD4SpKZM44J78I5suCcUw5Hchs6R9dvvr24IxdjLbpSELlNbPKzJ/Tte3qaAFa6tdy6IV6oeqFTrzZrVFarabXLhDyE/OupP0PsFdiIlpaFCjLQRkxsM/3maM0u8oEWdAoq6iQ7ufX3dx981l1LqiuMEXwL0mj6kXADBGlLSt+9Gd8pCtw8d0ND/3vuxDFJxVcweMGpHSPP8yhXdeQuAo0SwrT2QL60jxVcrpKL9V29JySYO0XuFxhRrJfZjE4/Wrvb4937VYD7nMqu9cAPoMlvItfUN0vnqltZ6Eha6uLXMeJAVqaD7W5z/no1L1IpuiU4f/ZXAG3TDruLIL/UiMzmLMpBczwNLz6QKOF27Xq4QYrM0BuJRoNNIdHYkgDaMEWTw+vexXdwu3NKzyBfQYS/2dJWGFOffjiBhiElok1Tg92ylzOq9Y6aR4MgLgde9ufu6VNsbAMBmk8Sb0f5ACprk0ibXA4r1vIlZCzKkqHuCQdGZXlkpWdFqTyFfd+C51475Ph6k+Oy3iyU1KboOUrPvJAumdYXGbPw6+KzjPY4JTQv7bpxp86mpKXvZb3MFIFN2547NbOKJcb51JGNn74EHXcSYapHkW3q3qTbIdR0nPWSCubxahP+Py7vEkLT/pH4KZKuuKlg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR11MB3320.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(136003)(376002)(366004)(39860400002)(396003)(230922051799003)(1800799009)(186009)(64100799003)(451199024)(4326008)(8676002)(66476007)(8936002)(44832011)(66946007)(66556008)(5660300002)(110136005)(54906003)(41300700001)(38100700002)(316002)(6506007)(82960400001)(7416002)(4744005)(6666004)(2906002)(53546011)(2616005)(26005)(6512007)(6486002)(7366002)(478600001)(7406005)(86362001)(36756003)(31696002)(31686004)(43740500002)(45980500001);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?S3RnTU9OQnh3SjdzZzJxZDk3TVQ1WW82VnlqWnphRXh5VG85RzA1a3hrM1Ro?=
- =?utf-8?B?L2VDL3pHbWFEOU9ibUM3WlYxeDRpNEtnc0NYSFppM1RIZU9QeGw0blZ4b1o1?=
- =?utf-8?B?RlpaTWNodEdRYndURXYzOGVwcFJmWGRUR29lYjV2enNQUmh6eXJkdVFzNkg5?=
- =?utf-8?B?ZDhVS1FsNy9uMWxMWlQ4aXpHQTl5aGhHbUthQVRnSFNvYXRzMm9kNkFWOWFJ?=
- =?utf-8?B?ZGZLaTc1MGUxTVFUeWZuTjB3ZFBEZkdjTy8yRU85UWlNeTY1RE83UTNMcUdU?=
- =?utf-8?B?WnRjanN5T2g4c1JTVmlYWWkxMEJRek4yb3V1bjZaZTJOK21mZ2trTnU5WEFs?=
- =?utf-8?B?N2QvZStHM2lPNGVhbnVRZUREZktQVGdvZFRTL0tSK2svdGlFSHpPYmNncEpH?=
- =?utf-8?B?bEN3REk0Ykh3NGFHM291NHRRWHlXWEF4dGp2ajcxdlJOYnVPM1QzN29SbTF1?=
- =?utf-8?B?cDYwaFE5VHVtREpRamxwUkZiRzVDN1FlekhzanNvNUdvK25QdmlrK1MvanA1?=
- =?utf-8?B?S25GYUFEV0dyVVJhVmlzNXVDOEd2RWhQNklGY25Uc1k0dGxVVG5rNC9wZUE2?=
- =?utf-8?B?VjZFWWdWM3ptRUlSbkxuUXVUbDJ0K0pqbkRrVWlrb1NvOUIvVTZ2NTB6Zi9n?=
- =?utf-8?B?UjBpeEJtbkkzNW9pb1FNMWN0bTFIM3A0NWhXYWJIL090cDFxbnRZY0xwOWdQ?=
- =?utf-8?B?L2U4NU5udHNzcWY3dUtDN2JjeGx6RnFqc0p6d3R0MUlZTlJ2d1BvYTgvU2di?=
- =?utf-8?B?ZjgwM25PT1c4Ynd4dlp2UUFuYytkcFBxNHFmNi9rQ0c4ZGI4eldKcW9mbnpa?=
- =?utf-8?B?SVd1ZEZYNUpMcEdCZmdRcS9yY1dpQkprMDd5TXZtKzJ1cnBoTnQ4a1crcG0v?=
- =?utf-8?B?NjJyazhReDI1QWxwMWp5bnpnckErRjdtQU5yaitMZEx5UkQ2em1CalBvUGwv?=
- =?utf-8?B?UDd5VDJ5NmNSYXpjV1dnR3NBREhiVUJ1WGZwTDJJaFpQenplMnpLQnh0R3dC?=
- =?utf-8?B?YWlkRnIwU3ZGNEJNVmE4WnlodG80S0pFVVAzdG1LL2xKYktoWk0xWWhZWitt?=
- =?utf-8?B?VEtJRmV3bWVmbTNMVnNxY3ppdy9mYUg5RDdiV2dSYVFwc09mNVZ1VVNleUMr?=
- =?utf-8?B?cjhObUpsMGU2eTB5Rk50bDZrZHAydFZzdWFMa1dYQTNPTzkxWXVYd0JKTzFm?=
- =?utf-8?B?QTk0MllDVjRlc3VvWHVKL29CRVZRWTZuaEtOdHpZK2JKZ0dsYW80MURjYzQw?=
- =?utf-8?B?NFdjNkFkSW94VjRtazRjSGFvSlU5Ulo4ZkZrOXcwZ0lzd1gzWkhta2pqVkpt?=
- =?utf-8?B?UVczTzMwcko0K0VLVW1qS3gvaGxIcVl2WGUvdzBQMzh3WVAyd0hvejRzTXFC?=
- =?utf-8?B?enlpN3R4Q3JYZFltVHVmQlpVMHI3YXFPbzBLK1kyczNiQTBCdjh2N3piclll?=
- =?utf-8?B?UnhJbGdnVHZDQmVoSHBGTFZwalZhNm9Db0R3azdVb1NIR2U2TnNUVmR4YnFW?=
- =?utf-8?B?N3NRV1VVSlZlcUhpaUREUGJ0Unl6MmZQeTRlNjJPRVhoZ2dMWkpHWTZ5NVVv?=
- =?utf-8?B?bDh3c3dOTFVrWWNXZlNjSGVWSGhBSEtqdjBsdit5WGxTdEZtL2VkcGFSbzBN?=
- =?utf-8?B?WHNXS1QrdnBRTUJaMk8vT0M4TjdCWkRBby9Db21veEZKeDEwYm9zKzN3OXk0?=
- =?utf-8?B?OTh0Z2VSOGJmR2c1UnhLRzBuQUVObkNjYjdyaEkxam9abmJrc2dGN1lMV2tV?=
- =?utf-8?B?dnJ2eXc3Y1ZvRnpxcmpWeks5amg4cEIvbHRIdzluMmcrbDZrS2dvV2NINUwy?=
- =?utf-8?B?cjZ6bjZ0Y0JMK25BQTJ3NWc5WHhnWW5GZ2pGbVJmc2JKV0ZSUWRyYTl6VWMz?=
- =?utf-8?B?eUlHbFo3c1BZN1VqUXJqODJPUC9iWHVNOWV5T2sybTNCUHRRNnpQYW5jbUI1?=
- =?utf-8?B?aFYva0RBY2VEa2VNQ05XUis1VGtLTFhXRUdHQ21aRTErK2VGaS9zczd6aHdU?=
- =?utf-8?B?SmF3VHVwTE5STnc4VXA0WWpXMTVTcThUZ2lHL1FtVTkrS05rMEx4dUlOL0ZZ?=
- =?utf-8?B?YWk2YkVRVTVtdmlieWErUmRETGtuY05TaU5SL2FqeTlFTnRQdlEzdW52UTZO?=
- =?utf-8?Q?QQLAT2opv7b5dW6/YtX38cfZU?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 23356520-43ba-4f40-b7c9-08dbc42ec9b8
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3320.namprd11.prod.outlook.com
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?NU5ZVTZ2NFIzcXloaHRLcXhqL0FOaW5Ea0tKTWtXdDZrWE1ZcXdrMWdzRmJZ?=
+ =?utf-8?B?WWtsSDdZSUE0a2FFVlVGYkY4WkZZdW5aRnY0dUxzNW1GTGFtYTUxUHRmYW83?=
+ =?utf-8?B?ckVNK1FvM3h2TUxhYitQUnpNaWhhSmdCUlNmYStoWXN3TlRmQm5kUzZZekdh?=
+ =?utf-8?B?Z1RTeDlmdEFjZWRQVjBjZ1ZQcGtUV3B4aGpocUhQMmpwUkg5amhkaEhSUm5Q?=
+ =?utf-8?B?anFuRzFSZHlNTnFLdVpwcS9SeG01QnErbmE0blBQVjZDNVBWV2lFVnU0L3pk?=
+ =?utf-8?B?YXE2bnQ3T0MrMEpUa1RacGs1bC9TSHlkdllyaWxodnVZc0twbmZaTHpxUGk2?=
+ =?utf-8?B?eTZMZGRraTFpMGpZZTNzaEdUZ1V2WlRQQXlkVlo0UEI1MEVQZ0VIazFSclNZ?=
+ =?utf-8?B?dEErNHdQd2NjNnkvdDV1THhWeFAwdXhUaWZhNElJNDg5ZzBmWFRmdEhsOHFZ?=
+ =?utf-8?B?SFN2bTUwUUg1QW15VVJrbFNCekQ4NjVLS2t1bkVVNmw5T3R6aGxRUWFSWTR4?=
+ =?utf-8?B?eXljZERmbEVjNkxxdFd6Y0Fka2xxVFpaR1QxRzFIRUFCNS92Q3FrckRFYTJD?=
+ =?utf-8?B?ZXV5eGZ6SXlvQWZyNHJ5NWp4KzJnU3hERUJBSlJOQW93K3RmTFAzNEQwWURP?=
+ =?utf-8?B?V3BwaWxOcjJiN1FhSlRUUjlyL284aDVQc3M0K3VIUnZqRi9aTzJNVXdkbjBt?=
+ =?utf-8?B?am4wMlVsRGF0MVRJVEtVS1dqWWp1TnRXL1REMkduV1pORHh6ZXQ2NTBKZWk2?=
+ =?utf-8?B?WmxCYitDWEVIc1BsWFpiai9BRHY4elMyMEIyWjVCQlJhYzRuZkZoOUlNZHlE?=
+ =?utf-8?B?ZVhMSEtWU0x4ZXNsTDJJMGViL0FsVEViSzFIMTNyVXI5WDFIaWFKemhtQ0Yv?=
+ =?utf-8?B?NXNnR01qWnZFNTljOG5PbzIxdVVuQXdVV0VSK0ZBeXRIZW5RVWZodE9ONERQ?=
+ =?utf-8?B?OUhBYVQ1MytYZnNlN05zZXlxL0pCbzVYSlZvcCtpU29zVXBsOFozV01qbFp5?=
+ =?utf-8?B?MjRiR3poVWxuWVVzeHZDRC8rN29zYW16M2VwOUZMSm9uVlFOK2d2WUw0UDFa?=
+ =?utf-8?B?T0lMaEo2N05FMS8xRzlwTVNOM1lDYmc4M1JwaTBlVzR1ZVVkRnpRZkIzYlVs?=
+ =?utf-8?B?VU5FQ2dLVWt0UUNHTlBmbVYyZDY3anJ4K2lrU0s0TEIvMTNzcmt6ekxIUEds?=
+ =?utf-8?B?aXVaR01UNDY3Y1h6Mk5PdVk4L2hxN0VpSzhibHg2V2p6Ymc4WGUrNmxJNWkz?=
+ =?utf-8?B?OWpoQlNEMmxiOG9EaWtTR0NVdDFKc0U4RGhucTRwV0k4aVVYbnUwSVRxdDBD?=
+ =?utf-8?B?eTdKSUpiRysvM05GREJpVGo4dldGMCtVcUs5Y3YrUVE2TzU5NUVrWENTSXFu?=
+ =?utf-8?B?WnJIZTlib2Q1NGdrbDZTZS9ibWgwYTVyTmovQ1g3R1Nid2kvazZJL2VDV09n?=
+ =?utf-8?B?ZHcwclhNSnFnMjJ0QlJtMjdiNVVHMFhzdWthZVZaUy9IaFpPVXpMUWhyeG5r?=
+ =?utf-8?B?NVFtckhEN2phWW5UM1ZZa0doZHUxQnJLWG4yNm9HWFAraWgxNytzalNnTy9Z?=
+ =?utf-8?B?Mk1vN2pkenU1MGRZLzN4aTI2ZEd5L29xOFM0WU1Cby9yc3lVWHZva2NmQmps?=
+ =?utf-8?B?eXdHeE5kV3pyMkdIZ0loK1ZNK0FHQ0VPdDJpbndvNXlNOE5hN1NEVmdCZ0lv?=
+ =?utf-8?B?eHY2Uk52MEVpc2JJbTJHOVMvZVJzTk9PYXFVd2N6M3lFWENBZ0xkczd2OE5y?=
+ =?utf-8?B?U3lkUEp5Uk1DbWJCSmFQRk0raHhHTGdORE9pN3NlK2pmWWJ6U0x4Q0xra083?=
+ =?utf-8?B?bXBHZXg1TUZkS0o2Tnk4Qkd1Z1pwdDgwbzBONE9lTUc2TjV6aUNxRXBmMUFa?=
+ =?utf-8?B?TXpuQmF5V3Y3QW92dy9Nb042TEtZS0tWT3R0aWY3V09zdWVucFBUUTZTTEN5?=
+ =?utf-8?B?dEVsMlMvL2w1bE9ELzBqR1N2Yk4xNHRHK0J2ZHVyNEZTODNOTml3eE5YSld0?=
+ =?utf-8?B?MTRFTk9VMFVRekh0NlI4TkVpTGwwTDhmckw4TVFuVElzbEtVK01jSEQ2dThq?=
+ =?utf-8?B?YXpnaGk2dkdkdXBYcWltRVJBOVAvc2RUdzc5NzkrUnBrbzVtaE9URVJpUXpz?=
+ =?utf-8?Q?95/79KBaE/pDDA5SEH/27W8TH?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 529268fb-ca70-459e-dbff-08dbc434c5bd
+X-MS-Exchange-CrossTenant-AuthSource: BL0PR11MB3313.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Oct 2023 16:35:43.6905
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Oct 2023 17:18:36.2175
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: kWJ7H9InOJapywMfVgSQSSPWD8p5HBOT4mY2NmI35F86DE1Thsh/A94rh9iMvIP3T2w5V1RwXxb0oYbqtCn3Mw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR11MB8347
+X-MS-Exchange-CrossTenant-UserPrincipalName: taVq7aiy+E/+aSodbq/4rI0f0H8z1si2jTWBMWpeD6JKJdE6PJfVFA6izhh0kD6JBh7dXsZbt8Hzz3yuFcYl+A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW5PR11MB5881
 X-OriginatorOrg: intel.com
 X-Mailman-Approved-At: Wed, 04 Oct 2023 05:32:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -165,253 +169,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max
- Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will
- Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Yoshinori
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H.
+ Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will
+ Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W.
+ Biederman" <ebiederm@xmission.com>, Yoshinori
  Sato <ysato@users.sourceforge.jp>, Helge
- Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas
- Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul
+ Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas
+ Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo
+ Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul
  Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal
  Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/14/2023 11:58 AM, Sohil Mehta wrote:
-> commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
-> recently added support for map_shadow_stack() but it is limited to x86
-> only for now. There is a possibility that other architectures (namely,
-> arm64 and RISC-V), that are implementing equivalent support for shadow
-> stacks, might need to add support for it.
+On 10/3/2023 9:54 AM, Arnd Bergmann wrote:
+> On Tue, Oct 3, 2023, at 18:35, Sohil Mehta wrote:
+>>
+>> Gentle ping...
+>>
+>> Are there any additional comments? It applies cleanly on 6.6-rc4.
+>>
+>> Or does it seem ready to be merged? It has the following
+>> acknowledgements until now:
+>>
+>> Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+>> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+>>
 > 
-> Independent of that, reserving arch-specific syscall numbers in the
-> syscall tables of all architectures is good practice and would help
-> avoid future conflicts. map_shadow_stack() is marked as a conditional
-> syscall in sys_ni.c. Adding it to the syscall tables of other
-> architectures is harmless and would return ENOSYS when exercised.
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 > 
-> Note, map_shadow_stack() was assigned #453 during the merge process
-> since #452 was taken by fchmodat2().
+
+Thanks Arnd.
+
+> If you like, I can pick this up for 6.7 through the asm-generic
+> tree. If you think this should be part of 6.6, I would suggest
+> to merge it through the tree that originally contained the
+> syscall code.
 > 
-> For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
-> syscall tables.
-> 
-> For Alpha, map_shadow_stack() takes up #563 as Alpha still diverges from
-> the common syscall numbering system in the other architectures.
-> 
-> Link: https://lore.kernel.org/lkml/20230515212255.GA562920@debug.ba.rivosinc.com/
-> Link: https://lore.kernel.org/lkml/b402b80b-a7c6-4ef0-b977-c0f5f582b78a@sirena.org.uk/
-> 
-> Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
-> ---
 
-Gentle ping...
+Dave, Ingo, would you prefer to take this patch through 6.6 or defer it
+until 6.7?
 
-Are there any additional comments? It applies cleanly on 6.6-rc4.
+It's not necessarily a fix but it does help finish up the shstk syscall
+added with 6.6. Also, it might help reduce some merge conflicts later if
+newer syscalls are being added during the 6.7 window.
 
-Or does it seem ready to be merged? It has the following
-acknowledgements until now:
-
-Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
->  arch/alpha/kernel/syscalls/syscall.tbl      | 1 +
->  arch/arm/tools/syscall.tbl                  | 1 +
->  arch/arm64/include/asm/unistd.h             | 2 +-
->  arch/arm64/include/asm/unistd32.h           | 2 ++
->  arch/ia64/kernel/syscalls/syscall.tbl       | 1 +
->  arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
->  arch/microblaze/kernel/syscalls/syscall.tbl | 1 +
->  arch/mips/kernel/syscalls/syscall_n32.tbl   | 1 +
->  arch/mips/kernel/syscalls/syscall_n64.tbl   | 1 +
->  arch/mips/kernel/syscalls/syscall_o32.tbl   | 1 +
->  arch/parisc/kernel/syscalls/syscall.tbl     | 1 +
->  arch/powerpc/kernel/syscalls/syscall.tbl    | 1 +
->  arch/s390/kernel/syscalls/syscall.tbl       | 1 +
->  arch/sh/kernel/syscalls/syscall.tbl         | 1 +
->  arch/sparc/kernel/syscalls/syscall.tbl      | 1 +
->  arch/x86/entry/syscalls/syscall_32.tbl      | 1 +
->  arch/xtensa/kernel/syscalls/syscall.tbl     | 1 +
->  include/uapi/asm-generic/unistd.h           | 5 ++++-
->  18 files changed, 22 insertions(+), 2 deletions(-)
->> diff --git a/arch/alpha/kernel/syscalls/syscall.tbl
-b/arch/alpha/kernel/syscalls/syscall.tbl
-> index ad37569d0507..6e8479c96e65 100644
-> --- a/arch/alpha/kernel/syscalls/syscall.tbl
-> +++ b/arch/alpha/kernel/syscalls/syscall.tbl
-> @@ -492,3 +492,4 @@
->  560	common	set_mempolicy_home_node		sys_ni_syscall
->  561	common	cachestat			sys_cachestat
->  562	common	fchmodat2			sys_fchmodat2
-> +563	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
-> index c572d6c3dee0..6d494dfbf5e4 100644
-> --- a/arch/arm/tools/syscall.tbl
-> +++ b/arch/arm/tools/syscall.tbl
-> @@ -466,3 +466,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
-> index bd77253b62e0..6a28fb91b85d 100644
-> --- a/arch/arm64/include/asm/unistd.h
-> +++ b/arch/arm64/include/asm/unistd.h
-> @@ -39,7 +39,7 @@
->  #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
->  #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
->  
-> -#define __NR_compat_syscalls		453
-> +#define __NR_compat_syscalls		454
->  #endif
->  
->  #define __ARCH_WANT_SYS_CLONE
-> diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
-> index 78b68311ec81..a201d842ec82 100644
-> --- a/arch/arm64/include/asm/unistd32.h
-> +++ b/arch/arm64/include/asm/unistd32.h
-> @@ -911,6 +911,8 @@ __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
->  __SYSCALL(__NR_cachestat, sys_cachestat)
->  #define __NR_fchmodat2 452
->  __SYSCALL(__NR_fchmodat2, sys_fchmodat2)
-> +#define __NR_map_shadow_stack 453
-> +__SYSCALL(__NR_map_shadow_stack, sys_map_shadow_stack)
->  
->  /*
->   * Please add new compat syscalls above this comment and update
-> diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
-> index 83d8609aec03..be02ce9d376f 100644
-> --- a/arch/ia64/kernel/syscalls/syscall.tbl
-> +++ b/arch/ia64/kernel/syscalls/syscall.tbl
-> @@ -373,3 +373,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-> index 259ceb125367..bee2d2f7f82c 100644
-> --- a/arch/m68k/kernel/syscalls/syscall.tbl
-> +++ b/arch/m68k/kernel/syscalls/syscall.tbl
-> @@ -452,3 +452,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
-> index a3798c2637fd..09eda7ed91b0 100644
-> --- a/arch/microblaze/kernel/syscalls/syscall.tbl
-> +++ b/arch/microblaze/kernel/syscalls/syscall.tbl
-> @@ -458,3 +458,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
-> index 152034b8e0a0..3c02cc3886ca 100644
-> --- a/arch/mips/kernel/syscalls/syscall_n32.tbl
-> +++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
-> @@ -391,3 +391,4 @@
->  450	n32	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	n32	cachestat			sys_cachestat
->  452	n32	fchmodat2			sys_fchmodat2
-> +453	n32	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
-> index cb5e757f6621..aa9ed6a7cb48 100644
-> --- a/arch/mips/kernel/syscalls/syscall_n64.tbl
-> +++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
-> @@ -367,3 +367,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	n64	cachestat			sys_cachestat
->  452	n64	fchmodat2			sys_fchmodat2
-> +453	n64	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-> index 1a646813afdc..756f6feb21c2 100644
-> --- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-> +++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-> @@ -440,3 +440,4 @@
->  450	o32	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	o32	cachestat			sys_cachestat
->  452	o32	fchmodat2			sys_fchmodat2
-> +453	o32	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
-> index e97c175b56f9..c80eedbe0170 100644
-> --- a/arch/parisc/kernel/syscalls/syscall.tbl
-> +++ b/arch/parisc/kernel/syscalls/syscall.tbl
-> @@ -451,3 +451,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-> index 20e50586e8a2..87a54acf8346 100644
-> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
-> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-> @@ -539,3 +539,4 @@
->  450 	nospu	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_ni_syscall
-> diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-> index 0122cc156952..22249c07e556 100644
-> --- a/arch/s390/kernel/syscalls/syscall.tbl
-> +++ b/arch/s390/kernel/syscalls/syscall.tbl
-> @@ -455,3 +455,4 @@
->  450  common	set_mempolicy_home_node	sys_set_mempolicy_home_node	sys_set_mempolicy_home_node
->  451  common	cachestat		sys_cachestat			sys_cachestat
->  452  common	fchmodat2		sys_fchmodat2			sys_fchmodat2
-> +453  common	map_shadow_stack	sys_map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-> index e90d585c4d3e..5ccfe6fbb6b1 100644
-> --- a/arch/sh/kernel/syscalls/syscall.tbl
-> +++ b/arch/sh/kernel/syscalls/syscall.tbl
-> @@ -455,3 +455,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-> index 4ed06c71c43f..b2d664edebdd 100644
-> --- a/arch/sparc/kernel/syscalls/syscall.tbl
-> +++ b/arch/sparc/kernel/syscalls/syscall.tbl
-> @@ -498,3 +498,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-> index 2d0b1bd866ea..743a7ef5a4b9 100644
-> --- a/arch/x86/entry/syscalls/syscall_32.tbl
-> +++ b/arch/x86/entry/syscalls/syscall_32.tbl
-> @@ -457,3 +457,4 @@
->  450	i386	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	i386	cachestat		sys_cachestat
->  452	i386	fchmodat2		sys_fchmodat2
-> +453	i386	map_shadow_stack	sys_map_shadow_stack
-> diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
-> index fc1a4f3c81d9..94e6bcc2bec7 100644
-> --- a/arch/xtensa/kernel/syscalls/syscall.tbl
-> +++ b/arch/xtensa/kernel/syscalls/syscall.tbl
-> @@ -423,3 +423,4 @@
->  450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
->  451	common	cachestat			sys_cachestat
->  452	common	fchmodat2			sys_fchmodat2
-> +453	common	map_shadow_stack		sys_map_shadow_stack
-> diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-> index abe087c53b4b..203ae30d7761 100644
-> --- a/include/uapi/asm-generic/unistd.h
-> +++ b/include/uapi/asm-generic/unistd.h
-> @@ -823,8 +823,11 @@ __SYSCALL(__NR_cachestat, sys_cachestat)
->  #define __NR_fchmodat2 452
->  __SYSCALL(__NR_fchmodat2, sys_fchmodat2)
->  
-> +#define __NR_map_shadow_stack 453
-> +__SYSCALL(__NR_map_shadow_stack, sys_map_shadow_stack)
-> +
->  #undef __NR_syscalls
-> -#define __NR_syscalls 453
-> +#define __NR_syscalls 454
->  
->  /*
->   * 32 bit systems traditionally used different
-> -- 
-
+Sohil
 
