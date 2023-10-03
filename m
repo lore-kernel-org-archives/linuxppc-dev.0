@@ -4,49 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AE64E75459
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20D84E7545E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:35:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RJg5sMjz2yVR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:32:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RM76Bcxz3vrQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:34:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=mkl@pengutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1137 seconds by postgrey-1.37 at boromir; Tue, 03 Oct 2023 18:54:38 AEDT
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S098G6h4Zz2yDY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 18:54:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0GqC0c95z2ykZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2023 23:10:13 +1100 (AEDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <mkl@pengutronix.de>)
-	id 1qnZuh-0003ZL-C4; Tue, 03 Oct 2023 09:33:51 +0200
+	id 1qneCk-0007eI-DF; Tue, 03 Oct 2023 14:08:46 +0200
 Received: from [2a0a:edc0:0:b01:1d::7b] (helo=bjornoya.blackshift.org)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <mkl@pengutronix.de>)
-	id 1qnZuX-00Aidc-00; Tue, 03 Oct 2023 09:33:41 +0200
+	id 1qneCb-00Al6E-S0; Tue, 03 Oct 2023 14:08:37 +0200
 Received: from pengutronix.de (unknown [172.20.34.65])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
 	(Authenticated sender: mkl-all@blackshift.org)
-	by smtp.blackshift.org (Postfix) with ESMTPSA id 9626922CA40;
-	Tue,  3 Oct 2023 07:16:33 +0000 (UTC)
-Date: Tue, 3 Oct 2023 09:16:33 +0200
+	by smtp.blackshift.org (Postfix) with ESMTPSA id D0B6422CC33;
+	Tue,  3 Oct 2023 11:26:49 +0000 (UTC)
+Date: Tue, 3 Oct 2023 13:26:49 +0200
 From: Marc Kleine-Budde <mkl@pengutronix.de>
 To: Christian Marangi <ansuelsmth@gmail.com>
 Subject: Re: [net-next PATCH 3/4] netdev: replace napi_reschedule with
  napi_schedule
-Message-ID: <20231003-living-seltzer-172ea6aec629-mkl@pengutronix.de>
+Message-ID: <20231003-struggle-lung-3d7c89eab00b-mkl@pengutronix.de>
 References: <20231002151023.4054-1-ansuelsmth@gmail.com>
  <20231002151023.4054-3-ansuelsmth@gmail.com>
+ <20231003-living-seltzer-172ea6aec629-mkl@pengutronix.de>
+ <651bf88c.050a0220.3a982.31fc@mx.google.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="rxxtlje5djnxwkyg"
+	protocol="application/pgp-signature"; boundary="zbzdaj4jqyp54e52"
 Content-Disposition: inline
-In-Reply-To: <20231002151023.4054-3-ansuelsmth@gmail.com>
+In-Reply-To: <651bf88c.050a0220.3a982.31fc@mx.google.com>
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
 X-SA-Exim-Mail-From: mkl@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
@@ -70,28 +71,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---rxxtlje5djnxwkyg
+--zbzdaj4jqyp54e52
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 02.10.2023 17:10:22, Christian Marangi wrote:
-> Now that napi_schedule return a bool, we can drop napi_reschedule that
-> does the same exact function. The function comes from a very old commit
-> bfe13f54f502 ("ibm_emac: Convert to use napi_struct independent of struct
-> net_device") and the purpose is actually deprecated in favour of
-> different logic.
+On 03.10.2023 13:18:33, Christian Marangi wrote:
+> On Tue, Oct 03, 2023 at 09:16:33AM +0200, Marc Kleine-Budde wrote:
+> > On 02.10.2023 17:10:22, Christian Marangi wrote:
+> > > Now that napi_schedule return a bool, we can drop napi_reschedule that
+> > > does the same exact function. The function comes from a very old comm=
+it
+> > > bfe13f54f502 ("ibm_emac: Convert to use napi_struct independent of st=
+ruct
+> > > net_device") and the purpose is actually deprecated in favour of
+> > > different logic.
+> > >=20
+> > > Convert every user of napi_reschedule to napi_schedule.
+> > >=20
+> > > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> > > ---
+> > >  drivers/infiniband/ulp/ipoib/ipoib_ib.c                |  4 ++--
+> > >  drivers/net/can/dev/rx-offload.c                       |  2 +-
+> >=20
+> > Acked-by: Marc Kleine-Budde # for can/dev/rx-offload.c
 >=20
-> Convert every user of napi_reschedule to napi_schedule.
->=20
-> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> ---
->  drivers/infiniband/ulp/ipoib/ipoib_ib.c                |  4 ++--
->  drivers/net/can/dev/rx-offload.c                       |  2 +-
+> Just to make sure can I use the correct tag: (you didn't include the
+> mail)
 
-Acked-by: Marc Kleine-Budde # for can/dev/rx-offload.c
+Doh! Sure.
 
-regards,
+> Acked-by: Marc Kleine-Budde <mkl@pengutronix.de> # for can/dev/rx-offload=
+=2Ec
+
+Acked-by: Marc Kleine-Budde <mkl@pengutronix.de> # for can/dev/rx-offload.c
+
 Marc
 
 --=20
@@ -100,19 +114,19 @@ Embedded Linux                   | https://www.pengutronix.de |
 Vertretung N=C3=BCrnberg              | Phone: +49-5121-206917-129 |
 Amtsgericht Hildesheim, HRA 2686 | Fax:   +49-5121-206917-9   |
 
---rxxtlje5djnxwkyg
+--zbzdaj4jqyp54e52
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEDs2BvajyNKlf9TJQvlAcSiqKBOgFAmUbv84ACgkQvlAcSiqK
-BOjnFwf+OhxcXa9c83Acv0LbbO4tgmF/CI9y5Gz59aFevokQHG/8d2f2USWDkqPB
-r/Yi54VuZtFU1I6dV9XVQtndbXcoPbhBYFOrdNFJtYbXU405HTkgVrKM3LEv8Num
-vuyP5J6+IPisIYReCl6jAlWMNbZmiQHVdI4dyV/I0R3W0VDSBcDd8vxouQrT+iNb
-wqTBUCgjHnea7OhI3S+CDi7692mmk8RC5Jbhxb0rr+i49Dx6gtpmCUb8QmB94TDT
-Rn5auDyJLh0+Wcg+eDdnNvKjNBS7v//BDSY+asVFVwlQ3/aMqVBXlKStFwHQa33O
-P/Y7vHxUVvIeimQmBn2zif8iFQjF3Q==
-=qf69
+iQEzBAABCgAdFiEEDs2BvajyNKlf9TJQvlAcSiqKBOgFAmUb+nYACgkQvlAcSiqK
+BOgAwwf9HSZX1sxRgnOHWLXSBACCTpqNm26rDzNrIqPlybJQVie8rNauFCEQbSz+
+cKDZD68pDokwEv+8WajpOBW0d/Zc27B2d7EZtYhlopNFjo0XIPYoYfA6QTXfZ6Qs
+vi22lC87vHoyEwEi37X3yTPapJVY2GDgyGSD+8FsdOliNE679gautzYvZSWLPiRF
+stXo71bRBm15AbVKwCuOqymieHGxKbooQ09lRIYUXdK6oF671CJLKUia6m9Qg42f
+6Itf4TBPlF4XdxS0vqKrvTsg78XduHN1FmuI+RJIPdzULMx9CoUlr8BOSfGomsN3
+eoH9v4s8IDrkLGQifa7oRIgxg9EkFw==
+=72hV
 -----END PGP SIGNATURE-----
 
---rxxtlje5djnxwkyg--
+--zbzdaj4jqyp54e52--
