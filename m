@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D27DE7AD77
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 16:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F5E5E7AD77
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 16:47:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HRKJ21Gg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O8spIlXW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0Nxq1Pvmz3vck
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 03:46:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S0Nyx51mjz3vZH
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 03:47:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HRKJ21Gg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O8spIlXW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0Nv670p9z3cVd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 03:44:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0NvJ4Dvcz3cb8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 03:44:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 5C8AACE18F1;
+	by ams.source.kernel.org (Postfix) with ESMTP id 8B818B81B1A;
+	Tue,  3 Oct 2023 16:44:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5921C433C7;
 	Tue,  3 Oct 2023 16:44:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9532DC433C8;
-	Tue,  3 Oct 2023 16:43:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1696351440;
-	bh=bt5J5fh5JDF9Qn4xoTeao+osiheqHYKP1EfCbyh3YY4=;
+	s=k20201202; t=1696351448;
+	bh=4rrnrq07QQ7mg3jVhwP3uG1o5PbTor7aJsxbpbknuWQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=HRKJ21GgyOrOgiWTGWajY3zVeTjNSGEpQnM5E7/zEUBs10f16djIyU6d2Gv19bZyD
-	 37AZRnAichRhL7LvFGmStMrQc9UH9TnurbB41hHihDdywRFI1h6LUfOKNblvPLbmHg
-	 ZWVhPwpedBIZmf0s0ZLbuobVL2kaN7YjqmzxwRwdgVwkOp7nAsBBvWYULSQOS+lHAm
-	 rdTCbLR27gtD3D6OLKGy5c+lIaa56IiE/M0IQ1NCKpI9nNOkBHzi8ycc4yQfJopH5D
-	 dM5gGSoQut5mPgA/xVFrvC2yKKKur5HrXAr5+QHiA2+iT3kesx3cdsC41Oboy+wnYO
-	 s1AwZDa7dbMRg==
-Received: (nullmailer pid 783965 invoked by uid 1000);
+	b=O8spIlXWkzl4liaZdSq7cgvDLyssraN6LGu+LotDYpVXG25fSXPtypRduBz5CcwhO
+	 qdYogJypcRDBH5NS1x/FjUb6QKXmWK2ekXbGj+EE2wqSjoPdEySk6SZD1U8I3jqWws
+	 T+iIb87PKXcB28CV1yguvYPyOgJqyj0gurLSAU6MrV89cqk6AUtfXr+Agf9LdL8HOL
+	 iPLnlqAO1SYjEKldeLux5a9221uj/NxTWph4HuIBnZy5fuIkOY84CGHlRD+FVvMY5U
+	 12HlXP+75zVS6SWgoch5l5bg6efntcVm3S/QEE+psfrFQmoYiu8Stb7tU7+lRB/SDC
+	 FhOOSTYlVdFyA==
+Received: (nullmailer pid 783961 invoked by uid 1000);
 	Tue, 03 Oct 2023 16:43:40 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 03 Oct 2023 11:43:10 -0500
-Subject: [PATCH 4/5] ASoC: qcom/lpass: Constify struct lpass_variant
+Date: Tue, 03 Oct 2023 11:43:08 -0500
+Subject: [PATCH 2/5] ASoC: Drop unnecessary of_match_device() calls
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231003-dt-asoc-header-cleanups-v1-4-308666806378@kernel.org>
+Message-Id: <20231003-dt-asoc-header-cleanups-v1-2-308666806378@kernel.org>
 References: <20231003-dt-asoc-header-cleanups-v1-0-308666806378@kernel.org>
 In-Reply-To: <20231003-dt-asoc-header-cleanups-v1-0-308666806378@kernel.org>
 To: Claudiu Beznea <claudiu.beznea@tuxon.dev>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Peter Rosin <peda@axentia.se>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Lars-Peter Clausen <lars@metafoo.de>, =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, James Schulman <james.schulman@cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, Support Opensource <support.opensource@diasemi.com>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Shenghao Ding <shenghao-ding@ti.com>, Kevin Lu <kevin-lu@ti.com>, Baojun Xu <baojun.xu@ti.com>, Oder Chiou <oder_chiou@realtek.com>, Fabio Estevam <festevam@gmail.com>, Kiseok Jo <kiseok.jo@irondevice.com>, Kevin Cernekee <cernekee@chromium.org>, Shengjiu Wang <shengjiu.wang@
@@ -67,450 +67,114 @@ Cc: patches@opensource.cirrus.com, alsa-devel@alsa-project.org, linuxppc-dev@lis
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'struct lpass_variant' is used for driver match data which is supposed to
-be constant. It's not modified anywhere, so it's just a matter of adding
-'const' everywhere.
+If probe is reached, we've already matched the device and in the case of
+DT matching, the struct device_node pointer will be set. Therefore, there
+is no need to call of_match_device() in probe.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- sound/soc/qcom/lpass-apq8016.c  |  6 +++---
- sound/soc/qcom/lpass-cdc-dma.c  |  2 +-
- sound/soc/qcom/lpass-cpu.c      | 28 ++++++++++++++--------------
- sound/soc/qcom/lpass-ipq806x.c  |  2 +-
- sound/soc/qcom/lpass-platform.c | 36 ++++++++++++++++++------------------
- sound/soc/qcom/lpass-sc7180.c   |  6 +++---
- sound/soc/qcom/lpass-sc7280.c   |  6 +++---
- sound/soc/qcom/lpass.h          |  2 +-
- 8 files changed, 44 insertions(+), 44 deletions(-)
+ sound/soc/codecs/ak5386.c  |  7 ++-----
+ sound/soc/codecs/cs4271.c  | 22 ++++++----------------
+ sound/soc/codecs/tas5086.c |  6 +-----
+ 3 files changed, 9 insertions(+), 26 deletions(-)
 
-diff --git a/sound/soc/qcom/lpass-apq8016.c b/sound/soc/qcom/lpass-apq8016.c
-index f919d46e18ca..8ce75b442b64 100644
---- a/sound/soc/qcom/lpass-apq8016.c
-+++ b/sound/soc/qcom/lpass-apq8016.c
-@@ -123,7 +123,7 @@ static struct snd_soc_dai_driver apq8016_lpass_cpu_dai_driver[] = {
- static int apq8016_lpass_alloc_dma_channel(struct lpass_data *drvdata,
- 					   int direction, unsigned int dai_id)
- {
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int chan = 0;
+diff --git a/sound/soc/codecs/ak5386.c b/sound/soc/codecs/ak5386.c
+index 0c5e00679c7d..21a44476f48d 100644
+--- a/sound/soc/codecs/ak5386.c
++++ b/sound/soc/codecs/ak5386.c
+@@ -10,7 +10,6 @@
+ #include <linux/slab.h>
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+-#include <linux/of_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <sound/soc.h>
+ #include <sound/pcm.h>
+@@ -168,7 +167,6 @@ static int ak5386_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
  
- 	if (direction == SNDRV_PCM_STREAM_PLAYBACK) {
-@@ -157,7 +157,7 @@ static int apq8016_lpass_free_dma_channel(struct lpass_data *drvdata, int chan,
- static int apq8016_lpass_init(struct platform_device *pdev)
- {
- 	struct lpass_data *drvdata = platform_get_drvdata(pdev);
--	struct lpass_variant *variant = drvdata->variant;
-+	const struct lpass_variant *variant = drvdata->variant;
- 	struct device *dev = &pdev->dev;
- 	int ret, i;
+-	priv->reset_gpio = -EINVAL;
+ 	dev_set_drvdata(dev, priv);
  
-@@ -223,7 +223,7 @@ static int apq8016_lpass_exit(struct platform_device *pdev)
- }
+ 	for (i = 0; i < ARRAY_SIZE(supply_names); i++)
+@@ -179,9 +177,8 @@ static int ak5386_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		return ret;
  
+-	if (of_match_device(of_match_ptr(ak5386_dt_ids), dev))
+-		priv->reset_gpio = of_get_named_gpio(dev->of_node,
+-						      "reset-gpio", 0);
++	priv->reset_gpio = of_get_named_gpio(dev->of_node,
++					     "reset-gpio", 0);
  
--static struct lpass_variant apq8016_data = {
-+static const struct lpass_variant apq8016_data = {
- 	.i2sctrl_reg_base	= 0x1000,
- 	.i2sctrl_reg_stride	= 0x1000,
- 	.i2s_ports		= 4,
-diff --git a/sound/soc/qcom/lpass-cdc-dma.c b/sound/soc/qcom/lpass-cdc-dma.c
-index 8221e2cbe35c..6389c7b6051e 100644
---- a/sound/soc/qcom/lpass-cdc-dma.c
-+++ b/sound/soc/qcom/lpass-cdc-dma.c
-@@ -37,7 +37,7 @@ static void __lpass_get_dmactl_handle(struct snd_pcm_substream *substream, struc
- 	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int dai_id = cpu_dai->driver->id;
- 
- 	switch (dai_id) {
-diff --git a/sound/soc/qcom/lpass-cpu.c b/sound/soc/qcom/lpass-cpu.c
-index 39571fed4001..18aff2654f89 100644
---- a/sound/soc/qcom/lpass-cpu.c
-+++ b/sound/soc/qcom/lpass-cpu.c
-@@ -44,7 +44,7 @@ static int lpass_cpu_init_i2sctl_bitfields(struct device *dev,
- 			struct lpaif_i2sctl *i2sctl, struct regmap *map)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 
- 	i2sctl->loopback = devm_regmap_field_alloc(dev, map, v->loopback);
- 	i2sctl->spken = devm_regmap_field_alloc(dev, map, v->spken);
-@@ -463,7 +463,7 @@ static int asoc_qcom_of_xlate_dai_name(struct snd_soc_component *component,
- 				   const char **dai_name)
- {
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
--	struct lpass_variant *variant = drvdata->variant;
-+	const struct lpass_variant *variant = drvdata->variant;
- 	int id = args->args[0];
- 	int ret = -EINVAL;
- 	int i;
-@@ -488,7 +488,7 @@ static const struct snd_soc_component_driver lpass_cpu_comp_driver = {
- static bool lpass_cpu_regmap_writeable(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->i2s_ports; ++i)
-@@ -530,7 +530,7 @@ static bool lpass_cpu_regmap_writeable(struct device *dev, unsigned int reg)
- static bool lpass_cpu_regmap_readable(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->i2s_ports; ++i)
-@@ -578,7 +578,7 @@ static bool lpass_cpu_regmap_readable(struct device *dev, unsigned int reg)
- static bool lpass_cpu_regmap_volatile(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->irq_ports; ++i) {
-@@ -613,7 +613,7 @@ static struct regmap_config lpass_cpu_regmap_config = {
- static int lpass_hdmi_init_bitfields(struct device *dev, struct regmap *map)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int i;
- 	struct lpass_hdmi_tx_ctl *tx_ctl;
- 	struct regmap_field *legacy_en;
-@@ -691,7 +691,7 @@ static int lpass_hdmi_init_bitfields(struct device *dev, struct regmap *map)
- static bool lpass_hdmi_regmap_writeable(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	if (reg == LPASS_HDMI_TX_CTL_ADDR(v))
-@@ -736,7 +736,7 @@ static bool lpass_hdmi_regmap_writeable(struct device *dev, unsigned int reg)
- static bool lpass_hdmi_regmap_readable(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	if (reg == LPASS_HDMI_TX_CTL_ADDR(v))
-@@ -785,7 +785,7 @@ static bool lpass_hdmi_regmap_readable(struct device *dev, unsigned int reg)
- static bool lpass_hdmi_regmap_volatile(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	if (reg == LPASS_HDMITX_APP_IRQSTAT_REG(v))
-@@ -824,7 +824,7 @@ static struct regmap_config lpass_hdmi_regmap_config = {
- static bool __lpass_rxtx_regmap_accessible(struct device *dev, unsigned int reg, bool rw)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->rxtx_irq_ports; ++i) {
-@@ -890,7 +890,7 @@ static bool lpass_rxtx_regmap_readable(struct device *dev, unsigned int reg)
- static bool lpass_rxtx_regmap_volatile(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->rxtx_irq_ports; ++i) {
-@@ -915,7 +915,7 @@ static bool lpass_rxtx_regmap_volatile(struct device *dev, unsigned int reg)
- static bool __lpass_va_regmap_accessible(struct device *dev, unsigned int reg, bool rw)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->va_irq_ports; ++i) {
-@@ -965,7 +965,7 @@ static bool lpass_va_regmap_readable(struct device *dev, unsigned int reg)
- static bool lpass_va_regmap_volatile(struct device *dev, unsigned int reg)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int i;
- 
- 	for (i = 0; i < v->va_irq_ports; ++i) {
-@@ -1104,7 +1104,7 @@ int asoc_qcom_lpass_cpu_platform_probe(struct platform_device *pdev)
- 	struct lpass_data *drvdata;
- 	struct device_node *dsp_of_node;
- 	struct resource *res;
--	struct lpass_variant *variant;
-+	const struct lpass_variant *variant;
- 	struct device *dev = &pdev->dev;
- 	const struct of_device_id *match;
- 	int ret, i, dai_id;
-diff --git a/sound/soc/qcom/lpass-ipq806x.c b/sound/soc/qcom/lpass-ipq806x.c
-index 2c97f295e394..bbe9f11d7780 100644
---- a/sound/soc/qcom/lpass-ipq806x.c
-+++ b/sound/soc/qcom/lpass-ipq806x.c
-@@ -108,7 +108,7 @@ static int ipq806x_lpass_free_dma_channel(struct lpass_data *drvdata, int chan,
- 	return 0;
- }
- 
--static struct lpass_variant ipq806x_data = {
-+static const struct lpass_variant ipq806x_data = {
- 	.i2sctrl_reg_base	= 0x0010,
- 	.i2sctrl_reg_stride	= 0x04,
- 	.i2s_ports		= 5,
-diff --git a/sound/soc/qcom/lpass-platform.c b/sound/soc/qcom/lpass-platform.c
-index 73e3d39bd24c..6569102486e2 100644
---- a/sound/soc/qcom/lpass-platform.c
-+++ b/sound/soc/qcom/lpass-platform.c
-@@ -100,7 +100,7 @@ static int lpass_platform_alloc_rxtx_dmactl_fields(struct device *dev,
- 					 struct regmap *map)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpaif_dmactl *rd_dmactl, *wr_dmactl;
- 	int rval;
- 
-@@ -128,7 +128,7 @@ static int lpass_platform_alloc_va_dmactl_fields(struct device *dev,
- 					 struct regmap *map)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpaif_dmactl *wr_dmactl;
- 
- 	wr_dmactl = devm_kzalloc(dev, sizeof(*wr_dmactl), GFP_KERNEL);
-@@ -145,7 +145,7 @@ static int lpass_platform_alloc_dmactl_fields(struct device *dev,
- 					 struct regmap *map)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpaif_dmactl *rd_dmactl, *wr_dmactl;
- 	int rval;
- 
-@@ -175,7 +175,7 @@ static int lpass_platform_alloc_hdmidmactl_fields(struct device *dev,
- 					 struct regmap *map)
- {
- 	struct lpass_data *drvdata = dev_get_drvdata(dev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpaif_dmactl *rd_dmactl;
- 
- 	rd_dmactl = devm_kzalloc(dev, sizeof(struct lpaif_dmactl), GFP_KERNEL);
-@@ -195,7 +195,7 @@ static int lpass_platform_pcmops_open(struct snd_soc_component *component,
- 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
- 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int ret, dma_ch, dir = substream->stream;
- 	struct lpass_pcm_data *data;
- 	struct regmap *map;
-@@ -287,7 +287,7 @@ static int lpass_platform_pcmops_close(struct snd_soc_component *component,
- 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
- 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpass_pcm_data *data;
- 	unsigned int dai_id = cpu_dai->driver->id;
- 
-@@ -358,7 +358,7 @@ static int __lpass_get_id(const struct snd_pcm_substream *substream,
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int id;
- 
- 	switch (cpu_dai->driver->id) {
-@@ -421,7 +421,7 @@ static int lpass_platform_pcmops_hw_params(struct snd_soc_component *component,
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	snd_pcm_format_t format = params_format(params);
- 	unsigned int channels = params_channels(params);
- 	unsigned int regval;
-@@ -574,7 +574,7 @@ static int lpass_platform_pcmops_hw_free(struct snd_soc_component *component,
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int reg;
+ 	if (gpio_is_valid(priv->reset_gpio))
+ 		if (devm_gpio_request_one(dev, priv->reset_gpio,
+diff --git a/sound/soc/codecs/cs4271.c b/sound/soc/codecs/cs4271.c
+index 188b8b43c524..9e6f8a048dd5 100644
+--- a/sound/soc/codecs/cs4271.c
++++ b/sound/soc/codecs/cs4271.c
+@@ -15,7 +15,6 @@
+ #include <linux/delay.h>
+ #include <linux/gpio.h>
+ #include <linux/of.h>
+-#include <linux/of_device.h>
+ #include <linux/of_gpio.h>
+ #include <linux/regulator/consumer.h>
+ #include <sound/pcm.h>
+@@ -563,19 +562,12 @@ static int cs4271_component_probe(struct snd_soc_component *component)
+ 	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+ 	struct cs4271_platform_data *cs4271plat = component->dev->platform_data;
  	int ret;
- 	struct regmap *map;
-@@ -602,7 +602,7 @@ static int lpass_platform_pcmops_prepare(struct snd_soc_component *component,
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpaif_dmactl *dmactl;
- 	struct regmap *map;
- 	int ret, id, ch, dir = substream->stream;
-@@ -665,7 +665,7 @@ static int lpass_platform_pcmops_trigger(struct snd_soc_component *component,
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	struct lpaif_dmactl *dmactl;
- 	struct regmap *map;
- 	int ret, ch, id;
-@@ -864,7 +864,7 @@ static snd_pcm_uframes_t lpass_platform_pcmops_pointer(
- 	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
- 	struct snd_pcm_runtime *rt = substream->runtime;
- 	struct lpass_pcm_data *pcm_data = rt->private_data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int base_addr, curr_addr;
- 	int ret, ch, dir = substream->stream;
- 	struct regmap *map;
-@@ -928,7 +928,7 @@ static irqreturn_t lpass_dma_interrupt_handler(
- {
- 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
- 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	irqreturn_t ret = IRQ_NONE;
- 	int rv;
- 	unsigned int reg, val, mask;
-@@ -1020,7 +1020,7 @@ static irqreturn_t lpass_dma_interrupt_handler(
- static irqreturn_t lpass_platform_lpaif_irq(int irq, void *data)
- {
- 	struct lpass_data *drvdata = data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int irqs;
- 	int rv, chan;
+-	bool amutec_eq_bmutec = false;
++	bool amutec_eq_bmutec;
  
-@@ -1048,7 +1048,7 @@ static irqreturn_t lpass_platform_lpaif_irq(int irq, void *data)
- static irqreturn_t lpass_platform_hdmiif_irq(int irq, void *data)
- {
- 	struct lpass_data *drvdata = data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int irqs;
- 	int rv, chan;
+-#ifdef CONFIG_OF
+-	if (of_match_device(cs4271_dt_ids, component->dev)) {
+-		if (of_get_property(component->dev->of_node,
+-				     "cirrus,amutec-eq-bmutec", NULL))
+-			amutec_eq_bmutec = true;
+-
+-		if (of_get_property(component->dev->of_node,
+-				     "cirrus,enable-soft-reset", NULL))
+-			cs4271->enable_soft_reset = true;
+-	}
+-#endif
++	amutec_eq_bmutec = of_property_read_bool(component->dev->of_node,
++						 "cirrus,amutec-eq-bmutec");
++	cs4271->enable_soft_reset = of_property_read_bool(component->dev->of_node,
++							  "cirrus,enable-soft-reset");
  
-@@ -1078,7 +1078,7 @@ static irqreturn_t lpass_platform_hdmiif_irq(int irq, void *data)
- static irqreturn_t lpass_platform_rxtxif_irq(int irq, void *data)
- {
- 	struct lpass_data *drvdata = data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int irqs;
- 	irqreturn_t rv;
- 	int chan;
-@@ -1103,7 +1103,7 @@ static irqreturn_t lpass_platform_rxtxif_irq(int irq, void *data)
- static irqreturn_t lpass_platform_vaif_irq(int irq, void *data)
- {
- 	struct lpass_data *drvdata = data;
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	unsigned int irqs;
- 	irqreturn_t rv;
- 	int chan;
-@@ -1268,7 +1268,7 @@ static const struct snd_soc_component_driver lpass_component_driver = {
- int asoc_qcom_lpass_platform_register(struct platform_device *pdev)
- {
- 	struct lpass_data *drvdata = platform_get_drvdata(pdev);
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int ret;
+ 	ret = regulator_bulk_enable(ARRAY_SIZE(cs4271->supplies),
+ 				    cs4271->supplies);
+@@ -655,9 +647,7 @@ static int cs4271_common_probe(struct device *dev,
+ 	if (!cs4271)
+ 		return -ENOMEM;
  
- 	drvdata->lpaif_irq = platform_get_irq_byname(pdev, "lpass-irq-lpaif");
-diff --git a/sound/soc/qcom/lpass-sc7180.c b/sound/soc/qcom/lpass-sc7180.c
-index d16c0d83aaad..1b0c04b210ce 100644
---- a/sound/soc/qcom/lpass-sc7180.c
-+++ b/sound/soc/qcom/lpass-sc7180.c
-@@ -76,7 +76,7 @@ static struct snd_soc_dai_driver sc7180_lpass_cpu_dai_driver[] = {
- static int sc7180_lpass_alloc_dma_channel(struct lpass_data *drvdata,
- 					   int direction, unsigned int dai_id)
- {
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int chan = 0;
+-	if (of_match_device(cs4271_dt_ids, dev))
+-		cs4271->gpio_nreset =
+-			of_get_named_gpio(dev->of_node, "reset-gpio", 0);
++	cs4271->gpio_nreset = of_get_named_gpio(dev->of_node, "reset-gpio", 0);
  
- 	if (dai_id == LPASS_DP_RX) {
-@@ -123,7 +123,7 @@ static int sc7180_lpass_free_dma_channel(struct lpass_data *drvdata, int chan, u
- static int sc7180_lpass_init(struct platform_device *pdev)
- {
- 	struct lpass_data *drvdata = platform_get_drvdata(pdev);
--	struct lpass_variant *variant = drvdata->variant;
-+	const struct lpass_variant *variant = drvdata->variant;
- 	struct device *dev = &pdev->dev;
- 	int ret, i;
+ 	if (cs4271plat)
+ 		cs4271->gpio_nreset = cs4271plat->gpio_nreset;
+diff --git a/sound/soc/codecs/tas5086.c b/sound/soc/codecs/tas5086.c
+index 60e59e993ba6..f52c14b43f28 100644
+--- a/sound/soc/codecs/tas5086.c
++++ b/sound/soc/codecs/tas5086.c
+@@ -940,11 +940,7 @@ static int tas5086_i2c_probe(struct i2c_client *i2c)
  
-@@ -179,7 +179,7 @@ static const struct dev_pm_ops sc7180_lpass_pm_ops = {
- 	SET_SYSTEM_SLEEP_PM_OPS(sc7180_lpass_dev_suspend, sc7180_lpass_dev_resume)
- };
+ 	i2c_set_clientdata(i2c, priv);
  
--static struct lpass_variant sc7180_data = {
-+static const struct lpass_variant sc7180_data = {
- 	.i2sctrl_reg_base	= 0x1000,
- 	.i2sctrl_reg_stride	= 0x1000,
- 	.i2s_ports		= 3,
-diff --git a/sound/soc/qcom/lpass-sc7280.c b/sound/soc/qcom/lpass-sc7280.c
-index 6b2eb25ed939..7cd3e291382a 100644
---- a/sound/soc/qcom/lpass-sc7280.c
-+++ b/sound/soc/qcom/lpass-sc7280.c
-@@ -110,7 +110,7 @@ static struct snd_soc_dai_driver sc7280_lpass_cpu_dai_driver[] = {
- static int sc7280_lpass_alloc_dma_channel(struct lpass_data *drvdata,
- 					  int direction, unsigned int dai_id)
- {
--	struct lpass_variant *v = drvdata->variant;
-+	const struct lpass_variant *v = drvdata->variant;
- 	int chan = 0;
- 
- 	switch (dai_id) {
-@@ -196,7 +196,7 @@ static int sc7280_lpass_free_dma_channel(struct lpass_data *drvdata, int chan, u
- static int sc7280_lpass_init(struct platform_device *pdev)
- {
- 	struct lpass_data *drvdata = platform_get_drvdata(pdev);
--	struct lpass_variant *variant = drvdata->variant;
-+	const struct lpass_variant *variant = drvdata->variant;
- 	struct device *dev = &pdev->dev;
- 	int ret, i;
- 
-@@ -252,7 +252,7 @@ static const struct dev_pm_ops sc7280_lpass_pm_ops = {
- 	SET_SYSTEM_SLEEP_PM_OPS(sc7280_lpass_dev_suspend, sc7280_lpass_dev_resume)
- };
- 
--static struct lpass_variant sc7280_data = {
-+static const struct lpass_variant sc7280_data = {
- 	.i2sctrl_reg_base		= 0x1000,
- 	.i2sctrl_reg_stride		= 0x1000,
- 	.i2s_ports			= 3,
-diff --git a/sound/soc/qcom/lpass.h b/sound/soc/qcom/lpass.h
-index bdfe66ec3314..aab60540563a 100644
---- a/sound/soc/qcom/lpass.h
-+++ b/sound/soc/qcom/lpass.h
-@@ -139,7 +139,7 @@ struct lpass_data {
- 	int vaif_irq;
- 
- 	/* SOC specific variations in the LPASS IP integration */
--	struct lpass_variant *variant;
-+	const struct lpass_variant *variant;
- 
- 	/* bit map to keep track of static channel allocations */
- 	unsigned long dma_ch_bit_map;
+-	if (of_match_device(of_match_ptr(tas5086_dt_ids), dev)) {
+-		struct device_node *of_node = dev->of_node;
+-		gpio_nreset = of_get_named_gpio(of_node, "reset-gpio", 0);
+-	}
+-
++	gpio_nreset = of_get_named_gpio(dev->of_node, "reset-gpio", 0);
+ 	if (gpio_is_valid(gpio_nreset))
+ 		if (devm_gpio_request(dev, gpio_nreset, "TAS5086 Reset"))
+ 			gpio_nreset = -EINVAL;
 
 -- 
 2.40.1
