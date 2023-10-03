@@ -4,59 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F42FE75459
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:38:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30788E75459
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Oct 2023 18:39:56 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=AsoLtHlJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Jau1+o+n;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RQr6Sw4z3w3k
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:38:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.180; helo=mail-qk1-f180.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S0RSp6LZpz3vvX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 05:39:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=AsoLtHlJ;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Jau1+o+n;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.27; helo=wnew2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from wnew2-smtp.messagingengine.com (wnew2-smtp.messagingengine.com [64.147.123.27])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0Phv4cpsz2ysB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 04:20:13 +1100 (AEDT)
-Received: by mail-qk1-f180.google.com with SMTP id af79cd13be357-773ac11de71so85076085a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2023 10:20:13 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696353610; x=1696958410;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=gDlx4Wu9l39McbXAmxr/aQafR9CqgRAFRsdqHoaziys=;
-        b=eZ6qrvJ7C1UpBmd2mLY9pzijF0NCuXzEp+TF49G6T0e+01Fl2/HUgSg431uUja55zF
-         c6FelYExHGL5Kjnq0VVp2bjazX7J2omzURUkmSvLEfcpIOkcnjVWMGME/iFmQY6vUvCV
-         8zEEPhS3pVDLrf32OoGsPzcv0JnDXLwO0FXSURpNoXcKA8lTWaXSM/fIICEgfTGKUzaG
-         835gPCXOU2Qs1wufiUvlhIBbMqrosEI2gxh9lmYaKSsb/bxm1Kh2CPT8hJSTv2zp1n2S
-         4cwQtmWn+ZcUROTaGUeSq7gvqMiY57Bxqpw1sRddtS6lwgpdezhPD1ZwqiXOJzIQgAcT
-         3Kng==
-X-Gm-Message-State: AOJu0YxbnYNz2taxFv9Y3mDJBcbOo2Fm5hGALPlKQ8vl5Lykumsq45S1
-	9nfJEm3+tjK1UaYVoynAUnZXyLpI7uHzoA==
-X-Google-Smtp-Source: AGHT+IFLdISeJG3vqDOnN7YKB6DHvajbNbCVF+Ix4sHYdtC8Suw+turr4qFvQg9+qMaLVSCENdoaXA==
-X-Received: by 2002:a05:620a:468b:b0:774:2a0e:1166 with SMTP id bq11-20020a05620a468b00b007742a0e1166mr229741qkb.17.1696353610542;
-        Tue, 03 Oct 2023 10:20:10 -0700 (PDT)
-Received: from mail-qv1-f49.google.com (mail-qv1-f49.google.com. [209.85.219.49])
-        by smtp.gmail.com with ESMTPSA id g4-20020ae9e104000000b007743360b3fasm621003qkm.34.2023.10.03.10.20.09
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 03 Oct 2023 10:20:10 -0700 (PDT)
-Received: by mail-qv1-f49.google.com with SMTP id 6a1803df08f44-65af7e20f39so7606156d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2023 10:20:09 -0700 (PDT)
-X-Received: by 2002:a81:a14b:0:b0:583:6db3:a007 with SMTP id
- y72-20020a81a14b000000b005836db3a007mr272837ywg.17.1696353588829; Tue, 03 Oct
- 2023 10:19:48 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0QRv6Hd3z3c2L
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 04:54:03 +1100 (AEDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+	by mailnew.west.internal (Postfix) with ESMTP id 296C12B0006B;
+	Tue,  3 Oct 2023 13:53:56 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute5.internal (MEProxy); Tue, 03 Oct 2023 13:54:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm1; t=1696355635; x=1696362835; bh=Em
+	ic7Z1y2XZwljvtzupGq8cvsW20UYl18kfH5lRmznc=; b=AsoLtHlJErskTrRJFq
+	YWB7LiuJuM5uGYXcM2daXNPnZcZ8WsiKuZn2wpyzlqdqjRHSCBO3d+MAAl4fq3QT
+	WcbWxKUmZoSgGhADqlbONnGKGrP0WPYftmyN5SHnl0RznO6QDh70iF4WWdmmdr1o
+	aIScf5LEdaaGhZvRXtqauEdQYcVTxfnY5fBDKymQI3GW62WysEdhRtl52Reur2xV
+	neOI7u8mmhegCJEg8MG+g/gN2FLhcS8X7pM1jBmSWDhpZHC3NL0k4AnK5u5eQSrj
+	2JqicmdimqMmRzc060ENJNbBiQ/6lJJQs7iVAB0KB6SoQ6jf1kentb8lURzCMPxW
+	GsLg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm2; t=1696355635; x=1696362835; bh=Emic7Z1y2XZwl
+	jvtzupGq8cvsW20UYl18kfH5lRmznc=; b=Jau1+o+nsNlGBB4FdY6b7J4VspbNA
+	aPd7cmm28YNYn367OO6LUMEIptuTzH5zBRlumJEK4RLdF7HR3VVDrI/hwj37Zese
+	n7JroZhW75x6+9gm+lN413ne/nHgr78NfIAyttCubWuBaxkO0eF98iMT2qUh7oiR
+	bnM9qrH8wfLq/b/WGafDJrClpK/9Ky/PNHRd1IYuq05u365NxX8nD1U6KBZLuCpv
+	TA+R5Olp6FDTDiDJDVx6+qIB0ESjxd14oLsCjLAmJopC38NMetD2FFVUqx64YCjQ
+	EgodgWspZ4ZGKgVj3rxWV/D4ycCjCoG/0ltVeXB3Myk6fP0zzX9/IrxaA==
+X-ME-Sender: <xms:MFUcZfSC4nOicsWJVAEEwkPxHVw3IOtLiMUmhmi2_A6LGQKSr8wOJg>
+    <xme:MFUcZQwW_3Fl-330qGVbPh4Hq3_93YdNnHRKSjwK5RF_peTaRIvfNogMNwzQggPcH
+    bj-JvdySS8ylDIut1U>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvkedrfeejgddvjecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
+    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
+    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
+    hnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:MFUcZU2D22kzVLiPB8I7PPK9hqXB0jIiyrEVTBJJV7gbFUvmHP7rXg>
+    <xmx:MFUcZfCBTWDztQr-WX_3iN9pneFwP2S06aBCQ9hNL6yy7ZThoDvuDw>
+    <xmx:MFUcZYi3QcnlGJ6ljx0r1LwaQgk6kVg8ny9_cY5OUXs_1qlaDJpSsw>
+    <xmx:M1UcZdKBE_BaqL21RT7ItgK7M7YEJCpJZ6XV5WpeTQIj-mielUA5Km_2a40>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 8B48FB60089; Tue,  3 Oct 2023 13:53:52 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-958-g1b1b911df8-fm-20230927.002-g1b1b911d
 MIME-Version: 1.0
-References: <20230914185804.2000497-1-sohil.mehta@intel.com>
-In-Reply-To: <20230914185804.2000497-1-sohil.mehta@intel.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 3 Oct 2023 19:19:36 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWDho+vRAnQ3_AWjLcGgrNKNhWGmpdpjipq53QjvRrUJw@mail.gmail.com>
-Message-ID: <CAMuHMdWDho+vRAnQ3_AWjLcGgrNKNhWGmpdpjipq53QjvRrUJw@mail.gmail.com>
-Subject: Re: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for
- all architectures
-To: Sohil Mehta <sohil.mehta@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Message-Id: <ac03a633-5d74-4735-a7bb-0214f54242c9@app.fastmail.com>
+In-Reply-To: <cdada842-2a7e-5f1d-eea3-3d99b637c26b@intel.com>
+References: <20230628230935.1196180-1-sohil.mehta@intel.com>
+ <20230710185124.3848462-1-sohil.mehta@intel.com>
+ <5748f659-4063-0e18-c5d4-941a863d0d93@intel.com>
+ <cdada842-2a7e-5f1d-eea3-3d99b637c26b@intel.com>
+Date: Tue, 03 Oct 2023 19:53:31 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Sohil Mehta" <sohil.mehta@intel.com>, linux-api@vger.kernel.org,
+ Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH v2] syscalls: Cleanup references to sys_lookup_dcookie()
+Content-Type: text/plain
 X-Mailman-Approved-At: Wed, 04 Oct 2023 05:32:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,56 +97,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner 
- <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-api@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hu
- nter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner <mattst88@gmail.co
+ m>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.o
+ rg>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 14, 2023 at 8:59=E2=80=AFPM Sohil Mehta <sohil.mehta@intel.com>=
- wrote:
-> commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
-> recently added support for map_shadow_stack() but it is limited to x86
-> only for now. There is a possibility that other architectures (namely,
-> arm64 and RISC-V), that are implementing equivalent support for shadow
-> stacks, might need to add support for it.
+On Tue, Oct 3, 2023, at 19:47, Sohil Mehta wrote:
+> Arnd, is this a good candidate for 6.7? Though old, the patch applies
+> cleanly on 6.6-rc4. I can re-send this one if you would prefer that.
 >
-> Independent of that, reserving arch-specific syscall numbers in the
-> syscall tables of all architectures is good practice and would help
-> avoid future conflicts. map_shadow_stack() is marked as a conditional
-> syscall in sys_ni.c. Adding it to the syscall tables of other
-> architectures is harmless and would return ENOSYS when exercised.
->
-> Note, map_shadow_stack() was assigned #453 during the merge process
-> since #452 was taken by fchmodat2().
->
-> For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
-> syscall tables.
->
-> For Alpha, map_shadow_stack() takes up #563 as Alpha still diverges from
-> the common syscall numbering system in the other architectures.
->
-> Link: https://lore.kernel.org/lkml/20230515212255.GA562920@debug.ba.rivos=
-inc.com/
-> Link: https://lore.kernel.org/lkml/b402b80b-a7c6-4ef0-b977-c0f5f582b78a@s=
-irena.org.uk/
->
-> Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
 
->  arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
+Thanks a lot for the reminder, I've added it to my asm-generic
+branch for v6.7 now, it should be in linux-next tomorrow.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+     Arnd
