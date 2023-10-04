@@ -4,65 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A5F5E8FDDD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 08:52:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E8A3E7B5EE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 11:03:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=MKm1hEnL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=nCmze0PD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0pNb1k1xz3dCt
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 19:52:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S0sHl5ySJz3cbF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 22:03:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=MKm1hEnL;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=nCmze0PD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=opensource.cirrus.com (client-ip=67.231.149.25; helo=mx0b-001ae601.pphosted.com; envelope-from=prvs=5641f542b1=ckeepax@opensource.cirrus.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 974 seconds by postgrey-1.37 at boromir; Wed, 04 Oct 2023 19:51:01 AEDT
-Received: from mx0b-001ae601.pphosted.com (mx0a-001ae601.pphosted.com [67.231.149.25])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=adhemerval.zanella@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0pLs2vznz3c8n
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 19:51:01 +1100 (AEDT)
-Received: from pps.filterd (m0077473.ppops.net [127.0.0.1])
-	by mx0a-001ae601.pphosted.com (8.17.1.22/8.17.1.22) with ESMTP id 39461LK5031802;
-	Wed, 4 Oct 2023 03:33:35 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=
-	date:from:to:cc:subject:message-id:references:mime-version
-	:content-type:in-reply-to; s=PODMain02222019; bh=C03Kz69TBbxck4h
-	yYh7pZ/332ziUW1qlTgjfP8Qf2Tg=; b=MKm1hEnLBCfTn8s5VJjtjUgmfX/JTvm
-	+OrRe1LWGGwQbaoNRf2GWfGYSjE6o45VTn1nyuudObMD4lODrlfjwrOlZtVOx6Qh
-	37dHacwtaXA6jLq+M2WNBVm7MVHRQldFk2ZTFgTKQLNtyASpRXzz9EnpGq5mzSc1
-	mIMYUabBH9Wst4ROoD5x0QVA1i/N1k5SpI3r8ACY7STWH5NcYwovm835M+4Z/TW8
-	KlIAE8jw8j9AiyEpmE+APRK5qiC22T5sHotstaVVs1Lm9quG99MahE/rVrK66KPe
-	3huRn/gK94po0HHXw77W4HccUrAoZSUK4itBjTrTuVLYFTYwHrdWGyw==
-Received: from ediex01.ad.cirrus.com ([84.19.233.68])
-	by mx0a-001ae601.pphosted.com (PPS) with ESMTPS id 3th2dt85sm-2
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Oct 2023 03:33:35 -0500 (CDT)
-Received: from ediex01.ad.cirrus.com (198.61.84.80) by ediex01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.37; Wed, 4 Oct
- 2023 09:33:32 +0100
-Received: from ediswmail.ad.cirrus.com (198.61.86.93) by ediex01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server id 15.2.1118.37 via Frontend
- Transport; Wed, 4 Oct 2023 09:33:32 +0100
-Received: from ediswmail.ad.cirrus.com (ediswmail.ad.cirrus.com [198.61.86.93])
-	by ediswmail.ad.cirrus.com (Postfix) with ESMTP id 4BC2AB06;
-	Wed,  4 Oct 2023 08:33:32 +0000 (UTC)
-Date: Wed, 4 Oct 2023 08:33:32 +0000
-From: Charles Keepax <ckeepax@opensource.cirrus.com>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/5] ASoC: Drop unnecessary of_match_device() calls
-Message-ID: <20231004083332.GQ103419@ediswmail.ad.cirrus.com>
-References: <20231003-dt-asoc-header-cleanups-v1-0-308666806378@kernel.org>
- <20231003-dt-asoc-header-cleanups-v1-2-308666806378@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0sGl6bcRz3c3x
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 22:02:37 +1100 (AEDT)
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-1c735473d1aso14970845ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2023 04:02:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1696417353; x=1697022153; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=/3oXbSz4Vr/TO4F6Fo1F+L1aN+UvHmKyPB5CbaVXPdE=;
+        b=nCmze0PDu3PV3xN8DPlfYkszm9ph4pWGDKcEH3jTeDjC+GMB28mHiOXH7xeBHvdK1S
+         ByBNWW+NiweN5EujXtCfZ+afVjPvzTVZtpZw06peY4K89yQmFxd9cocjzImkOUfozjTI
+         rAhBDrlDcWqDtmV/3R9mAhs91WeLr+UD1NohhqwwCpNzCstVq4tGIwANuuZflj717zIT
+         Ad+n+L+MMzVzBH6JcFrtNjbZM60W13w0EaASAD6iEyegncMURGwVlB7IU4ThvMYxfcP7
+         1L7h+whvPsfPT+b33snA86tvOabkhGPMi7TWgxiVfcTp9jHhzqD09QExY6SsuMH0+W8T
+         A9tw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696417353; x=1697022153;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/3oXbSz4Vr/TO4F6Fo1F+L1aN+UvHmKyPB5CbaVXPdE=;
+        b=EagtM4Ml8hjvlLJdnvdjlXmuWYlod6w+o2OgmtvJ/OuQFpL1b3NugXR67CvOL9lbyu
+         saBbnmuNbikKpHaPsxWn4bUfu0E7/k4ymkY+gNV7szU3XII8r496oIHMeGUIIAO4eGmR
+         hg2wRNX6J0DbnO0bG/6+KP/5/W+pG5Qfwb6D0QUJAJqNsk8QmF8MdEkOvX2jBjXLIpfI
+         E4PqwPifOGJ94cDU7Dlym3vgWI1NDDgFCtKJNW6C4bp2NsgG6/6q4cmWomdZeXinnb1Y
+         SH3+xJJ16A7WKK8BEPsMyQMnhaFQfOJbGfnSso65k8BkDHEWJ3TAwA5zcTB86nOEhCKt
+         CJ8g==
+X-Gm-Message-State: AOJu0YxGeHUJ7DEprM6efz5lNndbSCGuOwQlEfbGUi0fKUcs9110H1Xb
+	m1NeswDVUwu9FzXt7EDQFJKSQg==
+X-Google-Smtp-Source: AGHT+IHE2lbIz5Y66kYbALC9n6ii47EHeeCGPmVVWRQJyGC4GKJ6zn27JE3pya096RVjF3OIVgPZlQ==
+X-Received: by 2002:a17:902:c94f:b0:1c3:8464:cabd with SMTP id i15-20020a170902c94f00b001c38464cabdmr2190766pla.12.1696417352641;
+        Wed, 04 Oct 2023 04:02:32 -0700 (PDT)
+Received: from ?IPV6:2804:1b3:a7c1:feaf:b959:23ff:3a18:c5dc? ([2804:1b3:a7c1:feaf:b959:23ff:3a18:c5dc])
+        by smtp.gmail.com with ESMTPSA id u16-20020a170902e81000b001bd99fd1114sm3370394plg.288.2023.10.04.04.02.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Oct 2023 04:02:31 -0700 (PDT)
+Message-ID: <bea513ab-9ee2-4808-a490-c7dee5de26a6@linaro.org>
+Date: Wed, 4 Oct 2023 08:02:28 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20231003-dt-asoc-header-cleanups-v1-2-308666806378@kernel.org>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-Proofpoint-ORIG-GUID: cvmrx7nPMYCDUdYHAhx7anCT9XLT2sn8
-X-Proofpoint-GUID: cvmrx7nPMYCDUdYHAhx7anCT9XLT2sn8
-X-Proofpoint-Spam-Reason: safe
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] uapi/auxvec: Define AT_HWCAP3 and AT_HWCAP4 aux vector,
+ entries
+Content-Language: en-US
+To: Peter Bergner <bergner@linux.ibm.com>, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <fd879f60-3f0b-48d1-bfa1-6d337768207e@linux.ibm.com>
+ <97eb2099-23c2-4921-89ac-9523226ad221@linaro.org>
+ <891957ad-453e-4c68-9c5a-7a979667543d@linux.ibm.com>
+ <057366c2-ee65-441d-b2ac-f40e1d94b44e@linaro.org>
+ <b4864730-1b12-4dd8-b6e9-85d78dad5e34@linux.ibm.com>
+From: Adhemerval Zanella Netto <adhemerval.zanella@linaro.org>
+Organization: Linaro
+In-Reply-To: <b4864730-1b12-4dd8-b6e9-85d78dad5e34@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,25 +89,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre
- Belloni <alexandre.belloni@bootlin.com>, Heiko Stuebner <heiko@sntech.de>, Bard Liao <yung-chuan.liao@linux.intel.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Cezary Rojewski <cezary.rojewski@intel.com>, Takashi Iwai <tiwai@suse.com>, Kevin Lu <kevin-lu@ti.com>, Thierry Reding <thierry.reding@gmail.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, Fabio Estevam <festevam@gmail.com>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, Lars-Peter
- Clausen <lars@metafoo.de>, Ban Tao <fengzheng923@gmail.com>, Samuel Holland <samuel@sholland.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nicolas Frattaroli <frattaroli.nicolas@gmail.com>, Chen-Yu Tsai <wens@csie.org>, NXP Linux Team <linux-imx@nxp.com>, Olivier Moysan <olivier.moysan@foss.st.com>, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Baojun Xu <baojun.xu@ti.com>, Jaroslav Kysela <perex@perex.cz>, Banajit Goswami <bgoswami@quicinc.com>, alsa-devel@alsa-project.org, Ray
- Jui <rjui@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Shenghao Ding <shenghao-ding@ti.com>, James Schulman <james.schulman@cirrus.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, Mark Brown <broonie@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Oder Chiou <oder_chiou@realtek.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Support Opensource <support.opensource@diasemi.com>, Scott Branden <sbranden@broadcom.com>, Shawn Guo <shawnguo@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, linux-kernel@vger.kernel.org, Kiseok Jo <kiseok.jo@irondevice.com>, Peter Ujfalusi <peter.ujfalusi@gmail.com>, Pengutronix
- Kernel Team <kernel@pengutronix.de>, patches@opensource.cirrus.com, Ranjani Sridharan <r.anjani.sridharan@linux.intel.com>, Kevin Cernekee <cernekee@chromium.org>, David Rhodes <david.rhodes@cirrus.com>, Peter Rosin <peda@axentia.se>, Jarkko Nikula <jarkko.nikula@bitmer.com>
+Cc: GNU C Library <libc-alpha@sourceware.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 03, 2023 at 11:43:08AM -0500, Rob Herring wrote:
-> If probe is reached, we've already matched the device and in the case of
-> DT matching, the struct device_node pointer will be set. Therefore, there
-> is no need to call of_match_device() in probe.
+
+
+On 03/10/23 19:12, Peter Bergner wrote:
+> On 10/3/23 9:08 AM, Adhemerval Zanella Netto wrote:
+>> What it is not clear to me is what kind of ABI boundary you are trying to
+>> preemptively add support here. The TCB ABI for __builtin_cpu_supports is
+>> userland only, so if your intention is just to allow gcc to work on older
+>> glibcs, it should be a matter to just reserve the space on tcbhead_t.
 > 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
+> Yes, extending tcbhead_t to contain the slots for hwcap3 and hwcap4 are the
+> ABI extensions we are interested in, and not something that can be backported
+> into a distro point release.  Yes, we don't strictly need the AT_HWCAP3 and
+> AT_HWCAP4 kernel defines to reserve (and clear) that space in glibc, but....
+> 
+> 
+> 
+>> If your intention is to also add support on glibc, it makes more sense to
+>> already reserve it.  For __builtin_cpu_supports it should work, although
+>> for glibc itself some backporting would be required (to correctly showing
+>> the bits with LD_SHOW_AUXV).
+> 
+> Our intention is to also add the glibc support too once we have the
+> AT_HWCAP3 and AT_HWCAP4 kernel macros defined.  1) Once the defines are
+> there, adding the support should be pretty straight forward, so why wait?
+> And 2) part of the glibc and compiler support introduces a new symbol
+> that is exported by glibc and referenced by the compilers to ensure the
+> compilers *never* access the hwcap* fields in the TCB unless the glibc
+> supports them.  See the symbol __parse_hwcap_and_convert_at_platform used
+> for HWCAP/HWCAP2.  We'll need a similar one for HWCAP3/HWCAP4 and I'm
+> doubtful whether the distros will allow the backport of a patch that
+> introduces a new exported symbol from glibc in a distro point release.
 
-For the cirrus bits:
-
-Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
-
-Thanks,
-Charles
+Alright, I makes more sense it now.  And indeed backporting a __parse_hwcap
+for HWCAP3/HWCAP4 will be frown upon.
