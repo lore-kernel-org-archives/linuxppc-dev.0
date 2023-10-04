@@ -4,35 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD430E7B5F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 11:28:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56E4FE7C4E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 17:40:52 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OeKoTfCe;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S0srX1jKXz3vYF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 22:28:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S126B2JpVz3cVy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 04:40:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OeKoTfCe;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S0mPZ4mvZz3bw9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 18:23:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S125852Ykz307y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2023 04:39:56 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 573CA6144B;
-	Wed,  4 Oct 2023 07:23:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5AA2C433C7;
-	Wed,  4 Oct 2023 07:22:59 +0000 (UTC)
-Date: Wed, 4 Oct 2023 08:22:57 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Sohil Mehta <sohil.mehta@intel.com>
-Subject: Re: [PATCH v2] arch: Reserve map_shadow_stack() syscall number for
- all architectures
-Message-ID: <ZR0S0QUoAbqTS/O+@arm.com>
-References: <20230914185804.2000497-1-sohil.mehta@intel.com>
+	by dfw.source.kernel.org (Postfix) with ESMTP id F1C3061635;
+	Wed,  4 Oct 2023 17:39:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14D07C433C7;
+	Wed,  4 Oct 2023 17:39:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1696441193;
+	bh=K/tg8/w4CVZM+MMZbqiJI4I0lw8Qwa2sMwfhdev7ubQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=OeKoTfCewQffVeEdL4VkIXNCVSD9d9NunmbLsCQ4KZkE5fGE3EzF5s2CJMEFTkFUR
+	 9+Rp0Lnw0r+oc+Gh5cs7EiGtRjCli4Pt6URVlEReTs6A8YRyKnMlwZuVSsvN5yl8ae
+	 nXnm9skgJdM3YBXLd0m7/YSlo87hzvKhk8PwH4P4i+Th69UGbjXYVgi82wU+QW8gDS
+	 TI0fbqAPstYUmGmbBYwsdfYqwZqe7LynkAtCAyxbEKu53rOqqPRSC9TsSL7q66drdJ
+	 IeRPQWuLX595ZGXfia1I+HXaRR8rGBrwp321J0JJdtnGTVTOmuXonAq7ANk6wMljxf
+	 w1+um5izaFBhA==
+Date: Wed, 4 Oct 2023 18:39:41 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/5] ASoC: Explicitly include correct DT includes
+Message-ID: <72f8f521-93f0-4e3d-929c-f7478622ddb3@sirena.org.uk>
+References: <20231004-dt-asoc-header-cleanups-v2-0-e77765080cbc@kernel.org>
+ <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="K1Dh/zQH53UxpeTH"
 Content-Disposition: inline
-In-Reply-To: <20230914185804.2000497-1-sohil.mehta@intel.com>
-X-Mailman-Approved-At: Wed, 04 Oct 2023 22:28:01 +1100
+In-Reply-To: <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org>
+X-Cookie: I thought YOU silenced the guard!
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,49 +61,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Matt Turner 
- <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sergei Trofimovich <slyich@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>, Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Deepak Gupta <debug@rivosinc.com>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-api@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Adrian Hunter <adrian.hu
- nter@intel.com>, linux-perf-users@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Cezary Rojewski <cezary.rojewski@intel.com>, Bard Liao <yung-chuan.liao@linux.intel.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, nuno.sa@analog.com, Kevin Lu <kevin-lu@ti.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lars-Peter Clausen <lars@metafoo.de>, Ban Tao <fengzheng923@gmail.com>, Fabio Estevam <festevam@gmail.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Peter Ujfalusi <peter.ujfalusi@gmail.com>, Nicolas Frattaroli <frattaroli.nicolas@gmail.com>, Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, Olivier Moysan <olivier.moysan@foss.st.com>, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Baojun Xu <baojun.xu@ti.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, alsa-devel@als
+ a-project.org, Shenghao Ding <shenghao-ding@ti.com>, James Schulman <james.schulman@cirrus.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, Jaroslav Kysela <perex@perex.cz>, Kevin Cernekee <cernekee@chromium.org>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Oder Chiou <oder_chiou@realtek.com>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, Kiseok Jo <kiseok.jo@irondevice.com>, linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org, Banajit Goswami <bgoswami@quicinc.com>, David Rhodes <david.rhodes@cirrus.com>, Peter Rosin <peda@axentia.se>, Jarkko Nikula <jarkko.nikula@bitmer.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 14, 2023 at 06:58:03PM +0000, Sohil Mehta wrote:
-> commit c35559f94ebc ("x86/shstk: Introduce map_shadow_stack syscall")
-> recently added support for map_shadow_stack() but it is limited to x86
-> only for now. There is a possibility that other architectures (namely,
-> arm64 and RISC-V), that are implementing equivalent support for shadow
-> stacks, might need to add support for it.
-> 
-> Independent of that, reserving arch-specific syscall numbers in the
-> syscall tables of all architectures is good practice and would help
-> avoid future conflicts. map_shadow_stack() is marked as a conditional
-> syscall in sys_ni.c. Adding it to the syscall tables of other
-> architectures is harmless and would return ENOSYS when exercised.
-> 
-> Note, map_shadow_stack() was assigned #453 during the merge process
-> since #452 was taken by fchmodat2().
-> 
-> For Powerpc, map it to sys_ni_syscall() as is the norm for Powerpc
-> syscall tables.
-> 
-> For Alpha, map_shadow_stack() takes up #563 as Alpha still diverges from
-> the common syscall numbering system in the other architectures.
-> 
-> Link: https://lore.kernel.org/lkml/20230515212255.GA562920@debug.ba.rivosinc.com/
-> Link: https://lore.kernel.org/lkml/b402b80b-a7c6-4ef0-b977-c0f5f582b78a@sirena.org.uk/
-> 
-> Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
-> ---
-> v2:
-> - Skip syscall table changes to tools/. They will be handled separetely by the
->   perf folks.
-> - Map Powerpc to sys_ni_syscall (Rick Edgecombe)
-> ---
->  arch/alpha/kernel/syscalls/syscall.tbl      | 1 +
->  arch/arm/tools/syscall.tbl                  | 1 +
->  arch/arm64/include/asm/unistd.h             | 2 +-
->  arch/arm64/include/asm/unistd32.h           | 2 ++
 
-For arm64 (compat):
+--K1Dh/zQH53UxpeTH
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+On Wed, Oct 04, 2023 at 10:58:05AM -0500, Rob Herring wrote:
+> The DT of_device.h and of_platform.h date back to the separate
+> of_platform_bus_type before it was merged into the regular platform bus.
+> As part of that merge prepping Arm DT support 13 years ago, they
+> "temporarily" include each other. They also include platform_device.h
+> and of.h. As a result, there's a pretty much random mix of those include
+> files used throughout the tree. In order to detangle these headers and
+> replace the implicit includes with struct declarations, users need to
+> explicitly include the correct includes.
+
+This is breaking various builds for me, for example arm64 defconfig:
+
+/build/stage/linux/sound/soc/rockchip/rockchip_i2s_tdm.c: In function =E2=
+=80=98rockchip_i2s_tdm_probe=E2=80=99:
+/build/stage/linux/sound/soc/rockchip/rockchip_i2s_tdm.c:1557:17: error: im=
+plicit declaration of function =E2=80=98of_match_device=E2=80=99; did you m=
+ean =E2=80=98of_match_node=E2=80=99? [-Werror=3Dimplicit-function-declarati=
+on]
+ 1557 |         of_id =3D of_match_device(rockchip_i2s_tdm_match, &pdev->de=
+v);
+      |                 ^~~~~~~~~~~~~~~
+      |                 of_match_node
+/build/stage/linux/sound/soc/rockchip/rockchip_i2s_tdm.c:1557:15: warning: =
+assignment to =E2=80=98const struct of_device_id *=E2=80=99 from =E2=80=98i=
+nt=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
+ 1557 |         of_id =3D of_match_device(rockchip_i2s_tdm_match, &pdev->de=
+v);
+      |               ^
+/build/stage/linux/sound/soc/tegra/tegra210_amx.c: In function =E2=80=98teg=
+ra210_amx_platform_probe=E2=80=99:
+/build/stage/linux/sound/soc/tegra/tegra210_amx.c:541:17: error: implicit d=
+eclaration of function =E2=80=98of_match_device=E2=80=99; did you mean =E2=
+=80=98of_match_node=E2=80=99? [-Werror=3Dimplicit-function-declaration]
+  541 |         match =3D of_match_device(tegra210_amx_of_match, dev);
+      |                 ^~~~~~~~~~~~~~~
+      |                 of_match_node
+/build/stage/linux/sound/soc/tegra/tegra210_amx.c:541:15: warning: assignme=
+nt to =E2=80=98const struct of_device_id *=E2=80=99 from =E2=80=98int=E2=80=
+=99 makes pointer from integer without a cast [-Wint-conversion]
+  541 |         match =3D of_match_device(tegra210_amx_of_match, dev);
+      |               ^
+cc1: some warnings being treated as errors
+
+multi_v7_defconfig is also broken.
+
+--K1Dh/zQH53UxpeTH
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmUdo10ACgkQJNaLcl1U
+h9Cx8gf/XCPMEtGS0YkOT48jnbRA+1YlgQJR8uZlu9+gze7VMTlA1QqBf04fiiA9
+I6p4yAWbk8inm8rqWm9T75tCz/xi0cZrcoQHPEFGYgneMyXkkoapTGe/PQbR9ZIT
+grUfha4+oIa2oZXQjYL1tV3U/hfjGjRG6dPR9n+92qlgwLfwdMUhOy7Nn752+xHF
+f6Igs59sXl5kvZTQVUb7Hkt9jfkBRz3QfUWiYcp9bJCblkEv9tWhi1YgLua+fUQY
+VjxE2e4zNB+Z2z3A9zlFKhTB/9yBIaRma+Qp3PElEYmsQQry9nRssA/aXS5Jccon
+7fWLNWj6wDBzZjKCwf69j2cORg/HHw==
+=RFjB
+-----END PGP SIGNATURE-----
+
+--K1Dh/zQH53UxpeTH--
