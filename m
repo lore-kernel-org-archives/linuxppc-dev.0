@@ -4,52 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56E4FE7C4E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 17:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FEF5E936E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 20:29:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OeKoTfCe;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h1x1dXpx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S126B2JpVz3cVy
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 04:40:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S15rT4L2lz3c3D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 07:29:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OeKoTfCe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h1x1dXpx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S125852Ykz307y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2023 04:39:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S15qT5Nh8z2yG9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2023 07:28:21 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id F1C3061635;
-	Wed,  4 Oct 2023 17:39:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14D07C433C7;
-	Wed,  4 Oct 2023 17:39:44 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id C357261712
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 20:28:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72DA3C433CB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2023 20:28:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1696441193;
-	bh=K/tg8/w4CVZM+MMZbqiJI4I0lw8Qwa2sMwfhdev7ubQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=OeKoTfCewQffVeEdL4VkIXNCVSD9d9NunmbLsCQ4KZkE5fGE3EzF5s2CJMEFTkFUR
-	 9+Rp0Lnw0r+oc+Gh5cs7EiGtRjCli4Pt6URVlEReTs6A8YRyKnMlwZuVSsvN5yl8ae
-	 nXnm9skgJdM3YBXLd0m7/YSlo87hzvKhk8PwH4P4i+Th69UGbjXYVgi82wU+QW8gDS
-	 TI0fbqAPstYUmGmbBYwsdfYqwZqe7LynkAtCAyxbEKu53rOqqPRSC9TsSL7q66drdJ
-	 IeRPQWuLX595ZGXfia1I+HXaRR8rGBrwp321J0JJdtnGTVTOmuXonAq7ANk6wMljxf
-	 w1+um5izaFBhA==
-Date: Wed, 4 Oct 2023 18:39:41 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/5] ASoC: Explicitly include correct DT includes
-Message-ID: <72f8f521-93f0-4e3d-929c-f7478622ddb3@sirena.org.uk>
-References: <20231004-dt-asoc-header-cleanups-v2-0-e77765080cbc@kernel.org>
- <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org>
+	s=k20201202; t=1696451297;
+	bh=ESQvJZctYiv8lN6ltsro47C1eNao1M4P8HhyGWJi1h4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=h1x1dXpxsW0znEXAMg1TsOxUEQAeL4mameKwEflZkI3ud72E4SfSnMLv4MTyPJOGK
+	 91xKEos+lnRlsdOawtcs1w7xjj/NrHk6TkQun8DsZU6AEJZ9kq8yvqhWsCcAP7ToV0
+	 3GMHy78dDOOJgAnAvr2ii/YekvQwjb2tiYwKcj8h+qj46tO8durP9jmgOwujcb89DT
+	 1Fcvt0BdxthkDKsconPNNWQjko1VboNg1Q5AJwRe7Wl23lo/dozWL04bt+Kplgmc+I
+	 i/sX6rb9bwFGm0GxmpG+U6qFYRmMILtd8DUJKRvdgDyKyyQ3S4+2RbKVtrvmaizWbG
+	 91yqWlSOeijRA==
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-2bfea381255so3116611fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2023 13:28:17 -0700 (PDT)
+X-Gm-Message-State: AOJu0YyaXiQRURMXytXrpyp0Cd4fAzk/zYE+IqwE/440Gl4MlyunwLal
+	ICiEw/oZKBYZWFkV6DLYpCeYa8uuuejeDtYjFg==
+X-Google-Smtp-Source: AGHT+IFXJfh8tz1TfG4klEB0mQGxX4Kz28T+ev5c9ShobOxqcsUhL+MV/lbeEpe9jSwPaddrVVnL759EryfLJI5QK0U=
+X-Received: by 2002:a05:6512:605:b0:503:1ca6:c590 with SMTP id
+ b5-20020a056512060500b005031ca6c590mr2798624lfe.22.1696451275113; Wed, 04 Oct
+ 2023 13:27:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="K1Dh/zQH53UxpeTH"
-Content-Disposition: inline
-In-Reply-To: <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org>
-X-Cookie: I thought YOU silenced the guard!
+References: <20231004-dt-asoc-header-cleanups-v2-0-e77765080cbc@kernel.org>
+ <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org> <72f8f521-93f0-4e3d-929c-f7478622ddb3@sirena.org.uk>
+In-Reply-To: <72f8f521-93f0-4e3d-929c-f7478622ddb3@sirena.org.uk>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 4 Oct 2023 15:27:42 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqLw6TKBsTee6U5Yfiz_T7WDt+1LZZNWzW1pL+z9bK5R0w@mail.gmail.com>
+Message-ID: <CAL_JsqLw6TKBsTee6U5Yfiz_T7WDt+1LZZNWzW1pL+z9bK5R0w@mail.gmail.com>
+Subject: Re: [PATCH v2 1/5] ASoC: Explicitly include correct DT includes
+To: Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,70 +73,24 @@ Cc: Cezary Rojewski <cezary.rojewski@intel.com>, Bard Liao <yung-chuan.liao@linu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Oct 4, 2023 at 12:39=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
+te:
+>
+> On Wed, Oct 04, 2023 at 10:58:05AM -0500, Rob Herring wrote:
+> > The DT of_device.h and of_platform.h date back to the separate
+> > of_platform_bus_type before it was merged into the regular platform bus=
+.
+> > As part of that merge prepping Arm DT support 13 years ago, they
+> > "temporarily" include each other. They also include platform_device.h
+> > and of.h. As a result, there's a pretty much random mix of those includ=
+e
+> > files used throughout the tree. In order to detangle these headers and
+> > replace the implicit includes with struct declarations, users need to
+> > explicitly include the correct includes.
+>
+> This is breaking various builds for me, for example arm64 defconfig:
 
---K1Dh/zQH53UxpeTH
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I believe I got some of the include changes in the wrong place. They
+should go into patch 5.
 
-On Wed, Oct 04, 2023 at 10:58:05AM -0500, Rob Herring wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it was merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
-
-This is breaking various builds for me, for example arm64 defconfig:
-
-/build/stage/linux/sound/soc/rockchip/rockchip_i2s_tdm.c: In function =E2=
-=80=98rockchip_i2s_tdm_probe=E2=80=99:
-/build/stage/linux/sound/soc/rockchip/rockchip_i2s_tdm.c:1557:17: error: im=
-plicit declaration of function =E2=80=98of_match_device=E2=80=99; did you m=
-ean =E2=80=98of_match_node=E2=80=99? [-Werror=3Dimplicit-function-declarati=
-on]
- 1557 |         of_id =3D of_match_device(rockchip_i2s_tdm_match, &pdev->de=
-v);
-      |                 ^~~~~~~~~~~~~~~
-      |                 of_match_node
-/build/stage/linux/sound/soc/rockchip/rockchip_i2s_tdm.c:1557:15: warning: =
-assignment to =E2=80=98const struct of_device_id *=E2=80=99 from =E2=80=98i=
-nt=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
- 1557 |         of_id =3D of_match_device(rockchip_i2s_tdm_match, &pdev->de=
-v);
-      |               ^
-/build/stage/linux/sound/soc/tegra/tegra210_amx.c: In function =E2=80=98teg=
-ra210_amx_platform_probe=E2=80=99:
-/build/stage/linux/sound/soc/tegra/tegra210_amx.c:541:17: error: implicit d=
-eclaration of function =E2=80=98of_match_device=E2=80=99; did you mean =E2=
-=80=98of_match_node=E2=80=99? [-Werror=3Dimplicit-function-declaration]
-  541 |         match =3D of_match_device(tegra210_amx_of_match, dev);
-      |                 ^~~~~~~~~~~~~~~
-      |                 of_match_node
-/build/stage/linux/sound/soc/tegra/tegra210_amx.c:541:15: warning: assignme=
-nt to =E2=80=98const struct of_device_id *=E2=80=99 from =E2=80=98int=E2=80=
-=99 makes pointer from integer without a cast [-Wint-conversion]
-  541 |         match =3D of_match_device(tegra210_amx_of_match, dev);
-      |               ^
-cc1: some warnings being treated as errors
-
-multi_v7_defconfig is also broken.
-
---K1Dh/zQH53UxpeTH
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmUdo10ACgkQJNaLcl1U
-h9Cx8gf/XCPMEtGS0YkOT48jnbRA+1YlgQJR8uZlu9+gze7VMTlA1QqBf04fiiA9
-I6p4yAWbk8inm8rqWm9T75tCz/xi0cZrcoQHPEFGYgneMyXkkoapTGe/PQbR9ZIT
-grUfha4+oIa2oZXQjYL1tV3U/hfjGjRG6dPR9n+92qlgwLfwdMUhOy7Nn752+xHF
-f6Igs59sXl5kvZTQVUb7Hkt9jfkBRz3QfUWiYcp9bJCblkEv9tWhi1YgLua+fUQY
-VjxE2e4zNB+Z2z3A9zlFKhTB/9yBIaRma+Qp3PElEYmsQQry9nRssA/aXS5Jccon
-7fWLNWj6wDBzZjKCwf69j2cORg/HHw==
-=RFjB
------END PGP SIGNATURE-----
-
---K1Dh/zQH53UxpeTH--
+Rob
