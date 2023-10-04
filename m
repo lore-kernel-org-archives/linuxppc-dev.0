@@ -4,84 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2652EE936E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 20:23:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93BFBE936EB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 22:06:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R5o8UGUA;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=tuxon.dev header.i=@tuxon.dev header.a=rsa-sha256 header.s=google header.b=N3u5NnMP;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S15kP5jBXz3vZ5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 07:23:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S180G064yz3cfy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 09:06:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R5o8UGUA;
+	dkim=pass (2048-bit key; secure) header.d=tuxon.dev header.i=@tuxon.dev header.a=rsa-sha256 header.s=google header.b=N3u5NnMP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tuxon.dev (client-ip=2a00:1450:4864:20::536; helo=mail-ed1-x536.google.com; envelope-from=claudiu.beznea@tuxon.dev; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S15fH6mq0z3c54
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2023 07:20:23 +1100 (AEDT)
-Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 394K6i6L032592;
-	Wed, 4 Oct 2023 20:20:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=60uuHAhjbFNbrxsW4mTGZK1/QN2qvb773gv1YRF42vM=;
- b=R5o8UGUAU/lfCoEiI9SCAAroTjs2TykkUyRzj3OwRAGCWVA1uYJcQekIosNGTn94Wlz9
- RDQWRA+9JHJtxjRQPALo6U97OKDhFJWwa15hY6gPUuXRZDO3IQkm0NXacSifFH2SWRMW
- lwCQfKvEZzQIGRpRT9KQipz9HyKB1X0r4GIC15J1qJqvE3woUMlZ19fHSMGos6FVOAhn
- dWvCT7WmQ2bytO5PCk2x9E7aNlgCpKJN5sEkCz97qJ5yhak5QHB5M1QnUutE6ICsELkk
- 9IVbwo1xoQrtG8qfn8Vt3Zv5Rm9VmsXVDqazUs4Coe0E95xsrUKJjmSoJimIZTzKsQNs 3g== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3thdm6j46h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Oct 2023 20:20:01 +0000
-Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 394K7dRg007199;
-	Wed, 4 Oct 2023 20:20:00 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3thdm6j460-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Oct 2023 20:20:00 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 394K8wHS006672;
-	Wed, 4 Oct 2023 20:19:59 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tf07kb642-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Oct 2023 20:19:59 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 394KJw482622066
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 4 Oct 2023 20:19:59 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C43205805B;
-	Wed,  4 Oct 2023 20:19:58 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1E08B58055;
-	Wed,  4 Oct 2023 20:19:58 +0000 (GMT)
-Received: from rhel-laptop.ibm.com (unknown [9.61.54.52])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  4 Oct 2023 20:19:58 +0000 (GMT)
-From: gjoyce@linux.vnet.ibm.com
-To: linux-block@vger.kernel.org, axboe@kernel.dk
-Subject: [PATCH v8 0/3] generic and PowerPC SED Opal keystore
-Date: Wed,  4 Oct 2023 15:19:54 -0500
-Message-Id: <20231004201957.1451669-1-gjoyce@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.39.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S10GZ6qdwz2yq4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2023 03:17:56 +1100 (AEDT)
+Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-538575a38ffso3980540a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2023 09:17:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=tuxon.dev; s=google; t=1696436273; x=1697041073; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=IboRMXWE799EUNN9JDL2Tv/P+eapXOiA7kGcWk1PU9o=;
+        b=N3u5NnMPleEFCNAX87ya9ZE+TziBtUminlkhDsIQE8YUAgviHfsaPqreZU447Lqdmp
+         brfWaRtap25BszlDJ3Dz7zeGlE6NAX2IfpyjhzGvaiqCbzcONBnvoXu6nse4cTRhlNyb
+         6GWpHzmxhT6FDaSqYG7OM6iMdYbRtQsrQdbtFencYbtP17jfYVztB7IaUPtDoAVI8MNd
+         wtLhNsnSAtia2yzpzxLBclV93QbDsJoYA8+70WjZQ1/oBHqessgUaA4KrrKAhm9MrY/l
+         N0YMB0d8kTFKnw1mdMiwCK/CfStvE0fF6NHZnxqSbIEuomEcHio2Pxx2M2zRGJUbziq4
+         cYrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696436273; x=1697041073;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=IboRMXWE799EUNN9JDL2Tv/P+eapXOiA7kGcWk1PU9o=;
+        b=UcuR7/HCBiRqUuDhclJ7/yTt3oMVpiZ3WGlfTGFOMkHG/cp8JpY70XHeAtsDAf3w06
+         ve5/7eWQADUPOhXAiasKvSQpDHtrjXUWQo916CTqMSoNXIwlHtTLG/o6oVJNx+pJiPt/
+         LgbL3BXb3xCgSDx90pCpOPx5w82X7gG1jb2qcinSviUtOVrGku+6fhwm4QaV+mc8B5cS
+         8eO7Gq7SQG/K9p3bxSqleEvKNyYSk2ZhuvBB4Lsz0BBONLAmjF7Ivopn790UwAhhy4Ko
+         r0Rfr7hl00hzB2MwctiTWKb6Z/SFchqwZpojBGCAH6w4damTVBn/HklxSjm8Am6Vv6Pn
+         ysDw==
+X-Gm-Message-State: AOJu0Yw8u8CdfQjzlap/66droLqya4HtJF6GdzYLhcu23g7VB1oVbpTC
+	hGw2HQoKVDxYjnNQIv18LLEzZg==
+X-Google-Smtp-Source: AGHT+IGxOeqnR4/4kozPd8vGztjp/+DmdrVb7jcdZSkFUd46at+lIJgvhTUzH7MccQN+WduUqYwZjw==
+X-Received: by 2002:aa7:c508:0:b0:523:100b:462b with SMTP id o8-20020aa7c508000000b00523100b462bmr2617775edq.5.1696436272722;
+        Wed, 04 Oct 2023 09:17:52 -0700 (PDT)
+Received: from [192.168.32.2] ([82.78.167.24])
+        by smtp.gmail.com with ESMTPSA id r17-20020aa7d151000000b005346bebc2a5sm76257edo.86.2023.10.04.09.17.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Oct 2023 09:17:52 -0700 (PDT)
+Message-ID: <72fb244b-e4b8-4eb2-cb20-1d3d37f813ab@tuxon.dev>
+Date: Wed, 4 Oct 2023 19:17:48 +0300
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: QNt4rnHyHauUo92tZB1p6o7Cl947Cxla
-X-Proofpoint-ORIG-GUID: 27DqnB4yWvIFe9Uk43lrHA5qVak4umQQ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-04_10,2023-10-02_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- priorityscore=1501 spamscore=0 mlxscore=0 bulkscore=0 lowpriorityscore=0
- malwarescore=0 phishscore=0 impostorscore=0 clxscore=1015 mlxlogscore=732
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310040148
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v2 1/5] ASoC: Explicitly include correct DT includes
+Content-Language: en-US
+To: Rob Herring <robh@kernel.org>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Peter Rosin <peda@axentia.se>, Lars-Peter Clausen <lars@metafoo.de>,
+ nuno.sa@analog.com, James Schulman <james.schulman@cirrus.com>,
+ David Rhodes <david.rhodes@cirrus.com>,
+ Richard Fitzgerald <rf@opensource.cirrus.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Shenghao Ding <shenghao-ding@ti.com>, Kevin Lu <kevin-lu@ti.com>,
+ Baojun Xu <baojun.xu@ti.com>, Oder Chiou <oder_chiou@realtek.com>,
+ Fabio Estevam <festevam@gmail.com>, Kiseok Jo <kiseok.jo@irondevice.com>,
+ Kevin Cernekee <cernekee@chromium.org>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+ Banajit Goswami <bgoswami@quicinc.com>,
+ Nicolas Frattaroli <frattaroli.nicolas@gmail.com>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+ Jarkko Nikula <jarkko.nikula@bitmer.com>,
+ Cezary Rojewski <cezary.rojewski@intel.com>,
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
+ Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+ Bard Liao <yung-chuan.liao@linux.intel.com>,
+ Ranjani Sridharan <ranjani.sridharan@linux.intel.com>,
+ Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+ Olivier Moysan <olivier.moysan@foss.st.com>,
+ Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>
+References: <20231004-dt-asoc-header-cleanups-v2-0-e77765080cbc@kernel.org>
+ <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org>
+From: claudiu beznea <claudiu.beznea@tuxon.dev>
+In-Reply-To: <20231004-dt-asoc-header-cleanups-v2-1-e77765080cbc@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Thu, 05 Oct 2023 09:05:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,80 +111,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gjoyce@linux.vnet.ibm.com, nayna@linux.ibm.com, ndesaulniers@google.com, nathan@kernel.org, okozina@redhat.com, jarkko@kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: Charles Keepax <ckeepax@opensource.cirrus.com>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Jernej Skrabec <jernej.skrabec@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-
-This patchset has gone through numerous rounds of review and
-all comments/suggetions have been addressed. The reviews have
-covered all relevant areas including reviews by block and keyring
-developers as well as the SED Opal maintainer.
-
-TCG SED Opal is a specification from The Trusted Computing Group
-that allows self encrypting storage devices (SED) to be locked at
-power on and require an authentication key to unlock the drive.
-
-PowerPC/pseries versions of key functions provide read/write access
-to SED Opal keys in the PLPKS keystore.
-
-The SED block driver has been modified to read the SED Opal
-keystore to populate a key in the SED Opal keyring. Changes to the
-SED Opal key will be written to the SED Opal keystore.
 
 
-Changelog
-v8:     - rebased to 6.6-rc4
-	- fixed issues using clang (thanks Nathan Chancellor and Nick
-	  Desaulniers)
-	- fixed crash if PLPKS is not present for pseries (thanks Michael
-	  Ellerman)
+On 04.10.2023 18:58, Rob Herring wrote:
+> The DT of_device.h and of_platform.h date back to the separate
+> of_platform_bus_type before it was merged into the regular platform bus.
+> As part of that merge prepping Arm DT support 13 years ago, they
+> "temporarily" include each other. They also include platform_device.h
+> and of.h. As a result, there's a pretty much random mix of those include
+> files used throughout the tree. In order to detangle these headers and
+> replace the implicit includes with struct declarations, users need to
+> explicitly include the correct includes.
+> 
+> Acked-by: Jernej Skrabec <jernej.skrabec@gmail.com>
+> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+> Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  sound/soc/atmel/atmel_wm8904.c                             | 1 -
+>  sound/soc/atmel/mchp-i2s-mcc.c                             | 2 +-
+>  sound/soc/atmel/tse850-pcm5142.c                           | 1 -
 
-v7:     - rebased to for-6.5/block
-
-v6:     - squashed two commits (suggested by Andrew Donnellan)
-
-v5:     - updated to reflect changes in PLPKS API
-
-v4:
-        - scope reduced to cover just SED Opal keys
-        - base SED Opal keystore is now in SED block driver
-        - removed use of enum to indicate type
-        - refactored common code into common function that read and
-          write use
-        - removed cast to void
-        - added use of SED Opal keystore functions to SED block driver
-
-v3:
-        - No code changes, but per reviewer requests, adding additional
-          mailing lists(keyring, EFI) for wider review.
-
-v2:
-        - Include feedback from Gregory Joyce, Eric Richter and
-          Murilo Opsfelder Araujo.
-        - Include suggestions from Michael Ellerman.
-        - Moved a dependency from generic SED code to this patchset.
-          This patchset now builds of its own.
-
-
-
-
-Greg Joyce (3):
-  block:sed-opal: SED Opal keystore
-  block: sed-opal: keystore access for SED Opal keys
-  powerpc/pseries: PLPKS SED Opal keystore support
-
- arch/powerpc/platforms/pseries/Kconfig        |   6 +
- arch/powerpc/platforms/pseries/Makefile       |   1 +
- .../powerpc/platforms/pseries/plpks_sed_ops.c | 131 ++++++++++++++++++
- block/Kconfig                                 |   1 +
- block/sed-opal.c                              |  18 ++-
- include/linux/sed-opal-key.h                  |  26 ++++
- 6 files changed, 181 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/plpks_sed_ops.c
- create mode 100644 include/linux/sed-opal-key.h
-
--- 
-gjoyce@linux.vnet.ibm.com
-
+Reviewed-by: Claudiu Beznea <claudiu.beznea@tuxon.dev> # for at91
