@@ -4,189 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 973ACE936EC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Oct 2023 22:11:06 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NqVtdmXP;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1976AE936FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 05:03:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S18611dn8z3vbp
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 09:11:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NqVtdmXP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=jlayton@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S1KFN3Dtwz3vcy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Oct 2023 16:03:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.216.51; helo=mail-pj1-f51.google.com; envelope-from=namhyung@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S13nH16hdz3c5S;
-	Thu,  5 Oct 2023 05:56:19 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id E28BDCE1E77;
-	Wed,  4 Oct 2023 18:56:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 675C9C433D9;
-	Wed,  4 Oct 2023 18:56:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1696445777;
-	bh=iC7KwsOJJL3kT0M8KubHc+xTYSGXLa7gjxgf1YgvBK8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=NqVtdmXPTE3K9q9deuJTm/G7a71zUKszCFqZsp5GIQNtA7H7/+QIS49PlOMCUfFNJ
-	 1ydyxG0x0Zhc5NXKKvQZoNb0pMC2bwR6porAQ3qOkvHn+oCaXipMdg5DIlUK6kK3dJ
-	 /qGaNm9SdmE2IDbECVrjFagXBbmQuihBc1Xhxlya1LZKKRDWQwFqYqNeRTG4/PcP8U
-	 fjxjbvBWhJKav9Mn2S5Lw52vmEkf02EL+EOCc8xxck+JdDNrgRWXBSojP+3KV6r6+j
-	 osY5RvD+bQgIMRf1FSVwxbtgizfCN1brIMaKXTHpZ/pGKsilyXHn7K+ZkEvj2U6B0B
-	 tzn7voxPB+lnw==
-From: Jeff Layton <jlayton@kernel.org>
-To: Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Sterba <dsterba@suse.cz>,
-	Amir Goldstein <amir73il@gmail.com>,
-	Theodore Ts'o <tytso@mit.edu>,
-	Eric Biederman <ebiederm@xmission.com>,
-	Kees Cook <keescook@chromium.org>,
-	Jeremy Kerr <jk@ozlabs.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	=?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-	Todd Kjos <tkjos@android.com>,
-	Martijn Coenen <maco@android.com>,
-	Joel Fernandes <joel@joelfernandes.org>,
-	Carlos Llamas <cmllamas@google.com>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Mattia Dongili <malattia@linux.it>,
-	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>,
-	Brad Warrum <bwarrum@linux.ibm.com>,
-	Ritu Agarwal <rituagar@linux.ibm.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Mark Gross <markgross@kernel.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Eric Van Hensbergen <ericvh@kernel.org>,
-	Latchesar Ionkov <lucho@ionkov.net>,
-	Dominique Martinet <asmadeus@codewreck.org>,
-	Christian Schoenebeck <linux_oss@crudebyte.com>,
-	David Sterba <dsterba@suse.com>,
-	David Howells <dhowells@redhat.com>,
-	Marc Dionne <marc.dionne@auristor.com>,
-	Ian Kent <raven@themaw.net>,
-	Luis de Bethencourt <luisbg@kernel.org>,
-	Salah Triki <salah.triki@gmail.com>,
-	"Tigran A. Aivazian" <aivazian.tigran@gmail.com>,
-	Chris Mason <clm@fb.com>,
-	Josef Bacik <josef@toxicpanda.com>,
-	Xiubo Li <xiubli@redhat.com>,
-	Ilya Dryomov <idryomov@gmail.com>,
-	Jan Harkes <jaharkes@cs.cmu.edu>,
-	coda@cs.cmu.edu,
-	Joel Becker <jlbec@evilplan.org>,
-	Christoph Hellwig <hch@lst.de>,
-	Nicolas Pitre <nico@fluxnic.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Gao Xiang <xiang@kernel.org>,
-	Chao Yu <chao@kernel.org>,
-	Yue Hu <huyue2@coolpad.com>,
-	Jeffle Xu <jefflexu@linux.alibaba.com>,
-	Namjae Jeon <linkinjeon@kernel.org>,
-	Sungjong Seo <sj1557.seo@samsung.com>,
-	Jan Kara <jack@suse.com>,
-	Andreas Dilger <adilger.kernel@dilger.ca>,
-	Jaegeuk Kim <jaegeuk@kernel.org>,
-	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-	Christoph Hellwig <hch@infradead.org>,
-	Miklos Szeredi <miklos@szeredi.hu>,
-	Bob Peterson <rpeterso@redhat.com>,
-	Andreas Gruenbacher <agruenba@redhat.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-	Mike Kravetz <mike.kravetz@oracle.com>,
-	Muchun Song <muchun.song@linux.dev>,
-	Jan Kara <jack@suse.cz>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Dave Kleikamp <shaggy@kernel.org>,
-	Tejun Heo <tj@kernel.org>,
-	Trond Myklebust <trond.myklebust@hammerspace.com>,
-	Anna Schumaker <anna@kernel.org>,
-	Chuck Lever <chuck.lever@oracle.com>,
-	Neil Brown <neilb@suse.de>,
-	Olga Kornievskaia <kolga@netapp.com>,
-	Dai Ngo <Dai.Ngo@oracle.com>,
-	Tom Talpey <tom@talpey.com>,
-	Ryusuke Konishi <konishi.ryusuke@gmail.com>,
-	Anton Altaparmakov <anton@tuxera.com>,
-	Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
-	Mark Fasheh <mark@fasheh.com>,
-	Joseph Qi <joseph.qi@linux.alibaba.com>,
-	Bob Copeland <me@bobcopeland.com>,
-	Mike Marshall <hubcap@omnibond.com>,
-	Martin Brandenburg <martin@omnibond.com>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Iurii Zaikin <yzaikin@google.com>,
-	Tony Luck <tony.luck@intel.com>,
-	"Guilherme G. Piccoli" <gpiccoli@igalia.com>,
-	Anders Larsen <al@alarsen.net>,
-	Steve French <sfrench@samba.org>,
-	Paulo Alcantara <pc@manguebit.com>,
-	Ronnie Sahlberg <lsahlber@redhat.com>,
-	Shyam Prasad N <sprasad@microsoft.com>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Phillip Lougher <phillip@squashfs.org.uk>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Evgeniy Dushistov <dushistov@mail.ru>,
-	Chandan Babu R <chandan.babu@oracle.com>,
-	"Darrick J. Wong" <djwong@kernel.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Naohiro Aota <naohiro.aota@wdc.com>,
-	Johannes Thumshirn <jth@kernel.org>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Martin KaFai Lau <martin.lau@linux.dev>,
-	Song Liu <song@kernel.org>,
-	Yonghong Song <yonghong.song@linux.dev>,
-	John Fastabend <john.fastabend@gmail.com>,
-	KP Singh <kpsingh@kernel.org>,
-	Stanislav Fomichev <sdf@google.com>,
-	Hao Luo <haoluo@google.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	Hugh Dickins <hughd@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	John Johansen <john.johansen@canonical.com>,
-	Paul Moore <paul@paul-moore.com>,
-	James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Stephen Smalley <stephen.smalley.work@gmail.com>,
-	Eric Paris <eparis@parisplace.org>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	Brian Foster <bfoster@redhat.com>
-Subject: [PATCH v2 89/89] fs: move i_generation into new hole created after timestamp conversion
-Date: Wed,  4 Oct 2023 14:55:30 -0400
-Message-ID: <20231004185530.82088-3-jlayton@kernel.org>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231004185530.82088-1-jlayton@kernel.org>
-References: <20231004185530.82088-1-jlayton@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S1KDr6RzNz2yVv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2023 16:02:35 +1100 (AEDT)
+Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-27760c31056so364044a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2023 22:02:35 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696482153; x=1697086953;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ucXGMM2wsWZRQUIgE61EwUCtxRL/wptAnVm0ckROPSc=;
+        b=mtpa0PpkFb3c4N+/mF6KzdzP7V9xrus+gRxBAvTTTb6dvVHaTxv6JSY2l+zIHfH+Fp
+         OzMdk5UuQHdunaKDA5AgEXge94EUh6Gnp42COU3OZLyq+LqSN9lnncI8q7l5Q2XfpuIu
+         mIvCS9X+V8FmVn1WWpe45gzHrUELovDoSdlnIxALfnNO+/cKEYe3SqagA1/0xalgkSXa
+         qY39a0WulSnnBTyuEMDbepdfF//lS5yxWEL6WBKQkHQsWHy9in15YsTTbmPRHmSyZ6hM
+         5Bs5zG9p1/IXHLvRxL3EWJLMsd277M2urP1cjMKX9Lckfq2ncm5pCAp+dSmaF7AfujlV
+         g2Cw==
+X-Gm-Message-State: AOJu0YxRXUrrZlrcKxN5k1lZKaKDIFx36KFaOzOA6YCOJsdOSJV0yqds
+	LS1ss2VOYz/Uk715LTWXvo3qbz9j6OtKbk/rl4I=
+X-Google-Smtp-Source: AGHT+IFcEDolgIB6QYHPmh5ef7Xci5FyI7BIz/Zahu5T5nGT9LDu5s5Q7rezmdB93yE13CCofmJWcfrMGf1+iG0cHcE=
+X-Received: by 2002:a17:90a:a38b:b0:274:99e7:217e with SMTP id
+ x11-20020a17090aa38b00b0027499e7217emr4008307pjp.16.1696482153357; Wed, 04
+ Oct 2023 22:02:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 05 Oct 2023 09:05:16 +1100
+References: <20230929041133.95355-1-atrajeev@linux.vnet.ibm.com> <20230929041133.95355-2-atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <20230929041133.95355-2-atrajeev@linux.vnet.ibm.com>
+From: Namhyung Kim <namhyung@kernel.org>
+Date: Wed, 4 Oct 2023 22:02:20 -0700
+Message-ID: <CAM9d7cj26Dpit3igZjybsbnotBiv_F8mEu62Aor+9bBhwVh55g@mail.gmail.com>
+Subject: Re: [PATCH 1/3] perf tests test_arm_coresight: Fix the shellcheck
+ warning in latest test_arm_coresight.sh
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
+	Mike Leach <mike.leach@linaro.org>, James Clark <james.clark@arm.com>, 
+	Leo Yan <leo.yan@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -198,44 +60,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jfs-discussion@lists.sourceforge.net, linux-efi@vger.kernel.org, platform-driver-x86@vger.kernel.org, gfs2@lists.linux.dev, linux-mm@kvack.org, linux-mtd@lists.infradead.org, linux-hardening@vger.kernel.org, linux-afs@lists.infradead.org, linux-s390@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-rdma@vger.kernel.org, linux-unionfs@vger.kernel.org, codalist@coda.cs.cmu.edu, linux-bcachefs@vger.kernel.org, linux-serial@vger.kernel.org, linux-ext4@vger.kernel.org, devel@lists.orangefs.org, linux-trace-kernel@vger.kernel.org, linux-cifs@vger.kernel.org, selinux@vger.kernel.org, apparmor@lists.ubuntu.com, autofs@vger.kernel.org, linux-um@lists.infradead.org, reiserfs-devel@vger.kernel.org, ocfs2-devel@lists.linux.dev, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org, v9fs@lists.linux.dev, linux-usb@vger.kernel.org, samba-technical@lists.samba.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourcef
- orge.net, linux-xfs@vger.kernel.org, linux-security-module@vger.kernel.org, netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, ntfs3@lists.linux.dev, linux-erofs@lists.ozlabs.org, linux-karma-devel@lists.sourceforge.net, linux-btrfs@vger.kernel.org
+Cc: irogers@google.com, maddy@linux.ibm.com, kjain@linux.ibm.com, adrian.hunter@intel.com, acme@kernel.org, linux-perf-users@vger.kernel.org, jolsa@kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The recent change to use discrete integers instead of struct timespec64
-shaved 8 bytes off of struct inode, but it also moves the i_lock
-into the previous cacheline, away from the fields that it protects.
+On Thu, Sep 28, 2023 at 9:11=E2=80=AFPM Athira Rajeev
+<atrajeev@linux.vnet.ibm.com> wrote:
+>
+> Running shellcheck on tests/shell/test_arm_coresight.sh
+> throws below warnings:
+>
+>         In tests/shell/test_arm_coresight.sh line 15:
+>         cs_etm_path=3D$(find  /sys/bus/event_source/devices/cs_etm/ -name=
+ cpu* -print -quit)
+>                   ^--^ SC2061: Quote the parameter to -name so the shell =
+won't interpret it.
+>
+>         In tests/shell/test_arm_coresight.sh line 20:
+>                 if [ $archhver -eq 5 -a "$(printf "0x%X\n" $archpart)" =
+=3D "0xA13" ] ; then
+>                                      ^-- SC2166: Prefer [ p ] && [ q ] as=
+ [ p -a q ] is not well defined
+>
+> This warning is observed after commit:
+> "commit bb350847965d ("perf test: Update cs_etm testcase for Arm ETE")"
+>
+> Fixed this issue by using quoting 'cpu*' for SC2061 and
+> using "&&" in line number 20 for SC2166 warning
+>
+> Fixes: bb350847965d ("perf test: Update cs_etm testcase for Arm ETE")
+> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-Move i_generation above the i_lock, which moves the new 4 byte hole to
-just after the i_fsnotify_mask in my setup.
+You'd better add Coresight folks on this.
+Maybe this file was missing in the MAINTAINERS file.
 
-Suggested-by: Amir Goldstein <amir73il@gmail.com>
-Signed-off-by: Jeff Layton <jlayton@kernel.org>
----
- include/linux/fs.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
+Namhyung
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 485b5e21c8e5..686c9f33e725 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -677,6 +677,7 @@ struct inode {
- 	u32			i_atime_nsec;
- 	u32			i_mtime_nsec;
- 	u32			i_ctime_nsec;
-+	u32			i_generation;
- 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
- 	unsigned short          i_bytes;
- 	u8			i_blkbits;
-@@ -733,7 +734,6 @@ struct inode {
- 		unsigned		i_dir_seq;
- 	};
- 
--	__u32			i_generation;
- 
- #ifdef CONFIG_FSNOTIFY
- 	__u32			i_fsnotify_mask; /* all events this inode cares about */
--- 
-2.41.0
 
+> ---
+>  tools/perf/tests/shell/test_arm_coresight.sh | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/tools/perf/tests/shell/test_arm_coresight.sh b/tools/perf/te=
+sts/shell/test_arm_coresight.sh
+> index fe78c4626e45..f2115dfa24a5 100755
+> --- a/tools/perf/tests/shell/test_arm_coresight.sh
+> +++ b/tools/perf/tests/shell/test_arm_coresight.sh
+> @@ -12,12 +12,12 @@
+>  glb_err=3D0
+>
+>  cs_etm_dev_name() {
+> -       cs_etm_path=3D$(find  /sys/bus/event_source/devices/cs_etm/ -name=
+ cpu* -print -quit)
+> +       cs_etm_path=3D$(find  /sys/bus/event_source/devices/cs_etm/ -name=
+ 'cpu*' -print -quit)
+>         trcdevarch=3D$(cat ${cs_etm_path}/mgmt/trcdevarch)
+>         archhver=3D$((($trcdevarch >> 12) & 0xf))
+>         archpart=3D$(($trcdevarch & 0xfff))
+>
+> -       if [ $archhver -eq 5 -a "$(printf "0x%X\n" $archpart)" =3D "0xA13=
+" ] ; then
+> +       if [ $archhver -eq 5 ] && [ "$(printf "0x%X\n" $archpart)" =3D "0=
+xA13" ] ; then
+>                 echo "ete"
+>         else
+>                 echo "etm"
+> --
+> 2.31.1
+>
