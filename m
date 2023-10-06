@@ -4,75 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4AD1E94115
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 20:12:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBB40E94118
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 21:02:09 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qOrAH9W5;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S2KNf46xxz3vfp
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 07:12:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.47; helo=mail-ot1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com [209.85.210.47])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S2LTX28Z7z3vcj
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 08:02:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qOrAH9W5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S2KKB233Dz3vZF
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 07:09:50 +1100 (AEDT)
-Received: by mail-ot1-f47.google.com with SMTP id 46e09a7af769-6c7b3adbeb6so1707579a34.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2023 13:09:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696622987; x=1697227787;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=A+OCongk6Hb4BlpU4QfeNnEcgzo8GaBxo0N0PgFWYnw=;
-        b=Uo9AHG695V0+NxL99IMdMbeNmRUZaRWOoqo8EUgHlHoi5/3SAJR4X5ylxa4Bhj0Ovx
-         QY+hZW4W0xswdXOhzfPIhx6/Zk3kYs/+/+Pts/nuUd3LIB328gTspVHrTwIg6KnvPic+
-         L9qlal3wtkwePD88RV+Y7GPsws2RhW0WKpzP6E7LpTJlxIxNzWVg4zpj84KZHA2H0ZrT
-         AcOHvkWA5tKjSNf+OOTaP5eP+JxfVCveU/PKdReO0xLYDqusVXD9gOBPimfFX2elyLDD
-         B0QnmfVqB+8wQ2Nsohe+0vKJJGs0RBJCrlb+1955vs+GwzvmZo9OIy/d8+khC1tzcrdb
-         Jb+w==
-X-Gm-Message-State: AOJu0YxmQbVSayfmrhbMr0IjCKg4mE11t9yhojFRC4q74b/2HIZ5Na8q
-	56zgYliYyKyW/9BkrqtlZQ==
-X-Google-Smtp-Source: AGHT+IH7p3RI8WF5mlWccwSKg4dOKG/CNbO8ToEojOS1DN/EOweO0LBTKMQmzqXXejIioJEYMYtiWA==
-X-Received: by 2002:a05:6830:1502:b0:6bf:1f5f:ed18 with SMTP id k2-20020a056830150200b006bf1f5fed18mr8505526otp.1.1696622987671;
-        Fri, 06 Oct 2023 13:09:47 -0700 (PDT)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id v8-20020a9d7d08000000b006c4be829aa8sm679959otn.44.2023.10.06.13.09.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Oct 2023 13:09:47 -0700 (PDT)
-Received: (nullmailer pid 229129 invoked by uid 1000);
-	Fri, 06 Oct 2023 20:09:30 -0000
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 06 Oct 2023 15:09:12 -0500
-Subject: [PATCH v3 3/5] ASoC: da7218: Use i2c_get_match_data()
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S2LSV6c1Kz2xLW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 08:01:14 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 1A24DCE292D;
+	Fri,  6 Oct 2023 21:01:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 56079C433C9;
+	Fri,  6 Oct 2023 21:01:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1696626071;
+	bh=gD5zWIEFJgJXoW5g2bj+wCQiuzqjW8LQN3JI9oGwy+E=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=qOrAH9W5oCTd3bTOalkPjTbfoKeob6UtlTXyEIVGJ6W7W0e09Phf5nxheV/Z6RiKk
+	 te3nhJSjt54znnT4jyghE7sGvB8qPCCiVMQpSnyVt4okMx6KX+tqoNcd9I/zC/BoOY
+	 MjCClGfD6N1HltWTyb9Xstooaeoz+RP8VDYvORrgK/GjJsClfrSV1iClqqAXoGvKNJ
+	 Vu0/Ug5Q41PjxQ1kTrX0UdgP5wDGhpq1vI0nHB3S/QaA068QtkswQpaOpJDy+cMcwy
+	 o0mURposcz0uKtTwrSoleuawfzMULwbYxuh/XtdGQK+fjm47F9Xe5zrP9hZ3DYac1T
+	 Za8Zzlv4CE0+g==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A39EE94116;
+	Fri,  6 Oct 2023 21:01:11 +0000 (UTC)
+From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
+Date: Fri, 06 Oct 2023 16:01:04 -0500
+Subject: [PATCH 1/7] powerpc/uapi: export papr-miscdev.h header
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231006-dt-asoc-header-cleanups-v3-3-13a4f0f7fee6@kernel.org>
-References: <20231006-dt-asoc-header-cleanups-v3-0-13a4f0f7fee6@kernel.org>
-In-Reply-To: <20231006-dt-asoc-header-cleanups-v3-0-13a4f0f7fee6@kernel.org>
-To: Mark Brown <broonie@kernel.org>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Peter Rosin <peda@axentia.se>, 
-	Lars-Peter Clausen <lars@metafoo.de>, nuno.sa@analog.com, 
-	James Schulman <james.schulman@cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
-	Richard Fitzgerald <rf@opensource.cirrus.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Shenghao Ding <shenghao-ding@ti.com>, Kevin Lu <kevin-lu@ti.com>, Baojun Xu <baojun.xu@ti.com>, 
-	Oder Chiou <oder_chiou@realtek.com>, Fabio Estevam <festevam@gmail.com>, 
-	Kiseok Jo <kiseok.jo@irondevice.com>, Kevin Cernekee <cernekee@chromium.org>, 
-	Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
-	Nicolin Chen <nicoleotsuka@gmail.com>, 
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Banajit Goswami <bgoswami@quicinc.com>, 
-	Nicolas Frattaroli <frattaroli.nicolas@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 
-	Ban Tao <fengzheng923@gmail.com>, Peter Ujfalusi <peter.ujfalusi@gmail.com>, 
-	Jarkko Nikula <jarkko.nikula@bitmer.com>, Cezary Rojewski <cezary.rojewski@intel.com>, 
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, 
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
-	Bard Liao <yung-chuan.liao@linux.intel.com>, 
-	Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, 
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>, Olivier Moysan <olivier.moysan@foss.st.com>, 
-	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>
-X-Mailer: b4 0.13-dev
+Message-Id:  <20231006-papr-sys_rtas-vs-lockdown-v1-1-3a36bfb66e2e@linux.ibm.com>
+References:  <20231006-papr-sys_rtas-vs-lockdown-v1-0-3a36bfb66e2e@linux.ibm.com>
+In-Reply-To:  <20231006-papr-sys_rtas-vs-lockdown-v1-0-3a36bfb66e2e@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1696626070; l=765;
+ i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
+ bh=JMz2KShlBYHoqW3y8kJSBWwgwMz0qhqY8agvfGwn8cc=;
+ b=7Hs21euIUWv/t9La9rFTQFvqgrLAVP9nPwJWjuVIrXLNDmviLZm8vPWefM4IqO9pg4qzbxtVx
+ 8h1BtfAgynrBD+KsZ+XcZYh58hG6iWm191kPIWc8MQKj/39VWHMYOfH
+X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
+ pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
+X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
+X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,98 +73,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: nathanl@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, tyreld@linux.ibm.com, gcwilson@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use preferred i2c_get_match_data() instead of of_match_device() and
-i2c_match_id() to get the driver match data. With this, adjust the
-includes to explicitly include the correct headers.
+From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Avoid using 0 for enum da7218_dev_id so that no match data can be
-distinguished.
+Allocate one identifying code (the first column of the ioctl-number
+table) for the collection of PAPR miscdev drivers to share.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- sound/soc/codecs/da7218.c | 29 ++---------------------------
- sound/soc/codecs/da7218.h |  2 +-
- 2 files changed, 3 insertions(+), 28 deletions(-)
+ arch/powerpc/include/uapi/asm/papr-miscdev.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/sound/soc/codecs/da7218.c b/sound/soc/codecs/da7218.c
-index 3f456b08b809..8aacd7350798 100644
---- a/sound/soc/codecs/da7218.c
-+++ b/sound/soc/codecs/da7218.c
-@@ -9,7 +9,7 @@
- 
- #include <linux/clk.h>
- #include <linux/i2c.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/pm.h>
-@@ -2285,16 +2285,6 @@ static const struct of_device_id da7218_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, da7218_of_match);
- 
--static inline int da7218_of_get_id(struct device *dev)
--{
--	const struct of_device_id *id = of_match_device(da7218_of_match, dev);
--
--	if (id)
--		return (uintptr_t)id->data;
--	else
--		return -EINVAL;
--}
--
- static enum da7218_micbias_voltage
- 	da7218_of_micbias_lvl(struct snd_soc_component *component, u32 val)
- {
-@@ -3253,18 +3243,6 @@ static const struct regmap_config da7218_regmap_config = {
-  * I2C layer
-  */
- 
--static const struct i2c_device_id da7218_i2c_id[];
--
--static inline int da7218_i2c_get_id(struct i2c_client *i2c)
--{
--	const struct i2c_device_id *id = i2c_match_id(da7218_i2c_id, i2c);
--
--	if (id)
--		return (uintptr_t)id->driver_data;
--	else
--		return -EINVAL;
--}
--
- static int da7218_i2c_probe(struct i2c_client *i2c)
- {
- 	struct da7218_priv *da7218;
-@@ -3276,10 +3254,7 @@ static int da7218_i2c_probe(struct i2c_client *i2c)
- 
- 	i2c_set_clientdata(i2c, da7218);
- 
--	if (i2c->dev.of_node)
--		da7218->dev_id = da7218_of_get_id(&i2c->dev);
--	else
--		da7218->dev_id = da7218_i2c_get_id(i2c);
-+	da7218->dev_id = (uintptr_t)i2c_get_match_data(i2c);
- 
- 	if ((da7218->dev_id != DA7217_DEV_ID) &&
- 	    (da7218->dev_id != DA7218_DEV_ID)) {
-diff --git a/sound/soc/codecs/da7218.h b/sound/soc/codecs/da7218.h
-index 9ac2892092b5..7f6a4aea2c7a 100644
---- a/sound/soc/codecs/da7218.h
-+++ b/sound/soc/codecs/da7218.h
-@@ -1369,7 +1369,7 @@ enum da7218_sys_clk {
- };
- 
- enum da7218_dev_id {
--	DA7217_DEV_ID = 0,
-+	DA7217_DEV_ID = 1,
- 	DA7218_DEV_ID,
- };
- 
+diff --git a/arch/powerpc/include/uapi/asm/papr-miscdev.h b/arch/powerpc/include/uapi/asm/papr-miscdev.h
+new file mode 100644
+index 000000000000..49a2a270b7f3
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/papr-miscdev.h
+@@ -0,0 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++#ifndef _UAPI_PAPR_MISCDEV_H_
++#define _UAPI_PAPR_MISCDEV_H_
++
++enum {
++	PAPR_MISCDEV_IOC_ID = 0xb2,
++};
++
++#endif /* _UAPI_PAPR_MISCDEV_H_ */
 
 -- 
-2.40.1
+2.41.0
 
