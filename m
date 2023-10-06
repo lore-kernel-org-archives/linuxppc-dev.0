@@ -4,87 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFFF8E81E1B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 17:39:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B274E81E1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 18:14:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EzyQijSs;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BOWZxJeS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S2FzN3wVQz3vZL
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 04:39:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S2Glp1mtwz3cgW
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 05:14:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EzyQijSs;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BOWZxJeS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S2FyN6Dw9z2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 04:38:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S2Gkn4nqvz2xdd
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 05:13:21 +1100 (AEDT)
 Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 396Hbjgi009815;
-	Fri, 6 Oct 2023 17:38:12 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 396IC3kl027033;
+	Fri, 6 Oct 2023 18:13:04 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
  mime-version : subject : to : cc : references : from : in-reply-to :
  content-type : content-transfer-encoding; s=pp1;
- bh=uxxHa3gtcS8tX++vMQQNXrvraUKYgQw08AzzGzo6DoU=;
- b=EzyQijSsWwM2RwrO1Cjg+R1WbP327n1P8/hE4eBvKeKQX/ShFJm2zjdKiTbZABD3NPOQ
- 1bORqzfrANZymKCZClixanv2fItohNiLPWK+1BEGfwAm7BKNfKOKQHjMrKV68kcn3AaN
- AStlbBij1MnFtxbldJxZrlEFyYD3dQKK3G7h5SvVsGi3amO4pxD+OHH9D0Kk/uP8+Hdi
- OHhVBKnUV0DCI3qhfPTRQUx+qDx2qZifm4OdrZ9JboNy8AvgqKbsoZDKtLpyu92+DmqZ
- C2o+SMiJ0zxWevMMAtRCxoRLaDyZHXYGEYDAxCgPCiIKq0SyZYqfWIG28CqpE4z1UMhZ bA== 
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tjpt0g0p0-1
+ bh=uG89KsPrCmOIbR7tpcHiLM6LXCzlK59QVw5m4kwOAjg=;
+ b=BOWZxJeS8DSAkFT9+9xNfEabc6F1FrTZkLs7dctXDho+KFz/y16nwyW5C5n6oYoyks+H
+ Um2v4PiTdZcJiLOv+ywZ95bqb6kazDleeqG0HomUDExbDOMw+2GmDnELiMuLg2EvMJLI
+ Vaayg9y437+ry3S0H/oRMfnBLKq7YkmiG+02ALur0zEh5UHo4XqfLGYsVkPQ/LGxYMZw
+ Tsj+ANnETVeEnrWeNPI9D5T5zqdq9uL2olsATszr0+P8sLfeXEtFv9QbfNxaTo+qEHpE
+ Rv5hR5+6qF5eGEpW8CWgVCMy6mupkQHj+4F6nJT4JDeleNe72VQCxT5X6ywEmD/u4pk+ RQ== 
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tjqa980wv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 17:38:11 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 396HXux4006692;
-	Fri, 6 Oct 2023 17:38:10 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tf07mj7xt-31
+	Fri, 06 Oct 2023 18:13:03 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 396HmNMK007428;
+	Fri, 6 Oct 2023 18:12:50 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3teygn3cxx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 17:38:10 +0000
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 396GGJAL18154212
+	Fri, 06 Oct 2023 18:12:49 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 396IClr724838844
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 6 Oct 2023 16:16:19 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4C4D558057;
-	Fri,  6 Oct 2023 16:16:19 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3267058062;
-	Fri,  6 Oct 2023 16:16:19 +0000 (GMT)
-Received: from [9.61.60.170] (unknown [9.61.60.170])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  6 Oct 2023 16:16:19 +0000 (GMT)
-Message-ID: <e801c312-1a07-01f8-66ec-1aedd8052f26@linux.ibm.com>
-Date: Fri, 6 Oct 2023 11:16:19 -0500
+	Fri, 6 Oct 2023 18:12:48 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD26020040;
+	Fri,  6 Oct 2023 18:12:47 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 612A42004D;
+	Fri,  6 Oct 2023 18:12:46 +0000 (GMT)
+Received: from [9.43.70.9] (unknown [9.43.70.9])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  6 Oct 2023 18:12:46 +0000 (GMT)
+Message-ID: <159f0096-5b39-04c4-aaea-64e0742fb192@linux.ibm.com>
+Date: Fri, 6 Oct 2023 23:42:45 +0530
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: KUEP broken on FSP2?
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v5 1/5] powerpc/code-patching: introduce
+ patch_instructions()
 Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <fdaadc46-7476-9237-e104-1d2168526e72@linux.ibm.com>
- <11fda331-f3b8-57e2-1073-b6b2b40deea5@csgroup.eu>
- <e2e0caaa-571c-f131-1697-00b218c6febe@linux.ibm.com>
- <ea34f1f6-7b40-06e7-5b76-1ae08440375a@csgroup.eu>
-From: Eddie James <eajames@linux.ibm.com>
-In-Reply-To: <ea34f1f6-7b40-06e7-5b76-1ae08440375a@csgroup.eu>
+To: Song Liu <song@kernel.org>
+References: <20230928194818.261163-1-hbathini@linux.ibm.com>
+ <20230928194818.261163-2-hbathini@linux.ibm.com>
+ <CAPhsuW6o+4STm0AUviP_M8c-xK9Y7Uzke1zouEsEreggVBofkw@mail.gmail.com>
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <CAPhsuW6o+4STm0AUviP_M8c-xK9Y7Uzke1zouEsEreggVBofkw@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: _Hs0Iw0Xm5eZrSXK_4UVkuJ6dOACZLE4
-X-Proofpoint-ORIG-GUID: _Hs0Iw0Xm5eZrSXK_4UVkuJ6dOACZLE4
+X-Proofpoint-GUID: SoWxSm9TO-cFq6udCp4aS4lULbVqSwyU
+X-Proofpoint-ORIG-GUID: SoWxSm9TO-cFq6udCp4aS4lULbVqSwyU
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-06_13,2023-10-06_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
- adultscore=0 priorityscore=1501 suspectscore=0 bulkscore=0 impostorscore=0
- spamscore=0 phishscore=0 mlxlogscore=999 lowpriorityscore=0 clxscore=1015
+ definitions=2023-10-06_15,2023-10-06_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ mlxscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 mlxlogscore=582
+ spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1015 phishscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2309180000
- definitions=main-2310060132
+ definitions=main-2310060137
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,133 +95,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "paulus@samba.org" <paulus@samba.org>
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, bpf@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Thanks for the review, Song.
 
-On 10/6/23 10:55, Christophe Leroy wrote:
-> Hi,
->
-> Le 06/10/2023 à 17:43, Eddie James a écrit :
->> On 10/6/23 00:21, Christophe Leroy wrote:
->>> Hi,
->>>
->>> Le 05/10/2023 à 21:06, Eddie James a écrit :
->>>> Hi,
->>>>
->>>> I'm attempting to run linux 6.1 on my FSP2, but my kernel crashes
->>>> attempting to get into userspace. The init script works, but the first
->>>> binary (mount) I run results in oops. Can anyone help me to debug this
->>>> further or suggest anything?
->>> I can't see anything in your dump suggesting that KUEP is broken, can
->>> you ?
->>>
->>> What I see is that kernel tries to execute user memory, which is wrong.
->>> And KUEP perfectly works by blocking that access. There is no call
->>> trace, suggesting that the kernel has jumped in the weed.
+On 29/09/23 2:38 am, Song Liu wrote:
+> On Thu, Sep 28, 2023 at 12:48 PM Hari Bathini <hbathini@linux.ibm.com> wrote:
 >>
->> Right, the function works as intended, but the fact remains that I can't
->> call anything in userspace (except init) without the kernel trying to
->> execute that memory. I saw KUEP in the commit history and it seemed
->> relevant, but I could certainly be mistaken. Can anyone think of
->> anything else that might cause this? Or how I can debug further?
+>> patch_instruction() entails setting up pte, patching the instruction,
+>> clearing the pte and flushing the tlb. If multiple instructions need
+>> to be patched, every instruction would have to go through the above
+>> drill unnecessarily. Instead, introduce function patch_instructions()
+>> that sets up the pte, clears the pte and flushes the tlb only once per
+>> page range of instructions to be patched. This adds a slight overhead
+>> to patch_instruction() call while improving the patching time for
+>> scenarios where more than one instruction needs to be patched.
 >>
+>> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> 
+> Acked-by: Song Liu <song@kernel.org>
+> 
+> With a nit below.
+> 
+> [...]
+>> +/*
+>> + * A page is mapped and instructions that fit the page are patched.
+>> + * Assumes 'len' to be (PAGE_SIZE - offset_in_page(addr)) or below.
+>> + */
+>> +static int __do_patch_instructions_mm(u32 *addr, void *code, size_t len, bool repeat_instr)
+>>   {
+>>          int err;
+>>          u32 *patch_addr;
+>> @@ -307,11 +336,15 @@ static int __do_patch_instruction_mm(u32 *addr, ppc_inst_t instr)
 >>
->> I went ahead and removed the couple of lines of assembly that enabled
->> KUEP on 44x and tried again. Now I get a crash in load_elf_binary. NIP
->> is the kfree(elf_phdata) and LR is garbage, so not entirely sure where
->> it actually crashed...
-> Which confirms that KUEP is not the culprit.
-
-
-Right.
-
-
->
-> By the way when booting a bamboo defconfig on QEMU I have to problem.
-
-
-Yes FSP2 is a bit "special"...
-
-
->
-> Apparently KUEP for 4xx appears in Kernel 5.14.
->
-> Do you know of a kernel version that works ?
->
-> Can you check 5.14 (you have to explicitely select KUEP in that version,
-> it is not forced yet) ?
->
-> Once you have a good version, then what about a bisect ?
-
-
-Yea 5.10 works. I'll try 5.14. I was hoping to avoid a bisect as my 
-build and test process for this platform is quite time consuming.
-
-
-Thanks,
-
-Eddie
-
-
->
-> Christophe
->
+>>          orig_mm = start_using_temp_mm(patching_mm);
 >>
->> Thanks,
->>
->> Eddie
->>
->>
->>> Christophe
->>>
->>>> Thanks,
->>>>
->>>> Eddie
->>>>
->>>>
->>>> [    1.042743] kernel tried to execute user page (b7ee2000) - exploit
->>>> attempt? (
->>>> uid: 0)
->>>> [    1.042846] BUG: Unable to handle kernel instruction fetch
->>>> [    1.042919] Faulting instruction address: 0xb7ee2000
->>>> [    1.042986] Oops: Kernel access of bad area, sig: 11 [#1]
->>>> [    1.043059] BE PAGE_SIZE=4K FSP-2
->>>> [    1.043106] Modules linked in:
->>>> [    1.043149] CPU: 0 PID: 61 Comm: mount Not tainted
->>>> 6.1.55-d23900f.ppcnf-fsp2
->>>> #1
->>>> [    1.043249] Hardware name: ibm,fsp2 476fpe 0x7ff520c0 FSP-2
->>>> [    1.043323] NIP:  b7ee2000 LR: 8c008000 CTR: 00000000
->>>> [    1.043392] REGS: bffebd83 TRAP: 0400   Not tainted
->>>> (6.1.55-d23900f.ppcnf-fs
->>>> p2)
->>>> [    1.043491] MSR:  00000030 <IR,DR>  CR: 00001000  XER: 20000000
->>>> [    1.043579]
->>>> [    1.043579] GPR00: c00110ac bffebe63 bffebe7e bffebe88 8c008000
->>>> 00001000 0000
->>>> 0d12 b7ee2000
->>>> [    1.043579] GPR08: 00000033 00000000 00000000 c139df10 48224824
->>>> 1016c314 1016
->>>> 0000 00000000
->>>> [    1.043579] GPR16: 10160000 10160000 00000008 00000000 10160000
->>>> 00000000 1016
->>>> 0000 1017f5b0
->>>> [    1.043579] GPR24: 1017fa50 1017f4f0 1017fa50 1017f740 1017f630
->>>> 00000000 0000
->>>> 0000 1017f4f0
->>>> [    1.044101] NIP [b7ee2000] 0xb7ee2000
->>>> [    1.044153] LR [8c008000] 0x8c008000
->>>> [    1.044204] Call Trace:
->>>> [    1.044238] Instruction dump:
->>>> [    1.044279] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
->>>> XXXXXXXX XX
->>>> XXXXXX
->>>> [    1.044392] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
->>>> XXXXXXXX XX
->>>> XXXXXX
->>>> [    1.044506] ---[ end trace 0000000000000000 ]---
->>>> [    1.044568]
->>>> [    1.044590] note: mount[61] exited with irqs disabled
->>>>
+>> -       err = __patch_instruction(addr, instr, patch_addr);
+>> +       /* Single instruction case. */
+>> +       if (len == 0) {
+>> +               err = __patch_instruction(addr, *(ppc_inst_t *)code, patch_addr);
+> 
+> len == 0 for single instruction is a little weird to me. How about we just use
+> len == 4 or 8 depending on the instruction to patch?
+
+Yeah. Looks a bit weird but it avoids the need to call ppc_inst_read()
+& ppc_inst_len(). A comment explaining why this weird check could
+have been better though..
+
+Thanks
+Hari
