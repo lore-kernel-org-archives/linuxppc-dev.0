@@ -4,52 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77AD6E95A7E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 22:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAD19E95A67
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 23:37:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CyilkWGn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ghst8dG0;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S30xZ1417z3cl3
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 09:55:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S31tZ71Gqz3cg1
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 10:37:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CyilkWGn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ghst8dG0;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tasmiya@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S30wd5m7Cz3bPM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Oct 2023 09:54:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1696719265;
-	bh=nbk6q9Yf8RtraLdUwwm6uSKRHWkNNpARqVFKgzAyVkY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=CyilkWGntWBxGsb8/XLbizmV96t6hMY+W0oQpxspY3WK2Zh0/R+joh7+C88GFimV3
-	 6I5g2B4Dt2Xy+wj9DW/HuxK8tyxrSKxDPP7oNzaxvdscosPR/vDjlFPma8eZgFv6+G
-	 uQ/RHEyrZOZ4Ga1RPNBGnPQAKoEcdrniyh0eOgpfh44rH+bJaeiBGUPMx8MWSQU7UY
-	 LNh2tKDZ5Hn1nHnyTit7RGBb6gLwaex8nvFzsEQxmBY98k0X6xlE+Ot6LEQwu9o8dz
-	 tlT32psHUtCIwAtIXIHSWPGI1WDqRVZQnxpg6bO5PFz5v8KTolLpb8r45OssLtfpBu
-	 Ejp+7pALj8xzQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S30wb2SbSz4x7V;
-	Sun,  8 Oct 2023 09:54:23 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Ryan Roberts
- <ryan.roberts@arm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v6 4/9] mm: thp: Introduce anon_orders and
- anon_always_mask sysfs files
-In-Reply-To: <20230929155530.a51e68e03e47a06b6b84c689@linux-foundation.org>
-References: <20230929114421.3761121-1-ryan.roberts@arm.com>
- <20230929114421.3761121-5-ryan.roberts@arm.com>
- <20230929155530.a51e68e03e47a06b6b84c689@linux-foundation.org>
-Date: Sun, 08 Oct 2023 09:54:22 +1100
-Message-ID: <87fs2mrqld.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S28L16JFCz3cSJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 00:24:57 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 396D2MwY015236;
+	Fri, 6 Oct 2023 13:24:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ message-id : date : subject : to : cc : references : from : in-reply-to :
+ mime-version; s=pp1; bh=L+T6lFE7JWTCY6TXOpkbAgUgnwrpwuwEf+ukjzpnwKs=;
+ b=Ghst8dG0yoT5K1Pt1pWhwrxXd51UgcFdassplpw88sA6Of/1zmk5DT9oCQUqFCYo5nSN
+ 9osg0I4uutPkl8arCgP3WJFVnI9Kt83xChjhS8ye0JOTDXLcuEvSKtHjf7PNH2rKL50w
+ MeOQTLOJtULwWMdWLgc66SfUW7Yd38EnIbEbF5dUGgscMZ3iqW1vYb394o13AyO0+xOK
+ N/WVQgrMzffAJfMSzb/K7/FmyQz6hTuMUCAYPcpv6o8tSLrr+bBmrD5Bqj4V7fQ3YwML
+ WNxb6dux2u/KN2vEIbl+vOyJzsA+ISaXrLyeiQLHEkiKiaGgJKN/uyjSMcwnFAHPP/aL dA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tjjs28qnu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 06 Oct 2023 13:24:28 +0000
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 396DA2Mc011833;
+	Fri, 6 Oct 2023 13:24:20 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tjjs28pvs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 06 Oct 2023 13:24:20 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 396CtOg0005868;
+	Fri, 6 Oct 2023 13:22:11 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tex0u4chs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 06 Oct 2023 13:22:11 +0000
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 396DK8in62914976
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 6 Oct 2023 13:20:08 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0135D58067;
+	Fri,  6 Oct 2023 13:20:08 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2CC4358062;
+	Fri,  6 Oct 2023 13:20:02 +0000 (GMT)
+Received: from [9.171.83.242] (unknown [9.171.83.242])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  6 Oct 2023 13:20:01 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------yfix7TZyBa6O9vu3Xq2dxoEP"
+Message-ID: <7ce42090-a768-ba3d-bd27-e86bc076ee57@linux.vnet.ibm.com>
+Date: Fri, 6 Oct 2023 18:50:00 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [Bisected] [commit 2ad56efa80db] [Hotplug] WARNING while
+ performing hotplug operation on 6.6-rc3-next
+Content-Language: en-US
+To: Jason Gunthorpe <jgg@nvidia.com>
+References: <92db426f-4a31-9c2c-e23a-85a8d353fbae@linux.vnet.ibm.com>
+ <20231006113644.GN682044@nvidia.com>
+From: Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com>
+In-Reply-To: <20231006113644.GN682044@nvidia.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: KkzaBFMvirpzS_twIfSTN_9PJJ-DUN4T
+X-Proofpoint-ORIG-GUID: uEPdQtd5QCNkF2o_QrTpOrkwjwFTeE-W
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-06_10,2023-10-06_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
+ clxscore=1015 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ spamscore=0 adultscore=0 priorityscore=1501 mlxlogscore=941 malwarescore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2310060099
+X-Mailman-Approved-At: Sun, 08 Oct 2023 10:36:54 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,99 +102,218 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, David Rientjes <rientjes@google.com>, Yu Zhao <yuzhao@google.com>, John Hubbard <jhubbard@nvidia.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Yang Shi <shy828301@gmail.com>, David Hildenbrand <david@redhat.com>, Hugh Dickins <hughd@google.com>, Yin Fengwei <fengwei.yin@intel.com>, Matthew Wilcox <willy@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Luis Chamberlain <mcgrof@kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Zi Yan <ziy@nvidia.com>, "Huang, Ying" <ying.huang@intel.com>, Itaru Kitayama <itaru.kitayama@gmail.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: sachinp@linux.vnet.com, jroedel@suse.de, will@kernel.org, linux-arm-msm@vger.kernel.org, joro@8bytes.org, jsnitsel@redhat.com, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, abdhalee@linux.vnet.ibm.com, iommu@lists.linux.dev, linux-next@vger.kernel.org, mputtash@linux.vnet.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, baolu.lu@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Morton <akpm@linux-foundation.org> writes:
-> On Fri, 29 Sep 2023 12:44:15 +0100 Ryan Roberts <ryan.roberts@arm.com> wrote:
+This is a multi-part message in MIME format.
+--------------yfix7TZyBa6O9vu3Xq2dxoEP
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Greetings,
+
+Thanks Jason.
+
+The fix provided by you works. It is not giving WARNING's but i am 
+seeing below logs. Would you please confirm on the logs.
+
+https://lore.kernel.org/all/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com/
+
+[  152.342125] pci 0013:60:00.0: No hypervisor support for SR-IOV on 
+this device, IOV BARs disabled.
+[  152.344896] pci 0013:60:00.0: PME# supported from D0 D3hot D3cold
+[  152.348936] pci 0013:60:00.0: Adding to iommu group 0
+[  152.349944] pci 0013:60:00.1: No hypervisor support for SR-IOV on 
+this device, IOV BARs disabled.
+[  152.352701] pci 0013:60:00.1: PME# supported from D0 D3hot D3cold
+[  152.356520] pci 0013:60:00.1: Adding to iommu group 0
+[  152.356527] iommu_tce: it_map is not empty
+[  152.357501] pci 0013:60:00.2: No hypervisor support for SR-IOV on 
+this device, IOV BARs disabled.
+[  152.360247] pci 0013:60:00.2: PME# supported from D0 D3hot D3cold
+[  152.364070] pci 0013:60:00.2: Adding to iommu group 0
+[  152.364075] *iommu_tce: it_map is not empty*
+[  152.365043] pci 0013:60:00.3: No hypervisor support for SR-IOV on 
+this device, IOV BARs disabled.
+[  152.367790] pci 0013:60:00.3: PME# supported from D0 D3hot D3cold
+[  152.371635] pci 0013:60:00.3: Adding to iommu group 0
+[  152.371641] iommu_tce: it_map is not empty
+[  152.371720] pci 0013:60:00.0: of_irq_parse_pci: no interrupt-map 
+found, INTx interrupts not available
+[  152.408351] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.408376] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+*[  152.408404] tg3 0013:60:00.0: DMA engine test failed, aborting**
+**[  152.408557] tg3: probe of 0013:60:00.0 failed with error -12*
+[  152.408583] pci 0013:60:00.1: Adding to iommu group 0
+[  152.408589] iommu_tce: it_map is not empty
+[  152.408656] pci 0013:60:00.1: of_irq_parse_pci: no interrupt-map 
+found, INTx interrupts not available
+[  152.448321] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.448339] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.448360] tg3 0013:60:00.1: DMA engine test failed, aborting
+[  152.448497] tg3: probe of 0013:60:00.1 failed with error -12
+[  152.448519] pci 0013:60:00.2: Adding to iommu group 0
+[  152.448525] iommu_tce: it_map is not empty
+[  152.448586] pci 0013:60:00.2: of_irq_parse_pci: no interrupt-map 
+found, INTx interrupts not available
+[  152.488323] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.488340] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.488362] tg3 0013:60:00.2: DMA engine test failed, aborting
+[  152.488495] tg3: probe of 0013:60:00.2 failed with error -12
+[  152.488516] pci 0013:60:00.3: Adding to iommu group 0
+[  152.488523] iommu_tce: it_map is not empty
+[  152.488581] pci 0013:60:00.3: of_irq_parse_pci: no interrupt-map 
+found, INTx interrupts not available
+[  152.528342] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.528359] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA is 
+limited by 800002000000000
+[  152.528381] tg3 0013:60:00.3: DMA engine test failed, aborting
+[  152.528515] tg3: probe of 0013:60:00.3 failed with error -12
+
+On 10/6/23 17:06, Jason Gunthorpe wrote:
+> On Fri, Oct 06, 2023 at 01:20:17PM +0530, Tasmiya Nalatwad wrote:
+>> Greetings,
+>>
+>> [linux-next] [6.6.0-rc3-next-20230929] WARNING: CPU: 5 PID: 185612 at
+>> drivers/iommu/iommu.c:3049  iommu_setup_default_domain+0x410/0x680
+>>
+>> --- Traces ---
+>>
+>> [ 6296.425934] WARNING: CPU: 5 PID: 185612 at drivers/iommu/iommu.c:3049
+>> iommu_setup_default_domain+0x410/0x680
+> Does this fix it too? I think it should?
 >
->> In preparation for adding support for anonymous large folios that are
->> smaller than the PMD-size, introduce 2 new sysfs files that will be used
->> to control the new behaviours via the transparent_hugepage interface.
->> For now, the kernel still only supports PMD-order anonymous THP, so when
->> reading back anon_orders, it will reflect that. Therefore there are no
->> behavioural changes intended here.
+> https://lore.kernel.org/r/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com
 >
-> powerpc strikes again.  ARCH=powerpc allmodconfig:
->
->
-> In file included from ./include/linux/bits.h:6,
->                  from ./include/linux/ratelimit_types.h:5,
->                  from ./include/linux/printk.h:9,
->                  from ./include/asm-generic/bug.h:22,
->                  from ./arch/powerpc/include/asm/bug.h:116,
->                  from ./include/linux/bug.h:5,
->                  from ./include/linux/mmdebug.h:5,
->                  from ./include/linux/mm.h:6,
->                  from mm/huge_memory.c:8:
-> ./include/vdso/bits.h:7:33: error: initializer element is not constant
->     7 | #define BIT(nr)                 (UL(1) << (nr))
->       |                                 ^
-> mm/huge_memory.c:77:47: note: in expansion of macro 'BIT'
->    77 | unsigned int huge_anon_orders __read_mostly = BIT(PMD_ORDER);
->       |                                               ^~~
->
-> We keep tripping over this.  I wish there was a way to fix it.
+> Jason
 
-I can't think of any solution, other than ripping the code out.
+-- 
+Regards,
+Tasmiya Nalatwad
+IBM Linux Technology Center
 
-To catch it earlier we'd need a generic compile-time test that all values
-derived from the page table geometry are only used in places that don't
-require a constant. I can't think of a way to write a test for that.
+--------------yfix7TZyBa6O9vu3Xq2dxoEP
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Or submitters could compile-test for powerpc - one can dream :D
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p>Greetings,</p>
+    <p>Thanks Jason. <br>
+    </p>
+    <p>The fix provided by you works. It is not giving WARNING's but i
+      am seeing below logs. Would you please confirm on the logs.<br>
+    </p>
+    <p><a class="moz-txt-link-freetext" href="https://lore.kernel.org/all/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com/">https://lore.kernel.org/all/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com/</a></p>
+    <p>[  152.342125] pci 0013:60:00.0: No hypervisor support for SR-IOV
+      on this device, IOV BARs disabled.<br>
+      [  152.344896] pci 0013:60:00.0: PME# supported from D0 D3hot
+      D3cold<br>
+      [  152.348936] pci 0013:60:00.0: Adding to iommu group 0<br>
+      [  152.349944] pci 0013:60:00.1: No hypervisor support for SR-IOV
+      on this device, IOV BARs disabled.<br>
+      [  152.352701] pci 0013:60:00.1: PME# supported from D0 D3hot
+      D3cold<br>
+      [  152.356520] pci 0013:60:00.1: Adding to iommu group 0<br>
+      [  152.356527] iommu_tce: it_map is not empty<br>
+      [  152.357501] pci 0013:60:00.2: No hypervisor support for SR-IOV
+      on this device, IOV BARs disabled.<br>
+      [  152.360247] pci 0013:60:00.2: PME# supported from D0 D3hot
+      D3cold<br>
+      [  152.364070] pci 0013:60:00.2: Adding to iommu group 0<br>
+      [  152.364075] <b>iommu_tce: it_map is not empty</b><br>
+      [  152.365043] pci 0013:60:00.3: No hypervisor support for SR-IOV
+      on this device, IOV BARs disabled.<br>
+      [  152.367790] pci 0013:60:00.3: PME# supported from D0 D3hot
+      D3cold<br>
+      [  152.371635] pci 0013:60:00.3: Adding to iommu group 0<br>
+      [  152.371641] iommu_tce: it_map is not empty<br>
+      [  152.371720] pci 0013:60:00.0: of_irq_parse_pci: no
+      interrupt-map found, INTx interrupts not available<br>
+      [  152.408351] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.408376] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      <b>[  152.408404] tg3 0013:60:00.0: DMA engine test failed,
+        aborting</b><b><br>
+      </b><b>[  152.408557] tg3: probe of 0013:60:00.0 failed with error
+        -12</b><br>
+      [  152.408583] pci 0013:60:00.1: Adding to iommu group 0<br>
+      [  152.408589] iommu_tce: it_map is not empty<br>
+      [  152.408656] pci 0013:60:00.1: of_irq_parse_pci: no
+      interrupt-map found, INTx interrupts not available<br>
+      [  152.448321] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.448339] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.448360] tg3 0013:60:00.1: DMA engine test failed, aborting<br>
+      [  152.448497] tg3: probe of 0013:60:00.1 failed with error -12<br>
+      [  152.448519] pci 0013:60:00.2: Adding to iommu group 0<br>
+      [  152.448525] iommu_tce: it_map is not empty<br>
+      [  152.448586] pci 0013:60:00.2: of_irq_parse_pci: no
+      interrupt-map found, INTx interrupts not available<br>
+      [  152.488323] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.488340] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.488362] tg3 0013:60:00.2: DMA engine test failed, aborting<br>
+      [  152.488495] tg3: probe of 0013:60:00.2 failed with error -12<br>
+      [  152.488516] pci 0013:60:00.3: Adding to iommu group 0<br>
+      [  152.488523] iommu_tce: it_map is not empty<br>
+      [  152.488581] pci 0013:60:00.3: of_irq_parse_pci: no
+      interrupt-map found, INTx interrupts not available<br>
+      [  152.528342] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.528359] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA
+      is limited by 800002000000000<br>
+      [  152.528381] tg3 0013:60:00.3: DMA engine test failed, aborting<br>
+      [  152.528515] tg3: probe of 0013:60:00.3 failed with error -12<br>
+      <br>
+    </p>
+    <div class="moz-cite-prefix">On 10/6/23 17:06, Jason Gunthorpe
+      wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:20231006113644.GN682044@nvidia.com">
+      <pre class="moz-quote-pre" wrap="">On Fri, Oct 06, 2023 at 01:20:17PM +0530, Tasmiya Nalatwad wrote:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">Greetings,
 
-> Style whine: an all-caps identifier is supposed to be a constant,
-> dammit.
->
-> 	#define PTE_INDEX_SIZE  __pte_index_size
->
-> Nope.
+[linux-next] [6.6.0-rc3-next-20230929] WARNING: CPU: 5 PID: 185612 at
+drivers/iommu/<a class="moz-txt-link-freetext" href="iommu.c:3049">iommu.c:3049</a> iommu_setup_default_domain+0x410/0x680
 
-I agree it's ugly. It was done that way because PTE_INDEX_SIZE used to
-be constant, and still is for 32-bit PPC and 64-bit Book3E PPC.
+--- Traces ---
 
-We could rename PTE_INDEX_SIZE itself, but we'd still have eg.
-PTE_TABLE_SIZE which is used in generic code, and which would be
-sometimes constant and sometimes not for different powerpc subarches.
+[ 6296.425934] WARNING: CPU: 5 PID: 185612 at drivers/iommu/<a class="moz-txt-link-freetext" href="iommu.c:3049">iommu.c:3049</a>
+iommu_setup_default_domain+0x410/0x680
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+Does this fix it too? I think it should?
 
-> I did this:
->
-> --- a/mm/huge_memory.c~mm-thp-introduce-anon_orders-and-anon_always_mask-sysfs-files-fix
-> +++ a/mm/huge_memory.c
-> @@ -74,7 +74,7 @@ static unsigned long deferred_split_scan
->  static atomic_t huge_zero_refcount;
->  struct page *huge_zero_page __read_mostly;
->  unsigned long huge_zero_pfn __read_mostly = ~0UL;
-> -unsigned int huge_anon_orders __read_mostly = BIT(PMD_ORDER);
-> +unsigned int huge_anon_orders __read_mostly;
->  static unsigned int huge_anon_always_mask __read_mostly;
->  
->  /**
-> @@ -528,6 +528,9 @@ static int __init hugepage_init_sysfs(st
->  {
->  	int err;
->  
-> +	/* powerpc's PMD_ORDER isn't a compile-time constant */
-> +	huge_anon_orders = BIT(PMD_ORDER);
-> +
->  	*hugepage_kobj = kobject_create_and_add("transparent_hugepage", mm_kobj);
->  	if (unlikely(!*hugepage_kobj)) {
->  		pr_err("failed to create transparent hugepage kobject\n");
-> _
->
->
-> I assume this is set up early enough.
+<a class="moz-txt-link-freetext" href="https://lore.kernel.org/r/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com">https://lore.kernel.org/r/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com</a>
 
-Yes it should be.
+Jason
+</pre>
+    </blockquote>
+    <pre class="moz-signature" cols="72">-- 
+Regards,
+Tasmiya Nalatwad
+IBM Linux Technology Center</pre>
+  </body>
+</html>
 
-> I don't know why powerpc's PTE_INDEX_SIZE is variable.
+--------------yfix7TZyBa6O9vu3Xq2dxoEP--
 
-To allow a single vmlinux to boot using either the Hashed Page Table
-MMU, or Radix Tree MMU, which have different page table geometry.
-
-That's a pretty crucial feature for distros, so that they can build a
-single kernel to boot on Power8/9/10.
-
-cheers
