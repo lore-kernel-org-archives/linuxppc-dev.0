@@ -4,92 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAD19E95A67
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 23:37:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1283E95A67
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 23:38:34 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ghst8dG0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iWV9RYpD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S31tZ71Gqz3cg1
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 10:37:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S31vY0tkkz3cdV
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 10:38:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ghst8dG0;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iWV9RYpD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tasmiya@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=ansuelsmth@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S28L16JFCz3cSJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 00:24:57 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 396D2MwY015236;
-	Fri, 6 Oct 2023 13:24:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- message-id : date : subject : to : cc : references : from : in-reply-to :
- mime-version; s=pp1; bh=L+T6lFE7JWTCY6TXOpkbAgUgnwrpwuwEf+ukjzpnwKs=;
- b=Ghst8dG0yoT5K1Pt1pWhwrxXd51UgcFdassplpw88sA6Of/1zmk5DT9oCQUqFCYo5nSN
- 9osg0I4uutPkl8arCgP3WJFVnI9Kt83xChjhS8ye0JOTDXLcuEvSKtHjf7PNH2rKL50w
- MeOQTLOJtULwWMdWLgc66SfUW7Yd38EnIbEbF5dUGgscMZ3iqW1vYb394o13AyO0+xOK
- N/WVQgrMzffAJfMSzb/K7/FmyQz6hTuMUCAYPcpv6o8tSLrr+bBmrD5Bqj4V7fQ3YwML
- WNxb6dux2u/KN2vEIbl+vOyJzsA+ISaXrLyeiQLHEkiKiaGgJKN/uyjSMcwnFAHPP/aL dA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tjjs28qnu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 13:24:28 +0000
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 396DA2Mc011833;
-	Fri, 6 Oct 2023 13:24:20 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tjjs28pvs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 13:24:20 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 396CtOg0005868;
-	Fri, 6 Oct 2023 13:22:11 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tex0u4chs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 13:22:11 +0000
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 396DK8in62914976
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 6 Oct 2023 13:20:08 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0135D58067;
-	Fri,  6 Oct 2023 13:20:08 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2CC4358062;
-	Fri,  6 Oct 2023 13:20:02 +0000 (GMT)
-Received: from [9.171.83.242] (unknown [9.171.83.242])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  6 Oct 2023 13:20:01 +0000 (GMT)
-Content-Type: multipart/alternative;
- boundary="------------yfix7TZyBa6O9vu3Xq2dxoEP"
-Message-ID: <7ce42090-a768-ba3d-bd27-e86bc076ee57@linux.vnet.ibm.com>
-Date: Fri, 6 Oct 2023 18:50:00 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Subject: Re: [Bisected] [commit 2ad56efa80db] [Hotplug] WARNING while
- performing hotplug operation on 6.6-rc3-next
-Content-Language: en-US
-To: Jason Gunthorpe <jgg@nvidia.com>
-References: <92db426f-4a31-9c2c-e23a-85a8d353fbae@linux.vnet.ibm.com>
- <20231006113644.GN682044@nvidia.com>
-From: Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com>
-In-Reply-To: <20231006113644.GN682044@nvidia.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: KkzaBFMvirpzS_twIfSTN_9PJJ-DUN4T
-X-Proofpoint-ORIG-GUID: uEPdQtd5QCNkF2o_QrTpOrkwjwFTeE-W
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S2HcZ45Rgz3clc
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2023 05:53:02 +1100 (AEDT)
+Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-32167a4adaaso2156547f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2023 11:53:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1696618378; x=1697223178; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:subject:cc:to:from:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=X70lVOFCcfRrz5BPTne6oD5pXVKA4lkjxXDB0TaolDY=;
+        b=iWV9RYpDVaGNkKUrwFg8N+LQWjQlWuwk7zh8gPGCDJgVWsY8vkkJaacdY7sEfGDqDw
+         JEbQvVl6E4/2yeyklHfcvt0GuhKiDiyFrg/dzOFFYdPhZjM2NWGOmDfK8TaHtgsSNf2r
+         Tv2cWRCUvl4MBvBwruiclLKKWE+sRvkyV7jzZYeKdImH5FpKJK/LVTFmbh4TkFS+bZJY
+         kSuOKO83WhXQUiWQ636so6MO352UZBUnCpKXpueX+GKF8um5dbT6tNSdXjLmwYCg6z5d
+         UVKJNTUN4xkNQTnfGtyT7j89ARm6VaplSmA4PdFKl9Q/82nTmh29VjAiRSUVnqdJvGg4
+         qH2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696618378; x=1697223178;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:subject:cc:to:from:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=X70lVOFCcfRrz5BPTne6oD5pXVKA4lkjxXDB0TaolDY=;
+        b=m99PAqvnPGUtWzb0Yb8M6nk2fQ7aNAqZ048+P7GG6hWX2MJWvcrqy8sHr0cID7EeWm
+         PzDRcCKaiQqskDL44WwGxxEuJd6VF6/sAgwI6QdraoIyNhRaTxRRWzUijIek1HVaQi+/
+         h5VG/RrT2kuvVjmRiZo2gvm8Tsi/QElYN4UaJRl7S++Af4O0IJOg8NyWh8g0gfbahIUA
+         XkEDXdpnti/M6WaHpLiiC9AMMNmivPsTdRDRH5gu1a05OcfHvyZtbVKf1CCVRxLMKd7t
+         kSz86+AbAMUi9tEZsxjfbJbSEoZVZuFcZeB320sggwjAk5iu/ARBOyu0cuwzqIKZEFnD
+         2Iow==
+X-Gm-Message-State: AOJu0YwQpxhaRVyh8rRZaQFs6IVApEK7fgvGhu4rOl5TZuItjmBbrxkq
+	bz6kpNRiaNhZGxByr4iQGnE=
+X-Google-Smtp-Source: AGHT+IG8xdl5PYYzmkg371/9IVLxOcEUg0/AO4c3FMmCpHBI1rBYraaud13cZvVNCZmgDH81LCr6PA==
+X-Received: by 2002:a5d:4d8e:0:b0:324:7bdd:678e with SMTP id b14-20020a5d4d8e000000b003247bdd678emr7728648wru.60.1696618377892;
+        Fri, 06 Oct 2023 11:52:57 -0700 (PDT)
+Received: from Ansuel-xps. (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
+        by smtp.gmail.com with ESMTPSA id h9-20020a5d5489000000b003179d5aee67sm2231805wrv.94.2023.10.06.11.52.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 Oct 2023 11:52:57 -0700 (PDT)
+Message-ID: <65205789.5d0a0220.7e49b.ccb0@mx.google.com>
+X-Google-Original-Message-ID: <ZSBXiecYhFuSdjkC@Ansuel-xps.>
+Date: Fri, 6 Oct 2023 20:52:57 +0200
+From: Christian Marangi <ansuelsmth@gmail.com>
+To: Eric Dumazet <edumazet@google.com>
+Subject: Re: [net-next PATCH v2 3/4] netdev: replace napi_reschedule with
+ napi_schedule
+References: <20231003145150.2498-1-ansuelsmth@gmail.com>
+ <20231003145150.2498-3-ansuelsmth@gmail.com>
+ <CANn89iK226C-pHUJm7HKMyEtMycGC=KCA2M6kw2KJaUj0cCT6w@mail.gmail.com>
+ <20231005093253.2e25533a@kernel.org>
+ <CANn89iJQ50AdXP2C1YB2pGjE02WCJ-QCsZqE1yGXtcGsfLA0Jw@mail.gmail.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-06_10,2023-10-06_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
- clxscore=1015 lowpriorityscore=0 suspectscore=0 impostorscore=0
- spamscore=0 adultscore=0 priorityscore=1501 mlxlogscore=941 malwarescore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310060099
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANn89iJQ50AdXP2C1YB2pGjE02WCJ-QCsZqE1yGXtcGsfLA0Jw@mail.gmail.com>
 X-Mailman-Approved-At: Sun, 08 Oct 2023 10:36:54 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,218 +86,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp@linux.vnet.com, jroedel@suse.de, will@kernel.org, linux-arm-msm@vger.kernel.org, joro@8bytes.org, jsnitsel@redhat.com, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, abdhalee@linux.vnet.ibm.com, iommu@lists.linux.dev, linux-next@vger.kernel.org, mputtash@linux.vnet.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, baolu.lu@linux.intel.com
+Cc: Andrew Lunn <andrew@lunn.ch>, Sergey Ryazanov <ryazanov.s.a@gmail.com>, Ziwei Xiao <ziweixiao@google.com>, Chris Snook <chris.snook@gmail.com>, Rick Lindsley <ricklind@linux.ibm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Krzysztof Halasa <khalasa@piap.pl>, Yuri Karpov <YKarpov@ispras.ru>, netdev@vger.kernel.org, ath10k@lists.infradead.org, Dany Madden <danymadden@us.ibm.com>, Gregory Greenman <gregory.greenman@intel.com>, Zhengchao Shao <shaozhengchao@huawei.com>, Chiranjeevi Rapolu <chiranjeevi.rapolu@linux.intel.com>, Dawei Li <set_pte_at@outlook.com>, Intel Corporation <linuxwwan@intel.com>, Rob Herring <robh@kernel.org>, Jeroen de Borst <jeroendb@google.com>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, Lee Jones <lee@kernel.org>, Haren Myneni <haren@linux.ibm.com>, linux-stm32@st-md-mailman.stormreply.com, Rushil Gupta <rushilg@google.com>, Jason Gunthorpe <jgg@ziepe.ca>, Thomas Falcon <tlfalcon@linux.ibm.com>, Jose Abreu <joabreu@synopsys.com>,
+  Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, linux-wireless@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>, Wolfgang Grandegger <wg@grandegger.com>, Nick Child <nnac123@linux.ibm.com>, Simon Horman <horms@kernel.org>, Liu Haijun <haijun.liu@mediatek.com>, Kalle Valo <kvalo@kernel.org>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-can@vger.kernel.org, Yuanjun Gong <ruc_gongyuanjun@163.com>, Shailend Chand <shailend@google.com>, Marc Kleine-Budde <mkl@pengutronix.de>, Benjamin Berg <benjamin.berg@intel.com>, M Chetan Kumar <m.chetan.kumar@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Coco Li <lixiaoyan@google.com>, linux-arm-kernel@lists.infradead.org, Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>, Ricardo Martinez <ricardo.martinez@linux.intel.com>, Loic Poulain <loic.poulain@linaro.org>, Zheng Zengkai <zhengzengkai@huawei.com>, Maximilian Lu
+ z <luzmaximilian@gmail.com>, Anjaneyulu <pagadala.yesu.anjaneyulu@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Douglas Miller <dougmill@linux.ibm.com>, linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Junfeng Guo <junfeng.guo@intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Raju Rangoju <rajur@chelsio.com>, Praveen Kaligineedi <pkaligineedi@google.com>, Johannes Berg <johannes@sipsolutions.net>, Jeff Johnson <quic_jjohnson@quicinc.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------yfix7TZyBa6O9vu3Xq2dxoEP
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+On Thu, Oct 05, 2023 at 06:41:03PM +0200, Eric Dumazet wrote:
+> On Thu, Oct 5, 2023 at 6:32 PM Jakub Kicinski <kuba@kernel.org> wrote:
+> >
+> > On Thu, 5 Oct 2023 18:11:56 +0200 Eric Dumazet wrote:
+> > > OK, but I suspect some users of napi_reschedule() might not be race-free...
+> >
+> > What's the race you're thinking of?
+> 
+> This sort of thing... the race is in fl_starving() though...
+> 
+> diff --git a/drivers/net/ethernet/chelsio/cxgb4/sge.c
+> b/drivers/net/ethernet/chelsio/cxgb4/sge.c
+> index 98dd78551d89..b5ff2e1a9975 100644
+> --- a/drivers/net/ethernet/chelsio/cxgb4/sge.c
+> +++ b/drivers/net/ethernet/chelsio/cxgb4/sge.c
+> @@ -4261,7 +4261,7 @@ static void sge_rx_timer_cb(struct timer_list *t)
+> 
+>                         if (fl_starving(adap, fl)) {
+>                                 rxq = container_of(fl, struct sge_eth_rxq, fl);
+> -                               if (napi_reschedule(&rxq->rspq.napi))
+> +                               if (napi_schedule(&rxq->rspq.napi))
+>                                         fl->starving++;
+>                                 else
+>                                         set_bit(id, s->starving_fl);
 
-Greetings,
+Ehhh problem is that this is a simple rename so if any race is present,
+it's already there and not caused by this rename :(
 
-Thanks Jason.
+Don't know maybe this is out of scope and should be investigated with a
+bug report?
 
-The fix provided by you works. It is not giving WARNING's but i am 
-seeing below logs. Would you please confirm on the logs.
-
-https://lore.kernel.org/all/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com/
-
-[  152.342125] pci 0013:60:00.0: No hypervisor support for SR-IOV on 
-this device, IOV BARs disabled.
-[  152.344896] pci 0013:60:00.0: PME# supported from D0 D3hot D3cold
-[  152.348936] pci 0013:60:00.0: Adding to iommu group 0
-[  152.349944] pci 0013:60:00.1: No hypervisor support for SR-IOV on 
-this device, IOV BARs disabled.
-[  152.352701] pci 0013:60:00.1: PME# supported from D0 D3hot D3cold
-[  152.356520] pci 0013:60:00.1: Adding to iommu group 0
-[  152.356527] iommu_tce: it_map is not empty
-[  152.357501] pci 0013:60:00.2: No hypervisor support for SR-IOV on 
-this device, IOV BARs disabled.
-[  152.360247] pci 0013:60:00.2: PME# supported from D0 D3hot D3cold
-[  152.364070] pci 0013:60:00.2: Adding to iommu group 0
-[  152.364075] *iommu_tce: it_map is not empty*
-[  152.365043] pci 0013:60:00.3: No hypervisor support for SR-IOV on 
-this device, IOV BARs disabled.
-[  152.367790] pci 0013:60:00.3: PME# supported from D0 D3hot D3cold
-[  152.371635] pci 0013:60:00.3: Adding to iommu group 0
-[  152.371641] iommu_tce: it_map is not empty
-[  152.371720] pci 0013:60:00.0: of_irq_parse_pci: no interrupt-map 
-found, INTx interrupts not available
-[  152.408351] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.408376] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-*[  152.408404] tg3 0013:60:00.0: DMA engine test failed, aborting**
-**[  152.408557] tg3: probe of 0013:60:00.0 failed with error -12*
-[  152.408583] pci 0013:60:00.1: Adding to iommu group 0
-[  152.408589] iommu_tce: it_map is not empty
-[  152.408656] pci 0013:60:00.1: of_irq_parse_pci: no interrupt-map 
-found, INTx interrupts not available
-[  152.448321] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.448339] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.448360] tg3 0013:60:00.1: DMA engine test failed, aborting
-[  152.448497] tg3: probe of 0013:60:00.1 failed with error -12
-[  152.448519] pci 0013:60:00.2: Adding to iommu group 0
-[  152.448525] iommu_tce: it_map is not empty
-[  152.448586] pci 0013:60:00.2: of_irq_parse_pci: no interrupt-map 
-found, INTx interrupts not available
-[  152.488323] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.488340] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.488362] tg3 0013:60:00.2: DMA engine test failed, aborting
-[  152.488495] tg3: probe of 0013:60:00.2 failed with error -12
-[  152.488516] pci 0013:60:00.3: Adding to iommu group 0
-[  152.488523] iommu_tce: it_map is not empty
-[  152.488581] pci 0013:60:00.3: of_irq_parse_pci: no interrupt-map 
-found, INTx interrupts not available
-[  152.528342] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.528359] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA is 
-limited by 800002000000000
-[  152.528381] tg3 0013:60:00.3: DMA engine test failed, aborting
-[  152.528515] tg3: probe of 0013:60:00.3 failed with error -12
-
-On 10/6/23 17:06, Jason Gunthorpe wrote:
-> On Fri, Oct 06, 2023 at 01:20:17PM +0530, Tasmiya Nalatwad wrote:
->> Greetings,
->>
->> [linux-next] [6.6.0-rc3-next-20230929] WARNING: CPU: 5 PID: 185612 at
->> drivers/iommu/iommu.c:3049  iommu_setup_default_domain+0x410/0x680
->>
->> --- Traces ---
->>
->> [ 6296.425934] WARNING: CPU: 5 PID: 185612 at drivers/iommu/iommu.c:3049
->> iommu_setup_default_domain+0x410/0x680
-> Does this fix it too? I think it should?
->
-> https://lore.kernel.org/r/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com
->
-> Jason
+Maybe this should be changed to prep/__schedule to prevent any kind of
+race? But doing so doesn't prevent any kind of ""starving""?
 
 -- 
-Regards,
-Tasmiya Nalatwad
-IBM Linux Technology Center
-
---------------yfix7TZyBa6O9vu3Xq2dxoEP
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p>Greetings,</p>
-    <p>Thanks Jason. <br>
-    </p>
-    <p>The fix provided by you works. It is not giving WARNING's but i
-      am seeing below logs. Would you please confirm on the logs.<br>
-    </p>
-    <p><a class="moz-txt-link-freetext" href="https://lore.kernel.org/all/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com/">https://lore.kernel.org/all/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com/</a></p>
-    <p>[  152.342125] pci 0013:60:00.0: No hypervisor support for SR-IOV
-      on this device, IOV BARs disabled.<br>
-      [  152.344896] pci 0013:60:00.0: PME# supported from D0 D3hot
-      D3cold<br>
-      [  152.348936] pci 0013:60:00.0: Adding to iommu group 0<br>
-      [  152.349944] pci 0013:60:00.1: No hypervisor support for SR-IOV
-      on this device, IOV BARs disabled.<br>
-      [  152.352701] pci 0013:60:00.1: PME# supported from D0 D3hot
-      D3cold<br>
-      [  152.356520] pci 0013:60:00.1: Adding to iommu group 0<br>
-      [  152.356527] iommu_tce: it_map is not empty<br>
-      [  152.357501] pci 0013:60:00.2: No hypervisor support for SR-IOV
-      on this device, IOV BARs disabled.<br>
-      [  152.360247] pci 0013:60:00.2: PME# supported from D0 D3hot
-      D3cold<br>
-      [  152.364070] pci 0013:60:00.2: Adding to iommu group 0<br>
-      [  152.364075] <b>iommu_tce: it_map is not empty</b><br>
-      [  152.365043] pci 0013:60:00.3: No hypervisor support for SR-IOV
-      on this device, IOV BARs disabled.<br>
-      [  152.367790] pci 0013:60:00.3: PME# supported from D0 D3hot
-      D3cold<br>
-      [  152.371635] pci 0013:60:00.3: Adding to iommu group 0<br>
-      [  152.371641] iommu_tce: it_map is not empty<br>
-      [  152.371720] pci 0013:60:00.0: of_irq_parse_pci: no
-      interrupt-map found, INTx interrupts not available<br>
-      [  152.408351] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.408376] tg3 0013:60:00.0: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      <b>[  152.408404] tg3 0013:60:00.0: DMA engine test failed,
-        aborting</b><b><br>
-      </b><b>[  152.408557] tg3: probe of 0013:60:00.0 failed with error
-        -12</b><br>
-      [  152.408583] pci 0013:60:00.1: Adding to iommu group 0<br>
-      [  152.408589] iommu_tce: it_map is not empty<br>
-      [  152.408656] pci 0013:60:00.1: of_irq_parse_pci: no
-      interrupt-map found, INTx interrupts not available<br>
-      [  152.448321] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.448339] tg3 0013:60:00.1: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.448360] tg3 0013:60:00.1: DMA engine test failed, aborting<br>
-      [  152.448497] tg3: probe of 0013:60:00.1 failed with error -12<br>
-      [  152.448519] pci 0013:60:00.2: Adding to iommu group 0<br>
-      [  152.448525] iommu_tce: it_map is not empty<br>
-      [  152.448586] pci 0013:60:00.2: of_irq_parse_pci: no
-      interrupt-map found, INTx interrupts not available<br>
-      [  152.488323] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.488340] tg3 0013:60:00.2: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.488362] tg3 0013:60:00.2: DMA engine test failed, aborting<br>
-      [  152.488495] tg3: probe of 0013:60:00.2 failed with error -12<br>
-      [  152.488516] pci 0013:60:00.3: Adding to iommu group 0<br>
-      [  152.488523] iommu_tce: it_map is not empty<br>
-      [  152.488581] pci 0013:60:00.3: of_irq_parse_pci: no
-      interrupt-map found, INTx interrupts not available<br>
-      [  152.528342] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.528359] tg3 0013:60:00.3: iommu: 64-bit OK but direct DMA
-      is limited by 800002000000000<br>
-      [  152.528381] tg3 0013:60:00.3: DMA engine test failed, aborting<br>
-      [  152.528515] tg3: probe of 0013:60:00.3 failed with error -12<br>
-      <br>
-    </p>
-    <div class="moz-cite-prefix">On 10/6/23 17:06, Jason Gunthorpe
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:20231006113644.GN682044@nvidia.com">
-      <pre class="moz-quote-pre" wrap="">On Fri, Oct 06, 2023 at 01:20:17PM +0530, Tasmiya Nalatwad wrote:
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">Greetings,
-
-[linux-next] [6.6.0-rc3-next-20230929] WARNING: CPU: 5 PID: 185612 at
-drivers/iommu/<a class="moz-txt-link-freetext" href="iommu.c:3049">iommu.c:3049</a> iommu_setup_default_domain+0x410/0x680
-
---- Traces ---
-
-[ 6296.425934] WARNING: CPU: 5 PID: 185612 at drivers/iommu/<a class="moz-txt-link-freetext" href="iommu.c:3049">iommu.c:3049</a>
-iommu_setup_default_domain+0x410/0x680
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Does this fix it too? I think it should?
-
-<a class="moz-txt-link-freetext" href="https://lore.kernel.org/r/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com">https://lore.kernel.org/r/0-v1-2b52423411b9+164fc-iommu_ppc_defdomain_jgg@nvidia.com</a>
-
-Jason
-</pre>
-    </blockquote>
-    <pre class="moz-signature" cols="72">-- 
-Regards,
-Tasmiya Nalatwad
-IBM Linux Technology Center</pre>
-  </body>
-</html>
-
---------------yfix7TZyBa6O9vu3Xq2dxoEP--
-
+	Ansuel
