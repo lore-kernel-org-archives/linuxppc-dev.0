@@ -4,91 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC5ACE92FF4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 07:51:50 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ma6iwX/G;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BDACE92FF9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 08:36:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S20xc6nRqz3dh2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 18:51:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ma6iwX/G;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tasmiya@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S21xM5t57z3ddR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 19:36:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 202 seconds by postgrey-1.37 at boromir; Fri, 06 Oct 2023 19:36:08 AEDT
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S20wZ6pXqz30f8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2023 18:50:54 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3967i5Tt000861;
-	Fri, 6 Oct 2023 07:50:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : to : cc : from : subject : content-type :
- content-transfer-encoding; s=pp1;
- bh=9BB2cu1N6Jk+79F9w3sV0qQ+sVNDUW3RyPD71PeD5/Q=;
- b=ma6iwX/GxRNBz0ZBmYkElN3tIsuDzP3l7vw4fsobRB/HKdwx8PAPJoeHmy7MrjkmiG1o
- zqyZajkGAVIU9PwYQNA3JjDHey7vx1Y6LVNSOQLrCn+35fY+7Pd/JCfc9T/jLKJbz8Fe
- BJC5c9V3/Q13bkMIR4GWaWeYKjTMtlWVfqvQLBqcgXxy5nlL43zuyXSHMl7mgd3wyDXg
- 5dXv0HhzGi/i8wHDI1Tw8gZXqUrqR6pMfRHkSwbl703GLyw7RowQhAq5WFAdJUMQAmD9
- e/wdKNr4ILvOoGYOJgq33+r+b50p3mBxxaTUdni7f8NjInkTEXtCAY4ZQeoXI0yF58Je Xg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tje3wr87n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 07:50:28 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3967iaAe004141;
-	Fri, 6 Oct 2023 07:50:27 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tje3wr87d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 07:50:27 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3967O43U025205;
-	Fri, 6 Oct 2023 07:50:26 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3texd0dvv9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 06 Oct 2023 07:50:26 +0000
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3967oQYu6750816
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 6 Oct 2023 07:50:26 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EC61F58061;
-	Fri,  6 Oct 2023 07:50:25 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7C19358058;
-	Fri,  6 Oct 2023 07:50:19 +0000 (GMT)
-Received: from [9.171.85.112] (unknown [9.171.85.112])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  6 Oct 2023 07:50:19 +0000 (GMT)
-Message-ID: <92db426f-4a31-9c2c-e23a-85a8d353fbae@linux.vnet.ibm.com>
-Date: Fri, 6 Oct 2023 13:20:17 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S21wm3cGtz3bwX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2023 19:36:08 +1100 (AEDT)
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.95)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1qogFl-002AIM-AA; Fri, 06 Oct 2023 10:32:09 +0200
+Received: from dynamic-077-011-061-166.77.11.pool.telefonica.de ([77.11.61.166] helo=[192.168.1.12])
+          by inpost2.zedat.fu-berlin.de (Exim 4.95)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1qogFl-003cs4-1p; Fri, 06 Oct 2023 10:32:09 +0200
+Message-ID: <75ea07e52350df5d3581bd14939504f0896073aa.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH v5 3/4] arch/*/io.h: remove ioremap_uc in some
+ architectures
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Baoquan He <bhe@redhat.com>, linux-kernel@vger.kernel.org
+Date: Fri, 06 Oct 2023 10:31:59 +0200
+In-Reply-To: <20230921110424.215592-4-bhe@redhat.com>
+References: <20230921110424.215592-1-bhe@redhat.com>
+	 <20230921110424.215592-4-bhe@redhat.com>
+Autocrypt: addr=glaubitz@physik.fu-berlin.de; prefer-encrypt=mutual;
+ keydata=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
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.50.0 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Content-Language: en-US
-To: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org
-From: Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com>
-Subject: [Bisected] [commit 2ad56efa80db] [Hotplug] WARNING while performing
- hotplug operation on 6.6-rc3-next
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: h2h2se0pExF98aSMXOYalMC-tQGyi0qH
-X-Proofpoint-ORIG-GUID: T2rYUk5LfCGsEyQlXCp0qrtuQ2PiMAsq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-06_04,2023-10-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- impostorscore=0 bulkscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
- mlxscore=0 malwarescore=0 adultscore=0 mlxlogscore=740 clxscore=1011
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310060054
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 77.11.61.166
+X-ZEDAT-Hint: PO
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,140 +62,194 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jroedel@suse.de, abdhalee@linux.vnet.ibm.com, mputtash@linux.vnet.com, joro@8bytes.org, jsnitsel@redhat.com, sachinp@linux.vnet.com, jgg@ziepe.ca, iommu@lists.linux.dev, Jason Gunthorpe <jgg@nvidia.com>, will@kernel.org, baolu.lu@linux.intel.com
+Cc: linux-arch@vger.kernel.org, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, arnd@arndb.de, linux-sh@vger.kernel.org, deller@gmx.de, linux-m68k@lists.linux-m68k.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, hch@infradead.org, linux-mm@kvack.org, mcgrof@kernel.org, f.fainelli@gmail.com, geert@linux-m68k.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Greetings,
+On Thu, 2023-09-21 at 19:04 +0800, Baoquan He wrote:
+> ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+> extension, and on ia64 with its slightly unconventional ioremap()
+> behavior. So remove the ioremap_uc() definition in architecutures
+> other than x86 and ia64. These architectures all have asm-generic/io.h
+> included and will have the default ioremap_uc() definition which
+> returns NULL.
+>=20
+> This changes the existing behaviour, while no need to worry about
+> any breakage because in the only callsite of ioremap_uc(), code
+> has been adjusted to eliminate the impact. Please see
+> atyfb_setup_generic() of drivers/video/fbdev/aty/atyfb_base.c.
+>=20
+> If any new invocation of ioremap_uc() need be added, please consider
+> using ioremap() intead or adding a ARCH specific version if necessary.
+>=20
+> Signed-off-by: Baoquan He <bhe@redhat.com>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> Acked-by: Helge Deller <deller@gmx.de>  # parisc
+> Cc: linux-alpha@vger.kernel.org
+> Cc: linux-hexagon@vger.kernel.org
+> Cc: linux-m68k@lists.linux-m68k.org
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-parisc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: sparclinux@vger.kernel.org
+> ---
+>  Documentation/driver-api/device-io.rst | 9 +++++----
+>  arch/alpha/include/asm/io.h            | 1 -
+>  arch/hexagon/include/asm/io.h          | 3 ---
+>  arch/m68k/include/asm/kmap.h           | 1 -
+>  arch/mips/include/asm/io.h             | 1 -
+>  arch/parisc/include/asm/io.h           | 2 --
+>  arch/powerpc/include/asm/io.h          | 1 -
+>  arch/sh/include/asm/io.h               | 2 --
+>  arch/sparc/include/asm/io_64.h         | 1 -
+>  9 files changed, 5 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/Documentation/driver-api/device-io.rst b/Documentation/drive=
+r-api/device-io.rst
+> index 2c7abd234f4e..d55384b106bd 100644
+> --- a/Documentation/driver-api/device-io.rst
+> +++ b/Documentation/driver-api/device-io.rst
+> @@ -408,11 +408,12 @@ functions for details on the CPU side of things.
+>  ioremap_uc()
+>  ------------
+> =20
+> -ioremap_uc() behaves like ioremap() except that on the x86 architecture =
+without
+> -'PAT' mode, it marks memory as uncached even when the MTRR has designate=
+d
+> -it as cacheable, see Documentation/arch/x86/pat.rst.
+> +ioremap_uc() is only meaningful on old x86-32 systems with the PAT exten=
+sion,
+> +and on ia64 with its slightly unconventional ioremap() behavior, everywh=
+ere
+> +elss ioremap_uc() defaults to return NULL.
+> =20
+> -Portable drivers should avoid the use of ioremap_uc().
+> +
+> +Portable drivers should avoid the use of ioremap_uc(), use ioremap() ins=
+tead.
+> =20
+>  ioremap_cache()
+>  ---------------
+> diff --git a/arch/alpha/include/asm/io.h b/arch/alpha/include/asm/io.h
+> index 7aeaf7c30a6f..076f0e4e7f1e 100644
+> --- a/arch/alpha/include/asm/io.h
+> +++ b/arch/alpha/include/asm/io.h
+> @@ -308,7 +308,6 @@ static inline void __iomem *ioremap(unsigned long por=
+t, unsigned long size)
+>  }
+> =20
+>  #define ioremap_wc ioremap
+> -#define ioremap_uc ioremap
+> =20
+>  static inline void iounmap(volatile void __iomem *addr)
+>  {
+> diff --git a/arch/hexagon/include/asm/io.h b/arch/hexagon/include/asm/io.=
+h
+> index e2b308e32a37..b7bc246dbcb1 100644
+> --- a/arch/hexagon/include/asm/io.h
+> +++ b/arch/hexagon/include/asm/io.h
+> @@ -174,9 +174,6 @@ static inline void writel(u32 data, volatile void __i=
+omem *addr)
+>  #define _PAGE_IOREMAP (_PAGE_PRESENT | _PAGE_READ | _PAGE_WRITE | \
+>  		       (__HEXAGON_C_DEV << 6))
+> =20
+> -#define ioremap_uc(addr, size) ioremap((addr), (size))
+> -
+> -
+>  #define __raw_writel writel
+> =20
+>  static inline void memcpy_fromio(void *dst, const volatile void __iomem =
+*src,
+> diff --git a/arch/m68k/include/asm/kmap.h b/arch/m68k/include/asm/kmap.h
+> index 4efb3efa593a..b778f015c917 100644
+> --- a/arch/m68k/include/asm/kmap.h
+> +++ b/arch/m68k/include/asm/kmap.h
+> @@ -25,7 +25,6 @@ static inline void __iomem *ioremap(unsigned long physa=
+ddr, unsigned long size)
+>  	return __ioremap(physaddr, size, IOMAP_NOCACHE_SER);
+>  }
+> =20
+> -#define ioremap_uc ioremap
+>  #define ioremap_wt ioremap_wt
+>  static inline void __iomem *ioremap_wt(unsigned long physaddr,
+>  				       unsigned long size)
+> diff --git a/arch/mips/include/asm/io.h b/arch/mips/include/asm/io.h
+> index 41d8bd5adef8..1ecf255efb40 100644
+> --- a/arch/mips/include/asm/io.h
+> +++ b/arch/mips/include/asm/io.h
+> @@ -170,7 +170,6 @@ void iounmap(const volatile void __iomem *addr);
+>   */
+>  #define ioremap(offset, size)						\
+>  	ioremap_prot((offset), (size), _CACHE_UNCACHED)
+> -#define ioremap_uc		ioremap
+> =20
+>  /*
+>   * ioremap_cache -	map bus memory into CPU space
+> diff --git a/arch/parisc/include/asm/io.h b/arch/parisc/include/asm/io.h
+> index 366537042465..48630c78714a 100644
+> --- a/arch/parisc/include/asm/io.h
+> +++ b/arch/parisc/include/asm/io.h
+> @@ -132,8 +132,6 @@ static inline void gsc_writeq(unsigned long long val,=
+ unsigned long addr)
+> =20
+>  #define ioremap_wc(addr, size)  \
+>  	ioremap_prot((addr), (size), _PAGE_IOREMAP)
+> -#define ioremap_uc(addr, size)  \
+> -	ioremap_prot((addr), (size), _PAGE_IOREMAP)
+> =20
+>  #define pci_iounmap			pci_iounmap
+> =20
+> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.=
+h
+> index 0732b743e099..21bd3e8bffce 100644
+> --- a/arch/powerpc/include/asm/io.h
+> +++ b/arch/powerpc/include/asm/io.h
+> @@ -900,7 +900,6 @@ void __iomem *ioremap_wt(phys_addr_t address, unsigne=
+d long size);
+>  #endif
+> =20
+>  void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
+> -#define ioremap_uc(addr, size)		ioremap((addr), (size))
+>  #define ioremap_cache(addr, size) \
+>  	ioremap_prot((addr), (size), pgprot_val(PAGE_KERNEL))
+> =20
+> diff --git a/arch/sh/include/asm/io.h b/arch/sh/include/asm/io.h
+> index f2f38e9d489a..790bea22c9b5 100644
+> --- a/arch/sh/include/asm/io.h
+> +++ b/arch/sh/include/asm/io.h
+> @@ -302,8 +302,6 @@ unsigned long long poke_real_address_q(unsigned long =
+long addr,
+>  	ioremap_prot((addr), (size), pgprot_val(PAGE_KERNEL))
+>  #endif /* CONFIG_MMU */
+> =20
+> -#define ioremap_uc	ioremap
+> -
+>  /*
+>   * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+>   * access
+> diff --git a/arch/sparc/include/asm/io_64.h b/arch/sparc/include/asm/io_6=
+4.h
+> index 9303270b22f3..d8ee1442f303 100644
+> --- a/arch/sparc/include/asm/io_64.h
+> +++ b/arch/sparc/include/asm/io_64.h
+> @@ -423,7 +423,6 @@ static inline void __iomem *ioremap(unsigned long off=
+set, unsigned long size)
+>  	return (void __iomem *)offset;
+>  }
+> =20
+> -#define ioremap_uc(X,Y)			ioremap((X),(Y))
+>  #define ioremap_wc(X,Y)			ioremap((X),(Y))
+>  #define ioremap_wt(X,Y)			ioremap((X),(Y))
+>  static inline void __iomem *ioremap_np(unsigned long offset, unsigned lo=
+ng size)
 
-[linux-next] [6.6.0-rc3-next-20230929] WARNING: CPU: 5 PID: 185612 at 
-drivers/iommu/iommu.c:3049 iommu_setup_default_domain+0x410/0x680
+Acked-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> (SuperH)
 
---- Traces ---
-
-[ 6296.425934] WARNING: CPU: 5 PID: 185612 at drivers/iommu/iommu.c:3049 
-iommu_setup_default_domain+0x410/0x680
-[ 6296.425945] Modules linked in: sit tunnel4 ip_tunnel loop dm_mod 
-nft_compat nf_tables nfnetlink rpadlpar_io rpaphp tcp_diag udp_diag 
-inet_diag unix_diag af_packet_diag netlink_diag bonding rfkill xfs 
-libcrc32c pseries_rng xts vmx_crypto uio_pdrv_genirq uio sch_fq_codel 
-binfmt_misc ext4 mbcache jbd2 sd_mod sr_mod t10_pi cdrom crc64_rocksoft 
-crc64 sg tg3 ibmvscsi ibmveth scsi_transport_srp ptp pps_core fuse
-[ 6296.426001] CPU: 5 PID: 185612 Comm: avocado-runner- Kdump: loaded 
-Not tainted 6.6.0-rc3-next-20230929-autotest #1
-[ 6296.426008] Hardware name: IBM,9009-42A POWER9 (raw) 0x4e0202 
-0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
-[ 6296.426013] NIP:  c000000000889320 LR: c000000000889310 CTR: 
-c000000000da3570
-[ 6296.426018] REGS: c000000083517300 TRAP: 0700   Not tainted 
-(6.6.0-rc3-next-20230929-autotest)
-[ 6296.426024] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 
-88822822  XER: 2004000a
-[ 6296.426037] CFAR: c000000000887cf4 IRQMASK: 0
-[ 6296.426037] GPR00: c000000000889310 c0000000835175a0 c00000000121d200 
-fffffffffffffff0
-[ 6296.426037] GPR04: 0000000000000000 c0000000835171a0 c000000083517198 
-c000000051e14318
-[ 6296.426037] GPR08: c000000051e14098 0000000000000001 0000000000000002 
-c0000000029982b0
-[ 6296.426037] GPR12: 0000000000002000 c00000000ffc9f00 00007fff93a3f4f0 
-00007fff84ca7678
-[ 6296.426037] GPR16: 00007fff93a15578 00007ffff007e118 0000000000000000 
-0000000000000000
-[ 6296.426037] GPR20: c00000000105eef8 0000000000000001 c000000002a50fd0 
-0000000000000001
-[ 6296.426037] GPR24: 0000000000000000 c0000000010f1b80 fffffffffffffff0 
-0000000000000000
-[ 6296.426037] GPR28: c000000051e50e00 c000000051e50e48 c0000000025c4888 
-c000000051e50e48
-[ 6296.426098] NIP [c000000000889320] 
-iommu_setup_default_domain+0x410/0x680
-[ 6296.426104] LR [c000000000889310] iommu_setup_default_domain+0x400/0x680
-[ 6296.426109] Call Trace:
-[ 6296.426111] [c0000000835175a0] [c000000000889310] 
-iommu_setup_default_domain+0x400/0x680 (unreliable)
-[ 6296.426119] [c000000083517660] [c00000000088b028] 
-__iommu_probe_device+0x368/0x5e0
-[ 6296.426126] [c0000000835176d0] [c00000000088b850] 
-iommu_probe_device+0x30/0x90
-[ 6296.426133] [c000000083517700] [c00000000088b8f0] 
-iommu_bus_notifier+0x40/0x80
-[ 6296.426140] [c000000083517720] [c000000000199190] 
-notifier_call_chain+0xc0/0x1b0
-[ 6296.426147] [c000000083517780] [c000000000199c94] 
-blocking_notifier_call_chain+0x64/0xa0
-[ 6296.426153] [c0000000835177c0] [c00000000089e5c0] bus_notify+0x50/0x80
-[ 6296.426160] [c000000083517800] [c000000000899c34] device_add+0x754/0x9c0
-[ 6296.426166] [c0000000835178c0] [c000000000795074] 
-pci_device_add+0x2e4/0x860
-[ 6296.426174] [c000000083517970] [c000000000080f50] 
-of_create_pci_dev+0x390/0xa10
-[ 6296.426182] [c000000083517a50] [c000000000081818] 
-__of_scan_bus+0x248/0x320
-[ 6296.426188] [c000000083517b30] [c00000000007ccfc] 
-pci_hp_add_devices+0x1cc/0x200
-[ 6296.426195] [c000000083517b70] [c0080000020312d0] 
-enable_slot+0x108/0x180 [rpaphp]
-[ 6296.426204] [c000000083517bf0] [c0000000007cdc7c] 
-power_write_file+0xcc/0x180
-[ 6296.426211] [c000000083517c70] [c0000000007c3384] 
-pci_slot_attr_store+0x44/0x60
-[ 6296.426218] [c000000083517c90] [c0000000005bcb38] 
-sysfs_kf_write+0x68/0x80
-[ 6296.426225] [c000000083517cb0] [c0000000005bb4ac] 
-kernfs_fop_write_iter+0x1cc/0x280
-[ 6296.426232] [c000000083517d00] [c0000000004c3e10] vfs_write+0x350/0x4b0
-[ 6296.426238] [c000000083517dc0] [c0000000004c414c] ksys_write+0x7c/0x140
-[ 6296.426244] [c000000083517e10] [c000000000035148] 
-system_call_exception+0x158/0x3a0
-[ 6296.426252] [c000000083517e50] [c00000000000c6d4] 
-system_call_common+0xf4/0x258
-[ 6296.426259] --- interrupt: c00 at 0x7fff93637eb0
-[ 6296.426263] NIP:  00007fff93637eb0 LR: 00007fff93637e94 CTR: 
-0000000000000000
-[ 6296.426268] REGS: c000000083517e80 TRAP: 0c00   Not tainted 
-(6.6.0-rc3-next-20230929-autotest)
-[ 6296.426273] MSR:  800000000280f033 
-<SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 22222288  XER: 00000000
-[ 6296.426289] IRQMASK: 0
-[ 6296.426289] GPR00: 0000000000000004 00007ffff007d170 00007fff93667f00 
-0000000000000008
-[ 6296.426289] GPR04: 0000010014e69490 0000000000000001 0000000000000001 
-0000000000000002
-[ 6296.426289] GPR08: 00007fff93e85ad8 0000000000000000 0000000000000000 
-0000000000000000
-[ 6296.426289] GPR12: 0000000000000000 00007fff93e8d140 00007fff93a3f4f0 
-00007fff84ca7678
-[ 6296.426289] GPR16: 00007fff93a15578 00007ffff007e118 00007fff84c96d88 
-00007fff84cadb70
-[ 6296.426289] GPR20: 0000010014e64ba0 0000000000000000 00007fff93a3f4c4 
-00007fff84ca8eb0
-[ 6296.426289] GPR24: 0000000000000000 00000100148735e0 0000010014e69490 
-0000000000000008
-[ 6296.426289] GPR28: 0000000000000000 0000010014e69490 0000000000000008 
-0000000000000001
-[ 6296.426347] NIP [00007fff93637eb0] 0x7fff93637eb0
-[ 6296.426351] LR [00007fff93637e94] 0x7fff93637e94
-[ 6296.426355] --- interrupt: c00
-[ 6296.426358] Code: ebc1fff0 ebe1fff8 7c0803a6 4e800020 38a00001 
-7fc4f378 7f83e378 4bffe83d 7c690034 7c7a1b78 5529d97e 69290001 
-<0b090000> 2fa30000 419efe4c 4bffff38
-[ 6296.426378] ---[ end trace 0000000000000000 ]---
-[ 6296.427348] pci 0013:60:00.1: No hypervisor support for SR-IOV on 
-this device, IOV BARs disabled.
-[ 6296.430049] pci 0013:60:00.1: PME# supported from D0 D3hot D3cold
-[ 6296.433403] pci 0013:60:00.1: Adding to iommu group 0
-[ 6296.433408] iommu_tce: it_map is not empty
-[ 6296.433414] ------------[ cut here ]------------
-
-
-gitbisect is pointing to below commit
-
-commit 2ad56efa80dba89162106c06ebc00b611325e584
-     powerpc/iommu: Setup a default domain and remove set_platform_dma_ops
-
--- 
-Regards,
-Tasmiya Nalatwad
-IBM Linux Technology Center
-
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
