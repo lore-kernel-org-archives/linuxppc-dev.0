@@ -4,32 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A432EE92FF9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 08:50:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7FA9E92FF8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 09:08:15 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=QivChJSv;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UHQiahYz;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S22Fh12D0z3cmk
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 19:50:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alpha.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1513 seconds by postgrey-1.37 at boromir; Fri, 06 Oct 2023 19:50:17 AEDT
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S22F50Xdbz3c4R
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2023 19:50:17 +1100 (AEDT)
-Received: from uucp by elvis.franken.de with local-rmail (Exim 3.36 #1)
-	id 1qog8g-0002lT-00; Fri, 06 Oct 2023 10:24:50 +0200
-Received: by alpha.franken.de (Postfix, from userid 1000)
-	id C02E3C0198; Fri,  6 Oct 2023 10:05:46 +0200 (CEST)
-Date: Fri, 6 Oct 2023 10:05:46 +0200
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: Baoquan He <bhe@redhat.com>
-Subject: Re: [PATCH v5 3/4] arch/*/io.h: remove ioremap_uc in some
- architectures
-Message-ID: <ZR+/2jUUpJu74k1X@alpha.franken.de>
-References: <20230921110424.215592-1-bhe@redhat.com>
- <20230921110424.215592-4-bhe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230921110424.215592-4-bhe@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S22dp2mPzz3cjv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Oct 2023 20:08:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=QivChJSv;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UHQiahYz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S22cp2Nr2z3c76
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2023 20:07:21 +1100 (AEDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 5FAC41F45F;
+	Fri,  6 Oct 2023 09:07:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1696583237; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bD8sbVGvSvFYAjwHjrWGO9qMkoH9v3/UrCG8PEtboOg=;
+	b=QivChJSvJVR8LNOdOhA6MDbLOFK3wpE7D7XMJIyasGwuGu/4l26HnM//XIORawkiEB/Gow
+	C0skXqh2tYQngnKOcb/L03B6npSZD+FAt1M4UX2qgdjxRWuYNK/AHG4DCvcL+5xW9466Ke
+	SL6TyhFOSbgzrphv8mmuE7rtxfCHbic=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1696583237;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bD8sbVGvSvFYAjwHjrWGO9qMkoH9v3/UrCG8PEtboOg=;
+	b=UHQiahYzglBAec0t79mMCcMVS9H25khzq8WOyn4Fv/tBvtjPL04D0wVfJXmhPn/Imt0fwy
+	LwenhH/KPL8E6HBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 33F5A13A2E;
+	Fri,  6 Oct 2023 09:07:17 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id jEO6C0XOH2UtLAAAMHmgww
+	(envelope-from <tiwai@suse.de>); Fri, 06 Oct 2023 09:07:17 +0000
+Date: Fri, 06 Oct 2023 11:07:16 +0200
+Message-ID: <87lecgw24b.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] ALSA: aoa: Replace asm/prom.h with explicit includes
+In-Reply-To: <20231003163209.770750-1-robh@kernel.org>
+References: <20231003163209.770750-1-robh@kernel.org>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -41,47 +77,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, f.fainelli@gmail.com, linux-parisc@vger.kernel.org, arnd@arndb.de, linux-sh@vger.kernel.org, linux-m68k@lists.linux-m68k.org, deller@gmx.de, linux-kernel@vger.kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, hch@infradead.org, linux-mm@kvack.org, mcgrof@kernel.org, geert@linux-m68k.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Johannes Berg <johannes@sipsolutions.net>, Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 21, 2023 at 07:04:23PM +0800, Baoquan He wrote:
-> ioremap_uc() is only meaningful on old x86-32 systems with the PAT
-> extension, and on ia64 with its slightly unconventional ioremap()
-> behavior. So remove the ioremap_uc() definition in architecutures
-> other than x86 and ia64. These architectures all have asm-generic/io.h
-> included and will have the default ioremap_uc() definition which
-> returns NULL.
+On Tue, 03 Oct 2023 18:32:02 +0200,
+Rob Herring wrote:
 > 
-> This changes the existing behaviour, while no need to worry about
-> any breakage because in the only callsite of ioremap_uc(), code
-> has been adjusted to eliminate the impact. Please see
-> atyfb_setup_generic() of drivers/video/fbdev/aty/atyfb_base.c.
+> asm/prom.h should not be included directly as it no longer contains
+> anything drivers need. Drivers should include of.h and/or other headers
+> which were getting implicitly included.
 > 
-> If any new invocation of ioremap_uc() need be added, please consider
-> using ioremap() intead or adding a ARCH specific version if necessary.
-> 
-> Signed-off-by: Baoquan He <bhe@redhat.com>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-> Acked-by: Helge Deller <deller@gmx.de>  # parisc
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> ---
->  Documentation/driver-api/device-io.rst | 9 +++++----
->  arch/alpha/include/asm/io.h            | 1 -
->  arch/hexagon/include/asm/io.h          | 3 ---
->  arch/m68k/include/asm/kmap.h           | 1 -
->  arch/mips/include/asm/io.h             | 1 -
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Applied now to for-next branch.  Thanks.
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+
+Takashi
