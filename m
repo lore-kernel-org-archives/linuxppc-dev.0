@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A63ACE95A61
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 17:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 614E7E95A7B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Oct 2023 22:29:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=wFggfl5S;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PTQNhSgT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S2spq4R7Vz3vZd
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 04:33:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S30ML6kSlz3vZM
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 09:29:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PTQNhSgT;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S2snl32Nzz307V
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Oct 2023 04:32:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:References:Cc:To:From:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=aJVvBE4SP5c8uAtSdDAuWAVhLtX7ZDGEDfCptajDH6k=; b=wFggfl5SM9G9zYhKm7l+YGoy21
-	oqRvLUxgsvRf5bDmcQ3izmplXtWY3KQ+rSU5OYf3uN0FyrbnbgGHok1snt20q59SL5E80/9lu9fy3
-	1+hElBG2xZM0QUmg66Xjz6GthUS6gJM8a3npbi9fxUaEXk9Sw0X+cQty9L2Hqyr/VV2fT76f4Jpj7
-	XIUVecYZOwjhq/nwla/GYBYF0dl4Aqis4aZek2MQGSkvAXRVQX/x6gcp8jZYUDHlf8PbQDmtuZL40
-	3gQF5xrl01yAF1PxvDpHrLgIqxdlqEp5UwtTJea2WleKR3vSnskg7/XNUGXBuaSzWXX5F9URhTlIz
-	cQiQ3Q+Q==;
-Received: from [50.53.46.231] (helo=[192.168.254.15])
-	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1qpBAO-007lyk-11;
-	Sat, 07 Oct 2023 17:32:40 +0000
-Message-ID: <bc92f6cb-71dd-4b15-8d83-db7579ec7fb9@infradead.org>
-Date: Sat, 7 Oct 2023 10:32:37 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S30LM0pQnz3bwL
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Oct 2023 09:28:11 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1696717686;
+	bh=jw8aAP4zZwc1G8pTs7/VrYq/NyuehGKHT1lWT8/alhc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=PTQNhSgTeWF+xMjTik3ldHturS9HLjZ2QMEFCGZHuv2W2Dflhzne00zR/VUAcDMl1
+	 ujqj042a0eYC0j4pNrhJ8f1Htlb5rLpwTMrzqiNggXt8Z44ziVv3vYllyBKV4NCNX+
+	 6lyUCupAxWPnY5m04gqNDzRJXBHTtMKwA7+ez55GVdFwJjOUr6MY36z4opwA3SwCoE
+	 Rn0eHf+cud9BOvFERGN3Oi7+Fa4IwhFy0cA0LsD5XpYUeYiyk2ZviXU74gBC6EPzWV
+	 VFvzslNgemGOSC0kP7tK4o2sZA0k2LgPRz356Z1yAEkK+7+V5lKk3IGqwkZ5GLqZ68
+	 kckqn59dS4hGg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S30LF6t2Gz4x3j;
+	Sun,  8 Oct 2023 09:28:05 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Joel Granados <j.granados@samsung.com>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 00/15] sysctl: Remove sentinel elements from drivers
+In-Reply-To: <20231003084749.4xxi4z64hgq5a5lw@localhost>
+References: <20231002-jag-sysctl_remove_empty_elem_drivers-v2-0-02dd0d46f71e@samsung.com>
+ <CGME20231002122730eucas1p17643da82bb9aa655b35c3562446ad395@eucas1p1.samsung.com>
+ <64fd22df-616e-9f5a-26fb-44c4b3423b0c@csgroup.eu>
+ <20231003084749.4xxi4z64hgq5a5lw@localhost>
+Date: Sun, 08 Oct 2023 09:28:00 +1100
+Message-ID: <87il7irrtb.fsf@mail.lhotse>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: linux-next: Tree for Sep 20 (ppc32: ADB_CUDA Kconfig warning)
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Linux Next Mailing List <linux-next@vger.kernel.org>, tanyuan@tinylab.org
-References: <20230920133714.351f83f9@canb.auug.org.au>
- <fe130d55-7b5e-4444-85ea-c3fbf4eb238d@infradead.org>
- <87il83m5k0.fsf@mail.lhotse>
- <47afe095-0dd9-47bc-a4d1-dcd66f87ac7c@infradead.org>
-In-Reply-To: <47afe095-0dd9-47bc-a4d1-dcd66f87ac7c@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,83 +62,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+Joel Granados <j.granados@samsung.com> writes:
+> On Mon, Oct 02, 2023 at 12:27:18PM +0000, Christophe Leroy wrote:
+>> Le 02/10/2023 =C3=A0 10:55, Joel Granados via B4 Relay a =C3=A9crit=C2=
+=A0:
+>> > From: Joel Granados <j.granados@samsung.com>
+>> >=20
+> <--- snip --->
+>> >          - The "yesall" config saves 2432 bytes [4]
+>> >          - The "tiny" config saves 64 bytes [5]
+>> >      * memory usage:
+>> >          In this case there were no bytes saved because I do not have =
+any
+>> >          of the drivers in the patch. To measure it comment the printk=
+ in
+>> >          `new_dir` and uncomment the if conditional in `new_links` [3].
+>> >=20
+>> > ---
+>> > Changes in v2:
+>> > - Left the dangling comma in the ctl_table arrays.
+>> > - Link to v1: https://lore.kernel.org/r/20230928-jag-sysctl_remove_emp=
+ty_elem_drivers-v1-0-e59120fca9f9@samsung.com
+>> >=20
+>> > Comments/feedback greatly appreciated
+>>=20
+>> Same problem on powerpc CI tests, all boot target failed, most of them=20
+>> with similar OOPS, see=20
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20231002-jag-sys=
+ctl_remove_empty_elem_drivers-v2-15-02dd0d46f71e@samsung.com/
+> I found the culprit!. Here you are rebasing on top of v6.5.0-rc6 "INFO:
+> Looking for kernel version: 6.5.0-rc6-gbf2ac4d7d596". The error makes
+> sense becuase in that version we have not introduced the stopping
+> criteria based on the ctl_table array size, so the loop continues
+> looking for an empty sentinel past valid memory (and does not find it).
+> The ctl_table check catches it but then fails to do a proper error
+> because we have already tried to access invalid memory. The solution
+> here is to make sure to rebase in on top of the latest rc in v6.6.
 
-On 9/21/23 21:51, Randy Dunlap wrote:
-> 
-> 
-> On 9/21/23 17:10, Michael Ellerman wrote:
->> Randy Dunlap <rdunlap@infradead.org> writes:
->>> On 9/19/23 20:37, Stephen Rothwell wrote:
->>>> Hi all,
->>>>
->>>> Changes since 20230919:
->>>>
->>>> The mm tree lost its boot warning.
->>>>
->>>> The drm-misc tree gained a conflict against Linus' tree.
->>>>
->>>> Non-merge commits (relative to Linus' tree): 6006
->>>>  3996 files changed, 459968 insertions(+), 111742 deletions(-)
->>>>
->>>> ----------------------------------------------------------------------------
->>>
->>> 4 out of 10 randconfigs have this warning:
->>>
->>> WARNING: unmet direct dependencies detected for ADB_CUDA
->>>   Depends on [n]: MACINTOSH_DRIVERS [=n] && (ADB [=n] || PPC_PMAC [=y]) && !PPC_PMAC64 [=n]
->>>   Selected by [y]:
->>>   - PPC_PMAC [=y] && PPC_BOOK3S [=y] && CPU_BIG_ENDIAN [=y] && POWER_RESET [=y] && PPC32 [=y]
->>>
->>> WARNING: unmet direct dependencies detected for ADB_CUDA
->>>   Depends on [n]: MACINTOSH_DRIVERS [=n] && (ADB [=n] || PPC_PMAC [=y]) && !PPC_PMAC64 [=n]
->>>   Selected by [y]:
->>>   - PPC_PMAC [=y] && PPC_BOOK3S [=y] && CPU_BIG_ENDIAN [=y] && POWER_RESET [=y] && PPC32 [=y]
->>>
->>> WARNING: unmet direct dependencies detected for ADB_CUDA
->>>   Depends on [n]: MACINTOSH_DRIVERS [=n] && (ADB [=n] || PPC_PMAC [=y]) && !PPC_PMAC64 [=n]
->>>   Selected by [y]:
->>>   - PPC_PMAC [=y] && PPC_BOOK3S [=y] && CPU_BIG_ENDIAN [=y] && POWER_RESET [=y] && PPC32 [=y]
->>
->> Crud. Caused by:
->>
->> a3ef2fef198c ("powerpc/32: Add dependencies of POWER_RESET for pmac32")
->>
->> I was suspicious of that select, I should have been *more* suspicious :)
->>
->> I think this is a fix. The PPC32 isn't needed because ADB depends on (PPC_PMAC && PPC32).
-> 
-> Yes, that fixes the problem. Thanks.
-> 
-> Tested-by: Randy Dunlap <rdunlap@infradead.org>
-> Acked-by: Randy Dunlap <rdunlap@infradead.org>
-> 
+Thanks for tracking it down.
 
-Will you be merging this fix?
+This is my fault, previously Russell would update the branch that the CI
+uses as its base. Now that he has left I need to do that myself, but had
+forgotten.
 
-Thanks.
+Sorry for the noise.
 
->>
->> diff --git a/arch/powerpc/platforms/powermac/Kconfig b/arch/powerpc/platforms/powermac/Kconfig
->> index 8bdae0caf21e..84f101ec53a9 100644
->> --- a/arch/powerpc/platforms/powermac/Kconfig
->> +++ b/arch/powerpc/platforms/powermac/Kconfig
->> @@ -2,7 +2,7 @@
->>  config PPC_PMAC
->>         bool "Apple PowerMac based machines"
->>         depends on PPC_BOOK3S && CPU_BIG_ENDIAN
->> -       select ADB_CUDA if POWER_RESET && PPC32
->> +       select ADB_CUDA if POWER_RESET && ADB
->>         select MPIC
->>         select FORCE_PCI
->>         select PPC_INDIRECT_PCI if PPC32
->>
->> cheers
-> 
-
--- 
-~Randy
+cheers
