@@ -4,48 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD950E95A67
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 20:03:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A92D4E95A67
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Oct 2023 22:05:11 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RLiSrSV6;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S3Y4k3Chyz3bsP
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 07:03:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S3bnK6gNmz3cJl
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 09:05:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RLiSrSV6;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=ansuelsmth@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3Y3c5x1jz308M
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 07:02:19 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qpZyS-0001Rz-A6; Sun, 08 Oct 2023 22:02:00 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qpZyL-000Ez8-3z; Sun, 08 Oct 2023 22:01:53 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qpZyK-00Bezw-PY; Sun, 08 Oct 2023 22:01:52 +0200
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>
-Subject: [PATCH 00/20] mtd: Convert to platform remove callback returning void
-Date: Sun,  8 Oct 2023 22:01:23 +0200
-Message-Id: <20231008200143.196369-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.40.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3VyR36Whz2yq2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 05:27:41 +1100 (AEDT)
+Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-327be5fe4beso3493655f8f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Oct 2023 11:27:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1696789654; x=1697394454; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:subject:cc:to:from:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=UYhUlM0v/kiBnSA7qqkERNTe3ha0hd9wd9BeXsJuFRo=;
+        b=RLiSrSV6uJxuQ8T1y43SwW9mvR44TQbUqw79IJjusYUXAfbnpXYG3Epk4Oo7Ocol4l
+         VSvE1DHusx+KA3RbNSQBR0CofDlknCmNjKrmarEUlFBD4SVZTuOMjkedmruh2zWFpjgx
+         +9Izpj3hvZOtN1lah7m+9LiCIz1ctHiXMkv4YHm1qb/0nOTopOgUhsS1111ooAo2w9Eh
+         0/0fOm2lrIStLSbF/IhqcQnjuQ51yyWOphBpB0U3emJFGrUF6zNyalB4AKEKkkFG1KOA
+         +QucTQLnQwwCobXcSgWFVMqOWDa5zsqRvaaMqzd+zr2e8FmNQGhUZIGrLUVS3mkh0K0Z
+         9PEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696789654; x=1697394454;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:subject:cc:to:from:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=UYhUlM0v/kiBnSA7qqkERNTe3ha0hd9wd9BeXsJuFRo=;
+        b=sFlKklDh9c8BORLjQWdKdBx/UG2viUh/yhp872xv+DFlyKth+rQMZnd82vf1yis9fo
+         Yhn3+XRgXRk/2lTAQlm7QTITjfHhzhLrOA8RobbScp/CwNHBuH2szUygs00+NCa5Mt2W
+         iyb83wKBeA87HqGWbFQSqV7RMy4Sb8YY0pjNLrjOW98GTp7c6QbaPXAeSZBXOFE//E66
+         AAUWVoVYIKONWfQr3nLq/pGviI1tTX9IuZ/vi22MTXZqtpKoCaFp0DQ6ww5+dnmM51r2
+         vjr9s20E6r63Tn/TeK1sCfOL7osf3JY+R17ucyeYjubPpFgZe/Lwv8uT4R49KWqzxTuk
+         FBhQ==
+X-Gm-Message-State: AOJu0YwUnJj4+FXy4Y/ED6jOOtNiNnjBhDZ4dPri5tksHlsAXeFy7RLV
+	hY2xl+iMc9NpIMLc14ZV/yQ=
+X-Google-Smtp-Source: AGHT+IG1Z2UQG/8uimtzwOsX0SSnSzQeAnFClPvayUdx2bESkKFHKQw9/TSlsvhrREuwaEcXQ8SiYA==
+X-Received: by 2002:a5d:50c8:0:b0:316:f24b:597a with SMTP id f8-20020a5d50c8000000b00316f24b597amr11755917wrt.46.1696789653876;
+        Sun, 08 Oct 2023 11:27:33 -0700 (PDT)
+Received: from Ansuel-xps. (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
+        by smtp.gmail.com with ESMTPSA id j14-20020adff54e000000b003233a31a467sm7413627wrp.34.2023.10.08.11.27.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Oct 2023 11:27:33 -0700 (PDT)
+Message-ID: <6522f495.df0a0220.326ed.de6c@mx.google.com>
+X-Google-Original-Message-ID: <ZSL0kLgKGmK2HJ9x@Ansuel-xps.>
+Date: Sun, 8 Oct 2023 20:27:28 +0200
+From: Christian Marangi <ansuelsmth@gmail.com>
+To: Eric Dumazet <edumazet@google.com>
+Subject: Re: [net-next PATCH v2 4/4] netdev: use napi_schedule bool instead
+ of napi_schedule_prep/__napi_schedule
+References: <20231003145150.2498-1-ansuelsmth@gmail.com>
+ <20231003145150.2498-4-ansuelsmth@gmail.com>
+ <CANn89iLtYZJPOQE7OkAbEdmhT8qjzAJ+27poa__3c8Nf0M6u_w@mail.gmail.com>
+ <652056c5.5d0a0220.2b60d.c5dc@mx.google.com>
+ <CANn89i+Cie+oE_hTWkyJWutTG9CnPy+dbW+-A97Q+E9Rq-f9rQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4139; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=aa6SE3gWpaHTuyfq4v/sxGd7EehqufNhl2EDrrsJWOQ=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlRlrnLPoKUeQvyaTxuFWZ/OXFizKe5m/A+PtikJ0Ukdr qwXpBI6GY1ZGBi5GGTFFFnsG9dkWlXJRXau/XcZZhArE8gUBi5OAZiISDD7PyWTOakmExfPWSyu v9voS6C7FXdan5pmyQrjiye/v9j25eHul21Nr2RPvF76tXMKo7r99v6sA01L3h1JfFq5xXyKZmz nubtHmtecskjM6rgf+/OK9MalV7taHt85zWKwpYQ3O960UJNNvLPf4JKPp3xLzIVQ2ZltTqVbmL xX9YS5JehVlj55ynxmpmKm2jJreyNnmeueYaK7xPdoyE9a7fj14LSCk9xc86dd8zDZ8vlH9/aa9 JRi9qb7k79lncjhuLcg5IK1HNunIy3HVfa4JC4ubfZ2MmYt/LjfwOmxmAOH2Y4T1mGGdafFjjme 2fEw+XFkwDdzR96WbSda7tWGiq1heTfNPzBV0e5R8Kt5AA==
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CANn89i+Cie+oE_hTWkyJWutTG9CnPy+dbW+-A97Q+E9Rq-f9rQ@mail.gmail.com>
+X-Mailman-Approved-At: Mon, 09 Oct 2023 09:04:22 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,95 +86,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Woodhouse <David.Woodhouse@intel.com>, Hui Tang <tanghui20@huawei.com>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>, Li Zetao <lizetao1@huawei.com>, Zheng Yongjun <zhengyongjun3@huawei.com>, linux-mtd@lists.infradead.org, Robert Jarzmik <robert.jarzmik@free.fr>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh@kernel.org>, Yangtao Li <frank.li@vivo.com>, Tudor Ambarus <tudor.ambarus@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, linux-kbuild@vger.kernel.org, Joern Engel <joern@lazybastard.org>, Nicholas Piggin <npiggin@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, linux-arm-kernel@lists.infradead.org, Michael Walle <michael@walle.cc>, kernel@pengutronix.de, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Pratyush Yadav <pratyush@kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Sergey Ryazanov <ryazanov.s.a@gmail.com>, Ziwei Xiao <ziweixiao@google.com>, Chris Snook <chris.snook@gmail.com>, Rick Lindsley <ricklind@linux.ibm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Krzysztof Halasa <khalasa@piap.pl>, Yuri Karpov <YKarpov@ispras.ru>, netdev@vger.kernel.org, ath10k@lists.infradead.org, Dany Madden <danymadden@us.ibm.com>, Gregory Greenman <gregory.greenman@intel.com>, Zhengchao Shao <shaozhengchao@huawei.com>, Chiranjeevi Rapolu <chiranjeevi.rapolu@linux.intel.com>, Dawei Li <set_pte_at@outlook.com>, Intel Corporation <linuxwwan@intel.com>, Rob Herring <robh@kernel.org>, Jeroen de Borst <jeroendb@google.com>, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, Lee Jones <lee@kernel.org>, Haren Myneni <haren@linux.ibm.com>, linux-stm32@st-md-mailman.stormreply.com, Rushil Gupta <rushilg@google.com>, Jason Gunthorpe <jgg@ziepe.ca>, Thomas Falcon <tlfalcon@linux.ibm.com>, Jose Abreu <joabreu@synopsys.com>,
+  Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, linux-wireless@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>, Wolfgang Grandegger <wg@grandegger.com>, Nick Child <nnac123@linux.ibm.com>, Simon Horman <horms@kernel.org>, Liu Haijun <haijun.liu@mediatek.com>, Kalle Valo <kvalo@kernel.org>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-can@vger.kernel.org, Yuanjun Gong <ruc_gongyuanjun@163.com>, Shailend Chand <shailend@google.com>, Marc Kleine-Budde <mkl@pengutronix.de>, Benjamin Berg <benjamin.berg@intel.com>, M Chetan Kumar <m.chetan.kumar@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Coco Li <lixiaoyan@google.com>, linux-arm-kernel@lists.infradead.org, Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>, Ricardo Martinez <ricardo.martinez@linux.intel.com>, Loic Poulain <loic.poulain@linaro.org>, Zheng Zengkai <zhengzengkai@huawei.com>, Maximilian Lu
+ z <luzmaximilian@gmail.com>, Anjaneyulu <pagadala.yesu.anjaneyulu@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Douglas Miller <dougmill@linux.ibm.com>, linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Junfeng Guo <junfeng.guo@intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Raju Rangoju <rajur@chelsio.com>, Praveen Kaligineedi <pkaligineedi@google.com>, Johannes Berg <johannes@sipsolutions.net>, Jeff Johnson <quic_jjohnson@quicinc.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+On Sun, Oct 08, 2023 at 09:08:41AM +0200, Eric Dumazet wrote:
+> On Fri, Oct 6, 2023 at 8:49 PM Christian Marangi <ansuelsmth@gmail.com> wrote:
+> >
+> > On Thu, Oct 05, 2023 at 06:16:26PM +0200, Eric Dumazet wrote:
+> > > On Tue, Oct 3, 2023 at 8:36 PM Christian Marangi <ansuelsmth@gmail.com> wrote:
+> > > >
+> > > > Replace if condition of napi_schedule_prep/__napi_schedule and use bool
+> > > > from napi_schedule directly where possible.
+> > > >
+> > > > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> > > > ---
+> > > >  drivers/net/ethernet/atheros/atlx/atl1.c     | 4 +---
+> > > >  drivers/net/ethernet/toshiba/tc35815.c       | 4 +---
+> > > >  drivers/net/wireless/intel/iwlwifi/pcie/rx.c | 4 +---
+> > > >  3 files changed, 3 insertions(+), 9 deletions(-)
+> > > >
+> > > > diff --git a/drivers/net/ethernet/atheros/atlx/atl1.c b/drivers/net/ethernet/atheros/atlx/atl1.c
+> > > > index 02aa6fd8ebc2..a9014d7932db 100644
+> > > > --- a/drivers/net/ethernet/atheros/atlx/atl1.c
+> > > > +++ b/drivers/net/ethernet/atheros/atlx/atl1.c
+> > > > @@ -2446,7 +2446,7 @@ static int atl1_rings_clean(struct napi_struct *napi, int budget)
+> > > >
+> > > >  static inline int atl1_sched_rings_clean(struct atl1_adapter* adapter)
+> > > >  {
+> > > > -       if (!napi_schedule_prep(&adapter->napi))
+> > > > +       if (!napi_schedule(&adapter->napi))
+> > > >                 /* It is possible in case even the RX/TX ints are disabled via IMR
+> > > >                  * register the ISR bits are set anyway (but do not produce IRQ).
+> > > >                  * To handle such situation the napi functions used to check is
+> > > > @@ -2454,8 +2454,6 @@ static inline int atl1_sched_rings_clean(struct atl1_adapter* adapter)
+> > > >                  */
+> > > >                 return 0;
+> > > >
+> > > > -       __napi_schedule(&adapter->napi);
+> > > > -
+> > > >         /*
+> > > >          * Disable RX/TX ints via IMR register if it is
+> > > >          * allowed. NAPI handler must reenable them in same
+> > > > diff --git a/drivers/net/ethernet/toshiba/tc35815.c b/drivers/net/ethernet/toshiba/tc35815.c
+> > > > index 14cf6ecf6d0d..a8b8a0e13f9a 100644
+> > > > --- a/drivers/net/ethernet/toshiba/tc35815.c
+> > > > +++ b/drivers/net/ethernet/toshiba/tc35815.c
+> > > > @@ -1436,9 +1436,7 @@ static irqreturn_t tc35815_interrupt(int irq, void *dev_id)
+> > > >         if (!(dmactl & DMA_IntMask)) {
+> > > >                 /* disable interrupts */
+> > > >                 tc_writel(dmactl | DMA_IntMask, &tr->DMA_Ctl);
+> > > > -               if (napi_schedule_prep(&lp->napi))
+> > > > -                       __napi_schedule(&lp->napi);
+> > > > -               else {
+> > > > +               if (!napi_schedule(&lp->napi)) {
+> > > >                         printk(KERN_ERR "%s: interrupt taken in poll\n",
+> > > >                                dev->name);
+> > > >                         BUG();
+> > >
+> > > Hmmm... could you also remove this BUG() ? I think this code path can be taken
+> > > if some applications are using busy polling.
+> > >
+> > > Or simply rewrite this with the traditional
+> > >
+> > > if (napi_schedule_prep(&lp->napi)) {
+> > >    /* disable interrupts */
+> > >    tc_writel(dmactl | DMA_IntMask, &tr->DMA_Ctl);
+> > >     __napi_schedule(&lp->napi);
+> > > }
+> > >
+> > >
+> >
+> > Mhhh is it safe to do so? I mean it seems very wrong to print a warning
+> > and BUG() instead of disabling the interrupt only if napi can be
+> > scheduled... Maybe is very old code? The more I see this the more I see
+> > problem... (randomly disabling the interrupt and then make the kernel
+> > die)
+> 
+> I am pretty sure this BUG() can be hit these days with busy polling or
+> setting gro_flush_timeout.
+> 
+> I wish we could remove these bugs before someone copy-paste them.
+> 
+> Again, this is orthogonal, I might simply stop doing reviews if this
+> is not useful.
 
-this series converts all platform drivers below drivers/mtd to use the
-.remove_new() callback. Compared to the traditional .remove() callback
-.remove_new() returns no value. This is a good thing because the driver
-core doesn't (and cannot) cope for errors during remove. The only effect
-of a non-zero return value in .remove() is that the driver core emits a
-warning. The device is removed anyhow and an early return from .remove()
-usually yields resource leaks and/or use-after-free bugs.
+They are very useful and thanks a lot for them! I'm asking these as to
+understand how to proceed. I have in queue 2 other series that depends
+on this and I'm just asking info on how to speedup the progress on this!
 
-All drivers touched here returned zero unconditionally in their remove
-callback, so they could all be converted trivially to .remove_new().
+Soo think I have to send v3 with the suggested change and BUG() dropped?
+Happy to do everything to fix and improve this series!
 
-See commit 5c5a7680e67b ("platform: Provide a remove callback that
-returns no value") for an extended explanation and the eventual goal.
-
-As an added bonus the series starts with a minor fix and a
-simplification of the txx9ndfmc driver.
-
-The only interdependencies in this series is between the three txx9ndfmc
-patches. As there are still quite a few drivers to convert, I'm happy
-about every patch that makes it in. So even if there is a merge conflict
-with one patch until you apply (or a different concern that doesn't
-apply to all patches), please apply the remainder of this series anyhow.
-I'll come back to the part that you (maybe) skipped at a later point.
-
-Best regards
-Uwe
-
-Uwe Kleine-König (20):
-  mtd: rawnand: txx9ndfmc: Mark driver struct with __refdata to prevent
-    section mismatch warning
-  mtd: rawnand: txx9ndfmc: Drop if block with always false condition
-  mtd: bcm47xxsflash: Convert to platform remove callback returning void
-  mtd: docg3: Convert to platform remove callback returning void
-  mtd: phram: Convert to platform remove callback returning void
-  mtd: powernv_flash: Convert to platform remove callback returning void
-  mtd: spear_smi: Convert to platform remove callback returning void
-  mtd: st_spi_fsm: Convert to platform remove callback returning void
-  mtd: hyperbus: hbmc-am654: Convert to platform remove callback
-    returning void
-  mtd: hyperbus: rpc-if: Convert to platform remove callback returning
-    void
-  mtd: lpddr2_nvm: Convert to platform remove callback returning void
-  mtd: maps: lantiq-flash: Convert to platform remove callback returning
-    void
-  mtd: maps: physmap-core: Convert to platform remove callback returning
-    void
-  mtd: maps: plat-ram: Convert to platform remove callback returning
-    void
-  mtd: maps: pxa2xx-flash: Convert to platform remove callback returning
-    void
-  mtd: maps: sa1100-flash: Convert to platform remove callback returning
-    void
-  mtd: maps: sun_uflash: Convert to platform remove callback returning
-    void
-  mtd: rawnand: txx9ndfmc: Convert to platform remove callback returning
-    void
-  mtd: spi-nor: hisi-sfc: Convert to platform remove callback returning
-    void
-  mtd: spi-nor: nxp-spifi: Convert to platform remove callback returning
-    void
-
- drivers/mtd/devices/bcm47xxsflash.c         |  6 ++----
- drivers/mtd/devices/docg3.c                 |  5 ++---
- drivers/mtd/devices/phram.c                 |  6 ++----
- drivers/mtd/devices/powernv_flash.c         |  6 ++----
- drivers/mtd/devices/spear_smi.c             |  6 ++----
- drivers/mtd/devices/st_spi_fsm.c            |  6 ++----
- drivers/mtd/hyperbus/hbmc-am654.c           |  6 ++----
- drivers/mtd/hyperbus/rpc-if.c               |  6 ++----
- drivers/mtd/lpddr/lpddr2_nvm.c              |  6 ++----
- drivers/mtd/maps/lantiq-flash.c             |  6 ++----
- drivers/mtd/maps/physmap-core.c             |  5 ++---
- drivers/mtd/maps/plat-ram.c                 |  8 +++-----
- drivers/mtd/maps/pxa2xx-flash.c             |  5 ++---
- drivers/mtd/maps/sa1100-flash.c             |  6 ++----
- drivers/mtd/maps/sun_uflash.c               |  6 ++----
- drivers/mtd/nand/raw/txx9ndfmc.c            | 15 +++++++++------
- drivers/mtd/spi-nor/controllers/hisi-sfc.c  |  5 ++---
- drivers/mtd/spi-nor/controllers/nxp-spifi.c |  6 ++----
- 18 files changed, 44 insertions(+), 71 deletions(-)
-
-
-base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
 -- 
-2.40.1
-
+	Ansuel
