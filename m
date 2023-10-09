@@ -4,52 +4,133 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE896CD613A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 21:23:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09101E81E18
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 22:47:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KIVyWshc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RgBHhLuW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S4Bpp45xfz3cbP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Oct 2023 08:23:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S4Dg91XRpz3dDM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Oct 2023 09:47:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KIVyWshc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RgBHhLuW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=ansuelsmth@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S4Bkf6pDVz3cnZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2023 08:19:54 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 0A53E60109;
-	Mon,  9 Oct 2023 21:19:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11ACEC4339A;
-	Mon,  9 Oct 2023 21:19:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1696886391;
-	bh=Y6nnyfmtTcWoPREzqbIFTBI+9WLOEmya+e4ZqStyynQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=KIVyWshcorp4nyq4Qk8+l0N1N8+nlUOM6IHaO+AooXEfX9m85kJLXCLn75X4Qr9ox
-	 G4sPNTfqWNhVMkCj2BOx94nD/0py2qYjiSpQFth1je1eVBkTQ88qLiLMHg+b/babCq
-	 +LhuxXndG6txOrnhrIxYrR4rksZxoPuZOvtjtURC5mPPqGVCFSB8odMDjbooOR75+t
-	 aoDnY8GZzp+1s+3o84/onKNQTMcrpjC/XU1u6lNHnNpEsQXgX7ZpElKu3I1YwR9eSR
-	 sfTOjmKNG31tAW19dyOMjcoA1T271m2UFMWkp6F9XUTJ3PERoQ4K1KW4ad1WnkCYie
-	 SgV4Viirn0LbQ==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH v3 4/9] vgacon, arch/*: remove unused screen_info definitions
-Date: Mon,  9 Oct 2023 23:18:40 +0200
-Message-Id: <20231009211845.3136536-5-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20231009211845.3136536-1-arnd@kernel.org>
-References: <20231009211845.3136536-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S40Tt05Qyz3c13
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2023 00:38:08 +1100 (AEDT)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-40651a72807so44206955e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2023 06:38:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1696858684; x=1697463484; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=u6KCxFngvX9I/hwQrj7ymkXhwkpFmhe1Y7OW2VCan1I=;
+        b=RgBHhLuW7o6ArLD4eR+ELQkhIG0gWeGteHn7rlMSlPKpFoEFWeCm1sbskdOF1hfOAY
+         JVioqyKXajxUx1T3BOfePXyk0Op/Ywv89qKnIXmO8Q4DUdklZQU70ykdoHRlaXthPpun
+         0KdcRCYiOPYzyyr+3h9Ot24IiTKnPGmseb/1f/8vQ4aNrOWFjjefncznm3KZWfmPKtWo
+         wsuzbxJQx2NDn9hx4zZEqExb+r+jsFdPMhccS7JapyXkGNaNPVcvWl1olHj0F/LjpsGS
+         6thCLEpdfcvr4SsrxUtL6NPY8OZRD9AC4gbbKlv1Zhjn4jpA/s/kLWie+2RSqZPZugFA
+         uCeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696858684; x=1697463484;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=u6KCxFngvX9I/hwQrj7ymkXhwkpFmhe1Y7OW2VCan1I=;
+        b=hvOTsLeHi0wbEfhGHbuaoqp7HcyhKbKwrfEo/5OM0t9IxBU4ZtKrFGlK08gsjMvuZ1
+         vWY4KFUXZFqnoWpAmuvuEbaX0pBW6DFaNS9AVVZ9oQlWcyLRQnj8nBKLtXLAVOjjwbFv
+         pTH37T2o4LBoV6NkXOWacQgpZpXqVgFpeI8GDD98V+G4So/5/ecQMKJ3BOpXuxAPqf+U
+         Oqefv/ZqW7IcWpF/cLhPmZ7Fgrevm+DGbvCdiAjIiW4TWRdSjrjmoZk+rL2m4f7hWvqt
+         r0U4thGVcyY7VVgzYRwn3A5Nqr08DRdOF9mOv7Ev9h6JYkrK+lSx2UJSQR4EpVFEnmgY
+         3GIw==
+X-Gm-Message-State: AOJu0YxNi4evC3tYzvzGQNan85mhctvdRI6QJoYw1XcJmVyVxKvKgJ5U
+	jbIdLUvKhyahGq7uVdgwhsQ=
+X-Google-Smtp-Source: AGHT+IEMzVE5102E/rR+PKbFb4Y1qJpv3S+lyAIEK40sgvEz//IRItxHur9Z7ZsOHs5xcO/iYCxqbg==
+X-Received: by 2002:adf:f78d:0:b0:320:926:26d5 with SMTP id q13-20020adff78d000000b00320092626d5mr13881386wrp.30.1696858683739;
+        Mon, 09 Oct 2023 06:38:03 -0700 (PDT)
+Received: from localhost.localdomain (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
+        by smtp.googlemail.com with ESMTPSA id t4-20020a0560001a4400b0032763287473sm9746160wry.75.2023.10.09.06.38.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Oct 2023 06:38:03 -0700 (PDT)
+From: Christian Marangi <ansuelsmth@gmail.com>
+To: Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Wolfgang Grandegger <wg@grandegger.com>,
+	Marc Kleine-Budde <mkl@pengutronix.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Chris Snook <chris.snook@gmail.com>,
+	Raju Rangoju <rajur@chelsio.com>,
+	Jeroen de Borst <jeroendb@google.com>,
+	Praveen Kaligineedi <pkaligineedi@google.com>,
+	Shailend Chand <shailend@google.com>,
+	Douglas Miller <dougmill@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Dany Madden <danymadden@us.ibm.com>,
+	Thomas Falcon <tlfalcon@linux.ibm.com>,
+	Tariq Toukan <tariqt@nvidia.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Jose Abreu <joabreu@synopsys.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Krzysztof Halasa <khalasa@piap.pl>,
+	Kalle Valo <kvalo@kernel.org>,
+	Jeff Johnson <quic_jjohnson@quicinc.com>,
+	Gregory Greenman <gregory.greenman@intel.com>,
+	Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>,
+	Intel Corporation <linuxwwan@intel.com>,
+	Chiranjeevi Rapolu <chiranjeevi.rapolu@linux.intel.com>,
+	Liu Haijun <haijun.liu@mediatek.com>,
+	M Chetan Kumar <m.chetan.kumar@linux.intel.com>,
+	Ricardo Martinez <ricardo.martinez@linux.intel.com>,
+	Loic Poulain <loic.poulain@linaro.org>,
+	Sergey Ryazanov <ryazanov.s.a@gmail.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Christian Marangi <ansuelsmth@gmail.com>,
+	Yuanjun Gong <ruc_gongyuanjun@163.com>,
+	Alex Elder <elder@linaro.org>,
+	Bhupesh Sharma <bhupesh.sharma@linaro.org>,
+	Simon Horman <horms@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Bailey Forrest <bcf@google.com>,
+	Junfeng Guo <junfeng.guo@intel.com>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Ziwei Xiao <ziweixiao@google.com>,
+	Rushil Gupta <rushilg@google.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Yuri Karpov <YKarpov@ispras.ru>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Zheng Zengkai <zhengzengkai@huawei.com>,
+	Dawei Li <set_pte_at@outlook.com>,
+	Anjaneyulu <pagadala.yesu.anjaneyulu@intel.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	linux-rdma@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-can@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-arm-kernel@lists.infradead.org,
+	ath10k@lists.infradead.org,
+	linux-wireless@vger.kernel.org
+Subject: [net-next v3 1/5] netdev: replace simple napi_schedule_prep/__napi_schedule to napi_schedule
+Date: Mon,  9 Oct 2023 15:37:50 +0200
+Message-Id: <20231009133754.9834-1-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 10 Oct 2023 09:46:11 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,255 +142,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dave Hansen <dave.hansen@linux.intel.com>, Palmer Dabbelt <palmer@rivosinc.com>, Russell King <linux@armlinux.org.uk>, Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, linux-efi@vger.kernel.org, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, "K. Y. Srinivasan" <kys@microsoft.com>, David Airlie <airlied@gmail.com>, Ard Biesheuvel <ardb@kernel.org>, Wei Liu <wei.liu@kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Dexuan Cui <decui@microsoft.com>, Javier Martinez Canillas <javierm@redhat.com>, Deepak Rawat <drawat.floss@gmail.com>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
- , Haiyang Zhang <haiyangz@microsoft.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Khalid Aziz <khalid@gonehiking.org>, Brian Cain <bcain@quicinc.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+Replace drivers that still use napi_schedule_prep/__napi_schedule
+with napi_schedule helper as it does the same exact check and call.
 
-A number of architectures either kept the screen_info definition for
-historical purposes as it used to be required by the generic VT code, or
-they copied it from another architecture in order to build the VGA console
-driver in an allmodconfig build. The mips definition is used by some
-platforms, but the initialization on jazz is not needed.
-
-Now that vgacon no longer builds on these architectures, remove the
-stale definitions and initializations.
-
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
-Acked-by: Dinh Nguyen <dinguyen@kernel.org>
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
-Acked-by: Guo Ren <guoren@kernel.org>
-Acked-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+Reviewed-by: Eric Dumazet <edumazet@google.com>
 ---
- arch/csky/kernel/setup.c          | 12 ------------
- arch/hexagon/kernel/Makefile      |  2 --
- arch/hexagon/kernel/screen_info.c |  3 ---
- arch/mips/jazz/setup.c            |  9 ---------
- arch/nios2/kernel/setup.c         |  5 -----
- arch/sh/kernel/setup.c            |  5 -----
- arch/sparc/kernel/setup_32.c      | 13 -------------
- arch/sparc/kernel/setup_64.c      | 13 -------------
- arch/xtensa/kernel/setup.c        | 12 ------------
- 9 files changed, 74 deletions(-)
- delete mode 100644 arch/hexagon/kernel/screen_info.c
+Changes v3:
+- Add Reviewed-by tag
+Changes v2:
+- Add missing semicolon
+---
+ drivers/net/ethernet/ni/nixge.c     | 3 +--
+ drivers/net/ethernet/wiznet/w5100.c | 4 ++--
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/csky/kernel/setup.c b/arch/csky/kernel/setup.c
-index 106fbf0b6f3b4..51012e90780d6 100644
---- a/arch/csky/kernel/setup.c
-+++ b/arch/csky/kernel/setup.c
-@@ -8,22 +8,10 @@
- #include <linux/of_fdt.h>
- #include <linux/start_kernel.h>
- #include <linux/dma-map-ops.h>
--#include <linux/screen_info.h>
- #include <asm/sections.h>
- #include <asm/mmu_context.h>
- #include <asm/pgalloc.h>
+diff --git a/drivers/net/ethernet/ni/nixge.c b/drivers/net/ethernet/ni/nixge.c
+index 97f4798f4b42..f71a4f8bbb89 100644
+--- a/drivers/net/ethernet/ni/nixge.c
++++ b/drivers/net/ethernet/ni/nixge.c
+@@ -755,8 +755,7 @@ static irqreturn_t nixge_rx_irq(int irq, void *_ndev)
+ 		cr &= ~(XAXIDMA_IRQ_IOC_MASK | XAXIDMA_IRQ_DELAY_MASK);
+ 		nixge_dma_write_reg(priv, XAXIDMA_RX_CR_OFFSET, cr);
  
--#ifdef CONFIG_DUMMY_CONSOLE
--struct screen_info screen_info = {
--	.orig_video_lines	= 30,
--	.orig_video_cols	= 80,
--	.orig_video_mode	= 0,
--	.orig_video_ega_bx	= 0,
--	.orig_video_isVGA	= 1,
--	.orig_video_points	= 8
--};
--#endif
--
- static void __init csky_memblock_init(void)
- {
- 	unsigned long lowmem_size = PFN_DOWN(LOWMEM_LIMIT - PHYS_OFFSET_OFFSET);
-diff --git a/arch/hexagon/kernel/Makefile b/arch/hexagon/kernel/Makefile
-index e73cb321630ec..3fdf937eb572e 100644
---- a/arch/hexagon/kernel/Makefile
-+++ b/arch/hexagon/kernel/Makefile
-@@ -17,5 +17,3 @@ obj-y += vm_vectors.o
- obj-$(CONFIG_HAS_DMA) += dma.o
+-		if (napi_schedule_prep(&priv->napi))
+-			__napi_schedule(&priv->napi);
++		napi_schedule(&priv->napi);
+ 		goto out;
+ 	}
+ 	if (!(status & XAXIDMA_IRQ_ALL_MASK)) {
+diff --git a/drivers/net/ethernet/wiznet/w5100.c b/drivers/net/ethernet/wiznet/w5100.c
+index 341ee2f249fd..b26fd15c25ae 100644
+--- a/drivers/net/ethernet/wiznet/w5100.c
++++ b/drivers/net/ethernet/wiznet/w5100.c
+@@ -930,8 +930,8 @@ static irqreturn_t w5100_interrupt(int irq, void *ndev_instance)
  
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
--
--obj-$(CONFIG_VGA_CONSOLE) += screen_info.o
-diff --git a/arch/hexagon/kernel/screen_info.c b/arch/hexagon/kernel/screen_info.c
-deleted file mode 100644
-index 1e1ceb18bafe7..0000000000000
---- a/arch/hexagon/kernel/screen_info.c
-+++ /dev/null
-@@ -1,3 +0,0 @@
--#include <linux/screen_info.h>
--
--struct screen_info screen_info;
-diff --git a/arch/mips/jazz/setup.c b/arch/mips/jazz/setup.c
-index ee044261eb223..23059ead773fc 100644
---- a/arch/mips/jazz/setup.c
-+++ b/arch/mips/jazz/setup.c
-@@ -13,7 +13,6 @@
- #include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/console.h>
--#include <linux/screen_info.h>
- #include <linux/platform_device.h>
- #include <linux/serial_8250.h>
- #include <linux/dma-mapping.h>
-@@ -76,14 +75,6 @@ void __init plat_mem_setup(void)
+ 		if (priv->ops->may_sleep)
+ 			queue_work(priv->xfer_wq, &priv->rx_work);
+-		else if (napi_schedule_prep(&priv->napi))
+-			__napi_schedule(&priv->napi);
++		else
++			napi_schedule(&priv->napi);
+ 	}
  
- 	_machine_restart = jazz_machine_restart;
- 
--#ifdef CONFIG_VT
--	screen_info = (struct screen_info) {
--		.orig_video_cols	= 160,
--		.orig_video_lines	= 64,
--		.orig_video_points	= 16,
--	};
--#endif
--
- 	add_preferred_console("ttyS", 0, "9600");
- }
- 
-diff --git a/arch/nios2/kernel/setup.c b/arch/nios2/kernel/setup.c
-index 8582ed9658447..da122a5fa43b2 100644
---- a/arch/nios2/kernel/setup.c
-+++ b/arch/nios2/kernel/setup.c
-@@ -19,7 +19,6 @@
- #include <linux/memblock.h>
- #include <linux/initrd.h>
- #include <linux/of_fdt.h>
--#include <linux/screen_info.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/sections.h>
-@@ -36,10 +35,6 @@ static struct pt_regs fake_regs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 					0, 0, 0, 0, 0, 0,
- 					0};
- 
--#ifdef CONFIG_VT
--struct screen_info screen_info;
--#endif
--
- /* Copy a short hook instruction sequence to the exception address */
- static inline void copy_exception_handler(unsigned int addr)
- {
-diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
-index b3da2757faaf3..3d80515298d26 100644
---- a/arch/sh/kernel/setup.c
-+++ b/arch/sh/kernel/setup.c
-@@ -7,7 +7,6 @@
-  *  Copyright (C) 1999  Niibe Yutaka
-  *  Copyright (C) 2002 - 2010 Paul Mundt
-  */
--#include <linux/screen_info.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/initrd.h>
-@@ -69,10 +68,6 @@ EXPORT_SYMBOL(cpu_data);
- struct sh_machine_vector sh_mv = { .mv_name = "generic", };
- EXPORT_SYMBOL(sh_mv);
- 
--#ifdef CONFIG_VT
--struct screen_info screen_info;
--#endif
--
- extern int root_mountflags;
- 
- #define RAMDISK_IMAGE_START_MASK	0x07FF
-diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
-index 34ef7febf0d56..e3b72a7b46d37 100644
---- a/arch/sparc/kernel/setup_32.c
-+++ b/arch/sparc/kernel/setup_32.c
-@@ -17,7 +17,6 @@
- #include <linux/initrd.h>
- #include <asm/smp.h>
- #include <linux/user.h>
--#include <linux/screen_info.h>
- #include <linux/delay.h>
- #include <linux/fs.h>
- #include <linux/seq_file.h>
-@@ -51,18 +50,6 @@
- 
- #include "kernel.h"
- 
--struct screen_info screen_info = {
--	0, 0,			/* orig-x, orig-y */
--	0,			/* unused */
--	0,			/* orig-video-page */
--	0,			/* orig-video-mode */
--	128,			/* orig-video-cols */
--	0,0,0,			/* ega_ax, ega_bx, ega_cx */
--	54,			/* orig-video-lines */
--	0,                      /* orig-video-isVGA */
--	16                      /* orig-video-points */
--};
--
- /* Typing sync at the prom prompt calls the function pointed to by
-  * romvec->pv_synchook which I set to the following function.
-  * This should sync all filesystems and return, for now it just
-diff --git a/arch/sparc/kernel/setup_64.c b/arch/sparc/kernel/setup_64.c
-index 6546ca9d4d3f1..6a4797dec34b4 100644
---- a/arch/sparc/kernel/setup_64.c
-+++ b/arch/sparc/kernel/setup_64.c
-@@ -15,7 +15,6 @@
- #include <linux/ptrace.h>
- #include <asm/smp.h>
- #include <linux/user.h>
--#include <linux/screen_info.h>
- #include <linux/delay.h>
- #include <linux/fs.h>
- #include <linux/seq_file.h>
-@@ -68,18 +67,6 @@
- DEFINE_SPINLOCK(ns87303_lock);
- EXPORT_SYMBOL(ns87303_lock);
- 
--struct screen_info screen_info = {
--	0, 0,			/* orig-x, orig-y */
--	0,			/* unused */
--	0,			/* orig-video-page */
--	0,			/* orig-video-mode */
--	128,			/* orig-video-cols */
--	0, 0, 0,		/* unused, ega_bx, unused */
--	54,			/* orig-video-lines */
--	0,                      /* orig-video-isVGA */
--	16                      /* orig-video-points */
--};
--
- static void
- prom_console_write(struct console *con, const char *s, unsigned int n)
- {
-diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
-index 52d6e4870a04c..bdec4a773af09 100644
---- a/arch/xtensa/kernel/setup.c
-+++ b/arch/xtensa/kernel/setup.c
-@@ -19,7 +19,6 @@
- #include <linux/init.h>
- #include <linux/mm.h>
- #include <linux/proc_fs.h>
--#include <linux/screen_info.h>
- #include <linux/kernel.h>
- #include <linux/percpu.h>
- #include <linux/reboot.h>
-@@ -49,17 +48,6 @@
- #include <asm/timex.h>
- #include <asm/traps.h>
- 
--#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
--struct screen_info screen_info = {
--	.orig_x = 0,
--	.orig_y = 24,
--	.orig_video_cols = 80,
--	.orig_video_lines = 24,
--	.orig_video_isVGA = 1,
--	.orig_video_points = 16,
--};
--#endif
--
- #ifdef CONFIG_BLK_DEV_INITRD
- extern unsigned long initrd_start;
- extern unsigned long initrd_end;
+ 	return IRQ_HANDLED;
 -- 
-2.39.2
+2.40.1
 
