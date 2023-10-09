@@ -4,114 +4,153 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22532E95A95
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 07:04:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BB92E95A91
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 07:49:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=K7gal1MY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YhrbV2W1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S3qm25KDCz3cN4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 18:04:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S3rlM0bYKz3cNk
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 18:49:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=K7gal1MY;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YhrbV2W1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=j.granados@samsung.com; receiver=lists.ozlabs.org)
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mgamail.intel.com; envelope-from=kevin.tian@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3qkz2jjcz2y1j
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 18:03:51 +1100 (AEDT)
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20231009070340euoutp015b9ade788582b3cbabeb19404f335276~MXnXkVszm0480204802euoutp01I;
-	Mon,  9 Oct 2023 07:03:40 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20231009070340euoutp015b9ade788582b3cbabeb19404f335276~MXnXkVszm0480204802euoutp01I
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1696835020;
-	bh=qL27lSW5ZMGTGSedh/Md9xLL53dYCemDlHl0E8oR2zs=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=K7gal1MYB1bygvVVFwpLIjW3/pK2UrXhKTbgD/ZY0H3x6irPprWSMIyJ9WMsoyMV7
-	 4N4zzGrpPpqL06YkUiEA8RT8ZbWuT7FrEMcG28ZhC89ZoAI987UqjKx0fyg9eGtyoW
-	 z0y24vZus0JcYfaBiTGDfpA6N9hTnORzAsZKd0qY=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-	eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-	20231009070339eucas1p2309116a7bf69e3440452f3c9c8dffa58~MXnXb3i9r1629816298eucas1p2r;
-	Mon,  9 Oct 2023 07:03:39 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-	eusmges1new.samsung.com (EUCPMTA) with SMTP id 3A.E2.42423.BC5A3256; Mon,  9
-	Oct 2023 08:03:39 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-	20231009070339eucas1p1fe3b98e93490d89e1c9fe8fb9df87c7a~MXnXHSLhP2545325453eucas1p18;
-	Mon,  9 Oct 2023 07:03:39 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-	eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-	20231009070339eusmtrp2e2cb45c024e5001dbb0825ad4ee4cde4~MXnXGkEk52593025930eusmtrp2p;
-	Mon,  9 Oct 2023 07:03:39 +0000 (GMT)
-X-AuditID: cbfec7f2-a51ff7000002a5b7-29-6523a5cb5d3a
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-	eusmgms1.samsung.com (EUCPMTA) with SMTP id A4.B2.10549.BC5A3256; Mon,  9
-	Oct 2023 08:03:39 +0100 (BST)
-Received: from CAMSVWEXC01.scsc.local (unknown [106.1.227.71]) by
-	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-	20231009070339eusmtip2359ce2aa5f147ed85f553e0885118c98~MXnW6Klug0727307273eusmtip21;
-	Mon,  9 Oct 2023 07:03:39 +0000 (GMT)
-Received: from localhost (106.110.32.133) by CAMSVWEXC01.scsc.local
-	(2002:6a01:e347::6a01:e347) with Microsoft SMTP Server (TLS) id 15.0.1497.2;
-	Mon, 9 Oct 2023 08:03:38 +0100
-Date: Mon, 9 Oct 2023 09:08:16 +0200
-From: Joel Granados <j.granados@samsung.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 00/15] sysctl: Remove sentinel elements from drivers
-Message-ID: <20231009070816.2bxodfj3vufx7qkb@localhost>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3rkJ1xgjz2yN8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 18:48:23 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1696837704; x=1728373704;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=1Khd8tcE33VNFsPCtLMSHp2tqOLq4p2ejvez7N/2BMw=;
+  b=YhrbV2W1SVCE3vrhbkcA5mJmiO71dyTxtnCpwGOIj2VzJLSLPoVCnVYe
+   TYgj+GjwoY8sEB0HNNpvgCL4JoQ+gC9SNgUOIAbGOlv4ESl8VwVXkkcir
+   CoxxOOG0UwCORWNLC16D/Q8w/zPG5GYmb2TfHE4zwaqYttvRdY857dxLk
+   AtsC7ES0indx2x3rqCLAeAX/c7iauG1kTORRkLZSPNEJ1J73rtdVN8PVt
+   Sw1ODC/EftdhvWQskGJ5xjnY0DObvReoPfJCA7iBh7nnYFU3KmbPstLRa
+   cDkNoi8fCiDz/SXSbWtuGDckHIVEkdQNAuRNgQgL2IkLlG9aXq8pT0pfo
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="364380501"
+X-IronPort-AV: E=Sophos;i="6.03,209,1694761200"; 
+   d="scan'208";a="364380501"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Oct 2023 00:48:21 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="756627780"
+X-IronPort-AV: E=Sophos;i="6.03,209,1694761200"; 
+   d="scan'208";a="756627780"
+Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
+  by fmsmga007.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 09 Oct 2023 00:48:21 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.32; Mon, 9 Oct 2023 00:48:21 -0700
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.32 via Frontend Transport; Mon, 9 Oct 2023 00:48:21 -0700
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (104.47.55.169)
+ by edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.32; Mon, 9 Oct 2023 00:48:20 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=CUPaUOxXWe+aEQ4E7HUkPWN9VjF0Kx9hc+83rKvx6c+HcJUjJg3no85Z+vGXdJAtG1VWNPh9sTlaCNuCoXsvNVbKaSDccSfjvnoxFgr5BAFFCG3TrMQItf9IZCLczFtaYNJans231+wOlR1/22l+LtX9Tgxf5ajT47Z58NfniXoo7gPuM0dAaedFlNluwILRhsRf6w3rrI+EE+7Jmdpa8S1BmZgLxfpdhfwRf+6AJPeTuF4yzrZFM4igzE2Cfzby6RuDfos7iZOVJrV0fpqzQXouVQBQYZxZAOHihiSlBKzFJ0jEJ6fMLxAkpYh9rTwMhAR60EjmybycQRoiIC6Saw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1Khd8tcE33VNFsPCtLMSHp2tqOLq4p2ejvez7N/2BMw=;
+ b=dZe41XWPM/+4ZRUb8ybX++/rjFpPG14NzrglafJMk0bviQ1GcstLbNw0ARBbDzmMzd7I/KZHBBVGEF87Hm1JS9X+gQ7fxDyT0JDdalYMFqZe++0G4Z0n6C8SCcWFjlEXEkApQHSh/jfg1AgIX/8HESb1e1VXZSevwKxpgfFZi0czGyEqZldRVRFAa4oTnfZLGFN9YwXIrm1lLIN0H6rdr8FbtshKQ5IGj1Uk7/maIyXzssJB5JyGzPlJLAWozRq0OAnGxf7b6224ErANFe7SCG6JoC7/Q6t47tDCKkPMZgsPln2tSapNPrxjzMRBV6Yh8Ynr7xHkax2VnCtriBfvwA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from BN9PR11MB5276.namprd11.prod.outlook.com (2603:10b6:408:135::18)
+ by PH8PR11MB7045.namprd11.prod.outlook.com (2603:10b6:510:217::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.43; Mon, 9 Oct
+ 2023 07:48:13 +0000
+Received: from BN9PR11MB5276.namprd11.prod.outlook.com
+ ([fe80::7116:9866:8367:95b4]) by BN9PR11MB5276.namprd11.prod.outlook.com
+ ([fe80::7116:9866:8367:95b4%3]) with mapi id 15.20.6863.032; Mon, 9 Oct 2023
+ 07:48:13 +0000
+From: "Tian, Kevin" <kevin.tian@intel.com>
+To: Jason Gunthorpe <jgg@nvidia.com>, Alyssa Rosenzweig
+	<alyssa@rosenzweig.io>, "asahi@lists.linux.dev" <asahi@lists.linux.dev>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>, David Woodhouse
+	<dwmw2@infradead.org>, "iommu@lists.linux.dev" <iommu@lists.linux.dev>, Joerg
+ Roedel <joro@8bytes.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, Hector Martin <marcan@marcan.st>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Robin
+ Murphy" <robin.murphy@arm.com>, Sven Peter <sven@svenpeter.dev>, Will Deacon
+	<will@kernel.org>
+Subject: RE: [PATCH v2 4/9] iommufd: Convert to alloc_domain_paging()
+Thread-Topic: [PATCH v2 4/9] iommufd: Convert to alloc_domain_paging()
+Thread-Index: AQHZ8Z0Nwuo6PGrErkWqPWeScL3Ir7BBJpHg
+Date: Mon, 9 Oct 2023 07:48:13 +0000
+Message-ID: <BN9PR11MB5276357F748504D2C40AACF18CCEA@BN9PR11MB5276.namprd11.prod.outlook.com>
+References: <0-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
+ <4-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
+In-Reply-To: <4-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: BN9PR11MB5276:EE_|PH8PR11MB7045:EE_
+x-ms-office365-filtering-correlation-id: 42da43bf-d9a4-4ad9-7d35-08dbc89c175c
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: Ml+FCnWTJ9vnwpyb+0mPsE5Fojk9+ESfF9c+oIwIRZy5wXglVBsU3lYYMkc5X46gOs/YL5TtB+doVGQIMagTr1CpUSBDrOZy5jZMOGvK0/91RoyR/68KcSTmZ8Hfq60lU5DwlOD12aRPH0cK2Xw0IAlrj2LF3kECkBIp9u3wXIGnEQI8BparmOgCTEigbvGmBbgfh43OHBj0nGKPHAW9FWYOa+9YrlVDM3acj9XprTszP0l6pqZfJCcCZX6wnpAW3EFUVXqg4OSdNWqbRlfMEiYGOFRyI2vKCV+t4id4PXHSfYS6W9M/e7LlL0liETijHQeipna0PzGA0XDGJfNXSs1kZKpGsDaodzqpMpf9HhBkoy2Y+eiBbQaq2FGMBTgBneHwjXrSAd1/F+GmrpO9v1RV8SmdJKUJkxLjQEj173v5NydWI+Wn0P/FAaW/YkGAx0VMIlw5dnO+ypvjo1fH4of6DIiuvB5UiUrKQcOukPGP6MXOYo8gZz2zia91Zllu6s/m8knOMrf7Zs/4q9aoCglO7XbP2e1rt9fsZ3yIvg48LxDuvfyL6aomUMAT7k4Fygt/6YMpEvL9kvK+e9K7oIGyKmdrTiGrP50cuS3InDo9XnD1F4K6TvP/W+DvOukGdBKuMxjRi6GcfSU3TRrb+A==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR11MB5276.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(376002)(346002)(396003)(39860400002)(366004)(230922051799003)(451199024)(1800799009)(186009)(64100799003)(55016003)(83380400001)(26005)(66476007)(66556008)(316002)(76116006)(110136005)(66446008)(54906003)(64756008)(7416002)(66946007)(8936002)(4326008)(5660300002)(8676002)(41300700001)(7696005)(52536014)(6506007)(9686003)(2906002)(478600001)(71200400001)(558084003)(33656002)(38070700005)(38100700002)(82960400001)(921005)(122000001)(86362001);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Cyd+LvkZhT8zaXzcag8fB0ta4x+TBe9leRx0hy9mNrA2ivEkZjmsY1WIHppf?=
+ =?us-ascii?Q?SPQrX4pGb2idUeA/84RMtTJ4egpgDXrGMVGW8KlCQcrNd2dMfCNzgygrI5f8?=
+ =?us-ascii?Q?codOJyjBxmwsfPGEEUrmz+8/DSQnDxgxcXIlunLZgZFg0b46iuHzHd4Y4Lkx?=
+ =?us-ascii?Q?XjmLHVeKPWEdj4wngc/+aDQBvtBgP3IdKr78vAacLX7uyNbkTEU5Om+GjULQ?=
+ =?us-ascii?Q?eGwZPOy6kBxg7zmIWoPuTQJssnhQC8qv4/pMk8YlI26H9WUF/wba7MJ3sfL7?=
+ =?us-ascii?Q?mw/rhLA4eZbxmik+DolC5pg0siNO+WMtkQMjPM/s6o6Gj16jdjG7IlTy+Otv?=
+ =?us-ascii?Q?diaVSlrNdpC7MsiGg+cXHIWBwguBkdWLr286yOWWospu6Vzi3zPauYP2xzdc?=
+ =?us-ascii?Q?bhB2LWdjLdUbb7Iv4uA0vsJckXDRXF1drLlLhHKrObPzFZMqygVVQnnSlIHb?=
+ =?us-ascii?Q?r/a6AybGQWE/xn32FsaztSJLsCE8vjRVxY+tB+HSculP3J5zLlY6X98JKZCg?=
+ =?us-ascii?Q?AexRiWT06rKMP4xpvIDuqYWCvDz6s9KGnswT1aB26a0eiPDksIDvBqZV84+L?=
+ =?us-ascii?Q?tMFTio3/DybUv4l1q+HGTxk5D2NIe9/Yt0EktJS9bq7gfTQa/ODMYnByf7XH?=
+ =?us-ascii?Q?cianLhr20xUfHvpZtn28nCk3mGa3qAXOOdnSfMy7tA+4/BqF6Aunsb/fYir/?=
+ =?us-ascii?Q?1cHLyyoNS+b1uoPpVjFtL847UZIWfus7234jzEhNVDu7omadtKVxjcaoXMgd?=
+ =?us-ascii?Q?8YTnVXTtS1zPt3tkIPoxfESrwbzu3OGIEF86g/0MZYPUvWvIMhx/Mes20yUZ?=
+ =?us-ascii?Q?OeO+c+abeTnuNg56ouehizf/hwP9UxrHkvM3D62peNSUYSul3x+X9teXcuKE?=
+ =?us-ascii?Q?RfPfmHyXHXUPh88gUFfYtaF8gfxVhp/s2WUfVcky/SbTtopRDVbhdc4A1Cs1?=
+ =?us-ascii?Q?+B0/iRLX9OHAKis86ySwW/C/sxeiRnmDqDbCBuJMKB8wYtJsHRC6wzp/qlkO?=
+ =?us-ascii?Q?b9YeZFH/gybQUWazRcz1BCzQ7xD1zhQ9t616pJ6RLOL//YZGkELzUe0U4ovv?=
+ =?us-ascii?Q?6n/cR9xj59CFzecd0XGiDfndECcgjYii5IdgnDKSlRfPnzORwomprmhpW71S?=
+ =?us-ascii?Q?i5SrKe5XErjvh1mJgl7FVSvLWGj6u51PHTsx8otfP1lWcyEwPp06O1HTr1Xh?=
+ =?us-ascii?Q?3vWpHP4YYTcXVZpdtyzbfDa+AP2LOzV2S1Laqfs7e7riRlf3WEgpN3IYfco5?=
+ =?us-ascii?Q?YLFIYlxafANSohkeKV4QFv17VoHwF57290nOdtfrEO98IpF5QscKahSkZ0Wc?=
+ =?us-ascii?Q?7zMED6g9B/TlVWAdCYQf7SDUblQ1RezFi9OJH8GfJ24CWz+G38UEqjRT1Sxe?=
+ =?us-ascii?Q?oK7gyPkR1ylgVZJ3elF9ZdT0Gm+05omTYN/0zD4NIpC5mWexI2ASecLNl5cC?=
+ =?us-ascii?Q?3oPadSqLhbIyT2tVFwgB/OkXkpura9j3YDWu9Ixo73XgX/BZI9mX8IngJwLl?=
+ =?us-ascii?Q?vWOofba2OY3J44dbtTq273veWD50MGmh1a4IgrAnvrNUJIuEH90opgn5fEPm?=
+ =?us-ascii?Q?0g7eB8IdOJcX7Xcwi4dTz8lDzzgk2qA828kkrkNM?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="npotpdju3zhmyfwo"
-Content-Disposition: inline
-In-Reply-To: <87il7irrtb.fsf@mail.lhotse>
-X-Originating-IP: [106.110.32.133]
-X-ClientProxiedBy: CAMSVWEXC01.scsc.local (2002:6a01:e347::6a01:e347) To
-	CAMSVWEXC01.scsc.local (2002:6a01:e347::6a01:e347)
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrDKsWRmVeSWpSXmKPExsWy7djPc7qnlyqnGmz5aWTxZskxZos7k56z
-	W/z+/o/VYkvDITYHFo+vN88xeSx62cDiMWHRAUaP8zMWMgawRHHZpKTmZJalFunbJXBlHLq9
-	gL3gglRFz7yfjA2M08S6GDk5JARMJI40/2frYuTiEBJYwSjRcGw3O4TzhVHixLw+JgjnM6PE
-	w5Wb2GFadq29BNWynFHiac8RVriqy93/GCGczYwSTw5/AGthEVCReDWpjxXEZhPQkTj/5g4z
-	iC0ioClxdfcysDizQA+jxNk5giC2sIC3xPVFq8B6eQXMJSbdP8kMYQtKnJz5hAWivkLif88H
-	oDgHkC0tsfwfB0iYE2jk5A6Q60AuVZL4+qaXFcKulVh77AzYbxICXzgkHvVcY4FIuEj0v3zA
-	DGELS7w6vgXqTRmJ/zvnM0E0TGaU2P/vA1T3akaJZY1fmSCqrCVarjyB6nCUeNVwiBHkIgkB
-	PokbbwUhDuWTmLRtOjNEmFeio00IolpNYvW9NywTGJVnIXltFpLXZiG8BhHWk7gxdQobhrC2
-	xLKFr5khbFuJdevesyxgZF/FKJ5aWpybnlpsmJdarlecmFtcmpeul5yfu4kRmKhO/zv+aQfj
-	3Fcf9Q4xMnEwHmJUAWp+tGH1BUYplrz8vFQlEV7dUoVUId6UxMqq1KL8+KLSnNTiQ4zSHCxK
-	4ryqKfKpQgLpiSWp2ampBalFMFkmDk6pBiZ2w2fPHFcs3uffnG22ktXuwzM1HRb/1KVRUsyb
-	bxcVP+aINfxzz+vN0uizXa+Z7iwxnjK5bGPT71NVfNkLr6p5MNjqWvGkzNdL3RG0ZkLmRdmD
-	9w74mF997s0274/zp+QbydV3pZ+yzr0s8uBWmuk9/x2zPq1ouMRkevdDdY2IQUhOzKfHLW28
-	J4s9fgmmqR3xEJ3iJHds0jHPtGc/RJ8dcb0xf6q7W5fO/x2maxsTbqVOyhHKeV7yyeU9o8Af
-	bcef14JS3tvs3FeVIcueoFFhlJcybY2uqG7aJvlFO986X+u4ERqTMvPA09nSBw+z25vcCNmQ
-	uWdXLO+spGdL/VdWzHZZy83mHJN/k9XAe44SS3FGoqEWc1FxIgC5y4C+zwMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrBIsWRmVeSWpSXmKPExsVy+t/xe7qnlyqnGjTulLZ4s+QYs8WdSc/Z
-	LX5//8dqsaXhEJsDi8fXm+eYPBa9bGDxmLDoAKPH+RkLGQNYovRsivJLS1IVMvKLS2yVog0t
-	jPQMLS30jEws9QyNzWOtjEyV9O1sUlJzMstSi/TtEvQyHv99wl5wTqri8vYjrA2MU8S6GDk5
-	JARMJHatvcTWxcjFISSwlFGi5c52RoiEjMTGL1dZIWxhiT/XuqCKPjJKvDryAMrZzChxYctJ
-	NpAqFgEViVeT+sA62AR0JM6/ucMMYosIaEpc3b0MLM4s0MMocXaOIIgtLOAtcX3RKnYQm1fA
-	XGLS/ZPMEEPXMUmcm3CYGSIhKHFy5hMWiOYyidfvpwEN4gCypSWW/+MACXMCzZ/ccYkN4lIl
-	ia9veqGurpV4dX834wRG4VlIJs1CMmkWwiSIsI7Ezq132DCEtSWWLXzNDGHbSqxb955lASP7
-	KkaR1NLi3PTcYkO94sTc4tK8dL3k/NxNjMBo3Xbs5+YdjPNefdQ7xMjEwXiIUQWo89GG1RcY
-	pVjy8vNSlUR4dUsVUoV4UxIrq1KL8uOLSnNSiw8xmgJDcSKzlGhyPjCN5JXEG5oZmBqamFka
-	mFqaGSuJ83oWdCQKCaQnlqRmp6YWpBbB9DFxcEo1MIlxn3e0vneMSevfSW+FjVFRRZvzE3XK
-	2KMfrWivi3OQm/p4gn45a0b2hTUPPdXZJ9wMPGbB+qkv/EWVu8LiBeIWOV2XhJYKzXrzeqLU
-	gjU3nzV03quSaEvg1dSW9f0tF1Ct+zqh7nmumGWo92/xsgMZ0x74fd/taBHbzsQZq6ss9fDW
-	vpe65i8KXvw/W6B47a2ImhfzDJ2NRbOCL4p8FOqYXV8164eepj9X3xRXU2/uCd8VNb/Ua92e
-	F7zaTMf/I1+7ZdTy+TsylKduqzgg/UF2yqxLpf3zK/hfvGf5JSh8YaV9zawTYvN2RStsuDXL
-	j9/U9bjj73yjaslFz5+/Tw2OFtvXE5CrM+vHRe3dSizFGYmGWsxFxYkA28Z012sDAAA=
-X-CMS-MailID: 20231009070339eucas1p1fe3b98e93490d89e1c9fe8fb9df87c7a
-X-Msg-Generator: CA
-X-RootMTR: 20231002122730eucas1p17643da82bb9aa655b35c3562446ad395
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20231002122730eucas1p17643da82bb9aa655b35c3562446ad395
-References: <20231002-jag-sysctl_remove_empty_elem_drivers-v2-0-02dd0d46f71e@samsung.com>
-	<CGME20231002122730eucas1p17643da82bb9aa655b35c3562446ad395@eucas1p1.samsung.com>
-	<64fd22df-616e-9f5a-26fb-44c4b3423b0c@csgroup.eu>
-	<20231003084749.4xxi4z64hgq5a5lw@localhost> <87il7irrtb.fsf@mail.lhotse>
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: BN9PR11MB5276.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 42da43bf-d9a4-4ad9-7d35-08dbc89c175c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Oct 2023 07:48:13.4844
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: IVYQGgsXwAZaIHTdYG4HvH1Y8zVE+k90MbvC8LpTsiVU1suqFpD6ul56UaQFKGatRgI9g2I585GUEYNuu2AOVg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB7045
+X-OriginatorOrg: intel.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,91 +162,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, ajd@linux.ibm.com
+Cc: Janne Grunau <j@jannau.net>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---npotpdju3zhmyfwo
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, Oct 08, 2023 at 09:28:00AM +1100, Michael Ellerman wrote:
-> Joel Granados <j.granados@samsung.com> writes:
-> > On Mon, Oct 02, 2023 at 12:27:18PM +0000, Christophe Leroy wrote:
-> >> Le 02/10/2023 =E0 10:55, Joel Granados via B4 Relay a =E9crit=A0:
-> >> > From: Joel Granados <j.granados@samsung.com>
-> >> >=20
-> > <--- snip --->
-> >> >          - The "yesall" config saves 2432 bytes [4]
-> >> >          - The "tiny" config saves 64 bytes [5]
-> >> >      * memory usage:
-> >> >          In this case there were no bytes saved because I do not hav=
-e any
-> >> >          of the drivers in the patch. To measure it comment the prin=
-tk in
-> >> >          `new_dir` and uncomment the if conditional in `new_links` [=
-3].
-> >> >=20
-> >> > ---
-> >> > Changes in v2:
-> >> > - Left the dangling comma in the ctl_table arrays.
-> >> > - Link to v1: https://lore.kernel.org/r/20230928-jag-sysctl_remove_e=
-mpty_elem_drivers-v1-0-e59120fca9f9@samsung.com
-> >> >=20
-> >> > Comments/feedback greatly appreciated
-> >>=20
-> >> Same problem on powerpc CI tests, all boot target failed, most of them=
-=20
-> >> with similar OOPS, see=20
-> >> https://protect2.fireeye.com/v1/url?k=3D9496ce12-f51ddb24-9497455d-000=
-babff9b5d-d6b001302bd0fd0d&q=3D1&e=3D044c4c09-2b44-4ded-a682-a5afe9b8beec&u=
-=3Dhttps%3A%2F%2Fpatchwork.ozlabs.org%2Fproject%2Flinuxppc-dev%2Fpatch%2F20=
-231002-jag-sysctl_remove_empty_elem_drivers-v2-15-02dd0d46f71e%40samsung.co=
-m%2F
-> > I found the culprit!. Here you are rebasing on top of v6.5.0-rc6 "INFO:
-> > Looking for kernel version: 6.5.0-rc6-gbf2ac4d7d596". The error makes
-> > sense becuase in that version we have not introduced the stopping
-> > criteria based on the ctl_table array size, so the loop continues
-> > looking for an empty sentinel past valid memory (and does not find it).
-> > The ctl_table check catches it but then fails to do a proper error
-> > because we have already tried to access invalid memory. The solution
-> > here is to make sure to rebase in on top of the latest rc in v6.6.
+> From: Jason Gunthorpe <jgg@nvidia.com>
+> Sent: Thursday, September 28, 2023 7:48 AM
 >=20
-> Thanks for tracking it down.
+> Move the global static blocked domain to the ops and convert the
+> unmanaged
+> domain to domain_alloc_paging.
 >=20
-> This is my fault, previously Russell would update the branch that the CI
-> uses as its base. Now that he has left I need to do that myself, but had
-> forgotten.
->=20
-> Sorry for the noise.
-no worries. It was very helpfull to have two runs to compare with. That
-was actually the thing that helped me find the issue.
+> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
 
-Best
->=20
-> cheers
-
---=20
-
-Joel Granados
-
---npotpdju3zhmyfwo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQGzBAABCgAdFiEErkcJVyXmMSXOyyeQupfNUreWQU8FAmUjpssACgkQupfNUreW
-QU9rgQv7BKXUyCTNks2f8B1XsdHqaGvmr8qAzQ52lxcALzfvbL9U/ONTXbXgYsJi
-86Z3HrGoqafW6TmkO5oIK7ctLNifJ0mZBFah4Jq4Xs6eOZ1TgkNV1qwDuj7CXhmh
-R5us9KTjFWj7kN0qRSV1F6vYvC9XkTDWtzUOoAMzmFU7DSokR4Z8woCfP7olJH18
-Vs+jEXBpdvtnOyTj7ElqEoJIECER+vrMUewHTctylTazx88SlRAmWCXhWOnOSODS
-aYo+Y+Lpj3yHrZpDkoulhjgvhe5eg9G2FvNMDENbyJMSX1XzGIfVxkO0K1g2Yc+P
-HISvDvOcgm1r1GQyhbVC3zaMyJJotEGkPNVNJcgmTZWkFtqxxsMDHg45dSdGGNDA
-xd8Lf7ZZZHr0D1BX4Zq9HV3izlRuXe1zZcoqm20RrzhfEjkR0trrr2V7LOomirDu
-QG2YqC53D3w6khOEJbi/Jn5jtAAM/21+knFaTskZqEsbO+71iSUztwH6MfXVO4BG
-srDtCwi4
-=8UK7
------END PGP SIGNATURE-----
-
---npotpdju3zhmyfwo--
+Reviewed-by: Kevin Tian <kevin.tian@intel.com>
