@@ -4,48 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B598CD6137
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 21:16:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE896CD613A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 21:23:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UX5AlFcs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KIVyWshc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S4BfV2cYTz3cBx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Oct 2023 08:16:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S4Bpp45xfz3cbP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Oct 2023 08:23:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UX5AlFcs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KIVyWshc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rob@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S4BcW0RGWz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2023 08:14:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S4Bkf6pDVz3cnZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2023 08:19:54 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4980561422;
-	Mon,  9 Oct 2023 21:14:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A26EC433C8;
-	Mon,  9 Oct 2023 21:14:32 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 0A53E60109;
+	Mon,  9 Oct 2023 21:19:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11ACEC4339A;
+	Mon,  9 Oct 2023 21:19:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1696886073;
-	bh=X1cH/h9NDVZrOok4vly/3g9sh+E04rVkCkSlfXlWOkc=;
-	h=From:To:Cc:Subject:Date:From;
-	b=UX5AlFcsmSNuOATqpTq/hIGo5FVEW6AOvZIzMyjgNvPnEIMxc0WKvQu08BweMdCFw
-	 0zCmWnxuIchvRaQE/rVjCjZwq4po/w6dpkLmCDkI9D1Na1t0515QYR2RidgCz5Rd90
-	 gdYcXPc0XrMJCb1s2LWdURita5X6F46xykVT0w25UhELnABfNrQ8xod18E3DeOgYAx
-	 tyXN6j/t9dhuK06eMT4UBk+nV+3s6U149ln3ThjasbJeCwtIcBTfCwWOtYlzuYrlxe
-	 mdEFlKV9cyMp0wjIPJUQGKLMKwkMzrWWijwCSKm7L6KNtXaN/x83pdrstCq1bDtYU1
-	 EWK50UVpWY+/g==
-Received: (nullmailer pid 3246487 invoked by uid 1000);
-	Mon, 09 Oct 2023 21:14:15 -0000
-From: Rob Herring <robh@kernel.org>
-To: Peter Chen <peter.chen@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Minas Harutyunyan <hminas@synopsys.com>, Li Yang <leoyang.li@nxp.com>, Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH] usb: Use device_get_match_data()
-Date: Mon,  9 Oct 2023 16:13:46 -0500
-Message-ID: <20231009211356.3242037-16-robh@kernel.org>
-X-Mailer: git-send-email 2.42.0
+	s=k20201202; t=1696886391;
+	bh=Y6nnyfmtTcWoPREzqbIFTBI+9WLOEmya+e4ZqStyynQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=KIVyWshcorp4nyq4Qk8+l0N1N8+nlUOM6IHaO+AooXEfX9m85kJLXCLn75X4Qr9ox
+	 G4sPNTfqWNhVMkCj2BOx94nD/0py2qYjiSpQFth1je1eVBkTQ88qLiLMHg+b/babCq
+	 +LhuxXndG6txOrnhrIxYrR4rksZxoPuZOvtjtURC5mPPqGVCFSB8odMDjbooOR75+t
+	 aoDnY8GZzp+1s+3o84/onKNQTMcrpjC/XU1u6lNHnNpEsQXgX7ZpElKu3I1YwR9eSR
+	 sfTOjmKNG31tAW19dyOMjcoA1T271m2UFMWkp6F9XUTJ3PERoQ4K1KW4ad1WnkCYie
+	 SgV4Viirn0LbQ==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH v3 4/9] vgacon, arch/*: remove unused screen_info definitions
+Date: Mon,  9 Oct 2023 23:18:40 +0200
+Message-Id: <20231009211845.3136536-5-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20231009211845.3136536-1-arnd@kernel.org>
+References: <20231009211845.3136536-1-arnd@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -58,175 +61,255 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-hyperv@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dave Hansen <dave.hansen@linux.intel.com>, Palmer Dabbelt <palmer@rivosinc.com>, Russell King <linux@armlinux.org.uk>, Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, linux-efi@vger.kernel.org, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, "K. Y. Srinivasan" <kys@microsoft.com>, David Airlie <airlied@gmail.com>, Ard Biesheuvel <ardb@kernel.org>, Wei Liu <wei.liu@kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Dexuan Cui <decui@microsoft.com>, Javier Martinez Canillas <javierm@redhat.com>, Deepak Rawat <drawat.floss@gmail.com>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+ , Haiyang Zhang <haiyangz@microsoft.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Khalid Aziz <khalid@gonehiking.org>, Brian Cain <bcain@quicinc.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use preferred device_get_match_data() instead of of_match_device() to
-get the driver match data. With this, adjust the includes to explicitly
-include the correct headers.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Signed-off-by: Rob Herring <robh@kernel.org>
+A number of architectures either kept the screen_info definition for
+historical purposes as it used to be required by the generic VT code, or
+they copied it from another architecture in order to build the VGA console
+driver in an allmodconfig build. The mips definition is used by some
+platforms, but the initialization on jazz is not needed.
+
+Now that vgacon no longer builds on these architectures, remove the
+stale definitions and initializations.
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Acked-by: Dinh Nguyen <dinguyen@kernel.org>
+Acked-by: Max Filippov <jcmvbkbc@gmail.com>
+Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+Acked-by: Guo Ren <guoren@kernel.org>
+Acked-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/usb/chipidea/ci_hdrc_usb2.c | 11 +++++------
- drivers/usb/dwc2/params.c           | 21 ++++++---------------
- drivers/usb/gadget/udc/fsl_qe_udc.c | 10 +++-------
- drivers/usb/misc/onboard_usb_hub.c  |  7 +------
- 4 files changed, 15 insertions(+), 34 deletions(-)
+ arch/csky/kernel/setup.c          | 12 ------------
+ arch/hexagon/kernel/Makefile      |  2 --
+ arch/hexagon/kernel/screen_info.c |  3 ---
+ arch/mips/jazz/setup.c            |  9 ---------
+ arch/nios2/kernel/setup.c         |  5 -----
+ arch/sh/kernel/setup.c            |  5 -----
+ arch/sparc/kernel/setup_32.c      | 13 -------------
+ arch/sparc/kernel/setup_64.c      | 13 -------------
+ arch/xtensa/kernel/setup.c        | 12 ------------
+ 9 files changed, 74 deletions(-)
+ delete mode 100644 arch/hexagon/kernel/screen_info.c
 
-diff --git a/drivers/usb/chipidea/ci_hdrc_usb2.c b/drivers/usb/chipidea/ci_hdrc_usb2.c
-index 1321ee67f3b8..180a632dd7ba 100644
---- a/drivers/usb/chipidea/ci_hdrc_usb2.c
-+++ b/drivers/usb/chipidea/ci_hdrc_usb2.c
-@@ -9,9 +9,9 @@
- #include <linux/dma-mapping.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_platform.h>
- #include <linux/phy/phy.h>
+diff --git a/arch/csky/kernel/setup.c b/arch/csky/kernel/setup.c
+index 106fbf0b6f3b4..51012e90780d6 100644
+--- a/arch/csky/kernel/setup.c
++++ b/arch/csky/kernel/setup.c
+@@ -8,22 +8,10 @@
+ #include <linux/of_fdt.h>
+ #include <linux/start_kernel.h>
+ #include <linux/dma-map-ops.h>
+-#include <linux/screen_info.h>
+ #include <asm/sections.h>
+ #include <asm/mmu_context.h>
+ #include <asm/pgalloc.h>
+ 
+-#ifdef CONFIG_DUMMY_CONSOLE
+-struct screen_info screen_info = {
+-	.orig_video_lines	= 30,
+-	.orig_video_cols	= 80,
+-	.orig_video_mode	= 0,
+-	.orig_video_ega_bx	= 0,
+-	.orig_video_isVGA	= 1,
+-	.orig_video_points	= 8
+-};
+-#endif
+-
+ static void __init csky_memblock_init(void)
+ {
+ 	unsigned long lowmem_size = PFN_DOWN(LOWMEM_LIMIT - PHYS_OFFSET_OFFSET);
+diff --git a/arch/hexagon/kernel/Makefile b/arch/hexagon/kernel/Makefile
+index e73cb321630ec..3fdf937eb572e 100644
+--- a/arch/hexagon/kernel/Makefile
++++ b/arch/hexagon/kernel/Makefile
+@@ -17,5 +17,3 @@ obj-y += vm_vectors.o
+ obj-$(CONFIG_HAS_DMA) += dma.o
+ 
+ obj-$(CONFIG_STACKTRACE) += stacktrace.o
+-
+-obj-$(CONFIG_VGA_CONSOLE) += screen_info.o
+diff --git a/arch/hexagon/kernel/screen_info.c b/arch/hexagon/kernel/screen_info.c
+deleted file mode 100644
+index 1e1ceb18bafe7..0000000000000
+--- a/arch/hexagon/kernel/screen_info.c
++++ /dev/null
+@@ -1,3 +0,0 @@
+-#include <linux/screen_info.h>
+-
+-struct screen_info screen_info;
+diff --git a/arch/mips/jazz/setup.c b/arch/mips/jazz/setup.c
+index ee044261eb223..23059ead773fc 100644
+--- a/arch/mips/jazz/setup.c
++++ b/arch/mips/jazz/setup.c
+@@ -13,7 +13,6 @@
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+ #include <linux/console.h>
+-#include <linux/screen_info.h>
  #include <linux/platform_device.h>
-+#include <linux/property.h>
- #include <linux/usb/chipidea.h>
- #include <linux/usb/hcd.h>
- #include <linux/usb/ulpi.h>
-@@ -51,8 +51,8 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct ci_hdrc_usb2_priv *priv;
- 	struct ci_hdrc_platform_data *ci_pdata = dev_get_platdata(dev);
-+	const struct ci_hdrc_platform_data *data;
- 	int ret;
--	const struct of_device_id *match;
- 
- 	if (!ci_pdata) {
- 		ci_pdata = devm_kmalloc(dev, sizeof(*ci_pdata), GFP_KERNEL);
-@@ -61,11 +61,10 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
- 		*ci_pdata = ci_default_pdata;	/* struct copy */
- 	}
- 
--	match = of_match_device(ci_hdrc_usb2_of_match, &pdev->dev);
--	if (match && match->data) {
-+	data = device_get_match_data(&pdev->dev);
-+	if (data)
- 		/* struct copy */
--		*ci_pdata = *(struct ci_hdrc_platform_data *)match->data;
--	}
-+		*ci_pdata = *data;
- 
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-diff --git a/drivers/usb/dwc2/params.c b/drivers/usb/dwc2/params.c
-index 93f52e371cdd..fb03162ae9b7 100644
---- a/drivers/usb/dwc2/params.c
-+++ b/drivers/usb/dwc2/params.c
-@@ -5,7 +5,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/usb/of.h>
- #include <linux/pci_ids.h>
- #include <linux/pci.h>
-@@ -968,26 +968,17 @@ typedef void (*set_params_cb)(struct dwc2_hsotg *data);
- 
- int dwc2_init_params(struct dwc2_hsotg *hsotg)
- {
--	const struct of_device_id *match;
- 	set_params_cb set_params;
- 
- 	dwc2_set_default_params(hsotg);
- 	dwc2_get_device_properties(hsotg);
- 
--	match = of_match_device(dwc2_of_match_table, hsotg->dev);
--	if (match && match->data) {
--		set_params = match->data;
-+	set_params = device_get_match_data(hsotg->dev);
-+	if (set_params) {
- 		set_params(hsotg);
--	} else if (!match) {
--		const struct acpi_device_id *amatch;
--		const struct pci_device_id *pmatch = NULL;
--
--		amatch = acpi_match_device(dwc2_acpi_match, hsotg->dev);
--		if (amatch && amatch->driver_data) {
--			set_params = (set_params_cb)amatch->driver_data;
--			set_params(hsotg);
--		} else if (!amatch)
--			pmatch = pci_match_id(dwc2_pci_ids, to_pci_dev(hsotg->dev->parent));
-+	} else {
-+		const struct pci_device_id *pmatch =
-+			pci_match_id(dwc2_pci_ids, to_pci_dev(hsotg->dev->parent));
- 
- 		if (pmatch && pmatch->driver_data) {
- 			set_params = (set_params_cb)pmatch->driver_data;
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index 4aae86b47edf..4e88681a79b6 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -27,9 +27,10 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/moduleparam.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
+ #include <linux/serial_8250.h>
  #include <linux/dma-mapping.h>
- #include <linux/usb/ch9.h>
- #include <linux/usb/gadget.h>
-@@ -2471,17 +2472,12 @@ static const struct of_device_id qe_udc_match[];
- static int qe_udc_probe(struct platform_device *ofdev)
- {
- 	struct qe_udc *udc;
--	const struct of_device_id *match;
- 	struct device_node *np = ofdev->dev.of_node;
- 	struct qe_ep *ep;
- 	unsigned int ret = 0;
- 	unsigned int i;
- 	const void *prop;
+@@ -76,14 +75,6 @@ void __init plat_mem_setup(void)
  
--	match = of_match_device(qe_udc_match, &ofdev->dev);
--	if (!match)
--		return -EINVAL;
+ 	_machine_restart = jazz_machine_restart;
+ 
+-#ifdef CONFIG_VT
+-	screen_info = (struct screen_info) {
+-		.orig_video_cols	= 160,
+-		.orig_video_lines	= 64,
+-		.orig_video_points	= 16,
+-	};
+-#endif
 -
- 	prop = of_get_property(np, "mode", NULL);
- 	if (!prop || strcmp(prop, "peripheral"))
- 		return -ENODEV;
-@@ -2493,7 +2489,7 @@ static int qe_udc_probe(struct platform_device *ofdev)
- 		return -ENOMEM;
- 	}
+ 	add_preferred_console("ttyS", 0, "9600");
+ }
  
--	udc->soc_type = (unsigned long)match->data;
-+	udc->soc_type = (unsigned long)device_get_match_data(&ofdev->dev);
- 	udc->usb_regs = of_iomap(np, 0);
- 	if (!udc->usb_regs) {
- 		ret = -ENOMEM;
-diff --git a/drivers/usb/misc/onboard_usb_hub.c b/drivers/usb/misc/onboard_usb_hub.c
-index 57bbe1309094..a341b2fbb7b4 100644
---- a/drivers/usb/misc/onboard_usb_hub.c
-+++ b/drivers/usb/misc/onboard_usb_hub.c
-@@ -240,7 +240,6 @@ static void onboard_hub_attach_usb_driver(struct work_struct *work)
+diff --git a/arch/nios2/kernel/setup.c b/arch/nios2/kernel/setup.c
+index 8582ed9658447..da122a5fa43b2 100644
+--- a/arch/nios2/kernel/setup.c
++++ b/arch/nios2/kernel/setup.c
+@@ -19,7 +19,6 @@
+ #include <linux/memblock.h>
+ #include <linux/initrd.h>
+ #include <linux/of_fdt.h>
+-#include <linux/screen_info.h>
  
- static int onboard_hub_probe(struct platform_device *pdev)
- {
--	const struct of_device_id *of_id;
- 	struct device *dev = &pdev->dev;
- 	struct onboard_hub *hub;
- 	unsigned int i;
-@@ -250,11 +249,7 @@ static int onboard_hub_probe(struct platform_device *pdev)
- 	if (!hub)
- 		return -ENOMEM;
+ #include <asm/mmu_context.h>
+ #include <asm/sections.h>
+@@ -36,10 +35,6 @@ static struct pt_regs fake_regs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 					0, 0, 0, 0, 0, 0,
+ 					0};
  
--	of_id = of_match_device(onboard_hub_match, &pdev->dev);
--	if (!of_id)
--		return -ENODEV;
+-#ifdef CONFIG_VT
+-struct screen_info screen_info;
+-#endif
 -
--	hub->pdata = of_id->data;
-+	hub->pdata = device_get_match_data(&pdev->dev);
- 	if (!hub->pdata)
- 		return -EINVAL;
+ /* Copy a short hook instruction sequence to the exception address */
+ static inline void copy_exception_handler(unsigned int addr)
+ {
+diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
+index b3da2757faaf3..3d80515298d26 100644
+--- a/arch/sh/kernel/setup.c
++++ b/arch/sh/kernel/setup.c
+@@ -7,7 +7,6 @@
+  *  Copyright (C) 1999  Niibe Yutaka
+  *  Copyright (C) 2002 - 2010 Paul Mundt
+  */
+-#include <linux/screen_info.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ #include <linux/initrd.h>
+@@ -69,10 +68,6 @@ EXPORT_SYMBOL(cpu_data);
+ struct sh_machine_vector sh_mv = { .mv_name = "generic", };
+ EXPORT_SYMBOL(sh_mv);
  
+-#ifdef CONFIG_VT
+-struct screen_info screen_info;
+-#endif
+-
+ extern int root_mountflags;
+ 
+ #define RAMDISK_IMAGE_START_MASK	0x07FF
+diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
+index 34ef7febf0d56..e3b72a7b46d37 100644
+--- a/arch/sparc/kernel/setup_32.c
++++ b/arch/sparc/kernel/setup_32.c
+@@ -17,7 +17,6 @@
+ #include <linux/initrd.h>
+ #include <asm/smp.h>
+ #include <linux/user.h>
+-#include <linux/screen_info.h>
+ #include <linux/delay.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+@@ -51,18 +50,6 @@
+ 
+ #include "kernel.h"
+ 
+-struct screen_info screen_info = {
+-	0, 0,			/* orig-x, orig-y */
+-	0,			/* unused */
+-	0,			/* orig-video-page */
+-	0,			/* orig-video-mode */
+-	128,			/* orig-video-cols */
+-	0,0,0,			/* ega_ax, ega_bx, ega_cx */
+-	54,			/* orig-video-lines */
+-	0,                      /* orig-video-isVGA */
+-	16                      /* orig-video-points */
+-};
+-
+ /* Typing sync at the prom prompt calls the function pointed to by
+  * romvec->pv_synchook which I set to the following function.
+  * This should sync all filesystems and return, for now it just
+diff --git a/arch/sparc/kernel/setup_64.c b/arch/sparc/kernel/setup_64.c
+index 6546ca9d4d3f1..6a4797dec34b4 100644
+--- a/arch/sparc/kernel/setup_64.c
++++ b/arch/sparc/kernel/setup_64.c
+@@ -15,7 +15,6 @@
+ #include <linux/ptrace.h>
+ #include <asm/smp.h>
+ #include <linux/user.h>
+-#include <linux/screen_info.h>
+ #include <linux/delay.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+@@ -68,18 +67,6 @@
+ DEFINE_SPINLOCK(ns87303_lock);
+ EXPORT_SYMBOL(ns87303_lock);
+ 
+-struct screen_info screen_info = {
+-	0, 0,			/* orig-x, orig-y */
+-	0,			/* unused */
+-	0,			/* orig-video-page */
+-	0,			/* orig-video-mode */
+-	128,			/* orig-video-cols */
+-	0, 0, 0,		/* unused, ega_bx, unused */
+-	54,			/* orig-video-lines */
+-	0,                      /* orig-video-isVGA */
+-	16                      /* orig-video-points */
+-};
+-
+ static void
+ prom_console_write(struct console *con, const char *s, unsigned int n)
+ {
+diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
+index 52d6e4870a04c..bdec4a773af09 100644
+--- a/arch/xtensa/kernel/setup.c
++++ b/arch/xtensa/kernel/setup.c
+@@ -19,7 +19,6 @@
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/proc_fs.h>
+-#include <linux/screen_info.h>
+ #include <linux/kernel.h>
+ #include <linux/percpu.h>
+ #include <linux/reboot.h>
+@@ -49,17 +48,6 @@
+ #include <asm/timex.h>
+ #include <asm/traps.h>
+ 
+-#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
+-struct screen_info screen_info = {
+-	.orig_x = 0,
+-	.orig_y = 24,
+-	.orig_video_cols = 80,
+-	.orig_video_lines = 24,
+-	.orig_video_isVGA = 1,
+-	.orig_video_points = 16,
+-};
+-#endif
+-
+ #ifdef CONFIG_BLK_DEV_INITRD
+ extern unsigned long initrd_start;
+ extern unsigned long initrd_end;
 -- 
-2.42.0
+2.39.2
 
