@@ -4,153 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2FA3E95A8E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 07:51:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A13AAE95A8E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 09:47:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TicWt8ob;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Q3298mSA;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S3rpP4GBwz3vgT
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 18:51:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S3vM711Ltz3c9y
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 20:46:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TicWt8ob;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Q3298mSA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mgamail.intel.com; envelope-from=kevin.tian@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::136; helo=mail-lf1-x136.google.com; envelope-from=tudor.ambarus@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3rkw2R3Fz3cHT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 18:48:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1696837736; x=1728373736;
-  h=from:to:cc:subject:date:message-id:references:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=bYHoyD0+/b4PUdY4iXwsXc6mHqE9GBFU91jJTIwiLT4=;
-  b=TicWt8obx4wz89I6rlkmlgfsyRdPyCFCq+aINJLLy0YN6NWT8Ckg4wMV
-   ohF8jYqJNmd4uzioFsNxuLSfs+XRSozA3/6BN6PlX9Edb9L7Pduz0thHP
-   lpfZXj1CMk6ZRNCrgoP/v99jye6SDSinpBkTl5FAA9BNNePoyA5RGyzE7
-   mYsG67futUHf2UwB5eVsrqpUzu5BIQ68Puy0BvZgIaxRVsVuGDQid+5Zt
-   GHQqYj+sv19VZVDVNK0V/nQpdk92exrAZO5C0aNOFzhKnxyG3i5GLNnBG
-   3PlANALcIQXLyvEob3P8BX0Ri84zcLmEIFEZZyvWBfLW1LRyT9q0m0Oh7
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="381354625"
-X-IronPort-AV: E=Sophos;i="6.03,209,1694761200"; 
-   d="scan'208";a="381354625"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Oct 2023 00:47:50 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="782404041"
-X-IronPort-AV: E=Sophos;i="6.03,209,1694761200"; 
-   d="scan'208";a="782404041"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
-  by orsmga008.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 09 Oct 2023 00:47:49 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32; Mon, 9 Oct 2023 00:47:49 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32 via Frontend Transport; Mon, 9 Oct 2023 00:47:49 -0700
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (104.47.55.168)
- by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.32; Mon, 9 Oct 2023 00:47:49 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=IadIbpmQE8Q7FqsRhWLFQMxf6F+4r8oeE4KIFuRraxA78eDB+Rz9WgT72+YmetIvVl8zWk/KMXaAzOS+COTvoyhyw07RsBgs5O1TCoNIyaGzHtNSyEQUsi3b4yLVklPokVrkwvppK7HdliCmLMswoXfjVA5ZEp0CfDZ11oKsj1BlzX1OvTSDdWHk5c/90jsrLAQ/2sQY5yDNX0Zj+d5e/p1Zg5YLm3tBDns7T3x7pgIQb4XWXINhbHz9xOBoRpxqYIzzQIYT6tTawJFcLz2qKUyZj0q+erUQ8KPyIgsVijdzkwi0PMQkgxaZaGyXRh5yW0DjedQHYl+azB4IHRd0jQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bYHoyD0+/b4PUdY4iXwsXc6mHqE9GBFU91jJTIwiLT4=;
- b=JjV8sZFnDeRlAcGkiuuPnffc0ryhzJdZxOn11UdWx0Z4YB99tPd/tTxMMXHRPKu8ZTANFyyKyAxTmySjJf2T0U+HmeQ+nRQT60zJwRRO4oHtP/1mM6Lu4HKv5arb5ks3yIgEQ57Id2ASjiWztJGtMak9C9vtgngq9kyNRIkK7BwQ14qqBdFx/bye2q3e2CvNiJqW9EQr4sSiUS9DKCXskYfUfxx/kIsTVU8RzfL3mZXE8yMw7QkoFYbZDpjTa9/JqZU4NDIR/CjsMW7HcUHKmZaS8CzNy+CbrTWvOYZJzH6bw19iDB0s8kf64OXxjhEC7vJDYQDcFpvINqSyq0uuyw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BN9PR11MB5276.namprd11.prod.outlook.com (2603:10b6:408:135::18)
- by PH8PR11MB7045.namprd11.prod.outlook.com (2603:10b6:510:217::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.43; Mon, 9 Oct
- 2023 07:47:47 +0000
-Received: from BN9PR11MB5276.namprd11.prod.outlook.com
- ([fe80::7116:9866:8367:95b4]) by BN9PR11MB5276.namprd11.prod.outlook.com
- ([fe80::7116:9866:8367:95b4%3]) with mapi id 15.20.6863.032; Mon, 9 Oct 2023
- 07:47:47 +0000
-From: "Tian, Kevin" <kevin.tian@intel.com>
-To: Jason Gunthorpe <jgg@nvidia.com>, Alyssa Rosenzweig
-	<alyssa@rosenzweig.io>, "asahi@lists.linux.dev" <asahi@lists.linux.dev>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>, David Woodhouse
-	<dwmw2@infradead.org>, "iommu@lists.linux.dev" <iommu@lists.linux.dev>, Joerg
- Roedel <joro@8bytes.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, Hector Martin <marcan@marcan.st>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Robin
- Murphy" <robin.murphy@arm.com>, Sven Peter <sven@svenpeter.dev>, Will Deacon
-	<will@kernel.org>
-Subject: RE: [PATCH v2 3/9] iommu/vt-d: Use ops->blocked_domain
-Thread-Topic: [PATCH v2 3/9] iommu/vt-d: Use ops->blocked_domain
-Thread-Index: AQHZ8Z0LAuKskghIC0yb53RiGV23trBBJoHg
-Date: Mon, 9 Oct 2023 07:47:46 +0000
-Message-ID: <BN9PR11MB5276D24F96465287BA28E9DF8CCEA@BN9PR11MB5276.namprd11.prod.outlook.com>
-References: <0-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
- <3-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
-In-Reply-To: <3-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BN9PR11MB5276:EE_|PH8PR11MB7045:EE_
-x-ms-office365-filtering-correlation-id: 1e24df82-04b2-4c7f-af9e-08dbc89c0791
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: peqfw0BrUaL4cFJeRKabMqF0vTlna87ZRT8okzDDENG+aH1aW3Lg4Xolsg3nR5I5C7Ax6dmIsIXZSQZWRHJY3hN27QomfWfFsdBd7UXJoAYxhKIHD5TxSvIUi02lvqKU3nes8CSA3sf2vrm82HDU5gkcV0k8yAIUO53vwILydJ5qFBAVawKl0alEyyBtINZN1kQ00sI9NFR39Nt+CK9vDCwB2XPAFzm1MozgenYzZpLsrNTnsKy7Kl3TfwiuCD60HBRn8l8Lv7uQpEOny9J2WBc2/R3hH6tWJGpcMN46ETxyHUAe1TqRxHaj1GEEL5tP63Dl5t1//+tuqboDuEuDSgNoC54YV7P4cUhraSbKDi/5f/jtZx9fIOxc1oMfQfSL2ny4mEv3K7X9XX0v2mXnugvxvMna3OUVuxA6NJMB0SnOJOSK2ZsPZzQG4j0pVQNNqlzq0HlHXgybussZkgBL2QJNBD0KHlhirCXTIZayg2UvTu2vD08VtKBteKaB1c658e+PQMNlC+m4g6mhyG/Yr003ZfFkgEUu+lWVIzNvnZu3J2VkXIYLJe1R03Qod7HTyr272LIWdSQ/roZ5GGcOhMx4mDctp88oqs8mEn1ClRwWODAxOgpNyMSO1g1IE1SHy4kNrUWkPTIQxNkJ6JDVtw==
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR11MB5276.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(376002)(346002)(396003)(39860400002)(366004)(230922051799003)(451199024)(1800799009)(186009)(64100799003)(55016003)(83380400001)(26005)(66476007)(66556008)(316002)(76116006)(110136005)(66446008)(54906003)(64756008)(7416002)(66946007)(8936002)(4326008)(5660300002)(8676002)(41300700001)(7696005)(52536014)(6506007)(15650500001)(9686003)(2906002)(478600001)(71200400001)(558084003)(33656002)(38070700005)(38100700002)(82960400001)(921005)(122000001)(86362001);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?5pyk7yEE+j8s0uF4VBQK5fqoX/eAFgFcGFT5FCik56AY9puQ5imQRX2NJH5Z?=
- =?us-ascii?Q?7jCcsZp9cnH9isB3hEggrZnGwSGTytMAX75H1LpqDyd3y5TAph/cT5rrmnug?=
- =?us-ascii?Q?CHl6BUt0yC/9fSNIcEJMhBIzTFCuaz0GxB6gx4zKNNMIT+5zjr0cdPfiKbfv?=
- =?us-ascii?Q?y/f16VjwMdS/z95MkfL+AZefxTKA2BXs6+uk8ft16f6GCKWMrYsytVlmqdbM?=
- =?us-ascii?Q?ahDZV4Dl92u3q0eNrRhFqMEnnWIt8E9oCGGtWDywPPO0dGlDLjdKlBZg5Fwk?=
- =?us-ascii?Q?3+tTv2RkeVcwUFN0wfvA0j3YRXPctI3feBLkAcHtOywROwmObPqjE4QyzW7y?=
- =?us-ascii?Q?QvChJAXmqoSyQgpuUf3NyjoLYFFRodnPSxwjbLYbdBjv1lCNFPNDYtzmiZiT?=
- =?us-ascii?Q?B4NUvHN7LH34lsx6z0F/OZGXPStZLrPhS2gKjzJCGdV/vsJckYwa3tDpxILo?=
- =?us-ascii?Q?S7kgNmv2wI/cApO5kA14lQ+jyR1wJNoudxyzM4J5tIpc5nEGgdPtygIddi08?=
- =?us-ascii?Q?rKQpQcEm2d1ihnuzBKb5dKlnTPzj6ThEF1pGmgVqm0H/uE/ILb8XwNfV7Fiu?=
- =?us-ascii?Q?jKSDDMM4Dhikf65+wVM0tPDoL0+fdiCguYC1g1YCOvHfct+Hpwvz2XoZEkD0?=
- =?us-ascii?Q?/RCcuq9HauU8st4pMCFUQywGGD0MHnRVgpSJNO/K9c376vIgVssaa21aAX10?=
- =?us-ascii?Q?g0yO8hxP8xbHdaAuxMJcmEzL9clw8lxBCRvIEU9pE5b7O8iBaI/KgYw37vCs?=
- =?us-ascii?Q?1ahAE0kdbkNajwofJQAwJNXKSgE/wWcjgp7jO1AAmjli30hKEgH1svq8org3?=
- =?us-ascii?Q?aeuuFxfHuPi5juzoqOfVZE2UCvbGRmKBN+KsqYUnqG6IlQ12xU/3p1QZlYGW?=
- =?us-ascii?Q?2ryg5WK5eebLgmKGtYFI//TM6jbunWXVKNudEks+IjpN4hMstA/iaS3FodFf?=
- =?us-ascii?Q?PSxOCygYNKvu0k1Ucrm/ffNKsIw89T0sj5zqVnyrGQMndayTJfN5DU+GSp5n?=
- =?us-ascii?Q?i1K/nXNRteqZfRvbTqETx3fCbFEh7W/IMFZew5ETakJZrFmIYEiD9JyQWWQ8?=
- =?us-ascii?Q?rNIy+1lw6Ah7pjCHic+bDJzIhQrlkxbTkD6OGdLmIZiJmtLwBt4jwF26rd0f?=
- =?us-ascii?Q?lX/wpZDxgtsQZH6TX2nzciAdt4XOeKeNlB6DygnjjU7uu0VODb5M1nHylg4b?=
- =?us-ascii?Q?mpgVDy/L5WTP+XhxoRQ6yuwqoeqKz8oUZgMuTwG4IrZkDI93aju46thvb6AB?=
- =?us-ascii?Q?ZiOmE9vKfdRyornSXC17bnZ8SkaL+Crnafu4UJh1Zjhh6eqbv73fS0UmBYQ0?=
- =?us-ascii?Q?cBR6Ths2pBzsLp3i+euXtGYdA83YJSENS3gKE3xRWLbLfVYCSvd6n2z2ebVW?=
- =?us-ascii?Q?57q+L/brwS4ecjCm6WxGHfkj2MY7umZ5rwA6ln4x9X+7KLsWH/7nBzaI11du?=
- =?us-ascii?Q?vGZVgGvSnTLBMQuzBZMGZttiISqYS40IPRtBaC73DLv8XOno1BqW8YbrC3gU?=
- =?us-ascii?Q?pf0IssKm5q8njz1QhYBrreW0XFxxB7aMOLFAGCfR/f91y8L2aHwSp0UG1uIc?=
- =?us-ascii?Q?38H0XrZyYBUHCeyVB0lFctTpONRElYEAWg/DHdvD?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3pV34fF0z2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 17:07:37 +1100 (AEDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-50435a9f800so5329711e87.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Oct 2023 23:07:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1696831648; x=1697436448; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=3jQSsnNPGoLekEfxryi1OyAWP3eYL96XguQhMUQ9k7M=;
+        b=Q3298mSAHIKmirIqf1BKiLCQemsF3Iaw20qxG82ODVWGmmndpINkrcKOdQuoMlHzOX
+         Lpihf1DmsC/toZi39U1vxr+FWehXVAWLJmcRirklZNtUueaXWg2l93xwz9l3xkW50hsm
+         J9UIDzrpEAAG3eC7tqFO2C2day49XTGnNz+Z1IX6wIL1OEpNe2rcf14p3pSLeUUZdUdP
+         28T+5D84Tkx1ZXYPP3bVhXiKPFa/wNLbmBwK33KXPc5yXsz8Z69XuaxPa8o1cG1v3qeS
+         Lt5fG/1EXAmL452ALUcbejLh8H725vVCf4x00Nc3xE6GFQKtFHNkb9pHeJbpirHn0q8e
+         7gsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696831648; x=1697436448;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=3jQSsnNPGoLekEfxryi1OyAWP3eYL96XguQhMUQ9k7M=;
+        b=eh6dqAn4twgl38MbzCC9itsRgfmoNcAnZ7B/hLOGV8QozZIkaTc9nUNpdp2EC4g8jb
+         L+r1P8WXcr4ZbXh7lORMkoD6DDPR3Vx7ElgtV1JtxPafK9x8hS0SB8rDkksntZ+9PPRQ
+         GT2PGCVcKyHSjFeDAY8HvQxI+STzzz5V+9+AHwz3fF9TMT3wzHHRgnON7VSysJTaGEgB
+         39BH5KcRGiFfXCG+WlBxgvI1D2NppQ6FEq/Q7+97c3kphwcPXMW6ZsWSyIYcwg5pebhv
+         FPhj0yLTqpIK1ogF0lNxR5L0WQgafx/fUyxHrdZMEQRb/b2K5kRY91kDGGigHDoQnGSw
+         oLDA==
+X-Gm-Message-State: AOJu0YzmR0pWSrYcDxmCsK3J23Bli7+Woq7cTMlmldy82SZRWAm9mavy
+	53p2hnNs8tCsjQBNHLiQ9aqtZA==
+X-Google-Smtp-Source: AGHT+IEulPl8s4i0M+Zi/sk4AKTnELItj8JoKzhnPWHm3t1wWVYt1qRXTgDtyk/ECIXgf4klmNEzyw==
+X-Received: by 2002:a19:5050:0:b0:503:31dc:7d64 with SMTP id z16-20020a195050000000b0050331dc7d64mr12856772lfj.21.1696831645881;
+        Sun, 08 Oct 2023 23:07:25 -0700 (PDT)
+Received: from [192.168.2.107] ([79.115.63.123])
+        by smtp.gmail.com with ESMTPSA id v2-20020a1cf702000000b00405d9a950a2sm12438473wmh.28.2023.10.08.23.07.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 08 Oct 2023 23:07:25 -0700 (PDT)
+Message-ID: <19a98e1d-583b-4057-bdbe-895402ab4143@linaro.org>
+Date: Mon, 9 Oct 2023 07:07:22 +0100
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR11MB5276.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1e24df82-04b2-4c7f-af9e-08dbc89c0791
-X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Oct 2023 07:47:47.0335
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 8ie30uJWHZUwklSebJl7yLeCHl+aYXO/+dlvGNy3XftWi0UhoE+adHx9cHFWy+UtklaxjLwv70cSsRzrL7SW8g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB7045
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 00/20] mtd: Convert to platform remove callback returning
+ void
+Content-Language: en-US
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>
+References: <20231008200143.196369-1-u.kleine-koenig@pengutronix.de>
+From: Tudor Ambarus <tudor.ambarus@linaro.org>
+In-Reply-To: <20231008200143.196369-1-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Mon, 09 Oct 2023 20:46:10 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -162,17 +84,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Janne Grunau <j@jannau.net>, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: David Woodhouse <David.Woodhouse@intel.com>, Hui Tang <tanghui20@huawei.com>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>, Li Zetao <lizetao1@huawei.com>, Zheng Yongjun <zhengyongjun3@huawei.com>, linux-mtd@lists.infradead.org, Robert Jarzmik <robert.jarzmik@free.fr>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh@kernel.org>, Yangtao Li <frank.li@vivo.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kbuild@vger.kernel.org, Joern Engel <joern@lazybastard.org>, Nicholas Piggin <npiggin@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, linux-arm-kernel@lists.infradead.org, Michael Walle <michael@walle.cc>, kernel@pengutronix.de, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Pratyush Yadav <pratyush@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> From: Jason Gunthorpe <jgg@nvidia.com>
-> Sent: Thursday, September 28, 2023 7:48 AM
->=20
-> Trivially migrate to the ops->blocked_domain for the existing global
-> static.
->=20
-> Reviewed-by: Lu Baolu <baolu.lu@linux.intel.com>
-> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
 
-Reviewed-by: Kevin Tian <kevin.tian@intel.com>
+
+On 10/8/23 21:01, Uwe Kleine-König wrote:
+> Hello,
+> 
+> this series converts all platform drivers below drivers/mtd to use the
+> .remove_new() callback. Compared to the traditional .remove() callback
+> .remove_new() returns no value. This is a good thing because the driver
+> core doesn't (and cannot) cope for errors during remove. The only effect
+> of a non-zero return value in .remove() is that the driver core emits a
+> warning. The device is removed anyhow and an early return from .remove()
+> usually yields resource leaks and/or use-after-free bugs.
+> 
+> All drivers touched here returned zero unconditionally in their remove
+> callback, so they could all be converted trivially to .remove_new().
+> 
+> See commit 5c5a7680e67b ("platform: Provide a remove callback that
+> returns no value") for an extended explanation and the eventual goal.
+> 
+
+Acked-by: Tudor Ambarus <tudor.ambarus@linaro.org>
