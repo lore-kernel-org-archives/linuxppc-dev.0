@@ -4,72 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 950BAE95A8E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 11:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA4F2E95A97
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 13:15:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZD5+6iFH;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZD5+6iFH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VzXJXIi8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S3xn607XDz3vcK
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Oct 2023 22:36:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S3zzL28G4z3cbP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Oct 2023 00:15:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZD5+6iFH;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZD5+6iFH;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VzXJXIi8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=piliu@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3xgk02kCz3cRv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2023 22:31:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1696851087;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Ln7pY+wr2qQD2ScMy6ex68H7bIVNwsO6jnYm/CoN2CQ=;
-	b=ZD5+6iFHPVAGRsA0wui7lPKgGKqAsOiO1AeRf4BBKWUqaRonacI5sDGacsHMq0onvZiadV
-	buwTHi3/tcD/s24U3DzAZJm6qCsawrqQabwLIq5qLUPzrBgbeC7Uew2zYnz+HWKCoCpevM
-	JHqSxk/lY5yshdmvOXA+OxcZD8EcVNA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1696851087;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Ln7pY+wr2qQD2ScMy6ex68H7bIVNwsO6jnYm/CoN2CQ=;
-	b=ZD5+6iFHPVAGRsA0wui7lPKgGKqAsOiO1AeRf4BBKWUqaRonacI5sDGacsHMq0onvZiadV
-	buwTHi3/tcD/s24U3DzAZJm6qCsawrqQabwLIq5qLUPzrBgbeC7Uew2zYnz+HWKCoCpevM
-	JHqSxk/lY5yshdmvOXA+OxcZD8EcVNA=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-685-bGOoXTBWNBWO2o2YKQeI3w-1; Mon, 09 Oct 2023 07:31:15 -0400
-X-MC-Unique: bGOoXTBWNBWO2o2YKQeI3w-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S3zyK2xnsz2yVv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2023 00:14:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1696857251;
+	bh=TSiatPgwJ5C77ethX9r6ZW+8VMKiX6LN1q7Pm+eFmIA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=VzXJXIi8qoZtXIjJYd66plh5zpI4LaKwopsi7NJgV+IT2iNTNbBU+GiGGBjjN3QOW
+	 FyDLc1YSlETmEukBTm9by084LWs1ii0sN/FYhR9RYWwPoRrBUn/EwWvHLoogX6uo95
+	 VN4Hu+lpBD+Gb9HJXL2nAejNnKnC+etEUeVKpR2bEfnBJw3f4D0PJIN6uKCQZ2DXKV
+	 ypfnQMGh5gVlm4xOQtWSH5xToPsU+3s5sJoGLEGoMFjWxIA3NSuQ4c+IERy4HhocPi
+	 tJucrK4AeW9Q52xYly3wPz2w9EqYY7d11YcRmvlLh63tkWYz2j4rUqyv0m+qGmj4rX
+	 xRhf47yjN6QfA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 96A61811E97;
-	Mon,  9 Oct 2023 11:31:14 +0000 (UTC)
-Received: from piliu.users.ipa.redhat.com (unknown [10.72.120.3])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 9780F215671F;
-	Mon,  9 Oct 2023 11:31:10 +0000 (UTC)
-From: Pingfan Liu <piliu@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv8 5/5] powerpc/setup: alloc extra paca_ptrs to hold boot_cpuid
-Date: Mon,  9 Oct 2023 19:30:36 +0800
-Message-Id: <20231009113036.45988-6-piliu@redhat.com>
-In-Reply-To: <20231009113036.45988-1-piliu@redhat.com>
-References: <20231009113036.45988-1-piliu@redhat.com>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S3zyB2vWcz4xWr;
+	Tue, 10 Oct 2023 00:14:10 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Eddie James <eajames@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: KUEP broken on FSP2?
+In-Reply-To: <fdaadc46-7476-9237-e104-1d2168526e72@linux.ibm.com>
+References: <fdaadc46-7476-9237-e104-1d2168526e72@linux.ibm.com>
+Date: Tue, 10 Oct 2023 00:14:07 +1100
+Message-ID: <87a5ssrl9c.fsf@mail.lhotse>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"; x-default=true
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,97 +57,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, Pingfan Liu <piliu@redhat.com>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Ming Lei <ming.lei@redhat.com>, Wen Xiong <wenxiong@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-paca_ptrs should be large enough to hold the boot_cpuid, hence, its
-lower boundary is set to the bigger one between boot_cpuid+1 and
-nr_cpus.
+Eddie James <eajames@linux.ibm.com> writes:
+> Hi,
+>
+> I'm attempting to run linux 6.1 on my FSP2, but my kernel crashes 
+> attempting to get into userspace. The init script works, but the first 
+> binary (mount) I run results in oops. Can anyone help me to debug this 
+> further or suggest anything?
 
-On the other hand, some kernel component: -1. the timer assumes cpu0
-online since the timer_list->flags subfield 'TIMER_CPUMASK' is zero if
-not initialized to a proper present cpu.  -2. power9_idle_stop() assumes
-the primary thread's paca is allocated.
+Hi Eddie,
 
-Hence lift nr_cpu_ids from one to two to ensure cpu0 is onlined, if the
-boot cpu is not cpu0.
+It looks like breakage in syscall_exit_finish.
 
-Result:
-When nr_cpus=1, taskset -c 14 bash -c 'echo c > /proc/sysrq-trigger'
-the kdump kernel brings up two cpus.
-While when taskset -c 4 bash -c 'echo c > /proc/sysrq-trigger',
-the kdump kernel brings up one cpu.
+Can you test this? Patch is against v6.1.
 
-Signed-off-by: Pingfan Liu <piliu@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Wen Xiong <wenxiong@linux.ibm.com>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Ming Lei <ming.lei@redhat.com>
-Cc: kexec@lists.infradead.org
-To: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/paca.c | 10 ++++++----
- arch/powerpc/kernel/prom.c |  9 ++++++---
- 2 files changed, 12 insertions(+), 7 deletions(-)
+cheers
 
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index cda4e00b67c1..91e2401de1bd 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -242,9 +242,10 @@ static int __initdata paca_struct_size;
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 3fc7c9886bb7..decd2594fb9c 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -135,7 +135,8 @@ ret_from_syscall:
+ 	lis	r4,icache_44x_need_flush@ha
+ 	lwz	r5,icache_44x_need_flush@l(r4)
+ 	cmplwi	cr0,r5,0
+-	bne-	2f
++	bne-	.L44x_icache_flush
++.L44x_icache_flush_return:
+ #endif /* CONFIG_PPC_47x */
+ 	kuep_unlock
+ 	lwz	r4,_LINK(r1)
+@@ -170,10 +171,11 @@ syscall_exit_finish:
+ 	b	1b
  
- void __init allocate_paca_ptrs(void)
- {
--	paca_nr_cpu_ids = nr_cpu_ids;
-+	int n = (boot_cpuid + 1) > nr_cpu_ids ? (boot_cpuid + 1) : nr_cpu_ids;
+ #ifdef CONFIG_44x
+-2:	li	r7,0
++.L44x_icache_flush:
++	li	r7,0
+ 	iccci	r0,r0
+ 	stw	r7,icache_44x_need_flush@l(r4)
+-	b	1b
++	b	.L44x_icache_flush_return
+ #endif  /* CONFIG_44x */
  
--	paca_ptrs_size = sizeof(struct paca_struct *) * nr_cpu_ids;
-+	paca_nr_cpu_ids = n;
-+	paca_ptrs_size = sizeof(struct paca_struct *) * n;
- 	paca_ptrs = memblock_alloc_raw(paca_ptrs_size, SMP_CACHE_BYTES);
- 	if (!paca_ptrs)
- 		panic("Failed to allocate %d bytes for paca pointers\n",
-@@ -287,13 +288,14 @@ void __init allocate_paca(int cpu)
- void __init free_unused_pacas(void)
- {
- 	int new_ptrs_size;
-+	int n = (boot_cpuid + 1) > nr_cpu_ids ? (boot_cpuid + 1) : nr_cpu_ids;
- 
--	new_ptrs_size = sizeof(struct paca_struct *) * nr_cpu_ids;
-+	new_ptrs_size = sizeof(struct paca_struct *) * n;
- 	if (new_ptrs_size < paca_ptrs_size)
- 		memblock_phys_free(__pa(paca_ptrs) + new_ptrs_size,
- 				   paca_ptrs_size - new_ptrs_size);
- 
--	paca_nr_cpu_ids = nr_cpu_ids;
-+	paca_nr_cpu_ids = n;
- 	paca_ptrs_size = new_ptrs_size;
- 
- #ifdef CONFIG_PPC_64S_HASH_MMU
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 87272a2d8c10..15c994f54bf9 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -362,9 +362,12 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 			 */
- 			boot_cpuid = i;
- 			found = true;
--			/* This works around the hole in paca_ptrs[]. */
--			if (nr_cpu_ids < nthreads)
--				set_nr_cpu_ids(nthreads);
-+			/*
-+			 * Ideally, nr_cpus=1 can be achieved if each kernel
-+			 * component does not assume cpu0 is onlined.
-+			 */
-+			if (boot_cpuid != 0 && nr_cpu_ids < 2)
-+				set_nr_cpu_ids(2);
- 		}
- #ifdef CONFIG_SMP
- 		/* logical cpu id is always 0 on UP kernels */
--- 
-2.31.1
-
+ 	.globl	ret_from_fork
