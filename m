@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 129C3CD98F3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Oct 2023 05:39:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9795ACD98C7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Oct 2023 05:40:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZjFCKGty;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TGuf5L9p;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S51mR20ssz3vYH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Oct 2023 16:39:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S51nN1j47z3vcq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Oct 2023 16:40:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZjFCKGty;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TGuf5L9p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S51kP6K1Fz3bbW
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S51kP6G5Nz3bP4
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 16:37:33 +1100 (AEDT)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39B5PAD5002689
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39B5HQuK011969
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=tW497MRkSkHhSKdL3u6Q0sX/gTobwAhq4rH6DGspnwE=;
- b=ZjFCKGtygU/ylYgrTsWaOcsqcOG7wd9dxb296d42KA2fV1PIXuuG8yaNwvpf725Vds45
- N0uOYcxisEfCfc45+gb235Tf1EZUoHaBib5YBMy9ku9oHnWvrwFtG7PJt/UcBLbEk11Z
- YJaa3aoYFbG7h7V/nTDnubf82axBZB+ZLYByjWARm9tNjXpyOjZlB6S2rouSEQItbAus
- AZU1wm9PcfreG2xHfZxmtci76R+hSShKsJvgnox18PpXEuewxHmdpiQzxM7F2z+2BOZU
- ZjATp8Z/Xl5lUUbFGsXoYB8x4TAKjx6VVxFwBx3/8dQdcVifO5zEWT8mg+rk9UPBM3ZU 2w== 
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tnnhp0beh-1
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=kNPmZTe29FFn0TSDkpGCTjBJ/lWEPBqtobQlJ+4PbKg=;
+ b=TGuf5L9pDW4Z5DgDORBEk358Hy7qnC5gNUxPGRncqtjUzW9neM516KMTH3EUlrlCuz0v
+ AP05VeNXCqmCUkvPxuZxM60UOnsFatduVWz6UYpDt4L5TCKnisSMJhxU6HGNPJZ6Qilv
+ 8z9hF4TZe88qGrIN5KN9PlEzP1mRS7cS9/jT13H4qwVbd1mzLiucPW1Ta8t+BzuSe3X1
+ Cb5R3+BDJM7LoQlWGVNR4+X1t1uKRwwlSQIaSP6H6ybRqRLhbZyx6Gd+UjDQ6KqZbLeg
+ ebQW29omPAAgmx0uQRjPKzsNzhwM9xXvoU6Eq9+a7cfjiM1TV5yhYqE3zT2s2ihx4U9c xA== 
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tnne28jq9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:30 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39B41G23001149
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39B4Vw17024461
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:29 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tkkvjwgp9-1
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tkhnsp7x7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:29 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39B5bRZ120251238
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39B5bRi79962184
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:27 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 797F92004D
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8494B2004F
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:27 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 096572004B
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11FC62004E
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:27 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:26 +0000 (GMT)
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2023 05:37:27 +0000 (GMT)
 Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7ED7C603C2;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7A3716047D;
 	Wed, 11 Oct 2023 16:37:24 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 03/12] powerpc: Explicitly reverse bytes when checking for byte reversal
-Date: Wed, 11 Oct 2023 16:37:02 +1100
-Message-ID: <20231011053711.93427-4-bgray@linux.ibm.com>
+Subject: [PATCH 01/12] powerpc/xive: Fix endian conversion size
+Date: Wed, 11 Oct 2023 16:37:00 +1100
+Message-ID: <20231011053711.93427-2-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231011053711.93427-1-bgray@linux.ibm.com>
 References: <20231011053711.93427-1-bgray@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: KRuTWTvc5u7AniTiUm93O4o-IQSexvI4
-X-Proofpoint-ORIG-GUID: KRuTWTvc5u7AniTiUm93O4o-IQSexvI4
+X-Proofpoint-GUID: fJ8AJyOwqb6jbFqIvtmzJ7GC40ZE4iSA
+X-Proofpoint-ORIG-GUID: fJ8AJyOwqb6jbFqIvtmzJ7GC40ZE4iSA
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-11_02,2023-10-10_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
- mlxlogscore=999 mlxscore=0 suspectscore=0 phishscore=0 spamscore=0
- priorityscore=1501 impostorscore=0 lowpriorityscore=0 malwarescore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310110048
+ definitions=2023-10-11_03,2023-10-10_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=860 clxscore=1015
+ lowpriorityscore=0 priorityscore=1501 malwarescore=0 phishscore=0
+ spamscore=0 impostorscore=0 mlxscore=0 bulkscore=0 adultscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2310110050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,31 +98,32 @@ Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sparse reports an invalid endian cast here. The code is written for
-big endian platforms, so le32_to_cpu() acts as a byte reversal.
+Sparse reports a size mismatch in the endian swap. The Opal
+implementation[1] passes the value as a __be64, and the receiving
+variable out_qsize is a u64, so the use of be32_to_cpu() appears to be
+an error.
 
-This file is checked by sparse on a little endian build though, so
-replace the reverse function with the dedicated swab32() function to
-better express the intent of the code.
+[1]: https://github.com/open-power/skiboot/blob/80e2b1dc73/hw/xive.c#L3854
 
+Fixes: 88ec6b93c8e7 ("powerpc/xive: add OPAL extensions for the XIVE native exploitation support")
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 ---
- arch/powerpc/sysdev/mpic.c | 2 +-
+ arch/powerpc/sysdev/xive/native.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index ba287abcb008..dabbdd356664 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -355,7 +355,7 @@ static void __init mpic_test_broken_ipi(struct mpic *mpic)
- 	mpic_write(mpic->gregs, MPIC_INFO(GREG_IPI_VECTOR_PRI_0), MPIC_VECPRI_MASK);
- 	r = mpic_read(mpic->gregs, MPIC_INFO(GREG_IPI_VECTOR_PRI_0));
- 
--	if (r == le32_to_cpu(MPIC_VECPRI_MASK)) {
-+	if (r == swab32(MPIC_VECPRI_MASK)) {
- 		printk(KERN_INFO "mpic: Detected reversed IPI registers\n");
- 		mpic->flags |= MPIC_BROKEN_IPI;
- 	}
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index 9f0af4d795d8..f1c0fa6ece21 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -802,7 +802,7 @@ int xive_native_get_queue_info(u32 vp_id, u32 prio,
+ 	if (out_qpage)
+ 		*out_qpage = be64_to_cpu(qpage);
+ 	if (out_qsize)
+-		*out_qsize = be32_to_cpu(qsize);
++		*out_qsize = be64_to_cpu(qsize);
+ 	if (out_qeoi_page)
+ 		*out_qeoi_page = be64_to_cpu(qeoi_page);
+ 	if (out_escalate_irq)
 -- 
 2.39.2
 
