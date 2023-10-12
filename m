@@ -4,34 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C771CDB46E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 10:42:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6066CDB46E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 11:08:24 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VDx3tQ87;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S5mRn1sDKz3vb3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 21:42:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=strlen.de (client-ip=2a0a:51c0:0:237:300::1; helo=chamillionaire.breakpoint.cc; envelope-from=fw@strlen.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2635 seconds by postgrey-1.37 at boromir; Thu, 12 Oct 2023 21:41:57 AEDT
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc [IPv6:2a0a:51c0:0:237:300::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S5n1f6Jcfz3cCS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 22:08:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VDx3tQ87;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S5mR91sxrz3c1Q
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2023 21:41:56 +1100 (AEDT)
-Received: from fw by Chamillionaire.breakpoint.cc with local (Exim 4.92)
-	(envelope-from <fw@strlen.de>)
-	id 1qqsRu-0007Vp-5J; Thu, 12 Oct 2023 11:57:46 +0200
-Date: Thu, 12 Oct 2023 11:57:46 +0200
-From: Florian Westphal <fw@strlen.de>
-To: Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com>
-Subject: Re: [Bisected] [1b4fa28a8b07] Build failure "net/core/gso_test.c"
-Message-ID: <20231012095746.GA26871@breakpoint.cc>
-References: <79fbe35c-4dd1-4f27-acb2-7a60794bc348@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S5n0h5L66z2yVR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2023 22:07:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1697108852;
+	bh=6OsxE8kV2xPTFulSGmBi28q09UFtUYgFyf1Emr7m/7A=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=VDx3tQ87D/n3Su76DDY5c5gznJtSvPRang3Mx9bCeIPCjwjUPr9G0mCFm0PxhngwL
+	 ZCuZ5Od7n3VtI386qVODEFFFPcwMufDJEpQaKTGSouVZhqzc0ZLQRHKkVnfw5ltSqA
+	 comqa8d0qr4bMVfi4uo1E42BuYfqs1+wmBJ4XF0NXNiK46ZMmcgO7AFEzh3MWjC+fS
+	 W013YuBkEp1d2MuCeoNIdH1GJ+42bNX13Ni/DI1DZinNx0moSCelY02xmTwLTCnh9C
+	 rrDEUR/yJEgCktS2SOt3WRXHgxqdqq1fhNOz3UHeeWsETZLNZ3kqOkyGP3wpYr6AcN
+	 FXBlsp5E6oekQ==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S5n0g1rM6z4xMC;
+	Thu, 12 Oct 2023 22:07:31 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v6 4/9] mm: thp: Introduce anon_orders and
+ anon_always_mask sysfs files
+In-Reply-To: <20231009172029.e558c08dd90d9b94fec3a036@linux-foundation.org>
+References: <20230929114421.3761121-1-ryan.roberts@arm.com>
+ <20230929114421.3761121-5-ryan.roberts@arm.com>
+ <20230929155530.a51e68e03e47a06b6b84c689@linux-foundation.org>
+ <87fs2mrqld.fsf@mail.lhotse>
+ <20231009172029.e558c08dd90d9b94fec3a036@linux-foundation.org>
+Date: Thu, 12 Oct 2023 22:07:26 +1100
+Message-ID: <87o7h4qett.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <79fbe35c-4dd1-4f27-acb2-7a60794bc348@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -43,143 +62,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: willemb@google.com, netdev@vger.kernel.org, fw@strlen.de, linux-kernel@vger.kernel.org, sachinp@linux.vnet.com, abdhalee@linux.vnet.ibm.com, edumazet@google.com, mputtash@linux.vnet.com, kuba@kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Yang Shi <shy828301@gmail.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Yu Zhao <yuzhao@google.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, Zi Yan <ziy@nvidia.com>, "Huang, Ying" <ying.huang@intel.com>, Ryan Roberts <ryan.roberts@arm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, John Hubbard <jhubbard@nvidia.com>, David Rientjes <rientjes@google.com>, Itaru Kitayama <itaru.kitayama@gmail.com>, linux-arm-kernel@lists.infradead.org, Yin Fengwei <fengwei.yin@intel.com>, Luis Chamberlain <mcgrof@kernel.org>, linuxppc-dev@lists.ozlabs.org, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com> wrote:
-> Greetings,
-> 
-> [net-next] [6.6-rc4] Build failure "net/core/gso_test.c"
-> 
-> --- Traces ---
-> 
-> make -j 33 -s && make modules_install && make install
-> net/core/gso_test.c:58:48: error: initializer element is not constant
->    58 |                 .segs = (const unsigned int[]) { gso_size },
->       |                                                ^
+Andrew Morton <akpm@linux-foundation.org> writes:
+> On Sun, 08 Oct 2023 09:54:22 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> > I don't know why powerpc's PTE_INDEX_SIZE is variable.
+>> 
+>> To allow a single vmlinux to boot using either the Hashed Page Table
+>> MMU, or Radix Tree MMU, which have different page table geometry.
+>> 
+>> That's a pretty crucial feature for distros, so that they can build a
+>> single kernel to boot on Power8/9/10.
+>
+> Dumb question: why can't distros ship two kernels and have the boot
+> loader (or something else) pick the appropriate one?
 
-Ouch, I can reproduce this with: gcc --version
-gcc (Debian 12.2.0-14) 12.2.0
-Copyright (C) 2022 Free Software Foundation, Inc.
+I'm not a grub expert, but AFAIK it doesn't support loading a different
+kernel based on CPU/firwmare features. I'm quite sure it can't do that
+on powerpc at least.
 
-gcc 13.2.1 and clang-16.0.6 are ok.
+We also have another bootloader (petitboot) that is still supported by
+some distros, and can't do that.
 
-Whats the preference here?  We could use simple preprocessor constant
-or we could require much more recent compiler version for the net
-kunit tests via kconfig.
+The other problem is like David says, distros are generally reluctant to
+add new kernel configurations unless they absolutely have to. It adds
+more work for them, more things to track, and can confuse users leading
+to spurious bug reports.
 
-gcc-12.2.0 can compile it after this simple s//g "fix":
-
-diff --git a/net/core/gso_test.c b/net/core/gso_test.c
---- a/net/core/gso_test.c
-+++ b/net/core/gso_test.c
-@@ -4,7 +4,7 @@
- #include <linux/skbuff.h>
- 
- static const char hdr[] = "abcdefgh";
--static const int gso_size = 1000;
-+#define GSO_TEST_SIZE 1000
- 
- static void __init_skb(struct sk_buff *skb)
- {
-@@ -18,7 +18,7 @@ static void __init_skb(struct sk_buff *skb)
- 
- 	/* proto is arbitrary, as long as not ETH_P_TEB or vlan */
- 	skb->protocol = htons(ETH_P_ATALK);
--	skb_shinfo(skb)->gso_size = gso_size;
-+	skb_shinfo(skb)->gso_size = GSO_TEST_SIZE;
- }
- 
- enum gso_test_nr {
-@@ -53,70 +53,70 @@ static struct gso_test_case cases[] = {
- 	{
- 		.id = GSO_TEST_NO_GSO,
- 		.name = "no_gso",
--		.linear_len = gso_size,
-+		.linear_len = GSO_TEST_SIZE,
- 		.nr_segs = 1,
--		.segs = (const unsigned int[]) { gso_size },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE },
- 	},
- 	{
- 		.id = GSO_TEST_LINEAR,
- 		.name = "linear",
--		.linear_len = gso_size + gso_size + 1,
-+		.linear_len = GSO_TEST_SIZE + GSO_TEST_SIZE + 1,
- 		.nr_segs = 3,
--		.segs = (const unsigned int[]) { gso_size, gso_size, 1 },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE, 1 },
- 	},
- 	{
- 		.id = GSO_TEST_FRAGS,
- 		.name = "frags",
--		.linear_len = gso_size,
-+		.linear_len = GSO_TEST_SIZE,
- 		.nr_frags = 2,
--		.frags = (const unsigned int[]) { gso_size, 1 },
-+		.frags = (const unsigned int[]) { GSO_TEST_SIZE, 1 },
- 		.nr_segs = 3,
--		.segs = (const unsigned int[]) { gso_size, gso_size, 1 },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE, 1 },
- 	},
- 	{
- 		.id = GSO_TEST_FRAGS_PURE,
- 		.name = "frags_pure",
- 		.nr_frags = 3,
--		.frags = (const unsigned int[]) { gso_size, gso_size, 2 },
-+		.frags = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE, 2 },
- 		.nr_segs = 3,
--		.segs = (const unsigned int[]) { gso_size, gso_size, 2 },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE, 2 },
- 	},
- 	{
- 		.id = GSO_TEST_GSO_PARTIAL,
- 		.name = "gso_partial",
--		.linear_len = gso_size,
-+		.linear_len = GSO_TEST_SIZE,
- 		.nr_frags = 2,
--		.frags = (const unsigned int[]) { gso_size, 3 },
-+		.frags = (const unsigned int[]) { GSO_TEST_SIZE, 3 },
- 		.nr_segs = 2,
--		.segs = (const unsigned int[]) { 2 * gso_size, 3 },
-+		.segs = (const unsigned int[]) { 2 * GSO_TEST_SIZE, 3 },
- 	},
- 	{
- 		/* commit 89319d3801d1: frag_list on mss boundaries */
- 		.id = GSO_TEST_FRAG_LIST,
- 		.name = "frag_list",
--		.linear_len = gso_size,
-+		.linear_len = GSO_TEST_SIZE,
- 		.nr_frag_skbs = 2,
--		.frag_skbs = (const unsigned int[]) { gso_size, gso_size },
-+		.frag_skbs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE },
- 		.nr_segs = 3,
--		.segs = (const unsigned int[]) { gso_size, gso_size, gso_size },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE, GSO_TEST_SIZE },
- 	},
- 	{
- 		.id = GSO_TEST_FRAG_LIST_PURE,
- 		.name = "frag_list_pure",
- 		.nr_frag_skbs = 2,
--		.frag_skbs = (const unsigned int[]) { gso_size, gso_size },
-+		.frag_skbs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE },
- 		.nr_segs = 2,
--		.segs = (const unsigned int[]) { gso_size, gso_size },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE },
- 	},
- 	{
- 		/* commit 43170c4e0ba7: GRO of frag_list trains */
- 		.id = GSO_TEST_FRAG_LIST_NON_UNIFORM,
- 		.name = "frag_list_non_uniform",
--		.linear_len = gso_size,
-+		.linear_len = GSO_TEST_SIZE,
- 		.nr_frag_skbs = 4,
--		.frag_skbs = (const unsigned int[]) { gso_size, 1, gso_size, 2 },
-+		.frag_skbs = (const unsigned int[]) { GSO_TEST_SIZE, 1, GSO_TEST_SIZE, 2 },
- 		.nr_segs = 4,
--		.segs = (const unsigned int[]) { gso_size, gso_size, gso_size, 3 },
-+		.segs = (const unsigned int[]) { GSO_TEST_SIZE, GSO_TEST_SIZE, GSO_TEST_SIZE, 3 },
- 	},
- 	{
- 		/* commit 3953c46c3ac7 ("sk_buff: allow segmenting based on frag sizes") and
+cheers
