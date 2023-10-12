@@ -4,54 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8D15CDB465
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 00:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5818CDB47E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 20:48:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VE5CUTDP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jwW6XONp;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S5WMf0JByz3cdx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Oct 2023 11:53:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S61vD1V72z3vX5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 07:48:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VE5CUTDP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jwW6XONp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=rob@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S5W5H0K28z30GC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2023 11:40:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S61tC3SFYz3cCM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2023 07:47:47 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C88A761B46;
-	Thu, 12 Oct 2023 00:40:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 83E1DC43391;
-	Thu, 12 Oct 2023 00:40:29 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTP id 0DE7AB8270F;
+	Thu, 12 Oct 2023 20:47:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6D11C433C7;
+	Thu, 12 Oct 2023 20:47:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1697071229;
-	bh=wGHJyiALp3GFYTvWaoHxyso+f2Vuj4QGs+ejJHlDf/k=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=VE5CUTDPsvYyqkldEDqOEXMVmFtYsTPZSIVSOrPhdqUiu+qC0gTSFu6e4mo37ejhQ
-	 /nJHSRLR/5Uq37Vk7V8G+nOXlNvk8vH6E7h/jFJuVqHPRQONGS0TzuyWGyPhojUAH7
-	 Y4urAQ4NY7DQHqZIv7DL90hwQTF8/SrBLn8tcK2EKIaO4+tESHK8SoJsiMlOStfslk
-	 O/7RUIjozO0FXUzHR0diff2R+Z5LRSigjR9sS4lydG4rj6L1lOXawWzS/iyDrc3/8u
-	 ubZ2+bqVueHFdmEqJE9Vi1b+9kyKU6EIaNcULLSEz66GZICCGoNPjSU3dE+Xj/HwlZ
-	 8gXY0TDIzUzzA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 5A538E21ED9;
-	Thu, 12 Oct 2023 00:40:29 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	s=k20201202; t=1697143662;
+	bh=aRI71YpV2+d2IfU0eZ+HabZAmiGR+yyp2A4+ZTsQCm8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jwW6XONp9+IMeAdLC1MyMWFkTL/L1Hr+ur2t+B5NP0UUDc9ONKaqHTzvv0oxqvS9/
+	 /jXz/mBCECQ846jut7nzwMpEVmoV4xcaSarxfTXPF9zQUCeLVeXpWbQSGeWElukxpH
+	 hmK9Xu879p9WIcxTglg170fsF1NK+WWmRk+1etdS2+gsznWZdx4SghDduB8FUkFTTI
+	 D5aLPEDFrX/Ew+4GELA8rAyIl0CXXsS9jBSxEzf4TvcKz0L3tTGLy3DfL+c4iBoH8Y
+	 V9I7A1mtfNwuYaOTFpgho6RY5aglBHpgGTC2DZO9Cw9eDAHayKrqnTF0tLqIkf0Fdz
+	 OpimIrub0090Q==
+Received: (nullmailer pid 1712886 invoked by uid 1000);
+	Thu, 12 Oct 2023 20:47:39 -0000
+Date: Thu, 12 Oct 2023 15:47:39 -0500
+From: Rob Herring <robh@kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v3 1/2] ASoC: dt-bindings: sound-card-common: List DAPM
+ endpoints ignoring system suspend
+Message-ID: <20231012204739.GA1706264-robh@kernel.org>
+References: <20231011114759.1073757-1-chancel.liu@nxp.com>
+ <f639c88d-371a-4c72-a906-47d643b24ca8@sirena.org.uk>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [net-next v3 1/5] netdev: replace simple
- napi_schedule_prep/__napi_schedule to napi_schedule
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id:  <169707122936.23011.6924255297609142862.git-patchwork-notify@kernel.org>
-Date: Thu, 12 Oct 2023 00:40:29 +0000
-References: <20231009133754.9834-1-ansuelsmth@gmail.com>
-In-Reply-To: <20231009133754.9834-1-ansuelsmth@gmail.com>
-To: Christian Marangi <ansuelsmth@gmail.com>
-X-Mailman-Approved-At: Thu, 12 Oct 2023 11:52:14 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f639c88d-371a-4c72-a906-47d643b24ca8@sirena.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,45 +62,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andrew@lunn.ch, ryazanov.s.a@gmail.com, ziweixiao@google.com, chris.snook@gmail.com, ricklind@linux.ibm.com, alexandre.torgue@foss.st.com, linux-kernel@vger.kernel.org, khalasa@piap.pl, edumazet@google.com, ath10k@lists.infradead.org, danymadden@us.ibm.com, gregory.greenman@intel.com, set_pte_at@outlook.com, chiranjeevi.rapolu@linux.intel.com, linux-stm32@st-md-mailman.stormreply.com, linuxwwan@intel.com, robh@kernel.org, jeroendb@google.com, leon@kernel.org, linux-rdma@vger.kernel.org, haren@linux.ibm.com, rushilg@google.com, jgg@ziepe.ca, tlfalcon@linux.ibm.com, joabreu@synopsys.com, elder@linaro.org, linux-wireless@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com, wg@grandegger.com, nnac123@linux.ibm.com, bhupesh.sharma@linaro.org, haijun.liu@mediatek.com, kvalo@kernel.org, u.kleine-koenig@pengutronix.de, bcf@google.com, npiggin@gmail.com, linux-can@vger.kernel.org, ruc_gongyuanjun@163.com, shailend@google.com, mkl@pengutronix.de, benjamin.berg@intel.com, m.chetan.kumar@lin
- ux.intel.com, tglx@linutronix.de, YKarpov@ispras.ru, linux-arm-kernel@lists.infradead.org, chandrashekar.devegowda@intel.com, ricardo.martinez@linux.intel.com, loic.poulain@linaro.org, zhengzengkai@huawei.com, netdev@vger.kernel.org, pagadala.yesu.anjaneyulu@intel.com, linuxppc-dev@lists.ozlabs.org, dougmill@linux.ibm.com, gustavoars@kernel.org, tariqt@nvidia.com, horms@kernel.org, krzysztof.kozlowski@linaro.org, junfeng.guo@intel.com, mcoquelin.stm32@gmail.com, rajur@chelsio.com, pkaligineedi@google.com, johannes@sipsolutions.net, quic_jjohnson@quicinc.com, davem@davemloft.net
+Cc: devicetree@vger.kernel.org, conor+dt@kernel.org, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de, alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com, festevam@gmail.com, s.hauer@pengutronix.de, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com, Chancel Liu <chancel.liu@nxp.com>, linux-arm-kernel@lists.infradead.org, krzysztof.kozlowski+dt@linaro.org, shawnguo@kernel.org, shengjiu.wang@gmail.com, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
-
-This series was applied to netdev/net-next.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
-
-On Mon,  9 Oct 2023 15:37:50 +0200 you wrote:
-> Replace drivers that still use napi_schedule_prep/__napi_schedule
-> with napi_schedule helper as it does the same exact check and call.
+On Wed, Oct 11, 2023 at 10:21:33PM +0100, Mark Brown wrote:
+> On Wed, Oct 11, 2023 at 07:47:58PM +0800, Chancel Liu wrote:
 > 
-> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> Reviewed-by: Eric Dumazet <edumazet@google.com>
-> ---
-> Changes v3:
-> - Add Reviewed-by tag
-> Changes v2:
-> - Add missing semicolon
+> > +  lpa-widgets:
+> > +    $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+> > +    description: |
+> > +      A list of DAPM endpoints which mark paths between these endpoints should
+> > +      not be disabled when system enters in suspend state. LPA means low power
+> > +      audio case. For example on asymmetric multiprocessor, there are Cortex-A
 > 
-> [...]
+> I suspect that the DT maintainers would prefer that this description be
+> workshopped a bit to remove the Linux specifics.
 
-Here is the summary with links:
-  - [net-next,v3,1/5] netdev: replace simple napi_schedule_prep/__napi_schedule to napi_schedule
-    https://git.kernel.org/netdev/net-next/c/ef724517b596
-  - [net-next,v3,2/5] netdev: make napi_schedule return bool on NAPI successful schedule
-    https://git.kernel.org/netdev/net-next/c/0a779003213b
-  - [net-next,v3,3/5] netdev: replace napi_reschedule with napi_schedule
-    https://git.kernel.org/netdev/net-next/c/73382e919f3d
-  - [net-next,v3,4/5] net: tc35815: rework network interface interrupt logic
-    https://git.kernel.org/netdev/net-next/c/be176234d0a8
-  - [net-next,v3,5/5] netdev: use napi_schedule bool instead of napi_schedule_prep/__napi_schedule
-    https://git.kernel.org/netdev/net-next/c/d1fea38f01ac
-
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+And Cortex A/M specifics if this is a common binding.
 
 
+>  I think the key thing
+> here is that these are endpoints that can be active over suspend of the
+> main application processor that the current operating system is running
+> (system DT stuff is an interesting corner case here...), and the example
+> is probably a bit specific.  Other bindings use "audio sound widgets"
+> rather than "DAPM widgets".
+> 
+> We also shouldn't see that these endpoints "should not be disabled"
+> since that implies that they should be left on even if they aren't
+> active which isn't quite the case, instead it's that we can continue
+> playing an audio stream through them in suspend.
+
+This seems like one of those things that everyone has/does, and everyone 
+handles it a bit differently. I applaud trying to do something common, 
+but it isn't really common until we have multiple users.
+
+Rob
