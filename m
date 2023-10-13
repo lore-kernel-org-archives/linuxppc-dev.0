@@ -4,87 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50782CDB482
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 07:33:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B13CCDB47E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 07:34:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YcmNpIJ9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aaHk70p6;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S6JCJ6Qd8z3vZ8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 18:33:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S6JDF5hCkz3vc5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 18:34:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YcmNpIJ9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aaHk70p6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S6J8Q4pvnz3bfK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2023 18:31:02 +1100 (AEDT)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39D6oTkD025409;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S6J8V5QxMz3bYc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2023 18:31:06 +1100 (AEDT)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39D7QR15016091;
 	Fri, 13 Oct 2023 07:30:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=/G3cBknUaW4tiH/55Yxcl6QZSFGbX1nK8eJ8Rwnk0LY=;
- b=YcmNpIJ98xh0kOGv1j4fcaMJMzLbssYYcihqFGz8JMjDEdZJlcEclEXYW6Ua56PnTljN
- FUJHUebVU4DiP5bxUs0sBqLe/tZ+4t6+JZNOKNUk0wGiUYsqxwpPgAc9rtHpY9McXT/z
- yN1S4Pf1wxB6TBaRq9mWHpQx9zoAzRkElNBj/YSzu7PLeY12UDyDcPxzwnUhOMk9Ag8B
- VbtDuA0xTonyjVziuyoTzg/n4XTjlc2mHTB6YRUalApKoHm0kfkJthK/BkbhIIPXrMtW
- fRs4bOyeg+zU4VssW07FUqTHfeoj1sXYHBul76QIdFMxH6XTMPOx0JPR0dYoN7jYWgY5 vQ== 
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=PZcn3Fv4gRUXZDkr1qH1Xsndhw6sXPvItkl6A6F4V2I=;
+ b=aaHk70p6Sdg14piObE3UtJKu3j7T4x7VsGRd8wADiJL+wkALQT917fGIpZjyZ3BvUu2k
+ cve1JcBCPz/FNm+jrNqx2emDCeujOgWGpQe8/3Iy91ux2UqNLgUfFutqvsVaN6ZZML6Z
+ 4uxy4eQHFdVGs4DYIxQiOcPa0TJGl+KU1uCtsPw8XJLVdT8VqUdhYDGmWbRY9WeaH9hH
+ gp6Pfm/9vvRhiRGsS4FYIpRcxX9WAIpw1JbsyKN9qEHWfm3Gfn0vcAtPbqbW6VMNy3p0
+ f/SZBteGPxMlgYV1LEbWrZgVW9hG9KX6z8+x0XYDL90O2oZ04TCQcDoZtmK6GJUJHbBS jA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tq0yj912m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Oct 2023 07:30:36 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39D7IIjw014911;
-	Fri, 13 Oct 2023 07:30:35 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tq0yj9126-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tq15bgj95-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 13 Oct 2023 07:30:35 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39D5OvpT016275;
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39D7QTHU016361;
+	Fri, 13 Oct 2023 07:30:35 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tq15bgj8r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Oct 2023 07:30:35 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39D5PO5H029739;
 	Fri, 13 Oct 2023 07:30:34 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3tpt582bfw-1
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tpt5bjbb5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 13 Oct 2023 07:30:34 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39D7UV1044761618
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39D7URKS3736246
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 13 Oct 2023 07:30:31 GMT
+	Fri, 13 Oct 2023 07:30:27 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 615582004B;
-	Fri, 13 Oct 2023 07:30:31 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id F29EE2004E;
+	Fri, 13 Oct 2023 07:30:26 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7398020043;
-	Fri, 13 Oct 2023 07:30:29 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 197EE20043;
+	Fri, 13 Oct 2023 07:30:25 +0000 (GMT)
 Received: from athiras-mbp.in.ibm.com (unknown [9.109.214.47])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 13 Oct 2023 07:30:29 +0000 (GMT)
+	Fri, 13 Oct 2023 07:30:24 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
         irogers@google.com, namhyung@kernel.org
-Subject: [PATCH V2 2/3] tools/perf/tests: Fix shellcheck warning in record_sideband.sh test
-Date: Fri, 13 Oct 2023 13:00:20 +0530
-Message-Id: <20231013073021.99794-3-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V2 0/3] Fix for shellcheck issues with latest scripts in tests/shell
+Date: Fri, 13 Oct 2023 13:00:18 +0530
+Message-Id: <20231013073021.99794-1-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20231013073021.99794-1-atrajeev@linux.vnet.ibm.com>
-References: <20231013073021.99794-1-atrajeev@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Tio_BjHR1T8vQITeMd4Q9YalJiu7nDX-
-X-Proofpoint-GUID: J9Do5lKyFOjU3gcIv4Tpw5Bzx357taju
+X-Proofpoint-ORIG-GUID: rgqWIhMhFOnjlH99B2bhDgw9JFTcu9kC
+X-Proofpoint-GUID: 4mfAP3UJKOVpSQQ5Q2c22I75q1wl8Uql
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-10-13_03,2023-10-12_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- priorityscore=1501 clxscore=1015 mlxlogscore=999 lowpriorityscore=0
- suspectscore=0 mlxscore=0 adultscore=0 bulkscore=0 malwarescore=0
- phishscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 mlxscore=0
+ lowpriorityscore=0 adultscore=0 phishscore=0 priorityscore=1501
+ clxscore=1015 impostorscore=0 spamscore=0 suspectscore=0 mlxlogscore=740
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2309180000 definitions=main-2310130061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -101,43 +99,41 @@ Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kern
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Running shellcheck on record_sideband.sh throws below
-warning:
+shellcheck was run on perf tool shell scripts as a pre-requisite
+to include a build option for shellcheck discussed here:
+https://www.spinics.net/lists/linux-perf-users/msg25553.html
 
-	In tests/shell/record_sideband.sh line 25:
-	  if ! perf record -o ${perfdata} -BN --no-bpf-event -C $1 true 2>&1 >/dev/null
-	    ^--^ SC2069: To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' to clarify).
+And fixes were added for the coding/formatting issues in
+two patchsets:
+https://lore.kernel.org/linux-perf-users/20230613164145.50488-1-atrajeev@linux.vnet.ibm.com/
+https://lore.kernel.org/linux-perf-users/20230709182800.53002-1-atrajeev@linux.vnet.ibm.com/
 
-This shows shellcheck warning SC2069 where the redirection
-order needs to be fixed. Use "cmd > /dev/null 2>&1" to fix
-the redirection of perf record output
+Three additional issues were observed and fixes are part of:
+git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git
 
-Fixes: 23b97c7ee963 ("perf test: Add test case for record sideband events")
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Reviewed-by: Kajol Jain <kjain@linux.ibm.com>
----
-changelog:
- v1 -> v2:
- Add Reviewed-by from Kajol
- Used "cmd > /dev/null 2>&1" to fix the redirection
- warning from shellcheck
+With recent commits in perf, other three issues are observed.
+shellcheck version: 0.6.0
+The changes are with recent commits ( which is mentioned in each patch)
+for lock_contention, record_sideband and stat_all_metricgroups test.
+Patch series fixes these testcases and patches are on top of:
+git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git
 
- tools/perf/tests/shell/record_sideband.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The version 1 patchset had fix patch for test_arm_coresight.sh.
+Dropping that in V2 based on discussion here:
+https://lore.kernel.org/linux-perf-users/F265857D-0D37-4878-908C-D20732F212F9@linux.vnet.ibm.com/T/#u
 
-diff --git a/tools/perf/tests/shell/record_sideband.sh b/tools/perf/tests/shell/record_sideband.sh
-index 5024a7ce0c51..ac70ac27d590 100755
---- a/tools/perf/tests/shell/record_sideband.sh
-+++ b/tools/perf/tests/shell/record_sideband.sh
-@@ -22,7 +22,7 @@ trap trap_cleanup EXIT TERM INT
- 
- can_cpu_wide()
- {
--    if ! perf record -o ${perfdata} -BN --no-bpf-event -C $1 true 2>&1 >/dev/null
-+    if ! perf record -o ${perfdata} -BN --no-bpf-event -C $1 true > /dev/null 2>&1
-     then
-         echo "record sideband test [Skipped cannot record cpu$1]"
-         err=2
+Athira Rajeev (3):
+  tools/perf/tests Ignore the shellcheck SC2046 warning in
+    lock_contention
+  tools/perf/tests: Fix shellcheck warning in record_sideband.sh test
+  tools/perf/tests/shell: Fix shellcheck warning SC2112 with
+    stat_all_metricgroups
+
+ tools/perf/tests/shell/lock_contention.sh       | 1 +
+ tools/perf/tests/shell/record_sideband.sh       | 2 +-
+ tools/perf/tests/shell/stat_all_metricgroups.sh | 2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
 -- 
 2.31.1
 
