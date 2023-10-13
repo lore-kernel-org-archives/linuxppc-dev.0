@@ -4,69 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CCA2CDB47E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 06:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0456CDB47E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 07:31:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=GTHEL/fK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q8SKLx3/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S6GNG63Ltz3cMH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 17:11:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S6J9R1P4Nz3dy3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 18:31:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=GTHEL/fK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q8SKLx3/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=m.muzzammilashraf@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S6FVb6lK8z30gn
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2023 16:31:34 +1100 (AEDT)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-6b20577ef7bso330266b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2023 22:31:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697175089; x=1697779889; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Jy7TboT1tjJJztCz7Esa81WmhMy+A2tzF01Kh4RO/iQ=;
-        b=GTHEL/fKDVwyTUA8UfY7a2z6lNwvJXK6Y+vIYPIRSNHAJwrJ7O8biiRttto5WVYZhc
-         JwLvTLERuaapcBBkL01YTY3PZDqHyWs0ha1b8vpngPZOZI9jT9HkgZbWICXWC57Hozl+
-         oYRGVoNKXV/YqdqiBjPlDktMqvj2ccCTq2Aw1JsXOKcfFA3SQpdjdLGfUf9cgxtuWBwn
-         ++iZF4xPVfZkMQ9G9WjOz1cIbD1ShHoRlmWTfYOu0WWH9zRa2FYjrDWc31iYlxGg0Zau
-         yiqQ5vdUkm0QAdSpj2JBBymKIFNU0Jx6X3y2rqP82Ve1LOG581bJNMM1xCd7p+9chGF9
-         Uy5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697175089; x=1697779889;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Jy7TboT1tjJJztCz7Esa81WmhMy+A2tzF01Kh4RO/iQ=;
-        b=qepUJbVkXqWIP5evQ9iD3avoqpHyzbvo4VnonHMGVm1DYg0dvcRIXezJ14WuUnJFVC
-         8w3CIipzQD8FtbFEpXZvHQJn2cWmqnu1DImj3/M0ViMrgycKCaXqdVGXUp2wrbcPpqmp
-         8kTj2AjYOFnB69bgvsatb3ilsrUbtYMYXpR9QtWHsCUSKIn5xLr59FW/1rV3u+0SlnVm
-         eepZ2jx0Z4SFEl83uO2vJaqVJ1IrcTXcFYqlm4pNv5zzUlIsLjatMMGmGVwiBVx0eQym
-         5jGENQfIxRkvPja1HHjKnom5kmg0UTXAnJYZDJCawY/hUwf2Z4YhGMHjyvq6QQoFPS3Y
-         7FUg==
-X-Gm-Message-State: AOJu0YyHb7V0mXZUrRyclKU/P9yxbq46SVCda6evqFkcjEbpMbBYZvmP
-	Xl6Hi02MS+9KSv8U80POrlo=
-X-Google-Smtp-Source: AGHT+IHySDr3oEw1qDXbIuzEx4XcRygIfCFWDj/u4f5YrKZqXJ1e1m2fIFG1DX9JEnpa3d6n1wKU4w==
-X-Received: by 2002:a05:6a20:729c:b0:15e:bcd:57f5 with SMTP id o28-20020a056a20729c00b0015e0bcd57f5mr26569539pzk.3.1697175089434;
-        Thu, 12 Oct 2023 22:31:29 -0700 (PDT)
-Received: from dreambig.dreambig.corp ([58.27.187.115])
-        by smtp.gmail.com with ESMTPSA id d16-20020a17090ad99000b00274bbfc34c8sm2764917pjv.16.2023.10.12.22.31.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Oct 2023 22:31:29 -0700 (PDT)
-From: Muhammad Muzammil <m.muzzammilashraf@gmail.com>
-To: martin.lau@linux.dev,
-	yonghong.song@linux.dev,
-	john.fastabend@gmail.com
-Subject: [PATCH] arch: powerpc: net: bpf_jit_comp32.c: Fixed 'instead' typo
-Date: Fri, 13 Oct 2023 10:31:18 +0500
-Message-Id: <20231013053118.11221-1-m.muzzammilashraf@gmail.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S6J8Q483Hz3bYc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2023 18:31:02 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39D7KRpL006108;
+	Fri, 13 Oct 2023 07:30:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=piRyvg3rVnT9i0qMazdeEbqlgVJgTqu8Hnb611PSnVo=;
+ b=Q8SKLx3/3uVTq3bnSUdY5hXapdnSdsq2ILhu06z3ffPjadO2/T2hNIOd0oRyZ+KWIsRQ
+ PkqLDFCv2NM7z5+/nkLCQy8w7Br38+mgghFwCb2m0pbbRGpSuYF//3Leo5Yj44JwuRRP
+ YmkC9oERwnTbE4QGXMqJl1sYGvSLq/2AdFlHW9CCnE7/p/AmIgMtaueQuRKPOZ+h9uXz
+ I3u7WqXX00DkQTqRYdEF62TdTV07npeGxg0yqAj3/+r6Ui799ScRw8GsFOO8ufzZwsRw
+ c8VGUCSKJ/Gf/vNoM+VuuMAEx8nI60p/+toKaexeyeQdXrpUqrMg9H8YAi7EbcZHoNMO zw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tq1dr09xe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Oct 2023 07:30:37 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39D7LMW9010098;
+	Fri, 13 Oct 2023 07:30:37 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tq1dr09wu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Oct 2023 07:30:37 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39D5KtFg009030;
+	Fri, 13 Oct 2023 07:30:36 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3tpt57jb6t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Oct 2023 07:30:36 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39D7UXut38863160
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 13 Oct 2023 07:30:33 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 958A32005A;
+	Fri, 13 Oct 2023 07:30:33 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A7FA320040;
+	Fri, 13 Oct 2023 07:30:31 +0000 (GMT)
+Received: from athiras-mbp.in.ibm.com (unknown [9.109.214.47])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 13 Oct 2023 07:30:31 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        irogers@google.com, namhyung@kernel.org
+Subject: [PATCH V2 3/3] tools/perf/tests/shell: Fix shellcheck warning SC2112 with stat_all_metricgroups
+Date: Fri, 13 Oct 2023 13:00:21 +0530
+Message-Id: <20231013073021.99794-4-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20231013073021.99794-1-atrajeev@linux.vnet.ibm.com>
+References: <20231013073021.99794-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 13 Oct 2023 17:10:23 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: fePokvPYqHTrb64kDhEYQpC-AtWSCl6p
+X-Proofpoint-GUID: lRvbcj7EYduS1Jmm-im8XlB1vQxMJ5eO
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-13_03,2023-10-12_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 suspectscore=0
+ lowpriorityscore=0 bulkscore=0 mlxlogscore=846 phishscore=0 mlxscore=0
+ clxscore=1015 priorityscore=1501 adultscore=0 impostorscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2310130061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,30 +97,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Muhammad Muzammil <m.muzzammilashraf@gmail.com>
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixed 'instead' typo
+Running shellcheck on stat_all_metricgroups.sh reports
+below warning:
 
-Signed-off-by: Muhammad Muzammil <m.muzzammilashraf@gmail.com>
+ In ./tests/shell/stat_all_metricgroups.sh line 7:
+ function ParanoidAndNotRoot()
+ ^-- SC2112: 'function' keyword is non-standard. Delete it.
+
+As per the format, "function" is a non-standard keyword that
+can be used to declare functions. Fix this by removing the
+"function" keyword from ParanoidAndNotRoot function
+
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- arch/powerpc/net/bpf_jit_comp32.c | 2 +-
+Changelog:
+ This is a new patch added in V2
+
+ tools/perf/tests/shell/stat_all_metricgroups.sh | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index 7f91ea064c08..bc7f92ec7f2d 100644
---- a/arch/powerpc/net/bpf_jit_comp32.c
-+++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -940,7 +940,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 				 * !fp->aux->verifier_zext. Emit NOP otherwise.
- 				 *
- 				 * Note that "li reg_h,0" is emitted for BPF_B/H/W case,
--				 * if necessary. So, jump there insted of emitting an
-+				 * if necessary. So, jump there instead of emitting an
- 				 * additional "li reg_h,0" instruction.
- 				 */
- 				if (size == BPF_DW && !fp->aux->verifier_zext)
+diff --git a/tools/perf/tests/shell/stat_all_metricgroups.sh b/tools/perf/tests/shell/stat_all_metricgroups.sh
+index f3e305649e2c..55ef9c9ded2d 100755
+--- a/tools/perf/tests/shell/stat_all_metricgroups.sh
++++ b/tools/perf/tests/shell/stat_all_metricgroups.sh
+@@ -4,7 +4,7 @@
+ 
+ set -e
+ 
+-function ParanoidAndNotRoot()
++ParanoidAndNotRoot()
+ {
+   [ "$(id -u)" != 0 ] && [ "$(cat /proc/sys/kernel/perf_event_paranoid)" -gt $1 ]
+ }
 -- 
-2.27.0
+2.31.1
 
