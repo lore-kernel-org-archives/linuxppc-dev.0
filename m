@@ -4,48 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01845C25B45
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 21:17:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41457CDB47E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Oct 2023 23:43:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=sgAr1vkU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bLjWxlj+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SDp121rY0z3cT7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 08:17:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S6jkc4h7Cz3vZQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Oct 2023 10:43:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=sgAr1vkU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bLjWxlj+;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SDp041Nzwz2xXP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2023 08:16:20 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
-	s=201702; t=1698095778;
-	bh=D0yeEwspGZToug4I7VXU9FlsdciqujVRt9xPN/1plGY=;
-	h=Date:From:To:Cc:Subject:From;
-	b=sgAr1vkUsV9ffQaMOa/LFgd6o8m62W1M5pgscbs9OBssSqY1i3FfogdYJ1dwhgV9B
-	 pE807wl7OKmD/t+xOACig7k6tEXAptgMmQAAyq9I/lM7qWZsuMreQpQNTSFHLIqWP3
-	 hfvXfrFLKKmjNENJ1LncE2b1pybZBa3Je8XnjH8TYQgegUg5vK3sTvAMZ7lVUo9fSQ
-	 TBya1HDStcHdV9wtuH4FRoD8BMzqLB71kLeKzPoB+QqloC1LcdiTMEuaTEqqqtZjIs
-	 ZQtQRsGHpFAH7dWBi5MO5Wo6XtP9dd9xeZzzIHUMPV/pfE757JBXU4ELtas5AIAk8D
-	 263FGfSs4XAOw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SDp023PDtz4wcJ;
-	Tue, 24 Oct 2023 08:16:18 +1100 (AEDT)
-Date: Tue, 24 Oct 2023 08:16:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: Signed-off-by missing for commit in the powerpc tree
-Message-ID: <20231024081617.686c086f@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S6jjf1FCmz30Jy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2023 10:42:46 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by ams.source.kernel.org (Postfix) with ESMTP id 0CFFBB82C45;
+	Fri, 13 Oct 2023 23:42:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B281C433C8;
+	Fri, 13 Oct 2023 23:42:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1697240560;
+	bh=r4IUZNE379YWHqCHxAQm/TihzJtfE6ZEd/gZZS7lJS4=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=bLjWxlj+Lc/b7dcG5rH3Gu4xfd6S8jL04AX81iJfqafgkHvZGp9pA/cf9DWs/48pE
+	 i9o6zpaBGtfArJvY5plwB2EcprvBeyZralvRuGguiTsQC9cTeZsdqhWcz5df+6k16r
+	 mmWkVo+n0nJv9ZV0d05MDUwqG5YynWRNSVcK6GO3XAFr/Ojd44GoXME8bsOz5E9Gey
+	 uBcpEbxlOhk0wMo5pt9jfo3GyA+R3gch8+cT5IYJo0JlumgDnqAnS9GR5uQcaX+X47
+	 OSy9epstWDE1TVLo5Ct0W4ceqSYMJV4pEOINs8mtu1VQV8yyscUPhmeKUxV75ZL7nf
+	 NI4IWA8Ci0Tag==
+Date: Fri, 13 Oct 2023 16:42:38 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>
+Subject: Re: [PATCH v8 10/30] net: wan: Add support for QMC HDLC
+Message-ID: <20231013164238.4984b39e@kernel.org>
+In-Reply-To: <20231011061437.64213-11-herve.codina@bootlin.com>
+References: <20231011061437.64213-1-herve.codina@bootlin.com>
+	<20231011061437.64213-11-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/0pV_NK7c99nPUcyLur.Kr.z";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,42 +59,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, Simon Horman <horms@kernel.org>, lin
+ uxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/0pV_NK7c99nPUcyLur.Kr.z
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 11 Oct 2023 08:14:14 +0200 Herve Codina wrote:
+> The QMC HDLC driver provides support for HDLC using the QMC (QUICC
+> Multichannel Controller) to transfer the HDLC data.
+> 
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Hi all,
-
-Commit
-
-  351a050f602d ("Revert "powerpc: add `cur_cpu_spec` symbol to vmcoreinfo"")
-
-is missing a Signed-off-by from its author and committer.
-
-Reverts are commits as well ...
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/0pV_NK7c99nPUcyLur.Kr.z
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmU24qEACgkQAVBC80lX
-0GwGkQf/XJ4Mm38KSnnVJwtJ35imsiLP52PcHsITty5kXz/JMQrXjZYJv11bF1JN
-HNt/iRC1RE440GhIlMgh9YvuewjAFfRAm1bCAXOqP3XuAYsV5twrN9hdIbyZnfWP
-HWG0fnQpWzAGwyR8oMAz2aKyML6gFP4ITsFSeEd0p6EhIJkMlGoVYeqYLXX9b7QK
-VXAsAsUZ/P8i8Dw54nbkGrqQKVifsAhXdbcskdsd/0Hwp+UmbPjsiRBF4VC65/aP
-HmzSiUiSe/jwVDYBkgVcq0acFhVcucH6+Y+NdnboLfKpG/I744k00j8XpAWyr173
-whitus6X0O8SFuqWu7GyDkkkhTq0Gw==
-=VW7N
------END PGP SIGNATURE-----
-
---Sig_/0pV_NK7c99nPUcyLur.Kr.z--
+Acked-by: Jakub Kicinski <kuba@kernel.org>
