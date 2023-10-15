@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51142CDB47E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 10:10:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55493CDB482
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 10:11:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gJBgCvZa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HmEGUjqt;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S7bbf71CMz3w2h
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 21:10:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S7bcm032Mz3w5x
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 21:11:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gJBgCvZa;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HmEGUjqt;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S7bVS2VVnz3vZS
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2023 21:06:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S7bVc2ckwz3vhY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2023 21:06:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1697364368;
-	bh=i4UWmSXRdf8U3S13I3kD1JSY13lhFBz1uoD0N3O5gJM=;
+	s=201909; t=1697364376;
+	bh=fNILS6uDqzn/+3Ar+0VrGi84TCCExiQmIbL2jAANHTU=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=gJBgCvZaEh9UB1j8l9jgl1lcm9tKhfgJp9ItNPM9Hj3n7fbEgL8m+iRP9O0vHZAgR
-	 UBK77/niEbZXGJQWrrYT2xxm8zjejGl14XMaPzkLlLLTeAE9m7RPyXvuXYonrP4ZYm
-	 MeAcgvITgft32SbCtgN+Sv7eCSiaHlr8BPPua5qvKAtqfxmlppHwkbqhvXA8WlX1Kt
-	 LVr0BPr3a/zXmElcDvv8bj7MGn5nly4LU/6t1w8esohXrYX7wTBqXs4vAWpKDf362v
-	 yyR5RTdmpoVzPLvXesfWxE2zH6UJTKLkzyzght/sVyGAmETiC7k0N6sJpWsFBvrNHg
-	 VRK1ozDCF1xJg==
+	b=HmEGUjqtwXU1PP3R09/L84YDDHpybyRlLIClTp2AjvJEN9hrp9HDTxTQiA8OSrI0D
+	 AsFwtIMbErrBzRJVj/rcBQegAjUM731KhBdMDDzpM2KYYWqm/dmCXxq8Frwgm7IkLP
+	 xjg01JzXJatVjJc1t6POPdRaiiVIpUt4/U5QW44STccatnTWPz9V9bmwpcGUp5PQaS
+	 XyKlqDFEQ28OtjMnRK4frK8OU+RuP59BS769h/HWObHqsBqMMCyUD0KC/aP7G6I2Gd
+	 WlvsC3pYY6ROEGXRCV4Om+E0Csa0G/VONr0CmOe30g5BCDMnBeJ9PlBKEpyEzqleq5
+	 kvorUc+Cz+b8w==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S7bVQ4zgTz4wcc;
-	Sun, 15 Oct 2023 21:06:06 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S7bVS4L6tz4wdF;
+	Sun, 15 Oct 2023 21:06:08 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Ungerer <gerg@linux-m68k.org>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Thomas Gleixner <tglx@linutronix.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-In-Reply-To: <cover.1695031668.git.geert@linux-m68k.org>
-References: <cover.1695031668.git.geert@linux-m68k.org>
-Subject: Re: (subset) [PATCH v2 0/2] m68k/powerpc: Kill references to non-existent README.legal
-Message-Id: <169736429851.960528.8922488798725928458.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, sam@ravnborg.org, benh@kernel.crashing.org, linux@treblig.org
+In-Reply-To: <20230825142754.1487900-1-linux@treblig.org>
+References: <20230825142754.1487900-1-linux@treblig.org>
+Subject: Re: [PATCH v4] powerpc: Use shared font data
+Message-Id: <169736429855.960528.2851417902761239149.b4-ty@ellerman.id.au>
 Date: Sun, 15 Oct 2023 21:04:58 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -58,23 +58,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-spdx@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rdunlap@infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 18 Sep 2023 12:14:42 +0200, Geert Uytterhoeven wrote:
-> Note that the "COPYING" file at that time corresponded to the version
-> from upstream Linux v0.99.11 until v2.1.104, and thus predated the
-> addition of the "only valid GPL version is v2" clause in v2.4.0-test8.
+On Fri, 25 Aug 2023 15:27:54 +0100, linux@treblig.org wrote:
+> PowerPC has a 'btext' font used for the console which is almost identical
+> to the shared font_sun8x16, so use it rather than duplicating the data.
 > 
-> This patch series gets rid of the references to README.legal by
-> replacing the boilerplate with SPDX license identifiers.
+> They were actually identical until about a decade ago when
+>    commit bcfbeecea11c ("drivers: console: font_: Change a glyph from
+>                         "broken bar" to "vertical line"")
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[2/2] powerpc: Replace GPL 2.0+ README.legal boilerplate with SPDX
-      https://git.kernel.org/powerpc/c/6fcb13972bc2b41211e1dddb02f5e73199addc75
+[1/1] powerpc: Use shared font data
+      https://git.kernel.org/powerpc/c/0ebc7feae79ac07772a20382eebd8c3503313714
 
 cheers
