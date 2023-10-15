@@ -4,67 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C652FCDB465
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Oct 2023 04:23:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BFBACDB482
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 10:04:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KafOiL9C;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=neT1iSdE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S6qxy6WCtz3cHf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Oct 2023 15:23:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S7bSB3Bxvz2yst
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 21:04:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KafOiL9C;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=neT1iSdE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=visitorckw@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S6Z3J1vS1z3bZ1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2023 04:57:30 +1100 (AEDT)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-1c9d132d92cso6324905ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2023 10:57:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697219845; x=1697824645; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=fonQwXfCN69NQb+A4dqVyCysjcLISiFg18CBwAvV4OA=;
-        b=KafOiL9CjLgeiUkCQW8uguPEA5K02iVh3FtxuM0Q8YmNIKsEc4Nm6jmr7NeYQrXptK
-         1JIZdf+QXr8NnylDTGzvznSjFKj7igMumbQOnDs+6ZXKukMgJzOZC2KnYBDbNzvmppQs
-         ZYa/z8TGA3yvbUKhT956uQ/Qyxxs7MwEsLtLTAojQgNpwwfHOhVmkxm56JPfKq45yS50
-         Dbx1iLADIPdgzqiREv/FtHFSYmO/ITuIQj0LzRDiCvK4SYBM+C3zIqmSy4x8Mvm1TK9y
-         y5wf2rtklbleoydPd4Yy/mZ8QjhcDX7Ak6Wc09zW3zqPwSPw6hrCKCw85Cb36D7WXnQh
-         iiQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697219845; x=1697824645;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=fonQwXfCN69NQb+A4dqVyCysjcLISiFg18CBwAvV4OA=;
-        b=c2xrXVFt4UmcXb/80LZVOEK5sNarBNwVh7daBIRFJ4mWOhepKUr77R2niT8/yL9SCy
-         aNJScgVxFQN8Z5zM+kmZu/AbkZH+B0+R1yX52SzEc64UEMEYngG2PAI0LVBpuYgk/++D
-         EkBvoy4NHF8x3Uy4nG3kfcFtkvMJGA1PoVRYRTBkmnjOiqlEVayr3Q1nqA4G1NdR3T59
-         JJMF2SjK/BpvUhK7yFGKeA6IcyKa8WusIAGigVnODuqDdFW1IznBzXliTLfd+ocCNu0s
-         HlcPhDrfFOcMmgkt/Exl5TYPobQfXAuvoc5+6kKm4DXWWmYJb3xwCA/spahb+MHKWLA/
-         l3Xw==
-X-Gm-Message-State: AOJu0Yw/UgzmH1bgQ5E4nPGndOwq9J3sFmGqzhDZBtrLyAb4f2ImcG7u
-	qYLj2mHHmkEUFBbWxP18chg=
-X-Google-Smtp-Source: AGHT+IFhoOHVOaGD9kq5X81RwxEZLP3PqLvj1FxrxbU49r5DYy2eSGLjob+eRv+TUFObOX1sv5UuTA==
-X-Received: by 2002:a17:902:f686:b0:1c7:5581:f9c with SMTP id l6-20020a170902f68600b001c755810f9cmr29945485plg.0.1697219845416;
-        Fri, 13 Oct 2023 10:57:25 -0700 (PDT)
-Received: from localhost.localdomain ([140.116.154.65])
-        by smtp.gmail.com with ESMTPSA id d10-20020a170902654a00b001c63429fa89sm4232472pln.247.2023.10.13.10.57.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Oct 2023 10:57:24 -0700 (PDT)
-From: Kuan-Wei Chiu <visitorckw@gmail.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/perf: Optimize find_alternatives_list() using binary search
-Date: Sat, 14 Oct 2023 01:57:14 +0800
-Message-Id: <20231013175714.2142775-1-visitorckw@gmail.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S7bRD3sndz30P3
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2023 21:03:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1697364200;
+	bh=Q/bzuX+XRukXINWRk6WjTJ0Dsx+nhlcsHcO34kFVNyE=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=neT1iSdEvJEcD8Pn72Ik6GoscWZUJeCY38+sefDfpP/cZ/H9negXKQfnF+Xdp/jrL
+	 XzLx3TVEfz6NA4T16Ur8c5kFIPjVBJMT4BGYBdZ+Z3cud75R4KoVY0d3WV5ZZfW7wT
+	 J3YtJqEkOGoncq3HX3EfKUCrRmjHyOBGsgyJ+/Fi5ETCR07+WTSkeg6ANyBwonK9yN
+	 vRWsxK2S5N9gA0qXYntot79FAtWjCvgzxej+HkNanHkeoGqio0YETIIFqn2h5gBjJk
+	 41K7/mZQhAkYeW1JKRgNj4Z83/mYwegZkZiagoWAdHcZag4KANCc+hzSvDxgHI16lZ
+	 zYt4YnDHCr9vw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S7bRD1Djwz4wnw;
+	Sun, 15 Oct 2023 21:03:20 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <066caa6d9480365da9b8ed83692d7101e10ac5f8.1695657339.git.christophe.leroy@csgroup.eu>
+References: <066caa6d9480365da9b8ed83692d7101e10ac5f8.1695657339.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/85xx: Fix math emulation exception
+Message-Id: <169736402375.957740.5992745074331848586.b4-ty@ellerman.id.au>
+Date: Sun, 15 Oct 2023 21:00:23 +1100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Sat, 14 Oct 2023 15:23:03 +1100
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,78 +58,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kuan-Wei Chiu <visitorckw@gmail.com>, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch improves the performance of event alternative lookup by
-replacing the previous linear search with a more efficient binary
-search. This change reduces the time complexity for the search process
-from O(n) to O(log(n)). A pre-sorted table of event values and their
-corresponding indices has been introduced to expedite the search
-process.
+On Mon, 25 Sep 2023 17:55:51 +0200, Christophe Leroy wrote:
+> Booting mpc85xx_defconfig kernel on QEMU leads to:
+> 
+> Bad trap at PC: fe9bab0, SR: 2d000, vector=800
+> awk[82]: unhandled trap (5) at 0 nip fe9bab0 lr fe9e01c code 5 in libc-2.27.so[fe5a000+17a000]
+> awk[82]: code: 3aa00000 3a800010 4bffe03c 9421fff0 7ca62b78 38a00000 93c10008 83c10008
+> awk[82]: code: 38210010 4bffdec8 9421ffc0 7c0802a6 <fc00048e> d8010008 4815190d 93810030
+> Trace/breakpoint trap
+> WARNING: no useful console
+> 
+> [...]
 
-Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
----
- arch/powerpc/perf/power6-pmu.c | 43 ++++++++++++++++++++--------------
- 1 file changed, 26 insertions(+), 17 deletions(-)
+Applied to powerpc/fixes.
 
-diff --git a/arch/powerpc/perf/power6-pmu.c b/arch/powerpc/perf/power6-pmu.c
-index 5729b6e059de..b6030ea130eb 100644
---- a/arch/powerpc/perf/power6-pmu.c
-+++ b/arch/powerpc/perf/power6-pmu.c
-@@ -335,25 +335,34 @@ static const unsigned int event_alternatives[][MAX_ALT] = {
- 	{ 0x3000fe, 0x400056 },			/* PM_DATA_FROM_L3MISS */
- };
- 
--/*
-- * This could be made more efficient with a binary search on
-- * a presorted list, if necessary
-- */
- static int find_alternatives_list(u64 event)
- {
--	int i, j;
--	unsigned int alt;
--
--	for (i = 0; i < ARRAY_SIZE(event_alternatives); ++i) {
--		if (event < event_alternatives[i][0])
--			return -1;
--		for (j = 0; j < MAX_ALT; ++j) {
--			alt = event_alternatives[i][j];
--			if (!alt || event < alt)
--				break;
--			if (event == alt)
--				return i;
--		}
-+	const unsigned int presort_event_table[] = {
-+		0x0130e8, 0x080080, 0x080088, 0x10000a, 0x10000b, 0x10000d, 0x10000e,
-+		0x100010, 0x10001a, 0x100026, 0x100054, 0x100056, 0x1000f0, 0x1000f8,
-+		0x1000fc, 0x200008, 0x20000e, 0x200010, 0x200012, 0x200054, 0x2000f0,
-+		0x2000f2, 0x2000f4, 0x2000f5, 0x2000f6, 0x2000f8, 0x2000fc, 0x2000fe,
-+		0x2d0030, 0x30000a, 0x30000c, 0x300010, 0x300012, 0x30001a, 0x300056,
-+		0x3000f0, 0x3000f2, 0x3000f6, 0x3000f8, 0x3000fc, 0x3000fe, 0x400006,
-+		0x400007, 0x40000a, 0x40000e, 0x400010, 0x400018, 0x400056, 0x4000f0,
-+		0x4000f8, 0x600005};
-+	const unsigned int event_index_table[] = {
-+		0,  1,  2,  3,  4,  1, 5,  6,  7,  8,  9,  10, 11, 12, 13, 12, 14,
-+		7,  15, 2,  9,  16, 3, 4,  0,  17, 10, 18, 19, 20, 1,  17, 15, 19,
-+		18, 2,  16, 21, 8,  0, 22, 13, 14, 11, 21, 5,  20, 22, 1,  6,  3};
-+	int lo = 0;
-+	int hi = ARRAY_SIZE(presort_event_table) - 1;
-+
-+	while (lo <= hi) {
-+		int mid = lo + (hi - lo) / 2;
-+		unsigned int alt = presort_event_table[mid];
-+
-+		if (alt < event)
-+			lo = mid + 1;
-+		else if (alt > event)
-+			hi = mid - 1;
-+		else
-+			return event_index_table[mid];
- 	}
- 	return -1;
- }
--- 
-2.25.1
+[1/1] powerpc/85xx: Fix math emulation exception
+      https://git.kernel.org/powerpc/c/8e8a12ecbc86700b5e1a3596ce2b3c43dafad336
 
+cheers
