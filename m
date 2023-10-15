@@ -4,49 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7A2CCDB47E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 10:12:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6A36CDB47E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 10:32:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Jgv8/cUx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hEixdUl5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S7bdh2jlGz3vd8
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 21:12:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S7c4s3K3Rz3cSg
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Oct 2023 21:32:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Jgv8/cUx;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hEixdUl5;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S7bVl6vdYz3vhH
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2023 21:06:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S7c3w3THPz2ygx
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2023 21:31:40 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1697364383;
-	bh=lQ471ge3JT3D/IyXiBK6OqZg4gy00/Wz1cpF1NMX1CI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=Jgv8/cUxgQM27y6U//UT8VctmRJrqlUlqIr1QQTvvhugWnDzvcBYSj+SLZifK2jTQ
-	 owmdqqRmmp8iY6chJq2Mlnpjbq6RAj8jt0kTavOSSUm2KQgIWHKXgDY5hnkI1rXRb9
-	 NIdVXDDuIe1rtwQ5evX8B8s9Peo+r//MyCvLnEJu3WQv7amCnhXoAL+d5jvpc0YjYY
-	 35406tFs9oyMdUOOMphj3mCWt3yUm5zVp0ckK6CxgcejWbG+0vkHDPW3MGFNsWQ5DX
-	 tEUDQT8EKLC+kMhx0X8thKh1EhRV8sMxpXYvKiRh1qX2qbrIMTQ4XvICpOiJdoeKvz
-	 ZQx5NpTCbYS3w==
+	s=201909; t=1697365900;
+	bh=LXWDfpoZP6jZcN2pW3gdh9fiUrOU2L0I4poYZOCpU68=;
+	h=From:To:Cc:Subject:Date:From;
+	b=hEixdUl5pSqNTvbDH6lK6lbzSodhjWujiHO/+JG0SNXGZadhPfcRO/jDx0X6A3bjL
+	 rj++NgjlaY7JNbT+8245OFt9zo2BqXvSAeTsYeqDoK8OK226L1mFnJZiGgHtIAXkY1
+	 /1irW9jvPXqo7dLy/hbpcl5pFnviqbVFR+z2R9pEWZw0nXCJ0lJ54nTctLe60qTyC9
+	 toGPJzcD10YA7PdtSp1Gz0Q72E4ztzVbIWaMRh0rV1LEiJ7mcLgqiY+oN9SHn6FJ3U
+	 VSwuRBtxB5+jkLOtbpLn4Zkj8rPPn8O30whLsd59M4nmWgqEiiX+s2KMICM40EyYEO
+	 9i9sdFGbpP2ig==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S7bVc4t2xz4wnw;
-	Sun, 15 Oct 2023 21:06:16 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4S7c3w0gPPz4wcJ;
+	Sun, 15 Oct 2023 21:31:39 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: reiserfs-devel@vger.kernel.org, Peter Lafreniere <peter@n8pjl.ca>
-In-Reply-To: <20230918175529.19011-1-peter@n8pjl.ca>
-References: <20230918175529.19011-1-peter@n8pjl.ca>
-Subject: Re: (subset) [PATCH 0/7] arch/*: config: Remove ReiserFS from defconfig
-Message-Id: <169736429854.960528.1442206910501555108.b4-ty@ellerman.id.au>
-Date: Sun, 15 Oct 2023 21:04:58 +1100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.6-4 tag
+Date: Sun, 15 Oct 2023 21:31:39 +1100
+Message-ID: <87mswkyy5w.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,23 +55,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tsbogend@alpha.franken.de, jack@suse.cz, linux-sh@vger.kernel.org, ink@jurassic.park.msu.ru, richard@nod.at, linux-um@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, geert@linux-m68k.org, linux-alpha@vger.kernel.org, linux@armlinux.org.uk, johannes@sipsolutions.net, richard.henderson@linaro.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, anton.ivanov@cambridgegreys.com
+Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 18 Sep 2023 17:56:09 +0000, Peter Lafreniere wrote:
-> ReiserFS has been considered deprecated for 19 months since commit
-> eb103a51640e ("reiserfs: Deprecate reiserfs"). However, there are
-> several architectures that still build it into their defconfig kernels.
-> 
-> As ReiserFS will be removed in 2025, delete all ReiserFS-related options
-> from defconfig files before the filesystem's removal.
-> 
-> [...]
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Applied to powerpc/next.
+Hi Linus,
 
-[2/7] arch: powerpc: remove ReiserFS from defconfig
-      https://git.kernel.org/powerpc/c/c945e6f453a361b0e9daddd2be9c099d1b80d6f8
+Please pull some more powerpc fixes for 6.6:
 
-cheers
+The following changes since commit 58b33e78a31782ffe25d404d5eba9a45fe636e27:
+
+  selftests/powerpc: Fix emit_tests to work with run_kselftest.sh (2023-09-22 20:29:48 +1000)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.6-4
+
+for you to fetch changes up to f0eee815babed70a749d2496a7678be5b45b4c14:
+
+  powerpc/47x: Fix 47x syscall return crash (2023-10-11 09:31:26 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 6.6 #4
+
+ - Fix softlockup/crash when using hcall tracing.
+
+ - Fix pte_access_permitted() for PAGE_NONE on 8xx.
+
+ - Fix inverted pte_young() test in __ptep_test_and_clear_young() on 64-bit BookE.
+
+ - Fix unhandled math emulation exception on 85xx.
+
+ - Fix kernel crash on syscall return on 476.
+
+Thanks to: Athira Rajeev, Christophe Leroy, Eddie James, Naveen N Rao.
+
+- ------------------------------------------------------------------
+Athira Rajeev (2):
+      powerpc/pseries: Fix STK_PARAM access in the hcall tracing code
+      powerpc/pseries: Remove unused r0 in the hcall tracing code
+
+Christophe Leroy (3):
+      powerpc/8xx: Fix pte_access_permitted() for PAGE_NONE
+      powerpc/64e: Fix wrong test in __ptep_test_and_clear_young()
+      powerpc/85xx: Fix math emulation exception
+
+Michael Ellerman (1):
+      powerpc/47x: Fix 47x syscall return crash
+
+
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h | 7 +++++++
+ arch/powerpc/include/asm/nohash/64/pgtable.h | 2 +-
+ arch/powerpc/include/asm/nohash/pgtable.h    | 2 ++
+ arch/powerpc/kernel/entry_32.S               | 8 +++++---
+ arch/powerpc/kernel/head_85xx.S              | 2 +-
+ arch/powerpc/platforms/pseries/hvCall.S      | 8 +-------
+ 6 files changed, 17 insertions(+), 12 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmUrvzYACgkQUevqPMjh
+pYCKAQ/+MjIJYV6DQPPoopfl1mFgPTKEGZh4xSj0VAuRHcvZGJT3UgJGu/ngnQw/
+IWjcdDuHg1eYayWLhQBYBzTZVN8nNxSF/eAxdYyV2CFHBDk3iED1rpFO8nlrM+wL
+rBfY+4U37Lx7HJDHPC6pzn+5hzIVBqwCh7cdS4z/VYW/7Nz1hPr5oD1MAYYTCBdV
+Yuan4v5VqfMmXPCn/kBgGWjE2kNIDBfPqyi3VC3uJu9Z/pVpkBT8GFSqbZ6pxIHw
+pOC8mkimWNkY3VZqqcrb649NeDHvZUjctzZTy45f3euC+x+UQ7kkI2Bc56DzcK4F
+6M+aI6t9WO0N4XVZxrHCC5j90/RZDccwTK/KBbtAPGhOjZTWSY5oZF+F3v/ga+/2
+IbcHSKHtFw3jf9JHpqe3VF9l4LbwsnYfh99ZaHZcfiY6007sJwzp8M+xbHOKLVVm
+4Q+J2qoTqdXSHXkO7ldCcBz7dcp3CI8EGs3Nvk+EBjRkMjlsShhsFq8yGgzAOS3Y
+AWg1br+w9udkvI4t7TWT8JhXy5jitSuB+Cxpe3wZ1PPRB9mVqICdIPcJ7XsAqMH1
+fbaa7wOXbAXPSIN1o70WmrENB1qn5HLoDPBpbSJc+EW2efCPhDN+IsRsqEkWjKD6
+hkD+z9B2WppLl79nE5Xso2/MwtxhlINVBpPyVLPvnVzYQ7An+1U=
+=p0qH
+-----END PGP SIGNATURE-----
