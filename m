@@ -4,48 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9177CDB483
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 20:48:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C5F5CDB474
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 21:40:46 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=TDwQC0Hi;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S95fX2Yhyz3vbJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 07:48:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S96q11B3Rz3cM7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 08:40:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=TDwQC0Hi;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=quicinc.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=quic_pbrahma@quicinc.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1391 seconds by postgrey-1.37 at boromir; Tue, 17 Oct 2023 22:04:37 AEDT
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S95dL4ylxz3c54
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2023 07:47:16 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qsqy0-0001nh-VN; Tue, 17 Oct 2023 22:47:04 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qsqxz-002Ol4-ED; Tue, 17 Oct 2023 22:47:03 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1qsqxz-000U0X-5D; Tue, 17 Oct 2023 22:47:03 +0200
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 2/6] usb: gadget: fsl-udc: Convert to use module_platform_driver()
-Date: Tue, 17 Oct 2023 22:44:45 +0200
-Message-ID: <20231017204442.1625925-10-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231017204442.1625925-8-u.kleine-koenig@pengutronix.de>
-References: <20231017204442.1625925-8-u.kleine-koenig@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S8rj11hZTz2xmC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2023 22:04:35 +1100 (AEDT)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39H8GRuK014171;
+	Tue, 17 Oct 2023 10:41:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : to : cc : references : subject : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=zBhBLqqpj0n+5jzHyUrlt0lv7F+dDsbPhpjc08ioUEQ=;
+ b=TDwQC0HikJ/UYtBkHD7h61cTXujZv3SrZ2WUb9ePKx+DvDe87gLqT+FD7MnliGdvN29L
+ j14jiq6axOjLHO1GP6uQa6DGkzRkbe/Lpt/WQCUXl9HLh88EuPvkgMv2Dt0dZTLW4Dq1
+ I98etMMnLTHGlR2f0FKoisvScNqjsm2EuPKCWBSMnc2PrrSSS+mjs4VJazOScTVArgPt
+ m0FhiKbUR6hPXP/IVTeGYQpjXn7cQP1ufkal/suuta02ffDjRfKwlAdFcezMHPh9h8Qs
+ 2xK7v1ujUY3mYoub8nXof5TN6l4ZwiLybDjmeDJ/ONiWV0wmYWfynFk2H8tweN79kZwj Vg== 
+Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ts85fta6b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Oct 2023 10:41:08 +0000
+Received: from nasanex01c.na.qualcomm.com (nasanex01c.na.qualcomm.com [10.45.79.139])
+	by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39HAewZd022148
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Oct 2023 10:40:58 GMT
+Received: from [10.214.66.187] (10.80.80.8) by nasanex01c.na.qualcomm.com
+ (10.45.79.139) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Tue, 17 Oct
+ 2023 03:40:54 -0700
+Message-ID: <4c420081-fe57-d036-ded7-2899c13738ee@quicinc.com>
+Date: Tue, 17 Oct 2023 16:10:42 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1448; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=bqTWPGwzIMLwkfNPce7loB5RVG7gQl51fgVj1tD+3GU=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlS9Tw6Xult+sGp52F06+OYI//cHC7cqHLm1R9XZ85Dfy eYj+/kndjIaszAwcjHIiimy2DeuybSqkovsXPvvMswgViaQKQxcnAIwkQo39t+s9cGXU9m++YjH /zRz/b8u1WzK5D0mnjrcKScXbdM38WVacSqxgq1jglaeb9t6Jgv7EDu1n1u0TQUFL78Nu+2wT9L g8smtLPm1QsLFSuunbVHyOX5O0KjWPq6X71eWVASvgmtQ1g6fxz+/CB07FG+cpWMrW5Qlc8bqp+ 5Mjh3t4tULGjoXPFbX71/zI1jYfuanji8+z1fsTbnU1NER3VvRGHf48yztRwutVac1xV5P4nB7n /Z9+xRPJqlFjte4/8ns7hNqyhCo9AhVvvn2wiaNgFNqj7nDeHbaXZk201OKvSTr/MlfWxcrV0ed Cqk1+Oh6klWTYfGirT3HmNe9vlet4Llc8/biEO72S7vtAA==
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.1.2
+To: <danielwa@cisco.com>
+References: <20230417162415.GF1391488@zorba>
+Subject: Re: [PATCH 1/4] add generic builtin command line
+Content-Language: en-US
+From: Pratyush Brahma <quic_pbrahma@quicinc.com>
+In-Reply-To: <20230417162415.GF1391488@zorba>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01c.na.qualcomm.com (10.45.79.139)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: MRvxMaYkqsM1Y31hTxHRI_3fVzxS599_
+X-Proofpoint-GUID: MRvxMaYkqsM1Y31hTxHRI_3fVzxS599_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-16_13,2023-10-17_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 adultscore=0
+ priorityscore=1501 phishscore=0 malwarescore=0 spamscore=0 mlxscore=0
+ bulkscore=0 impostorscore=0 suspectscore=0 mlxlogscore=535
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2310170089
+X-Mailman-Approved-At: Wed, 18 Oct 2023 08:39:55 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,44 +86,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org, linux-usb@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org
+Cc: christophe.leroy@c-s.fr, Pavan Kondeti <quic_pkondeti@quicinc.com>, tomas.mudrunka@gmail.com, quic_vjitta@quicinc.com, xe-linux-external@cisco.com, linux-kernel@vger.kernel.org, robh+dt@kernel.org, maksym.kokhan@globallogic.com, "quic_guptap@quicinc.com quic_ylal"@quicinc.com, dwalker@fifo99.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-module_platform_driver_probe() has the advantage that the .probe() and
-.remove() calls can live in .init.text and .exit.text respectively and
-so some memory is saved. The downside is that dynamic bind and unbind
-are impossible. As the driver doesn't benefit from the advantages (both
-.probe and .remove are defined in plain .text), stop suffering from the
-downsides and use module_platform_driver() instead of
-module_platform_driver_probe().
+Hi Daniel
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/usb/gadget/udc/fsl_udc_core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+We have a usecase which requires this patch necessarily. For android 
+usecases, we have two different build variants
+differentiated by defconfigs - production and debug. However, we only 
+have a single dts for both these variants.
 
-diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index ee5705d336e3..2693a10eb0c7 100644
---- a/drivers/usb/gadget/udc/fsl_udc_core.c
-+++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -2666,6 +2666,7 @@ static const struct platform_device_id fsl_udc_devtype[] = {
- };
- MODULE_DEVICE_TABLE(platform, fsl_udc_devtype);
- static struct platform_driver udc_driver = {
-+	.probe		= fsl_udc_probe,
- 	.remove		= fsl_udc_remove,
- 	.id_table	= fsl_udc_devtype,
- 	/* these suspend and resume are not usb suspend and resume */
-@@ -2679,7 +2680,7 @@ static struct platform_driver udc_driver = {
- 	},
- };
- 
--module_platform_driver_probe(udc_driver, fsl_udc_probe);
-+module_platform_driver(udc_driver);
- 
- MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_AUTHOR(DRIVER_AUTHOR);
--- 
-2.42.0
+
+We want to enable certain features like page owner and slub debug which 
+require cmdline params in addition to
+their respective configs to be enabled. Enabling page_owner and 
+slub_debug options in dts file enables it for both
+production and debug variants. These features have significant memory 
+overhead which are undesirable for
+our production environment. However, these are necessary for debug 
+environment to enable internal testing and debug.
+Currently, android uses out-of-tree configs like CONFIG_CMDLINE_EXTEND 
+to do so in gki_defconfig [1].
+One option is to use CMDLINE_FORCE option which would enable these 
+cmdline params but this disables the bootloader to add
+any additional cmdline params which may be necessary.
+
+
+For such a usecase, the CONFIG_CMDLINE_PREPEND seems to be quite useful 
+as it would help to stitch bootloader
+and the desired build variant's configs together. Can you please help to 
+merge this patch?
+
+
+[1] 
+https://android.googlesource.com/kernel/common/+/refs/heads/android14-6.1-lts/arch/arm64/configs/gki_defconfig#62
 
