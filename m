@@ -4,73 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03C86CDB474
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 21:41:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A86ACDB474
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 23:15:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=avm.de header.i=@avm.de header.a=rsa-sha256 header.s=mail header.b=H3xiTCRT;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=HxtKZKLs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S96r03lHRz3dlY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 08:41:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S98wc5pxmz3c2H
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 10:15:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=avm.de header.i=@avm.de header.a=rsa-sha256 header.s=mail header.b=H3xiTCRT;
+	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=HxtKZKLs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=avm.de (client-ip=2001:bf0:244:244::119; helo=mail.avm.de; envelope-from=n.schier@avm.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 175 seconds by postgrey-1.37 at boromir; Tue, 17 Oct 2023 23:12:45 AEDT
-Received: from mail.avm.de (mail.avm.de [IPv6:2001:bf0:244:244::119])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=80.241.56.152; helo=mout-p-102.mailbox.org; envelope-from=erhard_f@mailbox.org; receiver=lists.ozlabs.org)
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S8tCd5gytz30fk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2023 23:12:45 +1100 (AEDT)
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
-	by mail.avm.de (Postfix) with ESMTPS;
-	Tue, 17 Oct 2023 14:09:31 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=avm.de; s=mail;
-	t=1697544572; bh=KD3DEtP5d6DCBHOitoR8vzNgmhwKZ20ThM66mmXaQDA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=H3xiTCRTfXo07q+mWSyekXKERZRHw8/lwaQcPG8H37jzuclELv0P1eZcewRqi9xfm
-	 4FjwkD5E/CAI7Jsf1jt27JdGi4xolHrKm534XM7mLulgUbh3foeFQbVeHZrkGEgsx3
-	 6NcIgfurfJnD3rsiwm/mEe1Iw8nhHG8j82oJD9DM=
-Received: from buildd.core.avm.de (buildd-sv-01.avm.de [172.16.0.225])
-	by mail-auth.avm.de (Postfix) with ESMTPA id CFCFB81EAD;
-	Tue, 17 Oct 2023 14:09:31 +0200 (CEST)
-Received: by buildd.core.avm.de (Postfix, from userid 1000)
-	id B9EFA1819D1; Tue, 17 Oct 2023 14:09:31 +0200 (CEST)
-Date: Tue, 17 Oct 2023 14:09:31 +0200
-From: Nicolas Schier <n.schier@avm.de>
-To: Masahiro Yamada <masahiroy@kernel.org>
-Subject: Re: [PATCH 1/4] kbuild: remove ARCH_POSTLINK from module builds
-Message-ID: <ZS55e3ZyzoNDchD+@buildd.core.avm.de>
-Mail-Followup-To: Masahiro Yamada <masahiroy@kernel.org>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Albert Ou <aou@eecs.berkeley.edu>, Borislav Petkov <bp@alien8.de>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-mips@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	x86@kernel.org
-References: <20231017103742.130927-1-masahiroy@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S98vc47Q0z30NP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2023 10:14:51 +1100 (AEDT)
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [10.196.197.2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4S98vV5cBmz9sXg;
+	Wed, 18 Oct 2023 01:14:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1697584486;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Cmtq4fWj5Rl8hlT+/wDd4j3/Uz9lprd8zFd/8pF1nPY=;
+	b=HxtKZKLsmXiXc3pFtY43GBAEzKy09Otq7ByZ3x2MMcWctFaedNZJxCMReVUq0+VgnYehlx
+	J99ULnk1lQtml6cJdQJWZNxnlVbuUgDNH6GRJ1oRd5sL6mhjusK4/7gEBNpN7OuPIbgfOW
+	o7WRjdk5MGSNNH/UzePyoyKGqQqVtAW2YNVsu8LUoCTxm0IlWHal/iCL5MG0BMQqETyN4A
+	8JhnRsCBX8iiDrAtM3C9fN11lKtxen6f9lQbS8exoYMRoRNzYkw2GquORS6/iAPC9ChEAn
+	t0q7yqdgM+klxvv0EcFgZqTq4ZpDCeqV9jjt0Y7hFUr6LIsUgAQJ3LLH1GqCwA==
+Date: Wed, 18 Oct 2023 01:14:43 +0200
+From: Erhard Furtner <erhard_f@mailbox.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH 0/2] Allow nesting of lazy MMU mode
+Message-ID: <20231018011443.3bd8b366@yea>
+In-Reply-To: <875y35zswo.fsf@linux.ibm.com>
+References: <20231012195415.282357-1-willy@infradead.org>
+	<20231013154220.02fb2e6d@yea>
+	<875y35zswo.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20231017103742.130927-1-masahiroy@kernel.org>
-Organization: AVM GmbH
-X-purgate-ID: 149429::1697544571-C3E340EE-41584499/0/0
-X-purgate-type: clean
-X-purgate-size: 585
-X-purgate-Ad: Categorized by eleven eXpurgate (R) http://www.eleven.de
-X-purgate: This mail is considered clean (visit http://www.eleven.de for further information)
-X-purgate: clean
-X-Mailman-Approved-At: Wed, 18 Oct 2023 08:39:55 +1100
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-MBO-RS-ID: 99c3693f2065b8fe824
+X-MBO-RS-META: dcbcmyejoc5m4xaoafkbxmyubyh5pkqz
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,24 +65,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Nicolas Schier <nicolas@fjasle.eu>, linux-kbuild@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, "H. Peter Anvin" <hpa@zytor.com>, Palmer Dabbelt <palmer@dabbelt.com>, Thomas Gleixner <tglx@linutronix.de>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org
+Cc: Juergen Gross <jgross@suse.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, linux-sparc@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 17, 2023 at 07:37:39PM +0900, Masahiro Yamada wrote:
-> The '%.ko' rule in arch/*/Makefile.postlink does nothing but call the
-> 'true' command.
-> 
-> Remove the meaningless code.
-> 
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
-> 
->  arch/mips/Makefile.postlink    | 3 ---
->  arch/powerpc/Makefile.postlink | 3 ---
->  arch/riscv/Makefile.postlink   | 3 ---
->  arch/x86/Makefile.postlink     | 3 ---
->  scripts/Makefile.modfinal      | 5 +----
->  5 files changed, 1 insertion(+), 16 deletions(-)
+On Tue, 17 Oct 2023 11:34:23 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
 
-Reviewed-by: Nicolas Schier <n.schier@avm.de>
+> ie, we can do something like below. The change also make sure we call
+> set_pte_filter on all the ptes we are setting via set_ptes(). I haven't
+> sent this as a proper patch because we still are not able to fix the
+> issue Erhard reported. 
+> 
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index 3ba9fe411604..95ab20cca2da 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -191,28 +191,35 @@ void set_ptes(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+>  		pte_t pte, unsigned int nr)
+>  {
+>  	/*
+> -	 * Make sure hardware valid bit is not set. We don't do
+> -	 * tlb flush for this update.
+> +	 * We don't need to call arch_enter/leave_lazy_mmu_mode()
+> +	 * because we expect set_ptes to be only be used on not present
+> +	 * and not hw_valid ptes. Hence there is not translation cache flush
+> +	 * involved that need to be batched.
+>  	 */
+> -	VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
+> +	for (;;) {
+>  
+> -	/* Note: mm->context.id might not yet have been assigned as
+> -	 * this context might not have been activated yet when this
+> -	 * is called.
+> -	 */
+> -	pte = set_pte_filter(pte);
+> +		/*
+> +		 * Make sure hardware valid bit is not set. We don't do
+> +		 * tlb flush for this update.
+> +		 */
+> +		VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
+>  
+> -	/* Perform the setting of the PTE */
+> -	arch_enter_lazy_mmu_mode();
+> -	for (;;) {
+> +		/* Note: mm->context.id might not yet have been assigned as
+> +		 * this context might not have been activated yet when this
+> +		 * is called.
+> +		 */
+> +		pte = set_pte_filter(pte);
+> +
+> +		/* Perform the setting of the PTE */
+>  		__set_pte_at(mm, addr, ptep, pte, 0);
+>  		if (--nr == 0)
+>  			break;
+>  		ptep++;
+> -		pte = __pte(pte_val(pte) + (1UL << PTE_RPN_SHIFT));
+>  		addr += PAGE_SIZE;
+> +		/* increment the pfn */
+> +		pte = __pte(pte_val(pte) + PAGE_SIZE);
+> +
+>  	}
+> -	arch_leave_lazy_mmu_mode();
+>  }
+>  
+>  void unmap_kernel_page(unsigned long va)
+
+Was this a new version of the patch for me to test? Sorry for asking but this was a bit unclear to me.
+
+In any case I tried it on top of v6.6-rc6 and it did not help with the issue I reported.
+
+Regards,
+Erhard
