@@ -4,91 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 204DBCDB474
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 10:34:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5762ECDB474
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 10:39:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=szyyRuQ0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QaRapYwk;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S8r253pnNz3c5K
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 21:34:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S8r7S5rJlz3dd4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Oct 2023 21:39:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=szyyRuQ0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QaRapYwk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S8r146wlqz2xpm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2023 21:33:28 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39HATQxj021740;
-	Tue, 17 Oct 2023 10:32:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Tlf+oTVxCcnecV21J9ROPtWMY0jET//PlIcawPM8rPk=;
- b=szyyRuQ0E4JmVuUI/lB8vjmMfqsU0X1R1LpR2JWxPvd4az5hxesqyj50QOwqs+5W/BUh
- W/vaKB/93VQCJxakFYW1CWdWK+yTFVBciezRQjYkWF29Z79IaFMKa/MxPLfKLIvE5Eaw
- O1Ugge6QvniAtEUKVr5tV/hPrjvr/045t1khPUjjoX55+x1NI/q82+0Li0ejfDnnqw3X
- p56Ci7a4ilM4z6P4Kr8Eiz64vQ347AYpuStWTHFYnjdRIBQ+er7KH0xCN69IIGMMM/im
- j3gQvUtVldwpdlUET+BSmPLJkk0kU8Cdbzc+oadHZQmhyNv2cr6UnpJO0c26/ftOWBYH rg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tsrjd06eh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Oct 2023 10:32:56 +0000
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39HATjPV023056;
-	Tue, 17 Oct 2023 10:32:13 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tsrjd0550-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Oct 2023 10:32:08 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39H8t1vJ012871;
-	Tue, 17 Oct 2023 10:31:10 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3tr5py8d7j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Oct 2023 10:31:10 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39HAV6VV43713096
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 17 Oct 2023 10:31:06 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B49A92004B;
-	Tue, 17 Oct 2023 10:31:06 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AFC9720043;
-	Tue, 17 Oct 2023 10:31:04 +0000 (GMT)
-Received: from [9.43.86.173] (unknown [9.43.86.173])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 17 Oct 2023 10:31:04 +0000 (GMT)
-Message-ID: <15e9830a-800f-24b3-29bc-af36fade447e@linux.ibm.com>
-Date: Tue, 17 Oct 2023 16:01:03 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S8r6X41ggz2xdp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2023 21:38:12 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by ams.source.kernel.org (Postfix) with ESMTP id A7A9DB81D0A;
+	Tue, 17 Oct 2023 10:38:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB2D4C433C7;
+	Tue, 17 Oct 2023 10:38:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1697539088;
+	bh=eKMGcZsMQDmh2XIngoO27ap1DpB5rplaSJR1DYg/pc8=;
+	h=From:To:Cc:Subject:Date:From;
+	b=QaRapYwkwmCacW8HwqsxWXC31f2QMHrz+w7jsl7pBJeh3K1VQZVYvfufrilHhTjXd
+	 0EIVa98dnYgBaBrqDHc7TADhJhFHjiXu7JSD1PqXI4coxWuxLdi0D7xwC/PyneKGa4
+	 uSuOVuIxzN0xP8r/KD1DWUcu0mS5vKmwrFFO20/dDsJtbFszzO26DLqZnKguMDRqVn
+	 JO5cl1x5GwyOfcEivSoIZUk33J1YlsXTFWde/19Todb+P0Ac2JSqx710uBa/yVKUVH
+	 kBOa9m8ejE3dLKufSJAgZJho+OKWZk/ZIFllJ+qZ0x1igUTuAekdovLlkbfN8psEua
+	 B8DHWxdhlylww==
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH 1/4] kbuild: remove ARCH_POSTLINK from module builds
+Date: Tue, 17 Oct 2023 19:37:39 +0900
+Message-Id: <20231017103742.130927-1-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCHv9 1/2] powerpc/setup : Enable boot_cpu_hwid for PPC32
-Content-Language: en-US
-To: Pingfan Liu <piliu@redhat.com>, linuxppc-dev@lists.ozlabs.org
-References: <20231017022806.4523-1-piliu@redhat.com>
- <20231017022806.4523-2-piliu@redhat.com>
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20231017022806.4523-2-piliu@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: WJ43DWB2YgHBkYCKaapMUY5DBcAXlxDQ
-X-Proofpoint-GUID: oXFClmMtoBHp_6stgKRrmeldR4IApy7I
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-16_13,2023-10-17_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
- mlxlogscore=999 adultscore=0 impostorscore=0 malwarescore=0 bulkscore=0
- mlxscore=0 lowpriorityscore=0 spamscore=0 phishscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2309180000
- definitions=main-2310170087
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,82 +56,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Ming Lei <ming.lei@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Wen Xiong <wenxiong@us.ibm.com>
+Cc: x86@kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Nicolas Schier <nicolas@fjasle.eu>, Masahiro Yamada <masahiroy@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, "H. Peter Anvin" <hpa@zytor.com>, Palmer Dabbelt <palmer@dabbelt.com>, Thomas Gleixner <tglx@linutronix.de>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The '%.ko' rule in arch/*/Makefile.postlink does nothing but call the
+'true' command.
 
+Remove the meaningless code.
 
-On 17/10/23 7:58 am, Pingfan Liu wrote:
-> In order to identify the boot cpu, its intserv[] should be recorded and
-> checked in smp_setup_cpu_maps().
-> 
-> smp_setup_cpu_maps() is shared between PPC64 and PPC32. Since PPC64 has
-> already used boot_cpu_hwid to carry that information, enabling this
-> variable on PPC32 so later it can also be used to carry that information
-> for PPC32 in the coming patch.
-> 
-> Signed-off-by: Pingfan Liu <piliu@redhat.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Wen Xiong <wenxiong@us.ibm.com>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: Ming Lei <ming.lei@redhat.com>
-> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: kexec@lists.infradead.org
-> To: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
 
-LGTM.
+ arch/mips/Makefile.postlink    | 3 ---
+ arch/powerpc/Makefile.postlink | 3 ---
+ arch/riscv/Makefile.postlink   | 3 ---
+ arch/x86/Makefile.postlink     | 3 ---
+ scripts/Makefile.modfinal      | 5 +----
+ 5 files changed, 1 insertion(+), 16 deletions(-)
 
-Acked-by: Hari Bathini <hbathini@linux.ibm.com>
+diff --git a/arch/mips/Makefile.postlink b/arch/mips/Makefile.postlink
+index 34e3bd71f3b0..6cfdc149d3bc 100644
+--- a/arch/mips/Makefile.postlink
++++ b/arch/mips/Makefile.postlink
+@@ -31,9 +31,6 @@ ifeq ($(CONFIG_RELOCATABLE),y)
+ 	$(call if_changed,relocs)
+ endif
+ 
+-%.ko: FORCE
+-	@true
+-
+ clean:
+ 	@true
+ 
+diff --git a/arch/powerpc/Makefile.postlink b/arch/powerpc/Makefile.postlink
+index 1f860b3c9bec..ae5a4256b03d 100644
+--- a/arch/powerpc/Makefile.postlink
++++ b/arch/powerpc/Makefile.postlink
+@@ -35,9 +35,6 @@ ifdef CONFIG_RELOCATABLE
+ 	$(call if_changed,relocs_check)
+ endif
+ 
+-%.ko: FORCE
+-	@true
+-
+ clean:
+ 	rm -f .tmp_symbols.txt
+ 
+diff --git a/arch/riscv/Makefile.postlink b/arch/riscv/Makefile.postlink
+index a46fc578b30b..829b9abc91f6 100644
+--- a/arch/riscv/Makefile.postlink
++++ b/arch/riscv/Makefile.postlink
+@@ -36,9 +36,6 @@ ifdef CONFIG_RELOCATABLE
+ 	$(call if_changed,relocs_strip)
+ endif
+ 
+-%.ko: FORCE
+-	@true
+-
+ clean:
+ 	@true
+ 
+diff --git a/arch/x86/Makefile.postlink b/arch/x86/Makefile.postlink
+index 936093d29160..fef2e977cc7d 100644
+--- a/arch/x86/Makefile.postlink
++++ b/arch/x86/Makefile.postlink
+@@ -34,9 +34,6 @@ ifeq ($(CONFIG_X86_NEED_RELOCS),y)
+ 	$(call cmd,strip_relocs)
+ endif
+ 
+-%.ko: FORCE
+-	@true
+-
+ clean:
+ 	@rm -f $(OUT_RELOCS)/vmlinux.relocs
+ 
+diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
+index b3a6aa8fbe8c..8568d256d6fb 100644
+--- a/scripts/Makefile.modfinal
++++ b/scripts/Makefile.modfinal
+@@ -28,14 +28,11 @@ quiet_cmd_cc_o_c = CC [M]  $@
+ %.mod.o: %.mod.c FORCE
+ 	$(call if_changed_dep,cc_o_c)
+ 
+-ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(SRCARCH)/Makefile.postlink)
+-
+ quiet_cmd_ld_ko_o = LD [M]  $@
+       cmd_ld_ko_o +=							\
+ 	$(LD) -r $(KBUILD_LDFLAGS)					\
+ 		$(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE)		\
+-		-T scripts/module.lds -o $@ $(filter %.o, $^);		\
+-	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
++		-T scripts/module.lds -o $@ $(filter %.o, $^)
+ 
+ quiet_cmd_btf_ko = BTF [M] $@
+       cmd_btf_ko = 							\
+-- 
+2.40.1
 
-> ---
->   arch/powerpc/include/asm/smp.h     | 2 +-
->   arch/powerpc/kernel/prom.c         | 3 +--
->   arch/powerpc/kernel/setup-common.c | 2 --
->   3 files changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-> index aaaa576d0e15..5db9178cc800 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -26,7 +26,7 @@
->   #include <asm/percpu.h>
->   
->   extern int boot_cpuid;
-> -extern int boot_cpu_hwid; /* PPC64 only */
-> +extern int boot_cpu_hwid;
->   extern int spinning_secondaries;
->   extern u32 *cpu_to_phys_id;
->   extern bool coregroup_enabled;
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 0b5878c3125b..ec82f5bda908 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -372,8 +372,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->   	    be32_to_cpu(intserv[found_thread]));
->   	boot_cpuid = found;
->   
-> -	if (IS_ENABLED(CONFIG_PPC64))
-> -		boot_cpu_hwid = be32_to_cpu(intserv[found_thread]);
-> +	boot_cpu_hwid = be32_to_cpu(intserv[found_thread]);
->   
->   	/*
->   	 * PAPR defines "logical" PVR values for cpus that
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index 2f1026fba00d..707f0490639d 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -87,9 +87,7 @@ EXPORT_SYMBOL(machine_id);
->   int boot_cpuid = -1;
->   EXPORT_SYMBOL_GPL(boot_cpuid);
->   
-> -#ifdef CONFIG_PPC64
->   int boot_cpu_hwid = -1;
-> -#endif
->   
->   /*
->    * These are used in binfmt_elf.c to put aux entries on the stack
