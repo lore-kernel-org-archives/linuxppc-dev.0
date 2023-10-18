@@ -4,35 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6638ECDB47E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 20:52:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 787B8CDB482
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 21:10:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S9jjC6MZYz3vZL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Oct 2023 07:52:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=xy8f=ga=goodmis.org=rostedt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S9k5V5lFxz3vXG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Oct 2023 08:10:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=yiyang13@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1497 seconds by postgrey-1.37 at boromir; Wed, 18 Oct 2023 21:14:36 AEDT
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S9jhc4K13z3c5H
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2023 07:52:16 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id A84E561917;
-	Wed, 18 Oct 2023 20:52:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BCE0C433C8;
-	Wed, 18 Oct 2023 20:52:10 +0000 (UTC)
-Date: Wed, 18 Oct 2023 16:52:08 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: kernel test robot <lkp@intel.com>
-Subject: Re: [linux-next:master] BUILD REGRESSION
- 2dac75696c6da3c848daa118a729827541c89d33
-Message-ID: <20231018165208.5267a9b9@gandalf.local.home>
-In-Reply-To: <202310190456.pryB092r-lkp@intel.com>
-References: <202310190456.pryB092r-lkp@intel.com>
-X-Mailer: Claws Mail 3.19.1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S9RXr2ypKz2ydR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2023 21:14:30 +1100 (AEDT)
+Received: from kwepemm000014.china.huawei.com (unknown [172.30.72.53])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4S9QR44ZHmzLp25;
+	Wed, 18 Oct 2023 17:24:32 +0800 (CST)
+Received: from huawei.com (10.67.174.78) by kwepemm000014.china.huawei.com
+ (7.193.23.6) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 18 Oct
+ 2023 17:28:37 +0800
+From: Yi Yang <yiyang13@huawei.com>
+To: <miquel.raynal@bootlin.com>, <richard@nod.at>, <vigneshr@ti.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
+	<u.kleine-koenig@pengutronix.de>, <tudor.ambarus@linaro.org>,
+	<robh@kernel.org>
+Subject: [PATCH] mtd: powernv_flash: check return value of devm_kasprintf()
+Date: Wed, 18 Oct 2023 09:27:28 +0000
+Message-ID: <20231018092728.315071-1-yiyang13@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.67.174.78]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ kwepemm000014.china.huawei.com (7.193.23.6)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Thu, 19 Oct 2023 08:09:55 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,17 +51,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-msm@vger.kernel.org, amd-gfx@lists.freedesktop.org, Linux Memory Management List <linux-mm@kvack.org>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-trace-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 19 Oct 2023 04:07:35 +0800
-kernel test robot <lkp@intel.com> wrote:
+The devm_kasprintf() returns a pointer to dynamically allocated memory.
+that will return NULL when allocate failed.
+Fix it by check return value of devm_kasprintf().
 
-> Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml:
-> Documentation/devicetree/bindings/mfd/qcom-pm8xxx.yaml:
-> fs/tracefs/event_inode.c:782:11-21: ERROR: ei is NULL but dereferenced.
+Fixes: acfe63ec1c59 ("mtd: Convert to using %pOFn instead of device_node.name")
+Signed-off-by: Yi Yang <yiyang13@huawei.com>
+---
+ drivers/mtd/devices/powernv_flash.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-This was already reported and I'm currently testing a patch to fix it.
+diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
+index 66044f4f5bad..b305e555ddbf 100644
+--- a/drivers/mtd/devices/powernv_flash.c
++++ b/drivers/mtd/devices/powernv_flash.c
+@@ -207,6 +207,10 @@ static int powernv_flash_set_driver_info(struct device *dev,
+ 	 * get them
+ 	 */
+ 	mtd->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFP", dev->of_node);
++	if (mtd->name) {
++		dev_err(dev, "failed to allocate mtd->name\n");
++		return -ENOMEM;
++	}
+ 	mtd->type = MTD_NORFLASH;
+ 	mtd->flags = MTD_WRITEABLE;
+ 	mtd->size = size;
+-- 
+2.25.1
 
--- Steve
