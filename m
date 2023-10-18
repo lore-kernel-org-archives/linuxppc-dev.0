@@ -4,136 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BD1ECDB47E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 21:12:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8460DCDB483
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Oct 2023 21:13:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-armh-onmicrosoft-com header.b=jVWTV1dg;
-	dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-armh-onmicrosoft-com header.b=jVWTV1dg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c76dRGAL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4S9k7S54Sgz3vZn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Oct 2023 08:12:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4S9k8Z1QsGz3vdp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Oct 2023 08:13:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-armh-onmicrosoft-com header.b=jVWTV1dg;
-	dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-armh-onmicrosoft-com header.b=jVWTV1dg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c76dRGAL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=2a01:111:f400:7e1a::601; helo=eur05-db8-obe.outbound.protection.outlook.com; envelope-from=szabolcs.nagy@arm.com; receiver=lists.ozlabs.org)
-Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on20601.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e1a::601])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4S9bkW6RlKz3cBV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2023 03:23:27 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=armh.onmicrosoft.com;
- s=selector2-armh-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Sgj16zS6PgE0Gfzy2ZVYrIaDELe67037s2rq4tznm7Y=;
- b=jVWTV1dgPmW8ShIlQsW1ISqg71I2IaJt0CZwji5LJhkxIcv1j5RSdghYwJUuxa7eQ6pzZZO4nNeXqh8cdX+8T60G2DRFhPZ5ypFHlW+uchRZjCcgLhJq4Use8c2sJLTNpShv4tUcw7ZX/9yCFX4FSM6S/yFi9jg83n25EHxXo5k=
-Received: from AM6P195CA0048.EURP195.PROD.OUTLOOK.COM (2603:10a6:209:87::25)
- by AS2PR08MB10084.eurprd08.prod.outlook.com (2603:10a6:20b:648::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.22; Wed, 18 Oct
- 2023 16:22:52 +0000
-Received: from AM7EUR03FT038.eop-EUR03.prod.protection.outlook.com
- (2603:10a6:209:87:cafe::7) by AM6P195CA0048.outlook.office365.com
- (2603:10a6:209:87::25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.21 via Frontend
- Transport; Wed, 18 Oct 2023 16:22:52 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 63.35.35.123)
- smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=armh.onmicrosoft.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 63.35.35.123 as permitted sender) receiver=protection.outlook.com;
- client-ip=63.35.35.123; helo=64aa7808-outbound-1.mta.getcheckrecipient.com;
- pr=C
-Received: from 64aa7808-outbound-1.mta.getcheckrecipient.com (63.35.35.123) by
- AM7EUR03FT038.mail.protection.outlook.com (100.127.140.120) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6907.24 via Frontend Transport; Wed, 18 Oct 2023 16:22:51 +0000
-Received: ("Tessian outbound 9e011a9ddd13:v215"); Wed, 18 Oct 2023 16:22:51 +0000
-X-CheckRecipientChecked: true
-X-CR-MTA-CID: 9bc9be87f8aee56f
-X-CR-MTA-TID: 64aa7808
-Received: from 6319eec14f4b.1
-	by 64aa7808-outbound-1.mta.getcheckrecipient.com id 16CA8F59-A1A4-4788-BB6B-1934F2EF7CD7.1;
-	Wed, 18 Oct 2023 16:22:44 +0000
-Received: from EUR02-DB5-obe.outbound.protection.outlook.com
-    by 64aa7808-outbound-1.mta.getcheckrecipient.com with ESMTPS id 6319eec14f4b.1
-    (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384);
-    Wed, 18 Oct 2023 16:22:44 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=F/bumfYspw4GSjf+TokeekzRTgXTX0pJs8w4FkTa7TzYMA3azxTez5ci6MdLvIJW/5DniiGgWp+Quk3MdF5+jvlRzCy+9TORzPgybv+NR36If+GKHHRdyA38HoB26AHsK8oEiXNNqeYfU0gVpBotxUZKZen1/LF7kFQSHgk0P7yluU4SmxgO9jFHra0sf7Bw9Ik4Rmy3Md521GIdzPZwl6SDtOWpx+JD9XW7zevLis2mDcTGa1vVDKjRjVycIzmeLFAFKE6GgHBTIs1kirAGV+du91tK0icJEARDmyELHR1kQ7zIxKLRZcvmv4rlzyGCF0b6gki75Ma9nH/clC74ZQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Sgj16zS6PgE0Gfzy2ZVYrIaDELe67037s2rq4tznm7Y=;
- b=kiKuFCr+9docbTvI4txUNY6Q877bwEiXyOqiUpYn4MHUCvn1DJ7KvY8AYDj1kBanazp1qivrftom3nQXc9nUYmMxVzVWXVmbwN+M/QTRaO7uUW7R8iii2yO1mpqrnCim1WXndftIVSqjqZJDzmFcLasPvWddkJMx/90qSXQxUH3Sn/FctfgEeX/qEnt2ZaPnKpKAGEHMpba+rFXohvbRaFM3RUQdV1q8V7hFuX3DlK+VJIvHLqzsSdqxCNuhjjN50qo4uiXQMtZX6K04NTP2qbilHDU98MILcPGwGEzmYQGy13mmZknuklkUaFiE7eVMcWtrIY1+1a1JkfKovRpvXg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=armh.onmicrosoft.com;
- s=selector2-armh-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Sgj16zS6PgE0Gfzy2ZVYrIaDELe67037s2rq4tznm7Y=;
- b=jVWTV1dgPmW8ShIlQsW1ISqg71I2IaJt0CZwji5LJhkxIcv1j5RSdghYwJUuxa7eQ6pzZZO4nNeXqh8cdX+8T60G2DRFhPZ5ypFHlW+uchRZjCcgLhJq4Use8c2sJLTNpShv4tUcw7ZX/9yCFX4FSM6S/yFi9jg83n25EHxXo5k=
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-Received: from DB9PR08MB7179.eurprd08.prod.outlook.com (2603:10a6:10:2cc::19)
- by PA6PR08MB10829.eurprd08.prod.outlook.com (2603:10a6:102:3d6::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.22; Wed, 18 Oct
- 2023 16:22:43 +0000
-Received: from DB9PR08MB7179.eurprd08.prod.outlook.com
- ([fe80::7279:cb15:78e8:3831]) by DB9PR08MB7179.eurprd08.prod.outlook.com
- ([fe80::7279:cb15:78e8:3831%5]) with mapi id 15.20.6907.021; Wed, 18 Oct 2023
- 16:22:42 +0000
-Date: Wed, 18 Oct 2023 17:22:29 +0100
-From: Szabolcs Nagy <szabolcs.nagy@arm.com>
-To: Peter Bergner <bergner@linux.ibm.com>, linux-api@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PING][PATCH] uapi/auxvec: Define AT_HWCAP3 and AT_HWCAP4 aux
- vector, entries
-Message-ID: <ZTAGRY0Zn0KV/biE@arm.com>
-References: <fd879f60-3f0b-48d1-bfa1-6d337768207e@linux.ibm.com>
- <4294d9ae-3f5e-4f81-b586-2c134d21896a@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4294d9ae-3f5e-4f81-b586-2c134d21896a@linux.ibm.com>
-X-ClientProxiedBy: LO2P265CA0088.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:8::28) To DB9PR08MB7179.eurprd08.prod.outlook.com
- (2603:10a6:10:2cc::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4S9k6P6B0mz3vX1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2023 08:11:09 +1100 (AEDT)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39IL2Q4U005611;
+	Wed, 18 Oct 2023 21:11:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=6v5l/hkSJmTwRpvY1qqaY0eTm5Y1d2NrtQerWHkv8qM=;
+ b=c76dRGALK0ZX9/L3wzuflUnQT80tcxnZ2IqR9uJ5orbs292iDlWm8MnMWOuHyaioK9lc
+ J6WRqu3OyTHfU5IFxcL8hNlX23tKyMSMl+FsQmLYgs3LPspNb4ucaBc51VRT1btWsS1D
+ 8p7VOMnvGkSYRu2spmc6e0nNXQlQuVALXWyvM1bge2Vz4kcuiy7/VD4QGImrIH3qzxPA
+ x8X3PyiHBQDzUb7WmtO801ReFuPkepOYZqHNUVBDgkPSI/gOR4oFmAbYfjSg3JxT/cbs
+ T/vLxxVhomsKFJgBVgBiZfeTGUe7QxfPA+j1Lwv4QsG0E2bu9JBm4UqrjJiTCoGvzNPE Dw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ttpx50kqj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 18 Oct 2023 21:11:03 +0000
+Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39IL3ont016466;
+	Wed, 18 Oct 2023 21:11:02 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ttpx50kq8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 18 Oct 2023 21:11:02 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39IKVgJa012949;
+	Wed, 18 Oct 2023 21:11:01 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3tr5pym7n1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 18 Oct 2023 21:11:01 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39ILAx6Z32244404
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 18 Oct 2023 21:10:59 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 481CC5803F;
+	Wed, 18 Oct 2023 21:10:59 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2DD6358056;
+	Wed, 18 Oct 2023 21:10:59 +0000 (GMT)
+Received: from localhost (unknown [9.41.178.242])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 18 Oct 2023 21:10:59 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Haren Myneni <haren@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc/pseries/vas: Migration suspend waits for no
+ in-progress open windows
+In-Reply-To: <20231018030332.862606-1-haren@linux.ibm.com>
+References: <20231018030332.862606-1-haren@linux.ibm.com>
+Date: Wed, 18 Oct 2023 16:10:58 -0500
+Message-ID: <87il73vdp9.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic: 	DB9PR08MB7179:EE_|PA6PR08MB10829:EE_|AM7EUR03FT038:EE_|AS2PR08MB10084:EE_
-X-MS-Office365-Filtering-Correlation-Id: cb9e52a1-a6ce-458e-0ed9-08dbcff679f3
-x-checkrecipientrouted: true
-NoDisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted: BCL:0;
-X-Microsoft-Antispam-Message-Info-Original:  1wG3soMbwbiPjvoXL19E8lJ+DuH7PSpk/5qhpukbI+bBLeHFPrtl072sjH9FZe3z1B03vf9zi+S6RJyWdk810MI7KXszzeqx3O5kElJYvb4JnaprgE3zd03eW3DEnHrkhOpg7vqOvDkVKb0shiw9yTcmI/nG1CszATch8TeTq4ZkqzYA7Dzn3Jr/0CNRWYRcXKSl1hcA2LAgl2LaaidZNUojK2hTUEH/CvuvDSRRLagDLgccCcE0iw1BatvN87ntIrNcHz0zLlK/kiYXSt3INTh7azjHeaqopKiyL6iqzWKf55xAc6U4eKEhmNkgVvza6Yp7JGU2Dn8X/iqIxPW0mnM0oMUOCxKcW/QBEJQXRyAJjD+FCkhS1+m3Td4vUHYB9xmO2MvMzKXDiA6No6stIK582/75zWHYbl9rGonxLMC8lklifowIlyC7MokJzsrdvy6lnlGomXNVZxp9y66cYEz9Q2LwNPBFCpm0V7xjo7ooYC79SZwoEqNKK30n7k8D1kAoK/QXGw7ma+VnxZPfTxEXz9gUYAsk7T7QNZHRSiiwXvh+xK/WaG0iyHn6gDRD
-X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR08MB7179.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(136003)(376002)(366004)(396003)(39860400002)(230922051799003)(1800799009)(64100799003)(451199024)(186009)(6512007)(6506007)(2616005)(26005)(6666004)(6486002)(478600001)(44832011)(38100700002)(8676002)(36756003)(5660300002)(316002)(41300700001)(86362001)(2906002)(8936002)(4326008)(110136005)(4744005)(66476007)(66946007)(66556008)(54906003);DIR:OUT;SFP:1101;
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6PR08MB10829
-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:  AM7EUR03FT038.eop-EUR03.prod.protection.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 	9179579b-26c2-4ba1-771c-08dbcff67472
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	FqRkGz27a9sFpYX46Oa1A0bYM7ZS4mGXM66Y6cAQwoXfOAif6lh1tkg3nh0NmG0fJktsBalRo6kNm4GAr3nBzhitmq43mtl8EIgS55PFbnN5GKf5y4UA/2QYn6Qqd4VLh3pM67baMb+Z2AvffCADpHX7W2SYpnCyu2MS6U17F5P/5KZ/qAfrTLjQRNvF539mdMQnt02h72sTJ4N/FtDPb0u0U/AxZr/kkzSlqrojAVBNG3OOftmhUxFyiP+MgFsteLP25rUoy7mWitwLXyTLGL8/vrOEuTcS/cPJ4CkNW3VlV0DqOMUybKpVbVO1XERiYSvQquis57Nn72irPsyUTakgjEZK7L7C14qy1OMfAD5cPsJNbowS9MSlaDIP7yF2q8Al4RlnJced8NEo8aAlQL7dorlF8NUQi+t9qQ/zEC0B5Qh5ep849ixz02yPUBEmsmdljUyM/TUaKQ990Q+yUAzHDKzdJgf24idmcFTEwfknG8SKpKqnfJuVMCo6YI45wYsHIpOC8IP1gGlqOXM+NfSrTdZ8mF5S5Q/Dgan3mxC0cQ6LL91m+M89mWptWYrJfnLhB0gnI+vSzodWRnCjeThPxjn0WthVNiKSCEeBorRnkyy96de8Rfy+tyE9oC+7c6QFf6WSO3S+ZdflwGS6fgVA/mjMkQAojYaipq0HKg2V8yLk0MyOyJ2YdmWHVQBdBqZA4shYrnwM6L7KQKdDLP++vPMthUDSANppp1iXiyrVIaJhb2rDfV8Mg3NfOAqg
-X-Forefront-Antispam-Report: 	CIP:63.35.35.123;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:64aa7808-outbound-1.mta.getcheckrecipient.com;PTR:ec2-63-35-35-123.eu-west-1.compute.amazonaws.com;CAT:NONE;SFS:(13230031)(4636009)(396003)(39860400002)(346002)(136003)(376002)(230922051799003)(186009)(82310400011)(451199024)(1800799009)(64100799003)(36840700001)(40470700004)(46966006)(36860700001)(47076005)(40480700001)(81166007)(356005)(82740400003)(478600001)(70206006)(6512007)(6486002)(6506007)(70586007)(316002)(6666004)(110136005)(5660300002)(54906003)(2906002)(4326008)(44832011)(4744005)(41300700001)(8676002)(107886003)(26005)(2616005)(336012)(8936002)(86362001)(36756003)(40460700003);DIR:OUT;SFP:1101;
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Oct 2023 16:22:51.7308
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: cb9e52a1-a6ce-458e-0ed9-08dbcff679f3
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[63.35.35.123];Helo=[64aa7808-outbound-1.mta.getcheckrecipient.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	AM7EUR03FT038.eop-EUR03.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR08MB10084
-X-Mailman-Approved-At: Thu, 19 Oct 2023 08:09:55 +1100
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: PUwTewClaC6O9DZm2peDPMwC4kJt94nG
+X-Proofpoint-ORIG-GUID: IxQcWWhUQF5B3NFTJhcRJpPPjMd6OSH-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-18_18,2023-10-18_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ lowpriorityscore=0 spamscore=0 mlxlogscore=999 phishscore=0 malwarescore=0
+ mlxscore=0 impostorscore=0 clxscore=1015 adultscore=0 priorityscore=1501
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2310180174
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -145,21 +95,241 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: GNU C Library <libc-alpha@sourceware.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Haren Myneni <haren@linux.ibm.com>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The 10/17/2023 18:14, Peter Bergner wrote:
-> CCing linux-kernel for more exposure.
-> 
-> PING.  I'm waiting on a reply from anyone on the kernel side of things
-> to see whether they have an issue with reserving values for AT_HWCAP3
-> and AT_HWCAP4.  
-> 
-> I'll note reviews from the GLIBC camp did not have an issue with the below patch.
+Haren Myneni <haren@linux.ibm.com> writes:
+> The hypervisor returns migration failure if all VAS windows are not
+> closed. During pre-migration stage, vas_migration_handler() sets
+> migration_in_progress flag and closes all windows from the list.
+> The allocate VAS window routine checks the migration flag, setup
+> the window and then add it to the list. So there is possibility of
+> the migration handler missing the window that is still in the
+> process of setup.
+>
+> t1: Allocate and open VAS	t2: Migration event
+>     window
+>
+> lock vas_pseries_mutex
+> If migration_in_progress set
+>   unlock vas_pseries_mutex
+>   return
+> open window HCALL
+> unlock vas_pseries_mutex
+> Modify window HCALL		lock vas_pseries_mutex
+> setup window			migration_in_progress=true
+> 				Closes all windows from
+> 				the list
+> 				unlock vas_pseries_mutex
+> lock vas_pseries_mutex		return
+> if nr_closed_windows == 0
+>   // No DLPAR CPU or migration
+>   add to the list
+>   unlock vas_pseries_mutex
+>   return
+> unlock vas_pseries_mutex
+> Close VAS window
+> // due to DLPAR CPU or migration
+> return -EBUSY
+>
+> This patch resolves the issue with the following steps:
+> - Define migration_in_progress as atomic so that the migration
+>   handler sets this flag without holding mutex.
 
-fwiw, aarch64 is quickly filling up AT_HWCAP2 so this will be
-useful for arm64 too eventually, but we are not in a hurry.
+This part of the commit message is no longer accurate...
 
-> > +#define AT_HWCAP3 29	/* extension of AT_HWCAP */
-> > +#define AT_HWCAP4 30	/* extension of AT_HWCAP */
+> - Introduce nr_open_wins_progress counter in VAS capabilities
+>   struct
+> - This counter tracks the number of open windows are still in
+>   progress
+> - The allocate setup window thread closes windows if the migration
+>   is set and decrements nr_open_window_progress counter
+> - The migration handler waits for no in-progress open windows.
+>
+> Fixes: 37e6764895ef ("powerpc/pseries/vas: Add VAS migration handler")
+> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+>
+> ---
+> Changes from v1:
+> - Do not define the migration_in_progress flag as atomic as
+>   suggested by Nathan
+> ---
+>  arch/powerpc/platforms/pseries/vas.c | 45 +++++++++++++++++++++++-----
+>  arch/powerpc/platforms/pseries/vas.h |  2 ++
+>  2 files changed, 40 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/vas.c b/arch/powerpc/platforms/pseries/vas.c
+> index 15d958e38eca..b86f0db08e98 100644
+> --- a/arch/powerpc/platforms/pseries/vas.c
+> +++ b/arch/powerpc/platforms/pseries/vas.c
+> @@ -32,6 +32,7 @@ static struct hv_vas_cop_feat_caps hv_cop_caps;
+>  static struct vas_caps vascaps[VAS_MAX_FEAT_TYPE];
+>  static DEFINE_MUTEX(vas_pseries_mutex);
+>  static bool migration_in_progress;
+> +static DECLARE_WAIT_QUEUE_HEAD(open_win_progress_wq);
+>  
+>  static long hcall_return_busy_check(long rc)
+>  {
+> @@ -384,11 +385,15 @@ static struct vas_window *vas_allocate_window(int vas_id, u64 flags,
+>  	 * same fault IRQ is not freed by the OS before.
+>  	 */
+>  	mutex_lock(&vas_pseries_mutex);
+> -	if (migration_in_progress)
+> +	if (migration_in_progress) {
+>  		rc = -EBUSY;
+> -	else
+> +	} else {
+>  		rc = allocate_setup_window(txwin, (u64 *)&domain[0],
+>  				   cop_feat_caps->win_type);
+> +		if (!rc)
+> +			atomic_inc(&caps->nr_open_wins_progress);
+> +	}
+> +
+>  	mutex_unlock(&vas_pseries_mutex);
+>  	if (rc)
+>  		goto out;
+> @@ -403,8 +408,17 @@ static struct vas_window *vas_allocate_window(int vas_id, u64 flags,
+>  		goto out_free;
+>  
+>  	txwin->win_type = cop_feat_caps->win_type;
+> -	mutex_lock(&vas_pseries_mutex);
+> +
+>  	/*
+> +	 * The migration SUSPEND thread sets migration_in_progress and
+> +	 * closes all open windows from the list. But the window is
+> +	 * added to the list after open and modify HCALLs. So possible
+> +	 * that migration_in_progress is set before modify HCALL which
+> +	 * may cause some windows are still open when the hypervisor
+> +	 * initiates the migration.
+> +	 * So checks the migration_in_progress flag again and close all
+> +	 * open windows.
+> +	 *
+>  	 * Possible to lose the acquired credit with DLPAR core
+>  	 * removal after the window is opened. So if there are any
+>  	 * closed windows (means with lost credits), do not give new
+> @@ -412,9 +426,11 @@ static struct vas_window *vas_allocate_window(int vas_id, u64 flags,
+>  	 * after the existing windows are reopened when credits are
+>  	 * available.
+>  	 */
+> -	if (!caps->nr_close_wins) {
+> +	mutex_lock(&vas_pseries_mutex);
+> +	if (!caps->nr_close_wins && !migration_in_progress) {
+>  		list_add(&txwin->win_list, &caps->list);
+>  		caps->nr_open_windows++;
+> +		atomic_dec(&caps->nr_open_wins_progress);
+
+Should there not be a test and wakeup here?
+
+if (atomic_dec_return(&caps->nr_open_wins_progress) == 0)
+	wake_up(&open_win_progress_wq);
+
+>  		mutex_unlock(&vas_pseries_mutex);
+>  		vas_user_win_add_mm_context(&txwin->vas_win.task_ref);
+>  		return &txwin->vas_win;
+> @@ -432,6 +448,8 @@ static struct vas_window *vas_allocate_window(int vas_id, u64 flags,
+>  	 */
+>  	free_irq_setup(txwin);
+>  	h_deallocate_vas_window(txwin->vas_win.winid);
+> +	atomic_dec(&caps->nr_open_wins_progress);
+> +	wake_up(&open_win_progress_wq);
+
+I wonder if this should also wake only when the counter reaches zero.
+
+>  out:
+>  	atomic_dec(&cop_feat_caps->nr_used_credits);
+>  	kfree(txwin);
+> @@ -936,14 +954,14 @@ int vas_migration_handler(int action)
+>  	struct vas_caps *vcaps;
+>  	int i, rc = 0;
+>  
+> +	pr_info("VAS migration event %d\n", action);
+> +
+
+A leftover debug statement? It doesn't seem necessary.
+
+>  	/*
+>  	 * NX-GZIP is not enabled. Nothing to do for migration.
+>  	 */
+>  	if (!copypaste_feat)
+>  		return rc;
+>  
+> -	mutex_lock(&vas_pseries_mutex);
+> -
+>  	if (action == VAS_SUSPEND)
+>  		migration_in_progress = true;
+>  	else
+> @@ -989,12 +1007,24 @@ int vas_migration_handler(int action)
+>  
+>  		switch (action) {
+>  		case VAS_SUSPEND:
+> +			mutex_lock(&vas_pseries_mutex);
+>  			rc = reconfig_close_windows(vcaps, vcaps->nr_open_windows,
+>  							true);
+> +			mutex_unlock(&vas_pseries_mutex);
+> +			/*
+> +			 * Windows are included in the list after successful
+> +			 * open. So wait for closing these in-progress open
+> +			 * windows in vas_allocate_window() which will be
+> +			 * done if the migration_in_progress is set.
+> +			 */
+> +			rc = wait_event_interruptible(open_win_progress_wq,
+> +				!atomic_read(&vcaps->nr_open_wins_progress));
+
+I don't think the wait should be interruptible. We don't want a signal
+to cause this function to return before all the windows are released.
+
+Note that since vas_migration_handler() updates migration_in_progress
+before acquiring the mutex and loads vcaps->nr_open_wins_progress after
+releasing the mutex, this order of operations *could* occur:
+
+  // when action == VAS_SUSPEND
+  acquire vas_pseries_mutex
+  load &vcaps->nr_open_wins_progress
+  store &migration_in_progress
+  release vas_pseries_mutex
+
+Or at least I suspect so when reconfig_close_windows() has no work to
+do. I'm relying on this passage from memory-barriers.txt:
+
+  An ACQUIRE followed by a RELEASE may not be assumed to be full memory barrier
+  because it is possible for an access preceding the ACQUIRE to happen after the
+  ACQUIRE, and an access following the RELEASE to happen before the RELEASE, and
+  the two accesses can themselves then cross:
+
+	*A = a;
+	ACQUIRE M
+	RELEASE M
+	*B = b;
+
+  may occur as:
+
+	ACQUIRE M, STORE *B, STORE *A, RELEASE M
+
+
+Now, I don't currently see problems with this in the allocation
+path. But the fact that reviewers now need to consider such
+possibilities makes me want a different locking model in this code.
+
+>  			break;
+>  		case VAS_RESUME:
+> +			mutex_lock(&vas_pseries_mutex);
+>  			atomic_set(&caps->nr_total_credits, new_nr_creds);
+>  			rc = reconfig_open_windows(vcaps, new_nr_creds, true);
+> +			mutex_unlock(&vas_pseries_mutex);
+>  			break;
+>  		default:
+>  			/* should not happen */
+> @@ -1010,8 +1040,9 @@ int vas_migration_handler(int action)
+>  			goto out;
+>  	}
+>  
+> +	pr_info("VAS migration event (%d) successful\n", action);
+> +
+
+Looks like another leftover debug statement.
+
+>  out:
+> -	mutex_unlock(&vas_pseries_mutex);
+>  	return rc;
+>  }
