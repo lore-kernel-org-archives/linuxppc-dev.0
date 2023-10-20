@@ -4,55 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A13AECDB474
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Oct 2023 09:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B77C7CDB474
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Oct 2023 10:05:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AUJJlKph;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f83rYL0g;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SBg3T6CsLz3dfg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Oct 2023 20:56:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SBgFL1gMQz3vXp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Oct 2023 21:05:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AUJJlKph;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f83rYL0g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=bjorn@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nysal@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SBg2T39hqz3cGk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2023 20:56:01 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 25992CE35E5;
-	Fri, 20 Oct 2023 09:55:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03568C433C8;
-	Fri, 20 Oct 2023 09:55:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1697795756;
-	bh=Z8ZuvLU9qD1wAS9sgFRuBmjbVEM7Pn+nD5WWqHJs10M=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=AUJJlKphrqw/o7lmtSQ+IkqWYh8FwAzZh4+CvrE6unyvvs3EQGCT5g/YTWZTTcKpS
-	 3tscwUlRHcVkD5AvTyY5/rX5LfoJ4dSlRuNzNO3PGkbwl6jQ4oCCI4BMm3kQftVhvH
-	 VRPKVmf5M4QDnnJy06buHR/ZKq3ZUNAgwoIYH9TChGSW/5l9TW3xXkHO11u0EzEANG
-	 whJs0N6uL5udv7BZ0zh3XaiaOAZdxqEhjlMtC3crlOzXstm4C74Nvh8ZHFR+MFI3RF
-	 3aDRCXQCRFea8KycE+r5iHmcYlc1/TXKhp8QT+8YrKpLpIjoqIxrGcnmj1oGc6L3DW
-	 lAnCrZgHvoqZQ==
-From: =?utf-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>
-To: Anup Patel <apatel@ventanamicro.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Atish Patra <atishp@atishpatra.org>, Palmer Dabbelt
- <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jirislaby@kernel.org>
-Subject: Re: [PATCH v3 8/9] tty: Add SBI debug console support to HVC SBI
- driver
-In-Reply-To: <20231020072140.900967-9-apatel@ventanamicro.com>
-References: <20231020072140.900967-1-apatel@ventanamicro.com>
- <20231020072140.900967-9-apatel@ventanamicro.com>
-Date: Fri, 20 Oct 2023 11:55:53 +0200
-Message-ID: <87mswdbot2.fsf@all.your.base.are.belong.to.us>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SBgDP34TBz3cJl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2023 21:04:37 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39K9lnpR022006
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2023 10:04:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=P2P2GAvDL8wZhYWdew8Ez+UNu8O+zedfR1Occy4/SU8=;
+ b=f83rYL0gxFndxozk6yI0STwvDnk2RsaErLYp3uQJIEvXhtpEjHGIG1WE4IsWz/B1CmcQ
+ zCxVKA5MULhLJ/UAIWSy0Oj1yZruUw62TjPlYsYh7XhZaHRbfva+bxPArn0gcgFDUWf7
+ nPIdkYn0IRTLESp4A2QLxnww6+w4zHSNYvBaYyBnepoQK5CFcB3yaPiGxgKuq3iAVA11
+ MqVEYCcwSMcp8RkipiRnS0DJPBC3oxFnymmBLlOblyOTqN/cnE9uXglgLv5WFHokm2dp
+ j4VXn2bzCw6a+V0uOFd1uqjAj7YIsSqH3PZPp3Q2IdgHmIY8txOzundbh1aocgGpwOiM UQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tuq7y0my3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2023 10:04:34 +0000
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39K9mtNQ026052
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2023 10:04:34 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3tuq7y0mxf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 20 Oct 2023 10:04:34 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39K91YTT024191;
+	Fri, 20 Oct 2023 10:04:33 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3tuc293tt4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 20 Oct 2023 10:04:33 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39KA4V4L43385370
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 20 Oct 2023 10:04:31 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 079392004F;
+	Fri, 20 Oct 2023 10:04:31 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9588320065;
+	Fri, 20 Oct 2023 10:04:30 +0000 (GMT)
+Received: from localhost (unknown [9.195.39.224])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 20 Oct 2023 10:04:30 +0000 (GMT)
+Date: Fri, 20 Oct 2023 15:34:29 +0530
+From: "Nysal Jan K.A." <nysal@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 0/6] powerpc/qspinlock: Fix yield latency bug and other
+Message-ID: <20231020100429.GB213288@li-80eaad4c-2afd-11b2-a85c-af8123d033e3.ibm.com>
+References: <20231016124305.139923-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231016124305.139923-1-npiggin@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 6Fgn_HARMhf_xH7_B3n89qPsSAW5pjCe
+X-Proofpoint-ORIG-GUID: Z8ZSA012x4S4WAzZ3cQFVi2NTt3M3JhD
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-20_08,2023-10-19_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxlogscore=353
+ spamscore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
+ suspectscore=0 adultscore=0 bulkscore=0 malwarescore=0 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2310170001 definitions=main-2310200083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,70 +95,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anup Patel <apatel@ventanamicro.com>, linux-serial@vger.kernel.org, kvm@vger.kernel.org, Atish Patra <atishp@rivosinc.com>, linux-kernel@vger.kernel.org, Conor Dooley <conor@kernel.org>, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Andrew Jones <ajones@ventanamicro.com>
+Cc: Shrikanth Hegde <sshegde@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Anup Patel <apatel@ventanamicro.com> writes:
+On Mon, Oct 16, 2023 at 10:42:59PM +1000, Nicholas Piggin wrote:
+> This fixes a long-standing latency bug in the powerpc qspinlock
+> implementation that quite a few people have reported and helped
+> out with debugging.
+> 
+> The first patch is a minimal fix that avoids the problem. The
+> other patches are streamlining and improvements after the fix.
+> 
+> Thanks,
+> Nick
+> 
+> Nicholas Piggin (6):
+>   powerpc/qspinlock: Fix stale propagated yield_cpu
+>   powerpc/qspinlock: stop queued waiters trying to set lock sleepy
+>   powerpc/qspinlock: propagate owner preemptedness rather than CPU
+>     number
+>   powerpc/qspinlock: don't propagate the not-sleepy state
+>   powerpc/qspinlock: Propagate sleepy if previous waiter is preempted
+>   powerpc/qspinlock: Rename yield_propagate_owner tunable
+> 
+>  arch/powerpc/lib/qspinlock.c | 119 +++++++++++++++--------------------
+>  1 file changed, 52 insertions(+), 67 deletions(-)
+> 
+> -- 
+> 2.42.0
+> 
+Just a minor comment regarding patch 2.
 
-> From: Atish Patra <atishp@rivosinc.com>
->
-> RISC-V SBI specification supports advanced debug console
-> support via SBI DBCN extension.
->
-> Extend the HVC SBI driver to support it.
->
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  drivers/tty/hvc/Kconfig         |  2 +-
->  drivers/tty/hvc/hvc_riscv_sbi.c | 82 ++++++++++++++++++++++++++++++---
->  2 files changed, 76 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-> index 4f9264d005c0..6e05c5c7bca1 100644
-> --- a/drivers/tty/hvc/Kconfig
-> +++ b/drivers/tty/hvc/Kconfig
-> @@ -108,7 +108,7 @@ config HVC_DCC_SERIALIZE_SMP
->=20=20
->  config HVC_RISCV_SBI
->  	bool "RISC-V SBI console support"
-> -	depends on RISCV_SBI_V01
-> +	depends on RISCV_SBI
->  	select HVC_DRIVER
->  	help
->  	  This enables support for console output via RISC-V SBI calls, which
-> diff --git a/drivers/tty/hvc/hvc_riscv_sbi.c b/drivers/tty/hvc/hvc_riscv_=
-sbi.c
-> index 31f53fa77e4a..56da1a4b5aca 100644
-> --- a/drivers/tty/hvc/hvc_riscv_sbi.c
-> +++ b/drivers/tty/hvc/hvc_riscv_sbi.c
-> @@ -39,21 +39,89 @@ static int hvc_sbi_tty_get(uint32_t vtermno, char *bu=
-f, int count)
->  	return i;
->  }
->=20=20
-> -static const struct hv_ops hvc_sbi_ops =3D {
-> +static const struct hv_ops hvc_sbi_v01_ops =3D {
->  	.get_chars =3D hvc_sbi_tty_get,
->  	.put_chars =3D hvc_sbi_tty_put,
->  };
->=20=20
-> -static int __init hvc_sbi_init(void)
-> +static int hvc_sbi_dbcn_tty_put(uint32_t vtermno, const char *buf, int c=
-ount)
->  {
-> -	return PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_ops, 16));
-> +	phys_addr_t pa;
-> +	struct sbiret ret;
-> +
-> +	if (is_vmalloc_addr(buf)) {
-> +		pa =3D page_to_phys(vmalloc_to_page(buf)) + offset_in_page(buf);
-> +		if (PAGE_SIZE < (offset_in_page(buf) + count))
-> +			count =3D PAGE_SIZE - offset_in_page(buf);
+For the series:
 
-Thanks for fixing the cross-page issue. Now you're cutting the buffer
-off. What about doing two SBI calls instead? (Dito on the get side)
-
-
-Bj=C3=B6rn
+Reviewed-by: Nysal Jan K.A <nysal@linux.ibm.com>
