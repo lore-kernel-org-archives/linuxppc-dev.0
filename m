@@ -4,54 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CCF1CDB474
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Oct 2023 16:19:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 016A9C0032E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Oct 2023 00:04:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=EMC1XQKN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HO41pWF4;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SBqXT6tFCz3vfW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Oct 2023 03:19:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SC1s32SNmz3vYd
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Oct 2023 11:04:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=EMC1XQKN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HO41pWF4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+0337522d548a1f056a92+7362+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SBqSw2g8Pz3dWS
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2023 03:16:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:
-	To:From:Reply-To:Content-ID:Content-Description;
-	bh=OW6M6axVm5EebrjONkYC4l2vPrYg1mjhksi3LsyyGRs=; b=EMC1XQKNq6loHyWtwUrjbzwmwV
-	cAgfQRMd4tmkJ8vfgqiDsAHkfDsIEKFYNphoGgZltm07MeMmeMyO41dK4BLYlKHBUnL8cqRNJUffv
-	zVUHHvzr6M4MMJHsTleqmotIfBWN5RE5+FHp2NiKmK8ql6L7KcoxAfQIzazUnV+8qIv//5YmJyAH9
-	OxkBx/FtKdKWlxLO5fHYVYMBiLVYGrhC5A2L6h+uGalAtARfBXqSpuBlQovufA2ZACvU44sInMHHX
-	saBDt/gndB0Jsk/Udp6oA3ydy0qG4OQ/poadbKKrrsFCSauxFUH/o6H3FX9ha6MDCtAaqPZVCLSsN
-	QtrjJRcw==;
-Received: from [2001:8b0:10b:1::ebe] (helo=i7.infradead.org)
-	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1qts9v-00BAsE-0Q;
-	Fri, 20 Oct 2023 16:15:36 +0000
-Received: from dwoodhou by i7.infradead.org with local (Exim 4.96 #2 (Red Hat Linux))
-	id 1qts9s-001UOW-0m;
-	Fri, 20 Oct 2023 17:15:32 +0100
-From: David Woodhouse <dwmw2@infradead.org>
-To: Juergen Gross <jgross@suse.com>,
-	xen-devel@lists.xenproject.org
-Subject: [PATCH v2 1/3] hvc/xen: fix event channel handling for secondary consoles
-Date: Fri, 20 Oct 2023 17:15:27 +0100
-Message-Id: <20231020161529.355083-2-dwmw2@infradead.org>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20231020161529.355083-1-dwmw2@infradead.org>
-References: <20231020161529.355083-1-dwmw2@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SC1r65LFNz3bT8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2023 11:03:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 99B6B622D5;
+	Sat, 21 Oct 2023 00:03:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 701EBC433C7;
+	Sat, 21 Oct 2023 00:03:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1697846594;
+	bh=yx4b5fn0c6i/eWSkHChzUW6XYw4N9dR7DJEx3AAQzKc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=HO41pWF4QiVeyQdPM9A8bwglMTkInB+dDxLsibIcJ30M+4iCc9NpMlN4JttCNzuaK
+	 I0X1YuLX1KLGw99923ETQopyWBDfkGs4geJUBuctgKXlTwLzelPSiWGMIY15iU+aUd
+	 yMyu6R5D0p1G+noEVVZD3ia8XWI492fPN30rc3YTrazlWaBy7gEQ5KO63eh+IeqSwe
+	 qaP4ucYpaw5nJPDqHHyzsvTdPJVSCwle669n/x7ACYuxC6EW/+MDpB2nOkRb/Djs+s
+	 ykmMHQc+LybdfhMTFle5SpngmM//y3uCXr572zhDZa/75v1wJ0nr/q9GuZfKwG9HPT
+	 qg3j2dn2Cs76A==
+Date: Fri, 20 Oct 2023 17:03:12 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Kunwu Chan <chentao@kylinos.cn>
+Subject: Re: [PATCH] treewide: Spelling fix in comment
+Message-ID: <20231020170312.5baf8c59@kernel.org>
+In-Reply-To: <20231020093156.538856-1-chentao@kylinos.cn>
+References: <20231020093156.538856-1-chentao@kylinos.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,52 +58,14 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stefano Stabellini <sstabellini@kernel.org>, Paul Durrant <paul@xen.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, Dawei Li <set_pte_at@outlook.com>, Jiri Slaby <jirislaby@kernel.org>, Roger Pau Monne <roger.pau@citrix.com>
+Cc: jeff@garzik.org, mokuno@sm.sony.co.jp, kunwu.chan@hotmail.com, dcbw@redhat.com, linville@tuxdriver.com, linux-kernel@vger.kernel.org, edumazet@google.com, npiggin@gmail.com, netdev@vger.kernel.org, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: David Woodhouse <dwmw@amazon.co.uk>
+On Fri, 20 Oct 2023 17:31:56 +0800 Kunwu Chan wrote:
+> reques -> request
+> 
+> Fixes: 09dde54c6a69 ("PS3: gelic: Add wireless support for PS3")
+> Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
 
-The xencons_connect_backend() function allocates a local interdomain
-event channel with xenbus_alloc_evtchn(), then calls
-bind_interdomain_evtchn_to_irq_lateeoi() to bind to that port# on the
-*remote* domain.
-
-That doesn't work very well:
-
-(qemu) device_add xen-console,id=con1,chardev=pty0
-[   44.323872] xenconsole console-1: 2 xenbus_dev_probe on device/console/1
-[   44.323995] xenconsole: probe of console-1 failed with error -2
-
-Fix it to use bind_evtchn_to_irq_lateeoi(), which does the right thing
-by just binding that *local* event channel to an irq. The backend will
-do the interdomain binding.
-
-This didn't affect the primary console because the setup for that is
-special — the toolstack allocates the guest event channel and the guest
-discovers it with HVMOP_get_param.
-
-Fixes: fe415186b4 ("xen/console: harden hvc_xen against event channel storms")
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
-Reviewed-by: Juergen Gross <jgross@suse.com>
-Cc: stable@vger.kernel.org
----
- drivers/tty/hvc/hvc_xen.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index 98764e740c07..f24e285b6441 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -433,7 +433,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
- 	if (ret)
- 		return ret;
- 	info->evtchn = evtchn;
--	irq = bind_interdomain_evtchn_to_irq_lateeoi(dev, evtchn);
-+	irq = bind_evtchn_to_irq_lateeoi(evtchn);
- 	if (irq < 0)
- 		return irq;
- 	info->irq = irq;
--- 
-2.40.1
-
+Appears to have been applied to net, thank you!
