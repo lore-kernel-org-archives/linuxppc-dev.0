@@ -4,47 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3157ECDB474
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 09:24:14 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QzQ7f14+;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6232C001E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 10:45:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SDVBP3NlGz3cTQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 20:24:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QzQ7f14+;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SDV9S5TXMz2xX4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2023 20:23:24 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1698053004;
-	bh=HdFjJoRqJH8sIN0+sXhrJSvvZdUFAdGypL//0aVvhSA=;
-	h=From:To:Subject:Date:From;
-	b=QzQ7f14+jYekwp+UXspq8Ka1C6ZIlHdKqm5Tmy3lGaRdttJg8cgVqWETRihytht96
-	 /Uv73d2X0RP/FIREFXxzKc2Utr0NR352cCQa2QvtXW5Jyf4/qKyKJmQeGcMgvADJYO
-	 9YhC9N/fGgDgJ3DDPP7FBGK2Sk3lWsw1jFgnmjTkjqtHcVLd4SGNMpjCI8k5bUB1qM
-	 /bWSb+COoMoeGnYqc3J2oyfJX6w2OD/YALZkZMP2Hk21X+gWcmh2uJuaoUR1YVbzIN
-	 XSifPg+t9Ho/61f/Oe0OCARUT8QJPnSRDY1dwcR4OEL5O8EMWqo4ldxudK7cP2ZlaP
-	 DpgJ5BCRjQ1Tw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SDV9S4DBLz4x1x;
-	Mon, 23 Oct 2023 20:23:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/32s: Implement local_flush_tlb_page_psize()
-Date: Mon, 23 Oct 2023 20:23:19 +1100
-Message-ID: <20231023092319.1507325-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.41.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SDX0P2T9Qz3clb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 21:45:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=james.clark@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SDWzp37kSz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2023 21:45:07 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7367F1FB;
+	Mon, 23 Oct 2023 03:45:15 -0700 (PDT)
+Received: from [192.168.1.3] (unknown [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 227A73F64C;
+	Mon, 23 Oct 2023 03:44:33 -0700 (PDT)
+Message-ID: <3a9164b4-9ff2-82a1-6339-3a1fdd91dc47@arm.com>
+Date: Mon, 23 Oct 2023 11:44:33 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH V3] tools/perf: Add perf binary dependent rule for
+ shellcheck log in Makefile.perf
+Content-Language: en-US
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+References: <20231013073641.99934-1-atrajeev@linux.vnet.ibm.com>
+From: James Clark <james.clark@arm.com>
+In-Reply-To: <20231013073641.99934-1-atrajeev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,42 +44,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: irogers@google.com, maddy@linux.ibm.com, kjain@linux.ibm.com, adrian.hunter@intel.com, acme@kernel.org, linux-perf-users@vger.kernel.org, jolsa@kernel.org, namhyung@kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There's a single call to local_flush_tlb_page_psize() in the code
-patching code. That call is never executed on 32-bit Book3S,
-because it's guarded by mm_patch_enabled() which is essentially a
-radix_enabled() check, which is always false on 32s.
 
-However depending on how the optimiser sees things it may still trip
-over the BUILD_BUG() in the 32s stub of local_flush_tlb_page_psize().
 
-To avoid that, implement it in terms of flush_range() so that if it ever
-becomes called it should function, even if not optimally.
+On 13/10/2023 08:36, Athira Rajeev wrote:
+> Add rule in new Makefile "tests/Makefile.tests" for running
+> shellcheck on shell test scripts. This automates below shellcheck
+> into the build.
+> 
+> 	$ for F in $(find tests/shell/ -perm -o=x -name '*.sh'); do shellcheck -S warning $F; done
+> 
+> Condition for shellcheck is added in Makefile.perf to avoid build
+> breakage in the absence of shellcheck binary. Update Makefile.perf
+> to contain new rule for "SHELLCHECK_TEST" which is for making
+> shellcheck test as a dependency on perf binary. Added
+> "tests/Makefile.tests" to run shellcheck on shellscripts in
+> tests/shell. The make rule "SHLLCHECK_RUN" ensures that, every
+> time during make, shellcheck will be run only on modified files
+> during subsequent invocations. By this, if any newly added shell
+> scripts or fixes in existing scripts breaks coding/formatting
+> style, it will get captured during the perf build.
+> 
+> Example build failure with present scripts in tests/shell:
+> 
+> 	INSTALL libsubcmd_headers
+> 	INSTALL libperf_headers
+> 	INSTALL libapi_headers
+> 	INSTALL libsymbol_headers
+> 	INSTALL libbpf_headers
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/record_sideband.dep] Error 1
+> 	make[3]: *** Waiting for unfinished jobs....
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/test_arm_coresight.dep] Error 1
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/lock_contention.dep] Error 1
+> 	make[2]: *** [Makefile.perf:675: SHELLCHECK_TEST] Error 2
+> 	make[1]: *** [Makefile.perf:238: sub-make] Error 2
+> 	make: *** [Makefile:70: all] Error 2
+> 
+> After this, for testing, changed "tests/shell/record.sh" to
+> break shellcheck format. In the next make run, it is
+> also captured:
+> 
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/record_sideband.dep] Error 1
+> 	make[3]: *** Waiting for unfinished jobs....
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/record.dep] Error 1
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/test_arm_coresight.dep] Error 1
+> 	make[3]: *** [/root/athira/namhyung/perf-tools-next/tools/perf/tests/Makefile.tests:17: output/tests/shell/lock_contention.dep] Error 1
+> 	make[2]: *** [Makefile.perf:675: SHELLCHECK_TEST] Error 2
+> 	make[1]: *** [Makefile.perf:238: sub-make] Error 2
+> 	make: *** [Makefile:70: all] Error 2
+> 
+> The exact failure log can be found in:
+> output/tests/shell/record.dep.log file
+> 
 
-Note that flush_range() deals with page aligning the address and so on,
-and that 32s doesn't support huge pages so there should be no issue with
-non-standard page sizes needing to be flushed.
+Hi Athira,
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/book3s/32/tlbflush.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Having the reason for a hard failure put into a log file rather than the
+console output is very non standard. I'm not sure what the reason for
+this is.
 
-diff --git a/arch/powerpc/include/asm/book3s/32/tlbflush.h b/arch/powerpc/include/asm/book3s/32/tlbflush.h
-index 4be572908124..e43534da5207 100644
---- a/arch/powerpc/include/asm/book3s/32/tlbflush.h
-+++ b/arch/powerpc/include/asm/book3s/32/tlbflush.h
-@@ -80,7 +80,7 @@ static inline void local_flush_tlb_page(struct vm_area_struct *vma,
- static inline void local_flush_tlb_page_psize(struct mm_struct *mm,
- 					      unsigned long vmaddr, int psize)
- {
--	BUILD_BUG();
-+	flush_range(mm, vmaddr, vmaddr);
- }
- 
- static inline void local_flush_tlb_mm(struct mm_struct *mm)
--- 
-2.41.0
+The log filename isn't even listed in the output so how would anyone
+know what went wrong?
 
+Can we just have it so that the failure is printed in the make output
+like any other build error.
+
+[...]
+
+> +output/%.dep: %.sh | $(DIRS)
+> +	$(call rule_mkdir)
+> +	$(eval input_file := $(subst output/,./,$(patsubst %.dep, %.sh, $@)))
+> +	$(Q)$(call frecho-cmd,test)@shellcheck -S warning ${input_file} 1> $@.log && ([[ ! -s $@.log ]])
+
+[[ ]] is a bash extension, but the build system seems to use /bin/sh so
+you get this error depending on your distro:
+
+  tools/perf/tests/Makefile.tests:17: output/tests/shell
+      /record+probe_libc_inet_pton.dep] Error 127
+  /bin/sh: 1: [[: not found
+
+Changing it to [ ] fixes it
+
+> +	$(Q)$(call frecho-cmd,test)@touch $@
+
+Touching the source file in the build system doesn't feel right, surely
+this could be open to all kinds of parallel build race conditions or
+version controll issues.
+
+Isn't the output of the rule the .log file, so just a normal make rule
+based on those two files work? Then if the .log file is older than the
+source file, the shellcheck is re-run, otherwise not? It feels like the
+.dep file would then also be unecessary.
+
+The .dep lines in the make output are a bit confusing because they're
+not in the source tree so it's not clear to an outsider what that make
+output is for.
+
+Other than that, it does seem to work ok for me.
+
+> +	$(Q)$(call frecho-cmd,test)@rm -rf $@.log
+> +$(DIRS):
+> +	@mkdir -p $@
+> +
+> +clean:
+> +	@rm -rf output
