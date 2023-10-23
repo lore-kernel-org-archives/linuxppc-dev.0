@@ -4,52 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60733C25B45
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 17:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01845C25B45
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 21:17:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZOVDksWf;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=sgAr1vkU;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SDhnk0QHGz3cTn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 04:22:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SDp121rY0z3cT7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 08:17:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZOVDksWf;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=sgAr1vkU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SDhmn0Kr7z2xdZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2023 04:21:12 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id CF6ADCE0C47;
-	Mon, 23 Oct 2023 17:21:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 977DEC433C7;
-	Mon, 23 Oct 2023 17:21:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1698081670;
-	bh=WQYEKm0Mc7inaH0wFnxcEUmfAmPR1JoMV7fRygVNKQQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZOVDksWfw+hV9R+Z5ZexM6NcY3xDNdzdq9AsRt4vO9wMdxWhqWWcxLwP+eW4A962q
-	 Qk6ekhq2Ipm65VVsfFxXGy8qQeQOWzCvDqLJfEU8nWaZHFbI6flnaXvlVH0CRDWH+w
-	 hIMRahts5mdD+tpF+6eXFcpVMEl1Ep7tHL5W7fbVdPmlfZ6yQugf14RafBolwJcEMn
-	 21vyDdZz0h9WC0+Q/QJBX2oIB6fGQ1kXhcFuxCsKB2tbLoPEgU/BSdSOixB9qw31iO
-	 OgDPN8A4Uqs6uFqTMJcPk6zjMZ/offJmG+hcHSxPefHsLKYd1oYsfoKs6fvoRIkbKX
-	 wMvEth+vb/+ag==
-Date: Mon, 23 Oct 2023 18:21:00 +0100
-From: Will Deacon <will@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v3 07/13] arm64, execmem: extend execmem_params for
- generated code allocations
-Message-ID: <20231023172059.GB4041@willie-the-truck>
-References: <20230918072955.2507221-1-rppt@kernel.org>
- <20230918072955.2507221-8-rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SDp041Nzwz2xXP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2023 08:16:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=201702; t=1698095778;
+	bh=D0yeEwspGZToug4I7VXU9FlsdciqujVRt9xPN/1plGY=;
+	h=Date:From:To:Cc:Subject:From;
+	b=sgAr1vkUsV9ffQaMOa/LFgd6o8m62W1M5pgscbs9OBssSqY1i3FfogdYJ1dwhgV9B
+	 pE807wl7OKmD/t+xOACig7k6tEXAptgMmQAAyq9I/lM7qWZsuMreQpQNTSFHLIqWP3
+	 hfvXfrFLKKmjNENJ1LncE2b1pybZBa3Je8XnjH8TYQgegUg5vK3sTvAMZ7lVUo9fSQ
+	 TBya1HDStcHdV9wtuH4FRoD8BMzqLB71kLeKzPoB+QqloC1LcdiTMEuaTEqqqtZjIs
+	 ZQtQRsGHpFAH7dWBi5MO5Wo6XtP9dd9xeZzzIHUMPV/pfE757JBXU4ELtas5AIAk8D
+	 263FGfSs4XAOw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SDp023PDtz4wcJ;
+	Tue, 24 Oct 2023 08:16:18 +1100 (AEDT)
+Date: Tue, 24 Oct 2023 08:16:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: Signed-off-by missing for commit in the powerpc tree
+Message-ID: <20231024081617.686c086f@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230918072955.2507221-8-rppt@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: multipart/signed; boundary="Sig_/0pV_NK7c99nPUcyLur.Kr.z";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,77 +57,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linux-trace-kernel@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?iso-8859-1?Q?Bj=F6rn_
- T=F6pel?= <bjorn@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 18, 2023 at 10:29:49AM +0300, Mike Rapoport wrote:
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> 
-> The memory allocations for kprobes and BPF on arm64 can be placed
-> anywhere in vmalloc address space and currently this is implemented with
-> overrides of alloc_insn_page() and bpf_jit_alloc_exec() in arm64.
-> 
-> Define EXECMEM_KPROBES and EXECMEM_BPF ranges in arm64::execmem_params and
-> drop overrides of alloc_insn_page() and bpf_jit_alloc_exec().
-> 
-> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
-> ---
->  arch/arm64/kernel/module.c         | 13 +++++++++++++
->  arch/arm64/kernel/probes/kprobes.c |  7 -------
->  arch/arm64/net/bpf_jit_comp.c      | 11 -----------
->  3 files changed, 13 insertions(+), 18 deletions(-)
-> 
-> diff --git a/arch/arm64/kernel/module.c b/arch/arm64/kernel/module.c
-> index cd6320de1c54..d27db168d2a2 100644
-> --- a/arch/arm64/kernel/module.c
-> +++ b/arch/arm64/kernel/module.c
-> @@ -116,6 +116,16 @@ static struct execmem_params execmem_params __ro_after_init = {
->  			.flags = EXECMEM_KASAN_SHADOW,
->  			.alignment = MODULE_ALIGN,
->  		},
-> +		[EXECMEM_KPROBES] = {
-> +			.start = VMALLOC_START,
-> +			.end = VMALLOC_END,
-> +			.alignment = 1,
-> +		},
-> +		[EXECMEM_BPF] = {
-> +			.start = VMALLOC_START,
-> +			.end = VMALLOC_END,
-> +			.alignment = 1,
-> +		},
->  	},
->  };
->  
-> @@ -140,6 +150,9 @@ struct execmem_params __init *execmem_arch_params(void)
->  		r->end = module_plt_base + SZ_2G;
->  	}
->  
-> +	execmem_params.ranges[EXECMEM_KPROBES].pgprot = PAGE_KERNEL_ROX;
-> +	execmem_params.ranges[EXECMEM_BPF].pgprot = PAGE_KERNEL;
-> +
->  	return &execmem_params;
->  }
->  
-> diff --git a/arch/arm64/kernel/probes/kprobes.c b/arch/arm64/kernel/probes/kprobes.c
-> index 70b91a8c6bb3..6fccedd02b2a 100644
-> --- a/arch/arm64/kernel/probes/kprobes.c
-> +++ b/arch/arm64/kernel/probes/kprobes.c
-> @@ -129,13 +129,6 @@ int __kprobes arch_prepare_kprobe(struct kprobe *p)
->  	return 0;
->  }
->  
-> -void *alloc_insn_page(void)
-> -{
-> -	return __vmalloc_node_range(PAGE_SIZE, 1, VMALLOC_START, VMALLOC_END,
-> -			GFP_KERNEL, PAGE_KERNEL_ROX, VM_FLUSH_RESET_PERMS,
-> -			NUMA_NO_NODE, __builtin_return_address(0));
-> -}
+--Sig_/0pV_NK7c99nPUcyLur.Kr.z
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It's slightly curious that we didn't clear the tag here, so it's nice that
-it all happens magically with your series:
+Hi all,
 
-Acked-by: Will Deacon <will@kernel.org>
+Commit
 
-Will
+  351a050f602d ("Revert "powerpc: add `cur_cpu_spec` symbol to vmcoreinfo"")
+
+is missing a Signed-off-by from its author and committer.
+
+Reverts are commits as well ...
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/0pV_NK7c99nPUcyLur.Kr.z
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmU24qEACgkQAVBC80lX
+0GwGkQf/XJ4Mm38KSnnVJwtJ35imsiLP52PcHsITty5kXz/JMQrXjZYJv11bF1JN
+HNt/iRC1RE440GhIlMgh9YvuewjAFfRAm1bCAXOqP3XuAYsV5twrN9hdIbyZnfWP
+HWG0fnQpWzAGwyR8oMAz2aKyML6gFP4ITsFSeEd0p6EhIJkMlGoVYeqYLXX9b7QK
+VXAsAsUZ/P8i8Dw54nbkGrqQKVifsAhXdbcskdsd/0Hwp+UmbPjsiRBF4VC65/aP
+HmzSiUiSe/jwVDYBkgVcq0acFhVcucH6+Y+NdnboLfKpG/I744k00j8XpAWyr173
+whitus6X0O8SFuqWu7GyDkkkhTq0Gw==
+=VW7N
+-----END PGP SIGNATURE-----
+
+--Sig_/0pV_NK7c99nPUcyLur.Kr.z--
