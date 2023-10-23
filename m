@@ -4,46 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FDD2CDB474
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 11:04:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CFB7C001E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 11:25:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jqtO1Tw0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aDM4xx7R;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SDXPp74lSz3cWY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 22:04:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SDXtq4mqRz3cRr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Oct 2023 22:25:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jqtO1Tw0;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aDM4xx7R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SDXNs4tbFz2xdZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2023 22:03:25 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 72E7CB81A65;
-	Mon, 23 Oct 2023 11:03:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D9ABC433CA;
-	Mon, 23 Oct 2023 11:03:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1698058999;
-	bh=BMggmvtBQY8hwOyVQVq62AgRI2SUxHnvQuDjQvfxizc=;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SDXst2jDDz30Ng
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2023 22:25:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1698060306;
+	bh=gOlR4G1l13aL+evjDnjeM9EgaAcwh5bo8mHaZqLDU4E=;
 	h=From:To:Cc:Subject:Date:From;
-	b=jqtO1Tw07SOPfYVrK8fE6SZMvbytaHht7Jy5OtrX9diVHSX5K3HNQxskPtktWfFvz
-	 CjZ3YK4olpEa2TBbnNdiztmCRUBd/sy56szRbdoFsDXW/CznME+hySB2P9cqNX0M+G
-	 G3dtuG3I41vbJXJ3s4zIxr3NveJQMHa2i2EwT6nbV9LnN8cL03l9/1eQnftyaqrLoh
-	 DLxrYtZeDq9LUl4ENQCU5ls+0AUUTqADDGpY0CmxjUulJqc+dMJKoL61DIHafHxImc
-	 G/V+zxP4KmKLxKv1J30hLeV7f3DNlkrN+uvdFRZ28Fv1G2e93EwT8ag9OCuvvUoUcD
-	 0DMGDNiF0NVXg==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Eric DeVolder <eric.devolder@oracle.com>
-Subject: [PATCH 1/2] kexec: fix KEXEC_FILE dependencies
-Date: Mon, 23 Oct 2023 13:01:54 +0200
-Message-Id: <20231023110308.1202042-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
+	b=aDM4xx7RFEBYMGjoLylchBOM7TnhCz1NGLp3ddLQqj9OWM2iTxx1ZL6ShHiWP8p5J
+	 IpFfHaNzYVYQQSnFFXLPRC465aL7KJHxRTOvNnnIHA592znI9E0HqVtllh+F4uhB1P
+	 z5NrCfCaCDhWxhhqJKpo6SnBUwYKlZjVvjxyxQYSc/RNmy4caPwNQGz0jhszt9K7n6
+	 2DcRk6FHbohJKGInmBvoPHENCWRCbRQ8yiPYxg/Y8n+bhFnKv1xCFMimd7R2pV3eUu
+	 3aRfkKBCy1PzuvdzoxKM7n+RlxTXo0XZVuE94rC2BM0J4PX09ro83JYozxoAbw3q2s
+	 T4CUve/z7IyxQ==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SDXss5ZYjz4xWF;
+	Mon, 23 Oct 2023 22:25:05 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/mm: Fix boot crash with FLATMEM
+Date: Mon, 23 Oct 2023 22:25:00 +1100
+Message-ID: <20231023112500.1550208-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,138 +56,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Ard Biesheuvel <ardb@kernel.org>, linux-s390@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: erhard_f@mailbox.org, willy@infradead.org, aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+Erhard reported that his G5 was crashing with v6.6-rc kernels:
 
-The cleanup for the CONFIG_KEXEC Kconfig logic accidentally changed the
-'depends on CRYPTO=y' dependency to a plain 'depends on CRYPTO', which
-causes a link failure when all the crypto support is in a loadable module
-and kexec_file support is built-in:
+  mpic: Setting up HT PICs workarounds for U3/U4
+  BUG: Unable to handle kernel data access at 0xfeffbb62ffec65fe
+  Faulting instruction address: 0xc00000000005dc40
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 PowerMac
+  Modules linked in:
+  CPU: 0 PID: 0 Comm: swapper/0 Tainted: G                T  6.6.0-rc3-PMacGS #1
+  Hardware name: PowerMac11,2 PPC970MP 0x440101 PowerMac
+  NIP:  c00000000005dc40 LR: c000000000066660 CTR: c000000000007730
+  REGS: c0000000022bf510 TRAP: 0380   Tainted: G                T (6.6.0-rc3-PMacGS)
+  MSR:  9000000000001032 <SF,HV,ME,IR,DR,RI>  CR: 44004242  XER: 00000000
+  IRQMASK: 3
+  GPR00: 0000000000000000 c0000000022bf7b0 c0000000010c0b00 00000000000001ac
+  GPR04: 0000000003c80000 0000000000000300 c0000000f20001ae 0000000000000300
+  GPR08: 0000000000000006 feffbb62ffec65ff 0000000000000001 0000000000000000
+  GPR12: 9000000000001032 c000000002362000 c000000000f76b80 000000000349ecd8
+  GPR16: 0000000002367ba8 0000000002367f08 0000000000000006 0000000000000000
+  GPR20: 00000000000001ac c000000000f6f920 c0000000022cd985 000000000000000c
+  GPR24: 0000000000000300 00000003b0a3691d c0003e008030000e 0000000000000000
+  GPR28: c00000000000000c c0000000f20001ee feffbb62ffec65fe 00000000000001ac
+  NIP hash_page_do_lazy_icache+0x50/0x100
+  LR  __hash_page_4K+0x420/0x590
+  Call Trace:
+    hash_page_mm+0x364/0x6f0
+    do_hash_fault+0x114/0x2b0
+    data_access_common_virt+0x198/0x1f0
+  --- interrupt: 300 at mpic_init+0x4bc/0x10c4
+  NIP:  c000000002020a5c LR: c000000002020a04 CTR: 0000000000000000
+  REGS: c0000000022bf9f0 TRAP: 0300   Tainted: G                T (6.6.0-rc3-PMacGS)
+  MSR:  9000000000001032 <SF,HV,ME,IR,DR,RI>  CR: 24004248  XER: 00000000
+  DAR: c0003e008030000e DSISR: 40000000 IRQMASK: 1
+  ...
+  NIP mpic_init+0x4bc/0x10c4
+  LR  mpic_init+0x464/0x10c4
+  --- interrupt: 300
+    pmac_setup_one_mpic+0x258/0x2dc
+    pmac_pic_init+0x28c/0x3d8
+    init_IRQ+0x90/0x140
+    start_kernel+0x57c/0x78c
+    start_here_common+0x1c/0x20
 
-x86_64-linux-ld: vmlinux.o: in function `__x64_sys_kexec_file_load':
-(.text+0x32e30a): undefined reference to `crypto_alloc_shash'
-x86_64-linux-ld: (.text+0x32e58e): undefined reference to `crypto_shash_update'
-x86_64-linux-ld: (.text+0x32e6ee): undefined reference to `crypto_shash_final'
+A bisect pointed to the breakage beginning with commit 9fee28baa601 ("powerpc:
+implement the new page table range API").
 
-Both s390 and x86 have this problem, while ppc64 and riscv have the
-correct dependency already. On riscv, the dependency is only used
-for the purgatory, not for the kexec_file code itself, which may
-be a bit surprising as it means that with CONFIG_CRYPTO=m, it is
-possible to enable KEXEC_FILE but then the purgatory code is silently
-left out.
+Analysis of the oops pointed to a struct page with a corrupted
+compound_head being loaded via page_folio() -> _compound_head() in
+hash_page_do_lazy_icache().
 
-Move this into the common Kconfig.kexec file in a way that is
-correct everywhere, using the dependency on CRYPTO_SHA256=y only
-when the purgatory code is available. This requires reversing the
-dependency between ARCH_SUPPORTS_KEXEC_PURGATORY and KEXEC_FILE,
-but the effect remains the same, other than making riscv behave
-like the other ones.
+The access by the mpic code is to an MMIO address, so the expectation
+is that the struct page for that address would be initialised by
+init_unavailable_range(), as pointed out by Aneesh.
 
-On s390, there is an additional dependency on CRYPTO_SHA256_S390, which
-should technically not be required but gives better performance. Remove
-this dependency here, noting that it was not present in the initial
-Kconfig code but was brought in without an explanation in commit
-71406883fd357 ("s390/kexec_file: Add kexec_file_load system call").
+Instrumentation showed that was not the case, which eventually lead to
+the realisation that pfn_valid() was returning false for that address,
+causing the struct page to not be initialised.
 
-Fixes: 6af5138083005 ("x86/kexec: refactor for kernel/Kconfig.kexec")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Because the system is using FLATMEM, the version of pfn_valid() in
+memory_model.h is used:
+
+static inline int pfn_valid(unsigned long pfn)
+{
+	...
+	return pfn >= pfn_offset && (pfn - pfn_offset) < max_mapnr;
+}
+
+Which relies on max_mapnr being initialised. Early in boot max_mapnr is
+zero meaning no PFNs are valid.
+
+max_mapnr is initialised in mem_init() called via:
+
+  start_kernel()
+    mm_core_init()  # init/main.c:928
+      mem_init()
+
+But that is too late for the usage in init_unavailable_range() called via:
+
+  start_kernel()
+    setup_arch()    # init/main.c:893
+      paging_init()
+        free_area_init()
+          init_unavailable_range()
+
+Although max_mapnr is currently set in mem_init(), the value is actually
+already available much earlier, as soon as mem_topology_setup() has
+completed, which is also before paging_init() is called. So move the
+initialisation there, which causes paging_init() to correctly initialise
+the struct page and fixes the bug.
+
+This bug seems to have been lurking for years, but went unnoticed
+because the pre-folio code was inspecting the uninitialised page->flags
+but not dereferencing it.
+
+Thanks to Erhard and Aneesh for help debugging.
+
+Reported-by: Erhard Furtner <erhard_f@mailbox.org>
+Closes: https://lore.kernel.org/all/20230929132750.3cd98452@yea/
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig | 4 ++--
- arch/riscv/Kconfig   | 4 +---
- arch/s390/Kconfig    | 4 ++--
- arch/x86/Kconfig     | 4 ++--
- kernel/Kconfig.kexec | 1 +
- 5 files changed, 8 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 2 ++
+ arch/powerpc/mm/mem.c              | 1 -
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d5d5388973ac7..4640cee33f123 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -607,10 +607,10 @@ config ARCH_SUPPORTS_KEXEC
- 	def_bool PPC_BOOK3S || PPC_E500 || (44x && !SMP)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 2f1026fba00d..20f72cd1d813 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -948,6 +948,8 @@ void __init setup_arch(char **cmdline_p)
  
- config ARCH_SUPPORTS_KEXEC_FILE
--	def_bool PPC64 && CRYPTO=y && CRYPTO_SHA256=y
-+	def_bool PPC64
+ 	/* Parse memory topology */
+ 	mem_topology_setup();
++	/* Set max_mapnr before paging_init() */
++	set_max_mapnr(max_pfn);
  
- config ARCH_SUPPORTS_KEXEC_PURGATORY
--	def_bool KEXEC_FILE
-+	def_bool y
+ 	/*
+ 	 * Release secondary cpus out of their spinloops at 0x60 now that
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 8b121df7b08f..07e8f4f1e07f 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -288,7 +288,6 @@ void __init mem_init(void)
+ #endif
  
- config ARCH_SELECTS_KEXEC_FILE
- 	def_bool y
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 25474f8c12b79..f571bad2d22d0 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -687,9 +687,7 @@ config ARCH_SELECTS_KEXEC_FILE
- 	select KEXEC_ELF
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+-	set_max_mapnr(max_pfn);
  
- config ARCH_SUPPORTS_KEXEC_PURGATORY
--	def_bool KEXEC_FILE
--	depends on CRYPTO=y
--	depends on CRYPTO_SHA256=y
-+	def_bool y
+ 	kasan_late_init();
  
- config ARCH_SUPPORTS_CRASH_DUMP
- 	def_bool y
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index b0d67ac8695f9..ec77106af4137 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -253,13 +253,13 @@ config ARCH_SUPPORTS_KEXEC
- 	def_bool y
- 
- config ARCH_SUPPORTS_KEXEC_FILE
--	def_bool CRYPTO && CRYPTO_SHA256 && CRYPTO_SHA256_S390
-+	def_bool y
- 
- config ARCH_SUPPORTS_KEXEC_SIG
- 	def_bool MODULE_SIG_FORMAT
- 
- config ARCH_SUPPORTS_KEXEC_PURGATORY
--	def_bool KEXEC_FILE
-+	def_bool y
- 
- config ARCH_SUPPORTS_CRASH_DUMP
- 	def_bool y
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 94efde80ebf35..f9975b15ccd57 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2073,7 +2073,7 @@ config ARCH_SUPPORTS_KEXEC
- 	def_bool y
- 
- config ARCH_SUPPORTS_KEXEC_FILE
--	def_bool X86_64 && CRYPTO && CRYPTO_SHA256
-+	def_bool X86_64
- 
- config ARCH_SELECTS_KEXEC_FILE
- 	def_bool y
-@@ -2081,7 +2081,7 @@ config ARCH_SELECTS_KEXEC_FILE
- 	select HAVE_IMA_KEXEC if IMA
- 
- config ARCH_SUPPORTS_KEXEC_PURGATORY
--	def_bool KEXEC_FILE
-+	def_bool y
- 
- config ARCH_SUPPORTS_KEXEC_SIG
- 	def_bool y
-diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
-index 7aff28ded2f48..bfc636d64ff2b 100644
---- a/kernel/Kconfig.kexec
-+++ b/kernel/Kconfig.kexec
-@@ -36,6 +36,7 @@ config KEXEC
- config KEXEC_FILE
- 	bool "Enable kexec file based system call"
- 	depends on ARCH_SUPPORTS_KEXEC_FILE
-+	depends on CRYPTO_SHA256=y || !ARCH_SUPPORTS_KEXEC_PURGATORY
- 	select KEXEC_CORE
- 	help
- 	  This is new version of kexec system call. This system call is
 -- 
-2.39.2
+2.41.0
 
