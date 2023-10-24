@@ -4,48 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD5F7C07545
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 06:39:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56DA8C07545
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 09:31:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=bDdUKwTt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dby9AI0p;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SF2V337lrz3cTQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 17:39:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SF6JH73PHz3cVH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Oct 2023 20:31:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=bDdUKwTt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dby9AI0p;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kvalo@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SF2T33CYxz2xYk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2023 17:38:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
-	s=201702; t=1698129524;
-	bh=Yjbi8baLATD/fHzOgylyef37xmECN0dtorEYBlgpJAo=;
-	h=Date:From:To:Cc:Subject:From;
-	b=bDdUKwTtceJdJmpW1npM8gL05L9yIA6l8I9K6l3S1aeZzuF+uwvzAv2fQqVBIabZN
-	 ErnhUntr7EB5+K3b12a7j1QZYC/Srm+1F/5C5dg1/51V7vU3uYs/k5dnrgw7nAm77S
-	 0g7wr/YOedGN1Np95gqYAR6cZRFICQvtgO8G2YSlvZRjQOshPDsHAUz2FMWX1AuefF
-	 eWBBwN0xoIwf7MDYuUZIIvu2nbv9wCHT+jvJghDoQLv+u82wq7eCxgnr52HATyDTQM
-	 wX5DSB/Zt4MfQyw3KkSO8O7WSTnsakiS4ePXZEDMzdPas8azsaZML2e+ovdjGBXoJf
-	 HrQQcI30KG+PA==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SF2Sz551tz4wdC;
-	Tue, 24 Oct 2023 17:38:43 +1100 (AEDT)
-Date: Tue, 24 Oct 2023 17:38:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build warnings after merge of the powerpc tree
-Message-ID: <20231024173843.07ca9afc@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SF6HM1Zjtz2xqH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2023 20:30:39 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id D61BC62ADE;
+	Tue, 24 Oct 2023 09:30:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3EABCC433C8;
+	Tue, 24 Oct 2023 09:30:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1698139836;
+	bh=CB0uZasGotH3WSQ2XD6CQGludeAGY3f8w17TrzekeQU=;
+	h=From:To:Cc:Subject:References:Date:In-Reply-To:From;
+	b=Dby9AI0p83lKR7U5CCjg2W7DpqRQqyb59zNfumlkY8ts8VHFwcff/XFzqbRKMY55Q
+	 RPEGb17YmlSQo+XND8ZEqC7yXRo+6kDE9s3zllgDm+XX6xUwEB5Z4wXMl+4sx4O02e
+	 HlDNnlnAG9UftAcKGoZHxSGp4zKOqPsYGiLTNoVQbiaXrsshmAYMv0FyYHYIOOaS0K
+	 FNXQGox4XxUgAWUtTfAGwv5zHAnOri9VwXtnN3WXrk66gXQ6NM2RfYSYo+eyHFUIRd
+	 CbCvNJqEy1WbUgxeM336II3ysCBIN6XpQjlNUkpd2/EQUjF31mxQmi6Kk7gjMRduMv
+	 TE0I45NGqEfNA==
+From: Kalle Valo <kvalo@kernel.org>
+To: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Subject: Re: [PATCH 10/10] [RFC] wifi: remove ipw2100/ipw2200 drivers
+References: <20231023131953.2876682-1-arnd@kernel.org>
+	<20231023131953.2876682-11-arnd@kernel.org>
+	<20231024014302.0a0b79b0@mir>
+Date: Tue, 24 Oct 2023 12:30:29 +0300
+In-Reply-To: <20231024014302.0a0b79b0@mir> (Stefan Lippers-Hollmann's message
+	of "Tue, 24 Oct 2023 01:43:02 +0200")
+Message-ID: <875y2wz7t6.fsf@kernel.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/ZmEuILtJOwo8pcQ9yHFFAfJ";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,49 +61,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, Jeff Johnson <quic_jjohnson@quicinc.com>, Pavel Machek <pavel@ucw.cz>, Gregory Greenman <gregory.greenman@intel.com>, Stanislaw Gruszka <stf_xl@wp.pl>, linux-staging@lists.linux.dev, Linux Wireless <ilw@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Jakub Kicinski <kuba@kernel.org>, Stanislav Yakovlev <stas.yakovlev@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Nicolas Ferre <nicolas.ferre@microchip.com>, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David
+ S . Miller" <davem@davemloft.net>, Larry Finger <Larry.Finger@lwfinger.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/ZmEuILtJOwo8pcQ9yHFFAfJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Stefan Lippers-Hollmann <s.l-h@gmx.de> writes:
 
-Hi all,
+> On 2023-10-23, Arnd Bergmann wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> These two drivers were used for the earliest "Centrino" branded Intel
+>> laptops during the late 32-bit Pentium-M era, roughly 2003 to 2005, which
+>> probably makes it the most modern platform that still uses the wireless
+>> extension interface instead of cfg80211. Unlike the other drivers that
+>> are suggested for removal, this one is still officially maintained.
+>>
+>> According to Johannes Berg, there was an effort to finish the move away
+>> from wext in the past, but the last evidence of this that I could find
+>> is from commit a3caa99e6c68f ("libipw: initiate cfg80211 API conversion
+>> (v2)") in 2009.
+>>
+>> Link: https://lore.kernel.org/all/87fs2fgals.fsf@kernel.org/
+>> Cc: Stanislav Yakovlev <stas.yakovlev@gmail.com>
+>> Cc: Linux Wireless <ilw@linux.intel.com>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> ---
+>> I'm not convinced this should be in the same set of drivers as the
+>> rest, since this is clearly less obsolete than the other hardware
+>> that I would remove support for.
+>
+> These have indeed been very common back in the day, I'm still using
+> a 2003-vintage 1.5 GHz Pentium-M 'Banias' Acer Travelmate 292LMi
+> notebook using ipw2200 (and have two spare ipw2200 mini-PCI cards).
+> Works still fine using v6.5.8-rc1 and WPA2PSK/ CCMP (sadly it does
+> not do WPA3) and I do use it semi-regularly (running the latest
+> stable- or stable-rc kernel of the day).
+>
+> While it would be nice to replace it with an ath5k based card (to
+> get WPA3 support), the card isn't that easy to reach in the notebook,
+> so it would be sad to see this go.
 
-After merging the powerpc tree, today's linux-next build (powerpc
-allyesconfig) produced this warnings:
+Wow, I'm very surprised that ipw2200 still works after 20 years. Thanks
+for the report, I think it's best that we still keep the ipw2x00 driver
+in the kernel.
 
-WARNING: modpost: vmlinux: section mismatch in reference: process_fadump+0x=
-2c8 (section: .text.process_fadump) -> fadump_setup_elfcorehdr_buf (section=
-: .init.text)
-WARNING: modpost: vmlinux: section mismatch in reference: process_fadump+0x=
-2f4 (section: .text.process_fadump) -> fadump_populate_elfcorehdr (section:=
- .init.text)
+-- 
+https://patchwork.kernel.org/project/linux-wireless/list/
 
-Probably introduced by commit
-
-  c17687d0d62d ("powerpc: make fadump resilient with memory add/remove even=
-ts")
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/ZmEuILtJOwo8pcQ9yHFFAfJ
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmU3ZnMACgkQAVBC80lX
-0Gzx8Qf+KFI2SR2hDeKrZJa/tECX1cLqRx+/7vMPVE3k7qFJOfHJj/jm5zL9TkuQ
-iT6yyzyHcGKfqy1AS7u6vbsjDdeIEXpgOXSxfS9AKboWsDCcMnd4AcKBnjbuR0DV
-S0JOEfvjT+YTTXPmzaq7gnJj80y66R+DaAWtylGmnSH+9qZMyU3o9G563kHvUE4d
-df7R03M3OmlGXISG75/bS1zpYrEvAp3zRHFZPbkibVlOSCsR+NHvPsmHZhRyP2bc
-3DgGFSvLdUAJblONBqH99i0Atm520zencF0HHLWT1OwvhAePEV9WJL33M3NRPSRR
-uKvBqKdPxIRs+G8qliqCDUbUrfS2LQ==
-=bMPO
------END PGP SIGNATURE-----
-
---Sig_/ZmEuILtJOwo8pcQ9yHFFAfJ--
+https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches
