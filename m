@@ -4,56 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D13FC25B6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BA27C25B6B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:22:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=QZ+3oERQ;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=s4EP/Tnf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3LY1CH7z3dK8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:21:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3MT1gvRz3cSM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:22:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=QZ+3oERQ;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=s4EP/Tnf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBL4bBXz3bwL
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBL51ZXz3bxL
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 00:13:45 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 944F5100049;
-	Wed, 25 Oct 2023 16:07:45 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 944F5100049
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 667BE10003F;
+	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 667BE10003F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1698239265;
-	bh=jFv3zRFPBURbWkj0WPqDbxM+2lb+aTaY7naFpHwUmqk=;
+	s=mail; t=1698239264;
+	bh=yGub9+Dsp9bk1acBBB0/yAlR8ZzAfw6sZjBF08zOdpU=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=QZ+3oERQ60BbSQDRTDDg7BpzHN8Yp2ggrHeGmuqVl2QEa2Pfof8BoyVWfiw8d2Qom
-	 dhnZcGc32wNXr9vLV2cJbFbBB2TTOOzOs73qH/+jKsItMuNNljqwFuBse0AjkwpjzZ
-	 2qAwHq5+fqeqUvlCSwdlnq9ftxnwq4mV6Mugvxk7hqOhas3UK4zD7Ve+H6ws/z1Pum
-	 kptVRCooRp4TWSqzLsJjBRYjMcvv6tz8ntzUKJ9XMAmxFU6aHCPFVuBzCSHQWJUrGi
-	 z+qTSBKQa+ESPXECLiEa4gHlEc89nWkaiLEkY37N9e1WE+hTm2Sj79KcSUuPy+03vm
-	 idVrUkgmFPZ9g==
+	b=s4EP/TnfUb8IXrOlVO//TgpOfTSDBG+Z+BupDUdIDF4DstolYt1F8kT5getb3vo/v
+	 Bmy7SwjJb7ThjM6IhKaxIjjDZsqZonF/QV18hXnUWatQvWRYf5mA0Is2cA3hNNcK1U
+	 phiXb4HwBMu81Q05o/V3t3ENkXUzgZzw5zaHTbo06EMUPjKpXUaKxQvPmwzUsEgvyM
+	 qkcKPnKtKzHGjduuCKmuSVgfvCAkJM04Rb8aOOpc7o5AiM6v7fEt2KrwlsJ+EcEVcm
+	 8tSPkAhUdpoFrPGRlsflj/Q3iF2v8leMoMNgKzrnZQSRIfs127bnTYk19IAP4QW8Op
+	 PkfyBfHAvf2XQ==
 Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Wed, 25 Oct 2023 16:07:45 +0300 (MSK)
+	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
 Received: from localhost.localdomain (100.64.160.123) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.37; Wed, 25 Oct 2023 16:07:45 +0300
+ 15.2.1118.37; Wed, 25 Oct 2023 16:07:43 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <pavel@ucw.cz>, <lee@kernel.org>, <vadimp@nvidia.com>,
 	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<gnstark@salutedevices.com>
-Subject: [PATCH 7/8] leds: lp3952: explicitly unregister LEDs at module's shutdown
-Date: Wed, 25 Oct 2023 16:07:36 +0300
-Message-ID: <20231025130737.2015468-8-gnstark@salutedevices.com>
+Subject: [PATCH 0/8] devm_led_classdev_register() usage problem
+Date: Wed, 25 Oct 2023 16:07:29 +0300
+Message-ID: <20231025130737.2015468-1-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231025130737.2015468-1-gnstark@salutedevices.com>
-References: <20231025130737.2015468-1-gnstark@salutedevices.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -92,35 +90,84 @@ Cc: kernel@sberdevices.ru, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kern
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LEDs are registered using devm_led_classdev_register() and automatically
-unregistered after module's remove(). led_classdev_unregister() calls
-led_set_brightness() to turn off the LEDs and module's appropriate callback
-uses resources those were destroyed already in module's remove().
-So explicitly unregister LEDs at module shutdown.
+Lots of drivers use devm_led_classdev_register() to register their led objects
+and let the kernel free those leds at the driver's remove stage.
+It can lead to a problem due to led_classdev_unregister()
+implementation calls led_set_brightness() to turn off the led.
+led_set_brightness() may call one of the module's brightness_set callbacks.
+If that callback uses module's resources allocated without using devm funcs()
+then those resources will be already freed at module's remove() callback and
+we may have use-after-free situation.
 
-Signed-off-by: George Stark <gnstark@salutedevices.com>
----
- drivers/leds/leds-lp3952.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Here is an example:
 
-diff --git a/drivers/leds/leds-lp3952.c b/drivers/leds/leds-lp3952.c
-index 3bd55652a706..2de49192011a 100644
---- a/drivers/leds/leds-lp3952.c
-+++ b/drivers/leds/leds-lp3952.c
-@@ -257,8 +257,13 @@ static int lp3952_probe(struct i2c_client *client)
- static void lp3952_remove(struct i2c_client *client)
- {
- 	struct lp3952_led_array *priv;
-+	int i;
- 
- 	priv = i2c_get_clientdata(client);
-+	for (i = 0; i < LP3952_LED_ALL; i++)
-+		if (priv->leds[i].priv)
-+			devm_led_classdev_unregister(&client->dev,
-+						     &priv->leds[i].cdev);
- 	lp3952_on_off(priv, LP3952_LED_ALL, false);
- 	gpiod_set_value(priv->enable_gpio, 0);
- }
+module_probe()
+{
+    devm_led_classdev_register(module_brightness_set_cb);
+    mutex_init(&mutex);
+}
+
+module_brightness_set_cb()
+{
+    mutex_lock(&mutex);
+    do_set_brightness();
+    mutex_unlock(&mutex);
+}
+
+module_remove()
+{
+    mutex_destroy(&mutex);
+}
+
+at rmmod:
+module_remove()
+    ->mutex_destroy(&mutex);
+devres_release_all()
+    ->led_classdev_unregister();
+        ->led_set_brightness();
+            ->module_brightness_set_cb();
+                 ->mutex_lock(&mutex);  /* use-after-free */
+
+I think it's an architectural issue and should be discussed thoroughly.
+Some thoughts about fixing it as a start:
+1) drivers can use devm_led_classdev_unregister() to explicitly free leds before
+dependend resources are freed. devm_led_classdev_register() remains being useful
+to simplify probe implementation.
+As a proof of concept I examined all drivers from drivers/leds and prepared
+patches where it's needed. Sometimes it was not as clean as just calling
+devm_led_classdev_unregister() because several drivers do not track
+their leds object at all - they can call devm_led_classdev_register() and drop the
+returned pointer. In that case I used devres group API.
+
+Drivers outside drivers/leds should be checked too after discussion.
+
+2) remove led_set_brightness from led_classdev_unregister() and force the drivers
+to turn leds off at shutdown. May be add check that led's brightness is 0
+at led_classdev_unregister() and put a warning to dmesg if it's not.
+Actually in many cases it doesn't really need to turn off the leds manually one-by-one
+if driver shutdowns whole led controller. For the last case to disable the warning
+new flag can be brought in e.g LED_AUTO_OFF_AT_SHUTDOWN (similar to LED_RETAIN_AT_SHUTDOWN).
+
+George Stark (8):
+  leds: powernv: explicitly unregister LEDs at module's shutdown
+  leds: nic78bx: explicitly unregister LEDs at module's shutdown
+  leds: an30259a: explicitly unregister LEDs at module's shutdown
+  leds: mlxreg: explicitly unregister LEDs at module's shutdown
+  leds: aw200xx: explicitly unregister LEDs at module's shutdown
+  leds: aw2013: explicitly unregister LEDs at module's shutdown
+  leds: lp3952: explicitly unregister LEDs at module's shutdown
+  leds: lm3532: explicitly unregister LEDs at module's shutdown
+
+ drivers/leds/leds-an30259a.c |  4 ++++
+ drivers/leds/leds-aw200xx.c  |  4 ++++
+ drivers/leds/leds-aw2013.c   |  4 ++++
+ drivers/leds/leds-lm3532.c   |  6 ++++++
+ drivers/leds/leds-lp3952.c   |  5 +++++
+ drivers/leds/leds-mlxreg.c   | 12 +++++++++++-
+ drivers/leds/leds-nic78bx.c  |  4 ++++
+ drivers/leds/leds-powernv.c  |  7 +++++++
+ 8 files changed, 45 insertions(+), 1 deletion(-)
+
 -- 
 2.38.4
 
