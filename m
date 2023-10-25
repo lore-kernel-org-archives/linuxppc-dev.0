@@ -4,54 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00257C0032E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 17:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67626C07545
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 20:40:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nadt9RxL;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XKzfQX3U;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SFxKj2cgkz3cV0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 04:50:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SG15s65Wxz3cTP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 07:40:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nadt9RxL;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XKzfQX3U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFxJh1TPDz2xYt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 04:49:40 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id DFF4FB81B3E;
-	Wed, 25 Oct 2023 17:49:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96A26C433C8;
-	Wed, 25 Oct 2023 17:49:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1698256173;
-	bh=CeyTBZs2xeQb0TaJ5m+PpCM8nU28HSwaY1ik5tYD5o0=;
-	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
-	b=nadt9RxLEqdHQTzPCvB13pBQ1Ju+RhH3NuQ+TT+dsOEsLlKYWgzWmdZbyM7HjHxsG
-	 R7PqnTwS5jDxcU0LCHA15oW67sHKbxeTFWDFsZkNjS6wPoDme83JMnIAkPZg+iMOiG
-	 gvM89z6zDpLOCUhfgShobVv5NtRtt4igElnNjJJ596qVQ+FJAdlCIlJVfWw15kw+fH
-	 f5I8rbfwXSh5SoR2cWdwEa/TzVEJcmGZb6bAlUNACxoItcxlsz1b14qIJ0v05LDXT/
-	 /IOHbguBYqKOkVKZvQ+XVSmfCas70j1oqYv3vTtDp6JapFQpKWQ/rNR8apP0znKWAp
-	 pOMIzfudAr/HA==
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 25 Oct 2023 20:49:24 +0300
-Message-Id: <CWHPKFQIGWPM.B6IBLPXVBR1E@suppilovahvero>
-Subject: Re: [PATCH v4 2/5] KEYS: trusted: Introduce NXP DCP-backed trusted
- keys
-From: "Jarkko Sakkinen" <jarkko@kernel.org>
-To: "David Gstir" <david@sigma-star.at>, "Mimi Zohar" <zohar@linux.ibm.com>,
- "James Bottomley" <jejb@linux.ibm.com>, "Herbert Xu"
- <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
-X-Mailer: aerc 0.15.2
-References: <20231024162024.51260-1-david@sigma-star.at>
- <20231024162024.51260-3-david@sigma-star.at>
-In-Reply-To: <20231024162024.51260-3-david@sigma-star.at>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SG14s57RRz3c09
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 07:39:39 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1698266381; x=1729802381;
+  h=date:from:to:cc:subject:message-id;
+  bh=6UwMzb7Wo7K1S+KTNaYAnxM5hnwhD+NjmbmqRnJsbwc=;
+  b=XKzfQX3ULir0oWQffUNu4uBnxCSokbCFEilKDuNsVqWt/uykJmC5ZVp3
+   1RWEe/0rjK8j30ByVMc7obqN6Ex61daxzJTSDujVPhwg3I0t16GRZIRWZ
+   XyEccfZqyd6Han9zwnnIDUWC6jx1u1v1Xtv8XyunW2/SFXSLQyFkOoFRf
+   eDghK68r2EiEvFvRfd0gKke9y4yPYTftJWsnvCHwzz9+d7wygTs2pVUXS
+   NuSmdYixuCviYephxgi8zDVdVeHTUcsr1rO4dd9ZwGyiJBSrczWomjLA1
+   hJ3j/toVfTAlD98/yiQPOoT5MhH6WEzvP7tsk63g3fKBN9vYHVLrYgR48
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10874"; a="366743363"
+X-IronPort-AV: E=Sophos;i="6.03,250,1694761200"; 
+   d="scan'208";a="366743363"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2023 13:39:36 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10874"; a="758968611"
+X-IronPort-AV: E=Sophos;i="6.03,250,1694761200"; 
+   d="scan'208";a="758968611"
+Received: from lkp-server01.sh.intel.com (HELO 8917679a5d3e) ([10.239.97.150])
+  by orsmga002.jf.intel.com with ESMTP; 25 Oct 2023 13:39:34 -0700
+Received: from kbuild by 8917679a5d3e with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1qvkf6-0009Ba-1M;
+	Wed, 25 Oct 2023 20:39:32 +0000
+Date: Thu, 26 Oct 2023 04:38:45 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS
+ 4d121328397f83465b6c1f60c5fad93bda9bc90e
+Message-ID: <202310260442.JuL6LpFD-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,138 +66,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org, Fabio Estevam <festevam@gmail.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Paul Moore <paul@paul-moore.com>, Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, James Morris <jmorris@namei.org>, NXP Linux
- Team <linux-imx@nxp.com>, "Serge E.
- Hallyn" <serge@hallyn.com>, "Paul E. McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, sigma
- star Kernel Team <upstream+dcp@sigma-star.at>, "Steven Rostedt
- \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Randy
- Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, linux-security-module@vger.kernel.org, linux-crypto@vger.kernel.org, Pengutronix Kernel Team <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, linux-integrity@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue Oct 24, 2023 at 7:20 PM EEST, David Gstir wrote:
-> DCP (Data Co-Processor) is the little brother of NXP's CAAM IP.
-> Beside of accelerated crypto operations, it also offers support for
-> hardware-bound keys. Using this feature it is possible to implement a blo=
-b
-> mechanism similar to what CAAM offers. Unlike on CAAM, constructing and
-> parsing the blob has to happen in software (i.e. the kernel).
->
-> The software-based blob format used by DCP trusted keys encrypts
-> the payload using AES-128-GCM with a freshly generated random key and non=
-ce.
-> The random key itself is AES-128-ECB encrypted using the DCP unique
-> or OTP key.
->
-> The DCP trusted key blob format is:
-> /*
->  * struct dcp_blob_fmt - DCP BLOB format.
->  *
->  * @fmt_version: Format version, currently being %1
->  * @blob_key: Random AES 128 key which is used to encrypt @payload,
->  *            @blob_key itself is encrypted with OTP or UNIQUE device key=
- in
->  *            AES-128-ECB mode by DCP.
->  * @nonce: Random nonce used for @payload encryption.
->  * @payload_len: Length of the plain text @payload.
->  * @payload: The payload itself, encrypted using AES-128-GCM and @blob_ke=
-y,
->  *           GCM auth tag of size AES_BLOCK_SIZE is attached at the end o=
-f it.
->  *
->  * The total size of a DCP BLOB is sizeof(struct dcp_blob_fmt) + @payload=
-_len +
->  * AES_BLOCK_SIZE.
->  */
-> struct dcp_blob_fmt {
-> 	__u8 fmt_version;
-> 	__u8 blob_key[AES_KEYSIZE_128];
-> 	__u8 nonce[AES_KEYSIZE_128];
-> 	__le32 payload_len;
-> 	__u8 payload[];
-> } __packed;
->
-> By default the unique key is used. It is also possible to use the
-> OTP key. While the unique key should be unique it is not documented how
-> this key is derived. Therefore selection the OTP key is supported as
-> well via the use_otp_key module parameter.
->
-> Co-developed-by: Richard Weinberger <richard@nod.at>
-> Signed-off-by: Richard Weinberger <richard@nod.at>
-> Co-developed-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Signed-off-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Signed-off-by: David Gstir <david@sigma-star.at>
-> ---
->  include/keys/trusted_dcp.h                |  11 +
->  security/keys/trusted-keys/Kconfig        |   9 +-
->  security/keys/trusted-keys/Makefile       |   2 +
->  security/keys/trusted-keys/trusted_core.c |   6 +-
->  security/keys/trusted-keys/trusted_dcp.c  | 311 ++++++++++++++++++++++
->  5 files changed, 337 insertions(+), 2 deletions(-)
->  create mode 100644 include/keys/trusted_dcp.h
->  create mode 100644 security/keys/trusted-keys/trusted_dcp.c
->
-> diff --git a/include/keys/trusted_dcp.h b/include/keys/trusted_dcp.h
-> new file mode 100644
-> index 000000000000..9aaa42075b40
-> --- /dev/null
-> +++ b/include/keys/trusted_dcp.h
-> @@ -0,0 +1,11 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (C) 2021 sigma star gmbh
-> + */
-> +
-> +#ifndef TRUSTED_DCP_H
-> +#define TRUSTED_DCP_H
-> +
-> +extern struct trusted_key_ops dcp_trusted_key_ops;
-> +
-> +#endif
-> diff --git a/security/keys/trusted-keys/Kconfig b/security/keys/trusted-k=
-eys/Kconfig
-> index dbfdd8536468..c6b80b7e5c78 100644
-> --- a/security/keys/trusted-keys/Kconfig
-> +++ b/security/keys/trusted-keys/Kconfig
-> @@ -33,6 +33,13 @@ config TRUSTED_KEYS_CAAM
->  	  Enable use of NXP's Cryptographic Accelerator and Assurance Module
->  	  (CAAM) as trusted key backend.
-> =20
-> -if !TRUSTED_KEYS_TPM && !TRUSTED_KEYS_TEE && !TRUSTED_KEYS_CAAM
-> +config TRUSTED_KEYS_DCP
-> +	bool "DCP-based trusted keys"
-> +	depends on CRYPTO_DEV_MXS_DCP >=3D TRUSTED_KEYS
-> +	default y
-> +	help
-> +	  Enable use of NXP's DCP (Data Co-Processor) as trusted key backend.
-> +
-> +if !TRUSTED_KEYS_TPM && !TRUSTED_KEYS_TEE && !TRUSTED_KEYS_CAAM && !TRUS=
-TED_KEYS_DCP
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 4d121328397f83465b6c1f60c5fad93bda9bc90e  Automatic merge of 'next' into merge (2023-10-23 20:42)
 
-This does not scale tbh.
+elapsed time: 3247m
 
-I'd suggest to add additional patch before adding the new key type,
-which clears this up a little bit.
+configs tested: 129
+configs skipped: 2
 
-First:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-config HAVE_TRUSTED_KEYS
-	bool
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20231024   gcc  
+arm                               allnoconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                   randconfig-001-20231024   gcc  
+arm64                             allnoconfig   gcc  
+arm64                               defconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                                defconfig   gcc  
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20231024   gcc  
+i386         buildonly-randconfig-002-20231024   gcc  
+i386         buildonly-randconfig-003-20231024   gcc  
+i386         buildonly-randconfig-004-20231024   gcc  
+i386         buildonly-randconfig-005-20231024   gcc  
+i386         buildonly-randconfig-006-20231024   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                  randconfig-001-20231024   gcc  
+i386                  randconfig-002-20231024   gcc  
+i386                  randconfig-003-20231024   gcc  
+i386                  randconfig-004-20231024   gcc  
+i386                  randconfig-005-20231024   gcc  
+i386                  randconfig-006-20231024   gcc  
+i386                  randconfig-011-20231024   gcc  
+i386                  randconfig-012-20231024   gcc  
+i386                  randconfig-013-20231024   gcc  
+i386                  randconfig-014-20231024   gcc  
+i386                  randconfig-015-20231024   gcc  
+i386                  randconfig-016-20231024   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                        allyesconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20231024   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                             allmodconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+openrisc                         allmodconfig   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                 randconfig-001-20231024   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                              allnoconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                  randconfig-001-20231024   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                 randconfig-001-20231024   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-001-20231023   gcc  
+x86_64       buildonly-randconfig-002-20231023   gcc  
+x86_64       buildonly-randconfig-003-20231023   gcc  
+x86_64       buildonly-randconfig-004-20231023   gcc  
+x86_64       buildonly-randconfig-005-20231023   gcc  
+x86_64       buildonly-randconfig-006-20231023   gcc  
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20231024   gcc  
+x86_64                randconfig-002-20231024   gcc  
+x86_64                randconfig-003-20231024   gcc  
+x86_64                randconfig-004-20231024   gcc  
+x86_64                randconfig-005-20231024   gcc  
+x86_64                randconfig-006-20231024   gcc  
+x86_64                randconfig-011-20231024   gcc  
+x86_64                randconfig-012-20231024   gcc  
+x86_64                randconfig-013-20231024   gcc  
+x86_64                randconfig-014-20231024   gcc  
+x86_64                randconfig-015-20231024   gcc  
+x86_64                randconfig-016-20231024   gcc  
+x86_64                randconfig-071-20231024   gcc  
+x86_64                randconfig-072-20231024   gcc  
+x86_64                randconfig-073-20231024   gcc  
+x86_64                randconfig-074-20231024   gcc  
+x86_64                randconfig-075-20231024   gcc  
+x86_64                randconfig-076-20231024   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
 
-And then following this pattern to all trusted key types:
-
-config TRUSTED_KEYS_DCP
-	bool "DCP-based trusted keys"
-	depends on CRYPTO_DEV_MXS_DCP >=3D TRUSTED_KEYS
-	default y
-	select HAVE_TRUSTED_KEYS
-	help
-	  Enable use of NXP's DCP (Data Co-Processor) as trusted key backend.
-
-And finally:
-
-if !HAVE_TRUSTED_KEYS
-	comment "No trust source selected!"
-endif
-
-BR, Jarkko
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
