@@ -4,61 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0C86C0032E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 23:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC7A8C25B6B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 23:08:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KkyzU8i9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KpLMDOIa;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SG4N31hq5z3cTS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 10:08:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SG4Nz32pKz3d87
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 10:08:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KkyzU8i9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KpLMDOIa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::329; helo=mail-ot1-x329.google.com; envelope-from=witold.baryluk@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x329.google.com (mail-ot1-x329.google.com [IPv6:2607:f8b0:4864:20::329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::633; helo=mail-ej1-x633.google.com; envelope-from=philipp.g.hortmann@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SG3Ts1y87z2xQD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 09:28:00 +1100 (AEDT)
-Received: by mail-ot1-x329.google.com with SMTP id 46e09a7af769-6ce2988d62eso158959a34.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2023 15:28:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SG3xX06lpz30gF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 09:48:29 +1100 (AEDT)
+Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-9cc6c92d1e9so7577766b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2023 15:48:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1698272877; x=1698877677; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=gpIvHM5NvuykoUDW2kRupuz5sx/Tvq7a0jlZsKkUcZs=;
-        b=KkyzU8i9cuc6LhRyCVxOHYy3xmO7OTqKrDJ5MLm2Yd/OcknARPcKm+K8LGpEEqDVZY
-         wtFA6JyP0kUDcOAFbpiHcHFvDCd6YASq5iB61GJFxtv0cnisC/2duUHTbfTdWhlqjO5l
-         13zVZ8wVuhE/DZrhL+XLiS0nNjqoIFpj0mf//KEa8nha8FdUOr5z6XUBUkkpL1jpuE5q
-         JnZwpO9SGtFnyg0b9EJZrrOvC9Mctu+kQd5M7H650aHoZ0jL5yztmQJuLNfQJ0UltZZk
-         Dn7JomtPApCKM0Mf3BeA8xK3cYjF8oNwTBn/aFDwmkeeDxwlGDSnGZlSEKslNVrx/8PW
-         Tcsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698272877; x=1698877677;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+        d=gmail.com; s=20230601; t=1698274101; x=1698878901; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=gpIvHM5NvuykoUDW2kRupuz5sx/Tvq7a0jlZsKkUcZs=;
-        b=gOQF1S6FP4LYILztKRfiH9bckUJwVbCL+it2qYDbe0f3FpMVbX/W9Jwv7LGQwVIq1A
-         7D/geY9FG7ywsFbeNc71Iu823BmPdPwVeLpXP4yh3R2t5bdNfFdnbDTWIeapCN8KTGsy
-         Iyufl7Slvf2URm7Z0Nmc40IXJfmXeJbY5wvi/PiByRsBOLO/idWIs60Vs45s2YUara+9
-         V/nwF6FSN1DG6DfSWMsIWZCHSyFAepr7X3afzbxukWtpjg2BQ8kVY1DjfAsIRH+hPgfm
-         9cm9AX2weZ0XAcoechlVuI+Wa67buxeVxuD7XffkfIDeOrOG0lvE2C2XzipvcbZD5x2U
-         Yjmw==
-X-Gm-Message-State: AOJu0YzePsAIxm6HPvt0gva0QAPQuTIvZxvl0AqAA7CFoqKYB4Vd8rLU
-	ZiGy+0VJlcsVrpA7xF6lYU+L7pWcEGCqxyCKT7w=
-X-Google-Smtp-Source: AGHT+IGppM3tGzEymUiuG98SnROM8wXZMsAgd+v2Tnglma2FhzcDZnsttPGrnBID7W3UQdByYtn9HbwApuPSX3zdZhk=
-X-Received: by 2002:a05:6871:4391:b0:1bb:a227:7008 with SMTP id
- lv17-20020a056871439100b001bba2277008mr20401190oab.3.1698272877001; Wed, 25
- Oct 2023 15:27:57 -0700 (PDT)
+        bh=h1Wtmp4jaolI15oZgo//tqFOl12QGRnI6l3LLvFOdIo=;
+        b=KpLMDOIaD4eRBqk2wJU76JM+ETyJzz9GRUjDQpZGq2Yd2jmXbJXP9lOksOg8EdAvyx
+         fa0+it89cmq+MNQaacVeVfv/fmyGzytVBXgv72IKdfooFRo+M4grXFq7i4T1AVshO1yK
+         UqI5gWTH0ZGJpJ+zIWSNSd77e8QD4M9JuWkg9Q2p2/Qe+hpNpPD3EDWo3+O0MmH/8+s6
+         aX3tWHPUjgj+/4wF46qCCwtIBF6CcERTeAbXidu7j7OG8uR/iNCP5KGVUyaLVnFSCrDo
+         mFIuSnTAMxNEXYhZyK7/652z1qcm1QUUY/QJOEyCFy3FVCkj4nV89rdB2SS9rU2y0FSW
+         kHLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698274101; x=1698878901;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=h1Wtmp4jaolI15oZgo//tqFOl12QGRnI6l3LLvFOdIo=;
+        b=p2EQHiEDoCYN44JvzCG+3t3yvD7hQFYzn+mFY6MWsECZBb1Vk5A8Bu2v6TfwZNCogI
+         ra+uxuHTdflM745EDzzFkaTF8BS8faY9Joc3fIZ6ZbKVZ2jxsDKc5MWFaZQWtNPRp8k5
+         qQOjxzbIxUZy6qHaHcesFKSMXtfcABB2iUGBBqaa/knBXmyX1JM6WC6kE4NW7Xl1Dc9E
+         kYgd29XhBXMsSa76sRYNg/Zuy0Hcxxq1l4PtxPxFZVReHcvylH3smER9WYyLLS17S9kn
+         TuVWQ8NbBGOwDHFYh0ByKy15bXjZPE4jJcfT7r6Q8Y4PfPq7+6DIIQfeEN2eKdZn5tlY
+         p5uA==
+X-Gm-Message-State: AOJu0Yxf8HrHaO4YAlA4lzb+ZB9vPsrqIOCARu1d6eVROZqMem21/LLn
+	k7T9+1QwCPWkRcDpd3NyxkI=
+X-Google-Smtp-Source: AGHT+IGZysA7t84XKVRzSA8XE25oFrQWSh3/UAeHsseDmefuOjgMHv8S1Go5CrpHtdDA4m4jNf1AlA==
+X-Received: by 2002:a17:906:21b:b0:9ce:c4f4:5f97 with SMTP id 27-20020a170906021b00b009cec4f45f97mr243735ejd.1.1698274100762;
+        Wed, 25 Oct 2023 15:48:20 -0700 (PDT)
+Received: from [192.168.0.103] (p579356c7.dip0.t-ipconnect.de. [87.147.86.199])
+        by smtp.gmail.com with ESMTPSA id 26-20020a170906011a00b009ae69c303aasm10545728eje.137.2023.10.25.15.48.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 25 Oct 2023 15:48:20 -0700 (PDT)
+Message-ID: <c608f328-387e-431b-b3c2-4b8fa0c4f11f@gmail.com>
+Date: Thu, 26 Oct 2023 00:48:18 +0200
 MIME-Version: 1.0
-From: Witold Baryluk <witold.baryluk@gmail.com>
-Date: Wed, 25 Oct 2023 22:27:20 +0000
-Message-ID: <CAEGMnwo6RFqADPO5FRkRUNL=GfV6DY8UuwgsypEYOD3LTnXdJg@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 10/10] [RFC] wifi: remove ipw2100/ipw2200 drivers
-To: arnd@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+To: Witold Baryluk <witold.baryluk@gmail.com>, arnd@kernel.org
+References: <CAEGMnwo6RFqADPO5FRkRUNL=GfV6DY8UuwgsypEYOD3LTnXdJg@mail.gmail.com>
+From: Philipp Hortmann <philipp.g.hortmann@gmail.com>
+In-Reply-To: <CAEGMnwo6RFqADPO5FRkRUNL=GfV6DY8UuwgsypEYOD3LTnXdJg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Thu, 26 Oct 2023 10:07:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,67 +85,22 @@ Cc: alexandre.belloni@bootlin.com, linux-kernel@vger.kernel.org, pavel@ucw.cz, g
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> These two drivers were used for the earliest "Centrino" branded Intel
-> laptops during the late 32-bit Pentium-M era, roughly 2003 to 2005, which
-> probably makes it the most modern platform that still uses the wireless
-> extension interface instead of cfg80211. Unlike the other drivers that
-> are suggested for removal, this one is still officially maintained.
->
-> According to Johannes Berg, there was an effort to finish the move away
-> from wext in the past, but the last evidence of this that I could find
-> is from commit a3caa99e6c68f ("libipw: initiate cfg80211 API conversion
-> (v2)") in 2009.
->
-> Link: https://lore.kernel.org/all/87fs2fgals.fsf@kernel.org/
-> Cc: Stanislav Yakovlev <stas.yakovlev@gmail.com>
-> Cc: Linux Wireless <ilw@linux.intel.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-> I'm not convinced this should be in the same set of drivers as the
-> rest, since this is clearly less obsolete than the other hardware
-> that I would remove support for.
+On 10/26/23 00:27, Witold Baryluk wrote:
+> I might be interested in modernizing the driver, but I have no idea how 
+> much effort it would be (in terms of changed fraction of code). 20k LOC 
+> is neither small or big, and not obvious (a lot of it would be 
+> unchanged), if it is a week of work, or months of work.
 
-I still use ipw2200 on Intel PRO/Wireless 2915ABG [Calexico2] Network
-Connection card, in my IBM Thinkpad X41 (Pentium-M 1.73GHz, Centrino
-platform). The laptop is rock solid, and I use it as a backup for my
-other Thinkpad. In fact is sometimes preferable to more modern machines
-(IMHO X41 itself is the best laptop ever made in terms of a design).
+Hi Witold,
 
-Never had really issues with WiFi on it. In terms of speed it is neither
-far or slow, but does the job anyway.
+I am trying to do this with rtl8192e.
+One possibility is to take the following patch series as a starting point:
+https://yhbt.net/lore/all/1414604649-9105-1-git-send-email-tvboxspy@gmail.com/
 
-Now, I do not use this laptop frequently, maybe once or twice a month.
-But that is more because in I use laptops less in general these days. Not
-because the machine is not usable. I have modern SSD in it, second hard
-drive, two USB 3.0 ports via ExpressCard, high res 4:3 (1440x1050)
-display, full disk encryption, etc.
+For me as a beginner and hobbyist this is a huge task. I am happy when I 
+can finish it until next summer.
 
-I would really like for this driver to stay in the mainline for another 5-10
-years.
+In case of questions feel free to ask.
 
-I might be interested in modernizing the driver, but I have no idea how
-much effort it would be (in terms of changed fraction of code). 20k LOC is
-neither small or big, and not obvious (a lot of it would be unchanged),
-if it is a week of work, or months of work.
+Bye Philipp
 
-I would not have an issue with removing it, and readding back if somebody
-(or me) ports it, if not for re-review from scratch concerns. If I port
-it, I would not be able to do re-review, 1) out of date coding standards,
-2) different reviewers, 3) I would only port needed parts, and keep rest
-of the driver intact, so I would not be able to really provide much
-insight. So, readding after porting might be harder than keeping and
-porting.
-
-I also used in the past other drivers you are removing (zd1201, hostap,
-orinoco, rndis, wl3501), but I do not have too much worry about them, as
-they are ancient, and also require ancient hardware to run.
-
-
-Cheers,
-Witold
-
-
--- 
-Witold Baryluk
