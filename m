@@ -4,86 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B604C0032E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 14:06:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D55FC07545
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 15:59:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AUoZEId0;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=U+yq0mGb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SFrLg0H7qz3cVJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 01:06:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SFtsb3yTHz3cVH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 02:59:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AUoZEId0;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=U+yq0mGb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::c2a; helo=mail-oo1-xc2a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc2a.google.com (mail-oo1-xc2a.google.com [IPv6:2607:f8b0:4864:20::c2a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFrKg4MC5z2xdf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 01:05:10 +1100 (AEDT)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39PDxXK3018981;
-	Wed, 25 Oct 2023 14:05:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=UpzMQgXBLNK/EoivKscrvN6Dy+dSEl664zEdv9NSTs4=;
- b=AUoZEId0nLkiY2sDfUKRsqDhWFvEqv4ZfECZRHsb7W4EdXUcnIyEgo7i/+F84XsCgxDt
- 002Hd/UZwct4TH6A5rzyfUROM4a5TsFMLDdjauz7a8fj+U+h0PyPl0Er9oH03tbnaPXa
- lmOVLypI5UeU4SpVV/FHk0rtqF1qDO39rxwiqGStokZw7fCZtSX2+NB2T7NPWwu83nV8
- 7g2Y1V4DFlRCDaodKTyGoX63pJo3Zah+6qBNcCqRZi+b6Bi1OyDk2mopA4i1e/IDhYuC
- si06sWyP82qvHTDn8nDS5hgXYgod+sME0ASZOlYRmqzq/e4Wj3OK0xR5mQTv6Mg6bunm 0w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ty487gdn3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Oct 2023 14:05:03 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39PDxobs021210;
-	Wed, 25 Oct 2023 14:05:02 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ty487gdmc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Oct 2023 14:05:02 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39PCPohq012387;
-	Wed, 25 Oct 2023 14:05:02 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tvup1xj8g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Oct 2023 14:05:02 +0000
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39PE50Q724379998
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 25 Oct 2023 14:05:00 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 275605805E;
-	Wed, 25 Oct 2023 14:05:00 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 048375805F;
-	Wed, 25 Oct 2023 14:05:00 +0000 (GMT)
-Received: from localhost (unknown [9.61.190.226])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 25 Oct 2023 14:04:59 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Haren Myneni <haren@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3] powerpc/pseries/vas: Migration suspend waits for no
- in-progress open windows
-In-Reply-To: <20231020004424.1370320-1-haren@linux.ibm.com>
-References: <20231020004424.1370320-1-haren@linux.ibm.com>
-Date: Wed, 25 Oct 2023 09:04:59 -0500
-Message-ID: <87y1fq3iic.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFtrc1yN0z2xTm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 02:58:38 +1100 (AEDT)
+Received: by mail-oo1-xc2a.google.com with SMTP id 006d021491bc7-5842a94feb2so3213137eaf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2023 08:58:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1698249514; x=1698854314; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xh9TIQAzLGtY8IKnRXxYUTC8KDsKOaw81BBkG/qg5HY=;
+        b=U+yq0mGbZUrYv0lkHiiLuiJfjA0XixpdU+Bni6jI0zMHin6TcJTKaUoOY5rg0yHQnQ
+         RZZmeudUv+N3me9fOb/qNvMfAjZk8VXE2dfs6/rss2UT6VQktYAqDEiBHC0CVgz5TLyE
+         cVUPHmSNn90FTtFh5RgFSFS+IbXz68hI9LflpdNHKBY+b4IJhV5KUXKwTOugnSfNgYx9
+         x+dWcFeB9ZK3LucYJiJIw7nH3ffkSysMlsjhulNoEcMptcRMJkcRFsa3nHpXt53uk5Wb
+         4yO+Lxg8TiwTvRmavvaL4j/LA0l3jxb8Fnsacdf6xxKdesg7E8xTkVV8oHfUX2205cTE
+         EGCw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698249514; x=1698854314;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:date:from:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xh9TIQAzLGtY8IKnRXxYUTC8KDsKOaw81BBkG/qg5HY=;
+        b=u4ZuyP6++6ykjXiDd/lwFKrVOSXKuklvQRU1qPyzbIK18051+bII0leNbrQM9/bhma
+         +NRQr4llWzbLdEALcF7P2hsRb4SdREipZRWyqCpbvMSlIGi1ltXfnXrLUsF/4BCrEUhT
+         E13PW6zBSjuL+Oyl6czQiXp2d8BSh3X632z4dIJqax6dV/jPLZILFPkFL/dwE639Vy/+
+         kXbHQjNOv9uHm+B6z/htaYLnEYMq5MMO9W/LQpqVFLlep4CU6cOU/M8+theGhKR35e+/
+         mP+Q0Pwaqc3UyLGiy9KuaPCdvViwA7gtQO2ivpamvtBs1BqD6/6nRJ2wpN1EEPbnfA59
+         0zrA==
+X-Gm-Message-State: AOJu0YxlESEJ0D5mKrgcl9MJnFDwwjU1kdLB7SoZuDZQUbiu1cPJtJ+/
+	uKbcjRktDSiNSyqZg6MyyvPrng==
+X-Google-Smtp-Source: AGHT+IFzIsrHLnoP3SfHHNSS732Byz8xbCh6I9WGwH1qvCmSKAsaFlHdvXIydQDBYtQoTuLU7GaqVw==
+X-Received: by 2002:a4a:bd05:0:b0:581:ff09:62e4 with SMTP id n5-20020a4abd05000000b00581ff0962e4mr15571716oop.2.1698249513815;
+        Wed, 25 Oct 2023 08:58:33 -0700 (PDT)
+Received: from ziepe.ca (hlfxns017vw-142-68-26-201.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.68.26.201])
+        by smtp.gmail.com with ESMTPSA id y4-20020a4aaa44000000b0057e66fa004dsm26569oom.47.2023.10.25.08.58.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Oct 2023 08:58:33 -0700 (PDT)
+From: jgg@ziepe.ca
+X-Google-Original-From: Jason Gunthorpe <jgg@nvidia.com>, Joerg Roedel <joro@8bytes.org>
+Received: from jgg by wakko with local (Exim 4.95)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1qvgHA-004tcE-CG;
+	Wed, 25 Oct 2023 12:58:32 -0300
+Date: Wed, 25 Oct 2023 12:58:32 -0300
+To: Alyssa Rosenzweig <alyssa@rosenzweig.io>, asahi@lists.linux.dev,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	David Woodhouse <dwmw2@infradead.org>, iommu@lists.linux.dev,
+	Kevin Tian <kevin.tian@intel.com>,
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	Hector Martin <marcan@marcan.st>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Sven Peter <sven@svenpeter.dev>, Will Deacon <will@kernel.org>
+Subject: Re: [PATCH v2 0/9] iommu: Convert dart & iommufd to the new
+ domain_alloc_paging()
+Message-ID: <20231025155832.GA1167025@nvidia.com>
+References: <0-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: b4jOJBz_o_MuYt7bnGBMUaHFIH3fvsay
-X-Proofpoint-GUID: 0MK4tGH8jWfgR1RlVrkHLDTy2fJIEyfX
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-25_02,2023-10-25_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
- phishscore=0 priorityscore=1501 spamscore=0 clxscore=1011 suspectscore=0
- lowpriorityscore=0 mlxlogscore=999 malwarescore=0 bulkscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2310170001
- definitions=main-2310250120
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0-v2-bff223cf6409+282-dart_paging_jgg@nvidia.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,59 +92,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Haren Myneni <haren@linux.ibm.com>, npiggin@gmail.com
+Cc: Janne Grunau <j@jannau.net>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Haren Myneni <haren@linux.ibm.com> writes:
-> The hypervisor returns migration failure if all VAS windows are not
-> closed. During pre-migration stage, vas_migration_handler() sets
-> migration_in_progress flag and closes all windows from the list.
-> The allocate VAS window routine checks the migration flag, setup
-> the window and then add it to the list. So there is possibility of
-> the migration handler missing the window that is still in the
-> process of setup.
->
-> t1: Allocate and open VAS	t2: Migration event
->     window
->
-> lock vas_pseries_mutex
-> If migration_in_progress set
->   unlock vas_pseries_mutex
->   return
-> open window HCALL
-> unlock vas_pseries_mutex
-> Modify window HCALL		lock vas_pseries_mutex
-> setup window			migration_in_progress=true
-> 				Closes all windows from
-> 				the list
-> 				unlock vas_pseries_mutex
-> lock vas_pseries_mutex		return
-> if nr_closed_windows == 0
->   // No DLPAR CPU or migration
->   add to the list
->   unlock vas_pseries_mutex
->   return
-> unlock vas_pseries_mutex
-> Close VAS window
-> // due to DLPAR CPU or migration
-> return -EBUSY
->
-> This patch resolves the issue with the following steps:
-> - Set the migration_in_progress flag without holding mutex.
-> - Introduce nr_open_wins_progress counter in VAS capabilities
->   struct
-> - This counter tracks the number of open windows are still in
->   progress
-> - The allocate setup window thread closes windows if the migration
->   is set and decrements nr_open_window_progress counter
-> - The migration handler waits for no in-progress open windows.
->
-> Fixes: 37e6764895ef ("powerpc/pseries/vas: Add VAS migration handler")
-> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+On Wed, Sep 27, 2023 at 08:47:30PM -0300, Jason Gunthorpe wrote:
+> Continue converting drivers to the new interface. Introduce
+> ops->blocked_domain to hold the global static BLOCKED domain and convert
+> all drivers supporting BLOCKED to use it.
+> 
+> This makes it trivial for dart and iommufd to convert over to
+> domain_alloc_paging().
+> 
+> There are six drivers remaining:
+> 
+> drivers/iommu/amd/iommu.c:      .domain_alloc = amd_iommu_domain_alloc,
+> drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c:    .domain_alloc           = arm_smmu_domain_alloc,
+> drivers/iommu/arm/arm-smmu/arm-smmu.c:  .domain_alloc           = arm_smmu_domain_alloc,
+> drivers/iommu/fsl_pamu_domain.c:        .domain_alloc   = fsl_pamu_domain_alloc,
+> drivers/iommu/intel/iommu.c:    .domain_alloc           = intel_iommu_domain_alloc,
+> drivers/iommu/virtio-iommu.c:   .domain_alloc           = viommu_domain_alloc,
+> 
+> v2:
+>  - Rebase to Joerg's for-next
+>  - New patch to remove force_bypass, as discussed with Janne
+>  - Move some hunks between patches to accommodate Robin's change to the
+>    attach_dev switch
+> v1: https://lore.kernel.org/r/0-v1-8060f06462cc+c0a39-dart_paging_jgg@nvidia.com
+> 
+> Jason Gunthorpe (9):
+>   iommu: Move IOMMU_DOMAIN_BLOCKED global statics to ops->blocked_domain
+>   iommu/vt-d: Update the definition of the blocking domain
+>   iommu/vt-d: Use ops->blocked_domain
+>   iommufd: Convert to alloc_domain_paging()
 
-Thanks for bearing with me Haren. While I still think this code would
-benefit from reevaluating the overall locking model, that can be taken
-up later. I can't identify any bugs in this version.
+Joerg can you grab these for this cycle please
 
-Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
+>   iommu/dart: Use static global identity domains
+>   iommu/dart: Move the blocked domain support to a global static
+>   iommu/dart: Convert to domain_alloc_paging()
+>   iommu/dart: Call apple_dart_finalize_domain() as part of
+>     alloc_paging()
+>   iommu/dart: Remove the force_bypass variable
+
+I will poke more dart related people to get a tested-by, maybe next
+cycle.
+
+The arm patches at least need this
+
+Thanks,
+Jason
