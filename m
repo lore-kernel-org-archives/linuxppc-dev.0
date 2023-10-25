@@ -4,54 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ED9CC25B6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:23:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6680DC25B6E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:24:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=D589SJVP;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=VojGS1Pp;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3NN602lz3dJb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:23:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3PK0tq5z3dRt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:24:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=D589SJVP;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=VojGS1Pp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 354 seconds by postgrey-1.37 at boromir; Thu, 26 Oct 2023 00:13:46 AEDT
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBL4NxPz2xwH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 00:13:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBR3mycz2xwH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 00:13:51 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 6BBC1100048;
-	Wed, 25 Oct 2023 16:07:45 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 6BBC1100048
+	by mx1.sberdevices.ru (Postfix) with ESMTP id B5F61100044;
+	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru B5F61100044
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1698239265;
-	bh=5E4909/OLVPw859bBxyrG8inInKJclLLjjZOJJt9bjw=;
+	s=mail; t=1698239264;
+	bh=bfmNKLq7qXt685RQkGWfdj7Fq3sNLbKBr4vZ23mFyMU=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=D589SJVPo+DoVMhZ7MkvVsSENwVznworXW7hjdcg9TVenGU9290jYzqO4IHkwkF5k
-	 aGLtT1R8Ft1vKB0csodWpzPsekDpgIDxttj78KJ2s0vDdIB00GkRQi1BH+0PKIiNj0
-	 9ut1UVKmroXhApSzOWbXoycbrBkSUlMn0nzqL2N7K/1rSdxGjt4pNCcxqO77l5XlUO
-	 OCus4KY0+7z0PqhqXnnq6dSKVE24LF7W0Rjp8u8W12oqmQ65vOiFAEvWgre945hex7
-	 AyUaYkTNS1VpmnjPtDBKrftuchF4jCEkqy2bE1SUpi06mA63eQuUHSNizjIxWZ7Yxu
-	 oLU1eMDftsPyw==
+	b=VojGS1PppsDkwWGmglY1Afhu5vYAKIYEUkEHdbS8F1mzDQmnEWIJJKLEu5ge1jdKk
+	 jz9GjXWVhsKYUqVgkk6ZU7SYg50fwdfLaZXmNuSgalrOibjjfWCRjsm5h3w79k5g+K
+	 FkHvvweEIoiTlvnLeuBmY15fp2mg/5t0cZjCIGg1P5myRI1ECi7Tk1xgdjgZfMqet9
+	 +BMue/7yrY0AhX84Oeroa+AVJdiOZXgAkAfkkqDrom4iyT3QHAc5ZKlvXVgulumCHC
+	 uq87G1cFwo3PxrvrAITB6YhIM4rzluhSPzcX0+N8HSBESMawpUffI+Vl6R/xHdP+/C
+	 ztSeq+Vm0XV5Q==
 Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Wed, 25 Oct 2023 16:07:45 +0300 (MSK)
+	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
 Received: from localhost.localdomain (100.64.160.123) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.37; Wed, 25 Oct 2023 16:07:45 +0300
+ 15.2.1118.37; Wed, 25 Oct 2023 16:07:44 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <pavel@ucw.cz>, <lee@kernel.org>, <vadimp@nvidia.com>,
 	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<gnstark@salutedevices.com>
-Subject: [PATCH 6/8] leds: aw2013: explicitly unregister LEDs at module's shutdown
-Date: Wed, 25 Oct 2023 16:07:35 +0300
-Message-ID: <20231025130737.2015468-7-gnstark@salutedevices.com>
+Subject: [PATCH 2/8] leds: nic78bx: explicitly unregister LEDs at module's shutdown
+Date: Wed, 25 Oct 2023 16:07:31 +0300
+Message-ID: <20231025130737.2015468-3-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231025130737.2015468-1-gnstark@salutedevices.com>
 References: <20231025130737.2015468-1-gnstark@salutedevices.com>
@@ -101,24 +100,24 @@ So explicitly unregister LEDs at module shutdown.
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- drivers/leds/leds-aw2013.c | 4 ++++
+ drivers/leds/leds-nic78bx.c | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/drivers/leds/leds-aw2013.c b/drivers/leds/leds-aw2013.c
-index 59765640b70f..bd233500aa2d 100644
---- a/drivers/leds/leds-aw2013.c
-+++ b/drivers/leds/leds-aw2013.c
-@@ -404,6 +404,10 @@ static int aw2013_probe(struct i2c_client *client)
- static void aw2013_remove(struct i2c_client *client)
+diff --git a/drivers/leds/leds-nic78bx.c b/drivers/leds/leds-nic78bx.c
+index f196f52eec1e..12b70fcad37f 100644
+--- a/drivers/leds/leds-nic78bx.c
++++ b/drivers/leds/leds-nic78bx.c
+@@ -170,6 +170,10 @@ static int nic78bx_probe(struct platform_device *pdev)
+ static int nic78bx_remove(struct platform_device *pdev)
  {
- 	struct aw2013 *chip = i2c_get_clientdata(client);
+ 	struct nic78bx_led_data *led_data = platform_get_drvdata(pdev);
 +	int i;
 +
-+	for (i = 0; i < chip->num_leds; i++)
-+		devm_led_classdev_unregister(&client->dev, &chip->leds[i].cdev);
++	for (i = 0; i < ARRAY_SIZE(nic78bx_leds); i++)
++		devm_led_classdev_unregister(&pdev->dev, &nic78bx_leds[i].cdev);
  
- 	aw2013_chip_disable(chip);
- 
+ 	/* Lock LED register */
+ 	outb(NIC78BX_LOCK_VALUE,
 -- 
 2.38.4
 
