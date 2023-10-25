@@ -4,79 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDE2EC25B6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:25:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBD93C0032E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:30:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=ZZ1auFEM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ScRxfxyO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3RB3PrWz3vmg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:25:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3XC2vx3z3dKJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:30:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=ZZ1auFEM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ScRxfxyO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
-Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBR3xfnz3bxL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 00:13:51 +1100 (AEDT)
-Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id DF1B0100045;
-	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru DF1B0100045
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1698239264;
-	bh=X7h6QnvXdm+wS50Idwxv0nNdXJ9bCTp96VnMyQNCCwg=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=ZZ1auFEMuagcIDSYOZM/p5o94oG1+t8GC7IJ14Leiu0ddlm09XDkHDT3TgDXNQ00q
-	 XOLfr/sfvTfSzhqe8LZwosH/6Q6VrYqXH/o2mZT/rnaUi51g0pdkx9oncCeHeFQFEz
-	 BgLrj2isnzciMZFHXWL+qQMrGstMnQnT0eG1B32GvApOH47JEHQnBvleUyUVan2XUH
-	 6nkEpdI9Qx3KEYgpUqBIFtLZyeLS2fMReyNVPP5IwWgmkuediQZHa+k0s44PqvSGK4
-	 2m4j3UQDR3nqY6WRjdqSM7W9+XAiRfoAdXRNgwbijhbg4sYDOWHznKjCAW7B0csw1z
-	 fXEjPXLAQDgOw==
-Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
-Received: from localhost.localdomain (100.64.160.123) by
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.37; Wed, 25 Oct 2023 16:07:44 +0300
-From: George Stark <gnstark@salutedevices.com>
-To: <pavel@ucw.cz>, <lee@kernel.org>, <vadimp@nvidia.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
-	<gnstark@salutedevices.com>
-Subject: [PATCH 3/8] leds: an30259a: explicitly unregister LEDs at module's shutdown
-Date: Wed, 25 Oct 2023 16:07:32 +0300
-Message-ID: <20231025130737.2015468-4-gnstark@salutedevices.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231025130737.2015468-1-gnstark@salutedevices.com>
-References: <20231025130737.2015468-1-gnstark@salutedevices.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SG3WH3YKFz30f8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 09:29:15 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 84764CE3BAC;
+	Wed, 25 Oct 2023 22:29:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A9BBC433C8;
+	Wed, 25 Oct 2023 22:29:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1698272950;
+	bh=r8HUSzqlDaMXESjFK5gUvBK0xrbNT7QU9T8BuJ2OzII=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=ScRxfxyOl3tHVsD6fcTjCUOXcJ82TGdMgHNFaT8XUzABQQmc7KAwIHjiDemvM1Ltp
+	 3c7ntN/s0aJuOF+oHuy7Ug+81FFDjFKBZsYXfZThcn9GlltAA2YBfl83yqpwpf2IYx
+	 lniZnXD8Q6eXIDByEPPrzjdxRFo/eHlC7gdA7BbQIfZmejEo4sofUelzGjEnF2ywcy
+	 lO3qL+/XHITIDaEFdQLL2EmSW+bLzD4bTyIzstq3npT+bEsiSgm/6HQjh42TkOHhC/
+	 S4l8V8BUosFGsXqR2VS3+TeiKiFlBRyZUQ96ZyhdxGwPnrVCjNqDkVB5qxtj9Oawqk
+	 qAwEVaHlu6gcg==
+Date: Wed, 25 Oct 2023 17:29:08 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH v6 1/3] PCI/AER: Factor out interrupt toggling into
+ helpers
+Message-ID: <20231025222908.GA1770972@bhelgaas>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [100.64.160.123]
-X-ClientProxiedBy: p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) To
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
-X-KSMG-Rule-ID: 10
-X-KSMG-Message-Action: clean
-X-KSMG-AntiSpam-Lua-Profiles: 180883 [Oct 25 2023]
-X-KSMG-AntiSpam-Version: 6.0.0.2
-X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 543 543 1e3516af5cdd92079dfeb0e292c8747a62cb1ee4, {Tracking_from_domain_doesnt_match_to}, 127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;100.64.160.123:7.1.2;p-i-exch-sc-m01.sberdevices.ru:7.1.1,5.0.1;salutedevices.com:7.1.1, FromAlignment: s, ApMailHostAddress: 100.64.160.123
-X-MS-Exchange-Organization-SCL: -1
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean
-X-KSMG-LinksScanning: Clean
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/10/25 11:29:00 #22291710
-X-KSMG-AntiVirus-Status: Clean, skipped
-X-Mailman-Approved-At: Thu, 26 Oct 2023 09:18:28 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230512000014.118942-1-kai.heng.feng@canonical.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,36 +58,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@sberdevices.ru, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org
+Cc: sathyanarayanan.kuppuswamy@linux.intel.com, mika.westerberg@linux.intel.com, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, koba.ko@canonical.com, Oliver O'Halloran <oohall@gmail.com>, Jonathan Cameron <Jonathan.Cameron@huawei.com>, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LEDs are registered using devm_led_classdev_register() and automatically
-unregistered after module's remove(). led_classdev_unregister() calls
-led_set_brightness() to turn off the LEDs and module's appropriate callback
-uses resources those were destroyed already in module's remove().
-So explicitly unregister LEDs at module shutdown.
+On Fri, May 12, 2023 at 08:00:12AM +0800, Kai-Heng Feng wrote:
+> There are many places that enable and disable AER interrupt, so move
+> them into helpers.
+> 
+> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 
-Signed-off-by: George Stark <gnstark@salutedevices.com>
----
- drivers/leds/leds-an30259a.c | 4 ++++
- 1 file changed, 4 insertions(+)
+I applied this patch (only 1/3) to pci/aer for v6.7.
 
-diff --git a/drivers/leds/leds-an30259a.c b/drivers/leds/leds-an30259a.c
-index 24b1041213c2..4209a407d802 100644
---- a/drivers/leds/leds-an30259a.c
-+++ b/drivers/leds/leds-an30259a.c
-@@ -324,6 +324,10 @@ static int an30259a_probe(struct i2c_client *client)
- static void an30259a_remove(struct i2c_client *client)
- {
- 	struct an30259a *chip = i2c_get_clientdata(client);
-+	int i;
-+
-+	for (i = 0; i < chip->num_leds; i++)
-+		devm_led_classdev_unregister(&client->dev, &chip->leds[i].cdev);
- 
- 	mutex_destroy(&chip->mutex);
- }
--- 
-2.38.4
+I'm not clear on the others yet, so let's look at those again after
+v6.7-rc1.  It seemed like there's still a question about disabling
+interrupts when we're going to D3hot.
 
+>  drivers/pci/pcie/aer.c | 45 +++++++++++++++++++++++++-----------------
+>  1 file changed, 27 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index f6c24ded134c..1420e1f27105 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -1227,6 +1227,28 @@ static irqreturn_t aer_irq(int irq, void *context)
+>  	return IRQ_WAKE_THREAD;
+>  }
+>  
+> +static void aer_enable_irq(struct pci_dev *pdev)
+> +{
+> +	int aer = pdev->aer_cap;
+> +	u32 reg32;
+> +
+> +	/* Enable Root Port's interrupt in response to error messages */
+> +	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+> +	reg32 |= ROOT_PORT_INTR_ON_MESG_MASK;
+> +	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
+> +}
+> +
+> +static void aer_disable_irq(struct pci_dev *pdev)
+> +{
+> +	int aer = pdev->aer_cap;
+> +	u32 reg32;
+> +
+> +	/* Disable Root's interrupt in response to error messages */
+> +	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+> +	reg32 &= ~ROOT_PORT_INTR_ON_MESG_MASK;
+> +	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
+> +}
+> +
+>  /**
+>   * aer_enable_rootport - enable Root Port's interrupts when receiving messages
+>   * @rpc: pointer to a Root Port data structure
+> @@ -1256,10 +1278,7 @@ static void aer_enable_rootport(struct aer_rpc *rpc)
+>  	pci_read_config_dword(pdev, aer + PCI_ERR_UNCOR_STATUS, &reg32);
+>  	pci_write_config_dword(pdev, aer + PCI_ERR_UNCOR_STATUS, reg32);
+>  
+> -	/* Enable Root Port's interrupt in response to error messages */
+> -	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+> -	reg32 |= ROOT_PORT_INTR_ON_MESG_MASK;
+> -	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
+> +	aer_enable_irq(pdev);
+>  }
+>  
+>  /**
+> @@ -1274,10 +1293,7 @@ static void aer_disable_rootport(struct aer_rpc *rpc)
+>  	int aer = pdev->aer_cap;
+>  	u32 reg32;
+>  
+> -	/* Disable Root's interrupt in response to error messages */
+> -	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+> -	reg32 &= ~ROOT_PORT_INTR_ON_MESG_MASK;
+> -	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
+> +	aer_disable_irq(pdev);
+>  
+>  	/* Clear Root's error status reg */
+>  	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_STATUS, &reg32);
+> @@ -1372,12 +1388,8 @@ static pci_ers_result_t aer_root_reset(struct pci_dev *dev)
+>  	 */
+>  	aer = root ? root->aer_cap : 0;
+>  
+> -	if ((host->native_aer || pcie_ports_native) && aer) {
+> -		/* Disable Root's interrupt in response to error messages */
+> -		pci_read_config_dword(root, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+> -		reg32 &= ~ROOT_PORT_INTR_ON_MESG_MASK;
+> -		pci_write_config_dword(root, aer + PCI_ERR_ROOT_COMMAND, reg32);
+> -	}
+> +	if ((host->native_aer || pcie_ports_native) && aer)
+> +		aer_disable_irq(root);
+>  
+>  	if (type == PCI_EXP_TYPE_RC_EC || type == PCI_EXP_TYPE_RC_END) {
+>  		rc = pcie_reset_flr(dev, PCI_RESET_DO_RESET);
+> @@ -1396,10 +1408,7 @@ static pci_ers_result_t aer_root_reset(struct pci_dev *dev)
+>  		pci_read_config_dword(root, aer + PCI_ERR_ROOT_STATUS, &reg32);
+>  		pci_write_config_dword(root, aer + PCI_ERR_ROOT_STATUS, reg32);
+>  
+> -		/* Enable Root Port's interrupt in response to error messages */
+> -		pci_read_config_dword(root, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+> -		reg32 |= ROOT_PORT_INTR_ON_MESG_MASK;
+> -		pci_write_config_dword(root, aer + PCI_ERR_ROOT_COMMAND, reg32);
+> +		aer_enable_irq(root);
+>  	}
+>  
+>  	return rc ? PCI_ERS_RESULT_DISCONNECT : PCI_ERS_RESULT_RECOVERED;
+> -- 
+> 2.34.1
+> 
