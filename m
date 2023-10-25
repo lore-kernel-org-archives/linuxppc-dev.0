@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 779D9C0032E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:24:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDE2EC25B6B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Oct 2023 22:25:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=EmYuRvSh;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=ZZ1auFEM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3QF1LNJz3vkm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:24:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SG3RB3PrWz3vmg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 09:25:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=EmYuRvSh;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=ZZ1auFEM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBR3y07z3c1L
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SFqBR3xfnz3bxL
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 00:13:51 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 8E872100043;
+	by mx1.sberdevices.ru (Postfix) with ESMTP id DF1B0100045;
 	Wed, 25 Oct 2023 16:07:44 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 8E872100043
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru DF1B0100045
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
 	s=mail; t=1698239264;
-	bh=QI0eEMit4cRAk0dzmRcmJgiC5EDe0H7Kqy7+mSGTVrU=;
+	bh=X7h6QnvXdm+wS50Idwxv0nNdXJ9bCTp96VnMyQNCCwg=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=EmYuRvSh8MROTQg+CWmVIV3ikaw4wqLxA7YespJ51Vt90wv4OJBBVdF+A5bM2O+Ba
-	 xt2+No1w8iIhvvbU5n2TEQAIQYAcJMnAhYhjOx9JLMTz+KvRmWNDTkFhsIVeHS15FX
-	 kFcvkjVZyJdhPO7MLDC+1DlRcdY/ab9UH9b07OjAxJzT7FcihnWqKC7njeuiOZiu0s
-	 dGG9otRgt3xpTKhii8rk7Hf5c2WpFtWR7RloZynI1NYjVRB0QniDtYs6JssC4m75SN
-	 DP+ROqDLgC3vJW3qJrzHnHAvhngpAEgcn8eKIZ5x08gylzWBzvkkVv713uOWrfqwHr
-	 Z1G9FXd3eeORw==
+	b=ZZ1auFEMuagcIDSYOZM/p5o94oG1+t8GC7IJ14Leiu0ddlm09XDkHDT3TgDXNQ00q
+	 XOLfr/sfvTfSzhqe8LZwosH/6Q6VrYqXH/o2mZT/rnaUi51g0pdkx9oncCeHeFQFEz
+	 BgLrj2isnzciMZFHXWL+qQMrGstMnQnT0eG1B32GvApOH47JEHQnBvleUyUVan2XUH
+	 6nkEpdI9Qx3KEYgpUqBIFtLZyeLS2fMReyNVPP5IwWgmkuediQZHa+k0s44PqvSGK4
+	 2m4j3UQDR3nqY6WRjdqSM7W9+XAiRfoAdXRNgwbijhbg4sYDOWHznKjCAW7B0csw1z
+	 fXEjPXLAQDgOw==
 Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
@@ -48,9 +48,9 @@ From: George Stark <gnstark@salutedevices.com>
 To: <pavel@ucw.cz>, <lee@kernel.org>, <vadimp@nvidia.com>,
 	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<gnstark@salutedevices.com>
-Subject: [PATCH 1/8] leds: powernv: explicitly unregister LEDs at module's shutdown
-Date: Wed, 25 Oct 2023 16:07:30 +0300
-Message-ID: <20231025130737.2015468-2-gnstark@salutedevices.com>
+Subject: [PATCH 3/8] leds: an30259a: explicitly unregister LEDs at module's shutdown
+Date: Wed, 25 Oct 2023 16:07:32 +0300
+Message-ID: <20231025130737.2015468-4-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231025130737.2015468-1-gnstark@salutedevices.com>
 References: <20231025130737.2015468-1-gnstark@salutedevices.com>
@@ -100,35 +100,24 @@ So explicitly unregister LEDs at module shutdown.
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- drivers/leds/leds-powernv.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/leds/leds-an30259a.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
-index 743e2cdd0891..7c7f696c8265 100644
---- a/drivers/leds/leds-powernv.c
-+++ b/drivers/leds/leds-powernv.c
-@@ -302,7 +302,12 @@ static int powernv_led_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, powernv_led_common);
- 
-+	if (!devres_open_group(&pdev->dev, priv, GFP_KERNEL))
-+		return -ENOMEM;
-+
- 	rc = powernv_led_classdev(pdev, led_node, powernv_led_common);
-+	if (rc)
-+		devres_remove_group(dev, priv);
- out:
- 	of_node_put(led_node);
- 	return rc;
-@@ -313,6 +318,8 @@ static int powernv_led_remove(struct platform_device *pdev)
+diff --git a/drivers/leds/leds-an30259a.c b/drivers/leds/leds-an30259a.c
+index 24b1041213c2..4209a407d802 100644
+--- a/drivers/leds/leds-an30259a.c
++++ b/drivers/leds/leds-an30259a.c
+@@ -324,6 +324,10 @@ static int an30259a_probe(struct i2c_client *client)
+ static void an30259a_remove(struct i2c_client *client)
  {
- 	struct powernv_led_common *powernv_led_common;
- 
-+	devres_release_group(&pdev->dev, powernv_led_common);
+ 	struct an30259a *chip = i2c_get_clientdata(client);
++	int i;
 +
- 	/* Disable LED operation */
- 	powernv_led_common = platform_get_drvdata(pdev);
- 	powernv_led_common->led_disabled = true;
++	for (i = 0; i < chip->num_leds; i++)
++		devm_led_classdev_unregister(&client->dev, &chip->leds[i].cdev);
+ 
+ 	mutex_destroy(&chip->mutex);
+ }
 -- 
 2.38.4
 
