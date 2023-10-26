@@ -4,60 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD439C0032E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 03:28:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE4ACC0032E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 03:28:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MOHAvEwM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qIM0paD8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGB8272vnz3dK0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 14:28:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGB8z2mZ7z3bTn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 14:28:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MOHAvEwM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qIM0paD8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGB4G240Hz2yVv
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGB4G278qz2ydN
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 14:24:46 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 9D0D062970;
-	Thu, 26 Oct 2023 03:24:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 46DE1C433C9;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 8A87962395;
+	Thu, 26 Oct 2023 03:24:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A006DC43395;
 	Thu, 26 Oct 2023 03:24:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1698290682;
-	bh=prCMgPiJ4tAPBasztHEsp/aCTDN8Yh7mnycw/RKiaDo=;
+	bh=fVsoNIFmHb26yy627o2S7FC4AgX8gAK1PIIXZ9CWg4g=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=MOHAvEwMX3abjcLOmVwizLmaCPzapRZt0GTpN5XwEEHdWH1YbedP7pWcY97TvAM3f
-	 /qMv+AxAAQNIZ7fiQ8QZPgZNQMcw2A7h8oJKSchbivD7tR37M8XWQRhulzFcLPcPdF
-	 sOlkHnd9PGZJUBS+uZEKCV73wFgKeDSq4tOmm3aIsQ5BSg9NV8RyZORohwdU9Qke54
-	 rvVzbS0LP6/9sMVXUMdrx9Pz84+Ibwuw7UPQ4W6PPrgt1nuMJ1ajFwKyCv0WlWiORi
-	 WAVR1ugxn0f4e+ftsZQnBLN0U8MrcR/75WSotuioCduSKpnh9NrDLFxN7hp78uWykW
-	 Y6St3XSTm2IEA==
+	b=qIM0paD8FyEig6oo4XHO6gQ2mCKVxYOUQ74+afk91SCCmtqkTYJt/UkWlGKqnF0C8
+	 Cpapy39WrEJXHSHAfGHVO4q/599gwT7UCzlcelRRGzMAcoaHFGymfLThR+u2AEybV7
+	 hYrhbDIzcjMurJjJ+EPVHe2St8EOIKXLBxf2+GRhjSTp9doPbwWjbYC2bF1JneGO6i
+	 MKvsq0wgZLSadwXXcn5A3lw1uSoB082gU+LU9FCuzHO2Mpie0ixvszqNqS9PsGWAFs
+	 JbZdW2DwVZZtbMvSJ8MPglZW2YOMugkinG7trKmZUzR+KsVGOoapeFqCirP9iASByw
+	 A6D9n486Qutig==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29CA8C25B47;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E5BCC25B47;
 	Thu, 26 Oct 2023 03:24:42 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Wed, 25 Oct 2023 22:24:16 -0500
-Subject: [PATCH v3 02/10] powerpc/rtas: Facilitate high-level call
- sequences
+Date: Wed, 25 Oct 2023 22:24:23 -0500
+Subject: [PATCH v3 09/10] powerpc/selftests: Add test for papr-vpd
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id:  <20231025-papr-sys_rtas-vs-lockdown-v3-2-5eb04559e7d8@linux.ibm.com>
+Content-Transfer-Encoding: 7bit
+Message-Id:  <20231025-papr-sys_rtas-vs-lockdown-v3-9-5eb04559e7d8@linux.ibm.com>
 References:  <20231025-papr-sys_rtas-vs-lockdown-v3-0-5eb04559e7d8@linux.ibm.com>
 In-Reply-To:  <20231025-papr-sys_rtas-vs-lockdown-v3-0-5eb04559e7d8@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1698290680; l=11630;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1698290680; l=10584;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=uY80tyrHZoRRCv7cxEzbpmpUrb3K26dHYRI6rR9LcXU=;
- b=dm8VFAEALAvipmFg8ohbGjvnaB9z/JISbwf4E6qnKxvWSVCIZbOeLUHzJTEwOOIl2Qv2txAls
- FmhHJQllpgZCtbrzfQRgC1Mpdbolba6Gr9Rw4EfJXRKirFU9FKn6Jir
+ bh=9aHWz0aWxbu7TXz6Q2SfxJz9QLl1HnWYCGoU/dvG2jc=;
+ b=nOK7teeFFwa3ZRVN9grSiJikGtJ1HmXmNGKX+kN9ME4IKYJv1zF95gKVFjjmrx1cqjVVEBAis
+ fsYrbcZmd4iBXQh9aJ7bqrP7Mv9vsdonc7a129rnLyqRIRJFCYWyzGn
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -80,300 +79,435 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-On RTAS platforms there is a general restriction that the OS must not
-enter RTAS on more than one CPU at a time. This low-level
-serialization requirement is satisfied by holding a spin
-lock (rtas_lock) across most RTAS function invocations.
+Add selftests for /dev/papr-vpd, exercising the common expected use
+cases:
 
-However, some pseries RTAS functions require multiple successive calls
-to complete a logical operation. Beginning a new call sequence for such a
-function may disrupt any other sequences of that function already in
-progress. Safe and reliable use of these functions effectively
-requires higher-level serialization beyond what is already done at the
-level of RTAS entry and exit.
+* Retrieve all VPD by passing an empty location code.
+* Retrieve the "system VPD" by passing a location code derived from DT
+  root node properties, as done by the vpdupdate command.
 
-Where a sequence-based RTAS function is invoked only through
-sys_rtas(), with no in-kernel users, there is no issue as far as the
-kernel is concerned. User space is responsible for appropriately
-serializing its call sequences. (Whether user space code actually
-takes measures to prevent sequence interleaving is another matter.)
-Examples of such functions currently include ibm,platform-dump and
-ibm,get-vpd.
+The tests also verify that certain intended properties of the driver
+hold:
 
-But where a sequence-based RTAS function has both user space and
-in-kernel uesrs, there is a hazard. Even if the in-kernel call sites
-of such a function serialize their sequences correctly, a user of
-sys_rtas() can invoke the same function at any time, potentially
-disrupting a sequence in progress.
+* Passing an unterminated location code to PAPR_VPD_CREATE_HANDLE gets
+  EINVAL.
+* Passing a NULL location code pointer to PAPR_VPD_CREATE_HANDLE gets
+  EFAULT.
+* Closing the device node without first issuing a
+  PAPR_VPD_CREATE_HANDLE command to it succeeds.
+* Releasing a handle without first consuming any data from it
+  succeeds.
+* Re-reading the contents of a handle returns the same data as the
+  first time.
 
-So in order to prevent disruption of kernel-based RTAS call sequences,
-they must serialize not only with themselves but also with sys_rtas()
-users, somehow. Preferably without adding global locks or adding more
-function-specific hacks to sys_rtas(). This is a prerequisite for
-adding an in-kernel call sequence of ibm,get-vpd, which is in a change
-to follow.
+Some minimal validation of the returned data is performed.
 
-Note that it has never been feasible for the kernel to prevent
-sys_rtas()-based sequences from being disrupted because control
-returns to user space on every call. sys_rtas()-based users of these
-functions have always been, and continue to be, responsible for
-coordinating their call sequences with other users, even those which
-may invoke the RTAS functions through less direct means than
-sys_rtas(). This is an unavoidable consequence of exposing
-sequence-based RTAS functions through sys_rtas().
-
-* Add new rtas_function_lock() and rtas_function_unlock() APIs for use
-  with sequence-based RTAS functions.
-
-* Add an optional per-function mutex to struct rtas_function. When this
-  member is set, kernel-internal callers of the RTAS function are
-  required to guard their call sequences with rtas_function_lock() and
-  rtas_function_unlock(). This requirement will be enforced in a later
-  change, after all affected call sites are updated.
-
-* Populate the lock members of function table entries where
-  serialization of call sequences is known to be necessary, along with
-  justifying commentary.
-
-* In sys_rtas(), acquire the per-function mutex when it is present.
-
-There should be no perceivable change introduced here except that
-concurrent callers of the same RTAS function via sys_rtas() may block
-on a mutex instead of spinning on rtas_lock. Changes to follow will
-add rtas_function_lock()/unlock() pairs to kernel-based call
-sequences.
+The tests are skipped on systems where the papr-vpd driver does not
+initialize, making this useful only on PowerVM LPARs at this point.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h |   2 +
- arch/powerpc/kernel/rtas.c      | 101 +++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 101 insertions(+), 2 deletions(-)
+ tools/testing/selftests/powerpc/Makefile           |   1 +
+ .../testing/selftests/powerpc/papr_vpd/.gitignore  |   1 +
+ tools/testing/selftests/powerpc/papr_vpd/Makefile  |  12 +
+ .../testing/selftests/powerpc/papr_vpd/papr_vpd.c  | 352 +++++++++++++++++++++
+ 4 files changed, 366 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index c697c3c74694..382627854034 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -408,6 +408,8 @@ static inline bool rtas_function_implemented(const rtas_fn_handle_t handle)
- {
- 	return rtas_function_token(handle) != RTAS_UNKNOWN_SERVICE;
- }
-+void rtas_function_lock(rtas_fn_handle_t handle);
-+void rtas_function_unlock(rtas_fn_handle_t handle);
- extern int rtas_token(const char *service);
- extern int rtas_service_present(const char *service);
- extern int rtas_call(int token, int, int, int *, ...);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index e2fac171bf69..579a2c475bb6 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -18,6 +18,7 @@
- #include <linux/kernel.h>
- #include <linux/lockdep.h>
- #include <linux/memblock.h>
-+#include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/reboot.h>
-@@ -70,14 +71,34 @@ struct rtas_filter {
-  *                            ppc64le, and we want to keep it that way. It does
-  *                            not make sense for this to be set when @filter
-  *                            is NULL.
-+ * @lock: Pointer to an optional dedicated per-function mutex. This
-+ *        should be set for functions that require multiple calls in
-+ *        sequence to complete a single operation, and such sequences
-+ *        will disrupt each other if allowed to interleave. Users of
-+ *        this function are required to hold the associated lock for
-+ *        the duration of the call sequence. Add an explanatory
-+ *        comment to the function table entry if setting this member.
-  */
- struct rtas_function {
- 	s32 token;
- 	const bool banned_for_syscall_on_le:1;
- 	const char * const name;
- 	const struct rtas_filter *filter;
-+	struct mutex *lock;
- };
- 
-+/*
-+ * Per-function locks. Access these through the
-+ * rtas_function_lock/unlock APIs, not directly.
-+ */
-+static DEFINE_MUTEX(rtas_ibm_activate_firmware_lock);
-+static DEFINE_MUTEX(rtas_ibm_get_dynamic_sensor_state_lock);
-+static DEFINE_MUTEX(rtas_ibm_get_indices_lock);
-+static DEFINE_MUTEX(rtas_ibm_get_vpd_lock);
-+static DEFINE_MUTEX(rtas_ibm_lpar_perftools_lock);
-+static DEFINE_MUTEX(rtas_ibm_physical_attestation_lock);
-+static DEFINE_MUTEX(rtas_ibm_set_dynamic_indicator_lock);
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index 7ea42fa02eab..05fc68d446c2 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -32,6 +32,7 @@ SUB_DIRS = alignment		\
+ 	   vphn         \
+ 	   math		\
+ 	   papr_attributes	\
++	   papr_vpd		\
+ 	   ptrace	\
+ 	   security	\
+ 	   mce
+diff --git a/tools/testing/selftests/powerpc/papr_vpd/.gitignore b/tools/testing/selftests/powerpc/papr_vpd/.gitignore
+new file mode 100644
+index 000000000000..49285031a656
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/papr_vpd/.gitignore
+@@ -0,0 +1 @@
++/papr_vpd
+diff --git a/tools/testing/selftests/powerpc/papr_vpd/Makefile b/tools/testing/selftests/powerpc/papr_vpd/Makefile
+new file mode 100644
+index 000000000000..06b719703bfd
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/papr_vpd/Makefile
+@@ -0,0 +1,12 @@
++# SPDX-License-Identifier: GPL-2.0
++noarg:
++	$(MAKE) -C ../
 +
- static struct rtas_function rtas_function_table[] __ro_after_init = {
- 	[RTAS_FNIDX__CHECK_EXCEPTION] = {
- 		.name = "check-exception",
-@@ -125,6 +146,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = -1, .size_idx1 = -1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR doesn't explicitly impose any restriction, but
-+		 * this typically requires multiple calls before
-+		 * success, and there's no reason to allow sequences
-+		 * to interleave.
-+		 */
-+		.lock = &rtas_ibm_activate_firmware_lock,
- 	},
- 	[RTAS_FNIDX__IBM_CBE_START_PTCAL] = {
- 		.name = "ibm,cbe-start-ptcal",
-@@ -196,6 +224,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 1, .size_idx1 = -1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ R1–7.3.19–3 is explicit that the OS must not
-+		 * call ibm,get-dynamic-sensor-state with different
-+		 * inputs until a non-retry status has been returned.
-+		 */
-+		.lock = &rtas_ibm_get_dynamic_sensor_state_lock,
- 	},
- 	[RTAS_FNIDX__IBM_GET_INDICES] = {
- 		.name = "ibm,get-indices",
-@@ -203,6 +237,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 2, .size_idx1 = 3,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ R1–7.3.17–2 says that the OS must not
-+		 * interleave ibm,get-indices call sequences with
-+		 * different inputs.
-+		 */
-+		.lock = &rtas_ibm_get_indices_lock,
- 	},
- 	[RTAS_FNIDX__IBM_GET_RIO_TOPOLOGY] = {
- 		.name = "ibm,get-rio-topology",
-@@ -220,6 +260,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 0, .size_idx1 = -1,
- 			.buf_idx2 = 1, .size_idx2 = 2,
- 		},
-+		/*
-+		 * PAPR+ R1–7.3.20–4 indicates that sequences
-+		 * should not be allowed to interleave.
-+		 */
-+		.lock = &rtas_ibm_get_vpd_lock,
- 	},
- 	[RTAS_FNIDX__IBM_GET_XIVE] = {
- 		.name = "ibm,get-xive",
-@@ -239,6 +284,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 2, .size_idx1 = 3,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ R1–7.3.26–6 says the OS should allow only one
-+		 * call sequence in progress at a time.
-+		 */
-+		.lock = &rtas_ibm_lpar_perftools_lock,
- 	},
- 	[RTAS_FNIDX__IBM_MANAGE_FLASH_IMAGE] = {
- 		.name = "ibm,manage-flash-image",
-@@ -277,6 +327,14 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 0, .size_idx1 = 1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * This follows a sequence-based pattern similar to
-+		 * ibm,get-vpd et al. Since PAPR+ restricts
-+		 * interleaving call sequences for other functions of
-+		 * this style, assume the restriction applies here,
-+		 * even though it's not explicit in the spec.
-+		 */
-+		.lock = &rtas_ibm_physical_attestation_lock,
- 	},
- 	[RTAS_FNIDX__IBM_PLATFORM_DUMP] = {
- 		.name = "ibm,platform-dump",
-@@ -284,6 +342,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 4, .size_idx1 = 5,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ 7.3.3.4.1 indicates that concurrent sequences
-+		 * of ibm,platform-dump are allowed if they are
-+		 * operating on different dump tags. So leave
-+		 * the lock pointer unset for now. This may need
-+		 * reconsideration if kernel-internal users appear.
-+		 */
- 	},
- 	[RTAS_FNIDX__IBM_POWER_OFF_UPS] = {
- 		.name = "ibm,power-off-ups",
-@@ -326,6 +391,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 2, .size_idx1 = -1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ R1–7.3.18–3 says the OS must not call this
-+		 * function with different inputs until a non-retry
-+		 * status has been returned.
-+		 */
-+		.lock = &rtas_ibm_set_dynamic_indicator_lock,
- 	},
- 	[RTAS_FNIDX__IBM_SET_EEH_OPTION] = {
- 		.name = "ibm,set-eeh-option",
-@@ -551,9 +622,9 @@ static int __init rtas_token_to_function_xarray_init(void)
- }
- arch_initcall(rtas_token_to_function_xarray_init);
- 
--static const struct rtas_function *rtas_token_to_function(s32 token)
-+static struct rtas_function *rtas_token_to_function(s32 token)
- {
--	const struct rtas_function *func;
-+	struct rtas_function *func;
- 
- 	if (WARN_ONCE(token < 0, "invalid token %d", token))
- 		return NULL;
-@@ -566,6 +637,28 @@ static const struct rtas_function *rtas_token_to_function(s32 token)
- 	return func;
- }
- 
-+static void __rtas_function_lock(struct rtas_function *func)
++TEST_GEN_PROGS := papr_vpd
++
++top_srcdir = ../../../../..
++include ../../lib.mk
++
++$(TEST_GEN_PROGS): ../harness.c ../utils.c
++
++$(OUTPUT)/papr_vpd: CFLAGS += $(KHDR_INCLUDES)
+diff --git a/tools/testing/selftests/powerpc/papr_vpd/papr_vpd.c b/tools/testing/selftests/powerpc/papr_vpd/papr_vpd.c
+new file mode 100644
+index 000000000000..98cbb9109ee6
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/papr_vpd/papr_vpd.c
+@@ -0,0 +1,352 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#define _GNU_SOURCE
++#include <errno.h>
++#include <fcntl.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <unistd.h>
++
++#include <asm/papr-vpd.h>
++
++#include "utils.h"
++
++#define DEVPATH "/dev/papr-vpd"
++
++static int dev_papr_vpd_open_close(void)
 +{
-+	if (func && func->lock)
-+		mutex_lock(func->lock);
++	const int devfd = open(DEVPATH, O_RDONLY);
++
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++	FAIL_IF(close(devfd) != 0);
++
++	return 0;
 +}
 +
-+static void __rtas_function_unlock(struct rtas_function *func)
++static int dev_papr_vpd_get_handle_all(void)
 +{
-+	if (func && func->lock)
-+		mutex_unlock(func->lock);
++	const int devfd = open(DEVPATH, O_RDONLY);
++	struct papr_location_code lc = { .str = "", };
++	off_t size;
++	int fd;
++
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++
++	errno = 0;
++	fd = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, &lc);
++	FAIL_IF(errno != 0);
++	FAIL_IF(fd < 0);
++
++	FAIL_IF(close(devfd) != 0);
++
++	size = lseek(fd, 0, SEEK_END);
++	FAIL_IF(size <= 0);
++
++	void *buf = malloc((size_t)size);
++	FAIL_IF(!buf);
++
++	ssize_t consumed = pread(fd, buf, size, 0);
++	FAIL_IF(consumed != size);
++
++	/* Ensure EOF */
++	FAIL_IF(read(fd, buf, size) != 0);
++	FAIL_IF(close(fd));
++
++	/* Verify that the buffer looks like VPD */
++	static const char needle[] = "System VPD";
++	FAIL_IF(!memmem(buf, size, needle, strlen(needle)));
++
++	return 0;
 +}
 +
-+void rtas_function_lock(const rtas_fn_handle_t handle)
++static int dev_papr_vpd_get_handle_byte_at_a_time(void)
 +{
-+	__rtas_function_lock(rtas_function_lookup(handle));
++	const int devfd = open(DEVPATH, O_RDONLY);
++	struct papr_location_code lc = { .str = "", };
++	int fd;
++
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++
++	errno = 0;
++	fd = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, &lc);
++	FAIL_IF(errno != 0);
++	FAIL_IF(fd < 0);
++
++	FAIL_IF(close(devfd) != 0);
++
++	size_t consumed = 0;
++	while (1) {
++		ssize_t res;
++		char c;
++
++		errno = 0;
++		res = read(fd, &c, sizeof(c));
++		FAIL_IF(res > sizeof(c));
++		FAIL_IF(res < 0);
++		FAIL_IF(errno != 0);
++		consumed += res;
++		if (res == 0)
++			break;
++	}
++
++	FAIL_IF(consumed != lseek(fd, 0, SEEK_END));
++
++	FAIL_IF(close(fd));
++
++	return 0;
 +}
 +
-+void rtas_function_unlock(const rtas_fn_handle_t handle)
++
++static int dev_papr_vpd_unterm_loc_code(void)
 +{
-+	__rtas_function_unlock(rtas_function_lookup(handle));
++	const int devfd = open(DEVPATH, O_RDONLY);
++	struct papr_location_code lc = {};
++	int fd;
++
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++
++	/*
++	 * Place a non-null byte in every element of loc_code; the
++	 * driver should reject this input.
++	 */
++	memset(lc.str, 'x', ARRAY_SIZE(lc.str));
++
++	errno = 0;
++	fd = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, &lc);
++	FAIL_IF(fd != -1);
++	FAIL_IF(errno != EINVAL);
++
++	FAIL_IF(close(devfd) != 0);
++	return 0;
 +}
 +
- /* This is here deliberately so it's only used in this file */
- void enter_rtas(unsigned long);
- 
-@@ -1870,6 +1963,8 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- 
- 	buff_copy = get_errorlog_buffer();
- 
-+	__rtas_function_lock(rtas_token_to_function(token));
++static int dev_papr_vpd_null_handle(void)
++{
++	const int devfd = open(DEVPATH, O_RDONLY);
++	int rc;
 +
- 	raw_spin_lock_irqsave(&rtas_lock, flags);
- 	cookie = lockdep_pin_lock(&rtas_lock);
- 
-@@ -1885,6 +1980,8 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- 	lockdep_unpin_lock(&rtas_lock, cookie);
- 	raw_spin_unlock_irqrestore(&rtas_lock, flags);
- 
-+	__rtas_function_unlock(rtas_token_to_function(token));
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
 +
- 	if (buff_copy) {
- 		if (errbuf)
- 			log_error(errbuf, ERR_TYPE_RTAS_LOG, 0);
++	FAIL_IF(devfd < 0);
++
++	errno = 0;
++	rc = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, NULL);
++	FAIL_IF(rc != -1);
++	FAIL_IF(errno != EFAULT);
++
++	FAIL_IF(close(devfd) != 0);
++	return 0;
++}
++
++static int papr_vpd_close_handle_without_reading(void)
++{
++	const int devfd = open(DEVPATH, O_RDONLY);
++	struct papr_location_code lc;
++	int fd;
++
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++
++	errno = 0;
++	fd = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, &lc);
++	FAIL_IF(errno != 0);
++	FAIL_IF(fd < 0);
++
++	/* close the handle without reading it */
++	FAIL_IF(close(fd) != 0);
++
++	FAIL_IF(close(devfd) != 0);
++	return 0;
++}
++
++static int papr_vpd_reread(void)
++{
++	const int devfd = open(DEVPATH, O_RDONLY);
++	struct papr_location_code lc = { .str = "", };
++	int fd;
++
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++
++	errno = 0;
++	fd = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, &lc);
++	FAIL_IF(errno != 0);
++	FAIL_IF(fd < 0);
++
++	FAIL_IF(close(devfd) != 0);
++
++	const off_t size = lseek(fd, 0, SEEK_END);
++	FAIL_IF(size <= 0);
++
++	char *bufs[2];
++
++	for (size_t i = 0; i < ARRAY_SIZE(bufs); ++i) {
++		bufs[i] = malloc(size);
++		FAIL_IF(!bufs[i]);
++		ssize_t consumed = pread(fd, bufs[i], size, 0);
++		FAIL_IF(consumed != size);
++	}
++
++	FAIL_IF(memcmp(bufs[0], bufs[1], size));
++
++	FAIL_IF(close(fd) != 0);
++
++	return 0;
++}
++
++static int get_system_loc_code(struct papr_location_code *lc)
++{
++	static const char system_id_path[] = "/sys/firmware/devicetree/base/system-id";
++	static const char model_path[] = "/sys/firmware/devicetree/base/model";
++	char *system_id;
++	char *model;
++	int err = -1;
++
++	if (read_file_alloc(model_path, &model, NULL))
++		return err;
++
++	if (read_file_alloc(system_id_path, &system_id, NULL))
++		goto free_model;
++
++	char *mtm;
++	int sscanf_ret = sscanf(model, "IBM,%ms", &mtm);
++	if (sscanf_ret != 1)
++		goto free_system_id;
++
++	char *plant_and_seq;
++	if (sscanf(system_id, "IBM,%*c%*c%ms", &plant_and_seq) != 1)
++		goto free_mtm;
++	/*
++	 * Replace - with . to build location code.
++	 */
++	char *sep = strchr(mtm, '-');
++	if (!sep)
++		goto free_mtm;
++	else
++		*sep = '.';
++
++	snprintf(lc->str, sizeof(lc->str),
++		 "U%s.%s", mtm, plant_and_seq);
++	err = 0;
++
++	free(plant_and_seq);
++free_mtm:
++	free(mtm);
++free_system_id:
++	free(system_id);
++free_model:
++	free(model);
++	return err;
++}
++
++static int papr_vpd_system_loc_code(void)
++{
++	struct papr_location_code lc;
++	const int devfd = open(DEVPATH, O_RDONLY);
++	off_t size;
++	int fd;
++
++	SKIP_IF_MSG(get_system_loc_code(&lc),
++		    "Cannot determine system location code");
++	SKIP_IF_MSG(devfd < 0 && errno == ENOENT,
++		    DEVPATH " not present");
++
++	FAIL_IF(devfd < 0);
++
++	errno = 0;
++	fd = ioctl(devfd, PAPR_VPD_IOC_CREATE_HANDLE, &lc);
++	FAIL_IF(errno != 0);
++	FAIL_IF(fd < 0);
++
++	FAIL_IF(close(devfd) != 0);
++
++	size = lseek(fd, 0, SEEK_END);
++	FAIL_IF(size <= 0);
++
++	void *buf = malloc((size_t)size);
++	FAIL_IF(!buf);
++
++	ssize_t consumed = pread(fd, buf, size, 0);
++	FAIL_IF(consumed != size);
++
++	/* Ensure EOF */
++	FAIL_IF(read(fd, buf, size) != 0);
++	FAIL_IF(close(fd));
++
++	/* Verify that the buffer looks like VPD */
++	static const char needle[] = "System VPD";
++	FAIL_IF(!memmem(buf, size, needle, strlen(needle)));
++
++	return 0;
++}
++
++struct vpd_test {
++	int (*function)(void);
++	const char *description;
++};
++
++static const struct vpd_test vpd_tests[] = {
++	{
++		.function = dev_papr_vpd_open_close,
++		.description = "open/close " DEVPATH,
++	},
++	{
++		.function = dev_papr_vpd_unterm_loc_code,
++		.description = "ensure EINVAL on unterminated location code",
++	},
++	{
++		.function = dev_papr_vpd_null_handle,
++		.description = "ensure EFAULT on bad handle addr",
++	},
++	{
++		.function = dev_papr_vpd_get_handle_all,
++		.description = "get handle for all VPD"
++	},
++	{
++		.function = papr_vpd_close_handle_without_reading,
++		.description = "close handle without consuming VPD"
++	},
++	{
++		.function = dev_papr_vpd_get_handle_byte_at_a_time,
++		.description = "read all VPD one byte at a time"
++	},
++	{
++		.function = papr_vpd_reread,
++		.description = "ensure re-read yields same results"
++	},
++	{
++		.function = papr_vpd_system_loc_code,
++		.description = "get handle for system VPD"
++	},
++};
++
++int main(void)
++{
++	size_t fails = 0;
++
++	for (size_t i = 0; i < ARRAY_SIZE(vpd_tests); ++i) {
++		const struct vpd_test *t = &vpd_tests[i];
++
++		if (test_harness(t->function, t->description))
++			++fails;
++	}
++
++	return fails == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
++}
 
 -- 
 2.41.0
