@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03E9AC25B48
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 06:05:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0C88C25B6B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 06:06:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=f47TBnc/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TVyTy2Au;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGFdD22qRz3bcJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 17:05:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGFfH13Xnz3cRP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Oct 2023 17:05:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=f47TBnc/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TVyTy2Au;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.126])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGFcG0spJz2xZG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 17:04:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGFdH2dD3z2ykV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2023 17:05:06 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1698300254; x=1729836254;
+  t=1698300307; x=1729836307;
   h=date:from:to:cc:subject:message-id;
-  bh=6YlLC7yzh4g6a75w2C5n0ZY2dX4w/c+m7aqByPIJdJI=;
-  b=f47TBnc/+60qJL+tf93RfXlceD6dlTEOPudZJPf5ztBRS7idIwzPlBc5
-   76B88QrTjPiephw1JtPEkISxWto/JABr+8NpStpaKV9LJPZiLQmdhsIeQ
-   rcYVgdAfBPrMn6gXpLGWM5/fjZxY/Qc0ICGYPlcXKMskkX7+zY4LVWD17
-   lR6jcBaCXl+9Qr9EWQdDiDF58xYHHrZ/NkRL3Iigm9tyg7P7Moivq0I8J
-   6c6xA9lcd6gRGvUvH+yzXJ/ZYiRLiTy3MM04E3FS++VvVhKxlVPAtOli2
-   mLpsZ9SfTcQdN0QOFgyZuyq2m55CiOXvSl1iA43nBJdEEyzRd5BSO0TTz
+  bh=HPSChAxblL47feqOjGnBNRfa2ABXgVFpFhM74bxuBe0=;
+  b=TVyTy2AuuzuLGrz8S5v9V6TZq/NBDEvOSIHbyWhHZ8OUTC5HVbOTNDvK
+   2XI+22JPdoZORAEkvcSG1DgiHpS79v6Nge7sXtFf+TGtEemHvhmc0KiGi
+   KfQvHfGMIWzAPPkt/ZBfTpeZvOBgRCvFKDDAv+5NMusRvudQTM9dVfVvS
+   n6cE8yG8WW1y8ponKkiuRVwJuC8TMdpL/Wt7WYwnP2gqk+Qd1OEmuGUbe
+   soNpzqBut+jLsickD6F9PY6kH9yeqY41RbyTQcChZsiEr4O1J2kIcyBW/
+   C6OvwvKnFFbkK9e9So4otMjtNps0ekALgfCG8PytXvqMHAn7B0QemHsIy
    A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10874"; a="372511623"
+X-IronPort-AV: E=McAfee;i="6600,9927,10874"; a="390324289"
 X-IronPort-AV: E=Sophos;i="6.03,253,1694761200"; 
-   d="scan'208";a="372511623"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2023 23:04:04 -0700
+   d="scan'208";a="390324289"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2023 23:05:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10874"; a="932617074"
+X-IronPort-AV: E=McAfee;i="6600,9927,10874"; a="849802087"
 X-IronPort-AV: E=Sophos;i="6.03,253,1694761200"; 
-   d="scan'208";a="932617074"
+   d="scan'208";a="849802087"
 Received: from lkp-server01.sh.intel.com (HELO 8917679a5d3e) ([10.239.97.150])
-  by orsmga005.jf.intel.com with ESMTP; 25 Oct 2023 23:04:03 -0700
+  by FMSMGA003.fm.intel.com with ESMTP; 25 Oct 2023 23:05:03 -0700
 Received: from kbuild by 8917679a5d3e with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1qvtTM-0009WE-2B;
-	Thu, 26 Oct 2023 06:04:00 +0000
-Date: Thu, 26 Oct 2023 14:03:05 +0800
+	id 1qvtUK-0009WJ-2N;
+	Thu, 26 Oct 2023 06:05:00 +0000
+Date: Thu, 26 Oct 2023 14:04:51 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 47b8def9358c5eb888e78b24b7e5b7f2e2e97b8e
-Message-ID: <202310261401.8G40XwbS-lkp@intel.com>
+Subject: [powerpc:next] BUILD SUCCESS
+ 36e826b568e412f61d68fedc02a67b4d8b7583cc
+Message-ID: <202310261448.UcbEqKwd-lkp@intel.com>
 User-Agent: s-nail v14.9.24
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,10 +70,10 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 47b8def9358c5eb888e78b24b7e5b7f2e2e97b8e  powerpc/mm: Avoid calling arch_enter/leave_lazy_mmu() in set_ptes
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+branch HEAD: 36e826b568e412f61d68fedc02a67b4d8b7583cc  powerpc/vmcore: Add MMU information to vmcoreinfo
 
-elapsed time: 1483m
+elapsed time: 1497m
 
 configs tested: 200
 configs skipped: 2
