@@ -4,49 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DF7EC25B67
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:23:41 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=awF+gGUp;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06572C25B67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:24:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGzK80QZxz3w4j
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:23:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=awF+gGUp;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGzKf5B1Qz3wWR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:24:06 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzd54JRz3cTF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1698401302;
-	bh=4zpW2Ej49O+fw+/4GVGtCLrWkB843lWN/CxSuwPn4BI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=awF+gGUprdTX8E8+1W2BshMTrSwBbWbMXAYFevxbBf1FuEeJAo6dOP3qRpxaPTMaw
-	 kt6EiU/bqVeq6hhg3aCnWfLTsd8IodBgc6qPCxjqWh5ab62QxFm1RM6EPWDVGdb8LQ
-	 JgxxaKfKr7oTu1J037vGSC3v5MhoBruiOKVXYWqxmMWHLF93Bap+9poA0E49YwoI73
-	 Q9IPpIsilq/BvKBhLD+saiTR+f5XmaUzjddq/OlkTvHIX58ZQS9GXazhJYmnN+cZip
-	 zhQ4M77LPyqHw1jZpENok3uxVK2era6x9l7r6COeY476XZ4NiA/Pb23/knKKdvB8p6
-	 G7RfB40mmoIJw==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGz234Vl5z3dLj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:10:35 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzV3CCcz4xX9;
-	Fri, 27 Oct 2023 21:08:22 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Naveen N Rao <naveen@kernel.org>
-In-Reply-To: <20230530093821.298590-1-naveen@kernel.org>
-References: <20230530093821.298590-1-naveen@kernel.org>
-Subject: Re: [PATCH] powerpc/tools: Pass -mabi=elfv2 to gcc-check-mprofile-kernel.sh
-Message-Id: <169840079682.2701453.13462664634309720164.b4-ty@ellerman.id.au>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGz233KQ0z4xWS;
+	Fri, 27 Oct 2023 21:10:35 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Stanislav Kinsburskii <skinsburskii@linux.microsoft.com>
+In-Reply-To: <168155718437.13678.714141668943813263.stgit@skinsburskii.localdomain>
+References: <168155718437.13678.714141668943813263.stgit@skinsburskii.localdomain>
+Subject: Re: [PATCH 0/7] Expect immutable pointer in virt_to_phys/isa_virt_to_bus prototypes
+Message-Id: <169840079674.2701453.2906749813304412928.b4-ty@ellerman.id.au>
 Date: Fri, 27 Oct 2023 20:59:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,20 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 30 May 2023 15:08:21 +0530, Naveen N Rao wrote:
-> Toolchains don't always default to the ELFv2 ABI. This is true with at
-> least the kernel.org toolchains. As such, pass -mabi=elfv2 explicitly to
-> ensure that we are testing against the correct compiler output.
+On Sat, 15 Apr 2023 04:17:19 -0700, Stanislav Kinsburskii wrote:
+> This series is aimed to address compilation warnings when a constant pointer
+> is passed to virt_to_phys and isa_virt_to_bus functions:
 > 
+>   warning: passing argument 1 of ‘virt_to_phys’ discards ‘const’ qualifier from pointer target type
+>   warning: passing argument 1 of ‘isa_virt_to_bus’ discards ‘const’ qualifier from pointer target type
 > 
+> The change(s) is the same for all architectures, but it's split into a series on
+> per-arch basis to simplify applying and testing on the maintainers side.
+> 
+> [...]
 
-Applied to powerpc/next.
+Patch 6 applied to powerpc/next.
 
-[1/1] powerpc/tools: Pass -mabi=elfv2 to gcc-check-mprofile-kernel.sh
-      https://git.kernel.org/powerpc/c/d42f55e8ae741540d0d2ebab8ff02f68fb0c802f
+[6/7] powerpc: asm/io.h: Expect immutable pointer in virt_to_phys prototype
+      https://git.kernel.org/powerpc/c/b28d1ccf921a4333be14017d82066386d419e638
 
 cheers
