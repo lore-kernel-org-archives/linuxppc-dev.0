@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 545BFC25B67
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33686C25B67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:17:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kG9V+Tlb;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ECsiud9L;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz8l06C3z3cYj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:16:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz9f6TsTz3vmD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:17:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kG9V+Tlb;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ECsiud9L;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzS4nfPz3cQ7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzT0pKMz3cQq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1698401300;
-	bh=cEQzeRUXv06MDDaWaCL3j8A2cyadnKJYI/xOqlzkLb8=;
+	s=201909; t=1698401301;
+	bh=jtuCWNKuE/h7zD2BeBm3DoEXh/mgySFqwyRN11JrCB0=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=kG9V+TlbtxYc6/VtuMoWuvBZZA96pY4nS+XT7Nk8tNGzXDS0qUTJDw/iom4amzGUs
-	 o5mf0oL6rVs5GyxnE2jxhg++oQteRkEejCVvNm/DQnoQRDlMJ4ETcOqg7kX0b0MhHA
-	 ZPH6Vvd1Aj528Vy5h1it58MVthf85Mu6xu1t/2v/bTtrTPXuRbuftFMCW0lS6EuFCF
-	 npUrn+8EMpsdjyGdcULpKW8b9OkQSVaV+7Vki9jN8aZwzVfjM5Sy/+n+V+rm05kD4g
-	 laosIOu2TNnig+8K9IYQq5RytOfrHgJf0UO4Lsv/e4jvFJalxkVeiBuRWrX9grNYjR
-	 BjoGVMRreDrMw==
+	b=ECsiud9L4hpYSVBuhqqg+PWooHWULZGIoQRUwr5//eEDwnO6Pncwp3gV8iHlXu99w
+	 mpchcTlkkrMeiX+UXhquvTZKzHiW7QVJxkfjjebQ28rP464hoyEKw0BltCSj8elq6m
+	 6RhJvnOFv7CE3hBqwsfL+tLMCQ3FDh6NKCwgStvh/mYXizaaFlq60b+x9iLVCiImsb
+	 17YbMcNbby9awVq4fk6+cnfErbuZTiMamUzuOkNkbqDoq+MHSNxctHjGWTTqgLh6ij
+	 aDLNJVZnrtP3MJIKPhZ8u0Dj38PQPuq0Du7TS2mVYn3HW8Qqgtt06Jn/HbHjVoDSTE
+	 0XEcrTS/I8QBA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzS0qnXz4xWm;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzS6kLTz4xWn;
 	Fri, 27 Oct 2023 21:08:20 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20231020141358.643575-1-hbathini@linux.ibm.com>
-References: <20231020141358.643575-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH v7 0/5] powerpc/bpf: use BPF prog pack allocator
-Message-Id: <169840079686.2701453.13107509549614413199.b4-ty@ellerman.id.au>
+To: martin.lau@linux.dev, yonghong.song@linux.dev, john.fastabend@gmail.com, Muhammad Muzammil <m.muzzammilashraf@gmail.com>
+In-Reply-To: <20231013053118.11221-1-m.muzzammilashraf@gmail.com>
+References: <20231013053118.11221-1-m.muzzammilashraf@gmail.com>
+Subject: Re: [PATCH] arch: powerpc: net: bpf_jit_comp32.c: Fixed 'instead' typo
+Message-Id: <169840079668.2701453.302685477788337592.b4-ty@ellerman.id.au>
 Date: Fri, 27 Oct 2023 20:59:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -58,34 +58,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 20 Oct 2023 19:43:53 +0530, Hari Bathini wrote:
-> Most BPF programs are small, but they consume a page each. For systems
-> with busy traffic and many BPF programs, this may also add significant
-> pressure on instruction TLB. High iTLB pressure usually slows down the
-> whole system causing visible performance degradation for production
-> workloads.
+On Fri, 13 Oct 2023 10:31:18 +0500, Muhammad Muzammil wrote:
+> Fixed 'instead' typo
 > 
-> bpf_prog_pack, a customized allocator that packs multiple bpf programs
-> into preallocated memory chunks, was proposed [1] to address it. This
-> series extends this support on powerpc.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/5] powerpc/code-patching: introduce patch_instructions()
-      https://git.kernel.org/powerpc/c/465cabc97b42405eb89380ea6ba8d8b03e4ae1a2
-[2/5] powerpc/bpf: implement bpf_arch_text_copy
-      https://git.kernel.org/powerpc/c/6efc1675acb88eef45ef0156b93f95d66a8ee759
-[3/5] powerpc/bpf: implement bpf_arch_text_invalidate for bpf_prog_pack
-      https://git.kernel.org/powerpc/c/033ffaf0af1f974ecf401db3f70aae6fe1a90fc5
-[4/5] powerpc/bpf: rename powerpc64_jit_data to powerpc_jit_data
-      https://git.kernel.org/powerpc/c/de04e40600ae15fa5e484be242e74aad6de7418f
-[5/5] powerpc/bpf: use bpf_jit_binary_pack_[alloc|finalize|free]
-      https://git.kernel.org/powerpc/c/90d862f370b6e9de1b5d607843c5a2f9823990f3
+[1/1] arch: powerpc: net: bpf_jit_comp32.c: Fixed 'instead' typo
+      https://git.kernel.org/powerpc/c/4b47b0fa4b15e0de916e7dd93cd787fdab208ff2
 
 cheers
