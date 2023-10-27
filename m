@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FAAEC25B47
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:14:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89566C25B47
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:14:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HsM795jW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jQzILde5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz5z0ttNz3cgM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:13:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz6v1qVmz3dVZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:14:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HsM795jW;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jQzILde5;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzQ5qvhz3cCH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzR1nw2z3cFh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1698401298;
-	bh=SPAGDpDz2k/2kguqhl8Z+gROPqCD/5aODXVh/os0Cbc=;
+	s=201909; t=1698401299;
+	bh=0tSupoaXw3PNm+1ssTFm6jQxgNKdnFhV/B2IybUSobA=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=HsM795jWPXFnOnk0M1FPzOceaIeclRS7j+TcuJss3VixbC04tSeLgjThN7oHVcDLi
-	 TvW6YzJOFCT1sRaPssBNOI3ddyGhtpM0acR40OeGby66ZXLP20pDvbs86B8DCVbvaA
-	 KR7r730jGpBM6AQGUts2roI91Xp56sasQmAcDC6VMRTEY2vRvtJ+R+MtZwzJKmxvkP
-	 529z1y4d4/lNQt16aSpoPWpDOKd7tdlDq3mevSGWTy/zXXIaqOuyceWb24Jv13eimZ
-	 BoPkuUk3LkXnYOPrPmq5X1BhthZe33jH6Yz14YkFKnvCOAJNu4JsQTGg1LewmFb2yl
-	 dvaM6WSsNGgTQ==
+	b=jQzILde5pelxgGYr760bO3cfAdt+bZ7Ta907VVMaUe4oT5X9nX+HJlckc9Y0OzbzP
+	 YnO2eH/U1i4M9q5jcX9ha4A6bY3JZdaLKhf5tBrNK1g1Yv8eCXDVT4iGkoURtoM/IC
+	 KIFs/XBpb7HmmKEDYZtcA1oi4Jypgh2qiaFCjtZh5SkpEa1ABy2Ul+Nx8N8yNpq5iB
+	 tpThaHfnLs7N9Jhh+R/Pc6lfYN+ek3YKlmuF8r2fWKYfNfeQV8s1QaDptFeKNhLtDf
+	 8EKSSqN9VAMzsPiETBkpfbWXnQcC0P23vgLs8xDqZj/pgcBpmOIvA3W1hZTGFXDXhZ
+	 tDBLeYbijpsJQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzQ1RzFz4xWb;
-	Fri, 27 Oct 2023 21:08:18 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzR0XgGz4xWf;
+	Fri, 27 Oct 2023 21:08:19 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Minjie Du <duminjie@vivo.com>
-In-Reply-To: <20230717092648.9752-1-duminjie@vivo.com>
-References: <20230717092648.9752-1-duminjie@vivo.com>
-Subject: Re: [PATCH v1] powerpc/pseries: use kfree_sensitive() in plpks_gen_password()
-Message-Id: <169840079685.2701453.1853260380342531870.b4-ty@ellerman.id.au>
+To: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+In-Reply-To: <20231003030802.47914-1-gbatra@linux.vnet.ibm.com>
+References: <20231003030802.47914-1-gbatra@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries/iommu: enable_ddw incorrectly returns direct mapping for SR-IOV device
+Message-Id: <169840079678.2701453.14213017318168478377.b4-ty@ellerman.id.au>
 Date: Fri, 27 Oct 2023 20:59:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -58,20 +58,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: opensource.kernel@vivo.com
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, gjoyce@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Jul 2023 17:26:48 +0800, Minjie Du wrote:
-> password might contain private information, so better use
-> kfree_sensitive to free it.
-> In plpks_gen_password() use kfree_sensitive().
+On Mon, 02 Oct 2023 22:08:02 -0500, Gaurav Batra wrote:
+> When a device is initialized, the driver invokes dma_supported() twice -
+> first for streaming mappings followed by coherent mappings. For an
+> SR-IOV device, default window is deleted and DDW created. With vPMEM
+> enabled, TCE mappings are dynamically created for both vPMEM and SR-IOV
+> device.  There are no direct mappings.
 > 
+> First time when dma_supported() is called with 64 bit mask, DDW is created
+> and marked as dynamic window. The second time dma_supported() is called,
+> enable_ddw() finds existing window for the device and incorrectly returns
+> it as "direct mapping".
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: use kfree_sensitive() in plpks_gen_password()
-      https://git.kernel.org/powerpc/c/ca2b746d5f91a37f01baedff54b9315a50ee617d
+[1/1] powerpc/pseries/iommu: enable_ddw incorrectly returns direct mapping for SR-IOV device
+      https://git.kernel.org/powerpc/c/3bf983e4e93ce8e6d69e9d63f52a66ec0856672e
 
 cheers
