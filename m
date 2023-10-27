@@ -4,47 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D185CC25B67
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:09:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F229C25B47
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:10:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FLndooOa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ReDZGBiq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz1C3dttz3dD2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:09:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz271ZgKz3dLq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:10:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FLndooOa;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ReDZGBiq;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzM0sn6z3bWH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:15 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4SGyzM0JMjz4xVb; Fri, 27 Oct 2023 21:08:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzN0PVXz3c13
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1698401295;
-	bh=rouP6sw+8W5XSrbBGcfctIt7whzXGBCXOyfOKiyF3Vo=;
+	bh=KDsvzW99/6MUtGF6A21Q7TspVKEYplpYhiBKkLhuJJg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=FLndooOa+O6PYOh/pYDt33DEiBwE7/zbuEll86J3MnK6pkSpoXpgi3wWBYJYvxeC9
-	 jNtf+ZQ7Uqztu3hstE5pX71GZl+972bQw0UWsOXtrV1ZOFZGtqxcV84D0UsY2cgs4F
-	 ktCCd4aHEh/zPhWMjS6icGQ+iGZlhQT19kUXIC9+HlyirhKrswQkDGHg6+YeahYqvP
-	 wG64geXioH1/z2/4Y8W660CFcrmorwvSuUZwo2m++8rLZDvpIZZNg74kV9wMIbJ4ry
-	 U24SdpZfrGuKMkBg5XlmSdpAt0owIYuFMVNtpafra+Sla10vt7dKULlryRLmadISTQ
-	 T9h/3WGqW8mdA==
+	b=ReDZGBiqj633/pzOOlM4lkGwCG9ptpwWu94S2VSgVoSY2hyRmmNkg7rORzvefRW7p
+	 lpr3nZeOEXP9QcUPhYqHPxCpwI6ArMXdGMjXEL9zzxZdiHs8Xi5lL2ZoRaVo6VRq4j
+	 SjrYJNh/S81DbsZVPUNpGlv0p5fGWp0rszRJMz/7erRmi4qWGsuYI1FLuFl5xyE6vX
+	 e+3FITbfdPMnD57hakXPvDDoliTygMJkcO/chbkxzFN3u6K8iRzkjPkP6BLyWvNKiZ
+	 lzVXmztc9FyORTqhzGQjHfy8nUHVcTQHMDF44rYvhZqlsqJn0QFY3tqI//1+fGDP+V
+	 hBhK33dpxUr0Q==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzL6cc3z4xVZ;
-	Fri, 27 Oct 2023 21:08:14 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzM6KZyz4xWS;
+	Fri, 27 Oct 2023 21:08:15 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>
-In-Reply-To: <20231023072612.50874-1-adityag@linux.ibm.com>
-References: <20231023072612.50874-1-adityag@linux.ibm.com>
-Subject: Re: [PATCH] ppc64: add mmu information to vmcoreinfo
-Message-Id: <169840079688.2701453.15154354310571529574.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+In-Reply-To: <20230309134831.Nz12nqsU@linutronix.de>
+References: <20230309134831.Nz12nqsU@linutronix.de>
+Subject: Re: [PATCH] powerpc/imc-pmu: Use the correct spinlock initializer.
+Message-Id: <169840079680.2701453.3088502811732499350.b4-ty@ellerman.id.au>
 Date: Fri, 27 Oct 2023 20:59:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -60,23 +58,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Hari Bathini <hbathini@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Sachin Sant <sachinp@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Kajol Jain <kjain@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 23 Oct 2023 12:56:12 +0530, Aditya Gupta wrote:
-> Since below commit, address mapping for vmemmap has changed for Radix
-> MMU, where address mapping is stored in kernel page table itself,
-> instead of earlier used 'vmemmap_list'.
+On Thu, 09 Mar 2023 14:48:31 +0100, Sebastian Andrzej Siewior wrote:
+> The macro __SPIN_LOCK_INITIALIZER() is implementation specific. Users
+> that desire to initialize a spinlock in a struct must use
+> __SPIN_LOCK_UNLOCKED().
 > 
->     commit 368a0590d954 ("powerpc/book3s64/vmemmap: switch radix to use
->     a different vmemmap handling function")
+> Use __SPIN_LOCK_UNLOCKED() for the spinlock_t in imc_global_refc.
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] ppc64: add mmu information to vmcoreinfo
-      https://git.kernel.org/powerpc/c/36e826b568e412f61d68fedc02a67b4d8b7583cc
+[1/1] powerpc/imc-pmu: Use the correct spinlock initializer.
+      https://git.kernel.org/powerpc/c/007240d59c11f87ac4f6cfc6a1d116630b6b634c
 
 cheers
