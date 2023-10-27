@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33686C25B67
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:17:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5FB0C25B67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:17:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ECsiud9L;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VJiq8279;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz9f6TsTz3vmD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:17:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGzBZ3nLgz3dVw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:17:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ECsiud9L;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VJiq8279;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzT0pKMz3cQq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzT4FDvz3cQH
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1698401301;
-	bh=jtuCWNKuE/h7zD2BeBm3DoEXh/mgySFqwyRN11JrCB0=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=ECsiud9L4hpYSVBuhqqg+PWooHWULZGIoQRUwr5//eEDwnO6Pncwp3gV8iHlXu99w
-	 mpchcTlkkrMeiX+UXhquvTZKzHiW7QVJxkfjjebQ28rP464hoyEKw0BltCSj8elq6m
-	 6RhJvnOFv7CE3hBqwsfL+tLMCQ3FDh6NKCwgStvh/mYXizaaFlq60b+x9iLVCiImsb
-	 17YbMcNbby9awVq4fk6+cnfErbuZTiMamUzuOkNkbqDoq+MHSNxctHjGWTTqgLh6ij
-	 aDLNJVZnrtP3MJIKPhZ8u0Dj38PQPuq0Du7TS2mVYn3HW8Qqgtt06Jn/HbHjVoDSTE
-	 0XEcrTS/I8QBA==
+	bh=FC7+h/MMImsoh32pZqwqSJlj4+oAhJfsLfQ4WI0iOMA=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=VJiq827950XnrpbuGLaDaTEcbGj9x9VsNZvxqUuWYMcv0O+6Mg9aPi8QDuPb7AooI
+	 nP+h7Z/Anx7eofbABQNMaUDVsdHF9Lf4wGo3Jz68yUrrEva2h1vEVFPoke+qwM4Thy
+	 MoYDlDOTRSI144GT4XR2aqWvoUpIkMjdvzslUgDiYs8EaZMDzsr4Pk5Dq7FryrpRvB
+	 2B/CdMcwXWD1xLR8X9rOwZ3lzCjmPhFCeWhnHcdrYOQe/etsO6FD0LhgAT3vGA7cEf
+	 j+XcTslxOLEhth//rfzYNca7b9fV3qwCceFzl9qgIKnU+sNovhNvpH1cTMJhN8coxI
+	 Pq+J0Jqw+q+5w==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzS6kLTz4xWn;
-	Fri, 27 Oct 2023 21:08:20 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzT3523z4xWq;
+	Fri, 27 Oct 2023 21:08:21 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: martin.lau@linux.dev, yonghong.song@linux.dev, john.fastabend@gmail.com, Muhammad Muzammil <m.muzzammilashraf@gmail.com>
-In-Reply-To: <20231013053118.11221-1-m.muzzammilashraf@gmail.com>
-References: <20231013053118.11221-1-m.muzzammilashraf@gmail.com>
-Subject: Re: [PATCH] arch: powerpc: net: bpf_jit_comp32.c: Fixed 'instead' typo
-Message-Id: <169840079668.2701453.302685477788337592.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20231023092319.1507325-1-mpe@ellerman.id.au>
+References: <20231023092319.1507325-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/32s: Implement local_flush_tlb_page_psize()
+Message-Id: <169840079686.2701453.11411354355592178144.b4-ty@ellerman.id.au>
 Date: Fri, 27 Oct 2023 20:59:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -58,18 +58,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 13 Oct 2023 10:31:18 +0500, Muhammad Muzammil wrote:
-> Fixed 'instead' typo
+On Mon, 23 Oct 2023 20:23:19 +1100, Michael Ellerman wrote:
+> There's a single call to local_flush_tlb_page_psize() in the code
+> patching code. That call is never executed on 32-bit Book3S,
+> because it's guarded by mm_patch_enabled() which is essentially a
+> radix_enabled() check, which is always false on 32s.
 > 
+> However depending on how the optimiser sees things it may still trip
+> over the BUILD_BUG() in the 32s stub of local_flush_tlb_page_psize().
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] arch: powerpc: net: bpf_jit_comp32.c: Fixed 'instead' typo
-      https://git.kernel.org/powerpc/c/4b47b0fa4b15e0de916e7dd93cd787fdab208ff2
+[1/1] powerpc/32s: Implement local_flush_tlb_page_psize()
+      https://git.kernel.org/powerpc/c/aad26d3b6af13c055b1d05dd253d2484551bde55
 
 cheers
