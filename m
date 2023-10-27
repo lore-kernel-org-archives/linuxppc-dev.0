@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F229C25B47
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:10:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79DD9C25B67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 10:11:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ReDZGBiq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i8BMO8t6;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz271ZgKz3dLq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:10:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SGz330CY7z3dW3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 21:11:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ReDZGBiq;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i8BMO8t6;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzN0PVXz3c13
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SGyzN740dz3bx0
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 21:08:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1698401295;
-	bh=KDsvzW99/6MUtGF6A21Q7TspVKEYplpYhiBKkLhuJJg=;
+	s=201909; t=1698401296;
+	bh=30OBHWUfyQHjnBWbrlGeUaI2WXMNAW9Re3MJ+2tSPpc=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=ReDZGBiqj633/pzOOlM4lkGwCG9ptpwWu94S2VSgVoSY2hyRmmNkg7rORzvefRW7p
-	 lpr3nZeOEXP9QcUPhYqHPxCpwI6ArMXdGMjXEL9zzxZdiHs8Xi5lL2ZoRaVo6VRq4j
-	 SjrYJNh/S81DbsZVPUNpGlv0p5fGWp0rszRJMz/7erRmi4qWGsuYI1FLuFl5xyE6vX
-	 e+3FITbfdPMnD57hakXPvDDoliTygMJkcO/chbkxzFN3u6K8iRzkjPkP6BLyWvNKiZ
-	 lzVXmztc9FyORTqhzGQjHfy8nUHVcTQHMDF44rYvhZqlsqJn0QFY3tqI//1+fGDP+V
-	 hBhK33dpxUr0Q==
+	b=i8BMO8t6Y4KHqTx8aUV5Zw4npGWR8icDA0Xv/4pqRaVRUM03VA16MiLOb78fabd3C
+	 AiKl8545U4Tepu0sA+VFzcWMD+xuN9/a7cZUWexLo2Izbu9sGvj53Ad5n8deRgubs2
+	 vKE2jyhylRvMPvluSCFHjt/H8z7dNm/MN6U5lA86pmpiWo7ZjYBL6ld9xZwkIgzHzl
+	 elosUl/zMPN5EfPwD9QLl29qPlMLGuBLfR8+PUSkntuXDhS6xwytpFctYPPNQZoHis
+	 A+pnoAvAoo5JPFPQiy6HGIYbQGs3MnF0EGFYMI9x4GhbLqcwdg3rzvnuyEu3ODysto
+	 4XJeiC5kSdKTg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzM6KZyz4xWS;
-	Fri, 27 Oct 2023 21:08:15 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SGyzN2hTPz4xVb;
+	Fri, 27 Oct 2023 21:08:16 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-In-Reply-To: <20230309134831.Nz12nqsU@linutronix.de>
-References: <20230309134831.Nz12nqsU@linutronix.de>
-Subject: Re: [PATCH] powerpc/imc-pmu: Use the correct spinlock initializer.
-Message-Id: <169840079680.2701453.3088502811732499350.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <e88b154eaf2efd9ff177d472d3411dcdec8ff4f5.1696675567.git.christophe.leroy@csgroup.eu>
+References: <e88b154eaf2efd9ff177d472d3411dcdec8ff4f5.1696675567.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/code-patching: Perform hwsync in __patch_instruction() in case of failure
+Message-Id: <169840079684.2701453.17093858702248932899.b4-ty@ellerman.id.au>
 Date: Fri, 27 Oct 2023 20:59:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -58,23 +58,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, Kajol Jain <kjain@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>
+Cc: "Christopher M . Riedl" <cmr@bluescreens.de>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 09 Mar 2023 14:48:31 +0100, Sebastian Andrzej Siewior wrote:
-> The macro __SPIN_LOCK_INITIALIZER() is implementation specific. Users
-> that desire to initialize a spinlock in a struct must use
-> __SPIN_LOCK_UNLOCKED().
+On Sat, 07 Oct 2023 12:46:19 +0200, Christophe Leroy wrote:
+> Commit c28c15b6d28a ("powerpc/code-patching: Use temporary mm for
+> Radix MMU") added a hwsync for when __patch_instruction() fails,
+> we results in a quite odd unbalanced logic.
 > 
-> Use __SPIN_LOCK_UNLOCKED() for the spinlock_t in imc_global_refc.
-> 
+> Instead of calling mb() when __patch_instruction() returns an error,
+> call mb() in the __patch_instruction()'s error path directly.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/imc-pmu: Use the correct spinlock initializer.
-      https://git.kernel.org/powerpc/c/007240d59c11f87ac4f6cfc6a1d116630b6b634c
+[1/1] powerpc/code-patching: Perform hwsync in __patch_instruction() in case of failure
+      https://git.kernel.org/powerpc/c/74726fda9fe306f848088ef73ec266cae0470d5b
 
 cheers
