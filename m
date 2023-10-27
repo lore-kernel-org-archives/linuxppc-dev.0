@@ -4,96 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9740CC25B47
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 18:13:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2A9CC25B6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Oct 2023 18:23:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R+S5bTdg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=iwmL1u3y;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SH9km6KJ8z3cZ9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Oct 2023 05:13:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SH9yl171vz3cF4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Oct 2023 05:23:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R+S5bTdg;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=iwmL1u3y;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=34_87zqykdaqwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x649.google.com (mail-pl1-x649.google.com [IPv6:2607:f8b0:4864:20::649])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SH9jp11Brz2yDt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2023 05:12:14 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SH9jj2xwjz4x5K
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2023 05:12:09 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4SH9jj2s3bz4x2P; Sat, 28 Oct 2023 05:12:09 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R+S5bTdg;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SH9jh70Kcz4wy6;
-	Sat, 28 Oct 2023 05:12:08 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39RHwrSO014438;
-	Fri, 27 Oct 2023 18:12:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : content-type : in-reply-to :
- mime-version; s=pp1; bh=uxZQeuJmYftS+QBKpybqUAxdzwKzd914IvdqS7Kmw/4=;
- b=R+S5bTdgYbtv0IqHrHZNsJj4GvFJnJNB877fNc1o2lf75goJLlOUjLf/BYdmjM0vabnd
- iatSPz/r0R2fP6bfBVy+7BzwIgjLCfRXb7yhMpLTohB+qxDYXiKGdBUCo8u01DtU1+B7
- VVaPIT67Z0FjNM5zxd1DOByU2R5l+n70gtNWrruf/1InzuZ8SUb5yCFuwdRim1y/YhaQ
- KOUk8ZBmuYwyOlyc+E77wtVXccjZmSYL9Yf+IBhZ65xrGMD5AQpLRFaulLzpA4z8Ia1k
- 3XzvOvnbw14NggHAd95FbXvixX7ICaYf8x54fOSQlfu5oy0oan8Td30clPJzWa9QF1Ua LQ== 
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u0h7f9rsx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Oct 2023 18:12:06 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39RG0eRx026909;
-	Fri, 27 Oct 2023 18:12:05 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3tywqrpw6t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Oct 2023 18:12:05 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39RIC2Pc11731546
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Oct 2023 18:12:02 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1B0692004B;
-	Fri, 27 Oct 2023 18:12:02 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0EE1C20040;
-	Fri, 27 Oct 2023 18:12:00 +0000 (GMT)
-Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.ibm.com (unknown [9.179.24.245])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 27 Oct 2023 18:11:59 +0000 (GMT)
-Date: Fri, 27 Oct 2023 23:41:54 +0530
-From: Aditya Gupta <adityag@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] ppc64: add mmu information to vmcoreinfo
-Message-ID: <d52bvisvucuiqhel3rr6fbonvkey4vqkob6u4oevk5ibgoxzcp@52fjqw77w7rh>
-References: <20231023072612.50874-1-adityag@linux.ibm.com>
- <169840079688.2701453.15154354310571529574.b4-ty@ellerman.id.au>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <169840079688.2701453.15154354310571529574.b4-ty@ellerman.id.au>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ZK1Ld0OuRHV6JpNAfA9OVwhopq3Aj4Hz
-X-Proofpoint-GUID: ZK1Ld0OuRHV6JpNAfA9OVwhopq3Aj4Hz
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
-MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-27_17,2023-10-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- impostorscore=0 spamscore=0 mlxlogscore=247 priorityscore=1501
- suspectscore=0 phishscore=0 mlxscore=0 clxscore=1015 bulkscore=0
- malwarescore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2310240000 definitions=main-2310270157
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SH9xj4vHKz3bwX
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2023 05:22:31 +1100 (AEDT)
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-1c9d140fcddso23363995ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2023 11:22:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1698430947; x=1699035747; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
+        bh=ySJgJVuGTMb9d8TKULAih8JyrrSd4YVeUb9Jc+6kES0=;
+        b=iwmL1u3yE94/ozfvXG0p/pXwj95slB+n3khaGpUYXostdKldxkt0QuEKDWCroBDycr
+         bXcd5yNRRhHNs5MK3b2wdx9ihWJCcPvfR3LA7cJqNG07NrINXkcjyVTc06hst+Bo7/7+
+         d3ide8i10QzERG6w/OLHNgLFYVto9yjzEkGgcFepp1LZ6zc2v/+gsTu/1PGKRK9M8MsA
+         Fn54/rhFkpnD/VTpoHH+i70OoWRE+2aFFKr1W56if+i6uGbopNN365E1VJHWFpBccp01
+         26+ohPGV8siDqin7K9PBWK9+9wIWHK/C1rIghDXd4X3qekysIk0ektiQ7phHFO4l9On7
+         UIyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698430947; x=1699035747;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ySJgJVuGTMb9d8TKULAih8JyrrSd4YVeUb9Jc+6kES0=;
+        b=IVef4ZiyFpexOwFrjHSHdtGYnBpkXr2syARz1jgOfFFkLdhzx8BQBFlz71Sx3f/ae/
+         8ysdQaGLPBxlkxJCuLaLgr4RZM6YmdcWvovt32Ufkqn/SAQl2yNiFgI/AwjgKP6MHg5D
+         AKSNg9Lnel/0q/zJhMIkWUYwRhO4JxcttCsW/O2Ao/wjfOhQSivdEYiMvVtwO8c+Gi3j
+         NImvdCuFQeEg+drOjS3zq+gywVtK6ETBeJb6jnAd5H23jKqFJb6/W4BKeW7Ugbr0kxrx
+         cSeMVxa+He3QPloHy9WEh1BZGpaQfshHXrEjQnLUXsLfXEtud9UtERhehTCrNhMPSUtM
+         xQNA==
+X-Gm-Message-State: AOJu0YyOQtSvwTUeC5XFn9v6hb/u49oX8RKm97UVmUDdZe2RqyrejdUv
+	9cB9JZ3ynxODMniXud//7o24R3fjLa0=
+X-Google-Smtp-Source: AGHT+IEjsuFrlNkUUm601K8PUP+r8R6hCJNbQUJrGpc/pHCXTUzh4iBnaMaTICwCQxjFnojaM1raJDMMRNs=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a17:902:ac8e:b0:1cc:30cf:eae6 with SMTP id
+ h14-20020a170902ac8e00b001cc30cfeae6mr955plr.10.1698430947671; Fri, 27 Oct
+ 2023 11:22:27 -0700 (PDT)
+Date: Fri, 27 Oct 2023 11:21:43 -0700
+In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
+Mime-Version: 1.0
+References: <20231027182217.3615211-1-seanjc@google.com>
+X-Mailer: git-send-email 2.42.0.820.g83a721a137-goog
+Message-ID: <20231027182217.3615211-2-seanjc@google.com>
+Subject: [PATCH v13 01/35] KVM: Tweak kvm_hva_range and hva_handler_t to allow
+ reusing for gfn ranges
+From: Sean Christopherson <seanjc@google.com>
+To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Sean Christopherson <seanjc@google.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,27 +82,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org, Sachin Sant <sachinp@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
+Reply-To: Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Xiaoyao Li <xiaoyao.li@intel.com>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, linux-arm-kernel@lists.infradead.org, Maciej Szmigiero <mail@maciej.szmigiero.name>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, David Matlack <dmatlack@google.com>, Vlastimil Babka <vbabka@suse.cz>, =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, kvmarm@lists.linux.dev, linux-mips@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, Yu Zhang <yu.c.zhang@linux.intel.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Vishal Annapurve
+  <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 27, 2023 at 08:59:56PM +1100, Michael Ellerman wrote:
-> On Mon, 23 Oct 2023 12:56:12 +0530, Aditya Gupta wrote:
-> > Since below commit, address mapping for vmemmap has changed for Radix
-> > MMU, where address mapping is stored in kernel page table itself,
-> > instead of earlier used 'vmemmap_list'.
-> > 
-> >     commit 368a0590d954 ("powerpc/book3s64/vmemmap: switch radix to use
-> >     a different vmemmap handling function")
-> > 
-> > [...]
-> 
-> Applied to powerpc/next.
-> 
-> [1/1] ppc64: add mmu information to vmcoreinfo
->       https://git.kernel.org/powerpc/c/36e826b568e412f61d68fedc02a67b4d8b7583cc
-> 
-> cheers
+Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
+that the structure can be used to handle notifications that operate on gfn
+context, i.e. that aren't tied to a host virtual address.  Rename the
+handler typedef too (arguably it should always have been gfn_handler_t).
 
-Thank you.
+Practically speaking, this is a nop for 64-bit kernels as the only
+meaningful change is to store start+end as u64s instead of unsigned longs.
+
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
+ 1 file changed, 19 insertions(+), 15 deletions(-)
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 486800a7024b..0524933856d4 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+ 	return container_of(mn, struct kvm, mmu_notifier);
+ }
+ 
+-typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
++typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
+ 
+ typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
+ 			     unsigned long end);
+ 
+ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+ 
+-struct kvm_hva_range {
+-	unsigned long start;
+-	unsigned long end;
++struct kvm_mmu_notifier_range {
++	/*
++	 * 64-bit addresses, as KVM notifiers can operate on host virtual
++	 * addresses (unsigned long) and guest physical addresses (64-bit).
++	 */
++	u64 start;
++	u64 end;
+ 	union kvm_mmu_notifier_arg arg;
+-	hva_handler_t handler;
++	gfn_handler_t handler;
+ 	on_lock_fn_t on_lock;
+ 	on_unlock_fn_t on_unlock;
+ 	bool flush_on_ret;
+@@ -581,7 +585,7 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIFIER_NO_ARG;
+ 	     node = interval_tree_iter_next(node, start, last))	     \
+ 
+ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+-						  const struct kvm_hva_range *range)
++						  const struct kvm_mmu_notifier_range *range)
+ {
+ 	bool ret = false, locked = false;
+ 	struct kvm_gfn_range gfn_range;
+@@ -608,9 +612,9 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 			unsigned long hva_start, hva_end;
+ 
+ 			slot = container_of(node, struct kvm_memory_slot, hva_node[slots->node_idx]);
+-			hva_start = max(range->start, slot->userspace_addr);
+-			hva_end = min(range->end, slot->userspace_addr +
+-						  (slot->npages << PAGE_SHIFT));
++			hva_start = max_t(unsigned long, range->start, slot->userspace_addr);
++			hva_end = min_t(unsigned long, range->end,
++					slot->userspace_addr + (slot->npages << PAGE_SHIFT));
+ 
+ 			/*
+ 			 * To optimize for the likely case where the address
+@@ -660,10 +664,10 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+ 						unsigned long start,
+ 						unsigned long end,
+ 						union kvm_mmu_notifier_arg arg,
+-						hva_handler_t handler)
++						gfn_handler_t handler)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range range = {
++	const struct kvm_mmu_notifier_range range = {
+ 		.start		= start,
+ 		.end		= end,
+ 		.arg		= arg,
+@@ -680,10 +684,10 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
+ 							 unsigned long start,
+ 							 unsigned long end,
+-							 hva_handler_t handler)
++							 gfn_handler_t handler)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range range = {
++	const struct kvm_mmu_notifier_range range = {
+ 		.start		= start,
+ 		.end		= end,
+ 		.handler	= handler,
+@@ -771,7 +775,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+ 					const struct mmu_notifier_range *range)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range hva_range = {
++	const struct kvm_mmu_notifier_range hva_range = {
+ 		.start		= range->start,
+ 		.end		= range->end,
+ 		.handler	= kvm_unmap_gfn_range,
+@@ -835,7 +839,7 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+ 					const struct mmu_notifier_range *range)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range hva_range = {
++	const struct kvm_mmu_notifier_range hva_range = {
+ 		.start		= range->start,
+ 		.end		= range->end,
+ 		.handler	= (void *)kvm_null_fn,
+-- 
+2.42.0.820.g83a721a137-goog
 
