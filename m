@@ -4,95 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A898C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Oct 2023 12:48:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C614BC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Oct 2023 12:49:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CeRDr//Z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z24caU9i;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SJGRn095rz3cfy
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Oct 2023 23:48:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SJGSj3P3zz3vdQ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Oct 2023 23:49:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CeRDr//Z;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z24caU9i;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SJGNn6cVkz3d94
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2023 23:46:17 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SJGNn65mgz4xPY
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2023 23:46:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SJGP91C8Kz3dRb
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2023 23:46:37 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SJGP90ljxz4xPh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2023 23:46:37 +1100 (AEDT)
 Received: by gandalf.ozlabs.org (Postfix)
-	id 4SJGNn608Qz4wnt; Sun, 29 Oct 2023 23:46:17 +1100 (AEDT)
+	id 4SJGP90gZBz4xPc; Sun, 29 Oct 2023 23:46:37 +1100 (AEDT)
 Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CeRDr//Z;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z24caU9i;
 	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SJGNn2L2Mz4wcX;
-	Sun, 29 Oct 2023 23:46:16 +1100 (AEDT)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39TCieXZ019219;
-	Sun, 29 Oct 2023 12:46:15 GMT
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SJGP85Q0Xz4wnt;
+	Sun, 29 Oct 2023 23:46:36 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39TCFmrh024268;
+	Sun, 29 Oct 2023 12:46:35 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=VQhQbNk6oBGZOPx50QGFVou6/4Ccpv3nMcNOLdbfYe0=;
- b=CeRDr//Zk9FZGTu/HEjbJXVnTZ4yfEA93YOke7o98hkCXeLnx7Ho0IC0F23Fdi1F0BTh
- Tyrpwmm+Kq1QeZLJZLt1W4xoL/zKBVQO6jVGuZhYcJXLMYpmyBzA6b9A2CEOXaHYZ0dV
- 19DZDjF/ONws2T7bqiFJfbfxB8XFQJTDxfO6Vkxu4WoxSZ2rEAknb1hwFXYL9Ql0HkVL
- 0o5en+rgE8HG9vwBC5x6yXi5WsT1srKcF0epaXTbGaxmLLn04ZwUMkkmUCsgg9yefFNV
- VU7tiOC/PFK/qdpwVwTcAXLDEvEI2+zqhHlDfhFtVrbB7fcGX9xkkjwfYWMfov71HqqC /g== 
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u1qnn00ky-1
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=XXpzYAfZtXRQAcYAl/41FbmEXgkg7K3CsuIwPwUxBqc=;
+ b=Z24caU9iUZw7wF3a7D1kD6Zlw8yBpI+7bLpUHFcbOpDqmPiEhxKER4fRGo9lO9Bf+oX6
+ WnF4oqNPD6FyvXOZr6v7y0OcziyJtC3Si8+zNCnuArLzbF8NTsS0pFX1RayODv+o1jHb
+ OFl08SBZ5Bq3nP2pSHgfImuUHij9eBZoAvBZzBm9doMp4GLXDITZWTlT4jmBN8lphMZB
+ 4feWCwkjOn+mcEvOGwfQ3LbfRvI5FUwkWN3S6bJwKOjIfRJ12dB1HOYAJa/ZKLkrulTQ
+ mkcTPbXL8wjEUX92f/uSIc3LgW2d5ZE143Omo5h543hlY08880eQkjbrG8ujttiGip5T yg== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u1ft2eu06-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 29 Oct 2023 12:46:13 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39TALMRV031391;
+	Sun, 29 Oct 2023 12:46:34 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39TBjmY7007664;
 	Sun, 29 Oct 2023 12:46:13 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3u1fb1jaaf-1
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3u1dmn2uy3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Sun, 29 Oct 2023 12:46:13 +0000
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39TCjtQE14090844
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39TCjpBZ24314468
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 29 Oct 2023 12:45:55 GMT
+	Sun, 29 Oct 2023 12:45:51 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B30B32004B;
-	Sun, 29 Oct 2023 12:45:55 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id B090C20043;
+	Sun, 29 Oct 2023 12:45:51 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3BB9F20043;
-	Sun, 29 Oct 2023 12:45:54 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 3889B20040;
+	Sun, 29 Oct 2023 12:45:50 +0000 (GMT)
 Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.98.119])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 29 Oct 2023 12:45:53 +0000 (GMT)
+	Sun, 29 Oct 2023 12:45:49 +0000 (GMT)
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 2/3] powerpc/fadump: add hotplug_ready sysfs interface
-Date: Sun, 29 Oct 2023 18:15:47 +0530
-Message-ID: <20231029124548.12198-3-sourabhjain@linux.ibm.com>
+Subject: [PATCH v5 0/3] powerpc: make fadump resilient with memory add/remove events
+Date: Sun, 29 Oct 2023 18:15:45 +0530
+Message-ID: <20231029124548.12198-1-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231029124548.12198-1-sourabhjain@linux.ibm.com>
-References: <20231029124548.12198-1-sourabhjain@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: shuMjVLy9D_NdSd6cqFmA0ivSmqemSb2
-X-Proofpoint-GUID: shuMjVLy9D_NdSd6cqFmA0ivSmqemSb2
+X-Proofpoint-ORIG-GUID: -VKq6fffTMMD47MnVRES4Qm01t9dWHDy
+X-Proofpoint-GUID: -VKq6fffTMMD47MnVRES4Qm01t9dWHDy
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-28_24,2023-10-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
- malwarescore=0 phishscore=0 priorityscore=1501 spamscore=0
- lowpriorityscore=0 bulkscore=0 mlxlogscore=946 adultscore=0
- impostorscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2310240000 definitions=main-2310290108
+ definitions=2023-10-29_01,2023-10-27_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
+ suspectscore=0 priorityscore=1501 adultscore=0 mlxscore=0
+ lowpriorityscore=0 malwarescore=0 clxscore=1015 mlxlogscore=999
+ spamscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2310240000 definitions=main-2310290110
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,91 +106,112 @@ Cc: Aditya Gupta <adityag@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.co
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The elfcorehdr describes the CPUs and memory of the crashed kernel to
-the kernel that captures the dump, known as the second or fadump kernel.
-The elfcorehdr needs to be updated if the system's memory changes due to
-memory hotplug or online/offline events.
+Problem:
+========
+Due to changes in memory resources caused by either memory hotplug or
+online/offline events, the elfcorehdr, which describes the cpus and
+memory of the crashed kernel to the kernel that collects the dump (known
+as second/fadump kernel), becomes outdated. Consequently, attempting
+dump collection with an outdated elfcorehdr can lead to failed or
+inaccurate dump collection.
 
-Currently, memory hotplug events are monitored in userspace by udev
-rules, and fadump is re-registered, which recreates the elfcorehdr with
-the latest available memory in the system.
+Memory hotplug or online/offline events is referred as memory add/remove
+events in reset of the patch series.
 
-However, the previous patch ("powerpc: make fadump resilient with memory
-add/remove events") moved the creation of elfcorehdr to the second or
-fadump kernel. This eliminates the need to regenerate the elfcorehdr
-during memory hotplug or online/offline events.
+Existing solution:
+==================
+Monitor memory add/remove events in userspace using udev rules, and
+re-register fadump whenever there are changes in memory resources. This
+leads to the creation of a new elfcorehdr with updated system memory
+information.
 
-Create a sysfs entry at /sys/kernel/fadump/hotplug_ready to let
-userspace know that fadump re-registration is not required for memory
-add/remove events.
+Challenges with existing solution:
+==================================
+1. Performing bulk memory add/remove with udev-based fadump
+   re-registration can lead to race conditions and, more importantly,
+   it creates a large wide window during which fadump is inactive until
+   all memory add/remove events are settled.
+2. Re-registering fadump for every memory add/remove event is
+   inefficient.
+3. Memory for elfcorehdr is allocated based on the memblock regions
+   available during first kernel early boot and it remains fixed
+   thereafter. However, if the elfcorehdr is later recreated with
+   additional memblock regions, its size will increase, potentially
+   leading to memory corruption.
 
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Proposed solution:
+==================
+Address the aforementioned challenges by shifting the creation of
+elfcorehdr from the first kernel (also referred as the crashed kernel),
+where it was created and frequently recreated for every memory
+add/remove event, to the fadump kernel. As a result, the elfcorehdr only
+needs to be created once, thus eliminating the necessity to re-register
+fadump during memory add/remove events.
+
+To know more about elfcorehdr creation in the fadump kernel, refer to
+the first patch in this series.
+
+The second patch includes a new sysfs interface that tells userspace
+that fadump re-registration isn't needed for memory add/remove events. 
+note that userspace changes do not need to be in sync with kernel
+changes; they can roll out independently.
+
+Since there are significant changes in the fadump implementation, the
+third patch updates the fadump documentation to reflect the changes made
+in this patch series.
+
+Kernel tree rebased on 6.6-rc7 with patch series applied:
+=========================================================
+https://github.com/sourabhjains/linux/tree/fadump-mem-hotplug
+
+Userspace changes:
+==================
+To realize this feature, one must update the kdump udev rules to prevent
+fadump re-registration during memory add/remove events.
+
+On rhel apply the following changes to file
+/usr/lib/udev/rules.d/98-kexec.rules
+
+-run+="/bin/sh -c '/usr/bin/systemctl is-active kdump.service || exit 0; /usr/bin/systemd-run --quiet --no-block /usr/lib/udev/kdump-udev-throttler'"
++# don't re-register fadump if the value of the node
++# /sys/kernel/fadump/hotplug_ready is 1.
++
++run+="/bin/sh -c '/usr/bin/systemctl is-active kdump.service || exit 0; ! test -f /sys/kernel/fadump_enabled || cat /sys/kernel/fadump_enabled | grep 0  || ! test -f /sys/kernel/fadump/hotplug_ready || cat /sys/kernel/fadump/hotplug_ready | grep 0 || exit 0; /usr/bin/systemd-run --quiet --no-block /usr/lib/udev/kdump-udev-throttler'"
+
+Changelog:
+==========
+v1 -> v2
+- Fixed a few indentation issues reported by the checkpatch script.
+- Rebased it to 6.6.0-rc3
+
+v2 -> v3
+- Assign physical address of elfcorehdr to fdh->elfcorehdr_addr
+- Rename a variable, boot_mem_dest_addr -> boot_mem_dest_offset
+
+v3 -> v4
+- Fix a build warning about type casting
+
+v4 -> v5
+- Fix a comment on the first patch
+
 Cc: Aditya Gupta <adityag@linux.ibm.com>
 Cc: Hari Bathini <hbathini@linux.ibm.com>
 Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
----
- Documentation/ABI/testing/sysfs-kernel-fadump | 12 ++++++++++++
- arch/powerpc/kernel/fadump.c                  | 14 ++++++++++++++
- 2 files changed, 26 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump b/Documentation/ABI/testing/sysfs-kernel-fadump
-index 8f7a64a81783..f8ba21da0f71 100644
---- a/Documentation/ABI/testing/sysfs-kernel-fadump
-+++ b/Documentation/ABI/testing/sysfs-kernel-fadump
-@@ -38,3 +38,15 @@ Contact:	linuxppc-dev@lists.ozlabs.org
- Description:	read only
- 		Provide information about the amount of memory reserved by
- 		FADump to save the crash dump in bytes.
-+What:		/sys/kernel/fadump/hotplug_ready
-+Date:		Sep 2023
-+Contact:	linuxppc-dev@lists.ozlabs.org
-+Description:	read only
-+		The Kdump scripts utilize udev rules to monitor memory add/remove
-+		events, ensuring that FADUMP is automatically re-registered when
-+		system memory changes occur. This re-registration was necessary
-+		to update the elfcorehdr, which describes the system memory to the
-+		second kernel. Now If this sysfs node holds a value of 1, it
-+		indicates to userspace that FADUMP does not require re-registration
-+		since the elfcorehdr is now generated in the second kernel.
-+User:		kexec-tools
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 8fd90afe886e..6c936bb69322 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1475,6 +1475,18 @@ static ssize_t enabled_show(struct kobject *kobj,
- 	return sprintf(buf, "%d\n", fw_dump.fadump_enabled);
- }
- 
-+/*
-+ * /sys/kernel/fadump/hotplug_ready sysfs node only returns 1,
-+ * which inidcates to usersapce that fadump re-registration is not
-+ * required on memory hotplug events.
-+ */
-+static ssize_t hotplug_ready_show(struct kobject *kobj,
-+				      struct kobj_attribute *attr,
-+				      char *buf)
-+{
-+	return sprintf(buf, "%d\n", 1);
-+}
-+
- static ssize_t mem_reserved_show(struct kobject *kobj,
- 				 struct kobj_attribute *attr,
- 				 char *buf)
-@@ -1547,11 +1559,13 @@ static struct kobj_attribute release_attr = __ATTR_WO(release_mem);
- static struct kobj_attribute enable_attr = __ATTR_RO(enabled);
- static struct kobj_attribute register_attr = __ATTR_RW(registered);
- static struct kobj_attribute mem_reserved_attr = __ATTR_RO(mem_reserved);
-+static struct kobj_attribute hotplug_ready_attr = __ATTR_RO(hotplug_ready);
- 
- static struct attribute *fadump_attrs[] = {
- 	&enable_attr.attr,
- 	&register_attr.attr,
- 	&mem_reserved_attr.attr,
-+	&hotplug_ready_attr.attr,
- 	NULL,
- };
- 
+Sourabh Jain (3):
+  powerpc: make fadump resilient with memory add/remove events
+  powerpc/fadump: add hotplug_ready sysfs interface
+  Documentation/powerpc: update fadump implementation details
+
+ Documentation/ABI/testing/sysfs-kernel-fadump |  12 +
+ .../powerpc/firmware-assisted-dump.rst        |  91 ++---
+ arch/powerpc/include/asm/fadump-internal.h    |  24 +-
+ arch/powerpc/kernel/fadump.c                  | 375 +++++++++++-------
+ arch/powerpc/platforms/powernv/opal-fadump.c  |  18 +-
+ arch/powerpc/platforms/pseries/rtas-fadump.c  |  23 +-
+ 6 files changed, 310 insertions(+), 233 deletions(-)
+
 -- 
 2.41.0
 
