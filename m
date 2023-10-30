@@ -4,106 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0ABDC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 07:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 027A6C4167D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 10:08:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YdMsFA6Z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=RKBHp/8H;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=B3MRq1ue;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SJly91jk2z3cHR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 18:58:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SJpr4360Jz3cTn
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 21:08:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YdMsFA6Z;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=RKBHp/8H;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=B3MRq1ue;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.18; helo=wnew4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com [64.147.123.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SJlx83vPfz2xdq
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 18:57:32 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SJlx50179z4wcX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 18:57:28 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4SJlx46nRTz4xDB; Mon, 30 Oct 2023 18:57:28 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YdMsFA6Z;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SJlx44V4pz4wcX
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2023 18:57:28 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39U7BHrb015037;
-	Mon, 30 Oct 2023 07:57:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- subject : to : cc : references : from : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=x0DHrCrbA3J0aEmgZ2ZvFDDkwNYNZ9zfSIbaGC8A9BM=;
- b=YdMsFA6ZjIVOyhlTTnA5EoPiCZCd5H6IpmegwJPLt9LawV2RXxB/ray400J5QPEY+8eL
- kTRKawZ647fqYP09G4a8eAFajgRP5g85oHBk8KQUwox14r0kMdRY9/RfSs3TICPnBXoy
- NwYyAltG+BiRedd/Fb7FthZy0Ih/oaD5nraRAjaR09w5IJKdflUPS9cDkGfaavzJ41Ml
- 6JBIBaKNMDkK8Mc++XZWjPbR2o6RXkzSnvqlUaQEXSUN6guWIUY/y5wpd2zAXE+bWH9x
- QYY1zeAmqLxPD8hB6s35LliPI4g5A0nz36mPY4NyZtgDeDQfIq7UIORCxFLnIncSih2P QA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u251p4xjr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Oct 2023 07:57:01 +0000
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 39U7KjNw024225;
-	Mon, 30 Oct 2023 07:57:00 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u251p4xj2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Oct 2023 07:57:00 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 39U5cHsw007713;
-	Mon, 30 Oct 2023 07:56:59 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3u1dmn7kex-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Oct 2023 07:56:58 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 39U7utEk18940668
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 30 Oct 2023 07:56:55 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 98C6D2004B;
-	Mon, 30 Oct 2023 07:56:55 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C036820040;
-	Mon, 30 Oct 2023 07:56:51 +0000 (GMT)
-Received: from [9.43.56.123] (unknown [9.43.56.123])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 30 Oct 2023 07:56:51 +0000 (GMT)
-Message-ID: <d6e87443-4402-402f-9c98-449cc9fd158f@linux.ibm.com>
-Date: Mon, 30 Oct 2023 13:26:50 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v12 6/6] powerpc: add crash memory hotplug support
-To: kernel test robot <lkp@intel.com>, linuxppc-dev@ozlabs.org
-References: <20231029124039.6158-7-sourabhjain@linux.ibm.com>
- <202310300812.yN6FuPcZ-lkp@intel.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <202310300812.yN6FuPcZ-lkp@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: YUg_rupIguVp5iY-e6851HQxd-kryJB5
-X-Proofpoint-ORIG-GUID: K7-O8qPNq3ZpO55X5WXf8VxaqHoKC1AI
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SJpq20D4Qz30Nr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 21:07:24 +1100 (AEDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+	by mailnew.west.internal (Postfix) with ESMTP id 3E9DC2B00124;
+	Mon, 30 Oct 2023 06:07:19 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute5.internal (MEProxy); Mon, 30 Oct 2023 06:07:21 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm2; t=1698660438; x=1698667638; bh=C0
+	spIghu26RS2wSePnhlO3VNbIZSADnovwnCABmc7C4=; b=RKBHp/8HXI5MdxTLUG
+	sjTD10H5ter+kClY+aYdpwooyGy5f8IwRe3HkozWNFbKQ6hY0uC4rY/abuASM/Ts
+	gbxcuEWLVJU0uf4lk6xr0VuixzVQHiexvztu4A/nIOEY7f4jWFJIWkxl31POeGkW
+	+b4/QuqzYnQvJRXlfpfYfRvAte9fGj6yL5rLJnb1TY6Hk+j1Z60oCeb3eAAMmJCC
+	RRGII1IK5P5SHtegyPe7hfhOsVmHQQPPVLkeTJ26zDJXakEJdWAei1+IL5dELo36
+	BDIOG+oy4YmZoYViF/yWWBbcfz70oqDx7b2hgBh55rf5/zbusVe7BBo4vx5Cup8/
+	GpAA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm3; t=1698660438; x=1698667638; bh=C0spIghu26RS2
+	wSePnhlO3VNbIZSADnovwnCABmc7C4=; b=B3MRq1ue/dMlkLetdRiRUouN8zJPR
+	L3B1Jb4D9iwtRemN46QOwk1kBy8Tpz6C3dJ2008xf578SsD/i4540hST/jBxDNBq
+	waEkDOnmtLvV2RFDcL2g8xNC2tnVHMR18cltuM1DTDrCyo6hDDoZNx54N/fO8Eo3
+	/imKNfNbQEFHzD6iZQ431tL7Xwa81EJdOdogA37vkQBUwmTnvFB4n3W/wVJfv90Y
+	TEBXlxhlPDqJ3+Kz6myadXrYb3QOrEIy6XT+5kJrlP46M4kiyeCZDlZHihs2b5Ui
+	772WvO6QsJ9ImSUKbcWcWu6tQrC/1xDDOAw7Sy0OZhCvd/22ACkgAoUOw==
+X-ME-Sender: <xms:VYA_ZdLUSl_zQ27EJdpf---UOQdzZS7hrufqr4yiNwC0WPvANVGHyQ>
+    <xme:VYA_ZZJln2PErRZpqhTdikK2ex6pB2UCBIVJWLotFavPrt3wcPJa24uR9PWWFZLpy
+    vyW1i7p4ohWwK7AKG8>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvkedruddttddguddtucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:VYA_ZVvDF9ZPLgxZ4RQWSEeEbbISJbhSluKsCJVlXC36i5EI3QSj0Q>
+    <xmx:VYA_ZeZbaci_WsO4NVcQR2LUZqoQMrCwbRHao8dkMSV7tGqCPle4Tg>
+    <xmx:VYA_ZUaJuGU4ElrPPnwQfbIuiLPWd2QvhcqomOoIuTaaSGBTItwvkQ>
+    <xmx:VoA_ZRR556ZzlQwwmRgvxHGug2eDFRSR_DbcAJMx9k6Z8L4HV2vi88gFrtc>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id B405FB6008D; Mon, 30 Oct 2023 06:07:17 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-1048-g9229b632c5-fm-20231019.001-g9229b632
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-30_06,2023-10-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 bulkscore=0
- mlxscore=0 mlxlogscore=999 adultscore=0 lowpriorityscore=0 impostorscore=0
- malwarescore=0 suspectscore=0 priorityscore=1501 spamscore=0 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2310240000
- definitions=main-2310300059
+Message-Id: <052ea479-9965-45d0-b1a5-3e8079ffb0ab@app.fastmail.com>
+In-Reply-To: <20231030071922.233080-1-glaubitz@physik.fu-berlin.de>
+References: <20231023131953.2876682-1-arnd@kernel.org>
+ <20231030071922.233080-1-glaubitz@physik.fu-berlin.de>
+Date: Mon, 30 Oct 2023 11:06:55 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "John Paul Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>,
+ "Arnd Bergmann" <arnd@kernel.org>
+Subject: Re: [PATCH 00/10] Remove obsolete and orphaned wifi drivers
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,63 +94,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, Linux Memory Management List <linux-mm@kvack.org>, Eric DeVolder <eric.devolder@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Valentin Schneider <vschneid@redhat.com>, Baoquan He <bhe@redhat.com>, x86@kernel.org, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Borislav Petkov <bp@alien8.de>, oe-kbuild-all@lists.linux.dev, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Stanislaw Gruszka <stf_xl@wp.pl>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kalle Valo <kvalo@kernel.org>, linux-staging@lists.linux.dev, linux-wireless@vger.kernel.org, Claudiu Beznea <claudiu.beznea@tuxon.dev>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Pavel Machek <pavel@ucw.cz>, Gregory Greenman <gregory.greenman@intel.com>, Jakub Kicinski <kuba@kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Jeff Johnson <quic_jjohnson@quicinc.com>, "David S . Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org, Larry Finger <Larry.Finger@lwfinger.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+On Mon, Oct 30, 2023, at 08:19, John Paul Adrian Glaubitz wrote:
+> Hi Arnd!
+>
+> There is some non-x86 hardware like the Amiga that still uses 
+> PCMCIA-style networking
+> cards on machines like the A600 and A1200. So, unless these drivers are 
+> actually causing
+> problems, I would rather not see them go yet.
 
-On 30/10/23 06:13, kernel test robot wrote:
-> Hi Sourabh,
->
-> kernel test robot noticed the following build errors:
->
-> [auto build test ERROR on akpm-mm/mm-everything]
-> [also build test ERROR on linus/master v6.6-rc7]
-> [cannot apply to powerpc/next powerpc/fixes tip/x86/core next-20231027]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch#_base_tree_information]
->
-> url:    https://github.com/intel-lab-lkp/linux/commits/Sourabh-Jain/crash-forward-memory_notify-arg-to-arch-crash-hotplug-handler/20231029-213858
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git mm-everything
-> patch link:    https://lore.kernel.org/r/20231029124039.6158-7-sourabhjain%40linux.ibm.com
-> patch subject: [PATCH v12 6/6] powerpc: add crash memory hotplug support
-> config: powerpc64-randconfig-001-20231029 (https://download.01.org/0day-ci/archive/20231030/202310300812.yN6FuPcZ-lkp@intel.com/config)
-> compiler: powerpc64-linux-gcc (GCC) 13.2.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231030/202310300812.yN6FuPcZ-lkp@intel.com/reproduce)
->
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202310300812.yN6FuPcZ-lkp@intel.com/
->
-> All errors (new ones prefixed by >>):
->
->     powerpc64-linux-ld: warning: discarding dynamic section .glink
->     powerpc64-linux-ld: warning: discarding dynamic section .plt
->     powerpc64-linux-ld: linkage table error against `add_opal_mem_range'
->     powerpc64-linux-ld: stubs don't match calculated size
->     powerpc64-linux-ld: can not build stubs: bad value
->     powerpc64-linux-ld: arch/powerpc/kexec/core_64.o: in function `get_crash_memory_ranges':
->     core_64.c:(.text+0x1010): undefined reference to `add_mem_range'
->     powerpc64-linux-ld: core_64.c:(.text+0x1064): undefined reference to `sort_memory_ranges'
->     powerpc64-linux-ld: core_64.c:(.text+0x1128): undefined reference to `add_rtas_mem_range'
->     powerpc64-linux-ld: core_64.c:(.text+0x1140): undefined reference to `add_opal_mem_range'
->     powerpc64-linux-ld: core_64.c:(.text+0x1160): undefined reference to `add_mem_range'
->     powerpc64-linux-ld: core_64.c:(.text+0x1188): undefined reference to `sort_memory_ranges'
->     powerpc64-linux-ld: core_64.c:(.text+0x11e0): undefined reference to `realloc_mem_ranges'
->     powerpc64-linux-ld: arch/powerpc/kexec/core_64.o: in function `arch_crash_handle_hotplug_event':
->>> core_64.c:(.text+0x1900): undefined reference to `remove_mem_range'
+Do you know of any systems other than the Amiga that are still
+in use with new kernels and that rely on PCMCIA networking?
 
-The patch series uses a couple of functions defined in 
-arch/powerpc/kexec/ranges.c. Since this file
-only builds when CONFIG_KEXEC_FILE is set, we are encountering this 
-build issue.
+I know that Amiga has its own simple CONFIG_AMIGA_PCMCIA
+implementation that is incompatible with CONFIG_PCMCIA device
+drivers, so it is not affected by this.
 
-If CONFIG_KEXEC_FILE is set, then this issue is not observed.
+For the few ARM systems that still support a CF card slot,
+these tend to be used for IDE type storage cards because their
+internal flash is too limited otherwise.
 
-I will fix the above warnings and post the next version.
-
-Thanks,
-Sourabh
+       Arnd
