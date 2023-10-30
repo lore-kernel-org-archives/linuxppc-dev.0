@@ -4,57 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FCACC00142
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 21:32:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 083C1C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 22:08:29 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=hxk+/HDz;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SK61N4dKrz3cZr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 08:32:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.180; helo=mail-oi1-f180.google.com; envelope-from=robherring2@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SK6pz44Kzz3cYV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 09:08:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=hxk+/HDz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3jclazqykdkczlhuqjnvvnsl.jvtspubewwj-klcspzaz.vgshiz.vyn@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SK60m6kRWz2ys9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 08:31:51 +1100 (AEDT)
-Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-3b2f5aed39cso3076748b6e.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 14:31:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SK6nz2nvgz2yG9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 09:07:35 +1100 (AEDT)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-1cc3ad55c75so13204005ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 15:07:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1698703652; x=1699308452; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=EkAABuzKmGyzNibmrxwxoleV2c1qCswFjV4kStA9p5Y=;
+        b=hxk+/HDzwAhc8PlY7dsWj9wtWOBQY9H/nOVf3ewbjVqS9tcNbDtsz2C0j5L3Znaxo0
+         pLpOLx3d20PdCOHIdGJM+ui8UiyRWR9EoEYRkCKFLWgI2ZJlTKcZQyMfoRjQ0SqHJPd0
+         8mViVqnuy/cFTUDddsIN8zO8pM9+t9xxq46YTFkBc5QZgE+cpi78eAxipLJNVA1xJcxb
+         2xvXJyFUJcdki2ft22wfUdlkULETKA+Bc7H7cCo/FUeDvBIc3WPBD4sbwfHUkFMkK/iJ
+         STyvLWJq9DK5QoEm8Aq/fbe6MrYZopY+m96Y+nIearNGutPzs9cN8vNBMDE+KxTks5QT
+         io9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698701508; x=1699306308;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=OuBaURUuWJkEQpbZhWeSxspKPPb+Lr69ekE2ADTt8Wc=;
-        b=p31cTEkvQ855SjhqJM5IbPZ9Yp2HYknnJCydMRAJ5K+dZymBe/3vwofIjw7GGQv70o
-         D1Km/bkihHOkG3Ca3bjm4FWG6rZSvcZG0l9czX+qd5i8hMCRHb+EAhu1/1U2FYSFRpMH
-         sm9NS41vZs24lwoAeK6q4ExTFv0V2YtZOvS3gk7oBPAh3nWlFYgRKhfjLF37vkzlZqAJ
-         Gh/M0J/46WScP7bsGEDK9dCi/T8uuKFW+ozyAyDwZf1dIcWYTRsIS8+SARhR6WBnZtRp
-         glOu9j9qEkWdbUsPT7Bba2Mg4xY8e9xSf6mruOHcpaBh2b/9pboqwyoj0VzVQs0c9rE1
-         38FA==
-X-Gm-Message-State: AOJu0YzMkeDi6mOVt0x3x2DT5pxZ4rEp5cSV9O2XBt8PjCq5tPfefMPq
-	3qKnfP70jvFfvBK4IPJXzQ==
-X-Google-Smtp-Source: AGHT+IGKuby//PdBhTBpw28HsYfEui30ghahooRRo1gU9DZgJ7OM+SQsCkxRsIdIYwyzeeSbhBnk8w==
-X-Received: by 2002:a05:6808:1789:b0:3ae:554b:9c97 with SMTP id bg9-20020a056808178900b003ae554b9c97mr14084990oib.37.1698701508322;
-        Mon, 30 Oct 2023 14:31:48 -0700 (PDT)
-Received: from herring.priv (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id e22-20020a05680809b600b003afc33bf048sm1518710oig.2.2023.10.30.14.31.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Oct 2023 14:31:47 -0700 (PDT)
-Received: (nullmailer pid 2495794 invoked by uid 1000);
-	Mon, 30 Oct 2023 21:31:46 -0000
-Date: Mon, 30 Oct 2023 16:31:46 -0500
-From: Rob Herring <robh@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH v8 00/30] Add support for QMC HDLC, framer infrastructure
- and PEF2256 framer
-Message-ID: <20231030213146.GA2490536-robh@kernel.org>
-References: <20231011061437.64213-1-herve.codina@bootlin.com>
- <20231013164647.7855f09a@kernel.org>
- <20231025170051.27dc83ea@bootlin.com>
- <20231025123215.5caca7d4@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231025123215.5caca7d4@kernel.org>
+        d=1e100.net; s=20230601; t=1698703652; x=1699308452;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=EkAABuzKmGyzNibmrxwxoleV2c1qCswFjV4kStA9p5Y=;
+        b=FknL9trDj6wm6DgWxMxszqY/G5QhnBWIudq8Wy+GCUkKmRkSDDQKEbXF6rPXk+tpaB
+         L3v4ykgxmqv+Mm9tXGJZlPP/Y9/P64yst7R2afZ/jNkpfB/+1sRJqzLC1BEpgKaNHkgP
+         xrFhLllumRWRgQHHCijL8OztfW+N5PfBVV/NnZESUjGue2uH9dzRyiFfDaFX+h0nABLq
+         7jhidjysvMwE6VYDP8E/9rAx5SErdeCuWRc7ibIG6kps1PQNXLgv53HJnAv4DaBECsRa
+         2WACsbvAUn+jc0Ho0RcDiQaOELubNLWW3wjvG2ftbYMCPmrnpy73+bjf4MVLEmiJ0lvC
+         ZJMw==
+X-Gm-Message-State: AOJu0Yxa5AiI2GBF+tMA1qb294Dhke9jjCusFN+rYgrayDZiCaH2qNk6
+	lzMUAkuTroC2o0g0QStvpnpHdmtQhnE=
+X-Google-Smtp-Source: AGHT+IHfmttfYISWufdVkZGI1GGv3oPE0CaVU/9uw2yWegmaBLqLOedbYI1/usu4SKmN8TEK3NCdArCTZyE=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a17:902:ed45:b0:1cc:533e:f52b with SMTP id
+ y5-20020a170902ed4500b001cc533ef52bmr49726plb.4.1698703652255; Mon, 30 Oct
+ 2023 15:07:32 -0700 (PDT)
+Date: Mon, 30 Oct 2023 15:07:30 -0700
+In-Reply-To: <077cec97-7920-4d20-8bd3-fe07ab8bcc29@redhat.com>
+Mime-Version: 1.0
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-13-seanjc@google.com>
+ <077cec97-7920-4d20-8bd3-fe07ab8bcc29@redhat.com>
+Message-ID: <ZUApIvo_gIdsfEEV@google.com>
+Subject: Re: [PATCH v13 12/35] KVM: Prepare for handling only shared mappings
+ in mmu_notifier events
+From: Sean Christopherson <seanjc@google.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,30 +75,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Herve Codina <herve.codina@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Simon Horman <horms@kernel.or
- g>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, l
+ inux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 25, 2023 at 12:32:15PM -0700, Jakub Kicinski wrote:
-> On Wed, 25 Oct 2023 17:00:51 +0200 Herve Codina wrote:
-> > > Which way will those patches go? Via some FSL SoC tree?  
-> > 
-> > This series seems mature now.
-> > What is the plan next in order to have it applied ?
-> > 
-> > Don't hesitate to tell me if you prefer split series.
+On Mon, Oct 30, 2023, Paolo Bonzini wrote:
+> On 10/27/23 20:21, Sean Christopherson wrote:
+> > @@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+> >  			 * the second or later invocation of the handler).
+> >  			 */
+> >  			gfn_range.arg = range->arg;
+> > +
+> > +			/*
+> > +			 * HVA-based notifications aren't relevant to private
+> > +			 * mappings as they don't have a userspace mapping.
 > 
-> FWIW we are happy to take the drivers/net/ parts if there is no hard
-> dependency. But there's no point taking that unless the SoC bits
-> also go in for 6.7.
+> It's confusing who "they" is.  Maybe
 > 
-> Li Yang, what are your expectations WRT merging this series?
+> 	 * HVA-based notifications provide a userspace address,
+> 	 * and as such are only relevant for shared mappings.
 
-I think it is too late for SoC stuff for 6.7. 
-
-I picked up binding patches 6, 7, and 8 because 6 and 7 are the same as 
-an additionalProperties fix I have in my tree. As 8 depends on them, I 
-just picked it up too.
-
-Rob
+Works for me.
