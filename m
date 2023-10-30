@@ -4,72 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88700C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 20:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 775B4C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Oct 2023 22:06:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=DCZNTtqz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=vy01LS0j;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SK4tw1MHRz3cRp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 07:41:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SK6nD6qXHz3cW1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 09:06:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=DCZNTtqz;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=vy01LS0j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--justinstitt.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=30hrazqskdc0sdbcrwbcrccpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--justinstitt.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3xihazqykdek3plyunrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SK4sz1WCLz2xmC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 07:40:53 +1100 (AEDT)
-Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-5ae5b12227fso51473697b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 13:40:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SK6mF4BQnz3bXH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 09:06:03 +1100 (AEDT)
+Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-5af9b0850fdso43633077b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2023 15:06:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1698698450; x=1699303250; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=+L7D0X/8UFbDxxszxyMbdHdPxX3IfKefskLSxNpM7js=;
-        b=DCZNTtqzECDkPixlKarZNnIzhBQ8JrqU4TyzYZaaQ2CYGa4OPvI39VyD8yBg2k7frQ
-         bW+WUuN7VrnNtl4bDPouDqAnJbY9dA3zYvgQKD+icJLIix3V2OINopEQy6ft60UXAoHN
-         kBllAj8cDMN4XCt7NJAm6QbCwxlRblfR2wXc5Qc8M8m+ywN2hDaVxljQOfV81YT6lDfS
-         AFArjY2FZF8PxvHSUygHBzwm2wSsxYet9SuW+7eiBJU9C1jpLFaGqXGq6gYn4/6nKp+u
-         4rVZZZo+IrWciXYSaq8/9meHoP3wecKwZQdf112uK16A9hPTrOX2Ff2SyuLMrhWIcgqW
-         6Urw==
+        d=google.com; s=20230601; t=1698703558; x=1699308358; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=1IwVDVsbZSN9+qsHUIXJ8IN4aMaIP7o7r0dMzi80JWo=;
+        b=vy01LS0jfiJKLmmKpkSzUVJ/pcSP7m9SiVySLWbyQIqjXFmoewG+EuRKsBmvISCqmd
+         +F777UYvT0UV5vh0UHLJIBPjuTs4REgswcEjnUBOlCwcn42I5rIsGUL56R2T8RrRD3Dy
+         N5gj28d5t7ueVJye3pAa+fqX2miOqdjv1KjctYSE/+gLfzneOnXBj12XHWtafHw9I9Dy
+         jv3sIg4OJPH9Fh0d+++aG2Z7k49PmjUuBjZ+miAgAIs3UkqeAUIL0LR4XfnlDt7zt3I3
+         oMTc/4aiDvg4ckbk3gykSiuOw9owyt723TShXheOAOt4z6zp3Xu0z9ZODpnXT/6EZ4pR
+         3gWQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698698450; x=1699303250;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=+L7D0X/8UFbDxxszxyMbdHdPxX3IfKefskLSxNpM7js=;
-        b=NFMLaKmzfcy7CSKuqY1VyqlPW31ZBiukYXx5h70ceFIREMnNtO1mSK5ITZnXVKcu3n
-         /3rRNA4B62RK+DGG23wOoI+hr/Erx2FOnKkUBE290RWdzG2epooL6wvvUDB9P0YzlfQ2
-         zwmTb42JxrCRut3t2+j4dtdMSk6jbW+w4rdflgVtfKnJzyAysds2cNelhYXZe/m2SCL5
-         p5+HD1BtJkQEdJ5GTfcdWZNFx1CRg+MENMO6Lq9DtqfOejbbY6CRFcmjTWgYYqKm3xu7
-         rSrQiM5ubu0XHHUc2//X+Cvju07tWytRoThEsKdBDwSK9/S+aYBR9SaFAiJJyn9h4HY3
-         pPvw==
-X-Gm-Message-State: AOJu0YwpaI9XhQ5Q3vQnAepLCieZnErXcxRaf0hQCVfXY4Y95eSGUWO+
-	4DhEEvIRAwDtQsYNCaf/m/PVII+vnFNqeJ2F8A==
-X-Google-Smtp-Source: AGHT+IFMwgpHnQc+ZprATG+9xkN/YQLqGDr23c9NaiAHsaOO+EK9sMO0RJNh4rCFVzgL3jJHRVsodsSz8UC842FQaQ==
-X-Received: from jstitt-linux1.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
- (user=justinstitt job=sendgmr) by 2002:a81:8494:0:b0:5a8:6162:b69 with SMTP
- id u142-20020a818494000000b005a861620b69mr223809ywf.3.1698698450488; Mon, 30
- Oct 2023 13:40:50 -0700 (PDT)
-Date: Mon, 30 Oct 2023 20:40:48 +0000
+        d=1e100.net; s=20230601; t=1698703558; x=1699308358;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=1IwVDVsbZSN9+qsHUIXJ8IN4aMaIP7o7r0dMzi80JWo=;
+        b=ngv+Wl41Wvi6jfwnCCWLHJjK5PyNg9ugOrp2Kd4Ky8s5DmQTDlwV0YxIB3qe/fP+HX
+         ++FiIHuX3NGcIV9Fh61mgAdQgXPNKJM2zWeZ7+SyuX8KoeZFpb1QbiN6xIZIoMSU6ZyJ
+         G6fAIgScfOHwe5Ycg36BfwDsHIjmOsl/uZhoKPnYXL//GyWIJyeokDzsvKkI9oIiT7cw
+         Zd2j8zUM9eo7Ceb2ncgsKye954TX9Z3jm/SeMLXxHLecQgWE+jd11p8wWtih7kHxMVK7
+         +Oo1S/zMuem/ZOiWPCizG/aMXLfXBL1ovOyVekpiIh/3cNLxennPxbppmtkophIQ+7T2
+         RuVA==
+X-Gm-Message-State: AOJu0Ywh4dRATc71MNBzWHPKR4N2cESqU0WcMSoqu5DSnD4crox7YaGm
+	OZBITKyb3JCACUz0qXiM2TeHdQhMHKs=
+X-Google-Smtp-Source: AGHT+IEdUnGiaB+HWnyvBXIWgJEvc4p4Jj6o8XAknp5F2BcjElHvOjmW/sQ9BadeZP3HZD1+EeGEwSi+J0Q=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a25:b108:0:b0:d99:3750:d607 with SMTP id
+ g8-20020a25b108000000b00d993750d607mr203752ybj.8.1698703558464; Mon, 30 Oct
+ 2023 15:05:58 -0700 (PDT)
+Date: Mon, 30 Oct 2023 15:05:56 -0700
+In-Reply-To: <ZT_ViJOW1p4TN_fI@google.com>
 Mime-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAM8UQGUC/1WNMQ6DMAwAv4I8Y8khYihfQR3AcVsPBGRXERXi7
- 43Y2O6WuwNcTMVhaA4wKeq65iqhbYA/U34LaqoOHXUxUCT0r2XefphMi5ijsyvqvJQ7MMa5p/B g6WlKUHObyUv3azU+z/MPq6nGinoAAAA=
-X-Developer-Key: i=justinstitt@google.com; a=ed25519; pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1698698449; l=2516;
- i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
- bh=gC2v5Pe9R9loyw+Pgy7T7l7m2TvAbA4wi3ehG1YRi0M=; b=W3M+JdyCyQGlb9fJmaBzQFKyHdjqWqWHavOQpR+qFwi3gIjoNLdwqlFCE5x4QCeRE1qFOjDV/
- sdKApW7tbo9DiqLojPnw03mfZ+Pl1LUprSvDY4g8Uc12B3oz4FkevI6
-X-Mailer: b4 0.12.3
-Message-ID: <20231030-strncpy-drivers-scsi-ibmvscsi-ibmvscsi-c-v1-1-f8b06ae9e3d5@google.com>
-Subject: [PATCH] scsi: ibmvscsi: replace deprecated strncpy with strscpy
-From: Justin Stitt <justinstitt@google.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	"James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Content-Type: text/plain; charset="utf-8"
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-14-seanjc@google.com>
+ <ZT9lQ9c7Bik6FIpw@chao-email> <ZT_ViJOW1p4TN_fI@google.com>
+Message-ID: <ZUAoxCZJnpPGWjpu@google.com>
+Subject: Re: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
+From: Sean Christopherson <seanjc@google.com>
+To: Chao Gao <chao.gao@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,68 +74,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Justin Stitt <justinstitt@google.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, linux-hardening@vger.kernel.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, L
+ iam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-strncpy() is deprecated for use on NUL-terminated destination strings
-[1] and as such we should prefer more robust and less ambiguous string
-interfaces.
+On Mon, Oct 30, 2023, Sean Christopherson wrote:
+> On Mon, Oct 30, 2023, Chao Gao wrote:
+> > On Fri, Oct 27, 2023 at 11:21:55AM -0700, Sean Christopherson wrote:
+> > >From: Chao Peng <chao.p.peng@linux.intel.com>
+> > >
+> > >In confidential computing usages, whether a page is private or shared is
+> > >necessary information for KVM to perform operations like page fault
+> > >handling, page zapping etc. There are other potential use cases for
+> > >per-page memory attributes, e.g. to make memory read-only (or no-exec,
+> > >or exec-only, etc.) without having to modify memslots.
+> > >
+> > >Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
+> > >userspace to operate on the per-page memory attributes.
+> > >  - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
+> > >    a guest memory range.
+> > 
+> > >  - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
+> > >    memory attributes.
+> > 
+> > This ioctl() is already removed. So, the changelog is out-of-date and needs
+> > an update.
+> 
+> Doh, I lost track of this and the fixup for KVM_CAP_MEMORY_ATTRIBUTES below.
+> 
+> > >+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
+> > >+:Architectures: x86
+> > >+:Type: vm ioctl
+> > >+:Parameters: struct kvm_memory_attributes(in)
+> > 
+> > 					   ^ add one space here?
+> 
+> Ah, yeah, that does appear to be the standard.
+> > 
+> > 
+> > >+static bool kvm_pre_set_memory_attributes(struct kvm *kvm,
+> > >+					  struct kvm_gfn_range *range)
+> > >+{
+> > >+	/*
+> > >+	 * Unconditionally add the range to the invalidation set, regardless of
+> > >+	 * whether or not the arch callback actually needs to zap SPTEs.  E.g.
+> > >+	 * if KVM supports RWX attributes in the future and the attributes are
+> > >+	 * going from R=>RW, zapping isn't strictly necessary.  Unconditionally
+> > >+	 * adding the range allows KVM to require that MMU invalidations add at
+> > >+	 * least one range between begin() and end(), e.g. allows KVM to detect
+> > >+	 * bugs where the add() is missed.  Rexlaing the rule *might* be safe,
+> > 
+> > 					    ^^^^^^^^ Relaxing
+> > 
+> > >@@ -4640,6 +4850,17 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+> > > 	case KVM_CAP_BINARY_STATS_FD:
+> > > 	case KVM_CAP_SYSTEM_EVENT_DATA:
+> > > 		return 1;
+> > >+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+> > >+	case KVM_CAP_MEMORY_ATTRIBUTES:
+> > >+		u64 attrs = kvm_supported_mem_attributes(kvm);
+> > >+
+> > >+		r = -EFAULT;
+> > >+		if (copy_to_user(argp, &attrs, sizeof(attrs)))
+> > >+			goto out;
+> > >+		r = 0;
+> > >+		break;
+> > 
+> > This cannot work, e.g., no @argp in this function and is fixed by a later commit:
+> > 
+> > 	fcbef1e5e5d2 ("KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing memory")
+> 
+> I'll post a fixup patch for all of these, thanks much!
 
-We expect partition_name to be NUL-terminated based on its usage with
-format strings:
-|       dev_info(hostdata->dev, "host srp version: %s, "
-|                "host partition %s (%d), OS %d, max io %u\n",
-|                hostdata->madapter_info.srp_version,
-|                hostdata->madapter_info.partition_name,
-|                be32_to_cpu(hostdata->madapter_info.partition_number),
-|                be32_to_cpu(hostdata->madapter_info.os_type),
-|                be32_to_cpu(hostdata->madapter_info.port_max_txu[0]));
-...
-|       len = snprintf(buf, PAGE_SIZE, "%s\n",
-|                hostdata->madapter_info.partition_name);
+Heh, that was an -ENOCOFFEE.  Fixup patches for a changelog goof and an ephemeral
+bug are going to be hard to post.
 
-Moreover, NUL-padding is not required as madapter_info is explicitly
-memset to 0:
-|       memset(&hostdata->madapter_info, 0x00,
-|                       sizeof(hostdata->madapter_info));
-
-Considering the above, a suitable replacement is `strscpy` [2] due to
-the fact that it guarantees NUL-termination on the destination buffer
-without unnecessarily NUL-padding.
-
-Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
-Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
-Link: https://github.com/KSPP/linux/issues/90
-Cc: linux-hardening@vger.kernel.org
-Signed-off-by: Justin Stitt <justinstitt@google.com>
----
-Note: build-tested only.
-
-Found with: $ rg "strncpy\("
----
- drivers/scsi/ibmvscsi/ibmvscsi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 59599299615d..71f3e9563520 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -266,7 +266,7 @@ static void set_adapter_info(struct ibmvscsi_host_data *hostdata)
- 	dev_info(hostdata->dev, "SRP_VERSION: %s\n", SRP_VERSION);
- 	strcpy(hostdata->madapter_info.srp_version, SRP_VERSION);
- 
--	strncpy(hostdata->madapter_info.partition_name, partition_name,
-+	strscpy(hostdata->madapter_info.partition_name, partition_name,
- 			sizeof(hostdata->madapter_info.partition_name));
- 
- 	hostdata->madapter_info.partition_number =
-
----
-base-commit: ffc253263a1375a65fa6c9f62a893e9767fbebfa
-change-id: 20231030-strncpy-drivers-scsi-ibmvscsi-ibmvscsi-c-3b5019ce50ad
-
-Best regards,
---
-Justin Stitt <justinstitt@google.com>
-
+Paolo, do you want to take care of all of these fixups and typos, or would you
+prefer that I start a v14 branch and then hand it off to you at some point?
