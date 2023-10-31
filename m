@@ -4,70 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3A9AC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 08:36:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C0CEC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 14:05:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IT+OTK47;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=T4nLNgBf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SKNlT6pMvz3cSS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 19:36:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SKX3b4sK9z3cSd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 01:05:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IT+OTK47;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=T4nLNgBf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mgamail.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3halbzqykdms9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKNkT2NB9z2xqH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 19:35:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1698741329; x=1730277329;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=P66Mu8Qvvs1bSZcrJh1IrkuvvxdPz+TRpT/cX8K5jyg=;
-  b=IT+OTK47fGAwzj5rTk899SHz4iDuqOE/aPOTvH8Dv92c1/lU8wtIS2FT
-   Jjs08J0uXY95RPJjM1yTI5KqTJVwdYoP0Z3JuNcpJh33paPXmbMKUhBRB
-   rewfxD51Y9O0Wxa51Gmd8jbUtHDiIBmUFFJbUiUgz6i5S9QvAsPJRZTHK
-   sVqG0LE/+EZtRk/sXzRCVKgasSwh3ez2+BEwRMe4pqB/Phf2F7sdlHyNT
-   mwNjf0wMGHn6Xzx1PiwgKWlI64SHi/uYfmRYDxGI94XMjaq6DncZ9Ha8e
-   9slErFg/P5mVi4BOY7UtGe6N/dKko6im7nNr/HUHj5cd7msfglJzNKB2x
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10879"; a="474479550"
-X-IronPort-AV: E=Sophos;i="6.03,265,1694761200"; 
-   d="scan'208";a="474479550"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2023 01:35:23 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10879"; a="795488444"
-X-IronPort-AV: E=Sophos;i="6.03,265,1694761200"; 
-   d="scan'208";a="795488444"
-Received: from xiaoyaol-hp-g830.ccr.corp.intel.com (HELO [10.93.9.145]) ([10.93.9.145])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2023 01:35:11 -0700
-Message-ID: <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com>
-Date: Tue, 31 Oct 2023 16:35:08 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 17/35] KVM: Add transparent hugepage support for
- dedicated guest memory
-Content-Language: en-US
-To: Sean Christopherson <seanjc@google.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-18-seanjc@google.com>
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-In-Reply-To: <20231027182217.3615211-18-seanjc@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKX2d2NZrz3bZr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2023 01:04:55 +1100 (AEDT)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-5a7af69a4baso63839187b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 07:04:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1698761092; x=1699365892; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZsemryN+7v+wOBolNu7Hy0wHrULeaB9eFsfVkGp1/e8=;
+        b=T4nLNgBftf2ElDbB3iD5kDrjDVJ6+78wne5ffs2CuaEKA8EZnsok7p3LdC0iGmrSeI
+         EOwLW8qlSDJVucyJdLXBfCWhipnf2bZpwe9uKxAku+xEjdwSL1/XuDGxL0UmhksVhb8M
+         axgDwnWUjmDpIczVhKPVP4y8rnf0c+1ryeQ3GE6J1yEh6YwcYDolsRC4LYFJ/zS2LaK6
+         XGvwQ2Rd79fZ28jO2AU6gj16fl+/NfkZy+rnLZlMFCMbF2be8YOBhc9/iw77pAHF73Sl
+         p0w8daK/mpZbl1bkfPubOp4fYJNG87QSzNpWev1HqNd0W3UfZS5XhD9KYFyIJxJBvJqs
+         L8Hw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698761092; x=1699365892;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZsemryN+7v+wOBolNu7Hy0wHrULeaB9eFsfVkGp1/e8=;
+        b=vwbcdSgfCU55n/ph+Tm4DrByiRdyYl6xFeTWUU+Lk2rvDMZk8J0K6ZxpELnteTFzE0
+         P1X5JSP/lDgmDRGMOlpxGYFM+3Htm+8GZkv/S1YKmu+9rQ466mEIKoxxjCue2G+/SWWz
+         q6alPBfa483IPk8KYKAeP7MoUKPfOkKLZCQlndIZ+PIJF9vtVSFd92G2WSobos0MkSx4
+         Ugcawa3YGbnwnhV1tR80g5LrvpVnR4UuFuRNn/06ic5tHF5OsSAS8XwB9MFeZX8U4R9C
+         OLHIFLkRXrSmYL3hKGvtb2ckCEEL7DciIqroFvQYncHBB1wwRkfttORvNFQkC4fwq0Bf
+         WWpg==
+X-Gm-Message-State: AOJu0YxLJNyZO7sORBVx5Y9oUruKsMdqTC1+5QlwnPmBdWrOpa+X7c2I
+	Kl8+gWr2fJzyfbKe6myZg610Zj0lmGM=
+X-Google-Smtp-Source: AGHT+IGMRYf422gsAhq04hJnKRMCzmHg+RO6tAl4JuMhPFGeve1lxsPBrReypZbUvK9g95iFN5O303NMZlw=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a05:6902:1083:b0:d9a:c3b8:4274 with SMTP id
+ v3-20020a056902108300b00d9ac3b84274mr301710ybu.7.1698761092559; Tue, 31 Oct
+ 2023 07:04:52 -0700 (PDT)
+Date: Tue, 31 Oct 2023 07:04:51 -0700
+In-Reply-To: <2edd908a-9699-4d8e-9063-c655f1fc9712@intel.com>
+Mime-Version: 1.0
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-9-seanjc@google.com>
+ <2edd908a-9699-4d8e-9063-c655f1fc9712@intel.com>
+Message-ID: <ZUEJg_rBf35NyCG3@google.com>
+Subject: Re: [PATCH v13 08/35] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+From: Sean Christopherson <seanjc@google.com>
+To: Xiaoyao Li <xiaoyao.li@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,27 +74,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, linux-arm-kernel@lists.infradead.org, Maciej Szmigiero <mail@maciej.szmigiero.name>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, David Matlack <dmatlack@google.com>, Vlastimil Babka <vbabka@suse.cz>, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8?= =?UTF-8?Q?n?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, kvmarm@lists.linux.dev, linux-mips@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, Yu Zhang <yu.c.zhang@linux.intel.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Vishal Annapurve <vannapurve@google.com>, l
- inuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.co
+ m>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/28/2023 2:21 AM, Sean Christopherson wrote:
-> Extended guest_memfd to allow backing guest memory with transparent 
-> hugepages. Require userspace to opt-in via a flag even though there's no 
-> known/anticipated use case for forcing small pages as THP is optional, 
-> i.e. to avoid ending up in a situation where userspace is unaware that 
-> KVM can't provide hugepages.
+On Tue, Oct 31, 2023, Xiaoyao Li wrote:
+> On 10/28/2023 2:21 AM, Sean Christopherson wrote:
+> > Introduce a "version 2" of KVM_SET_USER_MEMORY_REGION so that additional
+> > information can be supplied without setting userspace up to fail.  The
+> > padding in the new kvm_userspace_memory_region2 structure will be used to
+> > pass a file descriptor in addition to the userspace_addr, i.e. allow
+> > userspace to point at a file descriptor and map memory into a guest that
+> > is NOT mapped into host userspace.
+> > 
+> > Alternatively, KVM could simply add "struct kvm_userspace_memory_region2"
+> > without a new ioctl(), but as Paolo pointed out, adding a new ioctl()
+> > makes detection of bad flags a bit more robust, e.g. if the new fd field
+> > is guarded only by a flag and not a new ioctl(), then a userspace bug
+> > (setting a "bad" flag) would generate out-of-bounds access instead of an
+> > -EINVAL error.
+> > 
+> > Cc: Jarkko Sakkinen <jarkko@kernel.org>
+> > Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> > Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >   Documentation/virt/kvm/api.rst | 21 +++++++++++++++++++
+> >   arch/x86/kvm/x86.c             |  2 +-
+> >   include/linux/kvm_host.h       |  4 ++--
+> >   include/uapi/linux/kvm.h       | 13 ++++++++++++
+> >   virt/kvm/kvm_main.c            | 38 +++++++++++++++++++++++++++-------
+> >   5 files changed, 67 insertions(+), 11 deletions(-)
+> > 
+> > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > index 21a7578142a1..ace984acc125 100644
+> > --- a/Documentation/virt/kvm/api.rst
+> > +++ b/Documentation/virt/kvm/api.rst
+> > @@ -6070,6 +6070,27 @@ writes to the CNTVCT_EL0 and CNTPCT_EL0 registers using the SET_ONE_REG
+> >   interface. No error will be returned, but the resulting offset will not be
+> >   applied.
+> > +4.139 KVM_SET_USER_MEMORY_REGION2
+> > +---------------------------------
+> > +
+> > +:Capability: KVM_CAP_USER_MEMORY2
+> > +:Architectures: all
+> > +:Type: vm ioctl
+> > +:Parameters: struct kvm_userspace_memory_region2 (in)
+> > +:Returns: 0 on success, -1 on error
+> > +
+> > +::
+> > +
+> > +  struct kvm_userspace_memory_region2 {
+> > +	__u32 slot;
+> > +	__u32 flags;
+> > +	__u64 guest_phys_addr;
+> > +	__u64 memory_size; /* bytes */
+> > +	__u64 userspace_addr; /* start of the userspace allocated memory */
+> 
+> missing
+> 
+> 	__u64 pad[16];
 
-Personally, it seems not so "transparent" if requiring userspace to opt-in.
-
-People need to 1) check if the kernel built with TRANSPARENT_HUGEPAGE 
-support, or check is the sysfs of transparent hugepage exists; 2)get the 
-maximum support hugepage size 3) ensure the size satisfies the 
-alignment; before opt-in it.
-
-Even simpler, userspace can blindly try to create guest memfd with 
-transparent hugapage flag. If getting error, fallback to create without 
-the transparent hugepage flag.
-
-However, it doesn't look transparent to me.
+I can't even copy+paste correctly :-(
