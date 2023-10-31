@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6892BC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 02:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3A9AC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 08:36:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RGYc8mFN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IT+OTK47;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SKDbc0bs9z3cDk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 13:29:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SKNlT6pMvz3cSS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 19:36:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RGYc8mFN;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IT+OTK47;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mgamail.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.126])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mgamail.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKDZg6T5xz2yV3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 13:28:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKNkT2NB9z2xqH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 19:35:26 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1698719292; x=1730255292;
+  t=1698741329; x=1730277329;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=vr6E776DqFsISXT/abuJv1DHpqFpjFuaZ5JfgggngVk=;
-  b=RGYc8mFN2GRbFLyFgJdvcevMDoQLRMGAxS2t6ZLo+fw4VmOEVZpVMi9S
-   /AupNNn38S5evhT2Sc3ZuI89HJA9s0mgP6CU4wP/D+CBOoM7vuTuGIetp
-   OQS7HuDofBhZnqHKPjDpgxoQxz8K7wklYKRZL/3HBanjNWvY0p9Ri2vq/
-   ymz8DkZ7QnrwOwhbNgVQNuhG0g/GZlgXutkyEWuT7xVtr5e8VOqXURqES
-   i7p+cJuu/ostX2Y9cpSdyJ6v7M7vmCr0AfIIBBorJPnh/mQpT8u1tKKnd
-   Kx3oHa8Pk3K4d2Z0zDFvJ+p80jRavhzCmbXyr8WW6ozbBcnNOKWitA22z
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10879"; a="373249923"
-X-IronPort-AV: E=Sophos;i="6.03,264,1694761200"; 
-   d="scan'208";a="373249923"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2023 19:28:09 -0700
+  bh=P66Mu8Qvvs1bSZcrJh1IrkuvvxdPz+TRpT/cX8K5jyg=;
+  b=IT+OTK47fGAwzj5rTk899SHz4iDuqOE/aPOTvH8Dv92c1/lU8wtIS2FT
+   Jjs08J0uXY95RPJjM1yTI5KqTJVwdYoP0Z3JuNcpJh33paPXmbMKUhBRB
+   rewfxD51Y9O0Wxa51Gmd8jbUtHDiIBmUFFJbUiUgz6i5S9QvAsPJRZTHK
+   sVqG0LE/+EZtRk/sXzRCVKgasSwh3ez2+BEwRMe4pqB/Phf2F7sdlHyNT
+   mwNjf0wMGHn6Xzx1PiwgKWlI64SHi/uYfmRYDxGI94XMjaq6DncZ9Ha8e
+   9slErFg/P5mVi4BOY7UtGe6N/dKko6im7nNr/HUHj5cd7msfglJzNKB2x
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10879"; a="474479550"
+X-IronPort-AV: E=Sophos;i="6.03,265,1694761200"; 
+   d="scan'208";a="474479550"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2023 01:35:23 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.03,264,1694761200"; 
-   d="scan'208";a="8161979"
+X-IronPort-AV: E=McAfee;i="6600,9927,10879"; a="795488444"
+X-IronPort-AV: E=Sophos;i="6.03,265,1694761200"; 
+   d="scan'208";a="795488444"
 Received: from xiaoyaol-hp-g830.ccr.corp.intel.com (HELO [10.93.9.145]) ([10.93.9.145])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2023 19:27:57 -0700
-Message-ID: <aecdc915-8541-4933-b8cd-04ce0ade68e6@intel.com>
-Date: Tue, 31 Oct 2023 10:27:56 +0800
+  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2023 01:35:11 -0700
+Message-ID: <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com>
+Date: Tue, 31 Oct 2023 16:35:08 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
+Subject: Re: [PATCH v13 17/35] KVM: Add transparent hugepage support for
+ dedicated guest memory
 Content-Language: en-US
 To: Sean Christopherson <seanjc@google.com>,
  Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
@@ -62,9 +63,9 @@ To: Sean Christopherson <seanjc@google.com>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>,
  Andrew Morton <akpm@linux-foundation.org>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-17-seanjc@google.com>
+ <20231027182217.3615211-18-seanjc@google.com>
 From: Xiaoyao Li <xiaoyao.li@intel.com>
-In-Reply-To: <20231027182217.3615211-17-seanjc@google.com>
+In-Reply-To: <20231027182217.3615211-18-seanjc@google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -84,30 +85,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 10/28/2023 2:21 AM, Sean Christopherson wrote:
-...
-> +KVM_SET_USER_MEMORY_REGION2 is an extension to KVM_SET_USER_MEMORY_REGION that
-> +allows mapping guest_memfd memory into a guest.  All fields shared with
-> +KVM_SET_USER_MEMORY_REGION identically.  Userspace can set KVM_MEM_PRIVATE in
-> +flags to have KVM bind the memory region to a given guest_memfd range of
-> +[guest_memfd_offset, guest_memfd_offset + memory_size].  The target guest_memfd
-> +must point at a file created via KVM_CREATE_GUEST_MEMFD on the current VM, and
-> +the target range must not be bound to any other memory region.  All standard
-> +bounds checks apply (use common sense).
-> +
->   ::
->   
->     struct kvm_userspace_memory_region2 {
-> @@ -6087,9 +6096,24 @@ applied.
->   	__u64 guest_phys_addr;
->   	__u64 memory_size; /* bytes */
->   	__u64 userspace_addr; /* start of the userspace allocated memory */
-> +  __u64 guest_memfd_offset;
+> Extended guest_memfd to allow backing guest memory with transparent 
+> hugepages. Require userspace to opt-in via a flag even though there's no 
+> known/anticipated use case for forcing small pages as THP is optional, 
+> i.e. to avoid ending up in a situation where userspace is unaware that 
+> KVM can't provide hugepages.
 
-missing a tab
+Personally, it seems not so "transparent" if requiring userspace to opt-in.
 
-> +	__u32 guest_memfd;
-> +	__u32 pad1;
-> +	__u64 pad2[14];
->     };
->   
+People need to 1) check if the kernel built with TRANSPARENT_HUGEPAGE 
+support, or check is the sysfs of transparent hugepage exists; 2)get the 
+maximum support hugepage size 3) ensure the size satisfies the 
+alignment; before opt-in it.
 
+Even simpler, userspace can blindly try to create guest memfd with 
+transparent hugapage flag. If getting error, fallback to create without 
+the transparent hugepage flag.
+
+However, it doesn't look transparent to me.
