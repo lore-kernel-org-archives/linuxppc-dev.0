@@ -4,88 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E403C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 22:19:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8738C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 22:26:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=U/HXjC4K;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=U/HXjC4K;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=o20+dDTq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SKl0x3qtnz3cSv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 09:19:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SKl9W3nksz3cV9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 09:26:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=U/HXjC4K;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=U/HXjC4K;
+	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=o20+dDTq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canonical.com (client-ip=185.125.188.123; helo=smtp-relay-internal-1.canonical.com; envelope-from=dimitri.ledkov@canonical.com; receiver=lists.ozlabs.org)
+Received: from smtp-relay-internal-1.canonical.com (smtp-relay-internal-1.canonical.com [185.125.188.123])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKl000fWPz2xwH
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2023 09:18:23 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1698790699;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=kfYGCdpNkdX5yz1jUhkJ/3qqRF866UiTHuuzMPk/uy0=;
-	b=U/HXjC4KoPV/Btr64/oDMmCFswL4JdEWUn4iFg7PbR6UdUT1dd6oFwZb7jZHNNWz7DNOLc
-	IJOCnsxuYILAR6fmdvARcSHeDfsbBnkn+LUGE/ZMRrZUi0MZcHESk15m8WxqI5yX5haiHd
-	rYEWAv/sukBArIm1PoLdvJz0Oh2u6PE=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1698790699;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=kfYGCdpNkdX5yz1jUhkJ/3qqRF866UiTHuuzMPk/uy0=;
-	b=U/HXjC4KoPV/Btr64/oDMmCFswL4JdEWUn4iFg7PbR6UdUT1dd6oFwZb7jZHNNWz7DNOLc
-	IJOCnsxuYILAR6fmdvARcSHeDfsbBnkn+LUGE/ZMRrZUi0MZcHESk15m8WxqI5yX5haiHd
-	rYEWAv/sukBArIm1PoLdvJz0Oh2u6PE=
-Received: from mail-vs1-f70.google.com (mail-vs1-f70.google.com
- [209.85.217.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-621-ZSxgZZ4AMNermYyWZrSquA-1; Tue, 31 Oct 2023 18:18:17 -0400
-X-MC-Unique: ZSxgZZ4AMNermYyWZrSquA-1
-Received: by mail-vs1-f70.google.com with SMTP id ada2fe7eead31-457cf1d3546so2025585137.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 15:18:17 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKVDm4yRrz30gn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 23:43:35 +1100 (AEDT)
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com [209.85.221.70])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 00FB93F1D9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 12:43:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+	s=20210705; t=1698756209;
+	bh=TWlHvfqzW08hhviWU907m+JvbPrmK9OV3LEKQy9qTqk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type;
+	b=o20+dDTqkbrQXplDgrXglygao75sHLm0iyenSRj4O6izVUoAoH4hDHOtFxcoLdhD+
+	 0SZAZxHCdkVxicQEpFkQeLLEayn8REdM3H6av8rEJCQ9Icsc7VyM3iDfWRzjXx1Whg
+	 0IMF8IAOIp+bYYBtN5AvmLs5EtHxTnnhnUFjR6WMrLPPIVnNJ0xkwgwjjqse+u1QhD
+	 z06OAuSzdVI4aYqNaNoZtte4KsCkbKMVR8VPSV5rwogUP5WKZrbh6HvAUx2yksBTwi
+	 nvRtN5xc9fv++6IL89xQNNQZ2w05u/mavJLgVkh6xDcZS05UcBalWi1K2VFQumIzv0
+	 l+9keEjCBOjmA==
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-32f790a39d2so1450727f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2023 05:43:28 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698790697; x=1699395497;
+        d=1e100.net; s=20230601; t=1698756208; x=1699361008;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=kfYGCdpNkdX5yz1jUhkJ/3qqRF866UiTHuuzMPk/uy0=;
-        b=o0qfR9r1/jd46KMZgHWPlqfoRUHbWuyTXWjIivwhx/eRN/R7oS9lm5K6Gjbyn/HNbz
-         AKPe3BMwYTfBKWz2v2QGbWlkGZTdi6dWYDt7kW+DOGSj1yz1FQuSuGPWgL3sCGTEITKq
-         JxaqwbgkJaNVGRuzDLTvdDIlJAjjTgA05VdrBFDHZSzdcFg6py7vEGXkavQW5yooRoPl
-         VPQkA2os9+5bHn+pyjCNAeefRLwbym4W8R2QEnu+mm+tAyPx9MUcfIbzLFtrEIaeEvcI
-         wosp12cVM92J8zeTiMhrx1mLo9ZDuumSKr8KwDspUhM+LfN13zFwRh0V7D7kGtWwq421
-         MrTQ==
-X-Gm-Message-State: AOJu0YwpYclxelbi9+CqD6ZG55y/SgueBa9SxWnUJN+DEHmZQUfyiTqI
-	CdZvOJgialEr/VfHF0nHtemEEHWaxUKpBYbpYpFpdc6trXUWliz7V5b3X9QV6idEWRbhhNctnze
-	8CSIP2GQQwDVEA7RrqPST/vkPiSZg/Il+9XjPZThZbw==
-X-Received: by 2002:a67:c218:0:b0:44e:99a2:a42 with SMTP id i24-20020a67c218000000b0044e99a20a42mr9981772vsj.11.1698790697106;
-        Tue, 31 Oct 2023 15:18:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGQrBiQJHLqXrbYP+Ue59NphHDME9ef8CfXr1engDM3UMhS/wxqjXJBm4DCAAdJKCtZSXIUO7Qf2zwxIf8biNY=
-X-Received: by 2002:a67:c218:0:b0:44e:99a2:a42 with SMTP id
- i24-20020a67c218000000b0044e99a20a42mr9981736vsj.11.1698790696825; Tue, 31
- Oct 2023 15:18:16 -0700 (PDT)
+        bh=TWlHvfqzW08hhviWU907m+JvbPrmK9OV3LEKQy9qTqk=;
+        b=fQaiwWmzn5miMKa8889uHgxbG6yfKdduOtaA7MbsL1M8aFvrwcoYfxN/F4sCxz+hXk
+         0C/JYFNPksynUb3eRA0N2WYOziwVnZune7l+uwr3Rtw7yG91ZdMkIH9G8p33IozdKkEy
+         JwLRGkDesOTfmVrw7H2Gi6kGkEyvZJH2+9ZDoirjY8zDC3srGIMQQprf5YziV/CntV0Z
+         yrUYWESPmKtvGun32MkXEaHd/7OY+1lFyBr89k5EQBtJX+QWFDRK+R/GMes2QAbUukU8
+         nMftxXsWIibLxnny1/NdatB1fvv72xAxQgFi2drThiRJ0NkrcHP6+5bP0pK3JXz1ch3r
+         WKqQ==
+X-Gm-Message-State: AOJu0YwhV1AfqNbAG17q60Upz97ewm+rEwXwiO+q/VJbnV89+SURza7Z
+	+X2EacuFfByyS4Sb6YzaAzvsg8AAhx8zPDv38DXool9aD20UakSa8XM43SzhIt7fWWiZDU0hBst
+	BJjf0/nt2DOtXnV9BdZeqiWKx1+JwDVtJ34pMWM7mhv9W/Np7C9t6fi99WAA=
+X-Received: by 2002:a05:6000:2cb:b0:32f:7f2c:de2e with SMTP id o11-20020a05600002cb00b0032f7f2cde2emr7611016wry.36.1698756208350;
+        Tue, 31 Oct 2023 05:43:28 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IF2Bt006mBK17Bc+TrTxp8GQwF9PfVFIAW7TfjXGIuFHSfstzZosDHrkRwJhCuJGaEX2N4iuuxX+GvsjnIAIR8=
+X-Received: by 2002:a05:6000:2cb:b0:32f:7f2c:de2e with SMTP id
+ o11-20020a05600002cb00b0032f7f2cde2emr7611001wry.36.1698756208055; Tue, 31
+ Oct 2023 05:43:28 -0700 (PDT)
 MIME-Version: 1.0
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
- <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com> <ZUF8A5KpwpA6IKUH@google.com>
-In-Reply-To: <ZUF8A5KpwpA6IKUH@google.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 31 Oct 2023 23:18:04 +0100
-Message-ID: <CABgObfbLonVYk2WE4TC6-J_0ShanY7TbcLXStxji=XDU+9qQ7g@mail.gmail.com>
-Subject: Re: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-To: Sean Christopherson <seanjc@google.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
+References: <2721FCA5-6113-4B2E-8DA9-893105EE966C@linux.ibm.com>
+In-Reply-To: <2721FCA5-6113-4B2E-8DA9-893105EE966C@linux.ibm.com>
+From: Dimitri John Ledkov <dimitri.ledkov@canonical.com>
+Date: Tue, 31 Oct 2023 14:42:52 +0200
+Message-ID: <CADWks+a9UJM9trjJf-VOi21rfA9eetXP8KPyThqP56kKpZ-yug@mail.gmail.com>
+Subject: Re: [ppc64le] WARN at crypto/testmgr.c:5804
+To: Sachin Sant <sachinp@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Wed, 01 Nov 2023 09:25:51 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,32 +84,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, A
- nup Patel <anup@brainfault.org>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: linux-next@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-crypto@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 31, 2023 at 11:13=E2=80=AFPM Sean Christopherson <seanjc@google=
-.com> wrote:
-> On Tue, Oct 31, 2023, Fuad Tabba wrote:
-> > On Fri, Oct 27, 2023 at 7:23=E2=80=AFPM Sean Christopherson <seanjc@goo=
-gle.com> wrote:
-> Since we now know that at least pKVM will use guest_memfd for shared memo=
-ry, and
-> odds are quite good that "regular" VMs will also do the same, i.e. will w=
-ant
-> guest_memfd with the concept of private memory, I agree that we should av=
-oid
-> PRIVATE.
+On Tue, 31 Oct 2023 at 14:09, Sachin Sant <sachinp@linux.ibm.com> wrote:
 >
-> Though I vote for KVM_MEM_GUEST_MEMFD (or KVM_MEM_GUEST_MEMFD_VALID or
-> KVM_MEM_USE_GUEST_MEMFD).  I.e. do our best to avoid ambiguity between re=
-ferring
-> to "guest memory" at-large and guest_memfd.
+> Following warning is observed during boot of latest -next
+> kernel (6.6.0-rc7-next-20231030 and todays -next) on IBM Power server.
+>
+> [ 0.085775] workingset: timestamp_bits=3D38 max_order=3D20 bucket_order=
+=3D0
+> [ 0.085801] zbud: loaded
+> [ 0.086473] ------------[ cut here ]------------
+> [ 0.086477] WARNING: CPU: 23 PID: 211 at crypto/testmgr.c:5804 alg_test.p=
+art.33+0x308/0x740
+> [ 0.086486] Modules linked in:
+> [ 0.086489] CPU: 23 PID: 211 Comm: cryptomgr_test Not tainted 6.6.0-rc7-n=
+ext-20231030 #1
+> [ 0.086493] Hardware name: IBM,9080-HEX POWER10 (raw) 0x800200 0xf000006 =
+of:IBM,FW1030.20 (NH1030_058) hv:phyp pSeries
+> [ 0.086497] NIP: c000000000765068 LR: c000000000764ff4 CTR: c00000000075d=
+a00
+> [ 0.086500] REGS: c00000000ed7bb50 TRAP: 0700 Not tainted (6.6.0-rc7-next=
+-20231030)
+> [ 0.086503] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE> CR: 80000284 XER=
+: 20040002
+> [ 0.086511] CFAR: c000000000765318 IRQMASK: 1
+> GPR00: c000000000764ff4 c00000000ed7bdf0 c000000001482000 000000000000000=
+2
+> GPR04: c00000000ed7be60 000000000000000e 000000000000002f fffffffffffe000=
+0
+> GPR08: 0000ff000000ffff 0000000000000001 0000000000000008 000000000000000=
+0
+> GPR12: c00000000075da00 c000000aa7cec700 c00000000019da88 c000000006df9cc=
+0
+> GPR16: 0000000000000000 0000000000000000 c000000001309f98 000000000000000=
+0
+> GPR20: c000000001308d50 c000000001308d98 c000000000ffeaf0 c000000001309fb=
+0
+> GPR24: c000000000ffb330 c000000000ffdf30 0000000000000400 c000000019bfd48=
+0
+> GPR28: 0000000000000002 c000000019bfd400 c000000002bcf633 000000000000000=
+e
+> [ 0.086547] NIP [c000000000765068] alg_test.part.33+0x308/0x740
+> [ 0.086552] LR [c000000000764ff4] alg_test.part.33+0x294/0x740
+> [ 0.086556] Call Trace:
+> [ 0.086557] [c00000000ed7bdf0] [c000000000764ff4] alg_test.part.33+0x294/=
+0x740 (unreliable)
+> [ 0.086563] [c00000000ed7bf60] [c00000000075da34] cryptomgr_test+0x34/0x7=
+0
+> [ 0.086568] [c00000000ed7bf90] [c00000000019dbb8] kthread+0x138/0x140
+> [ 0.086573] [c00000000ed7bfe0] [c00000000000df98] start_kernel_thread+0x1=
+4/0x18
+> [ 0.086578] Code: fb210138 fb810150 3af76d20 3b80ffff 3a526d38 3a946d50 3=
+ab56d98 3b380040 3ad837c0 2f9c0000 7d301026 5529f7fe <0b090000> 7f890034 55=
+29d97e 419d03a4
+> [ 0.086589] ---[ end trace 0000000000000000 ]---
+> [ 0.086592] testmgr: alg_test_descs entries in wrong order: 'pkcs1pad(rsa=
+,sha512)' before 'pkcs1pad(rsa,sha3-256)=E2=80=99
+>
+> Git bisect points to following patch:
+> commit ee62afb9d02dd279a7b73245614f13f8fe777a6d
+>     crypto: rsa-pkcs1pad - Add FIPS 202 SHA-3 support
+>
+> - Sachin
 
-I was going to propose KVM_MEM_HAS_GUESTMEMFD.  Any option
-is okay for me so, if no one complains, I'll go for KVM_MEM_GUESTMEMFD
-(no underscore because I found the repeated "_MEM" distracting).
+Patch to address this was submitted at
+https://lore.kernel.org/all/20231027195206.46643-1-ebiggers@kernel.org/
+and should address this issue.
 
-Paolo
+--
+okurrr,
 
+Dimitri
