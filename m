@@ -4,49 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73F09C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 14:56:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6989BC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Oct 2023 16:19:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jog2dxcM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K8ukv2xC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SKYBd6Ypyz3cVf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 01:56:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SKb1P6D0vz3cVF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 03:19:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jog2dxcM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K8ukv2xC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKY9g1XVrz3c1L
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2023 01:56:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SKb0Q4D2Cz3bZN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2023 03:18:14 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id AA2C2CE09EC;
-	Tue, 31 Oct 2023 14:56:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B1EF5C433C7;
-	Tue, 31 Oct 2023 14:56:02 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTP id 4813FB80E97;
+	Tue, 31 Oct 2023 16:18:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC49EC433C7;
+	Tue, 31 Oct 2023 16:17:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1698764162;
-	bh=Cxdgq83jiMoJ70NysJNU4kcpJnjm2mFKYjiQrvsOqUQ=;
+	s=k20201202; t=1698769080;
+	bh=HCX1df8KCBHXTAnQTau8yrSKPJ1ZZEmzSDDHwuNCfSQ=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=Jog2dxcMmGGGRASrapDOhOj8zcOAieXrt9M+dygNz7EEFwueTaWid3idU+e4dvxSS
-	 t1f3nvl2Xw/eDzoVtpUWnuRZsugYFVvFiXd7LhhFiJjbo5w3uZ8erqzsbZGA8i2hfZ
-	 irEX+TgbAk6CmRjYTxjsoFZ1kTYwoGd55+uaLinwBYIj2Q8SQqAUBI2N93hIRyulpw
-	 mkSQ8QtRFnyTjHF2Wzf3qNdgwT+GjCUfPZssWyEpD28aTw2tD/fM4PWNLWfygZUgpr
-	 bKIiavOsnkyE1cb0yoF3pZdMva1irDxt+WcHoLWdfZfTCb6ALlcGiCRkSwS/MO5yjD
-	 WG4cRXU75oC9Q==
-Date: Tue, 31 Oct 2023 09:56:00 -0500
+	b=K8ukv2xCzOKe8u1Ay0pk568Vgiy0KmGaE6zOcWpgpdwjdD16//wndhmVNzfHDgrPp
+	 ZHPCDTqWVCqD8Ky2Ivs0b514MqOHv1+AF/hYY7TtHNXLvTaSPSpSy25/ctPvw5j+2t
+	 43QCikypsHfu09DPmbe/m9CJ/2WW+NCoB6etcNBcmS9dp9/RjYIg0rnvBgflPJs/qr
+	 RhaCxfM5dzQ5jkiThISeioN1AaoJJqIKRpA4hqMGGWnmnUicgkMVaTrEGAd0igG4Uh
+	 E3wLtLk+tRLoSYwNYHdC30Uwx1xIsu3/4NbxqqJywZAb6q9swVP6S7rVjiIEeaTFrI
+	 Rwna0lW1ysMOA==
+Date: Tue, 31 Oct 2023 11:17:57 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
-To: kernel test robot <lkp@intel.com>
-Subject: Re: [pci:controller/xilinx-xdma] BUILD REGRESSION
- 8d786149d78c7784144c7179e25134b6530b714b
-Message-ID: <20231031145600.GA9161@bhelgaas>
+To: Robert Richter <rrichter@amd.com>, Terry Bowman <terry.bowman@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+	Siddharth Vadapalli <s-vadapalli@ti.com>
+Subject: Re: [linux-next:master] BUILD REGRESSION
+ c503e3eec382ac708ee7adf874add37b77c5d312
+Message-ID: <20231031161757.GA11354@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <202310282050.Y5D8ZPCw-lkp@intel.com>
+In-Reply-To: <202310310457.5LusQqF6-lkp@intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,59 +61,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, Nathan Chancellor <nathan@kernel.org>, linuxppc-dev@lists.ozlabs.org, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+Cc: kernel test robot <lkp@intel.com>, linux-pci@vger.kernel.org, linux-cxl@vger.kernel.org, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+cc powerpc, clang folks]
-
-On Sat, Oct 28, 2023 at 08:22:54PM +0800, kernel test robot wrote:
-> tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git controller/xilinx-xdma
-> branch HEAD: 8d786149d78c7784144c7179e25134b6530b714b  PCI: xilinx-xdma: Add Xilinx XDMA Root Port driver
+On Tue, Oct 31, 2023 at 04:35:23AM +0800, kernel test robot wrote:
+> tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+> branch HEAD: c503e3eec382ac708ee7adf874add37b77c5d312  Add linux-next specific files for 20231030
 > 
-> Error/Warning ids grouped by kconfigs:
+> Error/Warning reports:
+> ... 
+> https://lore.kernel.org/oe-kbuild-all/202310302206.Pkr5eBDi-lkp@intel.com
+
+> Error/Warning: (recently discovered and may have been fixed)
 > 
-> clang_recent_errors
-> `-- powerpc-pmac32_defconfig
->     |-- arch-powerpc-sysdev-grackle.c:error:unused-function-grackle_set_stg-Werror-Wunused-function
->     |-- arch-powerpc-xmon-xmon.c:error:unused-function-get_output_lock-Werror-Wunused-function
->     `-- arch-powerpc-xmon-xmon.c:error:unused-function-release_output_lock-Werror-Wunused-function
+> Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/iio/imu/bosch,bma400.yaml
+> aarch64-linux-ld: drivers/cxl/core/pci.c:921:(.text+0xbbc): undefined reference to `pci_print_aer'
+> ...
+> arch/riscv/include/asm/mmio.h:67:(.text+0xd66): undefined reference to `pci_print_aer'
+> csky-linux-ld: pci.c:(.text+0x6e8): undefined reference to `pci_print_aer'
+> drivers/cxl/core/pci.c:921: undefined reference to `pci_print_aer'
+> drivers/cxl/core/pci.c:921:(.text+0xbc0): undefined reference to `pci_print_aer'
+> ...
+> ld: drivers/cxl/core/pci.c:921: undefined reference to `pci_print_aer'
+> loongarch64-linux-ld: drivers/cxl/core/pci.c:921:(.text+0xa38): undefined reference to `pci_print_aer'
+> pci.c:(.text+0x662): undefined reference to `pci_print_aer'
+> powerpc-linux-ld: pci.c:(.text+0xf10): undefined reference to `pci_print_aer'
+> riscv64-linux-ld: pci.c:(.text+0x11ec): undefined reference to `pci_print_aer'
 
-This report is close to useless.  It doesn't show the complete error
-message, it doesn't show how to reproduce the issue, and the pci -next
-branch (including controller/xilinx-xdma) doesn't reference any of
-these functions:
+I have no idea about the above (and all the similar ones below); I
+assume they all have to do with
+https://lore.kernel.org/r/20231018171713.1883517-13-rrichter@amd.com
 
-  $ git grep -E "grackle_set_stg|get_output_lock|release_output_lock" | cat
-  arch/powerpc/sysdev/grackle.c:static inline void grackle_set_stg(struct pci_controller* bp, int enable)
-  arch/powerpc/sysdev/grackle.c:	grackle_set_stg(hose, 1);
-  arch/powerpc/xmon/xmon.c:static void get_output_lock(void)
-  arch/powerpc/xmon/xmon.c:static void release_output_lock(void)
-  arch/powerpc/xmon/xmon.c:static inline void get_output_lock(void) {}
-  arch/powerpc/xmon/xmon.c:static inline void release_output_lock(void) {}
-  arch/powerpc/xmon/xmon.c:		get_output_lock();
-  arch/powerpc/xmon/xmon.c:		release_output_lock();
-  arch/powerpc/xmon/xmon.c:			get_output_lock();
-  arch/powerpc/xmon/xmon.c:			release_output_lock();
-  arch/powerpc/xmon/xmon.c:		get_output_lock();
-  arch/powerpc/xmon/xmon.c:		release_output_lock();
-  arch/powerpc/xmon/xmon.c:		get_output_lock();
-  arch/powerpc/xmon/xmon.c:		release_output_lock();
+> Unverified Error/Warning (likely false positive, please contact us if interested):
+> 
+> drivers/pci/controller/dwc/pcie-rcar-gen4.c:439:15: warning: cast to smaller integer type 'enum dw_pcie_device_mode' from 'const void *' [-Wvoid-pointer-to-enum-cast]
 
-That said, the unused functions do look legit:
+Safe but annoying.  Yoshihiro, can you fix this by adding structs for
+the of_device_id.data member instead of casting DW_PCIE_RC_TYPE and
+DW_PCIE_EP_TYPE?  Examples here:
 
-grackle_set_stg() is a static function and the only call is under
-"#if 0".
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pci-dra7xx.c?id=v6.6#n557
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pci-keystone.c?id=v6.6#n1069
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pcie-artpec6.c?id=v6.6#n452
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pcie-designware-plat.c?id=v6.6#n159
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pcie-keembay.c?id=v6.6#n437
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pcie-tegra194.c?id=v6.6#n2431
 
-Same with get_output_lock() and release_output_lock(): they're static
-and always defined in xmon.c, but only called if either CONFIG_SMP or
-CONFIG_DEBUG_FS.
+Siddharth, since you're looking at keystone v3.65, it looks to me like
+DW_PCIE_VER_365A is currently broken because ks_pcie_rc_of_data
+doesn't set .mode, so it defaults to zero, and it looks like we should
+end up at the INVALID device type case here:
 
-But they're certainly not related to controller/xilinx-xdma, so I'm
-going to ignore them.
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/controller/dwc/pci-keystone.c?id=v6.6#n1285
 
-Bjorn
+> |-- arm64-buildonly-randconfig-r003-20220511
+> |   `-- aarch64-linux-ld:drivers-cxl-core-pci.c:(.text):undefined-reference-to-pci_print_aer
 
-P.S. Nathan & Nick, I cc'd you because of this earlier report that
-also mentioned grackle_set_stg():
-https://lore.kernel.org/lkml/202308121120.u2d3YPVt-lkp@intel.com/
+> |-- csky-randconfig-001-20231030
+> |   |-- csky-linux-ld:pci.c:(.text):undefined-reference-to-pci_print_aer
+> |   `-- pci.c:(.text):undefined-reference-to-pci_print_aer
+
+> |-- i386-randconfig-141-20231030
+> |   |-- ld:drivers-cxl-core-pci.c:undefined-reference-to-pci_print_aer
+
+> |-- loongarch-randconfig-r014-20230225
+> |   `-- drivers-cxl-core-pci.c:(.text):undefined-reference-to-pci_print_aer
+> |-- loongarch-randconfig-r032-20220926
+> |   `-- loongarch64-linux-ld:drivers-cxl-core-pci.c:(.text):undefined-reference-to-pci_print_aer
+
+> |-- powerpc-randconfig-003-20231016
+> |   `-- powerpc-linux-ld:pci.c:(.text):undefined-reference-to-pci_print_aer
+
+> |-- riscv-randconfig-r002-20220124
+> |   `-- arch-riscv-include-asm-mmio.h:(.text):undefined-reference-to-pci_print_aer
+> |-- riscv-randconfig-r011-20220606
+> |   `-- riscv64-linux-ld:pci.c:(.text):undefined-reference-to-pci_print_aer
+
+> |-- x86_64-randconfig-x052-20230810
+> |   `-- drivers-cxl-core-pci.c:undefined-reference-to-pci_print_aer
