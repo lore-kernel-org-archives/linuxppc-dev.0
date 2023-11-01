@@ -4,52 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79F7EC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 17:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66568C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 21:24:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gkQcweyp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eaZfx2Ua;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SLDg30Th2z3ccS
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 04:35:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SLKl44HT3z3cTH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 08:24:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gkQcweyp;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eaZfx2Ua;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SLDf623KCz3bhc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2023 04:34:38 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 6DC3461009;
-	Wed,  1 Nov 2023 17:34:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BCAFC433C7;
-	Wed,  1 Nov 2023 17:34:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1698860074;
-	bh=AZ7FlxIgY3mFat3YE3LfxcZV9vaFbjtvd2CiHdrDoCA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gkQcweypPovpUSspGMtCjAHctsSyLjgOpC3UlBBPdNulRFiCGEvPp5PnVau8FH/oa
-	 GnBCD2dRnJoWG8XokCaU59fPYvF2ikbIAgQlF7sYqMjojw3OVOZZK5myToHFRpRH9O
-	 nCrQVqID2A1K1nWT8RS20fHPbBSiqG55455VuPC5t857ciRMQXPce/3D6q8rhic0gE
-	 ojplor16FOwW9x06v5frTYo3Wx+Z4iBBD7I8xeln2PUltuMH1EJMORWeBo1NsWz5eS
-	 8/tpj5FaCqpkzsh2amzhnFFSCcZ016bwjazkjb6MoEcssJZfhS7C4G1u73eNx5urGZ
-	 N4Pz+BJbHhZfg==
-Date: Wed, 1 Nov 2023 10:34:32 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [pci:controller/xilinx-xdma] BUILD REGRESSION
- 8d786149d78c7784144c7179e25134b6530b714b
-Message-ID: <20231101173432.GC1368360@dev-arch.thelio-3990X>
-References: <20231031171401.GA17989@bhelgaas>
- <da1413c0-d81a-47b6-8283-0fb3da7975e6@app.fastmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SL9xb6cxmz3c2k
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2023 02:32:50 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1698852772; x=1730388772;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=2nyEdm6cgXtLmEHT90SMnCtukFAW1r//JISNY6vr7Ro=;
+  b=eaZfx2Uarr46v/Ve4Sx7xVBpwha2ar82jj5woYqh37OcJchWVGnfCwNH
+   G1rZwHi7tWFocY8bmnPTotckukicdr8mxkZF0PHfoniBJEh2ADFhkwULT
+   VUF9P0wJKMEgP46tW3tBNguVGYvbKI52PSGmyPysyrqVOV9RDk+aKQt5S
+   80kktHgdnZMeA30OPWjNQUe7laKm3GtgfpJ14CiWVhXl7Fi0SHOrGj6YL
+   TSPovxbV9d0Ox48Pg5ds+aAvmizLS+pg8s40sb45SLJDiumh3x2wm4Y96
+   v6t3VcopveHpdvqL5xDMmk/rgQ2rTLfizGZWC3gG+erWYSw9wJZWnkh2g
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10881"; a="474758884"
+X-IronPort-AV: E=Sophos;i="6.03,268,1694761200"; 
+   d="scan'208";a="474758884"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2023 08:32:44 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.03,268,1694761200"; 
+   d="scan'208";a="2207680"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmviesa002.fm.intel.com with ESMTP; 01 Nov 2023 08:32:35 -0700
+Date: Wed, 1 Nov 2023 23:31:10 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: [PATCH v13 03/35] KVM: Use gfn instead of hva for
+ mmu_notifier_retry
+Message-ID: <ZUJvPi9TRsHZzVag@yilunxu-OptiPlex-7050>
+References: <20231027182217.3615211-1-seanjc@google.com>
+ <20231027182217.3615211-4-seanjc@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <da1413c0-d81a-47b6-8283-0fb3da7975e6@app.fastmail.com>
+In-Reply-To: <20231027182217.3615211-4-seanjc@google.com>
+X-Mailman-Approved-At: Thu, 02 Nov 2023 08:23:28 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,41 +68,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, linux-pci@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, Bjorn Helgaas <helgaas@kernel.org>, linuxppc-dev@lists.ozlabs.org, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, L
+ iam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 01, 2023 at 10:25:25AM +0100, Arnd Bergmann wrote:
-> On Tue, Oct 31, 2023, at 18:14, Bjorn Helgaas wrote:
-> > On Tue, Oct 31, 2023 at 09:59:29AM -0700, Nick Desaulniers wrote:
-> >> On Tue, Oct 31, 2023 at 7:56 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
+On Fri, Oct 27, 2023 at 11:21:45AM -0700, Sean Christopherson wrote:
+> From: Chao Peng <chao.p.peng@linux.intel.com>
 > 
-> >> >   arch/powerpc/xmon/xmon.c:             release_output_lock();
-> >> >
-> >> > That said, the unused functions do look legit:
-> >> >
-> >> > grackle_set_stg() is a static function and the only call is under
-> >> > "#if 0".
-> >> 
-> >> Time to remove it then? Or is it a bug that it's not called?
-> >> Otherwise the definition should be behind the same preprocessor guards
-> >> as the caller.  Same for the below.
-> 
-> It would be nice to get rid of all warnings about unused
-> "static inline" functions and "static const" variables in .c
-> files. I think both these warnings got added at the W=1 level
-> for compilers that support them at some point, but are ignored
-> for normal builds without W=1 because they are too noisy.
-> 
-> Obviously, all compilers ignore unused inline functions and
-> const variables in header files regardless of the warning level.
+> Currently in mmu_notifier invalidate path, hva range is recorded and
+> then checked against by mmu_notifier_retry_hva() in the page fault
+                          ^
 
-Right, this was an intentional change done by Masahiro to try and take
-advantage of the fact that clang warns about unused static inline
-functions in .c files (whereas GCC has no warning in .c or .h files) to
-clean up dead code. See commit 6863f5643dd7 ("kbuild: allow Clang to
-find unused static inline functions for W=1 build") for more
-information.
+should be mmu_invalidate_retry_hva().
 
-Cheers,
-Nathan
+Besides this, Reviewed-by: Xu Yilun <yilun.xu@linux.intel.com>
+
+Thanks
