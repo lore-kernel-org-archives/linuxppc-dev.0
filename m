@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 574D2C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 14:20:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54579C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 17:37:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=mn0aoc2A;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=KF63XbBN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SL8Lf07Xfz3cV9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 01:20:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SLDjk4Wblz3cYj
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 04:37:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=mn0aoc2A;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=KF63XbBN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f30; helo=mail-qv1-xf30.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com [IPv6:2607:f8b0:4864:20::f30])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3syxczqykdayykgtpimuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SL8Kg38txz2xqq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2023 01:20:06 +1100 (AEDT)
-Received: by mail-qv1-xf30.google.com with SMTP id 6a1803df08f44-66fa16092c0so47382426d6.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2023 07:20:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SLDhk2DqDz2xqH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2023 04:36:52 +1100 (AEDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-da03ef6fc30so5047276.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2023 10:36:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1698848403; x=1699453203; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Bjt3QR9Oyt0AfbOrG8Ks+Z2RSKpEyu9CpvIK66pVo08=;
-        b=mn0aoc2AGyEobVvr4w6JlZpoJaudADK3SE4cfR5nvjpPW/GNWPbTGFhQ6CmcYcCgw7
-         IlfIRVfECQhhEscFVd3ug3bKfKiYQpW/aa7LQO9ye1EGGjlGkoPCfXr51Ejszb7v7Fwk
-         teTrKd9BS4OD5fI4PTM1GM5q4ejbxLUVayKtc+f5P+J0UJzPL/nhD037Cax+/CXPUNgY
-         79FBW5nAypGA7RVSggBhfnt/ZWpiHSVzSK5UZetlPXBR5TAQCkawsqbufiiIIJFexoiH
-         WKlySCoP4LkUjT05PKZYbs9U5mzFnfxCclmPYLYS9U/slIRouD/iqtELGFfeUy0fUWsv
-         xsVw==
+        d=google.com; s=20230601; t=1698860210; x=1699465010; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Aa5pPv4/g+I3C3eNDgudVhrFstr6S8Xmtwrf0OlljDI=;
+        b=KF63XbBNyBeFoxA9ahqEkDM2XPg7vs3nkktkVRtyAScvCj4RBMgzGNqKbq/LJeuquC
+         pmNjssciaOSs659CT4IYAtg11oclMCNcaCiCGE+K07dNuGgcEZ+Ouo7KAOTDSCTn//o3
+         uDRBhP4nVp8WPlMso6uNqoKaQwhdPC6nscVJRW+3NIGtFWcSZK7d89PPS3sxoYJ/5wew
+         u05tzgez0I5uXp+4T5NkqiXLyV6702DnJDOrf1N1XvkCTF2g6wRyBeMujy15Drg+SfG3
+         81KwT3Jo7KAn9EJHDUxEGpw/LnrjeokOdhQgUwD3BMfpUkNZQWp6rcnfRWREcqu/ECFc
+         9RRw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698848403; x=1699453203;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Bjt3QR9Oyt0AfbOrG8Ks+Z2RSKpEyu9CpvIK66pVo08=;
-        b=FfjMaCd95PcAtBvaG6l5TEl3Z1AMmtmcdWywbSwVY7x9vLzVBdMeECpdkMWc4tdzYP
-         1/evpYcABacWpaOiBZpKCAvXmPzIrs/cqjy5MzD06rhpk8pkZEEzvVZjYCbnY2nYgOne
-         DAL272fH4LoCofw+d/9XzK/eOOc/YnQXbJDXuj0rB6EUVbIY2tjROMrpxQxGaUyjjLiu
-         jFwZTwW3gKfHszUoQtY4b4IpxkFIvcS88zbFOkCc85gk1fJfJDXBnJi3VJOz5tOD6bp2
-         4mIpR6Hd3vYnVM4UWQDjCNhZ3bk8KfYC6D2mx8s9RfiOyy/sGnQRD3cY1gLRl/pKFiyb
-         c8kg==
-X-Gm-Message-State: AOJu0YzIVRu/4bm4O1jKgzNfkn5LCy+Thpr1Il83wSFrDec46M7PO7gq
-	jldqobSvQQb8fC5RViaenOPihBdsYhr3TIiw3RyDfw==
-X-Google-Smtp-Source: AGHT+IHK1fieD/BgK48oE6vj2OwKc097KW4M2L6co0EoihJHDvl5lPyutAVieGa2E49DOF2qJpRq12aLhod9YaGzUi0=
-X-Received: by 2002:ad4:596c:0:b0:65b:220d:72a5 with SMTP id
- eq12-20020ad4596c000000b0065b220d72a5mr16187853qvb.51.1698848403231; Wed, 01
- Nov 2023 07:20:03 -0700 (PDT)
-MIME-Version: 1.0
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-9-seanjc@google.com>
-In-Reply-To: <20231027182217.3615211-9-seanjc@google.com>
-From: Fuad Tabba <tabba@google.com>
-Date: Wed, 1 Nov 2023 14:19:26 +0000
-Message-ID: <CA+EHjTwEr4rLcs9VGQnhRKyBW7A_jGOjQe=zxYbmHnium5=W6Q@mail.gmail.com>
-Subject: Re: [PATCH v13 08/35] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        d=1e100.net; s=20230601; t=1698860210; x=1699465010;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Aa5pPv4/g+I3C3eNDgudVhrFstr6S8Xmtwrf0OlljDI=;
+        b=Z5dYE2pgIaby9F8Adb92QlAAggtCVQgcwtVvr5eA1jlBsel5cabfqTv/1jyJbLn89/
+         xmVwWGPdZG//Zdq7SWfa4OqIrhJFoP0rd5fmI6sEOHB3u3zJxGejJbuomjfAYLOj79BL
+         u/+MKL9goTaobcroPpK8tOhXJBlqp3MRohzb6BXwyYRcrikvvDL/C+nn3G37fogy0zb2
+         jauJlS6NMSYzvgNkItuWr7/lWw5gdaY9CL93Pt81zhTOj/VSKVnKiSfi9Axqv9SVRiW8
+         HE/cH2SGLWVS1J/llnWOzbYuhAS0bv+aXM2vEkNMnYU7N4lZXMp86VXYIqlOuWq+RvsL
+         Gfpg==
+X-Gm-Message-State: AOJu0YykZfjrF9/sBvb2CjN6gOLZv25R4VATWRb1gpgLY9wPYRvZMjaN
+	pJyPTYHulmFjCQhWtHSGSXgQfWYKDp0=
+X-Google-Smtp-Source: AGHT+IG/a6Sj0mASs5/8PEJQnR69sSphX+9SHKWYEjRPOLGEF4l6c52AgzjYtmdhHr7JL68mzkGP7JI8NEg=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a05:6902:168c:b0:da0:3e46:8ba5 with SMTP id
+ bx12-20020a056902168c00b00da03e468ba5mr304342ybb.8.1698860209654; Wed, 01 Nov
+ 2023 10:36:49 -0700 (PDT)
+Date: Wed, 1 Nov 2023 10:36:48 -0700
+In-Reply-To: <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+Mime-Version: 1.0
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-10-seanjc@google.com>
+ <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+Message-ID: <ZUKMsOdg3N9wmEzy@google.com>
+Subject: Re: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
+ faults to userspace
+From: Sean Christopherson <seanjc@google.com>
+To: Kai Huang <kai.huang@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,277 +75,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracl
- e.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "david@redhat.com" <david@redhat.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "chao.p.peng@linux.intel.com" <chao.p.peng@linux.intel.com>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "isaku.yamahata@gmail.com" <isaku.yamahata@gmail.com>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "willy@infradead.org" <willy@infradead.org>, Wei W Wang <wei.w.wang@intel.com>, "vbabka@suse.cz" <vbabka@suse.cz>, "yu.c.zhang@linux.intel.com" <yu.c.zhang@linux.intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mail@maciej.szmigiero.name" <mail@maciej.szmigiero.name>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "michael.roth@amd.com" <michael.roth@amd.com>, "ackerleytng@google.com" <ackerleyt
+ ng@google.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>, "mic@digikod.net" <mic@digikod.net>, "tabba@google.com" <tabba@google.com>, Isaku Yamahata <isaku.yamahata@intel.com>, "brauner@kernel.org" <brauner@kernel.org>, "qperret@google.com" <qperret@google.com>, "anup@brainfault.org" <anup@brainfault.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "oliver.upton@linux.dev" <oliver.upton@linux.dev>, "dmatlack@google.com" <dmatlack@google.com>, "jarkko@kernel.org" <jarkko@kernel.org>, "palmer@dabbelt.com" <palmer@dabbelt.com>, "amoorthy@google.com" <amoorthy@google.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, "maz@kernel.org" <maz@kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "liam.merwick@oracle.com" <liam.merwick@oracle.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, "linuxppc-dev@list
+ s.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yilun Xu <yilun.xu@intel.com>, "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 27, 2023 at 7:22=E2=80=AFPM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> Introduce a "version 2" of KVM_SET_USER_MEMORY_REGION so that additional
-> information can be supplied without setting userspace up to fail.  The
-> padding in the new kvm_userspace_memory_region2 structure will be used to
-> pass a file descriptor in addition to the userspace_addr, i.e. allow
-> userspace to point at a file descriptor and map memory into a guest that
-> is NOT mapped into host userspace.
->
-> Alternatively, KVM could simply add "struct kvm_userspace_memory_region2"
-> without a new ioctl(), but as Paolo pointed out, adding a new ioctl()
-> makes detection of bad flags a bit more robust, e.g. if the new fd field
-> is guarded only by a flag and not a new ioctl(), then a userspace bug
-> (setting a "bad" flag) would generate out-of-bounds access instead of an
-> -EINVAL error.
->
-> Cc: Jarkko Sakkinen <jarkko@kernel.org>
-> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-> Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
+On Wed, Nov 01, 2023, Kai Huang wrote:
+> 
+> > +7.34 KVM_CAP_MEMORY_FAULT_INFO
+> > +------------------------------
+> > +
+> > +:Architectures: x86
+> > +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
+> > +
+> > +The presence of this capability indicates that KVM_RUN will fill
+> > +kvm_run.memory_fault if KVM cannot resolve a guest page fault VM-Exit, e.g. if
+> > +there is a valid memslot but no backing VMA for the corresponding host virtual
+> > +address.
+> > +
+> > +The information in kvm_run.memory_fault is valid if and only if KVM_RUN returns
+> > +an error with errno=EFAULT or errno=EHWPOISON *and* kvm_run.exit_reason is set
+> > +to KVM_EXIT_MEMORY_FAULT.
+> 
+> IIUC returning -EFAULT or whatever -errno is sort of KVM internal
+> implementation.
 
-With the missing pad in api.rst fixed:
-Reviewed-by: Fuad Tabba <tabba@google.com>
-Tested-by: Fuad Tabba <tabba@google.com>
+The errno that is returned to userspace is ABI.  In KVM, it's a _very_ poorly
+defined ABI for the vast majority of ioctls(), but it's still technically ABI.
+KVM gets away with being cavalier with errno because the vast majority of errors
+are considered fatal by userespace, i.e. in most cases, userspace simply doesn't
+care about the exact errno.
 
-Cheers,
-/fuad
+A good example is KVM_RUN with -EINTR; if KVM were to return something other than
+-EINTR on a pending signal or vcpu->run->immediate_exit, userspace would fall over.
 
->  Documentation/virt/kvm/api.rst | 21 +++++++++++++++++++
->  arch/x86/kvm/x86.c             |  2 +-
->  include/linux/kvm_host.h       |  4 ++--
->  include/uapi/linux/kvm.h       | 13 ++++++++++++
->  virt/kvm/kvm_main.c            | 38 +++++++++++++++++++++++++++-------
->  5 files changed, 67 insertions(+), 11 deletions(-)
->
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.=
-rst
-> index 21a7578142a1..ace984acc125 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6070,6 +6070,27 @@ writes to the CNTVCT_EL0 and CNTPCT_EL0 registers =
-using the SET_ONE_REG
->  interface. No error will be returned, but the resulting offset will not =
-be
->  applied.
->
-> +4.139 KVM_SET_USER_MEMORY_REGION2
-> +---------------------------------
-> +
-> +:Capability: KVM_CAP_USER_MEMORY2
-> +:Architectures: all
-> +:Type: vm ioctl
-> +:Parameters: struct kvm_userspace_memory_region2 (in)
-> +:Returns: 0 on success, -1 on error
-> +
-> +::
-> +
-> +  struct kvm_userspace_memory_region2 {
-> +       __u32 slot;
-> +       __u32 flags;
-> +       __u64 guest_phys_addr;
-> +       __u64 memory_size; /* bytes */
-> +       __u64 userspace_addr; /* start of the userspace allocated memory =
-*/
-> +  };
-> +
-> +See KVM_SET_USER_MEMORY_REGION.
-> +
->  5. The kvm_run structure
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 41cce5031126..6409914428ca 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -12455,7 +12455,7 @@ void __user * __x86_set_memory_region(struct kvm =
-*kvm, int id, gpa_t gpa,
->         }
->
->         for (i =3D 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
-> -               struct kvm_userspace_memory_region m;
-> +               struct kvm_userspace_memory_region2 m;
->
->                 m.slot =3D id | (i << 16);
->                 m.flags =3D 0;
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 5faba69403ac..4e741ff27af3 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1146,9 +1146,9 @@ enum kvm_mr_change {
->  };
->
->  int kvm_set_memory_region(struct kvm *kvm,
-> -                         const struct kvm_userspace_memory_region *mem);
-> +                         const struct kvm_userspace_memory_region2 *mem)=
-;
->  int __kvm_set_memory_region(struct kvm *kvm,
-> -                           const struct kvm_userspace_memory_region *mem=
-);
-> +                           const struct kvm_userspace_memory_region2 *me=
-m);
->  void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot=
-);
->  void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen);
->  int kvm_arch_prepare_memory_region(struct kvm *kvm,
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 13065dd96132..bd1abe067f28 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
->         __u64 userspace_addr; /* start of the userspace allocated memory =
-*/
->  };
->
-> +/* for KVM_SET_USER_MEMORY_REGION2 */
-> +struct kvm_userspace_memory_region2 {
-> +       __u32 slot;
-> +       __u32 flags;
-> +       __u64 guest_phys_addr;
-> +       __u64 memory_size;
-> +       __u64 userspace_addr;
-> +       __u64 pad[16];
-> +};
-> +
->  /*
->   * The bit 0 ~ bit 15 of kvm_userspace_memory_region::flags are visible =
-for
->   * userspace, other bits are reserved for kvm internal use which are def=
-ined
-> @@ -1192,6 +1202,7 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_COUNTER_OFFSET 227
->  #define KVM_CAP_ARM_EAGER_SPLIT_CHUNK_SIZE 228
->  #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
-> +#define KVM_CAP_USER_MEMORY2 230
->
->  #ifdef KVM_CAP_IRQ_ROUTING
->
-> @@ -1473,6 +1484,8 @@ struct kvm_vfio_spapr_tce {
->                                         struct kvm_userspace_memory_regio=
-n)
->  #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)
->  #define KVM_SET_IDENTITY_MAP_ADDR _IOW(KVMIO,  0x48, __u64)
-> +#define KVM_SET_USER_MEMORY_REGION2 _IOW(KVMIO, 0x49, \
-> +                                        struct kvm_userspace_memory_regi=
-on2)
->
->  /* enable ucontrol for s390 */
->  struct kvm_s390_ucas_mapping {
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 6e708017064d..3f5b7c2c5327 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -1578,7 +1578,7 @@ static void kvm_replace_memslot(struct kvm *kvm,
->         }
->  }
->
-> -static int check_memory_region_flags(const struct kvm_userspace_memory_r=
-egion *mem)
-> +static int check_memory_region_flags(const struct kvm_userspace_memory_r=
-egion2 *mem)
->  {
->         u32 valid_flags =3D KVM_MEM_LOG_DIRTY_PAGES;
->
-> @@ -1980,7 +1980,7 @@ static bool kvm_check_memslot_overlap(struct kvm_me=
-mslots *slots, int id,
->   * Must be called holding kvm->slots_lock for write.
->   */
->  int __kvm_set_memory_region(struct kvm *kvm,
-> -                           const struct kvm_userspace_memory_region *mem=
-)
-> +                           const struct kvm_userspace_memory_region2 *me=
-m)
->  {
->         struct kvm_memory_slot *old, *new;
->         struct kvm_memslots *slots;
-> @@ -2084,7 +2084,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
->  EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
->
->  int kvm_set_memory_region(struct kvm *kvm,
-> -                         const struct kvm_userspace_memory_region *mem)
-> +                         const struct kvm_userspace_memory_region2 *mem)
->  {
->         int r;
->
-> @@ -2096,7 +2096,7 @@ int kvm_set_memory_region(struct kvm *kvm,
->  EXPORT_SYMBOL_GPL(kvm_set_memory_region);
->
->  static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
-> -                                         struct kvm_userspace_memory_reg=
-ion *mem)
-> +                                         struct kvm_userspace_memory_reg=
-ion2 *mem)
->  {
->         if ((u16)mem->slot >=3D KVM_USER_MEM_SLOTS)
->                 return -EINVAL;
-> @@ -4566,6 +4566,7 @@ static int kvm_vm_ioctl_check_extension_generic(str=
-uct kvm *kvm, long arg)
->  {
->         switch (arg) {
->         case KVM_CAP_USER_MEMORY:
-> +       case KVM_CAP_USER_MEMORY2:
->         case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
->         case KVM_CAP_JOIN_MEMORY_REGIONS_WORKS:
->         case KVM_CAP_INTERNAL_ERROR_DATA:
-> @@ -4821,6 +4822,14 @@ static int kvm_vm_ioctl_get_stats_fd(struct kvm *k=
-vm)
->         return fd;
->  }
->
-> +#define SANITY_CHECK_MEM_REGION_FIELD(field)                            =
-       \
-> +do {                                                                    =
-       \
-> +       BUILD_BUG_ON(offsetof(struct kvm_userspace_memory_region, field) =
-!=3D             \
-> +                    offsetof(struct kvm_userspace_memory_region2, field)=
-);     \
-> +       BUILD_BUG_ON(sizeof_field(struct kvm_userspace_memory_region, fie=
-ld) !=3D         \
-> +                    sizeof_field(struct kvm_userspace_memory_region2, fi=
-eld)); \
-> +} while (0)
-> +
->  static long kvm_vm_ioctl(struct file *filp,
->                            unsigned int ioctl, unsigned long arg)
->  {
-> @@ -4843,15 +4852,28 @@ static long kvm_vm_ioctl(struct file *filp,
->                 r =3D kvm_vm_ioctl_enable_cap_generic(kvm, &cap);
->                 break;
->         }
-> +       case KVM_SET_USER_MEMORY_REGION2:
->         case KVM_SET_USER_MEMORY_REGION: {
-> -               struct kvm_userspace_memory_region kvm_userspace_mem;
-> +               struct kvm_userspace_memory_region2 mem;
-> +               unsigned long size;
-> +
-> +               if (ioctl =3D=3D KVM_SET_USER_MEMORY_REGION)
-> +                       size =3D sizeof(struct kvm_userspace_memory_regio=
-n);
-> +               else
-> +                       size =3D sizeof(struct kvm_userspace_memory_regio=
-n2);
-> +
-> +               /* Ensure the common parts of the two structs are identic=
-al. */
-> +               SANITY_CHECK_MEM_REGION_FIELD(slot);
-> +               SANITY_CHECK_MEM_REGION_FIELD(flags);
-> +               SANITY_CHECK_MEM_REGION_FIELD(guest_phys_addr);
-> +               SANITY_CHECK_MEM_REGION_FIELD(memory_size);
-> +               SANITY_CHECK_MEM_REGION_FIELD(userspace_addr);
->
->                 r =3D -EFAULT;
-> -               if (copy_from_user(&kvm_userspace_mem, argp,
-> -                                               sizeof(kvm_userspace_mem)=
-))
-> +               if (copy_from_user(&mem, argp, size))
->                         goto out;
->
-> -               r =3D kvm_vm_ioctl_set_memory_region(kvm, &kvm_userspace_=
-mem);
-> +               r =3D kvm_vm_ioctl_set_memory_region(kvm, &mem);
->                 break;
->         }
->         case KVM_GET_DIRTY_LOG: {
-> --
-> 2.42.0.820.g83a721a137-goog
->
+> Is it better to relax the validity of kvm_run.memory_fault when
+> KVM_RUN returns any -errno?
+
+Not unless there's a need to do so, and if there is then we can update the
+documentation accordingly.  If KVM's ABI is that kvm_run.memory_fault is valid
+for any errno, then KVM would need to purge kvm_run.exit_reason super early in
+KVM_RUN, e.g. to prevent an -EINTR return due to immediate_exit from being
+misinterpreted as KVM_EXIT_MEMORY_FAULT.  And purging exit_reason super early is
+subtly tricky because KVM's (again, poorly documented) ABI is that *some* exit
+reasons are preserved across KVM_RUN with vcpu->run->immediate_exit (or with a
+pending signal).
+
+https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf@google.com
+
+> [...]
+> 
+> 
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -2327,4 +2327,15 @@ static inline void kvm_account_pgtable_pages(void *virt, int nr)
+> >  /* Max number of entries allowed for each kvm dirty ring */
+> >  #define  KVM_DIRTY_RING_MAX_ENTRIES  65536
+> >  
+> > +static inline void kvm_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> > +						 gpa_t gpa, gpa_t size)
+> > +{
+> > +	vcpu->run->exit_reason = KVM_EXIT_MEMORY_FAULT;
+> > +	vcpu->run->memory_fault.gpa = gpa;
+> > +	vcpu->run->memory_fault.size = size;
+> > +
+> > +	/* Flags are not (yet) defined or communicated to userspace. */
+> > +	vcpu->run->memory_fault.flags = 0;
+> > +}
+> > +
+> 
+> KVM_CAP_MEMORY_FAULT_INFO is x86 only, is it better to put this function to
+> <asm/kvm_host.h>?
+
+I'd prefer to keep it in generic code, as it's highly likely to end up there
+sooner than later.  There's a known use case for ARM (exit to userspace on missing
+userspace mapping[*]), and I'm guessing pKVM (also ARM) will also utilize this API.
+
+[*] https://lore.kernel.org/all/20230908222905.1321305-8-amoorthy@google.com
