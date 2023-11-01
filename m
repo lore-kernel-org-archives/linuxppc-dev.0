@@ -4,65 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B791C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 10:56:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDD4AC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 12:47:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=enupJPD7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=fFhd3+l5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SL3pS5FZBz3d9K
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 21:56:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SL6Gt4Rtvz3cYN
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Nov 2023 23:47:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=enupJPD7;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=fFhd3+l5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f30; helo=mail-qv1-xf30.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com [IPv6:2607:f8b0:4864:20::f30])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f2b; helo=mail-qv1-xf2b.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com [IPv6:2607:f8b0:4864:20::f2b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SL3jp26fRz3cbB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2023 21:52:13 +1100 (AEDT)
-Received: by mail-qv1-xf30.google.com with SMTP id 6a1803df08f44-66d17bdabe1so45038736d6.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2023 03:52:13 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SL6Fw1M5lz2xqH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2023 23:46:43 +1100 (AEDT)
+Received: by mail-qv1-xf2b.google.com with SMTP id 6a1803df08f44-6707401e1edso27853186d6.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2023 05:46:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1698835928; x=1699440728; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1698842800; x=1699447600; darn=lists.ozlabs.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=+1C51gwP1j6EX8xWamHNo0Nti+w4//VV3v7LQeJatAc=;
-        b=enupJPD7QN+q2aqATSYrKOUxp2DigEOjJL/CAYxm1K4UOCE9GqSg6ATS8dlOxpu8hv
-         H4lYvm0fZzmuJXG3lzoZ8WTHm7C3TZMUL+i22q58h8AP1ZR90RIze7dDnr9qLRL52+wp
-         AM6xF0xZCzFZS0cXMKCusKZYtw4jY99URydPMxiHdAcD0J0igyPigtacAOUE42GRAkJE
-         klzo2dqfsqxoVFJMeMxeS+b+wGkfqUH6gcZLhgmoe7Vo5z15eIuHLL7sS1XuMsehApvv
-         lT/aj12hQpYervoOC9A/rtrPOBcwxPbT0oSk3rJh/nDm6OaMLc75m26voQD8vR4eDQQI
-         sPSQ==
+        bh=mygXGcRJ5YlWP61Tr7KN5KWyfhmOoXTRmQYYFZqOKKI=;
+        b=fFhd3+l55SDXC1Qo3TqrZtObMkqke3Y0eJhCVhXr9ZKuyi6rsGjdla3kXxxoWXMLAV
+         UG9rjKgtRWqoErTQ7Zzy3wQrp0vh7p7aYXZqegGYw5eppz1h7l4rmQeL6577k+Lh2FnT
+         rONefgpRVDGhorMAuzUffO2AYoesTnncpgw37hfvZQWyq0T/I3pr24oRpw5i1asxKHKP
+         Xx1MhabVb9lIWD6D08x0pU980ug+tZoFNkD+zVLfptrzgcVxOrkixUSqloR+Y88Z6U2O
+         nGD8ulRbLRzX67ypEFnqV0kxfpASXK9HGxXRGfvmR23S04B6m+371tE+KdJ+x7LJzqu+
+         hsgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698835928; x=1699440728;
+        d=1e100.net; s=20230601; t=1698842800; x=1699447600;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=+1C51gwP1j6EX8xWamHNo0Nti+w4//VV3v7LQeJatAc=;
-        b=wdxiYTNqxuuoms87f+PaUHKpZ96Jy0FyIPSuPgBOr+o71eqAEJdqibYQUrUY2VGcTf
-         c/wTY6sviaZvFftSOB8rNbs/GkzvbZMA6O5DT9IqBB70thzL3sURhiHoGmeR/Ys+JqrC
-         uAyWVKQd/cBNWxxRV0e/sP6mOEffQ7Xv8JW1nsm0z7F2IhtPc2tDBJjA80i7fJY01yTN
-         1qI5cHqDmPpM06rdvUW9CsrGjpJbIIOR6N+Jcw2ihVSjb2j00C1pehyJI2w/dHg3/Iwb
-         PYVXo6/N0WmQC9G/SxQ7/RLA//JWOhBXmvsWK1nesyA92V82s5qu2zKWlvKSj310FA5Z
-         jqfA==
-X-Gm-Message-State: AOJu0YzpKdhhuGThboTy3bUwg/SHTx6E8P7gYMo+3+Kqnosb0OVIHX9c
-	WB0bjahWN9hYRMN+sAR/ysH8dOBO3XZ6BmTPRMWWiQ==
-X-Google-Smtp-Source: AGHT+IGBD7AeuMGXkTRP2ep4CYUi9124TDOVpS389Mu+hB31XqL4gTKvstmlOGh29as6609/Xh60qBUoSzB28pjDL10=
-X-Received: by 2002:a0c:d64a:0:b0:675:5111:4cec with SMTP id
- e10-20020a0cd64a000000b0067551114cecmr114725qvj.58.1698835928102; Wed, 01 Nov
- 2023 03:52:08 -0700 (PDT)
+        bh=mygXGcRJ5YlWP61Tr7KN5KWyfhmOoXTRmQYYFZqOKKI=;
+        b=TBEXTnlJJYiQfxf/mWzygmnyRtzx1iJSxrjI/Uh/tOjwgdiPWhO76Uegibi0w6y5Yw
+         U5265qkkhGpX5/jiwUOWGM0DwqEBCbaezTcsjTPec2Jm5UdeBeQdLGFOsntbj0xnBVZW
+         7y4aqiO7WHfUujX5dRvPk7pADZl5jBwWyZDnj51F6Cx3u6GQT3zfsq+tUXLT3yaxajTX
+         x2shtM9G1uORXFmQS9Ew60dl1LeauOI4HKMcRaREXNUlp6G5hEagWWD10MQ7GVW9Zw14
+         VGy3Q0nwzmAGQ8dGdSbdZv+unzpPMcH6nHq1o5Xvp/UoO+RvpYpzCTLrzfnhTZ6v8y9G
+         oqEA==
+X-Gm-Message-State: AOJu0YzoIeBRMIM7sJMPO56FRSB34Ru9XbsuC8W7a1EC2mVJ2MITqpqP
+	jDSKwiedg6gHwInUMV/pY+mSFwyQRGQjTcs/i/uKEA==
+X-Google-Smtp-Source: AGHT+IHd9N8dL6zdz3IA97hhnoDYG1Yv2Mx5veJZKoCg3Vt6EBcnFz3FSACXzGNwepp4FUZ865yy59BtQyGtgdViYUM=
+X-Received: by 2002:a05:6214:f6c:b0:671:739e:e2fa with SMTP id
+ iy12-20020a0562140f6c00b00671739ee2famr13258176qvb.59.1698842799599; Wed, 01
+ Nov 2023 05:46:39 -0700 (PDT)
 MIME-Version: 1.0
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
- <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com> <ZUF8A5KpwpA6IKUH@google.com>
-In-Reply-To: <ZUF8A5KpwpA6IKUH@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-2-seanjc@google.com>
+In-Reply-To: <20231027182217.3615211-2-seanjc@google.com>
 From: Fuad Tabba <tabba@google.com>
-Date: Wed, 1 Nov 2023 10:51:31 +0000
-Message-ID: <CA+EHjTwTT9cFzYTtwT43nLJS01Sgt0NqzUgKAnfo2fiV3tEvXg@mail.gmail.com>
-Subject: Re: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
+Date: Wed, 1 Nov 2023 12:46:02 +0000
+Message-ID: <CA+EHjTy5tmgGmVNGTX4a2Engb+r1AQizsMxwb8xqOi1f9+VQLA@mail.gmail.com>
+Subject: Re: [PATCH v13 01/35] KVM: Tweak kvm_hva_range and hva_handler_t to
+ allow reusing for gfn ranges
 To: Sean Christopherson <seanjc@google.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -82,206 +81,159 @@ Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sean,
-
-On Tue, Oct 31, 2023 at 10:13=E2=80=AFPM Sean Christopherson <seanjc@google=
-.com> wrote:
+On Fri, Oct 27, 2023 at 7:22=E2=80=AFPM Sean Christopherson <seanjc@google.=
+com> wrote:
 >
-> On Tue, Oct 31, 2023, Fuad Tabba wrote:
-> > Hi,
-> >
-> > On Fri, Oct 27, 2023 at 7:23=E2=80=AFPM Sean Christopherson <seanjc@goo=
-gle.com> wrote:
-> >
-> > ...
-> >
-> > > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/=
-api.rst
-> > > index e2252c748fd6..e82c69d5e755 100644
-> > > --- a/Documentation/virt/kvm/api.rst
-> > > +++ b/Documentation/virt/kvm/api.rst
-> > > @@ -6079,6 +6079,15 @@ applied.
-> > >  :Parameters: struct kvm_userspace_memory_region2 (in)
-> > >  :Returns: 0 on success, -1 on error
-> > >
-> > > +KVM_SET_USER_MEMORY_REGION2 is an extension to KVM_SET_USER_MEMORY_R=
-EGION that
-> > > +allows mapping guest_memfd memory into a guest.  All fields shared w=
-ith
-> > > +KVM_SET_USER_MEMORY_REGION identically.  Userspace can set KVM_MEM_P=
-RIVATE in
-> > > +flags to have KVM bind the memory region to a given guest_memfd rang=
-e of
-> > > +[guest_memfd_offset, guest_memfd_offset + memory_size].  The target =
-guest_memfd
-> > > +must point at a file created via KVM_CREATE_GUEST_MEMFD on the curre=
-nt VM, and
-> > > +the target range must not be bound to any other memory region.  All =
-standard
-> > > +bounds checks apply (use common sense).
-> > > +
-> >
-> > Bikeshedding here: Not sure if KVM_MEM_PRIVATE is the best name for
-> > this. It gets confusing with KVM_MEMORY_ATTRIBUTE_PRIVATE, i.e., that
-> > a region marked as KVM_MEM_PRIVATE is only potentially private. It did
-> > confuse the rest of the team when I walked them through a previous
-> > version of this code once. Would something like KVM_MEM_GUESTMEM make
-> > more sense?
+> Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
+> that the structure can be used to handle notifications that operate on gf=
+n
+> context, i.e. that aren't tied to a host virtual address.  Rename the
+> handler typedef too (arguably it should always have been gfn_handler_t).
 >
-> Heh, deja vu.  We discussed this back in v7[*], and I came to the conclus=
-ion that
-> choosing a name that wasn't explicitly tied to private memory wasn't just=
-ified.
-> But that was before a KVM-owned guest_memfd was even an idea, and thus be=
-fore we
-> had anything close to a real use case.
+> Practically speaking, this is a nop for 64-bit kernels as the only
+> meaningful change is to store start+end as u64s instead of unsigned longs=
+.
 >
-> Since we now know that at least pKVM will use guest_memfd for shared memo=
-ry, and
-> odds are quite good that "regular" VMs will also do the same, i.e. will w=
-ant
-> guest_memfd with the concept of private memory, I agree that we should av=
-oid
-> PRIVATE.
->
-> Though I vote for KVM_MEM_GUEST_MEMFD (or KVM_MEM_GUEST_MEMFD_VALID or
-> KVM_MEM_USE_GUEST_MEMFD).  I.e. do our best to avoid ambiguity between re=
-ferring
-> to "guest memory" at-large and guest_memfd.
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
 
-Yeah I remember that discussion, but I didn't realize how confusing it
-was until I was presenting my work so far to the rest of the team, and
-it confused them quite a bit. I'm happy with any of the other
-alternatives that you suggest, as long as the distinction is clear.
+Reviewed-by: Fuad Tabba <tabba@google.com>
+Tested-by: Fuad Tabba <tabba@google.com>
 
-> > > -See KVM_SET_USER_MEMORY_REGION.
-> > > +A KVM_MEM_PRIVATE region _must_ have a valid guest_memfd (private me=
-mory) and
-> > > +userspace_addr (shared memory).  However, "valid" for userspace_addr=
- simply
-> > > +means that the address itself must be a legal userspace address.  Th=
-e backing
-> > > +mapping for userspace_addr is not required to be valid/populated at =
-the time of
-> > > +KVM_SET_USER_MEMORY_REGION2, e.g. shared memory can be lazily mapped=
-/allocated
-> > > +on-demand.
-> >
-> > Regarding requiring that a private region have both a valid
-> > guest_memfd and a userspace_addr, should this be
-> > implementation-specific? In pKVM at least, all regions for protected
-> > VMs are private, and KVM doesn't care about the host userspace address
-> > for those regions even when part of the memory is shared.
->
-> Hmm, as of this patch, no, because the pKVM usage doesn't exist.  E.g.
->
-> .  Because this literally documents the current ABI.  When
-
-Ack.
-
-> > > +When mapping a gfn into the guest, KVM selects shared vs. private, i=
-.e consumes
-> > > +userspace_addr vs. guest_memfd, based on the gfn's KVM_MEMORY_ATTRIB=
-UTE_PRIVATE
-> > > +state.  At VM creation time, all memory is shared, i.e. the PRIVATE =
-attribute
-> > > +is '0' for all gfns.  Userspace can control whether memory is shared=
-/private by
-> > > +toggling KVM_MEMORY_ATTRIBUTE_PRIVATE via KVM_SET_MEMORY_ATTRIBUTES =
-as needed.
-> >
-> > In pKVM, guest memory is private by default, and most of it will
-> > remain so for the lifetime of the VM. Userspace could explicitly mark
-> > all the guest's memory as private at initialization, but it would save
-> > a slight amount of work. That said, I understand that it might be
-> > better to be consistent across implementations.
->
-> Yeah, we discussed this in v12[*].  The default really doesn't matter for=
- memory
-> overheads or performances once supports range-based xarray entries, and i=
-f that
-> isn't sufficient, KVM can internally invert the polarity of PRIVATE.
->
-> But for the ABI, I think we put a stake in the ground and say that all me=
-mory is
-> shared by default.  That way CoCo VMs and regular VMs (i.e VMs without th=
-e concept
-> of private memory) all have the same ABI.  Practically speaking, the cost=
- to pKVM
-> (and likely every other CoCo VM type) is a single ioctl() during VM creat=
-ion to
-> "convert" all memory to private.
->
-> [*] https://lore.kernel.org/all/ZRw6X2BptZnRPNK7@google.com
-
-Ack.
-
-...
-
-> > > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> > > index 78a0b09ef2a5..5d1a2f1b4e94 100644
-> > > --- a/virt/kvm/kvm_main.c
-> > > +++ b/virt/kvm/kvm_main.c
-> > > @@ -798,7 +798,7 @@ void kvm_mmu_invalidate_range_add(struct kvm *kvm=
-, gfn_t start, gfn_t end)
-> > >         }
-> > >  }
-> > >
-> > > -static bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_=
-range *range)
-> > > +bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *=
-range)
-> > >  {
-> > >         kvm_mmu_invalidate_range_add(kvm, range->start, range->end);
-> > >         return kvm_unmap_gfn_range(kvm, range);
-> > > @@ -1034,6 +1034,9 @@ static void kvm_destroy_dirty_bitmap(struct kvm=
-_memory_slot *memslot)
-> > >  /* This does not remove the slot from struct kvm_memslots data struc=
-tures */
-> > >  static void kvm_free_memslot(struct kvm *kvm, struct kvm_memory_slot=
- *slot)
-> > >  {
-> > > +       if (slot->flags & KVM_MEM_PRIVATE)
-> > > +               kvm_gmem_unbind(slot);
-> > > +
-> >
-> > Should this be called after kvm_arch_free_memslot()? Arch-specific ode
-> > might need some of the data before the unbinding, something I thought
-> > might be necessary at one point for the pKVM port when deleting a
-> > memslot, but realized later that kvm_invalidate_memslot() ->
-> > kvm_arch_guest_memory_reclaimed() was the more logical place for it.
-> > Also, since that seems to be the pattern for arch-specific handlers in
-> > KVM.
->
-> Maybe?  But only if we can about symmetry between the allocation and free=
- paths
-> I really don't think kvm_arch_free_memslot() should be doing anything bey=
-ond a
-> "pure" free.  E.g. kvm_arch_free_memslot() is also called after moving a =
-memslot,
-> which hopefully we never actually have to allow for guest_memfd, but any =
-code in
-> kvm_arch_free_memslot() would bring about "what if" questions regarding m=
-emslot
-> movement.  I.e. the API is intended to be a "free arch metadata associate=
-d with
-> the memslot".
->
-> Out of curiosity, what does pKVM need to do at kvm_arch_guest_memory_recl=
-aimed()?
-
-It's about the host reclaiming ownership of guest memory when tearing
-down a protected guest. In pKVM, we currently teardown the guest and
-reclaim its memory when kvm_arch_destroy_vm() is called. The problem
-with guestmem is that kvm_gmem_unbind() could get called before that
-happens, after which the host might try to access the unbound guest
-memory. Since the host hasn't reclaimed ownership of the guest memory
-from hyp, hilarity ensues (it crashes).
-
-Initially, I hooked reclaim guest memory to kvm_free_memslot(), but
-then I needed to move the unbind later in the function. I realized
-later that kvm_arch_guest_memory_reclaimed() gets called earlier (at
-the right time), and is more aptly named.
-
-Thanks,
+Cheers,
 /fuad
+
+
+>  virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
+>  1 file changed, 19 insertions(+), 15 deletions(-)
+>
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 486800a7024b..0524933856d4 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struc=
+t mmu_notifier *mn)
+>         return container_of(mn, struct kvm, mmu_notifier);
+>  }
+>
+> -typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *ran=
+ge);
+> +typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *ran=
+ge);
+>
+>  typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
+>                              unsigned long end);
+>
+>  typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+>
+> -struct kvm_hva_range {
+> -       unsigned long start;
+> -       unsigned long end;
+> +struct kvm_mmu_notifier_range {
+> +       /*
+> +        * 64-bit addresses, as KVM notifiers can operate on host virtual
+> +        * addresses (unsigned long) and guest physical addresses (64-bit=
+).
+> +        */
+> +       u64 start;
+> +       u64 end;
+>         union kvm_mmu_notifier_arg arg;
+> -       hva_handler_t handler;
+> +       gfn_handler_t handler;
+>         on_lock_fn_t on_lock;
+>         on_unlock_fn_t on_unlock;
+>         bool flush_on_ret;
+> @@ -581,7 +585,7 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIF=
+IER_NO_ARG;
+>              node =3D interval_tree_iter_next(node, start, last))      \
+>
+>  static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+> -                                                 const struct kvm_hva_ra=
+nge *range)
+> +                                                 const struct kvm_mmu_no=
+tifier_range *range)
+>  {
+>         bool ret =3D false, locked =3D false;
+>         struct kvm_gfn_range gfn_range;
+> @@ -608,9 +612,9 @@ static __always_inline int __kvm_handle_hva_range(str=
+uct kvm *kvm,
+>                         unsigned long hva_start, hva_end;
+>
+>                         slot =3D container_of(node, struct kvm_memory_slo=
+t, hva_node[slots->node_idx]);
+> -                       hva_start =3D max(range->start, slot->userspace_a=
+ddr);
+> -                       hva_end =3D min(range->end, slot->userspace_addr =
++
+> -                                                 (slot->npages << PAGE_S=
+HIFT));
+> +                       hva_start =3D max_t(unsigned long, range->start, =
+slot->userspace_addr);
+> +                       hva_end =3D min_t(unsigned long, range->end,
+> +                                       slot->userspace_addr + (slot->npa=
+ges << PAGE_SHIFT));
+>
+>                         /*
+>                          * To optimize for the likely case where the addr=
+ess
+> @@ -660,10 +664,10 @@ static __always_inline int kvm_handle_hva_range(str=
+uct mmu_notifier *mn,
+>                                                 unsigned long start,
+>                                                 unsigned long end,
+>                                                 union kvm_mmu_notifier_ar=
+g arg,
+> -                                               hva_handler_t handler)
+> +                                               gfn_handler_t handler)
+>  {
+>         struct kvm *kvm =3D mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range range =3D {
+> +       const struct kvm_mmu_notifier_range range =3D {
+>                 .start          =3D start,
+>                 .end            =3D end,
+>                 .arg            =3D arg,
+> @@ -680,10 +684,10 @@ static __always_inline int kvm_handle_hva_range(str=
+uct mmu_notifier *mn,
+>  static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_noti=
+fier *mn,
+>                                                          unsigned long st=
+art,
+>                                                          unsigned long en=
+d,
+> -                                                        hva_handler_t ha=
+ndler)
+> +                                                        gfn_handler_t ha=
+ndler)
+>  {
+>         struct kvm *kvm =3D mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range range =3D {
+> +       const struct kvm_mmu_notifier_range range =3D {
+>                 .start          =3D start,
+>                 .end            =3D end,
+>                 .handler        =3D handler,
+> @@ -771,7 +775,7 @@ static int kvm_mmu_notifier_invalidate_range_start(st=
+ruct mmu_notifier *mn,
+>                                         const struct mmu_notifier_range *=
+range)
+>  {
+>         struct kvm *kvm =3D mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range hva_range =3D {
+> +       const struct kvm_mmu_notifier_range hva_range =3D {
+>                 .start          =3D range->start,
+>                 .end            =3D range->end,
+>                 .handler        =3D kvm_unmap_gfn_range,
+> @@ -835,7 +839,7 @@ static void kvm_mmu_notifier_invalidate_range_end(str=
+uct mmu_notifier *mn,
+>                                         const struct mmu_notifier_range *=
+range)
+>  {
+>         struct kvm *kvm =3D mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range hva_range =3D {
+> +       const struct kvm_mmu_notifier_range hva_range =3D {
+>                 .start          =3D range->start,
+>                 .end            =3D range->end,
+>                 .handler        =3D (void *)kvm_null_fn,
+> --
+> 2.42.0.820.g83a721a137-goog
+>
