@@ -4,56 +4,140 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2F57C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 08:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20070C4167D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 10:33:45 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VpsKDnE5;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VpsKDnE5;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SLd5P2LhPz3clY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 19:56:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SLgFz4XgVz3cWq
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Nov 2023 21:33:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VpsKDnE5;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VpsKDnE5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SLd4n4sbmz2xWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2023 19:55:35 +1100 (AEDT)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.95)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1qyTU2-000sVY-7b; Thu, 02 Nov 2023 09:55:22 +0100
-Received: from p5dc55299.dip0.t-ipconnect.de ([93.197.82.153] helo=[192.168.178.81])
-          by inpost2.zedat.fu-berlin.de (Exim 4.95)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1qyTU1-003w1r-W4; Thu, 02 Nov 2023 09:55:22 +0100
-Message-ID: <a4707277562862260bdc159bb88dafd6f85a67bc.camel@physik.fu-berlin.de>
-Subject: Re: Does anyone use Appletalk?
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Finn Thain <fthain@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 02 Nov 2023 09:55:21 +0100
-In-Reply-To: <973278b8-c9e5-b1cf-2e08-2ff8fd8e9aa4@linux-m68k.org>
-References: 	<CAMuHMdWL2TnYmkt2W6=ohBuKmyof8kR3p7ZPzmXmWSGnKj9c3g@mail.gmail.com>
-	 <594446aaf91b282ff3cbd95953576ffd29f38dab.camel@physik.fu-berlin.de>
-	 <CAMuHMdWv=A6MiVwUuOp8zOCcf21HxKb8cdrndzdbAZik3VRXiw@mail.gmail.com>
-	 <5e3e52a48ba9cc0109a98cf4c5371c3f80c4b4cc.camel@physik.fu-berlin.de>
-	 <79b7f88e3dd6536fe69c63ed3b4cc1f2c551ce8d.camel@redhat.com>
-	 <d40cd45a-e7e3-49c4-931b-c5ec75a6bf56@app.fastmail.com>
-	 <973278b8-c9e5-b1cf-2e08-2ff8fd8e9aa4@linux-m68k.org>
-Autocrypt: addr=glaubitz@physik.fu-berlin.de; prefer-encrypt=mutual;
- keydata=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
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.50.1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SLgDx3XZyz2ys9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2023 21:32:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1698921165;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=EePgrsn5C6IrnNIxegoYsuWMp1Sc1phl1cmFpN1d7s8=;
+	b=VpsKDnE5+vy1ipNe+M59ZzucbG66sJQWn+JflI6XAwfBn51go3p0AgXLW6aloPzkQGnaUz
+	iQ0joLrNX8kq6AViEx1uVRowkudjD/YkTuSUc1xk8Wm9QHVwHO0PeBEl8Kwu3bDpk094KE
+	OQJw7eVeBMGBGpTHA6FhvceFj5dzBUw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1698921165;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=EePgrsn5C6IrnNIxegoYsuWMp1Sc1phl1cmFpN1d7s8=;
+	b=VpsKDnE5+vy1ipNe+M59ZzucbG66sJQWn+JflI6XAwfBn51go3p0AgXLW6aloPzkQGnaUz
+	iQ0joLrNX8kq6AViEx1uVRowkudjD/YkTuSUc1xk8Wm9QHVwHO0PeBEl8Kwu3bDpk094KE
+	OQJw7eVeBMGBGpTHA6FhvceFj5dzBUw=
+Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
+ [209.85.218.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-658-9iyk1bCUPYuBfVR75NNd9w-1; Thu, 02 Nov 2023 06:32:41 -0400
+X-MC-Unique: 9iyk1bCUPYuBfVR75NNd9w-1
+Received: by mail-ej1-f70.google.com with SMTP id a640c23a62f3a-9d4b8735f48so54137666b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2023 03:32:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698921160; x=1699525960;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=EePgrsn5C6IrnNIxegoYsuWMp1Sc1phl1cmFpN1d7s8=;
+        b=QlRKZr3rJf9BG3qqBI+lkjSjOSnXo7jxPnA7iYe9LZoIgiTHikwwqlFNadyeJJPXFK
+         noZxmvtzXG4CzdFvpP52WJv4DS1UYO6F3MDcS8vz8YFAqnZ2ee+6AdKSYYR1EiYkhCE6
+         Ph+bB3bKv1RpihctgPi1zURd6faVV5mWJIXVfgCjscASw5odsn8TNlor3N/gPSzMk0Hx
+         CE37OunB0TRM+uh3kgXT6wIra5JKIaHBnb7aTRzrvym+cOJc5s9LfqBOBMv6QIbmT7x2
+         lokiyOd/7NSeYxvxdXIXE6mQXxaebuTsZONwwWubdBRgYcpWwvx2EANDooKEiEjvXrl3
+         B9bQ==
+X-Gm-Message-State: AOJu0YykwVum5+bCBBKy+ZwGOU1IfzJXL0EsGBIGDsrA6vWm3WMCiH6f
+	OcqXepQzqq+Gu3IqUddbpq45l2kxhww99expJy1Cicsw6fEyjpI77a4b9tThftzMPeKaTE2C715
+	/Ss2iM9GdxxPT/WPtCcCqJEFEqw==
+X-Received: by 2002:a17:907:70a:b0:9bd:9bfe:e410 with SMTP id xb10-20020a170907070a00b009bd9bfee410mr4134641ejb.72.1698921160410;
+        Thu, 02 Nov 2023 03:32:40 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHdKWTZCjPNQtOILp1najbjDKUZt1gJ0TmclwPTaP4Nu9rDAFXiy/5MsPxAUlznxhN/2PedEg==
+X-Received: by 2002:a17:907:70a:b0:9bd:9bfe:e410 with SMTP id xb10-20020a170907070a00b009bd9bfee410mr4134618ejb.72.1698921159974;
+        Thu, 02 Nov 2023 03:32:39 -0700 (PDT)
+Received: from ?IPV6:2001:b07:6468:f312:9af8:e5f5:7516:fa89? ([2001:b07:6468:f312:9af8:e5f5:7516:fa89])
+        by smtp.googlemail.com with ESMTPSA id y13-20020a170906470d00b0099bd1a78ef5sm957651ejq.74.2023.11.02.03.32.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 02 Nov 2023 03:32:39 -0700 (PDT)
+Message-ID: <a03d0e36-7b38-4841-9c62-66c9029e388d@redhat.com>
+Date: Thu, 2 Nov 2023 11:32:34 +0100
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 93.197.82.153
-X-ZEDAT-Hint: PO
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
+To: "Huang, Kai" <kai.huang@intel.com>,
+ "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+ "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
+ "Christopherson,, Sean" <seanjc@google.com>,
+ "brauner@kernel.org" <brauner@kernel.org>,
+ "oliver.upton@linux.dev" <oliver.upton@linux.dev>,
+ "chenhuacai@kernel.org" <chenhuacai@kernel.org>,
+ "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>,
+ "palmer@dabbelt.com" <palmer@dabbelt.com>, "maz@kernel.org"
+ <maz@kernel.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "willy@infradead.org" <willy@infradead.org>,
+ "anup@brainfault.org" <anup@brainfault.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+References: <20231027182217.3615211-1-seanjc@google.com>
+ <20231027182217.3615211-14-seanjc@google.com>
+ <b486ed5036fab6d6d4e13a6c68abddcb9541d51b.camel@intel.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Autocrypt: addr=pbonzini@redhat.com; keydata=
+ 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
+In-Reply-To: <b486ed5036fab6d6d4e13a6c68abddcb9541d51b.camel@intel.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,29 +149,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dan Williams <dcbw@redhat.com>, Netdev <netdev@vger.kernel.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jakub Kicinski <kuba@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "david@redhat.com" <david@redhat.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "mic@digikod.net" <mic@digikod.net>, "chao.p.peng@linux.intel.com" <chao.p.peng@linux.intel.com>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "isaku.yamahata@gmail.com" <isaku.yamahata@gmail.com>, "Li, Xiaoyao" <xiaoyao.li@intel.com>, "Wang, Wei W" <wei.w.wang@intel.com>, "tabba@google.com" <tabba@google.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mail@maciej.szmigiero.name" <mail@maciej.szmigiero.name>, "michael.roth@amd.com" <michael.roth@amd.com>, "ackerleytng@google.com" <ackerleytng@google.com>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "vbabka@suse.cz" <vbabka@suse.cz>, "Yamahata, Isaku" <isaku.yamahata@intel.com>, "qperret@google.com" <qperret@google.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org
+ >, "dmatlack@google.com" <dmatlack@google.com>, "jarkko@kernel.org" <jarkko@kernel.org>, "yu.c.zhang@linux.intel.com" <yu.c.zhang@linux.intel.com>, "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "liam.merwick@oracle.com" <liam.merwick@oracle.com>, "Annapurve, Vishal" <vannapurve@google.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xu, Yilun" <yilun.xu@intel.com>, "amoorthy@google.com" <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2023-11-02 at 13:13 +1100, Finn Thain wrote:
-> So I can't object to the removal of the localtalk code. But I do object t=
-o=20
-> the underhand manner in which it is done.
+On 11/2/23 04:01, Huang, Kai wrote:
+> On Fri, 2023-10-27 at 11:21 -0700, Sean Christopherson wrote:
+>> From: Chao Peng <chao.p.peng@linux.intel.com>
+>>
+>> In confidential computing usages, whether a page is private or shared is
+>> necessary information for KVM to perform operations like page fault
+>> handling, page zapping etc. There are other potential use cases for
+>> per-page memory attributes, e.g. to make memory read-only (or no-exec,
+>> or exec-only, etc.) without having to modify memslots.
+>>
+>> Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
+>> userspace to operate on the per-page memory attributes.
+>>    - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
+>>      a guest memory range.
+>>    - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
+>>      memory attributes.
+>>
+>> Use an xarray to store the per-page attributes internally, with a naive,
+>> not fully optimized implementation, i.e. prioritize correctness over
+>> performance for the initial implementation.
+>>
+>> Use bit 3 for the PRIVATE attribute so that KVM can use bits 0-2 for RWX
+>> attributes/protections in the future, e.g. to give userspace fine-grained
+>> control over read, write, and execute protections for guest memory.
+>>
+>> Provide arch hooks for handling attribute changes before and after common
+>> code sets the new attributes, e.g. x86 will use the "pre" hook to zap all
+>> relevant mappings, and the "post" hook to track whether or not hugepages
+>> can be used to map the range.
+>>
+>> To simplify the implementation wrap the entire sequence with
+>> kvm_mmu_invalidate_{begin,end}() even though the operation isn't strictly
+>> guaranteed to be an invalidation.  For the initial use case, x86 *will*
+>> always invalidate memory, and preventing arch code from creating new
+>> mappings while the attributes are in flux makes it much easier to reason
+>> about the correctness of consuming attributes.
+>>
+>> It's possible that future usages may not require an invalidation, e.g.
+>> if KVM ends up supporting RWX protections and userspace grants _more_
+>> protections, but again opt for simplicity and punt optimizations to
+>> if/when they are needed.
+>>
+>> Suggested-by: Sean Christopherson <seanjc@google.com>
+>> Link: https://lore.kernel.org/all/Y2WB48kD0J4VGynX@google.com
+>> Cc: Fuad Tabba <tabba@google.com>
+>> Cc: Xu Yilun <yilun.xu@intel.com>
+>> Cc: Mickaël Salaün <mic@digikod.net>
+>> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+>> Co-developed-by: Sean Christopherson <seanjc@google.com>
+>> Signed-off-by: Sean Christopherson <seanjc@google.com>
+>>
+> 
+> [...]
+> 
+>> +Note, there is no "get" API.  Userspace is responsible for explicitly tracking
+>> +the state of a gfn/page as needed.
+>> +
+>>
+> 
+> [...]
+> 
+>>   
+>> +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+>> +static inline unsigned long kvm_get_memory_attributes(struct kvm *kvm, gfn_t gfn)
+>> +{
+>> +	return xa_to_value(xa_load(&kvm->mem_attr_array, gfn));
+>> +}
+> 
+> Only call xa_to_value() when xa_load() returns !NULL?
 
-I agree. I have the impression that the actual users of the affected code a=
-re
-never asked. It's usually a question posed on a mailing list where 99% of t=
-he
-affected users don't hang around.
+This xarray does not store a pointer, therefore xa_load() actually 
+returns an integer that is tagged with 1 in the low bit:
 
-Naturally, there won't be any objections to the removal because affected us=
-ers
-didn't receive a heads-up in the first place.
+static inline unsigned long xa_to_value(const void *entry)
+{
+         return (unsigned long)entry >> 1;
+}
 
-Adrian
+Returning zero for an empty entry is okay, so the result of xa_load() 
+can be used directly.
 
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+
+>> +
+>> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+>> +				     unsigned long attrs);
+> 
+> Seems it's not immediately clear why this function is needed in this patch,
+> especially when you said there is no "get" API above.  Add some material to
+> changelog?
+
+It's used by later patches; even without a "get" API, it's a pretty 
+fundamental functionality.
+
+>> +bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
+>> +					struct kvm_gfn_range *range);
+>> +bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
+>> +					 struct kvm_gfn_range *range);
+> 
+> Looks if this Kconfig is on, the above two arch hooks won't have implementation.
+> 
+> Is it better to have two __weak empty versions here in this patch?
+> 
+> Anyway, from the changelog it seems it's not mandatory for some ARCH to provide
+> the above two if one wants to turn this on, i.e., the two hooks can be empty and
+> the ARCH can just use the __weak version.
+
+I think this can be added by the first arch that needs memory attributes 
+and also doesn't need one of these hooks.  Or perhaps the x86 
+kvm_arch_pre_set_memory_attributes() could be made generic and thus that 
+would be the __weak version.  It's too early to tell, so it's better to 
+leave the implementation to the architectures for now.
+
+Paolo
+
