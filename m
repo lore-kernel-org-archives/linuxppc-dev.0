@@ -4,65 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4168CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 09:43:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BDF3C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 23:18:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=YYC6k1n9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=kloNgxDf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SMG624Db3z3cbl
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 20:43:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SMc9l2TYcz3cfy
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Nov 2023 10:18:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=YYC6k1n9;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=kloNgxDf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f29; helo=mail-qv1-xf29.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3hh9fzqykdmk7tp2yrv33v0t.r310x29c44r-sta0x787.3e0pq7.36v@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SMG526dNqz30P0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2023 20:43:01 +1100 (AEDT)
-Received: by mail-qv1-xf29.google.com with SMTP id 6a1803df08f44-6754b4091b6so10453636d6.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Nov 2023 02:43:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SMc8p4VJyz300g
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2023 10:17:28 +1100 (AEDT)
+Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-5b31e000e97so36317887b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Nov 2023 16:17:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1699004575; x=1699609375; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=KR3uUy+lpOtuK74sFvr5LpDDKafluOWW+OG46f9Hrzo=;
-        b=YYC6k1n9msarbRMiDeKwo4hsVn/mkPeUtKwUjzD0swwD7rRPJtxwTQ8hskORQY3vid
-         FjlFabMxWD/lshCT1AlFD+lOiIaSYNewKxZH1WCOew8eb891TZwnqgM+fAyOfmYp6oE8
-         Jkf/rog91jgUmIwZXOhW2+GMlYWKZ0JGG5trROk1VAVe34I16QCmFudHYZ/yA3n5SSDq
-         x0gz0X1nfb4fnxLIyd529c5pT+SnxZvxRaIEYfQ7rZoOPa5mFne/ARI2wkigWbfo/i3g
-         0Dn5d7mTdBrzaNZim7FNq3/H7+jFHhakH74BcXbTu61LegqSl3vopxa6gWRh11tJYyIy
-         h9UA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699004575; x=1699609375;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=google.com; s=20230601; t=1699053445; x=1699658245; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=KR3uUy+lpOtuK74sFvr5LpDDKafluOWW+OG46f9Hrzo=;
-        b=SMFhXhzrGU8CpPJlvGw1ZLjGCDmDYyMJZs//tRI3sIevcXa+MuMT6GJRQYl+mvQtwL
-         PIWMN/KKl7ClFYGLpXbyd3YK+Slrc0g/wleAhwnp9ZiKQCeE/U/tIY3qJDX6+fSaObAl
-         k55varCv/Z+oJ6POsq06hlWjw9cmTd/NgyzUESXVDBryMUxUaf9YHa8KHCxD5r2GtQ4h
-         vMatWsFp1bggV52GWaTUeAQfVORxMO0N/RDKkea0wskotyDziYX2so1UYPPMTUCbJCKY
-         SK3bddbHYTTsSyT5fGHMuD1xr0uZOoOcVvyFwyi74l23Hny5F+eJYON3jctjEv6XGI38
-         hT/Q==
-X-Gm-Message-State: AOJu0YwyLCWKeK4wrbsScO5eYQCVzU1X0SoNYZaisoJFX60q8FKzoipv
-	dC7D2cWmukosv3DMIY4l+f2d4LmrI06fZsxbuD35RQ==
-X-Google-Smtp-Source: AGHT+IHMtnnuJ+fshc7oeOwDt21mO974uTwKm6avpjixqQMFQPk6nu4AOneq997yl+dXgdaxeuVP+cu76MznLmTOvmQ=
-X-Received: by 2002:a05:6214:401c:b0:66d:34a8:3ed0 with SMTP id
- kd28-20020a056214401c00b0066d34a83ed0mr22048546qvb.26.1699004574544; Fri, 03
- Nov 2023 02:42:54 -0700 (PDT)
-MIME-Version: 1.0
+        bh=wL2niLMenc8rXWamhCVdrH1GL3hMVyvGfUspx7X4DS0=;
+        b=kloNgxDf9yIgHQr4Ky2ZzO5NYhim16+9BU3lpREL7yFlOQ3dTpQ0oNUMM/W6tC4ldl
+         Jd9GLEquXcgRNrroqiVJBLEiuaaSG7XCAVNR4eVGXWJp8bNj7V/0+sM44GoknhqDvTWA
+         bmwedEGnE1zNtlvtSvcwM6FiiHAMBsYNgzvnTSUbIzInkhsStQDw38DF88RojYCrnks0
+         9l/oZ485jtrekX2P9FKmrtqPoFCMDCKmVMfLTcB9TIActCe9MaeWSfMTcZ+lJxcxJWGf
+         sEx8HAF2zsPvTXs+f49BUe/pT5Rawsuz9fVPFo56mv7hFrKwrHEDP5TjHxeSs5l0yC22
+         dxTA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699053445; x=1699658245;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=wL2niLMenc8rXWamhCVdrH1GL3hMVyvGfUspx7X4DS0=;
+        b=VriyUEIr8ojuxmuWf2+4aQlZHEJTUB7psGlQppuY61JCbYw7oGj4v9GfQHOU95chsX
+         p0abvwCcOHzBu+LmxPW7DG9U4XNlw88dhxKFX5+QNg2uomJ6f44PpxhHYvU7B24WJBvy
+         u7hF2aroMDSOz2GzFDicT9hms9JRQmpXibf7Zm7sFDY7UIUDHPUpuS7CiSX2tnJZU7a1
+         EnMjiuMRwHBWi2pYZXFOYXdVrx0IT9uE2492ZrbPkkxs0Nbgc3tZ8Xh32cixcxnBvV3e
+         Svct/JquC3HvdSlOZKP/DP+fTfBSwa4rbYBRtMvYEiecvhxetRGkhc3BV+aw4H69s3+C
+         ArzQ==
+X-Gm-Message-State: AOJu0Yz3JSeuYoe1trSIw08nyTFknQzk0Yi0kWrPk66vkwKozl/gDwr0
+	t/bJGYh1LjY84WDlYy0zr6QptBHT47c=
+X-Google-Smtp-Source: AGHT+IGJDyi83TwJx+I35GsLQytKZmA4RJCyClEGAPsqdhhOEgS+Lm1oHaoRVNSHVuwQA3+7WVp40Ul4xUY=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a81:4958:0:b0:59f:3cde:b33a with SMTP id
+ w85-20020a814958000000b0059f3cdeb33amr84737ywa.6.1699053444944; Fri, 03 Nov
+ 2023 16:17:24 -0700 (PDT)
+Date: Fri, 3 Nov 2023 16:17:23 -0700
+In-Reply-To: <CA+EHjTzGzXnfXHh0m5iHt9m3BxerkUS56EVPDA_az6n2FRnk3w@mail.gmail.com>
+Mime-Version: 1.0
 References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
-In-Reply-To: <20231027182217.3615211-17-seanjc@google.com>
-From: Fuad Tabba <tabba@google.com>
-Date: Fri, 3 Nov 2023 09:42:17 +0000
-Message-ID: <CA+EHjTxEvJpfA7urRj6EbbuwTGWAw6ZYu6NmX9sLT5Cdp5p3eA@mail.gmail.com>
+ <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com>
+ <ZUF8A5KpwpA6IKUH@google.com> <CA+EHjTwTT9cFzYTtwT43nLJS01Sgt0NqzUgKAnfo2fiV3tEvXg@mail.gmail.com>
+ <ZULJYg5cf1UrNq3e@google.com> <CA+EHjTzGzXnfXHh0m5iHt9m3BxerkUS56EVPDA_az6n2FRnk3w@mail.gmail.com>
+Message-ID: <ZUV_g1_3pj62OgF-@google.com>
 Subject: Re: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
  guest-specific backing memory
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
+From: Sean Christopherson <seanjc@google.com>
+To: Fuad Tabba <tabba@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,31 +80,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracl
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracl
  e.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Thu, Nov 02, 2023, Fuad Tabba wrote:
+> On Wed, Nov 1, 2023 at 9:55=E2=80=AFPM Sean Christopherson <seanjc@google=
+.com> wrote:
+> > E.g. a misbehaving userspace could prematurely delete a memslot.  And t=
+he more
+> > fun example is intrahost migration, where the plan is to allow pointing=
+ multiple
+> > guest_memfd files at a single guest_memfd inode:
+> > https://lore.kernel.org/all/cover.1691446946.git.ackerleytng@google.com
+> >
+> > There was a lot of discussion for this, but it's scattered all over the=
+ place.
+> > The TL;DR is is that the inode will represent physical memory, and a fi=
+le will
+> > represent a given "struct kvm" instance's view of that memory.  And so =
+the memory
+> > isn't reclaimed until the inode is truncated/punched.
+> >
+> > I _think_ this reflects the most recent plan from the guest_memfd side:
+> > https://lore.kernel.org/all/1233d749211c08d51f9ca5d427938d47f008af1f.16=
+89893403.git.isaku.yamahata@intel.com
 
-...
+Doh, sitting in my TODO folder...
 
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index e2252c748fd6..e82c69d5e755 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
+https://lore.kernel.org/all/20231016115028.996656-1-michael.roth@amd.com
 
-...
-
-> +4.141 KVM_CREATE_GUEST_MEMFD
-> +----------------------------
-> +
-> +:Capability: KVM_CAP_GUEST_MEMFD
-> +:Architectures: none
-> +:Type: vm ioctl
-> +:Parameters: struct struct kvm_create_guest_memfd(in)
-
-One struct too many.
-
-Cheers,
-/fuad
+> Thanks for pointing that out. I think this might be the way to go.
+> I'll have a closer look at this and see how to get it to work with
+> pKVM.
