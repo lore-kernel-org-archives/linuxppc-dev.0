@@ -4,46 +4,130 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04635C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 05:39:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0278EC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 10:42:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=f95nJasf;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cRg4+PCq;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cRg4+PCq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SM8h32HQ2z3ccX
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 16:39:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SMHP62kVXz3cbL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 21:42:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=f95nJasf;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cRg4+PCq;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cRg4+PCq;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SM8g313Ccz30fD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2023 16:38:39 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1698989917;
-	bh=JZMMRqeEWCEK12q10Qv605qtznyYarNTMhcLZafSnTM=;
-	h=From:To:Cc:Subject:Date:From;
-	b=f95nJasfMPFESHSsjIEi/31HN51j16nbNXb4QPU77MmrrqO4ICye3UioH1p9JQNTX
-	 70BTE7eUWSp4vYEw7CEGbt64NLtyv4ZNpsLZXjAiMhRylKF6uSdBXcFbO9eUFgPKoD
-	 oTOxuJPjD4WN1uquZ9b6FxLtQNiVps+W96IQUNW/fskkpaCBYmqPYe6TbGGViineEU
-	 PmsNwu3MedQEFnCA4kx9IS3TTHZcmh8KzvOR/dwkiiYlfTRw2EM79wPRUhcqKPH1yw
-	 HXY0993Kl3WS8PFTJg/fWy4VvPPm1DGSj+0MT05PG3ju80RstCMNMhxCPrTzVzLCiV
-	 dknddn99WGfag==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SM8fw62j4z4xV1;
-	Fri,  3 Nov 2023 16:38:32 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.7-1 tag
-Date: Fri, 03 Nov 2023 16:38:27 +1100
-Message-ID: <878r7fgzvw.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SMHN364Jjz30gn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2023 21:41:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1699008062;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Lp6Jz+POVOM2ymATN0+4roKlcGz/gu2UjTswWR4Ytbw=;
+	b=cRg4+PCqqSlOE2s/8+SbHCWChJ/PgzTXRoLzGH2VKsxlFbC6nK51LMuzcKpx7+fFQ85SE9
+	ZqdCL60k0CdCxvgpyvUtNst78QeZG6G9eFzeg/QI6b37gEj2F0Veh//aj0hpgG1tnhl+/z
+	GKWyOQ93PVAwx6y1OyziDH2saneefoY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1699008062;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Lp6Jz+POVOM2ymATN0+4roKlcGz/gu2UjTswWR4Ytbw=;
+	b=cRg4+PCqqSlOE2s/8+SbHCWChJ/PgzTXRoLzGH2VKsxlFbC6nK51LMuzcKpx7+fFQ85SE9
+	ZqdCL60k0CdCxvgpyvUtNst78QeZG6G9eFzeg/QI6b37gEj2F0Veh//aj0hpgG1tnhl+/z
+	GKWyOQ93PVAwx6y1OyziDH2saneefoY=
+Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
+ [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-399-enzryQ_LNeCpEEkfvkehtw-1; Fri, 03 Nov 2023 06:41:00 -0400
+X-MC-Unique: enzryQ_LNeCpEEkfvkehtw-1
+Received: by mail-ej1-f71.google.com with SMTP id a640c23a62f3a-9d2606301eeso223862666b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Nov 2023 03:41:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699008060; x=1699612860;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Lp6Jz+POVOM2ymATN0+4roKlcGz/gu2UjTswWR4Ytbw=;
+        b=bwTsTjw3tbzG3DaOpzEVdB5S4gqPjCJYTPQEJw4z3dDbBMBWDHVMxQkTaYw8bzUL0k
+         GEzQvP2I0sGfh9HTlKu5+qxz/YtTWhD1RDYXi5mHVg/U3D8MjVX3GFFyMKxEbyTxJLDl
+         YmLUGreYvCtZsOZfYc7ZId4rt4iybBI9WYHFO/0OrgQG8pSESEb4B1qxCIo2tdHqb2i5
+         91Wx9bWIC61i/GpIbpC6eYUxWvZI9XybjnfpwHx4Oi+0yPHr7rSdiMIuBaQxoWFgzA9O
+         e7OAkIBsEq8AfWF6ZNNve1odIHUvD5N0TQLJx4qrQP2E4PhMITSo5n/2koYLLXOM0xxG
+         SHPQ==
+X-Gm-Message-State: AOJu0YzDUbdjq2zded12IrI6l2Co7ii8wBVtlREVv2/INt5x3hNKObtP
+	b6oAiSugHxK7nfXyXuuFJXEZE+jZff9c+54Uj3OkOY5ytVEZw98jIBy/yfJ/DxvJzVWdeRZsbhq
+	oPo5d+tUlqgvoXdtS1icME4PR4w==
+X-Received: by 2002:a17:906:7950:b0:9bf:c00f:654a with SMTP id l16-20020a170906795000b009bfc00f654amr2302811ejo.24.1699008059842;
+        Fri, 03 Nov 2023 03:40:59 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEYL84kQ58i2cP4K6S7xeuKGH18ZQ7RIKhzKbyX3E6c1jOpr4P+mCWZM0GIPaXqH2aak15cSg==
+X-Received: by 2002:a17:906:7950:b0:9bf:c00f:654a with SMTP id l16-20020a170906795000b009bfc00f654amr2302775ejo.24.1699008059454;
+        Fri, 03 Nov 2023 03:40:59 -0700 (PDT)
+Received: from ?IPV6:2001:b07:6468:f312:4783:a68:c1ee:15c5? ([2001:b07:6468:f312:4783:a68:c1ee:15c5])
+        by smtp.googlemail.com with ESMTPSA id g4-20020a170906394400b009a5f1d15644sm754493eje.119.2023.11.03.03.40.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Nov 2023 03:40:58 -0700 (PDT)
+Message-ID: <e39a8f6e-c98d-4873-aa3f-2e566dead5c5@redhat.com>
+Date: Fri, 3 Nov 2023 11:40:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v13 15/35] fs: Export anon_inode_getfile_secure() for use
+ by KVM
+To: Christian Brauner <brauner@kernel.org>,
+ Sean Christopherson <seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com>
+ <20231027182217.3615211-16-seanjc@google.com>
+ <20231102-freihalten-vorsah-fdd68051b005@brauner>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Autocrypt: addr=pbonzini@redhat.com; keydata=
+ xsEhBFRCcBIBDqDGsz4K0zZun3jh+U6Z9wNGLKQ0kSFyjN38gMqU1SfP+TUNQepFHb/Gc0E2
+ CxXPkIBTvYY+ZPkoTh5xF9oS1jqI8iRLzouzF8yXs3QjQIZ2SfuCxSVwlV65jotcjD2FTN04
+ hVopm9llFijNZpVIOGUTqzM4U55sdsCcZUluWM6x4HSOdw5F5Utxfp1wOjD/v92Lrax0hjiX
+ DResHSt48q+8FrZzY+AUbkUS+Jm34qjswdrgsC5uxeVcLkBgWLmov2kMaMROT0YmFY6A3m1S
+ P/kXmHDXxhe23gKb3dgwxUTpENDBGcfEzrzilWueOeUWiOcWuFOed/C3SyijBx3Av/lbCsHU
+ Vx6pMycNTdzU1BuAroB+Y3mNEuW56Yd44jlInzG2UOwt9XjjdKkJZ1g0P9dwptwLEgTEd3Fo
+ UdhAQyRXGYO8oROiuh+RZ1lXp6AQ4ZjoyH8WLfTLf5g1EKCTc4C1sy1vQSdzIRu3rBIjAvnC
+ tGZADei1IExLqB3uzXKzZ1BZ+Z8hnt2og9hb7H0y8diYfEk2w3R7wEr+Ehk5NQsT2MPI2QBd
+ wEv1/Aj1DgUHZAHzG1QN9S8wNWQ6K9DqHZTBnI1hUlkp22zCSHK/6FwUCuYp1zcAEQEAAc0j
+ UGFvbG8gQm9uemluaSA8cGJvbnppbmlAcmVkaGF0LmNvbT7CwU0EEwECACMFAlRCcBICGwMH
+ CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRB+FRAMzTZpsbceDp9IIN6BIA0Ol7MoB15E
+ 11kRz/ewzryFY54tQlMnd4xxfH8MTQ/mm9I482YoSwPMdcWFAKnUX6Yo30tbLiNB8hzaHeRj
+ jx12K+ptqYbg+cevgOtbLAlL9kNgLLcsGqC2829jBCUTVeMSZDrzS97ole/YEez2qFpPnTV0
+ VrRWClWVfYh+JfzpXmgyhbkuwUxNFk421s4Ajp3d8nPPFUGgBG5HOxzkAm7xb1cjAuJ+oi/K
+ CHfkuN+fLZl/u3E/fw7vvOESApLU5o0icVXeakfSz0LsygEnekDbxPnE5af/9FEkXJD5EoYG
+ SEahaEtgNrR4qsyxyAGYgZlS70vkSSYJ+iT2rrwEiDlo31MzRo6Ba2FfHBSJ7lcYdPT7bbk9
+ AO3hlNMhNdUhoQv7M5HsnqZ6unvSHOKmReNaS9egAGdRN0/GPDWr9wroyJ65ZNQsHl9nXBqE
+ AukZNr5oJO5vxrYiAuuTSd6UI/xFkjtkzltG3mw5ao2bBpk/V/YuePrJsnPFHG7NhizrxttB
+ nTuOSCMo45pfHQ+XYd5K1+Cv/NzZFNWscm5htJ0HznY+oOsZvHTyGz3v91pn51dkRYN0otqr
+ bQ4tlFFuVjArBZcapSIe6NV8C4cEiSTOwE0EVEJx7gEIAMeHcVzuv2bp9HlWDp6+RkZe+vtl
+ KwAHplb/WH59j2wyG8V6i33+6MlSSJMOFnYUCCL77bucx9uImI5nX24PIlqT+zasVEEVGSRF
+ m8dgkcJDB7Tps0IkNrUi4yof3B3shR+vMY3i3Ip0e41zKx0CvlAhMOo6otaHmcxr35sWq1Jk
+ tLkbn3wG+fPQCVudJJECvVQ//UAthSSEklA50QtD2sBkmQ14ZryEyTHQ+E42K3j2IUmOLriF
+ dNr9NvE1QGmGyIcbw2NIVEBOK/GWxkS5+dmxM2iD4Jdaf2nSn3jlHjEXoPwpMs0KZsgdU0pP
+ JQzMUMwmB1wM8JxovFlPYrhNT9MAEQEAAcLBMwQYAQIACQUCVEJx7gIbDAAKCRB+FRAMzTZp
+ sadRDqCctLmYICZu4GSnie4lKXl+HqlLanpVMOoFNnWs9oRP47MbE2wv8OaYh5pNR9VVgyhD
+ OG0AU7oidG36OeUlrFDTfnPYYSF/mPCxHttosyt8O5kabxnIPv2URuAxDByz+iVbL+RjKaGM
+ GDph56ZTswlx75nZVtIukqzLAQ5fa8OALSGum0cFi4ptZUOhDNz1onz61klD6z3MODi0sBZN
+ Aj6guB2L/+2ZwElZEeRBERRd/uommlYuToAXfNRdUwrwl9gRMiA0WSyTb190zneRRDfpSK5d
+ usXnM/O+kr3Dm+Ui+UioPf6wgbn3T0o6I5BhVhs4h4hWmIW7iNhPjX1iybXfmb1gAFfjtHfL
+ xRUr64svXpyfJMScIQtBAm0ihWPltXkyITA92ngCmPdHa6M1hMh4RDX+Jf1fiWubzp1voAg0
+ JBrdmNZSQDz0iKmSrx8xkoXYfA3bgtFN8WJH2xgFL28XnqY4M6dLhJwV3z08tPSRqYFm4NMP
+ dRsn0/7oymhneL8RthIvjDDQ5ktUjMe8LtHr70OZE/TT88qvEdhiIVUogHdo4qBrk41+gGQh
+ b906Dudw5YhTJFU3nC6bbF2nrLlB4C/XSiH76ZvqzV0Z/cAMBo5NF/w=
+In-Reply-To: <20231102-freihalten-vorsah-fdd68051b005@brauner>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,368 +139,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: srikar@linux.vnet.ibm.com, jniethe5@gmail.com, bigeasy@linutronix.de, song@kernel.org, bgray@linux.ibm.com, adityag@linux.ibm.com, tanyuan@tinylab.org, robh@kernel.org, mikey@neuling.org, duminjie@vivo.com, bhe@redhat.com, haren@linux.ibm.com, stanislav.kinsburskii@gmail.com, geert@linux-m68k.org, yangyingliang@huawei.com, nnac123@linux.ibm.com, wangyufen@huawei.com, m.muzzammilashraf@gmail.com, gbatra@linux.vnet.ibm.com, naveen@kernel.org, npiggin@gmail.com, peter@n8pjl.ca, hbathini@linux.ibm.com, linux-kernel@vger.kernel.org, Julia.Lawall@inria.fr, visitorckw@gmail.com, linux@treblig.org, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8?= =?UTF-8?Q?n?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, linux-mips@vger.kernel.org, Oli
+ ver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On 11/2/23 17:24, Christian Brauner wrote:
+> On Fri, Oct 27, 2023 at 11:21:57AM -0700, Sean Christopherson wrote:
+>> Export anon_inode_getfile_secure() so that it can be used by KVM to create
+>> and manage file-based guest memory without need a fullblow filesystem.
+>> The "standard" anon_inode_getfd() doesn't work for KVM's use case as KVM
+>> needs a unique inode for each file, e.g. to be able to independently
+>> manage the size and lifecycle of a given file.
+>>
+>> Note, KVM doesn't need a "secure" version, just unique inodes, i.e. ignore
+>> the name.
+>>
+>> Signed-off-by: Sean Christopherson <seanjc@google.com>
+>> ---
+> 
+> Before we enshrine this misleading name let's rename this to:
+> 
+> create_anon_inode_getfile()
+> 
+> I don't claim it's a great name but it's better than *_secure() which is
+> very confusing. So just:
+> 
+> struct file *create_anon_inode_getfile(const char *name,
+>                                         const struct file_operations *fops,
+>                                         void *priv, int flags)
 
-Hi Linus,
+I slightly prefer anon_inode_create_getfile(); grepping include/linux 
+for '\<create_' vs '_create_' shows that this is much more common.
 
-Please pull powerpc updates for 6.7.
+Neither userfaultfd (which uses anon_inode_getfd_secure()) nor io_uring 
+strictly speaking need separate inodes; they do want the call to 
+inode_init_security_anon().  But I agree that the new name is better and 
+I will adjust the comments so that it is clear why you'd use this 
+function instead of anon_inode_get{file,fd}().
 
-There's one conflict, where we added Documentation/powerpc/kvm-nested.rst while
-upstream moved Documentation/powerpc to Documentation/arch/powerpc. Resolution
-is just to add it in the new location.
+> May also just remove that context_inode argument from the exported
+> function. The only other caller is io_uring. And neither it nor this
+> patchset need the context_inode thing afaict.
 
-cheers
+True, OTOH we might as well rename anon_inode_getfd_secure() to 
+anon_inode_create_getfd(), and that one does need context_inode.
 
+I'll Cc you on v14 and will carry the patch in my tree.
 
-The following changes since commit ce9ecca0238b140b88f43859b211c9fdfd8e5b70:
+Paolo
 
-  Linux 6.6-rc2 (2023-09-17 14:40:24 -0700)
+> Merge conflict risk is
+> extremely low so carrying that as part of this patchset is fine and
+> shouldn't cause huge issues for you.
+> 
 
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.7-1
-
-for you to fetch changes up to 303d77a6e1707498f09c9d8ee91b1dc07ca315a5:
-
-  Merge branch 'topic/ppc-kvm' into next (2023-10-27 20:58:03 +1100)
-
-- ------------------------------------------------------------------
-powerpc updates for 6.7
-
- - Add support for KVM running as a nested hypervisor under development versions
-   of PowerVM, using the new PAPR nested virtualisation API.
-
- - Add support for the BPF prog pack allocator.
-
- - A rework of the non-server MMU handling to support execute-only on all platforms.
-
- - Some optimisations & cleanups for the powerpc qspinlock code.
-
- - Various other small features and fixes.
-
-Thanks to: Aboorva Devarajan, Aditya Gupta, Amit Machhiwal, Benjamin Gray,
-Christophe Leroy, Dr. David Alan Gilbert, Gaurav Batra, Gautam Menghani, Geert
-Uytterhoeven, Haren Myneni, Hari Bathini, Joel Stanley, Jordan Niethe, Julia
-Lawall, Kautuk Consul, Kuan-Wei Chiu, Michael Neuling, Minjie Du, Muhammad
-Muzammil, Naveen N Rao, Nicholas Piggin, Nick Child, Nysal Jan K.A, Peter
-Lafreniere, Rob Herring, Sachin Sant, Sebastian Andrzej Siewior, Shrikanth
-Hegde, Srikar Dronamraju, Stanislav Kinsburskii, Vaibhav Jain, Wang Yufen, Yang
-Yingliang, Yuan Tan.
-
-- ------------------------------------------------------------------
-Aditya Gupta (2):
-      powerpc: add `cur_cpu_spec` symbol to vmcoreinfo
-      powerpc/vmcore: Add MMU information to vmcoreinfo
-
-Benjamin Gray (12):
-      powerpc/configs: Set more PPC debug configs
-      powerpc/xive: Fix endian conversion size
-      powerpc: Explicitly reverse bytes when checking for byte reversal
-      powerpc: Use NULL instead of 0 for null pointers
-      powerpc: Remove extern from function implementations
-      powerpc: Annotate endianness of various variables and functions
-      powerpc/kvm: Force cast endianness of KVM shared regs
-      powerpc/opal: Annotate out param endianness
-      powerpc/uaccess: Cast away __user annotation after verification
-      powerpc: Cast away __iomem in low level IO routines
-      powerpc/eeh: Remove unnecessary cast
-      powerpc/fadump: Annotate endianness cast with __force
-
-Christophe Leroy (38):
-      powerpc: Only define __parse_fpscr() when required
-      powerpc/40x: Remove stale PTE_ATOMIC_UPDATES macro
-      powerpc: Remove pte_ERROR()
-      powerpc: Deduplicate prototypes of ptep_set_access_flags() and phys_mem_access_prot()
-      powerpc: Refactor update_mmu_cache_range()
-      powerpc: Untangle fixmap.h and pgtable.h and mmu.h
-      powerpc/nohash: Remove {pte/pmd}_protnone()
-      powerpc/nohash: Refactor declaration of {map/unmap}_kernel_page()
-      powerpc/nohash: Move 8xx version of pte_update() into pte-8xx.h
-      powerpc/nohash: Replace #ifdef CONFIG_44x by IS_ENABLED(CONFIG_44x) in pgtable.h
-      powerpc/nohash: Refactor pte_update()
-      powerpc/nohash: Refactor checking of no-change in pte_update()
-      powerpc/nohash: Deduplicate _PAGE_CHG_MASK
-      powerpc/nohash: Deduplicate pte helpers
-      powerpc/nohash: Refactor ptep_test_and_clear_young()
-      powerpc/nohash: Deduplicate ptep_set_wrprotect() and ptep_get_and_clear()
-      powerpc/nohash: Refactor pte_clear()
-      powerpc/nohash: Refactor __ptep_set_access_flags()
-      powerpc/e500: Simplify pte_mkexec()
-      powerpc: Implement and use pgprot_nx()
-      powerpc: Fail ioremap() instead of silently ignoring flags when PAGE_USER is set
-      powerpc: Remove pte_mkuser() and pte_mkpriviledged()
-      powerpc: Rely on address instead of pte_user()
-      powerpc: Refactor permission masks used for __P/__S table and kernel memory flags
-      powerpc/8xx: Use generic permission masks
-      powerpc/64s: Use generic permission masks
-      powerpc/nohash: Add _PAGE_WRITE to supplement _PAGE_RW
-      powerpc/nohash: Replace pte_user() by pte_read()
-      powerpc/e500: Introduce _PAGE_READ and remove _PAGE_USER
-      powerpc/44x: Introduce _PAGE_READ and remove _PAGE_USER
-      powerpc/40x: Introduce _PAGE_READ and remove _PAGE_USER
-      powerpc/32s: Add _PAGE_WRITE to supplement _PAGE_RW
-      powerpc/32s: Introduce _PAGE_READ and remove _PAGE_USER
-      powerpc/ptdump: Display _PAGE_READ and _PAGE_WRITE
-      powerpc: Finally remove _PAGE_USER
-      powerpc: Support execute-only on all powerpc
-      powerpc: Remove cpm_dp...() macros
-      powerpc/code-patching: Perform hwsync in __patch_instruction() in case of failure
-
-Dr. David Alan Gilbert (1):
-      powerpc: Use shared font data
-
-Gaurav Batra (1):
-      powerpc/pseries/iommu: enable_ddw incorrectly returns direct mapping for SR-IOV device
-
-Geert Uytterhoeven (1):
-      powerpc: Replace GPL 2.0+ README.legal boilerplate with SPDX
-
-Haren Myneni (1):
-      powerpc/vas: Limit open window failure messages in log bufffer
-
-Hari Bathini (7):
-      vmcore: remove dependency with is_kdump_kernel() for exporting vmcore
-      powerpc/fadump: make is_kdump_kernel() return false when fadump is active
-      powerpc/code-patching: introduce patch_instructions()
-      powerpc/bpf: implement bpf_arch_text_copy
-      powerpc/bpf: implement bpf_arch_text_invalidate for bpf_prog_pack
-      powerpc/bpf: rename powerpc64_jit_data to powerpc_jit_data
-      powerpc/bpf: use bpf_jit_binary_pack_[alloc|finalize|free]
-
-Jordan Niethe (10):
-      KVM: PPC: Always use the GPR accessors
-      KVM: PPC: Introduce FPR/VR accessor functions
-      KVM: PPC: Rename accessor generator macros
-      KVM: PPC: Use accessors for VCPU registers
-      KVM: PPC: Use accessors for VCORE registers
-      KVM: PPC: Book3S HV: Use accessors for VCPU registers
-      KVM: PPC: Book3S HV: Introduce low level MSR accessor
-      KVM: PPC: Add helper library for Guest State Buffers
-      KVM: PPC: Book3s HV: Hold LPIDs in an unsigned long
-      KVM: PPC: Add support for nestedv2 guests
-
-Julia Lawall (2):
-      powerpc/powermac: add missing of_node_put
-      powerpc/kexec_file: add missing of_node_put
-
-Kuan-Wei Chiu (1):
-      powerpc/perf: Optimize find_alternatives_list() using binary search
-
-Michael Ellerman (5):
-      Merge branch fixes into next
-      powerpc: Hide empty pt_regs at base of the stack
-      powerpc/32s: Implement local_flush_tlb_page_psize()
-      Revert "powerpc: add `cur_cpu_spec` symbol to vmcoreinfo"
-      Merge branch 'topic/ppc-kvm' into next
-
-Michael Neuling (1):
-      docs: powerpc: Document nested KVM on POWER
-
-Minjie Du (1):
-      powerpc/pseries: use kfree_sensitive() in plpks_gen_password()
-
-Muhammad Muzammil (1):
-      powerpc/bpf: Fixed 'instead' typo in bpf_jit_build_body()
-
-Naveen N Rao (2):
-      powerpc/tools: Pass -mabi=elfv2 to gcc-check-mprofile-kernel.sh
-      powerpc/trace: Add support for HAVE_FUNCTION_ARG_ACCESS_API
-
-Nicholas Piggin (6):
-      powerpc/perf: Fix disabling BHRB and instruction sampling
-      powerpc/qspinlock: stop queued waiters trying to set lock sleepy
-      powerpc/qspinlock: propagate owner preemptedness rather than CPU number
-      powerpc/qspinlock: don't propagate the not-sleepy state
-      powerpc/qspinlock: Propagate sleepy if previous waiter is preempted
-      powerpc/qspinlock: Rename yield_propagate_owner tunable
-
-Nick Child (1):
-      powerpc/boot: Add version to install filenames
-
-Peter Lafreniere (1):
-      powerpc/configs: Remove ReiserFS from defconfig
-
-Rob Herring (1):
-      powerpc/fsl_msi: Use device_get_match_data()
-
-Sebastian Andrzej Siewior (1):
-      powerpc/imc-pmu: Use the correct spinlock initializer.
-
-Srikar Dronamraju (1):
-      powerpc/paravirt: Improve vcpu_is_preempted
-
-Stanislav Kinsburskii (1):
-      powerpc/io: Expect immutable pointer in virt_to_phys() prototype
-
-Wang Yufen (1):
-      powerpc/pseries: fix potential memory leak in init_cpu_associativity()
-
-Yang Yingliang (1):
-      macintosh/macio-adb: add missing iounmap() on error in macio_init()
-
-Yuan Tan (2):
-      powerpc/32: Add dependencies of POWER_RESET for pmac32
-      powerpc/32: Enable POWER_RESET in pmac32_defconfig
-
-
- Documentation/arch/powerpc/index.rst            |   1 +
- Documentation/arch/powerpc/kvm-nested.rst       | 634 +++++++++++++
- arch/powerpc/Kconfig                            |   1 +
- arch/powerpc/Kconfig.debug                      |  14 +
- arch/powerpc/boot/install.sh                    |  16 +-
- arch/powerpc/configs/44x/sam440ep_defconfig     |   1 -
- arch/powerpc/configs/debug.config               |   4 +
- arch/powerpc/configs/g5_defconfig               |   4 -
- arch/powerpc/configs/pmac32_defconfig           |   2 +-
- arch/powerpc/configs/ppc64e_defconfig           |   4 -
- arch/powerpc/configs/ppc6xx_defconfig           |   5 -
- arch/powerpc/include/asm/book3s/32/pgtable.h    |  83 +-
- arch/powerpc/include/asm/book3s/32/tlbflush.h   |   2 +-
- arch/powerpc/include/asm/book3s/64/pgtable.h    |  37 +-
- arch/powerpc/include/asm/book3s/pgtable.h       |  33 -
- arch/powerpc/include/asm/code-patching.h        |   1 +
- arch/powerpc/include/asm/cpm1.h                 |   5 -
- arch/powerpc/include/asm/cpm2.h                 |   4 -
- arch/powerpc/include/asm/fixmap.h               |  16 +-
- arch/powerpc/include/asm/guest-state-buffer.h   | 995 ++++++++++++++++++++
- arch/powerpc/include/asm/hvcall.h               |  30 +
- arch/powerpc/include/asm/imc-pmu.h              |  16 +-
- arch/powerpc/include/asm/io.h                   |   2 +-
- arch/powerpc/include/asm/kexec.h                |   8 +-
- arch/powerpc/include/asm/kvm_book3s.h           | 220 ++++-
- arch/powerpc/include/asm/kvm_book3s_64.h        |   8 +-
- arch/powerpc/include/asm/kvm_booke.h            |  10 +
- arch/powerpc/include/asm/kvm_host.h             |  22 +-
- arch/powerpc/include/asm/kvm_ppc.h              | 110 ++-
- arch/powerpc/include/asm/nohash/32/mmu-8xx.h    |   1 -
- arch/powerpc/include/asm/nohash/32/pgtable.h    | 201 +---
- arch/powerpc/include/asm/nohash/32/pte-40x.h    |  21 +-
- arch/powerpc/include/asm/nohash/32/pte-44x.h    |  20 +-
- arch/powerpc/include/asm/nohash/32/pte-85xx.h   |  20 +-
- arch/powerpc/include/asm/nohash/32/pte-8xx.h    |  92 +-
- arch/powerpc/include/asm/nohash/64/pgtable.h    | 120 +--
- arch/powerpc/include/asm/nohash/pgtable.h       | 217 +++--
- arch/powerpc/include/asm/nohash/pte-e500.h      |  41 +-
- arch/powerpc/include/asm/opal.h                 |   2 +-
- arch/powerpc/include/asm/paravirt.h             |  47 +-
- arch/powerpc/include/asm/pgtable-masks.h        |  32 +
- arch/powerpc/include/asm/pgtable.h              |  35 +
- arch/powerpc/include/asm/plpar_wrappers.h       | 267 +++++-
- arch/powerpc/include/asm/ptrace.h               |  17 +
- arch/powerpc/include/asm/uaccess.h              |   2 +-
- arch/powerpc/kernel/btext.c                     | 360 +------
- arch/powerpc/kernel/crash_dump.c                |  12 +
- arch/powerpc/kernel/eeh_driver.c                |   4 +-
- arch/powerpc/kernel/head_40x.S                  |  19 +-
- arch/powerpc/kernel/head_44x.S                  |  40 +-
- arch/powerpc/kernel/head_85xx.S                 |  12 +-
- arch/powerpc/kernel/head_book3s_32.S            |  63 +-
- arch/powerpc/kernel/io.c                        |  12 +-
- arch/powerpc/kernel/iommu.c                     |   8 +-
- arch/powerpc/kernel/process.c                   |  26 +-
- arch/powerpc/kernel/prom_init.c                 |   2 +-
- arch/powerpc/kernel/ptrace/ptrace.c             |   5 +-
- arch/powerpc/kernel/setup_64.c                  |   2 +-
- arch/powerpc/kernel/signal.c                    |   5 +-
- arch/powerpc/kernel/signal.h                    |   7 +-
- arch/powerpc/kernel/traps.c                     |   6 +-
- arch/powerpc/kexec/core.c                       |   3 +
- arch/powerpc/kexec/core_64.c                    |   4 +-
- arch/powerpc/kexec/file_load_64.c               |  14 +-
- arch/powerpc/kvm/Makefile                       |   4 +
- arch/powerpc/kvm/book3s.c                       |  38 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c             |   7 +-
- arch/powerpc/kvm/book3s_64_mmu_radix.c          |  31 +-
- arch/powerpc/kvm/book3s_64_vio.c                |  12 +-
- arch/powerpc/kvm/book3s_hv.c                    | 358 ++++---
- arch/powerpc/kvm/book3s_hv.h                    |  76 ++
- arch/powerpc/kvm/book3s_hv_builtin.c            |  11 +-
- arch/powerpc/kvm/book3s_hv_nested.c             |  44 +-
- arch/powerpc/kvm/book3s_hv_nestedv2.c           | 994 +++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_p9_entry.c           |   4 +-
- arch/powerpc/kvm/book3s_hv_ras.c                |   4 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c             |   8 +-
- arch/powerpc/kvm/book3s_hv_rm_xics.c            |   4 +-
- arch/powerpc/kvm/book3s_hv_uvmem.c              |   2 +-
- arch/powerpc/kvm/book3s_xive.c                  |  12 +-
- arch/powerpc/kvm/book3s_xive_native.c           |   2 +-
- arch/powerpc/kvm/emulate_loadstore.c            |   6 +-
- arch/powerpc/kvm/guest-state-buffer.c           | 621 ++++++++++++
- arch/powerpc/kvm/powerpc.c                      |  76 +-
- arch/powerpc/kvm/test-guest-state-buffer.c      | 328 +++++++
- arch/powerpc/lib/code-patching.c                | 146 ++-
- arch/powerpc/lib/qspinlock.c                    | 122 +--
- arch/powerpc/mm/book3s32/hash_low.S             |  32 +-
- arch/powerpc/mm/book3s32/mmu.c                  |   6 +-
- arch/powerpc/mm/book3s64/pgtable.c              |  10 +-
- arch/powerpc/mm/drmem.c                         |   2 +-
- arch/powerpc/mm/fault.c                         |   9 +-
- arch/powerpc/mm/init_32.c                       |   1 +
- arch/powerpc/mm/ioremap.c                       |   6 +-
- arch/powerpc/mm/mem.c                           |   1 +
- arch/powerpc/mm/nohash/40x.c                    |  19 +-
- arch/powerpc/mm/nohash/8xx.c                    |   2 +
- arch/powerpc/mm/nohash/book3e_pgtable.c         |   2 +-
- arch/powerpc/mm/nohash/e500.c                   |   6 +-
- arch/powerpc/mm/nohash/e500_hugetlbpage.c       |   3 +-
- arch/powerpc/mm/pgtable.c                       |  26 +-
- arch/powerpc/mm/ptdump/8xx.c                    |   5 -
- arch/powerpc/mm/ptdump/shared.c                 |  14 +-
- arch/powerpc/net/bpf_jit.h                      |  18 +-
- arch/powerpc/net/bpf_jit_comp.c                 | 149 ++-
- arch/powerpc/net/bpf_jit_comp32.c               |  15 +-
- arch/powerpc/net/bpf_jit_comp64.c               |  10 +-
- arch/powerpc/perf/core-book3s.c                 |   5 +-
- arch/powerpc/perf/hv-24x7.c                     |   2 +-
- arch/powerpc/perf/imc-pmu.c                     |  13 +-
- arch/powerpc/perf/power6-pmu.c                  |  46 +-
- arch/powerpc/platforms/4xx/soc.c                |   2 +-
- arch/powerpc/platforms/83xx/misc.c              |   2 +
- arch/powerpc/platforms/8xx/cpm1.c               |   1 +
- arch/powerpc/platforms/book3s/vas-api.c         |  34 +-
- arch/powerpc/platforms/powermac/Kconfig         |   1 +
- arch/powerpc/platforms/powermac/feature.c       |   3 +-
- arch/powerpc/platforms/powermac/low_i2c.c       |   4 +-
- arch/powerpc/platforms/powermac/smp.c           |   4 +-
- arch/powerpc/platforms/powernv/opal-fadump.h    |   2 +-
- arch/powerpc/platforms/pseries/hotplug-memory.c |   3 +-
- arch/powerpc/platforms/pseries/iommu.c          |   8 +-
- arch/powerpc/platforms/pseries/lpar.c           |  12 +-
- arch/powerpc/platforms/pseries/plpks.c          |   4 +-
- arch/powerpc/platforms/pseries/vas.c            |   4 +-
- arch/powerpc/sysdev/fsl_msi.c                   |  10 +-
- arch/powerpc/sysdev/mpic.c                      |   2 +-
- arch/powerpc/sysdev/xive/native.c               |   2 +-
- arch/powerpc/tools/gcc-check-mprofile-kernel.sh |  11 +-
- drivers/macintosh/macio-adb.c                   |   1 +
- drivers/soc/fsl/qe/qe_common.c                  |   4 +-
- include/linux/crash_dump.h                      |   8 +-
- lib/fonts/Kconfig                               |   2 +-
- 133 files changed, 5788 insertions(+), 1675 deletions(-)
- create mode 100644 Documentation/arch/powerpc/kvm-nested.rst
- create mode 100644 arch/powerpc/include/asm/guest-state-buffer.h
- create mode 100644 arch/powerpc/include/asm/pgtable-masks.h
- create mode 100644 arch/powerpc/kvm/book3s_hv_nestedv2.c
- create mode 100644 arch/powerpc/kvm/guest-state-buffer.c
- create mode 100644 arch/powerpc/kvm/test-guest-state-buffer.c
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmVEhrwACgkQUevqPMjh
-pYD5KxAAnpC38GWKIx4JDjiRfptiCT61/H+Ezs4au/wyr4JzH57kwQrYAbbsb+w6
-1pDnXeLURUCuXPu6fyMmcSziTGeMKnC3LaEp6jbl9nCFp6+12Vwn0pn0fk6VuKTs
-yMxz+85S8Ehzg/ym89VLRvLmaj5q3Ycgp0i6U/cXbblMmO0HIqHmiJYgBtNk35I1
-RTJIEE14zRzJansGZ3FkMDvHlmr1XFyggid/Z9nh+dvhkSHygfImrpNrO+JB6wlu
-fTj+1cM+udOFFs7fY3zbFvv/oZ57K321or3RMDsiqiWcUG3IqFFNXdw0Vdigy6Rl
-Zu7Di8vE3GQZJe91mUR/SZJq1avPWftoOWFaNWkyFnbaRM/D2LWdr5VPXagx8IjP
-qgXvA4xHeosa7s6YcLPVrO3DbW/UHIhpmONGoeAxx/OD+TSXqZckdOthyaCjfHHA
-9lDVWGWrzh8op5gTIHaI39lZbwMAq5yherZ1thIj264yKQN83sS4K5XQL62MsE1Q
-P7d3h1vRt4ajUOjmTYvESTRM4rx5MKuKBIk47MGvtsbrkyTZQCQIFrbwNXhbz9Dp
-OmfpBEXtui9kmmWR9agdkNcCMDd3bYbUr4qEQULmqLat4TgPlZA5MVf5o+fcMCPu
-89jyJTck6slAxtqsso9MjbJv+6eR66Y3+cg7mayZMNQhwx7jhzU=
-=L+Ar
------END PGP SIGNATURE-----
