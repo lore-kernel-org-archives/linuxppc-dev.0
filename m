@@ -4,56 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D7BC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Nov 2023 20:23:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 862CFC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Nov 2023 07:19:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kGia1E8n;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=X+EJuDdV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SMXJB46lDz3d8B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Nov 2023 07:23:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SMprL6S1Sz3cfg
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Nov 2023 18:18:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kGia1E8n;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=X+EJuDdV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
+Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SMXHG5H1Vz3c76
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2023 07:22:50 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 933A4B81FA5;
-	Fri,  3 Nov 2023 20:22:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DBB59C433CC;
-	Fri,  3 Nov 2023 20:22:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1699042964;
-	bh=1yGEC1VTlVTYjeEdE3n21I8XP17kht2E8duzzRHaS7E=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=kGia1E8nDg+VZ6YlR69aAScIiKK+k2ca5Y+g5Siqi5Y/xVN9NkkRVZEOea/Psxz4b
-	 Vb+ypwcaa1Dc3DnBCEu7mBPuRV81jP3+mVq0kMfsBi6yzBr6w3AOGuCpYy6+Zgte8t
-	 qZDH8/spzOZDBdD18CS6NYkOITHeeTbhex29Ux6qaFOx/YZjm6hnJ5fTvGTn1wqbNM
-	 0ih8LWFIcpHKX55A8Gu79Tecy6kCg3hUqsmg6SKvr+65+UiQLpzjt8mQbQSqYceuwY
-	 hcNNtr0IKg48dJTKAJdhwJd7UIGSTWmlgVj1DUJUPUHCues/kl06w8rLTwVivYT+I0
-	 uweuDC2jVeyog==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id C2342C04DD9;
-	Fri,  3 Nov 2023 20:22:44 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-6.7-1 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <878r7fgzvw.fsf@mail.lhotse>
-References: <878r7fgzvw.fsf@mail.lhotse>
-X-PR-Tracked-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-X-PR-Tracked-Message-Id: <878r7fgzvw.fsf@mail.lhotse>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.7-1
-X-PR-Tracked-Commit-Id: 303d77a6e1707498f09c9d8ee91b1dc07ca315a5
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 707df298cbde200b939c70be2577b20775fe3345
-Message-Id: <169904296478.5035.1249699175679053125.pr-tracker-bot@kernel.org>
-Date: Fri, 03 Nov 2023 20:22:44 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SMpqM6XFxz2yVv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2023 18:18:02 +1100 (AEDT)
+Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 865AE100007;
+	Sat,  4 Nov 2023 10:17:55 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 865AE100007
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
+	s=mail; t=1699082275;
+	bh=s8uqfl8o3FZrVyh0mvXJUoUOdcz1xIKqtqL+86amnUo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type:From;
+	b=X+EJuDdVuaj/VCrb7v34vATJL7RAnLnG/Q0ViA2g07CMEb0bupDIZ0qns4Lm/rOUM
+	 jV2eQ1/DJJNLwhS/+bPGSrgRCu3g7dzxkonh5Pj9NsziBW44oP+GWVDjp1q77IdJ9u
+	 V4ZhxfFhwWHiu7dg8sWh87DP0gumG7J4LN+Fkl4I4jbaY76Y1oxaBtNVqq/1F0XiRR
+	 oNtShqPS5VJReEPP9/bkt7EkUdyCPLeFTT2oBjGGRfyxbj0VBODutuJY8f7y2FXNm7
+	 NTsBmFqm1r1PnWNum5YANIjVZCUErckbeKmGLNiCxAmu/LzhOjCkRfRjEN5nqjWji1
+	 T0adKEWsd+eDQ==
+Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mx1.sberdevices.ru (Postfix) with ESMTPS;
+	Sat,  4 Nov 2023 10:17:54 +0300 (MSK)
+Received: from [192.168.1.127] (100.64.160.123) by
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.37; Sat, 4 Nov 2023 10:17:54 +0300
+Message-ID: <8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com>
+Date: Sat, 4 Nov 2023 10:18:13 +0300
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/8] devm_led_classdev_register() usage problem
+Content-Language: en-US
+To: "andy.shevchenko@gmail.com" <andy.shevchenko@gmail.com>
+References: <20231025130737.2015468-1-gnstark@salutedevices.com>
+From: George Stark <gnstark@salutedevices.com>
+In-Reply-To: <20231025130737.2015468-1-gnstark@salutedevices.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [100.64.160.123]
+X-ClientProxiedBy: p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) To
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
+X-KSMG-Rule-ID: 10
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Lua-Profiles: 181122 [Nov 03 2023]
+X-KSMG-AntiSpam-Version: 6.0.0.2
+X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
+X-KSMG-AntiSpam-Rate: 0
+X-KSMG-AntiSpam-Status: not_detected
+X-KSMG-AntiSpam-Method: none
+X-KSMG-AntiSpam-Auth: dkim=none
+X-KSMG-AntiSpam-Info: LuaCore: 543 543 1e3516af5cdd92079dfeb0e292c8747a62cb1ee4, {Tracking_from_domain_doesnt_match_to}, salutedevices.com:7.1.1;p-i-exch-sc-m01.sberdevices.ru:5.0.1,7.1.1;127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;100.64.160.123:7.1.2, FromAlignment: s, ApMailHostAddress: 100.64.160.123
+X-MS-Exchange-Organization-SCL: -1
+X-KSMG-AntiSpam-Interceptor-Info: scan successful
+X-KSMG-AntiPhishing: Clean
+X-KSMG-LinksScanning: Clean
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/11/04 06:10:00 #22399920
+X-KSMG-AntiVirus-Status: Clean, skipped
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,19 +86,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: srikar@linux.vnet.ibm.com, jniethe5@gmail.com, bigeasy@linutronix.de, song@kernel.org, bgray@linux.ibm.com, adityag@linux.ibm.com, tanyuan@tinylab.org, robh@kernel.org, mikey@neuling.org, duminjie@vivo.com, bhe@redhat.com, haren@linux.ibm.com, stanislav.kinsburskii@gmail.com, geert@linux-m68k.org, yangyingliang@huawei.com, nnac123@linux.ibm.com, wangyufen@huawei.com, linux@treblig.org, gbatra@linux.vnet.ibm.com, naveen@kernel.org, npiggin@gmail.com, peter@n8pjl.ca, hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Julia.Lawall@inria.fr, visitorckw@gmail.com, m.muzzammilashraf@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: vadimp@nvidia.com, lee@kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, pavel@ucw.cz, kernel@sberdevices.ru, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Fri, 03 Nov 2023 16:38:27 +1100:
+Hello Andy
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.7-1
+Could you please take a look at this patch series?
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/707df298cbde200b939c70be2577b20775fe3345
+I've just found your post on habr about devres API misusing and I think 
+this is just another case.
 
-Thank you!
+On 10/25/23 16:07, George Stark wrote:
+> Lots of drivers use devm_led_classdev_register() to register their led objects
+> and let the kernel free those leds at the driver's remove stage.
+> It can lead to a problem due to led_classdev_unregister()
+> implementation calls led_set_brightness() to turn off the led.
+> led_set_brightness() may call one of the module's brightness_set callbacks.
+> If that callback uses module's resources allocated without using devm funcs()
+> then those resources will be already freed at module's remove() callback and
+> we may have use-after-free situation.
+> 
+> Here is an example:
+> 
+> module_probe()
+> {
+>      devm_led_classdev_register(module_brightness_set_cb);
+>      mutex_init(&mutex);
+> }
+> 
+> module_brightness_set_cb()
+> {
+>      mutex_lock(&mutex);
+>      do_set_brightness();
+>      mutex_unlock(&mutex);
+> }
+> 
+> module_remove()
+> {
+>      mutex_destroy(&mutex);
+> }
+> 
+> at rmmod:
+> module_remove()
+>      ->mutex_destroy(&mutex);
+> devres_release_all()
+>      ->led_classdev_unregister();
+>          ->led_set_brightness();
+>              ->module_brightness_set_cb();
+>                   ->mutex_lock(&mutex);  /* use-after-free */
+> 
+> I think it's an architectural issue and should be discussed thoroughly.
+> Some thoughts about fixing it as a start:
+> 1) drivers can use devm_led_classdev_unregister() to explicitly free leds before
+> dependend resources are freed. devm_led_classdev_register() remains being useful
+> to simplify probe implementation.
+> As a proof of concept I examined all drivers from drivers/leds and prepared
+> patches where it's needed. Sometimes it was not as clean as just calling
+> devm_led_classdev_unregister() because several drivers do not track
+> their leds object at all - they can call devm_led_classdev_register() and drop the
+> returned pointer. In that case I used devres group API.
+> 
+> Drivers outside drivers/leds should be checked too after discussion.
+> 
+> 2) remove led_set_brightness from led_classdev_unregister() and force the drivers
+> to turn leds off at shutdown. May be add check that led's brightness is 0
+> at led_classdev_unregister() and put a warning to dmesg if it's not.
+> Actually in many cases it doesn't really need to turn off the leds manually one-by-one
+> if driver shutdowns whole led controller. For the last case to disable the warning
+> new flag can be brought in e.g LED_AUTO_OFF_AT_SHUTDOWN (similar to LED_RETAIN_AT_SHUTDOWN).
+> 
+> George Stark (8):
+>    leds: powernv: explicitly unregister LEDs at module's shutdown
+>    leds: nic78bx: explicitly unregister LEDs at module's shutdown
+>    leds: an30259a: explicitly unregister LEDs at module's shutdown
+>    leds: mlxreg: explicitly unregister LEDs at module's shutdown
+>    leds: aw200xx: explicitly unregister LEDs at module's shutdown
+>    leds: aw2013: explicitly unregister LEDs at module's shutdown
+>    leds: lp3952: explicitly unregister LEDs at module's shutdown
+>    leds: lm3532: explicitly unregister LEDs at module's shutdown
+> 
+>   drivers/leds/leds-an30259a.c |  4 ++++
+>   drivers/leds/leds-aw200xx.c  |  4 ++++
+>   drivers/leds/leds-aw2013.c   |  4 ++++
+>   drivers/leds/leds-lm3532.c   |  6 ++++++
+>   drivers/leds/leds-lp3952.c   |  5 +++++
+>   drivers/leds/leds-mlxreg.c   | 12 +++++++++++-
+>   drivers/leds/leds-nic78bx.c  |  4 ++++
+>   drivers/leds/leds-powernv.c  |  7 +++++++
+>   8 files changed, 45 insertions(+), 1 deletion(-)
+> 
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Best regards
+George
