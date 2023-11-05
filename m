@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D1CEC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Nov 2023 16:33:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB9AAC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Nov 2023 16:35:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BJYl1Z9X;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BJYl1Z9X;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XPLcUrwy;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XPLcUrwy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SNg5r0n1Rz3cW8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 03:33:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SNg7r3WZpz3dGr
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 03:35:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BJYl1Z9X;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BJYl1Z9X;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XPLcUrwy;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XPLcUrwy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SNg374TSPz3cGC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2023 03:31:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SNg3M4r5wz3cC7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2023 03:31:27 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1699201873;
+	s=mimecast20190719; t=1699201884;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=l34ekIngaKcFhf0rhv3qmzlwWTTBwpnOE8ik/JX6oMg=;
-	b=BJYl1Z9XEqFG9O7PADrUZLfSbMyIpuVVj0xIWMfueCEVTDmaJw88H0cv7x0i5Iab1aftnv
-	PsC+2WUbGDAk8+1ugRWc+GTZVMOEn/5hECFCBH+1Dvqq3DLLvK5/E8qZB4Kho+U+Ljlq2f
-	UV7Dijgep/z89Z/b+Vlqxp7BJj2lJQQ=
+	bh=ts/ge04a2OEPPQrJdr5ialSNwsy6vefm6EL3ylmuQZA=;
+	b=XPLcUrwy2KTfH1NMMrnmlvV+iklSb8p+AHM6jEnH1eV9ICTFOey3lmbYxgnst7jM0qhij/
+	wpRBGmbSSySkYV41dYjDKvY+X5ETW7wPb1unUNoqe1gahUyAO4GLPCjjNaMi4XR+t4b5j3
+	BTkfh1cw3lSMLHBEfaQeCxGFMSp7zJU=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1699201873;
+	s=mimecast20190719; t=1699201884;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=l34ekIngaKcFhf0rhv3qmzlwWTTBwpnOE8ik/JX6oMg=;
-	b=BJYl1Z9XEqFG9O7PADrUZLfSbMyIpuVVj0xIWMfueCEVTDmaJw88H0cv7x0i5Iab1aftnv
-	PsC+2WUbGDAk8+1ugRWc+GTZVMOEn/5hECFCBH+1Dvqq3DLLvK5/E8qZB4Kho+U+Ljlq2f
-	UV7Dijgep/z89Z/b+Vlqxp7BJj2lJQQ=
+	bh=ts/ge04a2OEPPQrJdr5ialSNwsy6vefm6EL3ylmuQZA=;
+	b=XPLcUrwy2KTfH1NMMrnmlvV+iklSb8p+AHM6jEnH1eV9ICTFOey3lmbYxgnst7jM0qhij/
+	wpRBGmbSSySkYV41dYjDKvY+X5ETW7wPb1unUNoqe1gahUyAO4GLPCjjNaMi4XR+t4b5j3
+	BTkfh1cw3lSMLHBEfaQeCxGFMSp7zJU=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-633-ILi5kzQvOwag3AnT1pmDQg-1; Sun, 05 Nov 2023 11:31:06 -0500
-X-MC-Unique: ILi5kzQvOwag3AnT1pmDQg-1
+ us-mta-66-o8kgVV1dP5GILnrn4TVhRA-1; Sun, 05 Nov 2023 11:31:21 -0500
+X-MC-Unique: o8kgVV1dP5GILnrn4TVhRA-1
 Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 93FA9810FC0;
-	Sun,  5 Nov 2023 16:31:04 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 3AD20101A529;
+	Sun,  5 Nov 2023 16:31:19 +0000 (UTC)
 Received: from avogadro.redhat.com (unknown [10.39.192.93])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 3AE452166B26;
-	Sun,  5 Nov 2023 16:30:57 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 6E18E2166B26;
+	Sun,  5 Nov 2023 16:31:12 +0000 (UTC)
 From: Paolo Bonzini <pbonzini@redhat.com>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Marc Zyngier <maz@kernel.org>,
@@ -73,9 +73,9 @@ To: Paolo Bonzini <pbonzini@redhat.com>,
 	Christian Brauner <brauner@kernel.org>,
 	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 02/34] KVM: Assert that mmu_invalidate_in_progress *never* goes negative
-Date: Sun,  5 Nov 2023 17:30:05 +0100
-Message-ID: <20231105163040.14904-3-pbonzini@redhat.com>
+Subject: [PATCH 04/34] KVM: WARN if there are dangling MMU invalidations at VM destruction
+Date: Sun,  5 Nov 2023 17:30:07 +0100
+Message-ID: <20231105163040.14904-5-pbonzini@redhat.com>
 In-Reply-To: <20231105163040.14904-1-pbonzini@redhat.com>
 References: <20231105163040.14904-1-pbonzini@redhat.com>
 MIME-Version: 1.0
@@ -100,52 +100,48 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Sean Christopherson <seanjc@google.com>
 
-Move the assertion on the in-progress invalidation count from the primary
-MMU's notifier path to KVM's common notification path, i.e. assert that
-the count doesn't go negative even when the invalidation is coming from
-KVM itself.
+Add an assertion that there are no in-progress MMU invalidations when a
+VM is being destroyed, with the exception of the scenario where KVM
+unregisters its MMU notifier between an .invalidate_range_start() call and
+the corresponding .invalidate_range_end().
 
-Opportunistically convert the assertion to a KVM_BUG_ON(), i.e. kill only
-the affected VM, not the entire kernel.  A corrupted count is fatal to the
-VM, e.g. the non-zero (negative) count will cause mmu_invalidate_retry()
-to block any and all attempts to install new mappings.  But it's far from
-guaranteed that an end() without a start() is fatal or even problematic to
-anything other than the target VM, e.g. the underlying bug could simply be
-a duplicate call to end().  And it's much more likely that a missed
-invalidation, i.e. a potential use-after-free, would manifest as no
-notification whatsoever, not an end() without a start().
+KVM can't detect unpaired calls from the mmu_notifier due to the above
+exception waiver, but the assertion can detect KVM bugs, e.g. such as the
+bug that *almost* escaped initial guest_memfd development.
 
+Link: https://lore.kernel.org/all/e397d30c-c6af-e68f-d18e-b4e3739c5389@linux.intel.com
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Fuad Tabba <tabba@google.com>
 Tested-by: Fuad Tabba <tabba@google.com>
-Message-Id: <20231027182217.3615211-3-seanjc@google.com>
+Message-Id: <20231027182217.3615211-5-seanjc@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- virt/kvm/kvm_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ virt/kvm/kvm_main.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 0524933856d4..5a97e6c7d9c2 100644
+index 9cc57b23ec81..5422ce20dcba 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -833,6 +833,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
- 	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
+@@ -1358,9 +1358,16 @@ static void kvm_destroy_vm(struct kvm *kvm)
+ 	 * No threads can be waiting in kvm_swap_active_memslots() as the
+ 	 * last reference on KVM has been dropped, but freeing
+ 	 * memslots would deadlock without this manual intervention.
++	 *
++	 * If the count isn't unbalanced, i.e. KVM did NOT unregister its MMU
++	 * notifier between a start() and end(), then there shouldn't be any
++	 * in-progress invalidations.
  	 */
- 	kvm->mmu_invalidate_in_progress--;
-+	KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
- }
- 
- static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-@@ -863,8 +864,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
- 	 */
- 	if (wake)
- 		rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
--
--	BUG_ON(kvm->mmu_invalidate_in_progress < 0);
- }
- 
- static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
+ 	WARN_ON(rcuwait_active(&kvm->mn_memslots_update_rcuwait));
+-	kvm->mn_active_invalidate_count = 0;
++	if (kvm->mn_active_invalidate_count)
++		kvm->mn_active_invalidate_count = 0;
++	else
++		WARN_ON(kvm->mmu_invalidate_in_progress);
+ #else
+ 	kvm_flush_shadow_all(kvm);
+ #endif
 -- 
 2.39.1
 
