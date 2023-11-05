@@ -4,42 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B767AC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Nov 2023 21:45:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31F95C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Nov 2023 21:45:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SNp1F1prNz3cfg
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 08:45:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SNp1l6Qckz3dFH
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 08:45:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SNp0h6xg0z2yDS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SNp0j0PSsz2yDY
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2023 08:44:35 +1100 (AEDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1qzkun-0005cC-Oi; Sun, 05 Nov 2023 22:44:17 +0100
+	id 1qzkun-0005cE-Oi; Sun, 05 Nov 2023 22:44:17 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1qzkul-006sXL-OP; Sun, 05 Nov 2023 22:44:15 +0100
+	id 1qzkum-006sXR-8l; Sun, 05 Nov 2023 22:44:16 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1qzkul-00DHxV-Es; Sun, 05 Nov 2023 22:44:15 +0100
+	id 1qzkul-00DHxh-Vg; Sun, 05 Nov 2023 22:44:15 +0100
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Jiri Slaby <jirislaby@kernel.org>
-Subject: [PATCH 0/2] tty: hvc: Convert to platform remove callback returning void
-Date: Sun,  5 Nov 2023 22:44:07 +0100
-Message-ID: <20231105214406.3765906-4-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 2/2] tty: hvc: hvc_opal: Convert to platform remove callback returning void
+Date: Sun,  5 Nov 2023 22:44:09 +0100
+Message-ID: <20231105214406.3765906-6-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231105214406.3765906-4-u.kleine-koenig@pengutronix.de>
+References: <20231105214406.3765906-4-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1041; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=2G89HgbYBqf0Lwg13SXDRVWuf/UVadm57eZl7j7tSLs=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlSAynd3H0mMld8K/mCAxD8Ftf264W7AoOj2MGQ YI68GhmeDyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUgMpwAKCRCPgPtYfRL+ Ts9aB/9xWS/XexOtt4MrBteSIpKz45O4fgJ05w2EZFjyMcCQR+x6P5kmzIV7vMkeXc9a7yMh+0c 0B340N8ctuaQGvTEAPJdhYiOQoYLS+06FN1MP1M0a+N4MACHtomPKpvL5tarZHT1pqyfm/yBUfU cWO4pQ+73IoGd/casIVxeo6To/P460wir5nn9X1ad6o9VzfvSDvhvouTvzR9YYaOv05i4fbCj1Y pZ5XKnoHoJS2tcrM9XtTPpckwFQrdaNMSmPgyyQDHZZwulxBvUylPk+wT1UkEXZTs0/wgtApPmB maVVnEh4K0s3SiLOJuXeDrYmrsEolHgrfFVYKt0kWBUUL3w7
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1774; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=aRh+VlrD93eVwb3Ts9Sdsvnv4r85WYOj6jpzvcDjK9w=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlSAypRG5HDLrTaATjjj2FscK4Eor8te3H9iIjE lJfnUmMmMqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUgMqQAKCRCPgPtYfRL+ To21B/4sLgK1LpZERifG0P5EwL/zjUngw9OA63nUq3ZV2/pGLdvcQyAVWt5+X9pwnJs7/hPbI24 2T45zpauXqTT2KTEt/QyC+DdaalLvPCdvrSJYollV6B6qNxY6NdkwAY2DhNGYX8Sd36OJMAZMy7 Dyk4ewPY3xxL+d8iLSMuiBI414HbnLdfEUQDKC97xsPuu43tto1X9hl/rNhBqtqdk4U1NpXjt5j DI9oni1FBIlT0a/MnbZsz8k9/QAI+sRcEYu+3FAFnZkoZtzxgStbJJX2TRuMi9/Y6qTWf91PkiG ZurJ2t2hfaZTNWXsKhtHWP/srqY072ZgXgMcu9uP78bqW65K
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -61,31 +63,52 @@ Cc: kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npigg
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
 
-The hvc_opal driver had an error path in its remove function resulting
-in returning a non-zero value. This is a bad thing because the core
-doesn't do error handling and effectively ignores the return value.
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new(), which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
 
-In this case it's not as bad as it sounds though, as this error path is
-never taken.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-After the first patch changes hvc_remove() to return void the remove
-function obviously always returns zero. Then it can be trivially
-converted to .remove_new(). See commit 5c5a7680e67b ("platform: Provide
-a remove callback that returns no value") for an extended explanation
-and the eventual goal of this conversion.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/tty/hvc/hvc_opal.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Uwe Kleine-König (2):
-  tty: hvc: Make hvc_remove() return no value
-  tty: hvc: hvc_opal: Convert to platform remove callback returning void
-
- drivers/tty/hvc/hvc_console.c |  3 +--
- drivers/tty/hvc/hvc_console.h |  2 +-
- drivers/tty/hvc/hvc_opal.c    | 17 +++++++----------
- 3 files changed, 9 insertions(+), 13 deletions(-)
-
-base-commit: e27090b1413ff236ca1aec26d6b022149115de2c
+diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
+index 8995b253cf90..2cdf66e395cc 100644
+--- a/drivers/tty/hvc/hvc_opal.c
++++ b/drivers/tty/hvc/hvc_opal.c
+@@ -232,7 +232,7 @@ static int hvc_opal_probe(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-static int hvc_opal_remove(struct platform_device *dev)
++static void hvc_opal_remove(struct platform_device *dev)
+ {
+ 	struct hvc_struct *hp = dev_get_drvdata(&dev->dev);
+ 	int termno;
+@@ -242,13 +242,11 @@ static int hvc_opal_remove(struct platform_device *dev)
+ 	if (hvc_opal_privs[termno] != &hvc_opal_boot_priv)
+ 		kfree(hvc_opal_privs[termno]);
+ 	hvc_opal_privs[termno] = NULL;
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver hvc_opal_driver = {
+ 	.probe		= hvc_opal_probe,
+-	.remove		= hvc_opal_remove,
++	.remove_new	= hvc_opal_remove,
+ 	.driver		= {
+ 		.name	= hvc_opal_name,
+ 		.of_match_table	= hvc_opal_match,
 -- 
 2.42.0
 
