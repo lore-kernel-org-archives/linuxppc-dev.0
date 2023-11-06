@@ -4,65 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 534FDC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 13:50:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 001AAC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 13:50:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=itAqlkW0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=tVC/0EfH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SPCQd0932z3cWF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 00:50:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SPCRh4gJSz3vcf
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 00:50:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=itAqlkW0;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=tVC/0EfH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPCHF0Zh0z3c6Q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 00:43:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 63E2C60E17;
-	Mon,  6 Nov 2023 13:43:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D7215C433CC;
-	Mon,  6 Nov 2023 13:43:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1699278209;
-	bh=q7dGahbSw2aSGJr2512J7D29gSQwxcYyxusdtGkngpY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=itAqlkW0orDDy5jCBw7Caq5rkmvWy/7dFF1VB+NVIcbqiPeJ7aWk0OGf0MbZSsrA+
-	 BRSNuftwRo9xNEOTVCfQdu8QOYguYLqt961PJdV1I0CYrO9FX7VfM92EZuPpjKWEfR
-	 b3C+M1RpzB9/HkHN5rqpGZ6EnjmtxCCX3YJsF40I5/HMU+wmvIBEhc2P/6r/6O+tOy
-	 aA8yJeuIg1zqExV/WBUFyJAaLv+z9wTtLghRdgOWJmfp4AwgqoAqtnbcDmPRDHE6IT
-	 Y5ZdszNr6nr8ahdXFcp8fB+OPnYBKXshDPJOiOiB8t+z9YNtiKhRRaym8u+YLVqLTS
-	 q/xiULOoZPTog==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4B29C4332F;
-	Mon,  6 Nov 2023 13:43:29 +0000 (UTC)
-From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Nov 2023 07:42:57 -0600
-Subject: [PATCH 5/7] powerpc/rtas: Move post_mobility_fixup() declaration
- to pseries
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPCJL6bV9z3cT0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 00:44:33 +1100 (AEDT)
+Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-5079f9ec8d9so4823517e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2023 05:44:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1699278266; x=1699883066; darn=lists.ozlabs.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zfut42GZ6PJsX7RslNyzOoo+yrwpRsBHvP3u/FnXLmg=;
+        b=tVC/0EfHVput5VvSOaB2D+eLVAm2MLs0Ik5ISSoRuxoFh5fqm4M7gc5Yng0DbKzTS+
+         vGvp4AhO4WSj9x9v/s29U/HwiQ5hUe2Gu5qH2M8cFGmit+lCXgN7sOGp5hDPJGXphDe6
+         xU2VeGXwFQskuu49Du1JKdAkeL/NthCqVi6MWsn1FnqN8C9hhwLZEfokkmAMxxdlLVTD
+         vL3bcpuzFQNYMe9o70foZynxM0iz+25eFD+7LfR1NmdoBaO6CBZfCwae0oTLSh4Hrzni
+         26cA+0xvFakjKYyigrXEq+NS/3eUZVDYNck5DmThgQcONO1z1sLeAFtnfUugq3StwXNJ
+         z+Wg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699278266; x=1699883066;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zfut42GZ6PJsX7RslNyzOoo+yrwpRsBHvP3u/FnXLmg=;
+        b=bZ8hLe60fal625wkwPUArQgrQo3TnZZMxGdM4eAW0hY5LjjgNCQUwzeMoCyqZQ6Tk1
+         cUajBBzev8Jz1ua/ThgGXZygrcxws4saeb8AGW27EbfTDUJnTQs/1JW+6bBlNViY+4dZ
+         8WwC0AtEQU/8q6wBO+0oPLIRdehPLjFn3NBgel9jyS/gDivNw2rexi/HNzo8zlRx3dRI
+         iBOjnT2vbmF14XrFWhAcGHVqQlHixVvrFLByd2VxydHBiQDdXb7btFwdVNoZL/musIp1
+         xtTU4vyABBhTBY+wM3em7EkkhUGZOpETZcpyLCbxwB2epAdYLCG9IMPw2sGbwjtMR3lQ
+         VumQ==
+X-Gm-Message-State: AOJu0YwPAfsnLYE4Kj8ccKEvSalG+4UK7P6QJtJUm7jKKWFWFEN15gnM
+	DM/2Y6xagMyv0XirEQjJwcWlvw==
+X-Google-Smtp-Source: AGHT+IH4bzAeeYdxryFqi17NUYVW5UsmYhLWSTUCigieIHr7c5swW3uUM3EOV8t/mdnyfou3jNyCSA==
+X-Received: by 2002:a19:6505:0:b0:4fe:2815:8ba7 with SMTP id z5-20020a196505000000b004fe28158ba7mr3312316lfb.25.1699278266334;
+        Mon, 06 Nov 2023 05:44:26 -0800 (PST)
+Received: from [127.0.1.1] ([85.235.12.238])
+        by smtp.gmail.com with ESMTPSA id w25-20020a19c519000000b004fe2de20d88sm1123959lfe.232.2023.11.06.05.44.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Nov 2023 05:44:25 -0800 (PST)
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 06 Nov 2023 14:44:25 +0100
+Subject: [PATCH] powerpc: Fix signature of pfn_to_kaddr()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231106-rtas-trivial-v1-5-61847655c51f@linux.ibm.com>
-References: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
-In-Reply-To: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
+Message-Id: <20231106-virt-to-pfn-fix-ppc-v1-1-93197a7ccab4@linaro.org>
+X-B4-Tracking: v=1; b=H4sIALjtSGUC/x2MQQqAIBAAvxJ7bsG1UOor0SF0q72YaEgg/T3pO
+ AwzFTIn4QxzVyFxkSxXaEB9B+7cwsEovjFopQciZbBIuvG+MO4Bd3kwRod+Is+jdUaRhVbGxE3
+ 912V93w8BGl8jZQAAAA==
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1699278208; l=2039;
- i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=m3ZzkHGGDWvMrkkWKHzTjH9qFn2BzZzK6cBbnUv6bSA=;
- b=mMuQDapjwwiefuk4Pl7ud4nzuWz5Fvvb7rf7Cq8mjZ08nkRYg3YIXIP5SXANW/XsPjrkoF8zO
- aMDhLJMAciXDYZy1Uzf/NGuOvF6wBSwMG4x0ayPcwPKUnFeKpAPPj6V
-X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
- pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
-X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
-X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
+X-Mailer: b4 0.12.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,61 +81,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: nathanl@linux.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+There is a const in the returned value from pfn_to_kaddr()
+but there are consumers that want to modify the result
+and the generic function pfn_to_virt() in <asm-generic/page.h>
+does allow this, so let's relax this requirement and do not
+make the returned value const.
 
-This is a pseries-specific function declaration that doesn't belong in
-rtas.h. Move it to the pseries platform code and adjust
-pseries/suspend.c accordingly.
-
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202311061940.4pBrm44u-lkp@intel.com/
+Fixes: 58b6fed89ab0 ("powerpc: Make virt_to_pfn() a static inline")
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- arch/powerpc/include/asm/rtas.h          | 1 -
- arch/powerpc/platforms/pseries/pseries.h | 1 +
- arch/powerpc/platforms/pseries/suspend.c | 1 +
- 3 files changed, 2 insertions(+), 1 deletion(-)
+The remaining warnings from the test robot appear a bit bogus.
+If someone knows what to do about them, please help. The warnings
+often properly uncovers problems that have been around forever
+due to these functions being disguised as macros.
+---
+ arch/powerpc/include/asm/page.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index c6568a647cd0..2365668fc13e 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -444,7 +444,6 @@ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
- #ifdef CONFIG_PPC_PSERIES
- extern time64_t last_rtas_event;
- extern int clobbering_unread_rtas_event(void);
--extern void post_mobility_fixup(void);
- int rtas_syscall_dispatch_ibm_suspend_me(u64 handle);
- #else
- static inline int clobbering_unread_rtas_event(void) { return 0; }
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 8376f03f932a..bba4ad192b0f 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -55,6 +55,7 @@ extern int dlpar_detach_node(struct device_node *);
- extern int dlpar_acquire_drc(u32 drc_index);
- extern int dlpar_release_drc(u32 drc_index);
- extern int dlpar_unisolate_drc(u32 drc_index);
-+extern void post_mobility_fixup(void);
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index e5fcc79b5bfb..5243e48dc13a 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -230,7 +230,7 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
+ 	return __pa(kaddr) >> PAGE_SHIFT;
+ }
  
- void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
- int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
-diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
-index 5c43435472cc..382003dfdb9a 100644
---- a/arch/powerpc/platforms/pseries/suspend.c
-+++ b/arch/powerpc/platforms/pseries/suspend.c
-@@ -13,6 +13,7 @@
- #include <asm/mmu.h>
- #include <asm/rtas.h>
- #include <asm/topology.h>
-+#include "pseries.h"
- 
- static struct device suspend_dev;
- 
+-static inline const void *pfn_to_kaddr(unsigned long pfn)
++static inline void *pfn_to_kaddr(unsigned long pfn)
+ {
+ 	return __va(pfn << PAGE_SHIFT);
+ }
 
+---
+base-commit: d2f51b3516dade79269ff45eae2a7668ae711b25
+change-id: 20231106-virt-to-pfn-fix-ppc-d91de47c6017
+
+Best regards,
 -- 
-2.41.0
+Linus Walleij <linus.walleij@linaro.org>
 
