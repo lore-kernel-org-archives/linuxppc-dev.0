@@ -4,61 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC912C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 13:46:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42012C0018C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 13:46:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ucUkQyA7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eeZHRk1N;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SPCL04LvPz3d8N
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 00:46:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SPCLw6wfbz3clB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 00:46:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ucUkQyA7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eeZHRk1N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPCHB2S4jz2ygZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 00:43:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPCHD5n6sz3c5H
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 00:43:36 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 1C8DFB80FC3;
+	by sin.source.kernel.org (Postfix) with ESMTP id 8C082CE0CFB;
 	Mon,  6 Nov 2023 13:43:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 72D06C433C8;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C1048C433C9;
 	Mon,  6 Nov 2023 13:43:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1699278209;
-	bh=XjHHeI3xDmkXHroqHwUZ8yGTVJECDdLLXqJa8OXMPNY=;
+	bh=ZLJTGr1hINH/9KcIuL9KqapOBOkoy27BscHYYShS01E=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=ucUkQyA7YndKYztTQ6J1wqccqzQtXT4TN8PrhYzp4IWFIsb9bUNL8ymNSTFNolAAN
-	 zVaeegntyDhdee4yK8vUIE/3bv7B/hRdfeRT4VYZMcWtduHWGMjtHGGHzTni5ASx34
-	 p/i5G7NmMYMua059r0Fz0TqOGMGRb5YKtJIGrMK4J+M4x6zS9NAsUChBbQ87oQh0oC
-	 SehdfXpBR57C2vSItljImk9/o5lPQrue0eVIp8X7q0Wgjf3WC7Mq1a1L40dGwO7I3M
-	 MDUrcpD22vIaIbQFpDqUHnzERGUusgv78jXUzpZUMJoFw5qeCyOKFN0yu1s7n95N2r
-	 D0w56ET6ey4tg==
+	b=eeZHRk1NIt9ngFBSe5eKaUfiGvaYmsvCjDGvxxtHm4PsK6W/dgs89EEDHA4ulytrb
+	 l6nl0VVn83fP9R4Ac+bVQ0L/Z+C73YI3hGSrDSidX7mAOYMHRheNOtTpK5jVS52HoB
+	 RxrxEi6K+hXJ0BhEgs9/iaMNFLxaOUHs9aEUAnMYqe6rAs3TQaIljwb1Z0gwNw63KD
+	 faA9U4qFFi4Aj/OcI+WoOYpwnElcZymwwZeoXkYlz86phU4xkkOqlgnZ3+gOGQMHx+
+	 QRayU9kMavI7OvE1FvBk2j9vZDfGs60Lldd04l8P9El1TH7oJC5Y5gYQYfGitj7Dzx
+	 a6YoNzPC5FAng==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56642C4167B;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABABEC4167B;
 	Mon,  6 Nov 2023 13:43:29 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Nov 2023 07:42:53 -0600
-Subject: [PATCH 1/7] powerpc/pseries/rtas-work-area: Fix
- rtas_work_area_reserve_arena() kernel-doc
+Date: Mon, 06 Nov 2023 07:42:56 -0600
+Subject: [PATCH 4/7] powerpc/rtas: Remove unused rtas_service_present()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231106-rtas-trivial-v1-1-61847655c51f@linux.ibm.com>
+Message-Id: <20231106-rtas-trivial-v1-4-61847655c51f@linux.ibm.com>
 References: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
 In-Reply-To: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1699278208; l=1096;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1699278208; l=1479;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=SPblNQSOeY7KfFeIri1eXB1+jA3JaMamORCx6F8Rpj8=;
- b=ClSDmi29HMUQ/80JEN74l2GYbpkCJCraOELVtZVWM4BcHjR7EoGR+7y05tlobqs+rzevFc2hq
- 6MLMgp4jhM2Boo7+J9i7RqIMaewoL1EYzk+C1iev6c+dYScV+gBgK7z
+ bh=DZvLOdDIHUxKijnpi1Z0q0XnG4VEsIXvpzPh6vLb/O4=;
+ b=Zx9ZE6MAsw4TvhGqLNJy0o6cspILWbNDy5vO+Pw8Zbyyjddhz2gRQTPq9kL292s2G/YXSaBGW
+ 9hEDpqog0BIBnqnKf4011izANZbfeoA2s80mgbxsVMUYxCu3nMYpiNU
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -75,38 +74,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Reply-To: nathanl@linux.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-From a W=1 build:
+rtas_service_present() has no more users.
 
->> arch/powerpc/platforms/pseries/rtas-work-area.c:189: warning: Function parameter or member 'limit' not
->> described in 'rtas_work_area_reserve_arena'
-
-Add the missing description of the limit parameter.
+rtas_function_implemented() is now the appropriate API for determining
+whether a given RTAS function is available to call.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202309131221.Bm1pg96n-lkp@intel.com/
 ---
- arch/powerpc/platforms/pseries/rtas-work-area.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/rtas.h | 1 -
+ arch/powerpc/kernel/rtas.c      | 5 -----
+ 2 files changed, 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/rtas-work-area.c b/arch/powerpc/platforms/pseries/rtas-work-area.c
-index b37d52f40360..7fe34bee84d8 100644
---- a/arch/powerpc/platforms/pseries/rtas-work-area.c
-+++ b/arch/powerpc/platforms/pseries/rtas-work-area.c
-@@ -184,6 +184,7 @@ machine_arch_initcall(pseries, rtas_work_area_allocator_init);
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 3bf7f0a4b07e..c6568a647cd0 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -409,7 +409,6 @@ static inline bool rtas_function_implemented(const rtas_fn_handle_t handle)
+ 	return rtas_function_token(handle) != RTAS_UNKNOWN_SERVICE;
+ }
+ extern int rtas_token(const char *service);
+-extern int rtas_service_present(const char *service);
+ extern int rtas_call(int token, int, int, int *, ...);
+ void rtas_call_unlocked(struct rtas_args *args, int token, int nargs,
+ 			int nret, ...);
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index eddc031c4b95..b5b340a91157 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -900,11 +900,6 @@ int rtas_token(const char *service)
+ }
+ EXPORT_SYMBOL_GPL(rtas_token);
  
- /**
-  * rtas_work_area_reserve_arena() - Reserve memory suitable for RTAS work areas.
-+ * @limit: Upper limit for memblock allocation.
-  */
- void __init rtas_work_area_reserve_arena(const phys_addr_t limit)
- {
+-int rtas_service_present(const char *service)
+-{
+-	return rtas_token(service) != RTAS_UNKNOWN_SERVICE;
+-}
+-
+ #ifdef CONFIG_RTAS_ERROR_LOGGING
+ 
+ static u32 rtas_error_log_max __ro_after_init = RTAS_ERROR_LOG_MAX;
 
 -- 
 2.41.0
