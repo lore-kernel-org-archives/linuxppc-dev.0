@@ -4,63 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC4F4C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 13:33:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00AE5C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Nov 2023 13:44:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AymGKtdt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Shfglfvr;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SPC303NdNz3c5H
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 00:33:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SPCJ64m0Vz3c8r
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 00:44:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AymGKtdt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Shfglfvr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 07 Nov 2023 00:32:05 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPC1x56c4z3bWH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 00:32:05 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1699277526; x=1730813526;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=GcPOwqKIRcSDpD/XkGdZ5KVAeJljJ23LDoDjt600Qfg=;
-  b=AymGKtdtnY8HGhSe0vNWB7MilexnyhUY4IO4Mzjqax1R0tV2nzQebaUr
-   W1kOtf3cznuAPrdYdxXlD5y3g5PRYhhMRxRjIdpclLkLLxQ9eyFkT5W8p
-   MgIDdTnyZ8v403w37Zibu0S/eJqTA8vmfG3vC6eyCmZr7xb47U027xLF1
-   4wXiuZ8ayHigr8IwiJqgctlTPCB0Ev8ta2/rtGN2ilLh872ms4ohjLRIj
-   h5YnQyoHyWqbfqdGyqNIcHiJuOa/p4s+bVtzey1Z4Xts5Vmfi2V32vq8X
-   r8aJOXr/CZ8kEP3r8BvcKDgMIv8Fp0o0LIw97/Mv81a/RRtyKvtc/7R5m
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10885"; a="2263471"
-X-IronPort-AV: E=Sophos;i="6.03,281,1694761200"; 
-   d="scan'208";a="2263471"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Nov 2023 05:30:53 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10885"; a="755855766"
-X-IronPort-AV: E=Sophos;i="6.03,281,1694761200"; 
-   d="scan'208";a="755855766"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga007.jf.intel.com with ESMTP; 06 Nov 2023 05:30:42 -0800
-Date: Mon, 6 Nov 2023 21:29:10 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH v13 20/35] KVM: x86/mmu: Handle page fault for private
- memory
-Message-ID: <ZUjqJjz0Epf7ii8F@yilunxu-OptiPlex-7050>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-21-seanjc@google.com>
- <ZUeSaAKRemlSRQpO@yilunxu-OptiPlex-7050>
- <CABgObfb1Wf2ptitGhJPM6VcmkCG9haMoQj2BsttjeoV=9F0O9Q@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPCH92kJ3z2ygZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 00:43:33 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 6264BCE0CF9;
+	Mon,  6 Nov 2023 13:43:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9AE72C433CA;
+	Mon,  6 Nov 2023 13:43:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1699278209;
+	bh=5pP4L1KbkPryMlNCo7VrCpEIR3YQnJ8zm2PPFi1oTnQ=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Shfglfvroj2FdhonCXxZ7X/B1izMyla5qPFpPN5xAKYK2nSVWT+rir4MFc2WUoeHd
+	 jYWeJXVCb7/x10MvZLOj4u8U4oYONHcPNJthNG1r+5AF+EId5k6uXemMZC2TTRFM3M
+	 KfCiSuAeXDuzqhNXNcfXEd0LEgi51MzufLF3C9IkFmCE7vJwOo6BQdgxqQgsJysBky
+	 Q6Eaw7a2D4wFhn9HxroeuiOMBKxkqCVfqeovNqmI5Njt2NYo7EbdydtrGzmh/KIa1e
+	 zPZNNnema1E0zwheWsHmWnRqnKkZIj69Pzcg7ZI5B8muxzgYskZvOod2uxPR1pP0xa
+	 y6q3Q6fom6oXQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86E61C4332F;
+	Mon,  6 Nov 2023 13:43:29 +0000 (UTC)
+From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
+Date: Mon, 06 Nov 2023 07:42:54 -0600
+Subject: [PATCH 2/7] powerpc/rtas: Fix ppc_rtas_rmo_buf_show() kernel-doc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CABgObfb1Wf2ptitGhJPM6VcmkCG9haMoQj2BsttjeoV=9F0O9Q@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20231106-rtas-trivial-v1-2-61847655c51f@linux.ibm.com>
+References: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
+In-Reply-To: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1699278208; l=1171;
+ i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
+ bh=MnmHwrzxob67ZPsK4bqOYSxHsOYqB81Q1mDqbzsffXI=;
+ b=TrJuivsNnPgJjWeb4xWtS9Ju9o52A1tJtNTIM1pQ0awSCMtmEVw+mvMXSlrFdj/YofFdrTfFZ
+ SLBUBA8ZkiLBv4bABkSVHp/K7TtW9JIqpnvw+zK/cQ7hvb4tkqaXecM
+X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
+ pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
+X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
+X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,73 +73,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Anup Patel <anup@brainfault.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quen
- tin Perret <qperret@google.com>, Sean Christopherson <seanjc@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Reply-To: nathanl@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Nov 05, 2023 at 05:19:36PM +0100, Paolo Bonzini wrote:
-> On Sun, Nov 5, 2023 at 2:04 PM Xu Yilun <yilun.xu@linux.intel.com> wrote:
-> >
-> > > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> > > +                                           struct kvm_page_fault *fault)
-> > > +{
-> > > +     kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-> > > +                                   PAGE_SIZE, fault->write, fault->exec,
-> > > +                                   fault->is_private);
-> > > +}
-> > > +
-> > > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> > > +                                struct kvm_page_fault *fault)
-> > > +{
-> > > +     int max_order, r;
-> > > +
-> > > +     if (!kvm_slot_can_be_private(fault->slot)) {
-> > > +             kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > > +             return -EFAULT;
-> > > +     }
-> > > +
-> > > +     r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-> > > +                          &max_order);
-> > > +     if (r) {
-> > > +             kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > > +             return r;
-> >
-> > Why report KVM_EXIT_MEMORY_FAULT here? even with a ret != -EFAULT?
-> 
-> The cases are EFAULT, EHWPOISON (which can report
-> KVM_EXIT_MEMORY_FAULT) and ENOMEM. I think it's fine
-> that even -ENOMEM can return KVM_EXIT_MEMORY_FAULT,
-> and it doesn't violate the documentation.  The docs tell you "what
-> can you do if error if EFAULT or EHWPOISON?"; they don't
-> exclude that other errnos result in KVM_EXIT_MEMORY_FAULT,
-> it's just that you're not supposed to look at it
+From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Thanks, it's OK for ENOMEM + KVM_EXIT_MEMORY_FAULT.
+From a W=1 build:
 
-Another concern is, now 3 places to report EFAULT + KVM_EXIT_MEMORY_FAULT:
+>> arch/powerpc/kernel/rtas-proc.c:771: warning: Function parameter or member 'm' not described in
+>> 'ppc_rtas_rmo_buf_show'
+>> arch/powerpc/kernel/rtas-proc.c:771: warning: Function parameter or member 'v' not described in
+>> 'ppc_rtas_rmo_buf_show'
 
-  if (!kvm_slot_can_be_private(fault->slot)) {
-	kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-	return -EFAULT;
-  }
+Add the missing parameter descriptions.
 
-  file = kvm_gmem_get_file(slot);
-  if (!file)
-	return -EFAULT;
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202309211645.1Lvwmbv4-lkp@intel.com/
+---
+ arch/powerpc/kernel/rtas-proc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-  if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
-	kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-	return -EFAULT;
-  }
+diff --git a/arch/powerpc/kernel/rtas-proc.c b/arch/powerpc/kernel/rtas-proc.c
+index 9454b8395b6a..f38df72e64b8 100644
+--- a/arch/powerpc/kernel/rtas-proc.c
++++ b/arch/powerpc/kernel/rtas-proc.c
+@@ -752,6 +752,8 @@ static int ppc_rtas_tone_volume_show(struct seq_file *m, void *v)
+ 
+ /**
+  * ppc_rtas_rmo_buf_show() - Describe RTAS-addressable region for user space.
++ * @m: seq_file output target.
++ * @v: Unused.
+  *
+  * Base + size description of a range of RTAS-addressable memory set
+  * aside for user space to use as work area(s) for certain RTAS
 
-They are different cases, and seems userspace should handle them
-differently, but not enough information to distinguish them.
+-- 
+2.41.0
 
-Thanks,
-Yilun
-
-> 
-> Paolo
-> 
-> 
