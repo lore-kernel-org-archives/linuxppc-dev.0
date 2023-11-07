@@ -4,66 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 793C4C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 13:08:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B819C04A68
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 15:48:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=zEk9ZeKc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tUpjoh2K;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SPpSc5nHVz3cTl
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 00:08:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SPt0c1ZK1z3cTD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 02:48:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=zEk9ZeKc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tUpjoh2K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::32d; helo=mail-ot1-x32d.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com [IPv6:2607:f8b0:4864:20::32d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPpRg5M30z3c1B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2023 00:07:58 +1100 (AEDT)
-Received: by mail-ot1-x32d.google.com with SMTP id 46e09a7af769-6ce37d0f1a9so3497963a34.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2023 05:07:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1699362475; x=1699967275; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7VRoxoxM3bk/ddMYA7RkVxhIt7sN32CxDfhJasXbdTQ=;
-        b=zEk9ZeKcpZIVQPaJQvJLpc1+wBc6v4axUqcMy+BUfzdudTVJJxjUgzFIUPQfUUsxPL
-         HdHqYU7JxAxe6TYeZpyWxAJsHMeImPms1cJ3DXVZf99dFUji+BhNByz9VuNtFcGp6hMB
-         F1E6vsTdZ/clpNs5fu6K3Frv7EdHj71QI6HLYqifCNFzCNnBZhmjsm5nDy9F1HSmJB0a
-         v5qVsuUM85CinmfxsdK/kRbeykHp3eT62lyltoYvHwEmThPwZp58sTcJvS5jAdjQos8i
-         IpCvYJOZzxHUR3TEcQTwAdxB6kNzv1s2RsQ33AKoNZCYGslKYkogQyZd3wZYJ2oPWJ7y
-         SWpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699362475; x=1699967275;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7VRoxoxM3bk/ddMYA7RkVxhIt7sN32CxDfhJasXbdTQ=;
-        b=pdrKLEhSnWDwWvZZJm55QdQScy8ziEd/ru8cSYqXz+jg7TRuzeT4xDZD8MQ25UmR5J
-         3+O0YGI6UVVYqfFO7/UeLevPI6STfnIfYcoHqY6Oo0sC/er5T+MuVN2iu55NrnH3Q+3V
-         t14QvmWuvnyqjTzcBeSHRQWcnllKxaKQYDjUSYdfEGQTCCfPQMnLzh/P7QZYbXDtZR5E
-         b88V6J2Qy0kjTaegml0g3GFK1t8tgvPG6YtVrng3YZI4ls6NLWu1mSUE0GV+tLL00pFa
-         cZDJD2mgtuED+r42zToqu20IPZMwTzfRrymOmIld/RPBOQTSFNy/pfPzFHJoyIATEv6b
-         ktPA==
-X-Gm-Message-State: AOJu0YyBrajelTabVKiisMTyoregtSj5JqMoCQVkW6UIatB21o8w3E/c
-	wGCYQ4/ehbaZ6A38nMN9tmH8bD8LnJdzgvcxmjF1XQ==
-X-Google-Smtp-Source: AGHT+IEc/OoLKiW5UzIza8k0AJcg/cvGrUiQc/SGatsr9amhK5Gck/VoGoIGcZKiRYhIoVxvQmPBVV/w9nNgSokWHaw=
-X-Received: by 2002:a05:6871:3227:b0:1ef:ace4:f360 with SMTP id
- mo39-20020a056871322700b001eface4f360mr2023903oac.17.1699362474620; Tue, 07
- Nov 2023 05:07:54 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPszc4QGTz2yGW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2023 02:47:24 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 5D2AACE0EB5;
+	Tue,  7 Nov 2023 15:47:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78DC1C433C9;
+	Tue,  7 Nov 2023 15:47:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1699372039;
+	bh=2eJWaj7sdAhujQRhioQWuiiySmkvxaVJpU1wNr6VJeM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=tUpjoh2KipFCc6FSZ+kpCl0SphWgmii0tQYDAR1QFXnfXjt8c3uNvWmlFyJQNDG/f
+	 dmr4ExZbJfhzOnHCUMqn5WNJ5F3rSj5mYM5BpX4/76zdfv5kmNa+rdSUQC40xhF70G
+	 XrYefuxiexoKRfhcjugLoMdAB1C2ZUQ2Dhm3++91Jz5q1DpSf1ej1XPvXoskQMA6Oi
+	 4hif1LqGPU/25JbIeiOJJOYmHehugHeGi1txtkpmLdcl+4n+GPnpnrBKX4Ub6bRqwQ
+	 z51DPSkLMHxkKl+3zkB3hyvbESX9d1OHRrRc963HQ1oeaRzkBxOtvGWtWXtqnSqZX3
+	 JjqCpAFQet4UA==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.6 11/36] scsi: ibmvfc: Remove BUG_ON in the case of an empty event pool
+Date: Tue,  7 Nov 2023 10:45:53 -0500
+Message-ID: <20231107154654.3765336-11-sashal@kernel.org>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231107154654.3765336-1-sashal@kernel.org>
+References: <20231107154654.3765336-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-33-pbonzini@redhat.com>
-In-Reply-To: <20231105163040.14904-33-pbonzini@redhat.com>
-From: Fuad Tabba <tabba@google.com>
-Date: Tue, 7 Nov 2023 13:07:18 +0000
-Message-ID: <CA+EHjTxMK2G3WSQsjPA5zn94+a91HsoaWXx8tz1TTGuq1tVZ5Q@mail.gmail.com>
-Subject: Re: [PATCH 32/34] KVM: selftests: Add basic selftest for guest_memfd()
-To: Paolo Bonzini <pbonzini@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.6
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,302 +62,324 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Sean Christopherson <seanjc@goog
- le.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: Sasha Levin <sashal@kernel.org>, Tyrel Datwyler <tyreld@linux.ibm.com>, linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, jejb@linux.ibm.com, Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
 
-On Sun, Nov 5, 2023 at 4:35=E2=80=AFPM Paolo Bonzini <pbonzini@redhat.com> =
-wrote:
->
-> From: Chao Peng <chao.p.peng@linux.intel.com>
->
-> Add a selftest to verify the basic functionality of guest_memfd():
->
-> + file descriptor created with the guest_memfd() ioctl does not allow
->   read/write/mmap operations
-> + file size and block size as returned from fstat are as expected
-> + fallocate on the fd checks that offset/length on
->   fallocate(FALLOC_FL_PUNCH_HOLE) should be page aligned
-> + invalid inputs (misaligned size, invalid flags) are rejected
-> + file size and inode are unique (the innocuous-sounding
->   anon_inode_getfile() backs all files with a single inode...)
->
-> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-> Co-developed-by: Ackerley Tng <ackerleytng@google.com>
-> Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-> Co-developed-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> Co-developed-by: Sean Christopherson <seanjc@google.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> Message-Id: <20231027182217.3615211-35-seanjc@google.com>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> ---
->  tools/testing/selftests/kvm/Makefile          |   1 +
->  .../testing/selftests/kvm/guest_memfd_test.c  | 206 ++++++++++++++++++
->  2 files changed, 207 insertions(+)
->  create mode 100644 tools/testing/selftests/kvm/guest_memfd_test.c
->
-> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftes=
-ts/kvm/Makefile
-> index ecdea5e7afa8..fd3b30a4ca7b 100644
-> --- a/tools/testing/selftests/kvm/Makefile
-> +++ b/tools/testing/selftests/kvm/Makefile
-> @@ -134,6 +134,7 @@ TEST_GEN_PROGS_x86_64 +=3D access_tracking_perf_test
->  TEST_GEN_PROGS_x86_64 +=3D demand_paging_test
->  TEST_GEN_PROGS_x86_64 +=3D dirty_log_test
->  TEST_GEN_PROGS_x86_64 +=3D dirty_log_perf_test
-> +TEST_GEN_PROGS_x86_64 +=3D guest_memfd_test
->  TEST_GEN_PROGS_x86_64 +=3D guest_print_test
->  TEST_GEN_PROGS_x86_64 +=3D hardware_disable_test
->  TEST_GEN_PROGS_x86_64 +=3D kvm_create_max_vcpus
-> diff --git a/tools/testing/selftests/kvm/guest_memfd_test.c b/tools/testi=
-ng/selftests/kvm/guest_memfd_test.c
-> new file mode 100644
-> index 000000000000..ea0ae7e25330
-> --- /dev/null
-> +++ b/tools/testing/selftests/kvm/guest_memfd_test.c
-> @@ -0,0 +1,206 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright Intel Corporation, 2023
-> + *
-> + * Author: Chao Peng <chao.p.peng@linux.intel.com>
-> + */
-> +
-> +#define _GNU_SOURCE
-> +#include "test_util.h"
-> +#include "kvm_util_base.h"
-> +#include <linux/bitmap.h>
-> +#include <linux/falloc.h>
-> +#include <sys/mman.h>
-> +#include <sys/types.h>
-> +#include <sys/stat.h>
-> +
-> +#include <stdlib.h>
-> +#include <string.h>
-> +#include <unistd.h>
-> +#include <errno.h>
-> +#include <stdio.h>
-> +#include <fcntl.h>
+[ Upstream commit b39f2d10b86d0af353ea339e5815820026bca48f ]
 
-The include ordering should be fixed. Otherwise,
+In practice the driver should never send more commands than are allocated
+to a queue's event pool. In the unlikely event that this happens, the code
+asserts a BUG_ON, and in the case that the kernel is not configured to
+crash on panic returns a junk event pointer from the empty event list
+causing things to spiral from there. This BUG_ON is a historical artifact
+of the ibmvfc driver first being upstreamed, and it is well known now that
+the use of BUG_ON is bad practice except in the most unrecoverable
+scenario. There is nothing about this scenario that prevents the driver
+from recovering and carrying on.
 
-Reviewed-by: Fuad Tabba <tabba@google.com>
-Tested-by: Fuad Tabba <tabba@google.com>
+Remove the BUG_ON in question from ibmvfc_get_event() and return a NULL
+pointer in the case of an empty event pool. Update all call sites to
+ibmvfc_get_event() to check for a NULL pointer and perfrom the appropriate
+failure or recovery action.
 
-Cheers,
-/fuad
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Link: https://lore.kernel.org/r/20230921225435.3537728-2-tyreld@linux.ibm.com
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 124 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 122 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index ce9eb00e2ca04..712d109cb5589 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -1519,7 +1519,11 @@ static struct ibmvfc_event *ibmvfc_get_event(struct ibmvfc_queue *queue)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&queue->l_lock, flags);
+-	BUG_ON(list_empty(&queue->free));
++	if (list_empty(&queue->free)) {
++		ibmvfc_log(queue->vhost, 4, "empty event pool on queue:%ld\n", queue->hwq_id);
++		spin_unlock_irqrestore(&queue->l_lock, flags);
++		return NULL;
++	}
+ 	evt = list_entry(queue->free.next, struct ibmvfc_event, queue_list);
+ 	atomic_set(&evt->free, 0);
+ 	list_del(&evt->queue_list);
+@@ -1948,9 +1952,15 @@ static int ibmvfc_queuecommand(struct Scsi_Host *shost, struct scsi_cmnd *cmnd)
+ 	if (vhost->using_channels) {
+ 		scsi_channel = hwq % vhost->scsi_scrqs.active_queues;
+ 		evt = ibmvfc_get_event(&vhost->scsi_scrqs.scrqs[scsi_channel]);
++		if (!evt)
++			return SCSI_MLQUEUE_HOST_BUSY;
++
+ 		evt->hwq = hwq % vhost->scsi_scrqs.active_queues;
+-	} else
++	} else {
+ 		evt = ibmvfc_get_event(&vhost->crq);
++		if (!evt)
++			return SCSI_MLQUEUE_HOST_BUSY;
++	}
+ 
+ 	ibmvfc_init_event(evt, ibmvfc_scsi_done, IBMVFC_CMD_FORMAT);
+ 	evt->cmnd = cmnd;
+@@ -2038,6 +2048,11 @@ static int ibmvfc_bsg_timeout(struct bsg_job *job)
+ 
+ 	vhost->aborting_passthru = 1;
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		spin_unlock_irqrestore(vhost->host->host_lock, flags);
++		return -ENOMEM;
++	}
++
+ 	ibmvfc_init_event(evt, ibmvfc_bsg_timeout_done, IBMVFC_MAD_FORMAT);
+ 
+ 	tmf = &evt->iu.tmf;
+@@ -2096,6 +2111,10 @@ static int ibmvfc_bsg_plogi(struct ibmvfc_host *vhost, unsigned int port_id)
+ 		goto unlock_out;
+ 
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		rc = -ENOMEM;
++		goto unlock_out;
++	}
+ 	ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_MAD_FORMAT);
+ 	plogi = &evt->iu.plogi;
+ 	memset(plogi, 0, sizeof(*plogi));
+@@ -2214,6 +2233,11 @@ static int ibmvfc_bsg_request(struct bsg_job *job)
+ 	}
+ 
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		spin_unlock_irqrestore(vhost->host->host_lock, flags);
++		rc = -ENOMEM;
++		goto out;
++	}
+ 	ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_MAD_FORMAT);
+ 	mad = &evt->iu.passthru;
+ 
+@@ -2302,6 +2326,11 @@ static int ibmvfc_reset_device(struct scsi_device *sdev, int type, char *desc)
+ 		else
+ 			evt = ibmvfc_get_event(&vhost->crq);
+ 
++		if (!evt) {
++			spin_unlock_irqrestore(vhost->host->host_lock, flags);
++			return -ENOMEM;
++		}
++
+ 		ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_CMD_FORMAT);
+ 		tmf = ibmvfc_init_vfc_cmd(evt, sdev);
+ 		iu = ibmvfc_get_fcp_iu(vhost, tmf);
+@@ -2505,6 +2534,8 @@ static struct ibmvfc_event *ibmvfc_init_tmf(struct ibmvfc_queue *queue,
+ 	struct ibmvfc_tmf *tmf;
+ 
+ 	evt = ibmvfc_get_event(queue);
++	if (!evt)
++		return NULL;
+ 	ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_MAD_FORMAT);
+ 
+ 	tmf = &evt->iu.tmf;
+@@ -2561,6 +2592,11 @@ static int ibmvfc_cancel_all_mq(struct scsi_device *sdev, int type)
+ 
+ 		if (found_evt && vhost->logged_in) {
+ 			evt = ibmvfc_init_tmf(&queues[i], sdev, type);
++			if (!evt) {
++				spin_unlock(queues[i].q_lock);
++				spin_unlock_irqrestore(vhost->host->host_lock, flags);
++				return -ENOMEM;
++			}
+ 			evt->sync_iu = &queues[i].cancel_rsp;
+ 			ibmvfc_send_event(evt, vhost, default_timeout);
+ 			list_add_tail(&evt->cancel, &cancelq);
+@@ -2774,6 +2810,10 @@ static int ibmvfc_abort_task_set(struct scsi_device *sdev)
+ 
+ 	if (vhost->state == IBMVFC_ACTIVE) {
+ 		evt = ibmvfc_get_event(&vhost->crq);
++		if (!evt) {
++			spin_unlock_irqrestore(vhost->host->host_lock, flags);
++			return -ENOMEM;
++		}
+ 		ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_CMD_FORMAT);
+ 		tmf = ibmvfc_init_vfc_cmd(evt, sdev);
+ 		iu = ibmvfc_get_fcp_iu(vhost, tmf);
+@@ -4032,6 +4072,12 @@ static void ibmvfc_tgt_send_prli(struct ibmvfc_target *tgt)
+ 
+ 	kref_get(&tgt->kref);
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_NONE);
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		return;
++	}
+ 	vhost->discovery_threads++;
+ 	ibmvfc_init_event(evt, ibmvfc_tgt_prli_done, IBMVFC_MAD_FORMAT);
+ 	evt->tgt = tgt;
+@@ -4139,6 +4185,12 @@ static void ibmvfc_tgt_send_plogi(struct ibmvfc_target *tgt)
+ 	kref_get(&tgt->kref);
+ 	tgt->logo_rcvd = 0;
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_NONE);
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		return;
++	}
+ 	vhost->discovery_threads++;
+ 	ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_INIT_WAIT);
+ 	ibmvfc_init_event(evt, ibmvfc_tgt_plogi_done, IBMVFC_MAD_FORMAT);
+@@ -4215,6 +4267,8 @@ static struct ibmvfc_event *__ibmvfc_tgt_get_implicit_logout_evt(struct ibmvfc_t
+ 
+ 	kref_get(&tgt->kref);
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt)
++		return NULL;
+ 	ibmvfc_init_event(evt, done, IBMVFC_MAD_FORMAT);
+ 	evt->tgt = tgt;
+ 	mad = &evt->iu.implicit_logout;
+@@ -4242,6 +4296,13 @@ static void ibmvfc_tgt_implicit_logout(struct ibmvfc_target *tgt)
+ 	vhost->discovery_threads++;
+ 	evt = __ibmvfc_tgt_get_implicit_logout_evt(tgt,
+ 						   ibmvfc_tgt_implicit_logout_done);
++	if (!evt) {
++		vhost->discovery_threads--;
++		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_NONE);
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		return;
++	}
+ 
+ 	ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_INIT_WAIT);
+ 	if (ibmvfc_send_event(evt, vhost, default_timeout)) {
+@@ -4381,6 +4442,12 @@ static void ibmvfc_tgt_move_login(struct ibmvfc_target *tgt)
+ 
+ 	kref_get(&tgt->kref);
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_DEL_RPORT);
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		return;
++	}
+ 	vhost->discovery_threads++;
+ 	ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_INIT_WAIT);
+ 	ibmvfc_init_event(evt, ibmvfc_tgt_move_login_done, IBMVFC_MAD_FORMAT);
+@@ -4547,6 +4614,14 @@ static void ibmvfc_adisc_timeout(struct timer_list *t)
+ 	vhost->abort_threads++;
+ 	kref_get(&tgt->kref);
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		tgt_err(tgt, "Failed to get cancel event for ADISC.\n");
++		vhost->abort_threads--;
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		spin_unlock_irqrestore(vhost->host->host_lock, flags);
++		return;
++	}
+ 	ibmvfc_init_event(evt, ibmvfc_tgt_adisc_cancel_done, IBMVFC_MAD_FORMAT);
+ 
+ 	evt->tgt = tgt;
+@@ -4597,6 +4672,12 @@ static void ibmvfc_tgt_adisc(struct ibmvfc_target *tgt)
+ 
+ 	kref_get(&tgt->kref);
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_NONE);
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		return;
++	}
+ 	vhost->discovery_threads++;
+ 	ibmvfc_init_event(evt, ibmvfc_tgt_adisc_done, IBMVFC_MAD_FORMAT);
+ 	evt->tgt = tgt;
+@@ -4700,6 +4781,12 @@ static void ibmvfc_tgt_query_target(struct ibmvfc_target *tgt)
+ 
+ 	kref_get(&tgt->kref);
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_NONE);
++		kref_put(&tgt->kref, ibmvfc_release_tgt);
++		__ibmvfc_reset_host(vhost);
++		return;
++	}
+ 	vhost->discovery_threads++;
+ 	evt->tgt = tgt;
+ 	ibmvfc_init_event(evt, ibmvfc_tgt_query_target_done, IBMVFC_MAD_FORMAT);
+@@ -4872,6 +4959,13 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
+ {
+ 	struct ibmvfc_discover_targets *mad;
+ 	struct ibmvfc_event *evt = ibmvfc_get_event(&vhost->crq);
++	int level = IBMVFC_DEFAULT_LOG_LEVEL;
++
++	if (!evt) {
++		ibmvfc_log(vhost, level, "Discover Targets failed: no available events\n");
++		ibmvfc_hard_reset_host(vhost);
++		return;
++	}
+ 
+ 	ibmvfc_init_event(evt, ibmvfc_discover_targets_done, IBMVFC_MAD_FORMAT);
+ 	mad = &evt->iu.discover_targets;
+@@ -4949,8 +5043,15 @@ static void ibmvfc_channel_setup(struct ibmvfc_host *vhost)
+ 	struct ibmvfc_scsi_channels *scrqs = &vhost->scsi_scrqs;
+ 	unsigned int num_channels =
+ 		min(vhost->client_scsi_channels, vhost->max_vios_scsi_channels);
++	int level = IBMVFC_DEFAULT_LOG_LEVEL;
+ 	int i;
+ 
++	if (!evt) {
++		ibmvfc_log(vhost, level, "Channel Setup failed: no available events\n");
++		ibmvfc_hard_reset_host(vhost);
++		return;
++	}
++
+ 	memset(setup_buf, 0, sizeof(*setup_buf));
+ 	if (num_channels == 0)
+ 		setup_buf->flags = cpu_to_be32(IBMVFC_CANCEL_CHANNELS);
+@@ -5012,6 +5113,13 @@ static void ibmvfc_channel_enquiry(struct ibmvfc_host *vhost)
+ {
+ 	struct ibmvfc_channel_enquiry *mad;
+ 	struct ibmvfc_event *evt = ibmvfc_get_event(&vhost->crq);
++	int level = IBMVFC_DEFAULT_LOG_LEVEL;
++
++	if (!evt) {
++		ibmvfc_log(vhost, level, "Channel Enquiry failed: no available events\n");
++		ibmvfc_hard_reset_host(vhost);
++		return;
++	}
+ 
+ 	ibmvfc_init_event(evt, ibmvfc_channel_enquiry_done, IBMVFC_MAD_FORMAT);
+ 	mad = &evt->iu.channel_enquiry;
+@@ -5134,6 +5242,12 @@ static void ibmvfc_npiv_login(struct ibmvfc_host *vhost)
+ 	struct ibmvfc_npiv_login_mad *mad;
+ 	struct ibmvfc_event *evt = ibmvfc_get_event(&vhost->crq);
+ 
++	if (!evt) {
++		ibmvfc_dbg(vhost, "NPIV Login failed: no available events\n");
++		ibmvfc_hard_reset_host(vhost);
++		return;
++	}
++
+ 	ibmvfc_gather_partition_info(vhost);
+ 	ibmvfc_set_login_info(vhost);
+ 	ibmvfc_init_event(evt, ibmvfc_npiv_login_done, IBMVFC_MAD_FORMAT);
+@@ -5198,6 +5312,12 @@ static void ibmvfc_npiv_logout(struct ibmvfc_host *vhost)
+ 	struct ibmvfc_event *evt;
+ 
+ 	evt = ibmvfc_get_event(&vhost->crq);
++	if (!evt) {
++		ibmvfc_dbg(vhost, "NPIV Logout failed: no available events\n");
++		ibmvfc_hard_reset_host(vhost);
++		return;
++	}
++
+ 	ibmvfc_init_event(evt, ibmvfc_npiv_logout_done, IBMVFC_MAD_FORMAT);
+ 
+ 	mad = &evt->iu.npiv_logout;
+-- 
+2.42.0
 
-> +
-> +static void test_file_read_write(int fd)
-> +{
-> +       char buf[64];
-> +
-> +       TEST_ASSERT(read(fd, buf, sizeof(buf)) < 0,
-> +                   "read on a guest_mem fd should fail");
-> +       TEST_ASSERT(write(fd, buf, sizeof(buf)) < 0,
-> +                   "write on a guest_mem fd should fail");
-> +       TEST_ASSERT(pread(fd, buf, sizeof(buf), 0) < 0,
-> +                   "pread on a guest_mem fd should fail");
-> +       TEST_ASSERT(pwrite(fd, buf, sizeof(buf), 0) < 0,
-> +                   "pwrite on a guest_mem fd should fail");
-> +}
-> +
-> +static void test_mmap(int fd, size_t page_size)
-> +{
-> +       char *mem;
-> +
-> +       mem =3D mmap(NULL, page_size, PROT_READ | PROT_WRITE, MAP_SHARED,=
- fd, 0);
-> +       TEST_ASSERT_EQ(mem, MAP_FAILED);
-> +}
-> +
-> +static void test_file_size(int fd, size_t page_size, size_t total_size)
-> +{
-> +       struct stat sb;
-> +       int ret;
-> +
-> +       ret =3D fstat(fd, &sb);
-> +       TEST_ASSERT(!ret, "fstat should succeed");
-> +       TEST_ASSERT_EQ(sb.st_size, total_size);
-> +       TEST_ASSERT_EQ(sb.st_blksize, page_size);
-> +}
-> +
-> +static void test_fallocate(int fd, size_t page_size, size_t total_size)
-> +{
-> +       int ret;
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, total_size);
-> +       TEST_ASSERT(!ret, "fallocate with aligned offset and size should =
-succeed");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-> +                       page_size - 1, page_size);
-> +       TEST_ASSERT(ret, "fallocate with unaligned offset should fail");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size, page_size)=
-;
-> +       TEST_ASSERT(ret, "fallocate beginning at total_size should fail")=
-;
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size + page_size=
-, page_size);
-> +       TEST_ASSERT(ret, "fallocate beginning after total_size should fai=
-l");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-> +                       total_size, page_size);
-> +       TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) at total_size should suc=
-ceed");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-> +                       total_size + page_size, page_size);
-> +       TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) after total_size should =
-succeed");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-> +                       page_size, page_size - 1);
-> +       TEST_ASSERT(ret, "fallocate with unaligned size should fail");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-> +                       page_size, page_size);
-> +       TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) with aligned offset and =
-size should succeed");
-> +
-> +       ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE, page_size, page_size);
-> +       TEST_ASSERT(!ret, "fallocate to restore punched hole should succe=
-ed");
-> +}
-> +
-> +static void test_invalid_punch_hole(int fd, size_t page_size, size_t tot=
-al_size)
-> +{
-> +       struct {
-> +               off_t offset;
-> +               off_t len;
-> +       } testcases[] =3D {
-> +               {0, 1},
-> +               {0, page_size - 1},
-> +               {0, page_size + 1},
-> +
-> +               {1, 1},
-> +               {1, page_size - 1},
-> +               {1, page_size},
-> +               {1, page_size + 1},
-> +
-> +               {page_size, 1},
-> +               {page_size, page_size - 1},
-> +               {page_size, page_size + 1},
-> +       };
-> +       int ret, i;
-> +
-> +       for (i =3D 0; i < ARRAY_SIZE(testcases); i++) {
-> +               ret =3D fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUN=
-CH_HOLE,
-> +                               testcases[i].offset, testcases[i].len);
-> +               TEST_ASSERT(ret =3D=3D -1 && errno =3D=3D EINVAL,
-> +                           "PUNCH_HOLE with !PAGE_SIZE offset (%lx) and/=
-or length (%lx) should fail",
-> +                           testcases[i].offset, testcases[i].len);
-> +       }
-> +}
-> +
-> +static void test_create_guest_memfd_invalid(struct kvm_vm *vm)
-> +{
-> +       size_t page_size =3D getpagesize();
-> +       uint64_t flag;
-> +       size_t size;
-> +       int fd;
-> +
-> +       for (size =3D 1; size < page_size; size++) {
-> +               fd =3D __vm_create_guest_memfd(vm, size, 0);
-> +               TEST_ASSERT(fd =3D=3D -1 && errno =3D=3D EINVAL,
-> +                           "guest_memfd() with non-page-aligned page siz=
-e '0x%lx' should fail with EINVAL",
-> +                           size);
-> +       }
-> +
-> +       for (flag =3D 1; flag; flag <<=3D 1) {
-> +               uint64_t bit;
-> +
-> +               fd =3D __vm_create_guest_memfd(vm, page_size, flag);
-> +               TEST_ASSERT(fd =3D=3D -1 && errno =3D=3D EINVAL,
-> +                           "guest_memfd() with flag '0x%lx' should fail =
-with EINVAL",
-> +                           flag);
-> +
-> +               for_each_set_bit(bit, &valid_flags, 64) {
-> +                       fd =3D __vm_create_guest_memfd(vm, page_size, fla=
-g | BIT_ULL(bit));
-> +                       TEST_ASSERT(fd =3D=3D -1 && errno =3D=3D EINVAL,
-> +                                   "guest_memfd() with flags '0x%llx' sh=
-ould fail with EINVAL",
-> +                                   flag | BIT_ULL(bit));
-> +               }
-> +       }
-> +}
-> +
-> +static void test_create_guest_memfd_multiple(struct kvm_vm *vm)
-> +{
-> +       int fd1, fd2, ret;
-> +       struct stat st1, st2;
-> +
-> +       fd1 =3D __vm_create_guest_memfd(vm, 4096, 0);
-> +       TEST_ASSERT(fd1 !=3D -1, "memfd creation should succeed");
-> +
-> +       ret =3D fstat(fd1, &st1);
-> +       TEST_ASSERT(ret !=3D -1, "memfd fstat should succeed");
-> +       TEST_ASSERT(st1.st_size =3D=3D 4096, "memfd st_size should match =
-requested size");
-> +
-> +       fd2 =3D __vm_create_guest_memfd(vm, 8192, 0);
-> +       TEST_ASSERT(fd2 !=3D -1, "memfd creation should succeed");
-> +
-> +       ret =3D fstat(fd2, &st2);
-> +       TEST_ASSERT(ret !=3D -1, "memfd fstat should succeed");
-> +       TEST_ASSERT(st2.st_size =3D=3D 8192, "second memfd st_size should=
- match requested size");
-> +
-> +       ret =3D fstat(fd1, &st1);
-> +       TEST_ASSERT(ret !=3D -1, "memfd fstat should succeed");
-> +       TEST_ASSERT(st1.st_size =3D=3D 4096, "first memfd st_size should =
-still match requested size");
-> +       TEST_ASSERT(st1.st_ino !=3D st2.st_ino, "different memfd should h=
-ave different inode numbers");
-> +}
-> +
-> +int main(int argc, char *argv[])
-> +{
-> +       size_t page_size;
-> +       size_t total_size;
-> +       int fd;
-> +       struct kvm_vm *vm;
-> +
-> +       TEST_REQUIRE(kvm_has_cap(KVM_CAP_GUEST_MEMFD));
-> +
-> +       page_size =3D getpagesize();
-> +       total_size =3D page_size * 4;
-> +
-> +       vm =3D vm_create_barebones();
-> +
-> +       test_create_guest_memfd_invalid(vm);
-> +       test_create_guest_memfd_multiple(vm);
-> +
-> +       fd =3D vm_create_guest_memfd(vm, total_size, 0);
-> +
-> +       test_file_read_write(fd);
-> +       test_mmap(fd, page_size);
-> +       test_file_size(fd, page_size, total_size);
-> +       test_fallocate(fd, page_size, total_size);
-> +       test_invalid_punch_hole(fd, page_size, total_size);
-> +
-> +       close(fd);
-> +}
-> --
-> 2.39.1
->
->
