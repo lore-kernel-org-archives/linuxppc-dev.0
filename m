@@ -4,93 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 144A8C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 13:35:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB4E8C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 12:55:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ndwJHnCB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=1jUCN1tq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SPq3T4ypnz3cQT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 00:35:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SPp9T1JnTz3cT3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Nov 2023 23:55:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ndwJHnCB;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=1jUCN1tq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::f2e; helo=mail-qv1-xf2e.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com [IPv6:2607:f8b0:4864:20::f2e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPq2S4h0Yz30fD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2023 00:34:39 +1100 (AEDT)
-Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3A7DMfdV027040;
-	Tue, 7 Nov 2023 13:34:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=v3QkukCicnhLUxBi0c5Ls5rlqn8O3DTToO3Z55A5kTg=;
- b=ndwJHnCByIlKDBCsND4tEU4L2U5WwVHFB46dqPkWGs/dZQxf8JE0vJSy+XstM71CbYF7
- ntaI6QZlrCLJAK31/Bt1WigP6C2yCRm/3UKWsYTd/LZ1SZE8rnQ/mlJjW73FSxzHjNLA
- c+oYrxpzrcfRGiW4MCMYUgnNOQ27FZH0BNe2aR4CpccN9SxiXiEK0LryeZ4TOhpWk7/r
- fNF6IucoiJh/MBQhjKYvoqtEqg2lcCILmeeWEH93yacnCbngBoFN1s9BTSLu4mMFHN1S
- WyTNuUONMoxKTdOjbf5DV7o/WHLrS3P6NWTQ2jfoF3Fp2pBAy4oytcd/ezrAq7cExpMS 4Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u7p2k8aaa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Nov 2023 13:34:29 +0000
-Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3A7DNrkS030005;
-	Tue, 7 Nov 2023 13:34:28 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u7p2k8a9c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Nov 2023 13:34:28 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3A7C1kbU012794;
-	Tue, 7 Nov 2023 13:34:27 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3u609ss3tn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Nov 2023 13:34:27 +0000
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3A7DYQpx21562090
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 7 Nov 2023 13:34:27 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A77945805C;
-	Tue,  7 Nov 2023 13:34:26 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6BBCC5805A;
-	Tue,  7 Nov 2023 13:34:24 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.43.45.200])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  7 Nov 2023 13:34:24 +0000 (GMT)
-X-Mailer: emacs 29.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 29/37] powerpc/nohash: Replace pte_user() by pte_read()
-In-Reply-To: <02c4b724-f503-31ea-eb77-4b3cd6776fd8@csgroup.eu>
-References: <cover.1695659959.git.christophe.leroy@csgroup.eu>
- <72cbb5be595e9ef884140def73815ed0b0b37010.1695659959.git.christophe.leroy@csgroup.eu>
- <877cn39jyp.fsf@linux.ibm.com>
- <02c4b724-f503-31ea-eb77-4b3cd6776fd8@csgroup.eu>
-Date: Tue, 07 Nov 2023 19:04:22 +0530
-Message-ID: <87zfzpznz5.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SPp8X3XvNz3bxZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2023 23:54:51 +1100 (AEDT)
+Received: by mail-qv1-xf2e.google.com with SMTP id 6a1803df08f44-67131800219so38590416d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2023 04:54:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1699361687; x=1699966487; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FuFbqjfsVCp34XchBGKV0CWjcihho4T2q4FA5kjS7eU=;
+        b=1jUCN1tqmLwlkXM0IeWT0amOyDit022icDotDLW7cW1sJNnSGbawweYUGOeMgjNp02
+         BiHnMjn7dAhN2qocKEKL8rFt7bMsQJ+CJxO7VMKJ8LopASlDLAHasIqdsfNaeaCT4uJ1
+         ZMc/WPjQjLr9OGcj7IEjGZq4U83gREHenOluXvKp41hksEbeXDAKGMZJv6pmP87uLYkr
+         ZVMjK4WfhALNcN9cEvV8l+pcrD4RJm0dv6QZcrnRk/NNHUwKcdRzvnBpkb9IcEvTcDsN
+         JX0m9cN/ztIl/Acbs18CtM9CqRb6yYok3H+4wEN//0va58J3PXAs1HBkdWhbgrRTJG6u
+         ke9w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699361687; x=1699966487;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FuFbqjfsVCp34XchBGKV0CWjcihho4T2q4FA5kjS7eU=;
+        b=Vh7i8KoYcUesajawOEVGEak25TqU//LrHI5bHN+pdIkQiY7HkGK51oE68ozyAqGczZ
+         vZwo3Fz18G90XO4IllGO11Ztz6qPqexc0gq0RJ6J83tW9Lazcyz3eTL4DHoBhnP6TWIS
+         EO2E/jDNyutFSBxwuIbitAs20ZPp87Jp9Dxt41FR5MjVdPjeXDnHDOtK3Z1obi5ScG3n
+         y3aNlZHL4CDYiPWdXkWGILGKi669IGPeHpIrbAYKxBQTUoettmDdNEOzGgftckbzeMZl
+         eInwioUXAADCBrPrMmhmyeuE7xufrjabNdFBsa28UskU/fyQJvSNXXlZ1g+Qo9Qy8GnM
+         4Juw==
+X-Gm-Message-State: AOJu0Yziswe7ZhGml/+z896L3WJtGgTKOhUn3/zSyubWzzi7aalcJt3A
+	dLoa1gJ6lJVdvNS9mS5BV/YYg0adzUyLiwrjvuNjmg==
+X-Google-Smtp-Source: AGHT+IHS9JUkEkC/BybEMf4UmdGXo/DmXLNK4bOT/jrKIAqRMkLyM4gXD6uMK1OzLS09666PL8dXekXtndn5vIwFZqQ=
+X-Received: by 2002:a05:6214:260c:b0:66f:bb36:9a51 with SMTP id
+ gu12-20020a056214260c00b0066fbb369a51mr33614248qvb.36.1699361687221; Tue, 07
+ Nov 2023 04:54:47 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-31-pbonzini@redhat.com>
+In-Reply-To: <20231105163040.14904-31-pbonzini@redhat.com>
+From: Fuad Tabba <tabba@google.com>
+Date: Tue, 7 Nov 2023 12:54:10 +0000
+Message-ID: <CA+EHjTyZoLLv1nRfCEY4nHrbHadphn37jw3OPS17x1dAm_YUxA@mail.gmail.com>
+Subject: Re: [PATCH 30/34] KVM: selftests: Add KVM_SET_USER_MEMORY_REGION2 helper
+To: Paolo Bonzini <pbonzini@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: _yXYOuy1iDNyTTaHU1L3JHzj4hQSRrwv
-X-Proofpoint-ORIG-GUID: Dw-1ecWryLezBGYYr4IUtTKLD0JgQSOV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-11-07_04,2023-11-07_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=526
- priorityscore=1501 spamscore=0 lowpriorityscore=0 impostorscore=0
- malwarescore=0 phishscore=0 suspectscore=0 clxscore=1015 mlxscore=0
- adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2310240000 definitions=main-2311070112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,211 +75,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Vlastimil Babka <vbabka@suse.cz>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Sean Christopherson <seanjc@goog
+ le.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-
-> Le 31/10/2023 =C3=A0 11:15, Aneesh Kumar K.V a =C3=A9crit=C2=A0:
->> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
->>=20
->>> pte_user() is now only used in pte_access_permitted() to check
->>> access on vmas. User flag is cleared to make a page unreadable.
->>>
->>> So rename it pte_read() and remove pte_user() which isn't used
->>> anymore.
->>>
->>> For the time being it checks _PAGE_USER but in the near futur
->>> all plateforms will be converted to _PAGE_READ so lets support
->>> both for now.
->>>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->>> ---
->>>   arch/powerpc/include/asm/nohash/32/pte-8xx.h |  7 -------
->>>   arch/powerpc/include/asm/nohash/pgtable.h    | 13 +++++++------
->>>   arch/powerpc/mm/ioremap.c                    |  4 ----
->>>   3 files changed, 7 insertions(+), 17 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerp=
-c/include/asm/nohash/32/pte-8xx.h
->>> index 62c965a4511a..1ee38befd29a 100644
->>> --- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
->>> +++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
->>> @@ -112,13 +112,6 @@ static inline pte_t pte_mkwrite_novma(pte_t pte)
->>>=20=20=20
->>>   #define pte_mkwrite_novma pte_mkwrite_novma
->>>=20=20=20
->>> -static inline bool pte_user(pte_t pte)
->>> -{
->>> -	return !(pte_val(pte) & _PAGE_SH);
->>> -}
->>> -
->>> -#define pte_user pte_user
->>> -
->>>   static inline pte_t pte_mkhuge(pte_t pte)
->>>   {
->>>   	return __pte(pte_val(pte) | _PAGE_SPS | _PAGE_HUGE);
->>> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/i=
-nclude/asm/nohash/pgtable.h
->>> index ee677162f9e6..aba56fe3b1c6 100644
->>> --- a/arch/powerpc/include/asm/nohash/pgtable.h
->>> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
->>> @@ -160,9 +160,6 @@ static inline int pte_write(pte_t pte)
->>>   	return pte_val(pte) & _PAGE_WRITE;
->>>   }
->>>   #endif
->>> -#ifndef pte_read
->>> -static inline int pte_read(pte_t pte)		{ return 1; }
->>> -#endif
->>>   static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE=
-_DIRTY; }
->>>   static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAG=
-E_SPECIAL; }
->>>   static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE=
-_NONE_MASK) =3D=3D 0; }
->>> @@ -190,10 +187,14 @@ static inline int pte_young(pte_t pte)
->>>    * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
->>>    * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that cas=
-e too.
->>>    */
->>> -#ifndef pte_user
->>> -static inline bool pte_user(pte_t pte)
->>> +#ifndef pte_read
->>> +static inline bool pte_read(pte_t pte)
->>>   {
->>> +#ifdef _PAGE_READ
->>> +	return (pte_val(pte) & _PAGE_READ) =3D=3D _PAGE_READ;
->>> +#else
->>>   	return (pte_val(pte) & _PAGE_USER) =3D=3D _PAGE_USER;
->>> +#endif
->>>   }
->>>   #endif
->>>=20=20=20
->>> @@ -208,7 +209,7 @@ static inline bool pte_access_permitted(pte_t pte, =
-bool write)
->>>   	 * A read-only access is controlled by _PAGE_USER bit.
->>>   	 * We have _PAGE_READ set for WRITE and EXECUTE
->>>   	 */
->>> -	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
->>> +	if (!pte_present(pte) || !pte_read(pte))
->>>   		return false;
->>>=20=20=20
->>>   	if (write && !pte_write(pte))
->>> diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
->>> index 7823c38f09de..7b0afcabd89f 100644
->>> --- a/arch/powerpc/mm/ioremap.c
->>> +++ b/arch/powerpc/mm/ioremap.c
->>> @@ -50,10 +50,6 @@ void __iomem *ioremap_prot(phys_addr_t addr, size_t =
-size, unsigned long flags)
->>>   	if (pte_write(pte))
->>>   		pte =3D pte_mkdirty(pte);
->>>=20=20=20
->>> -	/* we don't want to let _PAGE_USER leak out */
->>> -	if (WARN_ON(pte_user(pte)))
->>> -		return NULL;
->>>
->>=20
->> This check is still valid right? I understand that we want to remove
->> _PAGE_USER. But then loosing this check is ok?
+On Sun, Nov 5, 2023 at 4:34=E2=80=AFPM Paolo Bonzini <pbonzini@redhat.com> =
+wrote:
 >
-> Well, we may have to think about it for book3s/64. For all others=20
-> _PAGE_USER is gone and replaced by a check of addresses versus TASK_SIZE.
+> From: Chao Peng <chao.p.peng@linux.intel.com>
 >
-> As ioremap() will map into vmalloc space that address is necesserally=20
-> correct.
->=20
+> Add helpers to invoke KVM_SET_USER_MEMORY_REGION2 directly so that tests
+> can validate of features that are unique to "version 2" of "set user
+> memory region", e.g. do negative testing on gmem_fd and gmem_offset.
 >
+> Provide a raw version as well as an assert-success version to reduce
+> the amount of boilerplate code need for basic usage.
+>
+> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+> Signed-off-by: Ackerley Tng <ackerleytng@google.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> Message-Id: <20231027182217.3615211-33-seanjc@google.com>
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+> ---
 
-We are adding the pte flags check not the map addr check there. Something l=
-ike this?
+Reviewed-by: Fuad Tabba <tabba@google.com>
+Tested-by: Fuad Tabba <tabba@google.com>
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/in=
-clude/asm/book3s/64/pgtable.h
-index 7c7de7b56df0..b053b86e0069 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1462,5 +1462,11 @@ static inline bool pud_is_leaf(pud_t pud)
- 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
- }
-=20
-+#define arch_ioremap_valid_pte arch_ioremap_valid_pte
-+static inline bool arch_ioremap_valid_pte(pte_t pte)
-+{
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
-+}
-+
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/in=
-clude/asm/nohash/32/pte-8xx.h
-index 137dc3c84e45..7b23d2543528 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-@@ -223,5 +223,11 @@ static inline pte_t ptep_get(pte_t *ptep)
-=20
- #endif
-=20
-+#define arch_ioremap_valid_pte arch_ioremap_valid_pte
-+static inline bool arch_ioremap_valid_pte(pte_t pte)
-+{
-+	return !!(pte_val(pte) & (_PAGE_SH))
-+}
-+
- #endif /* __KERNEL__ */
- #endif /*  _ASM_POWERPC_NOHASH_32_PTE_8xx_H */
-diff --git a/arch/powerpc/include/asm/nohash/pte-e500.h b/arch/powerpc/incl=
-ude/asm/nohash/pte-e500.h
-index f516f0b5b7a8..d31274178aa6 100644
---- a/arch/powerpc/include/asm/nohash/pte-e500.h
-+++ b/arch/powerpc/include/asm/nohash/pte-e500.h
-@@ -105,6 +105,13 @@ static inline pte_t pte_mkexec(pte_t pte)
- }
- #define pte_mkexec pte_mkexec
-=20
-+#define arch_ioremap_valid_pte arch_ioremap_valid_pte
-+static inline bool arch_ioremap_valid_pte(pte_t pte)
-+{
-+	return !(pte_val(pte) & (_PAGE_BAP_UR | _PAGE_BAP_UW | _PAGE_BAP_UX))
-+}
-+
-+
- #endif /* __ASSEMBLY__ */
-=20
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/=
-pgtable.h
-index 2bfb7dd3b49e..417abe5dcbd8 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -231,6 +231,13 @@ static inline bool arch_supports_memmap_on_memory(unsi=
-gned long vmemmap_size)
-=20
- #endif /* CONFIG_PPC64 */
-=20
-+#ifndef arch_ioremap_valid_pte
-+static inline book arch_ioremap_valid_pte(pte_t pte)
-+{
-+	return true;
-+}
-+#endif
-+
- #endif /* __ASSEMBLY__ */
-=20
- #endif /* _ASM_POWERPC_PGTABLE_H */
-diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
-index 7b0afcabd89f..1a39e698c3d4 100644
---- a/arch/powerpc/mm/ioremap.c
-+++ b/arch/powerpc/mm/ioremap.c
-@@ -50,6 +50,9 @@ void __iomem *ioremap_prot(phys_addr_t addr, size_t size,=
- unsigned long flags)
- 	if (pte_write(pte))
- 		pte =3D pte_mkdirty(pte);
-=20
-+	if (WARN_ON(!arch_ioremap_valid_pte(pte)))
-+		return NULL;
-+
- 	if (iowa_is_active())
- 		return iowa_ioremap(addr, size, pte_pgprot(pte), caller);
- 	return __ioremap_caller(addr, size, pte_pgprot(pte), caller);
-=20
+Cheers,
+/fuad
+
+>  .../selftests/kvm/include/kvm_util_base.h     |  7 +++++
+>  tools/testing/selftests/kvm/lib/kvm_util.c    | 29 +++++++++++++++++++
+>  2 files changed, 36 insertions(+)
+>
+> diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/=
+testing/selftests/kvm/include/kvm_util_base.h
+> index 157508c071f3..8ec122f5fcc8 100644
+> --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
+> +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+> @@ -522,6 +522,13 @@ void vm_set_user_memory_region(struct kvm_vm *vm, ui=
+nt32_t slot, uint32_t flags,
+>                                uint64_t gpa, uint64_t size, void *hva);
+>  int __vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32=
+_t flags,
+>                                 uint64_t gpa, uint64_t size, void *hva);
+> +void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32=
+_t flags,
+> +                               uint64_t gpa, uint64_t size, void *hva,
+> +                               uint32_t guest_memfd, uint64_t guest_memf=
+d_offset);
+> +int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint3=
+2_t flags,
+> +                                uint64_t gpa, uint64_t size, void *hva,
+> +                                uint32_t guest_memfd, uint64_t guest_mem=
+fd_offset);
+> +
+>  void vm_userspace_mem_region_add(struct kvm_vm *vm,
+>         enum vm_mem_backing_src_type src_type,
+>         uint64_t guest_paddr, uint32_t slot, uint64_t npages,
+> diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/s=
+elftests/kvm/lib/kvm_util.c
+> index 1c74310f1d44..d05d95cc3693 100644
+> --- a/tools/testing/selftests/kvm/lib/kvm_util.c
+> +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+> @@ -873,6 +873,35 @@ void vm_set_user_memory_region(struct kvm_vm *vm, ui=
+nt32_t slot, uint32_t flags,
+>                     errno, strerror(errno));
+>  }
+>
+> +int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint3=
+2_t flags,
+> +                                uint64_t gpa, uint64_t size, void *hva,
+> +                                uint32_t guest_memfd, uint64_t guest_mem=
+fd_offset)
+> +{
+> +       struct kvm_userspace_memory_region2 region =3D {
+> +               .slot =3D slot,
+> +               .flags =3D flags,
+> +               .guest_phys_addr =3D gpa,
+> +               .memory_size =3D size,
+> +               .userspace_addr =3D (uintptr_t)hva,
+> +               .guest_memfd =3D guest_memfd,
+> +               .guest_memfd_offset =3D guest_memfd_offset,
+> +       };
+> +
+> +       return ioctl(vm->fd, KVM_SET_USER_MEMORY_REGION2, &region);
+> +}
+> +
+> +void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32=
+_t flags,
+> +                               uint64_t gpa, uint64_t size, void *hva,
+> +                               uint32_t guest_memfd, uint64_t guest_memf=
+d_offset)
+> +{
+> +       int ret =3D __vm_set_user_memory_region2(vm, slot, flags, gpa, si=
+ze, hva,
+> +                                              guest_memfd, guest_memfd_o=
+ffset);
+> +
+> +       TEST_ASSERT(!ret, "KVM_SET_USER_MEMORY_REGION2 failed, errno =3D =
+%d (%s)",
+> +                   errno, strerror(errno));
+> +}
+> +
+> +
+>  /* FIXME: This thing needs to be ripped apart and rewritten. */
+>  void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type=
+,
+>                 uint64_t guest_paddr, uint32_t slot, uint64_t npages,
+> --
+> 2.39.1
+>
+>
