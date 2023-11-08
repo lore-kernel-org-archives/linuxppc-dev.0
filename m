@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7D06C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 21:47:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6267C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 21:49:14 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IVsQ8P2d;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZHXtATMu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SQdwp2TKtz3dSC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 08:47:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SQdyd3mcNz3dVX
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 08:49:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IVsQ8P2d;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZHXtATMu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQQDz0h7Hz3bsP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 00:00:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQQFX1b7Cz3cCh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 00:01:20 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 9D321CE10D2;
-	Wed,  8 Nov 2023 13:00:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C32BFC433C7;
-	Wed,  8 Nov 2023 13:00:31 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3DB56615CD;
+	Wed,  8 Nov 2023 13:01:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBCE6C433C8;
+	Wed,  8 Nov 2023 13:01:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1699448446;
-	bh=AsWQYHzG9sipb7sEr1JLntaPFi93f1pC9EyAKGQfMYU=;
+	s=k20201202; t=1699448477;
+	bh=+ok2KiNpPUMGFu8Hb2aaGxbpAXXqdF0nd2Kz+6ZsY30=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IVsQ8P2dntVCqOp290JiIjSeAiJc+VMO2pw8M5wXect2MBBRk+jOoldL7GU96ZMeA
-	 HuTE9Cemzwdgusy0jqMNAGrkZljxwDe/bga3g2m7k9eEuDPGq3KBsmaI6dmPkl/wlE
-	 2sJ8x5zpsds68NNoBAImql8aGu/sRESukQSJx2yQtofDYlD6qoDUcqJIsRbgMEAgD5
-	 pBWkZwSHNGyEjrYKkBLIDiDk/X/C6tnjuGAPAvyQxIP+Clu91AntgrZdhbNIFgmOBm
-	 NDqic6B3ehDAmy+JcPX7W+ZFcv2EJF1l6Qv/grGtIBAqxH+1Q7icIKEapV1+6GP4HA
-	 hAP9sw3MNsZDA==
+	b=ZHXtATMuavdncqkz87p+2tvJYAeqnoXQjQs5NE1bsCCOtbQdulJkAhoQ125PPohOz
+	 JhoB5oZ+lcpGsix9e17Q+ywyhAQ/oxjlmWB04WHi+5RV5DE/3JW1588ZlT0gC+91PI
+	 9bbRHw+timWeM1qty7E7aah+l9eyIkhUOTIIUGfQXNjJjdaPJb6An1/cy5mCl2SG8N
+	 clXs12SEadbHQWq+FTm4drR1JP6LZdB+NroSIF501ylowL0AoCsuwTPnL6UYPR5bKI
+	 LqWgv5tSTcSLAJc47F2i6FBa6cfKr3InGHxmZ66g1vbpQhxNObrMJJKegEsQWjlYxy
+	 XtBY3J7JluUkg==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	linux-kernel@vger.kernel.org,
 	Masahiro Yamada <masahiroy@kernel.org>,
 	linux-kbuild@vger.kernel.org
-Subject: [PATCH 07/22] [RESEND] sched: fair: move unused stub functions to header
-Date: Wed,  8 Nov 2023 13:58:28 +0100
-Message-Id: <20231108125843.3806765-8-arnd@kernel.org>
+Subject: [PATCH 09/22] [v2] arch: fix asm-offsets.c building with -Wmissing-prototypes
+Date: Wed,  8 Nov 2023 13:58:30 +0100
+Message-Id: <20231108125843.3806765-10-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231108125843.3806765-1-arnd@kernel.org>
 References: <20231108125843.3806765-1-arnd@kernel.org>
@@ -70,82 +70,192 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-These four functions have a normal definition for CONFIG_FAIR_GROUP_SCHED,
-and empty one that is only referenced when FAIR_GROUP_SCHED is disabled
-but CGROUP_SCHED is still enabled. If both are turned off, the functions
-are still defined but the misisng prototype causes a W=1 warning:
+When -Wmissing-prototypes is enabled, the some asm-offsets.c files fail
+to build, even when this warning is disabled in the Makefile for normal
+files:
 
-kernel/sched/fair.c:12544:6: error: no previous prototype for 'free_fair_sched_group'
-kernel/sched/fair.c:12546:5: error: no previous prototype for 'alloc_fair_sched_group'
-kernel/sched/fair.c:12553:6: error: no previous prototype for 'online_fair_sched_group'
-kernel/sched/fair.c:12555:6: error: no previous prototype for 'unregister_fair_sched_group'
+arch/sparc/kernel/asm-offsets.c:22:5: error: no previous prototype for 'sparc32_foo' [-Werror=missing-prototypes]
+arch/sparc/kernel/asm-offsets.c:48:5: error: no previous prototype for 'foo' [-Werror=missing-prototypes]
 
-Move the alternatives into the header as static inline functions with
-the correct combination of #ifdef checks to avoid the warning without
-adding even more complexity.
+Address this by making use of the same trick as x86, marking these
+functions as 'static __used' to avoid the need for a prototype
+by not drop them in dead-code elimination.
 
-[A different patch with the same description got applied by accident
- and was later reverted, but the original patch is still missing]
-
-Fixes: 7aa55f2a5902 ("sched/fair: Move unused stub functions to header")
+Suggested-by: Masahiro Yamada <masahiroy@kernel.org>
+Link: https://lore.kernel.org/lkml/CAK7LNARfEmFk0Du4Hed19eX_G6tUC5wG0zP+L1AyvdpOF4ybXQ@mail.gmail.com/
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-A patch with the same commit log has
+v2: rewrite using a different approach
 ---
- kernel/sched/fair.c  | 13 -------------
- kernel/sched/sched.h | 11 +++++++++++
- 2 files changed, 11 insertions(+), 13 deletions(-)
+ arch/alpha/kernel/asm-offsets.c     |  2 +-
+ arch/loongarch/kernel/asm-offsets.c | 26 +++++++++++++-------------
+ arch/sparc/kernel/asm-offsets.c     |  6 +++---
+ 3 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 2048138ce54b..82b82fa1d81b 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -12927,19 +12927,6 @@ int sched_group_set_idle(struct task_group *tg, long idle)
- 	return 0;
+diff --git a/arch/alpha/kernel/asm-offsets.c b/arch/alpha/kernel/asm-offsets.c
+index b121294bee26..bf1eedd27cf7 100644
+--- a/arch/alpha/kernel/asm-offsets.c
++++ b/arch/alpha/kernel/asm-offsets.c
+@@ -12,7 +12,7 @@
+ #include <linux/kbuild.h>
+ #include <asm/io.h>
+ 
+-void foo(void)
++static void __used foo(void)
+ {
+ 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
+ 	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
+diff --git a/arch/loongarch/kernel/asm-offsets.c b/arch/loongarch/kernel/asm-offsets.c
+index 173fe514fc9e..bee9f7a3108f 100644
+--- a/arch/loongarch/kernel/asm-offsets.c
++++ b/arch/loongarch/kernel/asm-offsets.c
+@@ -15,7 +15,7 @@
+ #include <asm/processor.h>
+ #include <asm/ftrace.h>
+ 
+-void output_ptreg_defines(void)
++static void __used output_ptreg_defines(void)
+ {
+ 	COMMENT("LoongArch pt_regs offsets.");
+ 	OFFSET(PT_R0, pt_regs, regs[0]);
+@@ -62,7 +62,7 @@ void output_ptreg_defines(void)
+ 	BLANK();
  }
  
--#else /* CONFIG_FAIR_GROUP_SCHED */
--
--void free_fair_sched_group(struct task_group *tg) { }
--
--int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
--{
--	return 1;
--}
--
--void online_fair_sched_group(struct task_group *tg) { }
--
--void unregister_fair_sched_group(struct task_group *tg) { }
--
- #endif /* CONFIG_FAIR_GROUP_SCHED */
+-void output_task_defines(void)
++static void __used output_task_defines(void)
+ {
+ 	COMMENT("LoongArch task_struct offsets.");
+ 	OFFSET(TASK_STATE, task_struct, __state);
+@@ -77,7 +77,7 @@ void output_task_defines(void)
+ 	BLANK();
+ }
  
+-void output_thread_info_defines(void)
++static void __used output_thread_info_defines(void)
+ {
+ 	COMMENT("LoongArch thread_info offsets.");
+ 	OFFSET(TI_TASK, thread_info, task);
+@@ -93,7 +93,7 @@ void output_thread_info_defines(void)
+ 	BLANK();
+ }
  
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 2e5a95486a42..8f5df5250b8d 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -436,10 +436,21 @@ static inline int walk_tg_tree(tg_visitor down, tg_visitor up, void *data)
+-void output_thread_defines(void)
++static void __used output_thread_defines(void)
+ {
+ 	COMMENT("LoongArch specific thread_struct offsets.");
+ 	OFFSET(THREAD_REG01, task_struct, thread.reg01);
+@@ -129,7 +129,7 @@ void output_thread_defines(void)
+ 	BLANK();
+ }
  
- extern int tg_nop(struct task_group *tg, void *data);
+-void output_thread_fpu_defines(void)
++static void __used output_thread_fpu_defines(void)
+ {
+ 	OFFSET(THREAD_FPR0, loongarch_fpu, fpr[0]);
+ 	OFFSET(THREAD_FPR1, loongarch_fpu, fpr[1]);
+@@ -170,7 +170,7 @@ void output_thread_fpu_defines(void)
+ 	BLANK();
+ }
  
-+#ifdef CONFIG_FAIR_GROUP_SCHED
- extern void free_fair_sched_group(struct task_group *tg);
- extern int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent);
- extern void online_fair_sched_group(struct task_group *tg);
- extern void unregister_fair_sched_group(struct task_group *tg);
-+#else
-+static inline void free_fair_sched_group(struct task_group *tg) { }
-+static inline int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
-+{
-+       return 1;
-+}
-+static inline void online_fair_sched_group(struct task_group *tg) { }
-+static inline void unregister_fair_sched_group(struct task_group *tg) { }
-+#endif
-+
- extern void init_tg_cfs_entry(struct task_group *tg, struct cfs_rq *cfs_rq,
- 			struct sched_entity *se, int cpu,
- 			struct sched_entity *parent);
+-void output_thread_lbt_defines(void)
++static void __used output_thread_lbt_defines(void)
+ {
+ 	OFFSET(THREAD_SCR0,  loongarch_lbt, scr0);
+ 	OFFSET(THREAD_SCR1,  loongarch_lbt, scr1);
+@@ -180,7 +180,7 @@ void output_thread_lbt_defines(void)
+ 	BLANK();
+ }
+ 
+-void output_mm_defines(void)
++static void __used output_mm_defines(void)
+ {
+ 	COMMENT("Size of struct page");
+ 	DEFINE(STRUCT_PAGE_SIZE, sizeof(struct page));
+@@ -212,7 +212,7 @@ void output_mm_defines(void)
+ 	BLANK();
+ }
+ 
+-void output_sc_defines(void)
++static void __used output_sc_defines(void)
+ {
+ 	COMMENT("Linux sigcontext offsets.");
+ 	OFFSET(SC_REGS, sigcontext, sc_regs);
+@@ -220,7 +220,7 @@ void output_sc_defines(void)
+ 	BLANK();
+ }
+ 
+-void output_signal_defines(void)
++static void __used output_signal_defines(void)
+ {
+ 	COMMENT("Linux signal numbers.");
+ 	DEFINE(_SIGHUP, SIGHUP);
+@@ -258,7 +258,7 @@ void output_signal_defines(void)
+ }
+ 
+ #ifdef CONFIG_SMP
+-void output_smpboot_defines(void)
++static void __used output_smpboot_defines(void)
+ {
+ 	COMMENT("Linux smp cpu boot offsets.");
+ 	OFFSET(CPU_BOOT_STACK, secondary_data, stack);
+@@ -268,7 +268,7 @@ void output_smpboot_defines(void)
+ #endif
+ 
+ #ifdef CONFIG_HIBERNATION
+-void output_pbe_defines(void)
++static void __used output_pbe_defines(void)
+ {
+ 	COMMENT("Linux struct pbe offsets.");
+ 	OFFSET(PBE_ADDRESS, pbe, address);
+@@ -280,7 +280,7 @@ void output_pbe_defines(void)
+ #endif
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-void output_fgraph_ret_regs_defines(void)
++static void __used output_fgraph_ret_regs_defines(void)
+ {
+ 	COMMENT("LoongArch fgraph_ret_regs offsets.");
+ 	OFFSET(FGRET_REGS_A0, fgraph_ret_regs, regs[0]);
+@@ -291,7 +291,7 @@ void output_fgraph_ret_regs_defines(void)
+ }
+ #endif
+ 
+-void output_kvm_defines(void)
++static void __used output_kvm_defines(void)
+ {
+ 	COMMENT("KVM/LoongArch Specific offsets.");
+ 
+diff --git a/arch/sparc/kernel/asm-offsets.c b/arch/sparc/kernel/asm-offsets.c
+index 5784f2df489a..3d9b9855dce9 100644
+--- a/arch/sparc/kernel/asm-offsets.c
++++ b/arch/sparc/kernel/asm-offsets.c
+@@ -19,14 +19,14 @@
+ #include <asm/hibernate.h>
+ 
+ #ifdef CONFIG_SPARC32
+-int sparc32_foo(void)
++static int __used sparc32_foo(void)
+ {
+ 	DEFINE(AOFF_thread_fork_kpsr,
+ 			offsetof(struct thread_struct, fork_kpsr));
+ 	return 0;
+ }
+ #else
+-int sparc64_foo(void)
++static int __used sparc64_foo(void)
+ {
+ #ifdef CONFIG_HIBERNATION
+ 	BLANK();
+@@ -45,7 +45,7 @@ int sparc64_foo(void)
+ }
+ #endif
+ 
+-int foo(void)
++static int __used foo(void)
+ {
+ 	BLANK();
+ 	DEFINE(AOFF_task_thread, offsetof(struct task_struct, thread));
 -- 
 2.39.2
 
