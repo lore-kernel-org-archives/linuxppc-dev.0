@@ -4,52 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F42CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 21:59:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05DA6C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 22:02:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eNsPlZDJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=TNZyI7bC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SQfBc5Db7z3wKy
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 08:59:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SQfFX5FXpz3vf7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 09:02:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eNsPlZDJ;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=TNZyI7bC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::c2c; helo=mail-oo1-xc2c.google.com; envelope-from=amoorthy@google.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc2c.google.com (mail-oo1-xc2c.google.com [IPv6:2607:f8b0:4864:20::c2c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQQK63Tb7z3cNV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 00:04:26 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id EF897B81C6B;
-	Wed,  8 Nov 2023 13:04:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9689C433C9;
-	Wed,  8 Nov 2023 13:04:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1699448663;
-	bh=kegMIl+DMnSqVAHEcD2O4VmQR89XR3LaLbspvw04Tng=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=eNsPlZDJtmEkAPMbBG5R4qhHte1qNJj5hivdXnhMnQEYxjWoPW4joiDtxOU68W74A
-	 xYdGgBhCICOT3rUTOeUYm0Hc/0LeKHn3J/Gekc8+KTnNnPXVjHuBsHwOaN69BFuuvL
-	 wN1TtfsrekXIsK010uWdjCGU5Ld5U7BPhDH+yIeFwi0DnKAb/YUl2oaW2yuZulDgnz
-	 pUDyk70EhXQiruCjugsUuCxET23RnQ3wREunYYRXMrJO64AqO0M74uvMADhK6JM0RJ
-	 aJLD9+iPedZDT4sOV2VEhIsUeQxuPkYhEBdNhQp3p2/UHNMVvYSvjwsw+1CsJtL+wm
-	 Cl+RPNk7mv6uQ==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	Masahiro Yamada <masahiroy@kernel.org>,
-	linux-kbuild@vger.kernel.org
-Subject: [PATCH 22/22] Makefile.extrawarn: turn on missing-prototypes globally
-Date: Wed,  8 Nov 2023 13:58:43 +0100
-Message-Id: <20231108125843.3806765-23-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20231108125843.3806765-1-arnd@kernel.org>
-References: <20231108125843.3806765-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQWYq4JJ6z2x9T
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 04:00:46 +1100 (AEDT)
+Received: by mail-oo1-xc2c.google.com with SMTP id 006d021491bc7-58686e94ad7so3845206eaf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Nov 2023 09:00:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1699462842; x=1700067642; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1LRS4MOzwpv79nEdyxX9W+Fzi/lnfht07XTGfi+1KqQ=;
+        b=TNZyI7bCONx47On3/lHyaZhkBHddgWTYFiHcrbIHOemNvvGaeDo2m4A5W3Mm4dyS0S
+         igGyGcmn6Rkz4EhUsClzQ0qaBbCAD9p2iHkEzbQG7NLSBQbyVZqA5avssnMUtw3l+u5h
+         wKK3ito3iyZxPVNdjagZUu2bkvkCVMLlQsNNg91mbAYxt9ChP9N7nhM1Jcve0mcWQGDM
+         uVAfbHm7p4qbFN/bPiFXjoFFXgNv+VKX9wyrJ7c5Sp27VSzKPAwdjbOvQQKKAwUyWUVe
+         voEbtYvYtzDD8oZrkwCmBx7QoSaVMH0aEvGvbUvCGr4pOptTRkw6nH4rtCpybAajf0JD
+         ht/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699462842; x=1700067642;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1LRS4MOzwpv79nEdyxX9W+Fzi/lnfht07XTGfi+1KqQ=;
+        b=XGTlxu+JxZG6kmGK7gS6l5fm35vWBcZwm4+oQcm0F113XfH5sKdb/bBXNSl3/FZ8It
+         iUmxFDSe8f/cWNtVZDzSh/m8Sbb0YYI+Ebk+eTpAAxxszgcOE0ePmCwG7psjAAlzS0SX
+         wlNup0Ge15trYU3/vBah+NVGO6JLZGWe66xY9hyRuaehex3eS/3KeHDzygkN4nSLNwKn
+         FeCIbUtC4hGuSSP7GmwRGs4DA9opFpkFqWmUzjOvxakZNtlpbqYOiQrq0Vw/ukdmHfMu
+         xZBXW7Dg7K94VRnAF3p1HaDFNu2CEgeaAACLO2cDIwAOjw+4mdONz0E6Z4mqlNQ0Txb3
+         Xeyg==
+X-Gm-Message-State: AOJu0YyfV735UtVaZx6rRgi7AiBqv/BYxs7DHXjb3fKciq8VjAUrfKq2
+	/Xkp7UBgpSX18tZz9eBqLpFR8E6FptGd6fJ32kWyDw==
+X-Google-Smtp-Source: AGHT+IFUowk4ELsOivnzaXxc0QlUV4Wvcfh03Hm5SSyMQjwcPTJCFQB+7xIvrXwxFUaSBNJXJhJv8dNqTjB0k78gAdI=
+X-Received: by 2002:a4a:bd87:0:b0:589:df75:2d83 with SMTP id
+ k7-20020a4abd87000000b00589df752d83mr1373195oop.1.1699462842423; Wed, 08 Nov
+ 2023 09:00:42 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-28-pbonzini@redhat.com>
+In-Reply-To: <20231105163040.14904-28-pbonzini@redhat.com>
+From: Anish Moorthy <amoorthy@google.com>
+Date: Wed, 8 Nov 2023 09:00:00 -0800
+Message-ID: <CAF7b7mrGYuyjyEPAesYzZ6+KDuNAmvRxEonT7JC8NDPsSP+qDA@mail.gmail.com>
+Subject: Re: [PATCH 27/34] KVM: selftests: Introduce VM "shape" to allow tests
+ to specify the VM type
+To: Paolo Bonzini <pbonzini@redhat.com>, Sean Christopherson <seanjc@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Thu, 09 Nov 2023 08:41:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,79 +77,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, x86@kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, Guo Ren <guoren@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ard Biesheuvel <ardb@kernel.org>, linux-bcachefs@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen N. Rao" <naveen.n.rao@lin
- ux.ibm.com>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, Rich Felker <dalias@libc.org>, linux-trace-kernel@vger.kernel.org, Palmer Dabbelt <palmer@rivosinc.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Richard Henderson <richard.henderson@linaro.org>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, linux-csky@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infra
- dead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, linux-usb@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-alpha@vger.kernel.org, linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, l
+ inux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+This commit breaks the arm64 selftests build btw: looks like a simple overs=
+ight?
 
-Over the years we went from > 1000 of warnings to under 100 earlier
-this year, and I sent patches to address all the ones that I saw with
-compile testing randcom configs on arm64, arm and x86 kernels. This is a
-really useful warning, as it catches real bugs when there are mismatched
-prototypes. In particular with kernel control flow integrity enabled,
-those are no longer allowed.
-
-I have done extensive testing to ensure that there are no new build
-errors or warnings on any configuration of x86, arm and arm64 builds.
-I also made sure that at least the both the normal defconfig and an
-allmodconfig build is clean for arc, csky, loongarch, m68k, microblaze,
-openrisc, parisc, powerpc, riscv, s390, and xtensa, with the respective
-maintainers doing most of the patches.
-
-At this point, there are five architectures with a number of known
-regressions: alpha, nios2, mips, sh and sparc. In the previous version
-of this patch, I had turned off the missing prototype warnings for the 15
-architectures that still had issues, but since there are only five left,
-I think we can leave the rest to the maintainers (Cc'd here) as well.
-
-Cc: Richard Henderson <richard.henderson@linaro.org>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matt Turner <mattst88@gmail.com>
-Cc: Dinh Nguyen <dinguyen@kernel.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Link: https://lore.kernel.org/lkml/20230810141947.1236730-1-arnd@kernel.org/
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com> # RISC-V
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- scripts/Makefile.extrawarn | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
-index 2fe6f2828d37..c9725685aa76 100644
---- a/scripts/Makefile.extrawarn
-+++ b/scripts/Makefile.extrawarn
-@@ -17,6 +17,8 @@ KBUILD_CFLAGS += -Wno-format-security
- KBUILD_CFLAGS += -Wno-trigraphs
- KBUILD_CFLAGS += $(call cc-disable-warning,frame-address,)
- KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
-+KBUILD_CFLAGS += -Wmissing-declarations
-+KBUILD_CFLAGS += -Wmissing-prototypes
- 
- ifneq ($(CONFIG_FRAME_WARN),0)
- KBUILD_CFLAGS += -Wframe-larger-than=$(CONFIG_FRAME_WARN)
-@@ -95,10 +97,8 @@ export KBUILD_EXTRA_WARN
- ifneq ($(findstring 1, $(KBUILD_EXTRA_WARN)),)
- 
- KBUILD_CFLAGS += -Wextra -Wunused -Wno-unused-parameter
--KBUILD_CFLAGS += -Wmissing-declarations
- KBUILD_CFLAGS += $(call cc-option, -Wrestrict)
- KBUILD_CFLAGS += -Wmissing-format-attribute
--KBUILD_CFLAGS += -Wmissing-prototypes
- KBUILD_CFLAGS += -Wold-style-definition
- KBUILD_CFLAGS += -Wmissing-include-dirs
- KBUILD_CFLAGS += $(call cc-option, -Wunused-but-set-variable)
--- 
-2.39.2
-
+$ cd ${LINUX_ROOT}/tools/testing/selftests/kvm
+$ CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make
+# ...
+aarch64/page_fault_test.c: In function =E2=80=98run_test=E2=80=99:
+aarch64/page_fault_test.c:708:28: error: incompatible type for
+argument 1 of =E2=80=98____vm_create=E2=80=99
+  708 |         vm =3D ____vm_create(mode);
+         |                            ^~~~
+         |                            |
+         |                            enum vm_guest_mode
+In file included from include/kvm_util.h:10,
+                 from aarch64/page_fault_test.c:14:
+include/kvm_util_base.h:806:46: note: expected =E2=80=98struct vm_shape=E2=
+=80=99 but
+argument is of type =E2=80=98enum vm_guest_mode=E2=80=99
+  806 | struct kvm_vm *____vm_create(struct vm_shape shape);
