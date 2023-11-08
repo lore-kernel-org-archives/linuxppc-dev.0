@@ -4,59 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E626C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 20:05:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49535C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 20:39:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XOhsS+eL;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y4718RXG;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SQbg63dRLz3cTQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 07:05:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SQcQM5d03z3cSd
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 07:39:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XOhsS+eL;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y4718RXG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQbf53RrZz3cR9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 07:04:45 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id C26EDB81BDF;
-	Wed,  8 Nov 2023 20:04:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E43DAC433C8;
-	Wed,  8 Nov 2023 20:04:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1699473880;
-	bh=qhUpYSukAlblxid3F/W0xizAg/bkGWOSp+MdQC9RSsw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=XOhsS+eL+8m5YpKIsMJuRqU/oI3wEHeZX8FVzQjzYht3WTCF+HjaZNnZpg18KSKrx
-	 2LSA4vsnV+P36SAglTSoapW1iVGGZw0MTTNQI36gSHSqR3lC+4QBqkTsA8Fr/2hKVr
-	 /lTSNRK1zWPZXKsFH2uAuEholA8QqAmLkSQHkMLEEIND4R/Q6R1FYHIZ33qucFWYHx
-	 ebZAC2fTZx1DjZdSV+iPZSSzCqieNjVTr8v9VOsj/rjjWGRYLPdYCT+oB1eWikVp7S
-	 zrTeTu3GHxxbLTAy9BaQdBt4ECZFu4mIhK77l0s2byG2uKjLLmI2eJ5nohfHJ+kWpM
-	 J2OpqGZoUqNEg==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 7ADD24035D; Wed,  8 Nov 2023 17:04:37 -0300 (-03)
-Date: Wed, 8 Nov 2023 17:04:37 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] perf tests test_arm_coresight: Fix the shellcheck
- warning in latest test_arm_coresight.sh
-Message-ID: <ZUvp1YPdOWJcLkyJ@kernel.org>
-References: <20230929041133.95355-1-atrajeev@linux.vnet.ibm.com>
- <20230929041133.95355-2-atrajeev@linux.vnet.ibm.com>
- <552cbde4-6077-d5a4-251e-6c77786e1b31@arm.com>
- <3AFF6660-5A0E-4028-BA5A-D18CBAC8E1A4@linux.vnet.ibm.com>
- <ZUleKdUrbR9oFVW4@kernel.org>
- <8DEA17FB-DC0B-41F9-800D-4B74371F4849@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8DEA17FB-DC0B-41F9-800D-4B74371F4849@linux.vnet.ibm.com>
-X-Url: http://acmel.wordpress.com
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQcPP2h1yz3c56
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 07:38:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1699475929; x=1731011929;
+  h=date:from:to:cc:subject:message-id;
+  bh=T9T9y16utYLFSgf4og6lhGRvo4S0o6WQDuJcCY3w3P4=;
+  b=Y4718RXGV9LIscLPToafGHBGvxVCv3b546p7DFj67tsUHt3OUIi7aukP
+   d+5n8MP8thtkrbT9QREjhJ7b9nPoFJXjmbTTeXD5Oueq/YafhqpgGgH0j
+   nP1YSdHHsS4B8ETUyPWH0iprxH8PFAVUatOEJJqJpVCrTyVIjHJeOdMXK
+   DjXwUN9u45eiSati/UVA0xgSaMWKExL0fVc1qxZgaEdDZ2y1KRTx/ro7I
+   Jva03tKpPfNWom5lk5QABfnrKRq04LR+hzUCQk7wATJNRJnYOB6wAbflb
+   Aephm9ub9mfr0Upc48pFxpGBbKI4qWl4A9Jq+K5v9Y/EXIEVlzD2l9a2S
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10888"; a="456349700"
+X-IronPort-AV: E=Sophos;i="6.03,287,1694761200"; 
+   d="scan'208";a="456349700"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2023 12:38:43 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10888"; a="936625671"
+X-IronPort-AV: E=Sophos;i="6.03,287,1694761200"; 
+   d="scan'208";a="936625671"
+Received: from lkp-server01.sh.intel.com (HELO 17d9e85e5079) ([10.239.97.150])
+  by orsmga005.jf.intel.com with ESMTP; 08 Nov 2023 12:38:41 -0800
+Received: from kbuild by 17d9e85e5079 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1r0pJv-0008Am-1K;
+	Wed, 08 Nov 2023 20:38:39 +0000
+Date: Thu, 09 Nov 2023 04:38:16 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD REGRESSION
+ 11121f9bdf3d1f7a04a87381df18587b9fe8f908
+Message-ID: <202311090408.FMZEwgT7-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,37 +66,191 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, "coresight@lists.linaro.org" <coresight@lists.linaro.org>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users <linux-perf-users@vger.kernel.org>, James Clark <james.clark@arm.com>, Jiri Olsa <jolsa@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Tue, Nov 07, 2023 at 12:08:25PM +0530, Athira Rajeev escreveu:
-> > On 07-Nov-2023, at 3:14 AM, Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
-> >>> Reviewed-by: James Clark <james.clark@arm.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 11121f9bdf3d1f7a04a87381df18587b9fe8f908  Automatic merge of 'master' into merge (2023-11-07 22:10)
 
-> > Some are not applying, even after b4 picking up v2
+Error/Warning ids grouped by kconfigs:
 
-> > Total patches: 3
+gcc_recent_errors
+|-- sh-allmodconfig
+|   |-- sh4-linux-gcc:internal-compiler-error:Segmentation-fault-signal-terminated-program-cc1
+|   |-- standard-input:Error:expected-symbol-name
+|   `-- standard-input:Error:pcrel-too-far
+`-- sh-allyesconfig
+    |-- sh4-linux-gcc:internal-compiler-error:Segmentation-fault-signal-terminated-program-cc1
+    |-- standard-input:Error:expected-symbol-name
+    `-- standard-input:Error:pcrel-too-far
 
-> > Cover: ./v2_20231013_atrajeev_fix_for_shellcheck_issues_with_latest_scripts_in_tests_shell.cover
-> > Link: https://lore.kernel.org/r/20231013073021.99794-1-atrajeev@linux.vnet.ibm.com
-> > Base: not specified
-> >       git am ./v2_20231013_atrajeev_fix_for_shellcheck_issues_with_latest_scripts_in_tests_shell.mbx
-> > ⬢[acme@toolbox perf-tools-next]$        git am ./v2_20231013_atrajeev_fix_for_shellcheck_issues_with_latest_scripts_in_tests_shell.mbx
-> > Applying: tools/perf/tests Ignore the shellcheck SC2046 warning in lock_contention
-> > error: patch failed: tools/perf/tests/shell/lock_contention.sh:33
-> > error: tools/perf/tests/shell/lock_contention.sh: patch does not apply
-> > Patch failed at 0001 tools/perf/tests Ignore the shellcheck SC2046 warning in lock_contention
-> > hint: Use 'git am --show-current-patch=diff' to see the failed patch
-> > When you have resolved this problem, run "git am --continue".
-> > If you prefer to skip this patch, run "git am --skip" instead.
-> > To restore the original branch and stop patching, run "git am --abort".
-> > ⬢[acme@toolbox perf-tools-next]$ git am --abort
-> > ⬢[acme@toolbox perf-tools-next]$
- 
-> The patch is picked up : https://lore.kernel.org/all/169757198796.167943.10552920255799914362.b4-ty@kernel.org/ .
-> Thanks for looking into.
+elapsed time: 1916m
 
-Thanks for checking, my mistake then,
+configs tested: 159
+configs skipped: 2
 
-- Arnaldo
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20231108   gcc  
+arc                   randconfig-002-20231108   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                   randconfig-001-20231108   gcc  
+arm                   randconfig-002-20231108   gcc  
+arm                   randconfig-003-20231108   gcc  
+arm                   randconfig-004-20231108   gcc  
+arm64                            allmodconfig   gcc  
+arm64                             allnoconfig   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                 randconfig-001-20231108   gcc  
+arm64                 randconfig-002-20231108   gcc  
+arm64                 randconfig-003-20231108   gcc  
+arm64                 randconfig-004-20231108   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+csky                  randconfig-001-20231108   gcc  
+csky                  randconfig-002-20231108   gcc  
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20231108   gcc  
+i386         buildonly-randconfig-002-20231108   gcc  
+i386         buildonly-randconfig-003-20231108   gcc  
+i386         buildonly-randconfig-004-20231108   gcc  
+i386         buildonly-randconfig-005-20231108   gcc  
+i386         buildonly-randconfig-006-20231108   gcc  
+i386                                defconfig   gcc  
+i386                  randconfig-001-20231108   gcc  
+i386                  randconfig-002-20231108   gcc  
+i386                  randconfig-003-20231108   gcc  
+i386                  randconfig-004-20231108   gcc  
+i386                  randconfig-005-20231108   gcc  
+i386                  randconfig-006-20231108   gcc  
+i386                  randconfig-011-20231108   gcc  
+i386                  randconfig-012-20231108   gcc  
+i386                  randconfig-013-20231108   gcc  
+i386                  randconfig-014-20231108   gcc  
+i386                  randconfig-015-20231108   gcc  
+i386                  randconfig-016-20231108   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                        allyesconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20231108   gcc  
+loongarch             randconfig-002-20231108   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                             allmodconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                 randconfig-001-20231108   gcc  
+nios2                 randconfig-002-20231108   gcc  
+openrisc                         allmodconfig   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc                randconfig-001-20231108   gcc  
+parisc                randconfig-002-20231108   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   gcc  
+powerpc               randconfig-001-20231108   gcc  
+powerpc               randconfig-002-20231108   gcc  
+powerpc               randconfig-003-20231108   gcc  
+powerpc64             randconfig-001-20231108   gcc  
+powerpc64             randconfig-002-20231108   gcc  
+powerpc64             randconfig-003-20231108   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                 randconfig-001-20231108   gcc  
+riscv                 randconfig-002-20231108   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                              allnoconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                  randconfig-001-20231108   gcc  
+s390                  randconfig-002-20231108   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sh                    randconfig-001-20231108   gcc  
+sh                    randconfig-002-20231108   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                 randconfig-001-20231108   gcc  
+sparc                 randconfig-002-20231108   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+sparc64               randconfig-001-20231108   gcc  
+sparc64               randconfig-002-20231108   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                    randconfig-001-20231108   gcc  
+um                    randconfig-002-20231108   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-001-20231108   gcc  
+x86_64       buildonly-randconfig-002-20231108   gcc  
+x86_64       buildonly-randconfig-003-20231108   gcc  
+x86_64       buildonly-randconfig-004-20231108   gcc  
+x86_64       buildonly-randconfig-005-20231108   gcc  
+x86_64       buildonly-randconfig-006-20231108   gcc  
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20231108   gcc  
+x86_64                randconfig-002-20231108   gcc  
+x86_64                randconfig-003-20231108   gcc  
+x86_64                randconfig-004-20231108   gcc  
+x86_64                randconfig-005-20231108   gcc  
+x86_64                randconfig-006-20231108   gcc  
+x86_64                randconfig-011-20231108   gcc  
+x86_64                randconfig-012-20231108   gcc  
+x86_64                randconfig-013-20231108   gcc  
+x86_64                randconfig-014-20231108   gcc  
+x86_64                randconfig-015-20231108   gcc  
+x86_64                randconfig-016-20231108   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa                randconfig-001-20231108   gcc  
+xtensa                randconfig-002-20231108   gcc  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
