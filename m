@@ -4,57 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49535C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 20:39:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED24CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Nov 2023 21:42:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y4718RXG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hdJmX6Tf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SQcQM5d03z3cSd
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 07:39:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SQdpM0D7Mz3c01
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 08:42:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y4718RXG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hdJmX6Tf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQcPP2h1yz3c56
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 07:38:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1699475929; x=1731011929;
-  h=date:from:to:cc:subject:message-id;
-  bh=T9T9y16utYLFSgf4og6lhGRvo4S0o6WQDuJcCY3w3P4=;
-  b=Y4718RXGV9LIscLPToafGHBGvxVCv3b546p7DFj67tsUHt3OUIi7aukP
-   d+5n8MP8thtkrbT9QREjhJ7b9nPoFJXjmbTTeXD5Oueq/YafhqpgGgH0j
-   nP1YSdHHsS4B8ETUyPWH0iprxH8PFAVUatOEJJqJpVCrTyVIjHJeOdMXK
-   DjXwUN9u45eiSati/UVA0xgSaMWKExL0fVc1qxZgaEdDZ2y1KRTx/ro7I
-   Jva03tKpPfNWom5lk5QABfnrKRq04LR+hzUCQk7wATJNRJnYOB6wAbflb
-   Aephm9ub9mfr0Upc48pFxpGBbKI4qWl4A9Jq+K5v9Y/EXIEVlzD2l9a2S
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10888"; a="456349700"
-X-IronPort-AV: E=Sophos;i="6.03,287,1694761200"; 
-   d="scan'208";a="456349700"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2023 12:38:43 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10888"; a="936625671"
-X-IronPort-AV: E=Sophos;i="6.03,287,1694761200"; 
-   d="scan'208";a="936625671"
-Received: from lkp-server01.sh.intel.com (HELO 17d9e85e5079) ([10.239.97.150])
-  by orsmga005.jf.intel.com with ESMTP; 08 Nov 2023 12:38:41 -0800
-Received: from kbuild by 17d9e85e5079 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1r0pJv-0008Am-1K;
-	Wed, 08 Nov 2023 20:38:39 +0000
-Date: Thu, 09 Nov 2023 04:38:16 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD REGRESSION
- 11121f9bdf3d1f7a04a87381df18587b9fe8f908
-Message-ID: <202311090408.FMZEwgT7-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQQC42D1tz3c40
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2023 23:59:12 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 74CD6CE10CA;
+	Wed,  8 Nov 2023 12:59:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 397CEC433C7;
+	Wed,  8 Nov 2023 12:58:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1699448345;
+	bh=mCKY7B1NUlBI0NuotW3ba1ch9AEY8/W0fCgPLr2mO8c=;
+	h=From:To:Cc:Subject:Date:From;
+	b=hdJmX6TfcykocaTr5OrRW3LbdILEh0itmqr9P21mwGlg6MNeeNmqG3lC80LfvXy6g
+	 VtUPAhXRHS6nGjOfsUwjv4hGM05Gke0gSh30zzdYv1zPY1K/pw/ewTT8Yp/pFtHxgA
+	 CqlBBLPXwAyP7VR93PLJDWmmif9jbReJ7JLAXEI1K/cSXYfGNGTUY0jhDW7DQKkLkv
+	 3fLnVWbGfEdWbODApTbzfegitWoXOm7yzXOFjF2nGEbrSRbNtAzwlzPk6EFXSXbWOk
+	 /dWaNDETcJ9PdXN+Cgh02YBuiyQScJCQc1vmxaWB0AVd7HB7HFVPq6/I5aemCJlBbV
+	 L+fUTsc/kSZfw==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	Masahiro Yamada <masahiroy@kernel.org>,
+	linux-kbuild@vger.kernel.org
+Subject: [PATCH 00/22] -Wmissing-prototype warning fixes
+Date: Wed,  8 Nov 2023 13:58:21 +0100
+Message-Id: <20231108125843.3806765-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 09 Nov 2023 08:41:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,191 +61,209 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, x86@kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, Guo Ren <guoren@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ard Biesheuvel <ardb@kernel.org>, linux-bcachefs@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Matt Turner <mattst88@gmail.com>
+ , linux-snps-arc@lists.infradead.org, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, linux-csky@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org, Sudip Mukherjee <sudipm.mukherj
+ ee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, linux-usb@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-alpha@vger.kernel.org, linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>, Al Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 11121f9bdf3d1f7a04a87381df18587b9fe8f908  Automatic merge of 'master' into merge (2023-11-07 22:10)
+From: Arnd Bergmann <arnd@arndb.de>
 
-Error/Warning ids grouped by kconfigs:
+I slightly dropped the ball on this since last sending the series in
+August, but a number of warning fixes have made it into the kernel in
+the meantime, both from my earlier submission and from architecture
+maintainers.
 
-gcc_recent_errors
-|-- sh-allmodconfig
-|   |-- sh4-linux-gcc:internal-compiler-error:Segmentation-fault-signal-terminated-program-cc1
-|   |-- standard-input:Error:expected-symbol-name
-|   `-- standard-input:Error:pcrel-too-far
-`-- sh-allyesconfig
-    |-- sh4-linux-gcc:internal-compiler-error:Segmentation-fault-signal-terminated-program-cc1
-    |-- standard-input:Error:expected-symbol-name
-    `-- standard-input:Error:pcrel-too-far
+I have none patches that remain from the previous submission, with
+two of them reworked according to comments. The additional patches
+are from more testing across architectures and configurations that
+I had previously missed.
 
-elapsed time: 1916m
+At least one patch is for a newly added warning in recent kernels.
 
-configs tested: 159
-configs skipped: 2
+Regarding the regressions in terms of added warnings, there are
+now only five architectures left that add warnings (alpha, mips,
+nios2, sh and sparc) rather than 15, so I think we can apply
+the Kbuild change directly and have the architecture maintainers
+take care of the warnings just like the others did already.
 
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allmodconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                   randconfig-001-20231108   gcc  
-arc                   randconfig-002-20231108   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                   randconfig-001-20231108   gcc  
-arm                   randconfig-002-20231108   gcc  
-arm                   randconfig-003-20231108   gcc  
-arm                   randconfig-004-20231108   gcc  
-arm64                            allmodconfig   gcc  
-arm64                             allnoconfig   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                 randconfig-001-20231108   gcc  
-arm64                 randconfig-002-20231108   gcc  
-arm64                 randconfig-003-20231108   gcc  
-arm64                 randconfig-004-20231108   gcc  
-csky                             allmodconfig   gcc  
-csky                              allnoconfig   gcc  
-csky                             allyesconfig   gcc  
-csky                                defconfig   gcc  
-csky                  randconfig-001-20231108   gcc  
-csky                  randconfig-002-20231108   gcc  
-i386                             allmodconfig   gcc  
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-001-20231108   gcc  
-i386         buildonly-randconfig-002-20231108   gcc  
-i386         buildonly-randconfig-003-20231108   gcc  
-i386         buildonly-randconfig-004-20231108   gcc  
-i386         buildonly-randconfig-005-20231108   gcc  
-i386         buildonly-randconfig-006-20231108   gcc  
-i386                                defconfig   gcc  
-i386                  randconfig-001-20231108   gcc  
-i386                  randconfig-002-20231108   gcc  
-i386                  randconfig-003-20231108   gcc  
-i386                  randconfig-004-20231108   gcc  
-i386                  randconfig-005-20231108   gcc  
-i386                  randconfig-006-20231108   gcc  
-i386                  randconfig-011-20231108   gcc  
-i386                  randconfig-012-20231108   gcc  
-i386                  randconfig-013-20231108   gcc  
-i386                  randconfig-014-20231108   gcc  
-i386                  randconfig-015-20231108   gcc  
-i386                  randconfig-016-20231108   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                        allyesconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch             randconfig-001-20231108   gcc  
-loongarch             randconfig-002-20231108   gcc  
-m68k                             allmodconfig   gcc  
-m68k                              allnoconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-microblaze                       allmodconfig   gcc  
-microblaze                        allnoconfig   gcc  
-microblaze                       allyesconfig   gcc  
-microblaze                          defconfig   gcc  
-mips                             allmodconfig   gcc  
-mips                              allnoconfig   gcc  
-mips                             allyesconfig   gcc  
-nios2                            allmodconfig   gcc  
-nios2                             allnoconfig   gcc  
-nios2                            allyesconfig   gcc  
-nios2                               defconfig   gcc  
-nios2                 randconfig-001-20231108   gcc  
-nios2                 randconfig-002-20231108   gcc  
-openrisc                         allmodconfig   gcc  
-openrisc                          allnoconfig   gcc  
-openrisc                         allyesconfig   gcc  
-openrisc                            defconfig   gcc  
-parisc                           allmodconfig   gcc  
-parisc                            allnoconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc                randconfig-001-20231108   gcc  
-parisc                randconfig-002-20231108   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                          allyesconfig   gcc  
-powerpc               randconfig-001-20231108   gcc  
-powerpc               randconfig-002-20231108   gcc  
-powerpc               randconfig-003-20231108   gcc  
-powerpc64             randconfig-001-20231108   gcc  
-powerpc64             randconfig-002-20231108   gcc  
-powerpc64             randconfig-003-20231108   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                 randconfig-001-20231108   gcc  
-riscv                 randconfig-002-20231108   gcc  
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                              allnoconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                  randconfig-001-20231108   gcc  
-s390                  randconfig-002-20231108   gcc  
-sh                               allmodconfig   gcc  
-sh                                allnoconfig   gcc  
-sh                               allyesconfig   gcc  
-sh                                  defconfig   gcc  
-sh                    randconfig-001-20231108   gcc  
-sh                    randconfig-002-20231108   gcc  
-sparc                            allmodconfig   gcc  
-sparc                             allnoconfig   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                 randconfig-001-20231108   gcc  
-sparc                 randconfig-002-20231108   gcc  
-sparc64                          allmodconfig   gcc  
-sparc64                          allyesconfig   gcc  
-sparc64                             defconfig   gcc  
-sparc64               randconfig-001-20231108   gcc  
-sparc64               randconfig-002-20231108   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                    randconfig-001-20231108   gcc  
-um                    randconfig-002-20231108   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-001-20231108   gcc  
-x86_64       buildonly-randconfig-002-20231108   gcc  
-x86_64       buildonly-randconfig-003-20231108   gcc  
-x86_64       buildonly-randconfig-004-20231108   gcc  
-x86_64       buildonly-randconfig-005-20231108   gcc  
-x86_64       buildonly-randconfig-006-20231108   gcc  
-x86_64                              defconfig   gcc  
-x86_64                randconfig-001-20231108   gcc  
-x86_64                randconfig-002-20231108   gcc  
-x86_64                randconfig-003-20231108   gcc  
-x86_64                randconfig-004-20231108   gcc  
-x86_64                randconfig-005-20231108   gcc  
-x86_64                randconfig-006-20231108   gcc  
-x86_64                randconfig-011-20231108   gcc  
-x86_64                randconfig-012-20231108   gcc  
-x86_64                randconfig-013-20231108   gcc  
-x86_64                randconfig-014-20231108   gcc  
-x86_64                randconfig-015-20231108   gcc  
-x86_64                randconfig-016-20231108   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa                randconfig-001-20231108   gcc  
-xtensa                randconfig-002-20231108   gcc  
+As before, my preference would be for the patches to make it
+through the respective subsystem maintainer trees, though I
+can apply the architecture specific ones to the asm-generic
+tree as well.
+
+Sorry for posting these during the merge window, I wanted to
+get them out before LPC so we can have them in linux-next
+as early as possible.
+
+    Arnd
+
+Link: https://lore.kernel.org/lkml/20230810141947.1236730-1-arnd@kernel.org/
+
+Arnd Bergmann (22):
+  [RESEND^2] ida: make 'ida_dump' static
+  [RESEND^2] jffs2: mark __jffs2_dbg_superblock_counts() static
+  [RESEND] kprobes: unify kprobes_exceptions_nofify() prototypes
+  [RESEND] time: make sysfs_get_uname() function visible in header
+  [RESEND] parport: gsc: mark init function static
+  [RESEND] stackleak: add declarations for global functions
+  [RESEND] sched: fair: move unused stub functions to header
+  [v2] arch: consolidate arch_irq_work_raise prototypes
+  [v2] arch: fix asm-offsets.c building with -Wmissing-prototypes
+  microblaze: include linux/cpu.h for trap_init() prototype
+  x86: sta2x11: include header for sta2x11_get_instance() prototype
+  csky: fix arch_jump_label_transform_static override
+  arch: add do_page_fault prototypes
+  arch: add missing prepare_ftrace_return() prototypes
+  arch: vdso: consolidate gettime prototypes
+  bcachefs: mark bch2_target_to_text_sb() static
+  powerpc: ps3: move udbg_shutdown_ps3gelic prototype
+  powerpc: pasemi: mark pas_shutdown() static
+  powerpc: powermac: mark smp_psurge_{give,take}_timebase static
+  usb: fsl-mph-dr-of: mark fsl_usb2_mpc5121_init() static
+  fbdev/fsl-diu-fb: mark wr_reg_wa() static
+  Makefile.extrawarn: turn on missing-prototypes globally
+
+ arch/alpha/include/asm/mmu_context.h         |  2 ++
+ arch/alpha/kernel/asm-offsets.c              |  2 +-
+ arch/alpha/kernel/traps.c                    |  1 +
+ arch/arc/include/asm/kprobes.h               |  3 ---
+ arch/arm/include/asm/irq_work.h              |  2 --
+ arch/arm/include/asm/kprobes.h               |  2 --
+ arch/arm/include/asm/vdso.h                  |  5 ----
+ arch/arm/vdso/vgettimeofday.c                |  1 +
+ arch/arm64/include/asm/irq_work.h            |  2 --
+ arch/arm64/include/asm/kprobes.h             |  2 --
+ arch/arm64/kernel/vdso32/vgettimeofday.c     |  1 +
+ arch/csky/include/asm/ftrace.h               |  4 +++
+ arch/csky/include/asm/irq_work.h             |  2 +-
+ arch/csky/include/asm/jump_label.h           |  5 ++++
+ arch/csky/include/asm/traps.h                |  2 +-
+ arch/csky/kernel/traps.c                     |  1 +
+ arch/csky/kernel/vdso/vgettimeofday.c        | 11 +--------
+ arch/loongarch/kernel/asm-offsets.c          | 26 ++++++++++----------
+ arch/loongarch/vdso/vgettimeofday.c          |  7 +-----
+ arch/m68k/coldfire/vectors.c                 |  3 +--
+ arch/m68k/coldfire/vectors.h                 |  3 ---
+ arch/microblaze/include/asm/ftrace.h         |  1 +
+ arch/microblaze/kernel/traps.c               |  1 +
+ arch/mips/include/asm/ftrace.h               |  4 +++
+ arch/mips/include/asm/kprobes.h              |  2 --
+ arch/mips/include/asm/traps.h                |  3 +++
+ arch/mips/vdso/vgettimeofday.c               |  1 +
+ arch/nios2/include/asm/traps.h               |  2 ++
+ arch/powerpc/include/asm/irq_work.h          |  1 -
+ arch/powerpc/include/asm/kprobes.h           |  2 --
+ arch/powerpc/include/asm/ps3.h               |  6 +++++
+ arch/powerpc/platforms/pasemi/setup.c        |  2 +-
+ arch/powerpc/platforms/powermac/smp.c        |  4 +--
+ arch/powerpc/platforms/ps3/gelic_udbg.c      |  1 +
+ arch/riscv/include/asm/irq_work.h            |  2 +-
+ arch/riscv/kernel/vdso/vgettimeofday.c       |  7 +-----
+ arch/s390/include/asm/irq_work.h             |  2 --
+ arch/s390/include/asm/kprobes.h              |  2 --
+ arch/sh/include/asm/kprobes.h                |  2 --
+ arch/sh/include/asm/traps_32.h               |  3 +++
+ arch/sparc/include/asm/kprobes.h             |  2 --
+ arch/sparc/kernel/asm-offsets.c              |  6 ++---
+ arch/sparc/kernel/traps_32.c                 |  1 +
+ arch/sparc/kernel/traps_64.c                 |  1 +
+ arch/x86/entry/vdso/vclock_gettime.c         | 10 +-------
+ arch/x86/include/asm/irq_work.h              |  1 -
+ arch/x86/include/asm/kprobes.h               |  2 --
+ arch/x86/include/asm/traps.h                 |  1 -
+ arch/x86/include/asm/vdso/gettimeofday.h     |  2 --
+ arch/x86/kernel/traps.c                      |  1 +
+ arch/x86/pci/sta2x11-fixup.c                 |  1 +
+ arch/x86/um/vdso/um_vdso.c                   |  1 +
+ drivers/net/ethernet/toshiba/ps3_gelic_net.h |  6 -----
+ drivers/parport/parport_gsc.c                |  2 +-
+ drivers/usb/host/fsl-mph-dr-of.c             |  2 +-
+ drivers/video/fbdev/fsl-diu-fb.c             |  2 +-
+ fs/bcachefs/disk_groups.c                    |  2 +-
+ fs/jffs2/debug.c                             |  2 +-
+ include/linux/irq_work.h                     |  3 +++
+ include/linux/kprobes.h                      |  4 +++
+ include/linux/stackleak.h                    |  6 +++++
+ include/vdso/gettime.h                       | 23 +++++++++++++++++
+ kernel/sched/fair.c                          | 13 ----------
+ kernel/sched/sched.h                         | 11 +++++++++
+ kernel/time/tick-internal.h                  |  3 ++-
+ lib/test_ida.c                               |  2 +-
+ scripts/Makefile.extrawarn                   |  4 +--
+ 67 files changed, 127 insertions(+), 122 deletions(-)
+ delete mode 100644 arch/m68k/coldfire/vectors.h
+ create mode 100644 include/vdso/gettime.h
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.39.2
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Vineet Gupta <vgupta@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Guo Ren <guoren@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ard Biesheuvel <ardb@kernel.org>
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: Greg Ungerer <gerg@linux-m68k.org>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Dinh Nguyen <dinguyen@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Geoff Levand <geoff@infradead.org>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: x86@kernel.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Kent Overstreet <kent.overstreet@linux.dev>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: Nicolas Schier <nicolas@fjasle.eu>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Uwe Kleine-König" <u.kleine-koenig@pengutronix.de>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-snps-arc@lists.infradead.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-trace-kernel@vger.kernel.org
+Cc: linux-csky@vger.kernel.org
+Cc: loongarch@lists.linux.dev
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: linux-mips@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-riscv@lists.infradead.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-bcachefs@vger.kernel.org
+Cc: linux-mtd@lists.infradead.org
+Cc: linux-kbuild@vger.kernel.org
+
