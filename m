@@ -4,46 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47046C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 02:36:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E3B6C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 05:51:20 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R9es98gj;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SQmL43Kmcz3cnZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 13:36:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=chengzhihao1@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 941 seconds by postgrey-1.37 at boromir; Thu, 09 Nov 2023 12:24:34 AEDT
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SQrft1fqfz3cW2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 16:51:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R9es98gj;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQkl60HrSz2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 12:24:29 +1100 (AEDT)
-Received: from kwepemm000013.china.huawei.com (unknown [172.30.72.53])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4SQkN45Xx2zfb3S;
-	Thu,  9 Nov 2023 09:08:04 +0800 (CST)
-Received: from [10.174.178.46] (10.174.178.46) by
- kwepemm000013.china.huawei.com (7.193.23.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.31; Thu, 9 Nov 2023 09:07:44 +0800
-Subject: Re: [PATCH 02/22] [RESEND^2] jffs2: mark
- __jffs2_dbg_superblock_counts() static
-To: Arnd Bergmann <arnd@kernel.org>, Andrew Morton
-	<akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>, Masahiro Yamada
-	<masahiroy@kernel.org>, <linux-kbuild@vger.kernel.org>
-References: <20231108125843.3806765-1-arnd@kernel.org>
- <20231108125843.3806765-3-arnd@kernel.org>
-From: Zhihao Cheng <chengzhihao1@huawei.com>
-Message-ID: <cf3724db-e130-01f2-c41e-f2f1e88fc1a8@huawei.com>
-Date: Thu, 9 Nov 2023 09:07:44 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SQrdt6kSsz3c13
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 16:50:26 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3A95laqM015407;
+	Thu, 9 Nov 2023 05:50:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=bHyL6okkDp866tGDyts+4ZwUO2BZULAwm3vpcD27fnI=;
+ b=R9es98gj2fJEc1VoQxOi3XMOGZkf0dQcG5VyiQ2PDjyqZSX9kqUIg4OQOgOv+jHW4cNi
+ QNbJ8wc6wWDAguzNVZgqa9i7dRNsqjxZ3ZXHonVCwqARfDOqYyDgFUAWcjN+xlOYN8xP
+ 26CD+bCTFuGvve9CvKuDEj5EbfMrze/JD2CTN7sS3fRL2ccOyTgXhS99iPvAYezJromT
+ c9SwpTwKZdBY+BvKF0E7QV4NKK6KE4QME4Q3qDVKH1lD3hiaeQWul/AgofFAcYHvsltp
+ oZMHtcj2rRxst8iO+9hyCk2Dn3gWPoH2wR5Us78oFpi+rqwSUJY8aJRmS1WY6Hx55MvG EA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u8s201f54-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Nov 2023 05:50:07 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3A95m67i017253;
+	Thu, 9 Nov 2023 05:50:07 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3u8s201f49-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Nov 2023 05:50:06 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3A94q1Vq003455;
+	Thu, 9 Nov 2023 05:50:06 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3u7w221tcv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Nov 2023 05:50:06 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3A95o3wB45154562
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 9 Nov 2023 05:50:03 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1E8F22004B;
+	Thu,  9 Nov 2023 05:50:03 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B25BB20040;
+	Thu,  9 Nov 2023 05:50:00 +0000 (GMT)
+Received: from sapthagiri.in.ibm.com (unknown [9.109.198.19])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  9 Nov 2023 05:50:00 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 2/5] powerpc/smp: Disable MC domain for shared processor
+Date: Thu,  9 Nov 2023 11:19:30 +0530
+Message-ID: <20231109054938.26589-3-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20231109054938.26589-1-srikar@linux.vnet.ibm.com>
+References: <20231109054938.26589-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20231108125843.3806765-3-arnd@kernel.org>
-Content-Type: text/plain; charset="gbk"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.178.46]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemm000013.china.huawei.com (7.193.23.81)
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Thu, 09 Nov 2023 13:36:01 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: d__swH62mFofZ5W_nx6tsbQ9U4diNO5m
+X-Proofpoint-ORIG-GUID: IAxiS1Dffz73V5XPc8YLGawJW0p5s6vC
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-09_04,2023-11-08_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ spamscore=0 bulkscore=0 impostorscore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 mlxlogscore=999 malwarescore=0 suspectscore=0 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311060000 definitions=main-2311090045
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,24 +97,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, x86@kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, Guo Ren <guoren@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ard Biesheuvel <ardb@kernel.org>, linux-bcachefs@vger.kernel.org, Tudor Ambarus <tudor.ambarus@linaro.org>, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen
- N. Rao" <naveen.n.rao@linux.ibm.com>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, linux-csky@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@goog
- le.com>, linux-mips@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, linux-usb@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-alpha@vger.kernel.org, linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: Mark Rutland <mark.rutland@arm.com>, Valentin Schneider <vschneid@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Srikar Dronamraju <srikar@linux.vnet.ibm.com>, "Paul E. McKenney" <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "ndesaulniers@google.com" <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ÔÚ 2023/11/8 20:58, Arnd Bergmann Ð´µÀ:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> This function is only called locally and does not need to be
-> global. Since there is no external prototype, gcc warns about
-> the non-static definition:
->
-> fs/jffs2/debug.c:160:6: error: no previous prototype for '__jffs2_dbg_superblock_counts' [-Werror=missing-prototypes]
->
-> Reviewed-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->   fs/jffs2/debug.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-Reviewed-by: Zhihao Cheng <chengzhihao1@huawei.com>
+Like L2-cache info, coregroup information which is used to determine MC
+sched domains is only present on dedicated LPARs. i.e PowerVM doesn't
+export coregroup information for shared processor LPARs. Hence disable
+creating MC domains on shared LPAR Systems.
+
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 69a3262024f1..1dae4e9ba42d 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1052,6 +1052,10 @@ static struct cpumask *cpu_coregroup_mask(int cpu)
+ 
+ static bool has_coregroup_support(void)
+ {
++	/* Coregroup identification not available on shared systems */
++	if (is_shared_processor())
++		return 0;
++
+ 	return coregroup_enabled;
+ }
+ 
+-- 
+2.31.1
+
