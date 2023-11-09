@@ -4,60 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 909FFC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 22:26:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23F74C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Nov 2023 23:29:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JOE+Y96n;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=LaFmDnyr;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRGl31YNNz3cS5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 09:26:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SRJ7Z4rMqz3cW7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 10:29:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JOE+Y96n;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=LaFmDnyr;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
+Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SR1MQ3jNDz2xps
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2023 23:23:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1699532610;
-	bh=R2IIgl4ZRFgwipCQ4ZBWquxZCbtnLxeQT8yMzVcSClk=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=JOE+Y96nQb0g0fD7YjgIsTtXOrsQ0zdJ9Xit6bae239vdgrtE8Xe20tGEjOEwp6b5
-	 bBGasTtN2qhciM6Vxj5gO1APMLHXfhhNabxTTxDpDoDz6AXcIv0hdu9+rRXuZNmSj3
-	 PriUuPEOny5OCaNxYhuQeMYyhW0D7Uuip11fA5kii4KmxM9zaRV2MnEviCDpMHy6zq
-	 fUfZ9elCA6bj44/a3P1CQqNaCruTVzrNA2B2UxDQEd/EBpaSM5DHluHgXy74J1JLYp
-	 rlgnpTfcT5fdD0htnPYkbVFENF7DqxPzxI5N3NUPYBgm/lUlPDoiySV3dJVovZ01Br
-	 M0UtCQNJ+RaEQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRJ6Z1kkPz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 10:28:19 +1100 (AEDT)
+Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 4BC0E10004D;
+	Fri, 10 Nov 2023 02:28:13 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 4BC0E10004D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
+	s=mail; t=1699572493;
+	bh=hBV4Kz/pkzP2ImJmSP5L6G2sBvOO6GVXQ7O0hvmEr94=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type:From;
+	b=LaFmDnyre+AUarFmgL90jZYQZO+Y+FtAOwa6unAgVvyl/QYoCuiZ7wiMBwFWkYtxu
+	 x3GnmkPgkz/o/MROXHKU595iUx6rNm2bvW4NInnW3j+/y3pFPWAT1MaQuMWng0nbIt
+	 Y0fUlmDXwTBkfjGcEV8kwMcE9Rl/mC2mQqKQgdEz86iWW229/X+Tq6FfauRLU8SVwh
+	 8xiuo+jYX3j0hSS3PmSOPxawWwezxUNDwHiHHZPFxrktmjJil0Ln5TvfFJ7sMm6/Qk
+	 3wWVrTWImlZR15+9xevXHfOZhhm9uBeIIf7896jZkt5ihfvaRuh2t7GoejsjSRUWb3
+	 VzhHdQmvFI20w==
+Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SR1MD6jtmz4wd2;
-	Thu,  9 Nov 2023 23:23:20 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Arnd Bergmann
- <arnd@arndb.de>, Arnd
- Bergmann <arnd@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Masahiro
- Yamada <masahiroy@kernel.org>, "linux-kbuild@vger.kernel.org"
- <linux-kbuild@vger.kernel.org>
-Subject: Re: [PATCH 15/22] arch: vdso: consolidate gettime prototypes
-In-Reply-To: <886df4e4-9fc2-ca52-e7e9-53688e6e821a@csgroup.eu>
-References: <20231108125843.3806765-1-arnd@kernel.org>
- <20231108125843.3806765-16-arnd@kernel.org>
- <ecedb0f1-9543-35c6-18bd-723e6bf21173@csgroup.eu>
- <d94de5b8-db92-4055-9484-f2666973c02a@app.fastmail.com>
- <87o7g3qlf5.fsf@mail.lhotse>
- <886df4e4-9fc2-ca52-e7e9-53688e6e821a@csgroup.eu>
-Date: Thu, 09 Nov 2023 23:23:20 +1100
-Message-ID: <87il6bqfnr.fsf@mail.lhotse>
+	by mx1.sberdevices.ru (Postfix) with ESMTPS;
+	Fri, 10 Nov 2023 02:28:13 +0300 (MSK)
+Received: from [192.168.1.127] (100.64.160.123) by
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.37; Fri, 10 Nov 2023 02:28:12 +0300
+Message-ID: <d5fab619-046a-484d-9d51-3a7fcc9e0a81@salutedevices.com>
+Date: Fri, 10 Nov 2023 02:28:23 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Fri, 10 Nov 2023 09:25:33 +1100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/8] leds: nic78bx: explicitly unregister LEDs at module's
+ shutdown
+Content-Language: en-US
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <20231025130737.2015468-1-gnstark@salutedevices.com>
+ <20231025130737.2015468-3-gnstark@salutedevices.com>
+ <810346b6-c8a4-8c40-8fe3-242332428313@csgroup.eu>
+From: George Stark <gnstark@salutedevices.com>
+In-Reply-To: <810346b6-c8a4-8c40-8fe3-242332428313@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [100.64.160.123]
+X-ClientProxiedBy: p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) To
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
+X-KSMG-Rule-ID: 10
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Lua-Profiles: 181258 [Nov 09 2023]
+X-KSMG-AntiSpam-Version: 6.0.0.2
+X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
+X-KSMG-AntiSpam-Rate: 0
+X-KSMG-AntiSpam-Status: not_detected
+X-KSMG-AntiSpam-Method: none
+X-KSMG-AntiSpam-Auth: dkim=none
+X-KSMG-AntiSpam-Info: LuaCore: 543 543 1e3516af5cdd92079dfeb0e292c8747a62cb1ee4, {Tracking_from_domain_doesnt_match_to}, p-i-exch-sc-m01.sberdevices.ru:7.1.1,5.0.1;salutedevices.com:7.1.1;100.64.160.123:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;127.0.0.199:7.1.2, FromAlignment: s, ApMailHostAddress: 100.64.160.123
+X-MS-Exchange-Organization-SCL: -1
+X-KSMG-AntiSpam-Interceptor-Info: scan successful
+X-KSMG-AntiPhishing: Clean
+X-KSMG-LinksScanning: Clean
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/11/09 21:19:00 #22426256
+X-KSMG-AntiVirus-Status: Clean, skipped
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,79 +89,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Netdev <netdev@vger.kernel.org>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Nicolas Schier <nicolas@fjasle.eu>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kerne
- l.org>, Russell King <linux@armlinux.org.uk>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, Ard Biesheuvel <ardb@kernel.org>, "linux-bcachefs@vger.kernel.org" <linux-bcachefs@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Matt Turner <mattst88@gmail.com>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, "linux-trace-kernel@vger.kernel.org" <linux-trace-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tg
- lx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@google.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, David Woodhouse <dwmw2@infradead.org>, "David S . Miller" <davem@davemloft.net>, Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: "vadimp@nvidia.com" <vadimp@nvidia.com>, "lee@kernel.org" <lee@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "npiggin@gmail.com" <npiggin@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "kernel@sberdevices.ru" <kernel@sberdevices.ru>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 09/11/2023 =C3=A0 11:18, Michael Ellerman a =C3=A9crit=C2=A0:
->> "Arnd Bergmann" <arnd@arndb.de> writes:
->>> On Wed, Nov 8, 2023, at 19:31, Christophe Leroy wrote:
->>>> Le 08/11/2023 =C3=A0 13:58, Arnd Bergmann a =C3=A9crit=C2=A0:
->>>
->>>> powerpc has functions doing more or less the same, they are called
->>>> __c_kernel_clock_gettime() and alike with their prototypes siting in
->>>> arch/powerpc/include/asm/vdso/gettimeofday.h
->>>>
->>>> Should those prototypes be moved to include/vdso/gettime.h too and
->>>> eventually renamed, or are they considered too powerpc specific ?
->>>
->>> I don't actually know, my initial interpretation was that
->>> these function names are part of the user ABI for the vdso,
->>> but I never looked closely enough at how vdso works to
->>> be sure what the actual ABI is.
->>=20
->> AFAIK the ABI is just the symbols we export, as defined in the linker
->> script:
->>=20
->> /*
->>   * This controls what symbols we export from the DSO.
->>   */
->> VERSION
->> {
->> 	VDSO_VERSION_STRING {
->> 	global:
->> 		__kernel_get_syscall_map;
->> 		__kernel_gettimeofday;
->> 		__kernel_clock_gettime;
->> 		__kernel_clock_getres;
->> 		__kernel_get_tbfreq;
->> 		__kernel_sync_dicache;
->> 		__kernel_sigtramp_rt64;
->> 		__kernel_getcpu;
->> 		__kernel_time;
->>=20
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
-arch/powerpc/kernel/vdso/vdso64.lds.S?h=3Dv6.6&#n117
->>=20
->>> If __c_kernel_clock_gettime() etc are not part of the user-facing
->>> ABI, I think renaming them for consistency with the other
->>> architectures would be best.
->>=20
->> The __c symbols are not part of the ABI, so we could rename them.
->>=20
->> At the moment though they don't have the same prototype as the generic
->> versions, because we find the VDSO data in asm and pass it to the C
->> functions, eg:
->>=20
->> int __c_kernel_gettimeofday(struct __kernel_old_timeval *tv, struct time=
-zone *tz,
->> 			    const struct vdso_data *vd);
->>=20
->> I think we can rework that though, by implementing
->> __arch_get_vdso_data() and getting the vdso_data in C. Then we'd be able
->> to share the prototypes.
->
-> I think it would not a been good idea, it would be less performant, for=20
-> explanation see commit=20
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
-/?id=3De876f0b69dc993e86ca7795e63e98385aa9a7ef3
+Hello Christophe.
 
-Ah thanks. I was wondering why you had done it in asm.
+Thanks for the review.
 
-It's a pity but you're right that's probably a measurable performance
-hit for some of those calls.
 
-cheers
+On 11/6/23 11:13, Christophe Leroy wrote:
+ >
+ >
+ > Le 25/10/2023 à 15:07, George Stark a écrit :
+ >> LEDs are registered using devm_led_classdev_register() and automatically
+ >> unregistered after module's remove(). led_classdev_unregister() calls
+ >> led_set_brightness() to turn off the LEDs and module's appropriate 
+callback
+ >> uses resources those were destroyed already in module's remove().
+ >> So explicitly unregister LEDs at module shutdown.
+ >>
+ >> Signed-off-by: George Stark <gnstark@salutedevices.com>
+ >> ---
+ >>    drivers/leds/leds-nic78bx.c | 4 ++++
+ >>    1 file changed, 4 insertions(+)
+ >>
+ >> diff --git a/drivers/leds/leds-nic78bx.c b/drivers/leds/leds-nic78bx.c
+ >> index f196f52eec1e..12b70fcad37f 100644
+ >> --- a/drivers/leds/leds-nic78bx.c
+ >> +++ b/drivers/leds/leds-nic78bx.c
+ >> @@ -170,6 +170,10 @@ static int nic78bx_probe(struct platform_device 
+*pdev)
+ >>    static int nic78bx_remove(struct platform_device *pdev)
+ >>    {
+ >>    	struct nic78bx_led_data *led_data = platform_get_drvdata(pdev);
+ >> +	int i;
+ >> +
+ >> +	for (i = 0; i < ARRAY_SIZE(nic78bx_leds); i++)
+ >> +		devm_led_classdev_unregister(&pdev->dev, &nic78bx_leds[i].cdev);
+ >
+ > The whole purpose of devm_ functions is that you don't need to call
+ > unregister when removing the driver as the dev core will do it for you.
+ > I understand your problem but I think this is not the solution.
+
+I agree my solution is questionable although 
+devm_led_classdev_unregister() is exists for some reason.
+
+Probably it's not the best solution to remove led_set_brightness() from 
+led_classdev_unregister() either.
+Or we'll have to patch a lot of drivers which use led subsystem to call 
+led_set_brightness() manually to keep leds' previous behavior.
+
+Well if we can't easily unregister leds before module's remove() 
+callback is completed may be we can get rid of remove() itself and 
+manage all resources using devm API. In that case by the time 
+led_set_brightness() is called from led_classdev_unregister() all 
+dependent resources will be alive.
+I'll try it in the next patch series.
+
+ >
+ >>
+ >>    	/* Lock LED register */
+ >>    	outb(NIC78BX_LOCK_VALUE,
+-- 
+Best regards
+George
