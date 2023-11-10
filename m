@@ -4,111 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2939CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 15:07:39 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Jnm001PI;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6029C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 15:31:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRhyK5M4Lz3dBp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 02:07:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Jnm001PI;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe59::61b; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2061b.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe59::61b])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SRjV93GNJz3dXj
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 02:31:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRhxK3m6nz3cTM
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2023 02:06:42 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=E30JYyjYP2ZRp+ciUIb1x3QZtvfGraTuYcW+F0KM1P+SiQtzZJngYzCWZyddC2eZUnp/JHNXjvJvpjS6iDu371/nb9jOLl7i43FKtN63cnKUj6DO+XEjl5Yzp+d3d/vN61PZaCCOsKKOvkemMNixxwfwD2uTd3UgKPeFJ2wznAm8yZsR1L5oH1z6StEv0pjxrSkjYbNnFrkmJ+qI+gm/IKpJqPHmbJ5uiNEx3AjDDBzbf2zcqwJZSbnl2lx/ILDdRW+EQSGSJAzk8+QAg0DRmlIol/5kQ4tKQU0na32Vcii4VMZlYE26OnqtXHfdmV5Eva0LfZ4lFcxhZ8WVOqF5QQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=JCkofdvjMXYNSFlDIyNp8TwxBV7wGxyrp/yDKjVQ3kI=;
- b=A+ii1o8cf1ButrJQWnEvn+lok590iaKuyLPOz5M2JNBxuEUdPDVSxjk+qaX1rWTRHjzXaBLvbhdURwTATH5dplE36ulUEecydtHT1mtjUK+wHKP3d4aIJnSBd8iDvjuzhRZQ73b/2rnejg0ctT8YuU5x7eYPRjua3tMiJb2nijGruD7NO8LYbQ5kjq8Zi5wMWMhcGvs8oWjDFn/+Wq2pRolpJDQRsBLgpA1hza5mzDQK9g8fIzNh1W9GkMmTj/hu03EOS/EQ58rrPmbNN787mu1y9HPjLhfNpjlgLXw/mfys8uNvTjbs3kX5lBAY/wgJH1KFumitLSyCEyPXAI6nhQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=JCkofdvjMXYNSFlDIyNp8TwxBV7wGxyrp/yDKjVQ3kI=;
- b=Jnm001PIt8QwMtCLmS4Z0rcSxgVSej++xGbu69dgKSwTkBhfurs7LdUjPobOjcaYIjigh6Gabgq58jWVYM2tOGcHamJ8mvhpiuBEBkft7NzQRl8OkbfenwouxoSbX/upd+U+QJDb4NBEYvJVot+U2KHVo/QUaVXwkhBU73czQ3JuidJSalvFkUNNArp9VdZCZRuUOaq4F3Bcb5NS9nTUHEtuc4JEaB4e3UziCTdFIWvPLzWRfxUBo9POYQhkfhtIfrzMvGWG/JlhxdeSHuh+JCXgBv0z8JV7XjhrgP5tbcI5h18rxkavTUGK2j7bYTj2sYqa/pZP9v0b4s18pdKnMg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
- by SA0PR12MB4382.namprd12.prod.outlook.com (2603:10b6:806:9a::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6977.21; Fri, 10 Nov
- 2023 15:06:22 +0000
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::60d4:c1e3:e1aa:8f93]) by LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::60d4:c1e3:e1aa:8f93%4]) with mapi id 15.20.6977.018; Fri, 10 Nov 2023
- 15:06:21 +0000
-Date: Fri, 10 Nov 2023 11:06:20 -0400
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
-Subject: Re: get_user_pages() and EXEC_ONLY mapping.
-Message-ID: <20231110150620.GQ4488@nvidia.com>
-References: <87bkc1oe8c.fsf@linux.ibm.com>
- <20231110145306.GP4488@nvidia.com>
- <9a51f827-6bf4-412b-9feb-37cc41ad3e90@linux.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9a51f827-6bf4-412b-9feb-37cc41ad3e90@linux.ibm.com>
-X-ClientProxiedBy: DS7PR03CA0171.namprd03.prod.outlook.com
- (2603:10b6:5:3b2::26) To LV2PR12MB5869.namprd12.prod.outlook.com
- (2603:10b6:408:176::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRjTK146qz3cSY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2023 02:30:59 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1TT8-0006Yc-Ry; Fri, 10 Nov 2023 16:30:50 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1TT8-0083Lu-5i; Fri, 10 Nov 2023 16:30:50 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1TT7-00GnyA-Sn; Fri, 10 Nov 2023 16:30:49 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>
+Subject: [PATCH 51/52] serial: ucc: Convert to platform remove callback returning void
+Date: Fri, 10 Nov 2023 16:30:19 +0100
+Message-ID: <20231110152927.70601-52-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
+In-Reply-To: <20231110152927.70601-1-u.kleine-koenig@pengutronix.de>
+References: <20231110152927.70601-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|SA0PR12MB4382:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7d8efe2d-71e5-43be-ddcc-08dbe1fe9994
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	rSvbEYjJqnTfJquyh3A6lMkntcvaE4luKFK/0aVchYNqlWWNuBEXGpFB7I4PBMcgHqWo9CdTFINRnwcarlJklJOcrvHol0Nxb79hh0WBzGrfgUQPskzpDARagmC3goPRfL8JWXU527OI7AYXKQyBOmrr7RbeC1up5Oweic1xSbw0qL7D2SqfgkcDl6426yDwZm1IdxMBwoVLB5lec8Oqn19xvH9qs8yHE5Xxl/OJU0iIj6zRQ0IcYtxWuIxVapW/nVnQq17Ii1B+LbnmLvpvkUfCNRYdKOkfhztDdYpLC2pSWJ2nGlO8q7pEPTLbJBA8nBvrKE9qlZdwPHmsNVIotwqCyx1mUeDsqaCxGPB5aLigC4pHHyeZPoH1vYhNawTKXTIx/CaqPKBspkcLIWE/vxXNNXTxy+NVWzd/aJLZN0syI1kUSREKMwZQicFlZWqSVInLve3qvAI1o/+q6QU4P+fJ0vAU/ZdB/AXchnKoqk6dYtYsphWZ4h6MQDPUdQf7UzyKt5hF+SOlV6CPCpq7OmOE5KnPVUFIvwNdg2PA/1ezhaX1lrclQwzcvGBiGTQr
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(366004)(346002)(136003)(396003)(39860400002)(376002)(230922051799003)(186009)(64100799003)(1800799009)(451199024)(1076003)(53546011)(6512007)(8676002)(2616005)(6506007)(26005)(5660300002)(2906002)(83380400001)(66946007)(66556008)(66476007)(33656002)(54906003)(478600001)(36756003)(41300700001)(6916009)(316002)(4326008)(8936002)(6486002)(86362001)(38100700002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?r8BBwykEqfjfSERl4H/dR0P4CXL4QO/PwKbbIjfFib4gpI+MElLAkzdfzx52?=
- =?us-ascii?Q?UPJRp7wL7kkUUuEA3DyOYT/ikFTG9CWR1CxbqLuFYSTvAzOsNEy9AUowOd/P?=
- =?us-ascii?Q?MVsaPEDfyide86em+xldZa89Q9U3gJr6bWnjwW42eAsRLV1qkgaVC62D3Zqg?=
- =?us-ascii?Q?PPdMBnLm+FblRYiGBgc3xdowKRDjeyc+EokE3HChfyW+lvihHtq+Ucu7fclf?=
- =?us-ascii?Q?T4c3uFP6PWx3zbaCbafTuwMuUfhIQPXr/Sx3RJERjgbEvOwSEzlVy+AwfS6W?=
- =?us-ascii?Q?N+O9gJ1vyRdlp6xUrMsxGli6vkNQ4fic8hJ8m8JEhS6g7fP/3Qe40nFDNDVH?=
- =?us-ascii?Q?HeNvdj0WjqXdaRJ5zT1RHXMgJiA3VZM+kq1RBeK52TvX8I+P2106WNLFGm8M?=
- =?us-ascii?Q?AdZesHpZENqDZ+uT/MKogPuZ46Eh9puaKktNFy27UBlnK8XgrS26DutL1Opf?=
- =?us-ascii?Q?r1DmpOulTbtdkLI0sRYLzXtDavWJeb6JbvqBD2tFzjMibjHsL2VYtmhpRMDc?=
- =?us-ascii?Q?dTkc2g9Si1Hr3KrK+MEqANNSvayExUxFGdXNluhkr6aaSwPbaC//6p/Y+ERD?=
- =?us-ascii?Q?W4VoioXhid1QpU3MTcJt6L068FSB7neNn8YZs7ZrqfURpMyzsoLGXa55Y+5y?=
- =?us-ascii?Q?4yv9Ol/sYMBMGz2UwKwj/W8YoJRk1WQ6wQM5iuorYGU7T9HUcgIAW/RnjSDT?=
- =?us-ascii?Q?WaXRcTla7VNWDoqZmyicTYYAm7QkJYLUSOQqKwBvQrC9VcYlb7vGc2PHNqDY?=
- =?us-ascii?Q?Gc/UeJnomaaXQVSA4tKSDehfcF1AYbXtEadaOrOIXeiFBSi2hqxJ9gtL+S96?=
- =?us-ascii?Q?CuwowCK1DFSNFg7EVG61R8HAiyo6qrFrpmVAcET4qdY0DS4Xzmjv3R8F2k3u?=
- =?us-ascii?Q?JaQShQRFkxwC5XWoel6awsocRc4ZKmAkiClS/EShoxcwrk+z2sVpYl7WtoLg?=
- =?us-ascii?Q?KSw4SkIdItEIZgMSzTfCL29xu/1NL4vkla08LHZx+VBMWVOrAUhGOPe5GLg/?=
- =?us-ascii?Q?L2GLl5Od4S71x6nPjA334auZJASCZe4ju+9SGtHblhpmGItsVZ1182T711QT?=
- =?us-ascii?Q?smNXUVtBtlld1C/XaLzyzYhhEP8vdY9k+80jfaXkHYYxwavEXE/BvplCYAb3?=
- =?us-ascii?Q?LUbWsQixCmDFpOQOIWdKzZoFyyJP4CCiPmxdQ96kHkVI1lAoWfTg4pTta+m+?=
- =?us-ascii?Q?WWf6VA7gud26+C/Y5cvgGe172Yr77aQlQh20+iO2zWpizfUa0B0ZOy6eBjp9?=
- =?us-ascii?Q?VF4BTi/8QLTgvTGiE5FE9laUg2LdRr+tmn0DC7bfb6s3tywacMMYdMqpfTf6?=
- =?us-ascii?Q?6122Zp6DLpI1iZrqfMvh8dPYAU+tuD/qOA8zi/txwLjYNRRFXxMUgpGUiePQ?=
- =?us-ascii?Q?KDf4VU03Josgl3ESmlLEFmBaBpHLyfuynAimeeVelRMPFbVZYyzOJV4WHQxr?=
- =?us-ascii?Q?uuu9syG7s6NOaqXBFqIIhw+C5e0ewwkQ6ArQ+kl9mNJWT9ckj9ChM5fM/t14?=
- =?us-ascii?Q?Xg7kBbHf/ifUmysvZ/oF2Mp63ApGe1VLQxGk0x8OS0Jd3aEievRolPVbUddp?=
- =?us-ascii?Q?O60UkofMXOiCjzzQ8VY=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7d8efe2d-71e5-43be-ddcc-08dbe1fe9994
-X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Nov 2023 15:06:21.9292
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: wSLcjy273Dbr8jd/E5Pc3RW/FidIz0XYdzX+Xe3uYbfemG+AnswKAvS0syBtIUj/
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR12MB4382
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1821; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=1i8KT+sh7QtkRDn6szKY9xL97sdpwMK7Je2MNdk5bn0=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlQ/n+keJw9FvldhWW778kewBkupye3qT/5WqkxLxK9Zb MxYf2VHJ6MxCwMjF4OsmCKLfeOaTKsqucjOtf8uwwxiZQKZwsDFKQATuR3P/lfgSfgf1VPeWVbN scFyGyYeKHWMXT99z8xfkdW3XkZU/X28fMLnAof23gJH0825/UlGknvaKwS+hGapxKzm2fDqmJL 6/TYVxrbK+sadn/wduFy5b857FqmgEa1fuiX7/CXjeVqVEnkbbU6dDeYw8BFnC/jU4F1sO4s9ue k/z5FlkXvdm3erPRW0+7/uUMYuuYrLpzQ9m0uvfFUOv/z27tZ2Y5nzH/PkxH97qN++wXuBu7i/L 1+qYkLz4dh/C1o37pnw78JT5+eBcrNefdnxni+r8ATP0yTVfP9ZjdIcERlP196MY3jt8szfRSWy skfU5ljdXoVlk/SXNs4XvVn5pz3kxMVzPm41HIvbrDilAQ==
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,56 +58,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mm@kvack.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de, Timur Tabi <timur@kernel.org>, linux-serial@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 10, 2023 at 08:27:19PM +0530, Aneesh Kumar K V wrote:
-> On 11/10/23 8:23 PM, Jason Gunthorpe wrote:
-> > On Fri, Nov 10, 2023 at 08:19:23PM +0530, Aneesh Kumar K.V wrote:
-> >>
-> >> Hello,
-> >>
-> >> Some architectures can now support EXEC_ONLY mappings and I am wondering
-> >> what get_user_pages() on those addresses should return. 
-> > 
-> > -EPERM
-> > 
-> >> Earlier PROT_EXEC implied PROT_READ and pte_access_permitted()
-> >> returned true for that. But arm64 does have this explicit comment
-> >> that says
-> >>
-> >>  /*
-> >>  * p??_access_permitted() is true for valid user mappings (PTE_USER
-> >>  * bit set, subject to the write permission check). For execute-only
-> >>  * mappings, like PROT_EXEC with EPAN (both PTE_USER and PTE_UXN bits
-> >>  * not set) must return false. PROT_NONE mappings do not have the
-> >>  * PTE_VALID bit set.
-> >>  */
-> >>
-> >> Is that correct? We should be able to get struct page for PROT_EXEC
-> >> mappings?
-> > 
-> > If the memory is unreadable then providing a back door through
-> > O_DIRECT and everthing else to read it sounds wrong to me.
-> > 
-> > If there is some case where a get_user_pages caller is exec-only
-> > compatible then a new FOLL_EXEC flag to permit it would make sense.
-> > 
-> 
-> I was expecting pin_user_pages() to return -EPERM and get_user_pages()
-> return struct page. This was based on Documentation/core-api/pin_user_pages.rst  
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
 
-Not unconditionally but you could argue that FOLL_GET should
-succeed. It depends how much do you care about absolute security of
-unreadable memory vs compatability.
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new(), which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
 
-> "Another way of thinking about these flags is as a progression of restrictions:
-> FOLL_GET is for struct page manipulation, without affecting the data that the
-> struct page refers to. FOLL_PIN is a *replacement* for FOLL_GET, and is for
-> short term pins on pages whose data *will* get accessed. "
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-This was sort of aspirational - have we got rid of all the FOLL_GET
-users that are touching the data? Looks like no from a quick check..
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/tty/serial/ucc_uart.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Jason
+diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
+index ed7a6bb5596a..f9ad942c9aaf 100644
+--- a/drivers/tty/serial/ucc_uart.c
++++ b/drivers/tty/serial/ucc_uart.c
+@@ -1459,7 +1459,7 @@ static int ucc_uart_probe(struct platform_device *ofdev)
+ 	return ret;
+ }
+ 
+-static int ucc_uart_remove(struct platform_device *ofdev)
++static void ucc_uart_remove(struct platform_device *ofdev)
+ {
+ 	struct uart_qe_port *qe_port = platform_get_drvdata(ofdev);
+ 
+@@ -1470,8 +1470,6 @@ static int ucc_uart_remove(struct platform_device *ofdev)
+ 	of_node_put(qe_port->np);
+ 
+ 	kfree(qe_port);
+-
+-	return 0;
+ }
+ 
+ static const struct of_device_id ucc_uart_match[] = {
+@@ -1492,7 +1490,7 @@ static struct platform_driver ucc_uart_of_driver = {
+ 		.of_match_table    = ucc_uart_match,
+ 	},
+ 	.probe  	= ucc_uart_probe,
+-	.remove 	= ucc_uart_remove,
++	.remove_new 	= ucc_uart_remove,
+ };
+ 
+ static int __init ucc_uart_init(void)
+-- 
+2.42.0
+
