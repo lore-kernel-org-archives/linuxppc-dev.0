@@ -4,73 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A7C3C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 02:08:40 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LTwQuqf2;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A89F0C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 03:14:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRzd24nBRz3cVR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 13:08:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LTwQuqf2;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SS15H1hm8z3cT8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 14:14:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRzc43Yb7z2yhT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2023 13:07:46 +1100 (AEDT)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-6b20a48522fso2394234b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 18:07:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1699668462; x=1700273262; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:subject:from:cc:to:content-language
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=us4PH3hYSKV8M14QXIBOyvA+4JqUtwc0XH3JtG4nmDY=;
-        b=LTwQuqf2hJbhl2H9gl9hLJL5R/bdTUKaAe6rnrhwbK9aMelAds1Z4NozIXq23vbZiF
-         uCBL6lwp54IpG1uBXYoKMuEkHc2+7fW8LWXHvQYYdPlN0N3jlDCYqmCNfyI5dNAMg8V3
-         KTtlb4VCjKnIiuDOVofKEB57uUomFSdpnq/E4DYAjdxU/Ce6Mo9A4OJh6aDS8PatQcqg
-         VqdhDRSmoO3QNAYOeImUCRdzyOfQJrTMbuYnPZmyS4YlR0/sEnN30jgFKYiHGx2jWF/d
-         t1TfBPApC/B2GFrbVAeiqhjKBZDwmQXpd9NFnLKE93p3FqVnLhm5Wu5JhTKj3WT68lEE
-         h6zg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699668462; x=1700273262;
-        h=content-transfer-encoding:subject:from:cc:to:content-language
-         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=us4PH3hYSKV8M14QXIBOyvA+4JqUtwc0XH3JtG4nmDY=;
-        b=qH7MR/zX30piBx0wIT/gopgHoaZX3iEKHdNZMOwMVGN4FySqPCeFoxJLX78VRMCBZg
-         olsFwSjw3hL2DhSPV71AHPbhs0XaTOD1oiD1sxbDtjEeCNXBf6nxkBdNkn4oE83PDAaj
-         5BcQV9k1SpvRk7TAPfEmo+Ud/NXp543gERttMSqvRC1uvtgrQtKYM4N+gTW2+vBl1+A0
-         Ozmbnjp897Myf/A/piosMzukujwx3+AheB4J69TZ1L9uMf154a6HjPNOAQSNlwq20uK1
-         0w9kEYfPKtHfV07KRfDubJhyFfqbpv9VUrLvnmDwIZsiQZb3i3swNNAs7/+VQwGtttWo
-         udzw==
-X-Gm-Message-State: AOJu0YyV3wjE1E13OwUS7IgtwpfzEypGK3tAzP5VcwMnlJsXMIqoIqWA
-	vvo/RfIRbVTpr/+9OcdNVuI=
-X-Google-Smtp-Source: AGHT+IHNBBW3BK8jyaoUi7xXcxcZdBpSdb0qc7l3zTckarw97gd+X2tbBj1Oc1EwReuZ3Rk530zP9g==
-X-Received: by 2002:a05:6a20:ce83:b0:131:b3fa:eaaa with SMTP id if3-20020a056a20ce8300b00131b3faeaaamr588855pzb.61.1699668462452;
-        Fri, 10 Nov 2023 18:07:42 -0800 (PST)
-Received: from [192.168.0.106] ([103.131.18.64])
-        by smtp.gmail.com with ESMTPSA id 13-20020a170902c20d00b001a9b29b6759sm308895pll.183.2023.11.10.18.07.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 10 Nov 2023 18:07:41 -0800 (PST)
-Message-ID: <60585667-70ca-4ace-8d8f-dbdd8d4428a6@gmail.com>
-Date: Sat, 11 Nov 2023 09:07:35 +0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRdnb0QkFz3cNY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 23:44:49 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1Qqm-0008RY-G3; Fri, 10 Nov 2023 13:43:04 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1Qqd-0081VE-CM; Fri, 10 Nov 2023 13:42:55 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1Qqd-00Gimy-0Z; Fri, 10 Nov 2023 13:42:55 +0100
+Date: Fri, 10 Nov 2023 13:41:23 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Arnd Bergmann <arnd@kernel.org>
+Subject: Re: [PATCH 04/22] [RESEND] time: make sysfs_get_uname() function
+ visible in header
+Message-ID: <20231110124123.5mado2cc5vnywqfx@pengutronix.de>
+References: <20231108125843.3806765-1-arnd@kernel.org>
+ <20231108125843.3806765-5-arnd@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Wireless <linux-wireless@vger.kernel.org>,
- Linux PCI <linux-pci@vger.kernel.org>,
- Linux PowerPC <linuxppc-dev@lists.ozlabs.org>
-From: Bagas Sanjaya <bagasdotme@gmail.com>
-Subject: Fwd: The PCIe AER error flood between PCIe bridge and Realtek's
- RTL8723BE makes system hang
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ljpauxr7qypfgjtq"
+Content-Disposition: inline
+In-Reply-To: <20231108125843.3806765-5-arnd@kernel.org>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-Mailman-Approved-At: Sat, 11 Nov 2023 14:14:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,79 +58,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Ping-Ke Shih <pkshih@realtek.com>, Oliver O'Halloran <oohall@gmail.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Jian-Hong Pan <jhp@endlessos.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, x86@kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, netdev@vger.kernel.org, Guo Ren <guoren@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, Helge Deller <deller@gmx.de>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Masahiro Yamada <masahiroy@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Greg Ungerer <gerg@linux-m68k.org>, linux-bcachefs@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen N.
+  Rao" <naveen.n.rao@linux.ibm.com>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, linux-csky@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, S
+ udip Mukherjee <sudipm.mukherjee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, linux-usb@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-alpha@vger.kernel.org, linux-mtd@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>, Al Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
 
-I notice a bug report on Bugzilla [1]. Quoting from it:
+--ljpauxr7qypfgjtq
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> We have an ASUS X555UQ laptop equipped with Intel i7-6500U CPU and Realtek RTL8723BE PCIe Wireless adapter.
-> 
-> We tested it with kernel 6.6.  System keeps showing AER error message flood, even hangs up, until rtl8723be's ASPM is disabled.
-> 
-> kernel: pcieport 0000:00:1c.5: PCIe Bus Error: severity=Corrected, type=Physical Layer, (Receiver ID)
-> kernel: pcieport 0000:00:1c.5:   device [8086:9d15] error status/mask=00000001/00002000
-> kernel: pcieport 0000:00:1c.5:    [ 0] RxErr                  (First)
-> kernel: pcieport 0000:00:1c.5: AER: Corrected error received: 0000:00:1c.5
-> kernel: pcieport 0000:00:1c.5: AER: can't find device of ID00e5
-> kernel: pcieport 0000:00:1c.5: AER: Corrected error received: 0000:00:1c.5
-> kernel: pcieport 0000:00:1c.5: AER: can't find device of ID00e5
-> kernel: pcieport 0000:00:1c.5: AER: Multiple Corrected error received: 0000:00:1c.5
-> kernel: pcieport 0000:00:1c.5: AER: can't find device of ID00e5
-> 
-> Here is the PCI tree:
-> $ lspci -tv
-> -[0000:00]-+-00.0  Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Host Bridge/DRAM Registers
->            +-02.0  Intel Corporation Skylake GT2 [HD Graphics 520]
->            +-04.0  Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Thermal Subsystem
->            +-14.0  Intel Corporation Sunrise Point-LP USB 3.0 xHCI Controller
->            +-14.2  Intel Corporation Sunrise Point-LP Thermal subsystem
->            +-15.0  Intel Corporation Sunrise Point-LP Serial IO I2C Controller #0
->            +-15.1  Intel Corporation Sunrise Point-LP Serial IO I2C Controller #1
->            +-16.0  Intel Corporation Sunrise Point-LP CSME HECI #1
->            +-17.0  Intel Corporation Sunrise Point-LP SATA Controller [AHCI mode]
->            +-1c.0-[01]----00.0  NVIDIA Corporation GM108M [GeForce 940MX]
->            +-1c.4-[02]----00.0  Realtek Semiconductor Co., Ltd. RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller
->            +-1c.5-[03]----00.0  Realtek Semiconductor Co., Ltd. RTL8723BE PCIe Wireless Network Adapter
->            +-1f.0  Intel Corporation Sunrise Point-LP LPC Controller
->            +-1f.2  Intel Corporation Sunrise Point-LP PMC
->            +-1f.3  Intel Corporation Sunrise Point-LP HD Audio
->            \-1f.4  Intel Corporation Sunrise Point-LP SMBus
+Hello Arnd,
 
-And then the reporter found that it was ASPM bug:
+On Wed, Nov 08, 2023 at 01:58:25PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> This function is defined globally in clocksource.c and used conditionally
+> in clockevent.c, which the declaration hidden when clockevent support
 
-> Notice a long time ago discussion mail: Dmesg filled with "AER: Corrected error received" [1]
-> 
-> So, I force write 1 to clear Receiver Error Status bit of Correctable Error Status Register, like
-> 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 9c8fd69ae5ad..39faedd2ec8e 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -1141,8 +1160,9 @@ static void aer_isr_one_error(struct aer_rpc *rpc,
->                         e_info.multi_error_valid = 0;
->                 aer_print_port_info(pdev, &e_info);
->  
-> -               if (find_source_device(pdev, &e_info))
-> -                       aer_process_err_devices(&e_info);
-> +               //if (find_source_device(pdev, &e_info))
-> +               //      aer_process_err_devices(&e_info);
-> +               pci_write_config_dword(pdev, pdev->aer_cap + PCI_ERR_COR_STATUS, 0x1);
->         }
->  
->         if (e_src->status & PCI_ERR_ROOT_UNCOR_RCV) {
-> 
-> Then, system should clear the error right away.  However, system still get the AER flood ...
-> 
-> Seems that we still have to disable rtl8723be's ASPM.
+s/which/with/ ?
 
-See Bugzilla for the full thread and attached full kernel logs.
+> is disabled. This causes a harmless warning in the definition:
+>=20
+> kernel/time/clocksource.c:1324:9: warning: no previous prototype for 'sys=
+fs_get_uname' [-Wmissing-prototypes]
+>  1324 | ssize_t sysfs_get_uname(const char *buf, char *dst, size_t cnt)
+>=20
+> Move the declaration out of the #ifdef so it is always visible.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Thanks.
+Other than that:
 
-[1]: https://bugzilla.kernel.org/show_bug.cgi?id=218127
+Reviewed-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
--- 
-An old man doll... just what I always wanted! - Clara
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--ljpauxr7qypfgjtq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVOJO4ACgkQj4D7WH0S
+/k65EAf/UjDsSsmivHFeg9uWSJLPICzRXZuL3swrSrbDypaI8PuJaX8767ZWsiYT
+oDeWDpXzpAvyvz7WUCuFkRJIytR6EpscoR2t39XsflnxAYmcgYmiBDesY/A6xtuZ
+k2ZldHp9NVszzJP3PiXQ8JOcEFA1LEc08SjHzEz4F6QAsno6WZD/do4yBIU+ikEg
+57Rbk4CJghGfXhgOAmwcWrN91qOFQwhPpKHHDgFfYSZ3zLo+f6H9hSUkzOuLGDhx
+zbK1UnRCuRi3iiJlIqS2LzaSySmRQ9tsbtjk9aQx7+GqdGprHajLMikxQ13xn8jh
+U+F4kOqRAwsIV6i5/GUFGEGtLnMsSQ==
+=9raj
+-----END PGP SIGNATURE-----
+
+--ljpauxr7qypfgjtq--
