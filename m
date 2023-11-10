@@ -4,55 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE8E0C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 01:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7EAAC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 08:50:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=J4lXVksC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Vt6HlnPf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRMP322ghz3cVT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 12:56:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SRXbQ3G3xz3cY8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 19:50:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=J4lXVksC;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Vt6HlnPf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mgamail.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Fri, 10 Nov 2023 12:55:17 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mgamail.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRMN50mCvz3cFw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 12:55:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRXZM07Ltz3bWQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 19:49:43 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1699581317; x=1731117317;
+  t=1699606187; x=1731142187;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=/ir+TT9QA0tCXZ0ZfOcG8EVOXV1LHqiUY1q9ig2bjkM=;
-  b=J4lXVksC2Wzrex8Kj4rEeWWlWyDbjn773MBqIUPUfhZ9si2r2tuac7ZU
-   MJ+ZR7n33XLQ8+aFR4FMFPLqiPcPzCP4qtgtqd6AztnbH92GmjlVtNhKF
-   H9uOKKFCDjkfDm9KA8qPa7tVZYE+V5qKeBdELiP8hdbvgNwB2yt01mMfG
-   NikQreMmul7RF3Y1bomDfoXiSvMlYRAT/SPkiQjf0U8RE072WEoU5Iz+B
-   wMvm6MR/n5i0DSydZnAozRnQFROWM5hvfupgJyYJ9Gcc1SIgTL7dQfLgy
-   6fflkzo7zFKgeeWgnnvHdqIx8QycLzUQrI3xAckiYMo7AnCDRuRyUwNGE
+  bh=+ZJrwu8dlZjYjWjLp1gdXlOokUQXh0jEVn+ZKnk4oik=;
+  b=Vt6HlnPfgm8mybZI240MIyVHUR1n01Fd3IVIqorsZxKYVdqqYAi+BVSR
+   NcPG4nhBal2wn0jBXsdQ0mjtXHxX3yfngl+08eCgX8NxS9TiskinBkaGf
+   a0WlBVzb5+zsYz/7uk+A6PIDTwt8ifo3+GUw/AgOAio1Nzpqa3uR6uWj7
+   jV7bBLcC5eq076W2cUI0Nz9iIpt9cypxTWiHUzBIPPNVpGUiu4WzSY4x2
+   Kn1/CjBKJwxBDS11ZajVNo6t1QZ6mDSFfeMsGc/rFNV3VkKSXsFqgj+AA
+   l3g6obic0RI96qzriv6T2+TLFlSMA2dwXOH+8mEUX1DkGOiOGkCXOJyPh
    g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10889"; a="456612352"
+X-IronPort-AV: E=McAfee;i="6600,9927,10889"; a="380545623"
 X-IronPort-AV: E=Sophos;i="6.03,291,1694761200"; 
-   d="scan'208";a="456612352"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2023 17:54:04 -0800
+   d="scan'208";a="380545623"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2023 00:49:36 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10889"; a="713510691"
+X-IronPort-AV: E=McAfee;i="6600,9927,10889"; a="887305217"
 X-IronPort-AV: E=Sophos;i="6.03,291,1694761200"; 
-   d="scan'208";a="713510691"
+   d="scan'208";a="887305217"
 Received: from xiaoyaol-hp-g830.ccr.corp.intel.com (HELO [10.93.9.145]) ([10.93.9.145])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2023 17:53:48 -0800
-Message-ID: <956d8ee3-8b63-4a2d-b0c4-c0d3d74a0f6f@intel.com>
-Date: Fri, 10 Nov 2023 09:53:41 +0800
+  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2023 00:49:24 -0800
+Message-ID: <b4ec10ab-9d06-4784-8893-6e2e895cd9b1@intel.com>
+Date: Fri, 10 Nov 2023 16:49:21 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 15/34] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-Content-Language: en-US
+Subject: Re: [PATCH 16/34] KVM: x86: "Reset" vcpu->run->exit_reason early in
+ KVM_RUN
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
  Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Anup Patel <anup@brainfault.org>,
@@ -64,11 +62,12 @@ To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>,
  Andrew Morton <akpm@linux-foundation.org>
 References: <20231105163040.14904-1-pbonzini@redhat.com>
- <20231105163040.14904-16-pbonzini@redhat.com>
+ <20231105163040.14904-17-pbonzini@redhat.com>
+Content-Language: en-US
 From: Xiaoyao Li <xiaoyao.li@intel.com>
-In-Reply-To: <20231105163040.14904-16-pbonzini@redhat.com>
+In-Reply-To: <20231105163040.14904-17-pbonzini@redhat.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,365 +87,57 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 On 11/6/2023 12:30 AM, Paolo Bonzini wrote:
 > From: Sean Christopherson <seanjc@google.com>
 > 
-> Introduce an ioctl(), KVM_CREATE_GUEST_MEMFD, to allow creating file-based
-> memory that is tied to a specific KVM virtual machine and whose primary
-> purpose is to serve guest memory.
+> Initialize run->exit_reason to KVM_EXIT_UNKNOWN early in KVM_RUN to reduce
+> the probability of exiting to userspace with a stale run->exit_reason that
+> *appears* to be valid.
 > 
-> A guest-first memory subsystem allows for optimizations and enhancements
-> that are kludgy or outright infeasible to implement/support in a generic
-> memory subsystem.  With guest_memfd, guest protections and mapping sizes
-> are fully decoupled from host userspace mappings.   E.g. KVM currently
-> doesn't support mapping memory as writable in the guest without it also
-> being writable in host userspace, as KVM's ABI uses VMA protections to
-> define the allow guest protection.  Userspace can fudge this by
-> establishing two mappings, a writable mapping for the guest and readable
-> one for itself, but that’s suboptimal on multiple fronts.
+> To support fd-based guest memory (guest memory without a corresponding
+> userspace virtual address), KVM will exit to userspace for various memory
+> related errors, which userspace *may* be able to resolve, instead of using
+> e.g. BUS_MCEERR_AR.  And in the more distant future, KVM will also likely
+> utilize the same functionality to let userspace "intercept" and handle
+> memory faults when the userspace mapping is missing, i.e. when fast gup()
+> fails.
 > 
-> Similarly, KVM currently requires the guest mapping size to be a strict
-> subset of the host userspace mapping size, e.g. KVM doesn’t support
-> creating a 1GiB guest mapping unless userspace also has a 1GiB guest
-> mapping.  Decoupling the mappings sizes would allow userspace to precisely
-> map only what is needed without impacting guest performance, e.g. to
-> harden against unintentional accesses to guest memory.
+> Because many of KVM's internal APIs related to guest memory use '0' to
+> indicate "success, continue on" and not "exit to userspace", reporting
+> memory faults/errors to userspace will set run->exit_reason and
+> corresponding fields in the run structure fields in conjunction with a
+> a non-zero, negative return code, e.g. -EFAULT or -EHWPOISON.  And because
+> KVM already returns  -EFAULT in many paths, there's a relatively high
+> probability that KVM could return -EFAULT without setting run->exit_reason,
+> in which case reporting KVM_EXIT_UNKNOWN is much better than reporting
+> whatever exit reason happened to be in the run structure.
 > 
-> Decoupling guest and userspace mappings may also allow for a cleaner
-> alternative to high-granularity mappings for HugeTLB, which has reached a
-> bit of an impasse and is unlikely to ever be merged.
+> Note, KVM must wait until after run->immediate_exit is serviced to
+> sanitize run->exit_reason as KVM's ABI is that run->exit_reason is
+> preserved across KVM_RUN when run->immediate_exit is true.
 > 
-> A guest-first memory subsystem also provides clearer line of sight to
-> things like a dedicated memory pool (for slice-of-hardware VMs) and
-> elimination of "struct page" (for offload setups where userspace _never_
-> needs to mmap() guest memory).
-> 
-> More immediately, being able to map memory into KVM guests without mapping
-> said memory into the host is critical for Confidential VMs (CoCo VMs), the
-> initial use case for guest_memfd.  While AMD's SEV and Intel's TDX prevent
-> untrusted software from reading guest private data by encrypting guest
-> memory with a key that isn't usable by the untrusted host, projects such
-> as Protected KVM (pKVM) provide confidentiality and integrity *without*
-> relying on memory encryption.  And with SEV-SNP and TDX, accessing guest
-> private memory can be fatal to the host, i.e. KVM must be prevent host
-> userspace from accessing guest memory irrespective of hardware behavior.
-> 
-> Attempt #1 to support CoCo VMs was to add a VMA flag to mark memory as
-> being mappable only by KVM (or a similarly enlightened kernel subsystem).
-> That approach was abandoned largely due to it needing to play games with
-> PROT_NONE to prevent userspace from accessing guest memory.
-> 
-> Attempt #2 to was to usurp PG_hwpoison to prevent the host from mapping
-> guest private memory into userspace, but that approach failed to meet
-> several requirements for software-based CoCo VMs, e.g. pKVM, as the kernel
-> wouldn't easily be able to enforce a 1:1 page:guest association, let alone
-> a 1:1 pfn:gfn mapping.  And using PG_hwpoison does not work for memory
-> that isn't backed by 'struct page', e.g. if devices gain support for
-> exposing encrypted memory regions to guests.
-> 
-> Attempt #3 was to extend the memfd() syscall and wrap shmem to provide
-> dedicated file-based guest memory.  That approach made it as far as v10
-> before feedback from Hugh Dickins and Christian Brauner (and others) led
-> to it demise.
-> 
-> Hugh's objection was that piggybacking shmem made no sense for KVM's use
-> case as KVM didn't actually *want* the features provided by shmem.  I.e.
-> KVM was using memfd() and shmem to avoid having to manage memory directly,
-> not because memfd() and shmem were the optimal solution, e.g. things like
-> read/write/mmap in shmem were dead weight.
-> 
-> Christian pointed out flaws with implementing a partial overlay (wrapping
-> only _some_ of shmem), e.g. poking at inode_operations or super_operations
-> would show shmem stuff, but address_space_operations and file_operations
-> would show KVM's overlay.  Paraphrashing heavily, Christian suggested KVM
-> stop being lazy and create a proper API.
-> 
-> Link: https://lore.kernel.org/all/20201020061859.18385-1-kirill.shutemov@linux.intel.com
-> Link: https://lore.kernel.org/all/20210416154106.23721-1-kirill.shutemov@linux.intel.com
-> Link: https://lore.kernel.org/all/20210824005248.200037-1-seanjc@google.com
-> Link: https://lore.kernel.org/all/20211111141352.26311-1-chao.p.peng@linux.intel.com
-> Link: https://lore.kernel.org/all/20221202061347.1070246-1-chao.p.peng@linux.intel.com
-> Link: https://lore.kernel.org/all/ff5c5b97-acdf-9745-ebe5-c6609dd6322e@google.com
-> Link: https://lore.kernel.org/all/20230418-anfallen-irdisch-6993a61be10b@brauner
-> Link: https://lore.kernel.org/all/ZEM5Zq8oo+xnApW9@google.com
-> Link: https://lore.kernel.org/linux-mm/20230306191944.GA15773@monkey
-> Link: https://lore.kernel.org/linux-mm/ZII1p8ZHlHaQ3dDl@casper.infradead.org
-> Cc: Fuad Tabba <tabba@google.com>
-> Cc: Vishal Annapurve <vannapurve@google.com>
-> Cc: Ackerley Tng <ackerleytng@google.com>
-> Cc: Jarkko Sakkinen <jarkko@kernel.org>
-> Cc: Maciej Szmigiero <mail@maciej.szmigiero.name>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: David Hildenbrand <david@redhat.com>
-> Cc: Quentin Perret <qperret@google.com>
-> Cc: Michael Roth <michael.roth@amd.com>
-> Cc: Wang <wei.w.wang@intel.com>
-> Cc: Liam Merwick <liam.merwick@oracle.com>
-> Cc: Isaku Yamahata <isaku.yamahata@gmail.com>
-> Co-developed-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Co-developed-by: Yu Zhang <yu.c.zhang@linux.intel.com>
-> Signed-off-by: Yu Zhang <yu.c.zhang@linux.intel.com>
-> Co-developed-by: Chao Peng <chao.p.peng@linux.intel.com>
-> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-> Co-developed-by: Ackerley Tng <ackerleytng@google.com>
-> Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-> Co-developed-by: Isaku Yamahata <isaku.yamahata@intel.com>
-> Signed-off-by: Isaku Yamahata <isaku.yamahata@intel.com>
-> Co-developed-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> Co-developed-by: Michael Roth <michael.roth@amd.com>
-> Signed-off-by: Michael Roth <michael.roth@amd.com>
+> Link: https://lore.kernel.org/all/20230908222905.1321305-1-amoorthy@google.com
+> Link: https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf@google.com
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> Message-Id: <20231027182217.3615211-17-seanjc@google.com>
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Reviewed-by: Fuad Tabba <tabba@google.com>
+> Tested-by: Fuad Tabba <tabba@google.com>
+> Message-Id: <20231027182217.3615211-19-seanjc@google.com>
 > Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+
+Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+
 > ---
->   Documentation/virt/kvm/api.rst |  69 ++++-
->   fs/anon_inodes.c               |   1 +
->   include/linux/kvm_host.h       |  48 +++
->   include/uapi/linux/kvm.h       |  15 +-
->   virt/kvm/Kconfig               |   4 +
->   virt/kvm/Makefile.kvm          |   1 +
->   virt/kvm/guest_memfd.c         | 538 +++++++++++++++++++++++++++++++++
->   virt/kvm/kvm_main.c            |  59 +++-
->   virt/kvm/kvm_mm.h              |  26 ++
->   9 files changed, 754 insertions(+), 7 deletions(-)
->   create mode 100644 virt/kvm/guest_memfd.c
+>   arch/x86/kvm/x86.c | 1 +
+>   1 file changed, 1 insertion(+)
 > 
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index 083ed507e200..6d681f45969e 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6202,6 +6202,15 @@ superset of the features supported by the system.
->   :Parameters: struct kvm_userspace_memory_region2 (in)
->   :Returns: 0 on success, -1 on error
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 8f9d8939b63b..f661acb01c58 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -11082,6 +11082,7 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
+>   {
+>   	int r;
 >   
-> +KVM_SET_USER_MEMORY_REGION2 is an extension to KVM_SET_USER_MEMORY_REGION that
-> +allows mapping guest_memfd memory into a guest.  All fields shared with
-> +KVM_SET_USER_MEMORY_REGION identically.  Userspace can set KVM_MEM_GUEST_MEMFD
-> +in flags to have KVM bind the memory region to a given guest_memfd range of
-> +[guest_memfd_offset, guest_memfd_offset + memory_size].  The target guest_memfd
-> +must point at a file created via KVM_CREATE_GUEST_MEMFD on the current VM, and
-> +the target range must not be bound to any other memory region.  All standard
-> +bounds checks apply (use common sense).
-> +
->   ::
+> +	vcpu->run->exit_reason = KVM_EXIT_UNKNOWN;
+>   	vcpu->arch.l1tf_flush_l1d = true;
 >   
->     struct kvm_userspace_memory_region2 {
-> @@ -6210,9 +6219,24 @@ superset of the features supported by the system.
->   	__u64 guest_phys_addr;
->   	__u64 memory_size; /* bytes */
->   	__u64 userspace_addr; /* start of the userspace allocated memory */
-> +	__u64 guest_memfd_offset;
-> +	__u32 guest_memfd;
-> +	__u32 pad1;
-> +	__u64 pad2[14];
->     };
->   
-> -See KVM_SET_USER_MEMORY_REGION.
-> +A KVM_MEM_GUEST_MEMFD region _must_ have a valid guest_memfd (private memory) and
-> +userspace_addr (shared memory).  However, "valid" for userspace_addr simply
-> +means that the address itself must be a legal userspace address.  The backing
-> +mapping for userspace_addr is not required to be valid/populated at the time of
-> +KVM_SET_USER_MEMORY_REGION2, e.g. shared memory can be lazily mapped/allocated
-> +on-demand.
-> +
-> +When mapping a gfn into the guest, KVM selects shared vs. private, i.e consumes
-> +userspace_addr vs. guest_memfd, based on the gfn's KVM_MEMORY_ATTRIBUTE_PRIVATE
-> +state.  At VM creation time, all memory is shared, i.e. the PRIVATE attribute
-> +is '0' for all gfns.  Userspace can control whether memory is shared/private by
-> +toggling KVM_MEMORY_ATTRIBUTE_PRIVATE via KVM_SET_MEMORY_ATTRIBUTES as needed.
->   
->   4.141 KVM_SET_MEMORY_ATTRIBUTES
->   -------------------------------
-> @@ -6250,6 +6274,49 @@ the state of a gfn/page as needed.
->   
->   The "flags" field is reserved for future extensions and must be '0'.
->   
-> +4.142 KVM_CREATE_GUEST_MEMFD
-> +----------------------------
-> +
-> +:Capability: KVM_CAP_GUEST_MEMFD
-> +:Architectures: none
-> +:Type: vm ioctl
-> +:Parameters: struct kvm_create_guest_memfd(in)
-> +:Returns: 0 on success, <0 on error
-> +
-> +KVM_CREATE_GUEST_MEMFD creates an anonymous file and returns a file descriptor
-> +that refers to it.  guest_memfd files are roughly analogous to files created
-> +via memfd_create(), e.g. guest_memfd files live in RAM, have volatile storage,
-> +and are automatically released when the last reference is dropped.  Unlike
-> +"regular" memfd_create() files, guest_memfd files are bound to their owning
-> +virtual machine (see below), cannot be mapped, read, or written by userspace,
-> +and cannot be resized  (guest_memfd files do however support PUNCH_HOLE).
-> +
-> +::
-> +
-> +  struct kvm_create_guest_memfd {
-> +	__u64 size;
-> +	__u64 flags;
-> +	__u64 reserved[6];
-> +  };
-> +
-> +Conceptually, the inode backing a guest_memfd file represents physical memory,
-> +i.e. is coupled to the virtual machine as a thing, not to a "struct kvm".  The
-> +file itself, which is bound to a "struct kvm", is that instance's view of the
-> +underlying memory, e.g. effectively provides the translation of guest addresses
-> +to host memory.  This allows for use cases where multiple KVM structures are
-> +used to manage a single virtual machine, e.g. when performing intrahost
-> +migration of a virtual machine.
-> +
-> +KVM currently only supports mapping guest_memfd via KVM_SET_USER_MEMORY_REGION2,
-> +and more specifically via the guest_memfd and guest_memfd_offset fields in
-> +"struct kvm_userspace_memory_region2", where guest_memfd_offset is the offset
-> +into the guest_memfd instance.  For a given guest_memfd file, there can be at
-> +most one mapping per page, i.e. binding multiple memory regions to a single
-> +guest_memfd range is not allowed (any number of memory regions can be bound to
-> +a single guest_memfd file, but the bound ranges must not overlap).
-> +
-> +See KVM_SET_USER_MEMORY_REGION2 for additional details.
-> +
->   5. The kvm_run structure
->   ========================
->   
-> diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
-> index 3d4a27f8b4fe..6f3d31b4d1e3 100644
-> --- a/fs/anon_inodes.c
-> +++ b/fs/anon_inodes.c
-> @@ -181,6 +181,7 @@ struct file *anon_inode_create_getfile(const char *name,
->   	return __anon_inode_getfile(name, fops, priv, flags,
->   				    context_inode, true);
->   }
-> +EXPORT_SYMBOL_GPL(anon_inode_create_getfile);
->   
->   static int __anon_inode_getfd(const char *name,
->   			      const struct file_operations *fops,
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 68a144cb7dbc..a6de526c0426 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -589,8 +589,20 @@ struct kvm_memory_slot {
->   	u32 flags;
->   	short id;
->   	u16 as_id;
-> +
-> +#ifdef CONFIG_KVM_PRIVATE_MEM
-> +	struct {
-> +		struct file __rcu *file;
-> +		pgoff_t pgoff;
-> +	} gmem;
-> +#endif
->   };
->   
-> +static inline bool kvm_slot_can_be_private(const struct kvm_memory_slot *slot)
-> +{
-> +	return slot && (slot->flags & KVM_MEM_GUEST_MEMFD);
-> +}
-> +
-
-maybe we can move this block and ...
-
-<snip>
-
-> @@ -2355,6 +2379,30 @@ bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
->   					struct kvm_gfn_range *range);
->   bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
->   					 struct kvm_gfn_range *range);
-> +
-> +static inline bool kvm_mem_is_private(struct kvm *kvm, gfn_t gfn)
-> +{
-> +	return IS_ENABLED(CONFIG_KVM_PRIVATE_MEM) &&
-> +	       kvm_get_memory_attributes(kvm, gfn) & KVM_MEMORY_ATTRIBUTE_PRIVATE;
-> +}
-> +#else
-> +static inline bool kvm_mem_is_private(struct kvm *kvm, gfn_t gfn)
-> +{
-> +	return false;
-> +}
->   #endif /* CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES */
-
-this block to Patch 18?
-
-
-<snip>
-
-> @@ -4844,6 +4875,10 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
->   #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
->   	case KVM_CAP_MEMORY_ATTRIBUTES:
->   		return kvm_supported_mem_attributes(kvm);
-> +#endif
-> +#ifdef CONFIG_KVM_PRIVATE_MEM
-> +	case KVM_CAP_GUEST_MEMFD:
-> +		return !kvm || kvm_arch_has_private_mem(kvm);
->   #endif
->   	default:
->   		break;
-> @@ -5277,6 +5312,18 @@ static long kvm_vm_ioctl(struct file *filp,
->   	case KVM_GET_STATS_FD:
->   		r = kvm_vm_ioctl_get_stats_fd(kvm);
->   		break;
-> +#ifdef CONFIG_KVM_PRIVATE_MEM
-> +	case KVM_CREATE_GUEST_MEMFD: {
-> +		struct kvm_create_guest_memfd guest_memfd;
-
-Do we need a guard of below?
-
-		r = -EINVAL;
-		if (!kvm_arch_has_private_mem(kvm))
-			goto out;
-
-
-
-> +		r = -EFAULT;
-> +		if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
-> +			goto out;
-> +
-> +		r = kvm_gmem_create(kvm, &guest_memfd);
-> +		break;
-> +	}
-> +#endif
->   	default:
->   		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
->   	}
-> @@ -6409,6 +6456,8 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
->   	if (WARN_ON_ONCE(r))
->   		goto err_vfio;
->   
-> +	kvm_gmem_init(module);
-> +
->   	/*
->   	 * Registration _must_ be the very last thing done, as this exposes
->   	 * /dev/kvm to userspace, i.e. all infrastructure must be setup!
-> diff --git a/virt/kvm/kvm_mm.h b/virt/kvm/kvm_mm.h
-> index 180f1a09e6ba..ecefc7ec51af 100644
-> --- a/virt/kvm/kvm_mm.h
-> +++ b/virt/kvm/kvm_mm.h
-> @@ -37,4 +37,30 @@ static inline void gfn_to_pfn_cache_invalidate_start(struct kvm *kvm,
->   }
->   #endif /* HAVE_KVM_PFNCACHE */
->   
-> +#ifdef CONFIG_KVM_PRIVATE_MEM
-> +void kvm_gmem_init(struct module *module);
-> +int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args);
-> +int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
-> +		  unsigned int fd, loff_t offset);
-> +void kvm_gmem_unbind(struct kvm_memory_slot *slot);
-> +#else
-> +static inline void kvm_gmem_init(struct module *module)
-> +{
-> +
-> +}
-> +
-> +static inline int kvm_gmem_bind(struct kvm *kvm,
-> +					 struct kvm_memory_slot *slot,
-> +					 unsigned int fd, loff_t offset)
-> +{
-> +	WARN_ON_ONCE(1);
-> +	return -EIO;
-> +}
-> +
-> +static inline void kvm_gmem_unbind(struct kvm_memory_slot *slot)
-> +{
-> +	WARN_ON_ONCE(1);
-> +}
-> +#endif /* CONFIG_KVM_PRIVATE_MEM */
-> +
->   #endif /* __KVM_MM_H__ */
+>   	for (;;) {
 
