@@ -4,70 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7EAAC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 08:50:43 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Vt6HlnPf;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20007C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 11:55:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRXbQ3G3xz3cY8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 19:50:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Vt6HlnPf;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mgamail.intel.com; envelope-from=xiaoyao.li@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRXZM07Ltz3bWQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 19:49:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1699606187; x=1731142187;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=+ZJrwu8dlZjYjWjLp1gdXlOokUQXh0jEVn+ZKnk4oik=;
-  b=Vt6HlnPfgm8mybZI240MIyVHUR1n01Fd3IVIqorsZxKYVdqqYAi+BVSR
-   NcPG4nhBal2wn0jBXsdQ0mjtXHxX3yfngl+08eCgX8NxS9TiskinBkaGf
-   a0WlBVzb5+zsYz/7uk+A6PIDTwt8ifo3+GUw/AgOAio1Nzpqa3uR6uWj7
-   jV7bBLcC5eq076W2cUI0Nz9iIpt9cypxTWiHUzBIPPNVpGUiu4WzSY4x2
-   Kn1/CjBKJwxBDS11ZajVNo6t1QZ6mDSFfeMsGc/rFNV3VkKSXsFqgj+AA
-   l3g6obic0RI96qzriv6T2+TLFlSMA2dwXOH+8mEUX1DkGOiOGkCXOJyPh
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10889"; a="380545623"
-X-IronPort-AV: E=Sophos;i="6.03,291,1694761200"; 
-   d="scan'208";a="380545623"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2023 00:49:36 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10889"; a="887305217"
-X-IronPort-AV: E=Sophos;i="6.03,291,1694761200"; 
-   d="scan'208";a="887305217"
-Received: from xiaoyaol-hp-g830.ccr.corp.intel.com (HELO [10.93.9.145]) ([10.93.9.145])
-  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2023 00:49:24 -0800
-Message-ID: <b4ec10ab-9d06-4784-8893-6e2e895cd9b1@intel.com>
-Date: Fri, 10 Nov 2023 16:49:21 +0800
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SRch64GXpz3d95
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 22:55:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=vincenzo.frascino@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SRZWw1FGKz3cP5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 21:17:44 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6DC7712FC;
+	Fri, 10 Nov 2023 02:17:56 -0800 (PST)
+Received: from [192.168.4.21] (unknown [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2EC783F6C4;
+	Fri, 10 Nov 2023 02:16:58 -0800 (PST)
+Message-ID: <8288a2e5-afa3-462a-9470-0b010e4bc5bc@arm.com>
+Date: Fri, 10 Nov 2023 10:16:46 +0000
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 16/34] KVM: x86: "Reset" vcpu->run->exit_reason early in
- KVM_RUN
-To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oliver.upton@linux.dev>, Huacai Chen <chenhuacai@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Sean Christopherson <seanjc@google.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <20231105163040.14904-1-pbonzini@redhat.com>
- <20231105163040.14904-17-pbonzini@redhat.com>
+Subject: Re: [PATCH 15/22] arch: vdso: consolidate gettime prototypes
+To: Arnd Bergmann <arnd@kernel.org>, Andrew Morton
+ <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ Masahiro Yamada <masahiroy@kernel.org>, linux-kbuild@vger.kernel.org
+References: <20231108125843.3806765-1-arnd@kernel.org>
+ <20231108125843.3806765-16-arnd@kernel.org>
 Content-Language: en-US
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-In-Reply-To: <20231105163040.14904-17-pbonzini@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Vincenzo Frascino <vincenzo.frascino@arm.com>
+In-Reply-To: <20231108125843.3806765-16-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Fri, 10 Nov 2023 22:54:36 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,65 +46,309 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, linux-arm-kernel@lists.infradead.org, Maciej Szmigiero <mail@maciej.szmigiero.name>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, David Matlack <dmatlack@google.com>, Vlastimil Babka <vbabka@suse.cz>, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8?= =?UTF-8?Q?n?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Quentin Perret <qperret@google.com>, kvmarm@lists.linux.dev, linux-mips@vger.kernel.org, Jarkko Sakkinen <jarkko@kernel.org>, Yu Zhang <yu.c.zhang@linux.intel.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Vishal Annapurve <vannapurve@google.com>, li
- nuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, x86@kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, Guo Ren <guoren@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ard Biesheuvel <ardb@kernel.org>, linux-bcachefs@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-tra
+ ce-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, linux-csky@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>,
+  linux-usb@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-alpha@vger.kernel.org, linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>, Al Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/6/2023 12:30 AM, Paolo Bonzini wrote:
-> From: Sean Christopherson <seanjc@google.com>
-> 
-> Initialize run->exit_reason to KVM_EXIT_UNKNOWN early in KVM_RUN to reduce
-> the probability of exiting to userspace with a stale run->exit_reason that
-> *appears* to be valid.
-> 
-> To support fd-based guest memory (guest memory without a corresponding
-> userspace virtual address), KVM will exit to userspace for various memory
-> related errors, which userspace *may* be able to resolve, instead of using
-> e.g. BUS_MCEERR_AR.  And in the more distant future, KVM will also likely
-> utilize the same functionality to let userspace "intercept" and handle
-> memory faults when the userspace mapping is missing, i.e. when fast gup()
-> fails.
-> 
-> Because many of KVM's internal APIs related to guest memory use '0' to
-> indicate "success, continue on" and not "exit to userspace", reporting
-> memory faults/errors to userspace will set run->exit_reason and
-> corresponding fields in the run structure fields in conjunction with a
-> a non-zero, negative return code, e.g. -EFAULT or -EHWPOISON.  And because
-> KVM already returns  -EFAULT in many paths, there's a relatively high
-> probability that KVM could return -EFAULT without setting run->exit_reason,
-> in which case reporting KVM_EXIT_UNKNOWN is much better than reporting
-> whatever exit reason happened to be in the run structure.
-> 
-> Note, KVM must wait until after run->immediate_exit is serviced to
-> sanitize run->exit_reason as KVM's ABI is that run->exit_reason is
-> preserved across KVM_RUN when run->immediate_exit is true.
-> 
-> Link: https://lore.kernel.org/all/20230908222905.1321305-1-amoorthy@google.com
-> Link: https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf@google.com
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-> Reviewed-by: Fuad Tabba <tabba@google.com>
-> Tested-by: Fuad Tabba <tabba@google.com>
-> Message-Id: <20231027182217.3615211-19-seanjc@google.com>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+Hi Arnd,
 
-Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+On 11/8/23 12:58, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The VDSO functions are defined as globals in the kernel sources but intended
+> to be called from userspace, so there is no need to declare them in a kernel
+> side header.
+> 
+> Without a prototype, this now causes warnings such as
+> 
+> arch/mips/vdso/vgettimeofday.c:14:5: error: no previous prototype for '__vdso_clock_gettime' [-Werror=missing-prototypes]
+> arch/mips/vdso/vgettimeofday.c:28:5: error: no previous prototype for '__vdso_gettimeofday' [-Werror=missing-prototypes]
+> arch/mips/vdso/vgettimeofday.c:36:5: error: no previous prototype for '__vdso_clock_getres' [-Werror=missing-prototypes]
+> arch/mips/vdso/vgettimeofday.c:42:5: error: no previous prototype for '__vdso_clock_gettime64' [-Werror=missing-prototypes]
+> arch/sparc/vdso/vclock_gettime.c:254:1: error: no previous prototype for '__vdso_clock_gettime' [-Werror=missing-prototypes]
+> arch/sparc/vdso/vclock_gettime.c:282:1: error: no previous prototype for '__vdso_clock_gettime_stick' [-Werror=missing-prototypes]
+> arch/sparc/vdso/vclock_gettime.c:307:1: error: no previous prototype for '__vdso_gettimeofday' [-Werror=missing-prototypes]
+> arch/sparc/vdso/vclock_gettime.c:343:1: error: no previous prototype for '__vdso_gettimeofday_stick' [-Werror=missing-prototypes]
+> 
+> Most architectures have already added workarounds for these by adding
+> declarations somewhere, but since these are all compatible, we should
+> really just have one copy, with an #ifdef check for the 32-bit vs
+> 64-bit variant and use that everywhere.
+> 
+
+I agree, it is a good idea to have a single header for this purpose.
+
+> Unfortunately, the sparc version is currently incompatible since
+> that never added support for __vdso_clock_gettime64() in 32-bit
+> userland. For the moment, I'm leaving this one out, as I can't
+> easily test it and it requires a larger rework.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+Reviewed-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
 
 > ---
->   arch/x86/kvm/x86.c | 1 +
->   1 file changed, 1 insertion(+)
+>  arch/arm/include/asm/vdso.h              |  5 -----
+>  arch/arm/vdso/vgettimeofday.c            |  1 +
+>  arch/arm64/kernel/vdso32/vgettimeofday.c |  1 +
+>  arch/csky/kernel/vdso/vgettimeofday.c    | 11 +----------
+>  arch/loongarch/vdso/vgettimeofday.c      |  7 +------
+>  arch/mips/vdso/vgettimeofday.c           |  1 +
+>  arch/riscv/kernel/vdso/vgettimeofday.c   |  7 +------
+>  arch/x86/entry/vdso/vclock_gettime.c     | 10 +---------
+>  arch/x86/include/asm/vdso/gettimeofday.h |  2 --
+>  arch/x86/um/vdso/um_vdso.c               |  1 +
+>  include/vdso/gettime.h                   | 23 +++++++++++++++++++++++
+>  11 files changed, 31 insertions(+), 38 deletions(-)
+>  create mode 100644 include/vdso/gettime.h
 > 
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 8f9d8939b63b..f661acb01c58 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -11082,6 +11082,7 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
->   {
->   	int r;
->   
-> +	vcpu->run->exit_reason = KVM_EXIT_UNKNOWN;
->   	vcpu->arch.l1tf_flush_l1d = true;
->   
->   	for (;;) {
+> diff --git a/arch/arm/include/asm/vdso.h b/arch/arm/include/asm/vdso.h
+> index 422c3afa806a..5b85889f82ee 100644
+> --- a/arch/arm/include/asm/vdso.h
+> +++ b/arch/arm/include/asm/vdso.h
+> @@ -24,11 +24,6 @@ static inline void arm_install_vdso(struct mm_struct *mm, unsigned long addr)
+>  
+>  #endif /* CONFIG_VDSO */
+>  
+> -int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
+> -int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
+> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
+> -int __vdso_clock_getres(clockid_t clock_id, struct old_timespec32 *res);
+> -
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* __KERNEL__ */
+> diff --git a/arch/arm/vdso/vgettimeofday.c b/arch/arm/vdso/vgettimeofday.c
+> index a003beacac76..3554aa35f1ba 100644
+> --- a/arch/arm/vdso/vgettimeofday.c
+> +++ b/arch/arm/vdso/vgettimeofday.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/types.h>
+>  #include <asm/vdso.h>
+>  #include <asm/unwind.h>
+> +#include <vdso/gettime.h>
+>  
+>  int __vdso_clock_gettime(clockid_t clock,
+>  			 struct old_timespec32 *ts)
+> diff --git a/arch/arm64/kernel/vdso32/vgettimeofday.c b/arch/arm64/kernel/vdso32/vgettimeofday.c
+> index 5acff29c5991..e23c7f4ef26b 100644
+> --- a/arch/arm64/kernel/vdso32/vgettimeofday.c
+> +++ b/arch/arm64/kernel/vdso32/vgettimeofday.c
+> @@ -5,6 +5,7 @@
+>   * Copyright (C) 2018 ARM Limited
+>   *
+>   */
+> +#include <vdso/gettime.h>
+>  
+>  int __vdso_clock_gettime(clockid_t clock,
+>  			 struct old_timespec32 *ts)
+> diff --git a/arch/csky/kernel/vdso/vgettimeofday.c b/arch/csky/kernel/vdso/vgettimeofday.c
+> index c4831145eed5..55af30e83752 100644
+> --- a/arch/csky/kernel/vdso/vgettimeofday.c
+> +++ b/arch/csky/kernel/vdso/vgettimeofday.c
+> @@ -2,36 +2,27 @@
+>  
+>  #include <linux/time.h>
+>  #include <linux/types.h>
+> +#include <vdso/gettime.h>
+>  
+>  extern
+> -int __vdso_clock_gettime(clockid_t clock,
+> -			 struct old_timespec32 *ts);
+>  int __vdso_clock_gettime(clockid_t clock,
+>  			 struct old_timespec32 *ts)
+>  {
+>  	return __cvdso_clock_gettime32(clock, ts);
+>  }
+>  
+> -int __vdso_clock_gettime64(clockid_t clock,
+> -			   struct __kernel_timespec *ts);
+>  int __vdso_clock_gettime64(clockid_t clock,
+>  			   struct __kernel_timespec *ts)
+>  {
+>  	return __cvdso_clock_gettime(clock, ts);
+>  }
+>  
+> -extern
+> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+> -			struct timezone *tz);
+>  int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+>  			struct timezone *tz)
+>  {
+>  	return __cvdso_gettimeofday(tv, tz);
+>  }
+>  
+> -extern
+> -int __vdso_clock_getres(clockid_t clock_id,
+> -			struct old_timespec32 *res);
+>  int __vdso_clock_getres(clockid_t clock_id,
+>  			struct old_timespec32 *res)
+>  {
+> diff --git a/arch/loongarch/vdso/vgettimeofday.c b/arch/loongarch/vdso/vgettimeofday.c
+> index 8f22863bd7ea..0885c1f3a89d 100644
+> --- a/arch/loongarch/vdso/vgettimeofday.c
+> +++ b/arch/loongarch/vdso/vgettimeofday.c
+> @@ -5,23 +5,18 @@
+>   * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
+>   */
+>  #include <linux/types.h>
+> +#include <vdso/gettime.h>
+>  
+> -extern
+> -int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
+>  int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
+>  {
+>  	return __cvdso_clock_gettime(clock, ts);
+>  }
+>  
+> -extern
+> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
+>  int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
+>  {
+>  	return __cvdso_gettimeofday(tv, tz);
+>  }
+>  
+> -extern
+> -int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res);
+>  int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res)
+>  {
+>  	return __cvdso_clock_getres(clock_id, res);
+> diff --git a/arch/mips/vdso/vgettimeofday.c b/arch/mips/vdso/vgettimeofday.c
+> index 6b83b6376a4b..604afea3f336 100644
+> --- a/arch/mips/vdso/vgettimeofday.c
+> +++ b/arch/mips/vdso/vgettimeofday.c
+> @@ -9,6 +9,7 @@
+>   */
+>  #include <linux/time.h>
+>  #include <linux/types.h>
+> +#include <vdso/gettime.h>
+>  
+>  #if _MIPS_SIM != _MIPS_SIM_ABI64
+>  int __vdso_clock_gettime(clockid_t clock,
+> diff --git a/arch/riscv/kernel/vdso/vgettimeofday.c b/arch/riscv/kernel/vdso/vgettimeofday.c
+> index cc0d80699c31..b35057802584 100644
+> --- a/arch/riscv/kernel/vdso/vgettimeofday.c
+> +++ b/arch/riscv/kernel/vdso/vgettimeofday.c
+> @@ -8,23 +8,18 @@
+>  
+>  #include <linux/time.h>
+>  #include <linux/types.h>
+> +#include <vdso/gettime.h>
+>  
+> -extern
+> -int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
+>  int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
+>  {
+>  	return __cvdso_clock_gettime(clock, ts);
+>  }
+>  
+> -extern
+> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
+>  int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
+>  {
+>  	return __cvdso_gettimeofday(tv, tz);
+>  }
+>  
+> -extern
+> -int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res);
+>  int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res)
+>  {
+>  	return __cvdso_clock_getres(clock_id, res);
+> diff --git a/arch/x86/entry/vdso/vclock_gettime.c b/arch/x86/entry/vdso/vclock_gettime.c
+> index 7d70935b6758..0debc194bd78 100644
+> --- a/arch/x86/entry/vdso/vclock_gettime.c
+> +++ b/arch/x86/entry/vdso/vclock_gettime.c
+> @@ -11,12 +11,10 @@
+>  #include <linux/time.h>
+>  #include <linux/kernel.h>
+>  #include <linux/types.h>
+> +#include <vdso/gettime.h>
+>  
+>  #include "../../../../lib/vdso/gettimeofday.c"
+>  
+> -extern int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
+> -extern __kernel_old_time_t __vdso_time(__kernel_old_time_t *t);
+> -
+>  int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
+>  {
+>  	return __cvdso_gettimeofday(tv, tz);
+> @@ -35,9 +33,6 @@ __kernel_old_time_t time(__kernel_old_time_t *t)	__attribute__((weak, alias("__v
+>  
+>  #if defined(CONFIG_X86_64) && !defined(BUILD_VDSO32_64)
+>  /* both 64-bit and x32 use these */
+> -extern int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
+> -extern int __vdso_clock_getres(clockid_t clock, struct __kernel_timespec *res);
+> -
+>  int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
+>  {
+>  	return __cvdso_clock_gettime(clock, ts);
+> @@ -56,9 +51,6 @@ int clock_getres(clockid_t, struct __kernel_timespec *)
+>  
+>  #else
+>  /* i386 only */
+> -extern int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
+> -extern int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res);
+> -
+>  int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts)
+>  {
+>  	return __cvdso_clock_gettime32(clock, ts);
+> diff --git a/arch/x86/include/asm/vdso/gettimeofday.h b/arch/x86/include/asm/vdso/gettimeofday.h
+> index c81858d903dc..a46edb0e0cf7 100644
+> --- a/arch/x86/include/asm/vdso/gettimeofday.h
+> +++ b/arch/x86/include/asm/vdso/gettimeofday.h
+> @@ -337,8 +337,6 @@ u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
+>  }
+>  #define vdso_calc_delta vdso_calc_delta
+>  
+> -int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
+> -
+>  #endif /* !__ASSEMBLY__ */
+>  
+>  #endif /* __ASM_VDSO_GETTIMEOFDAY_H */
+> diff --git a/arch/x86/um/vdso/um_vdso.c b/arch/x86/um/vdso/um_vdso.c
+> index ff0f3b4b6c45..63768dd347ce 100644
+> --- a/arch/x86/um/vdso/um_vdso.c
+> +++ b/arch/x86/um/vdso/um_vdso.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/time.h>
+>  #include <linux/getcpu.h>
+>  #include <asm/unistd.h>
+> +#include <vdso/gettime.h>
+>  
+>  int __vdso_clock_gettime(clockid_t clock, struct __kernel_old_timespec *ts)
+>  {
+> diff --git a/include/vdso/gettime.h b/include/vdso/gettime.h
+> new file mode 100644
+> index 000000000000..c50d152e7b3e
+> --- /dev/null
+> +++ b/include/vdso/gettime.h
+> @@ -0,0 +1,23 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _VDSO_GETTIME_H
+> +#define _VDSO_GETTIME_H
+> +
+> +#include <linux/types.h>
+> +
+> +struct __kernel_timespec;
+> +struct timezone;
+> +
+> +#if !defined(CONFIG_64BIT) || defined(BUILD_VDSO32_64)
+> +struct old_timespec32;
+> +int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res);
+> +int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
+> +#else
+> +int __vdso_clock_getres(clockid_t clock, struct __kernel_timespec *res);
+> +int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
+> +#endif
+> +
+> +__kernel_old_time_t __vdso_time(__kernel_old_time_t *t);
+> +int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
+> +int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
+> +
+> +#endif
 
+-- 
+Regards,
+Vincenzo
