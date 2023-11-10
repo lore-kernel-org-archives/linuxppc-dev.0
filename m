@@ -4,37 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20007C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 11:55:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1FB1C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 18:24:02 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=k1akDEfa;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRch64GXpz3d95
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Nov 2023 22:55:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=vincenzo.frascino@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SRZWw1FGKz3cP5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 21:17:44 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6DC7712FC;
-	Fri, 10 Nov 2023 02:17:56 -0800 (PST)
-Received: from [192.168.4.21] (unknown [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2EC783F6C4;
-	Fri, 10 Nov 2023 02:16:58 -0800 (PST)
-Message-ID: <8288a2e5-afa3-462a-9470-0b010e4bc5bc@arm.com>
-Date: Fri, 10 Nov 2023 10:16:46 +0000
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 15/22] arch: vdso: consolidate gettime prototypes
-To: Arnd Bergmann <arnd@kernel.org>, Andrew Morton
- <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- Masahiro Yamada <masahiroy@kernel.org>, linux-kbuild@vger.kernel.org
-References: <20231108125843.3806765-1-arnd@kernel.org>
- <20231108125843.3806765-16-arnd@kernel.org>
-Content-Language: en-US
-From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-In-Reply-To: <20231108125843.3806765-16-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Fri, 10 Nov 2023 22:54:36 +1100
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SRnJx2lLlz3cVm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 05:24:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=k1akDEfa;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3bhvozqykdfkj51ea37ff7c5.3fdc9elogg3-45mc9jkj.fqc12j.fi7@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRnHv2vvBz30fD
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2023 05:23:05 +1100 (AEDT)
+Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-5b02ed0f886so31980747b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2023 10:23:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1699640581; x=1700245381; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=/u2JG0fndtvz5StB0AokXkOquj7NpP7M8gj3x0QBG2E=;
+        b=k1akDEfaYOrqvKjGdfeCoiInVnqlLSoe9ZpTfAyvjtdQVV0RVTfQUCnrCi222J0iUw
+         ie5DdCAQhl+WL01Nj32jh0QyB3VoSE95PIRHuCY9eklKQDqPoEMj5WteRLIA3LvlR0+w
+         yiaKQ5cQtmg7nvOFLgqf0n4Y/QX9aAL0N7FPPdjTCR4bzNFMDr73O44fQlIYR4YS7Xcu
+         qlPFMU8dwUiOjMPuQzK9J2JhIpY0lPXGB9Ma8rpS8nU/daDsBD26HjTK8iJi6ShTp482
+         TjSmuLlTKIGF2freWcXaf646ZQEGJNmzrjOB396UXSE/FDEBFKM0e3rUnhL9Xjcw9V0Z
+         1xJg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699640581; x=1700245381;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=/u2JG0fndtvz5StB0AokXkOquj7NpP7M8gj3x0QBG2E=;
+        b=juGpjG0whjO01Y8Cqju48fTrMjvhbeACXOYzpx2bFLRWip/at0YhP7aGQ/MrQgpIyo
+         bXZDJ8rg4lhUX8pHE57/Lx2CiTKi6ThZP6ZmTfpfAJoeWF/ptLmcij6U2ekoOCxo9mAX
+         6EpUM1N2wxc+rf1CEwiOmRiTqNweZYOeUojAmgaPfiEvIBNUhYSOdzvLrUMNj7SCx2UN
+         nMK9rtp+nrRz0BsjSHmJZpwMYEpO3ky7BKqNc2TjFV/AO+Aka+YFJq2lOlJMhwOJ3Kfy
+         5xi4k5Ic7jzg1n+uyINpwueMtvpCWS/dwOnrj6f3nwtumDfCZzqDrt8y8DlZ3chjyk7w
+         IQSA==
+X-Gm-Message-State: AOJu0Yw7xhj/isUDZLps8ieJey4JH56QyiHE7HAEVBu+KYHQF2jgWJ8o
+	AYcJRBrACfYK0mqlE7WB6b/RlPrIPsA=
+X-Google-Smtp-Source: AGHT+IFilgu1/Q1EZiEoL3sTFYKCQfnhtgAeMBBAfAGcs6DHfZF6Y3nZ5EepLJy80XYZ0ZRT2keQkzxRdJY=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a81:ef0c:0:b0:5be:ae71:d70a with SMTP id
+ o12-20020a81ef0c000000b005beae71d70amr242444ywm.4.1699640580898; Fri, 10 Nov
+ 2023 10:23:00 -0800 (PST)
+Date: Fri, 10 Nov 2023 10:22:59 -0800
+In-Reply-To: <956d8ee3-8b63-4a2d-b0c4-c0d3d74a0f6f@intel.com>
+Mime-Version: 1.0
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-16-pbonzini@redhat.com>
+ <956d8ee3-8b63-4a2d-b0c4-c0d3d74a0f6f@intel.com>
+Message-ID: <ZU51A3U6E3aZXayC@google.com>
+Subject: Re: [PATCH 15/34] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+From: Sean Christopherson <seanjc@google.com>
+To: Xiaoyao Li <xiaoyao.li@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,309 +75,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, x86@kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, Guo Ren <guoren@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ard Biesheuvel <ardb@kernel.org>, linux-bcachefs@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-tra
- ce-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org, linux-csky@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Timur Tabi <timur@kernel.org>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kent Overstreet <kent.overstreet@linux.dev>, Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>,
-  linux-usb@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-alpha@vger.kernel.org, linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.co
+ m>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Arnd,
+On Fri, Nov 10, 2023, Xiaoyao Li wrote:
+> On 11/6/2023 12:30 AM, Paolo Bonzini wrote:
+> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> > index 68a144cb7dbc..a6de526c0426 100644
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -589,8 +589,20 @@ struct kvm_memory_slot {
+> >   	u32 flags;
+> >   	short id;
+> >   	u16 as_id;
+> > +
+> > +#ifdef CONFIG_KVM_PRIVATE_MEM
+> > +	struct {
+> > +		struct file __rcu *file;
+> > +		pgoff_t pgoff;
+> > +	} gmem;
+> > +#endif
+> >   };
+> > +static inline bool kvm_slot_can_be_private(const struct kvm_memory_slot *slot)
+> > +{
+> > +	return slot && (slot->flags & KVM_MEM_GUEST_MEMFD);
+> > +}
+> > +
+> 
+> maybe we can move this block and ...
+> 
+> <snip>
+> 
+> > @@ -2355,6 +2379,30 @@ bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
+> >   					struct kvm_gfn_range *range);
+> >   bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
+> >   					 struct kvm_gfn_range *range);
+> > +
+> > +static inline bool kvm_mem_is_private(struct kvm *kvm, gfn_t gfn)
+> > +{
+> > +	return IS_ENABLED(CONFIG_KVM_PRIVATE_MEM) &&
+> > +	       kvm_get_memory_attributes(kvm, gfn) & KVM_MEMORY_ATTRIBUTE_PRIVATE;
+> > +}
+> > +#else
+> > +static inline bool kvm_mem_is_private(struct kvm *kvm, gfn_t gfn)
+> > +{
+> > +	return false;
+> > +}
+> >   #endif /* CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES */
+> 
+> this block to Patch 18?
 
-On 11/8/23 12:58, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> The VDSO functions are defined as globals in the kernel sources but intended
-> to be called from userspace, so there is no need to declare them in a kernel
-> side header.
-> 
-> Without a prototype, this now causes warnings such as
-> 
-> arch/mips/vdso/vgettimeofday.c:14:5: error: no previous prototype for '__vdso_clock_gettime' [-Werror=missing-prototypes]
-> arch/mips/vdso/vgettimeofday.c:28:5: error: no previous prototype for '__vdso_gettimeofday' [-Werror=missing-prototypes]
-> arch/mips/vdso/vgettimeofday.c:36:5: error: no previous prototype for '__vdso_clock_getres' [-Werror=missing-prototypes]
-> arch/mips/vdso/vgettimeofday.c:42:5: error: no previous prototype for '__vdso_clock_gettime64' [-Werror=missing-prototypes]
-> arch/sparc/vdso/vclock_gettime.c:254:1: error: no previous prototype for '__vdso_clock_gettime' [-Werror=missing-prototypes]
-> arch/sparc/vdso/vclock_gettime.c:282:1: error: no previous prototype for '__vdso_clock_gettime_stick' [-Werror=missing-prototypes]
-> arch/sparc/vdso/vclock_gettime.c:307:1: error: no previous prototype for '__vdso_gettimeofday' [-Werror=missing-prototypes]
-> arch/sparc/vdso/vclock_gettime.c:343:1: error: no previous prototype for '__vdso_gettimeofday_stick' [-Werror=missing-prototypes]
-> 
-> Most architectures have already added workarounds for these by adding
-> declarations somewhere, but since these are all compatible, we should
-> really just have one copy, with an #ifdef check for the 32-bit vs
-> 64-bit variant and use that everywhere.
-> 
+It would work, but my vote is to keep them here to minimize the changes to common
+KVM code in the x86 enabling.  It's not a strong preference though.  Of course,
+at this point, fiddling with this sort of thing is probably a bad idea in terms
+of landing guest_memfd.
 
-I agree, it is a good idea to have a single header for this purpose.
-
-> Unfortunately, the sparc version is currently incompatible since
-> that never added support for __vdso_clock_gettime64() in 32-bit
-> userland. For the moment, I'm leaving this one out, as I can't
-> easily test it and it requires a larger rework.
+> > @@ -4844,6 +4875,10 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+> >   #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+> >   	case KVM_CAP_MEMORY_ATTRIBUTES:
+> >   		return kvm_supported_mem_attributes(kvm);
+> > +#endif
+> > +#ifdef CONFIG_KVM_PRIVATE_MEM
+> > +	case KVM_CAP_GUEST_MEMFD:
+> > +		return !kvm || kvm_arch_has_private_mem(kvm);
+> >   #endif
+> >   	default:
+> >   		break;
+> > @@ -5277,6 +5312,18 @@ static long kvm_vm_ioctl(struct file *filp,
+> >   	case KVM_GET_STATS_FD:
+> >   		r = kvm_vm_ioctl_get_stats_fd(kvm);
+> >   		break;
+> > +#ifdef CONFIG_KVM_PRIVATE_MEM
+> > +	case KVM_CREATE_GUEST_MEMFD: {
+> > +		struct kvm_create_guest_memfd guest_memfd;
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Reviewed-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
-
-> ---
->  arch/arm/include/asm/vdso.h              |  5 -----
->  arch/arm/vdso/vgettimeofday.c            |  1 +
->  arch/arm64/kernel/vdso32/vgettimeofday.c |  1 +
->  arch/csky/kernel/vdso/vgettimeofday.c    | 11 +----------
->  arch/loongarch/vdso/vgettimeofday.c      |  7 +------
->  arch/mips/vdso/vgettimeofday.c           |  1 +
->  arch/riscv/kernel/vdso/vgettimeofday.c   |  7 +------
->  arch/x86/entry/vdso/vclock_gettime.c     | 10 +---------
->  arch/x86/include/asm/vdso/gettimeofday.h |  2 --
->  arch/x86/um/vdso/um_vdso.c               |  1 +
->  include/vdso/gettime.h                   | 23 +++++++++++++++++++++++
->  11 files changed, 31 insertions(+), 38 deletions(-)
->  create mode 100644 include/vdso/gettime.h
+> Do we need a guard of below?
 > 
-> diff --git a/arch/arm/include/asm/vdso.h b/arch/arm/include/asm/vdso.h
-> index 422c3afa806a..5b85889f82ee 100644
-> --- a/arch/arm/include/asm/vdso.h
-> +++ b/arch/arm/include/asm/vdso.h
-> @@ -24,11 +24,6 @@ static inline void arm_install_vdso(struct mm_struct *mm, unsigned long addr)
->  
->  #endif /* CONFIG_VDSO */
->  
-> -int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
-> -int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
-> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
-> -int __vdso_clock_getres(clockid_t clock_id, struct old_timespec32 *res);
-> -
->  #endif /* __ASSEMBLY__ */
->  
->  #endif /* __KERNEL__ */
-> diff --git a/arch/arm/vdso/vgettimeofday.c b/arch/arm/vdso/vgettimeofday.c
-> index a003beacac76..3554aa35f1ba 100644
-> --- a/arch/arm/vdso/vgettimeofday.c
-> +++ b/arch/arm/vdso/vgettimeofday.c
-> @@ -8,6 +8,7 @@
->  #include <linux/types.h>
->  #include <asm/vdso.h>
->  #include <asm/unwind.h>
-> +#include <vdso/gettime.h>
->  
->  int __vdso_clock_gettime(clockid_t clock,
->  			 struct old_timespec32 *ts)
-> diff --git a/arch/arm64/kernel/vdso32/vgettimeofday.c b/arch/arm64/kernel/vdso32/vgettimeofday.c
-> index 5acff29c5991..e23c7f4ef26b 100644
-> --- a/arch/arm64/kernel/vdso32/vgettimeofday.c
-> +++ b/arch/arm64/kernel/vdso32/vgettimeofday.c
-> @@ -5,6 +5,7 @@
->   * Copyright (C) 2018 ARM Limited
->   *
->   */
-> +#include <vdso/gettime.h>
->  
->  int __vdso_clock_gettime(clockid_t clock,
->  			 struct old_timespec32 *ts)
-> diff --git a/arch/csky/kernel/vdso/vgettimeofday.c b/arch/csky/kernel/vdso/vgettimeofday.c
-> index c4831145eed5..55af30e83752 100644
-> --- a/arch/csky/kernel/vdso/vgettimeofday.c
-> +++ b/arch/csky/kernel/vdso/vgettimeofday.c
-> @@ -2,36 +2,27 @@
->  
->  #include <linux/time.h>
->  #include <linux/types.h>
-> +#include <vdso/gettime.h>
->  
->  extern
-> -int __vdso_clock_gettime(clockid_t clock,
-> -			 struct old_timespec32 *ts);
->  int __vdso_clock_gettime(clockid_t clock,
->  			 struct old_timespec32 *ts)
->  {
->  	return __cvdso_clock_gettime32(clock, ts);
->  }
->  
-> -int __vdso_clock_gettime64(clockid_t clock,
-> -			   struct __kernel_timespec *ts);
->  int __vdso_clock_gettime64(clockid_t clock,
->  			   struct __kernel_timespec *ts)
->  {
->  	return __cvdso_clock_gettime(clock, ts);
->  }
->  
-> -extern
-> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
-> -			struct timezone *tz);
->  int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
->  			struct timezone *tz)
->  {
->  	return __cvdso_gettimeofday(tv, tz);
->  }
->  
-> -extern
-> -int __vdso_clock_getres(clockid_t clock_id,
-> -			struct old_timespec32 *res);
->  int __vdso_clock_getres(clockid_t clock_id,
->  			struct old_timespec32 *res)
->  {
-> diff --git a/arch/loongarch/vdso/vgettimeofday.c b/arch/loongarch/vdso/vgettimeofday.c
-> index 8f22863bd7ea..0885c1f3a89d 100644
-> --- a/arch/loongarch/vdso/vgettimeofday.c
-> +++ b/arch/loongarch/vdso/vgettimeofday.c
-> @@ -5,23 +5,18 @@
->   * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
->   */
->  #include <linux/types.h>
-> +#include <vdso/gettime.h>
->  
-> -extern
-> -int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
->  int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
->  {
->  	return __cvdso_clock_gettime(clock, ts);
->  }
->  
-> -extern
-> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
->  int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
->  {
->  	return __cvdso_gettimeofday(tv, tz);
->  }
->  
-> -extern
-> -int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res);
->  int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res)
->  {
->  	return __cvdso_clock_getres(clock_id, res);
-> diff --git a/arch/mips/vdso/vgettimeofday.c b/arch/mips/vdso/vgettimeofday.c
-> index 6b83b6376a4b..604afea3f336 100644
-> --- a/arch/mips/vdso/vgettimeofday.c
-> +++ b/arch/mips/vdso/vgettimeofday.c
-> @@ -9,6 +9,7 @@
->   */
->  #include <linux/time.h>
->  #include <linux/types.h>
-> +#include <vdso/gettime.h>
->  
->  #if _MIPS_SIM != _MIPS_SIM_ABI64
->  int __vdso_clock_gettime(clockid_t clock,
-> diff --git a/arch/riscv/kernel/vdso/vgettimeofday.c b/arch/riscv/kernel/vdso/vgettimeofday.c
-> index cc0d80699c31..b35057802584 100644
-> --- a/arch/riscv/kernel/vdso/vgettimeofday.c
-> +++ b/arch/riscv/kernel/vdso/vgettimeofday.c
-> @@ -8,23 +8,18 @@
->  
->  #include <linux/time.h>
->  #include <linux/types.h>
-> +#include <vdso/gettime.h>
->  
-> -extern
-> -int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
->  int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
->  {
->  	return __cvdso_clock_gettime(clock, ts);
->  }
->  
-> -extern
-> -int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
->  int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
->  {
->  	return __cvdso_gettimeofday(tv, tz);
->  }
->  
-> -extern
-> -int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res);
->  int __vdso_clock_getres(clockid_t clock_id, struct __kernel_timespec *res)
->  {
->  	return __cvdso_clock_getres(clock_id, res);
-> diff --git a/arch/x86/entry/vdso/vclock_gettime.c b/arch/x86/entry/vdso/vclock_gettime.c
-> index 7d70935b6758..0debc194bd78 100644
-> --- a/arch/x86/entry/vdso/vclock_gettime.c
-> +++ b/arch/x86/entry/vdso/vclock_gettime.c
-> @@ -11,12 +11,10 @@
->  #include <linux/time.h>
->  #include <linux/kernel.h>
->  #include <linux/types.h>
-> +#include <vdso/gettime.h>
->  
->  #include "../../../../lib/vdso/gettimeofday.c"
->  
-> -extern int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
-> -extern __kernel_old_time_t __vdso_time(__kernel_old_time_t *t);
-> -
->  int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
->  {
->  	return __cvdso_gettimeofday(tv, tz);
-> @@ -35,9 +33,6 @@ __kernel_old_time_t time(__kernel_old_time_t *t)	__attribute__((weak, alias("__v
->  
->  #if defined(CONFIG_X86_64) && !defined(BUILD_VDSO32_64)
->  /* both 64-bit and x32 use these */
-> -extern int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
-> -extern int __vdso_clock_getres(clockid_t clock, struct __kernel_timespec *res);
-> -
->  int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
->  {
->  	return __cvdso_clock_gettime(clock, ts);
-> @@ -56,9 +51,6 @@ int clock_getres(clockid_t, struct __kernel_timespec *)
->  
->  #else
->  /* i386 only */
-> -extern int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
-> -extern int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res);
-> -
->  int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts)
->  {
->  	return __cvdso_clock_gettime32(clock, ts);
-> diff --git a/arch/x86/include/asm/vdso/gettimeofday.h b/arch/x86/include/asm/vdso/gettimeofday.h
-> index c81858d903dc..a46edb0e0cf7 100644
-> --- a/arch/x86/include/asm/vdso/gettimeofday.h
-> +++ b/arch/x86/include/asm/vdso/gettimeofday.h
-> @@ -337,8 +337,6 @@ u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
->  }
->  #define vdso_calc_delta vdso_calc_delta
->  
-> -int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
-> -
->  #endif /* !__ASSEMBLY__ */
->  
->  #endif /* __ASM_VDSO_GETTIMEOFDAY_H */
-> diff --git a/arch/x86/um/vdso/um_vdso.c b/arch/x86/um/vdso/um_vdso.c
-> index ff0f3b4b6c45..63768dd347ce 100644
-> --- a/arch/x86/um/vdso/um_vdso.c
-> +++ b/arch/x86/um/vdso/um_vdso.c
-> @@ -12,6 +12,7 @@
->  #include <linux/time.h>
->  #include <linux/getcpu.h>
->  #include <asm/unistd.h>
-> +#include <vdso/gettime.h>
->  
->  int __vdso_clock_gettime(clockid_t clock, struct __kernel_old_timespec *ts)
->  {
-> diff --git a/include/vdso/gettime.h b/include/vdso/gettime.h
-> new file mode 100644
-> index 000000000000..c50d152e7b3e
-> --- /dev/null
-> +++ b/include/vdso/gettime.h
-> @@ -0,0 +1,23 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _VDSO_GETTIME_H
-> +#define _VDSO_GETTIME_H
-> +
-> +#include <linux/types.h>
-> +
-> +struct __kernel_timespec;
-> +struct timezone;
-> +
-> +#if !defined(CONFIG_64BIT) || defined(BUILD_VDSO32_64)
-> +struct old_timespec32;
-> +int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res);
-> +int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
-> +#else
-> +int __vdso_clock_getres(clockid_t clock, struct __kernel_timespec *res);
-> +int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
-> +#endif
-> +
-> +__kernel_old_time_t __vdso_time(__kernel_old_time_t *t);
-> +int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
-> +int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
-> +
-> +#endif
+> 		r = -EINVAL;
+> 		if (!kvm_arch_has_private_mem(kvm))
+> 			goto out;
 
--- 
-Regards,
-Vincenzo
+Argh, yeah, that's weird since KVM_CAP_GUEST_MEMFD says "not supported" if the
+VM doesn't support private memory.
+
+Enforcing that would break guest_memfd_test.c though.  And having to create a
+"special" VM just to test basic guest_memfd functionality would be quite
+annoying.
+
+So my vote is to do:
+
+	case KVM_CAP_GUEST_MEMFD:
+		return IS_ENABLED(CONFIG_KVM_PRIVATE_MEM);
+
+There's no harm to KVM if userspace creates a file it can't use, and at some
+point KVM will hopefully support guest_memfd irrespective of private memory.
