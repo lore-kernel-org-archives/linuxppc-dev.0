@@ -4,48 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82621C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 09:58:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6101FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 10:09:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4STPy81c7Pz3dD1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 20:58:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4STQCN0TKZz3cM7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 21:09:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.214.169; helo=mail-pl1-f169.google.com; envelope-from=kswilczynski@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4STPxY48VNz2xqq
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 20:57:50 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r2ThD-0002FP-LY; Mon, 13 Nov 2023 10:57:31 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r2ThC-008her-Uf; Mon, 13 Nov 2023 10:57:30 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r2ThC-000e8G-LG; Mon, 13 Nov 2023 10:57:30 +0100
-Date: Mon, 13 Nov 2023 10:57:30 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] tty: hvc: Make hvc_remove() return no value
-Message-ID: <20231113095730.uein5ix7eduqvboq@pengutronix.de>
-References: <20231105214406.3765906-4-u.kleine-koenig@pengutronix.de>
- <20231105214406.3765906-5-u.kleine-koenig@pengutronix.de>
- <CWXL68T68A18.BZ8WHB15ZU2Y@wheely>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4STQBq1Vg0z3cF1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 21:09:21 +1100 (AEDT)
+Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-1ce1603f5cdso8561835ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 02:09:21 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699870156; x=1700474956;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KtssXOhT1IjkLH8DCwvrp9grDBN4NL0H2Di/o5vivrg=;
+        b=s7iuiBV1tpApbj6WGzKjcxgh+X0A1YFWtc3rTRBbVDXltkSDNksUjjpO2JXU0XN9Sv
+         mn+cSEnKh1J62MT8Ig9INxCpyQMoyK6iZbdZok1tYqayqd89yIblLqiRUt6MIovQjrPG
+         co6KZ8YlSyg8wY3t3mDUKS3gjJSHUVeFS3/ZeoBHG+58lEaCYI8q94J/Mb7zIpuS7Brv
+         YMst3ay3iPyfu42Vmj8QhOjP0A3KdnQWeHEC5lQntfQVPAzJrHG79GsCPsuilDf/CGeq
+         Gg5HI9uT7+DWOWqXmIM5YHAoNfGt6KpTmhNqNGdq9IPLqpu/llysq2GI5ctXwn8WS2AA
+         kixg==
+X-Gm-Message-State: AOJu0YxlTGIzQuCRl3xNTTSHKKNgUIbI3MtNVz9t8aGmFm63jUsYv06V
+	Mq9hLLM9m8RPTY27lgPcWf4=
+X-Google-Smtp-Source: AGHT+IGj6vUeUwfKU7nKXujpx369C8OQBBOgD1h6Il4RG1NldEGkeXRi0upURBkbSxn6ENkTD/+7LA==
+X-Received: by 2002:a17:902:e552:b0:1ca:a290:4c0c with SMTP id n18-20020a170902e55200b001caa2904c0cmr5440330plf.16.1699870155884;
+        Mon, 13 Nov 2023 02:09:15 -0800 (PST)
+Received: from localhost (fpd11144dd.ap.nuro.jp. [209.17.68.221])
+        by smtp.gmail.com with ESMTPSA id o6-20020a170902d4c600b001cc56354cc8sm3741846plg.62.2023.11.13.02.09.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Nov 2023 02:09:15 -0800 (PST)
+Date: Mon, 13 Nov 2023 19:09:14 +0900
+From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: Re: [PATCH 0/3] PCI: dwc: Improve code readability
+Message-ID: <20231113100914.GB1583963@rocinante>
+References: <20231113013300.2132152-1-yoshihiro.shimoda.uh@renesas.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="e57ttq5xm22amhut"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CWXL68T68A18.BZ8WHB15ZU2Y@wheely>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20231113013300.2132152-1-yoshihiro.shimoda.uh@renesas.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,65 +60,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>
+Cc: robh@kernel.org, mani@kernel.org, gustavo.pimentel@synopsys.com, lpieralisi@kernel.org, linux-pci@vger.kernel.org, roy.zang@nxp.com, linux-renesas-soc@vger.kernel.org, minghuan.Lian@nxp.com, jingoohan1@gmail.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org, mingkai.hu@nxp.com, marek.vasut+renesas@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Yoshihiro!
 
---e57ttq5xm22amhut
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> This patch series is based on the latest pci.git / next branch.
+[...]
 
-On Mon, Nov 13, 2023 at 07:45:27PM +1000, Nicholas Piggin wrote:
-> On Mon Nov 6, 2023 at 7:44 AM AEST, Uwe Kleine-K=F6nig wrote:
-> > The function hvc_remove() returns zero unconditionally. Make it return
-> > void instead to make it obvious that the caller doesn't need to do any
-> > error handling. Accordingly drop the error handling from
-> > hvc_opal_remove().
-> >
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
->=20
-> IIUC these are functionally no change, just tidying and removing
-> dead code?
+Thank you for following up to tidy things up!  Much appreciated.
 
-In case this isn't only a rethorical question: There is indeed no
-change in behaviour. hvc_remove() returned always zero, so
+Now, while you are looking at things, can you also take care about the following:
 
-	rc =3D hvc_remove(hp);
-	if (rc =3D=3D 0) {
-		... some code not changing rc ...
-	}
-	... some more code not changing rc ...
-	return rc
+  drivers/pci/controller/dwc/pcie-rcar-gen4.c:439:15: warning: cast to smaller integer type 'enum dw_pcie_device_mode' from 'const void *' [-Wvoid-pointer-to-enum-cast]
 
-can be simplified to
+This requires adding structs for each data member of the of_device_id type.
 
-	hvc_remove(hp);
-	... some code not changing rc ...
-	... some more code not changing rc ...
-	return 0;
+Some examples from other drivers:
 
-Best regards
-Uwe
+  - https://elixir.bootlin.com/linux/v6.6.1/source/drivers/pci/controller/dwc/pcie-tegra194.c#L2440
+  - https://elixir.bootlin.com/linux/v6.6.1/source/drivers/pci/controller/dwc/pci-keystone.c#L1074
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+Thank you! :)
 
---e57ttq5xm22amhut
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVR8wkACgkQj4D7WH0S
-/k6j1AgAiALJm4H/iiU3yfW9SEfUmYZS+axaeMjy9V8y2YO/HhvKYOaoAHaAOv0p
-8rbM2Dls5ordKi6T97/J1vsOayAFKcFO83pGG/kHUL2DBez1vWrN+Qx/v9FdPx5F
-aEUjNvhVqV7ZLD9KzAMJ5j4378sdFkaeRpPdgrkJiWz3JOFbavSMb55DXX0XUWcU
-cAz3aPrM/pbUzehaKzKGPyBwhwa4bvkYR77CVAAlmhCt682rftVYTZhKYGMyN9vX
-iJVaXIK+lRW9F34zWi+OHBAtXknjAoOpCOKC7azxgpnwD52NI7AzxXNxcb+8vnoE
-KduZ2Imc7+bzLOePlVNKIZGu+SoFeg==
-=SkF9
------END PGP SIGNATURE-----
-
---e57ttq5xm22amhut--
+	Krzysztof
