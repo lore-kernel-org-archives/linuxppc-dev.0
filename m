@@ -4,39 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94EDEC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 10:12:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFF9EC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 10:15:48 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=X/oufGeg;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4STQGR1DsTz3d90
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 21:12:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.137.80; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 579 seconds by postgrey-1.37 at boromir; Mon, 13 Nov 2023 21:12:03 AEDT
-Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4STQLC3JBfz3cWF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 21:15:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=X/oufGeg;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22f; helo=mail-lj1-x22f.google.com; envelope-from=fancer.lancer@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4STQFv4mHHz2xTR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 21:12:02 +1100 (AEDT)
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4STQ2V2ycgz4wykQ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 11:02:10 +0100 (CET)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:e81:b3d6:4f11:ac28])
-	by albert.telenet-ops.be with bizsmtp
-	id 9m292B0030WpEYl06m29vw; Mon, 13 Nov 2023 11:02:09 +0100
-Received: from geert (helo=localhost)
-	by ramsan.of.borg with local-esmtp (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1r2Tlh-009BsO-30;
-	Mon, 13 Nov 2023 11:02:09 +0100
-Date: Mon, 13 Nov 2023 11:02:09 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Build regressions/improvements in v6.7-rc1
-In-Reply-To: <20231113093630.4164101-1-geert@linux-m68k.org>
-Message-ID: <60ca157e-6eff-d12c-9dc0-8aeab125edda@linux-m68k.org>
-References: <CAHk-=whuO0zmuxp_yorYFWdcrALpqjRPhWkmEy+7wcCnnDcPNA@mail.gmail.com> <20231113093630.4164101-1-geert@linux-m68k.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4STQKG1ysPz3cFf
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 21:14:57 +1100 (AEDT)
+Received: by mail-lj1-x22f.google.com with SMTP id 38308e7fff4ca-2c503dbe50dso58986981fa.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 02:14:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1699870488; x=1700475288; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=/0RqJAesnLOhzqnQSk9CfR+Rzcd6ShMRpJ1TMCxlV2E=;
+        b=X/oufGeg795QAPuJCeh2GPLaIfBtODF5U+MmUjjxgijizdKqEXxzjIK0HHIgjlA7Mm
+         3i1V7nSRzKyhKjizTG1CrE02eUIVZff1cbIrX3nykqG7X4nlYnf3nxwgr1aCYS3c0T10
+         9Vr3Br2UykdjHufDuR0myNkQHsc0V/IlR80KFnTzJ79yMe3Z1jQ2O91rpZcQiGV7VHJF
+         xTY/cNGp1XwFHrIyImnnB0R5GCZuX4NryIV+Rr5JfuO+oidlbcrZBKx+3+AAoZURCKzy
+         5MqgX7givkCoJPkIUMTiXrFTNnoWFL5iSyfRLIuEtnrwiF7xEG9Q61DddDv36Wn8BbgN
+         n/AQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699870488; x=1700475288;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/0RqJAesnLOhzqnQSk9CfR+Rzcd6ShMRpJ1TMCxlV2E=;
+        b=NUlEke6aTVe2545Eg5RR4xZ9yRFEWZRBjszyD7sI7V+bzH9X3eqSkzSPCYriQVcfOg
+         9iSIpf4ey2PtR4zpuIbxmWaXo1bBP6urlonYqfwxwrpGrVLSt+/DZtpK4c2niDHXwvG4
+         HHoORLQ3RIEovSsDsIi6JhMS5cIeYQIOor5tteMPGMnHJEqBJxxZQdaVPAD5V3dznNQm
+         4JcF+gVQecas4ihcpwGeUcqWcWhTLPJLiBJEB36+imswPRW8fgyGbPofsoa27ec8rW2q
+         7A4UrYvAMGiUuU4TiXIshHx9FQIW5Sa1B3SStKw7aKTDg23WtwtGUOPZnYLVOpt1UkRn
+         W9Qg==
+X-Gm-Message-State: AOJu0YzeTOEfydNnFWLlGOCzszrVHUW/+gLfKcD3eavwZY8FSb1eFueC
+	Kh2f4A+LH3CJyJDrBIguLuM=
+X-Google-Smtp-Source: AGHT+IHM5/QmkB3bPtVdHeH9fM8wWz3y2IyrjLW/unc08806uxzrYjPHf1mLAGOQOEumUgls4zeWsQ==
+X-Received: by 2002:a2e:9348:0:b0:2c5:1ee1:8335 with SMTP id m8-20020a2e9348000000b002c51ee18335mr4325531ljh.28.1699870487295;
+        Mon, 13 Nov 2023 02:14:47 -0800 (PST)
+Received: from mobilestation ([178.176.56.174])
+        by smtp.gmail.com with ESMTPSA id b2-20020a2e8942000000b002bfec05a693sm944182ljk.22.2023.11.13.02.14.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Nov 2023 02:14:46 -0800 (PST)
+Date: Mon, 13 Nov 2023 13:14:44 +0300
+From: Serge Semin <fancer.lancer@gmail.com>
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: Re: [PATCH 1/3] PCI: dwc: Rename to .init in struct dw_pcie_ep_ops
+Message-ID: <ctr22275xmbx2ztoo43fr5b4p4252j2ygqxzeybbmiwcghzho6@gglrclbpj6xj>
+References: <20231113013300.2132152-1-yoshihiro.shimoda.uh@renesas.com>
+ <20231113013300.2132152-2-yoshihiro.shimoda.uh@renesas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231113013300.2132152-2-yoshihiro.shimoda.uh@renesas.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,67 +78,204 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-sh@vger.kernel.org, Shubhrajyoti Datta <shubhrajyoti.datta@amd.com>, linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org, Sai Krishna Potthuri <sai.krishna.potthuri@amd.com>
+Cc: kw@linux.com, robh@kernel.org, gustavo.pimentel@synopsys.com, lpieralisi@kernel.org, mani@kernel.org, linux-pci@vger.kernel.org, roy.zang@nxp.com, linux-renesas-soc@vger.kernel.org, minghuan.Lian@nxp.com, jingoohan1@gmail.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org, mingkai.hu@nxp.com, marek.vasut+renesas@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 Nov 2023, Geert Uytterhoeven wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v6.7-rc1[1] compared to v6.6[2].
->
-> Summarized:
->  - build errors: +20/-7
->  - build warnings: +24/-8
->
-> Note that there may be false regressions, as some logs are incomplete.
-> Still, they're build errors/warnings.
->
-> Happy fixing! ;-)
->
-> Thanks to the linux-next team for providing the build service.
->
-> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/b85ea95d086471afb4ad062012a4d73cd328fa86/ (238 out of 239 configs)
-> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/ffc253263a1375a65fa6c9f62a893e9767fbebfa/ (all 239 configs)
->
->
-> *** ERRORS ***
->
-> 20 error regressions:
->  + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_654' declared with attribute error: FIELD_PREP: value too large for the field:  => 435:38
+Hi Yoshihiro.
 
-powerpc-gcc5/powerpc-allyesconfig
-drivers/edac/versal_edac.c: In function 'mc_probe':
-num_chans = FIELD_PREP(XDDR_REG_CONFIG0_NUM_CHANS_MASK, regval);
+On Mon, Nov 13, 2023 at 10:32:58AM +0900, Yoshihiro Shimoda wrote:
+> Since the name of dw_pcie_ep_ops indicates that it's for ep obviously,
+> rename a member .ep_init to .init.
 
->  + {standard input}: Error: displacement to undefined symbol .L100 overflows 8-bit field :  => 588
->  + {standard input}: Error: displacement to undefined symbol .L104 overflows 8-bit field :  => 588
->  + {standard input}: Error: displacement to undefined symbol .L105 overflows 8-bit field :  => 593
->  + {standard input}: Error: displacement to undefined symbol .L134 overflows 8-bit field :  => 598
->  + {standard input}: Error: displacement to undefined symbol .L72 overflows 12-bit field:  => 589
->  + {standard input}: Error: displacement to undefined symbol .L73 overflows 8-bit field :  => 580
->  + {standard input}: Error: displacement to undefined symbol .L75 overflows 12-bit field:  => 586, 589, 606
->  + {standard input}: Error: displacement to undefined symbol .L76 overflows 8-bit field :  => 577, 580
->  + {standard input}: Error: displacement to undefined symbol .L77 overflows 8-bit field : 582 => 607, 585
->  + {standard input}: Error: displacement to undefined symbol .L78 overflows 8-bit field :  => 610
->  + {standard input}: Error: displacement to undefined symbol .L80 overflows 8-bit field :  => 607, 601
->  + {standard input}: Error: displacement to undefined symbol .L81 overflows 8-bit field : 606 => 604, 610
->  + {standard input}: Error: displacement to undefined symbol .L96 overflows 12-bit field:  => 602
->  + {standard input}: Error: displacement to undefined symbol .L97 overflows 12-bit field:  => 607
->  + {standard input}: Error: displacement to undefined symbol .L98 overflows 12-bit field:  => 602
->  + {standard input}: Error: invalid operands for opcode:  => 612
->  + {standard input}: Error: missing operand:  => 612
->  + {standard input}: Error: pcrel too far: 601, 598, 604, 577, 595, 574 => 590, 598, 599, 577, 596, 569, 604, 610, 572, 593
->  + {standard input}: Error: unknown pseudo-op: `.l':  => 609
+Thanks for the series. This change particularly looks good. But since
+you are fixing the redundant prefixes anyway, could you also fix the
+dw_pcie_host_ops structure too (drop host_ prefixes from the
+.host_init() and .host_deinit() fields)? The change was discussed a
+while ago here
+https://lore.kernel.org/linux-pci/20230802104049.GB57374@thinkpad/
+in the context of your long-going patchset.
 
-sh4-gcc1[123]/sh-all{mod,yes}config ICE
+It's better to be done in the framework of a separate patch released
+within this series.
 
-Gr{oetje,eeting}s,
+-Serge(y)
 
- 						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
- 							    -- Linus Torvalds
+> 
+> Signed-off-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+> ---
+>  drivers/pci/controller/dwc/pci-dra7xx.c           | 2 +-
+>  drivers/pci/controller/dwc/pci-imx6.c             | 2 +-
+>  drivers/pci/controller/dwc/pci-keystone.c         | 2 +-
+>  drivers/pci/controller/dwc/pci-layerscape-ep.c    | 2 +-
+>  drivers/pci/controller/dwc/pcie-artpec6.c         | 2 +-
+>  drivers/pci/controller/dwc/pcie-designware-ep.c   | 4 ++--
+>  drivers/pci/controller/dwc/pcie-designware-plat.c | 2 +-
+>  drivers/pci/controller/dwc/pcie-designware.h      | 2 +-
+>  drivers/pci/controller/dwc/pcie-keembay.c         | 2 +-
+>  drivers/pci/controller/dwc/pcie-qcom-ep.c         | 2 +-
+>  drivers/pci/controller/dwc/pcie-rcar-gen4.c       | 2 +-
+>  drivers/pci/controller/dwc/pcie-uniphier-ep.c     | 2 +-
+>  12 files changed, 13 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
+> index b445ffe95e3f..f9182cd6fe67 100644
+> --- a/drivers/pci/controller/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/controller/dwc/pci-dra7xx.c
+> @@ -436,7 +436,7 @@ dra7xx_pcie_get_features(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops pcie_ep_ops = {
+> -	.ep_init = dra7xx_pcie_ep_init,
+> +	.init = dra7xx_pcie_ep_init,
+>  	.raise_irq = dra7xx_pcie_raise_irq,
+>  	.get_features = dra7xx_pcie_get_features,
+>  };
+> diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/controller/dwc/pci-imx6.c
+> index 74703362aeec..737d4d90fef2 100644
+> --- a/drivers/pci/controller/dwc/pci-imx6.c
+> +++ b/drivers/pci/controller/dwc/pci-imx6.c
+> @@ -1093,7 +1093,7 @@ imx6_pcie_ep_get_features(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops pcie_ep_ops = {
+> -	.ep_init = imx6_pcie_ep_init,
+> +	.init = imx6_pcie_ep_init,
+>  	.raise_irq = imx6_pcie_ep_raise_irq,
+>  	.get_features = imx6_pcie_ep_get_features,
+>  };
+> diff --git a/drivers/pci/controller/dwc/pci-keystone.c b/drivers/pci/controller/dwc/pci-keystone.c
+> index 0def919f89fa..655c7307eb88 100644
+> --- a/drivers/pci/controller/dwc/pci-keystone.c
+> +++ b/drivers/pci/controller/dwc/pci-keystone.c
+> @@ -944,7 +944,7 @@ ks_pcie_am654_get_features(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops ks_pcie_am654_ep_ops = {
+> -	.ep_init = ks_pcie_am654_ep_init,
+> +	.init = ks_pcie_am654_ep_init,
+>  	.raise_irq = ks_pcie_am654_raise_irq,
+>  	.get_features = &ks_pcie_am654_get_features,
+>  };
+> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> index 3d3c50ef4b6f..4e4b687ef508 100644
+> --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> @@ -195,7 +195,7 @@ static unsigned int ls_pcie_ep_func_conf_select(struct dw_pcie_ep *ep,
+>  }
+>  
+>  static const struct dw_pcie_ep_ops ls_pcie_ep_ops = {
+> -	.ep_init = ls_pcie_ep_init,
+> +	.init = ls_pcie_ep_init,
+>  	.raise_irq = ls_pcie_ep_raise_irq,
+>  	.get_features = ls_pcie_ep_get_features,
+>  	.func_conf_select = ls_pcie_ep_func_conf_select,
+> diff --git a/drivers/pci/controller/dwc/pcie-artpec6.c b/drivers/pci/controller/dwc/pcie-artpec6.c
+> index 9b572a2b2c9a..27ff425c0698 100644
+> --- a/drivers/pci/controller/dwc/pcie-artpec6.c
+> +++ b/drivers/pci/controller/dwc/pcie-artpec6.c
+> @@ -370,7 +370,7 @@ static int artpec6_pcie_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  }
+>  
+>  static const struct dw_pcie_ep_ops pcie_ep_ops = {
+> -	.ep_init = artpec6_pcie_ep_init,
+> +	.init = artpec6_pcie_ep_init,
+>  	.raise_irq = artpec6_pcie_raise_irq,
+>  };
+>  
+> diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> index f6207989fc6a..ea99a97ce504 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> @@ -794,8 +794,8 @@ int dw_pcie_ep_init(struct dw_pcie_ep *ep)
+>  		list_add_tail(&ep_func->list, &ep->func_list);
+>  	}
+>  
+> -	if (ep->ops->ep_init)
+> -		ep->ops->ep_init(ep);
+> +	if (ep->ops->init)
+> +		ep->ops->init(ep);
+>  
+>  	ret = pci_epc_mem_init(epc, ep->phys_base, ep->addr_size,
+>  			       ep->page_size);
+> diff --git a/drivers/pci/controller/dwc/pcie-designware-plat.c b/drivers/pci/controller/dwc/pcie-designware-plat.c
+> index b625841e98aa..97088b7663e0 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware-plat.c
+> +++ b/drivers/pci/controller/dwc/pcie-designware-plat.c
+> @@ -74,7 +74,7 @@ dw_plat_pcie_get_features(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops pcie_ep_ops = {
+> -	.ep_init = dw_plat_pcie_ep_init,
+> +	.init = dw_plat_pcie_ep_init,
+>  	.raise_irq = dw_plat_pcie_ep_raise_irq,
+>  	.get_features = dw_plat_pcie_get_features,
+>  };
+> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+> index 55ff76e3d384..cad0e4c24e11 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware.h
+> +++ b/drivers/pci/controller/dwc/pcie-designware.h
+> @@ -332,7 +332,7 @@ struct dw_pcie_rp {
+>  
+>  struct dw_pcie_ep_ops {
+>  	void	(*pre_init)(struct dw_pcie_ep *ep);
+> -	void	(*ep_init)(struct dw_pcie_ep *ep);
+> +	void	(*init)(struct dw_pcie_ep *ep);
+>  	void	(*deinit)(struct dw_pcie_ep *ep);
+>  	int	(*raise_irq)(struct dw_pcie_ep *ep, u8 func_no,
+>  			     enum pci_epc_irq_type type, u16 interrupt_num);
+> diff --git a/drivers/pci/controller/dwc/pcie-keembay.c b/drivers/pci/controller/dwc/pcie-keembay.c
+> index 289bff99d762..3c38e047d5ed 100644
+> --- a/drivers/pci/controller/dwc/pcie-keembay.c
+> +++ b/drivers/pci/controller/dwc/pcie-keembay.c
+> @@ -325,7 +325,7 @@ keembay_pcie_get_features(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops keembay_pcie_ep_ops = {
+> -	.ep_init	= keembay_pcie_ep_init,
+> +	.init	= keembay_pcie_ep_init,
+>  	.raise_irq	= keembay_pcie_ep_raise_irq,
+>  	.get_features	= keembay_pcie_get_features,
+>  };
+> diff --git a/drivers/pci/controller/dwc/pcie-qcom-ep.c b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+> index 9e58f055199a..2b6f7c144c61 100644
+> --- a/drivers/pci/controller/dwc/pcie-qcom-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+> @@ -796,7 +796,7 @@ static void qcom_pcie_ep_init(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops pci_ep_ops = {
+> -	.ep_init = qcom_pcie_ep_init,
+> +	.init = qcom_pcie_ep_init,
+>  	.raise_irq = qcom_pcie_ep_raise_irq,
+>  	.get_features = qcom_pcie_epc_get_features,
+>  };
+> diff --git a/drivers/pci/controller/dwc/pcie-rcar-gen4.c b/drivers/pci/controller/dwc/pcie-rcar-gen4.c
+> index 3bc45e513b3d..2b7e0f213fb2 100644
+> --- a/drivers/pci/controller/dwc/pcie-rcar-gen4.c
+> +++ b/drivers/pci/controller/dwc/pcie-rcar-gen4.c
+> @@ -408,7 +408,7 @@ static unsigned int rcar_gen4_pcie_ep_get_dbi2_offset(struct dw_pcie_ep *ep,
+>  
+>  static const struct dw_pcie_ep_ops pcie_ep_ops = {
+>  	.pre_init = rcar_gen4_pcie_ep_pre_init,
+> -	.ep_init = rcar_gen4_pcie_ep_init,
+> +	.init = rcar_gen4_pcie_ep_init,
+>  	.deinit = rcar_gen4_pcie_ep_deinit,
+>  	.raise_irq = rcar_gen4_pcie_ep_raise_irq,
+>  	.get_features = rcar_gen4_pcie_ep_get_features,
+> diff --git a/drivers/pci/controller/dwc/pcie-uniphier-ep.c b/drivers/pci/controller/dwc/pcie-uniphier-ep.c
+> index cba3c88fcf39..40bd468f7e11 100644
+> --- a/drivers/pci/controller/dwc/pcie-uniphier-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-uniphier-ep.c
+> @@ -284,7 +284,7 @@ uniphier_pcie_get_features(struct dw_pcie_ep *ep)
+>  }
+>  
+>  static const struct dw_pcie_ep_ops uniphier_pcie_ep_ops = {
+> -	.ep_init = uniphier_pcie_ep_init,
+> +	.init = uniphier_pcie_ep_init,
+>  	.raise_irq = uniphier_pcie_ep_raise_irq,
+>  	.get_features = uniphier_pcie_get_features,
+>  };
+> -- 
+> 2.34.1
+> 
