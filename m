@@ -4,53 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 104E7C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 12:54:15 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=vfWkWekB;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94B48C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 12:58:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4STTs155wHz3cZn
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 23:54:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=vfWkWekB;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ideasonboard.com (client-ip=213.167.242.64; helo=perceval.ideasonboard.com; envelope-from=laurent.pinchart@ideasonboard.com; receiver=lists.ozlabs.org)
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4STTxl2GL6z3dJb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 23:58:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.172; helo=mail-yw1-f172.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4STTr26GBhz3cCM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 23:53:22 +1100 (AEDT)
-Received: from pendragon.ideasonboard.com (213-243-189-158.bb.dnainternet.fi [213.243.189.158])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 0BB5929A;
-	Mon, 13 Nov 2023 13:43:40 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1699879421;
-	bh=MQbkSDUiGthELij+clyy2MWBR01RgHz+P/tcMtA8zYc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=vfWkWekBqKHGAaE2eWRBghtZn7r87P8gmzJ3gCNH3KusI8zILXP8XKUZY8v4E2PTc
-	 5IFHUrAbY8JOZlY+XfqGVIAcCFqZFcIjzHCpfo5u2CEtQeBkVEiq29O6631j55xJia
-	 hI8iiGTFkbTvLPZhfIdU6S+BaqhNgrDeMoyAPPeE=
-Date: Mon, 13 Nov 2023 14:44:12 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PATCH v9 10/15] media: uapi: Add V4L2_CTRL_TYPE_FIXED_POINT
-Message-ID: <20231113124412.GA18974@pendragon.ideasonboard.com>
-References: <1699595289-25773-1-git-send-email-shengjiu.wang@nxp.com>
- <1699595289-25773-11-git-send-email-shengjiu.wang@nxp.com>
- <4cd6b593-2376-4cbc-a7c8-d3eb36a2f7a0@xs4all.nl>
- <20231113104238.GA13981@pendragon.ideasonboard.com>
- <6a3e7eb9-505c-4cfb-8a86-a8947a2e44d5@xs4all.nl>
- <20231113110754.GB24338@pendragon.ideasonboard.com>
- <3e898664-cbfc-4892-9765-37b66891643b@xs4all.nl>
- <ZVIIc-fi32ZxIi-p@valkosipuli.retiisi.eu>
- <20231113114357.GD24338@pendragon.ideasonboard.com>
- <da6efe14-c00d-4bf4-bf61-dd4ed39c5c60@xs4all.nl>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4STTx85hp3z2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 23:57:48 +1100 (AEDT)
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-5af6c445e9eso50954677b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 04:57:48 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699880265; x=1700485065;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=70G7gCA85kCqk8BsrysSVq5eVLLC+P3sWPCjl6nhTgo=;
+        b=YjoxTicETCWDpCGZopXcItm/vQ2vPJfTmFk7U/7EjppPwDWEpWl5yf0sntJupc8QGx
+         2hzXKW60ENE7cyrKZLYXF+bPT331KxXWVzg7Wr87ALCO19Iwg7h/5yvzIYZhe/wO76wM
+         pc0z01P2RFKUhYTn7kv6pLd0UWTADing7yHKrPo3DQpxGQIcgUPPZWnnCc2PGrWm/Wi4
+         dSbUJB6lg7IXTRv0V6yZCc9hKNQGgsWKjoQvqtlJGfl3C+8bImWYEsjzIu0IqijNkUqe
+         jnH9H/7kFZ7fjZy3wDI9syxfsHyuYbK4Vl210qaOGyNwqqa7eQes3R9EtOukN7frgOMQ
+         0Wsw==
+X-Gm-Message-State: AOJu0Yy44zLjp2aMRyj+0NUzeBOo2EgmxGWLMCoWOPtx1YUYCTXOA8K2
+	/8dWEXGSLtFWQbTKvlDlf9LZ2FS/M9t6bw==
+X-Google-Smtp-Source: AGHT+IExNqt/kwya2ExnpIK9nznDLwiL75e2OHVFQ3PVdqYnPvg9OmxE6pVBQC7dbQ9PL3NrXYR1SA==
+X-Received: by 2002:a81:7c88:0:b0:5a7:cc48:208d with SMTP id x130-20020a817c88000000b005a7cc48208dmr4830494ywc.5.1699880265493;
+        Mon, 13 Nov 2023 04:57:45 -0800 (PST)
+Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com. [209.85.219.169])
+        by smtp.gmail.com with ESMTPSA id u83-20020a816056000000b0059b2be24f88sm1729078ywb.143.2023.11.13.04.57.44
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Nov 2023 04:57:44 -0800 (PST)
+Received: by mail-yb1-f169.google.com with SMTP id 3f1490d57ef6-dafe04717baso140035276.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 04:57:44 -0800 (PST)
+X-Received: by 2002:a25:41d0:0:b0:da0:d0be:ef06 with SMTP id
+ o199-20020a2541d0000000b00da0d0beef06mr5385018yba.51.1699880263994; Mon, 13
+ Nov 2023 04:57:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <da6efe14-c00d-4bf4-bf61-dd4ed39c5c60@xs4all.nl>
+References: <20231113013300.2132152-1-yoshihiro.shimoda.uh@renesas.com>
+ <20231113100914.GB1583963@rocinante> <CAMuHMdVLmmf12KPQch7fT2iGjfDV--M2Wd0zsxSw6wfqYxUggQ@mail.gmail.com>
+ <TYBPR01MB53411530E01A90CB525DF814D8B3A@TYBPR01MB5341.jpnprd01.prod.outlook.com>
+ <20231113122221.GA2418639@rocinante>
+In-Reply-To: <20231113122221.GA2418639@rocinante>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 13 Nov 2023 13:57:32 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdX2D-Ui=6Xt_x_yDAYQYoooP51ZwZTmoASwcUeZTcME4g@mail.gmail.com>
+Message-ID: <CAMuHMdX2D-Ui=6Xt_x_yDAYQYoooP51ZwZTmoASwcUeZTcME4g@mail.gmail.com>
+Subject: Re: [PATCH 0/3] PCI: dwc: Improve code readability
+To: =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,158 +70,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, broonie@kernel.org, Sakari Ailus <sakari.ailus@iki.fi>, festevam@gmail.com, perex@perex.cz, mchehab@kernel.org, shengjiu.wang@gmail.com, m.szyprowski@samsung.com
+Cc: "robh@kernel.org" <robh@kernel.org>, "mani@kernel.org" <mani@kernel.org>, "gustavo.pimentel@synopsys.com" <gustavo.pimentel@synopsys.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "roy.zang@nxp.com" <roy.zang@nxp.com>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "minghuan.Lian@nxp.com" <minghuan.Lian@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "lpieralisi@kernel.org" <lpieralisi@kernel.org>, "mingkai.hu@nxp.com" <mingkai.hu@nxp.com>, "marek.vasut+renesas@gmail.com" <marek.vasut+renesas@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Hans,
+Hi Krzysztof,
 
-On Mon, Nov 13, 2023 at 01:05:12PM +0100, Hans Verkuil wrote:
-> On 13/11/2023 12:43, Laurent Pinchart wrote:
-> > On Mon, Nov 13, 2023 at 11:28:51AM +0000, Sakari Ailus wrote:
-> >> On Mon, Nov 13, 2023 at 12:24:14PM +0100, Hans Verkuil wrote:
-> >>> On 13/11/2023 12:07, Laurent Pinchart wrote:
-> >>>> On Mon, Nov 13, 2023 at 11:56:49AM +0100, Hans Verkuil wrote:
-> >>>>> On 13/11/2023 11:42, Laurent Pinchart wrote:
-> >>>>>> On Mon, Nov 13, 2023 at 11:29:09AM +0100, Hans Verkuil wrote:
-> >>>>>>> On 10/11/2023 06:48, Shengjiu Wang wrote:
-> >>>>>>>> Fixed point controls are used by the user to configure
-> >>>>>>>> a fixed point value in 64bits, which Q31.32 format.
-> >>>>>>>>
-> >>>>>>>> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> >>>>>>>
-> >>>>>>> This patch adds a new control type. This is something that also needs to be
-> >>>>>>> tested by v4l2-compliance, and for that we need to add support for this to
-> >>>>>>> one of the media test-drivers. The best place for that is the vivid driver,
-> >>>>>>> since that has already a bunch of test controls for other control types.
-> >>>>>>>
-> >>>>>>> See e.g. VIVID_CID_INTEGER64 in vivid-ctrls.c.
-> >>>>>>>
-> >>>>>>> Can you add a patch adding a fixed point test control to vivid?
-> >>>>>>
-> >>>>>> I don't think V4L2_CTRL_TYPE_FIXED_POINT is a good idea. This seems to
-> >>>>>> relate more to units than control types. We have lots of fixed-point
-> >>>>>> values in controls already, using the 32-bit and 64-bit integer control
-> >>>>>> types. They use various locations for the decimal point, depending on
-> >>>>>> the control. If we want to make this more explicit to users, we should
-> >>>>>> work on adding unit support to the V4L2 controls.
-> >>>>>
-> >>>>> "Fixed Point" is not a unit, it's a type. 'Db', 'Hz' etc. are units.
-> >>>>
-> >>>> It's not a unit, but I think it's related to units. My point is that,
-> >>>> without units support, I don't see why we need a formal definition of
-> >>>> fixed-point types, and why this series couldn't just use
-> >>>> VIVID_CID_INTEGER64. Drivers already interpret VIVID_CID_INTEGER64
-> >>>> values as they see fit.
-> >>>
-> >>> They do? That's new to me. A quick grep for V4L2_CTRL_TYPE_INTEGER64
-> >>> (I assume you meant that rather than VIVID_CID_INTEGER64) shows that it
-> > 
-> > Yes, I meant V4L2_CTRL_TYPE_INTEGER64. Too hasty copy & paste :-)
-> > 
-> >>> is always interpreted as a 64 bit integer and nothing else. As it should.
-> > 
-> > The most common case for control handling in drivers is taking the
-> > integer value and converting it to a register value, using
-> > device-specific encoding of the register value. It can be a fixed-point
-> > format or something else, depending on the device. My point is that
-> > drivers routinely convert a "plain" integer to something else, and that
-> > has never been considered as a cause of concern. I don't see why it
-> > would be different in this series.
-> > 
-> >>> And while we do not have support for units (other than the documentation),
-> >>> we do have type support in the form of V4L2_CTRL_TYPE_*.
-> >>>
-> >>>>> A quick "git grep -i "fixed point" Documentation/userspace-api/media/'
-> >>>>> only shows a single driver specific control (dw100.rst).
-> >>>>>
-> >>>>> I'm not aware of other controls in mainline that use fixed point.
-> >>>>
-> >>>> The analog gain control for sensors for instance.
-> >>>
-> >>> Not really. The documentation is super vague:
-> >>>
-> >>> V4L2_CID_ANALOGUE_GAIN (integer)
-> >>>
-> >>> 	Analogue gain is gain affecting all colour components in the pixel matrix. The
-> >>> 	gain operation is performed in the analogue domain before A/D conversion.
-> >>>
-> >>> And the integer is just a range. Internally it might map to some fixed
-> >>> point value, but userspace won't see that, it's hidden in the driver AFAICT.
-> > 
-> > It's hidden so well that libcamera has a database of the sensor it
-> > supports, with formulas to map a real gain value to the
-> > V4L2_CID_ANALOGUE_GAIN control. The encoding of the integer value does
-> > matter, and the kernel doesn't expose it. We may or may not consider
-> > that as a shortcoming of the V4L2 control API, but in any case it's the
-> > situation we have today.
-> > 
-> >> I wonder if Laurent meant digital gain.
-> > 
-> > No, I meant analog. It applies to digital gain too though.
-> > 
-> >> Those are often Q numbers. The practice there has been that the default
-> >> value yields gain of 1.
-> >>
-> >> There are probably many other examples in controls where something being
-> >> controlled isn't actually an integer while integer controls are still being
-> >> used for the purpose.
-> > 
-> > A good summary of my opinion :-)
-> 
-> And that works fine as long as userspace doesn't need to know what the value
-> actually means.
-> 
-> That's not the case here. The control is really a fractional Hz value:
-> 
-> +``V4L2_CID_M2M_AUDIO_SOURCE_RATE_OFFSET (fixed point)``
-> +    Sets the offset from the audio source sample rate, unit is Hz.
-> +    The offset compensates for any clock drift. The actual source audio sample
-> +    rate is the ideal source audio sample rate from
-> +    ``V4L2_CID_M2M_AUDIO_SOURCE_RATE`` plus this fixed point offset.
+On Mon, Nov 13, 2023 at 1:22=E2=80=AFPM Krzysztof Wilczy=C5=84ski <kw@linux=
+.com> wrote:
+> > > > Now, while you are looking at things, can you also take care about =
+the following:
+> > > >
+> > > >   drivers/pci/controller/dwc/pcie-rcar-gen4.c:439:15: warning: cast=
+ to smaller integer type 'enum dw_pcie_device_mode'
+> > > from 'const void *' [-Wvoid-pointer-to-enum-cast]
+> >
+> > Thank you for the report!
+> >
+> > > > This requires adding structs for each data member of the of_device_=
+id type.
+> > >
+> > > That sounds like overkill to me.
+> > > An intermediate cast to uintptr_t should fix the issue as well.
+> >
+> > I confirmed that the uintptr_t fixed the issue.
+>
+> We declined a similar fix in the past[1] ...
+>
+> > I also think that adding a new struct with the mode is overkill.
+>
+> ... with the hopes that a driver could drop the switch statements in plac=
+e
+> of using the other pattern.  Also, to be consistent with other drivers th=
+at
+> do this already.
 
-I don't see why this would require a new type, you can use
-V4L2_CTRL_TYPE_INTEGER64, and document the control as containing
-fixed-point values in Q31.32 format.
+Note that the issue of casting is something we cannot fix easily:
+some *_device_id structs use "kernel_ulong_t" for the "data" member,
+others use "void *".
 
-> >> Instead of this patch, I'd prefer to have a way to express the meaning of
-> >> the control value, be it a Q number or something else, and do that
-> >> independently of the type of the control.
-> 
-> Huh? How is that different from the type of the control? You have integers
-> (one type) and fixed point (another type).
-> 
-> Or do you want a more general V4L2_CTRL_TYPE_ that specifies the N.M values
-> explicitly?
-> 
-> I think the main reason why we use integer controls for gain is that we
-> never had a fixed point control type and you could get away with that in
-> user space for that particular use-case.
-> 
-> Based on the V4L2_CID_NOTIFY_GAINS documentation the gain value can typically
-> be calculated as (value / default_value),
+git grep -W "_device_id" -- include/linux/mod_devicetable.h | grep data
 
-Typically, but not always. Some sensor have an exponential gain model,
-and some have weird gain representation, such as 1/x. That's getting out
-of scope though.
+In addition, several drivers use multiple types of device IDs, so you
+cannot settle on one type to avoid casts.
 
-> but that won't work for a rate offset
-> control as above, or for e.g. CSC matrices for color converters.
-> 
-> > Agreed.
-> > 
-> >>> In the case of this particular series the control type is really a fixed point
-> >>> value with a documented unit (Hz). It really is not something you want to
-> >>> use type INTEGER64 for.
-> >>>
-> >>>>> Note that V4L2_CTRL_TYPE_FIXED_POINT is a Q31.32 format. By setting
-> >>>>> min/max/step you can easily map that to just about any QN.M format where
-> >>>>> N <= 31 and M <= 32.
-> >>>>>
-> >>>>> In the case of dw100 it is a bit different in that it is quite specialized
-> >>>>> and it had to fit in 16 bits.
+Also, putting enum values in instances of that struct, as suggested,
+increases kernel size, for IMHO no additional gain.  If there is more
+data to put in the struct, I agree it makes sense to use a struct.
 
--- 
-Regards,
+> > So, I would like to fix the issue by using the cast of uintptr_t.
+>
+> Sure.  I appreciate that this would be more work.  When you send your
+> patch, can you include an update to the iproc driver (and credit the
+> original author from [1])?  I would appreciate it.
+>
+> 1. https://lore.kernel.org/linux-pci/20230814230008.GA196797@bhelgaas/
 
-Laurent Pinchart
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
