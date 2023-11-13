@@ -4,70 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14240C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 10:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E324C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 10:46:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=V0AWk5qb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Hjuj99OF;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4STQn84Xwzz2xdh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 21:35:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4STR255vkLz3cXy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Nov 2023 21:46:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=V0AWk5qb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Hjuj99OF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22e; helo=mail-lj1-x22e.google.com; envelope-from=fancer.lancer@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4STQm86ZQdz3cNT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 21:34:47 +1100 (AEDT)
-Received: by mail-lj1-x22e.google.com with SMTP id 38308e7fff4ca-2c504a5e1deso58447181fa.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 02:34:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1699871683; x=1700476483; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=W8fr/etXthyoBBr7x9PlLJIdae8wlo624Fg8eK+QwQI=;
-        b=V0AWk5qbRR9rUrO6DSWfxB5YPpacoF6oRTaV+40nwQcQqWeJe3VUhGGl6ijdUpnPfm
-         gM5W3UTm1t4gij8Ue262iTSgz+c3AHXqC7zSIq7r0pN1MjwajhN7LTg6tFIWmm7vq5tZ
-         inzbIDRrUX3GtYicivL5ituuVBmlzfiH2j5yztEdGPtqsjUjKTkxG6iIJZn8h5syEUK3
-         s+bW//6wHZib+V3EkNVBYbML5kIe12DVPHfcByvDIjbDqKKw4FbttI5d6DxeAsFGqX0V
-         xtFI1QdTkGhaEQhy5t8iVYmyWyIuO3noOU/ixxyNuAjLm2CtL5ewvPyDJJTjwHFqrOwh
-         6N3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699871683; x=1700476483;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=W8fr/etXthyoBBr7x9PlLJIdae8wlo624Fg8eK+QwQI=;
-        b=NuLArWMpeHmJOoBUvAvkl5cyOCWzyJEqAp1cUBfvxDjgWRIVPEzgyYk2STaBA0OWek
-         hMRL5o06+hTXzPtOH8Pu/Dh3oQbLaf+8ysoEySIP6dqnuYhtq3f+u4qUOeaRsCQ4rU9b
-         BRtb8loFnokvq8+e58wM0T64xTuhYGHqdLeOA04dVwYhjQiUO7/A2AHYarbO3IGJ1gCW
-         ww0RAyqX2sDbG0WSb10kdHSZEoTNdUf8wfsYrSPRMSpA3U3RKjTZlxjAvIH6pl2Fodlb
-         8qKS3Op0JiTNeyz6LDuqXKDM5BsucnG5ThAg4FQKRFw/t1v835pfmw7l3xU3S5Zy6CxV
-         qLTw==
-X-Gm-Message-State: AOJu0YzQYO5gGiKZUXVDF2gIwN9QaQXHcpk2FMso7ySMDiG563d/8uCv
-	mQBkjVu1Vj/TJaEnAplGfXQ=
-X-Google-Smtp-Source: AGHT+IF9Abl2GVkQa7AiqNVi9FuPFCCvA7GvKvkG/t14gyAZj1I3fRjMYxmfrFDqvrP9xb+5Vsu2gw==
-X-Received: by 2002:a05:651c:310:b0:2c0:20e3:990f with SMTP id a16-20020a05651c031000b002c020e3990fmr3728099ljp.10.1699871682723;
-        Mon, 13 Nov 2023 02:34:42 -0800 (PST)
-Received: from mobilestation ([178.176.56.174])
-        by smtp.gmail.com with ESMTPSA id b23-20020a2e9897000000b002b9f03729e2sm935533ljj.36.2023.11.13.02.34.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Nov 2023 02:34:42 -0800 (PST)
-Date: Mon, 13 Nov 2023 13:34:39 +0300
-From: Serge Semin <fancer.lancer@gmail.com>
-To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: Re: [PATCH 2/3] PCI: dwc: Rename to .get_dbi_offset in struct
- dw_pcie_ep_ops
-Message-ID: <hlhjm7vhh3pmhvxfwprjnjfd3sdmyfdknv4iv4zhgppuyzktoj@jwaeyxxweyuo>
-References: <20231113013300.2132152-1-yoshihiro.shimoda.uh@renesas.com>
- <20231113013300.2132152-3-yoshihiro.shimoda.uh@renesas.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4STR145qC3z2ytV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2023 21:46:00 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3ADAdhMk008865;
+	Mon, 13 Nov 2023 10:45:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ subject : to : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=8qC9HU061TX3CPgJKaTK80qGymZn/7fb5x/5bbfXwGg=;
+ b=Hjuj99OFlVqdcjPG1amYO/BZXvZT/sOVOV0JWIocV/TgUlIrDcZX/OlfR/ptxPhfyNBr
+ F2J2aXTuMwKaSaR9uXvsaK7TkyvAHh1xwaYadgQgtD6UZkw7kcasdt5isTVChQ20Ivzm
+ xg091DXVyTo8QfkXIGDoaKpF+Ra14SNTL6tFM7Ls84CAuQslfr3JRp3DaSfEYqrgNkji
+ K1RtVsUZ/aB6GFvBMlwVUhxyuLSWmdXQs6LVrRwN71H2zMsoPciD2zkx9NmYnfDO20Cm
+ mihLU6xRBCgHexkC52ZszOHPiRWrWoK1qg//nBfXC4JFCe8UBBGnLUu3G/EacEUlkjQB ow== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ubj8686jw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Nov 2023 10:45:52 +0000
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3ADAeCSf011296;
+	Mon, 13 Nov 2023 10:45:52 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ubj8686jh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Nov 2023 10:45:51 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3ADA44ns001935;
+	Mon, 13 Nov 2023 10:45:51 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3uakxsgr7b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Nov 2023 10:45:51 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3ADAjnYU52953462
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Nov 2023 10:45:49 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5B01520043;
+	Mon, 13 Nov 2023 10:45:49 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1BE3220040;
+	Mon, 13 Nov 2023 10:45:48 +0000 (GMT)
+Received: from [9.109.212.144] (unknown [9.109.212.144])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Nov 2023 10:45:47 +0000 (GMT)
+Message-ID: <02b602c0-2b40-4cf9-b0ca-4bc12ac267cd@linux.ibm.com>
+Date: Mon, 13 Nov 2023 16:15:47 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH] powerpc/book3s/hash: Drop _PAGE_PRIVILEGED from
+ PAGE_NONE
+Content-Language: en-US
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        mpe@ellerman.id.au, christophe.leroy@csgroup.eu
+References: <20231102132327.294050-1-aneesh.kumar@linux.ibm.com>
+ <CWXLU5UP91CT.1AP3JHL6TR6UT@wheely>
+From: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
+In-Reply-To: <CWXLU5UP91CT.1AP3JHL6TR6UT@wheely>
+Content-Type: text/plain; charset=UTF-8
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: I4crEGq5j2pfbrY0bpMvd3ZMsSYrbDdv
+X-Proofpoint-ORIG-GUID: HP7nJTy7w-u4V4FJuOJe7vbcfY2_GtiJ
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231113013300.2132152-3-yoshihiro.shimoda.uh@renesas.com>
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-12_24,2023-11-09_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 impostorscore=0
+ priorityscore=1501 phishscore=0 mlxlogscore=410 spamscore=0 adultscore=0
+ suspectscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311060000
+ definitions=main-2311130088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,387 +102,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kw@linux.com, robh@kernel.org, gustavo.pimentel@synopsys.com, lpieralisi@kernel.org, mani@kernel.org, linux-pci@vger.kernel.org, roy.zang@nxp.com, linux-renesas-soc@vger.kernel.org, minghuan.Lian@nxp.com, jingoohan1@gmail.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org, mingkai.hu@nxp.com, marek.vasut+renesas@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 13, 2023 at 10:32:59AM +0900, Yoshihiro Shimoda wrote:
-> Since meaning of .func_conf_select is difficult to understand,
-> rename it to .get_dbi_offset.
-
-This change looks good. Thanks.
-Reviewed-by: Serge Semin <fancer.lancer@gmail.com>
-
-There are redundant initializers will have been left after this patch
-is applied, but it will be naturally fixed in the next patch.
-
--Serge(y)
-
+On 11/13/23 3:46 PM, Nicholas Piggin wrote:
+> On Thu Nov 2, 2023 at 11:23 PM AEST, Aneesh Kumar K.V wrote:
+>> There used to be a dependency on _PAGE_PRIVILEGED with pte_savedwrite.
+>> But that got dropped by
+>> commit 6a56ccbcf6c6 ("mm/autonuma: use can_change_(pte|pmd)_writable() to replace savedwrite")
+>>
+>> With this change numa fault pte (pte_protnone()) gets mapped as regular user pte
+>> with RWX cleared (no-access).
 > 
-> Signed-off-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> ---
->  .../pci/controller/dwc/pci-layerscape-ep.c    |   5 +-
->  .../pci/controller/dwc/pcie-designware-ep.c   | 108 +++++++++---------
->  drivers/pci/controller/dwc/pcie-designware.h  |   2 +-
->  drivers/pci/controller/dwc/pcie-rcar-gen4.c   |   4 +-
->  4 files changed, 59 insertions(+), 60 deletions(-)
+> You mean "that" above change (not *this* change), right?
 > 
-> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> index 4e4b687ef508..961ff1b719a1 100644
-> --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> @@ -184,8 +184,7 @@ static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
->  	}
->  }
->  
-> -static unsigned int ls_pcie_ep_func_conf_select(struct dw_pcie_ep *ep,
-> -						u8 func_no)
-> +static unsigned int ls_pcie_ep_get_dbi_offset(struct dw_pcie_ep *ep, u8 func_no)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  	struct ls_pcie_ep *pcie = to_ls_pcie_ep(pci);
-> @@ -198,7 +197,7 @@ static const struct dw_pcie_ep_ops ls_pcie_ep_ops = {
->  	.init = ls_pcie_ep_init,
->  	.raise_irq = ls_pcie_ep_raise_irq,
->  	.get_features = ls_pcie_ep_get_features,
-> -	.func_conf_select = ls_pcie_ep_func_conf_select,
-> +	.get_dbi_offset = ls_pcie_ep_get_dbi_offset,
->  };
->  
->  static const struct ls_pcie_ep_drvdata ls1_ep_drvdata = {
-> diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
-> index ea99a97ce504..1100671db887 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
-> +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
-> @@ -43,14 +43,14 @@ dw_pcie_ep_get_func_from_ep(struct dw_pcie_ep *ep, u8 func_no)
->  	return NULL;
->  }
->  
-> -static unsigned int dw_pcie_ep_func_select(struct dw_pcie_ep *ep, u8 func_no)
-> +static unsigned int dw_pcie_ep_get_dbi_offset(struct dw_pcie_ep *ep, u8 func_no)
->  {
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  
-> -	if (ep->ops->func_conf_select)
-> -		func_offset = ep->ops->func_conf_select(ep, func_no);
-> +	if (ep->ops->get_dbi_offset)
-> +		dbi_offset = ep->ops->get_dbi_offset(ep, func_no);
->  
-> -	return func_offset;
-> +	return dbi_offset;
->  }
->  
->  static unsigned int dw_pcie_ep_get_dbi2_offset(struct dw_pcie_ep *ep, u8 func_no)
-> @@ -59,8 +59,8 @@ static unsigned int dw_pcie_ep_get_dbi2_offset(struct dw_pcie_ep *ep, u8 func_no
->  
->  	if (ep->ops->get_dbi2_offset)
->  		dbi2_offset = ep->ops->get_dbi2_offset(ep, func_no);
-> -	else if (ep->ops->func_conf_select)     /* for backward compatibility */
-> -		dbi2_offset = ep->ops->func_conf_select(ep, func_no);
-> +	else if (ep->ops->get_dbi_offset)     /* for backward compatibility */
-> +		dbi2_offset = ep->ops->get_dbi_offset(ep, func_no);
->  
->  	return dbi2_offset;
->  }
-> @@ -68,14 +68,14 @@ static unsigned int dw_pcie_ep_get_dbi2_offset(struct dw_pcie_ep *ep, u8 func_no
->  static void __dw_pcie_ep_reset_bar(struct dw_pcie *pci, u8 func_no,
->  				   enum pci_barno bar, int flags)
->  {
-> -	unsigned int func_offset, dbi2_offset;
-> +	unsigned int dbi_offset, dbi2_offset;
->  	struct dw_pcie_ep *ep = &pci->ep;
->  	u32 reg, reg_dbi2;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  	dbi2_offset = dw_pcie_ep_get_dbi2_offset(ep, func_no);
->  
-> -	reg = func_offset + PCI_BASE_ADDRESS_0 + (4 * bar);
-> +	reg = dbi_offset + PCI_BASE_ADDRESS_0 + (4 * bar);
->  	reg_dbi2 = dbi2_offset + PCI_BASE_ADDRESS_0 + (4 * bar);
->  	dw_pcie_dbi_ro_wr_en(pci);
->  	dw_pcie_writel_dbi2(pci, reg_dbi2, 0x0);
-> @@ -102,16 +102,16 @@ static u8 __dw_pcie_ep_find_next_cap(struct dw_pcie_ep *ep, u8 func_no,
->  		u8 cap_ptr, u8 cap)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	u8 cap_id, next_cap_ptr;
->  	u16 reg;
->  
->  	if (!cap_ptr)
->  		return 0;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = dw_pcie_readw_dbi(pci, func_offset + cap_ptr);
-> +	reg = dw_pcie_readw_dbi(pci, dbi_offset + cap_ptr);
->  	cap_id = (reg & 0x00ff);
->  
->  	if (cap_id > PCI_CAP_ID_MAX)
-> @@ -127,13 +127,13 @@ static u8 __dw_pcie_ep_find_next_cap(struct dw_pcie_ep *ep, u8 func_no,
->  static u8 dw_pcie_ep_find_capability(struct dw_pcie_ep *ep, u8 func_no, u8 cap)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	u8 next_cap_ptr;
->  	u16 reg;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = dw_pcie_readw_dbi(pci, func_offset + PCI_CAPABILITY_LIST);
-> +	reg = dw_pcie_readw_dbi(pci, dbi_offset + PCI_CAPABILITY_LIST);
->  	next_cap_ptr = (reg & 0x00ff);
->  
->  	return __dw_pcie_ep_find_next_cap(ep, func_no, next_cap_ptr, cap);
-> @@ -144,23 +144,23 @@ static int dw_pcie_ep_write_header(struct pci_epc *epc, u8 func_no, u8 vfunc_no,
->  {
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
->  	dw_pcie_dbi_ro_wr_en(pci);
-> -	dw_pcie_writew_dbi(pci, func_offset + PCI_VENDOR_ID, hdr->vendorid);
-> -	dw_pcie_writew_dbi(pci, func_offset + PCI_DEVICE_ID, hdr->deviceid);
-> -	dw_pcie_writeb_dbi(pci, func_offset + PCI_REVISION_ID, hdr->revid);
-> -	dw_pcie_writeb_dbi(pci, func_offset + PCI_CLASS_PROG, hdr->progif_code);
-> -	dw_pcie_writew_dbi(pci, func_offset + PCI_CLASS_DEVICE,
-> +	dw_pcie_writew_dbi(pci, dbi_offset + PCI_VENDOR_ID, hdr->vendorid);
-> +	dw_pcie_writew_dbi(pci, dbi_offset + PCI_DEVICE_ID, hdr->deviceid);
-> +	dw_pcie_writeb_dbi(pci, dbi_offset + PCI_REVISION_ID, hdr->revid);
-> +	dw_pcie_writeb_dbi(pci, dbi_offset + PCI_CLASS_PROG, hdr->progif_code);
-> +	dw_pcie_writew_dbi(pci, dbi_offset + PCI_CLASS_DEVICE,
->  			   hdr->subclass_code | hdr->baseclass_code << 8);
-> -	dw_pcie_writeb_dbi(pci, func_offset + PCI_CACHE_LINE_SIZE,
-> +	dw_pcie_writeb_dbi(pci, dbi_offset + PCI_CACHE_LINE_SIZE,
->  			   hdr->cache_line_size);
-> -	dw_pcie_writew_dbi(pci, func_offset + PCI_SUBSYSTEM_VENDOR_ID,
-> +	dw_pcie_writew_dbi(pci, dbi_offset + PCI_SUBSYSTEM_VENDOR_ID,
->  			   hdr->subsys_vendor_id);
-> -	dw_pcie_writew_dbi(pci, func_offset + PCI_SUBSYSTEM_ID, hdr->subsys_id);
-> -	dw_pcie_writeb_dbi(pci, func_offset + PCI_INTERRUPT_PIN,
-> +	dw_pcie_writew_dbi(pci, dbi_offset + PCI_SUBSYSTEM_ID, hdr->subsys_id);
-> +	dw_pcie_writeb_dbi(pci, dbi_offset + PCI_INTERRUPT_PIN,
->  			   hdr->interrupt_pin);
->  	dw_pcie_dbi_ro_wr_dis(pci);
->  
-> @@ -243,17 +243,17 @@ static int dw_pcie_ep_set_bar(struct pci_epc *epc, u8 func_no, u8 vfunc_no,
->  {
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> -	unsigned int func_offset, dbi2_offset;
-> +	unsigned int dbi_offset, dbi2_offset;
->  	enum pci_barno bar = epf_bar->barno;
->  	size_t size = epf_bar->size;
->  	int flags = epf_bar->flags;
->  	u32 reg, reg_dbi2;
->  	int ret, type;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  	dbi2_offset = dw_pcie_ep_get_dbi2_offset(ep, func_no);
->  
-> -	reg = PCI_BASE_ADDRESS_0 + (4 * bar) + func_offset;
-> +	reg = PCI_BASE_ADDRESS_0 + (4 * bar) + dbi_offset;
->  	reg_dbi2 = PCI_BASE_ADDRESS_0 + (4 * bar) + dbi2_offset;
->  
->  	if (!(flags & PCI_BASE_ADDRESS_SPACE))
-> @@ -337,16 +337,16 @@ static int dw_pcie_ep_get_msi(struct pci_epc *epc, u8 func_no, u8 vfunc_no)
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  	u32 val, reg;
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	struct dw_pcie_ep_func *ep_func;
->  
->  	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
->  	if (!ep_func || !ep_func->msi_cap)
->  		return -EINVAL;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = ep_func->msi_cap + func_offset + PCI_MSI_FLAGS;
-> +	reg = ep_func->msi_cap + dbi_offset + PCI_MSI_FLAGS;
->  	val = dw_pcie_readw_dbi(pci, reg);
->  	if (!(val & PCI_MSI_FLAGS_ENABLE))
->  		return -EINVAL;
-> @@ -362,16 +362,16 @@ static int dw_pcie_ep_set_msi(struct pci_epc *epc, u8 func_no, u8 vfunc_no,
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  	u32 val, reg;
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	struct dw_pcie_ep_func *ep_func;
->  
->  	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
->  	if (!ep_func || !ep_func->msi_cap)
->  		return -EINVAL;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = ep_func->msi_cap + func_offset + PCI_MSI_FLAGS;
-> +	reg = ep_func->msi_cap + dbi_offset + PCI_MSI_FLAGS;
->  	val = dw_pcie_readw_dbi(pci, reg);
->  	val &= ~PCI_MSI_FLAGS_QMASK;
->  	val |= FIELD_PREP(PCI_MSI_FLAGS_QMASK, interrupts);
-> @@ -387,16 +387,16 @@ static int dw_pcie_ep_get_msix(struct pci_epc *epc, u8 func_no, u8 vfunc_no)
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  	u32 val, reg;
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	struct dw_pcie_ep_func *ep_func;
->  
->  	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
->  	if (!ep_func || !ep_func->msix_cap)
->  		return -EINVAL;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = ep_func->msix_cap + func_offset + PCI_MSIX_FLAGS;
-> +	reg = ep_func->msix_cap + dbi_offset + PCI_MSIX_FLAGS;
->  	val = dw_pcie_readw_dbi(pci, reg);
->  	if (!(val & PCI_MSIX_FLAGS_ENABLE))
->  		return -EINVAL;
-> @@ -412,7 +412,7 @@ static int dw_pcie_ep_set_msix(struct pci_epc *epc, u8 func_no, u8 vfunc_no,
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  	u32 val, reg;
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	struct dw_pcie_ep_func *ep_func;
->  
->  	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
-> @@ -421,19 +421,19 @@ static int dw_pcie_ep_set_msix(struct pci_epc *epc, u8 func_no, u8 vfunc_no,
->  
->  	dw_pcie_dbi_ro_wr_en(pci);
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = ep_func->msix_cap + func_offset + PCI_MSIX_FLAGS;
-> +	reg = ep_func->msix_cap + dbi_offset + PCI_MSIX_FLAGS;
->  	val = dw_pcie_readw_dbi(pci, reg);
->  	val &= ~PCI_MSIX_FLAGS_QSIZE;
->  	val |= interrupts;
->  	dw_pcie_writew_dbi(pci, reg, val);
->  
-> -	reg = ep_func->msix_cap + func_offset + PCI_MSIX_TABLE;
-> +	reg = ep_func->msix_cap + dbi_offset + PCI_MSIX_TABLE;
->  	val = offset | bir;
->  	dw_pcie_writel_dbi(pci, reg, val);
->  
-> -	reg = ep_func->msix_cap + func_offset + PCI_MSIX_PBA;
-> +	reg = ep_func->msix_cap + dbi_offset + PCI_MSIX_PBA;
->  	val = (offset + (interrupts * PCI_MSIX_ENTRY_SIZE)) | bir;
->  	dw_pcie_writel_dbi(pci, reg, val);
->  
-> @@ -514,7 +514,7 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
->  	struct dw_pcie_ep_func *ep_func;
->  	struct pci_epc *epc = ep->epc;
->  	unsigned int aligned_offset;
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	u16 msg_ctrl, msg_data;
->  	u32 msg_addr_lower, msg_addr_upper, reg;
->  	u64 msg_addr;
-> @@ -525,22 +525,22 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
->  	if (!ep_func || !ep_func->msi_cap)
->  		return -EINVAL;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
->  	/* Raise MSI per the PCI Local Bus Specification Revision 3.0, 6.8.1. */
-> -	reg = ep_func->msi_cap + func_offset + PCI_MSI_FLAGS;
-> +	reg = ep_func->msi_cap + dbi_offset + PCI_MSI_FLAGS;
->  	msg_ctrl = dw_pcie_readw_dbi(pci, reg);
->  	has_upper = !!(msg_ctrl & PCI_MSI_FLAGS_64BIT);
-> -	reg = ep_func->msi_cap + func_offset + PCI_MSI_ADDRESS_LO;
-> +	reg = ep_func->msi_cap + dbi_offset + PCI_MSI_ADDRESS_LO;
->  	msg_addr_lower = dw_pcie_readl_dbi(pci, reg);
->  	if (has_upper) {
-> -		reg = ep_func->msi_cap + func_offset + PCI_MSI_ADDRESS_HI;
-> +		reg = ep_func->msi_cap + dbi_offset + PCI_MSI_ADDRESS_HI;
->  		msg_addr_upper = dw_pcie_readl_dbi(pci, reg);
-> -		reg = ep_func->msi_cap + func_offset + PCI_MSI_DATA_64;
-> +		reg = ep_func->msi_cap + dbi_offset + PCI_MSI_DATA_64;
->  		msg_data = dw_pcie_readw_dbi(pci, reg);
->  	} else {
->  		msg_addr_upper = 0;
-> -		reg = ep_func->msi_cap + func_offset + PCI_MSI_DATA_32;
-> +		reg = ep_func->msi_cap + dbi_offset + PCI_MSI_DATA_32;
->  		msg_data = dw_pcie_readw_dbi(pci, reg);
->  	}
->  	aligned_offset = msg_addr_lower & (epc->mem->window.page_size - 1);
-> @@ -585,7 +585,7 @@ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
->  	struct dw_pcie_ep_func *ep_func;
->  	struct pci_epf_msix_tbl *msix_tbl;
->  	struct pci_epc *epc = ep->epc;
-> -	unsigned int func_offset = 0;
-> +	unsigned int dbi_offset = 0;
->  	u32 reg, msg_data, vec_ctrl;
->  	unsigned int aligned_offset;
->  	u32 tbl_offset;
-> @@ -597,9 +597,9 @@ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
->  	if (!ep_func || !ep_func->msix_cap)
->  		return -EINVAL;
->  
-> -	func_offset = dw_pcie_ep_func_select(ep, func_no);
-> +	dbi_offset = dw_pcie_ep_get_dbi_offset(ep, func_no);
->  
-> -	reg = ep_func->msix_cap + func_offset + PCI_MSIX_TABLE;
-> +	reg = ep_func->msix_cap + dbi_offset + PCI_MSIX_TABLE;
->  	tbl_offset = dw_pcie_readl_dbi(pci, reg);
->  	bir = FIELD_GET(PCI_MSIX_TABLE_BIR, tbl_offset);
->  	tbl_offset &= PCI_MSIX_TABLE_OFFSET;
-> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
-> index cad0e4c24e11..485ce52b2416 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware.h
-> +++ b/drivers/pci/controller/dwc/pcie-designware.h
-> @@ -344,7 +344,7 @@ struct dw_pcie_ep_ops {
->  	 * return a 0, and implement code in callback function of platform
->  	 * driver.
->  	 */
-> -	unsigned int (*func_conf_select)(struct dw_pcie_ep *ep, u8 func_no);
-> +	unsigned int (*get_dbi_offset)(struct dw_pcie_ep *ep, u8 func_no);
->  	unsigned int (*get_dbi2_offset)(struct dw_pcie_ep *ep, u8 func_no);
->  };
->  
-> diff --git a/drivers/pci/controller/dwc/pcie-rcar-gen4.c b/drivers/pci/controller/dwc/pcie-rcar-gen4.c
-> index 2b7e0f213fb2..8ef03d249001 100644
-> --- a/drivers/pci/controller/dwc/pcie-rcar-gen4.c
-> +++ b/drivers/pci/controller/dwc/pcie-rcar-gen4.c
-> @@ -394,7 +394,7 @@ rcar_gen4_pcie_ep_get_features(struct dw_pcie_ep *ep)
->  	return &rcar_gen4_pcie_epc_features;
->  }
->  
-> -static unsigned int rcar_gen4_pcie_ep_func_conf_select(struct dw_pcie_ep *ep,
-> +static unsigned int rcar_gen4_pcie_ep_get_dbi_offset(struct dw_pcie_ep *ep,
->  						       u8 func_no)
->  {
->  	return func_no * RCAR_GEN4_PCIE_EP_FUNC_DBI_OFFSET;
-> @@ -412,7 +412,7 @@ static const struct dw_pcie_ep_ops pcie_ep_ops = {
->  	.deinit = rcar_gen4_pcie_ep_deinit,
->  	.raise_irq = rcar_gen4_pcie_ep_raise_irq,
->  	.get_features = rcar_gen4_pcie_ep_get_features,
-> -	.func_conf_select = rcar_gen4_pcie_ep_func_conf_select,
-> +	.get_dbi_offset = rcar_gen4_pcie_ep_get_dbi_offset,
->  	.get_dbi2_offset = rcar_gen4_pcie_ep_get_dbi2_offset,
->  };
->  
-> -- 
-> 2.34.1
+
+With the change in this patch numa fault pte will not have _PAGE_PRIVILEGED set because 
+PAGE_NONE now maps to just _PAGE_BASE
+
+
+>> This also remove pte_user() from
+>> book3s/64.
 > 
+> Nice cleanup. That was an annoying hack.
+> 
+>> pte_access_permitted() now checks for _PAGE_EXEC because we now support
+>> EXECONLY mappings.
+> 
+> AFAIKS pte_exec() is not required, GUP is really only for read or
+> write access. It should be a separate patch if you think it's needed.
+> 
+
+I have a v2 dropping that based on https://lore.kernel.org/linux-mm/87bkc1oe8c.fsf@linux.ibm.com 
+I kept pte_user with pte_access_permitted being the only user. I can open code that
+if needed. 
+
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h | 23 +++++---------------
+>>  arch/powerpc/mm/book3s64/hash_utils.c        | 17 +++++++++++++++
+>>  2 files changed, 23 insertions(+), 17 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> index cb77eddca54b..7c7de7b56df0 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> @@ -17,12 +17,6 @@
+>>  #define _PAGE_EXEC		0x00001 /* execute permission */
+>>  #define _PAGE_WRITE		0x00002 /* write access allowed */
+>>  #define _PAGE_READ		0x00004	/* read access allowed */
+>> -#define _PAGE_NA		_PAGE_PRIVILEGED
+>> -#define _PAGE_NAX		_PAGE_EXEC
+>> -#define _PAGE_RO		_PAGE_READ
+>> -#define _PAGE_ROX		(_PAGE_READ | _PAGE_EXEC)
+>> -#define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
+>> -#define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
+>>  #define _PAGE_PRIVILEGED	0x00008 /* kernel access only */
+>>  #define _PAGE_SAO		0x00010 /* Strong access order */
+>>  #define _PAGE_NON_IDEMPOTENT	0x00020 /* non idempotent memory */
+> 
+> Did you leave PAGE_NONE as _PAGE_BASE | _PAGE_PRIVILEGED below?
+> Shouldn't that be changed too? Then this patch is not only hash
+> but also radix.
+> 
+
+A recent patch moved PAGE_NONE to pgtable-mask.h 
+a5a08dc90f4513d1a78582ec24b687fad01cc843
+
+> Why is the hash change required? Previously PAGE_NONE relied on
+> privileged bit to prevent access, now you need to handle a PTE
+> without that bit? In that case could that be patch 1, then the
+> rest patch 2?
+> 
+
+Looking at older kernel, I guess check_pte_access used _PAGE_PRIVILEGED 
+as a way to prevent access to PAGE_NONE ptes. We now depend on
+_PAGE_READ
+
+> __pte_flags_need_flush() should be updated after this too,
+> basically revert commit 1abce0580b894.
+> 
+
+Will update the patch to include the revert.
+
+>> @@ -119,9 +113,9 @@
+>>  /*
+>>   * user access blocked by key
+>>   */
+>> -#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
+>>  #define _PAGE_KERNEL_RO		 (_PAGE_PRIVILEGED | _PAGE_READ)
+>>  #define _PAGE_KERNEL_ROX	 (_PAGE_PRIVILEGED | _PAGE_READ | _PAGE_EXEC)
+>> +#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
+>>  #define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
+>>  /*
+>>   * _PAGE_CHG_MASK masks of bits that are to be preserved across
+> 
+> No need to reorder defines.
+> 
+
+ok
+
+
+> Thanks,
+> Nick
+> 
+>> @@ -523,19 +517,14 @@ static inline bool arch_pte_access_permitted(u64 pte, bool write, bool execute)
+>>  }
+>>  #endif /* CONFIG_PPC_MEM_KEYS */
+>>  
+>> -static inline bool pte_user(pte_t pte)
+>> -{
+>> -	return !(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
+>> -}
+>> -
+>>  #define pte_access_permitted pte_access_permitted
+>>  static inline bool pte_access_permitted(pte_t pte, bool write)
+>>  {
+>> -	/*
+>> -	 * _PAGE_READ is needed for any access and will be
+>> -	 * cleared for PROT_NONE
+>> -	 */
+>> -	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
+>> +
+>> +	if (!pte_present(pte))
+>> +		return false;
+>> +
+>> +	if (!(pte_read(pte) || pte_exec(pte)))
+>>  		return false;
+>>  
+>>  	if (write && !pte_write(pte))
+>> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+>> index ad2afa08e62e..b2eda22195f0 100644
+>> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+>> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+>> @@ -310,9 +310,26 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags, unsigned long flags
+>>  			else
+>>  				rflags |= 0x3;
+>>  		}
+>> +		WARN_ON(!(pteflags & _PAGE_RWX));
+>>  	} else {
+>>  		if (pteflags & _PAGE_RWX)
+>>  			rflags |= 0x2;
+>> +		else {
+>> +			/*
+>> +			 * PAGE_NONE will get mapped to 0b110 (slb key 1 no access)
+>> +			 * We picked 0b110 instead of 0b000 so that slb key 0 will
+>> +			 * get only read only access for the same rflags.
+>> +			 */
+>> +			if (mmu_has_feature(MMU_FTR_KERNEL_RO))
+>> +				rflags |= (HPTE_R_PP0 | 0x2);
+>> +			/*
+>> +			 * rflags = HPTE_R_N
+>> +			 * Without KERNEL_RO feature this will result in slb
+>> +			 * key 0 with read/write. But ISA only supports that.
+>> +			 * There is no key 1 no-access and key 0 read-only
+>> +			 * pp bit support.
+>> +			 */
+>> +		}
+>>  		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
+>>  			rflags |= 0x1;
+>>  	}
+> 
+
+V2 is also dropping the above change, because we will never have hash table entries inserted. 
+
+This is added to commit message.
+
+    Hash fault handling code did get some WARN_ON added because those
+    functions are not expected to get called with _PAGE_READ cleared.
+    commit 18061c17c8ec ("powerpc/mm: Update PROTFAULT handling in the page fault path")
+    explains the details.
+
+
+
+-aneesh
