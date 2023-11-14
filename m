@@ -4,60 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CF3BC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 17:05:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71F78C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 17:06:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VsRQhL1g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=esJZhq+A;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SVCN64LmCz3dJ9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 04:05:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SVCP401Khz3dWw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 04:06:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VsRQhL1g;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=esJZhq+A;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVCKB5Qqbz3cRs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2023 04:02:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVCKC5HrDz3cRs
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2023 04:02:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 62E666132A;
+	by ams.source.kernel.org (Postfix) with ESMTP id 8743DB811CB;
 	Tue, 14 Nov 2023 17:02:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 128F2C433CB;
-	Tue, 14 Nov 2023 17:02:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id DF0E8C433C8;
+	Tue, 14 Nov 2023 17:02:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1699981354;
-	bh=L9u1YAZnjCmI5frQZUszBrcjXGLM1MUKxS5O1XTqjO8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=VsRQhL1g7sPW7JjhGGgfEDhh9v8tsUmVhmpFQg9gP9wkAPLuYCdGdfy/Cc8abPm9D
-	 +qxJlVpPBjH9756zbBdATSiYpYoj/2sCbpq4ecrIo80ojoopXYiLo4Xs9Tw845xzsF
-	 voyd/7bSwLz3m6TZS2SzuId7xTL5VthhgNp7qtjY34xcgheNeR7r9clnHzjLOhcXih
-	 O013Oz/wHEkDrtuI1yl0vAfcNS1lv+7n4dqQROsV20wcLTW5mO1OHlSiSlaykivwwh
-	 1dKS9U7LX9rT8HpRPrUHp43r/41FfA2/rMxxB8gGbbkdJ0ULGIPx9x716Ey2BLzLR8
-	 hJxpSNP8Fwnig==
+	s=k20201202; t=1699981353;
+	bh=zdbILnLJ8Bse+F5hjFg/R9HPGLYwSKFm8c754/A0PGM=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=esJZhq+AqLmzp9jtlAq6Y0KUS7mUDpmP2OVzjAZcxGCNmQfiDTxyXJJPzLYfkFHjf
+	 XFJhKrwLuDF4uTDNDohQH27hQIUURYO03c3F3Y0xpQDYkMwMqk5ngBKrHLjqG5cKra
+	 RhLBgWY576enqsk+YptXD1DGt2oxWXIT8UWA33Hw4Z5jyzzsJjUVmHj8DGaZIl70xP
+	 whMm/2ZLgisjt++Y9oKkE/Mf+YEGvrN1efZcCjBzGEUgg2g1apexrQ1ztMgDrmKa/i
+	 03gW/TMyQug68iqAFhB5uHZ7vgd0PpRJkZu9mFeBDGNh7/LXHwbBzO3rLYcM0cZhog
+	 3V7gbVYDeYMLw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00838C41535;
-	Tue, 14 Nov 2023 17:02:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4839C4332F;
+	Tue, 14 Nov 2023 17:02:33 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Tue, 14 Nov 2023 11:01:55 -0600
-Subject: [PATCH 3/3] powerpc/pseries/memhp: Log more error conditions in
- add path
+Subject: [PATCH 0/3] powerpc/pseries/memhp: Fix minor bugs and improve
+ error logging
+Date: Tue, 14 Nov 2023 11:01:52 -0600
+Message-Id: <20231114-pseries-memhp-fixes-v1-0-fb8f2bb7c557@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231114-pseries-memhp-fixes-v1-3-fb8f2bb7c557@linux.ibm.com>
-References: <20231114-pseries-memhp-fixes-v1-0-fb8f2bb7c557@linux.ibm.com>
-In-Reply-To: <20231114-pseries-memhp-fixes-v1-0-fb8f2bb7c557@linux.ibm.com>
+X-B4-Tracking: v=1; b=H4sIAACoU2UC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI2NDQ0MT3QKIBt3c1NyMAt20zAog29DC1NLCIiUl1SjRQAmos6AoFSwB1Bg
+ dW1sLAIjdJyxlAAAA
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1699981353; l=1765;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1699981353; l=644;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=OECSKa6t5Y+xw/dFXWQT+ZAW2UYSta5I9dOlL6VIXK0=;
- b=dpLpHPs0Ley06//CDlZvN2nxA6S6q9hWibBMvLImKezkUooMo/To8Nz4w7f9NF1NDFO4tSZQJ
- lHvRUjelc0uC0qO9H7SwQ0dRFb9b/CXrmYMyKBpqf+7OEIbQO8M83zw
+ bh=zdbILnLJ8Bse+F5hjFg/R9HPGLYwSKFm8c754/A0PGM=;
+ b=6iG3yJoacYElVhp7oJuqIzdI2jyjd84ec391zC88z3nIqOPYe3GikpSgyb9BCW50ISrB4d0pH
+ 3bZy/oPmZ5/B30YXtCCF2z5pQ/CDftqxpXWG7WUJQEB/GxSSpWwRY25
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -78,57 +79,22 @@ Cc: Nathan Lynch <nathanl@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+This includes a fix for an array bounds read overrun that can be
+triggered when debug messages are enabled.
 
-When an add operation for multiple LMBs fails, there is currently
-little indication from the kernel of what went wrong. Be a little more
-verbose about error conditions in the add paths.
-
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-memory.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Nathan Lynch (3):
+      powerpc/pseries/memhp: Fix access beyond end of drmem array
+      powerpc/pseries/memhp: Remove unbalanced dlpar_release_drc() call
+      powerpc/pseries/memhp: Log more error conditions in add path
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index ba883c1b9f6d..4896920514f3 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -208,8 +208,10 @@ static int dlpar_change_lmb_state(struct drmem_lmb *lmb, bool online)
- 	int rc;
- 
- 	mem_block = lmb_to_memblock(lmb);
--	if (!mem_block)
-+	if (!mem_block) {
-+		pr_err("Failed memory block lookup for LMB 0x%x\n", lmb->drc_index);
- 		return -EINVAL;
-+	}
- 
- 	if (online && mem_block->dev.offline)
- 		rc = device_online(&mem_block->dev);
-@@ -575,6 +577,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
- 
- 	rc = update_lmb_associativity_index(lmb);
- 	if (rc) {
-+		pr_err("Failed to configure LMB 0x%x\n", lmb->drc_index);
- 		return rc;
- 	}
- 
-@@ -588,12 +591,14 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
- 	/* Add the memory */
- 	rc = __add_memory(nid, lmb->base_addr, block_sz, MHP_MEMMAP_ON_MEMORY);
- 	if (rc) {
-+		pr_err("Failed to add LMB 0x%x to node %u", lmb->drc_index, nid);
- 		invalidate_lmb_associativity_index(lmb);
- 		return rc;
- 	}
- 
- 	rc = dlpar_online_lmb(lmb);
- 	if (rc) {
-+		pr_err("Failed to online LMB 0x%x on node %u\n", lmb->drc_index, nid);
- 		__remove_memory(lmb->base_addr, block_sz);
- 		invalidate_lmb_associativity_index(lmb);
- 	} else {
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+---
+base-commit: 707df298cbde200b939c70be2577b20775fe3345
+change-id: 20231114-pseries-memhp-fixes-185988dde2a0
 
+Best regards,
 -- 
-2.41.0
+Nathan Lynch <nathanl@linux.ibm.com>
 
