@@ -4,67 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D6DBC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 15:34:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B733BC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 15:35:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=desoppb2;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=desoppb2;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ax3lt7JX;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ax3lt7JX;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SV9MS4pRbz3dBY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 02:34:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SV9NP2yzPz3dC2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 02:35:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=desoppb2;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=desoppb2;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ax3lt7JX;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ax3lt7JX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SV9LQ6gZhz2yhT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SV9LQ3dn5z2ydW
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2023 02:33:33 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1699976011;
+	s=mimecast20190719; t=1699976006;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=CqW5rMmhMyyQqUsWMnNu9qdUWQsPZPZ9QZziOkr38Pc=;
-	b=desoppb23hGEwSR7e37TxPbAqO7kQ8ZBLc/atSTAU+Ym+sC7sTwO3Fc4p6lwPAoV75G7dM
-	f+3sor3TamLDJGKTEM8OJmavSoif3YEZbqBv9ncwgZwUFeMIfFQYlLdw3kiXwy4ykSJkLX
-	Kyg+pPOC3jySJmKArCOi6Wl7vuNKBe0=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/+dElhLP1quyzdQBmNveEGvmbZDs+wXRqJTs6dmoqmk=;
+	b=Ax3lt7JXmvX26rpnEUyN1IIslC838EBUkF9fQG7ohAdZt++YiITQNCfOnMMtp1p933DI1W
+	m+ZUUiZNw8IVitU34yGc5lvDpSpxu9yZjIvvJXPJ1gvVptapfq/NucMKa8QEyAdCHoGyzv
+	foegjJQzjnoQwf0Xioh+F1OznOwG0dI=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1699976011;
+	s=mimecast20190719; t=1699976006;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=CqW5rMmhMyyQqUsWMnNu9qdUWQsPZPZ9QZziOkr38Pc=;
-	b=desoppb23hGEwSR7e37TxPbAqO7kQ8ZBLc/atSTAU+Ym+sC7sTwO3Fc4p6lwPAoV75G7dM
-	f+3sor3TamLDJGKTEM8OJmavSoif3YEZbqBv9ncwgZwUFeMIfFQYlLdw3kiXwy4ykSJkLX
-	Kyg+pPOC3jySJmKArCOi6Wl7vuNKBe0=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/+dElhLP1quyzdQBmNveEGvmbZDs+wXRqJTs6dmoqmk=;
+	b=Ax3lt7JXmvX26rpnEUyN1IIslC838EBUkF9fQG7ohAdZt++YiITQNCfOnMMtp1p933DI1W
+	m+ZUUiZNw8IVitU34yGc5lvDpSpxu9yZjIvvJXPJ1gvVptapfq/NucMKa8QEyAdCHoGyzv
+	foegjJQzjnoQwf0Xioh+F1OznOwG0dI=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-411-5YGHyBdvMFyk6fY-3gacPg-1; Tue, 14 Nov 2023 10:33:27 -0500
-X-MC-Unique: 5YGHyBdvMFyk6fY-3gacPg-1
+ us-mta-85-N9Dy5BYSNKe1LYvnmcJoug-1; Tue, 14 Nov 2023 10:33:22 -0500
+X-MC-Unique: N9Dy5BYSNKe1LYvnmcJoug-1
 Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 482E5858A28;
-	Tue, 14 Nov 2023 15:33:07 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id CB809103B81C;
+	Tue, 14 Nov 2023 15:32:59 +0000 (UTC)
 Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.112.231])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 2DC781C060B0;
-	Tue, 14 Nov 2023 15:33:03 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id A09871C060AE;
+	Tue, 14 Nov 2023 15:32:56 +0000 (UTC)
 From: Baoquan He <bhe@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/7] kexec_file: print out debugging message if required
-Date: Tue, 14 Nov 2023 23:32:48 +0800
-Message-ID: <20231114153253.241262-3-bhe@redhat.com>
-In-Reply-To: <20231114153253.241262-1-bhe@redhat.com>
-References: <20231114153253.241262-1-bhe@redhat.com>
+Subject: [PATCH 0/7] kexec_file: print out debugging message if required
+Date: Tue, 14 Nov 2023 23:32:46 +0800
+Message-ID: <20231114153253.241262-1-bhe@redhat.com>
 MIME-Version: 1.0
 Content-type: text/plain
 Content-Transfer-Encoding: 8bit
@@ -84,81 +80,91 @@ Cc: Baoquan He <bhe@redhat.com>, linux-parisc@vger.kernel.org, x86@kernel.org, k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace pr_debug() with the newly added kexec_dprintk() in kexec_file
-loading related codes.
+Currently, specifying '-d' will print a lot of debugging information
+about kexec/kdump loading with kexec_load interface.
 
-And also print out type/start/head of kimage and flags to help debug.
+However, kexec_file_load prints nothing even though '-d' is specified.
+It's very inconvenient to debug or analyze the kexec/kdump loading when
+something wrong happened with kexec/kdump itself or develper want to
+check the kexec/kdump loading.
 
-Signed-off-by: Baoquan He <bhe@redhat.com>
----
- kernel/crash_core.c                | 3 ++-
- kernel/kexec_file.c                | 7 ++++++-
- security/integrity/ima/ima_kexec.c | 2 +-
- 3 files changed, 9 insertions(+), 3 deletions(-)
+In this patchset, a kexec_file flag is KEXEC_FILE_DEBUG added and checked
+in code. If it's passed in, debugging message of kexec_file code will be
+printed out and can be seen from console and dmesg. Otherwise, the
+debugging message is printed via pr_debug().
 
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index efe87d501c8c..41001ffbaa99 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -551,7 +551,8 @@ int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_map,
- 		phdr->p_filesz = phdr->p_memsz = mend - mstart + 1;
- 		phdr->p_align = 0;
- 		ehdr->e_phnum++;
--		pr_debug("Crash PT_LOAD ELF header. phdr=%p vaddr=0x%llx, paddr=0x%llx, sz=0x%llx e_phnum=%d p_offset=0x%llx\n",
-+		kexec_dprintk("Crash PT_LOAD ELF header. phdr=%p vaddr=0x%llx, paddr=0x%llx, "
-+			"sz=0x%llx e_phnum=%d p_offset=0x%llx\n",
- 			phdr, phdr->p_vaddr, phdr->p_paddr, phdr->p_filesz,
- 			ehdr->e_phnum, phdr->p_offset);
- 		phdr++;
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 4c35500ae40a..7ae1b0901aa4 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -206,6 +206,8 @@ kimage_file_prepare_segments(struct kimage *image, int kernel_fd, int initrd_fd,
- 	if (ret < 0)
- 		return ret;
- 	image->kernel_buf_len = ret;
-+	kexec_dprintk("kernel: %p kernel_size: %#lx\n",
-+		      image->kernel_buf, image->kernel_buf_len);
- 
- 	/* Call arch image probe handlers */
- 	ret = arch_kexec_kernel_image_probe(image, image->kernel_buf,
-@@ -389,11 +391,12 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
- 	if (ret)
- 		goto out;
- 
-+	kexec_dprintk("nr_segments = %lu\n", image->nr_segments);
- 	for (i = 0; i < image->nr_segments; i++) {
- 		struct kexec_segment *ksegment;
- 
- 		ksegment = &image->segment[i];
--		pr_debug("Loading segment %d: buf=0x%p bufsz=0x%zx mem=0x%lx memsz=0x%zx\n",
-+		kexec_dprintk("segment[%d]: buf=0x%p bufsz=0x%zx mem=0x%lx memsz=0x%zx\n",
- 			 i, ksegment->buf, ksegment->bufsz, ksegment->mem,
- 			 ksegment->memsz);
- 
-@@ -408,6 +411,8 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
- 	if (ret)
- 		goto out;
- 
-+	kexec_dprintk("kexec_file_load: type:%u, start:0x%lx head:0x%lx flags:0x%lx\n",
-+		      image->type, image->start, image->head, flags);
- 	/*
- 	 * Free up any temporary buffers allocated which are not needed
- 	 * after image has been loaded
-diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-index ad133fe120db..e692624bcab3 100644
---- a/security/integrity/ima/ima_kexec.c
-+++ b/security/integrity/ima/ima_kexec.c
-@@ -129,7 +129,7 @@ void ima_add_kexec_buffer(struct kimage *image)
- 	image->ima_buffer_size = kexec_segment_size;
- 	image->ima_buffer = kexec_buffer;
- 
--	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
-+	kexec_dprintk("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
- 		 kbuf.mem);
- }
- #endif /* IMA_KEXEC */
+Note:
+=====
+1) The code in kexec-tools utility also need be changed to support
+passing KEXEC_FILE_DEBUG to kernel when 'kexec -s -d' is specified.
+The patch link is here:
+=========
+[PATCH] kexec_file: add kexec_file flag to support debug printing
+http://lists.infradead.org/pipermail/kexec/2023-November/028505.html
+
+2) s390 also has kexec_file code, while I am not sure what debugging
+information is necessary. So leave it to s390 dev to add if they think
+it's needed.
+
+Test:
+======
+I did testing on x86_64 and arm64. On x86_64, the printed messages look
+like below:
+--------------------------------------------------------------
+kexec measurement buffer for the loaded kernel at 0x207fffe000.
+Loaded purgatory at 0x207fff9000
+Loaded boot_param, command line and misc at 0x207fff3000 bufsz=0x1180 memsz=0x1180
+Loaded 64bit kernel at 0x207c000000 bufsz=0xc88200 memsz=0x3c4a000
+Loaded initrd at 0x2079e79000 bufsz=0x2186280 memsz=0x2186280
+Final command line is: root=/dev/mapper/fedora_intel--knightslanding--lb--02-root ro rd.lvm.lv=fedora_intel-knightslanding-lb-02/root console=ttyS0,115200N81 crashkernel=256M
+E820 memmap:
+0000000000000000-000000000009a3ff (1)
+000000000009a400-000000000009ffff (2)
+00000000000e0000-00000000000fffff (2)
+0000000000100000-000000006ff83fff (1)
+000000006ff84000-000000007ac50fff (2)
+......
+000000207fff6150-000000207fff615f (128)
+000000207fff6160-000000207fff714f (1)
+000000207fff7150-000000207fff715f (128)
+000000207fff7160-000000207fff814f (1)
+000000207fff8150-000000207fff815f (128)
+000000207fff8160-000000207fffffff (1)
+nr_segments = 5
+segment[0]: buf=0x000000004e5ece74 bufsz=0x211 mem=0x207fffe000 memsz=0x1000
+segment[1]: buf=0x000000009e871498 bufsz=0x4000 mem=0x207fff9000 memsz=0x5000
+segment[2]: buf=0x00000000d879f1fe bufsz=0x1180 mem=0x207fff3000 memsz=0x2000
+segment[3]: buf=0x000000001101cd86 bufsz=0xc88200 mem=0x207c000000 memsz=0x3c4a000
+segment[4]: buf=0x00000000c6e38ac7 bufsz=0x2186280 mem=0x2079e79000 memsz=0x2187000
+kexec_file_load: type:0, start:0x207fff91a0 head:0x109e004002 flags:0x8
+---------------------------------------------------------------------------
+
+Baoquan He (7):
+  kexec_file: add kexec_file flag to control debug printing
+  kexec_file: print out debugging message if required
+  kexec_file, x86: print out debugging message if required
+  kexec_file, arm64: print out debugging message if required
+  kexec_file, ricv: print out debugging message if required
+  kexec_file, power: print out debugging message if required
+  kexec_file, parisc: print out debugging message if required
+
+ arch/arm64/kernel/kexec_image.c        |  2 +-
+ arch/arm64/kernel/machine_kexec.c      | 24 ++++++------------------
+ arch/arm64/kernel/machine_kexec_file.c |  6 +++---
+ arch/parisc/kernel/kexec_file.c        |  6 +++---
+ arch/powerpc/kexec/elf_64.c            |  8 ++++----
+ arch/powerpc/kexec/file_load_64.c      | 14 +++++++-------
+ arch/riscv/kernel/elf_kexec.c          |  9 +++++----
+ arch/riscv/kernel/machine_kexec.c      | 26 --------------------------
+ arch/x86/kernel/crash.c                |  2 +-
+ arch/x86/kernel/kexec-bzimage64.c      | 23 ++++++++++++++---------
+ include/linux/kexec.h                  | 14 +++++++++++++-
+ include/uapi/linux/kexec.h             |  1 +
+ kernel/crash_core.c                    |  3 ++-
+ kernel/kexec_file.c                    | 12 +++++++++++-
+ security/integrity/ima/ima_kexec.c     |  2 +-
+ 15 files changed, 72 insertions(+), 80 deletions(-)
+
 -- 
 2.41.0
 
