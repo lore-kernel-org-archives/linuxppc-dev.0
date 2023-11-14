@@ -4,85 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35C8EC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 07:14:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77795C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 08:04:37 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ciEHfoko;
+	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=YQohFzl7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4STyGk6CKPz3ccf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 18:14:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4STzNM58sKz3cfB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Nov 2023 19:04:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ciEHfoko;
+	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=YQohFzl7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 194 seconds by postgrey-1.37 at boromir; Tue, 14 Nov 2023 19:03:45 AEDT
+Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4STyFm5Lz4z30MQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2023 18:13:48 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AE79cdw021592;
-	Tue, 14 Nov 2023 07:13:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=/xcRIxss24vPX7LOcN8YbMFBW+zGe4pjlFCLcTsmRDI=;
- b=ciEHfoko1oUQ75aqAKPKhljOChwTRo++ArDr9En7Xd0sMrSbm0q1HqUGQiUH4YjXfzWN
- t2NyArFVzuorg7mYL3DBSkQtc9ykoH9ySuOvUVLxU660zSU3ohSDyjVu+TVu6dtd90l1
- 7KZ6iIjlbAjGWGunEpKpwWvJfbJhhozJneWJ12nDLazlftlb9nI6CqzfhFZGzEwKrwIs
- l2RMNw9pbkaBSxw7K1ugDP8dj/ThRvsCLCVefXlBtrZl9r6bUbu1lFSnQ0RB9lhajvJi
- 1F43HU0MZxD5bpD1Eu7on3/78Pw8CVmaiOBbqHXjxRYlMuq1q9H4pb4I7KZyNaX7dwQl 9g== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uc48rg30c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Nov 2023 07:13:37 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AE79pgr022041;
-	Tue, 14 Nov 2023 07:13:36 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uc48rg305-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Nov 2023 07:13:36 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3AE5QvIP014869;
-	Tue, 14 Nov 2023 07:13:36 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3uamxn64a5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Nov 2023 07:13:36 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3AE7DZxF8061620
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 14 Nov 2023 07:13:35 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1AF8558059;
-	Tue, 14 Nov 2023 07:13:35 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7F4E258058;
-	Tue, 14 Nov 2023 07:13:32 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.43.56.65])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 14 Nov 2023 07:13:32 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: [PATCH] powerpc/sched: Cleanup vcpu_is_preempted()
-Date: Tue, 14 Nov 2023 12:42:19 +0530
-Message-ID: <20231114071219.198222-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.41.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4STzMP05glz3bvB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2023 19:03:44 +1100 (AEDT)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.rptsys.com (Postfix) with ESMTP id 256F7828535A;
+	Tue, 14 Nov 2023 02:03:42 -0600 (CST)
+Received: from mail.rptsys.com ([127.0.0.1])
+	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
+	with ESMTP id oPnla1OtGyZY; Tue, 14 Nov 2023 02:03:41 -0600 (CST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.rptsys.com (Postfix) with ESMTP id 0E07682856C5;
+	Tue, 14 Nov 2023 02:03:41 -0600 (CST)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 0E07682856C5
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
+	t=1699949021; bh=GnC7zdyJZxNd3SbpUV4gzDUlUb/G8sXLYymPm+EeDvg=;
+	h=Date:From:To:Message-ID:MIME-Version;
+	b=YQohFzl7Pfpo2RIcWleCSikbDv+nX+/ShZWc0DNIC9xW8X6DuKZ1gNF1my3AZmqmw
+	 I/ToTymzRXQczquAeCMXuzuZBe1ZRMWuy9AxmwPA5yv1HeWy7EV9C1W824LfZWN9tz
+	 KRXI0Edy5Ce6qQORrqQLMUHDmz4cyIr1TSaopn1c=
+X-Virus-Scanned: amavisd-new at rptsys.com
+Received: from mail.rptsys.com ([127.0.0.1])
+	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id UJhkqgCPTcJz; Tue, 14 Nov 2023 02:03:40 -0600 (CST)
+Received: from vali.starlink.edu (localhost [127.0.0.1])
+	by mail.rptsys.com (Postfix) with ESMTP id D2CDB828535A;
+	Tue, 14 Nov 2023 02:03:40 -0600 (CST)
+Date: Tue, 14 Nov 2023 02:03:40 -0600 (CST)
+From: Timothy Pearson <tpearson@raptorengineering.com>
+To: Salvatore Bonaccorso <carnil@debian.org>
+Message-ID: <1289669795.47202741.1699949020621.JavaMail.zimbra@raptorengineeringinc.com>
+In-Reply-To: <ZVMo0vOZAxuxT8la@eldamar.lan>
+References: <19221908.47168775.1699937769845.JavaMail.zimbra@raptorengineeringinc.com> <ZVMo0vOZAxuxT8la@eldamar.lan>
+Subject: Re: [PATCH] powerpc: Fix data corruption on IPI
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Fr6bV5ICTGrfZORGoGuG9krcx1-t-gVh
-X-Proofpoint-ORIG-GUID: P3eL1KlwpzTTQch_y1hNTSUzVyJNTI-f
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-11-14_05,2023-11-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 spamscore=0
- clxscore=1015 adultscore=0 phishscore=0 malwarescore=0 mlxscore=0
- mlxlogscore=999 suspectscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311060000 definitions=main-2311140054
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC119 (Linux)/8.5.0_GA_3042)
+Thread-Topic: powerpc: Fix data corruption on IPI
+Thread-Index: kJBWQeL92jH/nokdFfVv3+nZlpCT6Q==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,99 +70,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Jens Axboe <axboe@kernel.dk>, regressions <regressions@lists.linux.dev>, npiggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No functional change in this patch. A helper is added to find if
-vcpu is dispatched by hypervisor. Use that instead of opencoding.
-Also clarify some of the comments.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/paravirt.h | 33 ++++++++++++++++++++++-------
- 1 file changed, 25 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
-index ac4279208d63..b78b82d66057 100644
---- a/arch/powerpc/include/asm/paravirt.h
-+++ b/arch/powerpc/include/asm/paravirt.h
-@@ -76,6 +76,17 @@ static inline bool is_vcpu_idle(int vcpu)
- {
- 	return lppaca_of(vcpu).idle;
- }
-+
-+static inline bool vcpu_is_dispatched(int vcpu)
-+{
-+	/*
-+	 * This is the yield_count.  An "odd" value (low bit on) means that
-+	 * the processor is yielded (either because of an OS yield or a
-+	 * hypervisor preempt).  An even value implies that the processor is
-+	 * currently executing.
-+	 */
-+	return (!(yield_count_of(vcpu) & 1));
-+}
- #else
- static inline bool is_shared_processor(void)
- {
-@@ -109,6 +120,10 @@ static inline bool is_vcpu_idle(int vcpu)
- {
- 	return false;
- }
-+static inline bool vcpu_is_dispatched(int vcpu)
-+{
-+	return true;
-+}
- #endif
- 
- #define vcpu_is_preempted vcpu_is_preempted
-@@ -134,12 +149,12 @@ static inline bool vcpu_is_preempted(int cpu)
- 	 * If the hypervisor has dispatched the target CPU on a physical
- 	 * processor, then the target CPU is definitely not preempted.
- 	 */
--	if (!(yield_count_of(cpu) & 1))
-+	if (vcpu_is_dispatched(cpu))
- 		return false;
- 
- 	/*
--	 * If the target CPU has yielded to Hypervisor but OS has not
--	 * requested idle then the target CPU is definitely preempted.
-+	 * if the target CPU is not dispatched and the guest OS
-+	 * has not marked the CPU idle, then it is hypervisor preempted.
- 	 */
- 	if (!is_vcpu_idle(cpu))
- 		return true;
-@@ -166,7 +181,7 @@ static inline bool vcpu_is_preempted(int cpu)
- 
- 		/*
- 		 * The PowerVM hypervisor dispatches VMs on a whole core
--		 * basis. So we know that a thread sibling of the local CPU
-+		 * basis. So we know that a thread sibling of the executing CPU
- 		 * cannot have been preempted by the hypervisor, even if it
- 		 * has called H_CONFER, which will set the yield bit.
- 		 */
-@@ -174,15 +189,17 @@ static inline bool vcpu_is_preempted(int cpu)
- 			return false;
- 
- 		/*
--		 * If any of the threads of the target CPU's core are not
--		 * preempted or ceded, then consider target CPU to be
--		 * non-preempted.
-+		 * The specific target CPU was marked by guest OS as idle, but
-+		 * then also check all other cpus in the core for PowerVM
-+		 * because it does core scheduling and one of the vcpu
-+		 * of the core getting preempted by hypervisor implies
-+		 * other vcpus can also be considered preempted.
- 		 */
- 		first_cpu = cpu_first_thread_sibling(cpu);
- 		for (i = first_cpu; i < first_cpu + threads_per_core; i++) {
- 			if (i == cpu)
- 				continue;
--			if (!(yield_count_of(i) & 1))
-+			if (vcpu_is_dispatched(i))
- 				return false;
- 			if (!is_vcpu_idle(i))
- 				return true;
--- 
-2.41.0
+----- Original Message -----
+> From: "Salvatore Bonaccorso" <carnil@debian.org>
+> To: "Timothy Pearson" <tpearson@raptorengineering.com>
+> Cc: "Linuxppc-dev" <linuxppc-dev-bounces+tpearson=raptorengineering.com@lists.ozlabs.org>, "Jens Axboe"
+> <axboe@kernel.dk>, "regressions" <regressions@lists.linux.dev>, "Michael Ellerman" <mpe@ellerman.id.au>, "npiggin"
+> <npiggin@gmail.com>, "christophe leroy" <christophe.leroy@csgroup.eu>
+> Sent: Tuesday, November 14, 2023 1:59:14 AM
+> Subject: Re: [PATCH] powerpc: Fix data corruption on IPI
 
+> On Mon, Nov 13, 2023 at 10:56:09PM -0600, Timothy Pearson wrote:
+>> >From 0b2678b7cdada1a3d9aec8626f31a988d81373fa Mon Sep 17 00:00:00 2001
+>> From: Timothy Pearson <tpearson@raptorengineering.com>
+>> Date: Mon, 13 Nov 2023 22:42:58 -0600
+>> Subject: [PATCH] powerpc: Fix data corruption on IPI
+>> 
+>> On multithreaded SMP workloads such as those using io_uring, it is possible for
+>> multiple threads to hold an inconsistent view of system memory when an IPI is
+>> issued.  This in turn leads to userspace memory corruption with varying degrees
+>> of probability based on workload and inter-thread timing.
+>> 
+>> io_uring provokes this bug by its use of TWA_SIGNAL during thread creation,
+>> which is especially noticeable as significant userspace data corruption with
+>> certain workloads such as MariaDB (bug MDEV-30728).  While using
+>> TWA_SIGNAL_NO_IPI works around the corruption, no other architecture requires
+>> this workaround.
+>> 
+>> Issue an lwsync barrier instruction prior to sending the IPI.  This ensures
+>> the receiving CPU has a consistent view of system memory, in line with other
+>> architectures.
+>> 
+>> Tested under QEMU in kvm mode, running on a Talos II workstation with dual
+>> POWER9 DD2.2 CPUs.
+>> 
+>> Tested-by: Timothy Pearson <tpearson@raptorengineering.com>
+>> Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
+>> ---
+>>  arch/powerpc/kernel/smp.c | 4 +++-
+>>  1 file changed, 3 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> index ab691c89d787..ba42238de518 100644
+>> --- a/arch/powerpc/kernel/smp.c
+>> +++ b/arch/powerpc/kernel/smp.c
+>> @@ -369,8 +369,10 @@ static inline void do_message_pass(int cpu, int msg)
+>>  
+>>  void arch_smp_send_reschedule(int cpu)
+>>  {
+>> -	if (likely(smp_ops))
+>> +	if (likely(smp_ops)) {
+>> +		__smp_lwsync();
+>>  		do_message_pass(cpu, PPC_MSG_RESCHEDULE);
+>> +	}
+>>  }
+>>  EXPORT_SYMBOL_GPL(arch_smp_send_reschedule);
+> 
+> Once this is accepted in mainline, can you ensure that it get
+> backported to the needed relevant stable series? (Should it be CC'ed
+> as well for stable@?).
+
+Absolutely!  We've been blocked on kernel upgrades for production database systems for a while due to this particular bug.
+
+> For context, and maybe worth adding a Link: reference as well this is
+> hit in Debian in https://bugs.debian.org/1032104
+
+Sounds good.  If anyone here needs a v2 with that line added just let me know.
+
+Thanks!
