@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF7F9C07548
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 13:01:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68BCEC54F8C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 14:41:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q3PY4trJ;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q3PY4trJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PqN0C/rN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SVjwX3PLDz3dJg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 00:01:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SVm7c5x5mz3dTR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 01:41:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q3PY4trJ;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q3PY4trJ;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PqN0C/rN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVjvY197Gz2x9T
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2023 00:00:40 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700053237;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVm6d1TKfz3bTP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2023 01:40:22 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 6B275FF80A;
+	Wed, 15 Nov 2023 14:40:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1700059219;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=MsmoLDm3Vg05W8pfD2SPdYXQ50SnWlB0SUHodkqBzuQ=;
-	b=Q3PY4trJXywaZqiurR8JUqdn1l87WYZ4+FXY4+N/shP3k1E/txXt8unU3LWfNuxxljNIGr
-	ruXs6exAMFRIIZ8T21kkgSL0pJPFe4ppMmc2qjn7MRHCU8hpFFvA/44yFbaiQPOO81WFCI
-	nMZVymfWFyMhWau75NovMbh+1AfyzYw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700053237;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=MsmoLDm3Vg05W8pfD2SPdYXQ50SnWlB0SUHodkqBzuQ=;
-	b=Q3PY4trJXywaZqiurR8JUqdn1l87WYZ4+FXY4+N/shP3k1E/txXt8unU3LWfNuxxljNIGr
-	ruXs6exAMFRIIZ8T21kkgSL0pJPFe4ppMmc2qjn7MRHCU8hpFFvA/44yFbaiQPOO81WFCI
-	nMZVymfWFyMhWau75NovMbh+1AfyzYw=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-625-1eLEqSY3OeWVW86v4Tny6A-1; Wed, 15 Nov 2023 08:00:32 -0500
-X-MC-Unique: 1eLEqSY3OeWVW86v4Tny6A-1
-Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C3AC4810FC1;
-	Wed, 15 Nov 2023 13:00:31 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.9])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id BA6FF492BFD;
-	Wed, 15 Nov 2023 13:00:30 +0000 (UTC)
-Date: Wed, 15 Nov 2023 21:00:27 +0800
-From: Baoquan He <bhe@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/2] resource: add walk_system_ram_res_rev()
-Message-ID: <ZVTA6z/06cLnWKUz@MiWiFi-R3L-srv>
-References: <20231114091658.228030-1-bhe@redhat.com>
- <20231114091658.228030-2-bhe@redhat.com>
+	bh=a7GzZmAJnaw9HHP5d+rS0ScKn3aFjZ7ScMDMv0RYFek=;
+	b=PqN0C/rNzWACGBXJS3nkF/B04DusUHm/EHjuxRhC/uItQfm7X0//Q6bF4zwFLUkjXo/cmo
+	DvBa+2ykYlo7tP75TDBGus1iZgYtbuMq3hXb90X04Ct34cyB3SwL/NV824e+4hzHXmMLdO
+	L5HiNswLu1ehcjdCPtgJ2YdR3RnyT4VGOfm6mluiNJiY3T0NnuTve7yXM0ROBnYEStNuRo
+	/YE6K1eS1THtxwT9CEcXmHv9jsInMVMsuWX4JAEpTxeIFYDK9rQ1m5McWujbJFXHjGeAZc
+	SkvGRqAwxgaojud9lh63rL19QVPhRiBl7kL4Z8JvMX0qpFN+J9NaRq0QhsUeBg==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Lee Jones <lee@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH v9 02/27] soc: fsl: cpm1: qmc: Fix __iomem addresses declaration
+Date: Wed, 15 Nov 2023 15:39:38 +0100
+Message-ID: <20231115144007.478111-3-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20231115144007.478111-1-herve.codina@bootlin.com>
+References: <20231115144007.478111-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231114091658.228030-2-bhe@redhat.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.10
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,118 +79,154 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org, x86@kernel.org, kexec@lists.infradead.org, takahiro.akashi@linaro.org, ebiederm@xmission.com, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Simon Horman <horms@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This function, being a variant of walk_system_ram_res() introduced in
-commit 8c86e70acead ("resource: provide new functions to walk through
-resources"), walks through a list of all the resources of System RAM
-in reversed order, i.e., from higher to lower.
+Running sparse (make C=1) on qmc.c raises a lot of warning such as:
+  ...
+  warning: incorrect type in assignment (different address spaces)
+     expected struct cpm_buf_desc [usertype] *[noderef] __iomem bd
+     got struct cpm_buf_desc [noderef] [usertype] __iomem *txbd_free
+  ...
 
-It will be used in kexec_file code to load kernel, initrd etc when
-preparing kexec reboot.
+Indeed, some variable were declared 'type *__iomem var' instead of
+'type __iomem *var'.
 
-Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
-Signed-off-by: Baoquan He <bhe@redhat.com>
+Use the correct declaration to remove these warnings.
+
+Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v1->v2:
-- Use kvrealloc() to reallocate memory instead of kvcalloc(), this
-  simplifies code. Suggested by Andrew.
+ drivers/soc/fsl/qe/qmc.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
- include/linux/ioport.h |  3 +++
- kernel/resource.c      | 57 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+)
-
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index 14f5cfabbbc8..db7fe25f3370 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -331,6 +331,9 @@ extern int
- walk_system_ram_res(u64 start, u64 end, void *arg,
- 		    int (*func)(struct resource *, void *));
- extern int
-+walk_system_ram_res_rev(u64 start, u64 end, void *arg,
-+			int (*func)(struct resource *, void *));
-+extern int
- walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start, u64 end,
- 		    void *arg, int (*func)(struct resource *, void *));
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 92ec76c03965..3f3de1351c96 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -175,7 +175,7 @@ struct qmc_chan {
+ 	struct list_head list;
+ 	unsigned int id;
+ 	struct qmc *qmc;
+-	void *__iomem s_param;
++	void __iomem *s_param;
+ 	enum qmc_mode mode;
+ 	u64	tx_ts_mask;
+ 	u64	rx_ts_mask;
+@@ -203,9 +203,9 @@ struct qmc_chan {
+ struct qmc {
+ 	struct device *dev;
+ 	struct tsa_serial *tsa_serial;
+-	void *__iomem scc_regs;
+-	void *__iomem scc_pram;
+-	void *__iomem dpram;
++	void __iomem *scc_regs;
++	void __iomem *scc_pram;
++	void __iomem *dpram;
+ 	u16 scc_pram_offset;
+ 	cbd_t __iomem *bd_table;
+ 	dma_addr_t bd_dma_addr;
+@@ -218,37 +218,37 @@ struct qmc {
+ 	struct qmc_chan *chans[64];
+ };
  
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 866ef3663a0b..e8a244300e5b 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -27,6 +27,8 @@
- #include <linux/mount.h>
- #include <linux/resource_ext.h>
- #include <uapi/linux/magic.h>
-+#include <linux/string.h>
-+#include <linux/vmalloc.h>
- #include <asm/io.h>
- 
- 
-@@ -429,6 +431,61 @@ int walk_system_ram_res(u64 start, u64 end, void *arg,
- 				     func);
+-static inline void qmc_write16(void *__iomem addr, u16 val)
++static inline void qmc_write16(void __iomem *addr, u16 val)
+ {
+ 	iowrite16be(val, addr);
  }
  
-+/*
-+ * This function, being a variant of walk_system_ram_res(), calls the @func
-+ * callback against all memory ranges of type System RAM which are marked as
-+ * IORESOURCE_SYSTEM_RAM and IORESOUCE_BUSY in reversed order, i.e., from
-+ * higher to lower.
-+ */
-+int walk_system_ram_res_rev(u64 start, u64 end, void *arg,
-+				int (*func)(struct resource *, void *))
-+{
-+	struct resource res, *rams;
-+	int rams_size = 16, i;
-+	unsigned long flags;
-+	int ret = -1;
-+
-+	/* create a list */
-+	rams = kvcalloc(rams_size, sizeof(struct resource), GFP_KERNEL);
-+	if (!rams)
-+		return ret;
-+
-+	flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
-+	i = 0;
-+	while ((start < end) &&
-+		(!find_next_iomem_res(start, end, flags, IORES_DESC_NONE, &res))) {
-+		if (i >= rams_size) {
-+			/* re-alloc */
-+			struct resource *rams_new;
-+
-+			rams_new = kvrealloc(rams, rams_size * sizeof(struct resource),
-+					     (rams_size + 16) * sizeof(struct resource),
-+					     GFP_KERNEL);
-+			if (!rams_new)
-+				goto out;
-+
-+			rams = rams_new;
-+			rams_size += 16;
-+		}
-+
-+		rams[i].start = res.start;
-+		rams[i++].end = res.end;
-+
-+		start = res.end + 1;
-+	}
-+
-+	/* go reverse */
-+	for (i--; i >= 0; i--) {
-+		ret = (*func)(&rams[i], arg);
-+		if (ret)
-+			break;
-+	}
-+
-+out:
-+	kvfree(rams);
-+	return ret;
-+}
-+
- /*
-  * This function calls the @func callback against all memory ranges, which
-  * are ranges marked as IORESOURCE_MEM and IORESOUCE_BUSY.
+-static inline u16 qmc_read16(void *__iomem addr)
++static inline u16 qmc_read16(void __iomem *addr)
+ {
+ 	return ioread16be(addr);
+ }
+ 
+-static inline void qmc_setbits16(void *__iomem addr, u16 set)
++static inline void qmc_setbits16(void __iomem *addr, u16 set)
+ {
+ 	qmc_write16(addr, qmc_read16(addr) | set);
+ }
+ 
+-static inline void qmc_clrbits16(void *__iomem addr, u16 clr)
++static inline void qmc_clrbits16(void __iomem *addr, u16 clr)
+ {
+ 	qmc_write16(addr, qmc_read16(addr) & ~clr);
+ }
+ 
+-static inline void qmc_write32(void *__iomem addr, u32 val)
++static inline void qmc_write32(void __iomem *addr, u32 val)
+ {
+ 	iowrite32be(val, addr);
+ }
+ 
+-static inline u32 qmc_read32(void *__iomem addr)
++static inline u32 qmc_read32(void __iomem *addr)
+ {
+ 	return ioread32be(addr);
+ }
+ 
+-static inline void qmc_setbits32(void *__iomem addr, u32 set)
++static inline void qmc_setbits32(void __iomem *addr, u32 set)
+ {
+ 	qmc_write32(addr, qmc_read32(addr) | set);
+ }
+@@ -318,7 +318,7 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ {
+ 	struct qmc_xfer_desc *xfer_desc;
+ 	unsigned long flags;
+-	cbd_t *__iomem bd;
++	cbd_t __iomem *bd;
+ 	u16 ctrl;
+ 	int ret;
+ 
+@@ -374,7 +374,7 @@ static void qmc_chan_write_done(struct qmc_chan *chan)
+ 	void (*complete)(void *context);
+ 	unsigned long flags;
+ 	void *context;
+-	cbd_t *__iomem bd;
++	cbd_t __iomem *bd;
+ 	u16 ctrl;
+ 
+ 	/*
+@@ -425,7 +425,7 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ {
+ 	struct qmc_xfer_desc *xfer_desc;
+ 	unsigned long flags;
+-	cbd_t *__iomem bd;
++	cbd_t __iomem *bd;
+ 	u16 ctrl;
+ 	int ret;
+ 
+@@ -488,7 +488,7 @@ static void qmc_chan_read_done(struct qmc_chan *chan)
+ 	void (*complete)(void *context, size_t size);
+ 	struct qmc_xfer_desc *xfer_desc;
+ 	unsigned long flags;
+-	cbd_t *__iomem bd;
++	cbd_t __iomem *bd;
+ 	void *context;
+ 	u16 datalen;
+ 	u16 ctrl;
+@@ -663,7 +663,7 @@ static void qmc_chan_reset_rx(struct qmc_chan *chan)
+ {
+ 	struct qmc_xfer_desc *xfer_desc;
+ 	unsigned long flags;
+-	cbd_t *__iomem bd;
++	cbd_t __iomem *bd;
+ 	u16 ctrl;
+ 
+ 	spin_lock_irqsave(&chan->rx_lock, flags);
+@@ -694,7 +694,7 @@ static void qmc_chan_reset_tx(struct qmc_chan *chan)
+ {
+ 	struct qmc_xfer_desc *xfer_desc;
+ 	unsigned long flags;
+-	cbd_t *__iomem bd;
++	cbd_t __iomem *bd;
+ 	u16 ctrl;
+ 
+ 	spin_lock_irqsave(&chan->tx_lock, flags);
 -- 
 2.41.0
 
