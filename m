@@ -4,61 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C0C5C072A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 21:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B92E8C2BB3F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 21:40:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WvW2KL25;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=FRdilk6A;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SVwgj0gWQz3c9y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 08:06:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SVxR60sy7z3d8p
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 08:40:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WvW2KL25;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=FRdilk6A;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--mmaurer.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3krvvzqckdnggg4ol8laiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVwfk6wftz2ykV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2023 08:05:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1700082319; x=1731618319;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=HZaP63qR51WdI944Jzx+qswTuQEwasjcvHgL6QGSQhs=;
-  b=WvW2KL25QLsSDQvMQNEaERAOJlGWgB0UHhNNEhgrdWAnmzBMYbJJ048R
-   h0HE3PjMNhEzCmB63B70Eld1JhGeCxleT+LvMtX/dyK+xwYVhpR1HfwwD
-   fdd9rUszja/+X7rDwteCQKdRC/LdpwW6YK+PK5wrN8HWnJ7MgtQTmBwPl
-   WmntfwRdi87PgQ/hqZerCwyCGtX1xJNqI5yUEKI3XPyHaHhe92F/hUQ3U
-   nMG+9/dm+7fw2ra0P+kzq3pSQqQmJu8cAV90P9PMaJvYNSjr4TPhVu7+W
-   TqpHL9GZSzYGw5s9xy9aFD5yTQyWWF4yAgIdj9vCLCCOpVgSc96Inah2a
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10895"; a="4032592"
-X-IronPort-AV: E=Sophos;i="6.03,306,1694761200"; 
-   d="scan'208";a="4032592"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Nov 2023 13:05:13 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10895"; a="888699475"
-X-IronPort-AV: E=Sophos;i="6.03,306,1694761200"; 
-   d="scan'208";a="888699475"
-Received: from lkp-server02.sh.intel.com (HELO b8de5498638e) ([10.239.97.151])
-  by orsmga004.jf.intel.com with ESMTP; 15 Nov 2023 13:05:08 -0800
-Received: from kbuild by b8de5498638e with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1r3N4M-0000p6-1l;
-	Wed, 15 Nov 2023 21:05:06 +0000
-Date: Thu, 16 Nov 2023 05:04:43 +0800
-From: kernel test robot <lkp@intel.com>
-To: Baoquan He <bhe@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] kexec_file: print out debugging message if required
-Message-ID: <202311160431.BXPc7NO9-lkp@intel.com>
-References: <20231114153253.241262-3-bhe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231114153253.241262-3-bhe@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVstC4S4rz3c4M
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2023 06:00:01 +1100 (AEDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-daf702bde7eso4964724276.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2023 11:00:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1700074794; x=1700679594; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Qmcer6lC4M3sVp5hzPP8TVTi+lzihM8StX6tq1rvRlw=;
+        b=FRdilk6AAwmryFm5X1oVlD+DhCCPS0rlQ8wnGin7Twkfz6AuP5yuicXxy072SN2Dg3
+         i5SvJaZDE0vSqW6SO+uxEshjocbcsS9D/UL92BVQWaca3y44u4+J31pWfp9dPX4LEGzB
+         z5Y20k7uJVE2/7cyDgFUQFLkaeSk+JbbirVeUU+IVSX+j2KvlZx8UAfAP6vOMqvvp25d
+         hoqOr8iE+vlILuG+xMtzxiCj3xeV6t7o4gSGcgZYXceSltEyEtLz7HcnTbkMTA6qW0oS
+         9ryp8FsOp52CpRCw1t7FhxF/UIs8eAP7SDm6soMopMrxB1JPWsENuavlTbziBFvMC5OI
+         pF7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700074794; x=1700679594;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Qmcer6lC4M3sVp5hzPP8TVTi+lzihM8StX6tq1rvRlw=;
+        b=kRhj9RbQ2s9NV7YOIN5ZcJncPFXDRZ9JF/mh9M11oOVdeVLrd+Fqasv8NsFKJbheO3
+         UIHw13UNl0UiUb9hwQbB4pwNbVHvMQMNkJHaySgl2HXAvJMZHevux3Lbn0RemaSDc9RG
+         SiQEwHq48NykvZt8E6PDuFdm6HDy3zl8AGyCfcJZ/9vlbMFX9rbJIID1ysa64vikDCIP
+         be/jQ6rkwHSQoIqVfSbAyS38D66x1NohRfVy39FJ1i/PmToxrYH+MZj9GFDJ7kfgMwT6
+         WnpylRHO/xDPDe4ZuPVQGFzmJ3vczrVuAcssq+lgxqLqiQIQxnTHbna1W+bXtGgPG6dW
+         hMew==
+X-Gm-Message-State: AOJu0YyQXm6XOQhRb1hNdqERE+aC3Kb9pmd1zkZUwb4Zq7dmE/nVUqcg
+	p5Gb+LRprNRWrPpRv9S51h+nF1hrDEFb
+X-Google-Smtp-Source: AGHT+IHERGA7zRpPfbLXEqdgyK4LyKKZECDv5ROgnQkI8SyPb13F+RZ2TBOoN1DR45atLajBKyBsyY0c+xc6
+X-Received: from anyblade.c.googlers.com ([fda3:e722:ac3:cc00:20:ed76:c0a8:1791])
+ (user=mmaurer job=sendgmr) by 2002:a25:ab65:0:b0:da3:723b:b2a4 with SMTP id
+ u92-20020a25ab65000000b00da3723bb2a4mr304318ybi.7.1700074793576; Wed, 15 Nov
+ 2023 10:59:53 -0800 (PST)
+Date: Wed, 15 Nov 2023 18:50:10 +0000
+In-Reply-To: <20231115185858.2110875-1-mmaurer@google.com>
+Mime-Version: 1.0
+References: <20231115185858.2110875-1-mmaurer@google.com>
+X-Mailer: git-send-email 2.43.0.rc0.421.g78406f8d94-goog
+Message-ID: <20231115185858.2110875-3-mmaurer@google.com>
+Subject: [PATCH 2/3] modpost: Extended modversion support
+From: Matthew Maurer <mmaurer@google.com>
+To: gary@garyguo.net, masahiroy@kernel.org, 
+	Michael Ellerman <mpe@ellerman.id.au>, Luis Chamberlain <mcgrof@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+	Alex Gaynor <alex.gaynor@gmail.com>, Wedson Almeida Filho <wedsonaf@gmail.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Josh Poimboeuf <jpoimboe@kernel.org>, Song Liu <song@kernel.org>, 
+	Petr Mladek <pmladek@suse.com>, Matthew Maurer <mmaurer@google.com>, Naveen N Rao <naveen@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, 
+	"Masami Hiramatsu (Google)" <mhiramat@kernel.org>, "Paul E. McKenney" <paulmck@kernel.org>, 
+	Nick Desaulniers <ndesaulniers@google.com>, Randy Dunlap <rdunlap@infradead.org>, 
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Nhat Pham <nphamcs@gmail.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"=?UTF-8?q?Marc=20Aur=C3=A8le=20La=20France?=" <tsi@tuyoix.net>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Thu, 16 Nov 2023 08:39:29 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,178 +85,297 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Baoquan He <bhe@redhat.com>, linux-parisc@vger.kernel.org, llvm@lists.linux.dev, kexec@lists.infradead.org, oe-kbuild-all@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: =?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>, Nicolas Schier <nicolas@fjasle.eu>, rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, Alice Ryhl <aliceryhl@google.com>, linux-modules@vger.kernel.org, Benno Lossin <benno.lossin@proton.me>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Andreas Hindborg <a.hindborg@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Baoquan,
+Adds a new format for modversions which stores each field in a separate
+elf section. This initially adds support for variable length names, but
+could later be used to add additional fields to modversions in a
+backwards compatible way if needed.
 
-kernel test robot noticed the following build errors:
+Adding support for variable length names makes it possible to enable
+MODVERSIONS and RUST at the same time.
 
-[auto build test ERROR on arm64/for-next/core]
-[also build test ERROR on tip/x86/core powerpc/next powerpc/fixes linus/master v6.7-rc1 next-20231115]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Signed-off-by: Matthew Maurer <mmaurer@google.com>
+---
+ arch/powerpc/kernel/module_64.c | 24 +++++++++-
+ init/Kconfig                    |  1 -
+ kernel/module/internal.h        | 16 ++++++-
+ kernel/module/main.c            |  9 +++-
+ kernel/module/version.c         | 77 +++++++++++++++++++++++++++++++++
+ scripts/mod/modpost.c           | 33 ++++++++++++--
+ 6 files changed, 151 insertions(+), 9 deletions(-)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Baoquan-He/kexec_file-add-kexec_file-flag-to-control-debug-printing/20231114-234003
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-next/core
-patch link:    https://lore.kernel.org/r/20231114153253.241262-3-bhe%40redhat.com
-patch subject: [PATCH 2/7] kexec_file: print out debugging message if required
-config: hexagon-comet_defconfig (https://download.01.org/0day-ci/archive/20231116/202311160431.BXPc7NO9-lkp@intel.com/config)
-compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231116/202311160431.BXPc7NO9-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202311160431.BXPc7NO9-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   In file included from kernel/crash_core.c:13:
-   In file included from include/linux/kexec.h:19:
-   In file included from arch/hexagon/include/asm/io.h:337:
-   include/asm-generic/io.h:547:31: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
-           val = __raw_readb(PCI_IOBASE + addr);
-                             ~~~~~~~~~~ ^
-   include/asm-generic/io.h:560:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
-           val = __le16_to_cpu((__le16 __force)__raw_readw(PCI_IOBASE + addr));
-                                                           ~~~~~~~~~~ ^
-   include/uapi/linux/byteorder/little_endian.h:37:51: note: expanded from macro '__le16_to_cpu'
-   #define __le16_to_cpu(x) ((__force __u16)(__le16)(x))
-                                                     ^
-   In file included from kernel/crash_core.c:13:
-   In file included from include/linux/kexec.h:19:
-   In file included from arch/hexagon/include/asm/io.h:337:
-   include/asm-generic/io.h:573:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
-           val = __le32_to_cpu((__le32 __force)__raw_readl(PCI_IOBASE + addr));
-                                                           ~~~~~~~~~~ ^
-   include/uapi/linux/byteorder/little_endian.h:35:51: note: expanded from macro '__le32_to_cpu'
-   #define __le32_to_cpu(x) ((__force __u32)(__le32)(x))
-                                                     ^
-   In file included from kernel/crash_core.c:13:
-   In file included from include/linux/kexec.h:19:
-   In file included from arch/hexagon/include/asm/io.h:337:
-   include/asm-generic/io.h:584:33: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
-           __raw_writeb(value, PCI_IOBASE + addr);
-                               ~~~~~~~~~~ ^
-   include/asm-generic/io.h:594:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
-           __raw_writew((u16 __force)cpu_to_le16(value), PCI_IOBASE + addr);
-                                                         ~~~~~~~~~~ ^
-   include/asm-generic/io.h:604:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
-           __raw_writel((u32 __force)cpu_to_le32(value), PCI_IOBASE + addr);
-                                                         ~~~~~~~~~~ ^
->> kernel/crash_core.c:412:3: error: call to undeclared function 'kexec_dprintk'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-                   kexec_dprintk("Crash PT_LOAD ELF header. phdr=%p vaddr=0x%llx, paddr=0x%llx, "
-                   ^
-   6 warnings and 1 error generated.
-
-
-vim +/kexec_dprintk +412 kernel/crash_core.c
-
-   323	
-   324	int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_map,
-   325				  void **addr, unsigned long *sz)
-   326	{
-   327		Elf64_Ehdr *ehdr;
-   328		Elf64_Phdr *phdr;
-   329		unsigned long nr_cpus = num_possible_cpus(), nr_phdr, elf_sz;
-   330		unsigned char *buf;
-   331		unsigned int cpu, i;
-   332		unsigned long long notes_addr;
-   333		unsigned long mstart, mend;
-   334	
-   335		/* extra phdr for vmcoreinfo ELF note */
-   336		nr_phdr = nr_cpus + 1;
-   337		nr_phdr += mem->nr_ranges;
-   338	
-   339		/*
-   340		 * kexec-tools creates an extra PT_LOAD phdr for kernel text mapping
-   341		 * area (for example, ffffffff80000000 - ffffffffa0000000 on x86_64).
-   342		 * I think this is required by tools like gdb. So same physical
-   343		 * memory will be mapped in two ELF headers. One will contain kernel
-   344		 * text virtual addresses and other will have __va(physical) addresses.
-   345		 */
-   346	
-   347		nr_phdr++;
-   348		elf_sz = sizeof(Elf64_Ehdr) + nr_phdr * sizeof(Elf64_Phdr);
-   349		elf_sz = ALIGN(elf_sz, ELF_CORE_HEADER_ALIGN);
-   350	
-   351		buf = vzalloc(elf_sz);
-   352		if (!buf)
-   353			return -ENOMEM;
-   354	
-   355		ehdr = (Elf64_Ehdr *)buf;
-   356		phdr = (Elf64_Phdr *)(ehdr + 1);
-   357		memcpy(ehdr->e_ident, ELFMAG, SELFMAG);
-   358		ehdr->e_ident[EI_CLASS] = ELFCLASS64;
-   359		ehdr->e_ident[EI_DATA] = ELFDATA2LSB;
-   360		ehdr->e_ident[EI_VERSION] = EV_CURRENT;
-   361		ehdr->e_ident[EI_OSABI] = ELF_OSABI;
-   362		memset(ehdr->e_ident + EI_PAD, 0, EI_NIDENT - EI_PAD);
-   363		ehdr->e_type = ET_CORE;
-   364		ehdr->e_machine = ELF_ARCH;
-   365		ehdr->e_version = EV_CURRENT;
-   366		ehdr->e_phoff = sizeof(Elf64_Ehdr);
-   367		ehdr->e_ehsize = sizeof(Elf64_Ehdr);
-   368		ehdr->e_phentsize = sizeof(Elf64_Phdr);
-   369	
-   370		/* Prepare one phdr of type PT_NOTE for each possible CPU */
-   371		for_each_possible_cpu(cpu) {
-   372			phdr->p_type = PT_NOTE;
-   373			notes_addr = per_cpu_ptr_to_phys(per_cpu_ptr(crash_notes, cpu));
-   374			phdr->p_offset = phdr->p_paddr = notes_addr;
-   375			phdr->p_filesz = phdr->p_memsz = sizeof(note_buf_t);
-   376			(ehdr->e_phnum)++;
-   377			phdr++;
-   378		}
-   379	
-   380		/* Prepare one PT_NOTE header for vmcoreinfo */
-   381		phdr->p_type = PT_NOTE;
-   382		phdr->p_offset = phdr->p_paddr = paddr_vmcoreinfo_note();
-   383		phdr->p_filesz = phdr->p_memsz = VMCOREINFO_NOTE_SIZE;
-   384		(ehdr->e_phnum)++;
-   385		phdr++;
-   386	
-   387		/* Prepare PT_LOAD type program header for kernel text region */
-   388		if (need_kernel_map) {
-   389			phdr->p_type = PT_LOAD;
-   390			phdr->p_flags = PF_R|PF_W|PF_X;
-   391			phdr->p_vaddr = (unsigned long) _text;
-   392			phdr->p_filesz = phdr->p_memsz = _end - _text;
-   393			phdr->p_offset = phdr->p_paddr = __pa_symbol(_text);
-   394			ehdr->e_phnum++;
-   395			phdr++;
-   396		}
-   397	
-   398		/* Go through all the ranges in mem->ranges[] and prepare phdr */
-   399		for (i = 0; i < mem->nr_ranges; i++) {
-   400			mstart = mem->ranges[i].start;
-   401			mend = mem->ranges[i].end;
-   402	
-   403			phdr->p_type = PT_LOAD;
-   404			phdr->p_flags = PF_R|PF_W|PF_X;
-   405			phdr->p_offset  = mstart;
-   406	
-   407			phdr->p_paddr = mstart;
-   408			phdr->p_vaddr = (unsigned long) __va(mstart);
-   409			phdr->p_filesz = phdr->p_memsz = mend - mstart + 1;
-   410			phdr->p_align = 0;
-   411			ehdr->e_phnum++;
- > 412			kexec_dprintk("Crash PT_LOAD ELF header. phdr=%p vaddr=0x%llx, paddr=0x%llx, "
-   413				"sz=0x%llx e_phnum=%d p_offset=0x%llx\n",
-   414				phdr, phdr->p_vaddr, phdr->p_paddr, phdr->p_filesz,
-   415				ehdr->e_phnum, phdr->p_offset);
-   416			phdr++;
-   417		}
-   418	
-   419		*addr = buf;
-   420		*sz = elf_sz;
-   421		return 0;
-   422	}
-   423	
-
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 7112adc597a8..2582353a2048 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -355,6 +355,24 @@ static void dedotify_versions(struct modversion_info *vers,
+ 		}
+ }
+ 
++static void dedotify_ext_version_names(char *str_seq, unsigned long size)
++{
++	unsigned long out = 0;
++	unsigned long in;
++	char last = '\0';
++
++	for (in = 0; in < size; in++) {
++		if (last == '\0')
++			/* Skip all leading dots */
++			if (str_seq[in] == '.')
++				continue;
++		last = str_seq[in];
++		str_seq[out++] = last;
++	}
++	/* Zero the trailing portion of the names table for robustness */
++	bzero(&str_seq[out], size - out);
++}
++
+ /*
+  * Undefined symbols which refer to .funcname, hack to funcname. Make .TOC.
+  * seem to be defined (value set later).
+@@ -424,10 +442,12 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 			me->arch.toc_section = i;
+ 			if (sechdrs[i].sh_addralign < 8)
+ 				sechdrs[i].sh_addralign = 8;
+-		}
+-		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
++		} else if (strcmp(secstrings + sechdrs[i].sh_name, "__versions") == 0)
+ 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+ 					  sechdrs[i].sh_size);
++		else if (strcmp(secstrings + sechdrs[i].sh_name, "__version_ext_names") == 0)
++			dedotify_ext_version_names((void *)hdr + sechdrs[i].sh_offset,
++						   sechdrs[i].sh_size);
+ 
+ 		if (sechdrs[i].sh_type == SHT_SYMTAB)
+ 			dedotify((void *)hdr + sechdrs[i].sh_offset,
+diff --git a/init/Kconfig b/init/Kconfig
+index 9ffb103fc927..6cac5b4db8f6 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1885,7 +1885,6 @@ config RUST
+ 	bool "Rust support"
+ 	depends on HAVE_RUST
+ 	depends on RUST_IS_AVAILABLE
+-	depends on !MODVERSIONS
+ 	depends on !GCC_PLUGINS
+ 	depends on !RANDSTRUCT
+ 	depends on !DEBUG_INFO_BTF || PAHOLE_HAS_LANG_EXCLUDE
+diff --git a/kernel/module/internal.h b/kernel/module/internal.h
+index c8b7b4dcf782..0c188c96a045 100644
+--- a/kernel/module/internal.h
++++ b/kernel/module/internal.h
+@@ -80,7 +80,7 @@ struct load_info {
+ 	unsigned int used_pages;
+ #endif
+ 	struct {
+-		unsigned int sym, str, mod, vers, info, pcpu;
++		unsigned int sym, str, mod, vers, info, pcpu, vers_ext_crc, vers_ext_name;
+ 	} index;
+ };
+ 
+@@ -384,6 +384,20 @@ void module_layout(struct module *mod, struct modversion_info *ver, struct kerne
+ 		   struct kernel_symbol *ks, struct tracepoint * const *tp);
+ int check_modstruct_version(const struct load_info *info, struct module *mod);
+ int same_magic(const char *amagic, const char *bmagic, bool has_crcs);
++struct modversion_info_ext_s32 {
++	const s32 *value;
++	const s32 *end;
++};
++struct modversion_info_ext_string {
++	const char *value;
++	const char *end;
++};
++struct modversion_info_ext {
++	struct modversion_info_ext_s32 crc;
++	struct modversion_info_ext_string name;
++};
++ssize_t modversion_ext_start(const struct load_info *info, struct modversion_info_ext *ver);
++int modversion_ext_advance(struct modversion_info_ext *ver);
+ #else /* !CONFIG_MODVERSIONS */
+ static inline int check_version(const struct load_info *info,
+ 				const char *symname,
+diff --git a/kernel/module/main.c b/kernel/module/main.c
+index 98fedfdb8db5..e69b2ae46161 100644
+--- a/kernel/module/main.c
++++ b/kernel/module/main.c
+@@ -1886,10 +1886,15 @@ static int elf_validity_cache_copy(struct load_info *info, int flags)
+ 	if (!info->name)
+ 		info->name = info->mod->name;
+ 
+-	if (flags & MODULE_INIT_IGNORE_MODVERSIONS)
++	if (flags & MODULE_INIT_IGNORE_MODVERSIONS) {
+ 		info->index.vers = 0; /* Pretend no __versions section! */
+-	else
++		info->index.vers_ext_crc = 0;
++		info->index.vers_ext_name = 0;
++	} else {
+ 		info->index.vers = find_sec(info, "__versions");
++		info->index.vers_ext_crc = find_sec(info, "__version_ext_crcs");
++		info->index.vers_ext_name = find_sec(info, "__version_ext_names");
++	}
+ 
+ 	info->index.pcpu = find_pcpusec(info);
+ 
+diff --git a/kernel/module/version.c b/kernel/module/version.c
+index 53f43ac5a73e..93d97dad8c77 100644
+--- a/kernel/module/version.c
++++ b/kernel/module/version.c
+@@ -19,11 +19,28 @@ int check_version(const struct load_info *info,
+ 	unsigned int versindex = info->index.vers;
+ 	unsigned int i, num_versions;
+ 	struct modversion_info *versions;
++	struct modversion_info_ext version_ext;
+ 
+ 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
+ 	if (!crc)
+ 		return 1;
+ 
++	/* If we have extended version info, rely on it */
++	if (modversion_ext_start(info, &version_ext) >= 0) {
++		do {
++			if (strncmp(version_ext.name.value, symname,
++				    version_ext.name.end - version_ext.name.value) != 0)
++				continue;
++
++			if (*version_ext.crc.value == *crc)
++				return 1;
++			pr_debug("Found checksum %X vs module %X\n",
++				 *crc, *version_ext.crc.value);
++			goto bad_version;
++		} while (modversion_ext_advance(&version_ext) == 0);
++		goto broken_toolchain;
++	}
++
+ 	/* No versions at all?  modprobe --force does this. */
+ 	if (versindex == 0)
+ 		return try_to_force_load(mod, symname) == 0;
+@@ -46,6 +63,7 @@ int check_version(const struct load_info *info,
+ 		goto bad_version;
+ 	}
+ 
++broken_toolchain:
+ 	/* Broken toolchain. Warn once, then let it go.. */
+ 	pr_warn_once("%s: no symbol version for %s\n", info->name, symname);
+ 	return 1;
+@@ -87,6 +105,65 @@ int same_magic(const char *amagic, const char *bmagic,
+ 	return strcmp(amagic, bmagic) == 0;
+ }
+ 
++#define MODVERSION_FIELD_START(sec, field) \
++	field.value = (typeof(field.value))sec.sh_addr; \
++	field.end = field.value + sec.sh_size
++
++ssize_t modversion_ext_start(const struct load_info *info,
++			     struct modversion_info_ext *start)
++{
++	unsigned int crc_idx = info->index.vers_ext_crc;
++	unsigned int name_idx = info->index.vers_ext_name;
++	Elf_Shdr *sechdrs = info->sechdrs;
++
++	// Both of these fields are needed for this to be useful
++	// Any future fields should be initialized to NULL if absent.
++	if ((crc_idx == 0) || (name_idx == 0))
++		return -EINVAL;
++
++	MODVERSION_FIELD_START(sechdrs[crc_idx], start->crc);
++	MODVERSION_FIELD_START(sechdrs[name_idx], start->name);
++
++	return (start->crc.end - start->crc.value) / sizeof(*start->crc.value);
++}
++
++static int modversion_ext_s32_advance(struct modversion_info_ext_s32 *field)
++{
++	if (!field->value)
++		return 0;
++	if (field->value >= field->end)
++		return -EINVAL;
++	field->value++;
++	return 0;
++}
++
++static int modversion_ext_string_advance(struct modversion_info_ext_string *s)
++{
++	if (!s->value)
++		return 0;
++	if (s->value >= s->end)
++		return -EINVAL;
++	s->value += strnlen(s->value, s->end - s->value - 1) + 1;
++	if (s->value >= s->end)
++		return -EINVAL;
++	return 0;
++}
++
++int modversion_ext_advance(struct modversion_info_ext *start)
++{
++	int ret;
++
++	ret = modversion_ext_s32_advance(&start->crc);
++	if (ret < 0)
++		return ret;
++
++	ret = modversion_ext_string_advance(&start->name);
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
+ /*
+  * Generate the signature for all relevant module structures here.
+  * If these change, we don't want to try to parse the module.
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 973b5e5ae2dd..884860c2e833 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1910,15 +1910,42 @@ static void add_versions(struct buffer *b, struct module *mod)
+ 			continue;
+ 		}
+ 		if (strlen(s->name) >= MODULE_NAME_LEN) {
+-			error("too long symbol \"%s\" [%s.ko]\n",
+-			      s->name, mod->name);
+-			break;
++			/* this symbol will only be in the extended info */
++			continue;
+ 		}
+ 		buf_printf(b, "\t{ %#8x, \"%s\" },\n",
+ 			   s->crc, s->name);
+ 	}
+ 
+ 	buf_printf(b, "};\n");
++
++	buf_printf(b, "static const s32 ____version_ext_crcs[]\n");
++	buf_printf(b, "__used __section(\"__version_ext_crcs\") = {\n");
++	list_for_each_entry(s, &mod->unresolved_symbols, list) {
++		if (!s->module)
++			continue;
++		if (!s->crc_valid) {
++			// We already warned on this when producing the legacy
++			// modversions table.
++			continue;
++		}
++		buf_printf(b, "\t%#8x,\n", s->crc);
++	}
++	buf_printf(b, "};\n");
++
++	buf_printf(b, "static const char ____version_ext_names[]\n");
++	buf_printf(b, "__used __section(\"__version_ext_names\") =\n");
++	list_for_each_entry(s, &mod->unresolved_symbols, list) {
++		if (!s->module)
++			continue;
++		if (!s->crc_valid) {
++			// We already warned on this when producing the legacy
++			// modversions table.
++			continue;
++		}
++		buf_printf(b, "\t\"%s\\0\"\n", s->name);
++	}
++	buf_printf(b, ";\n");
+ }
+ 
+ static void add_depends(struct buffer *b, struct module *mod)
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0.rc0.421.g78406f8d94-goog
+
