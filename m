@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6908C54FB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 14:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A271C55825
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 14:45:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UoRE3pgn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=b2q7eO3n;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SVmCP3Lycz3clL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 01:44:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SVmDL2JNvz3vcJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 01:45:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UoRE3pgn;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=b2q7eO3n;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::229; helo=relay9-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::229])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVm6h2b7Nz30LM
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVm6h37Dzz3byh
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2023 01:40:28 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 71F58FF821;
-	Wed, 15 Nov 2023 14:40:22 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 6DEBBFF819;
+	Wed, 15 Nov 2023 14:40:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1700059224;
+	t=1700059217;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rx/A9HozqIkWV5W2yFN73CmDEmfw3GEllA7rLxW9iPs=;
-	b=UoRE3pgnFvM/eapkN04PwCY6VyDvs8DL6wdIX90ECoJ5obdWsYu/IY/skKaQ2Y28ut3Q+g
-	m3rP0CaPyac/TzU1k4FN8sdEpuXvwQmvsEFznH01zr52g17w+IcDJ1D27T2vodvd826EmA
-	5ZweP+WIqf1wFA2bxCawY3kp6qH7YvKt3nq1T4rrtlBkzAVPmJ9J97tpAX/J68nqhmd+hO
-	HW3L2W4fTZm+MjgahkNv9T0/cUU1h2QHWNxMKqb+EU5i77fHkvoq8z0u9+sGcOLGVG+jjB
-	hIeveSH1GVcJlmtA6mWc9O6KFMSa+xKYnMotPghHSTk+fMQnGEy0hJ8hjhmAlQ==
+	bh=ntzG6ybotYjozkAeYHyWB4F1x10leAK3nGo8q37pzGw=;
+	b=b2q7eO3nLewI3RYpBon72DLCQHmYUR2TykmiajTdXE1bJKJBoOcbt6DKDQ2LT1+p1Z7Fzc
+	L8+QipIFpmG/ewidhDUOvzVJsA++fNbPoVsw7yyURyGwLLaC54P6qq+5INSsExgCjAOyiN
+	di/yKlOdALhUsDOravlufMpPgG06/KVg76NCWlSzhZWvqoKjr3FXod/Mfu2U+ERV5XJE/Z
+	MorbrmJ8oha0q/DhjOXj2tPgegPEYGdf8Gi8JlgEhoC6EOPygb72qOa9lZdRS1EYfOZ2TK
+	oKo5M2oX9jinzmVUKwzd++JHOf/sVwc2yqY97TTNUqczizLgXmj8vWPpgZofDQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	"David S. Miller" <davem@davemloft.net>,
@@ -59,9 +59,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Nicolin Chen <nicoleotsuka@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH v9 05/27] soc: fsl: cpm1: qmc: Remove inline function specifiers
-Date: Wed, 15 Nov 2023 15:39:41 +0100
-Message-ID: <20231115144007.478111-6-herve.codina@bootlin.com>
+Subject: [PATCH v9 01/27] soc: fsl: cpm1: tsa: Fix __iomem addresses declaration
+Date: Wed, 15 Nov 2023 15:39:37 +0100
+Message-ID: <20231115144007.478111-2-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231115144007.478111-1-herve.codina@bootlin.com>
 References: <20231115144007.478111-1-herve.codina@bootlin.com>
@@ -83,68 +83,95 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Thomas Petazzoni <t
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The inline function specifier is present on some functions but it is
-better to let the compiler decide inlining or not these functions.
+Running sparse (make C=1) on tsa.c raises a lot of warning such as:
+  --- 8< ---
+  warning: incorrect type in assignment (different address spaces)
+     expected void *[noderef] si_regs
+     got void [noderef] __iomem *
+  --- 8< ---
 
-Remove inline specifiers.
+Indeed, some variable were declared 'type *__iomem var' instead of
+'type __iomem *var'.
 
-Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
+Use the correct declaration to remove these warnings.
+
+Fixes: 1d4ba0b81c1c ("soc: fsl: cpm1: Add support for TSA")
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Suggested-by: Andrew Lunn <andrew@lunn.ch>
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/qmc.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 4b4832d93c9b..27f2f16deac9 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -218,37 +218,37 @@ struct qmc {
- 	struct qmc_chan *chans[64];
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index 3f9981335590..6c5741cf5e9d 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -98,9 +98,9 @@
+ #define TSA_SIRP	0x10
+ 
+ struct tsa_entries_area {
+-	void *__iomem entries_start;
+-	void *__iomem entries_next;
+-	void *__iomem last_entry;
++	void __iomem *entries_start;
++	void __iomem *entries_next;
++	void __iomem *last_entry;
  };
  
--static inline void qmc_write16(void __iomem *addr, u16 val)
-+static void qmc_write16(void __iomem *addr, u16 val)
- {
- 	iowrite16be(val, addr);
+ struct tsa_tdm {
+@@ -117,8 +117,8 @@ struct tsa_tdm {
+ 
+ struct tsa {
+ 	struct device *dev;
+-	void *__iomem si_regs;
+-	void *__iomem si_ram;
++	void __iomem *si_regs;
++	void __iomem *si_ram;
+ 	resource_size_t si_ram_sz;
+ 	spinlock_t	lock;
+ 	int tdms; /* TSA_TDMx ORed */
+@@ -135,27 +135,27 @@ static inline struct tsa *tsa_serial_get_tsa(struct tsa_serial *tsa_serial)
+ 	return container_of(tsa_serial, struct tsa, serials[tsa_serial->id]);
  }
  
--static inline u16 qmc_read16(void __iomem *addr)
-+static u16 qmc_read16(void __iomem *addr)
- {
- 	return ioread16be(addr);
- }
- 
--static inline void qmc_setbits16(void __iomem *addr, u16 set)
-+static void qmc_setbits16(void __iomem *addr, u16 set)
- {
- 	qmc_write16(addr, qmc_read16(addr) | set);
- }
- 
--static inline void qmc_clrbits16(void __iomem *addr, u16 clr)
-+static void qmc_clrbits16(void __iomem *addr, u16 clr)
- {
- 	qmc_write16(addr, qmc_read16(addr) & ~clr);
- }
- 
--static inline void qmc_write32(void __iomem *addr, u32 val)
-+static void qmc_write32(void __iomem *addr, u32 val)
+-static inline void tsa_write32(void *__iomem addr, u32 val)
++static inline void tsa_write32(void __iomem *addr, u32 val)
  {
  	iowrite32be(val, addr);
  }
  
--static inline u32 qmc_read32(void __iomem *addr)
-+static u32 qmc_read32(void __iomem *addr)
+-static inline void tsa_write8(void *__iomem addr, u32 val)
++static inline void tsa_write8(void __iomem *addr, u32 val)
+ {
+ 	iowrite8(val, addr);
+ }
+ 
+-static inline u32 tsa_read32(void *__iomem addr)
++static inline u32 tsa_read32(void __iomem *addr)
  {
  	return ioread32be(addr);
  }
  
--static inline void qmc_setbits32(void __iomem *addr, u32 set)
-+static void qmc_setbits32(void __iomem *addr, u32 set)
+-static inline void tsa_clrbits32(void *__iomem addr, u32 clr)
++static inline void tsa_clrbits32(void __iomem *addr, u32 clr)
  {
- 	qmc_write32(addr, qmc_read32(addr) | set);
+ 	tsa_write32(addr, tsa_read32(addr) & ~clr);
  }
+ 
+-static inline void tsa_clrsetbits32(void *__iomem addr, u32 clr, u32 set)
++static inline void tsa_clrsetbits32(void __iomem *addr, u32 clr, u32 set)
+ {
+ 	tsa_write32(addr, (tsa_read32(addr) & ~clr) | set);
+ }
+@@ -313,7 +313,7 @@ static u32 tsa_serial_id2csel(struct tsa *tsa, u32 serial_id)
+ static int tsa_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
+ 			 u32 count, u32 serial_id)
+ {
+-	void *__iomem addr;
++	void __iomem *addr;
+ 	u32 left;
+ 	u32 val;
+ 	u32 cnt;
 -- 
 2.41.0
 
