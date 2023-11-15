@@ -4,50 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A212BC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 03:15:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C0C5C072A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Nov 2023 21:06:10 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WvW2KL25;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SS15p1gs1z3cFw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Nov 2023 14:15:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SVwgj0gWQz3c9y
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Nov 2023 08:06:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WvW2KL25;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SRjTc2wKwz3cVT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2023 02:31:16 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r1TT0-00065Q-GG; Fri, 10 Nov 2023 16:30:42 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r1TSx-0083Id-UM; Fri, 10 Nov 2023 16:30:39 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r1TSx-00Gnuj-JI; Fri, 10 Nov 2023 16:30:39 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Tony Lindgren <tony@atomide.com>,
-	Alexander Shiyan <shc_work@mail.ru>
-Subject: [PATCH 00/52] serial: Convert to platform remove callback returning void
-Date: Fri, 10 Nov 2023 16:29:28 +0100
-Message-ID: <20231110152927.70601-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SVwfk6wftz2ykV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2023 08:05:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1700082319; x=1731618319;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=HZaP63qR51WdI944Jzx+qswTuQEwasjcvHgL6QGSQhs=;
+  b=WvW2KL25QLsSDQvMQNEaERAOJlGWgB0UHhNNEhgrdWAnmzBMYbJJ048R
+   h0HE3PjMNhEzCmB63B70Eld1JhGeCxleT+LvMtX/dyK+xwYVhpR1HfwwD
+   fdd9rUszja/+X7rDwteCQKdRC/LdpwW6YK+PK5wrN8HWnJ7MgtQTmBwPl
+   WmntfwRdi87PgQ/hqZerCwyCGtX1xJNqI5yUEKI3XPyHaHhe92F/hUQ3U
+   nMG+9/dm+7fw2ra0P+kzq3pSQqQmJu8cAV90P9PMaJvYNSjr4TPhVu7+W
+   TqpHL9GZSzYGw5s9xy9aFD5yTQyWWF4yAgIdj9vCLCCOpVgSc96Inah2a
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10895"; a="4032592"
+X-IronPort-AV: E=Sophos;i="6.03,306,1694761200"; 
+   d="scan'208";a="4032592"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Nov 2023 13:05:13 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10895"; a="888699475"
+X-IronPort-AV: E=Sophos;i="6.03,306,1694761200"; 
+   d="scan'208";a="888699475"
+Received: from lkp-server02.sh.intel.com (HELO b8de5498638e) ([10.239.97.151])
+  by orsmga004.jf.intel.com with ESMTP; 15 Nov 2023 13:05:08 -0800
+Received: from kbuild by b8de5498638e with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1r3N4M-0000p6-1l;
+	Wed, 15 Nov 2023 21:05:06 +0000
+Date: Thu, 16 Nov 2023 05:04:43 +0800
+From: kernel test robot <lkp@intel.com>
+To: Baoquan He <bhe@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] kexec_file: print out debugging message if required
+Message-ID: <202311160431.BXPc7NO9-lkp@intel.com>
+References: <20231114153253.241262-3-bhe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8575; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=uSjGK//3oFZ52v8CbMudZ2zWDpIf+rV/Bz06fMr6GWo=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlQ/nwgpw9SOtCV6v+pmM2qvy30b4Lq49LLWF9d7/DeVZ WUfT6vrZDRmYWDkYpAVU2Sxb1yTaVUlF9m59t9lmEGsTCBTGLg4BWAit63Y/3DeWbXNbsaN6owD v7zeKjbpJWlH1DLLuAtpXzizckMmx203llrb1/+nvTIsPrdq+5X595O9r7k579Bw9+82qJzub57 xYRLnlnOf3z5I0jkjI3+hnSlh3u7CZtWj17OsTwtF9Zh1VPec575QJnDf2cNMZ92auiNbfa0U1I K4NMS4nGKWL9M2r8plO87j5ygYa/6+RbEk4fm2VxMXr107Q7gswU3y947dArnBDXHf36sIsmiEc f/g4GZMEG/dF80S1BrAt/VW0ITwlZUaT7adCHP/6ih/oXzv47Wsk5b57sm0tYvXmXys/bGln80K A/VHR2RlH3V3/5h2e8W6Lbt3hnOZavQfU+68c0/+U304AA==
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Approved-At: Sat, 11 Nov 2023 14:14:16 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231114153253.241262-3-bhe@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,165 +70,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Fabio Estevam <festevam@denx.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Pavel Krasavin <pkrasavin@imaqliq.com>, Alim Akhtar <alim.akhtar@samsung.com>, Peter Korsgaard <jacmet@sunsite.dk>, linux-stm32@st-md-mailman.stormreply.com, Karol Gugala <kgugala@antmicro.com>, Jerome Brunet <jbrunet@baylibre.com>, linux-samsung-soc@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>, Hammer Hsieh <hammerh0314@gmail.com>, Jiamei Xie <jiamei.xie@arm.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, NXP Linux Team <linux-imx@nxp.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Petr Mladek <pmladek@suse.com>, Arend van Spriel <arend.vanspriel@broadcom.com>, linux-serial@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-unisoc@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>, Scott Branden <sbranden@broadcom.com>, Richard GENOUD <richard.genoud@gmail.com>, Samuel Holland <samuel.holland@sifive.com>, Masami Hiramatsu <mhiramat
- @kernel.org>, kernel@pengutronix.de, "Maciej W. Rozycki" <macro@orcam.me.uk>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Max Filippov <jcmvbkbc@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Dmitry Rokosov <ddrokosov@sberdevices.ru>, delisun <delisun@pateo.com.cn>, Chunyan Zhang <zhang.lyra@gmail.com>, Ruan Jinjie <ruanjinjie@huawei.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mateusz Holenko <mholenko@antmicro.com>, Jonathan Hunter <jonathanh@nvidia.com>, Gabriel Somlo <gsomlo@gmail.com>, Hongyu Xie <xiehongyu1@kylinos.cn>, Tobias Klauser <tklauser@distanz.ch>, =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>, John Ogness <john.ogness@linutronix.de>, Yangtao Li <frank.li@vivo.com>, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, Biju Das <biju.das.jz@bp.renesas.com>, linux-amlogic@lis
- ts.infradead.org, Michal Simek <michal.simek@amd.com>, Sherry Sun <sherry.sun@nxp.com>, Neil Armstrong <neil.armstrong@linaro.org>, Thomas Richard <thomas.richard@bootlin.com>, "David S. Miller" <davem@davemloft.net>, Sergey Organov <sorganov@gmail.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, linux-mediatek@lists.infradead.org, Lino Sanfilippo <l.sanfilippo@kunbus.com>, Erwan Le Ray <erwan.leray@foss.st.com>, Tom Rix <trix@redhat.com>, Al Cooper <alcooperx@gmail.com>, Yuan Can <yuancan@huawei.com>, Matthias Brugger <matthias.bgg@gmail.com>, Fabio Estevam <festevam@gmail.com>, Rob Herring <robh@kernel.org>, linux-aspeed@lists.ozlabs.org, Bernhard Seibold <mail@bernhard-seibold.de>, Shenwei Wang <shenwei.wang@nxp.com>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Joel Stanley <joel@jms.id.au>, Chen-Yu Tsai <wenst@chromium.org>, Jacob Keller <jacob.e.keller@intel.com>, =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, Patrice Chotard
-  <patrice.chotard@foss.st.com>, Jacky Huang <ychuang3@nuvoton.com>, Arnd Bergmann <arnd@arndb.de>, Ray Jui <rjui@broadcom.com>, Vladimir Zapolskiy <vz@mleia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Orson Zhai <orsonzhai@gmail.com>, Thierry Reding <treding@nvidia.com>, Timur Tabi <timur@kernel.org>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, Julien Malik <julien.malik@unseenlabs.fr>, Konrad Dybcio <konrad.dybcio@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Shawn Guo <shawnguo@kernel.org>, =?utf-8?q?Andreas_F=C3=A4rber?= <afaerber@suse.de>, Baruch Siach <baruch@tkos.co.il>, Valentin Caron <valentin.caron@foss.st.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Alexandre Torgue <alexandre.torgue@foss.st.com>, linux-mips@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, sparclinux@vger.kernel.org, Shan-Chun Hung <schung@nuvoton.com>, linux-riscv@lists.infradead.org, Zhang Shurong <zhang_shurong@foxmail.com>, Marek Vasut <marex@denx.de>, Florian Fainelli <f
- lorian.fainelli@broadcom.com>, Russell King <linux@armlinux.org.uk>, Nick Hu <nick.hu@sifive.com>, Andy Gross <agross@kernel.org>, Martin Fuzzey <martin.fuzzey@flowbird.group>, Manivannan Sadhasivam <mani@kernel.org>, Takao Orito <orito.takao@socionext.com>, Johan Hovold <johan@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Paul Walmsley <paul.walmsley@sifive.com>, linux-tegra@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-arm-kernel@lists.infradead.org, Taichi Sugaya <sugaya.taichi@socionext.com>, Bjorn Andersson <andersson@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Lucas Tanure <tanure@linux.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andi Shyti <andi.shyti@linux.intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, Baoquan He <bhe@redhat.com>, linux-parisc@vger.kernel.org, llvm@lists.linux.dev, kexec@lists.infradead.org, oe-kbuild-all@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Hi Baoquan,
 
-this series starts with two fixes. The first one fixes a resource leak
-and use after free. The second only improves error reporting. I added a
-Fixes: marker to these. I let you decide if you want to drop them (or
-the second only) or add a Cc: stable (to both or only the first one).
+kernel test robot noticed the following build errors:
 
-After that all drivers below drivers/tty/serial are converted to struct
-platform_driver::remove_new. See commit 5c5a7680e67b ("platform: Provide
-a remove callback that returns no value") for an extended explanation
-and the eventual goal. The TL;DR; is to prevent bugs like the two fixed
-here.
+[auto build test ERROR on arm64/for-next/core]
+[also build test ERROR on tip/x86/core powerpc/next powerpc/fixes linus/master v6.7-rc1 next-20231115]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-After these two fixes all conversations are trivial, because all
-.remove() callbacks returned zero unconditionally.
+url:    https://github.com/intel-lab-lkp/linux/commits/Baoquan-He/kexec_file-add-kexec_file-flag-to-control-debug-printing/20231114-234003
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-next/core
+patch link:    https://lore.kernel.org/r/20231114153253.241262-3-bhe%40redhat.com
+patch subject: [PATCH 2/7] kexec_file: print out debugging message if required
+config: hexagon-comet_defconfig (https://download.01.org/0day-ci/archive/20231116/202311160431.BXPc7NO9-lkp@intel.com/config)
+compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231116/202311160431.BXPc7NO9-lkp@intel.com/reproduce)
 
-The conversion patches are merge window material. The two fixes might go
-in also before v6.7, but given the fixed problems are already old
-(v6.1-rc6 + v3.10-rc1) there is probably no urge.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202311160431.BXPc7NO9-lkp@intel.com/
 
-Best regards
-Uwe
+All errors (new ones prefixed by >>):
 
-Uwe Kleine-König (52):
-  serial: 8250: omap: Don't skip resource freeing if
-    pm_runtime_resume_and_get() failed
-  serial: sccnxp: Improve error message if regulator_disable() fails
-  serial: 8250: Convert to platform remove callback returning void
-  serial: altera_jtaguart: Convert to platform remove callback returning
-    void
-  serial: altera: Convert to platform remove callback returning void
-  serial: amba-pl011: Convert to platform remove callback returning void
-  serial: ar933x: Convert to platform remove callback returning void
-  serial: atmel: Convert to platform remove callback returning void
-  serial: bcm63xx: Convert to platform remove callback returning void
-  serial: clps711x: Convert to platform remove callback returning void
-  serial: cpm: Convert to platform remove callback returning void
-  serial: digicolor: Convert to platform remove callback returning void
-  serial: esp32_acm: Convert to platform remove callback returning void
-  serial: esp32: Convert to platform remove callback returning void
-  serial: fsl_linflexuart: Convert to platform remove callback returning
-    void
-  serial: fsl_lpuart: Convert to platform remove callback returning void
-  serial: imx: Convert to platform remove callback returning void
-  serial: lantiq: Convert to platform remove callback returning void
-  serial: liteuart: Convert to platform remove callback returning void
-  serial: lpc32xx_hs: Convert to platform remove callback returning void
-  serial: ma35d1: Convert to platform remove callback returning void
-  serial: mcf: Convert to platform remove callback returning void
-  serial: meson: Convert to platform remove callback returning void
-  serial: milbeaut_usio: Convert to platform remove callback returning
-    void
-  serial: mpc52xx: Convert to platform remove callback returning void
-  serial: msm: Convert to platform remove callback returning void
-  serial: mxs-auart: Convert to platform remove callback returning void
-  serial: omap: Convert to platform remove callback returning void
-  serial: owl: Convert to platform remove callback returning void
-  serial: pic32: Convert to platform remove callback returning void
-  serial: qcom_geni: Convert to platform remove callback returning void
-  serial: rda: Convert to platform remove callback returning void
-  serial: sa1100: Convert to platform remove callback returning void
-  serial: samsung: Convert to platform remove callback returning void
-  serial: sccnxp: Convert to platform remove callback returning void
-  serial: tegra: Convert to platform remove callback returning void
-  serial: txx9: Convert to platform remove callback returning void
-  serial: sh-sci: Convert to platform remove callback returning void
-  serial: sifive: Convert to platform remove callback returning void
-  serial: sprd: Convert to platform remove callback returning void
-  serial: st-asc: Convert to platform remove callback returning void
-  serial: stm32: Convert to platform remove callback returning void
-  serial: sunhv: Convert to platform remove callback returning void
-  serial: sunplus: Convert to platform remove callback returning void
-  serial: sunsab: Convert to platform remove callback returning void
-  serial: sunsu: Convert to platform remove callback returning void
-  serial: sunzilog: Convert to platform remove callback returning void
-  serial: tegra-tcu: Convert to platform remove callback returning void
-  serial: timbuart: Convert to platform remove callback returning void
-  serial: uartlite: Convert to platform remove callback returning void
-  serial: ucc: Convert to platform remove callback returning void
-  serial: xilinx_uartps: Convert to platform remove callback returning
-    void
-
- drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 ++----
- drivers/tty/serial/8250/8250_bcm2835aux.c   |  6 ++----
- drivers/tty/serial/8250/8250_bcm7271.c      |  5 ++---
- drivers/tty/serial/8250/8250_core.c         |  5 ++---
- drivers/tty/serial/8250/8250_dw.c           |  6 ++----
- drivers/tty/serial/8250/8250_em.c           |  5 ++---
- drivers/tty/serial/8250/8250_fsl.c          |  5 ++---
- drivers/tty/serial/8250/8250_ingenic.c      |  5 ++---
- drivers/tty/serial/8250/8250_ioc3.c         |  5 ++---
- drivers/tty/serial/8250/8250_lpc18xx.c      |  6 ++----
- drivers/tty/serial/8250/8250_mtk.c          |  6 ++----
- drivers/tty/serial/8250/8250_of.c           |  5 ++---
- drivers/tty/serial/8250/8250_omap.c         |  7 +++----
- drivers/tty/serial/8250/8250_pxa.c          |  6 ++----
- drivers/tty/serial/8250/8250_tegra.c        |  6 ++----
- drivers/tty/serial/8250/8250_uniphier.c     |  6 ++----
- drivers/tty/serial/altera_jtaguart.c        |  6 ++----
- drivers/tty/serial/altera_uart.c            |  6 ++----
- drivers/tty/serial/amba-pl011.c             |  5 ++---
- drivers/tty/serial/ar933x_uart.c            |  6 ++----
- drivers/tty/serial/atmel_serial.c           |  6 ++----
- drivers/tty/serial/bcm63xx_uart.c           |  5 ++---
- drivers/tty/serial/clps711x.c               |  6 ++----
- drivers/tty/serial/cpm_uart.c               |  6 ++----
- drivers/tty/serial/digicolor-usart.c        |  6 ++----
- drivers/tty/serial/esp32_acm.c              |  5 ++---
- drivers/tty/serial/esp32_uart.c             |  6 ++----
- drivers/tty/serial/fsl_linflexuart.c        |  6 ++----
- drivers/tty/serial/fsl_lpuart.c             |  5 ++---
- drivers/tty/serial/imx.c                    |  6 ++----
- drivers/tty/serial/lantiq.c                 |  6 ++----
- drivers/tty/serial/liteuart.c               |  6 ++----
- drivers/tty/serial/lpc32xx_hs.c             |  6 ++----
- drivers/tty/serial/ma35d1_serial.c          |  5 ++---
- drivers/tty/serial/mcf.c                    |  6 ++----
- drivers/tty/serial/meson_uart.c             |  8 +++-----
- drivers/tty/serial/milbeaut_usio.c          |  6 ++----
- drivers/tty/serial/mpc52xx_uart.c           |  7 ++-----
- drivers/tty/serial/msm_serial.c             |  6 ++----
- drivers/tty/serial/mxs-auart.c              |  6 ++----
- drivers/tty/serial/omap-serial.c            |  6 ++----
- drivers/tty/serial/owl-uart.c               |  6 ++----
- drivers/tty/serial/pic32_uart.c             |  7 ++-----
- drivers/tty/serial/qcom_geni_serial.c       |  6 ++----
- drivers/tty/serial/rda-uart.c               |  6 ++----
- drivers/tty/serial/sa1100.c                 |  6 ++----
- drivers/tty/serial/samsung_tty.c            |  6 ++----
- drivers/tty/serial/sccnxp.c                 | 13 +++++++------
- drivers/tty/serial/serial-tegra.c           |  5 ++---
- drivers/tty/serial/serial_txx9.c            |  5 ++---
- drivers/tty/serial/sh-sci.c                 |  6 ++----
- drivers/tty/serial/sifive.c                 |  6 ++----
- drivers/tty/serial/sprd_serial.c            |  6 ++----
- drivers/tty/serial/st-asc.c                 |  6 ++----
- drivers/tty/serial/stm32-usart.c            |  6 ++----
- drivers/tty/serial/sunhv.c                  |  6 ++----
- drivers/tty/serial/sunplus-uart.c           |  6 ++----
- drivers/tty/serial/sunsab.c                 |  6 ++----
- drivers/tty/serial/sunsu.c                  |  6 ++----
- drivers/tty/serial/sunzilog.c               |  6 ++----
- drivers/tty/serial/tegra-tcu.c              |  6 ++----
- drivers/tty/serial/timbuart.c               |  6 ++----
- drivers/tty/serial/uartlite.c               |  5 ++---
- drivers/tty/serial/ucc_uart.c               |  6 ++----
- drivers/tty/serial/xilinx_uartps.c          |  5 ++---
- 65 files changed, 137 insertions(+), 249 deletions(-)
+   In file included from kernel/crash_core.c:13:
+   In file included from include/linux/kexec.h:19:
+   In file included from arch/hexagon/include/asm/io.h:337:
+   include/asm-generic/io.h:547:31: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __raw_readb(PCI_IOBASE + addr);
+                             ~~~~~~~~~~ ^
+   include/asm-generic/io.h:560:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __le16_to_cpu((__le16 __force)__raw_readw(PCI_IOBASE + addr));
+                                                           ~~~~~~~~~~ ^
+   include/uapi/linux/byteorder/little_endian.h:37:51: note: expanded from macro '__le16_to_cpu'
+   #define __le16_to_cpu(x) ((__force __u16)(__le16)(x))
+                                                     ^
+   In file included from kernel/crash_core.c:13:
+   In file included from include/linux/kexec.h:19:
+   In file included from arch/hexagon/include/asm/io.h:337:
+   include/asm-generic/io.h:573:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __le32_to_cpu((__le32 __force)__raw_readl(PCI_IOBASE + addr));
+                                                           ~~~~~~~~~~ ^
+   include/uapi/linux/byteorder/little_endian.h:35:51: note: expanded from macro '__le32_to_cpu'
+   #define __le32_to_cpu(x) ((__force __u32)(__le32)(x))
+                                                     ^
+   In file included from kernel/crash_core.c:13:
+   In file included from include/linux/kexec.h:19:
+   In file included from arch/hexagon/include/asm/io.h:337:
+   include/asm-generic/io.h:584:33: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writeb(value, PCI_IOBASE + addr);
+                               ~~~~~~~~~~ ^
+   include/asm-generic/io.h:594:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writew((u16 __force)cpu_to_le16(value), PCI_IOBASE + addr);
+                                                         ~~~~~~~~~~ ^
+   include/asm-generic/io.h:604:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writel((u32 __force)cpu_to_le32(value), PCI_IOBASE + addr);
+                                                         ~~~~~~~~~~ ^
+>> kernel/crash_core.c:412:3: error: call to undeclared function 'kexec_dprintk'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+                   kexec_dprintk("Crash PT_LOAD ELF header. phdr=%p vaddr=0x%llx, paddr=0x%llx, "
+                   ^
+   6 warnings and 1 error generated.
 
 
-base-commit: 8728c14129df7a6e29188a2e737b4774fb200953
+vim +/kexec_dprintk +412 kernel/crash_core.c
+
+   323	
+   324	int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_map,
+   325				  void **addr, unsigned long *sz)
+   326	{
+   327		Elf64_Ehdr *ehdr;
+   328		Elf64_Phdr *phdr;
+   329		unsigned long nr_cpus = num_possible_cpus(), nr_phdr, elf_sz;
+   330		unsigned char *buf;
+   331		unsigned int cpu, i;
+   332		unsigned long long notes_addr;
+   333		unsigned long mstart, mend;
+   334	
+   335		/* extra phdr for vmcoreinfo ELF note */
+   336		nr_phdr = nr_cpus + 1;
+   337		nr_phdr += mem->nr_ranges;
+   338	
+   339		/*
+   340		 * kexec-tools creates an extra PT_LOAD phdr for kernel text mapping
+   341		 * area (for example, ffffffff80000000 - ffffffffa0000000 on x86_64).
+   342		 * I think this is required by tools like gdb. So same physical
+   343		 * memory will be mapped in two ELF headers. One will contain kernel
+   344		 * text virtual addresses and other will have __va(physical) addresses.
+   345		 */
+   346	
+   347		nr_phdr++;
+   348		elf_sz = sizeof(Elf64_Ehdr) + nr_phdr * sizeof(Elf64_Phdr);
+   349		elf_sz = ALIGN(elf_sz, ELF_CORE_HEADER_ALIGN);
+   350	
+   351		buf = vzalloc(elf_sz);
+   352		if (!buf)
+   353			return -ENOMEM;
+   354	
+   355		ehdr = (Elf64_Ehdr *)buf;
+   356		phdr = (Elf64_Phdr *)(ehdr + 1);
+   357		memcpy(ehdr->e_ident, ELFMAG, SELFMAG);
+   358		ehdr->e_ident[EI_CLASS] = ELFCLASS64;
+   359		ehdr->e_ident[EI_DATA] = ELFDATA2LSB;
+   360		ehdr->e_ident[EI_VERSION] = EV_CURRENT;
+   361		ehdr->e_ident[EI_OSABI] = ELF_OSABI;
+   362		memset(ehdr->e_ident + EI_PAD, 0, EI_NIDENT - EI_PAD);
+   363		ehdr->e_type = ET_CORE;
+   364		ehdr->e_machine = ELF_ARCH;
+   365		ehdr->e_version = EV_CURRENT;
+   366		ehdr->e_phoff = sizeof(Elf64_Ehdr);
+   367		ehdr->e_ehsize = sizeof(Elf64_Ehdr);
+   368		ehdr->e_phentsize = sizeof(Elf64_Phdr);
+   369	
+   370		/* Prepare one phdr of type PT_NOTE for each possible CPU */
+   371		for_each_possible_cpu(cpu) {
+   372			phdr->p_type = PT_NOTE;
+   373			notes_addr = per_cpu_ptr_to_phys(per_cpu_ptr(crash_notes, cpu));
+   374			phdr->p_offset = phdr->p_paddr = notes_addr;
+   375			phdr->p_filesz = phdr->p_memsz = sizeof(note_buf_t);
+   376			(ehdr->e_phnum)++;
+   377			phdr++;
+   378		}
+   379	
+   380		/* Prepare one PT_NOTE header for vmcoreinfo */
+   381		phdr->p_type = PT_NOTE;
+   382		phdr->p_offset = phdr->p_paddr = paddr_vmcoreinfo_note();
+   383		phdr->p_filesz = phdr->p_memsz = VMCOREINFO_NOTE_SIZE;
+   384		(ehdr->e_phnum)++;
+   385		phdr++;
+   386	
+   387		/* Prepare PT_LOAD type program header for kernel text region */
+   388		if (need_kernel_map) {
+   389			phdr->p_type = PT_LOAD;
+   390			phdr->p_flags = PF_R|PF_W|PF_X;
+   391			phdr->p_vaddr = (unsigned long) _text;
+   392			phdr->p_filesz = phdr->p_memsz = _end - _text;
+   393			phdr->p_offset = phdr->p_paddr = __pa_symbol(_text);
+   394			ehdr->e_phnum++;
+   395			phdr++;
+   396		}
+   397	
+   398		/* Go through all the ranges in mem->ranges[] and prepare phdr */
+   399		for (i = 0; i < mem->nr_ranges; i++) {
+   400			mstart = mem->ranges[i].start;
+   401			mend = mem->ranges[i].end;
+   402	
+   403			phdr->p_type = PT_LOAD;
+   404			phdr->p_flags = PF_R|PF_W|PF_X;
+   405			phdr->p_offset  = mstart;
+   406	
+   407			phdr->p_paddr = mstart;
+   408			phdr->p_vaddr = (unsigned long) __va(mstart);
+   409			phdr->p_filesz = phdr->p_memsz = mend - mstart + 1;
+   410			phdr->p_align = 0;
+   411			ehdr->e_phnum++;
+ > 412			kexec_dprintk("Crash PT_LOAD ELF header. phdr=%p vaddr=0x%llx, paddr=0x%llx, "
+   413				"sz=0x%llx e_phnum=%d p_offset=0x%llx\n",
+   414				phdr, phdr->p_vaddr, phdr->p_paddr, phdr->p_filesz,
+   415				ehdr->e_phnum, phdr->p_offset);
+   416			phdr++;
+   417		}
+   418	
+   419		*addr = buf;
+   420		*sz = elf_sz;
+   421		return 0;
+   422	}
+   423	
+
 -- 
-2.42.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
