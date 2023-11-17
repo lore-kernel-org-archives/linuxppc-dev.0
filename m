@@ -4,71 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D14CC197A0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 10:01:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D12FC54FB9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 10:07:55 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QB+yMVwO;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SWsqW0Zcqz3vd8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 21:01:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SWszG1WTVz3dLg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 21:07:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QB+yMVwO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SWspy1Pgzz3dJ0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2023 21:00:42 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r3vdd-0000CZ-8i; Fri, 17 Nov 2023 10:59:49 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r3vda-009eFY-MI; Fri, 17 Nov 2023 10:59:46 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r3vda-002zVo-C1; Fri, 17 Nov 2023 10:59:46 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Alex Elder <elder@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Tariq Toukan <tariqt@nvidia.com>,
-	Christian Marangi <ansuelsmth@gmail.com>,
-	Dawei Li <set_pte_at@outlook.com>,
-	=?utf-8?b?Q2zDqW1lbnQgTMOpZ2Vy?= <clement.leger@bootlin.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Heiner Kallweit <hkallweit1@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Zhao Qiang <qiang.zhao@nxp.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Imre Kaloz <kaloz@openwrt.org>,
-	Stephan Gerhold <stephan@gerhold.net>,
-	Andy Gross <agross@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Loic Poulain <loic.poulain@linaro.org>,
-	Sergey Ryazanov <ryazanov.s.a@gmail.com>,
-	Alexander Aring <alex.aring@gmail.com>,
-	Stefan Schmidt <stefan@datenfreihafen.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH net-next 00/10] net*: Convert to platform remove callback returning void
-Date: Fri, 17 Nov 2023 10:59:23 +0100
-Message-ID: <20231117095922.876489-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SWsyK0KQkz3cZC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2023 21:07:04 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AHA3DpY013480;
+	Fri, 17 Nov 2023 10:06:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=dKYPCoQ7Yr1hcxY+5D37d38TDsA6M9eq5Wy8f8ZQ6u8=;
+ b=QB+yMVwOL2x+KcUB/V8OCBd08qYSbWP9VBB2P/4fNX2WnzkeT4poGhXj4DNmO6QhizFv
+ /VEDsLjHS8jIc2uqvZ4CM1VsXPSJ8j4yiPw3XQ+q6pkHlbq7+wlfjwYGi8An6SGVkQrQ
+ 4uyll7p/I3B/6u2I8uuHv3qoM9Kwa+fxR3KCNZZ7YZGT4s3NCMfLqVuFcMDl7YtAo/HW
+ O2hrx38f2mjJ+lVdag+hFH2Xfl9SnbjCHKkmYymblCh/fj7NtKbgdIhMkhC0UrohzaL4
+ U5p70kZDArZZO9n9tVoZ+bqeX/gOtUg/nwTXHzn2/LRJzpx7XJcPUpz2JBcRdL/eDHQv 7w== 
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ue630r5hd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 17 Nov 2023 10:06:55 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3AH8mnKQ018018;
+	Fri, 17 Nov 2023 10:06:54 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3uapn24hde-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 17 Nov 2023 10:06:54 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3AHA6rU065601900
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 17 Nov 2023 10:06:53 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AC10A58050;
+	Fri, 17 Nov 2023 10:06:53 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 50CB958045;
+	Fri, 17 Nov 2023 10:06:52 +0000 (GMT)
+Received: from [9.204.201.194] (unknown [9.204.201.194])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 17 Nov 2023 10:06:51 +0000 (GMT)
+Message-ID: <9aaee6eb-a9a7-4945-8678-192868430b84@linux.ibm.com>
+Date: Fri, 17 Nov 2023 15:36:50 +0530
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: Restrict ARCH_HIBERNATION_POSSIBLE to supported
+ configurations
+Content-Language: en-US
+To: Michael Ellerman <mpe@ellerman.id.au>,
+        Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org
+References: <20231114082046.6018-1-vishalc@linux.ibm.com>
+ <87sf57zbcd.fsf@linux.ibm.com>
+ <ecc9d34a-4960-4540-802e-d35ee4f5259b@linux.ibm.com>
+ <c3594f58-c7a4-4265-a38e-c97b08169b61@linux.ibm.com>
+ <b7600012-0e7e-4b25-8d8c-1bffcc9c1461@linux.ibm.com>
+ <87jzqh706q.fsf@mail.lhotse>
+From: Vishal Chourasia <vishalc@linux.ibm.com>
+In-Reply-To: <87jzqh706q.fsf@mail.lhotse>
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2113; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=9oXuqsWt/RvURX9K94NXCtM0NJ0gIte8yeS/fqhGQB0=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlVzl7texqFwXoT5gAbvyECD9jkLIXHxLs+T/Jr /qMt/rFfeOJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZVc5ewAKCRCPgPtYfRL+ TvahB/wJQF9QJN/JIp3OWpqrOqErXY/3mGrH+LrcSAyWTQmW3IbON/tzsf0OudQ3GS4JGLYwrwf lr86btNOOf5otyzkyde9JO4eLJ8avvimGDtuJVCJeaYTcGT6IlHjm21zCMoNIxH3XlKMkrUmMYH 0oqnlR2AfeZP6cAxUjo5jJP1AG1OJ/Xt8losaCvn7bsz0CB5zYnZLJq+MNrGc9F0Bf/31+nYK54 8M2gDMXOJ3xh7IST9jk8chwWjoFy2mfa/rYWeB+ctDGzmvj2yQT+QW8WTFasq3UdajLrFen0s7I UHp9cIprBwWEtE2SBKNHHSiRAX7ph979/7RuQaY5V4oAWRFf
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 0fF0bbuCVcbfhpS_IVI09LMjT8m6ISUJ
+X-Proofpoint-ORIG-GUID: 0fF0bbuCVcbfhpS_IVI09LMjT8m6ISUJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-17_07,2023-11-16_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 malwarescore=0 spamscore=0 suspectscore=0
+ impostorscore=0 mlxlogscore=999 priorityscore=1501 clxscore=1015
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311060000 definitions=main-2311170074
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,58 +99,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-wpan@vger.kernel.org, kernel@pengutronix.de, linux-arm-msm@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
 
-this series converts the platform drivers below drivers/net that are not
-covered in the two other series converting drivers/net/ethernet and
-drivers/net/wireless. I put them all in a single series even though they
-are not maintained together. I thought that to be better than sending
-them out individually, I hope you agree.
+On 17/11/23 4:52 am, Michael Ellerman wrote:
+> Vishal Chourasia <vishalc@linux.ibm.com> writes:
+>> On 15/11/23 5:46 pm, Aneesh Kumar K V wrote:
+>>> On 11/15/23 5:23 PM, Vishal Chourasia wrote:
+>>>> On 15/11/23 1:39 pm, Aneesh Kumar K.V wrote:
+>>>>> Vishal Chourasia <vishalc@linux.ibm.com> writes:
+>>>>>
+>>>>>> This patch modifies the ARCH_HIBERNATION_POSSIBLE option to ensure that it
+>>>>>> correctly depends on these PowerPC configurations being enabled. As a result,
+>>>>>> it prevents the HOTPLUG_CPU from being selected when the required dependencies
+>>>>>> are not satisfied.
+>>>>>>
+>>>>>> This change aligns the dependency tree with the expected hardware support for
+>>>>>> CPU hot-plugging under PowerPC architectures, ensuring that the kernel
+>>>>>> configuration steps do not lead to inconsistent states.
+>>>>>>
+>>>>>> Signed-off-by: Vishal Chourasia <vishalc@linux.ibm.com>
+>>>>>> ---
+>>>>>> During the configuration process with 'make randconfig' followed by
+>>>>>> 'make olddefconfig', we observed a warning indicating an unmet direct
+>>>>>> dependency for the HOTPLUG_CPU option. The dependency in question relates to
+>>>>>> various PowerPC configurations (PPC_PSERIES, PPC_PMAC, PPC_POWERNV,
+>>>>>> FSL_SOC_BOOKE) which were not enabled, yet the HOTPLUG_CPU was beingDuring the configuration process with 'make randconfig' followed by
+>>>>>> 'make olddefconfig', we observed a warning indicating an unmet direct
+>>>>>> dependency for the HOTPLUG_CPU option. The dependency in question relates to
+>>>>>> various PowerPC configurations (PPC_PSERIES, PPC_PMAC, PPC_POWERNV,
+>>>>>> FSL_SOC_BOOKE) which were not enabled, yet the HOTPLUG_CPU was being
+>>>>>> erroneously selected due to an implicit assumption by the PM_SLEEP_SMP option.
+>>>>>> This misalignment in dependencies could potentially lead to inconsistent kernel
+>>>>>> configuration states, especially when considering the necessary hardware
+>>>>>> support for CPU hot-plugging on PowerPC platforms. The patch aims to correct
+>>>>>> this by ensuring that ARCH_HIBERNATION_POSSIBLE is contingent upon the
+>>>>>> appropriate PowerPC configurations being active.
+>>>>>>
+>>>>>> steps to reproduce (before applying the patch):
+>>>>>>
+>>>>>> Run 'make pseries_le_defconfig'
+>>>>>> Run 'make menuconfig'
+>>>>>> Enable hibernation [ Kernel options -> Hibernation (aka 'suspend to disk') ] 
+>>>>>> Disable [ Platform support -> IBM PowerNV (Non-Virtualized) platform support ]
+>>>>>> Disable [ Platform support -> IBM pSeries & new (POWER5-based) iSeries ]
+>>>>>> Enable SMP [ Processor support -> Symmetric multi-processing support ]
+>>>>>> Save the config
+>>>>>> Run 'make olddefconfig'
+>>>>>> erroneously selected due to an implicit assumption by the PM_SLEEP_SMP option.
+>>>>>> This misalignment in dependencies could potentially lead to inconsistent kernel
+>>>>>> configuration states, especially when considering the necessary hardware
+>>>>>> support for CPU hot-plugging on PowerPC platforms. The patch aims to correct
+>>>>>> this by ensuring that ARCH_HIBERNATION_POSSIBLE is contingent upon the
+>>>>>> appropriate PowerPC configurations being active.
+>>>>>>
+>>>>>> steps to reproduce (before applying the patch):
+>>>>>>
+>>>>>> Run 'make pseries_le_defconfig'
+>>>>>> Run 'make menuconfig'
+>>>>>> Enable hibernation [ Kernel options -> Hibernation (aka 'suspend to disk') ] 
+>>>>>> Disable [ Platform support -> IBM PowerNV (Non-Virtualized) platform support ]
+>>>>>> Disable [ Platform support -> IBM pSeries & new (POWER5-based) iSeries ]
+>>>>>> Enable SMP [ Processor support -> Symmetric multi-processing support ]
+>>>>>> Save the config
+>>>>>> Run 'make olddefconfig'
+>>>>>>
+>>>>>>  arch/powerpc/Kconfig | 5 +++--
+>>>>>>  1 file changed, 3 insertions(+), 2 deletions(-)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>>>>> index 6f105ee4f3cf..bf99ff9869f6 100644
+>>>>>> --- a/arch/powerpc/Kconfig
+>>>>>> +++ b/arch/powerpc/Kconfig
+>>>>>> @@ -380,8 +380,9 @@ config DEFAULT_UIMAGE
+>>>>>>  	  Used to allow a board to specify it wants a uImage built by default
+>>>>>>  
+>>>>>>  config ARCH_HIBERNATION_POSSIBLE
+>>>>>> -	bool
+>>>>>> -	default y
+>>>>>> +	def_bool y
+>>>>>> +	depends on PPC_PSERIES || \
+>>>>>> +		PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE
+>>>>>>  
+>>>>>>  config ARCH_SUSPEND_POSSIBLE
+>>>>>>  	def_bool y
+>>>>>>
+>>>>> I am wondering whether it should be switched to using select from
+>>>>> config PPC? 
+>>>>>
+>>>>> selecting ARCH_HIBERNATION_POSSIBLE based on value of config PPC
+>>>>> will not guarantee config PPC_PSERIES being set
+>>>>>
+>>>>> PPC_PSERIES can be set to N, even when config PPC is set.
+>> I understand what you meant before. Having ARCH_HIBERNATION_POSSIBLE under config PPC makes more sense.
+>>>>> grep -A 5 -i "config ppc_pseries" arch/powerpc/platforms/pseries/Kconfig
+>>>>> config PPC_PSERIES
+>>>>>         depends on PPC64 && PPC_BOOK3S
+>>>>>         bool "IBM pSeries & new (POWER5-based) iSeries"
+>>>>>         select HAVE_PCSPKR_PLATFORM
+>>>>>         select MPIC
+>>>>>         select OF_DYNAMIC
+>>>>>
+>>> modified   arch/powerpc/Kconfig
+>>> @@ -156,6 +156,7 @@ config PPC
+>>>  	select ARCH_HAS_UACCESS_FLUSHCACHE
+>>>  	select ARCH_HAS_UBSAN_SANITIZE_ALL
+>>>  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>>> +	select ARCH_HIBERNATION_POSSIBLE	if (PPC_PSERIES || PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
+>>>  	select ARCH_KEEP_MEMBLOCK
+>>>  	select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE	if PPC_RADIX_MMU
+>>>  	select ARCH_MIGHT_HAVE_PC_PARPORT
+>> Though, even with these changes I was able to reproduce same warnings. (using steps from above)
+>> It's because one can enable HIBERNATION manually.
+> But how? You shouldn't be able to enable it manually, it depends on
+> ARCH_HIBERNATION_POSSIBLE which shouldn't be enabled.
+>
+> For the above to work you also need to make it default n, eg:
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 6f105ee4f3cf..dd2a9b938188 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -380,8 +380,7 @@ config DEFAULT_UIMAGE
+>           Used to allow a board to specify it wants a uImage built by default
+>
+>  config ARCH_HIBERNATION_POSSIBLE
+> -       bool
+> -       default y
+> +       def_bool n
+>
+>  config ARCH_SUSPEND_POSSIBLE
+>         def_bool y
 
-See commit 5c5a7680e67b ("platform: Provide a remove callback that
-returns no value") for an extended explanation and the eventual goal.
-The TL;DR; is to make it harder for driver authors to leak resources
-without noticing.
+Ran make randconfig bunch of times.
 
-The first patch is a fix, but I don't think it's worth to add that to
-stable, it was broken since v5.7-rc1 and nobody seems to have hit the
-problem.
+# make KCONFIG_SEED=0x97C94A3C randconfig
+make[1]: Entering directory ''
+  GEN     Makefile
+KCONFIG_SEED=0x97C94A3C
 
-Best regards
-Uwe
+WARNING: unmet direct dependencies detected for HOTPLUG_CPU
+  Depends on [n]: SMP [=y] && (PPC_PSERIES [=n] || PPC_PMAC [=n] ||
+                                       PPC_POWERNV [=n] || FSL_SOC_BOOKE [=n])
+  Selected by [y]:
+  - PM_SLEEP_SMP [=y] && SMP [=y] && (ARCH_SUSPEND_POSSIBLE [=y]
+                                    || ARCH_HIBERNATION_POSSIBLE [=n]) && PM_SLEEP [=y]
+#
+# configuration written to .config
+#
+make[1]: Leaving directory ''
 
-Uwe Kleine-König (10):
-  net: ipa: Don't error out in .remove()
-  net: ipa: Convert to platform remove callback returning void
-  net: fjes: Convert to platform remove callback returning void
-  net: pcs: rzn1-miic: Convert to platform remove callback returning
-    void
-  net: sfp: Convert to platform remove callback returning void
-  net: wan/fsl_ucc_hdlc: Convert to platform remove callback returning
-    void
-  net: wan/ixp4xx_hss: Convert to platform remove callback returning
-    void
-  net: wwan: qcom_bam_dmux: Convert to platform remove callback
-    returning void
-  ieee802154: fakelb: Convert to platform remove callback returning void
-  ieee802154: hwsim: Convert to platform remove callback returning void
+As per my understanding,
 
- drivers/net/fjes/fjes_main.c             |  6 ++----
- drivers/net/ieee802154/fakelb.c          |  5 ++---
- drivers/net/ieee802154/mac802154_hwsim.c |  6 ++----
- drivers/net/ipa/ipa_main.c               | 20 +++++---------------
- drivers/net/pcs/pcs-rzn1-miic.c          |  6 ++----
- drivers/net/phy/sfp.c                    |  6 ++----
- drivers/net/wan/fsl_ucc_hdlc.c           |  6 ++----
- drivers/net/wan/ixp4xx_hss.c             |  5 ++---
- drivers/net/wwan/qcom_bam_dmux.c         |  6 ++----
- 9 files changed, 21 insertions(+), 45 deletions(-)
+"Depends on" clause of the config HOTPLUG_CPU as CPU hotplugging is only
+available for SMP systems and is only available for following power platforms
+(PPC_PSERIES || PPC_PMAC || PPC_POWERNV  || FSL_SOC_BOOKE)
 
-base-commit: eff99d8edbed7918317331ebd1e365d8e955d65e
--- 
-2.42.0
+Also, config HOTPLUG_CPU  is being selected by config PM_SLEEP_SMP
+config PM_SLEEP_SMP
+        def_bool y
+        depends on SMP
+        depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+        depends on PM_SLEEP
+        select HOTPLUG_CPU <----- Here
 
+Power management functionality depends and vary upon arch (and in powerpc case, platforms)
+supporting suspend/hibernation
+
+There are some platforms which support suspend and hence ARCH_SUSPEND_POSSIBLE
+is set, leading to PM_SLEEP_SMP being set, and ultimately, config HOTPLUG_CPU gets set.
+But, CPU hotplug is not supported for such platform and hence the conflict.
+
+
+>
+> cheers
