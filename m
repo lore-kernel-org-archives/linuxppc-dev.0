@@ -4,35 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90E6FC072A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 09:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DED28C072A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 10:00:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SWsdx1B4vz3dTD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 20:52:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1893 seconds by postgrey-1.37 at boromir; Fri, 17 Nov 2023 20:52:22 AEDT
-Received: from abb.hmeau.com (abb.hmeau.com [144.6.53.87])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SWspx2j1Gz3dSx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 21:00:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (unknown [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SWsdL0cv1z2yhT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2023 20:52:22 +1100 (AEDT)
-Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
-	by formenos.hmeau.com with smtp (Exim 4.94.2 #2 (Debian))
-	id 1r3v0v-000aCz-Kl; Fri, 17 Nov 2023 17:19:50 +0800
-Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Fri, 17 Nov 2023 17:19:57 +0800
-Date: Fri, 17 Nov 2023 17:19:57 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Gstir <david@sigma-star.at>
-Subject: Re: [PATCH v4 1/5] crypto: mxs-dcp: Add support for hardware-bound
- keys
-Message-ID: <ZVcwPUEbu3Frp61X@gondor.apana.org.au>
-References: <20231024162024.51260-1-david@sigma-star.at>
- <20231024162024.51260-2-david@sigma-star.at>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SWspL1Bnsz3cgQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2023 21:00:07 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r3vdd-0000DT-3D; Fri, 17 Nov 2023 10:59:49 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r3vdc-009eFs-48; Fri, 17 Nov 2023 10:59:48 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r3vdb-002zWG-RA; Fri, 17 Nov 2023 10:59:47 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Zhao Qiang <qiang.zhao@nxp.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>
+Subject: [PATCH net-next 06/10] net: wan/fsl_ucc_hdlc: Convert to platform remove callback returning void
+Date: Fri, 17 Nov 2023 10:59:29 +0100
+Message-ID: <20231117095922.876489-7-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
+In-Reply-To: <20231117095922.876489-1-u.kleine-koenig@pengutronix.de>
+References: <20231117095922.876489-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231024162024.51260-2-david@sigma-star.at>
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1871; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=NcjkW4IneIOd0dLZTdAVWdaFwPL7kTl1fdfEPCD9h5I=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlVzmBIBQWc3YwrHGUgl1NVC071q+J3xqj1LQj9 OBZHa0ZmN2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZVc5gQAKCRCPgPtYfRL+ Tsw+CAChcjHP+6yzxRri4q0G7oSZfAo0onlNYcorEcXtoIGeDwvEG7p0U4jr4HMunXrIW+Puc4W MBQXqVtK9P+Y53I3/5NRxeKIncunGSW/sK3r7Nx9Bc0IoVP5obik0M0wHUhMu9HtB8EApBcICqw r4Wu2D2NYlV6Ctuqny1pT1U+oCDeaFG1gyf0TO17muS8jqeEImDLfaSpGBIoePDivBtb95xCzSh moZme9sFnUlOV7WoRmLCUGOv+BlLwSuWlsTe3sr64c3c8Q4faSV3Fnqw1dEUBYi8RMyBtDAa0p2 GxmObJMk9eAG6wxOcQPqy6RXxZOKMHjV9XSQzi0cfL+t0Xf+
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,47 +61,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org, Fabio Estevam <festevam@gmail.com>, linux-security-module@vger.kernel.org, Ahmad Fatoum <a.fatoum@pengutronix.de>, Paul Moore <paul@paul-moore.com>, Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, James Morris <jmorris@namei.org>, NXP Linux Team <linux-imx@nxp.com>, James Bottomley <jejb@linux.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>, "Paul E. McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, sigma star Kernel Team <upstream+dcp@sigma-star.at>, "Steven Rostedt \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Jar
- kko Sakkinen <jarkko@kernel.org>, linux-crypto@vger.kernel.org, Pengutronix Kernel Team <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, linux-integrity@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 24, 2023 at 06:20:15PM +0200, David Gstir wrote:
-> DCP is capable of performing AES with two hardware-bound keys:
-> 
-> - The one-time programmable (OTP) key which is burnt via on-chip fuses
-> - The unique key (UK) which is derived from the OTP key
-> 
-> In addition to the two hardware-bound keys, DCP also supports
-> storing keys in 4 dedicated key slots within its secure memory area
-> (internal SRAM).
-> 
-> These keys are not stored in main memory and are therefore
-> not directly accessible by the operating system. To use them
-> for AES operations, a one-byte key reference has to supplied
-> with the DCP operation descriptor in the control register.
-> 
-> This adds support for using any of these 6 keys through the crypto API
-> via their key reference after they have been set up. The main purpose
-> is to add support for DCP-backed trusted keys. Other use cases are
-> possible too (see similar existing paes implementations), but these
-> should carefully be evaluated as e.g. enabling AF_ALG will give
-> userspace full access to use keys. In scenarios with untrustworthy
-> userspace, this will enable en-/decryption oracles.
-> 
-> Co-developed-by: Richard Weinberger <richard@nod.at>
-> Signed-off-by: Richard Weinberger <richard@nod.at>
-> Co-developed-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Signed-off-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Signed-off-by: David Gstir <david@sigma-star.at>
-> ---
->  drivers/crypto/mxs-dcp.c | 104 ++++++++++++++++++++++++++++++++++-----
->  include/soc/fsl/dcp.h    |  17 +++++++
->  2 files changed, 110 insertions(+), 11 deletions(-)
->  create mode 100644 include/soc/fsl/dcp.h
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
 
-Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new(), which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
+
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/net/wan/fsl_ucc_hdlc.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index fd50bb313b92..605e70f7baac 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -1259,7 +1259,7 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int ucc_hdlc_remove(struct platform_device *pdev)
++static void ucc_hdlc_remove(struct platform_device *pdev)
+ {
+ 	struct ucc_hdlc_private *priv = dev_get_drvdata(&pdev->dev);
+ 
+@@ -1277,8 +1277,6 @@ static int ucc_hdlc_remove(struct platform_device *pdev)
+ 	kfree(priv);
+ 
+ 	dev_info(&pdev->dev, "UCC based hdlc module removed\n");
+-
+-	return 0;
+ }
+ 
+ static const struct of_device_id fsl_ucc_hdlc_of_match[] = {
+@@ -1292,7 +1290,7 @@ MODULE_DEVICE_TABLE(of, fsl_ucc_hdlc_of_match);
+ 
+ static struct platform_driver ucc_hdlc_driver = {
+ 	.probe	= ucc_hdlc_probe,
+-	.remove	= ucc_hdlc_remove,
++	.remove_new = ucc_hdlc_remove,
+ 	.driver	= {
+ 		.name		= DRV_NAME,
+ 		.pm		= HDLC_PM_OPS,
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.42.0
+
