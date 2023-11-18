@@ -4,73 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 396A1C5AD4C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 15:52:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FEF3C5ACB3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 18:06:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=E5kIVMuH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MScRFB3b;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SXdZN5fQvz3cVJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Nov 2023 02:52:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SXhXn2wcNz3dJk
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Nov 2023 05:06:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=E5kIVMuH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MScRFB3b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b34; helo=mail-yb1-xb34.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb34.google.com (mail-yb1-xb34.google.com [IPv6:2607:f8b0:4864:20::b34])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=hkallweit1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SXdYP0twZz3bxZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Nov 2023 02:51:36 +1100 (AEDT)
-Received: by mail-yb1-xb34.google.com with SMTP id 3f1490d57ef6-dae7cc31151so2736135276.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2023 07:51:36 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SXhWk2ybpz3cJN
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Nov 2023 05:05:20 +1100 (AEDT)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-9d10f94f70bso399772466b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2023 10:05:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1700322694; x=1700927494; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1700330712; x=1700935512; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=2sgPttQUTNTuJ1Gv7B+hCylz5123eQWSPdiwCHEz6H8=;
-        b=E5kIVMuHQkQ2dGtZBRa58SiMUGIvoiifTu7xVGIIqNLoXJzJJ89Ru7sZb1eTJoS656
-         fB0yEVQX2rL3bf5r+O59LH9kwuWQ4MtZi4E/1JbGAJQE8PsmT1DDbXqa5Rya6fKi8ocC
-         K/xLCo1AcQIy23OC15eWDPSR3gOpZt3fbrnIyrB3d/fhRkbt2aBlcmcrfW1QBjgNzDi1
-         h0pD53wnLFSkcBdjmBhJHm6SCeF5cdot7WnwQMpoNtgT317dDopHXvQauRG1f2Y6APnL
-         PIypuzJfoikdeKjnOpAu4E/zQWin2e5ehKrxMzkDPmCuFfSWGtcPxYcFSZwHxjMNNv+/
-         DIqw==
+        bh=TvMhLdgxzmvHjkFyHLWsZZ7IOFCpPNkXdifeaawKQLI=;
+        b=MScRFB3biw2yf7Q+5QrxiK1UWa4LMcgC5q8ylMG9AA+y3F78arilOerCZxi+fDwk+X
+         fyOtxM42Sfrf31zO1ybhTZTUsbkWhW3X0EwUkUX2JQAs0U9Un/IoIMp8LtLgOAvQ/5M7
+         XIl1sWvejOPzvf8NOuacivP6Z0b0/5jBBxtJ4FIHhL9VMuS61FEYUHRqDKERWkD4Ro0f
+         L/orTPG7jlPfC49P3TvMQaEWfIJ+ZCvmcXcvy4QalpyliBDT+TAkLp6qjqJeImYbKBEM
+         fMVhzFPQIQLHI2nqJhPSCamYjvtOppstwpsFnVZMTXLHybbK3PAE+0ZUB0Q/90KLC2cJ
+         jijw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700322694; x=1700927494;
+        d=1e100.net; s=20230601; t=1700330712; x=1700935512;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2sgPttQUTNTuJ1Gv7B+hCylz5123eQWSPdiwCHEz6H8=;
-        b=LhkGZtLojiENyhQffrJOKX37orLekUcq/cQ/J7pR5fNQFMWJdDcSMnTcETZuqnCAXI
-         rtvGmXXwLAYK2VuTvEq7HVuPKMbzIxX2tKzSn4YI+J7PQe9gycxhImFyLCLc3zyN2TOh
-         FZcWlElzKs6zbQesJzvCQdbe9R9EqO9OQoyJomgxsKwsczSeH5IAOgPigUn8dJUnWbUR
-         U7LlR3vyqazPmhtZZhj961SNHEE0xMak4Pms+uoMIFZ8OpWDsFEkL9bVPD3m9x5B3Sf6
-         cwyBsj9k2bKngbMCsKn03fJrrQRiDqO7rkJeNRAiS+edtuVhspigQrQRau2htayM+4/o
-         4BOA==
-X-Gm-Message-State: AOJu0YyCtb6+UIHRnpA4EUqXIYrWKG8dJsOu/OVpMWfyXpPGIcuD3vM2
-	IoGLSJGAcboW7xesmoWxGEs=
-X-Google-Smtp-Source: AGHT+IH3c8eQ4c+uzbxwI+kH3hUCZgJt3MgED5/a9/Dtof5xSXMrcPkxFIL9d3IXLZ+C5ahKbRF/xw==
-X-Received: by 2002:a25:6d44:0:b0:da0:9735:b012 with SMTP id i65-20020a256d44000000b00da09735b012mr2056422ybc.11.1700322693911;
-        Sat, 18 Nov 2023 07:51:33 -0800 (PST)
-Received: from localhost ([2601:344:8301:57f0:48a9:bd4c:868d:dc97])
-        by smtp.gmail.com with ESMTPSA id u14-20020a05690201ce00b00d7b8a1074d4sm967654ybh.57.2023.11.18.07.51.32
+        bh=TvMhLdgxzmvHjkFyHLWsZZ7IOFCpPNkXdifeaawKQLI=;
+        b=D6g/EeFvLcsg9A1UGy8VhLLje+J5qdNXNMBonR5hk5u68TFlEV2BXUFyDk0V743vk1
+         dDH6UfF2pbtH5ELnrp62uhYjHCde921smu61FSgXpySeF+V29S5ePlppGB5y0Io6ZmzQ
+         rprBP/sRiVuJAxk4jRcu9HFuS1r7JkvsPqfPQsFCQHr2tDH58PS6dQRwKaVtNiktNk+8
+         OeRAuv5y+v8XbDb9LFlXXyn3NMKxWzinkCOSJLFWcORjNuQRxX/eNV5Z0oQciW1MTMso
+         ACZG2z5fZO4NyL2gu/W7e8JbKOCrd7KpW1veVwW5X+S0X8okSNWNVXeiRyY5++jikTyq
+         DXBg==
+X-Gm-Message-State: AOJu0Yxs4QGJKrzlfSSa817HrNyc9MzkodgNz1TxkYs6TMqRI8RLnhsV
+	nCenawmxj3Gc1OKdX0cXJx8=
+X-Google-Smtp-Source: AGHT+IGmY36vyE2njGaUXhkxvF2ffP5gHcb+uEcsV4u6HxS9Gv0SaqYqLLEs3KVtE4jvzvFYDygO7Q==
+X-Received: by 2002:a17:907:84d3:b0:9e3:ef19:7205 with SMTP id oh19-20020a17090784d300b009e3ef197205mr1849277ejc.3.1700330712142;
+        Sat, 18 Nov 2023 10:05:12 -0800 (PST)
+Received: from zotac.lan. (dynamic-2a01-0c22-77bf-8300-2223-08ff-fe18-0310.c22.pool.telefonica.de. [2a01:c22:77bf:8300:2223:8ff:fe18:310])
+        by smtp.gmail.com with ESMTPSA id m20-20020a1709062b9400b009f2c769b4ebsm2079456ejg.151.2023.11.18.10.05.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Nov 2023 07:51:33 -0800 (PST)
-From: Yury Norov <yury.norov@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Yury Norov <yury.norov@gmail.com>,
-	Colin Ian King <colin.i.king@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 16/34] powerpc: use atomic find_bit() API where appropriate
-Date: Sat, 18 Nov 2023 07:50:47 -0800
-Message-Id: <20231118155105.25678-17-yury.norov@gmail.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20231118155105.25678-1-yury.norov@gmail.com>
-References: <20231118155105.25678-1-yury.norov@gmail.com>
+        Sat, 18 Nov 2023 10:05:11 -0800 (PST)
+From: Heiner Kallweit <hkallweit1@gmail.com>
+To: Wolfram Sang <wsa@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 03/10] drivers/i2c/busses/i2c-pasemi-pci.c: Don't let i2c adapters declare I2C_CLASS_SPD support if they support I2C_CLASS_HWMON
+Date: Sat, 18 Nov 2023 19:04:57 +0100
+Message-ID: <20231118180504.1785-4-hkallweit1@gmail.com>
+X-Mailer: git-send-email 2.42.1
+In-Reply-To: <20231118180504.1785-1-hkallweit1@gmail.com>
+References: <20231118180504.1785-1-hkallweit1@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -84,146 +79,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Matthew Wilcox <willy@infradead.org>, Alexey Klimov <klimov.linux@gmail.com>, Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Maxim Kuvyrkov <maxim.kuvyrkov@linaro.org>
+Cc: Andi Shyti <andi.shyti@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix opencoded find_and_{set,clear}_bit() by using dedicated functions.
+After removal of the legacy eeprom driver the only remaining I2C
+client device driver supporting I2C_CLASS_SPD is jc42. Because this
+driver also supports I2C_CLASS_HWMON, adapters don't have to
+declare support for I2C_CLASS_SPD if they support I2C_CLASS_HWMON.
+It's one step towards getting rid of I2C_CLASS_SPD mid-term.
 
-Signed-off-by: Yury Norov <yury.norov@gmail.com>
+Series was created supported by Coccinelle and its splitpatch.
+
+Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+
 ---
- arch/powerpc/mm/book3s32/mmu_context.c     | 10 ++---
- arch/powerpc/platforms/pasemi/dma_lib.c    | 45 +++++-----------------
- arch/powerpc/platforms/powernv/pci-sriov.c | 12 ++----
- 3 files changed, 17 insertions(+), 50 deletions(-)
+ drivers/i2c/busses/i2c-pasemi-pci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/book3s32/mmu_context.c b/arch/powerpc/mm/book3s32/mmu_context.c
-index 1922f9a6b058..7db19f173c2e 100644
---- a/arch/powerpc/mm/book3s32/mmu_context.c
-+++ b/arch/powerpc/mm/book3s32/mmu_context.c
-@@ -50,13 +50,11 @@ static unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
+diff --git a/drivers/i2c/busses/i2c-pasemi-pci.c b/drivers/i2c/busses/i2c-pasemi-pci.c
+index cfc89e04e..77f90c743 100644
+--- a/drivers/i2c/busses/i2c-pasemi-pci.c
++++ b/drivers/i2c/busses/i2c-pasemi-pci.c
+@@ -56,7 +56,7 @@ static int pasemi_smb_pci_probe(struct pci_dev *dev,
+ 	if (!smbus->ioaddr)
+ 		return -EBUSY;
  
- unsigned long __init_new_context(void)
- {
--	unsigned long ctx = next_mmu_context;
-+	unsigned long ctx;
- 
--	while (test_and_set_bit(ctx, context_map)) {
--		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
--		if (ctx > LAST_CONTEXT)
--			ctx = 0;
--	}
-+	ctx = find_and_set_next_bit(context_map, LAST_CONTEXT + 1, next_mmu_context);
-+	if (ctx > LAST_CONTEXT)
-+		ctx = 0;
- 	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
- 
- 	return ctx;
-diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-index 1be1f18f6f09..906dabee0132 100644
---- a/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ b/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -118,14 +118,9 @@ static int pasemi_alloc_tx_chan(enum pasemi_dmachan_type type)
- 		limit = MAX_TXCH;
- 		break;
- 	}
--retry:
--	bit = find_next_bit(txch_free, MAX_TXCH, start);
--	if (bit >= limit)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, txch_free))
--		goto retry;
--
--	return bit;
-+
-+	bit = find_and_clear_next_bit(txch_free, MAX_TXCH, start);
-+	return bit < limit ? bit : -ENOSPC;
- }
- 
- static void pasemi_free_tx_chan(int chan)
-@@ -136,15 +131,9 @@ static void pasemi_free_tx_chan(int chan)
- 
- static int pasemi_alloc_rx_chan(void)
- {
--	int bit;
--retry:
--	bit = find_first_bit(rxch_free, MAX_RXCH);
--	if (bit >= MAX_TXCH)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, rxch_free))
--		goto retry;
--
--	return bit;
-+	int bit = find_and_clear_bit(rxch_free, MAX_RXCH);
-+
-+	return bit < MAX_TXCH ? bit : -ENOSPC;
- }
- 
- static void pasemi_free_rx_chan(int chan)
-@@ -374,16 +363,9 @@ EXPORT_SYMBOL(pasemi_dma_free_buf);
-  */
- int pasemi_dma_alloc_flag(void)
- {
--	int bit;
-+	int bit = find_and_clear_bit(flags_free, MAX_FLAGS);
- 
--retry:
--	bit = find_first_bit(flags_free, MAX_FLAGS);
--	if (bit >= MAX_FLAGS)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, flags_free))
--		goto retry;
--
--	return bit;
-+	return bit < MAX_FLAGS ? bit : -ENOSPC;
- }
- EXPORT_SYMBOL(pasemi_dma_alloc_flag);
- 
-@@ -439,16 +421,9 @@ EXPORT_SYMBOL(pasemi_dma_clear_flag);
-  */
- int pasemi_dma_alloc_fun(void)
- {
--	int bit;
--
--retry:
--	bit = find_first_bit(fun_free, MAX_FLAGS);
--	if (bit >= MAX_FLAGS)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, fun_free))
--		goto retry;
-+	int bit = find_and_clear_bit(fun_free, MAX_FLAGS);
- 
--	return bit;
-+	return bit < MAX_FLAGS ? bit : -ENOSPC;
- }
- EXPORT_SYMBOL(pasemi_dma_alloc_fun);
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-sriov.c b/arch/powerpc/platforms/powernv/pci-sriov.c
-index 59882da3e742..640e387e6d83 100644
---- a/arch/powerpc/platforms/powernv/pci-sriov.c
-+++ b/arch/powerpc/platforms/powernv/pci-sriov.c
-@@ -397,18 +397,12 @@ static int64_t pnv_ioda_map_m64_single(struct pnv_phb *phb,
- 
- static int pnv_pci_alloc_m64_bar(struct pnv_phb *phb, struct pnv_iov_data *iov)
- {
--	int win;
-+	int win = find_and_set_bit(&phb->ioda.m64_bar_alloc, phb->ioda.m64_bar_idx + 1);
- 
--	do {
--		win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
--				phb->ioda.m64_bar_idx + 1, 0);
--
--		if (win >= phb->ioda.m64_bar_idx + 1)
--			return -1;
--	} while (test_and_set_bit(win, &phb->ioda.m64_bar_alloc));
-+	if (win >= phb->ioda.m64_bar_idx + 1)
-+		return -1;
- 
- 	set_bit(win, iov->used_m64_bar_mask);
--
- 	return win;
- }
- 
--- 
-2.39.2
+-	smbus->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
++	smbus->adapter.class = I2C_CLASS_HWMON;
+ 	error = pasemi_i2c_common_probe(smbus);
+ 	if (error)
+ 		return error;
 
