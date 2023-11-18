@@ -4,85 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE28FC072A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Nov 2023 18:44:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7268C2BB3F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 03:40:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=OIMKEa72;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=noT+bkZz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SX5R12CYKz3dS8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 05:44:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SXKKn1T83z3cfn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 14:40:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=OIMKEa72;
+	dkim=pass (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=noT+bkZz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=embeddedor.com (client-ip=44.202.169.37; helo=omta038.useast.a.cloudfilter.net; envelope-from=gustavo@embeddedor.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 340 seconds by postgrey-1.37 at boromir; Sat, 18 Nov 2023 05:43:21 AEDT
-Received: from omta038.useast.a.cloudfilter.net (omta038.useast.a.cloudfilter.net [44.202.169.37])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ventanamicro.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=apatel@ventanamicro.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SX5Q174sFz3cPN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2023 05:43:21 +1100 (AEDT)
-Received: from eig-obgw-5004a.ext.cloudfilter.net ([10.0.29.221])
-	by cmsmtp with ESMTPS
-	id 438Tra7bYWcCI43hErAdEU; Fri, 17 Nov 2023 18:36:04 +0000
-Received: from gator4166.hostgator.com ([108.167.133.22])
-	by cmsmtp with ESMTPS
-	id 43hCrFWlK11XZ43hDrDvOp; Fri, 17 Nov 2023 18:36:03 +0000
-X-Authority-Analysis: v=2.4 cv=Z+v/oVdA c=1 sm=1 tr=0 ts=6557b293
- a=1YbLdUo/zbTtOZ3uB5T3HA==:117 a=WzbPXH4gqzPVN0x6HrNMNA==:17
- a=OWjo9vPv0XrRhIrVQ50Ab3nP57M=:19 a=dLZJa+xiwSxG16/P+YVxDGlgEgI=:19
- a=_mNlVl-r0hj7kTaC:21 a=IkcTkHD0fZMA:10 a=BNY50KLci1gA:10 a=wYkD_t78qR0A:10
- a=ye7ybKvv77Dy5FpuywAA:9 a=QEXdDO2ut3YA:10 a=N_l3Vs37sht3-TxgB6J7:22
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:Subject
-	:From:Cc:To:MIME-Version:Date:Message-ID:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=wyRvuZSscLa9d9ntE2mT20eFXy9zwRsiWA6t6CJn0xs=; b=OIMKEa72PqP7gP4lkLwYmUi4UC
-	HSNpj+iT+2bZhS2K76OodOwL7w6LdCOy+ANgbx0nuPsDfuH4WwcbWYOPcw+roscNNY+9kW1nwi8ib
-	k/r8EED8THY6Ogqn5EumD/xCgB3B/9wl3PTBg/ZDoJNwh4anXs9c01jD79BfBTLQZ3SY8IMSXQjbc
-	b6y71AfKoZe/BnuEqY7sqursBKPIYALJqYYnE2DjrXGydkSaDunUrdWayCNBrCLd7pQsWAo5GEcAL
-	GSRrSKK7K+cqFbdhixm6aRbXu3vkaEL57sEffsJxVpX8z2gjHzBDAQE4QcbaAFArFjJMfwA3mIVZ6
-	tCkCZ7ww==;
-Received: from 187-162-21-192.static.axtel.net ([187.162.21.192]:48062 helo=[192.168.15.10])
-	by gator4166.hostgator.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.96.2)
-	(envelope-from <gustavo@embeddedor.com>)
-	id 1r43hC-001jUU-1e;
-	Fri, 17 Nov 2023 12:36:02 -0600
-Message-ID: <6a8bf78c-aedb-4d5a-b0aa-82a51a17b884@embeddedor.com>
-Date: Fri, 17 Nov 2023 12:36:01 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SXKJm5c69z30gn
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2023 14:39:34 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-27ddc1b1652so2200846a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2023 19:39:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ventanamicro.com; s=google; t=1700278771; x=1700883571; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=2Xk65QbdRKZdLNSQh19GKuOPbc61/SWIMytvbu8dUYc=;
+        b=noT+bkZz9Uv/BqedNmezY/XMscGklvxNDs+ZvEeahGgbbWmuxA56i/gQvbWBTUeI+y
+         IgYsHyjvfoJkwHtb/BJ86YqRH3SxJqPf+4auyXEuqxFZPmy75KIZ4CHi7Rz7I9QIB0IM
+         8vtWHqJgMRGq39kv6kRkmpXua3Cysc8+MsrLqtB6At2xiQ/lStTeNs5LdQ23lazdnj4O
+         TeMNg/2LiLQ33NUYQjG/ublrXhl0Fa52o17CiKK5Py/NHyT5JZMSEQLX82Mi2N0bHo2n
+         bOlFoHavMHd//4hN8NG674aJvlUUYeuSnP2evQQNpL9syEqsPKFfjxSId8GxqxwQh+03
+         /ndg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700278771; x=1700883571;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=2Xk65QbdRKZdLNSQh19GKuOPbc61/SWIMytvbu8dUYc=;
+        b=hoSiEgq1DmNcHB1Kk+kH2mXTGseYYOJXwYQw+UJeAnlkeuxLH+gplinrFQS4MeiuVU
+         y+tW0qV32/s2YPAr3seLocjrSwSn2xQnmWdDzMMjiINUxgI3cla/DxjSa0YMRB3TClj+
+         6SZSynlfyakG+H+3/FtaqOSKhosba7dZzSQBW/LQbfxj2JZ0RYCBqOLt3H4fBA0HKmkm
+         +CoGkUyQNPVgL/j/1bXhmou+4vSOn6g8kD6mu7FtPWKLfl5vdpdYMy3JIXr0cp5eoERx
+         DmuffnebJvZ8OcVRNKcxhHUm53qi66tXJxuiifna6+UxOP5DiSw+lLW1w8oK45mcRQCR
+         09PA==
+X-Gm-Message-State: AOJu0YwKBksIvBwDVw2+sH6RDMkzA/mZ2eZOv3MLZkTkMCQVVRjgYrH5
+	Y3zgItaoYUejJhYBck4mrgNlMw==
+X-Google-Smtp-Source: AGHT+IEdivzV5yM9VLUbAmX/fPwvXT56J4szG18kUoyADgqsU5ZolAzZbNQxZHHnYCkaszm6OKc0Yw==
+X-Received: by 2002:a17:90b:4a49:b0:280:4ec6:97e9 with SMTP id lb9-20020a17090b4a4900b002804ec697e9mr1593141pjb.30.1700278770582;
+        Fri, 17 Nov 2023 19:39:30 -0800 (PST)
+Received: from anup-ubuntu-vm.localdomain ([171.76.80.108])
+        by smtp.gmail.com with ESMTPSA id cz8-20020a17090ad44800b00280fcbbe774sm2053823pjb.10.2023.11.17.19.39.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 17 Nov 2023 19:39:29 -0800 (PST)
+From: Anup Patel <apatel@ventanamicro.com>
+To: Palmer Dabbelt <palmer@dabbelt.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>
+Subject: [PATCH v4 0/5] RISC-V SBI debug console extension support
+Date: Sat, 18 Nov 2023 09:08:54 +0530
+Message-Id: <20231118033859.726692-1-apatel@ventanamicro.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: [RFC - is this a bug?] powerpc/lib/sstep: Asking for some light on
- this, please. :)
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - lists.ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 187.162.21.192
-X-Source-L: No
-X-Exim-ID: 1r43hC-001jUU-1e
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: 187-162-21-192.static.axtel.net ([192.168.15.10]) [187.162.21.192]:48062
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 1
-X-Org: HG=hgshared;ORG=hostgator;
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
-X-CMAE-Envelope: MS4xfAID/BokcwEgj7aTjJ9+BsV4xVxSIcKs9URfYGq7RnQwj2i318H9oH79b9LqB+IGZn58lW2E+LnjzR3OyjleUyYwUxEaTZBi4nXqIxYlodLFeL/t1NAZ
- BElAX1xfQ3z6xLlVA0UwH/Bx0BctL+KHBY+uwkUte40N8ai0NHp8g0/QNQ77uYRMJp0UACe+BD2pArEtqOHy/tTL1FgZFur97IijHIe538JUt4ehjhqv0R5x
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,127 +78,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Anup Patel <apatel@ventanamicro.com>, linux-kernel@vger.kernel.org, Conor Dooley <conor@kernel.org>, linux-serial@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Andrew Jones <ajones@ventanamicro.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+The SBI v2.0 specification is now frozen. The SBI v2.0 specification defines
+SBI debug console (DBCN) extension which replaces the legacy SBI v0.1
+functions sbi_console_putchar() and sbi_console_getchar().
+(Refer v2.0-rc5 at https://github.com/riscv-non-isa/riscv-sbi-doc/releases)
 
-I'm trying to fix the following -Wstringop-overflow warnings, and I'd like
-to get your feedback on this, please:
+This series adds support for SBI debug console (DBCN) extension in KVM RISC-V
+and Linux RISC-V.
 
-In function 'do_byte_reverse',
-     inlined from 'do_vec_store' at /home/gus/linux/arch/powerpc/lib/sstep.c:722:3,
-     inlined from 'emulate_loadstore' at /home/gus/linux/arch/powerpc/lib/sstep.c:3510:9:
-arch/powerpc/lib/sstep.c:287:23: error: writing 8 bytes into a region of size 0 [-Werror=stringop-overflow=]
-   287 |                 up[3] = tmp;
-       |                 ~~~~~~^~~~~
-arch/powerpc/lib/sstep.c: In function 'emulate_loadstore':
-arch/powerpc/lib/sstep.c:708:11: note: at offset [24, 39] into destination object 'u' of size 16
-   708 |         } u;
-       |           ^
-In function 'do_byte_reverse',
-     inlined from 'do_vec_store' at /home/gus/linux/arch/powerpc/lib/sstep.c:722:3,
-     inlined from 'emulate_loadstore' at /home/gus/linux/arch/powerpc/lib/sstep.c:3510:9:
-arch/powerpc/lib/sstep.c:289:23: error: writing 8 bytes into a region of size 0 [-Werror=stringop-overflow=]
-   289 |                 up[2] = byterev_8(up[1]);
-       |                 ~~~~~~^~~~~~~~~~~~~~~~~~
-arch/powerpc/lib/sstep.c: In function 'emulate_loadstore':
-arch/powerpc/lib/sstep.c:708:11: note: at offset 16 into destination object 'u' of size 16
-   708 |         } u;
-       |           ^
-In function 'do_byte_reverse',
-     inlined from 'do_vec_load' at /home/gus/linux/arch/powerpc/lib/sstep.c:691:3,
-     inlined from 'emulate_loadstore' at /home/gus/linux/arch/powerpc/lib/sstep.c:3439:9:
-arch/powerpc/lib/sstep.c:287:23: error: writing 8 bytes into a region of size 0 [-Werror=stringop-overflow=]
-   287 |                 up[3] = tmp;
-       |                 ~~~~~~^~~~~
-arch/powerpc/lib/sstep.c: In function 'emulate_loadstore':
-arch/powerpc/lib/sstep.c:681:11: note: at offset [24, 39] into destination object 'u' of size 16
-   681 |         } u = {};
-       |           ^
-arch/powerpc/lib/sstep.c:681:11: note: at offset [24, 39] into destination object 'u' of size 16
-arch/powerpc/lib/sstep.c:681:11: note: at offset [24, 39] into destination object 'u' of size 16
+To try these patches with KVM RISC-V, use KVMTOOL from riscv_sbi_dbcn_v1
+branch at: https://github.com/avpatel/kvmtool.git
 
-The origing of the issue seems to be the following calls to function `do_vec_store()`, when
-`size > 16`, or more precisely when `size == 32`
+These patches can also be found in the riscv_sbi_dbcn_v4 branch at:
+https://github.com/avpatel/linux.git
 
-arch/powerpc/lib/sstep.c:
-3436         case LOAD_VMX:
-3437                 if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
-3438                         return 0;
-3439                 err = do_vec_load(op->reg, ea, size, regs, cross_endian);
-3440                 break;
-...
-3507         case STORE_VMX:
-3508                 if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
-3509                         return 0;
-3510                 err = do_vec_store(op->reg, ea, size, regs, cross_endian);
-3511                 break;
+Changes since v3:
+ - Rebased on Linux-6.7-rc1
+ - Dropped PATCH1 to PATCH5 of v3 series since these were merged through
+   KVM RISC-V tree for Linux-6.7
+ - Used proper error code in PATCH1
+ - Added new PATCH2 which add common SBI debug console helper functions
+ - Updated PATCH3 and PATCH4 to use SBI debug console helper functions
 
-Inside `do_vec_store()`, we have that the size of `union u` is 16 bytes:
+Changes since v2:
+ - Rebased on Linux-6.6-rc5
+ - Handled page-crossing in PATCH7 of v2 series
+ - Addressed Drew's comment in PATCH3 of v2 series
+ - Added new PATCH5 to make get-reg-list test aware of SBI DBCN extension
 
-  702                                         int size, struct pt_regs *regs,
-  703                                         bool cross_endian)
-  704 {
-  705         union {
-  706                 __vector128 v;
-  707                 u8 b[sizeof(__vector128)];
-  708         } u;
+Changes since v1:
+ - Remove use of #ifdef from PATCH4 and PATCH5 of the v1 series
+ - Improved commit description of PATCH3 in v1 series
+ - Introduced new PATCH3 in this series to allow some SBI extensions
+   (such as SBI DBCN) do to disabled by default so that older KVM user space
+   work fine and newer KVM user space have to explicitly opt-in for emulating
+   SBI DBCN.
+ - Introduced new PATCH5 in this series which adds inline version of
+   sbi_console_getchar() and sbi_console_putchar() for the case where
+   CONFIG_RISCV_SBI_V01 is disabled.
 
-and then function `do_byte_reverse()` is called
+Anup Patel (4):
+  RISC-V: Add stubs for sbi_console_putchar/getchar()
+  RISC-V: Add SBI debug console helper routines
+  tty/serial: Add RISC-V SBI debug console based earlycon
+  RISC-V: Enable SBI based earlycon support
 
-  721         if (unlikely(cross_endian))
-  722                 do_byte_reverse(&u.b[ea & 0xf], size);
+Atish Patra (1):
+  tty: Add SBI debug console support to HVC SBI driver
 
-and if `size == 32`, the following piece of code tries to access
-`ptr` outside of its boundaries:
+ arch/riscv/configs/defconfig            |  1 +
+ arch/riscv/configs/rv32_defconfig       |  1 +
+ arch/riscv/include/asm/sbi.h            | 10 +++++
+ arch/riscv/kernel/sbi.c                 | 43 ++++++++++++++++++
+ drivers/tty/hvc/Kconfig                 |  2 +-
+ drivers/tty/hvc/hvc_riscv_sbi.c         | 59 ++++++++++++++++++++++---
+ drivers/tty/serial/Kconfig              |  2 +-
+ drivers/tty/serial/earlycon-riscv-sbi.c | 24 ++++++++--
+ 8 files changed, 129 insertions(+), 13 deletions(-)
 
-  260 static nokprobe_inline void do_byte_reverse(void *ptr, int nb)
-  261 {
-  262         switch (nb) {
-...
-  281         case 32: {
-  282                 unsigned long *up = (unsigned long *)ptr;
-  283                 unsigned long tmp;
-  284
-  285                 tmp = byterev_8(up[0]);
-  286                 up[0] = byterev_8(up[3]);
-  287                 up[3] = tmp;
-  288                 tmp = byterev_8(up[2]);
-  289                 up[2] = byterev_8(up[1]);
-  290                 up[1] = tmp;
-  291                 break;
-  292         }
+-- 
+2.34.1
 
-The following patch is merely a test to illustrate how the value in `size` initially appears
-to influence the warnings:
-
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index a4ab8625061a..86786957b736 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -3436,7 +3436,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
-         case LOAD_VMX:
-                 if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
-                         return 0;
--               err = do_vec_load(op->reg, ea, size, regs, cross_endian);
-+               err = do_vec_load(op->reg, ea, (size > 16) ? 16 : size, regs, cross_endian);
-                 break;
-  #endif
-  #ifdef CONFIG_VSX
-@@ -3507,7 +3507,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
-         case STORE_VMX:
-                 if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
-                         return 0;
--               err = do_vec_store(op->reg, ea, size, regs, cross_endian);
-+               err = do_vec_store(op->reg, ea, (size > 16) ? 16 : size, regs, cross_endian);
-                 break;
-  #endif
-  #ifdef CONFIG_VSX
-
-Is there something that I may be overlooking here? :)
-
-Thanks!
---
-Gustavo
