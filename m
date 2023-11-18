@@ -4,64 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D60BC2BB3F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 05:26:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4C71C2BB3F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 07:32:14 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o3fN7LP2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=H3Y7B1PB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SXMgZ3mnBz3w9K
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 16:26:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SXQT90fTKz3dK0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Nov 2023 18:32:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o3fN7LP2;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=H3Y7B1PB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--mmaurer.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3pihyzqckdcejj7robodlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SXMQT2J3Vz3cGJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2023 16:14:40 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 89768B82247;
-	Sat, 18 Nov 2023 05:14:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3515DC433CC;
-	Sat, 18 Nov 2023 05:14:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1700284470;
-	bh=NQt/79G32auBlNo/DL9TBUgl/9nP6QKeKwtcZtJgOa8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=o3fN7LP2MzYS5XrzZLzykIJpk1ciQo7ttMwCzQWG1JWWx2tgSpnekzpi8mLTjueHz
-	 qQRS9pLsneESJ/QLI7bNVCjj4oHLkQZz79TznBTy0bXK2nUFnSNvx++qSKbkyOuMIt
-	 283UeLiEtWASR+eKi9VSQFJ8Sod1D0wSaXXOZXVc8E6fqkbZwI5MrzHXYwWKA1dCT4
-	 7qjfJ89zCyIhHok3BFlxIbQNy1wDEuLsDOPVR5Bv/0DZ/eNqz6PV2ppU01ZPCf0y5P
-	 JNvE3RJxKl1eiYxhFSCKwY5nxoVLMbbdoESqFfHNT+84TjurIpuewsUgTaBXIxIWW6
-	 GxIgFXADcrqxg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24518C5AE4A;
-	Sat, 18 Nov 2023 05:14:30 +0000 (UTC)
-From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Fri, 17 Nov 2023 23:14:22 -0600
-Subject: [PATCH v4 04/13] powerpc/rtas: Factor out function descriptor
- lookup
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id:  <20231117-papr-sys_rtas-vs-lockdown-v4-4-b794d8cb8502@linux.ibm.com>
-References:  <20231117-papr-sys_rtas-vs-lockdown-v4-0-b794d8cb8502@linux.ibm.com>
-In-Reply-To:  <20231117-papr-sys_rtas-vs-lockdown-v4-0-b794d8cb8502@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1700284468; l=2119;
- i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=TOsUuive8ZDuMn3c0pP1+3FEVlK9o1TubebHmOMML3o=;
- b=zqlcoBdc9ZuM5GyIUAIWeB+L+P280dA3eNOArlopnW0cZ849RgyNyAfJQmgZuc5n1rA2yt8wr
- bqdRigAIEUQBUKp8b0WibrM57+lkVsM4eG9dai7PDoF0VISP6CQ87Wu
-X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
- pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
-X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
-X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SXJP33dDgz3c8c
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2023 13:58:14 +1100 (AEDT)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-daee86e2d70so3209870276.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2023 18:58:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1700276286; x=1700881086; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=QcqINJQ5diQHGOPsun01LVrGFl32Nw5/hV5eaRRLRg8=;
+        b=H3Y7B1PBdS6uEq0szgubBlDB9UEGvNABEMh/jvMrdea3sYSKbdrSDJU5j/qYwJDb2H
+         aELa0+li8a9mGQgVDzWtOv6/u0M2im0STe9l0xF05B3cBr0BnYMm3sil085R+9OUn6Qc
+         ME56j2YGwRHlq8TgVNIM3EpdyqnP8QoLg0/ywZ+2tdCVs6XBAcOQDF/bef3jwvxij4Hu
+         8VPVvOwfn1ziSqcNuvAZwzh7TAI0hcUsz6dbErX+SjWzIKgRR2WEkbXxpPyCmlsJrng5
+         IV3rGRTRLWWTqrUl/41Ve6K6MTTaTtPOHZhBhhuivmCmRBygt5o7X7RDph+Y3/BXRz+3
+         pabw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700276286; x=1700881086;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=QcqINJQ5diQHGOPsun01LVrGFl32Nw5/hV5eaRRLRg8=;
+        b=TwQDKt7lDAnZa16yyvibgd/65tVqdzRlCOiYPvkmqmUome6UTUrbJAd6GEkKHTJWk2
+         8NL9pMc+DxzBH4NkKJgQX8Clfl1B1J52Q7wPRTHYx1jDUTw6041P4L4RNpe2CGuoY3Q8
+         dTm4evu8EV2W27YvTOjCveqKkjsrmRhbRpSX141fDj1dh3/QAQz2HhHtoGd5VQtnS+c7
+         CQSuLhEmmgDtvtVNZjPQ+LYGrBUspmUMXWslybhv95V6AmvFP9oRm8tFSXFpvlNN23Io
+         8MK/yPYRnUf0CU4uDkZGpV5kINLLZGt6Dc6NKBbISpde5MK9PWkDdM9KXESktO81yTd8
+         5Tug==
+X-Gm-Message-State: AOJu0Yw7vDSr/eNIEzGJAenZjazzg30Lp4qCSB/72HzIAhtSMsNoQUGP
+	wOWMKXApO11SESn5/hnzDfoM1mETeMo1
+X-Google-Smtp-Source: AGHT+IEipLfYfNhkIRCz9BLTKi/Q07W5+qhbxpM56Qf4WuGm87G6Dh+mgTSQvuA9zn4iAz2ODTBXSWhTbmQj
+X-Received: from anyblade.c.googlers.com ([fda3:e722:ac3:cc00:20:ed76:c0a8:1791])
+ (user=mmaurer job=sendgmr) by 2002:a25:abe3:0:b0:d9c:c9a8:8c27 with SMTP id
+ v90-20020a25abe3000000b00d9cc9a88c27mr27045ybi.13.1700276286411; Fri, 17 Nov
+ 2023 18:58:06 -0800 (PST)
+Date: Sat, 18 Nov 2023 02:54:41 +0000
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.43.0.rc0.421.g78406f8d94-goog
+Message-ID: <20231118025748.2778044-1-mmaurer@google.com>
+Subject: [PATCH v2 0/5] MODVERSIONS + RUST Redux
+From: Matthew Maurer <mmaurer@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	Luis Chamberlain <mcgrof@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Sat, 18 Nov 2023 18:31:25 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,76 +75,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: nathanl@linux.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, tyreld@linux.ibm.com, =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org, gcwilson@linux.ibm.com
+Cc: Nicolas Schier <nicolas@fjasle.eu>, rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, Matthew Maurer <mmaurer@google.com>, Nathan Chancellor <nathan@kernel.org>, Laura Abbott <laura@labbott.name>, linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+The goal of this patch series is to allow MODVERSIONS and RUST to be
+enabled simultaneously. The primary issue with doing this at the moment
+is that Rust uses some extremely long symbol names - for those
+unfamiliar with Rust, it may be helpful to think of some of the mangled
+C++ names you may have seen in binaries in the past.
 
-Move the function descriptor table lookup out of rtas_function_token()
-into a separate routine for use in new code to follow. No functional
-change.
+Previously, Gary Guo attempted to accomplish this by modifying the
+existing modversion format [1] to support variable-length symbol names.
+This was unfortunately considered to be a potential userspace break
+because kmod tools inspect this kernel module metadata. Masahiro Yamada
+suggested [2] that this could instead be done with a section per-field.
+This gives us the ability to be more flexible with this format in the
+future, as a new field or additional information will be in a new
+section which userspace tools will not yet attempt to read.
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/kernel/rtas.c | 31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+In the previous version of this patchset, Luis Chamberlain suggested [3]
+I move validation out of the version checking and into the elf validity
+checker, and also add kernel-docs over there. I found
+elf_validity_cached_copy to be fairly dense and difficult to directly
+describe, so I refactored it into easier to explain pieces. In the
+process, I found a few missing checks and added those as well. See
+[PATCH 2/5] for more details. If this is too much, I'm more than happy
+to drop this patch from the series in favor of just adding the
+kernel-doc to the original code, but figured I'd offer it up in case the
+added clarity and checks were valuable.
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index f0051881348a..1fc0b3fffdd1 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -469,29 +469,36 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- static DEFINE_RAW_SPINLOCK(rtas_lock);
- static struct rtas_args rtas_args;
- 
--/**
-- * rtas_function_token() - RTAS function token lookup.
-- * @handle: Function handle, e.g. RTAS_FN_EVENT_SCAN.
-- *
-- * Context: Any context.
-- * Return: the token value for the function if implemented by this platform,
-- *         otherwise RTAS_UNKNOWN_SERVICE.
-- */
--s32 rtas_function_token(const rtas_fn_handle_t handle)
-+static struct rtas_function *rtas_function_lookup(const rtas_fn_handle_t handle)
- {
- 	const size_t index = handle.index;
- 	const bool out_of_bounds = index >= ARRAY_SIZE(rtas_function_table);
- 
- 	if (WARN_ONCE(out_of_bounds, "invalid function index %zu", index))
--		return RTAS_UNKNOWN_SERVICE;
-+		return NULL;
- 	/*
- 	 * Various drivers attempt token lookups on non-RTAS
- 	 * platforms.
- 	 */
- 	if (!rtas.dev)
--		return RTAS_UNKNOWN_SERVICE;
-+		return NULL;
-+
-+	return &rtas_function_table[index];
-+}
-+
-+/**
-+ * rtas_function_token() - RTAS function token lookup.
-+ * @handle: Function handle, e.g. RTAS_FN_EVENT_SCAN.
-+ *
-+ * Context: Any context.
-+ * Return: the token value for the function if implemented by this platform,
-+ *         otherwise RTAS_UNKNOWN_SERVICE.
-+ */
-+s32 rtas_function_token(const rtas_fn_handle_t handle)
-+{
-+	const struct rtas_function *func = rtas_function_lookup(handle);
- 
--	return rtas_function_table[index].token;
-+	return func ? func->token : RTAS_UNKNOWN_SERVICE;
- }
- EXPORT_SYMBOL_GPL(rtas_function_token);
- 
+[1] https://lore.kernel.org/lkml/20230111161155.1349375-1-gary@garyguo.net/
+[2] https://lore.kernel.org/lkml/CAK7LNATsuszFR7JB5ZkqVS1W=hWr9=E7bTf+MvgJ+NXT3aZNwg@mail.gmail.com/
+[3] https://lore.kernel.org/lkml/ZVZNh%2FPA5HiVRkeb@bombadil.infradead.org/
+
+Matthew Maurer (5):
+  export_report: Rehabilitate script
+  modules: Refactor + kdoc elf_validity_cached_copy
+  modpost: Extended modversion support
+  rust: Allow MODVERSIONS
+  export_report: Use new version info format
+
+ arch/powerpc/kernel/module_64.c |  25 +-
+ init/Kconfig                    |   1 -
+ kernel/module/internal.h        |  18 +-
+ kernel/module/main.c            | 663 +++++++++++++++++++++++++-------
+ kernel/module/version.c         |  43 +++
+ scripts/export_report.pl        |  17 +-
+ scripts/mod/modpost.c           |  37 +-
+ 7 files changed, 642 insertions(+), 162 deletions(-)
 
 -- 
-2.41.0
+2.43.0.rc0.421.g78406f8d94-goog
 
