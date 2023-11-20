@@ -4,53 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 725F5C2BB3F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 13:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94DDBC2BB3F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 23:41:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Adn5+nCR;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=CIg7RqXV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SYpLk3mCVz3cb4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 00:31:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZ3tp1fMqz3dJn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 10:41:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Adn5+nCR;
+	dkim=pass (2048-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=CIg7RqXV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cloudflare.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ignat@cloudflare.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SYpKk2y79z3c5H
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 00:30:34 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 470B3B81117;
-	Mon, 20 Nov 2023 13:30:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BD7EC433C8;
-	Mon, 20 Nov 2023 13:30:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1700487020;
-	bh=PHdu57Wzp+xZqOVNY9Pteh5+H3/OUfTVYEQwZtnjgaI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Adn5+nCRh7+2esCt06PpWOJ6Q7Sf9wGWzyL8OZ3xQ4KTuGsVYCl41uUSDvoZM1Qgh
-	 xYH9OzH46SDNykHqua+lZM2VDAFNJNwAhIazL4+HhuPw4y+ePFT4d4rp8a2u9mWmRp
-	 PnCbz5w1ll14XS8VhdWdJuOuFS0/ORhBUxPN9LZrU5nM5XwUgSrSc4kXfWDjHIHbGB
-	 JT3utmOA0eqk2DInnearZCiHRLiXuzkgmY4JBzfMGPTQF/bM9Mo53CgDyCMs/E4vK7
-	 vEYpztDFwP8Cf9bC1VZuImptYoTJCr3dqt3i1A+skz+dJKGH7DjDkXQ+BECL8kWBh6
-	 +vMaV+mcY9SLg==
-Date: Mon, 20 Nov 2023 13:30:08 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH v9 00/27] Add support for QMC HDLC, framer infrastructure
- and PEF2256 framer
-Message-ID: <573c9ca1-a560-4f7a-ba21-80673a2e162e@sirena.org.uk>
-References: <20231115144007.478111-1-herve.codina@bootlin.com>
- <20231117164746.0589e955@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZ2pr6NT0z3bdG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 09:53:08 +1100 (AEDT)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-5bdf5a025c1so3170405a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2023 14:53:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=cloudflare.com; s=google09082023; t=1700520783; x=1701125583; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=jj/vQll/FXoy8ynJ7Qc2odNrUXWiiF64P1hSHAKTnLo=;
+        b=CIg7RqXVuFz1+ylSBTdDewpUGnPrhwOTJkEwMkdxmCaizSNvG6UgdeqYKKXU/17lCP
+         BkR421CdhpBLkK9PJxNWGngPhRhB5tNPh0DGkN9CsvbcYgAK8pra78OcQsm/Y802Usqo
+         NLyXBsoaDf0WTFSnq1fu1tR+QwH6iZMFr4VYpOBHeNCswpI2Yt4x5Vi1CkSs+8oUbdMn
+         KbYPxQ5WncAbuBNLGmsDzvUVmBXWdBz2a/IZoiMNJgR44Au8PEFwzSD0esOZtRt0JA/+
+         EFGHCrN0hJde7NTMoW+2ZgfVFEEE8fgItXS7fKVJFl/i0GZOp/sgYPRbsnC7rZQ1Ds+6
+         C4Xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700520783; x=1701125583;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=jj/vQll/FXoy8ynJ7Qc2odNrUXWiiF64P1hSHAKTnLo=;
+        b=XDrjsNreWmWlwhux3NBZCNLDVWdOrjWtlC0Tr2qY65TS7sYbFmm+b25Ka1TdISxB/X
+         zVK+xu6xwKmTpnpBhrunOv8h+vBnBfkm/vPrszk2Y6bbHa3WPMAaPAWzDb7Ok2E+4xI6
+         RYFIpxtyESBFocB0U+/P/2rqbZcdngyVkP/L2dYI4D1e7MxTerfS+ho8paT1BurkOf8V
+         Q0OX91LeWFF7rQXSomaaPewBtN3d3zShBZ99dfcbQ0Hgog/K9YDYpQ3uV96DaMxIKw1O
+         ul6rtYlqKhnW7jOS2MeJqp9wp1ArC1i+I/5Hhs81CLcihNvXHECWZ+st0XLYmivGWDsm
+         UtKQ==
+X-Gm-Message-State: AOJu0Yzm5wiJkaESi92q1Bof8+3cUlUEsxZ3YVR69C5nYVZgfnOsWJZz
+	wLUMggGIW6+wbPeyk/rzBdqCbLkosff69LvM3Q6Emg==
+X-Google-Smtp-Source: AGHT+IFZPPhV0R/g5zHGb3q3Uo9IH7rXXP80OMq0eithxekw9SzGz9ATfztUful4gMY68aa6sJe0kX0Yn689XQCOKAw=
+X-Received: by 2002:a17:90b:1a89:b0:27d:2364:44f6 with SMTP id
+ ng9-20020a17090b1a8900b0027d236444f6mr7022804pjb.6.1700520783377; Mon, 20 Nov
+ 2023 14:53:03 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="HuVabfiR1A06kEJd"
-Content-Disposition: inline
-In-Reply-To: <20231117164746.0589e955@kernel.org>
-X-Cookie: <Manoj> I *like* the chicken
+From: Ignat Korchagin <ignat@cloudflare.com>
+Date: Mon, 20 Nov 2023 22:52:52 +0000
+Message-ID: <CALrw=nHpRQQaQTP_jZfREgrQEMpS8jBF8JQCv4ygqXycE-StaA@mail.gmail.com>
+Subject: Potential config regression after 89cde455 ("kexec: consolidate kexec
+ and crash options into kernel/Kconfig.kexec")
+To: eric.devolder@oracle.com
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Tue, 21 Nov 2023 10:40:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,46 +72,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Herve Codina <herve.codina@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Simon Horman <horms@kernel.o
- rg>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James Bottomley <James.Bottomley@hansenpartnership.com>, dalias@libc.org, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, rmk+kernel@armlinux.org.uk, paulmck@kernel.org, ysato@users.sourceforge.jp, kernel-team <kernel-team@cloudflare.com>, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, Ingo Molnar <mingo@redhat.com>, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, Ard Biesheuvel <ardb@kernel.org>, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, keescook@chromium.org, go
+ r@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, Thomas Gleixner <tglx@linutronix.de>, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, bhe@redhat.com, linux-parisc@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel <linux-kernel@vger.kernel.org>, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Good day!
 
---HuVabfiR1A06kEJd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We have recently started to evaluate Linux 6.6 and noticed that we
+cannot disable CONFIG_KEXEC anymore, but keep CONFIG_CRASH_DUMP
+enabled. It seems to be related to commit 89cde455 ("kexec:
+consolidate kexec and crash options into kernel/Kconfig.kexec"), where
+a CONFIG_KEXEC dependency was added to CONFIG_CRASH_DUMP.
 
-On Fri, Nov 17, 2023 at 04:47:46PM -0800, Jakub Kicinski wrote:
-> On Wed, 15 Nov 2023 15:39:36 +0100 Herve Codina wrote:
-> >    - Removed Patches 6, 7 and 8 (patches applied)
-> >=20
-> >    - Patches 7, 20, 21, 23 (patches 10, 23, 24, 26 in v8)
-> >      Add 'Acked-by: Jakub Kicinski <kuba@kernel.org>'
+In our current kernel (Linux 6.1) we only enable CONFIG_KEXEC_FILE
+with enforced signature check to support the kernel crash dumping
+functionality and would like to keep CONFIG_KEXEC disabled for
+security reasons [1].
 
-> I thought someone (Mark?) asked for the networking stuff to be put=20
-> on a branch. If that's still the preference - is it possible to factor
-> these out as a standalone series, too?  Will they build on their own?
+I was reading the long commit message, but the reason for adding
+CONFIG_KEXEC as a dependency for CONFIG_CRASH_DUMP evaded me. And I
+believe from the implementation perspective CONFIG_KEXEC_FILE should
+suffice here (as we successfully used it for crashdumps on Linux 6.1).
 
-Yes, can we *please* at least get the generic non-driver bits of this
-series moving - they seem uncontroversial as far as I can see and are a
-tiny portion of the overall 20 patches.  Patches 21-23 look like they
-can go on a branch in the net tree?
+Is there a reason for adding this dependency or is it just an
+oversight? Would some solution of requiring either CONFIG_KEXEC or
+CONFIG_KEXEC_FILE work here?
 
---HuVabfiR1A06kEJd
-Content-Type: application/pgp-signature; name="signature.asc"
+Ignat
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmVbX18ACgkQJNaLcl1U
-h9BhUQf/Y8e+dECLekhRMQLy8O0p4YRvMtVtYbyazFL0PEJyvuI93CnL/nqRzW/7
-x6zzsmJn2uab1/SmDbu8m5yE2PQDQs448v2ZAIcvu9SOQoH9ph+y/Li1dsCx0MQS
-b+VU0vl6YJcBmn8ycRkgBldpLgOoc6HU2tss4FQBAlR2R0Aw6KG97Smd+Py70Yyg
-ewedo+nXh+OkOHdJiG3Fbcbw6GwLEoQB+jj2MFy4QA3VilnEu+NBvRxIoegctggc
-mPB4GWRQNg9fb57iy6IqsME7oUq1hUb4SJ55O7s88qko3hFJ4ediuncLVP25kbl/
-HNP87K6I1Mebqh5LHTcVOvfo8zM/BQ==
-=n/vU
------END PGP SIGNATURE-----
-
---HuVabfiR1A06kEJd--
+[1]: https://mjg59.dreamwidth.org/28746.html
