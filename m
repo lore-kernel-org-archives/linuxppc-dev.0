@@ -4,53 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3275C2BB3F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 22:08:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 353F3C2BB3F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 23:25:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iU6FAGtP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H8jniV24;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZ1q32grCz3ckk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 09:08:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZ3WZ5nxdz3d8R
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 10:24:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iU6FAGtP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H8jniV24;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZ1p70npkz2xX4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 09:07:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZ3Vg0m8Xz2xdg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 10:24:11 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 349C6CE17B5;
-	Mon, 20 Nov 2023 22:07:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C49FBC433C7;
-	Mon, 20 Nov 2023 22:07:18 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTP id 10D6BB81C11;
+	Mon, 20 Nov 2023 23:24:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F25B3C433C8;
+	Mon, 20 Nov 2023 23:24:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1700518042;
-	bh=VgevGQRE0DkW5gNXBJLRH1C9nvApnpFXwehmDOXU/q8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=iU6FAGtPzvf4n9aM9W0QY4oudQh44SjSKBAI7GZnP37lx9b4Ur3Mj65H4PbTVlJe1
-	 K830TcCwVhF4na4SXXAjtuai+L+A4G0Z1VWcmlq7Rf5al1z2bgJiwIVL70UoAy60JP
-	 woqqwzLVJtmflPxfvt8pEjG9+CU6dhobQk6kSlU/BwIslM2g2r0yTlNK+lMPACTjuE
-	 SMPQGHtftu7E7I7YS2d/topBuO0JD4U+ptQ0vcLMCJUPTkZd4ECtI99oWD5qN1mrOF
-	 Em6PZDSrO8QmYMfZ0HBjZs5I19UKiw24kyVI9YIuY/WfdXmp8xYZmKtlBXOW1J85vA
-	 e4Go+Gv3eNASg==
-Date: Mon, 20 Nov 2023 22:07:15 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Chancel Liu <chancel.liu@nxp.com>
-Subject: Re: [PATCH v4 2/2] ASoC: imx-rpmsg: Force codec power on in low
- power audio mode
-Message-ID: <edd348ea-ef95-453a-9838-636769ab569f@sirena.org.uk>
-References: <20231023020718.1276000-1-chancel.liu@nxp.com>
- <20231023020718.1276000-2-chancel.liu@nxp.com>
+	s=k20201202; t=1700522644;
+	bh=67KEhLI0mEivJdbrkeCl+vFBBtgFo5YzYmUACDBON68=;
+	h=From:To:Cc:Subject:Date:From;
+	b=H8jniV24tZu68db9VGGm2q1zQTL4/mK90DWnFoovUtdjLOvX2sQaRAW9tq1BGVaOj
+	 7qX3z2eK3d6lvNNIKtJbLJ2Iw6euVJSNcBNlnv+gaQPgDbbDNXtCt6jA+iyW4IO6VF
+	 7m73afQT36H+vXmRCSH6nm2IjaNzTcC3ZhCVDkOaspknxf90tcCYnday6+8h5BfdBt
+	 wAl5D26oA/ehLsMMoHU5dV8CgCujZme+ru+sGtfkmjw6neS289tR8vbajgFjncYRxV
+	 JeGody4kjKgtnTgAbfwsz//Tmoq8zfFqKBbk7I1ak4r57jtbn+mag/3++tZF5bz1dT
+	 qAH0aq2JpD5mw==
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: add crtsavres.o to always-y instead of extra-y
+Date: Tue, 21 Nov 2023 08:23:32 +0900
+Message-Id: <20231120232332.4100288-1-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ys7+XtCcLmb6Czww"
-Content-Disposition: inline
-In-Reply-To: <20231023020718.1276000-2-chancel.liu@nxp.com>
-X-Cookie: The meek don't want it.
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,63 +59,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, conor+dt@kernel.org, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de, alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com, festevam@gmail.com, s.hauer@pengutronix.de, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, krzysztof.kozlowski+dt@linaro.org, shawnguo@kernel.org, shengjiu.wang@gmail.com, linux-kernel@vger.kernel.org
+Cc: Tom Rix <trix@redhat.com>, Masahiro Yamada <masahiroy@kernel.org>, llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+crtsavres.o is linked to modules. However, as explained in commit
+d0e628cd817f ("kbuild: doc: clarify the difference between extra-y
+and always-y"), 'make modules' does not build extra-y.
 
---ys7+XtCcLmb6Czww
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For example, the following command fails:
 
-On Mon, Oct 23, 2023 at 10:07:18AM +0800, Chancel Liu wrote:
-> Low power audio mode requires binding codec still power on while Acore
-> enters into suspend so Mcore can continue playback music.
->=20
-> ASoC machine driver acquires DAPM endpoints through reading
-> "ignore-suspend-widgets" property from DT and then forces the path
-> between these endpoints ignoring suspend.
+  $ make ARCH=powerpc LLVM=1 KBUILD_MODPOST_WARN=1 mrproper ps3_defconfig modules
+    [snip]
+    LD [M]  arch/powerpc/platforms/cell/spufs/spufs.ko
+  ld.lld: error: cannot open arch/powerpc/lib/crtsavres.o: No such file or directory
+  make[3]: *** [scripts/Makefile.modfinal:56: arch/powerpc/platforms/cell/spufs/spufs.ko] Error 1
+  make[2]: *** [Makefile:1844: modules] Error 2
+  make[1]: *** [/home/masahiro/workspace/linux-kbuild/Makefile:350: __build_one_by_one] Error 2
+  make: *** [Makefile:234: __sub-make] Error 2
 
-This breaks an x86 allmodconfig build:
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
 
-/build/stage/linux/sound/soc/fsl/imx-rpmsg.c: In function =E2=80=98imx_rpms=
-g_late_probe=E2=80=99
-:
-/build/stage/linux/sound/soc/fsl/imx-rpmsg.c:60:46: error: implicit declara=
-tion=20
-of function =E2=80=98of_find_device_by_node=E2=80=99; did you mean =E2=80=
-=98of_find_i2c_device_by_node=E2=80=99?
- [-Werror=3Dimplicit-function-declaration]
-   60 |                                 codec_pdev =3D of_find_device_by_no=
-de(code
-c_np);
-      |                                              ^~~~~~~~~~~~~~~~~~~~~~
-      |                                              of_find_i2c_device_by_=
-node
-/build/stage/linux/sound/soc/fsl/imx-rpmsg.c:60:44: error: assignment to =
-=E2=80=98struct
- platform_device *=E2=80=99 from =E2=80=98int=E2=80=99 makes pointer from i=
-nteger without a cast [-Werro
-r=3Dint-conversion]
-   60 |                                 codec_pdev =3D of_find_device_by_no=
-de(codec_np);
-      |                                            ^
-cc1: all warnings being treated as errors
+ arch/powerpc/lib/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---ys7+XtCcLmb6Czww
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 51ad0397c17a..6eac63e79a89 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -45,7 +45,7 @@ obj-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
+ # so it is only needed for modules, and only for older linkers which
+ # do not support --save-restore-funcs
+ ifndef CONFIG_LD_IS_BFD
+-extra-$(CONFIG_PPC64)	+= crtsavres.o
++always-$(CONFIG_PPC64)	+= crtsavres.o
+ endif
+ 
+ obj-$(CONFIG_PPC_BOOK3S_64) += copyuser_power7.o copypage_power7.o \
+-- 
+2.40.1
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmVb2JIACgkQJNaLcl1U
-h9D5Ygf/Ur0x116afGwToupSLPOlWheujkRjuYUrg95VQwQ3SkvnrgRzVCJ+GIst
-9GzXEnzHorx+Vw4NzSNtzA5TF94TOOf+9GuRz5LQrl5hUJFhOnF0lz+0FGrXbXNE
-yTD3a0tuYY7uSXyxFAZEszj3kHhUFZYg9SMAsJXVkpzej8rP7PiiJ2CyjnrkX0hY
-lt6a8UmWNeNDaxS/8PMAXsraltapBbMjgxKYUCrbRXG8eRwZuKM1FBUyTkk5rER3
-81ZfNxk2+8f5PDf9pX7mmjQXnPjDmumPU5HWn4Oz0cfEXeUG8xopxm50UwxLvhBk
-Jj4TQkMAEWCmlRaVVi8MKepQqzhNig==
-=sif7
------END PGP SIGNATURE-----
-
---ys7+XtCcLmb6Czww--
