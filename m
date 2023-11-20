@@ -4,70 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 637E9C197A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 12:33:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BC8EC2BB3F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 14:10:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=QihSDLnn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r45lYZBB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SYn4M0p3Tz3vjQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Nov 2023 23:33:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SYqCh5d8jz3cV9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 01:10:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=QihSDLnn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r45lYZBB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SYmzd2Y4Bz3cWH
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2023 23:29:49 +1100 (AEDT)
-Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-5bcfc508d14so3411715a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2023 04:29:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1700483387; x=1701088187; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=rgx8LkV8H82w8tImzphDtH1iEDRz4SAPPUMfGtDicEM=;
-        b=QihSDLnndnVX69Sj/yVSHKeVBc4RBnjAV6zvFqpsfdL7CJ0WdbgFlNyyjxlitA11Sv
-         YWJAn/SaGLSuBBa6y4tGbR8TsCY3VZobxrNWKljeeiUYhYQ1CzGc7dnoTQoiZc+CrDAC
-         nh95cAmxFr5EYFH3NSPBPtAfFe2Q+AvQ7j7ymzH2ZToEmyz0rWA46diYRyecHbqtqRFU
-         p29jGI9xcpwwCV5nqHT39lt9/1WdYJAiytn79aByQn5SQOkMifQ/3mWes/CqeqJwEnZQ
-         CDftB2BUHh/dBEQjvrTtaC3jaDDmJR8bfqFzTBwx+IGEee3ODuAMEzeaUIizAFjVUe1C
-         X/uQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700483387; x=1701088187;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=rgx8LkV8H82w8tImzphDtH1iEDRz4SAPPUMfGtDicEM=;
-        b=KArl+L2hQyMq1iFKerjilUAg+OEtUjxuzYvb659Echlw1tiR9XmflbA+PKQnfAKVlj
-         +3W0VypvWa+3dmyV8BUfIxcQLWI5kH4tpoDbtzCmlThv3A84xXEL3mwUfNiE8hTiTSBD
-         QsZFQLFzDSeWEXoQVkSoWJJRqGe9m5eUYMTCjJxDRrIu5Qhif+VS+UAkKG9C3CwRRhNO
-         aoflNX1WWNJXXadj0hJFv1nmgN0YUmJCTOBwp2c+0Z33BcI+U6yF4Lu3oMxbljWp1iDS
-         zxqh0j+7gqQI1ehI5o3j+E09S7xVzT8ooE2uACt8eprw6ntV0EH8+Yz6czwTyUl3HpaE
-         8pLA==
-X-Gm-Message-State: AOJu0YxbaNCP7KWDGA2Fo1YyzvcN2Fqyfz8WQ+DFLflnBDMthYipRwja
-	ePDdgU/tbCA7URlzp9Bw84E=
-X-Google-Smtp-Source: AGHT+IEibB6+6VzrAmexQ6L9y13uR22ZWYNVN8FC5GZHCDTfmSbEJdroHwYxybkyfCXhWzRBWtMSrQ==
-X-Received: by 2002:a05:6a20:8f27:b0:186:8dc1:f4a with SMTP id b39-20020a056a208f2700b001868dc10f4amr9984281pzk.0.1700483386805;
-        Mon, 20 Nov 2023 04:29:46 -0800 (PST)
-Received: from wheely.local0.net (203-219-179-16.tpgi.com.au. [203.219.179.16])
-        by smtp.gmail.com with ESMTPSA id d13-20020a056a00244d00b00690fe1c928csm6047477pfj.147.2023.11.20.04.29.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Nov 2023 04:29:46 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm@vger.kernel.org,
-	Paolo Bonzini <pbonzini@redhat.com>
-Subject: [PATCH v4 4/4] KVM: PPC: selftests: powerpc enable kvm_create_max_vcpus test
-Date: Mon, 20 Nov 2023 22:29:20 +1000
-Message-ID: <20231120122920.293076-5-npiggin@gmail.com>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231120122920.293076-1-npiggin@gmail.com>
-References: <20231120122920.293076-1-npiggin@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SYqBk3MQyz307V
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 01:09:34 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by ams.source.kernel.org (Postfix) with ESMTP id 6F364B817E5;
+	Mon, 20 Nov 2023 14:09:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A142C433C9;
+	Mon, 20 Nov 2023 14:09:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1700489371;
+	bh=hoIhA8+0yRB+8xKNhUqRCTi4Cj0Q9PRSELx11+Gdf9k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=r45lYZBBqyt2qIC3VTWvXeFOLpp7CslcoudAqZHo3c3ToiD3advJLwF+LCeQTSM4V
+	 ian9GJtKKF/6WQNbnSlPU6HPsyneu0ZkHaso51fhQyb5HfooUycrugoOjqW3AvaFvH
+	 JbSyG7Q6aiUwYwnG9OQSQDRK4H2FDhgaP+yGZfOW9mvm9hc6UiF2csU75mRMpuJsB/
+	 u1dCYBO9SVZu1FuLumVUvtcx32ALSNqXSMdsp9G0IufrXorcmRf7kCkpyLAOe7IGza
+	 CZVtn9hq2ML7D6TA2ZoEM+IA98iwR0d/sA7ltvFzg0zveh92v1bjHGQjv6XIUZ6hjb
+	 x08JifS0gmx4Q==
+Date: Mon, 20 Nov 2023 14:09:17 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Anish Moorthy <amoorthy@google.com>
+Subject: Re: [PATCH 34/34] KVM: selftests: Add a memory region subtest to
+ validate invalid flags
+Message-ID: <13677ced-e464-4cdb-82ae-4236536e169c@sirena.org.uk>
+References: <20231105163040.14904-1-pbonzini@redhat.com>
+ <20231105163040.14904-35-pbonzini@redhat.com>
+ <CAF7b7mpmuYLTY6OQfRRoOryfO-2e1ZumQ6SCQDHHPD5XFyhFTQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="61dY8WQ8Ox8wOW0h"
+Content-Disposition: inline
+In-Reply-To: <CAF7b7mpmuYLTY6OQfRRoOryfO-2e1ZumQ6SCQDHHPD5XFyhFTQ@mail.gmail.com>
+X-Cookie: Happiness is twin floppies.
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,56 +63,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sean Christopherson <seanjc@google.com>, linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?iso-8859-1?Q?Micka=EBl_Sala=FCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Se
+ an Christopherson <seanjc@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc's maximum permitted vCPU ID depends on the VM's SMT mode, and
-the maximum reported by KVM_CAP_MAX_VCPU_ID exceeds a simple non-SMT
-VM's limit.
 
-The powerpc KVM selftest port uses non-SMT VMs, so add a workaround
-to the kvm_create_max_vcpus test case to limit vCPU IDs to
-KVM_CAP_MAX_VCPUS on powerpc. And enable the test case.
+--61dY8WQ8Ox8wOW0h
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- tools/testing/selftests/kvm/Makefile               | 1 +
- tools/testing/selftests/kvm/kvm_create_max_vcpus.c | 9 +++++++++
- 2 files changed, 10 insertions(+)
+On Wed, Nov 08, 2023 at 05:08:01PM -0800, Anish Moorthy wrote:
+> Applying [1] and [2] reveals that this also breaks non-x86 builds- the
+> MEM_REGION_GPA/SLOT definitions are guarded behind an #ifdef
+> __x86_64__, while the usages introduced here aren't.
+>=20
+> Should
+>=20
+> On Sun, Nov 5, 2023 at 8:35=E2=80=AFAM Paolo Bonzini <pbonzini@redhat.com=
+> wrote:
+> >
+> > +       test_invalid_memory_region_flags();
+>=20
+> be #ifdef'd, perhaps? I'm not quite sure what the intent is.
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index a198fe6136c8..1e904d8871d7 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -211,6 +211,7 @@ TEST_GEN_PROGS_powerpc += dirty_log_test
- TEST_GEN_PROGS_powerpc += dirty_log_perf_test
- TEST_GEN_PROGS_powerpc += guest_print_test
- TEST_GEN_PROGS_powerpc += hardware_disable_test
-+TEST_GEN_PROGS_powerpc += kvm_create_max_vcpus
- TEST_GEN_PROGS_powerpc += kvm_page_table_test
- TEST_GEN_PROGS_powerpc += max_guest_memory_test
- TEST_GEN_PROGS_powerpc += memslot_modification_stress_test
-diff --git a/tools/testing/selftests/kvm/kvm_create_max_vcpus.c b/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-index 31b3cb24b9a7..330ede73c147 100644
---- a/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-+++ b/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-@@ -51,6 +51,15 @@ int main(int argc, char *argv[])
- 	pr_info("KVM_CAP_MAX_VCPU_ID: %d\n", kvm_max_vcpu_id);
- 	pr_info("KVM_CAP_MAX_VCPUS: %d\n", kvm_max_vcpus);
- 
-+#ifdef __powerpc64__
-+	/*
-+	 * powerpc has a particular format for the vcpu ID that depends on
-+	 * the guest SMT mode, and the max ID cap is too large for non-SMT
-+	 * modes, where the maximum ID is the same as the maximum vCPUs.
-+	 */
-+	kvm_max_vcpu_id = kvm_max_vcpus;
-+#endif
-+
- 	/*
- 	 * Check that we're allowed to open nr_fds_wanted file descriptors and
- 	 * try raising the limits if needed.
--- 
-2.42.0
+This has been broken in -next for a week now, do we have any progress
+on a fix or should we just revert the patch?
 
+--61dY8WQ8Ox8wOW0h
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmVbaI0ACgkQJNaLcl1U
+h9Aj2Qf9EbUUwOLmAwUa3Jl4QMfiLrKntsPjxIsD9MYRWpqfdGr2gZb7wNXozUgD
+A1SOrSPxLG5lvE3dOdXD1O/mzrxVwLcfAssVQ6KjXu13pJtZDIQHAUpYQBJL28QR
+KIeV8OVDMKeFryWnyt+y92xYK+7d4TocCuAq2Ph3jQj/OIXp4bI5quuTV58jmIG4
+1QuJFi73b7JIL4Ksmg32pp3aWaoP7BqMqnDxx92GwdngF0Jrg1NBhgHoMkh/J28y
+zT6Vui1HZF2pSrrxexqXFLJKhveYmLyg3kaoEyvYeRwj/WjZSB3U/9LJrhBDctTJ
+2Y23Hu9kFWuPdJxy0l8BV7AiIxSr4Q==
+=GWvB
+-----END PGP SIGNATURE-----
+
+--61dY8WQ8Ox8wOW0h--
