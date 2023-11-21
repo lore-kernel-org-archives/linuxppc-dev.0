@@ -4,61 +4,126 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7549EC54FB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 04:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC3F1C54FB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 05:48:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=ADLcADmV;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=roS91s+X;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZBF33gGSz3cjS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 15:27:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZD2S1TL0z3d8D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 16:48:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=ADLcADmV;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=roS91s+X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org)
-Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:7e1a::61b; helo=eur05-db8-obe.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2061b.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e1a::61b])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZBD55xKRz3cHf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 15:27:01 +1100 (AEDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id C8A9A8284E12;
-	Mon, 20 Nov 2023 22:26:58 -0600 (CST)
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id 6fLGJjT-9b_4; Mon, 20 Nov 2023 22:26:56 -0600 (CST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id A665182857F6;
-	Mon, 20 Nov 2023 22:26:56 -0600 (CST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com A665182857F6
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1700540816; bh=97VCJw9TeCFrTRV5ThjMp7+IapYPtKTxtdNGF1e7hqI=;
-	h=Date:From:To:Message-ID:MIME-Version;
-	b=ADLcADmV1JFSFijtqYqe/30oNwCNYBpLaK8vHDx1piWljSsE4Z8TCihHA6PD+mAkw
-	 O3UfxY1TSQpsVKmmqbdlLJA6ghbq8AqumjjjEVyM7jAXZOJ48q4qm7vlqg7F8bJKmY
-	 yR1g+J6jVYGBAVGyDcjzH8eLSLGOR0TtKw7mAEiw=
-X-Virus-Scanned: amavisd-new at rptsys.com
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id QTTljFFp8K5c; Mon, 20 Nov 2023 22:26:56 -0600 (CST)
-Received: from vali.starlink.edu (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 6F3818284E12;
-	Mon, 20 Nov 2023 22:26:56 -0600 (CST)
-Date: Mon, 20 Nov 2023 22:26:54 -0600 (CST)
-From: Timothy Pearson <tpearson@raptorengineering.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Message-ID: <558977252.48925254.1700540814404.JavaMail.zimbra@raptorengineeringinc.com>
-In-Reply-To: <1294229534.48922001.1700539832331.JavaMail.zimbra@raptorengineeringinc.com>
-References: <1921539696.48534988.1700407082933.JavaMail.zimbra@raptorengineeringinc.com> <877cmc7ve9.fsf@mail.lhotse> <439072392.48800901.1700498743840.JavaMail.zimbra@raptorengineeringinc.com> <874jhg6lkn.fsf@mail.lhotse> <1294229534.48922001.1700539832331.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: Re: [PATCH v2] powerpc: Don't clobber fr0/vs0 during fp|altivec
- register  save
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZD1S1zfSz2yGv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 16:47:56 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=eW4DbDK/fk6UIN1u5dafg/2DSovJKGp8xcVNdb+bXOIF8bM0gD8QPGakqnAt0thvGY7abbue5k0bt8WwLjvWjqBOaFkevn0+MP6CtpSArBE7tCL7ka+ttuXPXGyZUi8q8x//rJ9NcmKcobcuRjoDthv6qKRxK8UT+RaIAPkqEvIDu59SYyyJS2k7BhU/cL9Ic6bh7mYtedgoCDLjeWZ557mVL9W8bxYWUCLlUzNzv4qPagGCaaosXS7NBRRaoNTKD4F/xmUDr/s6411FX8Chl7tZjUTIhl8FIA8R4hOIVMsnBFRJT8NDQHxErTGnspg0oe03d3IpERfz1QEZNq0a8A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AvwdRZBZwFSH2Kq2WT0Bk4fl8JUFhpKoqGheMfEKxnc=;
+ b=WbaFCg8bj9CjICJOPTDqsUe6NnRX9AyKORTjzA4tk3skPDaxZbcHevE74um8KlaNfQaW9r04Xy45VVMj8M2QIR7qjjgl/tpSFMkrdLZvb0TxdskdOkNy6l/bHzCfJXtMZTUbLWkR0Vsb7gCPDSl4pKbDz+1pbIzZfwCus7kkaSPsOO2N/rukyxp0PP7G1Uvsr9o3c2t1Ilk7ihOMsWDgOqdM6LRIoWpvJ4Eaefrkqv1/hekDrdzPSVZHNWPVUjlvcbIsxMW2CrYyIytkbRtg+NDjvzYrf6KVJ3doxYcaSln3qC0eycbUiZb6ng1rYHGfeAuoz3xIc12FKO/YgN6EcA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AvwdRZBZwFSH2Kq2WT0Bk4fl8JUFhpKoqGheMfEKxnc=;
+ b=roS91s+Xkg01BnVFl9BnSunZo6KLqYaXavSH32PVM8ZI+WlILZ2PCMgIQRMY7i/ODR6XhY32+1+yyB+CTQzmSXNzGORkaiujOOE/WoKwhgIGQ8JF9clQaUS9UG1OOtzmaZlvlN/HTThpBwrynrcjWA32XoZYhS8kfsQMB00pzOM=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from DB9PR04MB9498.eurprd04.prod.outlook.com (2603:10a6:10:360::21)
+ by DBAPR04MB7270.eurprd04.prod.outlook.com (2603:10a6:10:1af::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7025.17; Tue, 21 Nov
+ 2023 05:47:36 +0000
+Received: from DB9PR04MB9498.eurprd04.prod.outlook.com
+ ([fe80::dffc:1d:4398:7768]) by DB9PR04MB9498.eurprd04.prod.outlook.com
+ ([fe80::dffc:1d:4398:7768%6]) with mapi id 15.20.7025.015; Tue, 21 Nov 2023
+ 05:47:36 +0000
+From: Chancel Liu <chancel.liu@nxp.com>
+To: lgirdwood@gmail.com,
+	broonie@kernel.org,
+	robh+dt@kernel.org,
+	krzysztof.kozlowski+dt@linaro.org,
+	conor+dt@kernel.org,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	perex@perex.cz,
+	tiwai@suse.com,
+	shawnguo@kernel.org,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	alsa-devel@alsa-project.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v5 2/2] ASoC: imx-rpmsg: Force codec power on in low power audio mode
+Date: Tue, 21 Nov 2023 13:25:12 +0800
+Message-Id: <20231121052512.20235-2-chancel.liu@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20231121052512.20235-1-chancel.liu@nxp.com>
+References: <20231121052512.20235-1-chancel.liu@nxp.com>
+Content-Type: text/plain
+X-ClientProxiedBy: AM0P190CA0018.EURP190.PROD.OUTLOOK.COM
+ (2603:10a6:208:190::28) To DB9PR04MB9498.eurprd04.prod.outlook.com
+ (2603:10a6:10:360::21)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC119 (Linux)/8.5.0_GA_3042)
-Thread-Topic: powerpc: Don't clobber fr0/vs0 during fp|altivec register save
-Thread-Index: o5SeDrCF+sPiXk0vknbS77i3C3t7PHByIwb+
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DB9PR04MB9498:EE_|DBAPR04MB7270:EE_
+X-MS-Office365-Filtering-Correlation-Id: ca0b9148-b1b3-4a34-791f-08dbea555d53
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	McUzxK5EFg/K0n5QUoLG7Cp6mlNTl5nlO8Ktf/XlrMjsYW2Uhf/D9I1w4Dz+eNHvyCrTK5NRKpjFJ7Q8yMEiY6xWP5v4MOyIx8YYkMfKQNxYMFPvUt/xjWGz+6J5qIh3jXqKfjnlTL2iGkdakwD5+2smLUwQLBlrH40ywY9B7qEzLyHWfAgKgDr3eMaVCI9CN2RwHNuxubIyTm0fzSAflJVWyI/akXY3gLtRfI8x7po/UrBRVV8CcfedoqFQ5lPoWHI2nGxkAtOxXf9mqBsWVMoRbab+ulqVwUnd9WRFdOFKp1GrathPh54bUmqvxPwl8MNE9bQMJtpZrjMEhkEKmgrfiHuRGEGNz9gayd9I4rd6vYPGXsnbKISEAVNHjseEFPCimklrR16JTBUNN27OdjxY9xjVdcxgVYSk8AWfbdRWQgCOaarmvKHqzIH7LqhelEa9KDPV3rOteiY1zKUX6K5F56/kMwVDXcfqkh2S3hsgGEwea/Wn54UiT5OlIDUM3uUnxMTVsE3vax/1HtQwDPJKw7ABnI5SIMQM03KIy87JcKUPcPNpujIRgpKlAuBkBX9tOoh25SjKCQPtBCuFn/wVbSIzaiR72AwHNW3+RcJJIZuk/P2EES+u38yPoLiNKgjQFosNix9Gd53MUhVUFPJXc4tEDqi6gPXipwNyhOk=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB9498.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(396003)(346002)(39860400002)(366004)(376002)(230922051799003)(451199024)(1800799012)(186009)(64100799003)(2906002)(5660300002)(7416002)(44832011)(2013699003)(41300700001)(8936002)(4326008)(8676002)(316002)(66476007)(66556008)(86362001)(1076003)(26005)(6486002)(478600001)(6512007)(6666004)(36756003)(52116002)(6506007)(2616005)(83380400001)(66946007)(38100700002)(38350700005)(921008);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?ACU7mDF+K8/AH3wWT8K/MOxx2JLqqMCElIuedtpRM0r3UkR6MsX89y/5fPaJ?=
+ =?us-ascii?Q?usaU1NN8kJ5Ugu2PfyOruJan6nLTi4Zci1rNiWXA9UD84euoOjBuxuDmXnpk?=
+ =?us-ascii?Q?fPOQsp4GTxq0uxwbdBP5C3XnW0hYRg05V6lHJnepXVRYTaq+yOwSQBoyh8Yw?=
+ =?us-ascii?Q?vaYPdUgU35HpMyEsbqlID2jBCs/l1xX98l8afBVyxz3r51YIalqT+0Mb0Wam?=
+ =?us-ascii?Q?Ad9WhAhlypL8E9XxvMrI1qdjYYOywJULJa6A0RYcIGbWreFR6Ke18Cx7+sXS?=
+ =?us-ascii?Q?u19KRmeQiBEP0mo5nBAiarZzbshBVcXr6NcmEU6h5RS3wXqj5dLda94jlxMP?=
+ =?us-ascii?Q?Ni/MyecRN/THAcg3unQLeaFm6rbOjywBgstJ0S53AFiqwERlNg1zuZF8qA9j?=
+ =?us-ascii?Q?lcA9xeeaarKGK0PDkzGG6mK1atTEBhE7mVBH3CPE71/9IOJBcl5orypvqWsn?=
+ =?us-ascii?Q?180eZFCaL3iwlSGigKPT90D4yE+pwGs0VrAMdTPGcw/jE0FXhpQURH0HuJ67?=
+ =?us-ascii?Q?K8BJmn3eyCBqVzz/U0VZ50L9y5lSZDNDflp+d6yl3CZI8+NQ/sI43PgcVy0x?=
+ =?us-ascii?Q?Z2iunphFAqCMWcFX87hqbaK8Cvq161/TtWNB82/+jusfFKNQVnL+mGAC8gPV?=
+ =?us-ascii?Q?v9oERsZ2vljWkLq/NrP0LGwP5sCay0tpngFZGUJyb41hq5c8msv+LObs/n1v?=
+ =?us-ascii?Q?aiZYGaopRlm+m7N0OxUc95kXz8E8MyInkdxJNStYnydvNXVE4VjBgVR7Qed3?=
+ =?us-ascii?Q?eV4YND2FeffdZb3lWooLO5GIkgOB4GELT2tb5bvWr9yRyKuLZRwv5qwSeopR?=
+ =?us-ascii?Q?vpXlpiSchgYHj/TP/AMHOyqkhI+8i9ZCV2Ua00NCFKGWgUaFArvD10FB9nR7?=
+ =?us-ascii?Q?IqQyAUwRz0JAACMHNzZIp0ulSvSHFpy9dWB8Mf5S9fCnwQzreeqff1pjVKUt?=
+ =?us-ascii?Q?bpOy13xSf1/NdmyUxSZHzUc/qsGwL1iSB+ONqlDwljgruxxzWi1tqxjpgcgR?=
+ =?us-ascii?Q?Xzn6/xssBH/Lj5scU/g5X+9fDkdZRoyYXTwte45yYtTWWtf3PKo22rcsTNw/?=
+ =?us-ascii?Q?ztTiv+Edv/pGb3/PwI/rrgOKJBT8J8xw3MHIWJZyNUmtq4+mCp7i1h8ea7db?=
+ =?us-ascii?Q?RwaATmPIo3Wsi5xDK0HO2ZUfwgPe2/UM6VbGDTGahzcAteczGehnl0Lj6QeL?=
+ =?us-ascii?Q?9eR9Lpf+R3yoZ/9atsyXFerNIDFt/KdYnckpJtRwHK31M2uKjCYaw9K/5tuy?=
+ =?us-ascii?Q?/ighgG9caILmsbC++4I3zGSuRLTlnJ2IUw0qPa6qUePk9VnOYWEZN28dxp7p?=
+ =?us-ascii?Q?m0weuQhRdCBBJRi5FN2fE5+O/vqcLjvAW14DzPRJtLTA12dbCG8lbLfp5ZKj?=
+ =?us-ascii?Q?TOrkFmRV5BFZGPuyVtHiVzApEnPBD48WwR+8hpMASMzHd4Y4agKQdQ2Yxv4X?=
+ =?us-ascii?Q?eDjG8s7yu3LDSC+GK4HjOwF7F3Duji3AJGSQJDZaPBjs4XPJCxckgyDwFG+h?=
+ =?us-ascii?Q?LmyLQpvKu2n6ukMX7DMEWImwx2bakblcdC+kQIpInms+e58JADFfPRJwd+b0?=
+ =?us-ascii?Q?mXBec5cw1asRaDRf9C2oZgSuVgzCiCbLORRa7qwz?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ca0b9148-b1b3-4a34-791f-08dbea555d53
+X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB9498.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Nov 2023 05:47:36.6876
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: VOSh7/GLFUjSOzzWue1oUm26fGVcGrXcVYTHuw9QPUwW+WlNn58oN6ub9A06qO3pypR1+QvWOt9/IK/U8ZbGww==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR04MB7270
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,186 +135,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, regressions <regressions@lists.linux.dev>, npiggin <npiggin@gmail.com>
+Cc: Chancel Liu <chancel.liu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Low power audio mode requires binding codec still power on while Acore
+enters into suspend so Mcore can continue playback music.
 
+ASoC machine driver acquires DAPM endpoints through reading
+"ignore-suspend-widgets" property from DT and then forces the path
+between these endpoints ignoring suspend.
 
------ Original Message -----
-> From: "Timothy Pearson" <tpearson@raptorengineeringinc.com>
-> To: "Michael Ellerman" <mpe@ellerman.id.au>
-> Cc: "Jens Axboe" <axboe@kernel.dk>, "regressions" <regressions@lists.linux.dev>, "npiggin" <npiggin@gmail.com>,
-> "christophe leroy" <christophe.leroy@csgroup.eu>, "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
-> Sent: Monday, November 20, 2023 10:10:32 PM
-> Subject: Re: [PATCH v2] powerpc: Don't clobber fr0/vs0 during fp|altivec register  save
+If the rpmsg sound card is in low power audio mode, the suspend/resume
+callback of binding codec is overridden to disable the suspend/resume.
 
-> ----- Original Message -----
->> From: "Michael Ellerman" <mpe@ellerman.id.au>
->> To: "Timothy Pearson" <tpearson@raptorengineering.com>
->> Cc: "Jens Axboe" <axboe@kernel.dk>, "regressions" <regressions@lists.linux.dev>,
->> "npiggin" <npiggin@gmail.com>,
->> "christophe leroy" <christophe.leroy@csgroup.eu>, "linuxppc-dev"
->> <linuxppc-dev@lists.ozlabs.org>
->> Sent: Monday, November 20, 2023 5:39:52 PM
->> Subject: Re: [PATCH v2] powerpc: Don't clobber fr0/vs0 during fp|altivec
->> register  save
-> 
->> Timothy Pearson <tpearson@raptorengineering.com> writes:
->>> ----- Original Message -----
->>>> From: "Michael Ellerman" <mpe@ellerman.id.au>
->> ...
->>>> 
->>>> But we now have a new path, because io-uring can call copy_process() via
->>>> create_io_thread() from the signal handling path. That's OK if the signal is
->>>> handled as we return from a syscall, but it's not OK if the signal is handled
->>>> due to some other interrupt.
->>>> 
->>>> Which is:
->>>> 
->>>> interrupt_return_srr_user()
->>>>  interrupt_exit_user_prepare()
->>>>    interrupt_exit_user_prepare_main()
->>>>      do_notify_resume()
->>>>        get_signal()
->>>>          task_work_run()
->>>>            create_worker_cb()
->>>>              create_io_worker()
->>>>                copy_process()
->>>>                  dup_task_struct()
->>>>                    arch_dup_task_struct()
->>>>                      flush_all_to_thread()
->>>>                        save_all()
->>>>                          if (tsk->thread.regs->msr & MSR_FP)
->>>>                            save_fpu()
->>>>                            # fr0 is clobbered and potentially live in userspace
->>>> 
->>>> 
->>>> So tldr I think the corruption is only an issue since io-uring started doing
->>>> the clone via signal, which I think matches the observed timeline of this bug
->>>> appearing.
->>>
->>> I agree the corruption really only started showing up in earnest on
->>> io_uring clone-via-signal, as this was confirmed several times in the
->>> course of debugging.
->> 
->> Thanks.
->> 
->>> Note as well that I may very well have a wrong call order in the
->>> commit message, since I was relying on a couple of WARN_ON() macros I
->>> inserted to check for a similar (but not identical) condition and
->>> didn't spend much time getting new traces after identifying the root
->>> cause.
->> 
->> Yep no worries. I'll reword it to incorporate the full path from my mail.
->> 
->>> I went back and grabbed some real world system-wide stack traces, since I now
->>> know what to trigger on.  A typical example is:
->>>
->>> interrupt_return_srr_user()
->>>  interrupt_exit_user_prepare()
->>>   interrupt_exit_user_prepare_main()
->>>    schedule()
->>>     __schedule()
->>>      __switch_to()
->>>       giveup_all()
->>>        # tsk->thread.regs->msr MSR_FP is still set here
->>>        __giveup_fpu()
->>>         save_fpu()
->>>         # fr0 is clobbered and potentially live in userspace
->> 
->> fr0 is not live there.
-> <snip>
->> ie. it clears the FP etc. bits from the task's MSR. That means the FP
->> state will be reloaded from the thread struct before the task is run again.
-> 
-> So a little more detail on this, just to put it to rest properly vs. assuming
-> hand analysis caught every possible pathway. :)
-> 
-> The debugging that generates this stack trace also verifies the following in
-> __giveup_fpu():
-> 
-> 1.) tsk->thread.fp_state.fpr doesn't contain the FPSCR contents prior to calling
-> save_fpu()
-> 2.) tsk->thread.fp_state.fpr contains the FPSCR contents directly after calling
-> save_fpu()
-> 3.) MSR_FP is set both in the task struct and in the live MSR.
-> 
-> Only if all three conditions are met will it generate the trace.  This is a
-> generalization of the hack I used to find the problem in the first place.
-> 
-> If the state will subsequently be reloaded from the thread struct, that means
-> we're reloading the registers from the thread struct that we just verified was
-> corrupted by the earlier save_fpu() call.  There are only two ways I can see
-> for that to be true -- one is if the registers were already clobbered when
-> giveup_all() was entered, and the other is if save_fpu() went ahead and
-> clobbered them right here inside giveup_all().
-> 
-> To see which scenario we were dealing with, I added a bit more instrumentation
-> to dump the current register state if MSR_FP bit was already set in registers
-> (i.e. not dumping data from task struct, but using the live FPU registers
-> instead), and sure enough the registers are corrupt on entry, so something else
-> has already called save_fpu() before we even hit giveup_all() in this call
-> chain.
-> 
-> Unless I'm missing something, doesn't this effectively mean that anything
-> interrupting a task can hit this bug?  Or, put another way, I'm seeing several
-> processes hit this exact call chain with the corrupt register going back out to
-> userspace without io_uring even in the mix, so there seems to be another
-> pathway in play.  These traces are from a qemu guest, in case it matters given
-> the kvm path is possibly susceptible.
-> 
-> Just a few things to think about.  The FPU patch itself definitely resolves the
-> problems; I used a sledgehammer approach *specifically* so that there is no
-> place for a rare call sequence we didn't consider to hit it again down the
-> line. :)
+Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
+---
+ sound/soc/fsl/imx-rpmsg.c | 61 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 59 insertions(+), 2 deletions(-)
 
-For reference, a couple of traces that are verified to hit the conditions above when I leave the debugging unrestricted system-wide:
+diff --git a/sound/soc/fsl/imx-rpmsg.c b/sound/soc/fsl/imx-rpmsg.c
+index a0c5c35817dd..e5bd63dab10c 100644
+--- a/sound/soc/fsl/imx-rpmsg.c
++++ b/sound/soc/fsl/imx-rpmsg.c
+@@ -2,9 +2,8 @@
+ // Copyright 2017-2020 NXP
+ 
+ #include <linux/module.h>
+-#include <linux/of.h>
++#include <linux/of_platform.h>
+ #include <linux/of_reserved_mem.h>
+-#include <linux/platform_device.h>
+ #include <linux/i2c.h>
+ #include <linux/of_gpio.h>
+ #include <linux/slab.h>
+@@ -21,8 +20,11 @@ struct imx_rpmsg {
+ 	struct snd_soc_dai_link dai;
+ 	struct snd_soc_card card;
+ 	unsigned long sysclk;
++	bool lpa;
+ };
+ 
++static struct dev_pm_ops lpa_pm;
++
+ static const struct snd_soc_dapm_widget imx_rpmsg_dapm_widgets[] = {
+ 	SND_SOC_DAPM_HP("Headphone Jack", NULL),
+ 	SND_SOC_DAPM_SPK("Ext Spk", NULL),
+@@ -39,6 +41,58 @@ static int imx_rpmsg_late_probe(struct snd_soc_card *card)
+ 	struct device *dev = card->dev;
+ 	int ret;
+ 
++	if (data->lpa) {
++		struct snd_soc_component *codec_comp;
++		struct device_node *codec_np;
++		struct device_driver *codec_drv;
++		struct device *codec_dev = NULL;
++
++		codec_np = data->dai.codecs->of_node;
++		if (codec_np) {
++			struct platform_device *codec_pdev;
++			struct i2c_client *codec_i2c;
++
++			codec_i2c = of_find_i2c_device_by_node(codec_np);
++			if (codec_i2c)
++				codec_dev = &codec_i2c->dev;
++			if (!codec_dev) {
++				codec_pdev = of_find_device_by_node(codec_np);
++				if (codec_pdev)
++					codec_dev = &codec_pdev->dev;
++			}
++		}
++		if (codec_dev) {
++			codec_comp = snd_soc_lookup_component_nolocked(codec_dev, NULL);
++			if (codec_comp) {
++				int i, num_widgets;
++				const char *widgets;
++				struct snd_soc_dapm_context *dapm;
++
++				num_widgets = of_property_count_strings(data->card.dev->of_node,
++									"ignore-suspend-widgets");
++				for (i = 0; i < num_widgets; i++) {
++					of_property_read_string_index(data->card.dev->of_node,
++								      "ignore-suspend-widgets",
++								      i, &widgets);
++					dapm = snd_soc_component_get_dapm(codec_comp);
++					snd_soc_dapm_ignore_suspend(dapm, widgets);
++				}
++			}
++			codec_drv = codec_dev->driver;
++			if (codec_drv->pm) {
++				memcpy(&lpa_pm, codec_drv->pm, sizeof(lpa_pm));
++				lpa_pm.suspend = NULL;
++				lpa_pm.resume = NULL;
++				lpa_pm.freeze = NULL;
++				lpa_pm.thaw = NULL;
++				lpa_pm.poweroff = NULL;
++				lpa_pm.restore = NULL;
++				codec_drv->pm = &lpa_pm;
++			}
++			put_device(codec_dev);
++		}
++	}
++
+ 	if (!data->sysclk)
+ 		return 0;
+ 
+@@ -138,6 +192,9 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
+ 		goto fail;
+ 	}
+ 
++	if (of_property_read_bool(np, "fsl,enable-lpa"))
++		data->lpa = true;
++
+ 	data->card.dev = &pdev->dev;
+ 	data->card.owner = THIS_MODULE;
+ 	data->card.dapm_widgets = imx_rpmsg_dapm_widgets;
+-- 
+2.42.0
 
-From perl:
-
-[  100.735133] NIP [c00000000001b0d8] __giveup_fpu+0xc8/0x280
-[  100.735162] LR [c00000000001b084] __giveup_fpu+0x74/0x280
-[  100.735190] Call Trace:
-[  100.735205] [c000000008ac7710] [c000000008ac7830] 0xc000000008ac7830 (unreliable)
-[  100.735251] [c000000008ac7a10] [c00000000001c094] giveup_all+0x84/0x120
-[  100.735289] [c000000008ac7a40] [c00000000001cb08] __switch_to+0x128/0x2e0
-[  100.735327] [c000000008ac7aa0] [c00000000101e0d0] __schedule+0x1020/0x11c0
-[  100.735362] [c000000008ac7b90] [c00000000101e3f8] schedule+0x188/0x1f0
-[  100.735397] [c000000008ac7c10] [c00000000063a834] pipe_read+0x3c4/0x5c0
-[  100.735437] [c000000008ac7cf0] [c00000000062a9cc] vfs_read+0x18c/0x360
-[  100.735505] [c000000008ac7dc0] [c00000000062b9e4] ksys_read+0xf4/0x150
-[  100.735540] [c000000008ac7e10] [c00000000002fca4] system_call_exception+0x294/0x2e0
-[  100.735581] [c000000008ac7e50] [c00000000000d0dc] system_call_vectored_common+0x15c/0x2ec
-
-From mariadbd:
-
-[  129.374710] NIP [c00000000001b0d8] __giveup_fpu+0xc8/0x280
-[  129.374743] LR [c00000000001b084] __giveup_fpu+0x74/0x280
-[  129.374774] Call Trace:
-[  129.374791] [c000000018dbf680] [0000000000000001] 0x1 (unreliable)
-[  129.374833] [c000000018dbf980] [c00000000001c094] giveup_all+0x84/0x120
-[  129.374873] [c000000018dbf9b0] [c00000000001cb08] __switch_to+0x128/0x2e0
-[  129.374915] [c000000018dbfa10] [c00000000101e0d0] __schedule+0x1020/0x11c0
-[  129.374958] [c000000018dbfb00] [c00000000101e3f8] schedule+0x188/0x1f0
-[  129.374996] [c000000018dbfb80] [c0000000002ba240] futex_wait_queue+0x80/0xf0
-[  129.375051] [c000000018dbfbc0] [c0000000002baf70] __futex_wait+0xc0/0x180
-[  129.375102] [c000000018dbfca0] [c0000000002bb0c4] futex_wait+0x94/0x150
-[  129.375161] [c000000018dbfd60] [c0000000002b5d5c] do_futex+0x11c/0x320
-[  129.375214] [c000000018dbfd90] [c0000000002b6130] sys_futex+0x1d0/0x240
-[  129.375261] [c000000018dbfe10] [c00000000002fca4] system_call_exception+0x294/0x2e0
-[  129.375307] [c000000018dbfe50] [c00000000000d0dc] system_call_vectored_common+0x15c/0x2ec
-
-Another from mariadbd (this one takes out the server in this particular run, but that's just because it "lost" the race with the io_uring worker spawn):
-
-[  136.342361] NIP [c00000000001b0d8] __giveup_fpu+0xc8/0x280
-[  136.342416] LR [c00000000001b084] __giveup_fpu+0x74/0x280
-[  136.342467] Call Trace:
-[  136.342491] [c000000018dbf8d0] [000000000000002b] 0x2b (unreliable)
-[  136.342557] [c000000018dbfbd0] [c00000000001c094] giveup_all+0x84/0x120
-[  136.342620] [c000000018dbfc00] [c00000000001cb08] __switch_to+0x128/0x2e0
-[  136.342685] [c000000018dbfc60] [c00000000101e0d0] __schedule+0x1020/0x11c0
-[  136.342752] [c000000018dbfd50] [c00000000101e3f8] schedule+0x188/0x1f0
-[  136.342818] [c000000018dbfdd0] [c00000000002e92c] interrupt_exit_user_prepare_main+0x7c/0x2e0
-[  136.342907] [c000000018dbfe20] [c00000000002ee18] interrupt_exit_user_prepare+0x88/0xa0
-[  136.342983] [c000000018dbfe50] [c00000000000d954] interrupt_return_srr_user+0x8/0x12c
