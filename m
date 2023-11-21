@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2997BC5ACB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 08:20:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 122C3C5ACB3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 08:20:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZHPH6K7vz3vrc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 19:20:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZHPp5g2Cz3vxC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 19:20:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZHLD45wLz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 19:17:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZHLF6zxxz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 19:17:41 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5F5DF1A03D0;
-	Tue, 21 Nov 2023 09:17:37 +0100 (CET)
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6CDDF1A0433;
+	Tue, 21 Nov 2023 09:17:39 +0100 (CET)
 Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id F15571A03FC;
-	Tue, 21 Nov 2023 09:17:36 +0100 (CET)
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 356AE1A03BB;
+	Tue, 21 Nov 2023 09:17:39 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id A8CA61802201;
-	Tue, 21 Nov 2023 16:17:34 +0800 (+08)
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 98606183AD51;
+	Tue, 21 Nov 2023 16:17:37 +0800 (+08)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: hverkuil@xs4all.nl,
 	sakari.ailus@iki.fi,
@@ -42,9 +42,9 @@ To: hverkuil@xs4all.nl,
 	tiwai@suse.com,
 	alsa-devel@alsa-project.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10 04/14] ASoC: fsl_asrc: register m2m platform device
-Date: Tue, 21 Nov 2023 15:37:25 +0800
-Message-Id: <1700552255-5364-5-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH v10 06/14] media: uapi: Add V4L2_CAP_AUDIO_M2M capability flag
+Date: Tue, 21 Nov 2023 15:37:27 +0800
+Message-Id: <1700552255-5364-7-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1700552255-5364-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1700552255-5364-1-git-send-email-shengjiu.wang@nxp.com>
@@ -63,110 +63,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Register m2m platform device, that user can
-use M2M feature.
+V4L2_CAP_AUDIO_M2M is similar to V4L2_CAP_VIDEO_M2M flag.
 
-Defined platform data structure and platform
-driver name.
+It is used for audio memory to memory case.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Mark Brown <broonie@kernel.org>
 ---
- include/sound/fsl_asrc_common.h | 23 +++++++++++++++++++++++
- sound/soc/fsl/fsl_asrc.c        | 18 ++++++++++++++++++
- 2 files changed, 41 insertions(+)
+ Documentation/userspace-api/media/v4l/vidioc-querycap.rst    | 3 +++
+ Documentation/userspace-api/media/videodev2.h.rst.exceptions | 1 +
+ include/uapi/linux/videodev2.h                               | 1 +
+ 3 files changed, 5 insertions(+)
 
-diff --git a/include/sound/fsl_asrc_common.h b/include/sound/fsl_asrc_common.h
-index 3b53d366182f..c709b8906929 100644
---- a/include/sound/fsl_asrc_common.h
-+++ b/include/sound/fsl_asrc_common.h
-@@ -71,6 +71,7 @@ struct fsl_asrc_pair {
-  * @dma_params_rx: DMA parameters for receive channel
-  * @dma_params_tx: DMA parameters for transmit channel
-  * @pdev: platform device pointer
-+ * @m2m_pdev: m2m platform device pointer
-  * @regmap: regmap handler
-  * @paddr: physical address to the base address of registers
-  * @mem_clk: clock source to access register
-@@ -103,6 +104,7 @@ struct fsl_asrc {
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	struct snd_dmaengine_dai_dma_data dma_params_tx;
- 	struct platform_device *pdev;
-+	struct platform_device *m2m_pdev;
- 	struct regmap *regmap;
- 	unsigned long paddr;
- 	struct clk *mem_clk;
-@@ -139,6 +141,27 @@ struct fsl_asrc {
- 	void *private;
- };
+diff --git a/Documentation/userspace-api/media/v4l/vidioc-querycap.rst b/Documentation/userspace-api/media/v4l/vidioc-querycap.rst
+index 6c57b8428356..1c0d97bf192a 100644
+--- a/Documentation/userspace-api/media/v4l/vidioc-querycap.rst
++++ b/Documentation/userspace-api/media/v4l/vidioc-querycap.rst
+@@ -173,6 +173,9 @@ specification the ioctl returns an ``EINVAL`` error code.
+ 	interface. A video overlay device typically stores captured images
+ 	directly in the video memory of a graphics card, with hardware
+ 	clipping and scaling.
++    * - ``V4L2_CAP_AUDIO_M2M``
++      - 0x00000008
++      - The device supports the audio Memory-To-Memory interface.
+     * - ``V4L2_CAP_VBI_CAPTURE``
+       - 0x00000010
+       - The device supports the :ref:`Raw VBI Capture <raw-vbi>`
+diff --git a/Documentation/userspace-api/media/videodev2.h.rst.exceptions b/Documentation/userspace-api/media/videodev2.h.rst.exceptions
+index 3e58aac4ef0b..da6d0b8e4c2c 100644
+--- a/Documentation/userspace-api/media/videodev2.h.rst.exceptions
++++ b/Documentation/userspace-api/media/videodev2.h.rst.exceptions
+@@ -197,6 +197,7 @@ replace define V4L2_CAP_META_OUTPUT device-capabilities
+ replace define V4L2_CAP_DEVICE_CAPS device-capabilities
+ replace define V4L2_CAP_TOUCH device-capabilities
+ replace define V4L2_CAP_IO_MC device-capabilities
++replace define V4L2_CAP_AUDIO_M2M device-capabilities
  
-+/**
-+ * struct fsl_asrc_m2m_pdata - platform data
-+ * @asrc: pointer to struct fsl_asrc
-+ * @fmt_in: input sample format
-+ * @fmt_out: output sample format
-+ * @chan_min: minimum channel number
-+ * @chan_max: maximum channel number
-+ * @rate_min: minimum rate
-+ * @rate_max: maximum rete
-+ */
-+struct fsl_asrc_m2m_pdata {
-+	struct fsl_asrc *asrc;
-+	u64 fmt_in;
-+	u64 fmt_out;
-+	int chan_min;
-+	int chan_max;
-+	int rate_min;
-+	int rate_max;
-+};
-+
-+#define M2M_DRV_NAME "fsl_asrc_m2m"
- #define DRV_NAME "fsl-asrc-dai"
- extern struct snd_soc_component_driver fsl_asrc_component;
- 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 7d8643ee0ba0..5ecb5d869607 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -1187,6 +1187,7 @@ static int fsl_asrc_runtime_suspend(struct device *dev);
- static int fsl_asrc_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-+	struct fsl_asrc_m2m_pdata m2m_pdata;
- 	struct fsl_asrc_priv *asrc_priv;
- 	struct fsl_asrc *asrc;
- 	struct resource *res;
-@@ -1368,6 +1369,18 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 		goto err_pm_get_sync;
- 	}
- 
-+	m2m_pdata.asrc = asrc;
-+	m2m_pdata.fmt_in = FSL_ASRC_FORMATS;
-+	m2m_pdata.fmt_out = FSL_ASRC_FORMATS | SNDRV_PCM_FMTBIT_S8;
-+	m2m_pdata.rate_min = 5512;
-+	m2m_pdata.rate_max = 192000;
-+	m2m_pdata.chan_min = 1;
-+	m2m_pdata.chan_max = 10;
-+	asrc->m2m_pdev = platform_device_register_data(&pdev->dev,
-+						       M2M_DRV_NAME,
-+						       PLATFORM_DEVID_AUTO,
-+						       &m2m_pdata,
-+						       sizeof(m2m_pdata));
- 	return 0;
- 
- err_pm_get_sync:
-@@ -1380,6 +1393,11 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 
- static void fsl_asrc_remove(struct platform_device *pdev)
- {
-+	struct fsl_asrc *asrc = dev_get_drvdata(&pdev->dev);
-+
-+	if (asrc->m2m_pdev && !IS_ERR(asrc->m2m_pdev))
-+		platform_device_unregister(asrc->m2m_pdev);
-+
- 	pm_runtime_disable(&pdev->dev);
- 	if (!pm_runtime_status_suspended(&pdev->dev))
- 		fsl_asrc_runtime_suspend(&pdev->dev);
+ # V4L2 pix flags
+ replace define V4L2_PIX_FMT_PRIV_MAGIC :c:type:`v4l2_pix_format`
+diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+index 3813212a5cd3..eb5911719734 100644
+--- a/include/uapi/linux/videodev2.h
++++ b/include/uapi/linux/videodev2.h
+@@ -473,6 +473,7 @@ struct v4l2_capability {
+ #define V4L2_CAP_VIDEO_CAPTURE		0x00000001  /* Is a video capture device */
+ #define V4L2_CAP_VIDEO_OUTPUT		0x00000002  /* Is a video output device */
+ #define V4L2_CAP_VIDEO_OVERLAY		0x00000004  /* Can do video overlay */
++#define V4L2_CAP_AUDIO_M2M		0x00000008  /* audio memory to memory */
+ #define V4L2_CAP_VBI_CAPTURE		0x00000010  /* Is a raw VBI capture device */
+ #define V4L2_CAP_VBI_OUTPUT		0x00000020  /* Is a raw VBI output device */
+ #define V4L2_CAP_SLICED_VBI_CAPTURE	0x00000040  /* Is a sliced VBI capture device */
 -- 
 2.34.1
 
