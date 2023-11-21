@@ -4,90 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A99BC61D90
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 16:00:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E247C61D85
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 17:02:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ElJWlHaH;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CrAFxo+y;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PxriTdLA;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sxr1AGai;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZTcT4zvpz3dJb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 03:00:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZVzY6Mgjz3dHK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 04:02:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ElJWlHaH;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CrAFxo+y;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PxriTdLA;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sxr1AGai;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZTbP1CvKz3c82
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 02:59:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZVyX07vsz3cT7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 04:01:22 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700582380;
+	s=mimecast20190719; t=1700586078;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JLQMSJj5cT+I2UqS+X9OetiKtxPgKmgg9Mky3rgL5p8=;
-	b=ElJWlHaHuSZy71M7B3dOQp8J/2OzWUhKuFd8uKuMe8cujuldou89HalsmJdmj4TLGCuZNm
-	BPjf4A3MspR6oe8b7koLqdrzIbMjiGtkLzsAlk3WWZABSntPrnsbxbUj6JICU+TgwhwMfu
-	4iVkQeoDOPNnX3OQXhFgZWSg2kNrAvE=
+	bh=v93FwVXoTzkwCTHloTDbAyzgq12DcyzYpNvU8V0mZJE=;
+	b=PxriTdLAuJq62GjFjnvroFIK95wCDarDaGOvAtVu5MZCQ4BWcKpUMtjhkRBnn8m917m2sf
+	gyP+gfVdnUNNnYILapQcNz7/iuQ8CXjQugj4QSWyzcYtXnBE9toOQ4JaIAWW1a9xeunC9d
+	x49B6PelrfzkaENjJyBDfp4VaN54lkE=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700582381;
+	s=mimecast20190719; t=1700586079;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JLQMSJj5cT+I2UqS+X9OetiKtxPgKmgg9Mky3rgL5p8=;
-	b=CrAFxo+ydw8C6CbTxUbBIaihHmYR6ig8k/MtfOpRtrd0RljEr+Ya2KItvfoyWQHbsGdFtN
-	h2noGDl4792ZLDm2wOTIapJbDdaB7q9k1gDawGnwsUJY0g1HMu2vLOKe0bGvy8PMMPFRSu
-	2THHOi/MDiY/3nxa2HMeRhO6qNkJ++A=
-Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
- [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=v93FwVXoTzkwCTHloTDbAyzgq12DcyzYpNvU8V0mZJE=;
+	b=Sxr1AGaigMR4E84yXwgzciS2FkVr0LnbIvidpZc0UKV9YGowa2PNrxbPAUXkJNE/04oQ1V
+	F3OakXZrxKHHyNzBtRlw9PU374AOUEOLesOpkaCtOF+24LP1G6jk4Btm6UlH7R6fIJzvs7
+	z/SLvmNuuUPgXqc6jbmbipqjA3U6KOI=
+Received: from mail-oo1-f71.google.com (mail-oo1-f71.google.com
+ [209.85.161.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-632-rbsngHtjMVWkpo5o_HBmIg-1; Tue, 21 Nov 2023 10:59:39 -0500
-X-MC-Unique: rbsngHtjMVWkpo5o_HBmIg-1
-Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-6716c2696c7so15014376d6.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 07:59:39 -0800 (PST)
+ us-mta-259-tMJ6tb5lN5aFmSWDMmnWDA-1; Tue, 21 Nov 2023 12:01:15 -0500
+X-MC-Unique: tMJ6tb5lN5aFmSWDMmnWDA-1
+Received: by mail-oo1-f71.google.com with SMTP id 006d021491bc7-587ac1e8eb1so6093212eaf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 09:01:12 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700582379; x=1701187179;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JLQMSJj5cT+I2UqS+X9OetiKtxPgKmgg9Mky3rgL5p8=;
-        b=NmyYBxUdgQItJRF6Sy4eNfVv6FE/N+paaWzm88cXlkVxYB+U03svv2gnKVDMiDMNhl
-         3GYB9cdkSULnQ4mcxvMmYgjARi9i/R9y/WoW6Z5xVHSh+eHsmP3FA7te0dB7sTiLSQhv
-         exYACrrg4umseWbdH/r78tvl8hc1OYPsAEwsVoQE9LqLIJKVdsqXcMFnkZNd8FzzGVBG
-         yRqWMxR/cifWFcTbELAjUzq4y/qewVzN5Ar/2tpruFINtrwjmGp8qMxA05fY72tJkfU0
-         Ej2ij1g3cSo1Wp0+MsDVxF8zfDr+dwpnJZMaqj93GJ0+EPdiVmDDxgEANGJXgHQInZxU
-         zWJA==
-X-Gm-Message-State: AOJu0YyzYAj5lXMyPYEca008yxxSrfW3Gs58FohSjwq6jhkx4gQakDDE
-	DQfbkH2ArQF0UG8lYqe3hwPz3/ex/7hi2/WX++jtXE4swFzUjC6jjSo9Io8q5yOOufvApemdE6/
-	DT+OV6SBwW4a6t0rZIluTlkHurQ==
-X-Received: by 2002:a0c:c582:0:b0:66d:1012:c16a with SMTP id a2-20020a0cc582000000b0066d1012c16amr10534479qvj.1.1700582378974;
-        Tue, 21 Nov 2023 07:59:38 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IG9jPSayCUuCFnqS3WxavS9ST6O5WwQE1cldTJjdWqW9XI/Aaj5okJ+Mn7wuuqXunOLRSa0AQ==
-X-Received: by 2002:a0c:c582:0:b0:66d:1012:c16a with SMTP id a2-20020a0cc582000000b0066d1012c16amr10534438qvj.1.1700582378610;
-        Tue, 21 Nov 2023 07:59:38 -0800 (PST)
-Received: from x1n (cpe688f2e2cb7c3-cm688f2e2cb7c0.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id a12-20020a0562140c2c00b00679d9547310sm2051153qvd.31.2023.11.21.07.59.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Nov 2023 07:59:38 -0800 (PST)
-Date: Tue, 21 Nov 2023 10:59:35 -0500
-From: Peter Xu <peterx@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH RFC 06/12] mm/gup: Drop folio_fast_pin_allowed() in
- hugepd processing
-Message-ID: <ZVzT5_3Zn-Y-6xth@x1n>
-References: <20231116012908.392077-1-peterx@redhat.com>
- <20231116012908.392077-7-peterx@redhat.com>
- <ZVsYMMJpmFV2T/Zc@infradead.org>
+        d=1e100.net; s=20230601; t=1700586069; x=1701190869;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=v93FwVXoTzkwCTHloTDbAyzgq12DcyzYpNvU8V0mZJE=;
+        b=bmuqu9wIN2QZbvCHQJEW0iwG8nTjGnM5EoTnV0GvhYOuVhvrG/XARI9pp6j74SZ8vE
+         vS2FHODA/nZ8SQ1aVhBCAbLdOF/jhpPPulNqbIMv+uAw82zW60ZiHWFz6rkXbccZ5NRm
+         DIdSA1Dg9IeQa8dS84ApjwadmXD6zYcLFzNGhuJRtub9gMIyvr4vfiUHlD2/Iky6qtCw
+         b1ez7kX9bKVbyci8NPZfWJuVv/Vrc1zy8qVM0EW8OhmO7rPv8DQvVx+1h3w5Yy6ijOCc
+         aHqeuVX3L1htOzjsesT5zxsIWpaYgdtmEiIOKyS04lDFZd4trrtUmT7+ne5yS5pc8TpH
+         MPBw==
+X-Gm-Message-State: AOJu0YymSJ8jCokCzpz/MrVas0prrFBGpds7CO6p60DoZ9kDKBHM0Eh/
+	zWNu5PvSe43kVAnlgHQI1I11zGrwpcMfUW7H5InzTwJlAIKmIaxUoyNJ97YY8xr5/gw6q+29koZ
+	755e8Yj1DA3KUwzpHCsbdIsZHh4L8sIrNJLkblFSDCg==
+X-Received: by 2002:a05:6358:7e47:b0:169:a9d4:3faf with SMTP id p7-20020a0563587e4700b00169a9d43fafmr12581526rwm.11.1700586069082;
+        Tue, 21 Nov 2023 09:01:09 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHzwqwXTcQOMVq6+W/ToO1AFQnqdGCzNKV3DK3CezCKFyIOZTTVBddsfYxnVHAme/q2N84DW6rxhPtI5xPi31c=
+X-Received: by 2002:a05:6358:7e47:b0:169:a9d4:3faf with SMTP id
+ p7-20020a0563587e4700b00169a9d43fafmr12581454rwm.11.1700586068588; Tue, 21
+ Nov 2023 09:01:08 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <ZVsYMMJpmFV2T/Zc@infradead.org>
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-35-pbonzini@redhat.com>
+ <CAF7b7mpmuYLTY6OQfRRoOryfO-2e1ZumQ6SCQDHHPD5XFyhFTQ@mail.gmail.com> <13677ced-e464-4cdb-82ae-4236536e169c@sirena.org.uk>
+In-Reply-To: <13677ced-e464-4cdb-82ae-4236536e169c@sirena.org.uk>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 21 Nov 2023 18:00:56 +0100
+Message-ID: <CABgObfZdk9Jn60QLJGweVZMN_yWsxo1d7W3Mu-NNTPZVO0uCnw@mail.gmail.com>
+Subject: Re: [PATCH 34/34] KVM: selftests: Add a memory region subtest to
+ validate invalid flags
+To: Mark Brown <broonie@kernel.org>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,38 +97,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, James Houghton <jthoughton@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Yang Shi <shy828301@gmail.com>, Rik van Riel <riel@surriel.com>, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Mike Rapoport <rppt@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Axel Rasmussen <axelrasmussen@google.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Vlastimil Babka <vbabka@suse.cz>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Sean Christopherson <seanjc@google.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org
+ >, Quentin Perret <qperret@google.com>, Anup Patel <anup@brainfault.org>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, linux-fsdevel@vger.kernel.org, Liam Merwick <liam.merwick@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 20, 2023 at 12:26:24AM -0800, Christoph Hellwig wrote:
-> On Wed, Nov 15, 2023 at 08:29:02PM -0500, Peter Xu wrote:
-> > Hugepd format is only used in PowerPC with hugetlbfs.  In commit
-> > a6e79df92e4a ("mm/gup: disallow FOLL_LONGTERM GUP-fast writing to
-> > file-backed mappings"), we added a check to fail gup-fast if there's
-> > potential risk of violating GUP over writeback file systems.  That should
-> > never apply to hugepd.
+On Mon, Nov 20, 2023 at 3:09=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
+te:
+>
+> On Wed, Nov 08, 2023 at 05:08:01PM -0800, Anish Moorthy wrote:
+> > Applying [1] and [2] reveals that this also breaks non-x86 builds- the
+> > MEM_REGION_GPA/SLOT definitions are guarded behind an #ifdef
+> > __x86_64__, while the usages introduced here aren't.
 > >
-> > Drop that check, not only because it'll never be true for hugepd, but also
-> > it paves way for reusing the function outside fast-gup.
-> 
-> What prevents us from ever using hugepd with file mappings?  I think
-> it would naturally fit in with how large folios for the pagecache work.
-> 
-> So keeping this check and generalizing it seems like the better idea to
-> me.
+> > Should
+> >
+> > On Sun, Nov 5, 2023 at 8:35=E2=80=AFAM Paolo Bonzini <pbonzini@redhat.c=
+om> wrote:
+> > >
+> > > +       test_invalid_memory_region_flags();
+> >
+> > be #ifdef'd, perhaps? I'm not quite sure what the intent is.
+>
+> This has been broken in -next for a week now, do we have any progress
+> on a fix or should we just revert the patch?
 
-But then it means we're still keeping that dead code for fast-gup even if
-we know that fact..  Or do we have a plan to add that support very soon, so
-this code will be destined to add back?
+Sorry, I was away last week. I have now posted a patch.
 
-The other option is I can always add a comment above gup_huge_pd()
-explaining this special bit, so that when someone is adding hugepd support
-to file large folios we'll hopefully not forget it?  But then that
-generalization work will only happen when the code will be needed.
-
-Thanks,
-
--- 
-Peter Xu
+Paolo
 
