@@ -4,71 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A97BC5AD4C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 02:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BD8CC61D88
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 09:21:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=h35Vxiqr;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LMydwJ77;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=OrgQS5jO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZ7tC0VFRz3dHJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 13:41:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZJlR6lXwz3dD2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 20:21:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=h35Vxiqr;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LMydwJ77;
+	dkim=pass (2048-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=OrgQS5jO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cloudflare.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ignat@cloudflare.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZ6lR4gQwz3c40
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 12:50:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700531418;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=y3Q3tLM9OGu607uvr6IkvxoBRGupiz4hQd2uNEc6wxU=;
-	b=h35Vxiqr1QITmJY7boN3uZO1bPYrOgJMJvd+9sbm8tZ47J8t72x9BolqdjlchhsEEzXaSc
-	EHQogQThJQNIqpBk0/VXB0ZaDI4uYCrl9PlsKDeXcgjUBGrYP+Ig+TBcgrlk7CpaV7owwd
-	Ptne/zjbqdKAgOgfQYItq3EcjBbF464=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700531419;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=y3Q3tLM9OGu607uvr6IkvxoBRGupiz4hQd2uNEc6wxU=;
-	b=LMydwJ77HzqnvuhB0uOoJe6x5pRm+prgth80bodOs1zfwTkuVyK1KeV2X5BHPZO86yv/RM
-	8vuN8w1nKiW8LJSmmVi9OU9NXAsj0zj30xGk0QVXk8dMQY98Gk0NA9FhHUIE8x9RuA3rst
-	gcT29mmNUQm4lRQ3IFCSlt/pWxdASwE=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-317-dGxeOKufP0OB-17nBSQkQA-1; Mon, 20 Nov 2023 20:50:15 -0500
-X-MC-Unique: dGxeOKufP0OB-17nBSQkQA-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1F0F9811E7B;
-	Tue, 21 Nov 2023 01:50:14 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.97])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 2267D2026D4C;
-	Tue, 21 Nov 2023 01:50:10 +0000 (UTC)
-Date: Tue, 21 Nov 2023 09:50:05 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Ignat Korchagin <ignat@cloudflare.com>, eric_devolder@yahoo.com
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZGq36DTvz3by8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 18:54:06 +1100 (AEDT)
+Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-28396255b81so2874418a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2023 23:54:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=cloudflare.com; s=google09082023; t=1700553239; x=1701158039; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=n94+xDIkUOqQeszLqyF1GvL8Xx0iP7KzdJ36tDGQoLY=;
+        b=OrgQS5jOoHCgXZJz+z//IXTj9AoWRZWOOMXU32Ecj6XQrZ+Z9TEOC+0EF0E5v9re3a
+         ug/pH13UVp18oashLAxlXXaiZuLKbu23mPSIaF6rQjX6eRhHAD6Jeo9e7XFH+FqHL2aJ
+         1kzL31nh9pV2UZksn/dcpkrlFB9ahGQ6OSaKy0tvPrGxEaas46R/7MdC2XbfLU9hnMnm
+         ucH9MXtMUXbPAlVshc3nY7y19AAyq9wQs9zmS8tV+kXyq1xGzNIOqcE7DTMm6/4CjS2B
+         WcSLWZ0w8vtssCG9seeIoOXnDUaZ+Wlz9HMt1DWcWZyZzm9jfJN8s/bXt+Hfh98lS12+
+         fjuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700553239; x=1701158039;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=n94+xDIkUOqQeszLqyF1GvL8Xx0iP7KzdJ36tDGQoLY=;
+        b=oBvtdWb8zUjtn5DIynBcOAeIc317SXdmPPqBdNafrIGhsHcwSrLla30fSLLoBdoYTA
+         fxmCj+mX/Mlgxe48KsfEWV/iVRCtGz8CBk+yv+esyxfwyO9Rfu7SARLoPdYAMtK93lQ2
+         zvg2iMWDKUk3AwtLbGmcWgUD1ljAMqqncPcocS4VrAVI0lP0hmQEljrSBFcsG032z98F
+         pjBkIgT4KGDn7iWAJZqAWt/lrYZLZaM1c+tDWX7BFh2f5V78AHdeZF7nNG/r8jm3vCc+
+         yt+FMXmewFQHwJ8MV2gwY5NmpkeKtwSSfpwUBlOFsDlivX8NnvzUPMqs1iSkwAZd8qCg
+         wdnw==
+X-Gm-Message-State: AOJu0Yz7GRyZlrP9dBNWTTpuNZLeSOi/7tD7oVpKz8gZ2Kmqa/c+xeNx
+	hspSUejvB6SHBLtYkoWw+PeYiogoaIub0mie7+OeJA==
+X-Google-Smtp-Source: AGHT+IFEH3g7IKb8uSXGkQLcfDFQGeKgdMM5+Twg24L86I2m/VOT+I8Lea+NYKy/4gFSwZ3WTdUJVHHh1PwvYjXVr94=
+X-Received: by 2002:a17:90a:8b01:b0:280:f534:6b9c with SMTP id
+ y1-20020a17090a8b0100b00280f5346b9cmr7974497pjn.21.1700553238477; Mon, 20 Nov
+ 2023 23:53:58 -0800 (PST)
+MIME-Version: 1.0
+References: <CALrw=nHpRQQaQTP_jZfREgrQEMpS8jBF8JQCv4ygqXycE-StaA@mail.gmail.com>
+ <ZVwMzXxWkgonIAfc@MiWiFi-R3L-srv>
+In-Reply-To: <ZVwMzXxWkgonIAfc@MiWiFi-R3L-srv>
+From: Ignat Korchagin <ignat@cloudflare.com>
+Date: Tue, 21 Nov 2023 07:53:47 +0000
+Message-ID: <CALrw=nG8xsYw7XKyL_VMHtKiaBcQCKvC8UVp-C9-BdeN4A1Daw@mail.gmail.com>
 Subject: Re: Potential config regression after 89cde455 ("kexec: consolidate
  kexec and crash options into kernel/Kconfig.kexec")
-Message-ID: <ZVwMzXxWkgonIAfc@MiWiFi-R3L-srv>
-References: <CALrw=nHpRQQaQTP_jZfREgrQEMpS8jBF8JQCv4ygqXycE-StaA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CALrw=nHpRQQaQTP_jZfREgrQEMpS8jBF8JQCv4ygqXycE-StaA@mail.gmail.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.4
-X-Mailman-Approved-At: Tue, 21 Nov 2023 13:39:48 +1100
+To: Baoquan He <bhe@redhat.com>, eric_devolder@yahoo.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Tue, 21 Nov 2023 20:20:18 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,44 +83,63 @@ Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Eric DeVolder's Oracle mail address is not available anymore, add his
-current mail address he told me. 
+On Tue, Nov 21, 2023 at 1:50=E2=80=AFAM Baoquan He <bhe@redhat.com> wrote:
+>
+> Eric DeVolder's Oracle mail address is not available anymore, add his
+> current mail address he told me.
 
-On 11/20/23 at 10:52pm, Ignat Korchagin wrote:
-> Good day!
-> 
-> We have recently started to evaluate Linux 6.6 and noticed that we
-> cannot disable CONFIG_KEXEC anymore, but keep CONFIG_CRASH_DUMP
-> enabled. It seems to be related to commit 89cde455 ("kexec:
-> consolidate kexec and crash options into kernel/Kconfig.kexec"), where
-> a CONFIG_KEXEC dependency was added to CONFIG_CRASH_DUMP.
-> 
-> In our current kernel (Linux 6.1) we only enable CONFIG_KEXEC_FILE
-> with enforced signature check to support the kernel crash dumping
-> functionality and would like to keep CONFIG_KEXEC disabled for
-> security reasons [1].
-> 
-> I was reading the long commit message, but the reason for adding
-> CONFIG_KEXEC as a dependency for CONFIG_CRASH_DUMP evaded me. And I
-> believe from the implementation perspective CONFIG_KEXEC_FILE should
-> suffice here (as we successfully used it for crashdumps on Linux 6.1).
-> 
-> Is there a reason for adding this dependency or is it just an
-> oversight? Would some solution of requiring either CONFIG_KEXEC or
-> CONFIG_KEXEC_FILE work here?
+Thank you!
 
-I searched the patch history, found Eric didn't add the dependency on
-CONFIG_KEXEC at the beginning. Later a linux-next building failure with
-randconfig was reported, in there CONFIG_CRASH_DUMP enabled, while
-CONFIG_KEXEC is disabled. Finally Eric added the KEXEC dependency for
-CRASH_DUMP. Please see below link for more details:
+> On 11/20/23 at 10:52pm, Ignat Korchagin wrote:
+> > Good day!
+> >
+> > We have recently started to evaluate Linux 6.6 and noticed that we
+> > cannot disable CONFIG_KEXEC anymore, but keep CONFIG_CRASH_DUMP
+> > enabled. It seems to be related to commit 89cde455 ("kexec:
+> > consolidate kexec and crash options into kernel/Kconfig.kexec"), where
+> > a CONFIG_KEXEC dependency was added to CONFIG_CRASH_DUMP.
+> >
+> > In our current kernel (Linux 6.1) we only enable CONFIG_KEXEC_FILE
+> > with enforced signature check to support the kernel crash dumping
+> > functionality and would like to keep CONFIG_KEXEC disabled for
+> > security reasons [1].
+> >
+> > I was reading the long commit message, but the reason for adding
+> > CONFIG_KEXEC as a dependency for CONFIG_CRASH_DUMP evaded me. And I
+> > believe from the implementation perspective CONFIG_KEXEC_FILE should
+> > suffice here (as we successfully used it for crashdumps on Linux 6.1).
+> >
+> > Is there a reason for adding this dependency or is it just an
+> > oversight? Would some solution of requiring either CONFIG_KEXEC or
+> > CONFIG_KEXEC_FILE work here?
+>
+> I searched the patch history, found Eric didn't add the dependency on
+> CONFIG_KEXEC at the beginning. Later a linux-next building failure with
+> randconfig was reported, in there CONFIG_CRASH_DUMP enabled, while
+> CONFIG_KEXEC is disabled. Finally Eric added the KEXEC dependency for
+> CRASH_DUMP. Please see below link for more details:
+>
+> https://lore.kernel.org/all/3e8eecd1-a277-2cfb-690e-5de2eb7b988e@oracle.c=
+om/T/#u
 
-https://lore.kernel.org/all/3e8eecd1-a277-2cfb-690e-5de2eb7b988e@oracle.com/T/#u
+Thank you for digging this up. However I'm still confused, because
+this is exactly how we configure Linux 6.1 (although we do have
+CONFIG_KEXEC_FILE enabled) and we don't have any problems. I believe
+we did not investigate this issue properly.
 
-And besides, the newly added CONFIG_CRASH_HOTPLUG also needs
-CONFIG_KEXEC if the elfcorehdr is allowed to be manipulated when
-cpu/memory hotplug hapened.
+> And besides, the newly added CONFIG_CRASH_HOTPLUG also needs
+> CONFIG_KEXEC if the elfcorehdr is allowed to be manipulated when
+> cpu/memory hotplug hapened.
 
-Thanks
-Baoquan
+This still feels like a regression to me: any crash dump support
+should be independent of KEXEC syscalls being present. While probably
+the common case (including us) that the crashing kernel and recovery
+kernel are the same, they don't have to be. We need kexec syscall in
+the crashing kernel, but crashdump support in the recovery kernel (but
+the recovery kernel not having the kexec syscalls should be totally
+fine). If we do require some code definitions from kexec - at most we
+should put them under CONFIG_KEXEC_CORE.
 
+> Thanks
+> Baoquan
+>
