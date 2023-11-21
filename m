@@ -4,72 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 861D6C5ACB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 07:57:09 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AqA1/fKJ;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1D57C54FB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 08:18:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZGtW5dQ1z3dJw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 18:57:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AqA1/fKJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZHLm1fk9z3dS8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 19:18:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZGsb6JTDz3byP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 18:56:19 +1100 (AEDT)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-6b1d1099a84so5007658b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2023 23:56:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1700553376; x=1701158176; darn=lists.ozlabs.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xPkROMmbes+NoTwBo6+myJWaj5ksNAqKHgxIe4KqEts=;
-        b=AqA1/fKJYFKpvO60uq3tzfFxbL73WRA5qbTwNMQYYSlteMCVw8tAa0wkHb+aNoONEH
-         A1K5/GL7whCKvH0iQOq6cCzhfjOi36k9d0gBJJoxH9QedBKJVmVfdUjwznqF/a3ErwTf
-         y5YXpTlmaIy1W8pSl9Su3kuTHObtzqr3X9VGOeTGlcTyCJGrRETdHDvT0bPFBRXh89iK
-         zhHPena/TGOlDEthNzN43OZZIeSeoEQaoXubpFyWtSlEoDvfIGidQtp1dpifUQl+k+RO
-         danRI/169sg6vK97ZcRyN4jg0qOxdm+tOUk4PzB1bCkiFB9kCc94vAkRMIziIguYiaG6
-         Ljyg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700553376; x=1701158176;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=xPkROMmbes+NoTwBo6+myJWaj5ksNAqKHgxIe4KqEts=;
-        b=t1XkiVfXXPiZX7IWsetMGIFIaqStwhc3u2LeuHJjbluC98pjPpcEeGA30qy8bD9Ct5
-         hvRAYg1B0qPm50Zw6MPER6Pi5JNZMrleFKnEQwFMNAk66ropS9D3pxwsAsNlvwBb3w2J
-         decRYZeWOfxmsQH8g+wSlDEcM0U/xM0Tyitd4y2LRj48imJYuKpK8Oho/H9nvl1+RmfM
-         qjUoI5V3bTYDHsHCT0X5kKps1ICpOgVdW8I6gZv4FxsDyIoVZ+BJ0mMiivQqTJMSg8hA
-         O2/X3ORlN4eaQi/KKQieUEVEH4K+weH70RG3B3nTAOY0KHF0buQpNlEgFg6ZlV99IfMp
-         vGCg==
-X-Gm-Message-State: AOJu0YzedZTrdDmAFdsfp+cdqF/vz4E1oBtoAiUB6jO7si0V4BNE1i2g
-	SyQN+uJY/xLRnFrc2HVCPqU=
-X-Google-Smtp-Source: AGHT+IGOCLqAMv/TBcLtTqQ5OkM/wL3HZhsfigdHGhc8FOL3f0xgpNEsonSURDAai5Ll61v7nVXwZg==
-X-Received: by 2002:a05:6a20:8f14:b0:18a:e86f:f246 with SMTP id b20-20020a056a208f1400b0018ae86ff246mr990692pzk.10.1700553376311;
-        Mon, 20 Nov 2023 23:56:16 -0800 (PST)
-Received: from localhost (203-219-179-16.tpgi.com.au. [203.219.179.16])
-        by smtp.gmail.com with ESMTPSA id ju4-20020a170903428400b001cc3875e658sm7340245plb.303.2023.11.20.23.56.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 20 Nov 2023 23:56:16 -0800 (PST)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 21 Nov 2023 17:56:10 +1000
-Message-Id: <CX4BUXJD624S.2U2UZ9M6H198U@wheely>
-Subject: Re: [PATCH v2] powerpc: Don't clobber fr0/vs0 during fp|altivec
- register  save
-From: "Nicholas Piggin" <npiggin@gmail.com>
-To: "Timothy Pearson" <tpearson@raptorengineering.com>, "Michael Ellerman"
- <mpe@ellerman.id.au>
-X-Mailer: aerc 0.15.2
-References: <1921539696.48534988.1700407082933.JavaMail.zimbra@raptorengineeringinc.com> <877cmc7ve9.fsf@mail.lhotse> <439072392.48800901.1700498743840.JavaMail.zimbra@raptorengineeringinc.com> <874jhg6lkn.fsf@mail.lhotse> <608737213.48890358.1700529837699.JavaMail.zimbra@raptorengineeringinc.com>
-In-Reply-To: <608737213.48890358.1700529837699.JavaMail.zimbra@raptorengineeringinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZHL900JWz2xTm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 19:17:35 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2F456200EEA;
+	Tue, 21 Nov 2023 09:17:31 +0100 (CET)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BDA8620005B;
+	Tue, 21 Nov 2023 09:17:30 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id C626D1802201;
+	Tue, 21 Nov 2023 16:17:28 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: hverkuil@xs4all.nl,
+	sakari.ailus@iki.fi,
+	tfiga@chromium.org,
+	m.szyprowski@samsung.com,
+	mchehab@kernel.org,
+	linux-media@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v10 00/14] Add audio support in v4l2 framework
+Date: Tue, 21 Nov 2023 15:37:21 +0800
+Message-Id: <1700552255-5364-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,177 +58,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, regressions <regressions@lists.linux.dev>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue Nov 21, 2023 at 11:23 AM AEST, Timothy Pearson wrote:
->
->
-> ----- Original Message -----
-> > From: "Michael Ellerman" <mpe@ellerman.id.au>
-> > To: "Timothy Pearson" <tpearson@raptorengineering.com>
-> > Cc: "Jens Axboe" <axboe@kernel.dk>, "regressions" <regressions@lists.li=
-nux.dev>, "npiggin" <npiggin@gmail.com>,
-> > "christophe leroy" <christophe.leroy@csgroup.eu>, "linuxppc-dev" <linux=
-ppc-dev@lists.ozlabs.org>
-> > Sent: Monday, November 20, 2023 5:39:52 PM
-> > Subject: Re: [PATCH v2] powerpc: Don't clobber fr0/vs0 during fp|altive=
-c register  save
->
-> > Timothy Pearson <tpearson@raptorengineering.com> writes:
-> >> ----- Original Message -----
-> >>> From: "Michael Ellerman" <mpe@ellerman.id.au>
-> > ...
-> >>>=20
-> >>> But we now have a new path, because io-uring can call copy_process() =
-via
-> >>> create_io_thread() from the signal handling path. That's OK if the si=
-gnal is
-> >>> handled as we return from a syscall, but it's not OK if the signal is=
- handled
-> >>> due to some other interrupt.
-> >>>=20
-> >>> Which is:
-> >>>=20
-> >>> interrupt_return_srr_user()
-> >>>  interrupt_exit_user_prepare()
-> >>>    interrupt_exit_user_prepare_main()
-> >>>      do_notify_resume()
-> >>>        get_signal()
-> >>>          task_work_run()
-> >>>            create_worker_cb()
-> >>>              create_io_worker()
-> >>>                copy_process()
-> >>>                  dup_task_struct()
-> >>>                    arch_dup_task_struct()
-> >>>                      flush_all_to_thread()
-> >>>                        save_all()
-> >>>                          if (tsk->thread.regs->msr & MSR_FP)
-> >>>                            save_fpu()
-> >>>                            # fr0 is clobbered and potentially live in=
- userspace
-> >>>=20
-> >>>=20
-> >>> So tldr I think the corruption is only an issue since io-uring starte=
-d doing
-> >>> the clone via signal, which I think matches the observed timeline of =
-this bug
-> >>> appearing.
-> >>
-> >> I agree the corruption really only started showing up in earnest on
-> >> io_uring clone-via-signal, as this was confirmed several times in the
-> >> course of debugging.
-> >=20
-> > Thanks.
-> >=20
-> >> Note as well that I may very well have a wrong call order in the
-> >> commit message, since I was relying on a couple of WARN_ON() macros I
-> >> inserted to check for a similar (but not identical) condition and
-> >> didn't spend much time getting new traces after identifying the root
-> >> cause.
-> >=20
-> > Yep no worries. I'll reword it to incorporate the full path from my mai=
-l.
-> >=20
-> >> I went back and grabbed some real world system-wide stack traces, sinc=
-e I now
-> >> know what to trigger on.  A typical example is:
-> >>
-> >> interrupt_return_srr_user()
-> >>  interrupt_exit_user_prepare()
-> >>   interrupt_exit_user_prepare_main()
-> >>    schedule()
-> >>     __schedule()
-> >>      __switch_to()
-> >>       giveup_all()
-> >>        # tsk->thread.regs->msr MSR_FP is still set here
-> >>        __giveup_fpu()
-> >>         save_fpu()
-> >>         # fr0 is clobbered and potentially live in userspace
-> >=20
-> > fr0 is not live there.
-> >=20
-> > __giveup_fpu() does roughly:
-> >=20
-> >	msr =3D tsk->thread.regs->msr;
-> >	msr &=3D ~(MSR_FP|MSR_FE0|MSR_FE1);
-> >        msr &=3D ~MSR_VSX;
-> >	tsk->thread.regs =3D msr;
-> >=20
-> > ie. it clears the FP etc. bits from the task's MSR. That means the FP
-> > state will be reloaded from the thread struct before the task is run ag=
-ain.
-> >=20
-> > Also on that path we're switching to another task, so we'll be reloadin=
-g
-> > the other task's FP state before returning to userspace.
-> >=20
-> > So I don't see any bug there.
->
-> Yeah, you're right.  I was trying to get traces while doing something els=
-e, and didn't think that all the way through, sorry. :)  It's not going to =
-be super easy to get a real trace (I was triggering the WARN_ON() from of f=
-r0 getting set to to FPSCR), so let's just assume it's mainly the path you =
-manually found above and update the commit message accordingly.
->
-> > There's only two places that call save_fpu() and skip the giveup logic,
-> > which is save_all() and kvmppc_save_user_regs().
->
-> Now that's interesting as well, since it might explain some issues I've s=
-een for years on a specific QEMU workload.  Once this is backported to stab=
-le I'll need to get the kernels updated on those boxes and see if the issue=
-s disappear...
+Audio signal processing also has the requirement for memory to
+memory similar as Video.
 
-KVM issue is actually slightly different. You need this (lightly
-verified to solve issue so far).
+This asrc memory to memory (memory ->asrc->memory) case is a non
+real time use case.
 
----
+User fills the input buffer to the asrc module, after conversion, then asrc
+sends back the output buffer to user. So it is not a traditional ALSA playback
+and capture case.
 
-From c12fbed0e12207058282a2411da59b43b1f96c49 Mon Sep 17 00:00:00 2001
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Tue, 21 Nov 2023 17:03:55 +1000
-Subject: [PATCH] KVM: PPC: Book3S HV: Fix KVM_RUN ioctl clobbering FP/VEC
- registers
+It is a specific use case,  there is no reference in current kernel.
+v4l2 memory to memory is the closed implementation,  v4l2 current
+support video, image, radio, tuner, touch devices, so it is not
+complicated to add support for this specific audio case.
 
-Before running a guest, the host process's FP/VEC registers are saved
-away like a context switch or a kernel use of those regs. The guest
-FP/VEC registers can then be loaded as needed. The host process
-registers would be restored lazily when it uses FP/VEC again.
+Because we had implemented the "memory -> asrc ->i2s device-> codec"
+use case in ALSA.  Now the "memory->asrc->memory" needs
+to reuse the code in asrc driver, so the first 3 patches is for refining
+the code to make it can be shared by the "memory->asrc->memory"
+driver.
 
-KVM HV did not do this correctly. The registers are saved in the
-thread struct, but the FP/VEC/VSX bits remain enabled in the user
-MSR, leading the kernel to think they are still valid. Even after
-they are clobbered by guest registers. This leads to the host
-process getting guest FP/VEC register values.
+The main change is in the v4l2 side, A /dev/vl4-audioX will be created,
+user applications only use the ioctl of v4l2 framework.
 
-KVM must be invoked by ioctl in this path, and almost certainly that
-means a C call to a wrapper function, but that still leaves real
-possibility of corruption in for non-volatile registers to cause
-problems for QEMU process.
----
- arch/powerpc/kernel/process.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Other change is to add memory to memory support for two kinds of i.MX ASRC
+module.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 392404688cec..9452a54d356c 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1198,11 +1198,11 @@ void kvmppc_save_user_regs(void)
-=20
- 	usermsr =3D current->thread.regs->msr;
-=20
-+	/* Caller has enabled FP/VEC/VSX/TM in MSR */
- 	if (usermsr & MSR_FP)
--		save_fpu(current);
--
-+		__giveup_fpu(current);
- 	if (usermsr & MSR_VEC)
--		save_altivec(current);
-+		__giveup_altivec(current);
-=20
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	if (usermsr & MSR_TM) {
---=20
-2.42.0
+changes in v10
+- remove FIXED_POINT type
+- change code base on media: v4l2-ctrls: add support for fraction_bits
+- fix issue reported by kernel test robot
+- remove module_alias
+
+changes in v9:
+- add MEDIA_ENT_F_PROC_AUDIO_RESAMPLER.
+- add MEDIA_INTF_T_V4L_AUDIO
+- add media controller support
+- refine the vim2m-audio to support 8k<->16k conversion.
+
+changes in v8:
+- refine V4L2_CAP_AUDIO_M2M to be 0x00000008
+- update doc for FIXED_POINT
+- address comments for imx-asrc
+
+changes in v7:
+- add acked-by from Mark
+- separate commit for fixed point, m2m audio class, audio rate controls
+- use INTEGER_MENU for rate,  FIXED_POINT for rate offset
+- remove used fmts
+- address other comments for Hans
+
+changes in v6:
+- use m2m_prepare/m2m_unprepare/m2m_start/m2m_stop to replace
+  m2m_start_part_one/m2m_stop_part_one, m2m_start_part_two/m2m_stop_part_two.
+- change V4L2_CTRL_TYPE_ASRC_RATE to V4L2_CTRL_TYPE_FIXED_POINT
+- fix warning by kernel test rebot
+- remove some unused format V4L2_AUDIO_FMT_XX
+- Get SNDRV_PCM_FORMAT from V4L2_AUDIO_FMT in driver.
+- rename audm2m to viaudm2m.
+
+changes in v5:
+- remove V4L2_AUDIO_FMT_LPCM
+- define audio pixel format like V4L2_AUDIO_FMT_S8...
+- remove rate and format in struct v4l2_audio_format.
+- Add V4L2_CID_ASRC_SOURCE_RATE and V4L2_CID_ASRC_DEST_RATE controls
+- updata document accordingly.
+
+changes in v4:
+- update document style
+- separate V4L2_AUDIO_FMT_LPCM and V4L2_CAP_AUDIO_M2M in separate commit
+
+changes in v3:
+- Modify documents for adding audio m2m support
+- Add audio virtual m2m driver
+- Defined V4L2_AUDIO_FMT_LPCM format type for audio.
+- Defined V4L2_CAP_AUDIO_M2M capability type for audio m2m case.
+- with modification in v4l-utils, pass v4l2-compliance test.
+
+changes in v2:
+- decouple the implementation in v4l2 and ALSA
+- implement the memory to memory driver as a platfrom driver
+  and move it to driver/media
+- move fsl_asrc_common.h to include/sound folder
+
+Shengjiu Wang (14):
+  ASoC: fsl_asrc: define functions for memory to memory usage
+  ASoC: fsl_easrc: define functions for memory to memory usage
+  ASoC: fsl_asrc: move fsl_asrc_common.h to include/sound
+  ASoC: fsl_asrc: register m2m platform device
+  ASoC: fsl_easrc: register m2m platform device
+  media: uapi: Add V4L2_CAP_AUDIO_M2M capability flag
+  media: v4l2: Add audio capture and output support
+  media: uapi: Define audio sample format fourcc type
+  media: uapi: Add V4L2_CTRL_CLASS_M2M_AUDIO
+  media: uapi: Add audio rate controls support
+  media: uapi: Declare interface types for Audio
+  media: uapi: Add an entity type for audio resampler
+  media: imx-asrc: Add memory to memory driver
+  media: vim2m-audio: add virtual driver for audio memory to memory
+
+ .../media/mediactl/media-types.rst            |   11 +
+ .../userspace-api/media/v4l/buffer.rst        |    6 +
+ .../userspace-api/media/v4l/common.rst        |    1 +
+ .../media/v4l/dev-audio-mem2mem.rst           |   71 +
+ .../userspace-api/media/v4l/devices.rst       |    1 +
+ .../media/v4l/ext-ctrls-audio-m2m.rst         |   41 +
+ .../userspace-api/media/v4l/pixfmt-audio.rst  |   87 ++
+ .../userspace-api/media/v4l/pixfmt.rst        |    1 +
+ .../media/v4l/vidioc-enum-fmt.rst             |    2 +
+ .../media/v4l/vidioc-g-ext-ctrls.rst          |    4 +
+ .../userspace-api/media/v4l/vidioc-g-fmt.rst  |    4 +
+ .../media/v4l/vidioc-querycap.rst             |    3 +
+ .../media/videodev2.h.rst.exceptions          |    3 +
+ .../media/common/videobuf2/videobuf2-v4l2.c   |    4 +
+ drivers/media/platform/nxp/Kconfig            |   13 +
+ drivers/media/platform/nxp/Makefile           |    1 +
+ drivers/media/platform/nxp/imx-asrc.c         | 1264 +++++++++++++++++
+ drivers/media/test-drivers/Kconfig            |   11 +
+ drivers/media/test-drivers/Makefile           |    1 +
+ drivers/media/test-drivers/vim2m-audio.c      |  799 +++++++++++
+ drivers/media/v4l2-core/v4l2-compat-ioctl32.c |    9 +
+ drivers/media/v4l2-core/v4l2-ctrls-defs.c     |   10 +
+ drivers/media/v4l2-core/v4l2-dev.c            |   21 +
+ drivers/media/v4l2-core/v4l2-ioctl.c          |   66 +
+ drivers/media/v4l2-core/v4l2-mem2mem.c        |   13 +-
+ include/media/v4l2-dev.h                      |    2 +
+ include/media/v4l2-ioctl.h                    |   34 +
+ .../fsl => include/sound}/fsl_asrc_common.h   |   60 +
+ include/uapi/linux/media.h                    |    2 +
+ include/uapi/linux/v4l2-controls.h            |    9 +
+ include/uapi/linux/videodev2.h                |   41 +
+ sound/soc/fsl/fsl_asrc.c                      |  144 ++
+ sound/soc/fsl/fsl_asrc.h                      |    4 +-
+ sound/soc/fsl/fsl_asrc_dma.c                  |    2 +-
+ sound/soc/fsl/fsl_easrc.c                     |  233 +++
+ sound/soc/fsl/fsl_easrc.h                     |    6 +-
+ 36 files changed, 2977 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/userspace-api/media/v4l/dev-audio-mem2mem.rst
+ create mode 100644 Documentation/userspace-api/media/v4l/ext-ctrls-audio-m2m.rst
+ create mode 100644 Documentation/userspace-api/media/v4l/pixfmt-audio.rst
+ create mode 100644 drivers/media/platform/nxp/imx-asrc.c
+ create mode 100644 drivers/media/test-drivers/vim2m-audio.c
+ rename {sound/soc/fsl => include/sound}/fsl_asrc_common.h (60%)
+
+-- 
+2.34.1
 
