@@ -4,69 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 862A9C61D92
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 11:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EFE6C61D92
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 16:30:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=UzNpmr1v;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=akn0TQ1t;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZMlC6VdXz3dC1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Nov 2023 22:36:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZVGX0gdbz3dH1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 03:30:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=UzNpmr1v;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=akn0TQ1t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cloudflare.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=ignat@cloudflare.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZKFs4v8xz3cS3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 20:44:00 +1100 (AEDT)
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-1cf52e5e07eso17804195ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 01:44:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cloudflare.com; s=google09082023; t=1700559837; x=1701164637; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zeX6LBtHobyx/lTsQiwAAEvgonswp+TnKesxqxWL11M=;
-        b=UzNpmr1vOEBDe6gSPpxAT2oSKSkTh6tGTzxj1IgE8Z8JDkuVFVd8EqMYhPUwPHxrk1
-         K0yP55pxrdLgEEQTk858fHLDgy3kz/8iPQlfkS9NIOGwj62Ool2IKcNg6/ckiPOuS3Mh
-         pQyQuiq5tijDLE0atJtBKl+1BM3tVAHaCExlGGiuqXYGuToHVhTdXznd14MRvfjjLXgb
-         xfHUM0+yk16zucqjlWc8+C9QXzsBiqWD4dFQLwVHQZnW+bFAUCKVUVumw1E3TygMt+lU
-         O6wJgB2hvwOBcBB8eg6zBMAVfxsf/lPcbjemFWCIeAl47f6MlKdGvyI9y6LaLPItL6Qu
-         HwbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700559837; x=1701164637;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=zeX6LBtHobyx/lTsQiwAAEvgonswp+TnKesxqxWL11M=;
-        b=r/21vNuVCY0rQqVw3W/8rCl0cEmT0IkJqXIOrMCex3s0e6xtnsdhJWW79WCOlAZ5EO
-         f0VKH+BvZSIAIG0HiKaz7dJ45ybYINmHfliAm4ChW2J4B4K+Hu1Ir4MC1lGad2qAwQL3
-         NuRILuz8bTTfVl6wN0X8LYEzoSX3d1r9YPBzhi6vyWDCDD9IMBoq7wg0MNbVpMjGDxJO
-         prDM5cZthCZa8rdfBc5quexY/Q5MSPVXvoNks5wUeNYo9iSpX5+4hOEKWU3gTel2cimS
-         otYEjZXFZKg5KcUTX4FadXiIyIIBiwUCGrXkpRwxnipYEbcm8VjT0BQJkepSIN2nDQHK
-         +fDw==
-X-Gm-Message-State: AOJu0YzpDahCISO0w9feOGAaHuA3nj/NHVKm8cuTwBN8M0mtl2pG554c
-	6HKIDWzBnL81rGPxsqW6ClqXCNu4SyNqHJkZji74cg==
-X-Google-Smtp-Source: AGHT+IEcUNpIPdW1r2zWS/VP7g/MssGikpOuJYLZxDVK+bKJDUZATHNuI3hhP6xrYrzf7teMAwRZk2h/7jc/ROLL0jw=
-X-Received: by 2002:a17:90b:4d0a:b0:283:2d65:f231 with SMTP id
- mw10-20020a17090b4d0a00b002832d65f231mr3047813pjb.22.1700559836764; Tue, 21
- Nov 2023 01:43:56 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZVFV4WXMz3cN4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 03:29:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 478C461A81;
+	Tue, 21 Nov 2023 16:29:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 914BEC433C7;
+	Tue, 21 Nov 2023 16:29:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1700584148;
+	bh=I7rTz58KR+S4gPSJUCHMuvvrAgbVHDd5w5snGcC6fmI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=akn0TQ1tx9tIwVVjKiVUiShOxIyrgDS6HtWnmTgRUnnSklSjnfnhzl6+GuCsg5RjU
+	 9SptLlLrBWaCEUXZt0ADSJ8CEKkqk2wF9KzP8cpzH4Gx09Owg9SZqDfyLEIg5QoKtl
+	 yQghzy2Lc/VM67gqmGXGWcz4FaVbhGzQPssRmIrwgDrV26t4om/KFBJPyKHznpDeiP
+	 wuqu+EX+sVaxwVH4N3+S5L9cHSc3CZb/Ev9j42UeMW/BbZmfG/VtCndmMqUDv495E7
+	 YkCJYcWckqEaSJD5gcvnhn23OD3MEoSCXL9FZ8InCUW36S86FsgcPUYQUVaL1QHMTK
+	 eeh5PRJrW3VzQ==
+Date: Tue, 21 Nov 2023 08:29:06 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>
+Subject: Re: [PATCH v9 00/27] Add support for QMC HDLC, framer
+ infrastructure and PEF2256 framer
+Message-ID: <20231121082906.354c9a7e@kernel.org>
+In-Reply-To: <20231121084330.4064bf14@bootlin.com>
+References: <20231115144007.478111-1-herve.codina@bootlin.com>
+	<20231117164746.0589e955@kernel.org>
+	<573c9ca1-a560-4f7a-ba21-80673a2e162e@sirena.org.uk>
+	<20231121084330.4064bf14@bootlin.com>
 MIME-Version: 1.0
-References: <CALrw=nHpRQQaQTP_jZfREgrQEMpS8jBF8JQCv4ygqXycE-StaA@mail.gmail.com>
- <ZVwMzXxWkgonIAfc@MiWiFi-R3L-srv> <CALrw=nG8xsYw7XKyL_VMHtKiaBcQCKvC8UVp-C9-BdeN4A1Daw@mail.gmail.com>
-In-Reply-To: <CALrw=nG8xsYw7XKyL_VMHtKiaBcQCKvC8UVp-C9-BdeN4A1Daw@mail.gmail.com>
-From: Ignat Korchagin <ignat@cloudflare.com>
-Date: Tue, 21 Nov 2023 09:43:45 +0000
-Message-ID: <CALrw=nH-vcROja2W23rUKEEZMZhxsQiNB4P_ZZQ-XhPHAJGxrg@mail.gmail.com>
-Subject: Re: Potential config regression after 89cde455 ("kexec: consolidate
- kexec and crash options into kernel/Kconfig.kexec")
-To: Baoquan He <bhe@redhat.com>, eric_devolder@yahoo.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 21 Nov 2023 22:35:16 +1100
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,86 +62,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James Bottomley <James.Bottomley@hansenpartnership.com>, dalias@libc.org, hpa@zytor.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, rmk+kernel@armlinux.org.uk, paulmck@kernel.org, ysato@users.sourceforge.jp, kernel-team <kernel-team@cloudflare.com>, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, Ingo Molnar <mingo@redhat.com>, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, Ard Biesheuvel <ardb@kernel.org>, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, keescook@chromium.org, go
- r@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, Thomas Gleixner <tglx@linutronix.de>, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, linux-parisc@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel <linux-kernel@vger.kernel.org>, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Fabio Estevam <festevam@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Lee Jones <lee@kernel.org>, Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Takashi Iwai <tiwai@suse.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>, Simon Horman <horms@kernel.org>, lin
+ uxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 21, 2023 at 7:53=E2=80=AFAM Ignat Korchagin <ignat@cloudflare.c=
-om> wrote:
->
-> On Tue, Nov 21, 2023 at 1:50=E2=80=AFAM Baoquan He <bhe@redhat.com> wrote=
-:
-> >
-> > Eric DeVolder's Oracle mail address is not available anymore, add his
-> > current mail address he told me.
->
-> Thank you!
->
-> > On 11/20/23 at 10:52pm, Ignat Korchagin wrote:
-> > > Good day!
-> > >
-> > > We have recently started to evaluate Linux 6.6 and noticed that we
-> > > cannot disable CONFIG_KEXEC anymore, but keep CONFIG_CRASH_DUMP
-> > > enabled. It seems to be related to commit 89cde455 ("kexec:
-> > > consolidate kexec and crash options into kernel/Kconfig.kexec"), wher=
-e
-> > > a CONFIG_KEXEC dependency was added to CONFIG_CRASH_DUMP.
-> > >
-> > > In our current kernel (Linux 6.1) we only enable CONFIG_KEXEC_FILE
-> > > with enforced signature check to support the kernel crash dumping
-> > > functionality and would like to keep CONFIG_KEXEC disabled for
-> > > security reasons [1].
-> > >
-> > > I was reading the long commit message, but the reason for adding
-> > > CONFIG_KEXEC as a dependency for CONFIG_CRASH_DUMP evaded me. And I
-> > > believe from the implementation perspective CONFIG_KEXEC_FILE should
-> > > suffice here (as we successfully used it for crashdumps on Linux 6.1)=
-.
-> > >
-> > > Is there a reason for adding this dependency or is it just an
-> > > oversight? Would some solution of requiring either CONFIG_KEXEC or
-> > > CONFIG_KEXEC_FILE work here?
-> >
-> > I searched the patch history, found Eric didn't add the dependency on
-> > CONFIG_KEXEC at the beginning. Later a linux-next building failure with
-> > randconfig was reported, in there CONFIG_CRASH_DUMP enabled, while
-> > CONFIG_KEXEC is disabled. Finally Eric added the KEXEC dependency for
-> > CRASH_DUMP. Please see below link for more details:
-> >
-> > https://lore.kernel.org/all/3e8eecd1-a277-2cfb-690e-5de2eb7b988e@oracle=
-.com/T/#u
->
-> Thank you for digging this up. However I'm still confused, because
-> this is exactly how we configure Linux 6.1 (although we do have
-> CONFIG_KEXEC_FILE enabled) and we don't have any problems. I believe
-> we did not investigate this issue properly.
+On Tue, 21 Nov 2023 08:43:30 +0100 Herve Codina wrote:
+> I plan to send the v10 with the patch 23 fixed.
+> Based on that v10, some patches (21 to 25 at least) could be applied and
+> I will remove them for the future v11.
+> I think it will be easier to follow if I iterate on the series removing
+> patches as soon as they are applied.
 
-I did some preliminary investigation for this. If I patch out the
-dependency on CONFIG_KEXEC the kernel builds just fine for x86
-(without CONFIG_CRASH_HOTPLUG - which is probably another issue) - so
-this was the previous behaviour. I can see that the reported error is
-for arm architecture and was able to reproduce it with a simple cross
-compiler in Debian. However, I think it is still somehow related to
-this patchset as the previous kernels (up to 6.5) build fine with just
-CONFIG_CRASH_DUMP and without CONFIG_KEXEC for arm as well. So even
-for arm it was introduced in 6.6.
-
-> > And besides, the newly added CONFIG_CRASH_HOTPLUG also needs
-> > CONFIG_KEXEC if the elfcorehdr is allowed to be manipulated when
-> > cpu/memory hotplug hapened.
->
-> This still feels like a regression to me: any crash dump support
-> should be independent of KEXEC syscalls being present. While probably
-> the common case (including us) that the crashing kernel and recovery
-> kernel are the same, they don't have to be. We need kexec syscall in
-> the crashing kernel, but crashdump support in the recovery kernel (but
-> the recovery kernel not having the kexec syscalls should be totally
-> fine). If we do require some code definitions from kexec - at most we
-> should put them under CONFIG_KEXEC_CORE.
->
-> > Thanks
-> > Baoquan
-> >
-
-Ignat
+It'd be helpful if you only reposted the patches you expect
+to be applied, as a standalone series.
