@@ -4,84 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 352F4C61D9D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 09:52:11 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dDcfro9n;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C199C61D9B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 10:03:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZxNn4sX4z3dLT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 20:52:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dDcfro9n;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZxdH08BTz3dSJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 21:02:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=chentao@kylinos.cn; receiver=lists.ozlabs.org)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZxMr0M10z3cJN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 20:51:19 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AM9lhLp029080;
-	Wed, 22 Nov 2023 09:51:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- subject : to : cc : references : from : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=QtNuCkWKKLiEAlGKkqXg1+0e/W6/gIROFCHbFVe8elo=;
- b=dDcfro9nyipVWxCFOOJtLBcjQm5itbrw/tXQJowFKCpJJzOjeyJrzginYRAEf4kzzl9h
- dK9kLHJ3UGS64Rn5cFKC8dHKZEj9pevDVf/iRVeEcj2WVid6UEBLuUGoB3TIE2x4IDhD
- jkBvf/ozGdTbHWZBtCYxmNKJ+R64SBJBSoICC3+d9fdCq6BK2IPt4deaFkTgAqcV/Wa4
- IC+schfGvIKgpoFvLoHDPI6jIi5hVBHvdQiM++/coKQjz3MLIrBjJ5VeG+zOBkhJ3Tf8
- ha+BnyH/bW8GVP03hK7iWeLPtCeXX+RQXs5pcujRE+gcmPOVHr3NFjCkynDSeNRUiABu PA== 
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uhfatg2g4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Nov 2023 09:51:07 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3AM9nJpG009464;
-	Wed, 22 Nov 2023 09:51:07 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3uf7kt7a46-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Nov 2023 09:51:07 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3AM9p6xE27984590
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Nov 2023 09:51:06 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 757F058063;
-	Wed, 22 Nov 2023 09:51:06 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 81F255804B;
-	Wed, 22 Nov 2023 09:51:04 +0000 (GMT)
-Received: from [9.171.5.81] (unknown [9.171.5.81])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 22 Nov 2023 09:51:04 +0000 (GMT)
-Message-ID: <552cbbea-4c12-4dd5-85da-afbcdd5ca73e@linux.ibm.com>
-Date: Wed, 22 Nov 2023 15:21:02 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: Adjust config HOTPLUG_CPU dependency
-Content-Language: en-US
-To: Aneesh Kumar K V <aneesh.kumar@kernel.org>, linuxppc-dev@lists.ozlabs.org
-References: <20231122092303.223719-1-vishalc@linux.ibm.com>
- <3fe72686-5b89-41e4-b760-d6353b426d81@kernel.org>
-From: Vishal Chourasia <vishalc@linux.ibm.com>
-In-Reply-To: <3fe72686-5b89-41e4-b760-d6353b426d81@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: WHpzX9J5oX9AJ9URYyzVx2tMIr-oACpV
-X-Proofpoint-ORIG-GUID: WHpzX9J5oX9AJ9URYyzVx2tMIr-oACpV
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZxcf16j7z3cVS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 21:02:24 +1100 (AEDT)
+X-UUID: 0f1fd2d019e44d1bad0c33f66457bf12-20231122
+X-CID-O-RULE: Release_Ham
+X-CID-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.32,REQID:41be7148-6f9a-4034-96b3-d81abd902688,IP:10,
+	URL:0,TC:0,Content:-5,EDM:25,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,AC
+	TION:release,TS:15
+X-CID-INFO: VERSION:1.1.32,REQID:41be7148-6f9a-4034-96b3-d81abd902688,IP:10,UR
+	L:0,TC:0,Content:-5,EDM:25,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
+	ON:release,TS:15
+X-CID-META: VersionHash:5f78ec9,CLOUDID:6bbdae95-10ce-4e4b-85c2-c9b5229ff92b,B
+	ulkID:23112217003121VE4392,BulkQuantity:0,Recheck:0,SF:66|38|24|17|19|44|1
+	02,TC:nil,Content:0,EDM:5,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,COL
+	:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI,TF_CID_SPAM_SNR
+X-UUID: 0f1fd2d019e44d1bad0c33f66457bf12-20231122
+X-User: chentao@kylinos.cn
+Received: from vt.. [(116.128.244.171)] by mailgw
+	(envelope-from <chentao@kylinos.cn>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 1086186215; Wed, 22 Nov 2023 17:00:29 +0800
+From: Kunwu Chan <chentao@kylinos.cn>
+To: mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu
+Subject: [PATCH] powerpc/mm: Fix null-pointer dereference in pgtable_cache_add
+Date: Wed, 22 Nov 2023 17:00:26 +0800
+Message-Id: <20231122090026.11728-1-chentao@kylinos.cn>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-11-22_06,2023-11-21_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- impostorscore=0 mlxlogscore=999 clxscore=1011 mlxscore=0
- priorityscore=1501 phishscore=0 malwarescore=0 spamscore=0 adultscore=0
- bulkscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2311060000 definitions=main-2311220068
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,107 +58,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Kunwu Chan <chentao@kylinos.cn>, kunwu.chan@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+kasprintf() returns a pointer to dynamically allocated memory
+which can be NULL upon failure. Ensure the allocation was successful
+by checking the pointer validity.
 
-On 22/11/23 3:03 pm, Aneesh Kumar K V wrote:
-> On 11/22/23 2:53 PM, Vishal Chourasia wrote:
->> Changed HOTPLUG_CPU dependency to SMP and either ARCH_HIBERNATION_POSSIBLE or
->> ARCH_SUSPEND_POSSIBLE, aligning with systems' suspend/hibernation capabilities.
->> This update links CPU hotplugging more logically with platforms' capabilities.
->>
->> Other changes include
->>
->> 1. configs ARCH_HIBERNATION_POSSIBLE and ARCH_SUSPEND_POSSIBLE are now selected
->>    only if required platform dependencies are met.
->>
->> 2. Defaults for configs ARCH_HIBERNATION_POSSIBLE and
->>    ARCH_SUSPEND_POSSIBLE has been set to 'N'
->>
->> Reported-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
->> Suggested-by: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
->> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
->> Signed-off-by: Vishal Chourasia <vishalc@linux.ibm.com>
->>
->> v1: https://lore.kernel.org/all/20231114082046.6018-1-vishalc@linux.ibm.com
->> ---
->> During the configuration process with 'make randconfig' followed by
->> 'make olddefconfig', we observed a warning indicating an unmet direct
->> dependency for the HOTPLUG_CPU option. The dependency in question relates to
->> various PowerPC configurations (PPC_PSERIES, PPC_PMAC, PPC_POWERNV,
->> FSL_SOC_BOOKE) which were not enabled, yet the HOTPLUG_CPU was being
->> erroneously selected due to an implicit assumption by the PM_SLEEP_SMP option.
->> This misalignment in dependencies could potentially lead to inconsistent kernel
->> configuration states, especially when considering the necessary hardware
->> support for CPU hot-plugging on PowerPC platforms. The patch aims to correct
->> this by ensuring that ARCH_HIBERNATION_POSSIBLE is contingent upon the
->> appropriate PowerPC configurations being active.
->>
->> steps to reproduce (before applying the patch):
->>
->> Run 'make pseries_le_defconfig'
->> Run 'make menuconfig'
->> Enable hibernation [ Kernel options -> Hibernation (aka 'suspend to disk') ] 
->> Disable [ Platform support -> IBM PowerNV (Non-Virtualized) platform support ]
->> Disable [ Platform support -> IBM pSeries & new (POWER5-based) iSeries ]
->> Enable SMP [ Processor support -> Symmetric multi-processing support ]
->> Save the config
->> Run 'make olddefconfig'
->>
->>  arch/powerpc/Kconfig | 13 +++++--------
->>  1 file changed, 5 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 6f105ee4f3cf..6e7e9af2f0c1 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -155,6 +155,8 @@ config PPC
->>  	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
->>  	select ARCH_HAS_UACCESS_FLUSHCACHE
->>  	select ARCH_HAS_UBSAN_SANITIZE_ALL
->> +	select ARCH_HIBERNATION_POSSIBLE        if (PPC_PSERIES || PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
->> +	select ARCH_SUSPEND_POSSIBLE            if (ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES || 44x || 40x)
-> We should keep that sorted as explained in comment around that. 
-Sure. I will send out another patch
->
->>  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->>  	select ARCH_KEEP_MEMBLOCK
->>  	select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE	if PPC_RADIX_MMU
->> @@ -380,14 +382,10 @@ config DEFAULT_UIMAGE
->>  	  Used to allow a board to specify it wants a uImage built by default
->>  
->>  config ARCH_HIBERNATION_POSSIBLE
->> -	bool
->> -	default y
->> +	def_bool n
->
-> We should be able to keep this 
-> config ARCH_HIBERNATION_POSSIBLE
->     bool
->
->
-> That is how we have rest of the ARCH_* config. I am not sure we need to explicitly say "def_bool n" 
-I believed it improves readability, that all. I can revert it back.
->
->>  
->>  config ARCH_SUSPEND_POSSIBLE
->> -	def_bool y
->> -	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
->> -		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
->> -		   || 44x || 40x
->> +	def_bool n
->>  
->>  config ARCH_SUSPEND_NONZERO_CPU
->>  	def_bool y
->> @@ -568,8 +566,7 @@ config ARCH_USING_PATCHABLE_FUNCTION_ENTRY
->>  
->>  config HOTPLUG_CPU
->>  	bool "Support for enabling/disabling CPUs"
->> -	depends on SMP && (PPC_PSERIES || \
->> -		PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
->> +	depends on SMP && (ARCH_HIBERNATION_POSSIBLE || ARCH_SUSPEND_POSSIBLE)
->>  	help
->>  	  Say Y here to be able to disable and re-enable individual
->>  	  CPUs at runtime on SMP machines.
+Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
+---
+ arch/powerpc/mm/init-common.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 119ef491f797..0884fc601c46 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -139,6 +139,8 @@ void pgtable_cache_add(unsigned int shift)
+ 
+ 	align = max_t(unsigned long, align, minalign);
+ 	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
++	if (!name)
++		return;
+ 	new = kmem_cache_create(name, table_size, align, 0, ctor(shift));
+ 	if (!new)
+ 		panic("Could not allocate pgtable cache for order %d", shift);
+-- 
+2.34.1
+
