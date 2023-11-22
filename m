@@ -4,49 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C45FC61D92
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 08:43:04 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IkSrqbab;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF5D5C61D9C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 09:04:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZvs25dCXz3dKv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 19:43:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IkSrqbab;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+f356749d2870cc4c8790+7395+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZwKY1z2qz3bws
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 20:04:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=47.90.199.5; helo=out199-5.us.a.mail.aliyun.com; envelope-from=jiapeng.chong@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out199-5.us.a.mail.aliyun.com (out199-5.us.a.mail.aliyun.com [47.90.199.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZvpS5K1Kz3dBK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 19:40:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=D5blU8RG7wrWZ9Dq/ESX/eAs3vI1C5+aiUl11b64TJI=; b=IkSrqbabsxJtFB+ZQhe2j8K6x6
-	gmah3bew0TPP0ysiQgpNZUFrCqPuz5lHJ+SRgg6OImxizgLz7xojou4jvO85FIqRpS8QO0tAUdKHE
-	rA4Uw6YYjcm+0HTujZSCoMbzEXPyjWNDQi5h4dJLM9wM/Ln2IYZXZY/WTR+WxIMJhILJ9DeeFlb8z
-	Sh9AFZK843MfY4JIxtlkW0I9zICdKW+ntXEodBFLQaC6YNvuXWjW87h+UB/TmK1UMAkUGI6VTa+3d
-	vVnSMTFNScSJr0L8JDnsTrn8iTyZqAK/m1GbJ6lYvAbf33DcWE787BrnJDz6876cmhrbYs26CtV3T
-	0kSji68g==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.96 #2 (Red Hat Linux))
-	id 1r5imd-0015Nr-35;
-	Wed, 22 Nov 2023 08:40:31 +0000
-Date: Wed, 22 Nov 2023 00:40:31 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Samuel Holland <samuel.holland@sifive.com>
-Subject: Re: [PATCH 3/3] drm/amd/display: Support DRM_AMD_DC_FP on RISC-V
-Message-ID: <ZV2+f/yu3C6xTVqn@infradead.org>
-References: <20231122030621.3759313-1-samuel.holland@sifive.com>
- <20231122030621.3759313-4-samuel.holland@sifive.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZwK13p3mz3bT8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 20:03:46 +1100 (AEDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R201e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045192;MF=jiapeng.chong@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0VwvWK8u_1700643793;
+Received: from localhost(mailfrom:jiapeng.chong@linux.alibaba.com fp:SMTPD_---0VwvWK8u_1700643793)
+          by smtp.aliyun-inc.com;
+          Wed, 22 Nov 2023 17:03:19 +0800
+From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc: Use ARRAY_SIZE for array length
+Date: Wed, 22 Nov 2023 17:03:12 +0800
+Message-Id: <20231122090312.114679-1-jiapeng.chong@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231122030621.3759313-4-samuel.holland@sifive.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,65 +39,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Masahiro Yamada <masahiroy@kernel.org>, Rodrigo Siqueira <Rodrigo.Siqueira@amd.com>, amd-gfx@lists.freedesktop.org, Harry Wentland <harry.wentland@amd.com>, Nicolas Schier <nicolas@fjasle.eu>, Will Deacon <will@kernel.org>, linux-kbuild@vger.kernel.org, Leo Li <sunpeng.li@amd.com>, Nathan Chancellor <nathan@kernel.org>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, Pan Xinhui <Xinhui.Pan@amd.com>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Daniel Vetter <daniel@ffwll.ch>, Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org, Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>
+Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, Abaci Robot <abaci@linux.alibaba.com>, linux-kernel@vger.kernel.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> -	select DRM_AMD_DC_FP if (X86 || LOONGARCH || (PPC64 && ALTIVEC) || (ARM64 && KERNEL_MODE_NEON && !CC_IS_CLANG))
-> +	select DRM_AMD_DC_FP if ARM64 && KERNEL_MODE_NEON && !CC_IS_CLANG
-> +	select DRM_AMD_DC_FP if PPC64 && ALTIVEC
-> +	select DRM_AMD_DC_FP if RISCV && FPU
-> +	select DRM_AMD_DC_FP if LOONGARCH || X86
+Use of macro ARRAY_SIZE to calculate array size minimizes
+the redundant code and improves code reusability.
 
-This really is a mess.  Can you add a ARCH_HAS_KERNEL_FPU_SUPPORT
-symbol that all architetures that have it select instead, and them
-make DRM_AMD_DC_FP depend on it?
+./arch/powerpc/xmon/ppc-opc.c:957:67-68: WARNING: Use ARRAY_SIZE.
 
-> -#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
-> +#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH) || defined(CONFIG_RISCV)
->  		kernel_fpu_begin();
->  #elif defined(CONFIG_PPC64)
->  		if (cpu_has_feature(CPU_FTR_VSX_COMP))
-> @@ -122,7 +124,7 @@ void dc_fpu_end(const char *function_name, const int line)
->  
->  	depth = __this_cpu_dec_return(fpu_recursion_depth);
->  	if (depth == 0) {
-> -#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
-> +#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH) || defined(CONFIG_RISCV)
->  		kernel_fpu_end();
->  #elif defined(CONFIG_PPC64)
->  		if (cpu_has_feature(CPU_FTR_VSX_COMP))
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Closes: https://bugzilla.openanolis.cn/show_bug.cgi?id=7612
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+---
+ arch/powerpc/xmon/ppc-opc.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-And then this mess can go away.  We'll need to decide if we want to
-cover all the in-kernel vector support as part of it, which would
-seem reasonable to me, or have a separate generic kernel_vector_begin
-with it's own option.
+diff --git a/arch/powerpc/xmon/ppc-opc.c b/arch/powerpc/xmon/ppc-opc.c
+index 0774d711453e..d409d6113f82 100644
+--- a/arch/powerpc/xmon/ppc-opc.c
++++ b/arch/powerpc/xmon/ppc-opc.c
+@@ -954,8 +954,7 @@ const struct powerpc_operand powerpc_operands[] =
+   { 0xff, 11, NULL, NULL, PPC_OPERAND_SIGNOPT },
+ };
+ 
+-const unsigned int num_powerpc_operands = (sizeof (powerpc_operands)
+-					   / sizeof (powerpc_operands[0]));
++const unsigned int num_powerpc_operands = ARRAY_SIZE(powerpc_operands);
+ 
+ /* The functions used to insert and extract complicated operands.  */
+ 
+-- 
+2.20.1.7.g153144c
 
-> diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-> index ea7d60f9a9b4..5c8f840ef323 100644
-> --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
-> +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-> @@ -43,6 +43,12 @@ dml_ccflags := -mfpu=64
->  dml_rcflags := -msoft-float
->  endif
->  
-> +ifdef CONFIG_RISCV
-> +include $(srctree)/arch/riscv/Makefile.isa
-> +# Remove V from the ISA string, like in arch/riscv/Makefile, but keep F and D.
-> +dml_ccflags := -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64ima)([^v_]*)v?/\1\2/')
-> +endif
-> +
->  ifdef CONFIG_CC_IS_GCC
->  ifneq ($(call gcc-min-version, 70100),y)
->  IS_OLD_GCC = 1
-
-And this is again not really something we should be doing.
-Instead we need a generic way in Kconfig to enable FPU support
-for an object file or set of, that the arch support can hook
-into.
-
-Btw, I'm also really worried about folks using the FPU instructions
-outside the kernel_fpu_begin/end windows in general (not directly
-related to the RISC-V support).  Can we have objecttool checks
-for that similar to only allowing the unsafe uaccess in the
-uaccess begin/end pairs?
