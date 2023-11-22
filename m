@@ -4,59 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FEDAC61DA7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 16:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DE2FC61D97
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 17:32:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UDMgvLwC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eIvJnsMS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sb6qd6b9cz3vtc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 03:57:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sb7c930lfz3dKH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 04:32:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UDMgvLwC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eIvJnsMS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sb4fn5pMCz3clH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 02:19:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1700666386; x=1732202386;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=nrNPcz4uYEQBP3pOrCUXcuO8X6G/FSLQKBhZfBz9dLY=;
-  b=UDMgvLwCI6f06Ge1Jwo2klU+QM+7+nT4a1LYN6xQICvPr8w2dDUNIVg5
-   zZobpXHvSx0R/5Wwy/LQFJA+trrzkYIllLs/Vmpz1UYgIQnagGDG5A97p
-   bDFnp/14YowlLTDU9q79hyPYFDbiOMKLTOVfUqsziiXB7891s4rNxax5l
-   LbrameL5h+T0VQD6DIIg4PrFDeuZXGEQdqjSsgvsJZ43Qswz1W22eGR1h
-   ikDzoPw/f8X+yX19D6nMc/YEMlKNOK0dMR9AnDP58j640FDCyNCX6ORoX
-   4gyuJFLt6IEQ0C+hnef9qMsnXxBP0X9lZApI81HvnzJoBcmZUHnAEIs1Z
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10902"; a="390932785"
-X-IronPort-AV: E=Sophos;i="6.04,219,1695711600"; 
-   d="scan'208";a="390932785"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Nov 2023 07:19:32 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10902"; a="833052538"
-X-IronPort-AV: E=Sophos;i="6.04,219,1695711600"; 
-   d="scan'208";a="833052538"
-Received: from tjquresh-mobl.ger.corp.intel.com (HELO localhost) ([10.252.41.76])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Nov 2023 07:19:09 -0800
-From: Jani Nikula <jani.nikula@linux.intel.com>
-To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] eventfd: simplify eventfd_signal()
-In-Reply-To: <20231122-vfs-eventfd-signal-v2-2-bd549b14ce0c@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20231122-vfs-eventfd-signal-v2-0-bd549b14ce0c@kernel.org>
- <20231122-vfs-eventfd-signal-v2-2-bd549b14ce0c@kernel.org>
-Date: Wed, 22 Nov 2023 17:19:06 +0200
-Message-ID: <877cm9n7dh.fsf@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sb7b95Jfcz30P0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 04:31:49 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 5498CCE2534;
+	Wed, 22 Nov 2023 17:31:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB6AAC433CA;
+	Wed, 22 Nov 2023 17:31:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1700674301;
+	bh=b3bPrHVvEfkj5yHIcwFXP8t5jf2bdOaikqngl5P4eqA=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=eIvJnsMSKRo0Sxw8ALRT2YlbDfHrwaCl4YEAwMm986k4Dg9IwdqWMGtbGBHsKJKzZ
+	 f6v1eyWxzKyoWRxoOlHO3W+boQ4GKyXb/fjK29H5IDuMwhkyYKykD7Bk8xISP1YIyP
+	 O6riwcErC+giYU07cCtlZiU+hCJ8hMG1JldyNvUPl5Za7DGJrhRy+1ivpxDzpJ1CEw
+	 SEApaVSTVEFhF3WswP7cG7HuOSHV0KvVUGsLtS/C/DTBK7C/uvDFut0UPmxifb6/hG
+	 rf9FnGbbYI2mlAVDOIlZkA8lNN/k74pCRL5RJq4SJMLE5TLFh7fucTK4DGvIsNPKs+
+	 bzfVfx0hiHHow==
+From: Mark Brown <broonie@kernel.org>
+To: nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ shengjiu.wang@gmail.com, lgirdwood@gmail.com, perex@perex.cz, 
+ tiwai@suse.com, alsa-devel@alsa-project.org, 
+ Shengjiu Wang <shengjiu.wang@nxp.com>
+In-Reply-To: <1700617373-6472-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1700617373-6472-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: Enable 2 * TX bit clock for spdif only
+ case
+Message-Id: <170067429848.2197522.15067671352238530085.b4-ty@kernel.org>
+Date: Wed, 22 Nov 2023 17:31:38 +0000
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Mailman-Approved-At: Thu, 23 Nov 2023 03:46:57 +1100
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-0438c
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,47 +63,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, linux-usb@vger.kernel.org, Jan Kara <jack@suse.cz>, Matthew Rosato <mjrosato@linux.ibm.com>, Paul Durrant <paul@xen.org>, Tom Rix <trix@redhat.com>, Jason Wang <jasowang@redhat.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, Kirti Wankhede <kwankhede@nvidia.com>, Paolo Bonzini <pbonzini@redhat.com>, Jens Axboe <axboe@kernel.dk>, Vineeth Vijayan <vneethv@linux.ibm.com>, Diana Craciun <diana.craciun@oss.nxp.com>, netdev@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, David Airlie <airlied@gmail.com>, Christoph Hellwig <hch@lst.de>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Shakeel Butt <shakeelb@google.com>, Vasily Gorbik <gor@linux.ibm.com>, Leon Romanovsky <leon@kernel.org>, Harald Freudenberger <freude@linux.ibm.com>, Fei Li <fei1.li@intel.com>, x86@kernel.org, Roman Gushchin <roman.gushchin@linux.dev>, Halil Pasic <pasic@linux.ibm.com>, Jason Gunthorpe
-  <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, intel-gfx@lists.freedesktop.org, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-fpga@vger.kernel.org, Zhi Wang <zhi.a.wang@intel.com>, Wu Hao <hao.wu@intel.com>, Jason Herne <jjherne@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, linux-s390@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Johannes Weiner <hannes@cmpxchg.org>, linuxppc-dev@lists.ozlabs.org, Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Auger <eric.auger@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>, kvm@vger.kernel.org, Rodrigo Vivi <rodrigo.vivi@intel.com>, cgroups@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, virtualization@lists.linux-foundation.org, intel-gvt-dev@lists.freedesktop.org, io-uring@vger.kernel.org, Tony Krowiak <akrowiak@linux.ibm.com>, Tvrtko Ursulin <tvrtko.ursulin@linux
- .intel.com>, Christian Brauner <brauner@kernel.org>, Pavel Begunkov <asml.silence@gmail.com>, Sean Christopherson <seanjc@google.com>, Oded Gabbay <ogabbay@kernel.org>, Muchun Song <muchun.song@linux.dev>, Peter Oberparleiter <oberpar@linux.ibm.com>, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>, "Michael S. Tsirkin" <mst@redhat.com>, Sven Schnelle <svens@linux.ibm.com>, Daniel Vetter <daniel@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Frederic Barrat <fbarrat@linux.ibm.com>, Borislav Petkov <bp@alien8.de>, Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>, Xu Yilun <yilun.xu@intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 22 Nov 2023, Christian Brauner <brauner@kernel.org> wrote:
-> diff --git a/fs/eventfd.c b/fs/eventfd.c
-> index 33a918f9566c..dc9e01053235 100644
-> --- a/fs/eventfd.c
-> +++ b/fs/eventfd.c
-> @@ -74,20 +74,17 @@ __u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n, __poll_t mask)
->  /**
->   * eventfd_signal - Adds @n to the eventfd counter.
+On Wed, 22 Nov 2023 09:42:53 +0800, Shengjiu Wang wrote:
+> The bit 10 in TX_DPTH_CTRL register controls the TX clock rate.
+> If this bit is set, TX datapath clock should be = 2* TX bit rate.
+> If this bit is not set, TX datapath clock should be 10* TX bit rate.
+> 
+> As the spdif only case, we always use 2 * TX bit clock, so
+> this bit need to be set.
+> 
+> [...]
 
-This still refers to @n here, and in patch 4.
+Applied to
 
-BR,
-Jani.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
->   * @ctx: [in] Pointer to the eventfd context.
-> - * @n: [in] Value of the counter to be added to the eventfd internal counter.
-> - *          The value cannot be negative.
->   *
->   * This function is supposed to be called by the kernel in paths that do not
->   * allow sleeping. In this function we allow the counter to reach the ULLONG_MAX
->   * value, and we signal this as overflow condition by returning a EPOLLERR
->   * to poll(2).
->   *
-> - * Returns the amount by which the counter was incremented.  This will be less
-> - * than @n if the counter has overflowed.
-> + * Returns the amount by which the counter was incremented.
->   */
-> -__u64 eventfd_signal(struct eventfd_ctx *ctx, __u64 n)
-> +__u64 eventfd_signal(struct eventfd_ctx *ctx)
->  {
-> -	return eventfd_signal_mask(ctx, n, 0);
-> +	return eventfd_signal_mask(ctx, 1, 0);
->  }
->  EXPORT_SYMBOL_GPL(eventfd_signal);
->  
+Thanks!
 
--- 
-Jani Nikula, Intel
+[1/1] ASoC: fsl_xcvr: Enable 2 * TX bit clock for spdif only case
+      commit: c33fd110424dfcb544cf55a1b312f43fe1918235
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
