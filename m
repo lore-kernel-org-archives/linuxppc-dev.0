@@ -4,91 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EB4AC61D9B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 14:07:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A0D6C61D97
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 15:23:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K9ZKUUO0;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=APW0lfRv;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=APW0lfRv;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sb32q4cWPz3dBs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 01:06:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sb4kz370Dz3dKm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 02:23:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K9ZKUUO0;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=APW0lfRv;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=APW0lfRv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sb31n0V52z3clw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 01:06:00 +1100 (AEDT)
-Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AMDHGf8025176;
-	Wed, 22 Nov 2023 14:04:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=dA7NrA5d6C8cs4386hd0trKQbmFGmI3SeE+zd99ea/I=;
- b=K9ZKUUO09qNAPWcuVsKyEBVp/fNXpdXkimm5gcu1Ai14fJf6F7NMk+Q//sZhReLZhbOZ
- PKVRsXMWuQcAKiZTRKyjbtZpSBoF9/UitPlii/QyjEXV5QFejRqoUWVc4CzQapNBWr87
- ZRq9XhA4K1hzSw85x5V5kvwwEdcqVjGgrdY7d/pj5MlKsVPJwPNeYS/i8IgQ57piU+jQ
- fMR4WDksYdkLUN103mfGItDYsMAUZVWBfgMwDRfMxC5m9x8RLBriediFdO46+4TT53JQ
- uyLde522BvqhGMY7Aigts6JkL/YN3SU2/zfJ8Q8bk8gDhkQQ+ZpePMuPtDYqlRCmfr3H IQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uhjd0hc3h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Nov 2023 14:04:57 +0000
-Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AMDolDB024045;
-	Wed, 22 Nov 2023 14:04:57 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uhjd0hc30-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Nov 2023 14:04:56 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3AMDUD1o001768;
-	Wed, 22 Nov 2023 14:04:55 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3uf93m031d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Nov 2023 14:04:55 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3AME4pgL44827032
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Nov 2023 14:04:51 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5FD3E20043;
-	Wed, 22 Nov 2023 14:04:51 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6A52B20040;
-	Wed, 22 Nov 2023 14:04:50 +0000 (GMT)
-Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 22 Nov 2023 14:04:50 +0000 (GMT)
-Date: Wed, 22 Nov 2023 15:04:49 +0100
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Jann Horn <jannh@google.com>
-Subject: Re: [PATCH 12/41] mm: add per-VMA lock and helper functions to
- control it
-Message-ID: <ZV4KgferuePsR2Iz@tuxmaker.boeblingen.de.ibm.com>
-References: <20230109205336.3665937-1-surenb@google.com>
- <20230109205336.3665937-13-surenb@google.com>
- <CAG48ez0RhQ6=W01brLUXDXqQxz2M1FEMNqd2OvL+LhcJQY=NqA@mail.gmail.com>
- <CAJuCfpHawn-hj3yK6MEMHsvnH9xgO87h7Sj3_g0FA7rgut_mVg@mail.gmail.com>
- <CAG48ez3sCwasFzKD5CsqMFA2W57-2fazd75g7r0NaA_BVNTLow@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sb4jx4fSJz2xFn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 02:22:27 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1700666542;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=jHf7jc7J8Bv83RTgjktPDmyDKiNjMVCeKkEQ7LZmkKc=;
+	b=APW0lfRvCKQPfDD58dtNMQ7pYMjMLagPUGvTkd/Q5jcBBMd0zIoTh8vS9/DBg0KXN06OaY
+	m9FdKUmocABNFVzma1RfPML5sjKjWT5fvHYd6Gsi2gV0oSj+zUnAEKZMriXWoYhZzOsKbw
+	97k9VfMOpZkMw7RpUEzAI+75JL3Lsmk=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1700666542;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=jHf7jc7J8Bv83RTgjktPDmyDKiNjMVCeKkEQ7LZmkKc=;
+	b=APW0lfRvCKQPfDD58dtNMQ7pYMjMLagPUGvTkd/Q5jcBBMd0zIoTh8vS9/DBg0KXN06OaY
+	m9FdKUmocABNFVzma1RfPML5sjKjWT5fvHYd6Gsi2gV0oSj+zUnAEKZMriXWoYhZzOsKbw
+	97k9VfMOpZkMw7RpUEzAI+75JL3Lsmk=
+Received: from mail-oo1-f70.google.com (mail-oo1-f70.google.com
+ [209.85.161.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-518-NxzGvXZkN6qUUdijFsKrEg-1; Wed, 22 Nov 2023 10:22:20 -0500
+X-MC-Unique: NxzGvXZkN6qUUdijFsKrEg-1
+Received: by mail-oo1-f70.google.com with SMTP id 006d021491bc7-58d07f8a92bso63886eaf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 07:22:20 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700666540; x=1701271340;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jHf7jc7J8Bv83RTgjktPDmyDKiNjMVCeKkEQ7LZmkKc=;
+        b=s/Mlwm5pnBsVc2dAHKT4U+YYWX/azrMhTlNImDzvd1sbDaRY90S6h/8C4wuEPmMxVf
+         SfAU9VAG/HUkNmP9Pz4vyHo1TVv1feEOMlUVsSBzDN4ZncWzoa/T5hodjh+h7p6unozS
+         OokvtjOTPgKxp9pA0YVob1onSBwPAu2FHKMxX/GoaWDRI0/0KZPYfXnPeiMN9YwmFwn3
+         oAeqAIIFCca4E899SVf84MlkYxIf8Ge2KzbtxVmHTinwepzHav4vrJchsdk2uUwjaF6v
+         7lmQoZz1vwwUe4IwiF1l6JV3UBAlZ72Cm2gK5rUX1BCNvQdmnU38t+PezjBuzMEFqE5F
+         LpdA==
+X-Gm-Message-State: AOJu0YxcXrvQHwJmrTk3g2SlhKxaGYW0wnTsfkqvL0APnhbgRsS7Goph
+	7XpY3Me8K0mMmYrcihAVPHoJxfoaYrPrhLecnyVJJq6//PDK/Le4saTc5hMpvnNHZhc9u2fNTZk
+	pYIjvOW++SsqKS+ZYicYA3p+ISg==
+X-Received: by 2002:a05:6820:311:b0:58c:e80a:537d with SMTP id l17-20020a056820031100b0058ce80a537dmr3009159ooe.1.1700666539866;
+        Wed, 22 Nov 2023 07:22:19 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHOaFlUlKMrMvbpX5vlLOYOyqCZqIYmeCKyEeM2CWjyOcsp+BCB1xOxZFIWf6oSiyQQHcWwQQ==
+X-Received: by 2002:a05:6820:311:b0:58c:e80a:537d with SMTP id l17-20020a056820031100b0058ce80a537dmr3009114ooe.1.1700666539416;
+        Wed, 22 Nov 2023 07:22:19 -0800 (PST)
+Received: from x1n (cpe688f2e2cb7c3-cm688f2e2cb7c0.cpe.net.cable.rogers.com. [99.254.121.117])
+        by smtp.gmail.com with ESMTPSA id m13-20020a0cbf0d000000b0066d04196c3dsm4941000qvi.49.2023.11.22.07.22.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Nov 2023 07:22:18 -0800 (PST)
+Date: Wed, 22 Nov 2023 10:22:11 -0500
+From: Peter Xu <peterx@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH RFC 06/12] mm/gup: Drop folio_fast_pin_allowed() in
+ hugepd processing
+Message-ID: <ZV4co7wcI-_wK91F@x1n>
+References: <20231116012908.392077-1-peterx@redhat.com>
+ <20231116012908.392077-7-peterx@redhat.com>
+ <ZVsYMMJpmFV2T/Zc@infradead.org>
+ <ZVzT5_3Zn-Y-6xth@x1n>
+ <ZV21GCbG48nTLDzn@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ZV21GCbG48nTLDzn@infradead.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAG48ez3sCwasFzKD5CsqMFA2W57-2fazd75g7r0NaA_BVNTLow@mail.gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 5MhcCP9ifUrUeiSZNpIhaNnBNovbexne
-X-Proofpoint-ORIG-GUID: zLZ94B08QXl1Fcylsg1aKWlm3qbMRA7p
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-11-22_09,2023-11-22_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
- suspectscore=0 priorityscore=1501 impostorscore=0 mlxlogscore=999
- clxscore=1011 bulkscore=0 adultscore=0 lowpriorityscore=0 mlxscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311060000 definitions=main-2311220100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,83 +101,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, Will Deacon <will@kernel.org>, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, Suren Baghdasaryan <surenb@google.com>, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kern
- el.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsingularity.net
+Cc: Andrea Arcangeli <aarcange@redhat.com>, James Houghton <jthoughton@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Yang Shi <shy828301@gmail.com>, Rik van Riel <riel@surriel.com>, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Mike Rapoport <rppt@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Axel Rasmussen <axelrasmussen@google.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Vlastimil Babka <vbabka@suse.cz>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 17, 2023 at 10:45:25PM +0100, Jann Horn wrote:
-
-Hi Jann,
-
-> On Tue, Jan 17, 2023 at 10:28 PM Suren Baghdasaryan <surenb@google.com> wrote:
-> > On Tue, Jan 17, 2023 at 10:03 AM Jann Horn <jannh@google.com> wrote:
-> > >
-> > > +locking maintainers
-> >
-> > Thanks! I'll CC the locking maintainers in the next posting.
-> >
-> > >
-> > > On Mon, Jan 9, 2023 at 9:54 PM Suren Baghdasaryan <surenb@google.com> wrote:
-> > > > Introduce a per-VMA rw_semaphore to be used during page fault handling
-> > > > instead of mmap_lock. Because there are cases when multiple VMAs need
-> > > > to be exclusively locked during VMA tree modifications, instead of the
-> > > > usual lock/unlock patter we mark a VMA as locked by taking per-VMA lock
-> > > > exclusively and setting vma->lock_seq to the current mm->lock_seq. When
-> > > > mmap_write_lock holder is done with all modifications and drops mmap_lock,
-> > > > it will increment mm->lock_seq, effectively unlocking all VMAs marked as
-> > > > locked.
-> > > [...]
-> > > > +static inline void vma_read_unlock(struct vm_area_struct *vma)
-> > > > +{
-> > > > +       up_read(&vma->lock);
-> > > > +}
-> > >
-> > > One thing that might be gnarly here is that I think you might not be
-> > > allowed to use up_read() to fully release ownership of an object -
-> > > from what I remember, I think that up_read() (unlike something like
-> > > spin_unlock()) can access the lock object after it's already been
-> > > acquired by someone else. So if you want to protect against concurrent
-> > > deletion, this might have to be something like:
-> > >
-> > > rcu_read_lock(); /* keeps vma alive */
-> > > up_read(&vma->lock);
-> > > rcu_read_unlock();
-> >
-> > But for deleting VMA one would need to write-lock the vma->lock first,
-> > which I assume can't happen until this up_read() is complete. Is that
-> > assumption wrong?
+On Wed, Nov 22, 2023 at 12:00:24AM -0800, Christoph Hellwig wrote:
+> On Tue, Nov 21, 2023 at 10:59:35AM -0500, Peter Xu wrote:
+> > > What prevents us from ever using hugepd with file mappings?  I think
+> > > it would naturally fit in with how large folios for the pagecache work.
+> > > 
+> > > So keeping this check and generalizing it seems like the better idea to
+> > > me.
+> > 
+> > But then it means we're still keeping that dead code for fast-gup even if
+> > we know that fact..  Or do we have a plan to add that support very soon, so
+> > this code will be destined to add back?
 > 
-> __up_read() does:
-> 
-> rwsem_clear_reader_owned(sem);
-> tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
-> DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
-> if (unlikely((tmp & (RWSEM_LOCK_MASK|RWSEM_FLAG_WAITERS)) ==
->       RWSEM_FLAG_WAITERS)) {
->   clear_nonspinnable(sem);
->   rwsem_wake(sem);
-> }
+> The question wasn't mean retorical - we support arbitrary power of two
+> sized folios for the pagepage, what prevents us from using hugepd with
+> them right now?
 
-This sequence is covered by preempt_disable()/preempt_enable().
-Would not it preserve the RCU grace period until after __up_read()
-exited?
+Ah, didn't catch that point previously.  Hugepd is just not used outside
+hugetlb right now, afaiu.
 
-> The atomic_long_add_return_release() is the point where we are doing
-> the main lock-releasing.
-> 
-> So if a reader dropped the read-lock while someone else was waiting on
-> the lock (RWSEM_FLAG_WAITERS) and no other readers were holding the
-> lock together with it, the reader also does clear_nonspinnable() and
-> rwsem_wake() afterwards.
-> But in rwsem_down_write_slowpath(), after we've set
-> RWSEM_FLAG_WAITERS, we can return successfully immediately once
-> rwsem_try_write_lock() sees that there are no active readers or
-> writers anymore (if RWSEM_LOCK_MASK is unset and the cmpxchg
-> succeeds). We're not necessarily waiting for the "nonspinnable" bit or
-> the wake.
-> 
-> So yeah, I think down_write() can return successfully before up_read()
-> is done with its memory accesses.
+For example, __hugepte_alloc() (and that's the only one calls
+hugepd_populate()) should be the function to allocate a hugepd (ppc only),
+and it's only called in huge_pte_alloc(), which is part of the current
+arch-specific hugetlb api.
 
-Thanks!
+And generic mm paths don't normally have hugepd handling, afaics.  For
+example, page_vma_mapped_walk() doesn't handle hugepd at all unless in
+hugetlb specific path.
+
+There're actually (only) two generic mm paths that can handle hugepd,
+namely:
+
+  - fast-gup
+  - walk_page_*() apis (aka, __walk_page_range())
+
+For fast-gup I think the hugepd code is in use, however for walk_page_*
+apis hugepd code shouldn't be reached iiuc as we have the hugetlb specific
+handling (walk_hugetlb_range()), so anything within walk_pgd_range() to hit
+a hugepd can be dead code to me (but note that this "dead code" is good
+stuff to me, if one would like to merge hugetlb instead into generic mm).
+
+This series tries to add slow gup into that list too, so the 3rd one to
+support it.  I plan to look more into this area (e.g., __walk_page_range()
+can be another good candidate soon).  I'm not sure whether we should teach
+the whole mm to understand hugepd yet, but slow gup and __walk_page_range()
+does look like good candidates to already remove the hugetlb specific code
+paths - slow-gup has average ~add/~del LOCs (which this series does), and
+__walk_page_range() can remove some code logically, no harm I yet see.
+
+Indeed above are based on only my code observations, so I'll be more than
+happy to be corrected otherwise, as early as possible.
+
+> 
+> > The other option is I can always add a comment above gup_huge_pd()
+> > explaining this special bit, so that when someone is adding hugepd support
+> > to file large folios we'll hopefully not forget it?  But then that
+> > generalization work will only happen when the code will be needed.
+> 
+> If dropping the check is the right thing for now (and I think the ppc
+> maintainers and willy as the large folio guy might have a more useful
+> opinions than I do), leaving a comment in would be very useful.
+
+Willy is in the loop, and I just notice I didn't really copy ppc list, even
+I planned to..  I am adding the list (linuxppc-dev@lists.ozlabs.org) into
+this reply.  I'll remember to do so as long as there's a new version.
+
+The other reason I feel like hugepd may or may not be further developed for
+new features like large folio is that I saw Power9 started to shift to
+radix pgtables, and afaics hugepd is only supported in hash tables
+(hugepd_ok()).  But again, I confess I know nothing about Power at all.
+
+Thanks,
+
+-- 
+Peter Xu
+
