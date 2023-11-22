@@ -4,58 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 341F2C61D97
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 15:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F02D8C61D99
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 16:47:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Lf41l0og;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AyZdLpZ8;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AyZdLpZ8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sb5LP6Pn3z3d8B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 02:50:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sb6cL49Swz3clH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 03:47:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Lf41l0og;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AyZdLpZ8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AyZdLpZ8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sb5KP62kWz2yDM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 02:49:45 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id 98EBBB8264D
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 15:49:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F13FDC433C8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 15:49:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1700668179;
-	bh=BYCJA3x5TTAbbQPMEAHdhxb9CpYziBSEh7qg5KYFc3Y=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Lf41l0og8Tssr/hb/ubSBpyXsbiBnPgG2tAw23ddfqRwz1CZu59t60YaMYFHd8bRo
-	 8iLpKtrocyaGbjEHRv4usmFfoRkieMPxaEUIlXxPhWmvy6QEByllSsydUjXkWK830b
-	 o3jHhP7F1ioMa2Q+Nxwy7Bpem4ZYprHsFuTIYVYWq+/yWnkJ81xXBKJz+MqMeNarcX
-	 2rVGUTJGdLOEngFCjMvoNtpm9shzVCPsFgNhFOZtMfwH1S0avG5tuSRA4ZdCACJ8s0
-	 I4ydnXS2p4dHVC7dnvadHyP/eaEqAg+Jy9xt2mgoScn8uKLm/G1MguQEqc9iUtVctN
-	 PXqAqIzofO9Fg==
-Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-1f938410f92so1900565fac.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 07:49:38 -0800 (PST)
-X-Gm-Message-State: AOJu0YzSjKc3M25vSZDwQ9WaAtQYYSZws1XZRMdFecp/9f7QEi2u+six
-	3WIxs/g6VpUpVzX0kguz6HOXSNOgduGIqYuNdIk=
-X-Google-Smtp-Source: AGHT+IGTa6C9d+mB8rUW3KBSbfG6/zDIsmWbZmbmj2c74lexp3YXviv1PGHzD95lJw6SS5pitC5dIey5qGrQgDzlQ+w=
-X-Received: by 2002:a05:6870:cb97:b0:1e9:919d:83ec with SMTP id
- ov23-20020a056870cb9700b001e9919d83ecmr3553401oab.28.1700668178329; Wed, 22
- Nov 2023 07:49:38 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZx0p3pVKz3c5S
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 20:34:49 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1700645684;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+OTgZltwB2ZS+YZyn6PYgFPXeR3pdRlWkz0aWS8O4HE=;
+	b=AyZdLpZ8AiKvLQrSXIR6OO2LShWad9447dErRDr6JDn9GXz4ajw8Wi/aqA6TjEWZnIF+o3
+	n4O1wCzZYsmXkZzsGZJECPH5MRhOtEsuMWOrmekZIG6ZSpfq1+pR/5TbSBum39W9BIPA3i
+	o53o/XjeGQcrCAx8QK19U9zi7vRdekg=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1700645684;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+OTgZltwB2ZS+YZyn6PYgFPXeR3pdRlWkz0aWS8O4HE=;
+	b=AyZdLpZ8AiKvLQrSXIR6OO2LShWad9447dErRDr6JDn9GXz4ajw8Wi/aqA6TjEWZnIF+o3
+	n4O1wCzZYsmXkZzsGZJECPH5MRhOtEsuMWOrmekZIG6ZSpfq1+pR/5TbSBum39W9BIPA3i
+	o53o/XjeGQcrCAx8QK19U9zi7vRdekg=
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-591-_biuZLCONCOAsgDXiclx4A-1; Wed,
+ 22 Nov 2023 04:34:40 -0500
+X-MC-Unique: _biuZLCONCOAsgDXiclx4A-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 8960E3C0FCA6;
+	Wed, 22 Nov 2023 09:34:39 +0000 (UTC)
+Received: from localhost (unknown [10.72.112.97])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id 2A80F1C060AE;
+	Wed, 22 Nov 2023 09:34:36 +0000 (UTC)
+Date: Wed, 22 Nov 2023 17:34:33 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Ignat Korchagin <ignat@cloudflare.com>
+Subject: Re: Potential config regression after 89cde455 ("kexec: consolidate
+ kexec and crash options into kernel/Kconfig.kexec")
+Message-ID: <ZV3LKVOokpx2WvKp@MiWiFi-R3L-srv>
+References: <CALrw=nHpRQQaQTP_jZfREgrQEMpS8jBF8JQCv4ygqXycE-StaA@mail.gmail.com>
+ <ZVwMzXxWkgonIAfc@MiWiFi-R3L-srv>
+ <CALrw=nG8xsYw7XKyL_VMHtKiaBcQCKvC8UVp-C9-BdeN4A1Daw@mail.gmail.com>
+ <CALrw=nH-vcROja2W23rUKEEZMZhxsQiNB4P_ZZQ-XhPHAJGxrg@mail.gmail.com>
 MIME-Version: 1.0
-References: <20231118025748.2778044-1-mmaurer@google.com>
-In-Reply-To: <20231118025748.2778044-1-mmaurer@google.com>
-From: Masahiro Yamada <masahiroy@kernel.org>
-Date: Thu, 23 Nov 2023 00:49:01 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQt8fy5+vSwpd1aXfzjzeZ5hiyW7EW9SW7pbG2eTJZAOA@mail.gmail.com>
-Message-ID: <CAK7LNAQt8fy5+vSwpd1aXfzjzeZ5hiyW7EW9SW7pbG2eTJZAOA@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] MODVERSIONS + RUST Redux
-To: Matthew Maurer <mmaurer@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CALrw=nH-vcROja2W23rUKEEZMZhxsQiNB4P_ZZQ-XhPHAJGxrg@mail.gmail.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.7
+X-Mailman-Approved-At: Thu, 23 Nov 2023 03:46:57 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,200 +86,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicolas Schier <nicolas@fjasle.eu>, rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Gary Guo <gary@garyguo.net>, Miguel Ojeda <ojeda@kernel.org>, Laura Abbott <laura@labbott.name>, linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
+Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, catalin.marinas@arm.com, linus.walleij@linaro.org, dave.hansen@linux.intel.com, linux-mips@vger.kernel.org, James Bottomley <James.Bottomley@hansenpartnership.com>, dalias@libc.org, eric_devolder@yahoo.com, linux-riscv@lists.infradead.org, will@kernel.org, kernel@xen0n.name, tsi@tuyoix.net, linux-s390@vger.kernel.org, agordeev@linux.ibm.com, rmk+kernel@armlinux.org.uk, hpa@zytor.com, paulmck@kernel.org, ysato@users.sourceforge.jp, kernel-team <kernel-team@cloudflare.com>, deller@gmx.de, x86@kernel.org, linux@armlinux.org.uk, paul.walmsley@sifive.com, Ingo Molnar <mingo@redhat.com>, geert@linux-m68k.org, hbathini@linux.ibm.com, samitolvanen@google.com, ojeda@kernel.org, juerg.haefliger@canonical.com, borntraeger@linux.ibm.com, frederic@kernel.org, arnd@arndb.de, mhiramat@kernel.org, Ard Biesheuvel <ardb@kernel.org>, thunder.leizhen@huawei.com, aou@eecs.berkeley.edu, 
+ keescook@chromium.org, gor@linux.ibm.com, anshuman.khandual@arm.com, hca@linux.ibm.com, xin3.li@intel.com, npiggin@gmail.com, konrad.wilk@oracle.com, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, glaubitz@physik.fu-berlin.de, Thomas Gleixner <tglx@linutronix.de>, ziy@nvidia.com, linux-arm-kernel@lists.infradead.org, boris.ostrovsky@oracle.com, tsbogend@alpha.franken.de, sebastian.reichel@collabora.com, linux-parisc@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>, kirill.shutemov@linux.intel.com, ndesaulniers@google.com, linux-kernel <linux-kernel@vger.kernel.org>, sourabhjain@linux.ibm.com, palmer@dabbelt.com, svens@linux.ibm.com, tj@kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, masahiroy@kernel.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Nov 18, 2023 at 11:58=E2=80=AFAM Matthew Maurer <mmaurer@google.com=
-> wrote:
->
-> The goal of this patch series is to allow MODVERSIONS and RUST to be
-> enabled simultaneously. The primary issue with doing this at the moment
-> is that Rust uses some extremely long symbol names - for those
-> unfamiliar with Rust, it may be helpful to think of some of the mangled
-> C++ names you may have seen in binaries in the past.
->
-> Previously, Gary Guo attempted to accomplish this by modifying the
-> existing modversion format [1] to support variable-length symbol names.
-> This was unfortunately considered to be a potential userspace break
-> because kmod tools inspect this kernel module metadata. Masahiro Yamada
-> suggested [2] that this could instead be done with a section per-field.
-> This gives us the ability to be more flexible with this format in the
-> future, as a new field or additional information will be in a new
-> section which userspace tools will not yet attempt to read.
->
-> In the previous version of this patchset, Luis Chamberlain suggested [3]
-> I move validation out of the version checking and into the elf validity
-> checker, and also add kernel-docs over there. I found
-> elf_validity_cached_copy to be fairly dense and difficult to directly
-> describe, so I refactored it into easier to explain pieces. In the
-> process, I found a few missing checks and added those as well. See
-> [PATCH 2/5] for more details. If this is too much, I'm more than happy
-> to drop this patch from the series in favor of just adding the
-> kernel-doc to the original code, but figured I'd offer it up in case the
-> added clarity and checks were valuable.
->
-> [1] https://lore.kernel.org/lkml/20230111161155.1349375-1-gary@garyguo.ne=
-t/
-> [2] https://lore.kernel.org/lkml/CAK7LNATsuszFR7JB5ZkqVS1W=3DhWr9=3DE7bTf=
-+MvgJ+NXT3aZNwg@mail.gmail.com/
-> [3] https://lore.kernel.org/lkml/ZVZNh%2FPA5HiVRkeb@bombadil.infradead.or=
-g/
+On 11/21/23 at 09:43am, Ignat Korchagin wrote:
+> On Tue, Nov 21, 2023 at 7:53 AM Ignat Korchagin <ignat@cloudflare.com> wrote:
+> >
+> > On Tue, Nov 21, 2023 at 1:50 AM Baoquan He <bhe@redhat.com> wrote:
+> > >
+> > > Eric DeVolder's Oracle mail address is not available anymore, add his
+> > > current mail address he told me.
+> >
+> > Thank you!
+> >
+> > > On 11/20/23 at 10:52pm, Ignat Korchagin wrote:
+> > > > Good day!
+> > > >
+> > > > We have recently started to evaluate Linux 6.6 and noticed that we
+> > > > cannot disable CONFIG_KEXEC anymore, but keep CONFIG_CRASH_DUMP
+> > > > enabled. It seems to be related to commit 89cde455 ("kexec:
+> > > > consolidate kexec and crash options into kernel/Kconfig.kexec"), where
+> > > > a CONFIG_KEXEC dependency was added to CONFIG_CRASH_DUMP.
+> > > >
+> > > > In our current kernel (Linux 6.1) we only enable CONFIG_KEXEC_FILE
+> > > > with enforced signature check to support the kernel crash dumping
+> > > > functionality and would like to keep CONFIG_KEXEC disabled for
+> > > > security reasons [1].
+> > > >
+> > > > I was reading the long commit message, but the reason for adding
+> > > > CONFIG_KEXEC as a dependency for CONFIG_CRASH_DUMP evaded me. And I
+> > > > believe from the implementation perspective CONFIG_KEXEC_FILE should
+> > > > suffice here (as we successfully used it for crashdumps on Linux 6.1).
+> > > >
+> > > > Is there a reason for adding this dependency or is it just an
+> > > > oversight? Would some solution of requiring either CONFIG_KEXEC or
+> > > > CONFIG_KEXEC_FILE work here?
+> > >
+> > > I searched the patch history, found Eric didn't add the dependency on
+> > > CONFIG_KEXEC at the beginning. Later a linux-next building failure with
+> > > randconfig was reported, in there CONFIG_CRASH_DUMP enabled, while
+> > > CONFIG_KEXEC is disabled. Finally Eric added the KEXEC dependency for
+> > > CRASH_DUMP. Please see below link for more details:
+> > >
+> > > https://lore.kernel.org/all/3e8eecd1-a277-2cfb-690e-5de2eb7b988e@oracle.com/T/#u
+> >
+> > Thank you for digging this up. However I'm still confused, because
+> > this is exactly how we configure Linux 6.1 (although we do have
+> > CONFIG_KEXEC_FILE enabled) and we don't have any problems. I believe
+> > we did not investigate this issue properly.
+> 
+> I did some preliminary investigation for this. If I patch out the
+> dependency on CONFIG_KEXEC the kernel builds just fine for x86
+> (without CONFIG_CRASH_HOTPLUG - which is probably another issue) - so
+> this was the previous behaviour. I can see that the reported error is
+> for arm architecture and was able to reproduce it with a simple cross
+> compiler in Debian. However, I think it is still somehow related to
+> this patchset as the previous kernels (up to 6.5) build fine with just
+> CONFIG_CRASH_DUMP and without CONFIG_KEXEC for arm as well. So even
+> for arm it was introduced in 6.6.
+
+Thanks for the information.
+
+I haven't run the reproducer of issue reported on Eric's old patchset,
+while checkout to kernel 6.1, only s390 selected KEXEC for CRASH_DUMP
+already. And with the ARM building breakage, the simplest idea is 
+to select KEXEC only for ARM or S390 CRASH_DUMP. I plan to try the
+reproducer later. If you have any idea or draft patch, please feel free
+to post.
+
+diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
+index 7aff28ded2f4..382dcd8d7a9d 100644
+--- a/kernel/Kconfig.kexec
++++ b/kernel/Kconfig.kexec
+@@ -97,7 +97,7 @@ config CRASH_DUMP
+        depends on ARCH_SUPPORTS_KEXEC
+        select CRASH_CORE
+        select KEXEC_CORE
+-       select KEXEC
++       select KEXEC if (ARM || S390)
+
+
+arch/s390/Kconfig in kernel 6.1:
+config CRASH_DUMP
+        bool "kernel crash dumps"
+        select KEXEC
+        help
+          Generate crash dump after being started by kexec.
+          Crash dump kernels are loaded in the main kernel with kexec-tools
+          into a specially reserved region and then later executed after
+          a crash by kdump/kexec.
+          Refer to <file:Documentation/s390/zfcpdump.rst> for more details on this.
+          This option also enables s390 zfcpdump.
+          See also <file:Documentation/s390/zfcpdump.rst>
+
+> 
+> > > And besides, the newly added CONFIG_CRASH_HOTPLUG also needs
+> > > CONFIG_KEXEC if the elfcorehdr is allowed to be manipulated when
+> > > cpu/memory hotplug hapened.
+> >
+> > This still feels like a regression to me: any crash dump support
+> > should be independent of KEXEC syscalls being present. While probably
+> > the common case (including us) that the crashing kernel and recovery
+> > kernel are the same, they don't have to be. We need kexec syscall in
+> > the crashing kernel, but crashdump support in the recovery kernel (but
+> > the recovery kernel not having the kexec syscalls should be totally
+> > fine). If we do require some code definitions from kexec - at most we
+> > should put them under CONFIG_KEXEC_CORE.
+> >
+> > > Thanks
+> > > Baoquan
+> > >
+> 
+> Ignat
+> 
 
-
-
-
-
-I want to know why this is useful.
-
-
-To clarify my question, let me first explain
-what the modversion is.
-
-
-
-In C, a function callee and callers must agree
-with the interface of the function.
-
-
-This is usually done by having a function prototype
-in a header file.
-
-
-Say, we have a function declaration
-
-    int foo(int x, int y);
-
-in include/linux/foo.h
-
-
-Then, the C file that defines foo() and all C files
-that call it must include <linux/foo.h> so that
-argument mismatch can be detected.
-
-
-
-
-Same for EXPORT_SYMBOL; the symbol provider and consumers
-must agree with the interface of exported symbols.
-
-In the kernel, however, there is no promise for in-kernel ABI
-compatibility across different kernel versions.
-The kernel only promises the compatibility of the userspace interface.
-
-
-To load modules, by principle, vmlinux and modules must have
-the same version.
-
-To slightly loosen the limitation, CONFIG_MODVERSIONS was
-introduced; when it is enabled, you can load a module
-as long as all the prototypes of exported symbols match.
-
-To do this, we need to encode information about prototypes.
-
-
-This is done by a tool called genksyms (scripts/genksyms/genksyms).
-
-
-
-Say, we have this code:
-
-
-int foo(int x, int y)
-{
-     // genksyms does not care about
-     // the function body.
-}
-EXPORT_SYMBOL(foo);
-
-
-Genksyms parses the code and computes a CRC value for 'foo'.
-Genksyms is only interested in the function name and its prototype.
-
-It sees
-
-   int foo(int, int)
-
-and it transforms it into a CRC.
-
-
-Any change to the prototype results in a
-different CRC, so the module subsystem
-can check the interface compatibility
-before loading a module.
-
-
-It is obvious that this is impossible for Rust source
-because scripts/genksyms/genksyms is only able to
-parse C code.
-
-
-Then, what is happening here?
-
-See rust/exports.c
-
-
-  #define EXPORT_SYMBOL_RUST_GPL(sym) extern int sym; EXPORT_SYMBOL_GPL(sym=
-)
-
-
-The global scope symbols in Rust (i.e. 'pub) are automatically
-exported, and all of them are visible as 'int' variables
-from C world.
-
-
-Genksyms will see this code:
-
-  extern int foo;
-  EXPORT_SYMBOL_GPL(foo);
-
-Of course, this is not a true prototype.
-The real signature on the Rust side might be:
-
-  fn foo(x: i32, y: i32) -> i32
-
-
-So, even if you enable CONFIG_MODVERSIONS,
-nothing is checked for Rust.
-Genksyms computes a CRC from "int foo", and
-the module subsystem confirms it is a "int"
-variable.
-
-We know this check always succeeds.
-
-Why is this useful?
-
-
-
-
-
-
-> Matthew Maurer (5):
->   export_report: Rehabilitate script
->   modules: Refactor + kdoc elf_validity_cached_copy
->   modpost: Extended modversion support
->   rust: Allow MODVERSIONS
->   export_report: Use new version info format
->
->  arch/powerpc/kernel/module_64.c |  25 +-
->  init/Kconfig                    |   1 -
->  kernel/module/internal.h        |  18 +-
->  kernel/module/main.c            | 663 +++++++++++++++++++++++++-------
->  kernel/module/version.c         |  43 +++
->  scripts/export_report.pl        |  17 +-
->  scripts/mod/modpost.c           |  37 +-
->  7 files changed, 642 insertions(+), 162 deletions(-)
->
-> --
-> 2.43.0.rc0.421.g78406f8d94-goog
->
-
-
---
-Best Regards
-
-
-
-
-
-Masahiro Yamada
