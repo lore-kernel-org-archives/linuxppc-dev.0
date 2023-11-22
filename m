@@ -4,41 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3519EC61D85
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 02:23:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0023CC61D92
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 02:59:21 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=HRvFlRsn;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZlQs4dpCz3dSr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 13:23:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZmDS3V7Pz3dHj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 13:59:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=HRvFlRsn;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZlQJ51vtz3bv3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 13:22:48 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 478091A0F04;
-	Wed, 22 Nov 2023 03:22:44 +0100 (CET)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0FB5A1A0D38;
-	Wed, 22 Nov 2023 03:22:44 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 76E58183AD45;
-	Wed, 22 Nov 2023 10:22:42 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: nicoleotsuka@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	shengjiu.wang@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: fsl_xcvr: Enable 2 * TX bit clock for spdif only case
-Date: Wed, 22 Nov 2023 09:42:53 +0800
-Message-Id: <1700617373-6472-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZmCS6Kmpz3cS3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 13:58:27 +1100 (AEDT)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-5b9a456798eso3837738a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2023 18:58:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1700621899; x=1701226699; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=IYM0Oaw3kRxzOyoQ/EbAwwAuiWC84244ywU20mM17lo=;
+        b=HRvFlRsnnAXcs4dC6wXlAMQOH4H0JAaCxPua7F+Qm9xPaUjKGaaoTpdQYbz+1SpaT8
+         lN5OPakH7MnxUoqCAAfEUV7pz9dU0Gzw8IgeU0ZPZnZtdy6H9mqzJ5bTaidF/bw0IwhC
+         x+Ht0wDbhV1Kha23GAhn1TB/fTy2kMfSgvmd+EUGJydCATGHBxFV2qqFF63N0uU7bg5f
+         xV7D/h6RsHJtrcIhjGd/rTsgMwYzxWCmpRwl/OEsIDbv3Lf9k8/0wusDp0mO33AMMHe8
+         SGsjlsz71xOzA93xYy0CufuAA0eHpsGCoD08DC7gLDUWnQFOz+J4husRz6aBFJFJjco9
+         WsaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700621899; x=1701226699;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=IYM0Oaw3kRxzOyoQ/EbAwwAuiWC84244ywU20mM17lo=;
+        b=QVbLLX1EQqE0p0L4wDqhd0bXaAiw91AjmaYzFf+gfe2KOflgLK0h3hiejj+4Cs8fQy
+         MHJP+9rIn6vMrOc7gXlvhbRJs4bJYb/aJQjqqlqQ5oZWqSD+M/PKGoS0oGj6XRujfsVy
+         ianS74Uy2ab1ifx012+nrA0VagWyXqUGCnTgKrl4cH2vQM0rZRsyvmLr1/D3hSeJ1BT7
+         /mNfe09Go2Lc5M0g3akvj84ejJL49mcMxaWy25O0qHRU5+o3kMBi31ypGwPZAcoEdM2b
+         ptX5Qrmj6jxeSW+6LwkRKoQX82ttRIjhmRmjKVky6ivK6t5eQwxoJxxKuwhlmaPGsaMy
+         8Igg==
+X-Gm-Message-State: AOJu0YzdyvRv8/HvxJUPKs6+wbqE1jqeAuSkGEzihKWVyCnegPpFDRaA
+	L+uqDIawTT2kU2Bamr42p9/VvHtuN6g=
+X-Google-Smtp-Source: AGHT+IEcqc/s2w/ZBALwv0dgeVaxc4fKN+qst8zGiW5r33dir6akhkAdzmg5zMkUt2NBkLwD3Bv2xA==
+X-Received: by 2002:a05:6a21:788f:b0:187:ae36:74c with SMTP id bf15-20020a056a21788f00b00187ae36074cmr1021859pzc.62.1700621899252;
+        Tue, 21 Nov 2023 18:58:19 -0800 (PST)
+Received: from wheely.local0.net (60-240-124-93.tpgi.com.au. [60.240.124.93])
+        by smtp.gmail.com with ESMTPSA id c5-20020a170903234500b001cf5ceade80sm4805533plh.1.2023.11.21.18.58.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Nov 2023 18:58:18 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Fix KVM_RUN clobbering FP/VEC user registers
+Date: Wed, 22 Nov 2023 12:58:11 +1000
+Message-ID: <20231122025811.2973-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.42.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,43 +75,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Timothy Pearson <tpearson@raptorengineering.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The bit 10 in TX_DPTH_CTRL register controls the TX clock rate.
-If this bit is set, TX datapath clock should be = 2* TX bit rate.
-If this bit is not set, TX datapath clock should be 10* TX bit rate.
+Before running a guest, the host process (e.g., QEMU) FP/VEC registers
+are saved if they were being used, similarly to when the kernel uses FP
+registers. The guest values are then be loaded into regs, and the host
+process registers will be restored lazily when it uses FP/VEC.
 
-As the spdif only case, we always use 2 * TX bit clock, so
-this bit need to be set.
+KVM HV has a bug here: the host process registers do get saved, but the
+user MSR bits remain enabled, which indicates the registers are valid
+for the process. After they are clobbered by running the guest, this
+valid indication causes the host process to take on the FP/VEC regiter
+values of the guest.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Fixes: de2a20aa7237b ("powerpc: Prepare for splitting giveup_{fpu, altivec, vsx} in two")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- sound/soc/fsl/fsl_xcvr.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/kernel/process.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-index fa0a15263c66..77f8e2394bf9 100644
---- a/sound/soc/fsl/fsl_xcvr.c
-+++ b/sound/soc/fsl/fsl_xcvr.c
-@@ -414,6 +414,16 @@ static int fsl_xcvr_prepare(struct snd_pcm_substream *substream,
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 392404688cec..9452a54d356c 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1198,11 +1198,11 @@ void kvmppc_save_user_regs(void)
  
- 	switch (xcvr->mode) {
- 	case FSL_XCVR_MODE_SPDIF:
-+		if (xcvr->soc_data->spdif_only && tx) {
-+			ret = regmap_update_bits(xcvr->regmap, FSL_XCVR_TX_DPTH_CTRL_SET,
-+						 FSL_XCVR_TX_DPTH_CTRL_BYPASS_FEM,
-+						 FSL_XCVR_TX_DPTH_CTRL_BYPASS_FEM);
-+			if (ret < 0) {
-+				dev_err(dai->dev, "Failed to set bypass fem: %d\n", ret);
-+				return ret;
-+			}
-+		}
-+		fallthrough;
- 	case FSL_XCVR_MODE_ARC:
- 		if (tx) {
- 			ret = fsl_xcvr_en_aud_pll(xcvr, fout);
+ 	usermsr = current->thread.regs->msr;
+ 
++	/* Caller has enabled FP/VEC/VSX/TM in MSR */
+ 	if (usermsr & MSR_FP)
+-		save_fpu(current);
+-
++		__giveup_fpu(current);
+ 	if (usermsr & MSR_VEC)
+-		save_altivec(current);
++		__giveup_altivec(current);
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (usermsr & MSR_TM) {
 -- 
-2.34.1
+2.42.0
 
