@@ -4,56 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1606CC072A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 05:17:58 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PxDe4lZh;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2456C072A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 07:27:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SZqJP49LSz3dKF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 16:17:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PxDe4lZh;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SZt9S2XFBz3dWF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Nov 2023 18:27:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=ke.zhao@shingroup.cn; receiver=lists.ozlabs.org)
+Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZqHT2ZGJz2yjD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 16:17:09 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4SZqHS5nznz4xQZ; Wed, 22 Nov 2023 16:17:08 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1700630228;
-	bh=TCYKc2HGVsybDUdZJckf8t5FSQftw5Rjcll+8CYTEmo=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=PxDe4lZhwi0ogRmrgnxSXD3Po6RKP4PQIE4Ky5NCk2UtjtGX1xpd9WW3FNLk6+1O8
-	 hddsoQoCCfL9c4zug8+6ioHnMlcdH+zDI8PY9uXXhnRypx7ApiOO6WDP1XnC19YiAH
-	 l7kqt9Y59nLCZkHE9Kgo0FxJlnQh54ZP037o1JCp6a4c9rQjX6bCUByVIQ3jE7+XD7
-	 nZ1yYs2/PWapSjDbPeEwac/bAmyudRDFc53wUkMTtrMMmTXlktp4oLtqhjrxG8dG7a
-	 upWaCmegFFa7wXPHbhi6zi9m+PW9obOCZpC/ZZwz/qUKIT6wDd6te6CBAlo5/Xg8Vi
-	 5P5vW1EfelRYA==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SZqHS50Q8z4xNG;
-	Wed, 22 Nov 2023 16:17:08 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>, Sourabh Jain
- <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5 1/3] powerpc: make fadump resilient with memory
- add/remove events
-In-Reply-To: <2c0f9f9d-8cc1-4bd4-8f7f-d284140ffa43@linux.ibm.com>
-References: <20231029124548.12198-1-sourabhjain@linux.ibm.com>
- <20231029124548.12198-2-sourabhjain@linux.ibm.com>
- <871qcr1v8v.fsf@linux.ibm.com>
- <1472a35a-5de9-4684-b4de-9dffebdedfbb@linux.ibm.com>
- <2c0f9f9d-8cc1-4bd4-8f7f-d284140ffa43@linux.ibm.com>
-Date: Wed, 22 Nov 2023 16:17:08 +1100
-Message-ID: <87fs0yjrjf.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SZt8v2CXpz3cDT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2023 18:26:38 +1100 (AEDT)
+X-QQ-mid: bizesmtp90t1700637925tzulhvmw
+Received: from [127.0.0.1] ( [121.8.34.183])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Wed, 22 Nov 2023 15:25:23 +0800 (CST)
+X-QQ-SSF: 01400000000000409000000A0000000
+X-QQ-FEAT: 3M0okmaRx3gWbAZsppbqFXOgd+ASBlrd9OFaP+k9ueK1HKF7gWC1foXGe+EqS
+	5s6Lqk4gZyRfovsWbuSJZ6iEmY9Q/CaPZofkp99N4oOXlUK89nrxiSjyNQAgFazULJvGX7j
+	WNKx9qE+yZGk5Afi+kgu5gMhqPbVkXoE2DPLtYXbABX997agyfD7UySSnu67oRaaB6ExlVX
+	2oS0xrlmTAcMOPt/uR0/Vyv9jXSIIfqit/lEYZ9gUPAyXn/5bqIwe9I7NRDi+N2egMU3LTq
+	0iplZfUmlVo6VOWXkHddbWDdro4A/RdLH/uc4J5tu9zuSc0Lg0keAOuWdD+2ABk9RzXvnd0
+	VxQ2lGVdQaaHhztyAecc7vztzu4Ve7h6jy9E1cIKWok0n69pqWqlf090A7zV+Ue8lcHGPCh
+	JRbJJGS63Zc=
+X-QQ-GoodBg: 2
+X-BIZMAIL-ID: 9463445068661459453
+Message-ID: <52743BC52E07B486+dcb66331-0993-462b-ac03-6de69a3e1fac@shingroup.cn>
+Date: Wed, 22 Nov 2023 15:25:23 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: Add PVN support for HeXin C2000 processor
+To: Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
+ christophe.leroy@csgroup.eu, fbarrat@linux.ibm.com, ajd@linux.ibm.com,
+ arnd@arndb.de, gregkh@linuxfoundation.org
+References: <20231117075215.647-1-ke.zhao@shingroup.cn>
+ <87sf4yk19w.fsf@mail.lhotse>
+Content-Language: en-US
+From: =?UTF-8?B?WmhhbyBLZSDotbUg5Y+v?= <ke.zhao@shingroup.cn>
+In-Reply-To: <87sf4yk19w.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:shingroup.cn:qybglogicsvrsz:qybglogicsvrsz3a-0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,25 +57,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Aditya Gupta <adityag@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: luming.yu@shingroup.cn, kvm@vger.kernel.org, dawei.li@shingroup.cn, linux-kernel@vger.kernel.org, shenghui.qu@shingroup.cn, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Aneesh Kumar K V <aneesh.kumar@linux.ibm.com> writes:
-...
+Hi Michael,
+
+On 2023/11/22 9:46, Michael Ellerman wrote:
+> Zhao Ke <ke.zhao@shingroup.cn> writes:
+>> HeXin Tech Co. has applied for a new PVN from the OpenPower Community
+>> for its new processor C2000. The OpenPower has assigned a new PVN
+>> and this newly assigned PVN is 0x0066, add pvr register related
+>> support for this PVN.
+>>
+>> Signed-off-by: Zhao Ke <ke.zhao@shingroup.cn>
+>> Link: https://discuss.openpower.foundation/t/how-to-get-a-new-pvr-for-processors-follow-power-isa/477/10
+>   
+> Hi Zhao Ke,
 >
-> I am not sure whether we need to add all the complexity to enable supporting different fadump kernel
-> version. Is that even a possible use case with fadump? Can't we always assume that with fadump the
-> crash kernel and fadump kernel will be same version?
+> Thanks for the patch. Just a few questions.
+>
+> Are you able to provide any further detail on the processor?
+>
+> Your cputable entry claims that it's identical to the original Power8
+> core, can you comment at all on how true that is in practice?
 
-How sure are we of that?
+Basically, we made lots of design change for the new processor.
 
-Don't we go through grub when we boot into the 2nd kernel. And so
-couldn't it choose to boot a different kernel, for whatever reason.
+For example:
 
-I don't think we need to support different pt_reg / cpumask sizes, but
-requiring the exact same kernel version is too strict I think.
+     1. redesign the interconnect of the fabric, from crossbar to mesh
 
-But maybe I'm wrong. Would be good to hear what distro folks think.
+     2. redesign the memory subsystem, including the modification of L2 
+and L3 architecture
 
-cheers
+     3. redesign the SMP bus
+
+     4. upgrade PCIe to gen5 and increase the number of lanes
+
+     5. upgrade ddr to DDR5, dimm direct connected, and the number of 
+channels
+
+     6. redesign the pervasive architecture, including debug/trace, 
+clock&power management, etc.
+
+
+> Unfortunately the kernel has some hard-coded knowledge of various
+> non-architected features, which are not controlled via the CPU table,
+> and are instead controlled by firmware. So you'll need to make sure you
+> set those correctly, see init_fw_feat_flags() for details.
+
+Thanks for telling me, we have a firmware team and we will work together
+
+on this.
+
+> One other comment below ...
+>
+>> diff --git a/arch/powerpc/kernel/cpu_specs_book3s_64.h b/arch/powerpc/kernel/cpu_specs_book3s_64.h
+>> index c370c1b804a9..4f604934da7c 100644
+>> --- a/arch/powerpc/kernel/cpu_specs_book3s_64.h
+>> +++ b/arch/powerpc/kernel/cpu_specs_book3s_64.h
+>> @@ -238,6 +238,21 @@ static struct cpu_spec cpu_specs[] __initdata = {
+>>   		.machine_check_early	= __machine_check_early_realmode_p8,
+>>   		.platform		= "power8",
+>>   	},
+>> +	{	/* 2.07-compliant processor, HeXin C2000 processor */
+>> +		.pvr_mask		= 0xffffffff,
+>> +		.pvr_value		= 0x00660000,
+>> +		.cpu_name		= "POWER8 (architected)",
+>   
+> Using "(architected)" here is not right. That's reserved for the
+> 0x0f00000x range of PVRs.
+>
+> You should use "POWER8 (raw)", or you could actually use the marketing
+> name there if you want to, eg. "HeXin C2000" or whatever.
+I will update this asap.
+> cheers
+>
+
