@@ -4,48 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C093C61D99
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 00:23:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87E41C61D99
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 00:27:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=NrtdkBBs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YPC8I2Y5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SbJjc2jywz3dJZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 11:23:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SbJpk1dwZz3d9g
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Nov 2023 11:27:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=NrtdkBBs;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YPC8I2Y5;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SbJhf1ztSz3cZr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 11:22:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SbJnm1130z2xFl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 11:26:36 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1700698930;
-	bh=M5GDyE4zSQHOMo2VmEGb9eJcwSsa+CIf5IyoPYCZygg=;
+	s=201909; t=1700699192;
+	bh=x4ZQqedJYLGPYSK+d7G5PNiQr9d+Gw8ba+LcRhYj45A=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=NrtdkBBs015WyelROXUBRNgCnLIY6y49tPIx5poCTLUzO6lSBg0XPb09wKF0e9ls8
-	 3HRRMFU+c496ylfCFx8L0CsJ0Bqw8zQvgEdN7LAYDlyvX7lcYoilEDVIX+ZKWKG+BD
-	 9lobJYHa2i9iecS6QXHAf0rOhx4mqUjyrlb0Ff3evLSLFa0dM1aZ/k2dBIc+5v577Z
-	 DSUXn5/q04RF7KyPazlXG3sW3EeCZTV85iBJa+SciiMYz+C4241fXmm3OnLuklz61n
-	 Avp0X4UQ5uo/MejgVOB932Vz1GNvmB1TUWBca7fMR7gcSLO8EGTV/QrZbTEIbCizyj
-	 0zJF4jegbfWhA==
+	b=YPC8I2Y51EwzLJV2d79l8abHDqwqoEm3vGEo2qWzyoLyBcQ5JdMhbBqj4iXNalv+R
+	 7oUNbrvjHmDzljIQGxEKhzff4EXfvuO8dUquzjPYSqhzwxjuMSf11xmT6OxyvNZwya
+	 61tfvYtMPH4+L53N59qS8/NxVg5VqFGRhWO99nmTG2k5sHQnWwKubKrzS0whjuzfKO
+	 arebV4JFb2GWg8Zo3dymdohx/UqOAc82d7JPz1cpzXSNo1RZemk28J04xolONPAC2C
+	 CSq8nYUWK+Wv/zKrQ18bo6T5l0xisx96lkzML/VjoMp1Xi1PCKmI6x1PzuClkJhU80
+	 nqxpcRcm9zwtw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SbJhc08sZz4x1p;
-	Thu, 23 Nov 2023 11:22:07 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SbJnh0btLz4x5n;
+	Thu, 23 Nov 2023 11:26:31 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 2/2] ASoC: cs4270: Remove unused codec
-In-Reply-To: <ZV3pIb1p52CFNsSl@finisterre.sirena.org.uk>
-References: <20231122062712.2250426-1-mpe@ellerman.id.au>
- <20231122062712.2250426-2-mpe@ellerman.id.au>
- <ZV3pIb1p52CFNsSl@finisterre.sirena.org.uk>
-Date: Thu, 23 Nov 2023 11:22:07 +1100
-Message-ID: <877cm9s4i8.fsf@mail.lhotse>
+To: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Subject: Re: [PATCH] powerpc: Use ARRAY_SIZE for array length
+In-Reply-To: <20231122090312.114679-1-jiapeng.chong@linux.alibaba.com>
+References: <20231122090312.114679-1-jiapeng.chong@linux.alibaba.com>
+Date: Thu, 23 Nov 2023 11:26:31 +1100
+Message-ID: <874jhds4aw.fsf@mail.lhotse>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,19 +57,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com, shengjiu.wang@gmail.com, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, linux-sound@vger.kernel.org, david.rhodes@cirrus.com, nicoleotsuka@gmail.com, paul.gortmaker@windriver.com, rf@opensource.cirrus.com, patches@opensource.cirrus.com, perex@perex.cz, james.schulman@cirrus.com, festevam@gmail.com
+Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, Abaci Robot <abaci@linux.alibaba.com>, linux-kernel@vger.kernel.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mark Brown <broonie@kernel.org> writes:
-> On Wed, Nov 22, 2023 at 05:27:12PM +1100, Michael Ellerman wrote:
->> The only driver to enable SND_SOC_CS4270 was SND_SOC_MPC8610_HPCD, which
->> was dropped in the preceding commit. Remove the codec as unused.
+Jiapeng Chong <jiapeng.chong@linux.alibaba.com> writes:
+> Use of macro ARRAY_SIZE to calculate array size minimizes
+> the redundant code and improves code reusability.
 >
-> There's no real overhead from having extra drivers and we do have
-> generic drivers that people can attach CODECs to.
+> ./arch/powerpc/xmon/ppc-opc.c:957:67-68: WARNING: Use ARRAY_SIZE.
+>
+> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> Closes: https://bugzilla.openanolis.cn/show_bug.cgi?id=7612
+> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+> ---
+>  arch/powerpc/xmon/ppc-opc.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-OK. I have no idea how sound works, I was just cleaning things up. So
-whatever you think is best.
+This code is copied from binutils, we don't take cleanup patches to it.
+
+See also the at least three times this has already been submitted :)
+
+https://lore.kernel.org/all/4ed43222-17b0-8355-f836-adabb453e432@csgroup.eu/
+https://lore.kernel.org/linuxppc-dev/20181004171036.GA1907@embeddedor.com/
+https://lore.kernel.org/linuxppc-dev/874lfxjnzl.fsf@concordia.ellerman.id.au/
 
 cheers
