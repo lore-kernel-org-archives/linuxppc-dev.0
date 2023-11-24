@@ -4,78 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A69B3C61D97
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 01:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E459C61D85
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 02:40:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ijRXAftj;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ijRXAftj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=H8OQ2a6a;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sbynv2c5yz3dLB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 12:58:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SbzkB5KNPz3dXC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 13:40:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ijRXAftj;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ijRXAftj;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=H8OQ2a6a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sbymx4gS0z3cLY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2023 12:58:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700791086;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SiHqBG5n3pSa5R94END0/8W0OBeOhpXL3D/OFSohC2M=;
-	b=ijRXAftj8POW/y+UTgPvOP2WCvvQLP/poHkJ8GaGZv4HXe1owr3938fZAoc8et9G8KW4dV
-	3jIiq5LzyIZYHq3c8wfqMI5wbJlJbgfj75SL0EiiBW6Jhc2gWDyN4QfL6JCerO+jv2fZBu
-	vOf6I+bari0+hY1HBzlxmL4HHfYUdhs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700791086;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SiHqBG5n3pSa5R94END0/8W0OBeOhpXL3D/OFSohC2M=;
-	b=ijRXAftj8POW/y+UTgPvOP2WCvvQLP/poHkJ8GaGZv4HXe1owr3938fZAoc8et9G8KW4dV
-	3jIiq5LzyIZYHq3c8wfqMI5wbJlJbgfj75SL0EiiBW6Jhc2gWDyN4QfL6JCerO+jv2fZBu
-	vOf6I+bari0+hY1HBzlxmL4HHfYUdhs=
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-9-_W8SERA3N_Gf5HeqVWenIA-1; Thu,
- 23 Nov 2023 20:58:02 -0500
-X-MC-Unique: _W8SERA3N_Gf5HeqVWenIA-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SbzjF17qmz2yhZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2023 13:40:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1700793600;
+	bh=WFqN7XdFHW/NhVtUbPjSXPK5v0o8fzBgXb/161VbErM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=H8OQ2a6aBxRkz/RG1wM0NXFPJnvYDSXO1kf//aLmHe6Cil3PfQXbUWBJs36e0VXwQ
+	 UQLyVnZQYY62EGQSwfwfGMhhBYQSRBEgjqEflGyD8J49dkiMy6i3pmDD/mJnOL7bu/
+	 My9i2VjDbqPkUE7e1G4QK98XzJr/2TGljk/wbh1A8FxOyXUMcz42v6jC1ckebwPwNs
+	 7NM04dXdGvuop4cHsV/yUDIj1eEc4Vtm/Eey1EQfOJj7mHmNdK3xKaLktdZort1p1T
+	 4Tz6kOHG1zKfo0y7le3dv+PJaQheFMWpcZ+X/vuILb6zVJhTpowxy2qPQ1j4eb46Go
+	 3TlAMWKGLPTrg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id A870E28EC110;
-	Fri, 24 Nov 2023 01:58:01 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.8])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 03C1B2166B2A;
-	Fri, 24 Nov 2023 01:58:00 +0000 (UTC)
-Date: Fri, 24 Nov 2023 09:57:57 +0800
-From: "bhe@redhat.com" <bhe@redhat.com>
-To: Yujie Liu <yujie.liu@intel.com>
-Subject: Re: [PATCH 2/7] kexec_file: print out debugging message if required
-Message-ID: <ZWADJcg5smQHZzMT@MiWiFi-R3L-srv>
-References: <20231114153253.241262-3-bhe@redhat.com>
- <202311160431.BXPc7NO9-lkp@intel.com>
- <ZVcvBft/T3cbRBWr@MiWiFi-R3L-srv>
- <39ccb4fda795a76996cf6d1c3b25909692358211.camel@intel.com>
- <ZVdyLdAzgNBXfjiW@MiWiFi-R3L-srv>
- <ZV9YYEK4L160ECQ+@MiWiFi-R3L-srv>
- <ZV/55OkN7bV02LY8@yujie-X299>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SbzjD3tc4z4wqN;
+	Fri, 24 Nov 2023 13:40:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vishal Chourasia <vishalc@linux.ibm.com>, aneesh.kumar@kernel.org
+Subject: Re: [PATCH v3] powerpc: Adjust config HOTPLUG_CPU dependency
+In-Reply-To: <20231122101040.231850-1-vishalc@linux.ibm.com>
+References: <3fe72686-5b89-41e4-b760-d6353b426d81@kernel.org>
+ <20231122101040.231850-1-vishalc@linux.ibm.com>
+Date: Fri, 24 Nov 2023 13:39:53 +1100
+Message-ID: <87v89rri12.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ZV/55OkN7bV02LY8@yujie-X299>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.6
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,102 +58,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "llvm@lists.linux.dev" <llvm@lists.linux.dev>, lkp <lkp@intel.com>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "kexec@lists.infradead.org" <kexec@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "oe-kbuild-all@lists.linux.dev" <oe-kbuild-all@lists.linux.dev>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: aneesh.kumar@linux.ibm.com, vishalc@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/24/23 at 09:18am, Yujie Liu wrote:
-> On Thu, Nov 23, 2023 at 09:49:20PM +0800, bhe@redhat.com wrote:
-> > On 11/17/23 at 10:01pm, Baoquan He wrote:
-> > > On 11/17/23 at 09:37am, Liu, Yujie wrote:
-> > > > Hi Baoquan,
-> > > > 
-> > > > On Fri, 2023-11-17 at 17:14 +0800, Baoquan He wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > On 11/16/23 at 05:04am, kernel test robot wrote:
-> > > > > > Hi Baoquan,
-> > > > > > 
-> > > > > > kernel test robot noticed the following build errors:
-> > > > > > 
-> > > > > > [auto build test ERROR on arm64/for-next/core]
-> > > > > > [also build test ERROR on tip/x86/core powerpc/next powerpc/fixes linus/master v6.7-rc1 next-20231115]
-> > > > > > [If your patch is applied to the wrong git tree, kindly drop us a note.
-> > > > > > And when submitting patch, we suggest to use '--base' as documented in
-> > > > > > https://git-scm.com/docs/git-format-patch#_base_tree_information]
-> > > > > > 
-> > > > > > url:    https://github.com/intel-lab-lkp/linux/commits/Baoquan-He/kexec_file-add-kexec_file-flag-to-control-debug-printing/20231114-234003
-> > > > > > base:   https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-next/core
-> > > > > > patch link:    https://lore.kernel.org/r/20231114153253.241262-3-bhe%40redhat.com
-> > > > > > patch subject: [PATCH 2/7] kexec_file: print out debugging message if required
-> > > > > > config: hexagon-comet_defconfig (https://download.01.org/0day-ci/archive/20231116/202311160431.BXPc7NO9-lkp@intel.com/config)
-> > > > > > compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
-> > > > > > reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231116/202311160431.BXPc7NO9-lkp@intel.com/reproduce)
-> > > > > > 
-> > > > > 
-> > > > > Thanks for reporting.
-> > > > > 
-> > > > > I met below failure when following the steps of provided reproducer.
-> > > > > Could anyone help check what's wrong with that?
-> > > > 
-> > > > Sorry this seems to be a bug in the reproducer. Could you please change
-> > > > the compiler parameter to "COMPILER=clang-16" and rerun the command? We
-> > > > will fix the issue ASAP.
-> > 
-> > Any update for the reproducer? I would like to post v2 with the fix. I
-> > doubt it's the same issue as another report on this patch, while not
-> > quite sure.
-> 
-> Setting "COMPILER=clang-16" is exactly the correct fix and should
-> reproduce the issue in this report. We've fixed the steps of reproducer
-> but this will only take effect in future reports.
+Hi Vishal,
 
-Thanks, Yujie. I thought you were asking me to use "COMPILER=clang-16"
-to get information to debug. I have done the testing according to
-Nathan's suggestion and can confirm it's the same issue as the one on
-arm64. Will post v2.
+I think our wires got crossed here somewhere :)
 
-> 
-> > > 
-> > > Here you are. Thanks for your quick response.
-> > > ------------------------------
-> > > [root@~ linux]# COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang-16 ~/bin/make.cross W=1 O=build_dir ARCH=hexagon olddefconfig
-> > > Compiler will be installed in /root/0day
-> > > lftpget -c https://cdn.kernel.org/pub/tools/llvm/files/./llvm-16.0.6-x86_64.tar.xz
-> > > /root/linux                                                                             
-> > > tar Jxf /root/0day/./llvm-16.0.6-x86_64.tar.xz -C /root/0day
-> > > PATH=/root/0day/llvm-16.0.6-x86_64/bin:/root/.local/bin:/root/bin:/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-> > > make --keep-going LLVM=1 CROSS_COMPILE=hexagon-linux- LLVM_IAS=1 --jobs=128 KCFLAGS=-Warray-bounds -Wundef -fstrict-flex-arrays=3 -funsigned-char -Wenum-conversion W=1 O=build_dir ARCH=hexagon olddefconfig
-> > > make[1]: Entering directory '/root/linux/build_dir'
-> > >   GEN     Makefile
-> > >   HOSTCC  scripts/basic/fixdep
-> > >   HOSTCC  scripts/kconfig/conf.o
-> > >   HOSTCC  scripts/kconfig/confdata.o
-> > >   HOSTCC  scripts/kconfig/expr.o
-> > >   HOSTCC  scripts/kconfig/lexer.lex.o
-> > >   HOSTCC  scripts/kconfig/menu.o
-> > >   HOSTCC  scripts/kconfig/parser.tab.o
-> > >   HOSTCC  scripts/kconfig/preprocess.o
-> > >   HOSTCC  scripts/kconfig/symbol.o
-> > >   HOSTCC  scripts/kconfig/util.o
-> > >   HOSTLD  scripts/kconfig/conf
-> > > #
-> > > # configuration written to .config
-> > > #
-> > > make[1]: Leaving directory '/root/linux/build_dir'
-> > > 
-> > > > 
-> > > > > [root@~ linux]# COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang ~/bin/make.cross W=1 O=build_dir ARCH=hexagon olddefconfig
-> > > > > Compiler will be installed in /root/0day
-> > > > > lftpget -c https://cdn.kernel.org/pub/tools/llvm/files/
-> > > > > get1: /pub/tools/llvm/files/: files/: Is a directory
-> > > > > Failed to download https://cdn.kernel.org/pub/tools/llvm/files/
-> > > > > clang crosstool install failed
-> > > > > Install clang compiler failed
-> > > > > setup_crosstool failed
-> > > > 
-> > > > 
-> > > 
-> > 
-> 
+Vishal Chourasia <vishalc@linux.ibm.com> writes:
+> Changed HOTPLUG_CPU dependency to SMP and either ARCH_HIBERNATION_POSSIBLE or
+> ARCH_SUSPEND_POSSIBLE, aligning with systems' suspend/hibernation capabilities.
+> This update link CPU hotplugging more logically with platforms' capabilities.
+>
+> configs ARCH_HIBERNATION_POSSIBLE and ARCH_SUSPEND_POSSIBLE are now selected
+> only if required platform dependencies are met.
+>
+> Reported-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Suggested-by: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Vishal Chourasia <vishalc@linux.ibm.com>
+>
+> v2: https://lore.kernel.org/all/20231122092303.223719-1-vishalc@linux.ibm.com
+> v1: https://lore.kernel.org/all/20231114082046.6018-1-vishalc@linux.ibm.com
+> ---
+> During the configuration process with 'make randconfig' followed by
+> 'make olddefconfig', we observed a warning indicating an unmet direct
+> dependency for the HOTPLUG_CPU option. The dependency in question relates to
+> various PowerPC configurations (PPC_PSERIES, PPC_PMAC, PPC_POWERNV,
+> FSL_SOC_BOOKE) which were not enabled, yet the HOTPLUG_CPU was being
+> erroneously selected due to an implicit assumption by the PM_SLEEP_SMP option.
+> This misalignment in dependencies could potentially lead to inconsistent kernel
+> configuration states, especially when considering the necessary hardware
+> support for CPU hot-plugging on PowerPC platforms. The patch aims to correct
+> this by ensuring that ARCH_HIBERNATION_POSSIBLE is contingent upon the
+> appropriate PowerPC configurations being active.
+>
+> steps to reproduce (before applying the patch):
+>
+> Run 'make pseries_le_defconfig'
+> Run 'make menuconfig'
+> Enable hibernation [ Kernel options -> Hibernation (aka 'suspend to disk') ] 
+> Disable [ Platform support -> IBM PowerNV (Non-Virtualized) platform support ]
+> Disable [ Platform support -> IBM pSeries & new (POWER5-based) iSeries ]
+> Enable SMP [ Processor support -> Symmetric multi-processing support ]
+> Save the config
+> Run 'make olddefconfig'
+>
+>  arch/powerpc/Kconfig | 11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 6f105ee4f3cf..87c8134da3da 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -166,6 +167,7 @@ config PPC
+>  	select ARCH_STACKWALK
+>  	select ARCH_SUPPORTS_ATOMIC_RMW
+>  	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC_BOOK3S || PPC_8xx || 40x
+> +	select ARCH_SUSPEND_POSSIBLE            if (ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES || 44x || 40x)
+
+I know Aneesh suggested moving symbols to under PPC, but I think this is
+too big and complicated to be under PPC.
+
+> @@ -381,13 +383,9 @@ config DEFAULT_UIMAGE
+>  
+>  config ARCH_HIBERNATION_POSSIBLE
+>  	bool
+> -	default y
+>  config ARCH_SUSPEND_POSSIBLE
+> -	def_bool y
+> -	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+> -		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
+> -		   || 44x || 40x
+> +	bool
+>  
+>  config ARCH_SUSPEND_NONZERO_CPU
+>  	def_bool y
+> @@ -568,8 +566,7 @@ config ARCH_USING_PATCHABLE_FUNCTION_ENTRY
+>  
+>  config HOTPLUG_CPU
+>  	bool "Support for enabling/disabling CPUs"
+> -	depends on SMP && (PPC_PSERIES || \
+> -		PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
+> +	depends on SMP && (ARCH_HIBERNATION_POSSIBLE || ARCH_SUSPEND_POSSIBLE)
+
+It's good to fix these warnings, but IMHO the result is that the
+dependencies are now backward.
+
+HOTPLUG_CPU should retain its original dependency list. It's easier to
+reason directly about "what platforms support CPU hotplug?", oh it's
+pseries/powernv/powermac/85xx, because they implement cpu_disable().
+
+If there's some dependency from suspend/hibernate on CPU hotplug, then
+those symbols (suspend/hibernate) should depend on something to do with
+CPU hotplug.
+
+Can you try the patch below?
+
+Though, going back to your original reproduction case, that kernel is
+configured for Book3S 64, but with no platforms enabled, which is a
+non-sensical configuration (it can't boot on any actual machines). So
+possibly the real root cause is that, and we should find some way to
+block creating a config that has no platforms enabled.
+
+cheers
+
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6f105ee4f3cf..9fe656a17017 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -380,11 +380,12 @@ config DEFAULT_UIMAGE
+ 	  Used to allow a board to specify it wants a uImage built by default
+ 
+ config ARCH_HIBERNATION_POSSIBLE
+-	bool
+-	default y
++	def_bool y
++	depends on !SMP || HAVE_HOTPLUG_CPU
+ 
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
++	depends on !SMP || HAVE_HOTPLUG_CPU
+ 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+ 		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
+ 		   || 44x || 40x
+@@ -566,10 +567,14 @@ config ARCH_USING_PATCHABLE_FUNCTION_ENTRY
+ 	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh $(CC) -mlittle-endian) if PPC64 && CPU_LITTLE_ENDIAN
+ 	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh $(CC) -mbig-endian) if PPC64 && CPU_BIG_ENDIAN
+ 
++config HAVE_HOTPLUG_CPU
++	def_bool y
++	depends on SMP
++	depends on PPC_PSERIES || PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE
++
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+-	depends on SMP && (PPC_PSERIES || \
+-		PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
++	depends on HAVE_HOTPLUG_CPU
+ 	help
+ 	  Say Y here to be able to disable and re-enable individual
+ 	  CPUs at runtime on SMP machines.
 
