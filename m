@@ -4,55 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C613AC61DF4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 05:30:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C72AC61DF4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 07:11:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PpYv4BBj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=IJ8pxtCa;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sc3TM3jqyz3dV1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 16:29:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sc5kN5zG6z3vcW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Nov 2023 18:11:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PpYv4BBj;
+	dkim=pass (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=IJ8pxtCa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ventanamicro.com (client-ip=2607:f8b0:4864:20::330; helo=mail-ot1-x330.google.com; envelope-from=apatel@ventanamicro.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sc3SN2JXGz3dBd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2023 16:29:08 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id B3E1A616B4;
-	Fri, 24 Nov 2023 05:29:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B82FC433C7;
-	Fri, 24 Nov 2023 05:28:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1700803744;
-	bh=b1xrLFEHTKstn3tjIcO7kRrLqNMDkvZlizKbZ9tMeZQ=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=PpYv4BBjh5pUqvb+tRw9+/ZzMx2Tz0YEDWezWO1IttzM0Vs+ZJzJeKKQIxKJNQ0p3
-	 MnYvvnVpZ+8NNiBcV75ilpO+5qMuY88uD3QkQx5eelkd3JJQDmlWiAAB4WEdd6giY9
-	 OSEc1zqwX3pbA6qEivv2Bd8HlAqgxCIABV9BqAeU6jza8xc3qQo/hUkmv7kLIqW3EC
-	 mQvOW9pAv3MePCglg1ruFu1oWrvpuChqcMpNYLnX9ei3Zbx5tMJddcT5W3/083HSp+
-	 Jl2oKTVE9J1TRJVGPJB8Amm3RYIFOshsSCbvueTtjrnj8cJ30QQ718ITVxXeNnhFRr
-	 dcvO53tjfP9VA==
-X-Mailer: emacs 29.1 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V (IBM) <aneesh.kumar@kernel.org>
-To: Peter Xu <peterx@redhat.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH RFC 06/12] mm/gup: Drop folio_fast_pin_allowed() in
- hugepd processing
-In-Reply-To: <ZV-p7haI5SmIYACs@x1n>
-References: <20231116012908.392077-1-peterx@redhat.com>
- <20231116012908.392077-7-peterx@redhat.com>
- <ZVsYMMJpmFV2T/Zc@infradead.org> <ZVzT5_3Zn-Y-6xth@x1n>
- <ZV21GCbG48nTLDzn@infradead.org> <ZV4co7wcI-_wK91F@x1n>
- <57be0ed0-f1d7-4583-9a5f-3ed7deb0ea97@csgroup.eu> <ZV-p7haI5SmIYACs@x1n>
-Date: Fri, 24 Nov 2023 10:58:51 +0530
-Message-ID: <87zfz37m98.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sc5jP3s4sz3cnZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2023 18:10:31 +1100 (AEDT)
+Received: by mail-ot1-x330.google.com with SMTP id 46e09a7af769-6ce2fc858feso870896a34.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2023 23:10:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ventanamicro.com; s=google; t=1700809824; x=1701414624; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=O91wfSpN9ObCdaEwiURAAaoPifbKQnuX2UDqzMk/9EE=;
+        b=IJ8pxtCaM2USPPXlSHCcBm42cPcRxEqBronZIMImeBgKBT/AAdliS6fcsC/+KKFoDn
+         r6mk18sqf2qklODQYrDjIB3wRIi9b0uFIMZUBAKq9rNTczv7qrC06ksUOlZm/w9V5TDc
+         nB7msB8zQk+a5SUSqqPDjZv1+S9zY3OohzC9Yq72/Y311+6KG9ADIwNOxTsOI8KqktRr
+         w6Sb//+HjemosbC46JlX5Ka58mp+pX1UNk3DiryVzd3Z/v7Lxt37fSQciEocGsdp0Rrn
+         cK4HUX5CzsVpZ/+nnbXyqsGFBEepveV6eIhBbvZtj788LpWQzyAFPGfyONSOoWNb7BGe
+         izxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700809824; x=1701414624;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=O91wfSpN9ObCdaEwiURAAaoPifbKQnuX2UDqzMk/9EE=;
+        b=wZNN0KmosJ/ujk0LbvLyqZTOgtaUjIQRvyOjdn5E70e5Twx/D6aGJ9Brmr4MnJS4KB
+         28sR9OupcTgdaQiJpJyZB5vPAKakP4wMgaSA9aplKD3+Rz8PCRbQVErj1X1kWVsytV3O
+         DDyLcqjLg4kPF7DabyXM8ceI6SXtRMUgaBG+JqEw5P6GUzg0gVHkFz4e9wKtM90jXvho
+         i40ACVwZhUJw6hGQdD0XRUnZLKxCFsQ47Im7aLK2jY1EGniDYMRI2tuvswmJfHDvgoMG
+         qcju9Xr3v0JuquPwKTos9a08xHNviI0Fhu67TrHD2PrOBdCfrWkaCvHGhraf1w1K6HrP
+         jA6Q==
+X-Gm-Message-State: AOJu0YyvGL7LRWwvwOK+oUSKRQZ1ozYqLVGLv/fyfnLwAzZmlBNhsPCJ
+	uh45+qIcvV0eCTN60Tf8V8GkIg==
+X-Google-Smtp-Source: AGHT+IHoAk7libxxmoEnwyG+ICVQkzzI6uc6joEaMVEQl0m28dbDgLSf9VQd9ACWrQm5vBhlWCIngw==
+X-Received: by 2002:a05:6830:603:b0:6d7:f66d:b0ae with SMTP id w3-20020a056830060300b006d7f66db0aemr1910766oti.5.1700809824530;
+        Thu, 23 Nov 2023 23:10:24 -0800 (PST)
+Received: from localhost.localdomain ([106.51.83.242])
+        by smtp.gmail.com with ESMTPSA id e5-20020a9d7305000000b006c61c098d38sm435532otk.21.2023.11.23.23.10.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Nov 2023 23:10:24 -0800 (PST)
+From: Anup Patel <apatel@ventanamicro.com>
+To: Palmer Dabbelt <palmer@dabbelt.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>
+Subject: [PATCH v5 0/5] RISC-V SBI debug console extension support
+Date: Fri, 24 Nov 2023 12:39:00 +0530
+Message-Id: <20231124070905.1043092-1-apatel@ventanamicro.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,46 +78,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, James Houghton <jthoughton@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Yang Shi <shy828301@gmail.com>, Rik van Riel <riel@surriel.com>, Hugh Dickins <hughd@google.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Vlastimil Babka <vbabka@suse.cz>, Jason Gunthorpe <jgg@nvidia.com>, Axel Rasmussen <axelrasmussen@google.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Anup Patel <apatel@ventanamicro.com>, linux-kernel@vger.kernel.org, Conor Dooley <conor@kernel.org>, linux-serial@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Andrew Jones <ajones@ventanamicro.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Peter Xu <peterx@redhat.com> writes:
+The SBI v2.0 specification is now frozen. The SBI v2.0 specification defines
+SBI debug console (DBCN) extension which replaces the legacy SBI v0.1
+functions sbi_console_putchar() and sbi_console_getchar().
+(Refer v2.0-rc5 at https://github.com/riscv-non-isa/riscv-sbi-doc/releases)
 
-> On Thu, Nov 23, 2023 at 06:22:33PM +0000, Christophe Leroy wrote:
->> > For fast-gup I think the hugepd code is in use, however for walk_page_*
->> > apis hugepd code shouldn't be reached iiuc as we have the hugetlb specific
->> > handling (walk_hugetlb_range()), so anything within walk_pgd_range() to hit
->> > a hugepd can be dead code to me (but note that this "dead code" is good
->> > stuff to me, if one would like to merge hugetlb instead into generic mm).
->> 
->> Not sure what you mean here. What do you mean by "dead code" ?
->> A hugepage directory can be plugged at any page level, from PGD to PMD.
->> So the following bit in walk_pgd_range() is valid and not dead:
->> 
->> 		if (is_hugepd(__hugepd(pgd_val(*pgd))))
->> 			err = walk_hugepd_range((hugepd_t *)pgd, addr, next, walk, PGDIR_SHIFT);
->
-> IMHO it boils down to the question on whether hugepd is only used in
-> hugetlbfs.  I think I already mentioned that above, but I can be more
-> explicit; what I see is that from higher stack in __walk_page_range():
->
-> 	if (is_vm_hugetlb_page(vma)) {
-> 		if (ops->hugetlb_entry)
-> 			err = walk_hugetlb_range(start, end, walk);
-> 	} else
-> 		err = walk_pgd_range(start, end, walk);
->
-> It means to me as long as the vma is hugetlb, it'll not trigger any code in
-> walk_pgd_range(), but only walk_hugetlb_range().  Do you perhaps mean
-> hugepd is used outside hugetlbfs?
->
+This series adds support for SBI debug console (DBCN) extension in
+Linux RISC-V.
 
-walk_pgd_range also get called from walk_page_range_novma().
-IIRC commit e17eae2b839937817d771e2f5d2b30e5e2b81bb7 added the hugepd
-details to pagewalk code to handle ptdump.
+To try these patches with KVM RISC-V, use KVMTOOL from the
+riscv_zbx_zicntr_smstateen_condops_v1 branch at:
+https://github.com/avpatel/kvmtool.git
 
-There is also a desire to use hugepd format in vmap mappings. 
-https://lore.kernel.org/linuxppc-dev/cover.1620795204.git.christophe.leroy@csgroup.eu
+These patches can also be found in the riscv_sbi_dbcn_v5 branch at:
+https://github.com/avpatel/linux.git
 
--aneesh
+Changes since v4:
+ - Rebased on Linux-6.7-rc2
+ - Addressed Drew's comments in PATCH2
+ - Improved sbi_debug_console_write/read() to directly take virtual
+   address of data so that virtual address to physical address
+   conversion can be shared between tty/serial/earlycon-riscv-sbi.c
+   and tty/hvc/hvc_riscv_sbi.c
+ - Addressed Samuel's comments in PATCH3 and PATCH4
+
+Changes since v3:
+ - Rebased on Linux-6.7-rc1
+ - Dropped PATCH1 to PATCH5 of v3 series since these were merged through
+   KVM RISC-V tree for Linux-6.7
+ - Used proper error code in PATCH1
+ - Added new PATCH2 which add common SBI debug console helper functions
+ - Updated PATCH3 and PATCH4 to use SBI debug console helper functions
+
+Changes since v2:
+ - Rebased on Linux-6.6-rc5
+ - Handled page-crossing in PATCH7 of v2 series
+ - Addressed Drew's comment in PATCH3 of v2 series
+ - Added new PATCH5 to make get-reg-list test aware of SBI DBCN extension
+
+Changes since v1:
+ - Remove use of #ifdef from PATCH4 and PATCH5 of the v1 series
+ - Improved commit description of PATCH3 in v1 series
+ - Introduced new PATCH3 in this series to allow some SBI extensions
+   (such as SBI DBCN) do to disabled by default so that older KVM user space
+   work fine and newer KVM user space have to explicitly opt-in for emulating
+   SBI DBCN.
+ - Introduced new PATCH5 in this series which adds inline version of
+   sbi_console_getchar() and sbi_console_putchar() for the case where
+   CONFIG_RISCV_SBI_V01 is disabled.
+
+Anup Patel (4):
+  RISC-V: Add stubs for sbi_console_putchar/getchar()
+  RISC-V: Add SBI debug console helper routines
+  tty/serial: Add RISC-V SBI debug console based earlycon
+  RISC-V: Enable SBI based earlycon support
+
+Atish Patra (1):
+  tty: Add SBI debug console support to HVC SBI driver
+
+ arch/riscv/configs/defconfig            |  1 +
+ arch/riscv/include/asm/sbi.h            | 10 ++++
+ arch/riscv/kernel/sbi.c                 | 66 +++++++++++++++++++++++++
+ drivers/tty/hvc/Kconfig                 |  2 +-
+ drivers/tty/hvc/hvc_riscv_sbi.c         | 37 +++++++++++---
+ drivers/tty/serial/Kconfig              |  2 +-
+ drivers/tty/serial/earlycon-riscv-sbi.c | 27 ++++++++--
+ 7 files changed, 133 insertions(+), 12 deletions(-)
+
+-- 
+2.34.1
+
