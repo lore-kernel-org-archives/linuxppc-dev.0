@@ -4,49 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 541DBC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 03:49:56 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=tq93Kuo3;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3987C0755A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 03:57:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sds6V63C3z3cVF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 14:49:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=tq93Kuo3;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (unknown [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SdsHD44D0z3cgd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 14:57:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 387 seconds by postgrey-1.37 at boromir; Mon, 27 Nov 2023 13:40:13 AEDT
+Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sds5X256xz30fM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2023 14:49:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
-	s=201702; t=1701056933;
-	bh=xDZKSlzh1/UCfSWZwMAP6iEXsWt5FFryCFfldIgRDvM=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=tq93Kuo33izvLI6GbhYWWx5Ia6NAAoD3hBp9dEPcUCYATgIfb9agy/7CueloQpLu3
-	 gHrLDRCrAebicnW4a+sFrH9U0rjM9jOgirIPng00QJD7JlfXMPC8LVt2KGV4rtZziu
-	 /MyP/uaZy2XREwjPURXMecVh/lIETFw4KrVpknXPLoPVRZyDrzv3eAsQ2PucYbX8WS
-	 lHbLA9tiG6FMRAOBm0zmpYMUPAc1itaGiR4A7aoRVg1h0pBU9lLA1bI1uVTslL5RQh
-	 MFVzulnEAitK6bDbE3vNqo8lfVd2Z4/V/kAF2XcqsmSu6XHG4BBcN+PlIu3ZAV+LRA
-	 7D7yIe3iAv17Q==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Sds5K2g9nz4wbr;
-	Mon, 27 Nov 2023 14:48:53 +1100 (AEDT)
-Date: Mon, 27 Nov 2023 14:48:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: build failure after merge of the mm tree
-Message-ID: <20231127144852.069b2e7e@canb.auug.org.au>
-In-Reply-To: <20231127132809.45c2b398@canb.auug.org.au>
-References: <20231127132809.45c2b398@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SdqZ556vrz30gH
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2023 13:40:13 +1100 (AEDT)
+X-QQ-mid: bizesmtp64t1701052377tsjca7qc
+Received: from HX09040029.powercore.com.cn ( [58.34.117.194])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Mon, 27 Nov 2023 10:32:54 +0800 (CST)
+X-QQ-SSF: 01400000000000103000000A0000000
+X-QQ-FEAT: CR3LFp2JE4lYlGZyt7s4Y2ErgzYu/i1VV9Xrg9Ot17hS0sZN4+BeicMF5VMkA
+	boSUhErVjzKfj68SY7KvmYQK8jxsKVFlnBTCI3e22iIVQvlcW2rrQlLjCk8yr3kzLTWQo6T
+	vDf5Aj5EOOJvaG8Hdm8w3iPApU+5vxAAH3875ZjfDTYId9QIkZ2JxD4FTXes+KKPv7TC6XQ
+	AU6ysOaOytRKx9ugXKYWzO3vOE57p4XEFGeMgqQXnMcTGcArtGhFLtcIthhszqd2buHvppz
+	QP3gxDvuvOXwTp7HVmQyScJeC7S7MRGEEbO/4WGZuU5PpMniuixJqr59OlQ0V/CZPMvglOu
+	4yXyTHUDW4w0mERxPsra1GFbQxbe9MOMEuOHvBrzY+YDxp+f+HIa5lr8k7Ae6aM+zSPZJZx
+	8GgbSAZFwgYIumQhd6tgHQ==
+X-QQ-GoodBg: 2
+X-BIZMAIL-ID: 16950061229270955396
+From: Luming Yu <luming.yu@shingroup.cn>
+To: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu
+Subject: [PATCH] powerpc/powernv/pci: Do setup dev PE in pnv_pci_enable_device_hook
+Date: Mon, 27 Nov 2023 10:32:39 +0800
+Message-ID: <041F99FBF8A508A2+20231127023239.4157-1-luming.yu@shingroup.cn>
+X-Mailer: git-send-email 2.42.0.windows.2
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/1OxpgZpOL2DDzmvOW3C.v.M";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz5a-1
+X-Mailman-Approved-At: Mon, 27 Nov 2023 14:57:01 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,94 +56,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: shenghui.qu@shingroup.cn, Luming Yu <luming.yu@shingroup.cn>, dawei.li@shingroup.cn, ke.zhao@shingroup.cn, luming.yu@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/1OxpgZpOL2DDzmvOW3C.v.M
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+after hot remove a pcie deivce with pci_dn having pnp_php driver attached,
+pci rescan with echo 1 > /sys/bus/pci/rescan could fail with error
+message like:
+pci 0020:0e:00.0: BAR 0: assigned [mem 0x3fe801820000-0x3fe80182ffff
+64bit]
+nvme nvme1: pci function 0020:0e:00.0
+nvme 0020:0e:00.0 pci_enable_device() blocked, no PE assigned.
 
-Hi all,
+It appears that the pci_dn object is reused with only pe_number
+clobbered in the case. And a simple call to pnv_ioda_setup_dev_PE should
+get PE number back and solve the problem.
 
-Just cc'ing the PowerPC guys to see if my fix is sensible.
+Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c     |  11 +-
+ drivers/gpu/drm/nouveau/nvkm/subdev/i2c/aux.c | 215 ------------------
+ drivers/gpu/drm/nouveau/nvkm/subdev/i2c/aux.h |  46 ----
+ include/soc/arc/aux.h                         |  59 -----
+ 4 files changed, 9 insertions(+), 322 deletions(-)
+ delete mode 100644 drivers/gpu/drm/nouveau/nvkm/subdev/i2c/aux.c
+ delete mode 100644 drivers/gpu/drm/nouveau/nvkm/subdev/i2c/aux.h
+ delete mode 100644 include/soc/arc/aux.h
 
-On Mon, 27 Nov 2023 13:28:09 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> After merging the mm tree, today's linux-next build (powerpc64
-> allnoconfig) failed like this:
->=20
-> arch/powerpc/mm/book3s64/pgtable.c:557:5: error: no previous prototype fo=
-r 'pmd_move_must_withdraw' [-Werror=3Dmissing-prototypes]
->   557 | int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
->       |     ^~~~~~~~~~~~~~~~~~~~~~
-> cc1: all warnings being treated as errors
->=20
-> Caused by commit
->=20
->   c6345dfa6e3e ("Makefile.extrawarn: turn on missing-prototypes globally")
->=20
-> I have added the following patch for today (which could be applied to
-> the mm or powerpc trees):
->=20
-> From 194805b44c11b4c0aa28bdcdc0bb0d82acef394c Mon Sep 17 00:00:00 2001
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 27 Nov 2023 13:08:57 +1100
-> Subject: [PATCH] powerpc: pmd_move_must_withdraw() is only needed for
->  CONFIG_TRANSPARENT_HUGEPAGE
->=20
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/mm/book3s64/pgtable.c | 2 ++
->  1 file changed, 2 insertions(+)
->=20
-> diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s6=
-4/pgtable.c
-> index be229290a6a7..3438ab72c346 100644
-> --- a/arch/powerpc/mm/book3s64/pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/pgtable.c
-> @@ -542,6 +542,7 @@ void ptep_modify_prot_commit(struct vm_area_struct *v=
-ma, unsigned long addr,
->  	set_pte_at(vma->vm_mm, addr, ptep, pte);
->  }
-> =20
-> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
->  /*
->   * For hash translation mode, we use the deposited table to store hash s=
-lot
->   * information and they are stored at PTRS_PER_PMD offset from related p=
-md
-> @@ -563,6 +564,7 @@ int pmd_move_must_withdraw(struct spinlock *new_pmd_p=
-tl,
-> =20
->  	return true;
->  }
-> +#endif
-> =20
->  /*
->   * Does the CPU support tlbie?
-> --=20
-> 2.40.1
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/1OxpgZpOL2DDzmvOW3C.v.M
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmVkEaQACgkQAVBC80lX
-0Gx3Uwf/eggLiBT0CMRtGTvKcImnVpzRYOstDC8af1O5yiQc2pfZeP1h5aG+DXTw
-eT/PR/kTiL3zK9pywiKe3a2wJu0UN/QZinW/7Mk/xJf3L8JHGUu+fyAaVjBKqjm9
-Ze+PH6AACdmi84DkTzOKmkLZR7AauuyKyuDbltPMrga6zsex0/shCRHRxjs3aGQu
-x+4eeWsjx2Pf24kUHrQ8f44+5cJZ+A9Vjzh99cJvycepd3GJEoTohBEPoda0NFCD
-xIGHUDC1B/dNuxzaGYkYy6jqYWtk/cjJOI/I3KvzYubPQwr3m7OVhe4EI11IyvSR
-kpoHYFK6c3LJ3LNWRf5SWFs3mS6+gA==
-=N35d
------END PGP SIGNATURE-----
-
---Sig_/1OxpgZpOL2DDzmvOW3C.v.M--
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 28fac4770073..9d7add79ee3d 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2325,11 +2325,18 @@ static resource_size_t pnv_pci_default_alignment(void)
+ static bool pnv_pci_enable_device_hook(struct pci_dev *dev)
+ {
+ 	struct pci_dn *pdn;
++	struct pnv_ioda_pe *pe;
+ 
+ 	pdn = pci_get_pdn(dev);
+-	if (!pdn || pdn->pe_number == IODA_INVALID_PE) {
+-		pci_err(dev, "pci_enable_device() blocked, no PE assigned.\n");
++	if (!pdn)
+ 		return false;
++
++	if (pdn->pe_number == IODA_INVALID_PE) {
++		pe = pnv_ioda_setup_dev_PE(dev);
++		if (!pe) {
++			pci_err(dev, "pci_enable_device() blocked, no PE assigned.\n");
++			return false;
++		}
+ 	}
+ 
+ 	return true;
