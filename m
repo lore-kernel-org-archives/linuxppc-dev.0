@@ -4,64 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EF18C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 12:42:47 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gt3M4qJ7;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DDEFC07CB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 13:25:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sf4xK3vWWz3cVN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Nov 2023 23:42:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gt3M4qJ7;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sf5tr5b4Wz3cc6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 00:25:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sf4wK1qXBz2ygx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2023 23:41:50 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1701088914; x=1732624914;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=v3n/pRVGJN+BSoahXNcOeH95ditBSNEnKGtGNzh0jZc=;
-  b=gt3M4qJ71i8gcWl39fZ2wnf390Y2cpolxF5B/hlCVilwbCOHPuoST6Gg
-   KIKUQfjipSSk6rb1djJZnMM7arzyX0iabfZNUFfDAzJGBQKI8mTE85zo2
-   QmTMJPht/20ykRPAMGfmJORp26ggmnJKTMKELxihzTxgraDVRIhf1Wean
-   fhJL68FxvTjvfuiIxXYSa1dPmU/19Is6ciIF+xrlPipK/xms8xzB6e0xv
-   mFs0+oX+NHELmz2NbjKynpQ29SZYpHlD+KPYM2lDYGEcJioHF5hthcojd
-   JvJd5FII4sjueYt56IsCsptFUp1Gob8qJVjizkRWeYmjKT1y09WjswE8l
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10906"; a="5883170"
-X-IronPort-AV: E=Sophos;i="6.04,230,1695711600"; 
-   d="scan'208";a="5883170"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Nov 2023 04:41:43 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10906"; a="802625987"
-X-IronPort-AV: E=Sophos;i="6.04,230,1695711600"; 
-   d="scan'208";a="802625987"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Nov 2023 04:41:39 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.97)
-	(envelope-from <andriy.shevchenko@intel.com>)
-	id 1r7avg-0000000HTOL-0Mob;
-	Mon, 27 Nov 2023 14:41:36 +0200
-Date: Mon, 27 Nov 2023 14:41:35 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: George Stark <gnstark@salutedevices.com>
-Subject: Re: [PATCH 0/8] devm_led_classdev_register() usage problem
-Message-ID: <ZWSOfya16XoCfy5H@smile.fi.intel.com>
-References: <20231025130737.2015468-1-gnstark@salutedevices.com>
- <ZWDBOfpsC5AVT8bX@smile.fi.intel.com>
- <13cd5524-0d40-4f07-b542-002b79b37533@salutedevices.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sf5tF6JH4z3c6Q
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2023 00:25:09 +1100 (AEDT)
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4984E21DB0;
+	Mon, 27 Nov 2023 13:17:04 +0000 (UTC)
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 1379913B3A;
+	Mon, 27 Nov 2023 13:17:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id SJ6iA9CWZGUhLQAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Mon, 27 Nov 2023 13:17:04 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	deller@gmx.de
+Subject: [PATCH v2 18/32] fbdev/ps3fb: Set FBINFO_VIRTFB flag
+Date: Mon, 27 Nov 2023 14:15:47 +0100
+Message-ID: <20231127131655.4020-19-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20231127131655.4020-1-tzimmermann@suse.de>
+References: <20231127131655.4020-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <13cd5524-0d40-4f07-b542-002b79b37533@salutedevices.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
+X-Spamd-Bar: +++++++++++
+Authentication-Results: smtp-out1.suse.de;
+	dkim=none;
+	dmarc=fail reason="No valid SPF, No valid DKIM" header.from=suse.de (policy=none);
+	spf=softfail (smtp-out1.suse.de: 2a07:de40:b281:104:10:150:64:98 is neither permitted nor denied by domain of tzimmermann@suse.de) smtp.mailfrom=tzimmermann@suse.de
+X-Rspamd-Server: rspamd2
+X-Spamd-Result: default: False [11.79 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:98:from];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 R_MISSING_CHARSET(2.50)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 R_SPF_SOFTFAIL(4.60)[~all:c];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 MX_GOOD(-0.01)[];
+	 RCPT_COUNT_SEVEN(0.00)[9];
+	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
+	 FREEMAIL_TO(0.00)[redhat.com,gmx.de];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 R_DKIM_NA(2.20)[];
+	 MIME_TRACE(0.00)[0:+];
+	 FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,suse.de,ellerman.id.au,gmail.com,csgroup.eu,lists.ozlabs.org];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-0.00)[16.73%];
+	 DMARC_POLICY_SOFTFAIL(0.10)[suse.de : No valid SPF, No valid DKIM,none]
+X-Rspamd-Queue-Id: 4984E21DB0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,90 +87,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "jic23@kernel.org" <jic23@kernel.org>, kernel@salutedevices.com, vadimp@nvidia.com, lee@kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, pavel@ucw.cz, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Nicholas Piggin <npiggin@gmail.com>, Thomas Zimmermann <tzimmermann@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Nov 25, 2023 at 03:47:41AM +0300, George Stark wrote:
-> On 11/24/23 18:28, Andy Shevchenko wrote:
-> > On Wed, Oct 25, 2023 at 04:07:29PM +0300, George Stark wrote:
-> > > Lots of drivers use devm_led_classdev_register() to register their led objects
-> > > and let the kernel free those leds at the driver's remove stage.
-> > > It can lead to a problem due to led_classdev_unregister()
-> > > implementation calls led_set_brightness() to turn off the led.
-> > > led_set_brightness() may call one of the module's brightness_set callbacks.
-> > > If that callback uses module's resources allocated without using devm funcs()
-> > > then those resources will be already freed at module's remove() callback and
-> > > we may have use-after-free situation.
-> > > 
-> > > Here is an example:
-> > > 
-> > > module_probe()
-> > > {
-> > >      devm_led_classdev_register(module_brightness_set_cb);
-> > >      mutex_init(&mutex);
-> > > }
-> > > 
-> > > module_brightness_set_cb()
-> > > {
-> > >      mutex_lock(&mutex);
-> > >      do_set_brightness();
-> > >      mutex_unlock(&mutex);
-> > > }
-> > > 
-> > > module_remove()
-> > > {
-> > >      mutex_destroy(&mutex);
-> > > }
-> > > 
-> > > at rmmod:
-> > > module_remove()
-> > >      ->mutex_destroy(&mutex);
-> > > devres_release_all()
-> > >      ->led_classdev_unregister();
-> > >          ->led_set_brightness();
-> > >              ->module_brightness_set_cb();
-> > >                   ->mutex_lock(&mutex);  /* use-after-free */
-> > > 
-> > > I think it's an architectural issue and should be discussed thoroughly.
-> > > Some thoughts about fixing it as a start:
-> > > 1) drivers can use devm_led_classdev_unregister() to explicitly free leds before
-> > > dependend resources are freed. devm_led_classdev_register() remains being useful
-> > > to simplify probe implementation.
-> > > As a proof of concept I examined all drivers from drivers/leds and prepared
-> > > patches where it's needed. Sometimes it was not as clean as just calling
-> > > devm_led_classdev_unregister() because several drivers do not track
-> > > their leds object at all - they can call devm_led_classdev_register() and drop the
-> > > returned pointer. In that case I used devres group API.
-> > > 
-> > > Drivers outside drivers/leds should be checked too after discussion.
-> > > 
-> > > 2) remove led_set_brightness from led_classdev_unregister() and force the drivers
-> > > to turn leds off at shutdown. May be add check that led's brightness is 0
-> > > at led_classdev_unregister() and put a warning to dmesg if it's not.
-> > > Actually in many cases it doesn't really need to turn off the leds manually one-by-one
-> > > if driver shutdowns whole led controller. For the last case to disable the warning
-> > > new flag can be brought in e.g LED_AUTO_OFF_AT_SHUTDOWN (similar to LED_RETAIN_AT_SHUTDOWN).
-> > 
-> > NAK.
-> > 
-> > Just fix the drivers by wrapping mutex_destroy() into devm, There are many
-> > doing so. You may be brave enough to introduce devm_mutex_init() somewhere
-> > in include/linux/device*
-> 
-> Just one thing about mutex_destroy(). It seems like there's no single
-> opinion on should it be called in 100% cases e.g. in remove() paths.
-> For example in iio subsystem Jonathan suggests it can be dropped in simple
-> cases: https://www.spinics.net/lists/linux-iio/msg73423.html
-> 
-> So the question is can we just drop mutex_destroy() in module's remove()
-> callback here if that mutex is needed for devm subsequent callbacks?
+The ps3fb driver operates on system memory. Mark the framebuffer
+accordingly. Helpers operating on the framebuffer memory will test
+for the presence of this flag.
 
-mutex_destroy() makes sense when debugging mutexes. It's harmless to drop,
-but will make life harder to one who is trying to debug something there...
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ drivers/video/fbdev/ps3fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index 64d291d6b1532..de81ad3a5d1ed 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -1145,7 +1145,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
+ 	info->fix.smem_len = ps3fb_videomemory.size - GPU_FB_START;
+ 
+ 	info->pseudo_palette = par->pseudo_palette;
+-	info->flags = FBINFO_READS_FAST |
++	info->flags = FBINFO_VIRTFB | FBINFO_READS_FAST |
+ 		      FBINFO_HWACCEL_XPAN | FBINFO_HWACCEL_YPAN;
+ 
+ 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 
