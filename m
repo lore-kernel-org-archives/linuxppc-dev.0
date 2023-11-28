@@ -4,47 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9800C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 13:32:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4131C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:09:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=L1xAxPwp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WisnC6Dm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfjzg2Wgnz3vf6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 00:31:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfkpt0X1jz3cc0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:09:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=L1xAxPwp;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WisnC6Dm;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.195; helo=relay3-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [217.70.183.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfjv61yclz30gn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 00:28:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1701178079;
-	bh=4i7yh5wPsXh9xXumdFHcmf3uJQQ1amcmAMZ7dYitSdA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=L1xAxPwpUnmHi1S5lJg0ceuMe4+MQa90Ly8PGOCIgCGt6dyZWHpFZFInwNEZD4Do+
-	 XmZRMAm26x2StvFR4Viezl7+YlPLUORZCLZq4RuI/W2UiRno0hQFuIxV5oRjDI6fKl
-	 FNYvn/kt1JmXyjyRrB4joP8S8clmhTuL4h2JtZxIDQmMqKZ9qHpbGpytBKCig/jYsp
-	 PQhJ3Q1Ud8fp0rAJ8HaAv8bd3Y4vsnxYL4LdoV6kG0NctyKbo7ma6rHfjQOC27D34t
-	 RsW/Tcqs0F17nPWzrfjGtgEDCeBcUixLiw0C1SmuIIYOza1erguptV64zapGtvSJ6b
-	 EgX0za9U40qSg==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Sfjv305Hyz4wy1;
-	Wed, 29 Nov 2023 00:27:58 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/5] selftests/powerpc: Fix error handling in FPU/VMX preemption tests
-Date: Wed, 29 Nov 2023 00:27:44 +1100
-Message-ID: <20231128132748.1990179-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.41.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknq22h0z3cGW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:30 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 4701A60004;
+	Tue, 28 Nov 2023 14:08:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1701180508;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=pfBJnitpzrGKndByRrnchYp3RVKMpoAglxZImjH5Vlc=;
+	b=WisnC6DmGBJEdW2QianjEi+teiBnTMAz8qT2WWm5xb8WBIt+SB/Lo5G/M+uR48g0UU6/vL
+	qpG12APlw0HfwpB/YSINf7HMEMQ7Q6OtZCMnJVBN4JADHonJPNNPgwRG/IvA706/qURFyZ
+	Q0iLW4bkcvOBxupUHgDg7HFifihs9WJdWCSFRoRESmvh8z+VYGn1CUEcFksbwxfQkTxIxF
+	rKM9QaAOcEbV1WkzhxBtvJ7kGPz0zjiafLAvBbm5RKhKmX1HFj1mDTjXAN9OdSo/E3uWl5
+	XMo3oYaYjX/7FvaWWXfxpb4W/h0Lk5wJZ0qRPh2gISjiDzVeMKnkQQvcmVaIag==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH 05/17] soc: fsl: cpm1: qmc: Remove inline function specifiers
+Date: Tue, 28 Nov 2023 15:08:04 +0100
+Message-ID: <20231128140818.261541-6-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231128140818.261541-1-herve.codina@bootlin.com>
+References: <20231128140818.261541-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,84 +69,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tpearson@raptorengineering.com
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The FPU & VMX preemption tests do not check for errors returned by the
-low-level asm routines, preempt_fpu() / preempt_vsx() respectively.
-That means any register corruption detected by the asm routines does not
-result in a test failure.
+The inline function specifier is present on some functions but it is
+better to let the compiler decide inlining or not these functions.
 
-Fix it by returning the return value of the asm routines from the
-pthread child routines.
+Remove inline specifiers.
 
-Fixes: e5ab8be68e44 ("selftests/powerpc: Test preservation of FPU and VMX regs across preemption")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+Suggested-by: Andrew Lunn <andrew@lunn.ch>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- tools/testing/selftests/powerpc/math/fpu_preempt.c |  9 +++++----
- tools/testing/selftests/powerpc/math/vmx_preempt.c | 10 ++++++----
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/math/fpu_preempt.c b/tools/testing/selftests/powerpc/math/fpu_preempt.c
-index 5235bdc8c0b1..3e5b5663d244 100644
---- a/tools/testing/selftests/powerpc/math/fpu_preempt.c
-+++ b/tools/testing/selftests/powerpc/math/fpu_preempt.c
-@@ -37,19 +37,20 @@ __thread double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
- int threads_starting;
- int running;
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 4b4832d93c9b..27f2f16deac9 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -218,37 +218,37 @@ struct qmc {
+ 	struct qmc_chan *chans[64];
+ };
  
--extern void preempt_fpu(double *darray, int *threads_starting, int *running);
-+extern int preempt_fpu(double *darray, int *threads_starting, int *running);
- 
- void *preempt_fpu_c(void *p)
+-static inline void qmc_write16(void __iomem *addr, u16 val)
++static void qmc_write16(void __iomem *addr, u16 val)
  {
-+	long rc;
- 	int i;
-+
- 	srand(pthread_self());
- 	for (i = 0; i < 21; i++)
- 		darray[i] = rand();
- 
--	/* Test failed if it ever returns */
--	preempt_fpu(darray, &threads_starting, &running);
-+	rc = preempt_fpu(darray, &threads_starting, &running);
- 
--	return p;
-+	return (void *)rc;
+ 	iowrite16be(val, addr);
  }
  
- int test_preempt_fpu(void)
-diff --git a/tools/testing/selftests/powerpc/math/vmx_preempt.c b/tools/testing/selftests/powerpc/math/vmx_preempt.c
-index 6761d6ce30ec..6f7cf400c687 100644
---- a/tools/testing/selftests/powerpc/math/vmx_preempt.c
-+++ b/tools/testing/selftests/powerpc/math/vmx_preempt.c
-@@ -37,19 +37,21 @@ __thread vector int varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
- int threads_starting;
- int running;
- 
--extern void preempt_vmx(vector int *varray, int *threads_starting, int *running);
-+extern int preempt_vmx(vector int *varray, int *threads_starting, int *running);
- 
- void *preempt_vmx_c(void *p)
+-static inline u16 qmc_read16(void __iomem *addr)
++static u16 qmc_read16(void __iomem *addr)
  {
- 	int i, j;
-+	long rc;
-+
- 	srand(pthread_self());
- 	for (i = 0; i < 12; i++)
- 		for (j = 0; j < 4; j++)
- 			varray[i][j] = rand();
- 
--	/* Test fails if it ever returns */
--	preempt_vmx(varray, &threads_starting, &running);
--	return p;
-+	rc = preempt_vmx(varray, &threads_starting, &running);
-+
-+	return (void *)rc;
+ 	return ioread16be(addr);
  }
  
- int test_preempt_vmx(void)
+-static inline void qmc_setbits16(void __iomem *addr, u16 set)
++static void qmc_setbits16(void __iomem *addr, u16 set)
+ {
+ 	qmc_write16(addr, qmc_read16(addr) | set);
+ }
+ 
+-static inline void qmc_clrbits16(void __iomem *addr, u16 clr)
++static void qmc_clrbits16(void __iomem *addr, u16 clr)
+ {
+ 	qmc_write16(addr, qmc_read16(addr) & ~clr);
+ }
+ 
+-static inline void qmc_write32(void __iomem *addr, u32 val)
++static void qmc_write32(void __iomem *addr, u32 val)
+ {
+ 	iowrite32be(val, addr);
+ }
+ 
+-static inline u32 qmc_read32(void __iomem *addr)
++static u32 qmc_read32(void __iomem *addr)
+ {
+ 	return ioread32be(addr);
+ }
+ 
+-static inline void qmc_setbits32(void __iomem *addr, u32 set)
++static void qmc_setbits32(void __iomem *addr, u32 set)
+ {
+ 	qmc_write32(addr, qmc_read32(addr) | set);
+ }
 -- 
-2.41.0
+2.42.0
 
