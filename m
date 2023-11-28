@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E960C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA7F1C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:15:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=CxCVUB/8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Ww25g59s;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfkwh1wj4z3vhk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:14:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfkxc0gBFz3vp1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:15:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=CxCVUB/8;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Ww25g59s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::223; helo=relay3-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::223])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknw6mbqz3cRr
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknx32M1z3cW8
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:36 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 119BF60010;
-	Tue, 28 Nov 2023 14:08:31 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 4563C60013;
+	Tue, 28 Nov 2023 14:08:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701180511;
+	t=1701180506;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Zz1ZSWhesx2d8c0NZFELt4xynqYdE38OR15azgcLscQ=;
-	b=CxCVUB/8kFinXWaDFzVyzOmSOhktqV1nsk8cs9JGZ5F0LPa+2icfWnnFD3GbAwzlZqMuih
-	aAtB8O5ZMuR4Q9OLco5ALg4MaGG8/VWp+Jns0750e7s657DEWuNDtwtVw0hNXlcklyhn9m
-	8TVi3uoG69fPGyoNO+0JZcMaNmfVNSVl1L++3j12RY9JfpUFHexpE6jJNaxzaO9Hl6NdYy
-	nJhWlUezo6mF2yDJir362r9HIsE/LDNVcuzNopMf/e6xzq8L/jIB0ukeBrtVuyIYL5qYE2
-	b7WCvD2UsxPh0Y0yj2jh5gqwdGMHPgV9Qf2+tUyWz19MY2Y6fhBieeE7fKAzWw==
+	bh=qto69Sz/uzj7vWp+LbsEsH5JgUyWqrsMlRYbgKO+Ta4=;
+	b=Ww25g59sPr1Wg8G2/+eo82WrZ6uxax9bU8yVHybpwtNwfTLCgJLf5wbu3NNaKdloqct4SN
+	JOl71UmaiYH9SqoWEm99UYUjls414OjRBZgwcCCRyxgXM+DgHiE6WiGInOx5WCGdzHXc1F
+	5JutCdvL8M33BnD43l0Zh8DE7gfb/B2Jp/wei1EUp9HzqSHivwORgT3bCB+K83Yp157Knc
+	IbPzw6Vd0r23914xtvob7oGilQ5CO/WiYAf5X4kE+y7MGAFcDlUHUdbT8gHvAQJfWnlUY7
+	K2lj3jmvc2L8Tb/VERzqS6pCaUHIe1CiReLbXjwgpUkt/bAlxy1311tX1O4q7g==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
@@ -49,9 +49,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 09/17] soc: fsl: cpm1: qmc: Introduce qmc_chan_setup_tsa*
-Date: Tue, 28 Nov 2023 15:08:08 +0100
-Message-ID: <20231128140818.261541-10-herve.codina@bootlin.com>
+Subject: [PATCH 03/17] soc: fsl: cpm1: qmc: Fix rx channel reset
+Date: Tue, 28 Nov 2023 15:08:02 +0100
+Message-ID: <20231128140818.261541-4-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231128140818.261541-1-herve.codina@bootlin.com>
 References: <20231128140818.261541-1-herve.codina@bootlin.com>
@@ -73,230 +73,36 @@ Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vge
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce the qmc_chan_setup_tsa* functions to setup entries related
-to the given channel.
-Use them during QMC channels setup.
+The qmc_chan_reset_rx() set the is_rx_stopped flag. This leads to an
+inconsistent state in the following sequence.
+    qmc_chan_stop()
+    qmc_chan_reset()
+Indeed, after the qmc_chan_reset() call, the channel must still be
+stopped. Only a qmc_chan_start() call can move the channel from stopped
+state to started state.
 
+Fix the issue removing the is_rx_stopped flag setting from
+qmc_chan_reset()
+
+Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/qmc.c | 161 ++++++++++++++++++++++++++++++---------
- 1 file changed, 125 insertions(+), 36 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index e3f2afb8fa4d..5d7e2ecdd933 100644
+index 3f3de1351c96..2312152a44b3 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -240,6 +240,11 @@ static void qmc_clrbits16(void __iomem *addr, u16 clr)
- 	qmc_write16(addr, qmc_read16(addr) & ~clr);
- }
+@@ -685,7 +685,6 @@ static void qmc_chan_reset_rx(struct qmc_chan *chan)
+ 		    qmc_read16(chan->s_param + QMC_SPE_RBASE));
  
-+static void qmc_clrsetbits16(void __iomem *addr, u16 clr, u16 set)
-+{
-+	qmc_write16(addr, (qmc_read16(addr) & ~clr) | set);
-+}
-+
- static void qmc_write32(void __iomem *addr, u32 val)
- {
- 	iowrite32be(val, addr);
-@@ -562,6 +567,122 @@ static void qmc_chan_read_done(struct qmc_chan *chan)
+ 	chan->rx_pending = 0;
+-	chan->is_rx_stopped = false;
+ 
  	spin_unlock_irqrestore(&chan->rx_lock, flags);
  }
- 
-+static int qmc_chan_setup_tsa_64rxtx(struct qmc_chan *chan, const struct tsa_serial_info *info)
-+{
-+	unsigned int i;
-+	u16 curr;
-+	u16 val;
-+
-+	/*
-+	 * Use a common Tx/Rx 64 entries table.
-+	 * Tx and Rx related stuffs must be identical
-+	 */
-+	if (chan->tx_ts_mask != chan->rx_ts_mask) {
-+		dev_err(chan->qmc->dev, "chan %u uses different Rx and Tx TS\n", chan->id);
-+		return -EINVAL;
-+	}
-+
-+	val = QMC_TSA_VALID | QMC_TSA_MASK | QMC_TSA_CHANNEL(chan->id);
-+
-+	/* Check entries based on Rx stuff*/
-+	for (i = 0; i < info->nb_rx_ts; i++) {
-+		if (!(chan->rx_ts_mask & (((u64)1) << i)))
-+			continue;
-+
-+		curr = qmc_read16(chan->qmc->scc_pram + QMC_GBL_TSATRX + (i * 2));
-+		if (curr & QMC_TSA_VALID && (curr & ~QMC_TSA_WRAP) != val) {
-+			dev_err(chan->qmc->dev, "chan %u TxRx entry %d already used\n",
-+				chan->id, i);
-+			return -EBUSY;
-+		}
-+	}
-+
-+	/* Set entries based on Rx stuff*/
-+	for (i = 0; i < info->nb_rx_ts; i++) {
-+		if (!(chan->rx_ts_mask & (((u64)1) << i)))
-+			continue;
-+
-+		qmc_clrsetbits16(chan->qmc->scc_pram + QMC_GBL_TSATRX + (i * 2),
-+				 ~QMC_TSA_WRAP, val);
-+	}
-+
-+	return 0;
-+}
-+
-+static int qmc_chan_setup_tsa_32rx_32tx(struct qmc_chan *chan, const struct tsa_serial_info *info)
-+{
-+	unsigned int i;
-+	u16 curr;
-+	u16 val;
-+
-+	/* Use a Tx 32 entries table and a Rx 32 entries table */
-+
-+	val = QMC_TSA_VALID | QMC_TSA_MASK | QMC_TSA_CHANNEL(chan->id);
-+
-+	/* Check entries based on Rx stuff */
-+	for (i = 0; i < info->nb_rx_ts; i++) {
-+		if (!(chan->rx_ts_mask & (((u64)1) << i)))
-+			continue;
-+
-+		curr = qmc_read16(chan->qmc->scc_pram + QMC_GBL_TSATRX + (i * 2));
-+		if (curr & QMC_TSA_VALID && (curr & ~QMC_TSA_WRAP) != val) {
-+			dev_err(chan->qmc->dev, "chan %u Rx entry %d already used\n",
-+				chan->id, i);
-+			return -EBUSY;
-+		}
-+	}
-+	/* Check entries based on Tx stuff */
-+	for (i = 0; i < info->nb_tx_ts; i++) {
-+		if (!(chan->tx_ts_mask & (((u64)1) << i)))
-+			continue;
-+
-+		curr = qmc_read16(chan->qmc->scc_pram + QMC_GBL_TSATTX + (i * 2));
-+		if (curr & QMC_TSA_VALID && (curr & ~QMC_TSA_WRAP) != val) {
-+			dev_err(chan->qmc->dev, "chan %u Tx entry %d already used\n",
-+				chan->id, i);
-+			return -EBUSY;
-+		}
-+	}
-+
-+	/* Set entries based on Rx stuff */
-+	for (i = 0; i < info->nb_rx_ts; i++) {
-+		if (!(chan->rx_ts_mask & (((u64)1) << i)))
-+			continue;
-+
-+		qmc_clrsetbits16(chan->qmc->scc_pram + QMC_GBL_TSATRX + (i * 2),
-+				 ~QMC_TSA_WRAP, val);
-+	}
-+	/* Set entries based on Tx stuff */
-+	for (i = 0; i < info->nb_tx_ts; i++) {
-+		if (!(chan->tx_ts_mask & (((u64)1) << i)))
-+			continue;
-+
-+		qmc_clrsetbits16(chan->qmc->scc_pram + QMC_GBL_TSATTX + (i * 2),
-+				 ~QMC_TSA_WRAP, val);
-+	}
-+
-+	return 0;
-+}
-+
-+static int qmc_chan_setup_tsa(struct qmc_chan *chan)
-+{
-+	struct tsa_serial_info info;
-+	int ret;
-+
-+	/* Retrieve info from the TSA related serial */
-+	ret = tsa_serial_get_info(chan->qmc->tsa_serial, &info);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Setup one common 64 entries table or two 32 entries (one for Tx
-+	 * and one for Tx) according to assigned TS numbers.
-+	 */
-+	return ((info.nb_tx_ts > 32) || (info.nb_rx_ts > 32)) ?
-+		qmc_chan_setup_tsa_64rxtx(chan, &info) :
-+		qmc_chan_setup_tsa_32rx_32tx(chan, &info);
-+}
-+
- static int qmc_chan_command(struct qmc_chan *chan, u8 qmc_opcode)
- {
- 	return cpm_command(chan->id << 2, (qmc_opcode << 4) | 0x0E);
-@@ -921,7 +1042,6 @@ static int qmc_of_parse_chans(struct qmc *qmc, struct device_node *np)
- 
- static int qmc_init_tsa_64rxtx(struct qmc *qmc, const struct tsa_serial_info *info)
- {
--	struct qmc_chan *chan;
- 	unsigned int i;
- 	u16 val;
- 
-@@ -935,18 +1055,6 @@ static int qmc_init_tsa_64rxtx(struct qmc *qmc, const struct tsa_serial_info *in
- 	for (i = 0; i < 64; i++)
- 		qmc_write16(qmc->scc_pram + QMC_GBL_TSATRX + (i * 2), 0x0000);
- 
--	/* Set entries based on Rx stuff*/
--	list_for_each_entry(chan, &qmc->chan_head, list) {
--		for (i = 0; i < info->nb_rx_ts; i++) {
--			if (!(chan->rx_ts_mask & (((u64)1) << i)))
--				continue;
--
--			val = QMC_TSA_VALID | QMC_TSA_MASK |
--			      QMC_TSA_CHANNEL(chan->id);
--			qmc_write16(qmc->scc_pram + QMC_GBL_TSATRX + (i * 2), val);
--		}
--	}
--
- 	/* Set Wrap bit on last entry */
- 	qmc_setbits16(qmc->scc_pram + QMC_GBL_TSATRX + ((info->nb_rx_ts - 1) * 2),
- 		      QMC_TSA_WRAP);
-@@ -963,7 +1071,6 @@ static int qmc_init_tsa_64rxtx(struct qmc *qmc, const struct tsa_serial_info *in
- 
- static int qmc_init_tsa_32rx_32tx(struct qmc *qmc, const struct tsa_serial_info *info)
- {
--	struct qmc_chan *chan;
- 	unsigned int i;
- 	u16 val;
- 
-@@ -978,28 +1085,6 @@ static int qmc_init_tsa_32rx_32tx(struct qmc *qmc, const struct tsa_serial_info
- 		qmc_write16(qmc->scc_pram + QMC_GBL_TSATTX + (i * 2), 0x0000);
- 	}
- 
--	/* Set entries based on Rx and Tx stuff*/
--	list_for_each_entry(chan, &qmc->chan_head, list) {
--		/* Rx part */
--		for (i = 0; i < info->nb_rx_ts; i++) {
--			if (!(chan->rx_ts_mask & (((u64)1) << i)))
--				continue;
--
--			val = QMC_TSA_VALID | QMC_TSA_MASK |
--			      QMC_TSA_CHANNEL(chan->id);
--			qmc_write16(qmc->scc_pram + QMC_GBL_TSATRX + (i * 2), val);
--		}
--		/* Tx part */
--		for (i = 0; i < info->nb_tx_ts; i++) {
--			if (!(chan->tx_ts_mask & (((u64)1) << i)))
--				continue;
--
--			val = QMC_TSA_VALID | QMC_TSA_MASK |
--			      QMC_TSA_CHANNEL(chan->id);
--			qmc_write16(qmc->scc_pram + QMC_GBL_TSATTX + (i * 2), val);
--		}
--	}
--
- 	/* Set Wrap bit on last entries */
- 	qmc_setbits16(qmc->scc_pram + QMC_GBL_TSATRX + ((info->nb_rx_ts - 1) * 2),
- 		      QMC_TSA_WRAP);
-@@ -1081,6 +1166,10 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
- 
- 	chan->qmc = qmc;
- 
-+	ret = qmc_chan_setup_tsa(chan);
-+	if (ret)
-+		return ret;
-+
- 	/* Set channel specific parameter base address */
- 	chan->s_param = qmc->dpram + (chan->id * 64);
- 	/* 16 bd per channel (8 rx and 8 tx) */
 -- 
 2.42.0
 
