@@ -4,42 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF672C07CA9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 13:23:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6FA5C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 13:28:48 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nMhXuo5c;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfjp339gXz3dBv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 00:23:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyingliang@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 994 seconds by postgrey-1.37 at boromir; Wed, 29 Nov 2023 00:22:49 AEDT
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfjvz2V4Xz3cR3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 00:28:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nMhXuo5c;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfjn55n6Gz3cYV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 00:22:49 +1100 (AEDT)
-Received: from dggpemm500006.china.huawei.com (unknown [172.30.72.53])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4SfjNf1JhmzvRGp;
-	Tue, 28 Nov 2023 21:05:06 +0800 (CST)
-Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
- dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Tue, 28 Nov 2023 21:05:36 +0800
-Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
- (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.35; Tue, 28 Nov
- 2023 21:05:36 +0800
-From: Yang Yingliang <yangyingliang@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfjv34d4Lz2yVh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 00:27:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1701178079;
+	bh=oZx4p5c1czKmkPHmDwhbX+TPujCNhITYCoO/TJfqgUo=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=nMhXuo5c982g+D9HXA4/PZsPRl3m40m13x2DqJBlLdcvSrj4VeX9elOGcT3Zk5fDc
+	 DCtCHb+4IgKFs1HDUNeXzsVqSKahO1XPHH5yE22tHTsrCoFketM98EubDGrTkIpRSb
+	 7QBpOhaPBZRsrdvLJua61kwZEio85hH5TWsGOu9MilOuRd9GZvEr7YYXk1+YMCX7R8
+	 0yYGmg9M166HkqDYf89fyhGg1Q9IFaJr8NUXAFNZ855TidMcDH/1tjpMR6SlFWNmJ7
+	 JKf6e0GJ41tTzpUC/XqQdig+lXgefAX3yDTAkB+7kxdIDrPXuOBJ1xe9XLY8p+eRPn
+	 3pzx3g5ePaJdA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Sfjv33RqZz4x2N;
+	Wed, 29 Nov 2023 00:27:59 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] soc: fsl: cpm1: qmc: fix error return code in qmc_probe()
-Date: Tue, 28 Nov 2023 21:09:42 +0800
-Message-ID: <20231128130942.2457873-1-yangyingliang@huawei.com>
-X-Mailer: git-send-email 2.25.1
+Subject: [PATCH 2/5] selftests/powerpc: Check all FPRs in fpu_preempt
+Date: Wed, 29 Nov 2023 00:27:45 +1100
+Message-ID: <20231128132748.1990179-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20231128132748.1990179-1-mpe@ellerman.id.au>
+References: <20231128132748.1990179-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.103.91]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- dggpemm500007.china.huawei.com (7.185.36.183)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,35 +58,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: herve.codina@bootlin.com, leoyang.li@nxp.com, broonie@kernel.org, yangyingliang@huawei.com, qiang.zhao@nxp.com
+Cc: tpearson@raptorengineering.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If platform_get_irq() fails, it need return error code in
-qmc_probe().
+There's a selftest that checks FPRs aren't corrupted by preemption, or
+just process scheduling. However it only checks the non-volatile FPRs,
+meaning corruption of the volatile FPRs could go undetected.
 
-Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+The check_fpu function it calls is used by several other tests, so for
+now add a new routine to check all the FPRs. Increase the size of the
+array of FPRs to 32, and initialise them all with random values.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/soc/fsl/qe/qmc.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ .../testing/selftests/powerpc/math/fpu_asm.S  | 41 +++++++++++++++++--
+ .../selftests/powerpc/math/fpu_preempt.c      | 15 +++----
+ 2 files changed, 43 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 92ec76c03965..65109f279a6b 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -1386,8 +1386,10 @@ static int qmc_probe(struct platform_device *pdev)
- 	qmc_write16(qmc->scc_regs + SCC_SCCM, 0x0000);
- 	qmc_write16(qmc->scc_regs + SCC_SCCE, 0x000F);
- 	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
-+	if (irq < 0) {
-+		ret = irq;
- 		goto err_tsa_serial_disconnect;
-+	}
- 	ret = devm_request_irq(qmc->dev, irq, qmc_irq_handler, 0, "qmc", qmc);
- 	if (ret < 0)
- 		goto err_tsa_serial_disconnect;
+diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
+index 9dc0c158f871..051392ad3ce7 100644
+--- a/tools/testing/selftests/powerpc/math/fpu_asm.S
++++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
+@@ -66,6 +66,40 @@ FUNC_START(check_fpu)
+ 	li	r3,0 # Success!!!
+ 1:	blr
+ 
++
++// int check_all_fprs(double darray[32])
++FUNC_START(check_all_fprs)
++	PUSH_BASIC_STACK(8)
++	mr	r4, r3	// r4 = darray
++	li	r3, 1	// prepare for failure
++
++	stfd	f31, STACK_FRAME_LOCAL(0, 0)(sp) // backup f31
++
++	// Check regs f0-f30, using f31 as scratch
++	.set i, 0
++	.rept 31
++	lfd	f31, (8 * i)(r4)	// load expected value
++	fcmpu	cr0, i, f31		// compare
++	bne	cr0, 1f			// bail if mismatch
++	.set i, i + 1
++	.endr
++
++	lfd	f31, STACK_FRAME_LOCAL(0, 0)(sp) // reload f31
++	stfd	f30, STACK_FRAME_LOCAL(0, 0)(sp) // backup f30
++
++	lfd	f30, (8 * 31)(r4)	// load expected value of f31
++	fcmpu	cr0, f30, f31		// compare
++	bne	cr0, 1f			// bail if mismatch
++
++	lfd	f30, STACK_FRAME_LOCAL(0, 0)(sp) // reload f30
++
++	// Success
++	li	r3, 0
++
++1:	POP_BASIC_STACK(8)
++	blr
++FUNC_END(check_all_fprs)
++
+ FUNC_START(test_fpu)
+ 	# r3 holds pointer to where to put the result of fork
+ 	# r4 holds pointer to the pid
+@@ -104,8 +138,8 @@ FUNC_START(preempt_fpu)
+ 	std r4,STACK_FRAME_PARAM(1)(sp) # int *threads_starting
+ 	std r5,STACK_FRAME_PARAM(2)(sp) # int *running
+ 
+-	bl load_fpu
+-	nop
++	// Load FPRs with expected values
++	OP_REGS lfd, 8, 0, 31, r3
+ 
+ 	sync
+ 	# Atomic DEC
+@@ -116,8 +150,7 @@ FUNC_START(preempt_fpu)
+ 	bne- 1b
+ 
+ 2:	ld r3,STACK_FRAME_PARAM(0)(sp)
+-	bl check_fpu
+-	nop
++	bl check_all_fprs
+ 	cmpdi r3,0
+ 	bne 3f
+ 	ld r4,STACK_FRAME_PARAM(2)(sp)
+diff --git a/tools/testing/selftests/powerpc/math/fpu_preempt.c b/tools/testing/selftests/powerpc/math/fpu_preempt.c
+index 3e5b5663d244..24b5abacccdc 100644
+--- a/tools/testing/selftests/powerpc/math/fpu_preempt.c
++++ b/tools/testing/selftests/powerpc/math/fpu_preempt.c
+@@ -1,13 +1,12 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  * Copyright 2015, Cyril Bur, IBM Corp.
++ * Copyright 2023, Michael Ellerman, IBM Corp.
+  *
+  * This test attempts to see if the FPU registers change across preemption.
+- * Two things should be noted here a) The check_fpu function in asm only checks
+- * the non volatile registers as it is reused from the syscall test b) There is
+- * no way to be sure preemption happened so this test just uses many threads
+- * and a long wait. As such, a successful test doesn't mean much but a failure
+- * is bad.
++ * There is no way to be sure preemption happened so this test just uses many
++ * threads and a long wait. As such, a successful test doesn't mean much but
++ * a failure is bad.
+  */
+ 
+ #include <stdio.h>
+@@ -30,9 +29,7 @@
+ #define THREAD_FACTOR 8
+ 
+ 
+-__thread double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+-		     1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+-		     2.1};
++__thread double darray[32];
+ 
+ int threads_starting;
+ int running;
+@@ -45,7 +42,7 @@ void *preempt_fpu_c(void *p)
+ 	int i;
+ 
+ 	srand(pthread_self());
+-	for (i = 0; i < 21; i++)
++	for (i = 0; i < ARRAY_SIZE(darray); i++)
+ 		darray[i] = rand();
+ 
+ 	rc = preempt_fpu(darray, &threads_starting, &running);
 -- 
-2.25.1
+2.41.0
 
