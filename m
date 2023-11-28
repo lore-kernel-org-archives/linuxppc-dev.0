@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9123C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D00EC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:11:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WsD6Lzz9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=SzXb9TkY;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfkrp1Nj2z3dKV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:11:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfksk3qgHz3vdh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:11:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WsD6Lzz9;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=SzXb9TkY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.195; helo=relay3-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [217.70.183.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknq2LLzz3cGY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:29 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 5579560003;
-	Tue, 28 Nov 2023 14:08:26 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknr5Km2z3cGW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:32 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 2FC336000A;
+	Tue, 28 Nov 2023 14:08:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701180507;
+	t=1701180510;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=1gGnXAZGnIVxoZRxeuFx4MpzbHqCUh3ZPY6HLb7Vr4A=;
-	b=WsD6Lzz9B55DltY1NVcvIJHBz75EtRr4zx04pkaaFf9tQGy2egh1PagI5ejZhJCtJh03Ys
-	FP7ts99+e0dnnURyHG60hLXnavk7loT00WYOWHlBD4HPoZBuoVH5DXjj9i3mbhQdVe/fuE
-	LEQaplcVPGzceciRdjppOsiLT7vJH8U6RkY8ejj8TBkZ66BYsI2bsS5LVfY7ODHvA9B2JV
-	vt1sZGNxRRd8MzXObX+GQd2VWbd+VYtRTrd5dhJUNf1oeo1L7y9sVWxC/Pi2aIRztQ4IZt
-	kopOP/72HHVVXhvex2yLb0Fs4/hpvHBcXxmxrbs26vcVc5NoeOGQJFsVWDaJNQ==
+	bh=eJosuVS67B3SR/85nZ6Wx85Kw09CqGjLv+oPzD8Rn2U=;
+	b=SzXb9TkYchl0rTqkA3UtYkw9S5Q63KYUYtkv5muVcQhY2Mpmbp8AnNpltvyuXQk2SbD68s
+	2ah8fH3AJ16Xepf4+iflodsNaMjSCN+rJSVyTA5X6RDtdHdFdEZHQg6XSBAZUOKhFOGRNJ
+	qAw5orshx7JWBNbHrJuVFBQOe9GQxBmZyN1T6O876SbXJZEwxxwWEB5dB2I7Uj2wwOipQC
+	aVXtQb0If9te8ku9Ge+q9aszV1h813xL1ijHyv+AnY5vI03RW2nWDivkE47IJ4guK/ZRhr
+	W7rYGAb+mLqFnujI3aXdI+d6XsmJ1srK4ECpTfAw2UyjD8Rv/1r71VKdJsztjg==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
@@ -49,9 +49,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 04/17] soc: fsl: cpm1: qmc: Extend the API to provide Rx status
-Date: Tue, 28 Nov 2023 15:08:03 +0100
-Message-ID: <20231128140818.261541-5-herve.codina@bootlin.com>
+Subject: [PATCH 07/17] soc: fsl: cpm1: qmc: Introduce available timeslots masks
+Date: Tue, 28 Nov 2023 15:08:06 +0100
+Message-ID: <20231128140818.261541-8-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231128140818.261541-1-herve.codina@bootlin.com>
 References: <20231128140818.261541-1-herve.codina@bootlin.com>
@@ -73,140 +73,54 @@ Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vge
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In HDLC mode, some status flags related to the data read transfer can be
-set by the hardware and need to be known by a QMC consumer for further
-analysis.
+Available timeslots masks define timeslots available for the related
+channel. These timeslots are defined by the QMC binding.
 
-Extend the API in order to provide these transfer status flags at the
-read complete() call.
-
-In TRANSPARENT mode, these flags have no meaning. Keep only one read
-complete() API and update the consumers working in transparent mode.
-In this case, the newly introduced flags parameter is simply unused.
+Timeslots used are initialized to available timeslots but can be a
+subset of available timeslots.
+This prepares the dynamic timeslots management (ie. changing timeslots
+at runtime).
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/qmc.c      | 29 +++++++++++++++++++++++++----
- include/soc/fsl/qe/qmc.h      | 15 ++++++++++++++-
- sound/soc/fsl/fsl_qmc_audio.c |  2 +-
- 3 files changed, 40 insertions(+), 6 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 2312152a44b3..4b4832d93c9b 100644
+index e716f13669a0..0413e25d4c67 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -166,7 +166,7 @@
- struct qmc_xfer_desc {
- 	union {
- 		void (*tx_complete)(void *context);
--		void (*rx_complete)(void *context, size_t length);
-+		void (*rx_complete)(void *context, size_t length, unsigned int flags);
- 	};
- 	void *context;
- };
-@@ -421,7 +421,8 @@ static void qmc_chan_write_done(struct qmc_chan *chan)
- }
+@@ -177,7 +177,9 @@ struct qmc_chan {
+ 	struct qmc *qmc;
+ 	void __iomem *s_param;
+ 	enum qmc_mode mode;
++	u64	tx_ts_mask_avail;
+ 	u64	tx_ts_mask;
++	u64	rx_ts_mask_avail;
+ 	u64	rx_ts_mask;
+ 	bool is_reverse_data;
  
- int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
--			 void (*complete)(void *context, size_t length), void *context)
-+			 void (*complete)(void *context, size_t length, unsigned int flags),
-+			 void *context)
- {
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
-@@ -454,6 +455,10 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
- 	xfer_desc->rx_complete = complete;
- 	xfer_desc->context = context;
- 
-+	/* Clear previous status flags */
-+	ctrl &= ~(QMC_BD_RX_L | QMC_BD_RX_F | QMC_BD_RX_LG | QMC_BD_RX_NO |
-+		  QMC_BD_RX_AB | QMC_BD_RX_CR);
-+
- 	/* Activate the descriptor */
- 	ctrl |= (QMC_BD_RX_E | QMC_BD_RX_UB);
- 	wmb(); /* Be sure to flush data before descriptor activation */
-@@ -485,7 +490,7 @@ EXPORT_SYMBOL(qmc_chan_read_submit);
- 
- static void qmc_chan_read_done(struct qmc_chan *chan)
- {
--	void (*complete)(void *context, size_t size);
-+	void (*complete)(void *context, size_t size, unsigned int flags);
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
- 	cbd_t __iomem *bd;
-@@ -527,7 +532,23 @@ static void qmc_chan_read_done(struct qmc_chan *chan)
- 
- 		if (complete) {
- 			spin_unlock_irqrestore(&chan->rx_lock, flags);
--			complete(context, datalen);
-+
-+			/*
-+			 * Avoid conversion between internal hardware flags and
-+			 * the software API flags.
-+			 * -> Be sure that the software API flags are consistent
-+			 *    with the hardware flags
-+			 */
-+			BUILD_BUG_ON(QMC_RX_FLAG_HDLC_LAST  != QMC_BD_RX_L);
-+			BUILD_BUG_ON(QMC_RX_FLAG_HDLC_FIRST != QMC_BD_RX_F);
-+			BUILD_BUG_ON(QMC_RX_FLAG_HDLC_OVF   != QMC_BD_RX_LG);
-+			BUILD_BUG_ON(QMC_RX_FLAG_HDLC_UNA   != QMC_BD_RX_NO);
-+			BUILD_BUG_ON(QMC_RX_FLAG_HDLC_ABORT != QMC_BD_RX_AB);
-+			BUILD_BUG_ON(QMC_RX_FLAG_HDLC_CRC   != QMC_BD_RX_CR);
-+
-+			complete(context, datalen,
-+				 ctrl & (QMC_BD_RX_L | QMC_BD_RX_F | QMC_BD_RX_LG |
-+					 QMC_BD_RX_NO | QMC_BD_RX_AB | QMC_BD_RX_CR));
- 			spin_lock_irqsave(&chan->rx_lock, flags);
+@@ -875,7 +877,8 @@ static int qmc_of_parse_chans(struct qmc *qmc, struct device_node *np)
+ 			of_node_put(chan_np);
+ 			return ret;
  		}
+-		chan->tx_ts_mask = ts_mask;
++		chan->tx_ts_mask_avail = ts_mask;
++		chan->tx_ts_mask = chan->tx_ts_mask_avail;
  
-diff --git a/include/soc/fsl/qe/qmc.h b/include/soc/fsl/qe/qmc.h
-index 3c61a50d2ae2..6f1d6cebc9fe 100644
---- a/include/soc/fsl/qe/qmc.h
-+++ b/include/soc/fsl/qe/qmc.h
-@@ -9,6 +9,7 @@
- #ifndef __SOC_FSL_QMC_H__
- #define __SOC_FSL_QMC_H__
+ 		ret = of_property_read_u64(chan_np, "fsl,rx-ts-mask", &ts_mask);
+ 		if (ret) {
+@@ -884,7 +887,8 @@ static int qmc_of_parse_chans(struct qmc *qmc, struct device_node *np)
+ 			of_node_put(chan_np);
+ 			return ret;
+ 		}
+-		chan->rx_ts_mask = ts_mask;
++		chan->rx_ts_mask_avail = ts_mask;
++		chan->rx_ts_mask = chan->rx_ts_mask_avail;
  
-+#include <linux/bits.h>
- #include <linux/types.h>
- 
- struct device_node;
-@@ -56,8 +57,20 @@ int qmc_chan_set_param(struct qmc_chan *chan, const struct qmc_chan_param *param
- int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
- 			  void (*complete)(void *context), void *context);
- 
-+/* Flags available (ORed) for read complete() flags parameter in HDLC mode.
-+ * No flags are available in transparent mode and the read complete() flags
-+ * parameter has no meaning in transparent mode.
-+ */
-+#define QMC_RX_FLAG_HDLC_LAST	BIT(11) /* Last in frame */
-+#define QMC_RX_FLAG_HDLC_FIRST	BIT(10) /* First in frame */
-+#define QMC_RX_FLAG_HDLC_OVF	BIT(5)  /* Data overflow */
-+#define QMC_RX_FLAG_HDLC_UNA	BIT(4)  /* Unaligned (ie. bits received not multiple of 8) */
-+#define QMC_RX_FLAG_HDLC_ABORT	BIT(3)  /* Received an abort sequence (seven consecutive ones) */
-+#define QMC_RX_FLAG_HDLC_CRC	BIT(2)  /* CRC error */
-+
- int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
--			 void (*complete)(void *context, size_t length),
-+			 void (*complete)(void *context, size_t length,
-+					  unsigned int flags),
- 			 void *context);
- 
- #define QMC_CHAN_READ  (1<<0)
-diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
-index 56d6b0b039a2..bfaaa451735b 100644
---- a/sound/soc/fsl/fsl_qmc_audio.c
-+++ b/sound/soc/fsl/fsl_qmc_audio.c
-@@ -99,7 +99,7 @@ static void qmc_audio_pcm_write_complete(void *context)
- 	snd_pcm_period_elapsed(prtd->substream);
- }
- 
--static void qmc_audio_pcm_read_complete(void *context, size_t length)
-+static void qmc_audio_pcm_read_complete(void *context, size_t length, unsigned int flags)
- {
- 	struct qmc_dai_prtd *prtd = context;
- 	int ret;
+ 		mode = "transparent";
+ 		ret = of_property_read_string(chan_np, "fsl,operational-mode", &mode);
 -- 
 2.42.0
 
