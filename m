@@ -4,37 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4131C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFA24C07E97
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:10:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WisnC6Dm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PDZiuP0i;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfkpt0X1jz3cc0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:09:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sfkqs1rbmz3dLS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:10:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WisnC6Dm;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PDZiuP0i;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.195; helo=relay3-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [217.70.183.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknq22h0z3cGW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:30 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 4701A60004;
-	Tue, 28 Nov 2023 14:08:27 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknq1xSQz3cF4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:29 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 7055560008;
+	Tue, 28 Nov 2023 14:08:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701180508;
+	t=1701180503;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pfBJnitpzrGKndByRrnchYp3RVKMpoAglxZImjH5Vlc=;
-	b=WisnC6DmGBJEdW2QianjEi+teiBnTMAz8qT2WWm5xb8WBIt+SB/Lo5G/M+uR48g0UU6/vL
-	qpG12APlw0HfwpB/YSINf7HMEMQ7Q6OtZCMnJVBN4JADHonJPNNPgwRG/IvA706/qURFyZ
-	Q0iLW4bkcvOBxupUHgDg7HFifihs9WJdWCSFRoRESmvh8z+VYGn1CUEcFksbwxfQkTxIxF
-	rKM9QaAOcEbV1WkzhxBtvJ7kGPz0zjiafLAvBbm5RKhKmX1HFj1mDTjXAN9OdSo/E3uWl5
-	XMo3oYaYjX/7FvaWWXfxpb4W/h0Lk5wJZ0qRPh2gISjiDzVeMKnkQQvcmVaIag==
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=i7q8w6Mxbljh5af2HafEdvKbBOFPqmcN00tNKcl/Whw=;
+	b=PDZiuP0iwt4HL5jAwOQe9/6sbhDuSvjOtiIVK89XjGPO9jvEVdXxLM1wLaXX628wjWek58
+	VAuVOZzrZBHvLipMSyQz8uNDHSVCveYdH6w18M65MklIYK7qTRUilNJ8aYB07tFDST4OVf
+	FDIZsZyBia9NFT5qbAm1DlknmHUqV8LCWnHAsM3Q+7n9QkmpXWkZhxbkMafTMeUTIp+W87
+	h1QUpv4cAasc+n92FMUTw2DAAoNgneH4AQt68WJ84ID0WMQPV8SYGXFZ9FCA89jIKyrLB3
+	2nLMEpVVVJOpLQ3GYUO9O0VTqemAY1R0XfuIHmgjLyEb0eN5znOYjUojFdsHLA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
@@ -49,13 +48,12 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 05/17] soc: fsl: cpm1: qmc: Remove inline function specifiers
-Date: Tue, 28 Nov 2023 15:08:04 +0100
-Message-ID: <20231128140818.261541-6-herve.codina@bootlin.com>
+Subject: [PATCH 00/17] Prepare the PowerQUICC QMC and TSA for the HDLC QMC driver
+Date: Tue, 28 Nov 2023 15:07:59 +0100
+Message-ID: <20231128140818.261541-1-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231128140818.261541-1-herve.codina@bootlin.com>
-References: <20231128140818.261541-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,72 +67,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The inline function specifier is present on some functions but it is
-better to let the compiler decide inlining or not these functions.
+Hi,
 
-Remove inline specifiers.
+This series updates PowerQUICC QMC and TSA drivers to prepare the
+support for the QMC HDLC driver.
 
-Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Suggested-by: Andrew Lunn <andrew@lunn.ch>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/soc/fsl/qe/qmc.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+Patches were previously sent as part of a full feature series:
+"Add support for QMC HDLC, framer infrastructure and PEF2256 framer" [1]
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 4b4832d93c9b..27f2f16deac9 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -218,37 +218,37 @@ struct qmc {
- 	struct qmc_chan *chans[64];
- };
- 
--static inline void qmc_write16(void __iomem *addr, u16 val)
-+static void qmc_write16(void __iomem *addr, u16 val)
- {
- 	iowrite16be(val, addr);
- }
- 
--static inline u16 qmc_read16(void __iomem *addr)
-+static u16 qmc_read16(void __iomem *addr)
- {
- 	return ioread16be(addr);
- }
- 
--static inline void qmc_setbits16(void __iomem *addr, u16 set)
-+static void qmc_setbits16(void __iomem *addr, u16 set)
- {
- 	qmc_write16(addr, qmc_read16(addr) | set);
- }
- 
--static inline void qmc_clrbits16(void __iomem *addr, u16 clr)
-+static void qmc_clrbits16(void __iomem *addr, u16 clr)
- {
- 	qmc_write16(addr, qmc_read16(addr) & ~clr);
- }
- 
--static inline void qmc_write32(void __iomem *addr, u32 val)
-+static void qmc_write32(void __iomem *addr, u32 val)
- {
- 	iowrite32be(val, addr);
- }
- 
--static inline u32 qmc_read32(void __iomem *addr)
-+static u32 qmc_read32(void __iomem *addr)
- {
- 	return ioread32be(addr);
- }
- 
--static inline void qmc_setbits32(void __iomem *addr, u32 set)
-+static void qmc_setbits32(void __iomem *addr, u32 set)
- {
- 	qmc_write32(addr, qmc_read32(addr) | set);
- }
+The full feature series reached the v9 iteration.
+The v1 was sent the 07/25/2023 followed by the other iterations
+(07/26/2023, 08/09/2023, 08/18/2023, 09/12/2023, 09/22/2023, 09/28/2023,
+10/11/23, 11/15/2023) and was ready to be merged in its v8.
+  https://lore.kernel.org/linux-kernel/20231025123215.5caca7d4@kernel.org/
+
+The lack of feedback from the Freescale SoC and the Quicc Engine
+maintainers (i.e. drivers/soc/fsl/qe/ to which the QMC and TSA drivers
+belong) blocks the entire full feature series.
+These patches are fixes and improvements to TSA and QMC drivers.
+These drivers were previously acked by Li Yang but without any feedback
+from Li Yang nor Qiang Zhao the series cannot move forward.
+
+In order to ease the review/merge, the full feature series has been
+split and this series contains patches related to the PowerQUICC SoC
+part (QMC and TSA).
+ - Perform some fixes (patches 1 to 5)
+ - Add support for child devices (patch 6)
+ - Add QMC dynamic timeslot support (patches 7 to 17)
+
+From the original full feature series, a patches extraction without any
+modification was done.
+
+Best regards,
+Hervé
+
+[1]: https://lore.kernel.org/linux-kernel/20231115144007.478111-1-herve.codina@bootlin.com/
+
+Patches extracted:
+  - Patch 1..6 : full feature series patch 1..6
+  - Patch 7..17 : full feature series patch 9..19
+
+Herve Codina (17):
+  soc: fsl: cpm1: tsa: Fix __iomem addresses declaration
+  soc: fsl: cpm1: qmc: Fix __iomem addresses declaration
+  soc: fsl: cpm1: qmc: Fix rx channel reset
+  soc: fsl: cpm1: qmc: Extend the API to provide Rx status
+  soc: fsl: cpm1: qmc: Remove inline function specifiers
+  soc: fsl: cpm1: qmc: Add support for child devices
+  soc: fsl: cpm1: qmc: Introduce available timeslots masks
+  soc: fsl: cpm1: qmc: Rename qmc_setup_tsa* to qmc_init_tsa*
+  soc: fsl: cpm1: qmc: Introduce qmc_chan_setup_tsa*
+  soc: fsl: cpm1: qmc: Remove no more needed checks from
+    qmc_check_chans()
+  soc: fsl: cpm1: qmc: Check available timeslots in qmc_check_chans()
+  soc: fsl: cpm1: qmc: Add support for disabling channel TSA entries
+  soc: fsl: cpm1: qmc: Split Tx and Rx TSA entries setup
+  soc: fsl: cpm1: qmc: Introduce is_tsa_64rxtx flag
+  soc: fsl: cpm1: qmc: Handle timeslot entries at channel start() and
+    stop()
+  soc: fsl: cpm1: qmc: Remove timeslots handling from setup_chan()
+  soc: fsl: cpm1: qmc: Introduce functions to change timeslots at
+    runtime
+
+ drivers/soc/fsl/qe/qmc.c      | 592 +++++++++++++++++++++++++++-------
+ drivers/soc/fsl/qe/tsa.c      |  22 +-
+ include/soc/fsl/qe/qmc.h      |  27 +-
+ sound/soc/fsl/fsl_qmc_audio.c |   2 +-
+ 4 files changed, 506 insertions(+), 137 deletions(-)
+
 -- 
 2.42.0
 
