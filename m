@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0B4CC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:16:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCA67C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Nov 2023 14:16:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=iof4yAQv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KPyUdJ0x;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SfkyX489qz3vgH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:16:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SfkzS387Hz3vyy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 01:16:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=iof4yAQv;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KPyUdJ0x;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::223; helo=relay3-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::223])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknx2dF5z3cVZ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sfknx2rsHz3cW3
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2023 01:08:36 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 487EF6000E;
-	Tue, 28 Nov 2023 14:08:24 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 37C2A6000F;
+	Tue, 28 Nov 2023 14:08:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701180505;
+	t=1701180509;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0wvI1tFhKePXdW/LM4A6s3+Ocv0iUTHrjsQSlsDC2Ew=;
-	b=iof4yAQvnhIgigz0o8FNaedVX+mM3Gl853qCtaOEZfqnl3C8ygCo8yOWR2ac60CBFvS3uS
-	9SqXZM2k/ww6UkQWUzKjF5LVcdG0F410ZYR/eDfA6CSbELAKW+XAT6DMt2t+wX7LAAbpoa
-	3LVQ1t0pP5h1qeEGNT7xsP1YMKk92xDDWjVD83/0ly1n2rFZN2jXIqiL8p6oEQn7lNxVkk
-	PurC7BoW699mvYmwE3OcYdQHDp2tLv9IsHDTfbXUD4xpNWtXReqnENJPMxLJACruYM6HHM
-	Wo+uB6fAmtsfS+0bc5hpbvEfeSyv4nO/wKJ1lsGY9rALSmfXGsiN2/O6s8Q9+A==
+	bh=+2B6YUVBlU8nP98Gi7Yh575FhYxDZUhvB/s29okN5tk=;
+	b=KPyUdJ0xO7QWgygD02j0RNLseVzKNmRyniX4pOsSzvLlzuUuMQRqgowuUQuXn8r9WrlEWq
+	Wen3h3xoZwcrt6FBc8214Lbfy0X/PMyqfE/aQtW+vtLzJfqgafT0kf2FMafIcp4PB1f/PP
+	GS+BOTEXJTXv4fsL+D9IAaR6m4Og6xtpjrOch/FfToMGIg3ECBsnFXIE3bE38L+WqPpClm
+	E2zk6rVYgJI48bUQGCXFH+/Xjf+ooEs/kjpAwKzY345On6Ct8GuwwLWscfQlyd9ZhLBA3W
+	NeZxWVFfNBn2DUmbghqIfoKK9dkUZVWR1UuW1azKzn80VDk7XxB3Ni37NzDerA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
@@ -49,9 +49,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 02/17] soc: fsl: cpm1: qmc: Fix __iomem addresses declaration
-Date: Tue, 28 Nov 2023 15:08:01 +0100
-Message-ID: <20231128140818.261541-3-herve.codina@bootlin.com>
+Subject: [PATCH 06/17] soc: fsl: cpm1: qmc: Add support for child devices
+Date: Tue, 28 Nov 2023 15:08:05 +0100
+Message-ID: <20231128140818.261541-7-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231128140818.261541-1-herve.codina@bootlin.com>
 References: <20231128140818.261541-1-herve.codina@bootlin.com>
@@ -73,150 +73,179 @@ Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vge
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Running sparse (make C=1) on qmc.c raises a lot of warning such as:
-  ...
-  warning: incorrect type in assignment (different address spaces)
-     expected struct cpm_buf_desc [usertype] *[noderef] __iomem bd
-     got struct cpm_buf_desc [noderef] [usertype] __iomem *txbd_free
-  ...
+QMC child devices support is needed to avoid orphan DT nodes that use a
+simple DT phandle to reference a QMC channel.
 
-Indeed, some variable were declared 'type *__iomem var' instead of
-'type __iomem *var'.
+Allow to instantiate child devices and also extend the API to get the
+qmc_chan using a child device.
 
-Use the correct declaration to remove these warnings.
-
-Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/qmc.c | 34 +++++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 91 +++++++++++++++++++++++++++++++---------
+ include/soc/fsl/qe/qmc.h |  2 +
+ 2 files changed, 73 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 92ec76c03965..3f3de1351c96 100644
+index 27f2f16deac9..e716f13669a0 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -175,7 +175,7 @@ struct qmc_chan {
- 	struct list_head list;
- 	unsigned int id;
- 	struct qmc *qmc;
--	void *__iomem s_param;
-+	void __iomem *s_param;
- 	enum qmc_mode mode;
- 	u64	tx_ts_mask;
- 	u64	rx_ts_mask;
-@@ -203,9 +203,9 @@ struct qmc_chan {
- struct qmc {
- 	struct device *dev;
- 	struct tsa_serial *tsa_serial;
--	void *__iomem scc_regs;
--	void *__iomem scc_pram;
--	void *__iomem dpram;
-+	void __iomem *scc_regs;
-+	void __iomem *scc_pram;
-+	void __iomem *dpram;
- 	u16 scc_pram_offset;
- 	cbd_t __iomem *bd_table;
- 	dma_addr_t bd_dma_addr;
-@@ -218,37 +218,37 @@ struct qmc {
- 	struct qmc_chan *chans[64];
+@@ -1425,8 +1425,16 @@ static int qmc_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, qmc);
+ 
++	/* Populate channel related devices */
++	ret = devm_of_platform_populate(qmc->dev);
++	if (ret)
++		goto err_disable_txrx;
++
+ 	return 0;
+ 
++err_disable_txrx:
++	qmc_setbits32(qmc->scc_regs + SCC_GSMRL, 0);
++
+ err_disable_intr:
+ 	qmc_write16(qmc->scc_regs + SCC_SCCM, 0);
+ 
+@@ -1465,26 +1473,16 @@ static struct platform_driver qmc_driver = {
  };
+ module_platform_driver(qmc_driver);
  
--static inline void qmc_write16(void *__iomem addr, u16 val)
-+static inline void qmc_write16(void __iomem *addr, u16 val)
+-struct qmc_chan *qmc_chan_get_byphandle(struct device_node *np, const char *phandle_name)
++static struct qmc_chan *qmc_chan_get_from_qmc(struct device_node *qmc_np, unsigned int chan_index)
  {
- 	iowrite16be(val, addr);
+-	struct of_phandle_args out_args;
+ 	struct platform_device *pdev;
+ 	struct qmc_chan *qmc_chan;
+ 	struct qmc *qmc;
+-	int ret;
+ 
+-	ret = of_parse_phandle_with_fixed_args(np, phandle_name, 1, 0,
+-					       &out_args);
+-	if (ret < 0)
+-		return ERR_PTR(ret);
+-
+-	if (!of_match_node(qmc_driver.driver.of_match_table, out_args.np)) {
+-		of_node_put(out_args.np);
++	if (!of_match_node(qmc_driver.driver.of_match_table, qmc_np))
+ 		return ERR_PTR(-EINVAL);
+-	}
+ 
+-	pdev = of_find_device_by_node(out_args.np);
+-	of_node_put(out_args.np);
++	pdev = of_find_device_by_node(qmc_np);
+ 	if (!pdev)
+ 		return ERR_PTR(-ENODEV);
+ 
+@@ -1494,17 +1492,12 @@ struct qmc_chan *qmc_chan_get_byphandle(struct device_node *np, const char *phan
+ 		return ERR_PTR(-EPROBE_DEFER);
+ 	}
+ 
+-	if (out_args.args_count != 1) {
++	if (chan_index >= ARRAY_SIZE(qmc->chans)) {
+ 		platform_device_put(pdev);
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (out_args.args[0] >= ARRAY_SIZE(qmc->chans)) {
+-		platform_device_put(pdev);
+-		return ERR_PTR(-EINVAL);
+-	}
+-
+-	qmc_chan = qmc->chans[out_args.args[0]];
++	qmc_chan = qmc->chans[chan_index];
+ 	if (!qmc_chan) {
+ 		platform_device_put(pdev);
+ 		return ERR_PTR(-ENOENT);
+@@ -1512,8 +1505,44 @@ struct qmc_chan *qmc_chan_get_byphandle(struct device_node *np, const char *phan
+ 
+ 	return qmc_chan;
  }
++
++struct qmc_chan *qmc_chan_get_byphandle(struct device_node *np, const char *phandle_name)
++{
++	struct of_phandle_args out_args;
++	struct qmc_chan *qmc_chan;
++	int ret;
++
++	ret = of_parse_phandle_with_fixed_args(np, phandle_name, 1, 0,
++					       &out_args);
++	if (ret < 0)
++		return ERR_PTR(ret);
++
++	if (out_args.args_count != 1) {
++		of_node_put(out_args.np);
++		return ERR_PTR(-EINVAL);
++	}
++
++	qmc_chan = qmc_chan_get_from_qmc(out_args.np, out_args.args[0]);
++	of_node_put(out_args.np);
++	return qmc_chan;
++}
+ EXPORT_SYMBOL(qmc_chan_get_byphandle);
  
--static inline u16 qmc_read16(void *__iomem addr)
-+static inline u16 qmc_read16(void __iomem *addr)
++struct qmc_chan *qmc_chan_get_bychild(struct device_node *np)
++{
++	struct device_node *qmc_np;
++	u32 chan_index;
++	int ret;
++
++	qmc_np = np->parent;
++	ret = of_property_read_u32(np, "reg", &chan_index);
++	if (ret)
++		return ERR_PTR(-EINVAL);
++
++	return qmc_chan_get_from_qmc(qmc_np, chan_index);
++}
++EXPORT_SYMBOL(qmc_chan_get_bychild);
++
+ void qmc_chan_put(struct qmc_chan *chan)
  {
- 	return ioread16be(addr);
+ 	put_device(chan->qmc->dev);
+@@ -1550,6 +1579,28 @@ struct qmc_chan *devm_qmc_chan_get_byphandle(struct device *dev,
  }
+ EXPORT_SYMBOL(devm_qmc_chan_get_byphandle);
  
--static inline void qmc_setbits16(void *__iomem addr, u16 set)
-+static inline void qmc_setbits16(void __iomem *addr, u16 set)
- {
- 	qmc_write16(addr, qmc_read16(addr) | set);
- }
++struct qmc_chan *devm_qmc_chan_get_bychild(struct device *dev,
++					   struct device_node *np)
++{
++	struct qmc_chan *qmc_chan;
++	struct qmc_chan **dr;
++
++	dr = devres_alloc(devm_qmc_chan_release, sizeof(*dr), GFP_KERNEL);
++	if (!dr)
++		return ERR_PTR(-ENOMEM);
++
++	qmc_chan = qmc_chan_get_bychild(np);
++	if (!IS_ERR(qmc_chan)) {
++		*dr = qmc_chan;
++		devres_add(dev, dr);
++	} else {
++		devres_free(dr);
++	}
++
++	return qmc_chan;
++}
++EXPORT_SYMBOL(devm_qmc_chan_get_bychild);
++
+ MODULE_AUTHOR("Herve Codina <herve.codina@bootlin.com>");
+ MODULE_DESCRIPTION("CPM QMC driver");
+ MODULE_LICENSE("GPL");
+diff --git a/include/soc/fsl/qe/qmc.h b/include/soc/fsl/qe/qmc.h
+index 6f1d6cebc9fe..166484bb4294 100644
+--- a/include/soc/fsl/qe/qmc.h
++++ b/include/soc/fsl/qe/qmc.h
+@@ -17,9 +17,11 @@ struct device;
+ struct qmc_chan;
  
--static inline void qmc_clrbits16(void *__iomem addr, u16 clr)
-+static inline void qmc_clrbits16(void __iomem *addr, u16 clr)
- {
- 	qmc_write16(addr, qmc_read16(addr) & ~clr);
- }
+ struct qmc_chan *qmc_chan_get_byphandle(struct device_node *np, const char *phandle_name);
++struct qmc_chan *qmc_chan_get_bychild(struct device_node *np);
+ void qmc_chan_put(struct qmc_chan *chan);
+ struct qmc_chan *devm_qmc_chan_get_byphandle(struct device *dev, struct device_node *np,
+ 					     const char *phandle_name);
++struct qmc_chan *devm_qmc_chan_get_bychild(struct device *dev, struct device_node *np);
  
--static inline void qmc_write32(void *__iomem addr, u32 val)
-+static inline void qmc_write32(void __iomem *addr, u32 val)
- {
- 	iowrite32be(val, addr);
- }
- 
--static inline u32 qmc_read32(void *__iomem addr)
-+static inline u32 qmc_read32(void __iomem *addr)
- {
- 	return ioread32be(addr);
- }
- 
--static inline void qmc_setbits32(void *__iomem addr, u32 set)
-+static inline void qmc_setbits32(void __iomem *addr, u32 set)
- {
- 	qmc_write32(addr, qmc_read32(addr) | set);
- }
-@@ -318,7 +318,7 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
- {
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
--	cbd_t *__iomem bd;
-+	cbd_t __iomem *bd;
- 	u16 ctrl;
- 	int ret;
- 
-@@ -374,7 +374,7 @@ static void qmc_chan_write_done(struct qmc_chan *chan)
- 	void (*complete)(void *context);
- 	unsigned long flags;
- 	void *context;
--	cbd_t *__iomem bd;
-+	cbd_t __iomem *bd;
- 	u16 ctrl;
- 
- 	/*
-@@ -425,7 +425,7 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
- {
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
--	cbd_t *__iomem bd;
-+	cbd_t __iomem *bd;
- 	u16 ctrl;
- 	int ret;
- 
-@@ -488,7 +488,7 @@ static void qmc_chan_read_done(struct qmc_chan *chan)
- 	void (*complete)(void *context, size_t size);
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
--	cbd_t *__iomem bd;
-+	cbd_t __iomem *bd;
- 	void *context;
- 	u16 datalen;
- 	u16 ctrl;
-@@ -663,7 +663,7 @@ static void qmc_chan_reset_rx(struct qmc_chan *chan)
- {
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
--	cbd_t *__iomem bd;
-+	cbd_t __iomem *bd;
- 	u16 ctrl;
- 
- 	spin_lock_irqsave(&chan->rx_lock, flags);
-@@ -694,7 +694,7 @@ static void qmc_chan_reset_tx(struct qmc_chan *chan)
- {
- 	struct qmc_xfer_desc *xfer_desc;
- 	unsigned long flags;
--	cbd_t *__iomem bd;
-+	cbd_t __iomem *bd;
- 	u16 ctrl;
- 
- 	spin_lock_irqsave(&chan->tx_lock, flags);
+ enum qmc_mode {
+ 	QMC_TRANSPARENT,
 -- 
 2.42.0
 
