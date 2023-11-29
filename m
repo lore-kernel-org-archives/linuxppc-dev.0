@@ -4,50 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0B16C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 13:23:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 636C5C07CB1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 13:24:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BJSzTYw/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fts1g4mc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SgKlp29lnz3vjT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 00:23:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SgKmk0vC0z3vmD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 00:24:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BJSzTYw/;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fts1g4mc;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SgKgL5bFLz3d8x
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 00:19:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SgKh96X9qz3d8y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 00:20:41 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1701263989;
-	bh=ood126AEmPXN2ZgrJ4jy6sUKjnSBWzxHaRg6mSEzgjM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BJSzTYw/eR/ITrJa2TUxd4flMiHqt1Cq9NOm2Y+WRHYgTtpEpkC0VNRnIO6ieXc/c
-	 3147zof5yCXU+WojThSqKAg/BDho4i8ZY1tJZH+pYTiL7yDe5QtUCzzg2f8OThzBQu
-	 0f4QTPwENsS7ECQs+oaHws4aBQSA4S/iSPbP+3phNa8z0aLlgfOaiSSANuv4btH9jb
-	 4c0m6mmrzl0K9wdvm7G0ApmtijlhU8KSTQuJXUTb8100iaFQsX+9ARnD2AgEn1HVbN
-	 VYNe9PvBjjW/G9eFcSA6RhWtHAdFVMMMm0CzW9hkrJHhH7CX1Cn24mT/QuGfij9UdB
-	 E4hPvMywBMy/Q==
+	s=201909; t=1701264041;
+	bh=OKAi9zgo4g/bQmTQBdSLrAuecjEinmMfHE8kTBND2a4=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=fts1g4mcy4taQ5OHfOyhbSUVs1VaZeepZzt/j252B/6z2thNSOWbTMrW4blrtMRLD
+	 /61egxE82F1NBJmTzR44XvykIn11Tc8rG1CSoiAxOpLoShN93wrVpl4WdCm1C6MFr0
+	 yJG2u/WYaLk5ayZuhO0TcB8JF+du+4JaVqUqFNN12wEmfx6N0q+kYrGu4lht3j9Vky
+	 mwuGKJVHIvQbMZY+xqGdzAm94IF/Uoo+x6sIfaZ9vAT6muBfcJkGRztj5lPZraHnA9
+	 TNkFCzIzDs0vCyqzZzlkHgL4EhMTyoYD1DVd04NAtqkG5IiM8yfm9HP4/1XWAgAimX
+	 Efe/nAtm9uYsA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SgKg90c5Bz4xSy;
-	Thu, 30 Nov 2023 00:19:49 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SgKh91f3Hz4x5q;
+	Thu, 30 Nov 2023 00:20:41 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/5] powerpc/512x: Fix missing prototype warnings
-Date: Thu, 30 Nov 2023 00:19:17 +1100
-Message-ID: <20231129131919.2528517-3-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231129131919.2528517-1-mpe@ellerman.id.au>
-References: <20231129131919.2528517-1-mpe@ellerman.id.au>
+To: Nathan Lynch <nathanl@linux.ibm.com>, Nathan Lynch via B4 Relay
+ <devnull+nathanl.linux.ibm.com@kernel.org>, Nicholas Piggin
+ <npiggin@gmail.com>
+Subject: Re: [PATCH v4 05/13] powerpc/rtas: Facilitate high-level call
+ sequences
+In-Reply-To: <87jzq11nsj.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+References: <20231117-papr-sys_rtas-vs-lockdown-v4-0-b794d8cb8502@linux.ibm.com>
+ <20231117-papr-sys_rtas-vs-lockdown-v4-5-b794d8cb8502@linux.ibm.com>
+ <87sf4p33zg.fsf@mail.lhotse>
+ <87jzq11nsj.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+Date: Thu, 30 Nov 2023 00:20:40 +1100
+Message-ID: <874jh43dcn.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,40 +63,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de
+Cc: tyreld@linux.ibm.com, Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org, gcwilson@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The mpc512x_defconfig build fails with:
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+>> Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
+>> writes:
+>>> From: Nathan Lynch <nathanl@linux.ibm.com>
+>>>
+>>> On RTAS platforms there is a general restriction that the OS must not
+>>> enter RTAS on more than one CPU at a time. This low-level
+>>> serialization requirement is satisfied by holding a spin
+>>> lock (rtas_lock) across most RTAS function invocations.
+>> ...
+>>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+>>> index 1fc0b3fffdd1..52f2242d0c28 100644
+>>> --- a/arch/powerpc/kernel/rtas.c
+>>> +++ b/arch/powerpc/kernel/rtas.c
+>>> @@ -581,6 +652,28 @@ static const struct rtas_function *rtas_token_to_function(s32 token)
+>>>  	return NULL;
+>>>  }
+>>>  
+>>> +static void __rtas_function_lock(struct rtas_function *func)
+>>> +{
+>>> +	if (func && func->lock)
+>>> +		mutex_lock(func->lock);
+>>> +}
+>>
+>> This is obviously going to defeat most static analysis tools.
+>
+> I guess it's not that obvious to me :-) Is it because the mutex_lock()
+> is conditional? I'll improve this if it's possible.
 
-  arch/powerpc/platforms/512x/mpc5121_ads_cpld.c:142:1: error: no previous prototype for ‘mpc5121_ads_cpld_map’ [-Werror=missing-prototypes]
-  142 | mpc5121_ads_cpld_map(void)
-      | ^~~~~~~~~~~~~~~~~~~~
-  arch/powerpc/platforms/512x/mpc5121_ads_cpld.c:157:1: error: no previous prototype for ‘mpc5121_ads_cpld_pic_init’ [-Werror=missing-prototypes]
-  157 | mpc5121_ads_cpld_pic_init(void)
-      | ^~~~~~~~~~~~~~~~~~~~~~~~~
+Well maybe I'm not giving modern static analysis tools enough credit :)
 
-There are prototypes for these functions but the header they are in is
-not included by mpc5121_ads_cpld.c. Include it to fix the build error.
+But what I mean that it's not easy to reason about what the function
+does in isolation. ie. all you can say is that it may or may not lock a
+mutex, and you can't say which mutex.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/512x/mpc5121_ads_cpld.c | 2 ++
- 1 file changed, 2 insertions(+)
+>> I assume lockdep is OK with it though?
+>
+> Seems to be, yes.
 
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-index 6f08d07aee3b..e995eb30bf09 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-@@ -17,6 +17,8 @@
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- 
-+#include "mpc5121_ads.h"
-+
- static struct device_node *cpld_pic_node;
- static struct irq_domain *cpld_pic_host;
- 
--- 
-2.41.0
+OK.
 
+cheers
