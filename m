@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F61EC07E98
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 13:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0B16C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Nov 2023 13:23:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Yl/YC+X0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BJSzTYw/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SgKkt6gh7z3vf6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 00:23:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SgKlp29lnz3vjT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 00:23:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Yl/YC+X0;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BJSzTYw/;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SgKgB2L5bz3cNQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 00:19:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SgKgL5bFLz3d8x
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 00:19:58 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1701263990;
-	bh=/bB1Nks5KtPyb0Yhho+sDeYW04/1u6lOjRMxvsJxA3g=;
+	s=201909; t=1701263989;
+	bh=ood126AEmPXN2ZgrJ4jy6sUKjnSBWzxHaRg6mSEzgjM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Yl/YC+X0dgfuGl1etK9BXo7mN4RGEpOmeqXiruA+jCHJZvJyxuVvO5BIIV2lqR7j6
-	 CFncTVjjOXRc+vISBHvHalPNk0+Gd/Vkq/7CE+dNH0Kw7o11ufY9/RFSQWBJEVDD69
-	 SDBRbDKgRCgGiZSkr+NpJb9VnnMV+pYogzH9SGB89tO8QvtF257JfpFhN+E3ZiVQiE
-	 eFENigcnZE68akED0jZt0zzK7DKSiDcczFs1pev7jpAxEltffuJJW11zbJpxzUr9JJ
-	 cAE7SlWNPnOKE0CQeAyGZ3xhhbSFjKzt3F922fMnKODDj2jTu8/gFN02GunrR1QHPW
-	 JqPdikuj9kAUA==
+	b=BJSzTYw/eR/ITrJa2TUxd4flMiHqt1Cq9NOm2Y+WRHYgTtpEpkC0VNRnIO6ieXc/c
+	 3147zof5yCXU+WojThSqKAg/BDho4i8ZY1tJZH+pYTiL7yDe5QtUCzzg2f8OThzBQu
+	 0f4QTPwENsS7ECQs+oaHws4aBQSA4S/iSPbP+3phNa8z0aLlgfOaiSSANuv4btH9jb
+	 4c0m6mmrzl0K9wdvm7G0ApmtijlhU8KSTQuJXUTb8100iaFQsX+9ARnD2AgEn1HVbN
+	 VYNe9PvBjjW/G9eFcSA6RhWtHAdFVMMMm0CzW9hkrJHhH7CX1Cn24mT/QuGfij9UdB
+	 E4hPvMywBMy/Q==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SgKgB12nRz4xVR;
-	Thu, 30 Nov 2023 00:19:50 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SgKg90c5Bz4xSy;
+	Thu, 30 Nov 2023 00:19:49 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 5/5] powerpc/64s: Fix CONFIG_NUMA=n build
-Date: Thu, 30 Nov 2023 00:19:19 +1100
-Message-ID: <20231129131919.2528517-5-mpe@ellerman.id.au>
+Subject: [PATCH 3/5] powerpc/512x: Fix missing prototype warnings
+Date: Thu, 30 Nov 2023 00:19:17 +1100
+Message-ID: <20231129131919.2528517-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231129131919.2528517-1-mpe@ellerman.id.au>
 References: <20231129131919.2528517-1-mpe@ellerman.id.au>
@@ -63,54 +63,36 @@ Cc: arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With CONFIG_NUMA=n the build fails with:
+The mpc512x_defconfig build fails with:
 
-  arch/powerpc/mm/book3s64/pgtable.c:275:15: error: no previous prototype for ‘create_section_mapping’ [-Werror=missing-prototypes]
-  275 | int __meminit create_section_mapping(unsigned long start, unsigned long end,
-      |               ^~~~~~~~~~~~~~~~~~~~~~
+  arch/powerpc/platforms/512x/mpc5121_ads_cpld.c:142:1: error: no previous prototype for ‘mpc5121_ads_cpld_map’ [-Werror=missing-prototypes]
+  142 | mpc5121_ads_cpld_map(void)
+      | ^~~~~~~~~~~~~~~~~~~~
+  arch/powerpc/platforms/512x/mpc5121_ads_cpld.c:157:1: error: no previous prototype for ‘mpc5121_ads_cpld_pic_init’ [-Werror=missing-prototypes]
+  157 | mpc5121_ads_cpld_pic_init(void)
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~
 
-That happens because the prototype for create_section_mapping() is in
-asm/mmzone.h, but asm/mmzone.h is only included by linux/mmzone.h
-when CONFIG_NUMA=y.
-
-In fact the prototype is only needed by arch/powerpc/mm code, so move
-the prototype into arch/powerpc/mm/mmu_decl.h, which also fixes the
-build error.
+There are prototypes for these functions but the header they are in is
+not included by mpc5121_ads_cpld.c. Include it to fix the build error.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/mmzone.h | 5 -----
- arch/powerpc/mm/mmu_decl.h        | 5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/512x/mpc5121_ads_cpld.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 4c6c6dbd182f..4740ca230d36 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -46,10 +46,5 @@ u64 memory_hotplug_max(void);
- #define __HAVE_ARCH_RESERVED_KERNEL_PAGES
- #endif
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+index 6f08d07aee3b..e995eb30bf09 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+@@ -17,6 +17,8 @@
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
  
--#ifdef CONFIG_MEMORY_HOTPLUG
--extern int create_section_mapping(unsigned long start, unsigned long end,
--				  int nid, pgprot_t prot);
--#endif
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_MMZONE_H_ */
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 7f9ff0640124..72341b9fb552 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -181,3 +181,8 @@ static inline bool debug_pagealloc_enabled_or_kfence(void)
- {
- 	return IS_ENABLED(CONFIG_KFENCE) || debug_pagealloc_enabled();
- }
++#include "mpc5121_ads.h"
 +
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+int create_section_mapping(unsigned long start, unsigned long end,
-+			   int nid, pgprot_t prot);
-+#endif
+ static struct device_node *cpld_pic_node;
+ static struct irq_domain *cpld_pic_host;
+ 
 -- 
 2.41.0
 
