@@ -4,33 +4,115 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A217AC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 11:56:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A69BC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 12:09:11 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=tkK3iflv;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sgvlz2g20z3cVg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 22:55:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sgt0B3kggz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 21:36:23 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D8A511042;
-	Thu, 30 Nov 2023 02:36:34 -0800 (PST)
-Received: from raptor (unknown [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 840DA3F6C4;
-	Thu, 30 Nov 2023 02:35:46 -0800 (PST)
-Date: Thu, 30 Nov 2023 10:35:43 +0000
-From: Alexandru Elisei <alexandru.elisei@arm.com>
-To: Shaoqin Huang <shahuang@redhat.com>
-Subject: Re: [kvm-unit-tests PATCH v1 00/18] arm/arm64: Rework cache
- maintenance at boot
-Message-ID: <ZWhlf7ZLTZIZ3qcQ@raptor>
-References: <20231130090722.2897974-1-shahuang@redhat.com>
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sgw396sXBz3cb8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 23:09:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=tkK3iflv;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe59::623; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on20623.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe59::623])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sgw2859Q6z2yDD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 23:08:13 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=H0ierRWbva/yzhJKTbXUcqPPrcbU5R5lqSgDF2Mg6pI5keTqdQcV5UazIPBAB5VVd9lWR/rSky3rCrvherxRcuTpWgC7ra811Yby8peB977coaVExRnjcggTG5QTrUulgCrkox7I8/+Vow8Tp0/kPA+Ec8Ar2IOYf2rwyWo0QYv0JBRp/Fs3KdxqOGOY+4zQMqwN1aqRzsZHiqy1kM35KcrRBHWviMTsatKJ9qbXhx0N4hLGRg3kJ8YP41tcSnIUS8TNWHtY+c8Kdqttb3LcBMIENl9O9BModoTZ8W3YdKGQW2eiWKqPV94eQNTUS715QFSDbDIyhtXG5TbED2qwrw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/bf+Eog8H80/LYq0vgSrbt5YRK9tITMPAvNJQ+r7N8s=;
+ b=WzKYwgV0ZuHhVwTUjf4rP1gpCczVOF3XBgDoFbCeAcPYgOkl2MLEhbXj15DOrTbWGP0lz7fbyLOjMEcLQ2v564x9XR6L94wRdNJpLpGV/dE4QKb4cv4eSDqAyfbYk3OQ+P+xK5UpcAwYzSg1iAQO1d4/qdxV99QZN+IhINQ7dPf4FDG66zCgrdS8A3haErD38jsjeXYg7rMehJ2hzP0i+wT9KE+s1VVltHc02mPR+4kWEzN8+/YlmF7vF7aKtfbnM9fnMxMhvXZJX5tavSJZ934q+5b0xZgSwAwZfnaZzTVsK2uMyVI8BPdLDu2ON6+TNTo5YWnJXTgmC2dDlRAYqw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/bf+Eog8H80/LYq0vgSrbt5YRK9tITMPAvNJQ+r7N8s=;
+ b=tkK3iflvhmd4W0N5upR95GRWyEeukoKi4ZKpIAEeD6CVdI3bKl0q9XAU/uxv3mwi9+GrQr0ZPt3bTjviWp1YqzSL+xrJWXl8AT94IGTpljuQn5kAfxWf90+WSVOvDXPesXRe9+Q31m/SFWWppH16nYTsqR2tPtp7pJIS8fcJhe6Nsge6x/z1q9dQBc0sr22mELndUDhSqjpfSx2yqVY2xrAKwgzJqgT8UaNVD+6erlKWz7j9V5jquEkICteNiCNwiM7G+CuC4oDEE4mB9clbW0MECsDiw0rU2CGyZ2eJxFSHJ1HT35t2SwITetkt+n1rcJmiF6iQGmxx/11vCGw6Ag==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
+ by DS0PR12MB8413.namprd12.prod.outlook.com (2603:10b6:8:f9::7) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7046.24; Thu, 30 Nov 2023 12:07:45 +0000
+Received: from LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::60d4:c1e3:e1aa:8f93]) by LV2PR12MB5869.namprd12.prod.outlook.com
+ ([fe80::60d4:c1e3:e1aa:8f93%4]) with mapi id 15.20.7046.015; Thu, 30 Nov 2023
+ 12:07:44 +0000
+Date: Thu, 30 Nov 2023 08:07:43 -0400
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: Ping? Re: [PATCH rc] kvm: Prevent compiling virt/kvm/vfio.c
+ unless VFIO is selected
+Message-ID: <20231130120743.GF1389974@nvidia.com>
+References: <0-v1-08396538817d+13c5-vfio_kvm_kconfig_jgg@nvidia.com>
+ <87edgy87ig.fsf@mail.lhotse>
+ <ZWagNsu1XQIqk5z9@google.com>
+ <875y1k3nm9.fsf@mail.lhotse>
+ <ZWfgYdSoJAZqL2Gx@google.com>
+ <20231130011650.GD1389974@nvidia.com>
+ <ZWftIIEpbLP2xF5H@google.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20231130090722.2897974-1-shahuang@redhat.com>
-X-Mailman-Approved-At: Thu, 30 Nov 2023 22:53:06 +1100
+In-Reply-To: <ZWftIIEpbLP2xF5H@google.com>
+X-ClientProxiedBy: SA0PR13CA0023.namprd13.prod.outlook.com
+ (2603:10b6:806:130::28) To LV2PR12MB5869.namprd12.prod.outlook.com
+ (2603:10b6:408:176::16)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|DS0PR12MB8413:EE_
+X-MS-Office365-Filtering-Correlation-Id: b2b859a9-1fbc-4b8c-842f-08dbf19cf613
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	SdZP8p2k8IxR1wCTPNTV01yFiZNR9CKGkVWtvnUpLdFwzd8KSypB83JEcAyoLgvnLlUuet5zj4R+K9ar7QrHRXecoq/BHKyFrSdyqNBbKXWSAT5xfB39qqCyZOF9hndEGw8dxM59QuuJUc2uLyMErKw9PfbO/+qDf4ip8T2z+rAZZm3Gut3URzwD0lFmMjDOEGsM/FmN5d6LNx8FhOuF1xTgqAgr7G7rSOYUhpZBGNXIn5icn2kzN2fMbngLiafXNp60Mp6+vsb/D/5uVJhDYGvZkCCop4JP/cQ1uFZtf97jvyUc45T72tJPpkNkQNIFpvmpFwIzEehbrpiZBBGYQYWkAozg339NGPwrG49fgOO1lVLihbVEpoVt7UOjX+7xiltA8VAq8HcqoKhjT/jLMiKw37xBF7uZ/ZKI6Wk/LUzp5CQ8U/FmhVGP5qVXsWX079+1XQJ9uqhZnTggkqcP5vSZ6c1RWqz4u7usNgznQkyA5Q11kIcJ0Muc2Og43sDt6ISQxeGDbxqW4DECvCVGi3TQuYKtVgoQ6ajFsCPNHdFvoeyQNYSyVRCk8TcthHh4WJAU6s82UUUVvKK9ECL7kE5hhiHkN/1QD7z2T/wG3OZYpGT1XOTz9Tg7fo7rmaVq89zTXXMjYxyyJlzlysvC1V3QX0r6s9Ev1yfGNNMLJxI=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(366004)(39860400002)(136003)(346002)(376002)(396003)(230273577357003)(230922051799003)(230173577357003)(1800799012)(186009)(64100799003)(451199024)(1076003)(26005)(6506007)(83380400001)(2616005)(6512007)(6486002)(7406005)(5660300002)(4326008)(8676002)(8936002)(41300700001)(4744005)(7416002)(2906002)(478600001)(316002)(6916009)(54906003)(66476007)(66556008)(66946007)(202311291699003)(86362001)(33656002)(36756003)(38100700002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?j1DuB+h7uY/Ghdp9YIiRQs8QKO5GQjBXN0LGO7WQaLVm+NdJzl22btnkhyvg?=
+ =?us-ascii?Q?ygJnG+q2WBq1Y9tNoZPRERVrFeC1uBBnSP3ORasb/mg/B+Y23dw1DH8G+pJQ?=
+ =?us-ascii?Q?7Lp1XAMtPfFUuOsC+/FaA+ojnUbb5jrYaQ3nbFN9+kSbCl/4TiLgKfQ6XVlA?=
+ =?us-ascii?Q?lQoUYCzyApBz227BS+hLMgrh199BRdzqMTxHURd5TARYBDxQuSUZ3CZ5hcTX?=
+ =?us-ascii?Q?zbl093zqyrXUGYdstUvwT2Ez0cdaEgUmCsUGblettnLREDypxbrnRGnpBuva?=
+ =?us-ascii?Q?qAxuxY2LE01hl5atmJ3Twktp+5sNMqBNiQEqOnyRJv5NIDL6mFxbPRrRltDi?=
+ =?us-ascii?Q?xm5wjLdvz8zpsEoQl9Ml/zpSYtMvYu2MU2RGbAHmocLq9Z+afyQzB91uCvcL?=
+ =?us-ascii?Q?MUtEaILJd3wAxNTz7BgxHugU04rZykp0A0srfFda0ZNsM1gf0y8Hol99VKNk?=
+ =?us-ascii?Q?82MAS6CGWhyoqUiShDtKibUmVOvPk5Nyo1zKueqQQg4VXJUFCpmTHoXRy+Xe?=
+ =?us-ascii?Q?Y6jriHuEt2dumScKiBt6rWpW86o1IaeJ5TlFnZzBpi2NAe9niiNFkc8RC9rk?=
+ =?us-ascii?Q?Yd7EwDeQfpBIRLxBbegIhfy4XG5iBvRTwXzdfb0G3P+QIfpr+QLX2Vj2SBNY?=
+ =?us-ascii?Q?K9Orud9xElSgCbQ5ECIYx26/B1jkphxeoHje3hk5MWstXfrb1s9pNtVqTSE3?=
+ =?us-ascii?Q?En25V2nWD5U/A0tRLoQkazKU/W701pWzTTpPXwP2NIIhIk/VCzrMnyk691V1?=
+ =?us-ascii?Q?/nSMof+9M4YM9Ey393wVvmjG8BEuK5fwfw4TGNVhzmTFQIA+jkb4hDp69RLn?=
+ =?us-ascii?Q?OLWwrRl/oBxCm9rz4OcY9szyCxesdFe2dI4xhXCy4J3XyIpyLQdychb13ArI?=
+ =?us-ascii?Q?xZ7vbX87y0V1D2/88rWo4pWrGdBfHWojzk82BO2dRMu5Zrs88xPRoLXzDY+l?=
+ =?us-ascii?Q?owA5tAlIsQ1nXgq/S2NPVelpvHzfJbIoBkOm9IyB3+3OnE3X4TCxhYEUyV+w?=
+ =?us-ascii?Q?NBKHVHpGQsjP4xq0pwvTqJnv1/HNwle653GsGBSR51j/qbqxsW+mrGAKNgJZ?=
+ =?us-ascii?Q?W+CNRKStAe3B1ZdNhDYZVITK6W95RAMnnrv2Gr658nb2uEU6HlQTldvRURoc?=
+ =?us-ascii?Q?HwWIk8mjH7wSFJqhPeB6YEFc6zD+G5krkLhUlORMxHibL2T7SHv37qHcZw+Z?=
+ =?us-ascii?Q?ZIG3jQEPWESu7P8eJfRBnSaLgDATB96MnLo9DNeC8RXV9XICNvhnCrpHx10g?=
+ =?us-ascii?Q?W6JvqauW0QWUPooN7YVkuRQvOJW0K5ktjM+oHNTqXrxNlRERygFovs85wo4S?=
+ =?us-ascii?Q?n+i5L/9sKv1pDHOuEuY/pf7EKVQcTEE4M0Gys4hIE8GwaK0CH4pCgf4pWRkl?=
+ =?us-ascii?Q?F/hng9j3mJ6AxEL6f7WWflQx/Kqw1LlzS3gwFHqlK+3rqGbGFSSEr7AxO0DR?=
+ =?us-ascii?Q?ME0Vm+5kZTCGqSS1KF2nfqlQQKn307HeoAAdyn7rBYfyRN8DAbDvsWc3ihZN?=
+ =?us-ascii?Q?FPkxZiB39vWFzlT67VpkN0MpCztdC45n0l6bc/l72s3zxXrp+I6hkcmonIKJ?=
+ =?us-ascii?Q?vK1FJ46+2rlLPq4gjC2OsJB3dXlv+KISvFbFpUuZ?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b2b859a9-1fbc-4b8c-842f-08dbf19cf613
+X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Nov 2023 12:07:44.9575
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: E1qqUaKUshzXuz+Ed62sZnrDyvhVpLdaXEknGQG3/tGqYPAM1+ZIMT0aMl+yve1/
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8413
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,152 +124,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>, Nico Boehr <nrb@linux.ibm.com>, kvm@vger.kernel.org, Andrew Jones <andrew.jones@linux.dev>, Nikos Nikoleris <nikos.nikoleris@arm.com>, Eric Auger <eric.auger@redhat.com>, Nadav Amit <namit@vmware.com>, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw@amazon.co.uk>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, Zenghui Yu <yuzenghui@huawei.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, Sven Schnelle <svens@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Wed, Nov 29, 2023 at 06:02:08PM -0800, Sean Christopherson wrote:
 
-Thank you so much for reviving this, much appreciated.
+> > > Ah, it's the same warning, I just missed the CONFIG_MODULES=n requirement.
+> > 
+> > Oh, wait, doesn't that mean the approach won't work? IIRC doesn't
+> > symbol_get turn into just &fn when non-modular turning this into a
+> > link failure without the kconfig part?
+> 
+> Yes, but it doesn't cause linker errors.  IIUC, because the extern declaration
+> is tagged "weak", a dummy default is used.  E.g. on x86, this is what is generated
+> with VFIO=y
 
-I wanted to let you know that I definitely plan to review the series as
-soon as possible, unfortunately I don't believe I won't be able to do that
-for at least 2 weeks.
+Oh wow that is some pretty dark magic there :|
 
-Thanks,
-Alex
-
-On Thu, Nov 30, 2023 at 04:07:02AM -0500, Shaoqin Huang wrote:
-> Hi,
-> 
-> I'm posting Alexandru's patch set[1] rebased on the latest branch with the
-> conflicts being resolved. No big changes compare to its original code.
-> 
-> As this version 1 of this series was posted one years ago, I would first let you
-> recall it, what's the intention of this series and what this series do. You can
-> view it by click the link[2] and view the cover-letter.
-> 
-> Since when writing the series[1], the efi support for arm64[3] hasn't been
-> merged into the kvm-unit-tests, but now the efi support for arm64 has been
-> merged. Directly rebase the series[1] onto the latest branch will break the efi
-> tests. This is mainly because the Patch #15 ("arm/arm64: Enable the MMU early")
-> moves the mmu_enable() out of the setup_mmu(), which causes the efi test will
-> not enable the mmu. So I do a small change in the efi_mem_init() which makes the
-> efi test also enable the MMU early, and make it works.
-> 
-> And another change should be noticed is in the Patch #17 ("arm/arm64: Perform
-> dcache maintenance"). In the efi_mem_init(), it will disable the mmu, and build
-> a new pagetable and re-enable the mmu, if the asm_mmu_disable clean and
-> invalidate the data caches for entire memory, we don't need to care the dcache
-> and after mmu disabled, we use the mmu_setup_early() to re-enable the mmu, which
-> takes care all the cache maintenance. But the situation changes since the Patch
-> #18 ("arm/arm64: Rework the cache maintenance in asm_mmu_disable") only clean
-> and invalidate the data caches for the stack memory area. So we need to clean
-> and invalidate the data caches manually before disable the mmu, I'm not
-> confident about current cache maintenance at the efi setup patch, so I ask for
-> your help to review it if it's right or not.
-> 
-> And I also drop one patch ("s390: Do not use the physical allocator") from[1]
-> since this cause s390 test to fail.
-> 
-> This series may include bug, so I really appreciate your review to improve this
-> series together.
-> 
-> You can get the code from:
-> 
-> $ git clone https://gitlab.com/shahuang/kvm-unit-tests.git \
-> 	-b arm-arm64-rework-cache-maintenance-at-boot-v1
-> 
-> [1] https://gitlab.arm.com/linux-arm/kvm-unit-tests-ae/-/tree/arm-arm64-rework-cache-maintenance-at-boot-v2-wip2
-> [2] https://lore.kernel.org/all/20220809091558.14379-1-alexandru.elisei@arm.com/
-> [3] https://patchwork.kernel.org/project/kvm/cover/20230530160924.82158-1-nikos.nikoleris@arm.com/
-> 
-> Changelog:
-> ----------
-> RFC->v1:
->   - Gathered Reviewed-by tags.
->   - Various changes to commit messages and comments to hopefully make the code
->     easier to understand.
->   - Patches #8 ("lib/alloc_phys: Expand documentation with usage and limitations")
->     are new.
->   - Folded patch "arm: page.h: Add missing libcflat.h include" into #17
->     ("arm/arm64: Perform dcache maintenance at boot").
->   - Reordered the series to group patches that touch aproximately the same code
->     together - the patches that change the physical allocator are now first,
->     followed come the patches that change how the secondaries are brought online.
->   - Fixed several nasty bugs where the r4 register was being clobbered in the arm
->     assembly.
->   - Unmap the early UART address if the DTB address does not match the early
->     address.
->   - Added dcache maintenance when a page table is modified with the MMU disabled.
->   - Moved the cache maintenance when disabling the MMU to be executed before the
->     MMU is disabled.
->   - Rebase it on lasted branch which efi support has been merged.
->   - Make the efi test also enable MMU early.
->   - Add cache maintenance on efi setup path especially before mmu_disable.
-> 
-> RFC: https://lore.kernel.org/all/20220809091558.14379-1-alexandru.elisei@arm.com/
-> 
-> Alexandru Elisei (18):
->   Makefile: Define __ASSEMBLY__ for assembly files
->   powerpc: Replace the physical allocator with the page allocator
->   lib/alloc_phys: Initialize align_min
->   lib/alloc_phys: Consolidate allocate functions into memalign_early()
->   lib/alloc_phys: Remove locking
->   lib/alloc_phys: Remove allocation accounting
->   lib/alloc_phys: Add callback to perform cache maintenance
->   lib/alloc_phys: Expand documentation with usage and limitations
->   arm/arm64: Zero secondary CPUs' stack
->   arm/arm64: Allocate secondaries' stack using the page allocator
->   arm/arm64: assembler.h: Replace size with end address for
->     dcache_by_line_op
->   arm/arm64: Add C functions for doing cache maintenance
->   arm/arm64: Configure secondaries' stack before enabling the MMU
->   arm/arm64: Use pgd_alloc() to allocate mmu_idmap
->   arm/arm64: Enable the MMU early
->   arm/arm64: Map the UART when creating the translation tables
->   arm/arm64: Perform dcache maintenance at boot
->   arm/arm64: Rework the cache maintenance in asm_mmu_disable
-> 
->  Makefile                   |   5 +-
->  arm/Makefile.arm           |   4 +-
->  arm/Makefile.arm64         |   4 +-
->  arm/Makefile.common        |   6 +-
->  arm/cstart.S               |  71 +++++++++++++++------
->  arm/cstart64.S             |  76 +++++++++++++++++------
->  lib/alloc_phys.c           | 122 ++++++++++++-------------------------
->  lib/alloc_phys.h           |  28 ++++++---
->  lib/arm/asm/assembler.h    |  15 ++---
->  lib/arm/asm/cacheflush.h   |   1 +
->  lib/arm/asm/mmu-api.h      |   1 +
->  lib/arm/asm/mmu.h          |   6 --
->  lib/arm/asm/page.h         |   2 +
->  lib/arm/asm/pgtable.h      |  39 ++++++++++--
->  lib/arm/asm/thread_info.h  |   3 +-
->  lib/arm/cache.S            |  89 +++++++++++++++++++++++++++
->  lib/arm/io.c               |  31 ++++++++++
->  lib/arm/io.h               |   3 +
->  lib/arm/mmu.c              |  37 ++++++++---
->  lib/arm/processor.c        |   1 -
->  lib/arm/setup.c            |  82 +++++++++++++++++++++----
->  lib/arm/smp.c              |   5 ++
->  lib/arm64/asm/assembler.h  |  11 ++--
->  lib/arm64/asm/cacheflush.h |  37 +++++++++++
->  lib/arm64/asm/mmu.h        |   5 --
->  lib/arm64/asm/pgtable.h    |  50 +++++++++++++--
->  lib/arm64/cache.S          |  85 ++++++++++++++++++++++++++
->  lib/arm64/processor.c      |   1 -
->  lib/devicetree.c           |   2 +-
->  lib/powerpc/setup.c        |   9 ++-
->  powerpc/Makefile.common    |   1 +
->  powerpc/cstart64.S         |   1 -
->  powerpc/spapr_hcall.c      |   5 +-
->  33 files changed, 642 insertions(+), 196 deletions(-)
->  create mode 100644 lib/arm/asm/cacheflush.h
->  create mode 100644 lib/arm/cache.S
->  create mode 100644 lib/arm64/asm/cacheflush.h
->  create mode 100644 lib/arm64/cache.S
-> 
-> -- 
-> 2.40.1
-> 
+Jason
