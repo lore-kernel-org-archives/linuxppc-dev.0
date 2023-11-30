@@ -4,47 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6858C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 11:45:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F62EC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 11:46:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=m3tx0bG+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EWMaHBFB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SgvWy2JRPz30GC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 22:45:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SgvXs6Npgz3dH4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Nov 2023 22:46:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=m3tx0bG+;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EWMaHBFB;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SgvW16p1sz2yhT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 22:44:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SgvW470XLz30P0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2023 22:44:48 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1701344684;
-	bh=XqsQFMeoD4+YcEIXaBq367cpF3aM4W8l3mkOClecMXA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=m3tx0bG+/LTQIj88J8cGXh443RmY/DrTSMwwNHDExCn6IkwzgTbJx+gb9Ol868gXu
-	 Ig9R59vJGVhTiNAmF9IIHZZJlEr8s1AH22Zsm8U81ucxWCBzvrWCAhzpwxxEuzttb6
-	 ebvFG6zB7I2vCW3vD6D10SR4hmQm4NbRgioSsxMAdn6lOQMxe7N27Rfhe0QqRcm/DP
-	 HG3LARF9R1bS6ewlgzhmZg39Dsee71u7qeNiudB12yCPf7JZIT0MABIe3g1Y//4db6
-	 Z4yfbD6TBpzaP9L8FdznKUrA7+YjCBZOzb8rID130dWZ19tZ4rFzhflJ+lFv4LEGwe
-	 IU277u6AzJ8fg==
+	s=201909; t=1701344683;
+	bh=uhCKMH/E7HlRqQvA7J6MIVjjEUPc4u8OoyMwluizoyU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=EWMaHBFBPoJaWWrGo3iucLIU9E2eju5XulV/fxAfbOU23TqtRfsUUPKlUG/hI3uT6
+	 0lgAsx4Tcww+SETdtARD2DMtsJFUo7EW9FO1ul1Fa+1c4PsT1AnCz9ucFSRociXqL9
+	 AqZeJ54nEdIW67/basNTpaUz2Gdu9T5HlBIWM5CKJhImwLjvx7HC1K5PY1aUWdpNVW
+	 BvjawHLpy0LKWMbm9h75CzF0zjVLn6Luw8ccfI48lBKKFZcrRw++WfI9ofSuibasnT
+	 o/4iBeh0ytv4ZDb+tLw/mYRKKbIlthK6cUBXTFEi5mFh758B6sLzFWBhHRrvRn0kbW
+	 isK6ibnIAGeZg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SgvW001QDz4xVl;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SgvVz2CRtz4xkN;
 	Thu, 30 Nov 2023 22:44:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] powerpc: Fix build error due to is_valid_bugaddr()
-Date: Thu, 30 Nov 2023 22:44:33 +1100
-Message-ID: <20231130114433.3053544-2-mpe@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc/mm: Fix build failures due to arch_reserved_kernel_pages()
+Date: Thu, 30 Nov 2023 22:44:32 +1100
+Message-ID: <20231130114433.3053544-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231130114433.3053544-1-mpe@ellerman.id.au>
-References: <20231130114433.3053544-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -63,37 +61,57 @@ Cc: arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With CONFIG_GENERIC_BUG=n the build fails with:
+With NUMA=n and FA_DUMP=y or PRESERVE_FA_DUMP=y the build fails with:
 
-  arch/powerpc/kernel/traps.c:1442:5: error: no previous prototype for ‘is_valid_bugaddr’ [-Werror=missing-prototypes]
-  1442 | int is_valid_bugaddr(unsigned long addr)
-       |     ^~~~~~~~~~~~~~~~
+  arch/powerpc/kernel/fadump.c:1739:22: error: no previous prototype for ‘arch_reserved_kernel_pages’ [-Werror=missing-prototypes]
+  1739 | unsigned long __init arch_reserved_kernel_pages(void)
+       |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The prototype is only defined, and the function is only needed, when
-CONFIG_GENERIC_BUG=y, so move the implementation under that.
+The prototype for arch_reserved_kernel_pages() is in include/linux/mm.h,
+but it's guarded by __HAVE_ARCH_RESERVED_KERNEL_PAGES. The powerpc
+headers define __HAVE_ARCH_RESERVED_KERNEL_PAGES in asm/mmzone.h, which
+is not included into the generic headers when NUMA=n.
+
+Move the definition of __HAVE_ARCH_RESERVED_KERNEL_PAGES into asm/mmu.h
+which is included regardless of NUMA=n.
+
+Additionally the ifdef around __HAVE_ARCH_RESERVED_KERNEL_PAGES needs to
+also check for CONFIG_PRESERVE_FA_DUMP.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/traps.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/mmu.h    | 4 ++++
+ arch/powerpc/include/asm/mmzone.h | 3 ---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 5ea2014aff90..11e062b47d3f 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1439,10 +1439,12 @@ static int emulate_instruction(struct pt_regs *regs)
- 	return -EINVAL;
- }
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 52cc25864a1b..d8b7e246a32f 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -412,5 +412,9 @@ extern void *abatron_pteptrs[2];
+ #include <asm/nohash/mmu.h>
+ #endif
  
-+#ifdef CONFIG_GENERIC_BUG
- int is_valid_bugaddr(unsigned long addr)
- {
- 	return is_kernel_addr(addr);
- }
++#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
++#define __HAVE_ARCH_RESERVED_KERNEL_PAGES
 +#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_MMU_H_ */
+diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+index 4740ca230d36..da827d2d0866 100644
+--- a/arch/powerpc/include/asm/mmzone.h
++++ b/arch/powerpc/include/asm/mmzone.h
+@@ -42,9 +42,6 @@ u64 memory_hotplug_max(void);
+ #else
+ #define memory_hotplug_max() memblock_end_of_DRAM()
+ #endif /* CONFIG_NUMA */
+-#ifdef CONFIG_FA_DUMP
+-#define __HAVE_ARCH_RESERVED_KERNEL_PAGES
+-#endif
  
- #ifdef CONFIG_MATH_EMULATION
- static int emulate_math(struct pt_regs *regs)
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_MMZONE_H_ */
 -- 
 2.41.0
 
