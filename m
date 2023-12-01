@@ -4,89 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BD53C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Dec 2023 13:30:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA485C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Dec 2023 13:31:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pJCQzc3x;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bteRmwvG;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ShYpH4k5tz3vfl
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Dec 2023 00:30:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ShYqC1znxz3vk1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Dec 2023 00:31:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pJCQzc3x;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bteRmwvG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ShYkn2ktMz3cXb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Dec 2023 00:27:13 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3B1DH0pI021666;
-	Fri, 1 Dec 2023 13:27:03 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ShYkp5V21z3d8N
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Dec 2023 00:27:14 +1100 (AEDT)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3B1DDilQ028099;
+	Fri, 1 Dec 2023 13:27:05 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=aDdxgOaL6Dh9EnxgVQBm9wHGLz4pIRePc5u5G3CgdEo=;
- b=pJCQzc3xGiIdn9fBnipbTKViujQV7+IYnNIbSfuX/vaNYYO0JCf3JgZdJIFH+9F1Ws1k
- r89tziirdk6ZgszxUaKuCUfvZJVA8jDdwjCWg7Rn1lC5zVqdlskoN7ERaaqHgChuG2XQ
- SoNrJP0TSB2Z6zCLoXQ3NosSz3AMpC3j/iY8KDm3NHhgtP/NxYufpRyC/uL4+r1u4zU7
- 42bwZAuiWNR9myoj6nZEblrJqqwoUMXGTUlwKsGNKhNX2UUVRT7Fv/U5CfeRPh2XOx7+
- NJNsD6TX4tp14+bhhMxfsy2w2LFCStHlULJMTyKBU9vb2b55Xsn5uZjej1u5t65LsOoN BA== 
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=Rc3HPvYC8e7vCSIAUFc6byeLxTiY4UQuc4oW21K7ISU=;
+ b=bteRmwvGe/W/GgJ+KJ5rLxJtiIUatumjNclLZ/52/Cg6XKUxi0pM5mfmdRakRr4rHUOU
+ D0FVJ8LPFjVbhVPQCVfI9GT68zOJRDnSbjAQ+YQ2uO1wYuhdGEioazl2/5xoqDcjerDM
+ WxFzGMopeyitOLHZi6LLtDQ5AJY07o0VEaQgwKtQX9vLZPvY/5V4zzmPxcoxdNWhufeP
+ /skTiqrIV4H5H/dwMPw+AeKXMNm3k1zHFsVKxURpqel34n3UyGWVqXAjrVCbi8e5C74S
+ SKcsnCIEsNI0IDWAMmpblR6C/smKvwX/ZL+OnvoNazxtz1OzwBArQ0lAF+ur0rwMJcRK Bw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uqg828aeu-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uqg6fgdgj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Dec 2023 13:27:02 +0000
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3B1DHvDv024701;
-	Fri, 1 Dec 2023 13:27:02 GMT
+	Fri, 01 Dec 2023 13:27:04 +0000
+Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3B1DEJg9030824;
+	Fri, 1 Dec 2023 13:26:50 GMT
 Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uqg828ae2-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uqg6fgdc1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Dec 2023 13:27:01 +0000
+	Fri, 01 Dec 2023 13:26:49 +0000
 Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3B1AY2Qg020465;
-	Fri, 1 Dec 2023 13:27:00 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3ukvrm52uj-1
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3B1AY1f2020448;
+	Fri, 1 Dec 2023 13:26:32 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3ukvrm52se-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Dec 2023 13:27:00 +0000
+	Fri, 01 Dec 2023 13:26:31 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3B1DQvST43909826
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3B1DQSON23134850
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 1 Dec 2023 13:26:57 GMT
+	Fri, 1 Dec 2023 13:26:28 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6E8CC2004B;
-	Fri,  1 Dec 2023 13:26:57 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7AB2D20040;
+	Fri,  1 Dec 2023 13:26:28 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A7BA620040;
-	Fri,  1 Dec 2023 13:26:53 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A11CF20043;
+	Fri,  1 Dec 2023 13:26:24 +0000 (GMT)
 Received: from vaibhav?linux.ibm.com (unknown [9.171.33.138])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Fri,  1 Dec 2023 13:26:53 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Fri, 01 Dec 2023 18:56:52 +0530
+	Fri,  1 Dec 2023 13:26:24 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Fri, 01 Dec 2023 18:56:23 +0530
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
         kvm-ppc@vger.kernel.org
-Subject: [PATCH 06/12] KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE
-Date: Fri,  1 Dec 2023 18:56:11 +0530
-Message-ID: <20231201132618.555031-7-vaibhav@linux.ibm.com>
+Subject: [PATCH 00/12] KVM: PPC: Nested APIv2 : Performance improvements
+Date: Fri,  1 Dec 2023 18:56:05 +0530
+Message-ID: <20231201132618.555031-1-vaibhav@linux.ibm.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20231201132618.555031-1-vaibhav@linux.ibm.com>
-References: <20231201132618.555031-1-vaibhav@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: WKVBC-1BHXhVu40T7NgS8du2Ep_eukLe
-X-Proofpoint-ORIG-GUID: yS3HZe4JdsuOHbK25QuCJYWbKZo6XCat
+X-Proofpoint-ORIG-GUID: zrjsxIfc1GSB9SzBuu4AfG_eqmAi68I5
+X-Proofpoint-GUID: h2afNjvX0_oXVfYmkQ5trQfskOPxNbyn
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-12-01_11,2023-11-30_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- clxscore=1015 phishscore=0 mlxlogscore=736 suspectscore=0 malwarescore=0
- spamscore=0 adultscore=0 bulkscore=0 mlxscore=0 impostorscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311060000 definitions=main-2312010092
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=1 adultscore=0 mlxlogscore=228
+ priorityscore=1501 spamscore=1 lowpriorityscore=0 malwarescore=0
+ phishscore=0 mlxscore=1 bulkscore=0 impostorscore=0 clxscore=1015
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311060000 definitions=main-2312010091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,58 +96,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, sbhat@linux.ibm.com, amachhiw@linux.vnet.ibm.com, Jordan Niethe <jniethe5@gmail.com>, gautam@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, David.Laight@ACULAB.COM, kconsul@linux.vnet.ibm.com, Vaibhav Jain <vaibhav@linux.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, sbhat@linux.ibm.com, amachhiw@linux.vnet.ibm.com, Jordan Niethe <jniethe5@gmail.com>, gautam@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, David.Laight@ACULAB.COM, kconsul@linux.vnet.ibm.com, vaibhav <vajain21@vajain21.in.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+From: vaibhav <vajain21@vajain21.in.ibm.com>
 
-Commit 026728dc5d41 ("KVM: PPC: Book3S HV P9: Inject pending xive
-interrupts at guest entry") changed guest entry so that if external
-interrupts are enabled, BOOK3S_IRQPRIO_EXTERNAL is not tested for. Test
-for this regardless of MSR_EE.
 
-For an L1 host, do not inject an interrupt, but always
-use LPCR_MER. If the L0 desires it can inject an interrupt.
+This patch series introduces series of performance improvements to recently
+added support for Nested APIv2 PPC64 Guests via [1]. Details for Nested
+APIv2 for PPC64 Guests is available in Documentation/powerpc/kvm-nested.rst.
 
-Fixes: 026728dc5d41 ("KVM: PPC: Book3S HV P9: Inject pending xive interrupts at guest entry")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-[jpn: use kvmpcc_get_msr(), write commit message]
-Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
----
- arch/powerpc/kvm/book3s_hv.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+This patch series introduces various optimizations for a Nested APIv2
+guests namely:
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 6d1f0bca27aa..4dc6a928073f 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4738,13 +4738,19 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
- 
- 	if (!nested) {
- 		kvmppc_core_prepare_to_enter(vcpu);
--		if (__kvmppc_get_msr_hv(vcpu) & MSR_EE) {
--			if (xive_interrupt_pending(vcpu))
-+		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
-+			     &vcpu->arch.pending_exceptions) ||
-+		    xive_interrupt_pending(vcpu)) {
-+			/*
-+			 * For nested HV, don't synthesize but always pass MER,
-+			 * the L0 will be able to optimise that more
-+			 * effectively than manipulating registers directly.
-+			 */
-+			if (!kvmhv_on_pseries() && (__kvmppc_get_msr_hv(vcpu) & MSR_EE))
- 				kvmppc_inject_interrupt_hv(vcpu,
--						BOOK3S_INTERRUPT_EXTERNAL, 0);
--		} else if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
--			     &vcpu->arch.pending_exceptions)) {
--			lpcr |= LPCR_MER;
-+							   BOOK3S_INTERRUPT_EXTERNAL, 0);
-+			else
-+				lpcr |= LPCR_MER;
- 		}
- 	} else if (vcpu->arch.pending_exceptions ||
- 		   vcpu->arch.doorbell_request ||
+* Reduce the number times L1 hypervisor requests for L2 state from L0.
+* Register the L2 VPA with L1
+* Optimizing interrupt delivery of some interrupt types.
+* Optimize emulation of mmio loads/stores for L2 in L1.
+
+The hcalls needed for testing these patches have been implemented in the
+spapr qemu model and is available at [2].
+
+There are scripts available to assist in setting up an environment for
+testing nested guests at [3].
+
+These patches are consequence of insights from on going performance
+engineering effort for improving performance of Nested APIv2
+Guests. Special thanks goes to:
+* Gautam Menghani
+* Jordan Niethe
+* Nicholas Piggin
+* Vaidyanathan Srinivasan
+
+Refs:
+[1] https://lore.kernel.org/all/20230905034658.82835-1-jniethe5@gmail.com
+[2] https://github.com/planetharsh/qemu/tree/upstream-0714-kop
+[3] https://github.com/iamjpn/kvm-powervm-test
+
+Jordan Niethe (11):
+  KVM: PPC: Book3S HV nestedv2: Invalidate RPT before deleting a guest
+  KVM: PPC: Book3S HV nestedv2: Avoid reloading the tb offset
+  KVM: PPC: Book3S HV nestedv2: Do not check msr on hcalls
+  KVM: PPC: Book3S HV nestedv2: Get the PID only if needed to copy
+    tofrom a guest
+  KVM: PPC: Book3S HV nestedv2: Ensure LPCR_MER bit is passed to the L0
+  KVM: PPC: Book3S HV nestedv2: Do not inject certain interrupts
+  KVM: PPC: Book3S HV nestedv2: Avoid msr check in
+    kvmppc_handle_exit_hv()
+  KVM: PPC: Book3S HV nestedv2: Do not call H_COPY_TOFROM_GUEST
+  KVM: PPC: Book3S HV nestedv2: Register the VPA with the L0
+  KVM: PPC: Reduce reliance on analyse_instr() in mmio emulation
+  KVM: PPC: Book3S HV nestedv2: Do not cancel pending decrementer
+    exception
+
+Nicholas Piggin (1):
+  KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with
+    MSR_EE
+
+ arch/powerpc/include/asm/kvm_book3s.h    | 10 +++-
+ arch/powerpc/include/asm/kvm_book3s_64.h |  1 +
+ arch/powerpc/kvm/book3s.c                |  4 +-
+ arch/powerpc/kvm/book3s_64_mmu_radix.c   |  7 ++-
+ arch/powerpc/kvm/book3s_hv.c             | 72 +++++++++++++++++-------
+ arch/powerpc/kvm/book3s_hv_nested.c      |  2 +-
+ arch/powerpc/kvm/book3s_hv_nestedv2.c    | 29 ++++++++++
+ arch/powerpc/kvm/emulate_loadstore.c     | 21 ++++---
+ 8 files changed, 107 insertions(+), 39 deletions(-)
+
 -- 
 2.42.0
 
