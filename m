@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7491FC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Dec 2023 23:03:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FADEC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Dec 2023 23:03:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SjQT36NRRz3dJs
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Dec 2023 10:03:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SjQTY5Sh3z3dV3
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Dec 2023 10:03:45 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SjQSY629Pz3c5S
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Dec 2023 10:02:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SjQSc4tSVz3cSt
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Dec 2023 10:02:56 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SjQSX4rBrz4x5G;
-	Sun,  3 Dec 2023 10:02:52 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SjQSZ12GLz4x5j;
+	Sun,  3 Dec 2023 10:02:54 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20231122025811.2973-1-npiggin@gmail.com>
-References: <20231122025811.2973-1-npiggin@gmail.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix KVM_RUN clobbering FP/VEC user registers
-Message-Id: <170155803785.146803.4946329954526131755.b4-ty@ellerman.id.au>
+To: Jens Axboe <axboe@kernel.dk>, regressions <regressions@lists.linux.dev>, npiggin <npiggin@gmail.com>, christophe leroy <christophe.leroy@csgroup.eu>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Timothy Pearson <tpearson@raptorengineering.com>
+In-Reply-To: <1921539696.48534988.1700407082933.JavaMail.zimbra@raptorengineeringinc.com>
+References: <1921539696.48534988.1700407082933.JavaMail.zimbra@raptorengineeringinc.com>
+Subject: Re: [PATCH v2] powerpc: Don't clobber fr0/vs0 during fp|altivec register save
+Message-Id: <170155803785.146803.11553342425486262629.b4-ty@ellerman.id.au>
 Date: Sun, 03 Dec 2023 10:00:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,27 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Timothy Pearson <tpearson@raptorengineering.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 22 Nov 2023 12:58:11 +1000, Nicholas Piggin wrote:
-> Before running a guest, the host process (e.g., QEMU) FP/VEC registers
-> are saved if they were being used, similarly to when the kernel uses FP
-> registers. The guest values are then be loaded into regs, and the host
-> process registers will be restored lazily when it uses FP/VEC.
-> 
-> KVM HV has a bug here: the host process registers do get saved, but the
-> user MSR bits remain enabled, which indicates the registers are valid
-> for the process. After they are clobbered by running the guest, this
-> valid indication causes the host process to take on the FP/VEC regiter
-> values of the guest.
+On Sun, 19 Nov 2023 09:18:02 -0600, Timothy Pearson wrote:
+> During floating point and vector save to thread data fr0/vs0 are clobbered
+> by the FPSCR/VSCR store routine.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] KVM: PPC: Book3S HV: Fix KVM_RUN clobbering FP/VEC user registers
-      https://git.kernel.org/powerpc/c/dc158d23b33df9033bcc8e7117e8591dd2f9d125
+[1/1] powerpc: Don't clobber fr0/vs0 during fp|altivec register save
+      https://git.kernel.org/powerpc/c/5e1d824f9a283cbf90f25241b66d1f69adb3835b
 
 cheers
