@@ -4,77 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D3D4C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Dec 2023 18:12:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50AD8C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Dec 2023 18:13:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=uhrUXJip;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=j52nTtV7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SkWwT0rlGz3dWG
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 05:12:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SkWxk72MVz3vlb
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 05:13:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=uhrUXJip;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=j52nTtV7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
-Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SkWpd1TNhz3cRp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2023 05:07:18 +1100 (AEDT)
-Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id C9100120015;
-	Mon,  4 Dec 2023 21:07:10 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru C9100120015
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1701713230;
-	bh=2odVOM9BnkWCbIAdrFB9FbwUfhyeUbvi+YVzHb6e/sU=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=uhrUXJipaXGYfVT73+HL9DJgULCzGID9RZhkeIk3XZZj0FJvs/6+VXnYlmDqO9mlW
-	 kaR/oX8BvDrhQP9yG7l5JJWxJOWhL3v/GJc/JzSoaBv0Itciu2axBKy3GkZhacsvoT
-	 hzE5AzoQQrvHWOqwZmnCZhTM/hNGFvdPrMwLnSlkRDncWG3QTBiQ6Hlcl9iPxy4XTW
-	 EzLrLtpXEOGZ35KY5Mf5slq8GwF/3WP6QzQNpC6lu7PhVec0DaNXB+++Amv8qVLIkb
-	 x70MVxpA4jPrqs8LjGUq+DtVUBfl2/zize5/IXd7rKM69E4KPrZ/gZ4F8qzHKSDGTU
-	 EvPOjO6Lq95KQ==
-Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Mon,  4 Dec 2023 21:07:10 +0300 (MSK)
-Received: from localhost.localdomain (100.64.160.123) by
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Mon, 4 Dec 2023 21:07:10 +0300
-From: George Stark <gnstark@salutedevices.com>
-To: <pavel@ucw.cz>, <lee@kernel.org>, <vadimp@nvidia.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
-	<hdegoede@redhat.com>, <mazziesaccount@gmail.com>,
-	<andy.shevchenko@gmail.com>, <jic23@kernel.org>
-Subject: [PATCH v2 00/10] devm_led_classdev_register() usage problem
-Date: Mon, 4 Dec 2023 21:05:53 +0300
-Message-ID: <20231204180603.470421-1-gnstark@salutedevices.com>
-X-Mailer: git-send-email 2.42.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SkWwq0bMBz3vhb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2023 05:12:42 +1100 (AEDT)
+Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-1fafe41bfb0so1909489fac.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2023 10:12:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1701713552; x=1702318352; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Be0ZogmXWjyNCUnYEc6/k4S4gqJjfHZoxi6an2eBP4w=;
+        b=j52nTtV75ZilJPOKE9dkzyy6oKcZmBHtbR6vbihmMyQ7ITzrdPPl54JfXGmgwQ2bKc
+         CQS8XezhpXn8L16XtOmrj78aRGYyQ0PfsfbqAAK/9A6EL1+p6R2iU+d53bF1OCEEJoQQ
+         eBbS1D9vGrLLeNEpO2wEZGuGnrFqI0JJpQZ8WtENIqVd1IcRfz1Uosa8yfpHfBusDHRF
+         CyKxLKip02KlP/z7OsvLFSvEeP9K2R8DF6tDRq6QfbWloRyFxfwvavBynKCE1+GJH6t+
+         SkLs+IcB/b8yQFcKDttUSdR0yhzQNPu3lMnhove7x3kmrUQRtJv2hSBVfBbjc/Vxc8K8
+         FTIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701713552; x=1702318352;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Be0ZogmXWjyNCUnYEc6/k4S4gqJjfHZoxi6an2eBP4w=;
+        b=epb5YCUbiI5bWgWojjPolRUel3CUqQhI5CpCWPSy6+2STevCHfCaJpv9lxu/v6zqn0
+         txaLCoNbxe88VZG121igzueEzjg3yhkxhWMXgYepU/15gjQbjJtddO1r0WYL0TMDHnQ1
+         9F6ARx5UF73r6HC9AoZKLBAfihKl4MABlya+1ODjfFCSv7WS6z6PlO93SO6ECojlNmVf
+         OhXXNyBkqoM7jAtGfSf+rkcPljGuxjaZpVKNfuT5//sHyMn4Efa4Qsskarr3llQU9wAY
+         A515/gLosv7NGk5Us6y4ZhPwlVS97rfngaqs7d0ARULjKnQjIYS0a3tKiBGQdew8SDAy
+         kmUQ==
+X-Gm-Message-State: AOJu0Yy5U/0fLPZ8VnMeFjWCm25IxRAmzUAeo7JmubwvNFpRSefMfV0N
+	aSh5sODYLow70Rtl+GBKB1p0mK+QlKf3RRNpTmc=
+X-Google-Smtp-Source: AGHT+IEo/v04uit+NqPsJPFvQ4QJ4Byz54ZYjIz0w4BaTkdkZSk1wERugeLXeDpdfXBLqggfENkj6AbOID8cLEtkKyw=
+X-Received: by 2002:a05:6870:d207:b0:1fa:dae2:8406 with SMTP id
+ g7-20020a056870d20700b001fadae28406mr4513257oac.0.1701713552007; Mon, 04 Dec
+ 2023 10:12:32 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [100.64.160.123]
-X-ClientProxiedBy: p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) To
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
-X-KSMG-Rule-ID: 10
-X-KSMG-Message-Action: clean
-X-KSMG-AntiSpam-Lua-Profiles: 181831 [Dec 04 2023]
-X-KSMG-AntiSpam-Version: 6.0.0.2
-X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 5 0.3.5 98d108ddd984cca1d7e65e595eac546a62b0144b, {Tracking_uf_ne_domains}, {Tracking_urls_end_caps}, {Tracking_from_domain_doesnt_match_to}, d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;100.64.160.123:7.1.2;p-i-exch-sc-m01.sberdevices.ru:7.1.1,5.0.1;127.0.0.199:7.1.2;salutedevices.com:7.1.1;lore.kernel.org:7.1.1, FromAlignment: s, ApMailHostAddress: 100.64.160.123
-X-MS-Exchange-Organization-SCL: -1
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean, bases: 2023/12/04 17:37:00
-X-KSMG-LinksScanning: Clean, bases: 2023/12/04 17:37:00
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/12/04 11:06:00 #22624476
-X-KSMG-AntiVirus-Status: Clean, skipped
+References: <20231204180603.470421-1-gnstark@salutedevices.com> <20231204180603.470421-2-gnstark@salutedevices.com>
+In-Reply-To: <20231204180603.470421-2-gnstark@salutedevices.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Mon, 4 Dec 2023 20:11:55 +0200
+Message-ID: <CAHp75Vc=GAnzwhWQTifLzw8OA7Lb35hrJCDxK-RkgZnX8JmfOg@mail.gmail.com>
+Subject: Re: [PATCH v2 01/10] devm-helpers: introduce devm_mutex_init
+To: George Stark <gnstark@salutedevices.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,53 +75,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, George Stark <gnstark@salutedevices.com>
+Cc: linuxppc-dev@lists.ozlabs.org, vadimp@nvidia.com, mazziesaccount@gmail.com, kernel@salutedevices.com, lee@kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, hdegoede@redhat.com, pavel@ucw.cz, linux-leds@vger.kernel.org, jic23@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series fixes the problem of devm_led_classdev_register misusing.
+On Mon, Dec 4, 2023 at 8:07=E2=80=AFPM George Stark <gnstark@salutedevices.=
+com> wrote:
+>
+> Using of devm API leads to certain order of releasing resources.
+> So all dependent resources which are not devm-wrapped should be deleted
+> with respect to devm-release order. Mutex is one of such objects that
+> often is bound to other resources and has no own devm wrapping.
+> Since mutex_destroy() actually does nothing in non-debug builds
+> frequently calling mutex_destroy() is just ignored which is safe for now
+> but wrong formally and can lead to a problem if mutex_destroy() is
+> extended so introduce devm_mutex_init().
 
-The basic problem is described in [1]. Shortly when devm_led_classdev_register()
-is used then led_classdev_unregister() called after driver's remove() callback.
-led_classdev_unregister() calls driver's brightness_set callback and that callback
-may use resources which were destroyed already in driver's remove().
+...
 
-After discussion with maintainers [2] [3] we decided:
-1) don't touch led subsytem core code and don't remove led_set_brightness() from it
-but fix drivers
-2) don't use devm_led_classdev_unregister
+Do you need to include mutex.h?
 
-So the solution is to use devm wrappers for all resources
-driver's brightness_set() depends on. And introduce dedicated devm wrapper
-for mutex as it's often used resource.
+...
 
-[1] https://lore.kernel.org/lkml/8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com/T/
-[2] https://lore.kernel.org/lkml/8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com/T/#mc132b9b350fa51931b4fcfe14705d9f06e91421f
-[3] https://lore.kernel.org/lkml/8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com/T/#mdbf572a85c33f869a553caf986b6228bb65c8383
+> +/**
+> + * devm_mutex_init - Resource-managed mutex initialization
+> + * @dev:       Device which lifetime work is bound to
+> + * @lock:      Pointer to a mutex
+> + *
+> + * Initialize mutex which is automatically destroyed when driver is deta=
+ched.
 
-George Stark (10):
-  devm-helpers: introduce devm_mutex_init
-  leds: aw2013: unlock mutex before destroying it
-  leds: aw2013: use devm API to cleanup module's resources
-  leds: aw200xx: use devm API to cleanup module's resources
-  leds: lp3952: use devm API to cleanup module's resources
-  leds: lm3532: use devm API to cleanup module's resources
-  leds: nic78bx: use devm API to cleanup module's resources
-  leds: mlxreg: use devm_mutex_init for mutex initializtion
-  leds: an30259a: use devm_mutext_init for mutext initialization
-  leds: powernv: add LED_RETAIN_AT_SHUTDOWN flag for leds
+the driver
 
- drivers/leds/leds-an30259a.c | 14 ++++----------
- drivers/leds/leds-aw200xx.c  | 36 +++++++++++++++++++++++++-----------
- drivers/leds/leds-aw2013.c   | 28 ++++++++++++++++------------
- drivers/leds/leds-lm3532.c   | 29 +++++++++++++++++------------
- drivers/leds/leds-lp3952.c   | 21 +++++++++++----------
- drivers/leds/leds-mlxreg.c   | 15 ++++-----------
- drivers/leds/leds-nic78bx.c  | 25 +++++++++++++------------
- drivers/leds/leds-powernv.c  | 23 ++++++++---------------
- include/linux/devm-helpers.h | 18 ++++++++++++++++++
- 9 files changed, 116 insertions(+), 93 deletions(-)
+Have you run scripts/kernel-doc -v -Wall -none ... against this file?
+I'm pretty sure it will complain.
 
---
-2.38.4
+> + */
 
+
+--=20
+With Best Regards,
+Andy Shevchenko
