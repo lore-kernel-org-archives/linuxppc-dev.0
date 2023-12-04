@@ -4,44 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27382C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Dec 2023 02:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52E66C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Dec 2023 02:29:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sk6vP2yrSz3cSM
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Dec 2023 13:25:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sk70X05krz3d96
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Dec 2023 13:29:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=chentao@kylinos.cn; receiver=lists.ozlabs.org)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sk6tp5LW0z3c4t
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2023 13:24:34 +1100 (AEDT)
-X-QQ-mid: bizesmtp82t1701656598t8frmqyu
-Received: from HX09040029.powercore.com.cn ( [58.34.117.194])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 04 Dec 2023 10:23:15 +0800 (CST)
-X-QQ-SSF: 01400000000000402000000A0000000
-X-QQ-FEAT: hkpyk8INzQP5z8rsiS8kuwoY6xUdsRY8dW9WQcjJFdXel2qTU+ejDRcm6VyqC
-	imh5Q0H5tFQijQhHaHLm0yo1zrgD2CtTy18O7IcZqVUghlE0gaZWgQDhPrlnVPOFnaEO7zC
-	alJqNiPdXhaIesMDJkgqolVaLUKWezM+6qDO2jl2pnqJNzpZP2BwzSu9kDdnA2TAu4t8yNe
-	i9tSPXYA7TrFaBpa3Eg4KbljeeX8cBB41xekY2eP0Iz4ZkeqB+k+kE8Vf6+hc2pm8XxV3fR
-	o2iGDYNltm/I8WG/R83ot9cZSxCoCDEOBQQ/YhOAtKEvkinQ8AtAA3nbD/26WCW2JiNrPP/
-	TSm8QIFMZfYlhC5WELPdSSAL3EbU9D7Gc5fxBTtn+OfUkwVlw7NZmQjQkxAnEN2YKELPWZs
-X-QQ-GoodBg: 2
-X-BIZMAIL-ID: 18421861491899950962
-From: Luming Yu <luming.yu@shingroup.cn>
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu
-Subject: [PATCH 1/2] powerpc/locking: implement this_cpu_cmpxchg local API
-Date: Mon,  4 Dec 2023 10:23:01 +0800
-Message-ID: <0EFBD0242622180B+20231204022303.528-1-luming.yu@shingroup.cn>
-X-Mailer: git-send-email 2.42.0.windows.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sk70001Mhz3c4t
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2023 13:29:02 +1100 (AEDT)
+X-UUID: a156a3a52da548fca377d46206efd6dc-20231204
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.33,REQID:58783b7a-b7ad-4933-98ae-b467bde845a3,IP:10,
+	URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACT
+	ION:release,TS:-10
+X-CID-INFO: VERSION:1.1.33,REQID:58783b7a-b7ad-4933-98ae-b467bde845a3,IP:10,UR
+	L:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-10
+X-CID-META: VersionHash:364b77b,CLOUDID:5fb5c560-c89d-4129-91cb-8ebfae4653fc,B
+	ulkID:231204102756QBXUMQUM,BulkQuantity:0,Recheck:0,SF:19|44|66|38|24|17|1
+	02,TC:nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,CO
+	L:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0,NGT
+X-CID-BAS: 0,NGT,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI
+X-UUID: a156a3a52da548fca377d46206efd6dc-20231204
+X-User: chentao@kylinos.cn
+Received: from [172.21.13.26] [(116.128.244.171)] by mailgw
+	(envelope-from <chentao@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 1655860228; Mon, 04 Dec 2023 10:27:53 +0800
+Message-ID: <2a0d2c32-5548-445e-a67e-db48157685d7@kylinos.cn>
+Date: Mon, 4 Dec 2023 10:27:47 +0800
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz5a-1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] powerpc/mm: Fix null-pointer dereference in
+ pgtable_cache_add
+Content-Language: en-US
+To: Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
+ christophe.leroy@csgroup.eu
+References: <20231130090953.2322490-1-chentao@kylinos.cn>
+ <87cyvq1b2f.fsf@mail.lhotse>
+From: Kunwu Chan <chentao@kylinos.cn>
+In-Reply-To: <87cyvq1b2f.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,47 +62,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: shenghui.qu@shingroup.cn, Luming Yu <luming.yu@shingroup.cn>, dawei.li@shingroup.cn, ke.zhao@shingroup.cn, luming.yu@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kunwu.chan@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ppc appears to have already supported cmpxchg-local atomic semantics
-that is defined by the kernel convention of the feature.
-Add this_cpu_cmpxchg ppc local for the performance benefit of arch
-sepcific implementation than asm-generic c verison of the locking API.
+Sure,i'll follow your suggestion in v3 patch:
+1. set new to NULL
+2. add a 'if' judgment before 'kmem_cache_create'
 
-Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
----
- arch/powerpc/include/asm/percpu.h | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+Thanks,
+Kunwu
 
-diff --git a/arch/powerpc/include/asm/percpu.h b/arch/powerpc/include/asm/percpu.h
-index 8e5b7d0b851c..ceab5df6e7ab 100644
---- a/arch/powerpc/include/asm/percpu.h
-+++ b/arch/powerpc/include/asm/percpu.h
-@@ -18,5 +18,22 @@
- #include <asm-generic/percpu.h>
- 
- #include <asm/paca.h>
-+#include <asm/cmpxchg.h>
-+#ifdef this_cpu_cmpxchg_1
-+#undef this_cpu_cmpxchg_1
-+#define this_cpu_cmpxchg_1(pcp, oval, nval)	__cmpxchg_local(raw_cpu_ptr(&(pcp)), oval, nval, 1)
-+#endif 
-+#ifdef this_cpu_cmpxchg_2
-+#undef this_cpu_cmpxchg_2
-+#define this_cpu_cmpxchg_2(pcp, oval, nval)	__cmpxchg_local(raw_cpu_ptr(&(pcp)), oval, nval, 2)
-+#endif
-+#ifdef this_cpu_cmpxchg_4
-+#undef this_cpu_cmpxchg_4
-+#define this_cpu_cmpxchg_4(pcp, oval, nval)	__cmpxchg_local(raw_cpu_ptr(&(pcp)), oval, nval, 4)
-+#endif
-+#ifdef this_cpu_cmpxchg_8
-+#undef this_cpu_cmpxchg_8
-+#define this_cpu_cmpxchg_8(pcp, oval, nval)	__cmpxchg_local(raw_cpu_ptr(&(pcp)), oval, nval, 8)
-+#endif
- 
- #endif /* _ASM_POWERPC_PERCPU_H_ */
--- 
-2.42.0.windows.2
-
+On 2023/12/1 18:17, Michael Ellerman wrote:
+> avoid two calls to panic
