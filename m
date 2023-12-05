@@ -4,60 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2179C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 15:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEED5C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 16:50:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PY2gAUaE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=t+qDUyC3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sl4Q548fDz3vhW
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 02:36:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sl62x1Z3Vz3d8B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 03:50:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PY2gAUaE;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=t+qDUyC3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::92e; helo=mail-ua1-x92e.google.com; envelope-from=naresh.kamboju@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ua1-x92e.google.com (mail-ua1-x92e.google.com [IPv6:2607:f8b0:4864:20::92e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sl4554xwmz3cbQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 02:21:45 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id EFB6A40021;
-	Tue,  5 Dec 2023 15:21:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701789702;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uOBWKYZj5UdDB35skSZSyrDTkyYGp1yN/Y6WoC8sAPc=;
-	b=PY2gAUaEK4upESCHDO+F9uMuJmh1B7rQ1kEYeSijJEUkapdzmEPWUNGoN4xxUHHadWWbTO
-	U2U1yCtHOYdCzC899WXZtUiCaVYz4/VyzASmINwsMH+MueuG2LRAUUCdbLeE9a/DVTGYdh
-	xnJcZyxY9oTEFXzEnkrgEFyQgWS9vcw82J66ZZiLTeXxE9v4Dem512pGYBNdg7gnhi7Syv
-	YMBk+q29jvxqzvjKeyNop6p+BFfZiH4Q9dR2JkvdHciP/fczFE4UA05avd9qPdle16f3Ut
-	pXXppn+TMlihFcYxx6OVkF+TDzpPe0f/n3gseqa0p12AFipuW6ILs0WOPzAivA==
-From: Herve Codina <herve.codina@bootlin.com>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 17/17] soc: fsl: cpm1: qmc: Introduce functions to change timeslots at runtime
-Date: Tue,  5 Dec 2023 16:21:14 +0100
-Message-ID: <20231205152116.122512-18-herve.codina@bootlin.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20231205152116.122512-1-herve.codina@bootlin.com>
-References: <20231205152116.122512-1-herve.codina@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sl61z1Z8Vz3c2V
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 03:49:09 +1100 (AEDT)
+Received: by mail-ua1-x92e.google.com with SMTP id a1e0cc1a2514c-7c513dc5815so1982155241.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2023 08:49:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1701794941; x=1702399741; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=YfqclM3ZkWiAXDbZmcjbBwB6xmJbMZCT4iOO/IexVc0=;
+        b=t+qDUyC3Ke4U0BFbdAO4Xn2amYmWnRS8MM9TPKnXAejIXcig56uC8WtKFrIR5LOTGW
+         teLcQSXNskI0gb+O8oKj2OMYYajBTgb4H1DtsQovMnmjKebxBWNo1TAIvHpX5FpSTMQZ
+         zTXbuIbq+K+B3giF6pKSmKqG1gaRa2gRd+cjYuo9kyr11DWkjSPWlQFrjPP7micSSQno
+         GnoebOSkTa+34B2wBamuBtdV10gwKLTCU6TFKgbVuYaNr2jDLP/0D3d1XyS4L4GH2SIF
+         CDH6oj8ZcUhCYKGszjozIkuk2xCkb8JH8AWx8PHH8orTnXomhEwZbybY9jPTtwC61OIm
+         Mykg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701794941; x=1702399741;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=YfqclM3ZkWiAXDbZmcjbBwB6xmJbMZCT4iOO/IexVc0=;
+        b=jp4Wx+pA615tNTg/iuXmJTXAVYKl3DWHx7cpKiXXQaL7LZ/jlS7q0KkUpSKAsvnUxh
+         8CPN3EJlpsIhWX6+ZknbTqYGhxhqrEwbEFZ+SM/6QRghmMUHpyMFevIBjrZUDX1M0VOF
+         3slIAhlsZvnZiqwNNW237XvGeM6NZijIBYhwafcB18hNbZk2oUVpLsy29w6XxbbHohwF
+         FbJS8RiO6vw+hqOasz9hvrV/mRn5KUAMGWSUMIFSjM3QeRKEM177bkxntDLl+DawNwK5
+         Y9F40ZOnamYH14pWwDGsqd8aFhF1mJOaZvFFuHYSorHYOWBgAzllxYC1r1L7TRmcrwIK
+         ywHA==
+X-Gm-Message-State: AOJu0YwMIHE6RE/NYi8MVyYNffv4vv94sZL9pE0AVVtlJq6Kdkftspnc
+	EY98kRM8ZuV2E+NH+EjDgrtbZzj8n6/ZaG6O8VrQ3Q==
+X-Google-Smtp-Source: AGHT+IHus3uB7dNMpJ0cP1uy5kkamJOMFLF8zMXjR6WyF50uZ0U0xiaK7tFOWnFeBiVqsPbRDg47o04MaF15ciRegfc=
+X-Received: by 2002:a05:6102:34e2:b0:462:c2e9:6dda with SMTP id
+ bi2-20020a05610234e200b00462c2e96ddamr3198642vsb.31.1701794940837; Tue, 05
+ Dec 2023 08:49:00 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+References: <20231205031519.853779502@linuxfoundation.org>
+In-Reply-To: <20231205031519.853779502@linuxfoundation.org>
+From: Naresh Kamboju <naresh.kamboju@linaro.org>
+Date: Tue, 5 Dec 2023 22:18:49 +0530
+Message-ID: <CA+G9fYs-XB29+aZ2kk9psA+MTo8PCh0owWgwGRiq8JK60CuUtg@mail.gmail.com>
+Subject: Re: [PATCH 5.15 00/67] 5.15.142-rc1 review
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,108 +73,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: f.fainelli@gmail.com, Gaurav Batra <gbatra@linux.vnet.ibm.com>, rwarsow@gmx.de, pavel@denx.de, conor@kernel.org, shuah@kernel.org, allen.lkml@gmail.com, patches@lists.linux.dev, stable@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, lkft-triage@lists.linaro.org, srw@sladewatkins.net, patches@kernelci.org, akpm@linux-foundation.org, jonathanh@nvidia.com, torvalds@linux-foundation.org, sudipm.mukherjee@gmail.com, linux@roeck-us.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce qmc_chan_{get,set}_ts_info() function to allow timeslots
-modification at runtime.
+On Tue, 5 Dec 2023 at 09:10, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> This is the start of the stable review cycle for the 5.15.142 release.
+> There are 67 patches in this series, all will be posted as a response
+> to this one.  If anyone has any issues with these being applied, please
+> let me know.
+>
+> Responses should be made by Thu, 07 Dec 2023 03:14:57 +0000.
+> Anything received after that time might be too late.
+>
+> The whole patch series can be found in one patch at:
+>         https://www.kernel.org/pub/linux/kernel/v5.x/stable-review/patch-5.15.142-rc1.gz
+> or in the git tree and branch at:
+>         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git linux-5.15.y
+> and the diffstat can be found below.
+>
+> thanks,
+>
+> greg k-h
 
-The modification is provided using qmc_chan_set_ts_info() and will be
-applied on next qmc_chan_start().
-qmc_chan_set_ts_info() must be called with the channel rx and/or tx
-stopped.
 
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Following powerpc build failures noticed.
+
+* powerpc, build
+  - clang-17-defconfig - FAILED
+  - gcc-12-defconfig - FAILED
+  - gcc-8-defconfig - FAILED
+
+build error:
 ---
- drivers/soc/fsl/qe/qmc.c | 51 ++++++++++++++++++++++++++++++++++++++++
- include/soc/fsl/qe/qmc.h | 10 ++++++++
- 2 files changed, 61 insertions(+)
+arch/powerpc/platforms/pseries/iommu.c: In function 'find_existing_ddw':
+arch/powerpc/platforms/pseries/iommu.c:908:49: error: 'struct dma_win'
+has no member named 'direct'
+  908 |                         *direct_mapping = window->direct;
+      |                                                 ^~
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 45d9cb40a118..f498db9abe35 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -290,6 +290,57 @@ int qmc_chan_get_info(struct qmc_chan *chan, struct qmc_chan_info *info)
- }
- EXPORT_SYMBOL(qmc_chan_get_info);
- 
-+int qmc_chan_get_ts_info(struct qmc_chan *chan, struct qmc_chan_ts_info *ts_info)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chan->ts_lock, flags);
-+
-+	ts_info->rx_ts_mask_avail = chan->rx_ts_mask_avail;
-+	ts_info->tx_ts_mask_avail = chan->tx_ts_mask_avail;
-+	ts_info->rx_ts_mask = chan->rx_ts_mask;
-+	ts_info->tx_ts_mask = chan->tx_ts_mask;
-+
-+	spin_unlock_irqrestore(&chan->ts_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(qmc_chan_get_ts_info);
-+
-+int qmc_chan_set_ts_info(struct qmc_chan *chan, const struct qmc_chan_ts_info *ts_info)
-+{
-+	unsigned long flags;
-+	int ret;
-+
-+	/* Only a subset of available timeslots is allowed */
-+	if ((ts_info->rx_ts_mask & chan->rx_ts_mask_avail) != ts_info->rx_ts_mask)
-+		return -EINVAL;
-+	if ((ts_info->tx_ts_mask & chan->tx_ts_mask_avail) != ts_info->tx_ts_mask)
-+		return -EINVAL;
-+
-+	/* In case of common rx/tx table, rx/tx masks must be identical */
-+	if (chan->qmc->is_tsa_64rxtx) {
-+		if (ts_info->rx_ts_mask != ts_info->tx_ts_mask)
-+			return -EINVAL;
-+	}
-+
-+	spin_lock_irqsave(&chan->ts_lock, flags);
-+
-+	if ((chan->tx_ts_mask != ts_info->tx_ts_mask && !chan->is_tx_stopped) ||
-+	    (chan->rx_ts_mask != ts_info->rx_ts_mask && !chan->is_rx_stopped)) {
-+		dev_err(chan->qmc->dev, "Channel rx and/or tx not stopped\n");
-+		ret = -EBUSY;
-+	} else {
-+		chan->tx_ts_mask = ts_info->tx_ts_mask;
-+		chan->rx_ts_mask = ts_info->rx_ts_mask;
-+		ret = 0;
-+	}
-+	spin_unlock_irqrestore(&chan->ts_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(qmc_chan_set_ts_info);
-+
- int qmc_chan_set_param(struct qmc_chan *chan, const struct qmc_chan_param *param)
- {
- 	if (param->mode != chan->mode)
-diff --git a/include/soc/fsl/qe/qmc.h b/include/soc/fsl/qe/qmc.h
-index 166484bb4294..2a333fc1ea81 100644
---- a/include/soc/fsl/qe/qmc.h
-+++ b/include/soc/fsl/qe/qmc.h
-@@ -40,6 +40,16 @@ struct qmc_chan_info {
- 
- int qmc_chan_get_info(struct qmc_chan *chan, struct qmc_chan_info *info);
- 
-+struct qmc_chan_ts_info {
-+	u64 rx_ts_mask_avail;
-+	u64 tx_ts_mask_avail;
-+	u64 rx_ts_mask;
-+	u64 tx_ts_mask;
-+};
-+
-+int qmc_chan_get_ts_info(struct qmc_chan *chan, struct qmc_chan_ts_info *ts_info);
-+int qmc_chan_set_ts_info(struct qmc_chan *chan, const struct qmc_chan_ts_info *ts_info);
-+
- struct qmc_chan_param {
- 	enum qmc_mode mode;
- 	union {
--- 
-2.43.0
+suspected commit:
+powerpc/pseries/iommu: enable_ddw incorrectly returns direct mapping
+for SR-IOV device
+ [ Upstream commit 3bf983e4e93ce8e6d69e9d63f52a66ec0856672e ]
 
+Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
+
+Links:
+  - https://qa-reports.linaro.org/lkft/linux-stable-rc-linux-5.15.y/build/v5.15.141-68-gbff845be423f/testrun/21492943/suite/build/test/gcc-12-defconfig/details/
+  - https://qa-reports.linaro.org/lkft/linux-stable-rc-linux-5.15.y/build/v5.15.141-68-gbff845be423f/testrun/21492943/suite/build/test/gcc-12-defconfig/history/
+
+
+--
+Linaro LKFT
+https://lkft.linaro.org
