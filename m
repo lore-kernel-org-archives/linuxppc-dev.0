@@ -4,77 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE0AFC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 16:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D803C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 16:54:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AMwB8fC8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QT91pOiE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sl64P1Yp2z3clL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 03:51:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sl67j0XZ9z3dBV
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 03:54:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AMwB8fC8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QT91pOiE;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sl63Q6QCjz3cRp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 03:50:26 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Sl63L2LW1z4wx7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 03:50:22 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4Sl63L23YYz4wxY; Wed,  6 Dec 2023 03:50:22 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AMwB8fC8;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at gandalf; Wed, 06 Dec 2023 03:50:21 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Sl63K5L1jz4wx7
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2023 03:50:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1701795021; x=1733331021;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=7vZuH5HdSCPRNmPWg/voqIUI80Iu2AQu2Qzt7cwlHqI=;
-  b=AMwB8fC85E+qKihImutHWLuUWHKYaROXYmleIRZvF6X85QZ496VZUOm+
-   Z3IIYram4AqrgjojduxXMqPzTYy8ZdFxvhUNiYQW9/M5HnC/rC8qKTF+F
-   YegNp/SlP073Zt+nc1BRcSb979sWkab9cnXmXeOLA+x2On7hKJD+BKrbn
-   JnBNcBUX1SGQl8gIZm/n81ZcX2oUQ0RnRoNe54EPal5VcAdDR72NWsR/5
-   rEXNqsSYiN4U1hF2kqZqFYWPzVqxzl7kWo2UrtlXYvb6mFy5ao25A8xoI
-   6f/zHd4hLvKv+y46XIghNlK+Jv8f4pUKKnmxpE1HKKytZ/9EKoFXYgWuS
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="396714332"
-X-IronPort-AV: E=Sophos;i="6.04,252,1695711600"; 
-   d="scan'208";a="396714332"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Dec 2023 08:49:11 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="944328444"
-X-IronPort-AV: E=Sophos;i="6.04,252,1695711600"; 
-   d="scan'208";a="944328444"
-Received: from lkp-server02.sh.intel.com (HELO b07ab15da5fe) ([10.239.97.151])
-  by orsmga005.jf.intel.com with ESMTP; 05 Dec 2023 08:49:05 -0800
-Received: from kbuild by b07ab15da5fe with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1rAYbU-0009OE-1c;
-	Tue, 05 Dec 2023 16:49:00 +0000
-Date: Wed, 6 Dec 2023 00:48:40 +0800
-From: kernel test robot <lkp@intel.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v13 6/6] powerpc: add crash memory hotplug support
-Message-ID: <202312060059.JITEJl8B-lkp@intel.com>
-References: <20231204053253.25305-7-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sl66l2qW4z3cLQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 03:53:19 +1100 (AEDT)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3B5GRKAR021718;
+	Tue, 5 Dec 2023 16:53:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : content-type :
+ mime-version; s=pp1; bh=6z+4aSGkX0C8sh32Dh4puLLnTPzHE0UepW2m2Y8DuKs=;
+ b=QT91pOiE0ReUKPsQCvXofwgWmX6XnDAZSq8S6z+uk2X1CPuU/zT2J43xwpFdMxnYcc+m
+ OuqqSwg0WZ5liljmlLwDGWw+gYZGbRjZ1kh/pQ+YWdzebh5aXcMgaMQOh/NgZsv4aHN6
+ YhK2ZDnwq/+MBtWgq8KDOVTdQARt9JQ/5LUt+4DhHTVNjHqxTa9+saGO2EY0N2WslVSI
+ e/odk4Xvwn6I3HPeucbYgJ8gZGY1EZF79RR8gcgOWjgrNEzG4MBHgDFl2WIT6Z7Qy3XR
+ CMYRVqdd24SVinQllXdr561awuVcAeB58uswCQ0CVvn0eP0HzokCWjlxSaKi358taJHJ gw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ut7d68u8n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 05 Dec 2023 16:53:13 +0000
+Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3B5GT6Kh028010;
+	Tue, 5 Dec 2023 16:53:12 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ut7d68twp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 05 Dec 2023 16:53:12 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3B5GjAZd009150;
+	Tue, 5 Dec 2023 16:51:31 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3urgdkythn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 05 Dec 2023 16:51:31 +0000
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3B5GpUWt41877996
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 5 Dec 2023 16:51:31 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 96C4C58056;
+	Tue,  5 Dec 2023 16:51:30 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7FD5958065;
+	Tue,  5 Dec 2023 16:51:30 +0000 (GMT)
+Received: from localhost (unknown [9.61.95.155])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  5 Dec 2023 16:51:30 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v4 05/13] powerpc/rtas: Facilitate high-level call
+ sequences
+In-Reply-To: <871qc623z2.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+References: <20231117-papr-sys_rtas-vs-lockdown-v4-0-b794d8cb8502@linux.ibm.com>
+ <20231117-papr-sys_rtas-vs-lockdown-v4-5-b794d8cb8502@linux.ibm.com>
+ <87sf4p33zg.fsf@mail.lhotse>
+ <87jzq11nsj.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+ <874jh43dcn.fsf@mail.lhotse>
+ <877clz14ii.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+ <87plzq271r.fsf@mail.lhotse>
+ <871qc623z2.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+Date: Tue, 05 Dec 2023 10:51:30 -0600
+Message-ID: <87sf4gk2y5.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: mQy7zw5r-uTkYocVf9tpvsQs4zOBRSzg
+X-Proofpoint-GUID: IKNJuBgp9YkyOL-Y55Llbhkszt1lF-3P
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231204053253.25305-7-sourabhjain@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-12-05_12,2023-12-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ mlxlogscore=999 spamscore=0 lowpriorityscore=0 phishscore=0 adultscore=0
+ impostorscore=0 priorityscore=1501 clxscore=1015 bulkscore=0
+ malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311060000 definitions=main-2312050133
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,71 +103,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, Linux Memory Management List <linux-mm@kvack.org>, Eric DeVolder <eric.devolder@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Valentin Schneider <vschneid@redhat.com>, Baoquan He <bhe@redhat.com>, x86@kernel.org, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Borislav Petkov <bp@alien8.de>, oe-kbuild-all@lists.linux.dev, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: tyreld@linux.ibm.com, Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org, gcwilson@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sourabh,
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>>>> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>>>>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>>>>>> Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
+>>>>>> writes:
+>>>>>>> From: Nathan Lynch <nathanl@linux.ibm.com>
+>>>>>>>
+>>>>>>> On RTAS platforms there is a general restriction that the OS must not
+>>>>>>> enter RTAS on more than one CPU at a time. This low-level
+>>>>>>> serialization requirement is satisfied by holding a spin
+>>>>>>> lock (rtas_lock) across most RTAS function invocations.
+>>>>>> ...
+>>>>>>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+>>>>>>> index 1fc0b3fffdd1..52f2242d0c28 100644
+>>>>>>> --- a/arch/powerpc/kernel/rtas.c
+>>>>>>> +++ b/arch/powerpc/kernel/rtas.c
+>>>>>>> @@ -581,6 +652,28 @@ static const struct rtas_function *rtas_token_to_function(s32 token)
+>>>>>>>  	return NULL;
+>>>>>>>  }
+>>>>>>>  
+>>>>>>> +static void __rtas_function_lock(struct rtas_function *func)
+>>>>>>> +{
+>>>>>>> +	if (func && func->lock)
+>>>>>>> +		mutex_lock(func->lock);
+>>>>>>> +}
+>>>>>>
+>>>>>> This is obviously going to defeat most static analysis tools.
+>>>>>
+>>>>> I guess it's not that obvious to me :-) Is it because the mutex_lock()
+>>>>> is conditional? I'll improve this if it's possible.
+>>>>
+>>>> Well maybe I'm not giving modern static analysis tools enough credit :)
+>>>>
+>>>> But what I mean that it's not easy to reason about what the function
+>>>> does in isolation. ie. all you can say is that it may or may not lock a
+>>>> mutex, and you can't say which mutex.
+>>>
+>>> I've pulled the thread on this a little bit and here is what I can do:
+>>>
+>>> * Discard rtas_lock_function() and rtas_unlock_function() and make the
+>>>   function mutexes extern as needed. As of now only
+>>>   rtas_ibm_get_vpd_lock will need to be exposed. This enables us to put
+>>>   __acquires(), __releases(), and __must_hold() annotations in
+>>>   papr-vpd.c since it explicitly manipulates the mutex.
+>>>
+>>> * Then sys_rtas() becomes the only site that needs
+>>>   __rtas_function_lock() and __rtas_function_unlock(), which can be
+>>>   open-coded and commented (and, one hopes, not emulated elsewhere).
+>>>
+>>> This will look something like:
+>>>
+>>> SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+>>> {
+>>>         struct rtas_function *func = rtas_token_to_function(token);
+>>>
+>>>         if (func->lock)
+>>>                 mutex_lock(func->lock);
+>>>
+>>>         [ ... acquire rtas_lock, enter RTAS, fetch any errors ... ]
+>>>
+>>>         if (func->lock)
+>>>                 mutex_unlock(func->lock);
+>>>
+>>> The indirection seems unavoidable since we're working backwards from a
+>>> token value (supplied by the user and not known at build time) to the
+>>> function descriptor.
+>>>
+>>> Is that tolerable for now?
+>>
+>> Yeah. Thanks for looking into it.
+>>
+>> I wasn't unhappy with the original version, but just slightly uneasy
+>> about the locking via pointer.
+>>
+>> But that new proposal sounds good, more code will have static lock
+>> annotations, and only sys_rtas() which is already weird, will have the
+>> dynamic stuff.
+>
+> OK, I'll work that up then.
 
-kernel test robot noticed the following build errors:
+Well, apparently the annotations aren't useful with mutexes; see these
+threads:
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on powerpc/fixes tip/x86/core akpm-mm/mm-everything linus/master v6.7-rc4 next-20231205]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+https://lore.kernel.org/all/8e8d93ee2125c739caabe5986f40fa2156c8b4ce.1579893447.git.jbi.octave@gmail.com/
+https://lore.kernel.org/all/20200601184552.23128-5-jbi.octave@gmail.com/
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Sourabh-Jain/crash-make-CPU-and-Memory-hotplug-support-reporting-flexible/20231204-143305
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-patch link:    https://lore.kernel.org/r/20231204053253.25305-7-sourabhjain%40linux.ibm.com
-patch subject: [PATCH v13 6/6] powerpc: add crash memory hotplug support
-config: powerpc64-randconfig-001-20231205 (https://download.01.org/0day-ci/archive/20231206/202312060059.JITEJl8B-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231206/202312060059.JITEJl8B-lkp@intel.com/reproduce)
+And indeed I can't get sparse to accept them when added to the papr-vpd
+code:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202312060059.JITEJl8B-lkp@intel.com/
+$ make C=2 arch/powerpc/platforms/pseries/papr-vpd.o
+  CHECK   scripts/mod/empty.c
+  CALL    scripts/checksyscalls.sh
+  CHECK   arch/powerpc/platforms/pseries/papr-vpd.c
+    arch/powerpc/platforms/pseries/papr-vpd.c:235:13: warning: context
+      imbalance in 'vpd_sequence_begin' - wrong count at exit
+    arch/powerpc/platforms/pseries/papr-vpd.c:269:13: warning: context
+      imbalance in 'vpd_sequence_end' - wrong count at exit
 
-All errors (new ones prefixed by >>):
+I don't think it's my own mistake since I see existing code with the
+same problem, such as net/core/sock.c:
 
-   arch/powerpc/kexec/core_64.c: In function 'arch_crash_get_elfcorehdr_size':
->> arch/powerpc/kexec/core_64.c:595:33: error: implicit declaration of function 'memory_hotplug_max' [-Werror=implicit-function-declaration]
-     595 |                 elf_phdr_cnt += memory_hotplug_max() / (2 * drmem_lmb_size());
-         |                                 ^~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
+static void *proto_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires(proto_list_mutex)
+{
+	mutex_lock(&proto_list_mutex);
+	return seq_list_start_head(&proto_list, *pos);
+}
 
+static void proto_seq_stop(struct seq_file *seq, void *v)
+	__releases(proto_list_mutex)
+{
+	mutex_unlock(&proto_list_mutex);
+}
 
-vim +/memory_hotplug_max +595 arch/powerpc/kexec/core_64.c
+which yields:
 
-   579	
-   580	/*
-   581	 * Advertise preferred elfcorehdr size to userspace via
-   582	 * /sys/kernel/crash_elfcorehdr_size sysfs interface.
-   583	 */
-   584	unsigned int arch_crash_get_elfcorehdr_size(void)
-   585	{
-   586		unsigned int sz;
-   587		unsigned long elf_phdr_cnt;
-   588	
-   589		/* Program header for CPU notes and vmcoreinfo */
-   590		elf_phdr_cnt = 2;
-   591		if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
-   592			/* In the worst case, a Phdr is needed for every other LMB to be
-   593			 * represented as an individual crash range.
-   594			 */
- > 595			elf_phdr_cnt += memory_hotplug_max() / (2 * drmem_lmb_size());
-   596	
-   597		/* Do not cross the max limit */
-   598		if (elf_phdr_cnt > PN_XNUM)
-   599			elf_phdr_cnt = PN_XNUM;
-   600	
-   601		sz = sizeof(struct elfhdr) + (elf_phdr_cnt * sizeof(Elf64_Phdr));
-   602		return sz;
-   603	}
-   604	
+net/core/sock.c:4018:13: warning: context imbalance in 'proto_seq_start'
+  - wrong count at exit
+net/core/sock.c:4030:13: warning: context imbalance in 'proto_seq_stop'
+  - wrong count at exit
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+So I'll give up on static annotations for this series and look for
+opportunities to add lockdep_assert_held() etc.
