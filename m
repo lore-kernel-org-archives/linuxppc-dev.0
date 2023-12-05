@@ -4,54 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49939C07E97
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 07:51:57 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=b4vhiER6;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7709C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 09:29:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Skt6347Vtz3clp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 18:51:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=b4vhiER6;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::229; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 3563 seconds by postgrey-1.37 at boromir; Tue, 05 Dec 2023 18:51:03 AEDT
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::229])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SkwGb0rBhz3dFr
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 20:29:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=chentao@kylinos.cn; receiver=lists.ozlabs.org)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Skt530HS8z2xQC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2023 18:51:00 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 15DFEFF80A;
-	Tue,  5 Dec 2023 07:50:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701762654;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=33Cr2ldAlMbcSRdOfjbnL3I/Zg4ZMoiw1vVYuAFexRo=;
-	b=b4vhiER6a0L6V8r2zxzPP/QzfzSTlhkeU1AriyKxFIiplNb1XZ+XCg2+EjeucXV/uV/YO1
-	A6h6P+g9lkmW+V/niTIfxHvrUoEZvRPzOqCAIDa3DT3VFQTc+CsmYxgkF04Y5f60h3AyTB
-	LGT8ZexvnP/khyItrTvFEaSAjyBJLtzeazAio64kaoWBvk9/Cf5MbKMwt/WGwhkx/tsdFN
-	mh73fi+AM6pxPwChmWZxPfMalh+OE/yLyktflvwxRIlg6Tb8lQh+mjSaNsubYNsZFYEufg
-	rM38OiIl0V2/qYiI4jNoAbSvYw49xiCSmt3syB9uLbezVsY4n/msm/yXn2SWag==
-Date: Tue, 5 Dec 2023 08:50:46 +0100
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH net-next v2 0/9] net*: Convert to platform remove
- callback returning void
-Message-ID: <20231205085046.7307ca9b@xps-13>
-In-Reply-To: <20231205073911.e6nphzhc6yjan5vu@pengutronix.de>
-References: <cover.1701713943.git.u.kleine-koenig@pengutronix.de>
-	<20231205075110.795b88d2@xps-13>
-	<20231205073911.e6nphzhc6yjan5vu@pengutronix.de>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SkwFz6Z9nz30fF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2023 20:28:52 +1100 (AEDT)
+X-UUID: 2aa5a5f3ecf24832a2cd6db6e3ab7ebb-20231205
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.33,REQID:550d1e5a-49cd-4e19-8ab4-4c8269f71884,IP:5,U
+	RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
+	ON:release,TS:-15
+X-CID-INFO: VERSION:1.1.33,REQID:550d1e5a-49cd-4e19-8ab4-4c8269f71884,IP:5,URL
+	:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:-15
+X-CID-META: VersionHash:364b77b,CLOUDID:871a2b96-10ce-4e4b-85c2-c9b5229ff92b,B
+	ulkID:2312041843482P8UAYLL,BulkQuantity:3,Recheck:0,SF:19|44|64|66|38|24|1
+	7|102,TC:nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,Bulk:40,QS:nil,BEC:nil,
+	COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI
+X-UUID: 2aa5a5f3ecf24832a2cd6db6e3ab7ebb-20231205
+X-User: chentao@kylinos.cn
+Received: from [172.20.15.254] [(116.128.244.169)] by mailgw
+	(envelope-from <chentao@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 1414185240; Tue, 05 Dec 2023 17:28:31 +0800
+Message-ID: <7be4a5ac-d0b8-4f5d-848a-b54ab3c67228@kylinos.cn>
+Date: Tue, 5 Dec 2023 17:28:30 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-GND-Sasl: miquel.raynal@bootlin.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cxl: Fix null pointer dereference in cxl_get_fd
+To: Frederic Barrat <fbarrat@linux.ibm.com>, ajd@linux.ibm.com,
+ arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
+ mrochs@linux.vnet.ibm.com
+References: <20231204020745.2445944-1-chentao@kylinos.cn>
+ <c914f4ba-253d-4b57-bdd2-4c95d40bbf91@linux.ibm.com>
+From: Kunwu Chan <chentao@kylinos.cn>
+In-Reply-To: <c914f4ba-253d-4b57-bdd2-4c95d40bbf91@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,56 +61,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Sergey Ryazanov <ryazanov.s.a@gmail.com>, Eric Dumazet <edumazet@google.com>, Stefan Schmidt <stefan@datenfreihafen.org>, Zhao Qiang <qiang.zhao@nxp.com>, linux-renesas-soc@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Andy Gross <agross@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, =?UTF-8?B?Q2zDqW1l?= =?UTF-8?B?bnQgTMOpZ2Vy?= <clement.leger@bootlin.com>, Christian Marangi <ansuelsmth@gmail.com>, Nick Child <nnac123@linux.ibm.com>, Stephan Gerhold <stephan@gerhold.net>, linux-arm-msm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Loic Poulain <loic.poulain@linaro.org>, Marc Kleine-Budde <mkl@pengutronix.de>, linux-arm-kernel@lists.infradead.org, Alex Elder <elder@kernel.org>, netdev@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, "David S. Miller" <davem@davemloft.net>, Konrad Dybcio <konrad.dybcio@linaro.org>, kernel@pengutronix.de, Johannes Berg <johannes@
- sipsolutions.net>, Imre Kaloz <kaloz@openwrt.org>, linux-wpan@vger.kernel.org, Linus Walleij <linusw@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kunwu.chan@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Uwe,
+Hi Fred,
+Thanks for your reply.
 
-u.kleine-koenig@pengutronix.de wrote on Tue, 5 Dec 2023 08:39:11 +0100:
 
-> Hello Miquel,
->=20
-> On Tue, Dec 05, 2023 at 07:51:10AM +0100, Miquel Raynal wrote:
-> > u.kleine-koenig@pengutronix.de wrote on Mon,  4 Dec 2023 19:30:40 +0100=
-: =20
-> > > (implicit) v1 of this series can be found at
-> > > https://lore.kernel.org/netdev/20231117095922.876489-1-u.kleine-koeni=
-g@pengutronix.de.
-> > > Changes since then:
-> > >=20
-> > >  - Dropped patch #1 as Alex objected. Patch #1 (was #2 before) now
-> > >    converts ipa to remove_new() and introduces an error message in the
-> > >    error path that failed before.
-> > >=20
-> > >  - Rebased to today's next
-> > >=20
-> > >  - Add the tags received in the previous round.
-> > >=20
-> > > Uwe Kleine-K=C3=B6nig (9):
-> > >   net: ipa: Convert to platform remove callback returning void
-> > >   net: fjes: Convert to platform remove callback returning void
-> > >   net: pcs: rzn1-miic: Convert to platform remove callback returning
-> > >     void
-> > >   net: sfp: Convert to platform remove callback returning void
-> > >   net: wan/fsl_ucc_hdlc: Convert to platform remove callback returning
-> > >     void
-> > >   net: wan/ixp4xx_hss: Convert to platform remove callback returning
-> > >     void
-> > >   net: wwan: qcom_bam_dmux: Convert to platform remove callback
-> > >     returning void
-> > >   ieee802154: fakelb: Convert to platform remove callback returning v=
-oid
-> > >   ieee802154: hwsim: Convert to platform remove callback returning vo=
-id =20
-> >=20
-> > FYI, I plan on taking patches 8 and 9 through wpan-next. =20
->=20
-> I forgot to mention explicitly that there are no interdependencies in
-> this series. So each maintainer picking up up their patches is fine.
+But there is a question, whether we should return an error code in error 
+path so that the caller of the 'cxl_get_fd' can know the specific 
+reason. rather than just return NULL.
+Such as:
+-       int rc, flags, fdtmp;
++       int rc = 0, flags, fdtmp;
+         char *name = NULL;
 
-Yes, no problem, it was quick to figure out.
+         /* only allow one per context */
+-       if (ctx->mapping)
+-               return ERR_PTR(-EEXIST);
++       if (ctx->mapping) {
++               rc = -EEXIST;
++               goto err;
++       }
 
-Thanks,
-Miqu=C3=A8l
+         flags = O_RDWR | O_CLOEXEC;
+
+         /* This code is similar to anon_inode_getfd() */
+         rc = get_unused_fd_flags(flags);
+-       if (rc < 0)
+-               return ERR_PTR(rc);
++       if (rc < 0) {
++               goto err;
++       }
+         fdtmp = rc;
+
+
+
+         name = kasprintf(GFP_KERNEL, "cxl:%d", ctx->pe);
++        if (!name) {
++               rc = -ENOMEM;
++               goto err_fd;
++        }
+         file = cxl_getfile(name, fops, ctx, flags);
+         kfree(name);
+@@ -434,6 +437,9 @@ struct file *cxl_get_fd(struct cxl_context *ctx, 
+struct file_operations *fops,
+
+  err_fd:
+         put_unused_fd(fdtmp);
++err:
++       if (rc)
++               return ERR_PTR(rc);
+         return NULL;
+
+
+Thanks again,
+Kunwu
+
+On 2023/12/4 18:43, Frederic Barrat wrote:
+> 
+> 
+> On 04/12/2023 03:07, Kunwu Chan wrote:
+>> kasprintf() returns a pointer to dynamically allocated memory
+>> which can be NULL upon failure.
+>>
+>> Fixes: bdecf76e319a ("cxl: Fix coredump generation when cxl_get_fd() 
+>> is used")
+>> Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
+>> ---
+>>   drivers/misc/cxl/api.c | 4 ++++
+>>   1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+>> index d85c56530863..bfd7ccd4d7e1 100644
+>> --- a/drivers/misc/cxl/api.c
+>> +++ b/drivers/misc/cxl/api.c
+>> @@ -419,6 +419,10 @@ struct file *cxl_get_fd(struct cxl_context *ctx, 
+>> struct file_operations *fops,
+>>           fops = (struct file_operations *)&afu_fops;
+>>       name = kasprintf(GFP_KERNEL, "cxl:%d", ctx->pe);
+>> +    if (!name) {
+>> +        put_unused_fd(fdtmp);
+>> +        return ERR_PTR(-ENOMEM);
+>> +    }
+> 
+> 
+> That works, but you might as well follow the existing error path:
+> 
+>      name = kasprintf(GFP_KERNEL, "cxl:%d", ctx->pe);
+>      if (!name)
+>          goto err_fd;
+> 
+>    Fred
+> 
+> 
+>>       file = cxl_getfile(name, fops, ctx, flags);
+>>       kfree(name);
+>>       if (IS_ERR(file))
