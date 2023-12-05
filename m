@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F17DCC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 15:24:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50B2EC10F04
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Dec 2023 15:25:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=TJj3Nn6G;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bPHz/aVw;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sl48h4Fz6z3dRc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 02:24:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sl49g6ncTz3dSK
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 02:25:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=TJj3Nn6G;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bPHz/aVw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::222])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sl44x47Smz3cVf
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sl44x4L2Qz3cVr
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 02:21:36 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id A725140016;
-	Tue,  5 Dec 2023 15:21:32 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 3195C40013;
+	Tue,  5 Dec 2023 15:21:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1701789693;
+	t=1701789691;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=CH30td9T992ZcnPYMJ2jKOsiF+4ZPdmUv7OxdVim8jo=;
-	b=TJj3Nn6Gf7TOul1jvegZEjqExz5j5thj0t/3531uP6G5RPtM/rYzmT6heliCJQK/7/qTEE
-	ER6itkYhT/HB2Ztv3u9zFGooof5wgfWCQLp7pmUv4MmuKNG7gNGCKb9CLwCRRmhbwav8lk
-	7iqxDT3ewH5423ddovm/J/ynF3RfPbsoOkCwxPLVEm1HONsWJ0mjoIYcqNSqzgUqKu6DQg
-	Ew0ZP09hM9WNlSiEHv94sD2PDsxUZoP7lrWqO7OLIUKHlDn687jRONdRrDT9N7EFTp2AR4
-	jH96j5pt3V0UvncPZrAX5yGxoTUPp19Jn2OfjutpA08U3KJ5khavuFzhFxIuhA==
+	bh=fr/+FFqEM69Z2xWv6TIr9xG1wPePBXpVB6jujvPjf7w=;
+	b=bPHz/aVwC/l9kXBOINLG0e+ZPXA9XHiKjq0rnAjQ2+3dlqMaRErm0OukHPYatzh1mF5cuT
+	xUOWmmJvUJcMfn0vtmLYO7kmuYgxcR9gL5qj3GfUHzOZdBfBA9n5zsgQzY2OHZ+9PaXB5l
+	3NHkcCug1z3oVRxFjDCsWNUHEDRomYRB2+/ExIpGqEyIiNOfxwzJimFlw2p52LZ3517Zoy
+	lgV6itCytQqdL+PVPuZat9ohMt+yiEqmAOxnYfAJXzLbd2XiWwWFFUoEE0jKg13qzMUQXp
+	JLqNpqH1Ni6iD9zqObm+BzheDazJbmyHYobb7VddhIXrGjEu7bpDfVNDhw0Gew==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
@@ -49,9 +49,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 07/17] soc: fsl: cpm1: qmc: Introduce available timeslots masks
-Date: Tue,  5 Dec 2023 16:21:04 +0100
-Message-ID: <20231205152116.122512-8-herve.codina@bootlin.com>
+Subject: [PATCH v2 05/17] soc: fsl: cpm1: qmc: Remove inline function specifiers
+Date: Tue,  5 Dec 2023 16:21:02 +0100
+Message-ID: <20231205152116.122512-6-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231205152116.122512-1-herve.codina@bootlin.com>
 References: <20231205152116.122512-1-herve.codina@bootlin.com>
@@ -69,58 +69,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Available timeslots masks define timeslots available for the related
-channel. These timeslots are defined by the QMC binding.
+The inline function specifier is present on some functions but it is
+better to let the compiler decide inlining or not these functions.
 
-Timeslots used are initialized to available timeslots but can be a
-subset of available timeslots.
-This prepares the dynamic timeslots management (ie. changing timeslots
-at runtime).
+Remove inline specifiers.
 
+Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+Suggested-by: Andrew Lunn <andrew@lunn.ch>
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/qmc.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index e716f13669a0..0413e25d4c67 100644
+index 4b4832d93c9b..27f2f16deac9 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -177,7 +177,9 @@ struct qmc_chan {
- 	struct qmc *qmc;
- 	void __iomem *s_param;
- 	enum qmc_mode mode;
-+	u64	tx_ts_mask_avail;
- 	u64	tx_ts_mask;
-+	u64	rx_ts_mask_avail;
- 	u64	rx_ts_mask;
- 	bool is_reverse_data;
+@@ -218,37 +218,37 @@ struct qmc {
+ 	struct qmc_chan *chans[64];
+ };
  
-@@ -875,7 +877,8 @@ static int qmc_of_parse_chans(struct qmc *qmc, struct device_node *np)
- 			of_node_put(chan_np);
- 			return ret;
- 		}
--		chan->tx_ts_mask = ts_mask;
-+		chan->tx_ts_mask_avail = ts_mask;
-+		chan->tx_ts_mask = chan->tx_ts_mask_avail;
+-static inline void qmc_write16(void __iomem *addr, u16 val)
++static void qmc_write16(void __iomem *addr, u16 val)
+ {
+ 	iowrite16be(val, addr);
+ }
  
- 		ret = of_property_read_u64(chan_np, "fsl,rx-ts-mask", &ts_mask);
- 		if (ret) {
-@@ -884,7 +887,8 @@ static int qmc_of_parse_chans(struct qmc *qmc, struct device_node *np)
- 			of_node_put(chan_np);
- 			return ret;
- 		}
--		chan->rx_ts_mask = ts_mask;
-+		chan->rx_ts_mask_avail = ts_mask;
-+		chan->rx_ts_mask = chan->rx_ts_mask_avail;
+-static inline u16 qmc_read16(void __iomem *addr)
++static u16 qmc_read16(void __iomem *addr)
+ {
+ 	return ioread16be(addr);
+ }
  
- 		mode = "transparent";
- 		ret = of_property_read_string(chan_np, "fsl,operational-mode", &mode);
+-static inline void qmc_setbits16(void __iomem *addr, u16 set)
++static void qmc_setbits16(void __iomem *addr, u16 set)
+ {
+ 	qmc_write16(addr, qmc_read16(addr) | set);
+ }
+ 
+-static inline void qmc_clrbits16(void __iomem *addr, u16 clr)
++static void qmc_clrbits16(void __iomem *addr, u16 clr)
+ {
+ 	qmc_write16(addr, qmc_read16(addr) & ~clr);
+ }
+ 
+-static inline void qmc_write32(void __iomem *addr, u32 val)
++static void qmc_write32(void __iomem *addr, u32 val)
+ {
+ 	iowrite32be(val, addr);
+ }
+ 
+-static inline u32 qmc_read32(void __iomem *addr)
++static u32 qmc_read32(void __iomem *addr)
+ {
+ 	return ioread32be(addr);
+ }
+ 
+-static inline void qmc_setbits32(void __iomem *addr, u32 set)
++static void qmc_setbits32(void __iomem *addr, u32 set)
+ {
+ 	qmc_write32(addr, qmc_read32(addr) | set);
+ }
 -- 
 2.43.0
 
