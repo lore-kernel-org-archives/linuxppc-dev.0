@@ -4,81 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13B82C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 21:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0535FC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 22:11:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BhGer3Z8;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IdejeKfu;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Cy4olHDE;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NQHlKZQ+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SlqcY4JzRz3c82
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 08:03:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sls6q3cBPz3d8n
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 09:10:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BhGer3Z8;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IdejeKfu;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Cy4olHDE;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NQHlKZQ+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=longman@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=hdegoede@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SlqbY16Wjz2xdR
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 08:02:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SlgWt2FRfz3c40
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 01:58:33 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1701896532;
+	s=mimecast20190719; t=1701874708;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=yHW20tuEOrmNp4P41P/HLfeGuZPZFZ5btUUMCBjAyAo=;
-	b=BhGer3Z86GXC+Tnl+fTXl52r3JXYI66KRdkrD7hfeQr19pu9KBzdsquAnNx3Gv+W+r6Rjd
-	wzQvG9kHLuFc6WiQZWdbKqEIO8X8CydvoHVKG8sn2I6d7cSwMEkCQGgAEvDuUlGh1Pw5EX
-	6GUdFivxhr4aYej8bLnQZ+JaXY69P4k=
+	bh=lI8W6CO+u1S10tMvsZNrVhiLtm/T33ov+fTqgOUmfWo=;
+	b=Cy4olHDELpz4Rg28Yn8xHshnwLc3VgCviD1EiP+dS/mamQr88N+/ut2eb2ls4E0VoBgNBa
+	VMSmE1ZRHN4gIPQAp2MgzQr2i0SexGNwHGwPUJcSCCPFjwO5KS2K5vQs673tV5yI7FQJQt
+	z7x+xyYBLS5/hBMSzKUgmlu9knrdO4A=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1701896533;
+	s=mimecast20190719; t=1701874709;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=yHW20tuEOrmNp4P41P/HLfeGuZPZFZ5btUUMCBjAyAo=;
-	b=IdejeKfuAmbLBWE992qTb78Bjo78t/JICzCeIt1W3H1eVbpj22YscQhKT6NjvOajmRzxfv
-	BXb/1jMEWw0cv3XqZP5HoS4UU5EM+w+YiCN73qXvjjZzr5ifdXaOadiQGz7Cy3+HRrxPHF
-	YUVoc7xkOxwguaRKYJKh/xrNIztQASs=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=lI8W6CO+u1S10tMvsZNrVhiLtm/T33ov+fTqgOUmfWo=;
+	b=NQHlKZQ+QjLjgq3yDAMRCJSCDTQpFKaem1LWnuKjGvFULXQpJp7IkznGtUx9QcfXKjeztF
+	uTrnTkaW4rkNxOBF+c7UBZ/1DCKyH1hOT5VsPXGESfDvxxIrbvblBIzqW7SBZu2QnbWvXU
+	LasaTgC21LZAhXbLnaAm6oyj1xBFy2w=
+Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
+ [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-58-Tr0n8Aj5Or-lbiOYGgyS8w-1; Wed, 06 Dec 2023 16:02:07 -0500
-X-MC-Unique: Tr0n8Aj5Or-lbiOYGgyS8w-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id A252F8353F2;
-	Wed,  6 Dec 2023 21:02:04 +0000 (UTC)
-Received: from [10.22.34.92] (unknown [10.22.34.92])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id B2EEB111E404;
-	Wed,  6 Dec 2023 21:02:02 +0000 (UTC)
-Message-ID: <469f44fb-2371-4b3b-bc1c-d09ec35a5ec8@redhat.com>
-Date: Wed, 6 Dec 2023 16:02:02 -0500
+ us-mta-249-BjoiSxFBNHmZ76JMIr1k5Q-1; Wed, 06 Dec 2023 09:58:26 -0500
+X-MC-Unique: BjoiSxFBNHmZ76JMIr1k5Q-1
+Received: by mail-lj1-f199.google.com with SMTP id 38308e7fff4ca-2c9f545220cso36301761fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Dec 2023 06:58:26 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701874705; x=1702479505;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=lI8W6CO+u1S10tMvsZNrVhiLtm/T33ov+fTqgOUmfWo=;
+        b=iSVfG5C1Hlv/7gW2OMpjE3bcm/Q5GcEEYfZ5asvP2EwKsV/sN1MkB4RbRuM23anJp1
+         jwEzPyM0Vd087y/ehyUIGswB+M+CV+SaWVgD3vbhO0EHwoyYBz42Yr4D+MtU29GwReau
+         PzC2ydPUxctoKx7vmMm/O4ZXQCGwsFyZm9uK+01eduRYBveI+aCNhqyUOBpFpPdoQJwt
+         BOFRjVLegPJ0nYRNvkfeRCjlZmr75ghbo6YZoaS49AXJhBS9+h61b9n12A7e1v4wOBaO
+         mLwO4JeQeFfDnPt5A1fYjHZSL4wm682sTrYmmxUIHORnI0zNy46DEc6GAHjKsDNkxTJO
+         VAbw==
+X-Gm-Message-State: AOJu0YwNXMTMd+z4QTZ3OvM8AxU6G8ieBhncLgl+UfQbaV/wLtAwL2Ey
+	VqmEJvarRzy52PLuid3RYIiy98LBYVuAsq59babmO4bg7aTFhpe+DnmIX8K36b14jaTS1uOFCd4
+	8FJW9Nv2asnHqD/e38k86pRaKLw==
+X-Received: by 2002:a2e:879a:0:b0:2c9:f2ef:cf14 with SMTP id n26-20020a2e879a000000b002c9f2efcf14mr784404lji.67.1701874705523;
+        Wed, 06 Dec 2023 06:58:25 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHFAROg+Lxclo/3NuDIimFR4fm3oJ99oj3ElVJlPS5SozqYTKjUwT8fR42ApPqSVQx8pFmf9Q==
+X-Received: by 2002:a2e:879a:0:b0:2c9:f2ef:cf14 with SMTP id n26-20020a2e879a000000b002c9f2efcf14mr784392lji.67.1701874705190;
+        Wed, 06 Dec 2023 06:58:25 -0800 (PST)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id br20-20020a170906d15400b00a1dcfd8f95csm27081ejb.37.2023.12.06.06.58.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 Dec 2023 06:58:24 -0800 (PST)
+Message-ID: <6381d523-8f49-48e2-8576-b74a14eead30@redhat.com>
+Date: Wed, 6 Dec 2023 15:58:23 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 01/10] devm-helpers: introduce devm_mutex_init
-Content-Language: en-US
-To: Hans de Goede <hdegoede@redhat.com>,
- George Stark <gnstark@salutedevices.com>, pavel@ucw.cz, lee@kernel.org,
- vadimp@nvidia.com, mpe@ellerman.id.au, npiggin@gmail.com,
- christophe.leroy@csgroup.eu, mazziesaccount@gmail.com,
- andy.shevchenko@gmail.com, jic23@kernel.org, peterz@infradead.org
+To: George Stark <gnstark@salutedevices.com>,
+ Andy Shevchenko <andy.shevchenko@gmail.com>
 References: <20231204180603.470421-1-gnstark@salutedevices.com>
  <20231204180603.470421-2-gnstark@salutedevices.com>
- <81798fe5-f89e-482f-b0d0-674ccbfc3666@redhat.com>
- <29584eb6-fa10-4ce0-9fa3-0c409a582445@salutedevices.com>
- <580ecff0-b335-4cc0-b928-a99fe73741ca@redhat.com>
-From: Waiman Long <longman@redhat.com>
-In-Reply-To: <580ecff0-b335-4cc0-b928-a99fe73741ca@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <CAHp75Vc=GAnzwhWQTifLzw8OA7Lb35hrJCDxK-RkgZnX8JmfOg@mail.gmail.com>
+ <48ea90f9-922d-4a03-86da-cbb5aa9908b6@salutedevices.com>
+From: Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <48ea90f9-922d-4a03-86da-cbb5aa9908b6@salutedevices.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US, nl
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.3
+X-Mailman-Approved-At: Thu, 07 Dec 2023 09:10:12 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,96 +105,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, vadimp@nvidia.com, mazziesaccount@gmail.com, kernel@salutedevices.com, lee@kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, pavel@ucw.cz, linux-leds@vger.kernel.org, jic23@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/6/23 14:55, Hans de Goede wrote:
-> Hi,
->
-> On 12/6/23 19:58, George Stark wrote:
->> Hello Hans
->>
->> Thanks for the review.
->>
->> On 12/6/23 18:01, Hans de Goede wrote:
->>> Hi George,
->>>
->>> On 12/4/23 19:05, George Stark wrote:
->>>> Using of devm API leads to certain order of releasing resources.
->>>> So all dependent resources which are not devm-wrapped should be deleted
->>>> with respect to devm-release order. Mutex is one of such objects that
->>>> often is bound to other resources and has no own devm wrapping.
->>>> Since mutex_destroy() actually does nothing in non-debug builds
->>>> frequently calling mutex_destroy() is just ignored which is safe for now
->>>> but wrong formally and can lead to a problem if mutex_destroy() is
->>>> extended so introduce devm_mutex_init().
->>>>
->>>> Signed-off-by: George Stark <gnstark@salutedevices.com>
->>>> ---
->>>>    include/linux/devm-helpers.h | 18 ++++++++++++++++++
->>>>    1 file changed, 18 insertions(+)
->>>>
->>>> diff --git a/include/linux/devm-helpers.h b/include/linux/devm-helpers.h
->>>> index 74891802200d..2f56e476776f 100644
->>>> --- a/include/linux/devm-helpers.h
->>>> +++ b/include/linux/devm-helpers.h
->>>> @@ -76,4 +76,22 @@ static inline int devm_work_autocancel(struct device *dev,
->>>>        return devm_add_action(dev, devm_work_drop, w);
->>>>    }
->>>>    +static inline void devm_mutex_release(void *res)
->>>> +{
->>>> +    mutex_destroy(res);
->>>> +}
->>>> +
->>>> +/**
->>>> + * devm_mutex_init - Resource-managed mutex initialization
->>>> + * @dev:    Device which lifetime work is bound to
->>>> + * @lock:    Pointer to a mutex
->>>> + *
->>>> + * Initialize mutex which is automatically destroyed when driver is detached.
->>>> + */
->>>> +static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
->>>> +{
->>>> +    mutex_init(lock);
->>>> +    return devm_add_action_or_reset(dev, devm_mutex_release, lock);
->>>> +}
->>>> +
->>>>    #endif
->>> mutex_destroy() only actually does anything if CONFIG_DEBUG_MUTEXES
->>> is set, otherwise it is an empty inline-stub.
->>>
->>> Adding a devres resource to the device just to call an empty inline
->>> stub which is a no-op seems like a waste of resources. IMHO it
->>> would be better to change this to:
->>>
->>> static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
->>> {
->>>      mutex_init(lock);
->>> #ifdef CONFIG_DEBUG_MUTEXES
->>>      return devm_add_action_or_reset(dev, devm_mutex_release, lock);
->>> #else
->>>      return 0;
->>> #endif
->>> }
->>>
->>> To avoid the unnecessary devres allocation when
->>> CONFIG_DEBUG_MUTEXES is not set.
->> Honestly saying I don't like unnecessary devres allocation either but the proposed approach has its own price:
->>
->> 1) we'll have more than one place with branching if mutex_destroy is empty or not using  indirect condition. If suddenly mutex_destroy is extended for non-debug code (in upstream branch or e.g. by someone for local debug) than there'll be a problem.
->>
->> 2) If mutex_destroy is empty or not depends on CONFIG_PREEMPT_RT option too. When CONFIG_PREEMPT_RT is on mutex_destroy is always empty.
->>
->> As I see it only the mutex interface (mutex.h) has to say definitely if mutex_destroy must be called. Probably we could add some define to include/linux/mutex.h,like IS_MUTEX_DESTROY_REQUIRED and declare it near mutex_destroy definition itself.
-> That (a  IS_MUTEX_DESTROY_REQUIRED define) is an interesting idea. Lets see for v3 if the mutex maintainers will accept that and if not then I guess we will just need to live with the unnecessary devres allocation.
+Hi,
 
-The purpose of calling mutex_destroy() is to mark a mutex as being 
-destroyed so that any subsequent call to mutex_lock/unlock will cause a 
-warning to be printed when CONFIG_DEBUG_MUTEXES is defined. I would not 
-say that mutex_destroy() is required. Rather it is a nice to have for 
-catching programming error.
+On 12/6/23 08:56, George Stark wrote:
+> Hello Andy
+> 
+> Thanks for the review.
+> 
+> On 12/4/23 21:11, Andy Shevchenko wrote:
+>> On Mon, Dec 4, 2023 at 8:07 PM George Stark <gnstark@salutedevices.com> wrote:
+>>>
+>>> Using of devm API leads to certain order of releasing resources.
+>>> So all dependent resources which are not devm-wrapped should be deleted
+>>> with respect to devm-release order. Mutex is one of such objects that
+>>> often is bound to other resources and has no own devm wrapping.
+>>> Since mutex_destroy() actually does nothing in non-debug builds
+>>> frequently calling mutex_destroy() is just ignored which is safe for now
+>>> but wrong formally and can lead to a problem if mutex_destroy() is
+>>> extended so introduce devm_mutex_init().
+>>
+>> ...
+>>
+>> Do you need to include mutex.h?
+> It's already included in linux/device.h which is included in devm-helpers. Should I include mutex.h explicitly?
 
-Cheers,
-Longman
+Yes you must explicitly include all headers you use definitions
+from. Relying on other headers to do this for you is error prone.
+
+Regards,
+
+Hans
+
 
