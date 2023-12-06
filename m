@@ -4,57 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90824C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 12:30:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A29CC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 15:38:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ehRZTaiX;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CZGrVUyW;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CZGrVUyW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SlcFD1qBsz3dJk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Dec 2023 23:30:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SlhQP3rBQz3c5H
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 02:38:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ehRZTaiX;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CZGrVUyW;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CZGrVUyW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SlcCj2KG2z3cW7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2023 23:29:21 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 4176CCE1D0D;
-	Wed,  6 Dec 2023 12:29:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DCD5C433C7;
-	Wed,  6 Dec 2023 12:29:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1701865757;
-	bh=Q0HoZRs2Q9F2t4b+cosMNjZ1vgtsTwFBeajyDqNa8h4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ehRZTaiXFsk/ydXQ+4ao5HFzJLeWtX/bL+ikaKNp0CGFWNECCN+fL5eXM7EZ/lZl4
-	 3iGpJ+bTP9PENPHJhPItf5HRuONIyFzWVcd2vpZ2HioGX91Nu7ZRl+5j38CXJIM0UA
-	 sw0fa+0/S7MBICxnqVo5C/ggHBKecwXs/HGD7xZyIdIVvLKouQs3FbIiuKGmWKeTSK
-	 6u37INE3uabqmLy4k0+Gw1y8rVCbo6+Rajq6o+MFbmjL/sL6Rdwkv2CR1hXOI2/1AS
-	 OkfUj+dcQpJi4zk37idjp6cAHMHU5yn79o49kA0OVgAtdYOaR1vs/CCX0ROzj/oHQ6
-	 h/l+Wgti+0NkQ==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 2CF224041A; Wed,  6 Dec 2023 09:29:15 -0300 (-03)
-Date: Wed, 6 Dec 2023 09:29:15 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4] tools/perf: Add perf binary dependent rule for
- shellcheck log in Makefile.perf
-Message-ID: <ZXBpG69R2D/nKlTZ@kernel.org>
-References: <20231123160232.94253-1-atrajeev@linux.vnet.ibm.com>
- <e8143e4d-d3ca-88c5-f1c8-b79f70ee5ffa@arm.com>
- <ZW+bIGC3r2dcTQUO@kernel.org>
- <46112CD2-2033-4885-863B-CF0F61672E65@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SlhPS6Y3bz2yts
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 02:38:04 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1701877081;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7m8xOH4+zttkQQNEKRFuMltiPwniLE68hwW+zcTlG4s=;
+	b=CZGrVUyWRHlOe+N8X7sbXSgZvuYGIbMXyPyAUUuLYKaIxlQAoGeANR77VS0vNm42bxfvSB
+	bDf0HDfD/uHJuXu2ktlEhYt5mGcsYu51jLqNEhxQQFy4v4Yuux0DtsPt98xfS71cC7ovGQ
+	XGBneVfj7BnsR2bB9X5Tc8EnAW6jfiQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1701877081;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7m8xOH4+zttkQQNEKRFuMltiPwniLE68hwW+zcTlG4s=;
+	b=CZGrVUyWRHlOe+N8X7sbXSgZvuYGIbMXyPyAUUuLYKaIxlQAoGeANR77VS0vNm42bxfvSB
+	bDf0HDfD/uHJuXu2ktlEhYt5mGcsYu51jLqNEhxQQFy4v4Yuux0DtsPt98xfS71cC7ovGQ
+	XGBneVfj7BnsR2bB9X5Tc8EnAW6jfiQ=
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-428-vpZ8jbrXNUaooO-lmVkN9w-1; Wed,
+ 06 Dec 2023 10:37:57 -0500
+X-MC-Unique: vpZ8jbrXNUaooO-lmVkN9w-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 414881C32941;
+	Wed,  6 Dec 2023 15:37:56 +0000 (UTC)
+Received: from localhost (unknown [10.72.113.121])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id 8A16D8C0C;
+	Wed,  6 Dec 2023 15:37:55 +0000 (UTC)
+Date: Wed, 6 Dec 2023 23:37:52 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Conor Dooley <conor@kernel.org>
+Subject: Re: [PATCH v3 5/7] kexec_file, ricv: print out debugging message if
+ required
+Message-ID: <ZXCVUD9cCYEShrrj@MiWiFi-R3L-srv>
+References: <20231130023955.5257-1-bhe@redhat.com>
+ <20231130023955.5257-6-bhe@redhat.com>
+ <20231201-blog-blasphemy-985d2665903c@wendy>
+ <ZW3yXWJ7rTrtZzyg@MiWiFi-R3L-srv>
+ <20231204-liftoff-enclosure-d3e3daf0ab6e@spud>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46112CD2-2033-4885-863B-CF0F61672E65@linux.vnet.ibm.com>
-X-Url: http://acmel.wordpress.com
+In-Reply-To: <20231204-liftoff-enclosure-d3e3daf0ab6e@spud>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,42 +83,145 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users <linux-perf-users@vger.kernel.org>, James Clark <james.clark@arm.com>, Jiri Olsa <jolsa@kernel.org>, Namhyung Kim <namhyung@kernel.org>, disgoel@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-parisc@vger.kernel.org, x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, nathan@kernel.org, Conor Dooley <conor.dooley@microchip.com>, joe@perches.com, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Wed, Dec 06, 2023 at 10:15:06AM +0530, Athira Rajeev escreveu:
+On 12/04/23 at 04:14pm, Conor Dooley wrote:
+> On Mon, Dec 04, 2023 at 11:38:05PM +0800, Baoquan He wrote:
+> > On 12/01/23 at 10:38am, Conor Dooley wrote:
+> > > On Thu, Nov 30, 2023 at 10:39:53AM +0800, Baoquan He wrote:
+> > > 
+> > > $subject has a typo in the arch bit :)
+> > 
+> > Indeed, will fix if need report. Thanks for careful checking.
+> > 
+> > > 
+> > > > Replace pr_debug() with the newly added kexec_dprintk() in kexec_file
+> > > > loading related codes.
+> > > 
+> > > Commit messages should be understandable in isolation, but this only
+> > > explains (part of) what is obvious in the diff. Why is this change
+> > > being made?
+> > 
+> > The purpose has been detailedly described in cover letter and patch 1
+> > log. Andrew has picked these patches into his tree and grabbed the cover
+> > letter log into the relevant commit for people's later checking. All
+> > these seven patches will be present in mainline together. This is common
+> > way when posting patch series? Please let me know if I misunderstand
+> > anything.
 > 
-> 
-> > On 06-Dec-2023, at 3:20 AM, Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
-> > 
-> > Em Mon, Nov 27, 2023 at 11:12:57AM +0000, James Clark escreveu:
-> >> On 23/11/2023 16:02, Athira Rajeev wrote:
-> >>> --- a/tools/perf/Makefile.perf
-> >>> @@ -1134,6 +1152,7 @@ bpf-skel-clean:
-> >>> $(call QUIET_CLEAN, bpf-skel) $(RM) -r $(SKEL_TMP_OUT) $(SKELETONS)
-> >>> 
-> >>> clean:: $(LIBAPI)-clean $(LIBBPF)-clean $(LIBSUBCMD)-clean $(LIBSYMBOL)-clean $(LIBPERF)-clean fixdep-clean python-clean bpf-skel-clean tests-coresight-targets-clean
-> >>> + $(Q)$(MAKE) -f $(srctree)/tools/perf/tests/Makefile.tests clean
-> >>> $(call QUIET_CLEAN, core-objs)  $(RM) $(LIBPERF_A) $(OUTPUT)perf-archive $(OUTPUT)perf-iostat $(LANG_BINDINGS)
-> >>> $(Q)find $(or $(OUTPUT),.) -name '*.o' -delete -o -name '\.*.cmd' -delete -o -name '\.*.d' -delete
-> >>> $(Q)$(RM) $(OUTPUT).config-detected
-> > 
-> > While merging perf-tools-next with torvalds/master I noticed that maybe
-> > we better have the above added line as:
-> > 
-> > +   $(call QUIET_CLEAN, tests) $(Q)$(MAKE) -f $(srctree)/tools/perf/tests/Makefile.tests clean
-> > 
-> > No?
-> > 
-> > Anyway I'm merging as-is, but it just hit my eye while merging,
-> > 
-> > - Arnaldo
-> Hi Arnaldo
-> 
-> As Ian pointed we removed Makefile.tests as part of :
-> https://lore.kernel.org/lkml/20231129213428.2227448-1-irogers@google.com/
+> Each patch having a commit message that explains why a change is being
+> made is the expectation. It is especially useful to explain the why
+> here, since it is not just a mechanical conversion of pr_debug()s as the
+> commit message suggests.
 
-Right, thanks for checking, see my reply to Ian for further details.
+Sounds reasonable. I rephrase the patch 3 log as below, do you think
+it's OK to you?
 
-- Arnaldo
+I will also adjust patch logs on other ARCH once this one is done.
+Thanks.
+
+=============================
+Subject: [PATCH v3 5/7] kexec_file, ricv: print out debugging message if required
+
+Then when specifying '-d' for kexec_file_load interface, loaded
+locations of kernel/initrd/cmdline etc can be printed out to help debug.
+
+Here replace pr_debug() with the newly added kexec_dprintk() in kexec_file
+loading related codes.
+
+And also replace pr_notice() with kexec_dprintk() in elf_kexec_load()
+because it's make sense to always print out loaded location of purgatory
+and device tree even though users don't expect the message.
+
+And also remove kexec_image_info() because the content has been printed
+out in generic code.
+
+============================
+
+> 
+> > > 
+> > > > 
+> > > > And also remove kexec_image_info() because the content has been printed
+> > > > out in generic code.
+> > > > 
+> > > > Signed-off-by: Baoquan He <bhe@redhat.com>
+> > > > ---
+> > > >  arch/riscv/kernel/elf_kexec.c     | 11 ++++++-----
+> > > >  arch/riscv/kernel/machine_kexec.c | 26 --------------------------
+> > > >  2 files changed, 6 insertions(+), 31 deletions(-)
+> > > > 
+> > > > diff --git a/arch/riscv/kernel/elf_kexec.c b/arch/riscv/kernel/elf_kexec.c
+> > > > index e60fbd8660c4..5bd1ec3341fe 100644
+> > > > --- a/arch/riscv/kernel/elf_kexec.c
+> > > > +++ b/arch/riscv/kernel/elf_kexec.c
+> > > > @@ -216,7 +216,6 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
+> > > >  	if (ret)
+> > > >  		goto out;
+> > > >  	kernel_start = image->start;
+> > > > -	pr_notice("The entry point of kernel at 0x%lx\n", image->start);
+> > > >  
+> > > >  	/* Add the kernel binary to the image */
+> > > >  	ret = riscv_kexec_elf_load(image, &ehdr, &elf_info,
+> > > > @@ -252,8 +251,8 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
+> > > >  		image->elf_load_addr = kbuf.mem;
+> > > >  		image->elf_headers_sz = headers_sz;
+> > > >  
+> > > > -		pr_debug("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+> > > > -			 image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
+> > > > +		kexec_dprintk("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+> > > > +			      image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
+> > > >  
+> > > >  		/* Setup cmdline for kdump kernel case */
+> > > >  		modified_cmdline = setup_kdump_cmdline(image, cmdline,
+> > > > @@ -275,6 +274,8 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
+> > > >  		pr_err("Error loading purgatory ret=%d\n", ret);
+> > > >  		goto out;
+> > > >  	}
+> > > > +	kexec_dprintk("Loaded purgatory at 0x%lx\n", kbuf.mem);
+> > > > +
+> > > >  	ret = kexec_purgatory_get_set_symbol(image, "riscv_kernel_entry",
+> > > >  					     &kernel_start,
+> > > >  					     sizeof(kernel_start), 0);
+> > > > @@ -293,7 +294,7 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
+> > > >  		if (ret)
+> > > >  			goto out;
+> > > >  		initrd_pbase = kbuf.mem;
+> > > 
+> > > > -		pr_notice("Loaded initrd at 0x%lx\n", initrd_pbase);
+> > > > +		kexec_dprintk("Loaded initrd at 0x%lx\n", initrd_pbase);
+> > > 
+> > > This is not a pr_debug().
+> > > 
+> > > >  	}
+> > > >  
+> > > >  	/* Add the DTB to the image */
+> > > > @@ -318,7 +319,7 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
+> > > >  	}
+> > > >  	/* Cache the fdt buffer address for memory cleanup */
+> > > >  	image->arch.fdt = fdt;
+> > > 
+> > > > -	pr_notice("Loaded device tree at 0x%lx\n", kbuf.mem);
+> > > > +	kexec_dprintk("Loaded device tree at 0x%lx\n", kbuf.mem);
+> > > 
+> > > Neither is this. Why are they being moved from pr_notice()?
+> > 
+> > You are right. 
+> > 
+> > While always printing out the loaded location of purgatory and
+> > device tree doesn't make sense. It will be confusing when users
+> > see these even when they do normal kexec/kdump loading. It should be
+> > changed to pr_debug().
+> > 
+> > Which way do you suggest?
+> > 1) change it back to pr_debug(), fix it in another patch;
+> > 2) keep it as is in the patch;
+> 
+> Personally I think it is fine to change them all in one patch, but the
+> rationale for converting pr_notice() to your new debug infrastructure
+> needs to be in the commit message.
+
+Sure, sounds good to me. I have changed the patch log to reflect this as
+you suggested, please help check. Thanks again.
+
