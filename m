@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87187C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:45:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71114C10F05
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:45:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDWv0F40z3vcB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:45:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDXP14ncz3vhf
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:45:57 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVn0hVFz3d8N
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVn2vp2z3d96
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:33 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVg4zp8z4xKR;
-	Thu,  7 Dec 2023 23:44:27 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVm6bFkz4xNG;
+	Thu,  7 Dec 2023 23:44:32 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, Dario Binacchi <dario.binacchi@amarulasolutions.com>
-In-Reply-To: <20231124100241.660374-1-dario.binacchi@amarulasolutions.com>
-References: <20231124100241.660374-1-dario.binacchi@amarulasolutions.com>
-Subject: Re: [PATCH] powerpc/85xx: Fix typo in code comment
-Message-Id: <170195271169.2310221.14321198700560335077.b4-ty@ellerman.id.au>
+To: fbarrat@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org, Li kunyu <kunyu@nfschina.com>
+In-Reply-To: <20231113015229.12074-1-kunyu@nfschina.com>
+References: <20231113015229.12074-1-kunyu@nfschina.com>
+Subject: Re: [PATCH] misc: ocxl: main: Remove unnecessary ‘0’ values from rc
+Message-Id: <170195271158.2310221.3721930020266501788.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,18 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, Zhicheng Fan <b32736@freescale.com>, linuxppc-dev@lists.ozlabs.org, Kumar Gala <galak@kernel.crashing.org>, Nicholas Piggin <npiggin@gmail.com>, Scott Wood <oss@buserror.net>, Pali Rohár <pali@kernel.org>, Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 Nov 2023 11:02:37 +0100, Dario Binacchi wrote:
-> s/singals/signals/
+On Mon, 13 Nov 2023 09:52:29 +0800, Li kunyu wrote:
+> rc is assigned first, so it does not need to initialize the assignment.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/85xx: Fix typo in code comment
-      https://git.kernel.org/powerpc/c/a9e1e4d6e8c77c732e8084b03bae0c78cafdceb0
+[1/1] misc: ocxl: main: Remove unnecessary ‘0’ values from rc
+      https://git.kernel.org/powerpc/c/29685ea5754f04c84ad443fd7c6869c68f636c26
 
 cheers
