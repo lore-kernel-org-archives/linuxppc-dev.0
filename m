@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 689E4C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:48:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABE75C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:48:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDZw1Byvz3w8p
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:48:08 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDbQ39lvz3wDW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:48:34 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVq2hTdz3dH8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVq6G5bz3dHJ
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:35 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVq1PWdz4xPY;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVq57dGz4xMv;
 	Thu,  7 Dec 2023 23:44:35 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231113051929.1952351-1-mpe@ellerman.id.au>
-References: <20231113051929.1952351-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/32: Drop unused grackle_set_stg()
-Message-Id: <170195271159.2310221.9196920543894957549.b4-ty@ellerman.id.au>
+In-Reply-To: <20231024112726.1819795-1-mpe@ellerman.id.au>
+References: <20231024112726.1819795-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/configs/64s: Enable CONFIG_MEM_SOFT_DIRTY
+Message-Id: <170195271159.2310221.5412588290546588528.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bhelgaas@google.com, nathan@kernel.org, ndesaulniers@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 Nov 2023 16:19:29 +1100, Michael Ellerman wrote:
-> The call to grackle_set_stg() ("Store Gathering") has always been inside
-> an #ifdef 0, since the code was first merged in v2.3.43pre7.
+On Tue, 24 Oct 2023 22:27:25 +1100, Michael Ellerman wrote:
+> Enable CONFIG_MEM_SOFT_DIRTY to get some test coverage. Distros enable
+> it, and it has been broken previously. See commit 66b2ca086210
+> ("powerpc/64s/radix: Fix soft dirty tracking").
 > 
-> Apparently it was suspected of causing problems on some hardware so was
-> disabled. No one has ever proved otherwise so drop the code as unused
-> for now.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/32: Drop unused grackle_set_stg()
-      https://git.kernel.org/powerpc/c/c8a1634145c23a5a979a7166a12b99871812a6ab
+[1/1] powerpc/configs/64s: Enable CONFIG_MEM_SOFT_DIRTY
+      https://git.kernel.org/powerpc/c/183bc0c640c785a710885a10b614193f114fe760
 
 cheers
