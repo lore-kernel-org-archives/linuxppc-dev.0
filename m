@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CD3AC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 689E4C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:48:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDZQ23K5z3w3q
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:47:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDZw1Byvz3w8p
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:48:08 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVp62Vcz3dDp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVq2hTdz3dH8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:35 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVp4w1Gz4xPf;
-	Thu,  7 Dec 2023 23:44:34 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVq1PWdz4xPY;
+	Thu,  7 Dec 2023 23:44:35 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231129131919.2528517-1-mpe@ellerman.id.au>
-References: <20231129131919.2528517-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/5] powerpc/suspend: Add prototype for do_after_copyback()
-Message-Id: <170195271166.2310221.15576290190918769105.b4-ty@ellerman.id.au>
+In-Reply-To: <20231113051929.1952351-1-mpe@ellerman.id.au>
+References: <20231113051929.1952351-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/32: Drop unused grackle_set_stg()
+Message-Id: <170195271159.2310221.9196920543894957549.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,34 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de
+Cc: bhelgaas@google.com, nathan@kernel.org, ndesaulniers@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 30 Nov 2023 00:19:15 +1100, Michael Ellerman wrote:
-> With HIBERNATION=y the build breaks with:
+On Mon, 13 Nov 2023 16:19:29 +1100, Michael Ellerman wrote:
+> The call to grackle_set_stg() ("Store Gathering") has always been inside
+> an #ifdef 0, since the code was first merged in v2.3.43pre7.
 > 
->   arch/powerpc/kernel/swsusp_64.c:14:6: error: no previous prototype for ‘do_after_copyback’ [-Werror=missing-prototypes]
->   14 | void do_after_copyback(void)
->      |      ^~~~~~~~~~~~~~~~~
-> 
-> do_after_copyback() is only called from asm, so there is no prototype,
-> nor any header where it makes sense to place one. Just add a prototype
-> in the C file to fix the build error.
+> Apparently it was suspected of causing problems on some hardware so was
+> disabled. No one has ever proved otherwise so drop the code as unused
+> for now.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/5] powerpc/suspend: Add prototype for do_after_copyback()
-      https://git.kernel.org/powerpc/c/360f051d82ee0cc580edfffe9e8c0b93011ab86d
-[2/5] powerpc/512x: Make pdm360ng_init() static
-      https://git.kernel.org/powerpc/c/24afc61990de29dd47be7642c196a173f6cc21fc
-[3/5] powerpc/512x: Fix missing prototype warnings
-      https://git.kernel.org/powerpc/c/10feb8f9612239b665815807e950bcd999a75dd2
-[4/5] powerpc/44x: Make ppc44x_idle_init() static
-      https://git.kernel.org/powerpc/c/b90ad501715f2feb1b0bf97aa700adb39c78deb3
-[5/5] powerpc/64s: Fix CONFIG_NUMA=n build
-      https://git.kernel.org/powerpc/c/ede66cd22441820cbd399936bf84fdc4294bc7fa
+[1/1] powerpc/32: Drop unused grackle_set_stg()
+      https://git.kernel.org/powerpc/c/c8a1634145c23a5a979a7166a12b99871812a6ab
 
 cheers
