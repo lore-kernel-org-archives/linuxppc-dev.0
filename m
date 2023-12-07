@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D416FC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:41:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C98EC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:41:54 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DH6IRHk9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q7Iz3zUs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmW4K2K08z3cTm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 10:41:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmW5F0MQTz3vcL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 10:41:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DH6IRHk9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q7Iz3zUs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmW1V3pwHz3cDy
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmW1V6yBVz3cS3
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 10:38:38 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id CFBA962243;
-	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 153A0C433AB;
+	by sin.source.kernel.org (Postfix) with ESMTP id 7AA7DCE25D3;
+	Thu,  7 Dec 2023 23:38:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3C2D6C433B9;
 	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1701992315;
-	bh=6lAz05ak4ecW+F2/qU7xixMjkVZa2GJt0pcFRiiaFrY=;
+	bh=p08xip5llOn8avcZ/i/itHRMLmdBVkckMkou2Z5Hi8o=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=DH6IRHk97xsYC/SOf95VhVaJiylkYfypdAmL5Qbu6MZ/u+UZ+3Be0jrIqoezFrg3q
-	 +S1jSSpZ+JOHdI5/isRAOgJbgpMHi9xMqaLy4sHn5wGd/s6Td8Q4YPxoZ7NIaJtRa7
-	 W7Ta1zeXXsa+142BNVWN2FZGBeNkuHcywnmzUGnqXCejoXDaOxd3QIOX2QDT2PkTT7
-	 /tpW6DzOedYCQKigFPTOHFC+Imh6gPymsmTWP20KHJG4J8a5lA/lx4SlX1tKGePO+B
-	 pSHn2I0+8HsPgXp0vSLi8GFfsXIWnoP2Qc5NLVCEy70Ic23TwmqZdu4RlYyLwhl2pa
-	 OZLSiS3//0c1A==
+	b=q7Iz3zUs61q6+UiYqao9TllF7beZBJfQFOwSfahw0ZAMTicjIWpcD+zBdTRbSFihv
+	 cvDOAg3mbv/MG44OgAmxhUMowK6DvusucIHzJIHvjh+ODtXmnDsERIsHUflAFgsW8Y
+	 NcIQbo0AjC6aGgUPv/IXiYMgPiuXhx3dUY/LRlgKfcf1rVr5gbG77Ff+PDskbEL9zl
+	 Wgz32mgYppYMdemhpOp0sRoIRii5CcZ/YTL/Y7ocoNA3xxircZOMoFMzQN7080pUfV
+	 qx3PmRWINlYcgTcaT2VRZfQ2Afy2emrsJlgKNS9Da59jJH5He82Z6b+V3Ugrs0Zoxs
+	 PLNwqlz9XGKqg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05F1FC46CA3;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C3ACC4167B;
 	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Thu, 07 Dec 2023 17:35:47 -0600
-Subject: [PATCH v5 08/13] powerpc/rtas: Warn if per-function lock isn't
- held
+Date: Thu, 07 Dec 2023 17:35:49 -0600
+Subject: [PATCH v5 10/13] powerpc/pseries/papr-sysparm: Validate buffer
+ object lengths
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20231207-papr-sys_rtas-vs-lockdown-v5-8-2ce965636a58@linux.ibm.com>
+Message-Id:  <20231207-papr-sys_rtas-vs-lockdown-v5-10-2ce965636a58@linux.ibm.com>
 References:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
 In-Reply-To:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1701992313; l=1931;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1701992313; l=3564;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=WeXFrQimFfnHGgmR7i5yQRK5CXtu2ckkZ+eRYu/mNRs=;
- b=XT53HGdVRT4F1cRAiaWlZ38jWNSACafNy+8GhDfhvXtwo0AQ/XMG/eZA88mvLSLn26W12qeJl
- rvI25FJgIpbCLvR1EGFFyu9LD/T4zJyekzbBDguUmXjqGRET5oD3vZx
+ bh=6bbrgd0ovnUjw1itj15WIksclWVAl56tP1qwG+1R09U=;
+ b=JPFhqFjZrc2nkRyY+p1mv+xa1cJ6bfQHt74+HaneTBlAIDMXZ5ypewEcpRzVeZJ5wje2IoQC7
+ SGTIViCF4RGBjpFvHAppFor9eAv3ZEP0SA0YTj+njejyGoxNmfgitA4
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -80,62 +80,107 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-If the function descriptor has a populated lock member, then callers
-are required to hold it across calls. Now that the firmware activation
-sequence is appropriately guarded, we can warn when the requirement
-isn't satisfied.
+The ability to get and set system parameters will be exposed to user
+space, so let's get a little more strict about malformed
+papr_sysparm_buf objects.
 
-__do_enter_rtas_trace() gets reorganized a bit as a result of
-performing the function descriptor lookup unconditionally now.
+* Create accessors for the length field of struct papr_sysparm_buf.
+  The length is always stored in MSB order and this is better than
+  spreading the necessary conversions all over.
 
-Reviewed-by: Aneesh Kumar K.V (IBM) <aneesh.kumar@kernel.org>
+* Reject attempts to submit invalid buffers to RTAS.
+
+* Warn if RTAS returns a buffer with an invalid length, clamping the
+  returned length to a safe value that won't overrun the buffer.
+
+These are meant as precautionary measures to mitigate both firmware
+and kernel bugs in this area, should they arise, but I am not aware of
+any.
+
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtas.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/pseries/papr-sysparm.c | 47 +++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 72f6b5a402dd..7e793b503e29 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -671,28 +671,25 @@ static void __do_enter_rtas(struct rtas_args *args)
- 
- static void __do_enter_rtas_trace(struct rtas_args *args)
- {
--	const char *name = NULL;
-+	const struct rtas_function *func = rtas_token_to_function(be32_to_cpu(args->token));
- 
--	if (args == &rtas_args)
--		lockdep_assert_held(&rtas_lock);
- 	/*
--	 * If the tracepoints that consume the function name aren't
--	 * active, avoid the lookup.
-+	 * If there is a per-function lock, it must be held by the
-+	 * caller.
- 	 */
--	if ((trace_rtas_input_enabled() || trace_rtas_output_enabled())) {
--		const s32 token = be32_to_cpu(args->token);
--		const struct rtas_function *func = rtas_token_to_function(token);
-+	if (func->lock)
-+		lockdep_assert_held(func->lock);
- 
--		name = func->name;
--	}
-+	if (args == &rtas_args)
-+		lockdep_assert_held(&rtas_lock);
- 
--	trace_rtas_input(args, name);
-+	trace_rtas_input(args, func->name);
- 	trace_rtas_ll_entry(args);
- 
- 	__do_enter_rtas(args);
- 
- 	trace_rtas_ll_exit(args);
--	trace_rtas_output(args, name);
-+	trace_rtas_output(args, func->name);
+diff --git a/arch/powerpc/platforms/pseries/papr-sysparm.c b/arch/powerpc/platforms/pseries/papr-sysparm.c
+index fedc61599e6c..a1e7aeac7416 100644
+--- a/arch/powerpc/platforms/pseries/papr-sysparm.c
++++ b/arch/powerpc/platforms/pseries/papr-sysparm.c
+@@ -23,6 +23,46 @@ void papr_sysparm_buf_free(struct papr_sysparm_buf *buf)
+ 	kfree(buf);
  }
  
- static void do_enter_rtas(struct rtas_args *args)
++static size_t papr_sysparm_buf_get_length(const struct papr_sysparm_buf *buf)
++{
++	return be16_to_cpu(buf->len);
++}
++
++static void papr_sysparm_buf_set_length(struct papr_sysparm_buf *buf, size_t length)
++{
++	WARN_ONCE(length > sizeof(buf->val),
++		  "bogus length %zu, clamping to safe value", length);
++	length = min(sizeof(buf->val), length);
++	buf->len = cpu_to_be16(length);
++}
++
++/*
++ * For use on buffers returned from ibm,get-system-parameter before
++ * returning them to callers. Ensures the encoded length of valid data
++ * cannot overrun buf->val[].
++ */
++static void papr_sysparm_buf_clamp_length(struct papr_sysparm_buf *buf)
++{
++	papr_sysparm_buf_set_length(buf, papr_sysparm_buf_get_length(buf));
++}
++
++/*
++ * Perform some basic diligence on the system parameter buffer before
++ * submitting it to RTAS.
++ */
++static bool papr_sysparm_buf_can_submit(const struct papr_sysparm_buf *buf)
++{
++	/*
++	 * Firmware ought to reject buffer lengths that exceed the
++	 * maximum specified in PAPR, but there's no reason for the
++	 * kernel to allow them either.
++	 */
++	if (papr_sysparm_buf_get_length(buf) > sizeof(buf->val))
++		return false;
++
++	return true;
++}
++
+ /**
+  * papr_sysparm_get() - Retrieve the value of a PAPR system parameter.
+  * @param: PAPR system parameter token as described in
+@@ -63,6 +103,9 @@ int papr_sysparm_get(papr_sysparm_t param, struct papr_sysparm_buf *buf)
+ 	if (token == RTAS_UNKNOWN_SERVICE)
+ 		return -ENOENT;
+ 
++	if (!papr_sysparm_buf_can_submit(buf))
++		return -EINVAL;
++
+ 	work_area = rtas_work_area_alloc(sizeof(*buf));
+ 
+ 	memcpy(rtas_work_area_raw_buf(work_area), buf, sizeof(*buf));
+@@ -77,6 +120,7 @@ int papr_sysparm_get(papr_sysparm_t param, struct papr_sysparm_buf *buf)
+ 	case 0:
+ 		ret = 0;
+ 		memcpy(buf, rtas_work_area_raw_buf(work_area), sizeof(*buf));
++		papr_sysparm_buf_clamp_length(buf);
+ 		break;
+ 	case -3: /* parameter not implemented */
+ 		ret = -EOPNOTSUPP;
+@@ -115,6 +159,9 @@ int papr_sysparm_set(papr_sysparm_t param, const struct papr_sysparm_buf *buf)
+ 	if (token == RTAS_UNKNOWN_SERVICE)
+ 		return -ENOENT;
+ 
++	if (!papr_sysparm_buf_can_submit(buf))
++		return -EINVAL;
++
+ 	work_area = rtas_work_area_alloc(sizeof(*buf));
+ 
+ 	memcpy(rtas_work_area_raw_buf(work_area), buf, sizeof(*buf));
 
 -- 
 2.41.0
