@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3E41C10DC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87187C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:45:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDWD5LcTz3dFx
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:44:56 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDWv0F40z3vcB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:45:31 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVg36D7z3cSQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVn0hVFz3d8N
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:33 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVd6PQ0z4xGP;
-	Thu,  7 Dec 2023 23:44:25 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVg4zp8z4xKR;
+	Thu,  7 Dec 2023 23:44:27 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, robh@kernel.org, Kunwu Chan <chentao@kylinos.cn>
-In-Reply-To: <20231122030651.3818-1-chentao@kylinos.cn>
-References: <20231122030651.3818-1-chentao@kylinos.cn>
-Subject: Re: [PATCH] powerpc/xics: Check return value of kasprintf in icp_native_map_one_cpu
-Message-Id: <170195271161.2310221.15976559317519125264.b4-ty@ellerman.id.au>
+To: linux-kernel@vger.kernel.org, Dario Binacchi <dario.binacchi@amarulasolutions.com>
+In-Reply-To: <20231124100241.660374-1-dario.binacchi@amarulasolutions.com>
+References: <20231124100241.660374-1-dario.binacchi@amarulasolutions.com>
+Subject: Re: [PATCH] powerpc/85xx: Fix typo in code comment
+Message-Id: <170195271169.2310221.14321198700560335077.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,20 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kunwu.chan@hotmail.com
+Cc: Rob Herring <robh@kernel.org>, Zhicheng Fan <b32736@freescale.com>, linuxppc-dev@lists.ozlabs.org, Kumar Gala <galak@kernel.crashing.org>, Nicholas Piggin <npiggin@gmail.com>, Scott Wood <oss@buserror.net>, Pali Rohár <pali@kernel.org>, Timur Tabi <timur@freescale.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 22 Nov 2023 11:06:51 +0800, Kunwu Chan wrote:
-> kasprintf() returns a pointer to dynamically allocated memory
-> which can be NULL upon failure. Ensure the allocation was successful
-> by checking the pointer validity.
+On Fri, 24 Nov 2023 11:02:37 +0100, Dario Binacchi wrote:
+> s/singals/signals/
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xics: Check return value of kasprintf in icp_native_map_one_cpu
-      https://git.kernel.org/powerpc/c/45b1ba7e5d1f6881050d558baf9bc74a2ae13930
+[1/1] powerpc/85xx: Fix typo in code comment
+      https://git.kernel.org/powerpc/c/a9e1e4d6e8c77c732e8084b03bae0c78cafdceb0
 
 cheers
