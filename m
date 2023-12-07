@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FDB4C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:40:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D416FC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:41:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oTM5Z2yx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DH6IRHk9;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmW3P5CLsz3dRV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 10:40:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmW4K2K08z3cTm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 10:41:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oTM5Z2yx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DH6IRHk9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmW1V3wvtz3cPk
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmW1V3pwHz3cDy
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 10:38:38 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 7ECDB6223F;
+	by dfw.source.kernel.org (Postfix) with ESMTP id CFBA962243;
 	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E3C64C433CB;
-	Thu,  7 Dec 2023 23:38:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 153A0C433AB;
+	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1701992314;
-	bh=IwxclI4wsCmE1ANpwai8qi1muSS6ZB21bW8sFJIR7iY=;
+	s=k20201202; t=1701992315;
+	bh=6lAz05ak4ecW+F2/qU7xixMjkVZa2GJt0pcFRiiaFrY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=oTM5Z2yxgqnIlUeWWmJDH3G/NSDMFZrZHjueGFizEs1g3Uedbm/3ZVEidzsKzQ5Hg
-	 Gv6dP5fweDp2mYt49LhGBI3FKtFxcH70ueGCtpUJArlUV/4J25sp+I+r88/RZMaCs+
-	 z/Enj2WJwgeE7TOsV+9/5TliXK9O0GPRa/3/xvKjYhuMnak4AIT7OJKhJmEw/QxJmp
-	 6WQFHL5irZlJ+IuJEQGPUXoKUqHEL/qDAOyvQNQw4mSB6FLp4J/LhqQgQkkfWkhr0I
-	 aDAEs/XeShYHszNFnmMg8VNy2Z1S5592zY1kvqpPxdCV21HDSlzAYOUdqwNV06AXc9
-	 kM3e5qFyTjNcg==
+	b=DH6IRHk97xsYC/SOf95VhVaJiylkYfypdAmL5Qbu6MZ/u+UZ+3Be0jrIqoezFrg3q
+	 +S1jSSpZ+JOHdI5/isRAOgJbgpMHi9xMqaLy4sHn5wGd/s6Td8Q4YPxoZ7NIaJtRa7
+	 W7Ta1zeXXsa+142BNVWN2FZGBeNkuHcywnmzUGnqXCejoXDaOxd3QIOX2QDT2PkTT7
+	 /tpW6DzOedYCQKigFPTOHFC+Imh6gPymsmTWP20KHJG4J8a5lA/lx4SlX1tKGePO+B
+	 pSHn2I0+8HsPgXp0vSLi8GFfsXIWnoP2Qc5NLVCEy70Ic23TwmqZdu4RlYyLwhl2pa
+	 OZLSiS3//0c1A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1570C10F04;
-	Thu,  7 Dec 2023 23:38:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05F1FC46CA3;
+	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Thu, 07 Dec 2023 17:35:43 -0600
-Subject: [PATCH v5 04/13] powerpc/rtas: Add function return status
- constants
+Date: Thu, 07 Dec 2023 17:35:47 -0600
+Subject: [PATCH v5 08/13] powerpc/rtas: Warn if per-function lock isn't
+ held
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20231207-papr-sys_rtas-vs-lockdown-v5-4-2ce965636a58@linux.ibm.com>
+Message-Id:  <20231207-papr-sys_rtas-vs-lockdown-v5-8-2ce965636a58@linux.ibm.com>
 References:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
 In-Reply-To:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1701992313; l=2372;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1701992313; l=1931;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=kCuJERDzmYgBzIZZ4Ubp2I3CxXEFkU4/FSvd3ux6m2U=;
- b=igL53VepUK5f0kaeVNNK6STqFc7SOM9kpJXudeFkJNdeeq6J4wGRSXpPP00ml9wxo3JakbIp8
- UDoLUvHr8cjB0YwzCdCn+4dyfJP5OUVg1pSkHfDWtz5Ch/6W5tsXzkd
+ bh=WeXFrQimFfnHGgmR7i5yQRK5CXtu2ckkZ+eRYu/mNRs=;
+ b=XT53HGdVRT4F1cRAiaWlZ38jWNSACafNy+8GhDfhvXtwo0AQ/XMG/eZA88mvLSLn26W12qeJl
+ rvI25FJgIpbCLvR1EGFFyu9LD/T4zJyekzbBDguUmXjqGRET5oD3vZx
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -80,53 +80,62 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Not all of the generic RTAS function statuses specified in PAPR have
-symbolic constants and descriptions in rtas.h. Fix this, providing a
-little more background, slightly updating the existing wording, and
-improving the formatting.
+If the function descriptor has a populated lock member, then callers
+are required to hold it across calls. Now that the firmware activation
+sequence is appropriately guarded, we can warn when the requirement
+isn't satisfied.
+
+__do_enter_rtas_trace() gets reorganized a bit as a result of
+performing the function descriptor lookup unconditionally now.
 
 Reviewed-by: Aneesh Kumar K.V (IBM) <aneesh.kumar@kernel.org>
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h | 25 +++++++++++++++++++------
- 1 file changed, 19 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/rtas.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index a7110ed52e25..08d19e6904f7 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -201,12 +201,25 @@ typedef struct {
- /* Memory set aside for sys_rtas to use with calls that need a work area. */
- #define RTAS_USER_REGION_SIZE (64 * 1024)
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 72f6b5a402dd..7e793b503e29 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -671,28 +671,25 @@ static void __do_enter_rtas(struct rtas_args *args)
  
--/* RTAS return status codes */
--#define RTAS_HARDWARE_ERROR	-1    /* Hardware Error */
--#define RTAS_BUSY		-2    /* RTAS Busy */
--#define RTAS_INVALID_PARAMETER	-3    /* Invalid indicator/domain/sensor etc. */
--#define RTAS_EXTENDED_DELAY_MIN	9900
--#define RTAS_EXTENDED_DELAY_MAX	9905
-+/*
-+ * Common RTAS function return values, derived from the table "RTAS
-+ * Status Word Values" in PAPR+ v2.13 7.2.8: "Return Codes". If a
-+ * function can return a value in this table then generally it has the
-+ * meaning listed here. More extended commentary in the documentation
-+ * for rtas_call().
-+ *
-+ * RTAS functions may use negative and positive numbers not in this
-+ * set for function-specific error and success conditions,
-+ * respectively.
-+ */
-+#define RTAS_SUCCESS                     0 /* Success. */
-+#define RTAS_HARDWARE_ERROR             -1 /* Hardware or other unspecified error. */
-+#define RTAS_BUSY                       -2 /* Retry immediately. */
-+#define RTAS_INVALID_PARAMETER          -3 /* Invalid indicator/domain/sensor etc. */
-+#define RTAS_UNEXPECTED_STATE_CHANGE    -7 /* Seems limited to EEH and slot reset. */
-+#define RTAS_EXTENDED_DELAY_MIN       9900 /* Retry after delaying for ~1ms. */
-+#define RTAS_EXTENDED_DELAY_MAX       9905 /* Retry after delaying for ~100s. */
-+#define RTAS_ML_ISOLATION_ERROR      -9000 /* Multi-level isolation error. */
+ static void __do_enter_rtas_trace(struct rtas_args *args)
+ {
+-	const char *name = NULL;
++	const struct rtas_function *func = rtas_token_to_function(be32_to_cpu(args->token));
  
- /* statuses specific to ibm,suspend-me */
- #define RTAS_SUSPEND_ABORTED     9000 /* Suspension aborted */
+-	if (args == &rtas_args)
+-		lockdep_assert_held(&rtas_lock);
+ 	/*
+-	 * If the tracepoints that consume the function name aren't
+-	 * active, avoid the lookup.
++	 * If there is a per-function lock, it must be held by the
++	 * caller.
+ 	 */
+-	if ((trace_rtas_input_enabled() || trace_rtas_output_enabled())) {
+-		const s32 token = be32_to_cpu(args->token);
+-		const struct rtas_function *func = rtas_token_to_function(token);
++	if (func->lock)
++		lockdep_assert_held(func->lock);
+ 
+-		name = func->name;
+-	}
++	if (args == &rtas_args)
++		lockdep_assert_held(&rtas_lock);
+ 
+-	trace_rtas_input(args, name);
++	trace_rtas_input(args, func->name);
+ 	trace_rtas_ll_entry(args);
+ 
+ 	__do_enter_rtas(args);
+ 
+ 	trace_rtas_ll_exit(args);
+-	trace_rtas_output(args, name);
++	trace_rtas_output(args, func->name);
+ }
+ 
+ static void do_enter_rtas(struct rtas_args *args)
 
 -- 
 2.41.0
