@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71EE9C10F04
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3DD6C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:51:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDdy1VZJz3vvC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:50:46 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDfS3zD6z74rv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:51:12 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVt37Lrz3dBV
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVt6yzYz3dK8
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:38 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVt1y14z4xRn;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVt5l8Cz4xS0;
 	Thu,  7 Dec 2023 23:44:38 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
-References: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
-Subject: Re: [PATCH 0/7] powerpc/rtas: Trivial, coding style, and kernel-doc fixes
-Message-Id: <170195271156.2310221.17797655469126733617.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Palmer Dabbelt <palmer@rivosinc.com>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Kees Cook <keescook@chromium.org>, Nathan Lynch <nathanl@linux.ibm.com>
+In-Reply-To: <20231127-rtas-pci-rw-config-v1-1-385d29ace3df@linux.ibm.com>
+References: <20231127-rtas-pci-rw-config-v1-1-385d29ace3df@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/rtas_pci: rename and properly expose config access APIs
+Message-Id: <170195271166.2310221.13174919656650959020.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,28 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>
+Cc: Anders Roxell <anders.roxell@linaro.org>, regressions@lists.linux.dev, Arnd Bergmann <arnd@arndb.de>, clang-built-linux <llvm@lists.linux.dev>, linux-kernel@vger.kernel.org, lkft-triage@lists.linaro.org, Nathan Chancellor <nathan@kernel.org>, Benjamin Gray <bgray@linux.ibm.com>, Linux Kernel Functional Testing <lkft@linaro.org>, linuxppc-dev@lists.ozlabs.org, Dan Carpenter <dan.carpenter@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 06 Nov 2023 07:42:52 -0600, Nathan Lynch wrote:
-> * Fix recently introduced kernel-doc warnings.
-> * Make minor coding style adjustments for readability.
-> * Remove rtas_service_present() and an old call_rtas() declaration.
-> * Move a pseries-specific function prototype to pseries code.
+On Mon, 27 Nov 2023 18:40:09 -0600, Nathan Lynch wrote:
+> The rtas_read_config() and rtas_write_config() functions in
+> kernel/rtas_pci.c have external linkage and two users in arch/powerpc:
+> the rtas_pci code itself and the pseries platform's "enhanced error
+> handling" (EEH) support code.
 > 
+> The prototypes for these functions in asm/ppc-pci.h have until now
+> been guarded by CONFIG_EEH since the only external caller is the
+> pseries EEH code. However, this presumably has always generated
+> warnings when built with !CONFIG_EEH and -Wmissing-prototypes:
+> 
+> [...]
 
-Patches 3-7 applied to powerpc/next.
+Applied to powerpc/next.
 
-[3/7] powerpc/rtas: Drop declaration of undefined call_rtas() function
-      https://git.kernel.org/powerpc/c/981d1c997fbc5e193b282f3a325a0230bf697363
-[4/7] powerpc/rtas: Remove unused rtas_service_present()
-      https://git.kernel.org/powerpc/c/1d8faf1f41b550eb7ab7ac841ebd70f205840dde
-[5/7] powerpc/rtas: Move post_mobility_fixup() declaration to pseries
-      https://git.kernel.org/powerpc/c/010862d235c9fab4f0f9dd169efc72df94110758
-[6/7] powerpc/rtas: Remove trailing space
-      https://git.kernel.org/powerpc/c/19773eda86e289526b7f08fa56c92e75cd7796f6
-[7/7] powerpc/rtas: Remove 'extern' from function declarations in rtas.h
-      https://git.kernel.org/powerpc/c/646477fc47905157a8440cdc45aad22901b5b3ce
+[1/1] powerpc/rtas_pci: rename and properly expose config access APIs
+      https://git.kernel.org/powerpc/c/9be4feb768b86c25da336a6c0f3e3caefd16f1e4
 
 cheers
