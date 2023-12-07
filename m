@@ -4,53 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D99EDC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 22:04:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DB81C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:39:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HBK5Wpbd;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R4bYli9e;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmSwt3trzz3dGn
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 09:04:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmW2T5fkHz3dH4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 10:39:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HBK5Wpbd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R4bYli9e;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmSvw5fHMz3c2V
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 09:03:40 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1701986620;
-	bh=FpdRbCvLc9cM0+D2gGxh1LT50OOe3QMLXdfceOfcuro=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=HBK5WpbdkQ6x34G7am++lhYlz4m4cBOfLFaUrA7IQI67nJdedI2N8VcRdwUhv9HJV
-	 HxbZNO9GPin8H13ohRNqbvY5lHPM7hjJZv9fx770xMiXW6RMatXGqKKfQiGPpS0SA5
-	 zCOS2f32cKaCGjkXbouGBuLNTaMNX3s6/K4uPqFgRXlzeEQjJEMBwL3Y07dZYpvCU8
-	 rC/RDwfBuaG7zs6fmjNtaokjyEUW5Og86AcBKfVPz4tUjQAOzOHHzOoONsE7dy6ukW
-	 y0uRT7i7Kgwxq8eNjjbRtP4JDT4BK7I8Bl1W2Njp7+OD23dBbhkYTCMibYVt7nGOHQ
-	 QDhkCs67BbE1w==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmSvt01Fnz4wbQ;
-	Fri,  8 Dec 2023 09:03:37 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Daniel Kolesa
- <daniel@octaforge.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] drm/amdgpu: drop the long-double-128 powerpc check/hack
-In-Reply-To: <18cd1ce5-ebea-4cb6-a91c-23283f2fc999@csgroup.eu>
-References: <dab9cbd8-2626-4b99-8098-31fe76397d2d@app.fastmail.com>
- <87o7o9b396.fsf@mpe.ellerman.id.au>
- <18cd1ce5-ebea-4cb6-a91c-23283f2fc999@csgroup.eu>
-Date: Fri, 08 Dec 2023 09:03:34 +1100
-Message-ID: <87v899ekll.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmW1V6wK2z3cQr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 10:38:38 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 444F9CE25D2;
+	Thu,  7 Dec 2023 23:38:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 02A27C43395;
+	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1701992315;
+	bh=TI/CARq7+us3OgoX1GKMH1qza6g+XMyPQjPHZYm2e2Q=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=R4bYli9eOAA+bqtq6q2vpYXZMRN1oUNvZnCFfeESYRanUyP3/3W3xyVNfWU9xzAqO
+	 ELK/BuLzW7WjvYXAqRr5wSNckKvB4DzYFZJiEq/0Oh8Yqmsc2vLrufOOtFbj4mYJeU
+	 uAc00Gu/r1LbcGFZjsr9vzXU4SaNz2KGZyRed/AczJAwSbBfPkCAQtGGEtchLYqSC5
+	 a70kiahDLWLMYHHkLbFww2Blr/rKD67HTDja/AKk9fod/WlHNGnWSmzccJs9jTB7bQ
+	 T+DQaaeF1OcbA5A2ZxMtPn/MkGu4xr6R7u1v7qHGGuhugj2a+8yhdxFAi11pSIqLmD
+	 ZSXnSgD/xcf+g==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4598C10F09;
+	Thu,  7 Dec 2023 23:38:34 +0000 (UTC)
+From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
+Date: Thu, 07 Dec 2023 17:35:45 -0600
+Subject: [PATCH v5 06/13] powerpc/rtas: Facilitate high-level call
+ sequences
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id:  <20231207-papr-sys_rtas-vs-lockdown-v5-6-2ce965636a58@linux.ibm.com>
+References:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
+In-Reply-To:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1701992313; l=10843;
+ i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
+ bh=t9ThGGqhBwDjwYP1nJoz9AB2kSN/GhOrXb1u2hPJCU4=;
+ b=gF3vQGHHS2Thmvutp5PzJGVR9rvOA8IVJc0tY+H4VfyTV3c2WEbhmAr/0txOhaC4e+2g5TP0D
+ eiCG4nF4TxeAVIuyQDGUdqWl+Clv0sbJIWdLLYl5EOD/3I/pb+mkXj2
+X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
+ pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
+X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
+X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,61 +73,291 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "dan@danny.cz" <dan@danny.cz>, "alexdeucher@gmail.com" <alexdeucher@gmail.com>, "tpearson@raptorengineering.com" <tpearson@raptorengineering.com>, "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>
+Reply-To: nathanl@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, tyreld@linux.ibm.com, gcwilson@linux.ibm.com, "Aneesh Kumar K.V \(IBM\)" <aneesh.kumar@kernel.org>, =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 31/03/2023 =C3=A0 12:53, Michael Ellerman a =C3=A9crit=C2=A0:
->> "Daniel Kolesa" <daniel@octaforge.org> writes:
->>> Commit c653c591789b ("drm/amdgpu: Re-enable DCN for 64-bit powerpc")
->>> introduced this check as a workaround for the driver not building
->>> with toolchains that default to 64-bit long double.
->> ...
->>> In mainline, this work is now fully done, so this check is fully
->>> redundant and does not do anything except preventing AMDGPU DC
->>> from being built on systems such as those using musl libc. The
->>> last piece of work to enable this was commit c92b7fe0d92a
->>> ("drm/amd/display: move remaining FPU code to dml folder")
->>> and this has since been backported to 6.1 stable (in 6.1.7).
->>>
->>> Relevant issue: https://gitlab.freedesktop.org/drm/amd/-/issues/2288
->>=20
->> I looked to pick this up for 6.3 but was still seeing build errors with
->> some compilers. I assumed that was due to some fixes coming in
->> linux-next that I didn't have.
->>=20
->> But applying the patch on v6.3-rc4 I still see build errors. This is
->> building allyesconfig with the kernel.org GCC 12.2.0 / binutils 2.39
->> toolchain:
->>=20
->>    powerpc64le-linux-gnu-ld: drivers/gpu/drm/amd/display/dc/dml/display_=
-mode_lib.o uses hard float, arch/powerpc/lib/test_emulate_step.o uses soft =
-float
->>    powerpc64le-linux-gnu-ld: failed to merge target specific data of fil=
-e drivers/gpu/drm/amd/display/dc/dml/display_mode_lib.o
->>=20
->> etc.
->>=20
->> All the conflicts are between test_emulate_step.o and some file in drive=
-rs/gpu/drm/amd/display/dc/dml.
->>=20
->> So even with all the hard-float code isolated in the dml folder, we
->> still hit build errors, because allyesconfig wants to link those
->> hard-float using objects with soft-float objects from elsewhere in the
->> kernel.
->>=20
->> It seems like the only workable fix is to force the kernel build to use
->> 128-bit long double. I'll send a patch doing that.
->>=20
->
-> Commit 78f0929884d4 ("powerpc/64: Always build with 128-bit long=20
-> double") I guess ?
+From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Yes.
+On RTAS platforms there is a general restriction that the OS must not
+enter RTAS on more than one CPU at a time. This low-level
+serialization requirement is satisfied by holding a spin
+lock (rtas_lock) across most RTAS function invocations.
 
-> Let's drop this patch from patchwork then.
+However, some pseries RTAS functions require multiple successive calls
+to complete a logical operation. Beginning a new call sequence for such a
+function may disrupt any other sequences of that function already in
+progress. Safe and reliable use of these functions effectively
+requires higher-level serialization beyond what is already done at the
+level of RTAS entry and exit.
 
-Thanks.
+Where a sequence-based RTAS function is invoked only through
+sys_rtas(), with no in-kernel users, there is no issue as far as the
+kernel is concerned. User space is responsible for appropriately
+serializing its call sequences. (Whether user space code actually
+takes measures to prevent sequence interleaving is another matter.)
+Examples of such functions currently include ibm,platform-dump and
+ibm,get-vpd.
 
-cheers
+But where a sequence-based RTAS function has both user space and
+in-kernel uesrs, there is a hazard. Even if the in-kernel call sites
+of such a function serialize their sequences correctly, a user of
+sys_rtas() can invoke the same function at any time, potentially
+disrupting a sequence in progress.
+
+So in order to prevent disruption of kernel-based RTAS call sequences,
+they must serialize not only with themselves but also with sys_rtas()
+users, somehow. Preferably without adding more function-specific hacks
+to sys_rtas(). This is a prerequisite for adding an in-kernel call
+sequence of ibm,get-vpd, which is in a change to follow.
+
+Note that it has never been feasible for the kernel to prevent
+sys_rtas()-based sequences from being disrupted because control
+returns to user space on every call. sys_rtas()-based users of these
+functions have always been, and continue to be, responsible for
+coordinating their call sequences with other users, even those which
+may invoke the RTAS functions through less direct means than
+sys_rtas(). This is an unavoidable consequence of exposing
+sequence-based RTAS functions through sys_rtas().
+
+* Add an optional mutex member to struct rtas_function.
+
+* Statically define a mutex for each RTAS function with known call
+  sequence serialization requirements, and assign its address to the
+  .lock member of the corresponding function table entry, along with
+  justifying commentary.
+
+* In sys_rtas(), if the table entry for the RTAS function being
+  called has a populated lock member, acquire it before taking
+  rtas_lock and entering RTAS.
+
+* Kernel-based RTAS call sequences are expected to access the
+  appropriate mutex explicitly by name. For example, a user of the
+  ibm,activate-firmware RTAS function would do:
+
+        int token = rtas_function_token(RTAS_FN_IBM_ACTIVATE_FIRMWARE);
+        int fwrc;
+
+        mutex_lock(&rtas_ibm_activate_firmware_lock);
+
+        do {
+                fwrc = rtas_call(token, 0, 1, NULL);
+        } while (rtas_busy_delay(fwrc));
+
+        mutex_unlock(&rtas_ibm_activate_firmware_lock);
+
+There should be no perceivable change introduced here except that
+concurrent callers of the same RTAS function via sys_rtas() may block
+on a mutex instead of spinning on rtas_lock.
+
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ arch/powerpc/include/asm/rtas.h |  3 ++
+ arch/powerpc/kernel/rtas.c      | 83 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 86 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 08d19e6904f7..9bb2210c8d44 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -3,6 +3,7 @@
+ #define _POWERPC_RTAS_H
+ #ifdef __KERNEL__
+ 
++#include <linux/mutex.h>
+ #include <linux/spinlock.h>
+ #include <asm/page.h>
+ #include <asm/rtas-types.h>
+@@ -512,6 +513,8 @@ extern char rtas_data_buf[RTAS_DATA_BUF_SIZE];
+ /* RMO buffer reserved for user-space RTAS use */
+ extern unsigned long rtas_rmo_buf;
+ 
++extern struct mutex rtas_ibm_get_vpd_lock;
++
+ #define GLOBAL_INTERRUPT_QUEUE 9005
+ 
+ /**
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index ca5bb0b994ac..4d28983e8b1d 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -18,6 +18,7 @@
+ #include <linux/kernel.h>
+ #include <linux/lockdep.h>
+ #include <linux/memblock.h>
++#include <linux/mutex.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+ #include <linux/reboot.h>
+@@ -70,14 +71,33 @@ struct rtas_filter {
+  *                            ppc64le, and we want to keep it that way. It does
+  *                            not make sense for this to be set when @filter
+  *                            is NULL.
++ * @lock: Pointer to an optional dedicated per-function mutex. This
++ *        should be set for functions that require multiple calls in
++ *        sequence to complete a single operation, and such sequences
++ *        will disrupt each other if allowed to interleave. Users of
++ *        this function are required to hold the associated lock for
++ *        the duration of the call sequence. Add an explanatory
++ *        comment to the function table entry if setting this member.
+  */
+ struct rtas_function {
+ 	s32 token;
+ 	const bool banned_for_syscall_on_le:1;
+ 	const char * const name;
+ 	const struct rtas_filter *filter;
++	struct mutex *lock;
+ };
+ 
++/*
++ * Per-function locks for sequence-based RTAS functions.
++ */
++static DEFINE_MUTEX(rtas_ibm_activate_firmware_lock);
++static DEFINE_MUTEX(rtas_ibm_get_dynamic_sensor_state_lock);
++static DEFINE_MUTEX(rtas_ibm_get_indices_lock);
++static DEFINE_MUTEX(rtas_ibm_lpar_perftools_lock);
++static DEFINE_MUTEX(rtas_ibm_physical_attestation_lock);
++static DEFINE_MUTEX(rtas_ibm_set_dynamic_indicator_lock);
++DEFINE_MUTEX(rtas_ibm_get_vpd_lock);
++
+ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 	[RTAS_FNIDX__CHECK_EXCEPTION] = {
+ 		.name = "check-exception",
+@@ -125,6 +145,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = -1, .size_idx1 = -1,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * PAPR+ as of v2.13 doesn't explicitly impose any
++		 * restriction, but this typically requires multiple
++		 * calls before success, and there's no reason to
++		 * allow sequences to interleave.
++		 */
++		.lock = &rtas_ibm_activate_firmware_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_CBE_START_PTCAL] = {
+ 		.name = "ibm,cbe-start-ptcal",
+@@ -196,6 +223,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 1, .size_idx1 = -1,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * PAPR+ v2.13 R1–7.3.19–3 is explicit that the OS
++		 * must not call ibm,get-dynamic-sensor-state with
++		 * different inputs until a non-retry status has been
++		 * returned.
++		 */
++		.lock = &rtas_ibm_get_dynamic_sensor_state_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_GET_INDICES] = {
+ 		.name = "ibm,get-indices",
+@@ -203,6 +237,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 2, .size_idx1 = 3,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * PAPR+ v2.13 R1–7.3.17–2 says that the OS must not
++		 * interleave ibm,get-indices call sequences with
++		 * different inputs.
++		 */
++		.lock = &rtas_ibm_get_indices_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_GET_RIO_TOPOLOGY] = {
+ 		.name = "ibm,get-rio-topology",
+@@ -220,6 +260,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 0, .size_idx1 = -1,
+ 			.buf_idx2 = 1, .size_idx2 = 2,
+ 		},
++		/*
++		 * PAPR+ v2.13 R1–7.3.20–4 indicates that sequences
++		 * should not be allowed to interleave.
++		 */
++		.lock = &rtas_ibm_get_vpd_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_GET_XIVE] = {
+ 		.name = "ibm,get-xive",
+@@ -239,6 +284,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 2, .size_idx1 = 3,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * PAPR+ v2.13 R1–7.3.26–6 says the OS should allow
++		 * only one call sequence in progress at a time.
++		 */
++		.lock = &rtas_ibm_lpar_perftools_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_MANAGE_FLASH_IMAGE] = {
+ 		.name = "ibm,manage-flash-image",
+@@ -277,6 +327,14 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 0, .size_idx1 = 1,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * This follows a sequence-based pattern similar to
++		 * ibm,get-vpd et al. Since PAPR+ restricts
++		 * interleaving call sequences for other functions of
++		 * this style, assume the restriction applies here,
++		 * even though it's not explicit in the spec.
++		 */
++		.lock = &rtas_ibm_physical_attestation_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_PLATFORM_DUMP] = {
+ 		.name = "ibm,platform-dump",
+@@ -284,6 +342,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 4, .size_idx1 = 5,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * PAPR+ v2.13 7.3.3.4.1 indicates that concurrent
++		 * sequences of ibm,platform-dump are allowed if they
++		 * are operating on different dump tags. So leave the
++		 * lock pointer unset for now. This may need
++		 * reconsideration if kernel-internal users appear.
++		 */
+ 	},
+ 	[RTAS_FNIDX__IBM_POWER_OFF_UPS] = {
+ 		.name = "ibm,power-off-ups",
+@@ -326,6 +391,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 			.buf_idx1 = 2, .size_idx1 = -1,
+ 			.buf_idx2 = -1, .size_idx2 = -1,
+ 		},
++		/*
++		 * PAPR+ v2.13 R1–7.3.18–3 says the OS must not call
++		 * this function with different inputs until a
++		 * non-retry status has been returned.
++		 */
++		.lock = &rtas_ibm_set_dynamic_indicator_lock,
+ 	},
+ 	[RTAS_FNIDX__IBM_SET_EEH_OPTION] = {
+ 		.name = "ibm,set-eeh-option",
+@@ -1888,6 +1959,15 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 
+ 	buff_copy = get_errorlog_buffer();
+ 
++	/*
++	 * If this function has a mutex assigned to it, we must
++	 * acquire it to avoid interleaving with any kernel-based uses
++	 * of the same function. Kernel-based sequences acquire the
++	 * appropriate mutex explicitly.
++	 */
++	if (func->lock)
++		mutex_lock(func->lock);
++
+ 	raw_spin_lock_irqsave(&rtas_lock, flags);
+ 	cookie = lockdep_pin_lock(&rtas_lock);
+ 
+@@ -1903,6 +1983,9 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 	lockdep_unpin_lock(&rtas_lock, cookie);
+ 	raw_spin_unlock_irqrestore(&rtas_lock, flags);
+ 
++	if (func->lock)
++		mutex_unlock(func->lock);
++
+ 	if (buff_copy) {
+ 		if (errbuf)
+ 			log_error(errbuf, ERR_TYPE_RTAS_LOG, 0);
+
+-- 
+2.41.0
+
