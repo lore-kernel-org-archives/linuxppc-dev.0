@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56B9EC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CEA3C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:46:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDXv0pR3z3dVX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:46:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDYP20JYz3vt6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:46:49 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVn630Bz3dBH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVp0HwDz3dBn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:34 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVn5DVkz4xPL;
-	Thu,  7 Dec 2023 23:44:33 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVl4Jpgz4xKl;
+	Thu,  7 Dec 2023 23:44:31 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, Masahiro Yamada <masahiroy@kernel.org>
-In-Reply-To: <20231120232332.4100288-1-masahiroy@kernel.org>
-References: <20231120232332.4100288-1-masahiroy@kernel.org>
-Subject: Re: [PATCH] powerpc: add crtsavres.o to always-y instead of extra-y
-Message-Id: <170195271160.2310221.3176675115907278770.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, fbarrat@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org, Zhao Ke <ke.zhao@shingroup.cn>
+In-Reply-To: <20231129075845.57976-1-ke.zhao@shingroup.cn>
+References: <20231129075845.57976-1-ke.zhao@shingroup.cn>
+Subject: Re: [PATCH v2] powerpc: Add PVN support for HeXin C2000 processor
+Message-Id: <170195271167.2310221.14120518840277202418.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,31 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Chancellor <nathan@kernel.org>, Tom Rix <trix@redhat.com>, llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org
+Cc: luming.yu@shingroup.cn, kvm@vger.kernel.org, dawei.li@shingroup.cn, linux-kernel@vger.kernel.org, shenghui.qu@shingroup.cn, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 21 Nov 2023 08:23:32 +0900, Masahiro Yamada wrote:
-> crtsavres.o is linked to modules. However, as explained in commit
-> d0e628cd817f ("kbuild: doc: clarify the difference between extra-y
-> and always-y"), 'make modules' does not build extra-y.
+On Wed, 29 Nov 2023 15:58:45 +0800, Zhao Ke wrote:
+> HeXin Tech Co. has applied for a new PVN from the OpenPower Community
+> for its new processor C2000. The OpenPower has assigned a new PVN
+> and this newly assigned PVN is 0x0066, add pvr register related
+> support for this PVN.
 > 
-> For example, the following command fails:
 > 
->   $ make ARCH=powerpc LLVM=1 KBUILD_MODPOST_WARN=1 mrproper ps3_defconfig modules
->     [snip]
->     LD [M]  arch/powerpc/platforms/cell/spufs/spufs.ko
->   ld.lld: error: cannot open arch/powerpc/lib/crtsavres.o: No such file or directory
->   make[3]: *** [scripts/Makefile.modfinal:56: arch/powerpc/platforms/cell/spufs/spufs.ko] Error 1
->   make[2]: *** [Makefile:1844: modules] Error 2
->   make[1]: *** [/home/masahiro/workspace/linux-kbuild/Makefile:350: __build_one_by_one] Error 2
->   make: *** [Makefile:234: __sub-make] Error 2
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: add crtsavres.o to always-y instead of extra-y
-      https://git.kernel.org/powerpc/c/1b1e38002648819c04773647d5242990e2824264
+[1/1] powerpc: Add PVN support for HeXin C2000 processor
+      https://git.kernel.org/powerpc/c/e12d8e2602d2bcd26022eff3e2519d25925e760c
 
 cheers
