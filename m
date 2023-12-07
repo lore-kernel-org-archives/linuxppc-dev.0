@@ -4,101 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39BA6C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 11:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 426ABC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:01:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=tg8NdadU;
-	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=eNkRt1wW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bVohqCM1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmBh04SpMz3dBl
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 22:22:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmCXn5f0Yz3d87
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:01:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=tg8NdadU;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=eNkRt1wW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bVohqCM1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sm7lx3xmjz30K6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 20:10:37 +1100 (AEDT)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 5B8831F897;
-	Thu,  7 Dec 2023 09:10:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1701940224; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jXiKfid97FD5zi8RqmP75wazePMuM2Vj4JZ4H26JF/w=;
-	b=tg8NdadUlk4VfBBiX/KnTc8KWn4/+I2eqU3OCsMmSGO5fGxGo+xFF7FC1+cL85+pnkxgh6
-	+2Q+t+yvWpRrlmhVvY0iaqUjhOk6aDapKv8aWDgxXaeYBRQUq2bq9mHOv8yIv2mkt3uJBW
-	DjcnaOKBqBG38BR6qn1JnsOv3SGRVLU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1701940224;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jXiKfid97FD5zi8RqmP75wazePMuM2Vj4JZ4H26JF/w=;
-	b=eNkRt1wWHc2B/3UiJ7gBmgVmSJJtzZTtEviOYNX31SorNi0ot/Q0TzM7nhemVkTB8kzvHE
-	aOrpBsXvOqOVy6BQ==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 34B3813907;
-	Thu,  7 Dec 2023 09:10:24 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id w3HWDACMcWWqPwAAn2gu4w
-	(envelope-from <jack@suse.cz>); Thu, 07 Dec 2023 09:10:24 +0000
-Received: by quack3.suse.cz (Postfix, from userid 1000)
-	id 7AF80A07C7; Thu,  7 Dec 2023 10:10:23 +0100 (CET)
-Date: Thu, 7 Dec 2023 10:10:23 +0100
-From: Jan Kara <jack@suse.cz>
-To: Yury Norov <yury.norov@gmail.com>
-Subject: Re: [PATCH v2 00/35] bitops: add atomic find_bit() operations
-Message-ID: <20231207091023.kioii5mgmnphrvl4@quack3>
-References: <20231203192422.539300-1-yury.norov@gmail.com>
- <20231204185101.ddmkvsr2xxsmoh2u@quack3>
- <ZXAFM2VZugdhM3oE@yury-ThinkPad>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmCWp3RpXz3cQM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:00:20 +1100 (AEDT)
+Received: by mail-qk1-x729.google.com with SMTP id af79cd13be357-77f44cd99c6so7973285a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2023 04:00:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1701950417; x=1702555217; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8N1+cn+fBSeHCGuo21Zugsp7Q1cczJw+MFPsoqSobZY=;
+        b=bVohqCM1cg5QWyMAzMR0i+WDfOKIyNhmZibjkVW+DhL6Vfkq/csMOORcXf1SrnsXj1
+         3+1G/vSne926ZTr/uGpQrCrgPIjclnRXRS+zmsilL6c1nYxcP9YDZyD/P0E6LrZFQ6Pb
+         k80RSbOj0ZYFJUK5WTzTackbyr/VIlQh4gutBkY4UVeDoxp9p8yOjhlNokF948o4Y2xH
+         95i1/dw3a2Y8ZN5xfEN9h3I35EDLZzfWz1MjIUARJBi+fKapSW8SB7cE2vJ7DX15NGWh
+         tZ+8eytgxrUF1OkvgB9ED2TYKRqJArWfqJwypihwxC9TBZRta4fV+diDS/t+ueK5HsWd
+         wfAA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701950417; x=1702555217;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=8N1+cn+fBSeHCGuo21Zugsp7Q1cczJw+MFPsoqSobZY=;
+        b=EYbYPmvuYjlJX/XP3AXCWP0miyJEyn3iz+cHtAQtc5ncQ2a9S01d87gbOcp4Y0ZvAq
+         BjUxNa65fhyB+pkjlrVOu3nZ1JOyoOjAiUHbJ345Z1T6IzW4lyBcKW6WqQlc7HYoEPz7
+         PE1lOwVnmRSXiPBu8NgN5pN3boOYm19OKzaUHygH/j8QKQgDe7h6cE2ItB2sK3bc7+2T
+         x+SnsNdXHpBi2nFB9piwyYjXNp25mPFswPz7KY4oQDfuuuk61E7kU8rSkDP+knozEMrr
+         tp1uOznhFt/mpvaPFowT6ZbQi7VyECzMqUP26TcEW6EMioTqVi8cU891ek5YfyL1BlTB
+         3EVg==
+X-Gm-Message-State: AOJu0YxJh/YFvxBySWqSeiTdDZBBYXjzN6W5Wg7XZf4xQlPAz2jo04n5
+	IWJcy6RRE1P4dt/F5aoX6aeduVXjnDHmvuSGPEs=
+X-Google-Smtp-Source: AGHT+IH34Xzv5KtY/D+BMVlkWYo9rwuiVxKqxlh5Ap5AifKPY0cMFdnuMB2UOvEGr+7lT/XiUh+en9FVxjhpx4Akg3E=
+X-Received: by 2002:a05:620a:2486:b0:77f:34bf:5593 with SMTP id
+ i6-20020a05620a248600b0077f34bf5593mr1943614qkn.17.1701950417106; Thu, 07 Dec
+ 2023 04:00:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZXAFM2VZugdhM3oE@yury-ThinkPad>
-Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spamd-Result: default: False [2.70 / 50.00];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 RCPT_COUNT_GT_50(0.00)[100];
-	 FREEMAIL_TO(0.00)[gmail.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 FORGED_RECIPIENTS(2.00)[m:yury.norov@gmail.com,m:davem@davemloft.net,m:jejb@linux.ibm.com,m:haris.iqbal@ionos.com,m:akinobu.mita@gmail.com,m:akpm@linux-foundation.org,m:andersson@kernel.org,m:bp@alien8.de,m:brauner@kernel.org,m:dave.hansen@linux.intel.com,m:ecree.xilinx@gmail.com,m:edumazet@google.com,m:fenghua.yu@intel.com,m:geert@linux-m68k.org,m:gregory.greenman@intel.com,m:hughd@google.com,m:kuba@kernel.org,m:axboe@kernel.dk,m:jirislaby@kernel.org,m:kvalo@kernel.org,m:kgraul@linux.ibm.com,m:isdn@linux-pingi.de,m:keescook@chromium.org,m:leon@kernel.org,m:mark.rutland@arm.com,m:habetsm.xilinx@gmail.com,m:mchehab@kernel.org,m:mpe@ellerman.id.au,m:npiggin@gmail.com,m:peterz@infradead.org,m:dalias@libc.org,m:robh@kernel.org,m:robin.murphy@arm.com,m:seanjc@google.com,m:xueshuai@linux.alibaba.com,m:rostedt@goodmis.org,m:tsbogend@alpha.franken.de,m:tglx@linutronix.de,m:wenjia@linux.ibm.com,m:will@kernel.org,m:alsa-devel@alsa-project.org,m:linux-net-drivers@amd.com,m:mpi3mr-linuxdrv.pdl
- @broadcom.com,m:x86@kernel.org,m:mirsad.todorovac@alu.unizg.hr,m:willy@infradead.org,m:andriy.shevchenko@linux.intel.com,m:maxim.kuvyrkov@linaro.org,m:klimov.linux@gmail.com,m:bvanassche@acm.org,s:s.shtylyov@omp.ru];
-	 BAYES_HAM(-0.00)[40.06%];
-	 ARC_NA(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[wp.pl,xs4all.nl];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 TAGGED_RCPT(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_SOME(0.00)[];
-	 DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 MID_RHS_NOT_FQDN(0.50)[];
-	 FREEMAIL_CC(0.00)[suse.cz,vger.kernel.org,davemloft.net,zytor.com,linux.ibm.com,microsoft.com,ionos.com,gmail.com,linux-foundation.org,kernel.org,alien8.de,nvidia.com,opensource.wdc.com,linux.intel.com,suse.de,google.com,intel.com,linux-m68k.org,linuxfoundation.org,xs4all.nl,redhat.com,perex.cz,ziepe.ca,kernel.dk,resnulli.us,linux-pingi.de,chromium.org,arm.com,ellerman.id.au,monstr.eu,suse.com,infradead.org,realtek.com,libc.org,linux.alibaba.com,wp.pl,goodmis.org,alpha.franken.de,linutronix.de,users.sourceforge.jp,marvell.com,alsa-project.org,lists.infradead.org,lists.linux.dev,lists.linux-m68k.org,amd.com,lists.ozlabs.org,broadcom.com,alu.unizg.hr,rasmusvillemoes.dk,linaro.org,acm.org,omp.ru];
-	 RCVD_TLS_ALL(0.00)[];
-	 SUSPICIOUS_RECIPS(1.50)[]
-X-Mailman-Approved-At: Thu, 07 Dec 2023 22:21:36 +1100
+References: <20231204180603.470421-1-gnstark@salutedevices.com>
+ <20231204180603.470421-2-gnstark@salutedevices.com> <81798fe5-f89e-482f-b0d0-674ccbfc3666@redhat.com>
+ <29584eb6-fa10-4ce0-9fa3-0c409a582445@salutedevices.com> <17a9fede-30e8-4cd5-ae02-fe34e11f5c20@csgroup.eu>
+ <be693688-2e82-4e1a-9ead-cf1513ee637b@csgroup.eu> <2a68534b-9e64-4d6e-8a49-eeab0889841b@salutedevices.com>
+In-Reply-To: <2a68534b-9e64-4d6e-8a49-eeab0889841b@salutedevices.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Thu, 7 Dec 2023 13:59:40 +0200
+Message-ID: <CAHp75VdMzZZg3w_jr-SF2APeyq1wVNHK=r=Amf0+JUOq1hy0Fw@mail.gmail.com>
+Subject: Re: [PATCH v2 01/10] devm-helpers: introduce devm_mutex_init
+To: George Stark <gnstark@salutedevices.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,56 +78,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-sh@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, Hans Verkuil <hverkuil@xs4all.nl>, "Md. Haris Iqbal" <haris.iqbal@ionos.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Bart Van Assche <bvanassche@acm.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jiri Pirko <jiri@resnulli.us>, Christian Brauner <brauner@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Alexey Klimov <klimov.linux@gmail.com>, Sergey Shtylyov <s.shtylyov@omp.ru>, Thomas Gleixner <tglx@linutronix.de>, Karsten Keil <isdn@linux-pingi.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, GR-QLogic-Storage-Upstream@marvell.com, Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>, alsa-devel@alsa-project.org, Dave Hansen <dave.hansen@linux.intel.com>, Eric Dumazet <edumazet@google.com>, Gregory Greenman <gregory.greenman@intel.com>, linux-s390@vger.kernel.org, Valentin Schneider <vschneid@redhat
- .com>, Leon Romanovsky <leon@kernel.org>, Will Deacon <will@kernel.org>, mpi3mr-linuxdrv.pdl@broadcom.com, Hugh Dickins <hughd@google.com>, iommu@lists.linux.dev, Martin Habets <habetsm.xilinx@gmail.com>, linux-media@vger.kernel.org, Stanislaw Gruszka <stf_xl@wp.pl>, linux-arm-msm@vger.kernel.org, Wenjia Zhang <wenjia@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, linux-arm-kernel@lists.infradead.org, Sean Christopherson <seanjc@google.com>, Oliver Neukum <oneukum@suse.com>, Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>, linux-pci@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-hyperv@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, Jiri Slaby <jirislaby@kernel.org>, Rob Herring <robh@kernel.org>, linux-rdma@vger.kernel.org, Damien Le Moal <damien.lemoal@opensource.wdc.com>, ath10k@lists.infradead.org, David Disseldorp <ddiss@suse.de>, Paolo Abeni <pabeni@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>, Kees Cook <keescook@chromium.org>, "James E.J. Bot
- tomley" <jejb@linux.ibm.com>, Akinobu Mita <akinobu.mita@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Borislav Petkov <bp@alien8.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Edward Cree <ecree.xilinx@gmail.com>, Shuai Xue <xueshuai@linux.alibaba.com>, netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Ping-Ke Shih <pkshih@realtek.com>, linux-scsi@vger.kernel.org, linux-net-drivers@amd.com, x86@kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Chaitanya Kulkarni <kch@nvidia.com>, Kalle Valo <kvalo@kernel.org>, linux-block@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-sound@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.
- com>, Maxim Kuvyrkov <maxim.kuvyrkov@linaro.org>, Jens Axboe <axboe@kernel.dk>, Michal Simek <monstr@monstr.eu>, Yoshinori Sato <ysato@users.sourceforge.jp>, linuxppc-dev@lists.ozlabs.org, Bjorn Andersson <andersson@kernel.org>, linux-mips@vger.kernel.org, linux-bluetooth@vger.kernel.org, dmaengine@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, Robin Murphy <robin.murphy@arm.com>, Karsten Graul <kgraul@linux.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "vadimp@nvidia.com" <vadimp@nvidia.com>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, boqun.feng@gmail.com, "lee@kernel.org" <lee@kernel.org>, "kernel@salutedevices.com" <kernel@salutedevices.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, mingo@redhat.com, "npiggin@gmail.com" <npiggin@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, Waiman Long <longman@redhat.com>, will@kernel.org, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "jic23@kernel.org" <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 05-12-23 21:22:59, Yury Norov wrote:
-> On Mon, Dec 04, 2023 at 07:51:01PM +0100, Jan Kara wrote:
-> > > This series is a result of discussion [1]. All find_bit() functions imply
-> > > exclusive access to the bitmaps. However, KCSAN reports quite a number
-> > > of warnings related to find_bit() API. Some of them are not pointing
-> > > to real bugs because in many situations people intentionally allow
-> > > concurrent bitmap operations.
-> > > 
-> > > If so, find_bit() can be annotated such that KCSAN will ignore it:
-> > > 
-> > >         bit = data_race(find_first_bit(bitmap, nbits));
-> > 
-> > No, this is not a correct thing to do. If concurrent bitmap changes can
-> > happen, find_first_bit() as it is currently implemented isn't ever a safe
-> > choice because it can call __ffs(0) which is dangerous as you properly note
-> > above. I proposed adding READ_ONCE() into find_first_bit() / find_next_bit()
-> > implementation to fix this issue but you disliked that. So other option we
-> > have is adding find_first_bit() and find_next_bit() variants that take
-> > volatile 'addr' and we have to use these in code like xas_find_chunk()
-> > which cannot be converted to your new helpers.
-> 
-> Here is some examples when concurrent operations with plain find_bit()
-> are acceptable:
-> 
->  - two threads running find_*_bit(): safe wrt ffs(0) and returns correct
->    value, because underlying bitmap is unchanged;
->  - find_next_bit() in parallel with set or clear_bit(), when modifying
->    a bit prior to the start bit to search: safe and correct;
->  - find_first_bit() in parallel with set_bit(): safe, but may return wrong
->    bit number;
->  - find_first_zero_bit() in parallel with clear_bit(): same as above.
-> 
-> In last 2 cases find_bit() may not return a correct bit number, but
-> it may be OK if caller requires any (not exactly first) set or clear
-> bit, correspondingly.
-> 
-> In such cases, KCSAN may be safely silenced.
+On Thu, Dec 7, 2023 at 1:23=E2=80=AFAM George Stark <gnstark@salutedevices.=
+com> wrote:
+> On 12/7/23 01:37, Christophe Leroy wrote:
+> > Le 06/12/2023 =C3=A0 23:14, Christophe Leroy a =C3=A9crit :
+> >> Le 06/12/2023 =C3=A0 19:58, George Stark a =C3=A9crit :
+> >>> On 12/6/23 18:01, Hans de Goede wrote:
+> >>>> On 12/4/23 19:05, George Stark wrote:
 
-True - but these are special cases. In particular the case in xas_find_chunk()
-is not any of these special cases. It is using find_next_bit() which is can
-be racing with clear_bit(). So what are your plans for such usecase?
+...
 
-								Honza
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+> >>>> mutex_destroy() only actually does anything if CONFIG_DEBUG_MUTEXES
+> >>>> is set, otherwise it is an empty inline-stub.
+> >>>>
+> >>>> Adding a devres resource to the device just to call an empty inline
+> >>>> stub which is a no-op seems like a waste of resources. IMHO it
+> >>>> would be better to change this to:
+> >>>>
+> >>>> static inline int devm_mutex_init(struct device *dev, struct mutex
+> >>>> *lock)
+> >>>> {
+> >>>>        mutex_init(lock);
+> >>>> #ifdef CONFIG_DEBUG_MUTEXES
+> >>>>        return devm_add_action_or_reset(dev, devm_mutex_release, lock=
+);
+> >>>> #else
+> >>>>        return 0;
+> >>>> #endif
+> >>>> }
+> >>>>
+> >>>> To avoid the unnecessary devres allocation when
+> >>>> CONFIG_DEBUG_MUTEXES is not set.
+> >>>
+> >>> Honestly saying I don't like unnecessary devres allocation either but
+> >>> the proposed approach has its own price:
+> >>>
+> >>> 1) we'll have more than one place with branching if mutex_destroy is
+> >>> empty or not using  indirect condition. If suddenly mutex_destroy is
+> >>> extended for non-debug code (in upstream branch or e.g. by someone fo=
+r
+> >>> local debug) than there'll be a problem.
+> >>>
+> >>> 2) If mutex_destroy is empty or not depends on CONFIG_PREEMPT_RT opti=
+on
+> >>> too. When CONFIG_PREEMPT_RT is on mutex_destroy is always empty.
+> >>>
+> >>> As I see it only the mutex interface (mutex.h) has to say definitely =
+if
+> >>> mutex_destroy must be called. Probably we could add some define to
+> >>> include/linux/mutex.h,like IS_MUTEX_DESTROY_REQUIRED and declare it n=
+ear
+> >>> mutex_destroy definition itself.
+> >>>
+> >>> I tried to put devm_mutex_init itself in mutex.h and it could've help=
+ed
+> >>> too but it's not the place for devm API.
+> >>>
+> >>
+> >> What do you mean by "it's not the place for devm API" ?
+> >>
+> >> If you do a 'grep devm_ include/linux/' you'll find devm_ functions in
+> >> almost 100 .h files. Why wouldn't mutex.h be the place for
+> >> devm_mutex_init() ?
+> mutex.h's maintainers believe so.
+>
+> https://lore.kernel.org/lkml/070c174c-057a-46de-ae8e-836e9e20eceb@saluted=
+evices.com/T/#mb42e1d7760816b0cedd3130e08f29690496b5ac2
+> >
+> > Looking at it closer, I have the feeling that you want to do similar to
+> > devm_gpio_request() in linux/gpio.h :
+> >
+> > In linux/mutex.h, add a prototype for devm_mutex_init() when
+> > CONFIG_DEBUG_MUTEXES is defined and an empty static inline otherwise.
+> > Then define devm_mutex_init() in kernel/locking/mutex-debug.c
+>
+> Yes, this would be almost perfect decision. BTW just as in linux/gpio.h
+> we wouldn't have to include whole "linux/device.h" into mutex.h, only
+> add forward declaration of struct device;
+>
+> > Wouldn't that work ?
+
+No. It will require inclusion of device.h (which is a twisted hell
+from the header perspective) into mutex.h. Completely unappreciated
+move.
+
+--=20
+With Best Regards,
+Andy Shevchenko
