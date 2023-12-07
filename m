@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35FE7C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71EE9C10F04
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:50:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDdR6WPgz3vs7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:50:19 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDdy1VZJz3vvC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:50:46 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVs6v5Jz3dK1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVt37Lrz3dBV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:38 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVs5lgRz4xQj;
-	Thu,  7 Dec 2023 23:44:37 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVt1y14z4xRn;
+	Thu,  7 Dec 2023 23:44:38 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20231114-pseries-memhp-fixes-v1-0-fb8f2bb7c557@linux.ibm.com>
-References: <20231114-pseries-memhp-fixes-v1-0-fb8f2bb7c557@linux.ibm.com>
-Subject: Re: [PATCH 0/3] powerpc/pseries/memhp: Fix minor bugs and improve error logging
-Message-Id: <170195271172.2310221.6748653819742482850.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nathan Lynch <nathanl@linux.ibm.com>
+In-Reply-To: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
+References: <20231106-rtas-trivial-v1-0-61847655c51f@linux.ibm.com>
+Subject: Re: [PATCH 0/7] powerpc/rtas: Trivial, coding style, and kernel-doc fixes
+Message-Id: <170195271156.2310221.17797655469126733617.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,20 +42,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Scott Cheloha <cheloha@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Nov 2023 11:01:52 -0600, Nathan Lynch wrote:
-> This includes a fix for an array bounds read overrun that can be
-> triggered when debug messages are enabled.
+On Mon, 06 Nov 2023 07:42:52 -0600, Nathan Lynch wrote:
+> * Fix recently introduced kernel-doc warnings.
+> * Make minor coding style adjustments for readability.
+> * Remove rtas_service_present() and an old call_rtas() declaration.
+> * Move a pseries-specific function prototype to pseries code.
 > 
 
-Patches 1 and 3 applied to powerpc/next.
+Patches 3-7 applied to powerpc/next.
 
-[1/3] powerpc/pseries/memhp: Fix access beyond end of drmem array
-      https://git.kernel.org/powerpc/c/bd68ffce69f6cf8ddd3a3c32549d1d2275e49fc5
-[3/3] powerpc/pseries/memhp: Log more error conditions in add path
-      https://git.kernel.org/powerpc/c/27951e1d8274e9f9a2925b069e4492939a3f2099
+[3/7] powerpc/rtas: Drop declaration of undefined call_rtas() function
+      https://git.kernel.org/powerpc/c/981d1c997fbc5e193b282f3a325a0230bf697363
+[4/7] powerpc/rtas: Remove unused rtas_service_present()
+      https://git.kernel.org/powerpc/c/1d8faf1f41b550eb7ab7ac841ebd70f205840dde
+[5/7] powerpc/rtas: Move post_mobility_fixup() declaration to pseries
+      https://git.kernel.org/powerpc/c/010862d235c9fab4f0f9dd169efc72df94110758
+[6/7] powerpc/rtas: Remove trailing space
+      https://git.kernel.org/powerpc/c/19773eda86e289526b7f08fa56c92e75cd7796f6
+[7/7] powerpc/rtas: Remove 'extern' from function declarations in rtas.h
+      https://git.kernel.org/powerpc/c/646477fc47905157a8440cdc45aad22901b5b3ce
 
 cheers
