@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFB7AC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:49:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 278B9C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:49:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDcR3bw3z3wMQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:49:27 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDcx6CF2z3dkm
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:49:53 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVr70F1z3dJ0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVs3RfBz3dFr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:37 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVr5nhbz4xQS;
-	Thu,  7 Dec 2023 23:44:36 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVs2JWKz4xPc;
+	Thu,  7 Dec 2023 23:44:37 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231025012452.1985680-1-mpe@ellerman.id.au>
-References: <20231025012452.1985680-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Make cpu_spec __ro_after_init
-Message-Id: <170195271159.2310221.14820812805712713324.b4-ty@ellerman.id.au>
+In-Reply-To: <20231113043947.1931831-1-mpe@ellerman.id.au>
+References: <20231113043947.1931831-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Remove orphaned reg_a2.h
+Message-Id: <170195271159.2310221.847582356282241280.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -45,22 +45,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 25 Oct 2023 12:24:52 +1100, Michael Ellerman wrote:
-> The cpu_spec is a struct holding various information about the CPU the
-> kernel is executing on. It's populated early in boot and must not change
-> after that.
+On Mon, 13 Nov 2023 15:39:47 +1100, Michael Ellerman wrote:
+> Commit fb5a515704d7 ("powerpc: Remove platforms/wsp and associated
+> pieces") removed the A2 CPU support, but missed removal of reg_a2.h.
 > 
-> In particular the cpu_features and mmu_features hold the set of
-> discovered CPU/MMU features and are used to set static keys for each
-> feature, and do binary patching of assembly. So any change to the
-> cpu_features/mmu_features later in boot will not be reflected in
-> the state of the static keys or patched code.
+> None of the defines contained in it are used, with the exception of the
+> SPRN_TEN* values, but they are also defined in reg_booke.h.
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Make cpu_spec __ro_after_init
-      https://git.kernel.org/powerpc/c/98eb30fe4c69a9b602f29e406317c49b5580352a
+[1/1] powerpc: Remove orphaned reg_a2.h
+      https://git.kernel.org/powerpc/c/6f2a9e0e0ae5fb0697dd1660ede7e609be25ff6f
 
 cheers
