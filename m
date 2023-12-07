@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7C68C10F04
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:49:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFB7AC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:49:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDbx3Mnfz3vg5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:49:01 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDcR3bw3z3wMQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:49:27 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVr3Q4Cz3dGx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVr70F1z3dJ0
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:36 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVr1Lw9z4xQP;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVr5nhbz4xQS;
 	Thu,  7 Dec 2023 23:44:36 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231120235436.1569255-1-mpe@ellerman.id.au>
-References: <20231120235436.1569255-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/lib: Avoid array bounds warnings in vec ops
-Message-Id: <170195271162.2310221.2324455057189218838.b4-ty@ellerman.id.au>
+In-Reply-To: <20231025012452.1985680-1-mpe@ellerman.id.au>
+References: <20231025012452.1985680-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Make cpu_spec __ro_after_init
+Message-Id: <170195271159.2310221.14820812805712713324.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,30 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gustavo@embeddedor.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 21 Nov 2023 10:54:36 +1100, Michael Ellerman wrote:
-> Building with GCC 13 (which has -array-bounds enabled) there are several
-> warnings in sstep.c along the lines of:
+On Wed, 25 Oct 2023 12:24:52 +1100, Michael Ellerman wrote:
+> The cpu_spec is a struct holding various information about the CPU the
+> kernel is executing on. It's populated early in boot and must not change
+> after that.
 > 
->   In function ‘do_byte_reverse’,
->       inlined from ‘do_vec_load’ at arch/powerpc/lib/sstep.c:691:3,
->       inlined from ‘emulate_loadstore’ at arch/powerpc/lib/sstep.c:3439:9:
->   arch/powerpc/lib/sstep.c:289:23: error: array subscript 2 is outside array bounds of ‘u8[16]’ {aka ‘unsigned char[16]’} [-Werror=array-bounds=]
->     289 |                 up[2] = byterev_8(up[1]);
->         |                 ~~~~~~^~~~~~~~~~~~~~~~~~
->   arch/powerpc/lib/sstep.c: In function ‘emulate_loadstore’:
->   arch/powerpc/lib/sstep.c:681:11: note: at offset 16 into object ‘u’ of size 16
->     681 |         } u = {};
->         |           ^
+> In particular the cpu_features and mmu_features hold the set of
+> discovered CPU/MMU features and are used to set static keys for each
+> feature, and do binary patching of assembly. So any change to the
+> cpu_features/mmu_features later in boot will not be reflected in
+> the state of the static keys or patched code.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/lib: Avoid array bounds warnings in vec ops
-      https://git.kernel.org/powerpc/c/df99da19c6c24ab65052ae1bc0904f99069478d9
+[1/1] powerpc: Make cpu_spec __ro_after_init
+      https://git.kernel.org/powerpc/c/98eb30fe4c69a9b602f29e406317c49b5580352a
 
 cheers
