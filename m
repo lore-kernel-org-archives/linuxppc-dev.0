@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73912C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:53:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44CD1C10F04
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:53:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDhc0m5wz75dc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:53:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDj602xNz3w7R
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:53:30 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVx5nD4z3dKw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVy3QCNz3dBw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:42 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVx505pz4xRj;
-	Thu,  7 Dec 2023 23:44:41 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVv26DCz4xGP;
+	Thu,  7 Dec 2023 23:44:39 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: fbarrat@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org, Li zeming <zeming@nfschina.com>
-In-Reply-To: <20231113014533.11064-1-zeming@nfschina.com>
-References: <20231113014533.11064-1-zeming@nfschina.com>
-Subject: Re: [PATCH] misc: ocxl: link: Remove unnecessary (void*) conversions
-Message-Id: <170195271158.2310221.13435467139810414115.b4-ty@ellerman.id.au>
+To: Naveen N Rao <naveen@kernel.org>
+In-Reply-To: <20231123071705.397625-1-naveen@kernel.org>
+References: <20231123071705.397625-1-naveen@kernel.org>
+Subject: Re: [PATCH] powerpc/lib: Validate size for vector operations
+Message-Id: <170195271162.2310221.13222401441821913354.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,18 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 Nov 2023 09:45:33 +0800, Li zeming wrote:
-> The link pointer does not need to cast the type.
+On Thu, 23 Nov 2023 12:47:05 +0530, Naveen N Rao wrote:
+> Some of the fp/vmx code in sstep.c assume a certain maximum size for the
+> instructions being emulated. The size of those operations however is
+> determined separately in analyse_instr().
 > 
+> Add a check to validate the assumption on the maximum size of the
+> operations, so as to prevent any unintended kernel stack corruption.
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] misc: ocxl: link: Remove unnecessary (void*) conversions
-      https://git.kernel.org/powerpc/c/220f3ced8e42b1efe9c6b84778fb0c77c0c56611
+[1/1] powerpc/lib: Validate size for vector operations
+      https://git.kernel.org/powerpc/c/8f9abaa6d7de0a70fc68acaedce290c1f96e2e59
 
 cheers
