@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CEA3C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:46:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFD9CC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:47:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDYP20JYz3vt6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:46:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDYv4y89z3vyl
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:47:15 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVp0HwDz3dBn
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDVp2fXFz3dBs
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:44:34 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVl4Jpgz4xKl;
-	Thu,  7 Dec 2023 23:44:31 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVp1Tw7z4xPQ;
+	Thu,  7 Dec 2023 23:44:34 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, fbarrat@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org, Zhao Ke <ke.zhao@shingroup.cn>
-In-Reply-To: <20231129075845.57976-1-ke.zhao@shingroup.cn>
-References: <20231129075845.57976-1-ke.zhao@shingroup.cn>
-Subject: Re: [PATCH v2] powerpc: Add PVN support for HeXin C2000 processor
-Message-Id: <170195271167.2310221.14120518840277202418.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20231130114433.3053544-1-mpe@ellerman.id.au>
+References: <20231130114433.3053544-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/mm: Fix build failures due to arch_reserved_kernel_pages()
+Message-Id: <170195271172.2310221.6102752620377148359.b4-ty@ellerman.id.au>
 Date: Thu, 07 Dec 2023 23:38:31 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,21 +42,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: luming.yu@shingroup.cn, kvm@vger.kernel.org, dawei.li@shingroup.cn, linux-kernel@vger.kernel.org, shenghui.qu@shingroup.cn, linuxppc-dev@lists.ozlabs.org
+Cc: arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Nov 2023 15:58:45 +0800, Zhao Ke wrote:
-> HeXin Tech Co. has applied for a new PVN from the OpenPower Community
-> for its new processor C2000. The OpenPower has assigned a new PVN
-> and this newly assigned PVN is 0x0066, add pvr register related
-> support for this PVN.
+On Thu, 30 Nov 2023 22:44:32 +1100, Michael Ellerman wrote:
+> With NUMA=n and FA_DUMP=y or PRESERVE_FA_DUMP=y the build fails with:
 > 
+>   arch/powerpc/kernel/fadump.c:1739:22: error: no previous prototype for ‘arch_reserved_kernel_pages’ [-Werror=missing-prototypes]
+>   1739 | unsigned long __init arch_reserved_kernel_pages(void)
+>        |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~
 > 
+> The prototype for arch_reserved_kernel_pages() is in include/linux/mm.h,
+> but it's guarded by __HAVE_ARCH_RESERVED_KERNEL_PAGES. The powerpc
+> headers define __HAVE_ARCH_RESERVED_KERNEL_PAGES in asm/mmzone.h, which
+> is not included into the generic headers when NUMA=n.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Add PVN support for HeXin C2000 processor
-      https://git.kernel.org/powerpc/c/e12d8e2602d2bcd26022eff3e2519d25925e760c
+[1/2] powerpc/mm: Fix build failures due to arch_reserved_kernel_pages()
+      https://git.kernel.org/powerpc/c/d8c3f243d4db24675b653f0568bb65dae34e6455
+[2/2] powerpc: Fix build error due to is_valid_bugaddr()
+      https://git.kernel.org/powerpc/c/f8d3555355653848082c351fa90775214fb8a4fa
 
 cheers
