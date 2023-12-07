@@ -4,70 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F3EBC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC50DC10DC3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 12:55:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T6oXEb5W;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=N9/bCE5o;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDk050YYz3wSV
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:54:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmDl42l0lz3wFD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:55:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T6oXEb5W;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=N9/bCE5o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b29; helo=mail-yb1-xb29.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
+Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDY61kRYz3dHJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:46:33 +1100 (AEDT)
-Received: by mail-yb1-xb29.google.com with SMTP id 3f1490d57ef6-db3fa47c2f7so1073314276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2023 04:46:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1701953189; x=1702557989; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=rHfqqy7VSfkSG99E4cdZjp3eHb2ShoLvFftEF8wWjOQ=;
-        b=T6oXEb5WJXAVHwyL6E5/XZPJgkX3RjaTQa68CFqVVWAZwV5KI9YXUhGOw/E5SabUJm
-         5TizD7rewIZZG4v/2mUIohcPLQw6BO7h45XrmajVBzfKkjZh+2XNta1ros1soo3QuXsm
-         bLW0ncVptmFSPJJdB94BrQHu3nLN4yelqt746qtbDJfZasIfjYa46mbjZOBhInnICtQ0
-         pDJSiXRVYsoU8J0kfLjkTws1QksUXRpYQjqn957064vUQAIea9J5rgicWvOr3e++FoWc
-         EsHyyVIuC6L5hPDEJXZXJgWnvEjh0IwhfPEV7vEoAkDNBCn8rymDU7//+Ip+okA2HHx3
-         AyiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701953189; x=1702557989;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=rHfqqy7VSfkSG99E4cdZjp3eHb2ShoLvFftEF8wWjOQ=;
-        b=MhsnRf9+7KVpicuJWAQI5KRa5J58PjUNucDVPtgtXoDbA+diLPTir5m3/LuWNdF7Wm
-         dcUdbQoZ/m4o/Ln365/OwC8oOmdqvSYy9J3rRVd8VHY5J6XGmyZsa2JoYx/Cbgx7JB2W
-         Xy4Md/N8c2bfnL/4jECRfQoQXjE37ejilEOYKKxplFDTva0avAs/vjJwaY8lDEiuS1sp
-         1J68IxE4FZLUOsfoFL/yHeL5n8JTxMq17Dspi38L+JXjPhu/YnMzRThibLtgu93toCzz
-         pG8ReGGi2DKadojPGpG+UfIyNmpfr2No4pVDWp6nx0DZ36hQp01hmJgYES8n7hhOJ9Rh
-         8bSA==
-X-Gm-Message-State: AOJu0YxtnuJP6uvqXY58VkjM5Kh9wGze87ExRU6GmKs6ZPr/lzkbSek3
-	T5IhW+2XuwR4Bw8nDPp7vpU423nOnaSc6Ty8oig=
-X-Google-Smtp-Source: AGHT+IFwsBRm2Rebv+SFsvxcHiAxag8PhUK1dcHIdFKH5KX2JpHW3VXWMpLshEKz01dWJ6+Za1oDmJQd0KMGyh6EKoc=
-X-Received: by 2002:a25:aa6a:0:b0:db7:dad0:60c1 with SMTP id
- s97-20020a25aa6a000000b00db7dad060c1mr2364100ybi.78.1701953188938; Thu, 07
- Dec 2023 04:46:28 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmDft2jX8z75Sn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 23:51:27 +1100 (AEDT)
+Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 2ADA5100008;
+	Thu,  7 Dec 2023 15:51:21 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 2ADA5100008
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
+	s=mail; t=1701953481;
+	bh=fI5OzawEGCVVfRbMhXE1Of2XRpyVwMZSfxOH5EOrJ1o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type:From;
+	b=N9/bCE5o94pPixmQ6rwVigYyQ8ZL1iWdN3H/ufJbuG/fJmBzC9B70M7Eoay6t7FDw
+	 oxcblJ1d8+s2ljK8OVXEcoVQI0pi2Ww+RV0dyc3kaxNPhfplP3APYPDoq6XQbpmUSp
+	 XWj+PmNtWEeYkfMolrzH9LqSq7r2ZoD5owypj4jX75gVfw8eJ/83lwbvcwuRGFMpA2
+	 gw63RsmrnvH+sw02s6qyY6+kJPO4n4dy4zOGip7BPd9b4HZsC8ZtbFQjt5arC0e7YX
+	 QTbKG3wnO5+fev8HWiFVzM9VhppNYGUu44S+HSbQAbsoT8g50AQlSsQQc1v5nNxf0/
+	 mMxVTg0ZXWriA==
+Received: from p-i-exch-sc-m01.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mx1.sberdevices.ru (Postfix) with ESMTPS;
+	Thu,  7 Dec 2023 15:51:20 +0300 (MSK)
+Received: from [192.168.1.127] (100.64.160.123) by
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.40; Thu, 7 Dec 2023 15:51:19 +0300
+Message-ID: <57ea099a-8b88-4b16-9b54-b81e5b28bcb6@salutedevices.com>
+Date: Thu, 7 Dec 2023 15:51:44 +0300
 MIME-Version: 1.0
-References: <20231204180603.470421-1-gnstark@salutedevices.com>
- <20231204180603.470421-2-gnstark@salutedevices.com> <81798fe5-f89e-482f-b0d0-674ccbfc3666@redhat.com>
- <29584eb6-fa10-4ce0-9fa3-0c409a582445@salutedevices.com> <17a9fede-30e8-4cd5-ae02-fe34e11f5c20@csgroup.eu>
- <be693688-2e82-4e1a-9ead-cf1513ee637b@csgroup.eu> <2a68534b-9e64-4d6e-8a49-eeab0889841b@salutedevices.com>
- <CAHp75VdMzZZg3w_jr-SF2APeyq1wVNHK=r=Amf0+JUOq1hy0Fw@mail.gmail.com> <3275dec3-fd19-4aa1-8eba-441fd64cc185@csgroup.eu>
-In-Reply-To: <3275dec3-fd19-4aa1-8eba-441fd64cc185@csgroup.eu>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 7 Dec 2023 14:45:52 +0200
-Message-ID: <CAHp75VfmF0sMrQTrq8G+R9e7icjEZR9jM9L9GEQHqTutS+E-Uw@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 01/10] devm-helpers: introduce devm_mutex_init
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Andy Shevchenko
+	<andy.shevchenko@gmail.com>
+References: <20231204180603.470421-1-gnstark@salutedevices.com>
+ <20231204180603.470421-2-gnstark@salutedevices.com>
+ <81798fe5-f89e-482f-b0d0-674ccbfc3666@redhat.com>
+ <29584eb6-fa10-4ce0-9fa3-0c409a582445@salutedevices.com>
+ <17a9fede-30e8-4cd5-ae02-fe34e11f5c20@csgroup.eu>
+ <be693688-2e82-4e1a-9ead-cf1513ee637b@csgroup.eu>
+ <2a68534b-9e64-4d6e-8a49-eeab0889841b@salutedevices.com>
+ <CAHp75Veyz-hMYPDEiCC1WJASGZ8N9pVef0foYJ0vBcW2VpfR+w@mail.gmail.com>
+ <34060476-86e5-42fb-a139-6790487c1568@csgroup.eu>
+From: George Stark <gnstark@salutedevices.com>
+In-Reply-To: <34060476-86e5-42fb-a139-6790487c1568@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [100.64.160.123]
+X-ClientProxiedBy: p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) To
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
+X-KSMG-Rule-ID: 10
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Lua-Profiles: 181936 [Dec 07 2023]
+X-KSMG-AntiSpam-Version: 6.0.0.2
+X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
+X-KSMG-AntiSpam-Rate: 0
+X-KSMG-AntiSpam-Status: not_detected
+X-KSMG-AntiSpam-Method: none
+X-KSMG-AntiSpam-Auth: dkim=none
+X-KSMG-AntiSpam-Info: LuaCore: 5 0.3.5 98d108ddd984cca1d7e65e595eac546a62b0144b, {Tracking_from_domain_doesnt_match_to}, p-i-exch-sc-m01.sberdevices.ru:7.1.1,5.0.1;100.64.160.123:7.1.2;salutedevices.com:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;127.0.0.199:7.1.2, FromAlignment: s, ApMailHostAddress: 100.64.160.123
+X-MS-Exchange-Organization-SCL: -1
+X-KSMG-AntiSpam-Interceptor-Info: scan successful
+X-KSMG-AntiPhishing: Clean
+X-KSMG-LinksScanning: Clean
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/12/07 02:56:00 #22627289
+X-KSMG-AntiVirus-Status: Clean, skipped
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,118 +95,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "vadimp@nvidia.com" <vadimp@nvidia.com>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "boqun.feng@gmail.com" <boqun.feng@gmail.com>, "lee@kernel.org" <lee@kernel.org>, "kernel@salutedevices.com" <kernel@salutedevices.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "npiggin@gmail.com" <npiggin@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "mingo@redhat.com" <mingo@redhat.com>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, George Stark <gnstark@salutedevices.com>, Waiman Long <longman@redhat.com>, "will@kernel.org" <will@kernel.org>, "jic23@kernel.org" <jic23@kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "vadimp@nvidia.com" <vadimp@nvidia.com>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "boqun.feng@gmail.com" <boqun.feng@gmail.com>, "lee@kernel.org" <lee@kernel.org>, "kernel@salutedevices.com" <kernel@salutedevices.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "npiggin@gmail.com" <npiggin@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "mingo@redhat.com" <mingo@redhat.com>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, Waiman Long <longman@redhat.com>, "will@kernel.org" <will@kernel.org>, "jic23@kernel.org" <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 7, 2023 at 2:31=E2=80=AFPM Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
-> Le 07/12/2023 =C3=A0 12:59, Andy Shevchenko a =C3=A9crit :
-> > On Thu, Dec 7, 2023 at 1:23=E2=80=AFAM George Stark <gnstark@salutedevi=
-ces.com> wrote:
-> >> On 12/7/23 01:37, Christophe Leroy wrote:
-> >>> Le 06/12/2023 =C3=A0 23:14, Christophe Leroy a =C3=A9crit :
-> >>>> Le 06/12/2023 =C3=A0 19:58, George Stark a =C3=A9crit :
-> >>>>> On 12/6/23 18:01, Hans de Goede wrote:
-> >>>>>> On 12/4/23 19:05, George Stark wrote:
 
-...
 
-> >>>>>> mutex_destroy() only actually does anything if CONFIG_DEBUG_MUTEXE=
-S
-> >>>>>> is set, otherwise it is an empty inline-stub.
-> >>>>>>
-> >>>>>> Adding a devres resource to the device just to call an empty inlin=
-e
-> >>>>>> stub which is a no-op seems like a waste of resources. IMHO it
-> >>>>>> would be better to change this to:
-> >>>>>>
-> >>>>>> static inline int devm_mutex_init(struct device *dev, struct mutex
-> >>>>>> *lock)
-> >>>>>> {
-> >>>>>>         mutex_init(lock);
-> >>>>>> #ifdef CONFIG_DEBUG_MUTEXES
-> >>>>>>         return devm_add_action_or_reset(dev, devm_mutex_release, l=
-ock);
+On 12/7/23 15:28, Christophe Leroy wrote:
+> 
+> 
+> Le 07/12/2023 à 13:02, Andy Shevchenko a écrit :
+>> On Thu, Dec 7, 2023 at 1:23 AM George Stark <gnstark@salutedevices.com> wrote:
+>>> On 12/7/23 01:37, Christophe Leroy wrote:
+>>>> Le 06/12/2023 à 23:14, Christophe Leroy a écrit :
+>>
+>> ...
+>>
+>>>> Looking at it closer, I have the feeling that you want to do similar to
+>>>> devm_gpio_request() in linux/gpio.h :
+>>>>
+>>>> In linux/mutex.h, add a prototype for devm_mutex_init() when
+>>>> CONFIG_DEBUG_MUTEXES is defined and an empty static inline otherwise.
+>>>> Then define devm_mutex_init() in kernel/locking/mutex-debug.c
+>>>
+>>> Yes, this would be almost perfect decision. BTW just as in linux/gpio.h
+>>> we wouldn't have to include whole "linux/device.h" into mutex.h, only
+>>> add forward declaration of struct device;
+>>
+>> In case you place it into a C-file. Otherwise you need a header for
+>> the API and that is not acceptable for mutex.h.
+>>
+> 
+> Right, that's the reason why I'm suggesting to define devm_mutex_init()
+> in kernel/locking/mutex-debug.c.
+> 
+> In linux/mutex.h, you define a stub for when CONFIG_DEBUG_MUTEXES is not
+> set, and the prototype of devm_mutex_init() when CONFIG_DEBUG_MUTEXES is
+> set.
 
-^^^^ (1)
+Something like this:
 
-> >>>>>> #else
-> >>>>>>         return 0;
-> >>>>>> #endif
-> >>>>>> }
-> >>>>>>
-> >>>>>> To avoid the unnecessary devres allocation when
-> >>>>>> CONFIG_DEBUG_MUTEXES is not set.
-> >>>>>
-> >>>>> Honestly saying I don't like unnecessary devres allocation either b=
-ut
-> >>>>> the proposed approach has its own price:
-> >>>>>
-> >>>>> 1) we'll have more than one place with branching if mutex_destroy i=
-s
-> >>>>> empty or not using  indirect condition. If suddenly mutex_destroy i=
-s
-> >>>>> extended for non-debug code (in upstream branch or e.g. by someone =
-for
-> >>>>> local debug) than there'll be a problem.
-> >>>>>
-> >>>>> 2) If mutex_destroy is empty or not depends on CONFIG_PREEMPT_RT op=
-tion
-> >>>>> too. When CONFIG_PREEMPT_RT is on mutex_destroy is always empty.
-> >>>>>
-> >>>>> As I see it only the mutex interface (mutex.h) has to say definitel=
-y if
-> >>>>> mutex_destroy must be called. Probably we could add some define to
-> >>>>> include/linux/mutex.h,like IS_MUTEX_DESTROY_REQUIRED and declare it=
- near
-> >>>>> mutex_destroy definition itself.
-> >>>>>
-> >>>>> I tried to put devm_mutex_init itself in mutex.h and it could've he=
-lped
-> >>>>> too but it's not the place for devm API.
-> >>>>>
-> >>>>
-> >>>> What do you mean by "it's not the place for devm API" ?
-> >>>>
-> >>>> If you do a 'grep devm_ include/linux/' you'll find devm_ functions =
-in
-> >>>> almost 100 .h files. Why wouldn't mutex.h be the place for
-> >>>> devm_mutex_init() ?
-> >> mutex.h's maintainers believe so.
-> >>
-> >> https://lore.kernel.org/lkml/070c174c-057a-46de-ae8e-836e9e20eceb@salu=
-tedevices.com/T/#mb42e1d7760816b0cedd3130e08f29690496b5ac2
-> >>>
-> >>> Looking at it closer, I have the feeling that you want to do similar =
-to
-> >>> devm_gpio_request() in linux/gpio.h :
-> >>>
-> >>> In linux/mutex.h, add a prototype for devm_mutex_init() when
-> >>> CONFIG_DEBUG_MUTEXES is defined and an empty static inline otherwise.
-> >>> Then define devm_mutex_init() in kernel/locking/mutex-debug.c
-> >>
-> >> Yes, this would be almost perfect decision. BTW just as in linux/gpio.=
-h
-> >> we wouldn't have to include whole "linux/device.h" into mutex.h, only
-> >> add forward declaration of struct device;
-> >>
-> >>> Wouldn't that work ?
-> >
-> > No. It will require inclusion of device.h (which is a twisted hell
-> > from the header perspective) into mutex.h. Completely unappreciated
-> > move.
->
-> I see no reason for including device.h, I think a forward declaration of
-> struct device would be enough, as done in linux/gpio.h
->
-> Am I missing something ?
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index a33aa9eb9fc3..4a6041a7fd44 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -21,6 +21,8 @@
+  #include <linux/debug_locks.h>
+  #include <linux/cleanup.h>
 
-Yes, see (1) above. If you want to have it in the header, you must
-provide an API, which is located in device.h. The idea about
-mutex-debug.c is interesting, but the file naming and the devm_*() API
-for _initing_ the mutex seems confusing.
++struct device;
++
+  #ifdef CONFIG_DEBUG_LOCK_ALLOC
+  # define __DEP_MAP_MUTEX_INITIALIZER(lockname)			\
+  		, .dep_map = {					\
+@@ -127,6 +129,20 @@ extern void __mutex_init(struct mutex *lock, const 
+char *name,
+   */
+  extern bool mutex_is_locked(struct mutex *lock);
 
---=20
-With Best Regards,
-Andy Shevchenko
++#ifdef CONFIG_DEBUG_MUTEXES
++
++extern int devm_mutex_init(struct device *dev, struct mutex *lock);
++
++#else
++
++static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
++{
++	mutex_init(lock);
++	return 0;
++}
++
++#endif
++
+  #else /* !CONFIG_PREEMPT_RT */
+  /*
+   * Preempt-RT variant based on rtmutexes.
+@@ -169,6 +185,13 @@ do {							\
+  							\
+  	__mutex_init((mutex), #mutex, &__key);		\
+  } while (0)
++
++static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
++{
++	mutex_init(lock);
++	return 0;
++}
++
+  #endif /* CONFIG_PREEMPT_RT */
+
+  /*
+diff --git a/kernel/locking/mutex-debug.c b/kernel/locking/mutex-debug.c
+index bc8abb8549d2..d50dfa06e82c 100644
+--- a/kernel/locking/mutex-debug.c
++++ b/kernel/locking/mutex-debug.c
+@@ -19,6 +19,7 @@
+  #include <linux/kallsyms.h>
+  #include <linux/interrupt.h>
+  #include <linux/debug_locks.h>
++#include <linux/device.h>
+
+  #include "mutex.h"
+
+@@ -104,3 +105,25 @@ void mutex_destroy(struct mutex *lock)
+  }
+
+  EXPORT_SYMBOL_GPL(mutex_destroy);
++
++static void devm_mutex_release(void *res)
++{
++	mutex_destroy(res);
++}
++
++/**
++ * devm_mutex_init - Resource-managed mutex initialization
++ * @dev:	Device which lifetime mutex is bound to
++ * @lock:	Pointer to a mutex
++ *
++ * Initialize mutex which is automatically destroyed when the driver is 
+detached.
++ *
++ * Returns: 0 on success or a negative error code on failure.
++ */
++int devm_mutex_init(struct device *dev, struct mutex *lock)
++{
++	mutex_init(lock);
++	return devm_add_action_or_reset(dev, devm_mutex_release, lock);
++}
++
++EXPORT_SYMBOL_GPL(devm_mutex_init);
+\ No newline at end of file
+
+
+-- 
+Best regards
+George
