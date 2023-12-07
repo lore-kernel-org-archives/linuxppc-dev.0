@@ -4,48 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19C8BC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 04:49:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBEB2C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 09:16:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=S3OFIEXV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I3enIjcB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sm1yd3lG4z3cNY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 15:49:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sm7tX373Bz3dKS
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 20:16:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=S3OFIEXV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I3enIjcB;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sm1xg3nZzz2yts
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 15:48:39 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1701924518;
-	bh=5v86kuw+WREddg6/1BQXTyPrhQFcUlwGuC7Hep43V7w=;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sm7sZ0L8sz3cDy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2023 20:15:29 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id F0A746203B;
+	Thu,  7 Dec 2023 09:15:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFF49C433C7;
+	Thu,  7 Dec 2023 09:15:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1701940526;
+	bh=/Ctyeihvym0TLJckEfSU+fK0IoOk5vWkpWC1s1zEMPM=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=S3OFIEXVQyuJV7Ws1XwoxszchGOPw4PI3ELuLYrZ8O5AXipv+qrlyxTIzC82m7xKt
-	 Ymw41Dw4UkY/6p/LtB2bN+0t3FYUnSKsoh0XlN7uRLnq+Mywb5a24azY6t+L5qsVSM
-	 /r8R9LiKrpfGfgpLiCcdjgWHUwaUEMfrDQC1bEkEQanJni1i9IX8i7BE5P5hpnTm3J
-	 77ABRINUkx+EAR3cEXEB58Y9mSCoiIXIza1X9fQJTEc6mjPzBoXmz3vMLGnJ5TMX5/
-	 hIceK+2nMo066dyOGH0p2Qy9XNyS2SECDXY3wkVdWuFD6FJepCPj5vmCUnkxzuJZV5
-	 6SikDYMHWxj2w==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Sm1xf5YJJz4wd0;
-	Thu,  7 Dec 2023 15:48:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] powerpc/Makefile: Auto detect cross compiler
-In-Reply-To: <20231206162556.GK19790@gate.crashing.org>
-References: <20231206115548.1466874-1-mpe@ellerman.id.au>
- <20231206115548.1466874-4-mpe@ellerman.id.au>
- <20231206162556.GK19790@gate.crashing.org>
-Date: Thu, 07 Dec 2023 15:48:30 +1100
-Message-ID: <87y1e6ehy9.fsf@mail.lhotse>
+	b=I3enIjcBzdi6ERkvUMs8ND5g/RZGWozPoSNu5732cRCy43npx7N7AXF7xHecPxUfr
+	 JLwONzeAnrGWYNeNo8et4zlC1VfSLm1zI+lcNSeQfXcG43eA+DDPi98h8grwMZ9IPT
+	 3LqvHIEfyqgrul+aqRCIT32OxkXczh3fP0eQRuMgP9dOySk3nh7j9D079xJIO/9E5e
+	 r//l5DxlaUS92HGG69hxhjKqrIyy46OPYszmKMFw0pmP9vfgXwPGIRslihA8ZSBxyG
+	 QIhm1BdjGsvR+3cSHaMtn1MK9bO326agDzFHXPCb+4GdoBqKltUuNdEECEW9RGkLG3
+	 7taPRy/0u0j3A==
+X-Mailer: emacs 29.1 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V (IBM) <aneesh.kumar@kernel.org>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 01/12] KVM: PPC: Book3S HV nestedv2: Invalidate RPT
+ before deleting a guest
+In-Reply-To: <20231201132618.555031-2-vaibhav@linux.ibm.com>
+References: <20231201132618.555031-1-vaibhav@linux.ibm.com>
+ <20231201132618.555031-2-vaibhav@linux.ibm.com>
+Date: Thu, 07 Dec 2023 14:45:18 +0530
+Message-ID: <878r66xtjt.fsf@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,41 +61,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, sbhat@linux.ibm.com, amachhiw@linux.vnet.ibm.com, Jordan Niethe <jniethe5@gmail.com>, gautam@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, David.Laight@ACULAB.COM, kconsul@linux.vnet.ibm.com, Vaibhav Jain <vaibhav@linux.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
-> On Wed, Dec 06, 2023 at 10:55:48PM +1100, Michael Ellerman wrote:
->> Look for various combinations, matching:
->>   powerpc(64(le)?)?(-unknown)?-linux(-gnu)?-
->> 
->> There are more possibilities, but the above is known to find a compiler
->> on Fedora and Ubuntu (which use linux-gnu-), and also detects the
->> kernel.org cross compilers (which use linux-).
+Vaibhav Jain <vaibhav@linux.ibm.com> writes:
+
+> From: Jordan Niethe <jniethe5@gmail.com>
 >
-> $ sh ../config.sub powerpc64-linux
-> powerpc64-unknown-linux-gnu
+> An L0 must invalidate the L2's RPT during H_GUEST_DELETE if this has not
+> already been done. This is a slow operation that means H_GUEST_DELETE
+> must return H_BUSY multiple times before completing. Invalidating the
+> tables before deleting the guest so there is less work for the L0 to do.
 >
-> I am very very lazy, so buildall uses short names everywhere :-)
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  arch/powerpc/include/asm/kvm_book3s.h | 1 +
+>  arch/powerpc/kvm/book3s_hv.c          | 6 ++++--
+>  arch/powerpc/kvm/book3s_hv_nested.c   | 2 +-
+>  3 files changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+> index 4f527d09c92b..a37736ed3728 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> @@ -302,6 +302,7 @@ void kvmhv_nested_exit(void);
+>  void kvmhv_vm_nested_init(struct kvm *kvm);
+>  long kvmhv_set_partition_table(struct kvm_vcpu *vcpu);
+>  long kvmhv_copy_tofrom_guest_nested(struct kvm_vcpu *vcpu);
+> +void kvmhv_flush_lpid(u64 lpid);
+>  void kvmhv_set_ptbl_entry(u64 lpid, u64 dw0, u64 dw1);
+>  void kvmhv_release_all_nested(struct kvm *kvm);
+>  long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu);
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 1ed6ec140701..5543e8490cd9 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -5691,10 +5691,12 @@ static void kvmppc_core_destroy_vm_hv(struct kvm *kvm)
+>  			kvmhv_set_ptbl_entry(kvm->arch.lpid, 0, 0);
+>  	}
+>  
+> -	if (kvmhv_is_nestedv2())
+> +	if (kvmhv_is_nestedv2()) {
+> +		kvmhv_flush_lpid(kvm->arch.lpid);
+>  		plpar_guest_delete(0, kvm->arch.lpid);
+>
 
-I used to use just ppc64-gcc :)
+I am not sure I follow the optimization here. I would expect the
+hypervisor to kill all the translation caches as part of guest_delete.
+What is the benefit of doing a lpid flush outside the guest delete?
 
-I can add more variants but didn't want to add too many unless someone
-is actually using them.
-
-> Btw, can you build the kernel for a config that differs in 32/64 or
-> BE/LE with the default your compiler uses?  There is no reason this
-> shouldn't work (you don't use any system libraries), but you need to
-> use the correct compiler command-line flags for that always.
-
-Yes it should work. I've tested at least ppc64le/ppc64/ppc defconfigs.
-
-There have been bugs in the past but AFAIK we have fixed all of them,
-though there's probably some still lurking for more obscure configs.
-
-> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
-
-Thanks.
-
-cheers
+> -	else
+> +	} else {
+>  		kvmppc_free_lpid(kvm->arch.lpid);
+> +	}
+>  
+>  	kvmppc_free_pimap(kvm);
+>  }
+> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+> index 3b658b8696bc..5c375ec1a3c6 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> @@ -503,7 +503,7 @@ void kvmhv_nested_exit(void)
+>  	}
+>  }
+>  
+> -static void kvmhv_flush_lpid(u64 lpid)
+> +void kvmhv_flush_lpid(u64 lpid)
+>  {
+>  	long rc;
+>  
+> -- 
+> 2.42.0
