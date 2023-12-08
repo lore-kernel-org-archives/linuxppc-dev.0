@@ -4,64 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1713C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Dec 2023 23:49:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F41ACC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 04:50:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WrXgbq9f;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=W0taEfyD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmWGP31MRz3vtL
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 10:49:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Smdxh1Dvcz3dHG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 15:50:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WrXgbq9f;
+	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=W0taEfyD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::732; helo=mail-qk1-x732.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x732.google.com (mail-qk1-x732.google.com [IPv6:2607:f8b0:4864:20::732])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmW1Y0W5nz3cSS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 10:38:40 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id E06AD62241;
-	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 22B55C433B7;
-	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1701992315;
-	bh=0vINiRxI716yfyayZWIdjCeD94u4Yu4ZUkovoHx01Rs=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=WrXgbq9fRv0cQKhsDnGBcQZKWsghykmok0GkX4rjzzXArzivs0ZW3jYn3ASVgduEN
-	 8lsJE1zNC6FJBqADwNw+uLGJmxy7GTDh2373pO3/ssEL3jtFksy1I4Z/Fj+M9ec0h/
-	 1QsirJDFaUy4vdNW8kd5u68RNAc7ckUnAzjNksqVAGkNrOMYGsaV6YR/2X9Rei5wJf
-	 msOkWI4+mh3wiDxU08+Pj19j/E5XiNEewHWVMQA+zcF9eDLy267roNDYpIniVGMA9E
-	 Y9Ldd/oRsAqn8sI+fkwADYFTzXPZtvl3XQZgWcf4Vo3xjyN3sF3MLguhbCNBoXnx1/
-	 Q6WiN9X2uXAqw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12C1BC10DC3;
-	Thu,  7 Dec 2023 23:38:35 +0000 (UTC)
-From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Thu, 07 Dec 2023 17:35:48 -0600
-Subject: [PATCH v5 09/13] powerpc/pseries: Add papr-vpd character driver
- for VPD retrieval
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Smdwm0rgTz3cSq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 15:49:58 +1100 (AEDT)
+Received: by mail-qk1-x732.google.com with SMTP id af79cd13be357-77f4b8bbe0eso25609985a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2023 20:49:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=sifive.com; s=google; t=1702010995; x=1702615795; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Siq5/aLB+N8os3ShA228wuqtqMbftMOZ84Ddlbg3k10=;
+        b=W0taEfyDM66+JXlGllf22jHJ5xo2iyYDa/P58YO4NGALLfMaIUBApfyDG1QgvxnyGL
+         lswFS9FXTpivLgIzN7YgXdnzeKgwHKwjHtGdidouBSrdwE+CcyJqK3OZN9YMd3tBrmNX
+         UWvcJkUZmO2pTAIC6k9HviAVwfoCNxk+xP5rhUcWVeBv4Qj4GYdXGRq9CYlDNEykf0p0
+         J6x5HyjSecMex9aQc/Sqs7IaXYImcomxO/zzifp9tOkV6gqeQ3s4ouACW4s48TaX5KsP
+         HxJZO1bzzv9qRC/BDj47a9AB09YnxQkgwoRdIH9+FS81TWU69D9a/zA90z17EPTXg+k2
+         2ZfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1702010995; x=1702615795;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Siq5/aLB+N8os3ShA228wuqtqMbftMOZ84Ddlbg3k10=;
+        b=o3mOydSwa4DHaxodm1AvDqAB7nm0GmG9ge+CnKwAdstuh4cMovUpQxvT79f1F0IH6t
+         0Fyj4FjnD8xlJzII9VjmzLd9sK5iQ7xHpxTEp3Ic5fdOuQu7//sBw/83Ch3BbMBqCLXa
+         DuCRiIxKeZDauliBTsV7fugo7eHlwSBW+jMkkIob/A8nOxuqzSHdgpG0ATe0EKPiv2te
+         2L1gfX+6H94+wd7V8H2NdyWlPl8AX+8rgNz1O1Z/mzRF2elK9v01J2slk7djfuLnFzI2
+         1WjrLV2fYz/GytPQ3kb+Y7Ip0dkC/DsS9YZWvZlt/bf4ko+eHJyYK0pfIGrdU68N7qDE
+         6+eQ==
+X-Gm-Message-State: AOJu0YyP/JC8aBLxl3btF64XMW0zgg4cAxBeDH/fbyllqwFdk572gH8k
+	w30lz+ihly3Q5MOq1QqMvhn6cg==
+X-Google-Smtp-Source: AGHT+IFZn6XnJPcvVcVddGixsOUuewR/YlITPthokCfZLM+Gy+wdFy5aCuBE/cobBs7DetgZyfJ9UA==
+X-Received: by 2002:a05:620a:1a8a:b0:77f:338c:a713 with SMTP id bl10-20020a05620a1a8a00b0077f338ca713mr2602110qkb.62.1702010994966;
+        Thu, 07 Dec 2023 20:49:54 -0800 (PST)
+Received: from ?IPV6:2600:1700:2000:b002:41c5:bf1:860b:1e95? ([2600:1700:2000:b002:41c5:bf1:860b:1e95])
+        by smtp.gmail.com with ESMTPSA id ov11-20020a05620a628b00b0077f05db2663sm430776qkn.66.2023.12.07.20.49.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 07 Dec 2023 20:49:54 -0800 (PST)
+Message-ID: <6d4cecd5-9083-4d68-a7e2-266dae9e3952@sifive.com>
+Date: Thu, 7 Dec 2023 22:49:53 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id:  <20231207-papr-sys_rtas-vs-lockdown-v5-9-2ce965636a58@linux.ibm.com>
-References:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
-In-Reply-To:  <20231207-papr-sys_rtas-vs-lockdown-v5-0-2ce965636a58@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1701992313; l=21371;
- i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=l1xX+Nc+WrVoveJHSd5xSA8spoWqxjnJQi8agDYCORQ=;
- b=tSQ5VrIVr3FjHnAdNsf7p3CtmRJmvNhuSfVmVFsFhFAC3J07DT17adOZqApt5GIQJeVCWsSWg
- d4BFJOOz9p1BeLCop5YV91GtJmNDKcdp3JvZJWVFYROZRokN93A9eXK
-X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
- pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
-X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
-X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] drm/amd/display: Support DRM_AMD_DC_FP on RISC-V
+Content-Language: en-US
+To: Christoph Hellwig <hch@infradead.org>
+References: <20231122030621.3759313-1-samuel.holland@sifive.com>
+ <20231122030621.3759313-4-samuel.holland@sifive.com>
+ <ZV2+f/yu3C6xTVqn@infradead.org>
+From: Samuel Holland <samuel.holland@sifive.com>
+In-Reply-To: <ZV2+f/yu3C6xTVqn@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,686 +82,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: nathanl@linux.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, tyreld@linux.ibm.com, gcwilson@linux.ibm.com, "Aneesh Kumar K.V \(IBM\)" <aneesh.kumar@kernel.org>, =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Masahiro Yamada <masahiroy@kernel.org>, Rodrigo Siqueira <Rodrigo.Siqueira@amd.com>, amd-gfx@lists.freedesktop.org, Harry Wentland <harry.wentland@amd.com>, Nicolas Schier <nicolas@fjasle.eu>, Will Deacon <will@kernel.org>, linux-kbuild@vger.kernel.org, Leo Li <sunpeng.li@amd.com>, Nathan Chancellor <nathan@kernel.org>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, Pan Xinhui <Xinhui.Pan@amd.com>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Daniel Vetter <daniel@ffwll.ch>, Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+Hi Christoph,
 
-PowerVM LPARs may retrieve Vital Product Data (VPD) for system
-components using the ibm,get-vpd RTAS function.
+On 2023-11-22 2:40 AM, Christoph Hellwig wrote:
+>> -	select DRM_AMD_DC_FP if (X86 || LOONGARCH || (PPC64 && ALTIVEC) || (ARM64 && KERNEL_MODE_NEON && !CC_IS_CLANG))
+>> +	select DRM_AMD_DC_FP if ARM64 && KERNEL_MODE_NEON && !CC_IS_CLANG
+>> +	select DRM_AMD_DC_FP if PPC64 && ALTIVEC
+>> +	select DRM_AMD_DC_FP if RISCV && FPU
+>> +	select DRM_AMD_DC_FP if LOONGARCH || X86
+> 
+> This really is a mess.  Can you add a ARCH_HAS_KERNEL_FPU_SUPPORT
+> symbol that all architetures that have it select instead, and them
+> make DRM_AMD_DC_FP depend on it?
 
-We can expose this to user space with a /dev/papr-vpd character
-device, where the programming model is:
+Yes, I have done this for v2, which I will send shortly.
 
-  struct papr_location_code plc = { .str = "", }; /* obtain all VPD */
-  int devfd = open("/dev/papr-vpd", O_RDONLY);
-  int vpdfd = ioctl(devfd, PAPR_VPD_CREATE_HANDLE, &plc);
-  size_t size = lseek(vpdfd, 0, SEEK_END);
-  char *buf = malloc(size);
-  pread(devfd, buf, size, 0);
+>> -#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
+>> +#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH) || defined(CONFIG_RISCV)
+>>  		kernel_fpu_begin();
+>>  #elif defined(CONFIG_PPC64)
+>>  		if (cpu_has_feature(CPU_FTR_VSX_COMP))
+>> @@ -122,7 +124,7 @@ void dc_fpu_end(const char *function_name, const int line)
+>>  
+>>  	depth = __this_cpu_dec_return(fpu_recursion_depth);
+>>  	if (depth == 0) {
+>> -#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
+>> +#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH) || defined(CONFIG_RISCV)
+>>  		kernel_fpu_end();
+>>  #elif defined(CONFIG_PPC64)
+>>  		if (cpu_has_feature(CPU_FTR_VSX_COMP))
+> 
+> And then this mess can go away.  We'll need to decide if we want to
+> cover all the in-kernel vector support as part of it, which would
+> seem reasonable to me, or have a separate generic kernel_vector_begin
+> with it's own option.
 
-When a file descriptor is obtained from ioctl(PAPR_VPD_CREATE_HANDLE),
-the file contains the result of a complete ibm,get-vpd sequence. The
-file contents are immutable from the POV of user space. To get a new
-view of the VPD, the client must create a new handle.
+I think we may want to keep vector separate for performance on architectures
+with separate FP and vector register files. For now, I have limited my changes
+to FPU support only, which means I have removed VSX/Altivec from here; the
+AMDGPU code doesn't need Altivec anyway.
 
-This design choice insulates user space from most of the complexities
-that ibm,get-vpd brings:
+>> diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+>> index ea7d60f9a9b4..5c8f840ef323 100644
+>> --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
+>> +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+>> @@ -43,6 +43,12 @@ dml_ccflags := -mfpu=64
+>>  dml_rcflags := -msoft-float
+>>  endif
+>>  
+>> +ifdef CONFIG_RISCV
+>> +include $(srctree)/arch/riscv/Makefile.isa
+>> +# Remove V from the ISA string, like in arch/riscv/Makefile, but keep F and D.
+>> +dml_ccflags := -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64ima)([^v_]*)v?/\1\2/')
+>> +endif
+>> +
+>>  ifdef CONFIG_CC_IS_GCC
+>>  ifneq ($(call gcc-min-version, 70100),y)
+>>  IS_OLD_GCC = 1
+> 
+> And this is again not really something we should be doing.
+> Instead we need a generic way in Kconfig to enable FPU support
+> for an object file or set of, that the arch support can hook
+> into.
 
-* ibm,get-vpd must be called more than once to obtain complete
-  results.
+I've included this in v2 as well.
 
-* Only one ibm,get-vpd call sequence should be in progress at a time;
-  interleaved sequences will disrupt each other. Callers must have a
-  protocol for serializing their use of the function.
+> Btw, I'm also really worried about folks using the FPU instructions
+> outside the kernel_fpu_begin/end windows in general (not directly
+> related to the RISC-V support).  Can we have objecttool checks
+> for that similar to only allowing the unsafe uaccess in the
+> uaccess begin/end pairs?
 
-* A call sequence in progress may receive a "VPD changed, try again"
-  status, requiring the client to abandon the sequence and start
-  over.
+ARM partially enforces this at compile time: it disallows calling
+kernel_neon_begin() inside a translation unit that has NEON enabled. That
+doesn't prevent the programmer from calling a FPU-enabled function from outside
+a begin/end section, but it does prevent the compiler from generating unexpected
+FPU usage behind your back. I implemented this same functionality for RISC-V.
 
-The memory required for the VPD buffers seems acceptable, around 20KB
-for all VPD on one of my systems. And the value of the
-/rtas/ibm,vpd-size DT property (the estimated maximum size of VPD) is
-consistently 300KB across various systems I've checked.
+Actually tracking all possibly-FPU-tainted functions and their call sites is
+probably possible, but a much larger task.
 
-I've implemented support for this new ABI in the rtas_get_vpd()
-function in librtas, which the vpdupdate command currently uses to
-populate its VPD database. I've verified that an unmodified vpdupdate
-binary generates an identical database when using a librtas.so that
-prefers the new ABI.
-
-Along with the papr-vpd.h header exposed to user space, this
-introduces a common papr-miscdev.h uapi header to share a base ioctl
-ID with similar drivers to come.
-
-Tested-by: Michal Suchánek <msuchanek@suse.de>
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- Documentation/userspace-api/ioctl/ioctl-number.rst |   2 +
- arch/powerpc/include/uapi/asm/papr-miscdev.h       |   9 +
- arch/powerpc/include/uapi/asm/papr-vpd.h           |  22 +
- arch/powerpc/platforms/pseries/Makefile            |   1 +
- arch/powerpc/platforms/pseries/papr-vpd.c          | 541 +++++++++++++++++++++
- 5 files changed, 575 insertions(+)
-
-diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
-index 4ea5b837399a..a950545bf7cd 100644
---- a/Documentation/userspace-api/ioctl/ioctl-number.rst
-+++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
-@@ -349,6 +349,8 @@ Code  Seq#    Include File                                           Comments
-                                                                      <mailto:vgo@ratio.de>
- 0xB1  00-1F                                                          PPPoX
-                                                                      <mailto:mostrows@styx.uwaterloo.ca>
-+0xB2  00     arch/powerpc/include/uapi/asm/papr-vpd.h                powerpc/pseries VPD API
-+                                                                     <mailto:linuxppc-dev>
- 0xB3  00     linux/mmc/ioctl.h
- 0xB4  00-0F  linux/gpio.h                                            <mailto:linux-gpio@vger.kernel.org>
- 0xB5  00-0F  uapi/linux/rpmsg.h                                      <mailto:linux-remoteproc@vger.kernel.org>
-diff --git a/arch/powerpc/include/uapi/asm/papr-miscdev.h b/arch/powerpc/include/uapi/asm/papr-miscdev.h
-new file mode 100644
-index 000000000000..49a2a270b7f3
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/papr-miscdev.h
-@@ -0,0 +1,9 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+#ifndef _UAPI_PAPR_MISCDEV_H_
-+#define _UAPI_PAPR_MISCDEV_H_
-+
-+enum {
-+	PAPR_MISCDEV_IOC_ID = 0xb2,
-+};
-+
-+#endif /* _UAPI_PAPR_MISCDEV_H_ */
-diff --git a/arch/powerpc/include/uapi/asm/papr-vpd.h b/arch/powerpc/include/uapi/asm/papr-vpd.h
-new file mode 100644
-index 000000000000..1c88e87cb420
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/papr-vpd.h
-@@ -0,0 +1,22 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+#ifndef _UAPI_PAPR_VPD_H_
-+#define _UAPI_PAPR_VPD_H_
-+
-+#include <asm/ioctl.h>
-+#include <asm/papr-miscdev.h>
-+
-+struct papr_location_code {
-+	/*
-+	 * PAPR+ v2.13 12.3.2.4 Converged Location Code Rules - Length
-+	 * Restrictions. 79 characters plus nul.
-+	 */
-+	char str[80];
-+};
-+
-+/*
-+ * ioctl for /dev/papr-vpd. Returns a VPD handle fd corresponding to
-+ * the location code.
-+ */
-+#define PAPR_VPD_IOC_CREATE_HANDLE _IOW(PAPR_MISCDEV_IOC_ID, 0, struct papr_location_code)
-+
-+#endif /* _UAPI_PAPR_VPD_H_ */
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 1476c5e4433c..f936962a2946 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -4,6 +4,7 @@ ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
- 
- obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   of_helpers.o rtas-work-area.o papr-sysparm.o \
-+			   papr-vpd.o \
- 			   setup.o iommu.o event_sources.o ras.o \
- 			   firmware.o power.o dlpar.o mobility.o rng.o \
- 			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-diff --git a/arch/powerpc/platforms/pseries/papr-vpd.c b/arch/powerpc/platforms/pseries/papr-vpd.c
-new file mode 100644
-index 000000000000..c29e85db5f35
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/papr-vpd.c
-@@ -0,0 +1,541 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+
-+#define pr_fmt(fmt) "papr-vpd: " fmt
-+
-+#include <linux/anon_inodes.h>
-+#include <linux/build_bug.h>
-+#include <linux/file.h>
-+#include <linux/fs.h>
-+#include <linux/init.h>
-+#include <linux/lockdep.h>
-+#include <linux/kernel.h>
-+#include <linux/miscdevice.h>
-+#include <linux/signal.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/string_helpers.h>
-+#include <linux/uaccess.h>
-+#include <asm/machdep.h>
-+#include <asm/papr-vpd.h>
-+#include <asm/rtas-work-area.h>
-+#include <asm/rtas.h>
-+#include <uapi/asm/papr-vpd.h>
-+
-+/*
-+ * Function-specific return values for ibm,get-vpd, derived from PAPR+
-+ * v2.13 7.3.20 "ibm,get-vpd RTAS Call".
-+ */
-+#define RTAS_IBM_GET_VPD_COMPLETE    0 /* All VPD has been retrieved. */
-+#define RTAS_IBM_GET_VPD_MORE_DATA   1 /* More VPD is available. */
-+#define RTAS_IBM_GET_VPD_START_OVER -4 /* VPD changed, restart call sequence. */
-+
-+/**
-+ * struct rtas_ibm_get_vpd_params - Parameters (in and out) for ibm,get-vpd.
-+ * @loc_code:  In: Caller-provided location code buffer. Must be RTAS-addressable.
-+ * @work_area: In: Caller-provided work area buffer for results.
-+ * @sequence:  In: Sequence number. Out: Next sequence number.
-+ * @written:   Out: Bytes written by ibm,get-vpd to @work_area.
-+ * @status:    Out: RTAS call status.
-+ */
-+struct rtas_ibm_get_vpd_params {
-+	const struct papr_location_code *loc_code;
-+	struct rtas_work_area *work_area;
-+	u32 sequence;
-+	u32 written;
-+	s32 status;
-+};
-+
-+/**
-+ * rtas_ibm_get_vpd() - Call ibm,get-vpd to fill a work area buffer.
-+ * @params: See &struct rtas_ibm_get_vpd_params.
-+ *
-+ * Calls ibm,get-vpd until it errors or successfully deposits data
-+ * into the supplied work area. Handles RTAS retry statuses. Maps RTAS
-+ * error statuses to reasonable errno values.
-+ *
-+ * The caller is expected to invoke rtas_ibm_get_vpd() multiple times
-+ * to retrieve all the VPD for the provided location code. Only one
-+ * sequence should be in progress at any time; starting a new sequence
-+ * will disrupt any sequence already in progress. Serialization of VPD
-+ * retrieval sequences is the responsibility of the caller.
-+ *
-+ * The caller should inspect @params.status to determine whether more
-+ * calls are needed to complete the sequence.
-+ *
-+ * Context: May sleep.
-+ * Return: -ve on error, 0 otherwise.
-+ */
-+static int rtas_ibm_get_vpd(struct rtas_ibm_get_vpd_params *params)
-+{
-+	const struct papr_location_code *loc_code = params->loc_code;
-+	struct rtas_work_area *work_area = params->work_area;
-+	u32 rets[2];
-+	s32 fwrc;
-+	int ret;
-+
-+	lockdep_assert_held(&rtas_ibm_get_vpd_lock);
-+
-+	do {
-+		fwrc = rtas_call(rtas_function_token(RTAS_FN_IBM_GET_VPD), 4, 3,
-+				 rets,
-+				 __pa(loc_code),
-+				 rtas_work_area_phys(work_area),
-+				 rtas_work_area_size(work_area),
-+				 params->sequence);
-+	} while (rtas_busy_delay(fwrc));
-+
-+	switch (fwrc) {
-+	case RTAS_HARDWARE_ERROR:
-+		ret = -EIO;
-+		break;
-+	case RTAS_INVALID_PARAMETER:
-+		ret = -EINVAL;
-+		break;
-+	case RTAS_IBM_GET_VPD_START_OVER:
-+		ret = -EAGAIN;
-+		break;
-+	case RTAS_IBM_GET_VPD_MORE_DATA:
-+		params->sequence = rets[0];
-+		fallthrough;
-+	case RTAS_IBM_GET_VPD_COMPLETE:
-+		params->written = rets[1];
-+		/*
-+		 * Kernel or firmware bug, do not continue.
-+		 */
-+		if (WARN(params->written > rtas_work_area_size(work_area),
-+			 "possible write beyond end of work area"))
-+			ret = -EFAULT;
-+		else
-+			ret = 0;
-+		break;
-+	default:
-+		ret = -EIO;
-+		pr_err_ratelimited("unexpected ibm,get-vpd status %d\n", fwrc);
-+		break;
-+	}
-+
-+	params->status = fwrc;
-+	return ret;
-+}
-+
-+/*
-+ * Internal VPD "blob" APIs for accumulating ibm,get-vpd results into
-+ * an immutable buffer to be attached to a file descriptor.
-+ */
-+struct vpd_blob {
-+	const char *data;
-+	size_t len;
-+};
-+
-+static bool vpd_blob_has_data(const struct vpd_blob *blob)
-+{
-+	return blob->data && blob->len;
-+}
-+
-+static void vpd_blob_free(const struct vpd_blob *blob)
-+{
-+	if (blob) {
-+		kvfree(blob->data);
-+		kfree(blob);
-+	}
-+}
-+
-+/**
-+ * vpd_blob_extend() - Append data to a &struct vpd_blob.
-+ * @blob: The blob to extend.
-+ * @data: The new data to append to @blob.
-+ * @len:  The length of @data.
-+ *
-+ * Context: May sleep.
-+ * Return: -ENOMEM on allocation failure, 0 otherwise.
-+ */
-+static int vpd_blob_extend(struct vpd_blob *blob, const char *data, size_t len)
-+{
-+	const size_t new_len = blob->len + len;
-+	const size_t old_len = blob->len;
-+	const char *old_ptr = blob->data;
-+	char *new_ptr;
-+
-+	new_ptr = old_ptr ?
-+		kvrealloc(old_ptr, old_len, new_len, GFP_KERNEL_ACCOUNT) :
-+		kvmalloc(len, GFP_KERNEL_ACCOUNT);
-+
-+	if (!new_ptr)
-+		return -ENOMEM;
-+
-+	memcpy(&new_ptr[old_len], data, len);
-+	blob->data = new_ptr;
-+	blob->len = new_len;
-+	return 0;
-+}
-+
-+/**
-+ * vpd_blob_generate() - Construct a new &struct vpd_blob.
-+ * @generator: Function that supplies the blob data.
-+ * @arg:       Context pointer supplied by caller, passed to @generator.
-+ *
-+ * The @generator callback is invoked until it returns NULL. @arg is
-+ * passed to @generator in its first argument on each call. When
-+ * @generator returns data, it should store the data length in its
-+ * second argument.
-+ *
-+ * Context: May sleep.
-+ * Return: A completely populated &struct vpd_blob, or NULL on error.
-+ */
-+static const struct vpd_blob *
-+vpd_blob_generate(const char * (*generator)(void *, size_t *), void *arg)
-+{
-+	struct vpd_blob *blob;
-+	const char *buf;
-+	size_t len;
-+	int err = 0;
-+
-+	blob  = kzalloc(sizeof(*blob), GFP_KERNEL_ACCOUNT);
-+	if (!blob)
-+		return NULL;
-+
-+	while (err == 0 && (buf = generator(arg, &len)))
-+		err = vpd_blob_extend(blob, buf, len);
-+
-+	if (err != 0 || !vpd_blob_has_data(blob))
-+		goto free_blob;
-+
-+	return blob;
-+free_blob:
-+	vpd_blob_free(blob);
-+	return NULL;
-+}
-+
-+/*
-+ * Internal VPD sequence APIs. A VPD sequence is a series of calls to
-+ * ibm,get-vpd for a given location code. The sequence ends when an
-+ * error is encountered or all VPD for the location code has been
-+ * returned.
-+ */
-+
-+/**
-+ * struct vpd_sequence - State for managing a VPD sequence.
-+ * @error:  Shall be zero as long as the sequence has not encountered an error,
-+ *          -ve errno otherwise. Use vpd_sequence_set_err() to update this.
-+ * @params: Parameter block to pass to rtas_ibm_get_vpd().
-+ */
-+struct vpd_sequence {
-+	int error;
-+	struct rtas_ibm_get_vpd_params params;
-+};
-+
-+/**
-+ * vpd_sequence_begin() - Begin a VPD retrieval sequence.
-+ * @seq:      Uninitialized sequence state.
-+ * @loc_code: Location code that defines the scope of the VPD to return.
-+ *
-+ * Initializes @seq with the resources necessary to carry out a VPD
-+ * sequence. Callers must pass @seq to vpd_sequence_end() regardless
-+ * of whether the sequence succeeds.
-+ *
-+ * Context: May sleep.
-+ */
-+static void vpd_sequence_begin(struct vpd_sequence *seq,
-+			       const struct papr_location_code *loc_code)
-+{
-+	/*
-+	 * Use a static data structure for the location code passed to
-+	 * RTAS to ensure it's in the RMA and avoid a separate work
-+	 * area allocation. Guarded by the function lock.
-+	 */
-+	static struct papr_location_code static_loc_code;
-+
-+	/*
-+	 * We could allocate the work area before acquiring the
-+	 * function lock, but that would allow concurrent requests to
-+	 * exhaust the limited work area pool for no benefit. So
-+	 * allocate the work area under the lock.
-+	 */
-+	mutex_lock(&rtas_ibm_get_vpd_lock);
-+	static_loc_code = *loc_code;
-+	*seq = (struct vpd_sequence) {
-+		.params = {
-+			.work_area = rtas_work_area_alloc(SZ_4K),
-+			.loc_code = &static_loc_code,
-+			.sequence = 1,
-+		},
-+	};
-+}
-+
-+/**
-+ * vpd_sequence_end() - Finalize a VPD retrieval sequence.
-+ * @seq: Sequence state.
-+ *
-+ * Releases resources obtained by vpd_sequence_begin().
-+ */
-+static void vpd_sequence_end(struct vpd_sequence *seq)
-+{
-+	rtas_work_area_free(seq->params.work_area);
-+	mutex_unlock(&rtas_ibm_get_vpd_lock);
-+}
-+
-+/**
-+ * vpd_sequence_should_stop() - Determine whether a VPD retrieval sequence
-+ *                              should continue.
-+ * @seq: VPD sequence state.
-+ *
-+ * Examines the sequence error state and outputs of the last call to
-+ * ibm,get-vpd to determine whether the sequence in progress should
-+ * continue or stop.
-+ *
-+ * Return: True if the sequence has encountered an error or if all VPD for
-+ *         this sequence has been retrieved. False otherwise.
-+ */
-+static bool vpd_sequence_should_stop(const struct vpd_sequence *seq)
-+{
-+	bool done;
-+
-+	if (seq->error)
-+		return true;
-+
-+	switch (seq->params.status) {
-+	case 0:
-+		if (seq->params.written == 0)
-+			done = false; /* Initial state. */
-+		else
-+			done = true; /* All data consumed. */
-+		break;
-+	case 1:
-+		done = false; /* More data available. */
-+		break;
-+	default:
-+		done = true; /* Error encountered. */
-+		break;
-+	}
-+
-+	return done;
-+}
-+
-+static int vpd_sequence_set_err(struct vpd_sequence *seq, int err)
-+{
-+	/* Preserve the first error recorded. */
-+	if (seq->error == 0)
-+		seq->error = err;
-+
-+	return seq->error;
-+}
-+
-+/*
-+ * Generator function to be passed to vpd_blob_generate().
-+ */
-+static const char *vpd_sequence_fill_work_area(void *arg, size_t *len)
-+{
-+	struct vpd_sequence *seq = arg;
-+	struct rtas_ibm_get_vpd_params *p = &seq->params;
-+
-+	if (vpd_sequence_should_stop(seq))
-+		return NULL;
-+	if (vpd_sequence_set_err(seq, rtas_ibm_get_vpd(p)))
-+		return NULL;
-+	*len = p->written;
-+	return rtas_work_area_raw_buf(p->work_area);
-+}
-+
-+/*
-+ * Higher-level VPD retrieval code below. These functions use the
-+ * vpd_blob_* and vpd_sequence_* APIs defined above to create fd-based
-+ * VPD handles for consumption by user space.
-+ */
-+
-+/**
-+ * papr_vpd_run_sequence() - Run a single VPD retrieval sequence.
-+ * @loc_code: Location code that defines the scope of VPD to return.
-+ *
-+ * Context: May sleep. Holds a mutex and an RTAS work area for its
-+ *          duration. Typically performs multiple sleepable slab
-+ *          allocations.
-+ *
-+ * Return: A populated &struct vpd_blob on success. Encoded error
-+ * pointer otherwise.
-+ */
-+static const struct vpd_blob *papr_vpd_run_sequence(const struct papr_location_code *loc_code)
-+{
-+	const struct vpd_blob *blob;
-+	struct vpd_sequence seq;
-+
-+	vpd_sequence_begin(&seq, loc_code);
-+	blob = vpd_blob_generate(vpd_sequence_fill_work_area, &seq);
-+	if (!blob)
-+		vpd_sequence_set_err(&seq, -ENOMEM);
-+	vpd_sequence_end(&seq);
-+
-+	if (seq.error) {
-+		vpd_blob_free(blob);
-+		return ERR_PTR(seq.error);
-+	}
-+
-+	return blob;
-+}
-+
-+/**
-+ * papr_vpd_retrieve() - Return the VPD for a location code.
-+ * @loc_code: Location code that defines the scope of VPD to return.
-+ *
-+ * Run VPD sequences against @loc_code until a blob is successfully
-+ * instantiated, or a hard error is encountered, or a fatal signal is
-+ * pending.
-+ *
-+ * Context: May sleep.
-+ * Return: A fully populated VPD blob when successful. Encoded error
-+ * pointer otherwise.
-+ */
-+static const struct vpd_blob *papr_vpd_retrieve(const struct papr_location_code *loc_code)
-+{
-+	const struct vpd_blob *blob;
-+
-+	/*
-+	 * EAGAIN means the sequence errored with a -4 (VPD changed)
-+	 * status from ibm,get-vpd, and we should attempt a new
-+	 * sequence. PAPR+ v2.13 R1–7.3.20–5 indicates that this
-+	 * should be a transient condition, not something that happens
-+	 * continuously. But we'll stop trying on a fatal signal.
-+	 */
-+	do {
-+		blob = papr_vpd_run_sequence(loc_code);
-+		if (!IS_ERR(blob)) /* Success. */
-+			break;
-+		if (PTR_ERR(blob) != -EAGAIN) /* Hard error. */
-+			break;
-+		pr_info_ratelimited("VPD changed during retrieval, retrying\n");
-+		cond_resched();
-+	} while (!fatal_signal_pending(current));
-+
-+	return blob;
-+}
-+
-+static ssize_t papr_vpd_handle_read(struct file *file, char __user *buf, size_t size, loff_t *off)
-+{
-+	const struct vpd_blob *blob = file->private_data;
-+
-+	/* bug: we should not instantiate a handle without any data attached. */
-+	if (!vpd_blob_has_data(blob)) {
-+		pr_err_once("handle without data\n");
-+		return -EIO;
-+	}
-+
-+	return simple_read_from_buffer(buf, size, off, blob->data, blob->len);
-+}
-+
-+static int papr_vpd_handle_release(struct inode *inode, struct file *file)
-+{
-+	const struct vpd_blob *blob = file->private_data;
-+
-+	vpd_blob_free(blob);
-+
-+	return 0;
-+}
-+
-+static loff_t papr_vpd_handle_seek(struct file *file, loff_t off, int whence)
-+{
-+	const struct vpd_blob *blob = file->private_data;
-+
-+	return fixed_size_llseek(file, off, whence, blob->len);
-+}
-+
-+
-+static const struct file_operations papr_vpd_handle_ops = {
-+	.read = papr_vpd_handle_read,
-+	.llseek = papr_vpd_handle_seek,
-+	.release = papr_vpd_handle_release,
-+};
-+
-+/**
-+ * papr_vpd_create_handle() - Create a fd-based handle for reading VPD.
-+ * @ulc: Location code in user memory; defines the scope of the VPD to
-+ *       retrieve.
-+ *
-+ * Handler for PAPR_VPD_IOC_CREATE_HANDLE ioctl command. Validates
-+ * @ulc and instantiates an immutable VPD "blob" for it. The blob is
-+ * attached to a file descriptor for reading by user space. The memory
-+ * backing the blob is freed when the file is released.
-+ *
-+ * The entire requested VPD is retrieved by this call and all
-+ * necessary RTAS interactions are performed before returning the fd
-+ * to user space. This keeps the read handler simple and ensures that
-+ * the kernel can prevent interleaving of ibm,get-vpd call sequences.
-+ *
-+ * Return: The installed fd number if successful, -ve errno otherwise.
-+ */
-+static long papr_vpd_create_handle(struct papr_location_code __user *ulc)
-+{
-+	struct papr_location_code klc;
-+	const struct vpd_blob *blob;
-+	struct file *file;
-+	long err;
-+	int fd;
-+
-+	if (copy_from_user(&klc, ulc, sizeof(klc)))
-+		return -EFAULT;
-+
-+	if (!string_is_terminated(klc.str, ARRAY_SIZE(klc.str)))
-+		return -EINVAL;
-+
-+	blob = papr_vpd_retrieve(&klc);
-+	if (IS_ERR(blob))
-+		return PTR_ERR(blob);
-+
-+	fd = get_unused_fd_flags(O_RDONLY | O_CLOEXEC);
-+	if (fd < 0) {
-+		err = fd;
-+		goto free_blob;
-+	}
-+
-+	file = anon_inode_getfile("[papr-vpd]", &papr_vpd_handle_ops,
-+				  (void *)blob, O_RDONLY);
-+	if (IS_ERR(file)) {
-+		err = PTR_ERR(file);
-+		goto put_fd;
-+	}
-+
-+	file->f_mode |= FMODE_LSEEK | FMODE_PREAD;
-+	fd_install(fd, file);
-+	return fd;
-+put_fd:
-+	put_unused_fd(fd);
-+free_blob:
-+	vpd_blob_free(blob);
-+	return err;
-+}
-+
-+/*
-+ * Top-level ioctl handler for /dev/papr-vpd.
-+ */
-+static long papr_vpd_dev_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
-+{
-+	void __user *argp = (__force void __user *)arg;
-+	long ret;
-+
-+	switch (ioctl) {
-+	case PAPR_VPD_IOC_CREATE_HANDLE:
-+		ret = papr_vpd_create_handle(argp);
-+		break;
-+	default:
-+		ret = -ENOIOCTLCMD;
-+		break;
-+	}
-+	return ret;
-+}
-+
-+static const struct file_operations papr_vpd_ops = {
-+	.unlocked_ioctl = papr_vpd_dev_ioctl,
-+};
-+
-+static struct miscdevice papr_vpd_dev = {
-+	.minor = MISC_DYNAMIC_MINOR,
-+	.name = "papr-vpd",
-+	.fops = &papr_vpd_ops,
-+};
-+
-+static __init int papr_vpd_init(void)
-+{
-+	if (!rtas_function_implemented(RTAS_FN_IBM_GET_VPD))
-+		return -ENODEV;
-+
-+	return misc_register(&papr_vpd_dev);
-+}
-+machine_device_initcall(pseries, papr_vpd_init);
-
--- 
-2.41.0
+Regards,
+Samuel
 
