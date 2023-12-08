@@ -4,46 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9A0EC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 16:35:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 505AEC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 16:36:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GDMWy+Me;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dgZj87RJ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmxbG383Pz3dLN
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Dec 2023 03:35:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Smxc769Zvz3dH4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Dec 2023 03:36:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GDMWy+Me;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dgZj87RJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmxZL13DCz3d9L
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2023 03:35:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmxZS1YMJz3ckp
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2023 03:35:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 320B16231E;
-	Fri,  8 Dec 2023 16:35:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C539C433C9;
-	Fri,  8 Dec 2023 16:35:01 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id CD178CE28A1;
+	Fri,  8 Dec 2023 16:35:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CBEEC433C8;
+	Fri,  8 Dec 2023 16:35:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1702053302;
-	bh=xQL6pG6caMEyh27UFdkVG4YVqENSinSYSj4xkfqkX3c=;
-	h=From:To:Cc:Subject:Date:From;
-	b=GDMWy+MeAdezgVTuAgkePTDVNCDmK6Xb8vdKI+aRsMe1aHkIohr2LQhf1GDl1VW3p
-	 Qquxo3Cj+Gf5cb/QZuFokdhqLBP1FrAJ8Xgxymun8pajiCz2JdgZZgcvyIlNCfokKf
-	 ZdzdF2+bkZMDW7TxDMJP7oBDr7yXViufFmxlCNNPhkBiSacXp8vNxdVzu0oTokHzAV
-	 6qPuW2i5fpMmEiIjtxUrcndcOqG8XNhqGbfo4rzj/q/rM6gbc9497pDenwuTZzf+cu
-	 BATEflAHnCRp+pUO+NvOT4fGDZLRsbteEvmG2mBAHMHsZYrv252nKEnpnFjnwwRvhS
-	 1x1qOB9aFrx8w==
+	s=k20201202; t=1702053308;
+	bh=SUBvtEn9z9UrSU17r7Cw0HAstRv+zJkI6nOLOYxgtBI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=dgZj87RJDMQntv41jgP4YNzanNPs+Fpah5vLvv/Fi7x0xv29OoS4clgN/qIAyR3jV
+	 hNHJeCEa/bbQa3tIPnXKAXv1XPy755Z5yFhAqz/ZNGNCeHC60vxB53+qo4cZ5ZDMGt
+	 1bKvP6XKSFo//muVUOZZnkbmDgADqtIdir6Z1wlBqONgp6SxBcA0Fpg4TBCaa7JPoH
+	 DyIwjCw1N0hyzBtUCNEkS+BkeEJHcvJ2vMCyeg2HJIFUbmpLMN74veO6ZY9RsKKn+X
+	 WnLEVHuFTlAKZL/rOOjuiuX5Vaa7uEQymnLPerK8Spbtr8wV1Ef8GfvngNKvimkVO8
+	 EumXuDYVXZszg==
 From: Naveen N Rao <naveen@kernel.org>
 To: <linuxppc-dev@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 0/9] powerpc: ftrace updates
-Date: Fri,  8 Dec 2023 22:00:39 +0530
-Message-ID: <cover.1702045299.git.naveen@kernel.org>
+Subject: [RFC PATCH 2/9] powerpc/ftrace: Unify 32-bit and 64-bit ftrace entry code
+Date: Fri,  8 Dec 2023 22:00:41 +0530
+Message-ID: <e89bb62a9bca1b60c758dc78980be677d6768ed1.1702045299.git.naveen@kernel.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1702045299.git.naveen@kernel.org>
+References: <cover.1702045299.git.naveen@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,69 +63,75 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Florent Revest <revest@chromium.org>, N
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Early RFC.
+On 32-bit powerpc, gcc generates a three instruction sequence for
+function profiling:
+	mflr	r0
+	stw	r0, 4(r1)
+	bl	_mcount
 
-This series attempts to address couple of issues with the existing 
-support for ftrace on powerpc, with a view towards improving performance 
-when ftrace is not enabled. See patch 6 for more details.
+On kernel boot, the call to _mcount() is nop-ed out, to be patched back
+in when ftrace is actually enabled. The 'stw' instruction therefore is
+not necessary unless ftrace is enabled. Nop it out during ftrace init.
 
-Patches 7 and 8 implement support for ftrace direct calls, through 
-adding support for DYNAMIC_FTRACE_WITH_CALL_OPS.
+When ftrace is enabled, we want the 'stw' so that stack unwinding works
+properly. Perform the same within the ftrace handler, similar to 64-bit
+powerpc.
 
-The first 5 patches are minor cleanups and updates, and can go in 
-separately.
+For 64-bit powerpc, early versions of gcc used to emit a three
+instruction sequence for function profiling (with -mprofile-kernel) with
+a 'std' instruction to mimic the 'stw' above. Address that scenario also
+by nop-ing out the 'std' instruction during ftrace init.
 
-This series depends on Benjamin Gray's series adding support for 
-patch_ulong().
+Signed-off-by: Naveen N Rao <naveen@kernel.org>
+---
+ arch/powerpc/kernel/trace/ftrace.c       | 6 ++++--
+ arch/powerpc/kernel/trace/ftrace_entry.S | 4 ++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-I have lightly tested this patch set and it looks to be working well. As 
-described in patch 6, context_switch microbenchmark shows an improvement 
-of ~6% with this series with ftrace disabled. Performance when ftrace is
-enabled reduces due to how DYNAMIC_FTRACE_WITH_CALL_OPS works, and due 
-to support for direct calls. Some of that can hopefully be improved, if 
-this approach is otherwise ok.
-
-- Naveen
-
-
-
-Naveen N Rao (8):
-  powerpc/ftrace: Fix indentation in ftrace.h
-  powerpc/ftrace: Unify 32-bit and 64-bit ftrace entry code
-  powerpc/ftrace: Remove nops after the call to ftrace_stub
-  powerpc/kprobes: Use ftrace to determine if a probe is at function
-    entry
-  powerpc/ftrace: Update and move function profile instructions
-    out-of-line
-  powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_CALL_OPS
-  powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-  samples/ftrace: Add support for ftrace direct samples on powerpc
-
-Sathvika Vasireddy (1):
-  powerpc/Kconfig: Select FUNCTION_ALIGNMENT_4B
-
- arch/powerpc/Kconfig                        |   6 +
- arch/powerpc/Makefile                       |   6 +-
- arch/powerpc/include/asm/code-patching.h    |  15 +-
- arch/powerpc/include/asm/ftrace.h           |  35 ++-
- arch/powerpc/include/asm/linkage.h          |   3 -
- arch/powerpc/kernel/asm-offsets.c           |   7 +
- arch/powerpc/kernel/kprobes.c               |  69 +++++-
- arch/powerpc/kernel/trace/ftrace.c          | 231 ++++++++++++++++----
- arch/powerpc/kernel/trace/ftrace_entry.S    | 182 +++++++++++----
- samples/ftrace/ftrace-direct-modify.c       |  94 +++++++-
- samples/ftrace/ftrace-direct-multi-modify.c | 110 +++++++++-
- samples/ftrace/ftrace-direct-multi.c        |  64 +++++-
- samples/ftrace/ftrace-direct-too.c          |  72 +++++-
- samples/ftrace/ftrace-direct.c              |  61 +++++-
- 14 files changed, 845 insertions(+), 110 deletions(-)
-
-
-base-commit: 9a15ae60f2c9707433b01e55815cd9142be102b2
-prerequisite-patch-id: 38d3e705bf2e27cfa5e3ba369a6ded84ba6615c2
-prerequisite-patch-id: 609d292e054b2396b603890522a940fa0bdfb6d8
-prerequisite-patch-id: 6f7213fb77b1260defbf43be0e47bff9c80054cc
-prerequisite-patch-id: f2328625ae2193c3c8e336b154b62030940cece8
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 82010629cf88..2956196c98ff 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -229,13 +229,15 @@ int ftrace_init_nop(struct module *mod, struct dyn_ftrace *rec)
+ 		/* Expected sequence: 'mflr r0', 'stw r0,4(r1)', 'bl _mcount' */
+ 		ret = ftrace_validate_inst(ip - 8, ppc_inst(PPC_RAW_MFLR(_R0)));
+ 		if (!ret)
+-			ret = ftrace_validate_inst(ip - 4, ppc_inst(PPC_RAW_STW(_R0, _R1, 4)));
++			ret = ftrace_modify_code(ip - 4, ppc_inst(PPC_RAW_STW(_R0, _R1, 4)),
++						 ppc_inst(PPC_RAW_NOP()));
+ 	} else if (IS_ENABLED(CONFIG_MPROFILE_KERNEL)) {
+ 		/* Expected sequence: 'mflr r0', ['std r0,16(r1)'], 'bl _mcount' */
+ 		ret = ftrace_read_inst(ip - 4, &old);
+ 		if (!ret && !ppc_inst_equal(old, ppc_inst(PPC_RAW_MFLR(_R0)))) {
+ 			ret = ftrace_validate_inst(ip - 8, ppc_inst(PPC_RAW_MFLR(_R0)));
+-			ret |= ftrace_validate_inst(ip - 4, ppc_inst(PPC_RAW_STD(_R0, _R1, 16)));
++			ret |= ftrace_modify_code(ip - 4, ppc_inst(PPC_RAW_STD(_R0, _R1, 16)),
++						  ppc_inst(PPC_RAW_NOP()));
+ 		}
+ 	} else {
+ 		return -EINVAL;
+diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
+index 40677416d7b2..17d1ed3d0b40 100644
+--- a/arch/powerpc/kernel/trace/ftrace_entry.S
++++ b/arch/powerpc/kernel/trace/ftrace_entry.S
+@@ -33,6 +33,8 @@
+  * and then arrange for the ftrace function to be called.
+  */
+ .macro	ftrace_regs_entry allregs
++	/* Save the original return address in A's stack frame */
++	PPC_STL		r0, LRSAVE(r1)
+ 	/* Create a minimal stack frame for representing B */
+ 	PPC_STLU	r1, -STACK_FRAME_MIN_SIZE(r1)
+ 
+@@ -44,8 +46,6 @@
+ 	SAVE_GPRS(3, 10, r1)
+ 
+ #ifdef CONFIG_PPC64
+-	/* Save the original return address in A's stack frame */
+-	std	r0, LRSAVE+SWITCH_FRAME_SIZE+STACK_FRAME_MIN_SIZE(r1)
+ 	/* Ok to continue? */
+ 	lbz	r3, PACA_FTRACE_ENABLED(r13)
+ 	cmpdi	r3, 0
 -- 
 2.43.0
 
