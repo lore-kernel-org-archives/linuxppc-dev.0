@@ -4,44 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC009C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 14:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9A0EC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 16:35:55 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GDMWy+Me;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmvMg2Hypz3dSs
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Dec 2023 01:55:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmxbG383Pz3dLN
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Dec 2023 03:35:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GDMWy+Me;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmvM7422Jz3bw8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2023 01:55:11 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Smtx83lBMz686x7;
-	Fri,  8 Dec 2023 22:36:12 +0800 (CST)
-Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id 548B0140680;
-	Fri,  8 Dec 2023 22:36:16 +0800 (CST)
-Received: from localhost (10.126.175.81) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.35; Fri, 8 Dec
- 2023 14:36:15 +0000
-Date: Fri, 8 Dec 2023 14:36:12 +0000
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH 1/3] PCI/AER: Use 'Correctable' and 'Uncorrectable' spec
- terms for errors
-Message-ID: <20231208143612.00000d92@Huawei.com>
-In-Reply-To: <20231206224231.732765-2-helgaas@kernel.org>
-References: <20231206224231.732765-1-helgaas@kernel.org>
-	<20231206224231.732765-2-helgaas@kernel.org>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmxZL13DCz3d9L
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2023 03:35:06 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 320B16231E;
+	Fri,  8 Dec 2023 16:35:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C539C433C9;
+	Fri,  8 Dec 2023 16:35:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1702053302;
+	bh=xQL6pG6caMEyh27UFdkVG4YVqENSinSYSj4xkfqkX3c=;
+	h=From:To:Cc:Subject:Date:From;
+	b=GDMWy+MeAdezgVTuAgkePTDVNCDmK6Xb8vdKI+aRsMe1aHkIohr2LQhf1GDl1VW3p
+	 Qquxo3Cj+Gf5cb/QZuFokdhqLBP1FrAJ8Xgxymun8pajiCz2JdgZZgcvyIlNCfokKf
+	 ZdzdF2+bkZMDW7TxDMJP7oBDr7yXViufFmxlCNNPhkBiSacXp8vNxdVzu0oTokHzAV
+	 6qPuW2i5fpMmEiIjtxUrcndcOqG8XNhqGbfo4rzj/q/rM6gbc9497pDenwuTZzf+cu
+	 BATEflAHnCRp+pUO+NvOT4fGDZLRsbteEvmG2mBAHMHsZYrv252nKEnpnFjnwwRvhS
+	 1x1qOB9aFrx8w==
+From: Naveen N Rao <naveen@kernel.org>
+To: <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 0/9] powerpc: ftrace updates
+Date: Fri,  8 Dec 2023 22:00:39 +0530
+Message-ID: <cover.1702045299.git.naveen@kernel.org>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.126.175.81]
-X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,31 +57,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Robert Richter <rrichter@amd.com>, Terry Bowman <terry.bowman@amd.com>, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Kai-Heng Feng <kai.heng.feng@canonical.com>, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Florent Revest <revest@chromium.org>, Nicholas Piggin <npiggin@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed,  6 Dec 2023 16:42:29 -0600
-Bjorn Helgaas <helgaas@kernel.org> wrote:
+Early RFC.
 
-> From: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> The PCIe spec classifies errors as either "Correctable" or "Uncorrectable".
-> Previously we printed these as "Corrected" or "Uncorrected".  To avoid
-> confusion, use the same terms as the spec.
-> 
-> One confusing situation is when one agent detects an error, but another
-> agent is responsible for recovery, e.g., by re-attempting the operation.
-> The first agent may log a "correctable" error but it has not yet been
-> corrected.  The recovery agent must report an uncorrectable error if it is
-> unable to recover.  If we print the first agent's error as "Corrected", it
-> gives the false impression that it has already been resolved.
-> 
-> Sample message change:
-> 
->   - pcieport 0000:00:1c.5: AER: Corrected error received: 0000:00:1c.5
->   + pcieport 0000:00:1c.5: AER: Correctable error received: 0000:00:1c.5
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com
-Good to tidy this up. FWIW
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+This series attempts to address couple of issues with the existing 
+support for ftrace on powerpc, with a view towards improving performance 
+when ftrace is not enabled. See patch 6 for more details.
+
+Patches 7 and 8 implement support for ftrace direct calls, through 
+adding support for DYNAMIC_FTRACE_WITH_CALL_OPS.
+
+The first 5 patches are minor cleanups and updates, and can go in 
+separately.
+
+This series depends on Benjamin Gray's series adding support for 
+patch_ulong().
+
+I have lightly tested this patch set and it looks to be working well. As 
+described in patch 6, context_switch microbenchmark shows an improvement 
+of ~6% with this series with ftrace disabled. Performance when ftrace is
+enabled reduces due to how DYNAMIC_FTRACE_WITH_CALL_OPS works, and due 
+to support for direct calls. Some of that can hopefully be improved, if 
+this approach is otherwise ok.
+
+- Naveen
+
+
+
+Naveen N Rao (8):
+  powerpc/ftrace: Fix indentation in ftrace.h
+  powerpc/ftrace: Unify 32-bit and 64-bit ftrace entry code
+  powerpc/ftrace: Remove nops after the call to ftrace_stub
+  powerpc/kprobes: Use ftrace to determine if a probe is at function
+    entry
+  powerpc/ftrace: Update and move function profile instructions
+    out-of-line
+  powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_CALL_OPS
+  powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+  samples/ftrace: Add support for ftrace direct samples on powerpc
+
+Sathvika Vasireddy (1):
+  powerpc/Kconfig: Select FUNCTION_ALIGNMENT_4B
+
+ arch/powerpc/Kconfig                        |   6 +
+ arch/powerpc/Makefile                       |   6 +-
+ arch/powerpc/include/asm/code-patching.h    |  15 +-
+ arch/powerpc/include/asm/ftrace.h           |  35 ++-
+ arch/powerpc/include/asm/linkage.h          |   3 -
+ arch/powerpc/kernel/asm-offsets.c           |   7 +
+ arch/powerpc/kernel/kprobes.c               |  69 +++++-
+ arch/powerpc/kernel/trace/ftrace.c          | 231 ++++++++++++++++----
+ arch/powerpc/kernel/trace/ftrace_entry.S    | 182 +++++++++++----
+ samples/ftrace/ftrace-direct-modify.c       |  94 +++++++-
+ samples/ftrace/ftrace-direct-multi-modify.c | 110 +++++++++-
+ samples/ftrace/ftrace-direct-multi.c        |  64 +++++-
+ samples/ftrace/ftrace-direct-too.c          |  72 +++++-
+ samples/ftrace/ftrace-direct.c              |  61 +++++-
+ 14 files changed, 845 insertions(+), 110 deletions(-)
+
+
+base-commit: 9a15ae60f2c9707433b01e55815cd9142be102b2
+prerequisite-patch-id: 38d3e705bf2e27cfa5e3ba369a6ded84ba6615c2
+prerequisite-patch-id: 609d292e054b2396b603890522a940fa0bdfb6d8
+prerequisite-patch-id: 6f7213fb77b1260defbf43be0e47bff9c80054cc
+prerequisite-patch-id: f2328625ae2193c3c8e336b154b62030940cece8
+-- 
+2.43.0
+
