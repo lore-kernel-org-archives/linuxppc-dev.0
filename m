@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FCAFC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 05:59:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFFC1C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 05:59:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=DTL/uNHp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=kmoS0JQ6;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SmgSW5tFmz3vdD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 16:59:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SmgTR2c76z3dLM
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Dec 2023 16:59:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=DTL/uNHp;
+	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=kmoS0JQ6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
 Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmgMy36L5z3cVw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 16:55:10 +1100 (AEDT)
-Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-1cf7a8ab047so12901385ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2023 21:55:10 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SmgN0085lz3cbt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2023 16:55:11 +1100 (AEDT)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-1d0a5422c80so15560275ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2023 21:55:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1702014908; x=1702619708; darn=lists.ozlabs.org;
+        d=sifive.com; s=google; t=1702014910; x=1702619710; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=y10I6kBvaoBdzCYCMFFIBpivZ4OdHpoiZkoWcSRPSMo=;
-        b=DTL/uNHpH6b24eTTVzq/WKeekK49rKqQWH0OB58DmiLwakGZ23rRL+iQoT3+z/tc7I
-         B4908DqRqUPqJ+/BC29RSA4Bn8VQwGxIc6U8+7iQYVo17OyAW4YLMla6ft5D+/8cAwn+
-         qYKS538qHPmXuT0PzJgFH38tZnXOnBtD38SKDFRrKAk+QHSqjHRpaD9YUimbHAuT9nIF
-         1mDdEl76xcmHUMY8uYf2ne4s91nIw/+OtcNMXMYW+eNuJGLOyYk/QGwH8rT07vt0EE7/
-         XWm7VKyWX3LXksVFHRwhf6ZWdqISzzFVma7IGvosY/s/tnSySB2VymgoNxoVyElDh5Ru
-         1kdA==
+        bh=kq9/CzymS2t6cI6IAaf6StcamgWHCvrnQt5+bd0vsJ4=;
+        b=kmoS0JQ61QD4NaciyWfGxqfv1hsHbkjZpWAdBZ2tQpcI3UvvnnNscau5o3dKqvWzzZ
+         oKTjgXkt3c6/vzT6iGY85iDjFISC0sqzk248TP2qCe2YIOfxX6EmN8MlYSQtjUiIEOBk
+         wmI/y1TUOSe7acsLUBnJA7c1Kx4bD9fm0zvGmru8FMtf1pC/XEmIzyO5O3p7zBF+wZ5y
+         8TxjhQifLu87SRVpd0YDilWru1Jj9X+VArEnNapKJuygGXlW4QNBU9eLK5wr3HZOlh7B
+         Pkom+zpHi7BoHdo9tCjlFKRAsh+qwyuKHtiwjMC0fCd8NccBinCLvOy16r3kIO+AOpOL
+         WvWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702014908; x=1702619708;
+        d=1e100.net; s=20230601; t=1702014910; x=1702619710;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=y10I6kBvaoBdzCYCMFFIBpivZ4OdHpoiZkoWcSRPSMo=;
-        b=H3iRHjrgyK3C5ZM68i9K6zUNO8Wntbs53BldtoRy3TJeHjjOJiNB1UPYnipNqD2aX0
-         QWxhdawbbdF4rCIhnqBnGbMp3CfVRXnlc3RbElSsfxp7O55vEsaCLgv/94xEP8wPqY8X
-         +FDQMSSvDG8vouwu1PO8S8RDWOK3j31rsGIcHHcE70teFUXDwhAtwapyX2yvdxWQKMaP
-         51wQVdCGgn9hzAPngsY7IN6Vrpdfi1rF6Zmz90GxHyYyGoo5S7c3jpG3CDTJcT+T0+0V
-         V1Y34mWSG1kfovL9POPZ4UJUQG/bmOjyVIdOoNePCGAvl5M7ol8n0kNQeX0XIyMC0HK+
-         b+Gg==
-X-Gm-Message-State: AOJu0YyHbCl5OjRn4fXJz6iOmG5HmxTezUpuGYP/RFUPa4QMHYm+ESPF
-	+B4pHkOnC7BYUYh1Owlro4OdVg==
-X-Google-Smtp-Source: AGHT+IEV61WWeWMu7V3217Zpahk/hLH31IwX3YH3+NDaZQD5K6JU/sf2eERQjPEIU9FeQqZ//wlz9w==
-X-Received: by 2002:a17:903:983:b0:1d0:bba1:57c1 with SMTP id mb3-20020a170903098300b001d0bba157c1mr3658032plb.78.1702014907827;
-        Thu, 07 Dec 2023 21:55:07 -0800 (PST)
+        bh=kq9/CzymS2t6cI6IAaf6StcamgWHCvrnQt5+bd0vsJ4=;
+        b=Rtf6mZZcGGDNJ0e7E4J2iJ0IWI6Ls0NbgO7V1L6NeDjhJp17Al80VYHVPj16mqFwNM
+         EQ/5XLM9dN1CEK3+HkkdKXqASYYlRSotyxlJGxZRj/MC/J1bBxAiRM0FVBdWJSorzJHL
+         u+JzhW5VyFQe+1NLeW9VWVaYORpYX0ThdqWrzI4rDpUV1iR1WKiSfR16wXkaXKZb1oJk
+         T8X4kwppp9pryN+fcRG1+6st/scHVQTcv0vXAiYkfzXzF76SITMr4tTFTd8LaYNLL7oB
+         ++Dqt9qzJ769lJlrJlpf2zqO/kCATClM3obUmvLvvcosB6+uPvUBMZRPwxW7EFm2lsZf
+         mKnA==
+X-Gm-Message-State: AOJu0Yz/1GXW4BNYHKzwQgk4F1XoapqBG1bLU34OZAWI+n7T046cP0AT
+	RBFx8VqdOURZrj7T54YNI4XupQ==
+X-Google-Smtp-Source: AGHT+IHV6F7Dn38rHWvZV+XaXS58Ch7TWuC4F5MVn7OmuYlLci2zlP9Fr0nUwpZzieoBTkpnbrTn6A==
+X-Received: by 2002:a17:903:2290:b0:1b8:90bd:d157 with SMTP id b16-20020a170903229000b001b890bdd157mr4496557plh.26.1702014910345;
+        Thu, 07 Dec 2023 21:55:10 -0800 (PST)
 Received: from sw06.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id s22-20020a170902989600b001ce5b859a59sm786250plp.305.2023.12.07.21.55.07
+        by smtp.gmail.com with ESMTPSA id s22-20020a170902989600b001ce5b859a59sm786250plp.305.2023.12.07.21.55.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 Dec 2023 21:55:07 -0800 (PST)
+        Thu, 07 Dec 2023 21:55:09 -0800 (PST)
 From: Samuel Holland <samuel.holland@sifive.com>
 To: linux-arm-kernel@lists.infradead.org,
 	loongarch@lists.linux.dev,
@@ -64,9 +64,9 @@ To: linux-arm-kernel@lists.infradead.org,
 	x86@kernel.org,
 	linux-riscv@lists.infradead.org,
 	Christoph Hellwig <hch@infradead.org>
-Subject: [RFC PATCH 04/12] arm64: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
-Date: Thu,  7 Dec 2023 21:54:34 -0800
-Message-ID: <20231208055501.2916202-5-samuel.holland@sifive.com>
+Subject: [RFC PATCH 06/12] LoongArch: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+Date: Thu,  7 Dec 2023 21:54:36 -0800
+Message-ID: <20231208055501.2916202-7-samuel.holland@sifive.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231208055501.2916202-1-samuel.holland@sifive.com>
 References: <20231208055501.2916202-1-samuel.holland@sifive.com>
@@ -87,74 +87,65 @@ Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.free
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-arm64 provides an equivalent to the common kernel-mode FPU API, but in a
-different header and using different function names. Add a wrapper
-header, and export CFLAGS adjustments as found in lib/raid6/Makefile.
+LoongArch already provides kernel_fpu_begin() and kernel_fpu_end() in
+asm/fpu.h, so it only needs to add kernel_fpu_available() and export
+the CFLAGS adjustments.
 
 Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
 ---
 
- arch/arm64/Kconfig           |  1 +
- arch/arm64/Makefile          |  9 ++++++++-
- arch/arm64/include/asm/fpu.h | 17 +++++++++++++++++
- 3 files changed, 26 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm64/include/asm/fpu.h
+ arch/loongarch/Kconfig           | 1 +
+ arch/loongarch/Makefile          | 5 ++++-
+ arch/loongarch/include/asm/fpu.h | 1 +
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 7b071a00425d..485ac389ac11 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -30,6 +30,7 @@ config ARM64
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_GIGANTIC_PAGE
+diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
+index ee123820a476..65d4475565b8 100644
+--- a/arch/loongarch/Kconfig
++++ b/arch/loongarch/Kconfig
+@@ -15,6 +15,7 @@ config LOONGARCH
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
+ 	select ARCH_HAS_FORTIFY_SOURCE
  	select ARCH_HAS_KCOV
-+	select ARCH_HAS_KERNEL_FPU_SUPPORT if KERNEL_MODE_NEON
- 	select ARCH_HAS_KEEPINITRD
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
++	select ARCH_HAS_KERNEL_FPU_SUPPORT if CPU_HAS_FPU
  	select ARCH_HAS_NMI_SAFE_THIS_CPU_OPS
-diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
-index 9a2d3723cd0f..4a65f24c7998 100644
---- a/arch/arm64/Makefile
-+++ b/arch/arm64/Makefile
-@@ -36,7 +36,14 @@ ifeq ($(CONFIG_BROKEN_GAS_INST),y)
- $(warning Detected assembler with broken .inst; disassembly will be unreliable)
+ 	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
+ 	select ARCH_HAS_PTE_SPECIAL
+diff --git a/arch/loongarch/Makefile b/arch/loongarch/Makefile
+index 204b94b2e6aa..f5c4f7e921db 100644
+--- a/arch/loongarch/Makefile
++++ b/arch/loongarch/Makefile
+@@ -25,6 +25,9 @@ endif
+ 32bit-emul		= elf32loongarch
+ 64bit-emul		= elf64loongarch
+ 
++CC_FLAGS_FPU		:= -mfpu=64
++CC_FLAGS_NO_FPU		:= -msoft-float
++
+ ifdef CONFIG_DYNAMIC_FTRACE
+ KBUILD_CPPFLAGS += -DCC_USING_PATCHABLE_FUNCTION_ENTRY
+ CC_FLAGS_FTRACE := -fpatchable-function-entry=2
+@@ -46,7 +49,7 @@ ld-emul			= $(64bit-emul)
+ cflags-y		+= -mabi=lp64s
  endif
  
--KBUILD_CFLAGS	+= -mgeneral-regs-only	\
-+# The GCC option -ffreestanding is required in order to compile code containing
-+# ARM/NEON intrinsics in a non C99-compliant environment (such as the kernel)
-+CC_FLAGS_FPU	:= -ffreestanding
-+# Enable <arm_neon.h>
-+CC_FLAGS_FPU	+= -isystem $(shell $(CC) -print-file-name=include)
-+CC_FLAGS_NO_FPU	:= -mgeneral-regs-only
-+
-+KBUILD_CFLAGS	+= $(CC_FLAGS_NO_FPU) \
- 		   $(compat_vdso) $(cc_has_k_constraint)
- KBUILD_CFLAGS	+= $(call cc-disable-warning, psabi)
- KBUILD_AFLAGS	+= $(compat_vdso)
-diff --git a/arch/arm64/include/asm/fpu.h b/arch/arm64/include/asm/fpu.h
-new file mode 100644
-index 000000000000..664c0a192ab1
---- /dev/null
-+++ b/arch/arm64/include/asm/fpu.h
-@@ -0,0 +1,17 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * linux/arch/arm64/include/asm/fpu.h
-+ *
-+ * Copyright (C) 2023 SiFive
-+ */
-+
-+#ifndef __ASM_FPU_H
-+#define __ASM_FPU_H
-+
-+#include <asm/neon.h>
-+
-+#define kernel_fpu_available()	cpu_has_neon()
-+#define kernel_fpu_begin()	kernel_neon_begin()
-+#define kernel_fpu_end()	kernel_neon_end()
-+
-+#endif /* ! __ASM_FPU_H */
+-cflags-y			+= -pipe -msoft-float
++cflags-y			+= -pipe $(CC_FLAGS_NO_FPU)
+ LDFLAGS_vmlinux			+= -static -n -nostdlib
+ 
+ # When the assembler supports explicit relocation hint, we must use it.
+diff --git a/arch/loongarch/include/asm/fpu.h b/arch/loongarch/include/asm/fpu.h
+index c2d8962fda00..3177674228f8 100644
+--- a/arch/loongarch/include/asm/fpu.h
++++ b/arch/loongarch/include/asm/fpu.h
+@@ -21,6 +21,7 @@
+ 
+ struct sigcontext;
+ 
++#define kernel_fpu_available() cpu_has_fpu
+ extern void kernel_fpu_begin(void);
+ extern void kernel_fpu_end(void);
+ 
 -- 
 2.42.0
 
