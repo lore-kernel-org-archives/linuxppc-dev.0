@@ -4,100 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E86FC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Dec 2023 08:35:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42ECCC4167B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Dec 2023 08:36:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iNcQCLOm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l3yBUN0e;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SpZnz0wwgz3cXw
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Dec 2023 19:35:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SpZpr6hrvz3dJd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Dec 2023 19:36:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iNcQCLOm;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l3yBUN0e;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SpZkN6bC0z30h8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2023 19:32:44 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SpZkN67RNz4x2V
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2023 19:32:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SpZkP3gbCz30NK
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2023 19:32:45 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SpZkP3G7Tz4x2V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2023 19:32:45 +1100 (AEDT)
 Received: by gandalf.ozlabs.org (Postfix)
-	id 4SpZkN641lz4x2W; Mon, 11 Dec 2023 19:32:44 +1100 (AEDT)
+	id 4SpZkP3B2Wz4x2W; Mon, 11 Dec 2023 19:32:45 +1100 (AEDT)
 Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iNcQCLOm;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=l3yBUN0e;
 	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SpZkN3l5mz4x2V
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SpZkP0BlLz4x2V
 	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2023 19:32:44 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3BB8LOYM010595;
-	Mon, 11 Dec 2023 08:32:25 GMT
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3BB8Jhbe008959;
+	Mon, 11 Dec 2023 08:32:07 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=9aS92prpDDW3MDLFbkAEaNOcU+LxXEhM6zI2Q2pz5iQ=;
- b=iNcQCLOmSIheyUYoLhLoz7GS8gi2JVXZazflP5c6i4cW602ExeQWn0IGVR5aPBW/3mhm
- sD2rSDjDI4W90jI6YRG/bDbZGgJdAkbkkSWdJnKnBu+aHo5QMjseZd4BxpywrxVv7w+R
- gIM0Um3mLbzPH6vGC7+V8ySU8D2qVjag/SPoG08Pb7+Yv4nbNa6xXB3RgMWqpwpMETu/
- uyHxQ73/D5qXWGGeEI1lydOMo32d1xF+xtV9JAqr/BnSeICqgL6oPFjWlOHo3RMtmTwZ
- 7OxBNUKLNUVEBFQ4rn9Kv1KBihcyRA+CdeFwt7+nWib5EdkXLy0DkbppB/zTpfMeCAhV WA== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=J6fhO+S7eHhTaU4yy+0JvIm5RqNTSwcPvqGlLW8k9oU=;
+ b=l3yBUN0epqxfHdc5IBf/pD9DeRR6lozU1Sg57ZJB4FslN70GWtvWS4JZE6wykN+Q5op1
+ 62gbiUDqCJ3IYy4HX7MnFGu66nFvPSQVMHvrs07NvPa1KhsTujHayxd8fizPthmQh84Y
+ j7515RE9p5plYNH/yVHH9zmTEB5u6VOP8MoWUYNbIYuuujOmtToQUZcb584zbkvIPQJ7
+ gNeNoMPzz7g53UGgBvOhP5UHLhi2kc3RP8jHXgGV/HPOV8X+bQGX/jLY0d4NGooZWF54
+ LqIuzUpRfdpzJoTc5FBQd/oEKIWzPJjpT4tn1lQApasQ3GSkgrudrsxjYWs9Z96iQDOo iA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uvw10hpdr-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uwu4txa53-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Dec 2023 08:32:24 +0000
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3BB8LXJY011551;
-	Mon, 11 Dec 2023 08:32:22 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uvw10hnu4-1
+	Mon, 11 Dec 2023 08:32:07 +0000
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3BB8KQcc012570;
+	Mon, 11 Dec 2023 08:32:06 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3uwu4txa4p-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Dec 2023 08:32:22 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3BB65Mvl004390;
-	Mon, 11 Dec 2023 08:31:15 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3uw4sjyqnf-1
+	Mon, 11 Dec 2023 08:32:06 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3BB6mk77008544;
+	Mon, 11 Dec 2023 08:32:05 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3uw2jt0bw2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Dec 2023 08:31:15 +0000
+	Mon, 11 Dec 2023 08:32:05 +0000
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3BB8VCo925952884
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3BB8W2Ob5571088
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 11 Dec 2023 08:31:12 GMT
+	Mon, 11 Dec 2023 08:32:02 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9D85620043;
-	Mon, 11 Dec 2023 08:31:12 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 5970520043;
+	Mon, 11 Dec 2023 08:32:02 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0B61D20040;
-	Mon, 11 Dec 2023 08:31:00 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6A51420040;
+	Mon, 11 Dec 2023 08:31:51 +0000 (GMT)
 Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.c4p-in.ibmmobiledemo.com (unknown [9.177.92.36])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 11 Dec 2023 08:30:59 +0000 (GMT)
+	Mon, 11 Dec 2023 08:31:51 +0000 (GMT)
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v14 0/6] powerpc/crash: Kernel handling of CPU and memory hotplug
-Date: Mon, 11 Dec 2023 14:00:50 +0530
-Message-ID: <20231211083056.340404-1-sourabhjain@linux.ibm.com>
+Subject: [PATCH v14 3/6] crash: add a new kexec flag for FDT update
+Date: Mon, 11 Dec 2023 14:00:53 +0530
+Message-ID: <20231211083056.340404-4-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.41.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: QxvVAu_ePZjAMJ6aiHJRBZe4vCJgZ-z-
-X-Proofpoint-ORIG-GUID: GHpFtAdjGpSEzN8b415kIGBWGDk5aGz4
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20231211083056.340404-1-sourabhjain@linux.ibm.com>
+References: <20231211083056.340404-1-sourabhjain@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Zo0hfFvALfhaNcQe-_sSblPS0nfbeR0_
+X-Proofpoint-GUID: TineP5Zea9Ovm8qcvZNG9pMjNlcyte7a
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-12-11_02,2023-12-07_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- spamscore=0 priorityscore=1501 impostorscore=0 mlxscore=0 suspectscore=0
- malwarescore=0 bulkscore=0 mlxlogscore=999 clxscore=1015 adultscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2312110071
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
+ priorityscore=1501 adultscore=0 phishscore=0 mlxscore=0 malwarescore=0
+ spamscore=0 mlxlogscore=999 lowpriorityscore=0 suspectscore=0
+ impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2311290000 definitions=main-2312110071
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,153 +115,23 @@ Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.c
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 247262756121 ("crash: add generic infrastructure for crash
-hotplug support") added a generic infrastructure that allows
-architectures to selectively update the kdump image component during CPU
-or memory add/remove events within the kernel itself.
+The commit a72bbec70da2 ("crash: hotplug support for kexec_load()")
+introduced a new kexec flag, `KEXEC_UPDATE_ELFCOREHDR`. Kexec tool uses
+this flag to indicate kernel that it is safe to modify the elfcorehdr
+of kdump image loaded using kexec_load system call.
 
-This patch series adds crash hotplug handler for PowerPC and enable
-support to update the kdump image on CPU/Memory add/remove events.
+Similarly, add a new kexec flag, `KEXEC_UPDATE_FDT`, for another kdump
+component named FDT (Flatten Device Tree). Architectures like PowerPC
+need to update FDT kdump image component on CPU hotplug events. Kexec
+tool passing `KEXEC_UPDATE_FDT` will be an indication to kernel that FDT
+segment is not part of SHA calculation hence it is safe to update it.
 
-Among the 6 patches in this series, the first three patches make changes
-to the generic crash hotplug handler to assist PowerPC in adding support
-for this feature. The last three patches add support for this feature.
+With the `KEXEC_UPDATE_ELFCOREHDR` and `KEXEC_UPDATE_FDT` kexec flags,
+crash hotplug support can be added to PowerPC for the kexec_load syscall
+while maintaining the backward compatibility with older kexec tools that
+do not have these newly introduced flags.
 
-The following section outlines the problem addressed by this patch
-series, along with the current solution, its shortcomings, and the
-proposed resolution.
-
-Problem:
-========
-Due to CPU/Memory hotplug or online/offline events the elfcorehdr
-(which describes the CPUs and memory of the crashed kernel) and FDT
-(Flattened Device Tree) of kdump image becomes outdated. Consequently,
-attempting dump collection with an outdated elfcorehdr or FDT can lead
-to failed or inaccurate dump collection.
-
-Going forward CPU hotplug or online/offline events are referred as
-CPU/Memory add/remove events.
-
-Existing solution and its shortcoming:
-======================================
-The current solution to address the above issue involves monitoring the
-CPU/memory add/remove events in userspace using udev rules and whenever
-there are changes in CPU and memory resources, the entire kdump image
-is loaded again. The kdump image includes kernel, initrd, elfcorehdr,
-FDT, purgatory. Given that only elfcorehdr and FDT get outdated due to
-CPU/Memory add/remove events, reloading the entire kdump image is
-inefficient. More importantly, kdump remains inactive for a substantial
-amount of time until the kdump reload completes.
-
-Proposed solution:
-==================
-Instead of initiating a full kdump image reload from userspace on
-CPU/Memory hotplug and online/offline events, the proposed solution aims
-to update only the necessary kdump image component within the kernel
-itself.
-
-Git tree for testing:
-=====================
-Git tree rebased on top of v6.7-rc4:
-https://github.com/sourabhjains/linux/tree/kdump-in-kernel-crash-update-v14
-
-To realize this feature, the kdump udev rule must be updated. On RHEL,
-add the following two lines at the top of the
-"/usr/lib/udev/rules.d/98-kexec.rules" file.
-
-SUBSYSTEM=="cpu", ATTRS{crash_hotplug}=="1", GOTO="kdump_reload_end"
-SUBSYSTEM=="memory", ATTRS{crash_hotplug}=="1", GOTO="kdump_reload_end"
-
-With the above change to the kdump udev rule, kdump reload is avoided
-during CPU/Memory add/remove events if this feature is enabled in the
-kernel.
-
-Note: only kexec_file_load syscall will work. For kexec_load minor changes
-are required in kexec tool.
-
-Changelog:
-----------
-
-v14:
-  - Fix build warnings by including necessary header files
-  - Rebase to v6.7-rc5
-
-v13:
-  - Fix a build warning, take ranges.c out of CONFIG_KEXEC_FILE
-  - Rebase to v6.7-rc4
-
-v12:
-  - A patch to add new kexec flags to support this feature on kexec_load
-    system call
-  - Change in the way this feature is advertise to userspace for both
-    kexec_load syscall
-  - Rebase to v6.6-rc7
-
-v11:
-  - Rebase to v6.4-rc6
-  - The patch that introduced CONFIG_CRASH_HOTPLUG for PowerPC has been
-    removed. The config is now part of common configuration:
-    https://lore.kernel.org/all/87ilbpflsk.fsf@mail.lhotse/
-
-v10:
-  - Drop the patch that adds fdt_index attribute to struct kimage_arch
-    Find the fdt segment index when needed.
-  - Added more details into commits messages.
-  - Rebased onto 6.3.0-rc5
-
-v9:
-  - Removed patch to prepare elfcorehdr crash notes for possible CPUs.
-    The patch is moved to generic patch series that introduces generic
-    infrastructure for in kernel crash update.
-  - Removed patch to pass the hotplug action type to the arch crash
-    hotplug handler function. The generic patch series has introduced
-    the hotplug action type in kimage struct.
-  - Add detail commit message for better understanding.
-
-v8:
-  - Restrict fdt_index initialization to machine_kexec_post_load
-    it work for both kexec_load and kexec_file_load.[3/8] Laurent Dufour
-
-  - Updated the logic to find the number of offline core. [6/8]
-
-  - Changed the logic to find the elfcore program header to accommodate
-    future memory ranges due memory hotplug events. [8/8]
-
-v7
-  - added a new config to configure this feature
-  - pass hotplug action type to arch specific handler
-
-v6
-  - Added crash memory hotplug support
-
-v5:
-  - Replace COFNIG_CRASH_HOTPLUG with CONFIG_HOTPLUG_CPU.
-  - Move fdt segment identification for kexec_load case to load path
-    instead of crash hotplug handler
-  - Keep new attribute defined under kimage_arch to track FDT segment
-    under CONFIG_HOTPLUG_CPU config.
-
-v4:
-  - Update the logic to find the additional space needed for hotadd CPUs
-    post kexec load. Refer "[RFC v4 PATCH 4/5] powerpc/crash hp: add crash
-    hotplug support for kexec_file_load" patch to know more about the
-    change.
-  - Fix a couple of typo.
-  - Replace pr_err to pr_info_once to warn user about memory hotplug
-    support.
-  - In crash hotplug handle exit the for loop if FDT segment is found.
-
-v3
-  - Move fdt_index and fdt_index_vaild variables to kimage_arch struct.
-  - Rebase patche on top of
-    https://lore.kernel.org/lkml/20220303162725.49640-1-eric.devolder@oracle.com/
-  - Fixed warning reported by checpatch script
-
-v2:
-  - Use generic hotplug handler introduced by
-    https://lore.kernel.org/lkml/20220209195706.51522-1-eric.devolder@oracle.com/
-    a significant change from v1.
-
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 Cc: Akhil Raj <lf32.dev@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
@@ -284,31 +156,62 @@ Cc: Valentin Schneider <vschneid@redhat.com>
 Cc: Vivek Goyal <vgoyal@redhat.com>
 Cc: kexec@lists.infradead.org
 Cc: x86@kernel.org
+---
+ include/linux/kexec.h      | 6 ++++--
+ include/uapi/linux/kexec.h | 1 +
+ kernel/kexec.c             | 2 ++
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
-Sourabh Jain (6):
-  crash: forward memory_notify arg to arch crash hotplug handler
-  crash: make CPU and Memory hotplug support reporting flexible
-  crash: add a new kexec flag for FDT update
-  powerpc/kexec: turn some static helper functions public
-  powerpc: add crash CPU hotplug support
-  powerpc: add crash memory hotplug support
-
- arch/powerpc/Kconfig                    |   4 +
- arch/powerpc/include/asm/kexec.h        |  25 ++
- arch/powerpc/include/asm/kexec_ranges.h |   1 +
- arch/powerpc/kexec/Makefile             |   4 +-
- arch/powerpc/kexec/core_64.c            | 369 ++++++++++++++++++++++++
- arch/powerpc/kexec/elf_64.c             |  12 +-
- arch/powerpc/kexec/file_load_64.c       | 211 +++-----------
- arch/powerpc/kexec/ranges.c             |  85 ++++++
- arch/x86/include/asm/kexec.h            |  10 +-
- arch/x86/kernel/crash.c                 |  23 +-
- include/linux/kexec.h                   |  21 +-
- include/uapi/linux/kexec.h              |   1 +
- kernel/crash_core.c                     |  37 ++-
- kernel/kexec.c                          |   2 +
- 14 files changed, 605 insertions(+), 200 deletions(-)
-
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 0f6ea35879ee..bcedb7625b1f 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -319,6 +319,7 @@ struct kimage {
+ #ifdef CONFIG_CRASH_HOTPLUG
+ 	/* If set, allow changes to elfcorehdr of kexec_load'd image */
+ 	unsigned int update_elfcorehdr:1;
++	unsigned int update_fdt:1;
+ #endif
+ 
+ #ifdef ARCH_HAS_KIMAGE_ARCH
+@@ -396,9 +397,10 @@ bool kexec_load_permitted(int kexec_image_type);
+ 
+ /* List of defined/legal kexec flags */
+ #ifndef CONFIG_KEXEC_JUMP
+-#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_UPDATE_ELFCOREHDR)
++#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_UPDATE_ELFCOREHDR | KEXEC_UPDATE_FDT)
+ #else
+-#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_PRESERVE_CONTEXT | KEXEC_UPDATE_ELFCOREHDR)
++#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_PRESERVE_CONTEXT | KEXEC_UPDATE_ELFCOREHDR | \
++			KEXEC_UPDATE_FDT)
+ #endif
+ 
+ /* List of defined/legal kexec file flags */
+diff --git a/include/uapi/linux/kexec.h b/include/uapi/linux/kexec.h
+index 01766dd839b0..3d5b3d757bed 100644
+--- a/include/uapi/linux/kexec.h
++++ b/include/uapi/linux/kexec.h
+@@ -13,6 +13,7 @@
+ #define KEXEC_ON_CRASH		0x00000001
+ #define KEXEC_PRESERVE_CONTEXT	0x00000002
+ #define KEXEC_UPDATE_ELFCOREHDR	0x00000004
++#define KEXEC_UPDATE_FDT	0x00000008
+ #define KEXEC_ARCH_MASK		0xffff0000
+ 
+ /*
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 8f35a5a42af8..97eb151cd931 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -132,6 +132,8 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
+ #ifdef CONFIG_CRASH_HOTPLUG
+ 	if (flags & KEXEC_UPDATE_ELFCOREHDR)
+ 		image->update_elfcorehdr = 1;
++	if (flags & KEXEC_UPDATE_FDT)
++		image->update_fdt = 1;
+ #endif
+ 
+ 	ret = machine_kexec_prepare(image);
 -- 
 2.41.0
 
