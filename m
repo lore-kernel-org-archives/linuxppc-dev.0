@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 733AAC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Dec 2023 17:07:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F5C8C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Dec 2023 17:08:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iP1cQxby;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lcslu2m/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SqQ611DvGz3vcw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 04:07:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SqQ6w0Zrcz3vfg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 04:08:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iP1cQxby;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lcslu2m/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SqPzc34Tlz3bpp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SqPzc33xLz3bnV
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2023 04:02:04 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 9FDEF618D6;
-	Tue, 12 Dec 2023 17:02:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 49674C433C7;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 7DBA1618E5;
+	Tue, 12 Dec 2023 17:02:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8F1FFC433AD;
 	Tue, 12 Dec 2023 17:02:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1702400520;
-	bh=Zoxzxiw8GD+0wIrOLoWKqVMwe3HmRaqK0uwSwCSq7oE=;
+	bh=6lAz05ak4ecW+F2/qU7xixMjkVZa2GJt0pcFRiiaFrY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=iP1cQxby5vf2h9ndHIJgOXqxhI2WZ4mGt1xVn9hAMDoi53AHcV24nwBMitkp9fcsG
-	 c/EUoylHLODUUACD9oGrNz8Q/2wT48mwUvNFsPz++a92B/GBu9q40RSccR+kun+FmC
-	 bIRplqsoDcJ1u9mgYpBdAzDKyMmuP1huHmBeFRb4LNyrKJp4cZ7UH0WmDK3zBtc+1v
-	 LlOePN4DIAZ86jcbkM53UfAVhQRKk2jbw8J86eWbR6h6lnxKFR7uOeN8ZZQt+wAvqd
-	 YreEOSARtBe5PRfUEZ6uWim3bjDAsr/dGDJf9jpR1lFAQmw+vH6BHEONSuuqyUqgXO
-	 jK+/kcExZ7ZQg==
+	b=lcslu2m/6AUDzqUoHZnkkP5flJULdrPBJzUVLq35l24+LYUXjqjUDn3/8X+IRy4yB
+	 00Q1SFU006KgutarB8vEe9gk4nUM4kPqMXSMNbhwNsHFiPztttvWgap4nwdn51qG3r
+	 /O8FRyOJiqHpxAqYMnFrs72borXUC3Uji4T6bAyfjlhE7a6YhZNLe2/3Uz9u0t1G6u
+	 OaOOX+H8WSHpVNCnSoL3g4kSmmZizpfvWE9cUj9gg4XyT/mGCP54XyfhOIHBLrDUYx
+	 h++Hhdmd87BzV20CB9BgLuMk/q/fX6IEN3ySI1c7rSoz2Qm1QRTiF+8Wlqd5UdU0g0
+	 WcRi/a9KZdEkg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FDF8C4167D;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CFE4C4167D;
 	Tue, 12 Dec 2023 17:02:00 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Tue, 12 Dec 2023 11:01:49 -0600
-Subject: [PATCH v6 02/13] powerpc/rtas: Add for_each_rtas_function()
- iterator
+Date: Tue, 12 Dec 2023 11:01:55 -0600
+Subject: [PATCH v6 08/13] powerpc/rtas: Warn if per-function lock isn't
+ held
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20231212-papr-sys_rtas-vs-lockdown-v6-2-e9eafd0c8c6c@linux.ibm.com>
+Message-Id:  <20231212-papr-sys_rtas-vs-lockdown-v6-8-e9eafd0c8c6c@linux.ibm.com>
 References:  <20231212-papr-sys_rtas-vs-lockdown-v6-0-e9eafd0c8c6c@linux.ibm.com>
 In-Reply-To:  <20231212-papr-sys_rtas-vs-lockdown-v6-0-e9eafd0c8c6c@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1702400518; l=1528;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1702400518; l=1931;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=NWsKJAvOyJ6+fcTpCAe3hP9I68yS9JzeFyNNJdqL2GM=;
- b=8V/qhZfXSaD5jFSH/GeiyyNRWs4HZsxH8ThYG3EnhhWKCbsq02A2lqKMonXWeQu2wrTxcC/M8
- JKWa6PDidVyCHpJ5U+QxXuQKe+mwdI4nwWIq9fh9iQzxP8zsTmUFkEx
+ bh=WeXFrQimFfnHGgmR7i5yQRK5CXtu2ckkZ+eRYu/mNRs=;
+ b=fnSWje3bRR/nwzEbvFCnvNSHK7eX+ADLsm1RPqx9YT1KlxMtWzf+CeQQRgMaVcrPHECaZeqya
+ HxxgdFemKTaC2wQU+UNz3e4jv4Zckkz8vmJUYC3WXDQilHMt+N2N9wU
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -80,45 +80,62 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Add a convenience macro for iterating over every element of the
-internal function table and convert the one site that can use it. An
-additional user of the macro is anticipated in changes to follow.
+If the function descriptor has a populated lock member, then callers
+are required to hold it across calls. Now that the firmware activation
+sequence is appropriately guarded, we can warn when the requirement
+isn't satisfied.
+
+__do_enter_rtas_trace() gets reorganized a bit as a result of
+performing the function descriptor lookup unconditionally now.
 
 Reviewed-by: Aneesh Kumar K.V (IBM) <aneesh.kumar@kernel.org>
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtas.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/rtas.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index ce37dc9860ef..ae9b10c954a1 100644
+index 72f6b5a402dd..7e793b503e29 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -454,6 +454,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 	},
- };
+@@ -671,28 +671,25 @@ static void __do_enter_rtas(struct rtas_args *args)
  
-+#define for_each_rtas_function(funcp)                                       \
-+	for (funcp = &rtas_function_table[0];                               \
-+	     funcp < &rtas_function_table[ARRAY_SIZE(rtas_function_table)]; \
-+	     ++funcp)
-+
- /*
-  * Nearly all RTAS calls need to be serialized. All uses of the
-  * default rtas_args block must hold rtas_lock.
-@@ -525,10 +530,10 @@ static DEFINE_XARRAY(rtas_token_to_function_xarray);
- 
- static int __init rtas_token_to_function_xarray_init(void)
+ static void __do_enter_rtas_trace(struct rtas_args *args)
  {
-+	const struct rtas_function *func;
- 	int err = 0;
+-	const char *name = NULL;
++	const struct rtas_function *func = rtas_token_to_function(be32_to_cpu(args->token));
  
--	for (size_t i = 0; i < ARRAY_SIZE(rtas_function_table); ++i) {
--		const struct rtas_function *func = &rtas_function_table[i];
-+	for_each_rtas_function(func) {
- 		const s32 token = func->token;
+-	if (args == &rtas_args)
+-		lockdep_assert_held(&rtas_lock);
+ 	/*
+-	 * If the tracepoints that consume the function name aren't
+-	 * active, avoid the lookup.
++	 * If there is a per-function lock, it must be held by the
++	 * caller.
+ 	 */
+-	if ((trace_rtas_input_enabled() || trace_rtas_output_enabled())) {
+-		const s32 token = be32_to_cpu(args->token);
+-		const struct rtas_function *func = rtas_token_to_function(token);
++	if (func->lock)
++		lockdep_assert_held(func->lock);
  
- 		if (token == RTAS_UNKNOWN_SERVICE)
+-		name = func->name;
+-	}
++	if (args == &rtas_args)
++		lockdep_assert_held(&rtas_lock);
+ 
+-	trace_rtas_input(args, name);
++	trace_rtas_input(args, func->name);
+ 	trace_rtas_ll_entry(args);
+ 
+ 	__do_enter_rtas(args);
+ 
+ 	trace_rtas_ll_exit(args);
+-	trace_rtas_output(args, name);
++	trace_rtas_output(args, func->name);
+ }
+ 
+ static void do_enter_rtas(struct rtas_args *args)
 
 -- 
 2.41.0
