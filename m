@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20F94C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Dec 2023 17:10:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D66A9C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Dec 2023 17:11:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oJI1KbRO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j8HUbYSN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SqQ9n5mdWz3dTt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 04:10:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SqQBh47xPz3cYt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 04:11:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oJI1KbRO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j8HUbYSN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SqPzd1v2hz3bvX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SqPzd1RD5z3bpp
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2023 04:02:05 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 7DBB6618EA;
+	by ams.source.kernel.org (Postfix) with ESMTP id B5EEAB817DE;
 	Tue, 12 Dec 2023 17:02:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7629BC43397;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B23EEC433CD;
 	Tue, 12 Dec 2023 17:02:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1702400520;
-	bh=TI/CARq7+us3OgoX1GKMH1qza6g+XMyPQjPHZYm2e2Q=;
+	bh=ukd/8/EI4XA3pUN7Rc2uf+35xByhiofgB48inYbgjTE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=oJI1KbROdGXBJoLa7iLscvy9NOV86B2uPCKOxyQtW1ZvfdnA6WA/AgIztwyjvid41
-	 3lAZaYfSgOohofo2ZrSTG2vjo7ZSW4tGRo35hjC2WJk+8UjnnC9tFyDizuBa/N+f/C
-	 3AaH7IgIta6q9PqHZ8N3hDUt1QahRV0B27jtBkqGs8rjYwn8AQ85VU5na4w/e0mQ5h
-	 etRGZwgFEMP7XK7hztVmmDLWsosv+br4gry6zinFsXDPYeAxCWNeVaWfVlNZ+F9hUm
-	 6tDs4B0VNnaMXQRvrzmgBOOdfGLcZjNtnwlzKGOQrMkCbRTBkT9CgTG+lPOUo3kqZl
-	 E9/Q0G/bRYAJQ==
+	b=j8HUbYSNMpcmJBaEsBeVJlhqH08nmhP8Mr1N+a4DgWyKYy194n/BNGf37ezlt3g6p
+	 QaywXZzkIgPeJv7K63yhMZ3wipIW9hkQ1OSEutZlfcAVMNjF0RKB3ybRut0ovH9Wve
+	 7AHIk8cQkWzFYNS9OQQVH+/RsfavPixKVcB//31zMpRBOh3ROzYlX7vsMnUymsthyT
+	 UqsNmkq0l7FQwplGT0NPmx4F0bycDHKNtPLsW3Iij2tKBkUA2b1KPW0eNDZxjezLEY
+	 Pfkc5JdHgnTv8lEvshJPrQiHXvaPfZY01P6EuawgVvBj7Lk9HHPqUwPCPNLgR4dQqB
+	 ubD4wNWqtsuyg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 657DDC4332F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A27C7C4332F;
 	Tue, 12 Dec 2023 17:02:00 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Tue, 12 Dec 2023 11:01:53 -0600
-Subject: [PATCH v6 06/13] powerpc/rtas: Facilitate high-level call
- sequences
+Date: Tue, 12 Dec 2023 11:01:58 -0600
+Subject: [PATCH v6 11/13] powerpc/pseries/papr-sysparm: Expose character
+ device to user space
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id:  <20231212-papr-sys_rtas-vs-lockdown-v6-6-e9eafd0c8c6c@linux.ibm.com>
+Content-Transfer-Encoding: 7bit
+Message-Id:  <20231212-papr-sys_rtas-vs-lockdown-v6-11-e9eafd0c8c6c@linux.ibm.com>
 References:  <20231212-papr-sys_rtas-vs-lockdown-v6-0-e9eafd0c8c6c@linux.ibm.com>
 In-Reply-To:  <20231212-papr-sys_rtas-vs-lockdown-v6-0-e9eafd0c8c6c@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1702400518; l=10843;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1702400518; l=11317;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=t9ThGGqhBwDjwYP1nJoz9AB2kSN/GhOrXb1u2hPJCU4=;
- b=6i+ZDa6r6lY6k9JBkLAb0lS3FgN276GQg3Skslk2qvCfLmvpX7mkJqxTXV+uisn3ajvRVhohO
- PJaCQr9W5CYBJAGfTIs0iOnYr6Pp60LOACUXoGB1bE1zMSIdkSOSxfu
+ bh=lNvmMSs6XNx0fyQRo6LoH0FOFjrPwQrwbzJiIMYmMII=;
+ b=yCzZ/Nfwo+FmuIREhInbtbDP1L630e2mArXKizRVHbcor+XPisuSW8z4JO/1I8qEzBW49X35a
+ +ZvA3H4BuKJC9ZU9tnME937JHmo2rSkJFZayIRFEEGh+NXFgXWNTtt4
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -80,283 +80,340 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-On RTAS platforms there is a general restriction that the OS must not
-enter RTAS on more than one CPU at a time. This low-level
-serialization requirement is satisfied by holding a spin
-lock (rtas_lock) across most RTAS function invocations.
+Until now the papr_sysparm APIs have been kernel-internal. But user
+space needs access to PAPR system parameters too. The only method
+available to user space today to get or set system parameters is using
+sys_rtas() and /dev/mem to pass RTAS-addressable buffers between user
+space and firmware. This is incompatible with lockdown and should be
+deprecated.
 
-However, some pseries RTAS functions require multiple successive calls
-to complete a logical operation. Beginning a new call sequence for such a
-function may disrupt any other sequences of that function already in
-progress. Safe and reliable use of these functions effectively
-requires higher-level serialization beyond what is already done at the
-level of RTAS entry and exit.
+So provide an alternative ABI to user space in the form of a
+/dev/papr-sysparm character device with just two ioctl commands (get
+and set). The data payloads involved are small enough to fit in the
+ioctl argument buffer, making the code relatively simple.
 
-Where a sequence-based RTAS function is invoked only through
-sys_rtas(), with no in-kernel users, there is no issue as far as the
-kernel is concerned. User space is responsible for appropriately
-serializing its call sequences. (Whether user space code actually
-takes measures to prevent sequence interleaving is another matter.)
-Examples of such functions currently include ibm,platform-dump and
-ibm,get-vpd.
+Exposing the system parameters through sysfs has been considered but
+it would be too awkward:
 
-But where a sequence-based RTAS function has both user space and
-in-kernel uesrs, there is a hazard. Even if the in-kernel call sites
-of such a function serialize their sequences correctly, a user of
-sys_rtas() can invoke the same function at any time, potentially
-disrupting a sequence in progress.
+* The kernel currently does not have to contain an exhaustive list of
+  defined system parameters. This is a convenient property to maintain
+  because we don't have to update the kernel whenever a new parameter
+  is added to PAPR. Exporting a named attribute in sysfs for each
+  parameter would negate this.
 
-So in order to prevent disruption of kernel-based RTAS call sequences,
-they must serialize not only with themselves but also with sys_rtas()
-users, somehow. Preferably without adding more function-specific hacks
-to sys_rtas(). This is a prerequisite for adding an in-kernel call
-sequence of ibm,get-vpd, which is in a change to follow.
+* Some system parameters are text-based and some are not.
 
-Note that it has never been feasible for the kernel to prevent
-sys_rtas()-based sequences from being disrupted because control
-returns to user space on every call. sys_rtas()-based users of these
-functions have always been, and continue to be, responsible for
-coordinating their call sequences with other users, even those which
-may invoke the RTAS functions through less direct means than
-sys_rtas(). This is an unavoidable consequence of exposing
-sequence-based RTAS functions through sys_rtas().
-
-* Add an optional mutex member to struct rtas_function.
-
-* Statically define a mutex for each RTAS function with known call
-  sequence serialization requirements, and assign its address to the
-  .lock member of the corresponding function table entry, along with
-  justifying commentary.
-
-* In sys_rtas(), if the table entry for the RTAS function being
-  called has a populated lock member, acquire it before taking
-  rtas_lock and entering RTAS.
-
-* Kernel-based RTAS call sequences are expected to access the
-  appropriate mutex explicitly by name. For example, a user of the
-  ibm,activate-firmware RTAS function would do:
-
-        int token = rtas_function_token(RTAS_FN_IBM_ACTIVATE_FIRMWARE);
-        int fwrc;
-
-        mutex_lock(&rtas_ibm_activate_firmware_lock);
-
-        do {
-                fwrc = rtas_call(token, 0, 1, NULL);
-        } while (rtas_busy_delay(fwrc));
-
-        mutex_unlock(&rtas_ibm_activate_firmware_lock);
-
-There should be no perceivable change introduced here except that
-concurrent callers of the same RTAS function via sys_rtas() may block
-on a mutex instead of spinning on rtas_lock.
+* Retrieval of at least one system parameter requires input data,
+  which a simple read-oriented interface can't support.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h |  3 ++
- arch/powerpc/kernel/rtas.c      | 83 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 86 insertions(+)
+ Documentation/userspace-api/ioctl/ioctl-number.rst |   2 +
+ arch/powerpc/include/asm/papr-sysparm.h            |  17 ++-
+ arch/powerpc/include/uapi/asm/papr-sysparm.h       |  58 ++++++++
+ arch/powerpc/platforms/pseries/papr-sysparm.c      | 158 ++++++++++++++++++++-
+ 4 files changed, 227 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 08d19e6904f7..9bb2210c8d44 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -3,6 +3,7 @@
- #define _POWERPC_RTAS_H
- #ifdef __KERNEL__
+diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
+index a950545bf7cd..d8b6cb1a3636 100644
+--- a/Documentation/userspace-api/ioctl/ioctl-number.rst
++++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
+@@ -351,6 +351,8 @@ Code  Seq#    Include File                                           Comments
+                                                                      <mailto:mostrows@styx.uwaterloo.ca>
+ 0xB2  00     arch/powerpc/include/uapi/asm/papr-vpd.h                powerpc/pseries VPD API
+                                                                      <mailto:linuxppc-dev>
++0xB2  01-02  arch/powerpc/include/uapi/asm/papr-sysparm.h            powerpc/pseries system parameter API
++                                                                     <mailto:linuxppc-dev>
+ 0xB3  00     linux/mmc/ioctl.h
+ 0xB4  00-0F  linux/gpio.h                                            <mailto:linux-gpio@vger.kernel.org>
+ 0xB5  00-0F  uapi/linux/rpmsg.h                                      <mailto:linux-remoteproc@vger.kernel.org>
+diff --git a/arch/powerpc/include/asm/papr-sysparm.h b/arch/powerpc/include/asm/papr-sysparm.h
+index f5fdbd8ae9db..0dbbff59101d 100644
+--- a/arch/powerpc/include/asm/papr-sysparm.h
++++ b/arch/powerpc/include/asm/papr-sysparm.h
+@@ -2,8 +2,10 @@
+ #ifndef _ASM_POWERPC_PAPR_SYSPARM_H
+ #define _ASM_POWERPC_PAPR_SYSPARM_H
  
-+#include <linux/mutex.h>
- #include <linux/spinlock.h>
- #include <asm/page.h>
- #include <asm/rtas-types.h>
-@@ -512,6 +513,8 @@ extern char rtas_data_buf[RTAS_DATA_BUF_SIZE];
- /* RMO buffer reserved for user-space RTAS use */
- extern unsigned long rtas_rmo_buf;
- 
-+extern struct mutex rtas_ibm_get_vpd_lock;
++#include <uapi/asm/papr-sysparm.h>
 +
- #define GLOBAL_INTERRUPT_QUEUE 9005
+ typedef struct {
+-	const u32 token;
++	u32 token;
+ } papr_sysparm_t;
  
- /**
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index ca5bb0b994ac..4d28983e8b1d 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -18,6 +18,7 @@
- #include <linux/kernel.h>
- #include <linux/lockdep.h>
- #include <linux/memblock.h>
-+#include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/reboot.h>
-@@ -70,14 +71,33 @@ struct rtas_filter {
-  *                            ppc64le, and we want to keep it that way. It does
-  *                            not make sense for this to be set when @filter
-  *                            is NULL.
-+ * @lock: Pointer to an optional dedicated per-function mutex. This
-+ *        should be set for functions that require multiple calls in
-+ *        sequence to complete a single operation, and such sequences
-+ *        will disrupt each other if allowed to interleave. Users of
-+ *        this function are required to hold the associated lock for
-+ *        the duration of the call sequence. Add an explanatory
-+ *        comment to the function table entry if setting this member.
-  */
- struct rtas_function {
- 	s32 token;
- 	const bool banned_for_syscall_on_le:1;
- 	const char * const name;
- 	const struct rtas_filter *filter;
-+	struct mutex *lock;
- };
+ #define mk_papr_sysparm(x_) ((papr_sysparm_t){ .token = x_, })
+@@ -20,11 +22,14 @@ typedef struct {
+ #define PAPR_SYSPARM_TLB_BLOCK_INVALIDATE_ATTRS    mk_papr_sysparm(50)
+ #define PAPR_SYSPARM_LPAR_NAME                     mk_papr_sysparm(55)
  
-+/*
-+ * Per-function locks for sequence-based RTAS functions.
+-enum {
+-	PAPR_SYSPARM_MAX_INPUT  = 1024,
+-	PAPR_SYSPARM_MAX_OUTPUT = 4000,
+-};
+-
++/**
++ * struct papr_sysparm_buf - RTAS work area layout for system parameter functions.
++ *
++ * This is the memory layout of the buffers passed to/from
++ * ibm,get-system-parameter and ibm,set-system-parameter. It is
++ * distinct from the papr_sysparm_io_block structure that is passed
++ * between user space and the kernel.
 + */
-+static DEFINE_MUTEX(rtas_ibm_activate_firmware_lock);
-+static DEFINE_MUTEX(rtas_ibm_get_dynamic_sensor_state_lock);
-+static DEFINE_MUTEX(rtas_ibm_get_indices_lock);
-+static DEFINE_MUTEX(rtas_ibm_lpar_perftools_lock);
-+static DEFINE_MUTEX(rtas_ibm_physical_attestation_lock);
-+static DEFINE_MUTEX(rtas_ibm_set_dynamic_indicator_lock);
-+DEFINE_MUTEX(rtas_ibm_get_vpd_lock);
+ struct papr_sysparm_buf {
+ 	__be16 len;
+ 	char val[PAPR_SYSPARM_MAX_OUTPUT];
+diff --git a/arch/powerpc/include/uapi/asm/papr-sysparm.h b/arch/powerpc/include/uapi/asm/papr-sysparm.h
+new file mode 100644
+index 000000000000..9f9a0f267ea5
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/papr-sysparm.h
+@@ -0,0 +1,58 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++#ifndef _UAPI_PAPR_SYSPARM_H_
++#define _UAPI_PAPR_SYSPARM_H_
 +
- static struct rtas_function rtas_function_table[] __ro_after_init = {
- 	[RTAS_FNIDX__CHECK_EXCEPTION] = {
- 		.name = "check-exception",
-@@ -125,6 +145,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = -1, .size_idx1 = -1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ as of v2.13 doesn't explicitly impose any
-+		 * restriction, but this typically requires multiple
-+		 * calls before success, and there's no reason to
-+		 * allow sequences to interleave.
-+		 */
-+		.lock = &rtas_ibm_activate_firmware_lock,
- 	},
- 	[RTAS_FNIDX__IBM_CBE_START_PTCAL] = {
- 		.name = "ibm,cbe-start-ptcal",
-@@ -196,6 +223,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 1, .size_idx1 = -1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ v2.13 R1–7.3.19–3 is explicit that the OS
-+		 * must not call ibm,get-dynamic-sensor-state with
-+		 * different inputs until a non-retry status has been
-+		 * returned.
-+		 */
-+		.lock = &rtas_ibm_get_dynamic_sensor_state_lock,
- 	},
- 	[RTAS_FNIDX__IBM_GET_INDICES] = {
- 		.name = "ibm,get-indices",
-@@ -203,6 +237,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 2, .size_idx1 = 3,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ v2.13 R1–7.3.17–2 says that the OS must not
-+		 * interleave ibm,get-indices call sequences with
-+		 * different inputs.
-+		 */
-+		.lock = &rtas_ibm_get_indices_lock,
- 	},
- 	[RTAS_FNIDX__IBM_GET_RIO_TOPOLOGY] = {
- 		.name = "ibm,get-rio-topology",
-@@ -220,6 +260,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 0, .size_idx1 = -1,
- 			.buf_idx2 = 1, .size_idx2 = 2,
- 		},
-+		/*
-+		 * PAPR+ v2.13 R1–7.3.20–4 indicates that sequences
-+		 * should not be allowed to interleave.
-+		 */
-+		.lock = &rtas_ibm_get_vpd_lock,
- 	},
- 	[RTAS_FNIDX__IBM_GET_XIVE] = {
- 		.name = "ibm,get-xive",
-@@ -239,6 +284,11 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 2, .size_idx1 = 3,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ v2.13 R1–7.3.26–6 says the OS should allow
-+		 * only one call sequence in progress at a time.
-+		 */
-+		.lock = &rtas_ibm_lpar_perftools_lock,
- 	},
- 	[RTAS_FNIDX__IBM_MANAGE_FLASH_IMAGE] = {
- 		.name = "ibm,manage-flash-image",
-@@ -277,6 +327,14 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 0, .size_idx1 = 1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * This follows a sequence-based pattern similar to
-+		 * ibm,get-vpd et al. Since PAPR+ restricts
-+		 * interleaving call sequences for other functions of
-+		 * this style, assume the restriction applies here,
-+		 * even though it's not explicit in the spec.
-+		 */
-+		.lock = &rtas_ibm_physical_attestation_lock,
- 	},
- 	[RTAS_FNIDX__IBM_PLATFORM_DUMP] = {
- 		.name = "ibm,platform-dump",
-@@ -284,6 +342,13 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 4, .size_idx1 = 5,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ v2.13 7.3.3.4.1 indicates that concurrent
-+		 * sequences of ibm,platform-dump are allowed if they
-+		 * are operating on different dump tags. So leave the
-+		 * lock pointer unset for now. This may need
-+		 * reconsideration if kernel-internal users appear.
-+		 */
- 	},
- 	[RTAS_FNIDX__IBM_POWER_OFF_UPS] = {
- 		.name = "ibm,power-off-ups",
-@@ -326,6 +391,12 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
- 			.buf_idx1 = 2, .size_idx1 = -1,
- 			.buf_idx2 = -1, .size_idx2 = -1,
- 		},
-+		/*
-+		 * PAPR+ v2.13 R1–7.3.18–3 says the OS must not call
-+		 * this function with different inputs until a
-+		 * non-retry status has been returned.
-+		 */
-+		.lock = &rtas_ibm_set_dynamic_indicator_lock,
- 	},
- 	[RTAS_FNIDX__IBM_SET_EEH_OPTION] = {
- 		.name = "ibm,set-eeh-option",
-@@ -1888,6 +1959,15 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
++#include <linux/types.h>
++#include <asm/ioctl.h>
++#include <asm/papr-miscdev.h>
++
++enum {
++	PAPR_SYSPARM_MAX_INPUT  = 1024,
++	PAPR_SYSPARM_MAX_OUTPUT = 4000,
++};
++
++struct papr_sysparm_io_block {
++	__u32 parameter;
++	__u16 length;
++	char data[PAPR_SYSPARM_MAX_OUTPUT];
++};
++
++/**
++ * PAPR_SYSPARM_IOC_GET - Retrieve the value of a PAPR system parameter.
++ *
++ * Uses _IOWR because of one corner case: Retrieving the value of the
++ * "OS Service Entitlement Status" parameter (60) requires the caller
++ * to supply input data (a date string) in the buffer passed to
++ * firmware. So the @length and @data of the incoming
++ * papr_sysparm_io_block are always used to initialize the work area
++ * supplied to ibm,get-system-parameter. No other parameters are known
++ * to parameterize the result this way, and callers are encouraged
++ * (but not required) to zero-initialize @length and @data in the
++ * common case.
++ *
++ * On error the contents of the ioblock are indeterminate.
++ *
++ * Return:
++ * 0: Success; @length is the length of valid data in @data, not to exceed @PAPR_SYSPARM_MAX_OUTPUT.
++ * -EIO: Platform error. (-1)
++ * -EINVAL: Incorrect data length or format. (-9999)
++ * -EPERM: The calling partition is not allowed to access this parameter. (-9002)
++ * -EOPNOTSUPP: Parameter not supported on this platform (-3)
++ */
++#define PAPR_SYSPARM_IOC_GET _IOWR(PAPR_MISCDEV_IOC_ID, 1, struct papr_sysparm_io_block)
++
++/**
++ * PAPR_SYSPARM_IOC_SET - Update the value of a PAPR system parameter.
++ *
++ * The contents of the ioblock are unchanged regardless of success.
++ *
++ * Return:
++ * 0: Success; the parameter has been updated.
++ * -EIO: Platform error. (-1)
++ * -EINVAL: Incorrect data length or format. (-9999)
++ * -EPERM: The calling partition is not allowed to access this parameter. (-9002)
++ * -EOPNOTSUPP: Parameter not supported on this platform (-3)
++ */
++#define PAPR_SYSPARM_IOC_SET _IOW(PAPR_MISCDEV_IOC_ID, 2, struct papr_sysparm_io_block)
++
++#endif /* _UAPI_PAPR_SYSPARM_H_ */
+diff --git a/arch/powerpc/platforms/pseries/papr-sysparm.c b/arch/powerpc/platforms/pseries/papr-sysparm.c
+index a1e7aeac7416..7063ce8884e4 100644
+--- a/arch/powerpc/platforms/pseries/papr-sysparm.c
++++ b/arch/powerpc/platforms/pseries/papr-sysparm.c
+@@ -2,14 +2,20 @@
  
- 	buff_copy = get_errorlog_buffer();
+ #define pr_fmt(fmt)	"papr-sysparm: " fmt
  
++#include <linux/anon_inodes.h>
+ #include <linux/bug.h>
++#include <linux/file.h>
++#include <linux/fs.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/miscdevice.h>
+ #include <linux/printk.h>
+ #include <linux/slab.h>
+-#include <asm/rtas.h>
++#include <linux/uaccess.h>
++#include <asm/machdep.h>
+ #include <asm/papr-sysparm.h>
+ #include <asm/rtas-work-area.h>
++#include <asm/rtas.h>
+ 
+ struct papr_sysparm_buf *papr_sysparm_buf_alloc(void)
+ {
+@@ -87,7 +93,6 @@ static bool papr_sysparm_buf_can_submit(const struct papr_sysparm_buf *buf)
+  *
+  * Return: 0 on success, -errno otherwise. @buf is unmodified on error.
+  */
+-
+ int papr_sysparm_get(papr_sysparm_t param, struct papr_sysparm_buf *buf)
+ {
+ 	const s32 token = rtas_function_token(RTAS_FN_IBM_GET_SYSTEM_PARAMETER);
+@@ -196,3 +201,152 @@ int papr_sysparm_set(papr_sysparm_t param, const struct papr_sysparm_buf *buf)
+ 
+ 	return ret;
+ }
++
++static struct papr_sysparm_buf *
++papr_sysparm_buf_from_user(const struct papr_sysparm_io_block __user *user_iob)
++{
++	struct papr_sysparm_buf *kern_spbuf;
++	long err;
++	u16 len;
++
 +	/*
-+	 * If this function has a mutex assigned to it, we must
-+	 * acquire it to avoid interleaving with any kernel-based uses
-+	 * of the same function. Kernel-based sequences acquire the
-+	 * appropriate mutex explicitly.
++	 * The length of valid data that userspace claims to be in
++	 * user_iob->data[].
 +	 */
-+	if (func->lock)
-+		mutex_lock(func->lock);
++	if (get_user(len, &user_iob->length))
++		return ERR_PTR(-EFAULT);
 +
- 	raw_spin_lock_irqsave(&rtas_lock, flags);
- 	cookie = lockdep_pin_lock(&rtas_lock);
- 
-@@ -1903,6 +1983,9 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- 	lockdep_unpin_lock(&rtas_lock, cookie);
- 	raw_spin_unlock_irqrestore(&rtas_lock, flags);
- 
-+	if (func->lock)
-+		mutex_unlock(func->lock);
++	static_assert(sizeof(user_iob->data) >= PAPR_SYSPARM_MAX_INPUT);
++	static_assert(sizeof(kern_spbuf->val) >= PAPR_SYSPARM_MAX_INPUT);
 +
- 	if (buff_copy) {
- 		if (errbuf)
- 			log_error(errbuf, ERR_TYPE_RTAS_LOG, 0);
++	if (len > PAPR_SYSPARM_MAX_INPUT)
++		return ERR_PTR(-EINVAL);
++
++	kern_spbuf = papr_sysparm_buf_alloc();
++	if (!kern_spbuf)
++		return ERR_PTR(-ENOMEM);
++
++	papr_sysparm_buf_set_length(kern_spbuf, len);
++
++	if (len > 0 && copy_from_user(kern_spbuf->val, user_iob->data, len)) {
++		err = -EFAULT;
++		goto free_sysparm_buf;
++	}
++
++	return kern_spbuf;
++
++free_sysparm_buf:
++	papr_sysparm_buf_free(kern_spbuf);
++	return ERR_PTR(err);
++}
++
++static int papr_sysparm_buf_to_user(const struct papr_sysparm_buf *kern_spbuf,
++				    struct papr_sysparm_io_block __user *user_iob)
++{
++	u16 len_out = papr_sysparm_buf_get_length(kern_spbuf);
++
++	if (put_user(len_out, &user_iob->length))
++		return -EFAULT;
++
++	static_assert(sizeof(user_iob->data) >= PAPR_SYSPARM_MAX_OUTPUT);
++	static_assert(sizeof(kern_spbuf->val) >= PAPR_SYSPARM_MAX_OUTPUT);
++
++	if (copy_to_user(user_iob->data, kern_spbuf->val, PAPR_SYSPARM_MAX_OUTPUT))
++		return -EFAULT;
++
++	return 0;
++}
++
++static long papr_sysparm_ioctl_get(struct papr_sysparm_io_block __user *user_iob)
++{
++	struct papr_sysparm_buf *kern_spbuf;
++	papr_sysparm_t param;
++	long ret;
++
++	if (get_user(param.token, &user_iob->parameter))
++		return -EFAULT;
++
++	kern_spbuf = papr_sysparm_buf_from_user(user_iob);
++	if (IS_ERR(kern_spbuf))
++		return PTR_ERR(kern_spbuf);
++
++	ret = papr_sysparm_get(param, kern_spbuf);
++	if (ret)
++		goto free_sysparm_buf;
++
++	ret = papr_sysparm_buf_to_user(kern_spbuf, user_iob);
++	if (ret)
++		goto free_sysparm_buf;
++
++	ret = 0;
++
++free_sysparm_buf:
++	papr_sysparm_buf_free(kern_spbuf);
++	return ret;
++}
++
++
++static long papr_sysparm_ioctl_set(struct papr_sysparm_io_block __user *user_iob)
++{
++	struct papr_sysparm_buf *kern_spbuf;
++	papr_sysparm_t param;
++	long ret;
++
++	if (get_user(param.token, &user_iob->parameter))
++		return -EFAULT;
++
++	kern_spbuf = papr_sysparm_buf_from_user(user_iob);
++	if (IS_ERR(kern_spbuf))
++		return PTR_ERR(kern_spbuf);
++
++	ret = papr_sysparm_set(param, kern_spbuf);
++	if (ret)
++		goto free_sysparm_buf;
++
++	ret = 0;
++
++free_sysparm_buf:
++	papr_sysparm_buf_free(kern_spbuf);
++	return ret;
++}
++
++static long papr_sysparm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
++{
++	void __user *argp = (__force void __user *)arg;
++	long ret;
++
++	switch (ioctl) {
++	case PAPR_SYSPARM_IOC_GET:
++		ret = papr_sysparm_ioctl_get(argp);
++		break;
++	case PAPR_SYSPARM_IOC_SET:
++		if (filp->f_mode & FMODE_WRITE)
++			ret = papr_sysparm_ioctl_set(argp);
++		else
++			ret = -EBADF;
++		break;
++	default:
++		ret = -ENOIOCTLCMD;
++		break;
++	}
++	return ret;
++}
++
++static const struct file_operations papr_sysparm_ops = {
++	.unlocked_ioctl = papr_sysparm_ioctl,
++};
++
++static struct miscdevice papr_sysparm_dev = {
++	.minor = MISC_DYNAMIC_MINOR,
++	.name = "papr-sysparm",
++	.fops = &papr_sysparm_ops,
++};
++
++static __init int papr_sysparm_init(void)
++{
++	if (!rtas_function_implemented(RTAS_FN_IBM_GET_SYSTEM_PARAMETER))
++		return -ENODEV;
++
++	return misc_register(&papr_sysparm_dev);
++}
++machine_device_initcall(pseries, papr_sysparm_init);
 
 -- 
 2.41.0
