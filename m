@@ -4,55 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA3D3C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 11:22:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60775C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 16:20:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=mVVUW+tA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PSNZEtly;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SqtPf1j43z2xQL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 22:22:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sr11R5wLWz3cXF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 03:20:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=mVVUW+tA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PSNZEtly;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=matthias.schiffer@ew.tq-group.com; receiver=lists.ozlabs.org)
-Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SqtNk6Vhjz3c13
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2023 22:21:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1702466519; x=1734002519;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=ourCIgEXwb49HY0a/VAqrzT1ZIAkfkNeTXmDQob5whA=;
-  b=mVVUW+tAY4fQPfpFQUhM0LEwCRoBcTuvwnLtkvIUEzAbwj6nNytrul9j
-   /WQT902rYm6Pc4872LhwqkXH7JebxKeHnVaUP1sHBKlnib9aaRLJ9zE5q
-   yhfXYL3J7lu4A2MC9Trj5bvx5FS5oF4WvootwhW+mfClyUyhV+QZGrF0Z
-   44pvnfd+RZZsiq+46fXy8gmrqBM4qnEEw2UeUyD6+KZHSE34Wso/vTwfl
-   vn8ROB2/u+XgjvF8xcI9pZoT5XK58S8MgEDEVbXDm/LXd+MF/sIvLAIhx
-   cp6T2txMr1ehl21aOIkIRnGgUUvywx1jfaSIIcmsIIKw1itAnRv9gZOdN
-   A==;
-X-IronPort-AV: E=Sophos;i="6.04,272,1695679200"; 
-   d="scan'208";a="34480876"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 13 Dec 2023 12:21:52 +0100
-Received: from [192.168.2.128] (SCHIFFERM-M2.tq-net.de [10.121.53.15])
-	by vtuxmail01.tq-net.de (Postfix) with ESMTPA id 8F4C1280075;
-	Wed, 13 Dec 2023 12:21:52 +0100 (CET)
-Message-ID: <a7ed5eddc674b0fcb7062af58c10d0190ccda2b8.camel@ew.tq-group.com>
-Subject: Re: [PATCH] Reapply "kbuild: Create directory for target DTB"
-From: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-To: Masahiro Yamada <masahiroy@kernel.org>
-Date: Wed, 13 Dec 2023 12:21:52 +0100
-In-Reply-To: <CAK7LNAQhVJ6kYC_+LutUzE9m-dQmaZ2HnWbLcOj54w5LZJe2FA@mail.gmail.com>
-References: <20231212161610.100862-1-matthias.schiffer@ew.tq-group.com>
-	 <CAK7LNAQhVJ6kYC_+LutUzE9m-dQmaZ2HnWbLcOj54w5LZJe2FA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.44.4-0ubuntu2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sr10V6wGWz2yGv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 03:19:54 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id DEA0A61C04;
+	Wed, 13 Dec 2023 16:19:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77D2AC433C9;
+	Wed, 13 Dec 2023 16:19:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1702484390;
+	bh=rtYsdGUgzG4gShOq5eir9uSz6Dv02AOWRgbvbC1z6QE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=PSNZEtlyKCT/FLY4w9ZppFBut3oFTo86KvXQ19A5ut2LSqARZgZyhF61vRtVNrlEe
+	 Ay6EDQ78iJiWMBryaP7r58sTbMMPPeFtYOwsHvf0y/xUOHdevS95ZXyDZ5996bVweU
+	 sv4KhhPsk0N6ZxNbb6aTXaRmvvfIxXMebINNc1JCdEbg3xS5+77zm0cfnfALLOjYaI
+	 LOX2IHnhNjki/2k4b+A3P3mcp4sjgIq92Q/94wAC7sdnVuHgtC7eESr3vtcaq3I9gA
+	 6uX/hRFS0gmB3XF6ZMoRq4x6IVDRMvD7vXlc24FhXwedhXTL2t+QN7yPIx4aLREPb6
+	 C/OnndWIpOX3Q==
+Date: Wed, 13 Dec 2023 16:19:44 +0000
+From: Will Deacon <will@kernel.org>
+To: Samuel Holland <samuel.holland@sifive.com>, ardb@kernel.org
+Subject: Re: [RFC PATCH 04/12] arm64: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+Message-ID: <20231213161944.GA32062@willie-the-truck>
+References: <20231208055501.2916202-1-samuel.holland@sifive.com>
+ <20231208055501.2916202-5-samuel.holland@sifive.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231208055501.2916202-5-samuel.holland@sifive.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,114 +60,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicolas Schier <nicolas@fjasle.eu>, "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nathan Chancellor <nathan@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux@ew.tq-group.com" <linux@ew.tq-group.com>
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2023-12-12 at 17:13 +0000, Masahiro Yamada wrote:
->=20
->=20
-> On Wed, Dec 13, 2023 at 1:17=E2=80=AFAM Matthias Schiffer
-> <matthias.schiffer@ew.tq-group.com> wrote:
-> >=20
-> > This reverts commit dd7699e37f289fa433f42c6bcc108468c8b198c0.
-> >=20
-> > On powerpc, dtb-y is usually empty unless CONFIG_OF_ALL_DTBS is set. Wh=
-ile
-> > passing a DTB as a make target explicitly works fine, individual DTB
-> > builds may also be pulled in as dependencies by cuImage.% and similar
-> > targets. In this case, nothing creates the arch/powerpc/dts directory,
-> > causing out-of-tree builds to fail.
-> >=20
-> > Fixes: dd7699e37f28 ("Revert "kbuild: Create directory for target DTB""=
-)
-> > Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-> > ---
->=20
->=20
->=20
-> NACK.
->=20
-> %.dtb is generated by if_changed_dep.
->=20
-> Each Makefile is responsible for adding %.dtb to 'targets'
-> if it is pulled in as dependencies of other images.
->=20
-> If it does not work for PowerPC, it is a bug in PowerPC Makefile.
->=20
->=20
-> Just checking arch/powerpc/boot/Makefile,
-> it adds dts/%.dtb and dts/fsl/%.dtb to 'targets'. [1] [2]
->=20
-> cuImage.% should be file, but it does not cover all images.
->=20
-> Fix arch/powerpc/boot/Makefile.
+On Thu, Dec 07, 2023 at 09:54:34PM -0800, Samuel Holland wrote:
+> arm64 provides an equivalent to the common kernel-mode FPU API, but in a
+> different header and using different function names. Add a wrapper
+> header, and export CFLAGS adjustments as found in lib/raid6/Makefile.
+> 
+> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+> ---
+> 
+>  arch/arm64/Kconfig           |  1 +
+>  arch/arm64/Makefile          |  9 ++++++++-
+>  arch/arm64/include/asm/fpu.h | 17 +++++++++++++++++
+>  3 files changed, 26 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/arm64/include/asm/fpu.h
+> 
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 7b071a00425d..485ac389ac11 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -30,6 +30,7 @@ config ARM64
+>  	select ARCH_HAS_GCOV_PROFILE_ALL
+>  	select ARCH_HAS_GIGANTIC_PAGE
+>  	select ARCH_HAS_KCOV
+> +	select ARCH_HAS_KERNEL_FPU_SUPPORT if KERNEL_MODE_NEON
+>  	select ARCH_HAS_KEEPINITRD
+>  	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+>  	select ARCH_HAS_NMI_SAFE_THIS_CPU_OPS
+> diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
+> index 9a2d3723cd0f..4a65f24c7998 100644
+> --- a/arch/arm64/Makefile
+> +++ b/arch/arm64/Makefile
+> @@ -36,7 +36,14 @@ ifeq ($(CONFIG_BROKEN_GAS_INST),y)
+>  $(warning Detected assembler with broken .inst; disassembly will be unreliable)
+>  endif
+>  
+> -KBUILD_CFLAGS	+= -mgeneral-regs-only	\
+> +# The GCC option -ffreestanding is required in order to compile code containing
+> +# ARM/NEON intrinsics in a non C99-compliant environment (such as the kernel)
+> +CC_FLAGS_FPU	:= -ffreestanding
+> +# Enable <arm_neon.h>
+> +CC_FLAGS_FPU	+= -isystem $(shell $(CC) -print-file-name=include)
+> +CC_FLAGS_NO_FPU	:= -mgeneral-regs-only
+> +
+> +KBUILD_CFLAGS	+= $(CC_FLAGS_NO_FPU) \
+>  		   $(compat_vdso) $(cc_has_k_constraint)
+>  KBUILD_CFLAGS	+= $(call cc-disable-warning, psabi)
+>  KBUILD_AFLAGS	+= $(compat_vdso)
 
-Ah, thank you for the pointers, I did not quite get the meaning of those Ma=
-kefile lines when first
-reading them. So the issue is that I'm trying to build a cuImage that is no=
-t added to image-y in the
-powerpc Makefile. It is unfortunate that this leads to a very confusing err=
-or message about the
-missing dts directory.
+Can you use this to replace the same logic in arch/arm64/lib/Makefile,
+like you do for arch/arm/?
 
-I'll send a new patch if I come to the conclusion that I actually need the =
-cuImage (for the ancient
-TQM5200 which hasn't really been touched since 2011).
-
-Regards,
-Matthias
-
-
->=20
->=20
->=20
-> [1] https://github.com/torvalds/linux/blob/v6.7-rc5/arch/powerpc/boot/Mak=
-efile#L386
-> [2] https://github.com/torvalds/linux/blob/v6.7-rc5/arch/powerpc/boot/Mak=
-efile#L388
->=20
->=20
->=20
-> >  scripts/Makefile.lib | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-> > index 1a965fe68e011..3fe0fc46badfe 100644
-> > --- a/scripts/Makefile.lib
-> > +++ b/scripts/Makefile.lib
-> > @@ -389,7 +389,8 @@ $(obj)/%.dtbo.S: $(obj)/%.dtbo FORCE
-> >         $(call if_changed,wrap_S_dtb)
-> >=20
-> >  quiet_cmd_dtc =3D DTC     $@
-> > -cmd_dtc =3D $(HOSTCC) -E $(dtc_cpp_flags) -x assembler-with-cpp -o $(d=
-tc-tmp) $< ; \
-> > +cmd_dtc =3D mkdir -p $(dir ${dtc-tmp}) ; \
-> > +       $(HOSTCC) -E $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tm=
-p) $< ; \
-> >         $(DTC) -o $@ -b 0 \
-> >                 $(addprefix -i,$(dir $<) $(DTC_INCLUDE)) $(DTC_FLAGS) \
-> >                 -d $(depfile).dtc.tmp $(dtc-tmp) ; \
-> > --
-> > TQ-Systems GmbH | M=C3=BChlstra=C3=9Fe 2, Gut Delling | 82229 Seefeld, =
-Germany
-> > Amtsgericht M=C3=BCnchen, HRB 105018
-> > Gesch=C3=A4ftsf=C3=BChrer: Detlef Schneider, R=C3=BCdiger Stahl, Stefan=
- Schneider
-> > https://www.tq-group.com/
-> >=20
->=20
->=20
-> --
-> Best Regards
->=20
-> Masahiro Yamada
->=20
-
---=20
-TQ-Systems GmbH | M=C3=BChlstra=C3=9Fe 2, Gut Delling | 82229 Seefeld, Germ=
-any
-Amtsgericht M=C3=BCnchen, HRB 105018
-Gesch=C3=A4ftsf=C3=BChrer: Detlef Schneider, R=C3=BCdiger Stahl, Stefan Sch=
-neider
-https://www.tq-group.com/
+Will
