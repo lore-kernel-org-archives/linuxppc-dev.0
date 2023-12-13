@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39536C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 22:32:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A8A6C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Dec 2023 22:33:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=no7tl/T9;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=G0eUOFci;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Sr9GD51lwz3cGL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 09:32:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Sr9HC2LZzz3dSl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 09:33:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=no7tl/T9;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=G0eUOFci;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sr9DC3KY0z2ysD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sr9DD0Ztvz3c2C
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 09:30:33 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id F198B100009;
-	Thu, 14 Dec 2023 01:30:27 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru F198B100009
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 5DA1A10000F;
+	Thu, 14 Dec 2023 01:30:28 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 5DA1A10000F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1702506627;
-	bh=Ii5sBqymhiHfCuQq+3pwgLlO+kjouXvW2nmQVbwI7UU=;
+	s=mail; t=1702506628;
+	bh=+lmmdIoH0rAig1Taqra6EznxKH0XzwvvS9jwX4KXfVg=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=no7tl/T9jZK9UqsFMv6dlMpRIpk1r4Z0yLCC5syS64E6OO6uNGre09OjlqNyNAzuS
-	 57StAIaX4rIxlUDWPBp0lt0/l+Za59SJV5unYZhrVSDr9INOW4zYz0V45tjE5ot/XQ
-	 q5jZTTks7CrNm7mJq5DdeeeapRLh8s172PfxLzg03QIDb5csYBF3PhgkWmMb+cEIo6
-	 xx2S7VKZgKvDqWvMzuq7mtpt4DFhDqXNs9JqfmMtC2GRkj6L0vvJuKk6KFhnLmtAn5
-	 ioBfvQ32a1ctlUYa3NWZ2OssdaXhCvOxC/Qf9EBZLXfgDPilNoVo4Tnp2G966eB68U
-	 cTi36XKJ7EBZQ==
+	b=G0eUOFciMHcQd32X1QxMykiR+hbQthJ5Gg3yhiRITkuLJ8kaLc5QjsoBm/DgU06f/
+	 iLe+TsJPevkyMCkJ+WwPxuxjBghqa5MY9tCIylKY9rp+e3j7o9DygXwswddCFF0WRk
+	 axoXYZvcb6trBgtuxzs27sSKUKvOMMudMA+NDHYr1sfMSwU4eIJXZJ3kFW275hMSbc
+	 AsOXt/jdCb6npcKxT98ql/Rj1QW7d6RIBZzH3SG82SEPGrq5lf6VjnZlJPI8OTMbl5
+	 Jf4926WySDDeaxcXY/iCHK6RaaB7HLPX51MmCjG6C2/dR0ukrOmweu+TMac8udnTNt
+	 DVsnkd6A3HnXw==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 14 Dec 2023 01:30:27 +0300 (MSK)
+	Thu, 14 Dec 2023 01:30:28 +0300 (MSK)
 Received: from localhost.localdomain (100.64.160.123) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
@@ -51,9 +51,9 @@ To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
 	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
 	<nikitos.tr@gmail.com>
-Subject: [PATCH v3 02/11] locking: add define if mutex_destroy() is not an empty function
-Date: Thu, 14 Dec 2023 01:30:11 +0300
-Message-ID: <20231213223020.2713164-3-gnstark@salutedevices.com>
+Subject: [PATCH v3 04/11] leds: aw2013: use devm API to cleanup module's resources
+Date: Thu, 14 Dec 2023 01:30:13 +0300
+Message-ID: <20231213223020.2713164-5-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20231213223020.2713164-1-gnstark@salutedevices.com>
 References: <20231213223020.2713164-1-gnstark@salutedevices.com>
@@ -94,33 +94,92 @@ Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-mutex_destroy() is only a debug helper and an empty function on non-debug
-configurations still we can't legally ignore it because it's the
-established API call and it can be extended theoretically in the future.
-Sometimes it could be useful to know e.g. in the higher-level API if
-mutex_destroy() really does something in the current configuration
-and it's should be called or skipped otherwise for the sake of
-optimization so add dedicated define to recognize these cases.
+In this driver LEDs are registered using devm_led_classdev_register()
+so they are automatically unregistered after module's remove() is done.
+led_classdev_unregister() calls module's led_set_brightness() to turn off
+the LEDs and that callback uses resources which were destroyed already
+in module's remove() so use devm API instead of remove().
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- include/linux/mutex.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/leds/leds-aw2013.c | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-index a33aa9eb9fc3..2395ce4fcaf6 100644
---- a/include/linux/mutex.h
-+++ b/include/linux/mutex.h
-@@ -83,6 +83,9 @@ struct mutex {
+diff --git a/drivers/leds/leds-aw2013.c b/drivers/leds/leds-aw2013.c
+index c2bc0782c0cd..863aeb02f278 100644
+--- a/drivers/leds/leds-aw2013.c
++++ b/drivers/leds/leds-aw2013.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ // Driver for Awinic AW2013 3-channel LED driver
  
- extern void mutex_destroy(struct mutex *lock);
++#include <linux/devm-helpers.h>
+ #include <linux/i2c.h>
+ #include <linux/leds.h>
+ #include <linux/module.h>
+@@ -318,6 +319,11 @@ static int aw2013_probe_dt(struct aw2013 *chip)
+ 	return 0;
+ }
  
-+/* mutex_destroy() is a real function, not a NOP */
-+#define mutex_destroy  mutex_destroy
++static void aw2013_chip_disable_action(void *data)
++{
++	aw2013_chip_disable(data);
++}
 +
- #else
+ static const struct regmap_config aw2013_regmap_config = {
+ 	.reg_bits = 8,
+ 	.val_bits = 8,
+@@ -334,7 +340,10 @@ static int aw2013_probe(struct i2c_client *client)
+ 	if (!chip)
+ 		return -ENOMEM;
  
- # define __DEBUG_MUTEX_INITIALIZER(lockname)
+-	mutex_init(&chip->mutex);
++	ret = devm_mutex_init(&client->dev, &chip->mutex);
++	if (ret)
++		return ret;
++
+ 	mutex_lock(&chip->mutex);
+ 
+ 	chip->client = client;
+@@ -378,6 +387,10 @@ static int aw2013_probe(struct i2c_client *client)
+ 		goto error_reg;
+ 	}
+ 
++	ret = devm_add_action(&client->dev, aw2013_chip_disable_action, chip);
++	if (ret)
++		goto error_reg;
++
+ 	ret = aw2013_probe_dt(chip);
+ 	if (ret < 0)
+ 		goto error_reg;
+@@ -398,19 +411,9 @@ static int aw2013_probe(struct i2c_client *client)
+ 
+ error:
+ 	mutex_unlock(&chip->mutex);
+-	mutex_destroy(&chip->mutex);
+ 	return ret;
+ }
+ 
+-static void aw2013_remove(struct i2c_client *client)
+-{
+-	struct aw2013 *chip = i2c_get_clientdata(client);
+-
+-	aw2013_chip_disable(chip);
+-
+-	mutex_destroy(&chip->mutex);
+-}
+-
+ static const struct of_device_id aw2013_match_table[] = {
+ 	{ .compatible = "awinic,aw2013", },
+ 	{ /* sentinel */ },
+@@ -424,7 +427,6 @@ static struct i2c_driver aw2013_driver = {
+ 		.of_match_table = of_match_ptr(aw2013_match_table),
+ 	},
+ 	.probe = aw2013_probe,
+-	.remove = aw2013_remove,
+ };
+ 
+ module_i2c_driver(aw2013_driver);
 -- 
 2.25.1
 
