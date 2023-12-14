@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A67D8C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:42:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6F61C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:43:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=o4PVSh0a;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=ogWeDn6x;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Srfnn1zvVz3vrJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:42:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Srfph2ZPmz3vXc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:43:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=o4PVSh0a;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=ogWeDn6x;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffX5YBtz3cXK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffX5TLwz3cW1
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 04:36:36 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id EEC3A12001E;
-	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru EEC3A12001E
+	by mx1.sberdevices.ru (Postfix) with ESMTP id B1302120020;
+	Thu, 14 Dec 2023 20:36:26 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru B1302120020
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1702575385;
-	bh=k3WMJ0GNwuGRczuP2LxdxutooPucV6JPLeqyGQDEPIA=;
+	s=mail; t=1702575386;
+	bh=IipliOBxVO1mB0P9vxh3aTZrhIFdLT6fPsP0SLsHsZA=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=o4PVSh0a2zgp2DaGeInM7daHcqicls01cPeXE8aE6Ms6f52DMAt8ZQiWho05YOyaI
-	 kjcXnU24UMVevOlFWDY+qDps3W3bdbk9SwHjjg0L/2ghAUIzrZyR4stKkdvlreFN85
-	 7B4xg+GBckWhUmhdlCDgpn0fr8MVe2nJCptXc2hho4tNOsxUkBxc0iCJXlOEz/pEHS
-	 ho/FuaUTz+zI7l1DiApIVydpaCILJD0TrC/mN2Bvqt3BhYDzEJXV7dwJpQasMnOB0j
-	 RnRnOF33H+rh8lCfr/PqJboNgzzGUCU8u8O0cElS+Z7LkSVXPcsldDb4zMAH/fjNOh
-	 51D/Z/+OlCB7Q==
+	b=ogWeDn6x5Jc6Am38+/f3ozPM/OnYdYI1EQ4Z/NZQ1rrQld2H+yUlwlfE0t1Ls1IHn
+	 jSXRRda4eritSb7OIENH3IwFBCWe9MxMVnDSqdMBDBeh63I22arzTmcOPal4zMzqBn
+	 N18Pzd+nrGZ5G5fXso7721xybvU0M4xEhGeMXUvqibwY0NB9S7lygfMyaMcqEevK5/
+	 JfAzsR+Z7LSXw+MDQ0yIEJ9pHiWnGqSgqGBAt0fRmsYyxEUQpSDzPD6rgDZStnqu33
+	 ejI6wuLvzAPvJPjMVgy5xLtjfTmyRXHolzZ4kqyJUEjjLindDKlcxqAMjdC1bEx6B6
+	 B+Bofz6+b10Hw==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
+	Thu, 14 Dec 2023 20:36:26 +0300 (MSK)
 Received: from localhost.localdomain (100.64.160.123) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 14 Dec 2023 20:36:25 +0300
+ 15.2.1118.40; Thu, 14 Dec 2023 20:36:26 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
@@ -51,9 +51,9 @@ To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
 	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
 	<nikitos.tr@gmail.com>
-Subject: [PATCH v4 07/10] leds: nic78bx: use devm API to cleanup module's resources
-Date: Thu, 14 Dec 2023 20:36:11 +0300
-Message-ID: <20231214173614.2820929-8-gnstark@salutedevices.com>
+Subject: [PATCH v4 10/10] leds: powernv: use LED_RETAIN_AT_SHUTDOWN flag for leds
+Date: Thu, 14 Dec 2023 20:36:14 +0300
+Message-ID: <20231214173614.2820929-11-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20231214173614.2820929-1-gnstark@salutedevices.com>
 References: <20231214173614.2820929-1-gnstark@salutedevices.com>
@@ -94,74 +94,72 @@ Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In this driver LEDs are registered using devm_led_classdev_register()
-so they are automatically unregistered after module's remove() is done.
-led_classdev_unregister() calls module's led_set_brightness() to turn off
-the LEDs and that callback uses resources which were destroyed already
-in module's remove() so use devm API instead of remove().
+This driver wants to keep its LEDs state after module is removed
+and implemented it in its own way. LED subsystem supports dedicated
+flag LED_RETAIN_AT_SHUTDOWN for the same purpose so use the flag
+instead of custom implementation.
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- drivers/leds/leds-nic78bx.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ drivers/leds/leds-powernv.c | 23 ++++++++---------------
+ 1 file changed, 8 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/leds/leds-nic78bx.c b/drivers/leds/leds-nic78bx.c
-index f196f52eec1e..f3049fa14f04 100644
---- a/drivers/leds/leds-nic78bx.c
-+++ b/drivers/leds/leds-nic78bx.c
-@@ -118,6 +118,15 @@ static struct nic78bx_led nic78bx_leds[] = {
- 	}
+diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
+index 743e2cdd0891..018ec933ac10 100644
+--- a/drivers/leds/leds-powernv.c
++++ b/drivers/leds/leds-powernv.c
+@@ -30,15 +30,6 @@ static const struct led_type_map led_type_map[] = {
  };
  
-+static void lock_led_reg_action(void *data)
-+{
-+	struct nic78bx_led_data *led_data = (struct nic78bx_led_data *)data;
-+
-+	/* Lock LED register */
-+	outb(NIC78BX_LOCK_VALUE,
-+	     led_data->io_base + NIC78BX_LOCK_REG_OFFSET);
-+}
-+
- static int nic78bx_probe(struct platform_device *pdev)
+ struct powernv_led_common {
+-	/*
+-	 * By default unload path resets all the LEDs. But on PowerNV
+-	 * platform we want to retain LED state across reboot as these
+-	 * are controlled by firmware. Also service processor can modify
+-	 * the LEDs independent of OS. Hence avoid resetting LEDs in
+-	 * unload path.
+-	 */
+-	bool		led_disabled;
+-
+ 	/* Max supported LED type */
+ 	__be64		max_led_type;
+ 
+@@ -178,10 +169,6 @@ static int powernv_brightness_set(struct led_classdev *led_cdev,
+ 	struct powernv_led_common *powernv_led_common = powernv_led->common;
+ 	int rc;
+ 
+-	/* Do not modify LED in unload path */
+-	if (powernv_led_common->led_disabled)
+-		return 0;
+-
+ 	mutex_lock(&powernv_led_common->lock);
+ 	rc = powernv_led_set(powernv_led, value);
+ 	mutex_unlock(&powernv_led_common->lock);
+@@ -225,6 +212,14 @@ static int powernv_led_create(struct device *dev,
+ 
+ 	powernv_led->cdev.brightness_set_blocking = powernv_brightness_set;
+ 	powernv_led->cdev.brightness_get = powernv_brightness_get;
++	/*
++	 * By default unload path resets all the LEDs. But on PowerNV
++	 * platform we want to retain LED state across reboot as these
++	 * are controlled by firmware. Also service processor can modify
++	 * the LEDs independent of OS. Hence avoid resetting LEDs in
++	 * unload path.
++	 */
++	powernv_led->cdev.flags = LED_RETAIN_AT_SHUTDOWN;
+ 	powernv_led->cdev.brightness = LED_OFF;
+ 	powernv_led->cdev.max_brightness = LED_FULL;
+ 
+@@ -313,9 +308,7 @@ static int powernv_led_remove(struct platform_device *pdev)
  {
- 	struct device *dev = &pdev->dev;
-@@ -152,6 +161,10 @@ static int nic78bx_probe(struct platform_device *pdev)
- 	led_data->io_base = io_rc->start;
- 	spin_lock_init(&led_data->lock);
+ 	struct powernv_led_common *powernv_led_common;
  
-+	ret = devm_add_action(dev, lock_led_reg_action, led_data);
-+	if (ret)
-+		return ret;
-+
- 	for (i = 0; i < ARRAY_SIZE(nic78bx_leds); i++) {
- 		nic78bx_leds[i].data = led_data;
+-	/* Disable LED operation */
+ 	powernv_led_common = platform_get_drvdata(pdev);
+-	powernv_led_common->led_disabled = true;
  
-@@ -167,17 +180,6 @@ static int nic78bx_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int nic78bx_remove(struct platform_device *pdev)
--{
--	struct nic78bx_led_data *led_data = platform_get_drvdata(pdev);
--
--	/* Lock LED register */
--	outb(NIC78BX_LOCK_VALUE,
--	     led_data->io_base + NIC78BX_LOCK_REG_OFFSET);
--
--	return 0;
--}
--
- static const struct acpi_device_id led_device_ids[] = {
- 	{"NIC78B3", 0},
- 	{"", 0},
-@@ -186,7 +188,6 @@ MODULE_DEVICE_TABLE(acpi, led_device_ids);
- 
- static struct platform_driver led_driver = {
- 	.probe = nic78bx_probe,
--	.remove = nic78bx_remove,
- 	.driver = {
- 		.name = KBUILD_MODNAME,
- 		.acpi_match_table = ACPI_PTR(led_device_ids),
+ 	/* Destroy lock */
+ 	mutex_destroy(&powernv_led_common->lock);
 -- 
 2.25.1
 
