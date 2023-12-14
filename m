@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90823C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62857C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:38:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=N3qm0OX4;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=lsJ1+DAj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrfgR6qXmz3dKb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:37:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrfhL6SVvz3dTR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:38:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=N3qm0OX4;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=lsJ1+DAj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffR28xMz3cTL
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffR2KSCz3cX1
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 04:36:28 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 4C0C212001B;
-	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 4C0C212001B
+	by mx1.sberdevices.ru (Postfix) with ESMTP id C789912001A;
+	Thu, 14 Dec 2023 20:36:24 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru C789912001A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1702575385;
-	bh=2AuAiO3OInmf7JfFcpOZ0isTbjfNOkeR9WOJsIXMUT4=;
+	s=mail; t=1702575384;
+	bh=iVWYFD6b0apij0HQWfsa8gAqaTMVMRAzNodGO05e/bE=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=N3qm0OX4jYf+qO+Up6Xf2I5g/M1zd2Colz3sB7rLYfos4v0EVovY2chsoiL+6683H
-	 aF4KszR1nUgXCqyRmO/bwV/+SFNnt8KjB3LGeWk7xfaBf64H/Lhf/HLItiKPqPIcbt
-	 pR4k2v6bGfPMuCXZCibc8tC7YutZ8i6ztxPHixzA9LBxvwxQvHIYrcsu/HvXLu2ulv
-	 wCAozndBC2ocvH/dr/fwHq1e8N63sU9sxuNUCc6qZhDuOwSYSvXA3DT9t+WEZjO8dQ
-	 I/TFtyeHs5B+Cp6WdQK+7z9QBhqLoWnIJDvUo8TXsTWERCTBBrM82Z0VOD8YGRv/Yk
-	 HTCVSWSr/K14Q==
+	b=lsJ1+DAjunouTieLbR0DMDE+qCUpL/VIvCKfDxmTxqgWwou1vJgPy5TEMeDUyMY17
+	 rijdruXZjHnokHnmFWKFPBzB5LV7P9oCurhzZ60Nw+yqqWZ9C3tHRZa3LwDAEph44k
+	 NY66cZDjQ9h5WfXg5HKOC49axRfnSvsxqWOHfx0Qe1f8r4KR7md8DNONqyH0Wpo586
+	 kdife/rVHy03q5wePcq0d2cJW9uhDVv4BTI5LBVJqOyTt3kHl5W0FJu0urgWbnS4AG
+	 Bbx+vxkXBg3cxz3LUaQrntRGI2zqyHxqFJxvqJCXm9pJsWU1qVfjr9owIxDGketVPZ
+	 bVNnhzOsyoIlg==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
+	Thu, 14 Dec 2023 20:36:24 +0300 (MSK)
 Received: from localhost.localdomain (100.64.160.123) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
@@ -51,9 +51,9 @@ To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
 	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
 	<nikitos.tr@gmail.com>
-Subject: [PATCH v4 04/10] leds: aw200xx: use devm API to cleanup module's resources
-Date: Thu, 14 Dec 2023 20:36:08 +0300
-Message-ID: <20231214173614.2820929-5-gnstark@salutedevices.com>
+Subject: [PATCH v4 02/10] locking: introduce devm_mutex_init
+Date: Thu, 14 Dec 2023 20:36:06 +0300
+Message-ID: <20231214173614.2820929-3-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20231214173614.2820929-1-gnstark@salutedevices.com>
 References: <20231214173614.2820929-1-gnstark@salutedevices.com>
@@ -94,100 +94,106 @@ Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In this driver LEDs are registered using devm_led_classdev_register()
-so they are automatically unregistered after module's remove() is done.
-led_classdev_unregister() calls module's led_set_brightness() to turn off
-the LEDs and that callback uses resources which were destroyed already
-in module's remove() so use devm API instead of remove().
+Using of devm API leads to a certain order of releasing resources.
+So all dependent resources which are not devm-wrapped should be deleted
+with respect to devm-release order. Mutex is one of such objects that
+often is bound to other resources and has no own devm wrapping.
+Since mutex_destroy() actually does nothing in non-debug builds
+frequently calling mutex_destroy() is just ignored which is safe for now
+but wrong formally and can lead to a problem if mutex_destroy() will be
+extended so introduce devm_mutex_init()
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- drivers/leds/leds-aw200xx.c | 33 ++++++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 11 deletions(-)
+ include/linux/mutex.h        | 23 +++++++++++++++++++++++
+ kernel/locking/mutex-debug.c | 22 ++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
 
-diff --git a/drivers/leds/leds-aw200xx.c b/drivers/leds/leds-aw200xx.c
-index 1d3943f86f7f..eed1e65c1c0e 100644
---- a/drivers/leds/leds-aw200xx.c
-+++ b/drivers/leds/leds-aw200xx.c
-@@ -10,6 +10,7 @@
- #include <linux/bitfield.h>
- #include <linux/bits.h>
- #include <linux/container_of.h>
-+#include <linux/devm-helpers.h>
- #include <linux/gpio/consumer.h>
- #include <linux/i2c.h>
- #include <linux/leds.h>
-@@ -530,6 +531,16 @@ static const struct regmap_config aw200xx_regmap_config = {
- 	.disable_locking = true,
- };
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index a33aa9eb9fc3..ebd03ff1ef66 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -21,6 +21,8 @@
+ #include <linux/debug_locks.h>
+ #include <linux/cleanup.h>
  
-+static void aw200xx_chip_reset_action(void *data)
++struct device;
++
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ # define __DEP_MAP_MUTEX_INITIALIZER(lockname)			\
+ 		, .dep_map = {					\
+@@ -127,6 +129,20 @@ extern void __mutex_init(struct mutex *lock, const char *name,
+  */
+ extern bool mutex_is_locked(struct mutex *lock);
+ 
++#ifdef CONFIG_DEBUG_MUTEXES
++
++int devm_mutex_init(struct device *dev, struct mutex *lock);
++
++#else
++
++static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
 +{
-+	aw200xx_chip_reset(data);
++	mutex_init(lock);
++	return 0;
 +}
 +
-+static void aw200xx_disable_action(void *data)
++#endif
++
+ #else /* !CONFIG_PREEMPT_RT */
+ /*
+  * Preempt-RT variant based on rtmutexes.
+@@ -169,6 +185,13 @@ do {							\
+ 							\
+ 	__mutex_init((mutex), #mutex, &__key);		\
+ } while (0)
++
++static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
 +{
-+	aw200xx_disable(data);
++	mutex_init(lock);
++	return 0;
 +}
 +
- static int aw200xx_probe(struct i2c_client *client)
- {
- 	const struct aw200xx_chipdef *cdef;
-@@ -568,11 +579,17 @@ static int aw200xx_probe(struct i2c_client *client)
+ #endif /* CONFIG_PREEMPT_RT */
  
- 	aw200xx_enable(chip);
+ /*
+diff --git a/kernel/locking/mutex-debug.c b/kernel/locking/mutex-debug.c
+index bc8abb8549d2..c9efab1a8026 100644
+--- a/kernel/locking/mutex-debug.c
++++ b/kernel/locking/mutex-debug.c
+@@ -19,6 +19,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/interrupt.h>
+ #include <linux/debug_locks.h>
++#include <linux/device.h>
  
-+	ret = devm_add_action(&client->dev, aw200xx_disable_action, chip);
-+	if (ret)
-+		return ret;
-+
- 	ret = aw200xx_chip_check(chip);
- 	if (ret)
- 		return ret;
+ #include "mutex.h"
  
--	mutex_init(&chip->mutex);
-+	ret = devm_mutex_init(&client->dev, &chip->mutex);
-+	if (ret)
-+		return ret;
- 
- 	/* Need a lock now since after call aw200xx_probe_fw, sysfs nodes created */
- 	mutex_lock(&chip->mutex);
-@@ -581,6 +598,10 @@ static int aw200xx_probe(struct i2c_client *client)
- 	if (ret)
- 		goto out_unlock;
- 
-+	ret = devm_add_action(&client->dev, aw200xx_chip_reset_action, chip);
-+	if (ret)
-+		goto out_unlock;
-+
- 	ret = aw200xx_probe_fw(&client->dev, chip);
- 	if (ret)
- 		goto out_unlock;
-@@ -595,15 +616,6 @@ static int aw200xx_probe(struct i2c_client *client)
- 	return ret;
+@@ -104,3 +105,24 @@ void mutex_destroy(struct mutex *lock)
  }
  
--static void aw200xx_remove(struct i2c_client *client)
--{
--	struct aw200xx *chip = i2c_get_clientdata(client);
--
--	aw200xx_chip_reset(chip);
--	aw200xx_disable(chip);
--	mutex_destroy(&chip->mutex);
--}
--
- static const struct aw200xx_chipdef aw20036_cdef = {
- 	.channels = 36,
- 	.display_size_rows_max = 3,
-@@ -652,7 +664,6 @@ static struct i2c_driver aw200xx_driver = {
- 		.of_match_table = aw200xx_match_table,
- 	},
- 	.probe_new = aw200xx_probe,
--	.remove = aw200xx_remove,
- 	.id_table = aw200xx_id,
- };
- module_i2c_driver(aw200xx_driver);
+ EXPORT_SYMBOL_GPL(mutex_destroy);
++
++static void devm_mutex_release(void *res)
++{
++	mutex_destroy(res);
++}
++
++/**
++ * devm_mutex_init - Resource-managed mutex initialization
++ * @dev:	Device which lifetime mutex is bound to
++ * @lock:	Pointer to a mutex
++ *
++ * Initialize mutex which is automatically destroyed when the driver is detached.
++ *
++ * Returns: 0 on success or a negative error code on failure.
++ */
++int devm_mutex_init(struct device *dev, struct mutex *lock)
++{
++	mutex_init(lock);
++	return devm_add_action_or_reset(dev, devm_mutex_release, lock);
++}
++EXPORT_SYMBOL_GPL(devm_mutex_init);
 -- 
 2.25.1
 
