@@ -4,81 +4,131 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7D23C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 08:35:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F4F1C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 08:38:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=of1Tn4MR;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=Y7SW8rSz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrQf839Vjz3dW4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 19:35:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrQjH5fBqz3dVH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 19:38:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=of1Tn4MR;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=Y7SW8rSz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
-Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::605; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on20605.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e19::605])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrQWn3fvxz3cBW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 19:29:54 +1100 (AEDT)
-Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 3922312004C;
-	Thu, 14 Dec 2023 11:29:49 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 3922312004C
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1702542589;
-	bh=k3WMJ0GNwuGRczuP2LxdxutooPucV6JPLeqyGQDEPIA=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=of1Tn4MRm5JWSFtRnnpDpM398sl1bI3loVSFhziq0an1Mqfcp58dJ8NWZ3hV9x8TG
-	 ttbTHk6KPFMrlpdvRaSJGr9Esy179EGMKnpANrgkKDqn57Cpt0YSowxKnapmgy3qFN
-	 5kXd5YF12alRwLC8xE7auXPFz1I+uEEsqt8x3Tk/pRevSHfhVr8EJyoMeeZIKwpd0D
-	 R7+EuFWggZUxYrUC1GszOPHbdCq53M5alfHXiyKCu9Rag/osUYHalxhY5nVIk5AhPb
-	 CShMmbVYiUzNkB4NNyVu9/i2tkoG8VeCzsvshqWp9bmL0Aj2Up13qUEhHGYTDmouAg
-	 PzrmOJzcC6yCQ==
-Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 14 Dec 2023 11:29:49 +0300 (MSK)
-Received: from localhost.localdomain (100.64.160.123) by
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 14 Dec 2023 11:29:48 +0300
-From: George Stark <gnstark@salutedevices.com>
-To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
-	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<christophe.leroy@csgroup.eu>, <hdegoede@redhat.com>,
-	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
-	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
-	<nikitos.tr@gmail.com>
-Subject: [PATCH v3 08/11] leds: nic78bx: use devm API to cleanup module's resources
-Date: Thu, 14 Dec 2023 11:29:37 +0300
-Message-ID: <20231214082940.2718303-4-gnstark@salutedevices.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20231214082940.2718303-1-gnstark@salutedevices.com>
-References: <20231214082940.2718303-1-gnstark@salutedevices.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrQhL3WfLz2xmC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 19:37:21 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Qc6Q3tGD6kLEorqOBALGc3APMhsiouaEcyZjlYvByKLpGJ/xWyavUL/eEfLRKG3BvDB9EJgTxagmFE30mrGb2J+rgZRUAu7nmgx5zX62lrU5fkulXMKYHHFbmJjfTxHi0sb75EarIp9PGrJ67v2zBrT91JWxHBUkgaBANw1xkW+SW9zuqjlb+FkDwNm2Ctr+2lBJVhuPe+LYlAgnghhZlEQYzkCOg2MYJ4dkbkqR0M8AGocToR1TKrINt4B/Zcq4mNKUJ8PykFtxNhHTW/tRwh+LiWqByYs5CwXXOWrvNSXy5isAND2haJWwUMIjUxwmntqDBLMLu4+uAOSWx/MbbA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=NS3d8j/q2pm5rCgu8r63d9ByEtjQ/QwPpQkJ7ZWOuho=;
+ b=TmgiMKLaYjuppI7mIpslvlJ/GtATYcfmKWhtsNTCHPSSyM9pldTudB4+KqKgnNqYGyciWHeHgpEfRiv+JmGbDCU8KF5Ljh6bykb4nM0vpDutVqEINgCRrB4wrvdnG/DGflG0wR4mK+QVPn4RjAUppATJCOKsHtstFF9tMMGxVTFY+uHnJIu/W289kPLc5saAzfiifpW9xvdjRyIxbhu8ZjD+IgvEGZX1FXsXJjJsU3iMBv5NZmHFXWgwGPeVCxNI6UMlwhoLeaZ5Hh5SHV98nv2276PH/NCdxM0zPKxuyIdgpsZiOEYjAHfKWQQzFtfVpawJmeQOQm4KR1AOK3CbIQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=NS3d8j/q2pm5rCgu8r63d9ByEtjQ/QwPpQkJ7ZWOuho=;
+ b=Y7SW8rSzrYWbER4yddisqnfBz0UCG9W/GPUSrAjPhXTF94rBjTVUfWsHoGws/g6S1C83QItraDxLAQcqpPrajoMMC0G/1MyV097wHvxclFj3Vj1B90Em4vTBPsRlS4CyFeWJ9YElOsGk6Wpq2deeekORWnYoeMoTQGTkKpT9Ap7zAF1MmVhAYKwMO06wpTNgmLstDgVfY2RYjiuBkr0d4EupqzCoa5yMOogj7668zQqyFu+dIn/JVfDFQTfvZ6GD+bq3YpfAwyTjv0D/ZCcuWo2TenT2K1yjcatmynAmax4pl9pR0E8JybKQrEyfGTfwt+twEycuKQf0cjqDRVXSUQ==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by MR1P264MB2370.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:33::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7091.26; Thu, 14 Dec
+ 2023 08:36:57 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::f788:32b4:1c5e:f264]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::f788:32b4:1c5e:f264%7]) with mapi id 15.20.7091.028; Thu, 14 Dec 2023
+ 08:36:57 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Nicholas Miehlbradt <nicholas@linux.ibm.com>, "glider@google.com"
+	<glider@google.com>, "elver@google.com" <elver@google.com>,
+	"dvyukov@google.com" <dvyukov@google.com>, "akpm@linux-foundation.org"
+	<akpm@linux-foundation.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+	"npiggin@gmail.com" <npiggin@gmail.com>
+Subject: Re: [PATCH 02/13] hvc: Fix use of uninitialized array in
+ udbg_hvc_putc
+Thread-Topic: [PATCH 02/13] hvc: Fix use of uninitialized array in
+ udbg_hvc_putc
+Thread-Index: AQHaLlJJ+Qmq98QSSk65tBcfvtQ1DrCodL8A
+Date: Thu, 14 Dec 2023 08:36:57 +0000
+Message-ID: <aab89390-264f-49bd-8e6e-b69de7f8c526@csgroup.eu>
+References: <20231214055539.9420-1-nicholas@linux.ibm.com>
+ <20231214055539.9420-3-nicholas@linux.ibm.com>
+In-Reply-To: <20231214055539.9420-3-nicholas@linux.ibm.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla Thunderbird
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|MR1P264MB2370:EE_
+x-ms-office365-filtering-correlation-id: 789fd0ea-574c-4686-f86d-08dbfc7fd5a4
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  4XAnzuvBVDh+P85ZBeUGN7YAx3PO4U7gkdKhAofs0TPQGuMXQEfgeJnSPkyn8bo9+nolZP3UNJHBDA0X4ylgXXpLZKkIx16KyBxPcwRfkW4fS3pVLgKuI4twXXHWtWi3LW8J9yksOKBDCP23JNNp/Le58948tI+OkRu2IdyYYk2pjXmzAMZz3nThlrhoayIkRN51Swbz0Pih6b/1GMt1PkZYcAnP/V7IeQcUfYZakshb8NxSR6PzpRTQEfkPAm9wYaukSozYQvaKLfWjlD16b32+MP11kh9iVsmsJta6JJ+d4QiHFywrqvpfghNDSE4DAVyPS3sgcgXdtBSNK6V1B2v3N0sSirVgpNHhGU89XUT0R3FAgaKR50I+6f4YD1l0gZ7GPiClCwVhi35gat1mFji2cKuxgub/aDlyZwcNqgH/2bKh/zM5pk8Z9KweiVDQ8vOiDttH6bji4yju2990BRaz8aTnQYaFrv/pQoTe2hX4K3ZD6i/UXKuVbiTySz6VPkxDYhlw9q9rFBIUPNtbleMfvxpytlkgmrR7KJLDsKYYKJpKcCTLUNdMHwdiF0wOgWnXrq/ruoHpbBgUJk56grah+iNlwDV2swEeqR7eR/f/BB9QObgCTUsRXjTW9LjkWfY+SWqq5kPri8oIV7mWYEGdTU8q0ueUIqwBzNE+F4tNrJlyfUa0w9gZlnRZpV/7
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(396003)(366004)(346002)(39850400004)(136003)(376002)(230922051799003)(186009)(64100799003)(1800799012)(451199024)(31686004)(66574015)(26005)(2616005)(6506007)(122000001)(86362001)(38100700002)(31696002)(38070700009)(36756003)(83380400001)(6512007)(76116006)(5660300002)(7416002)(44832011)(71200400001)(91956017)(8676002)(6486002)(66556008)(110136005)(64756008)(66476007)(316002)(66446008)(54906003)(66946007)(41300700001)(2906002)(4744005)(4326008)(8936002)(478600001)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?bVpnalpXZWJhR2RmZER5Syt2T3p3V05wVGxtTk55NGkrU0M3WUxqcTJVZHNy?=
+ =?utf-8?B?eWhvbFRwTVJ5bHNjRDYxOEQxZS9ZNmxPUE83Y0dnRzl0WkFvWE9FTlNEMTBv?=
+ =?utf-8?B?WGNaSXNHaHd1QnpuWkN5ZEtRQ3N5M3RtTzArdVJVTzNQYVN0MUJvbjdDODNj?=
+ =?utf-8?B?dXZ3ZDlSOVhCa2tPeUpBWFg5WCs2VVh4QVRzS3NpLzNURkJ3V1I2ODNYcFBt?=
+ =?utf-8?B?aG1tNHRhRDJUWjNiZWtEWHFncVlMTjdhOVRibCs1NVBHOVQ4N1VnZXdHQnlD?=
+ =?utf-8?B?TVdqK1U2WXdhSDJIMmhLSURSYnR0N2Eybk9rN3p5MlFNdm81NzdqYkZ1Q0xY?=
+ =?utf-8?B?T0wxdlpmUzgyeThIYVpTamRWR0xPKy9VZFVmdjV2MEg0VDVIbFZZaG04L2RO?=
+ =?utf-8?B?T1NJMnVuRnJEK1lFeitBckFiWmhuWmJwUFo2bHVzM0czZUM1NUhYSWEzM1Bn?=
+ =?utf-8?B?TnFrbEc4ZTU4L21wU21kZ0FuY0s1dEpJcHhqcEFNOUdjNjljNHpOeGJEMXFR?=
+ =?utf-8?B?T3RJUkpseFJzWktwK2U3NU41TWkveTdtbEljMVB5RklLVFBoQW0rVUJqaFhw?=
+ =?utf-8?B?OGpxM3FpYXd2R3RwTjY3ZloxYmNFOEJYenVJaGlQYml6ZmZyTVNwelFhRUc3?=
+ =?utf-8?B?K2FkUlFNOGZXT3ViZUdPbFYrZ2FxMjREZjdlOTk2VFpCNWRhWTMydG5YM3d6?=
+ =?utf-8?B?V0d6OVJFRmdoSXYvdnRYL2M5WFZSa0hkNG9GVFRMNGVMS0haSWtuMXhLSURp?=
+ =?utf-8?B?SzhvMnJYSXNCZ0dFYUpBSXNOR0lNUzIwR0ZYdXZqQ2NRMlNqZmU5VWNtaWpu?=
+ =?utf-8?B?LzJnRnBMa1N5YW5ZWjVmQTIvT1dneEtEa0dKVjlnay9TQUZxTXZsTENrOS9t?=
+ =?utf-8?B?TENaRnl1R1RtQVEwN25lR1JjMldBK0pYNVhEWDczNk1Qc3ZMNDVIb090UmJX?=
+ =?utf-8?B?am5MN1BteGR5OHNrV1E1cG9GcjN4TXFVU3NvT3VabjZQa1UrOWFHOWs5aVBv?=
+ =?utf-8?B?RTEzalNOYzZ4YWZjSE9Sb0hDdmlzbU94bmNvcS9ESzJlSkFLUEVIMkVuK0lM?=
+ =?utf-8?B?R0svOEQrN1ZoOHZtVDZqUVYrOEdhMnlvMzBMRTV4Y05tU3h3OFJXT0ZyWjU5?=
+ =?utf-8?B?aFlmd0h1T0xnY2luNDZvdEQxMzViZUlyWXZzWFFvQmljRm5WVjlMdEFpeTIr?=
+ =?utf-8?B?RjhKVnZNeldVVW5uT0Y2eWFmV29LaG1ucU13NmRDWi9HdEVhY2pDdU1leWYz?=
+ =?utf-8?B?ejRXYjJwQWhlNE11ZUlmSG9hVkk5eExCY1JQQWh1ZklNdmo4RDhsbkMzbXdT?=
+ =?utf-8?B?NjBIRUJ6amtwd0dDTHpWYnZWMldaeWRYWkZ5T2RKdXcxbTk1Mm80VEtmQjBL?=
+ =?utf-8?B?ZzBqcGx1RDNSN0VqVml3eVlFYUsraHBLUmJBUFozWGhnQ2x1LzEvc2IwK0dE?=
+ =?utf-8?B?VTM1MU1pc3VNbEcvWVBYb2pLY1R1ZC9QWjVrRXM3czJYQ1pkai9jQnU2c0R4?=
+ =?utf-8?B?R1FtWGwrMHRIckV3VFRnUkxFY1RqbFJGaW9OWjBYZHdmS0ZqTVB3QnFuVTlG?=
+ =?utf-8?B?OFQ4eENlVkJIYVBMQ3dvYThuaTdLdmN0SGF1dXNpVllhaFpFUUR1ZGkwQ0ps?=
+ =?utf-8?B?bEpIOEdXbm8xRTF6U00zSFRwMFVJVFRkMDR4NW9DV3lsUmlNUUxOTWVpU251?=
+ =?utf-8?B?QlVwSWhDaEFYbEJtOUFxNjZEM2NWRGZlazdaUnBkb201Z0tkY04vdzlDNVRZ?=
+ =?utf-8?B?b1dHa3IrRGpnVW1jeUJndTNxSWs3U3dSTmZsTjgrWjVhTnFUbmxrbWFyWjFC?=
+ =?utf-8?B?N2pMNGxiaGZGSmZlR090L3g3MUpWTWRtRm9lektYbDFPSm1qempVS0RBVGZK?=
+ =?utf-8?B?K1RDWTR3cWZzZHU2emUxNUdZUmZpOExvWkhpTEJ0bUZWNXU1a20renh4MXlI?=
+ =?utf-8?B?OFovbXlTaXI1TVBWc3dRTElSaU9kT1B2TERQUC9BdVZvdS9LQ0t4WjFreWxv?=
+ =?utf-8?B?NlVscmVyZ1IyYVVOOC9weEZGVFdnTDFHY2Y0NzZleVRNc3MvanlBYTE1ZDEw?=
+ =?utf-8?B?L2VOd05lcUZRZTFIWFV5Yk9SQWJnNFhaV29HZEE3WHF0cGdkd3VDRkNURWl0?=
+ =?utf-8?B?b1poR01IU1ZHbzBxWFY3R1JmVGZQRlBVSWVkZEcxR1JIT1Bnald1akdFOFNH?=
+ =?utf-8?B?cnc9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <729BB947E358D8408A7216C0B2179CE2@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [100.64.160.123]
-X-ClientProxiedBy: p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) To
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
-X-KSMG-Rule-ID: 10
-X-KSMG-Message-Action: clean
-X-KSMG-AntiSpam-Lua-Profiles: 182104 [Dec 14 2023]
-X-KSMG-AntiSpam-Version: 6.1.0.3
-X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 7 0.3.7 6d6bf5bd8eea7373134f756a2fd73e9456bb7d1a, {Tracking_from_domain_doesnt_match_to}, 127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;smtp.sberdevices.ru:5.0.1,7.1.1;salutedevices.com:7.1.1;100.64.160.123:7.1.2, FromAlignment: s, ApMailHostAddress: 100.64.160.123
-X-MS-Exchange-Organization-SCL: -1
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean
-X-KSMG-LinksScanning: Clean
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/12/14 06:13:00 #22683038
-X-KSMG-AntiVirus-Status: Clean, skipped
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 789fd0ea-574c-4686-f86d-08dbfc7fd5a4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Dec 2023 08:36:57.8188
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 7+KqI5d7rnwmjPdLJAJwdm+fFfBb2XnPZyHM6mrmpdZv73hturKPjsFe6xwjx77942J3vXxCpZhCBlwVD1vs5e2H6AqXiAkhAbetJtBLyMo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MR1P264MB2370
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,78 +140,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, George Stark <gnstark@salutedevices.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "iii@linux.ibm.com" <iii@linux.ibm.com>, "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In this driver LEDs are registered using devm_led_classdev_register()
-so they are automatically unregistered after module's remove() is done.
-led_classdev_unregister() calls module's led_set_brightness() to turn off
-the LEDs and that callback uses resources which were destroyed already
-in module's remove() so use devm API instead of remove().
-
-Signed-off-by: George Stark <gnstark@salutedevices.com>
----
- drivers/leds/leds-nic78bx.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/leds/leds-nic78bx.c b/drivers/leds/leds-nic78bx.c
-index f196f52eec1e..f3049fa14f04 100644
---- a/drivers/leds/leds-nic78bx.c
-+++ b/drivers/leds/leds-nic78bx.c
-@@ -118,6 +118,15 @@ static struct nic78bx_led nic78bx_leds[] = {
- 	}
- };
- 
-+static void lock_led_reg_action(void *data)
-+{
-+	struct nic78bx_led_data *led_data = (struct nic78bx_led_data *)data;
-+
-+	/* Lock LED register */
-+	outb(NIC78BX_LOCK_VALUE,
-+	     led_data->io_base + NIC78BX_LOCK_REG_OFFSET);
-+}
-+
- static int nic78bx_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -152,6 +161,10 @@ static int nic78bx_probe(struct platform_device *pdev)
- 	led_data->io_base = io_rc->start;
- 	spin_lock_init(&led_data->lock);
- 
-+	ret = devm_add_action(dev, lock_led_reg_action, led_data);
-+	if (ret)
-+		return ret;
-+
- 	for (i = 0; i < ARRAY_SIZE(nic78bx_leds); i++) {
- 		nic78bx_leds[i].data = led_data;
- 
-@@ -167,17 +180,6 @@ static int nic78bx_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int nic78bx_remove(struct platform_device *pdev)
--{
--	struct nic78bx_led_data *led_data = platform_get_drvdata(pdev);
--
--	/* Lock LED register */
--	outb(NIC78BX_LOCK_VALUE,
--	     led_data->io_base + NIC78BX_LOCK_REG_OFFSET);
--
--	return 0;
--}
--
- static const struct acpi_device_id led_device_ids[] = {
- 	{"NIC78B3", 0},
- 	{"", 0},
-@@ -186,7 +188,6 @@ MODULE_DEVICE_TABLE(acpi, led_device_ids);
- 
- static struct platform_driver led_driver = {
- 	.probe = nic78bx_probe,
--	.remove = nic78bx_remove,
- 	.driver = {
- 		.name = KBUILD_MODNAME,
- 		.acpi_match_table = ACPI_PTR(led_device_ids),
--- 
-2.25.1
-
+DQoNCkxlIDE0LzEyLzIwMjMgw6AgMDY6NTUsIE5pY2hvbGFzIE1pZWhsYnJhZHQgYSDDqWNyaXTC
+oDoNCj4gQWxsIGVsZW1lbnRzIG9mIGJvdW5jZV9idWZmZXIgYXJlIGV2ZW50dWFsbHkgcmVhZCBh
+bmQgcGFzc2VkIHRvIHRoZQ0KPiBoeXBlcnZpc29yIHNvIGl0IHNob3VsZCBwcm9iYWJseSBiZSBm
+dWxseSBpbml0aWFsaXplZC4NCg0Kc2hvdWxkIG9yIHNoYWxsID8NCg0KPiANCj4gU2lnbmVkLW9m
+Zi1ieTogTmljaG9sYXMgTWllaGxicmFkdCA8bmljaG9sYXNAbGludXguaWJtLmNvbT4NCg0KU2hv
+dWxkIGJlIGEgRml4ZWQ6IHRhZyA/DQoNCj4gLS0tDQo+ICAgZHJpdmVycy90dHkvaHZjL2h2Y192
+aW8uYyB8IDIgKy0NCj4gICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRp
+b24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3R0eS9odmMvaHZjX3Zpby5jIGIvZHJp
+dmVycy90dHkvaHZjL2h2Y192aW8uYw0KPiBpbmRleCA3MzZiMjMwZjVlYzAuLjFlODhiZmNkZGUy
+MCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy90dHkvaHZjL2h2Y192aW8uYw0KPiArKysgYi9kcml2
+ZXJzL3R0eS9odmMvaHZjX3Zpby5jDQo+IEBAIC0yMjcsNyArMjI3LDcgQEAgc3RhdGljIGNvbnN0
+IHN0cnVjdCBodl9vcHMgaHZ0ZXJtX2h2c2lfb3BzID0gew0KPiAgIHN0YXRpYyB2b2lkIHVkYmdf
+aHZjX3B1dGMoY2hhciBjKQ0KPiAgIHsNCj4gICAJaW50IGNvdW50ID0gLTE7DQo+IC0JdW5zaWdu
+ZWQgY2hhciBib3VuY2VfYnVmZmVyWzE2XTsNCj4gKwl1bnNpZ25lZCBjaGFyIGJvdW5jZV9idWZm
+ZXJbMTZdID0geyAwIH07DQoNCldoeSAxNiB3aGlsZSB3ZSBoYXZlIGEgY291bnQgb2YgMSBpbiB0
+aGUgY2FsbCB0byBodnRlcm1fcmF3X3B1dF9jaGFycygpID8NCg0KPiAgIA0KPiAgIAlpZiAoIWh2
+dGVybV9wcml2c1swXSkNCj4gICAJCXJldHVybjsNCg==
