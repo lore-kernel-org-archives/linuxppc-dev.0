@@ -4,77 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67F11C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 14:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90823C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:37:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eQNLmfLt;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=N3qm0OX4;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrZ9R65Gpz3dK3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 01:14:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrfgR6qXmz3dKb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:37:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eQNLmfLt;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=N3qm0OX4;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
+Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrZ8W0gmwz30fF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 01:13:47 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4SrZ8W06K9z4wby
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 01:13:47 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4SrZ8W02Lpz4x1p; Fri, 15 Dec 2023 01:13:47 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eQNLmfLt;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffR28xMz3cTL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 04:36:28 +1100 (AEDT)
+Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 4C0C212001B;
+	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 4C0C212001B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
+	s=mail; t=1702575385;
+	bh=2AuAiO3OInmf7JfFcpOZ0isTbjfNOkeR9WOJsIXMUT4=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
+	b=N3qm0OX4jYf+qO+Up6Xf2I5g/M1zd2Colz3sB7rLYfos4v0EVovY2chsoiL+6683H
+	 aF4KszR1nUgXCqyRmO/bwV/+SFNnt8KjB3LGeWk7xfaBf64H/Lhf/HLItiKPqPIcbt
+	 pR4k2v6bGfPMuCXZCibc8tC7YutZ8i6ztxPHixzA9LBxvwxQvHIYrcsu/HvXLu2ulv
+	 wCAozndBC2ocvH/dr/fwHq1e8N63sU9sxuNUCc6qZhDuOwSYSvXA3DT9t+WEZjO8dQ
+	 I/TFtyeHs5B+Cp6WdQK+7z9QBhqLoWnIJDvUo8TXsTWERCTBBrM82Z0VOD8YGRv/Yk
+	 HTCVSWSr/K14Q==
+Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4SrZ8V3sDtz4wby
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2023 01:13:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1702563221;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rWA4jrugxAphsdbeIh/acD095fJ5/82CDD3Wyi7fJAY=;
-	b=eQNLmfLt7eR2ulX+ZMVxLzDKJB12X0FfnzG9FGoXhB0Gb+Q3Jee3aja4PR/dOxYJWz2Rc/
-	v0hUEfDlxigWAhgtVRhoVKZ0CqZMyLcvdyirnrdC8ZHXnCuIlr3AKEQEXczrSdJ0PsY8s+
-	bFwFL/r1YLdIAC0YWx+5CQXveLhqiUI=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-610-sQoJWAN1MZCF3dhHJHsgwg-1; Thu, 14 Dec 2023 09:13:39 -0500
-X-MC-Unique: sQoJWAN1MZCF3dhHJHsgwg-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1D51E86EB22;
-	Thu, 14 Dec 2023 14:13:37 +0000 (UTC)
-Received: from localhost (unknown [10.72.116.38])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id A46303C25;
-	Thu, 14 Dec 2023 14:13:35 +0000 (UTC)
-Date: Thu, 14 Dec 2023 22:13:33 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v14 2/6] crash: make CPU and Memory hotplug support
- reporting flexible
-Message-ID: <ZXsNjTT7Ax9blFIt@MiWiFi-R3L-srv>
-References: <20231211083056.340404-1-sourabhjain@linux.ibm.com>
- <20231211083056.340404-3-sourabhjain@linux.ibm.com>
+	by mx1.sberdevices.ru (Postfix) with ESMTPS;
+	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
+Received: from localhost.localdomain (100.64.160.123) by
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.40; Thu, 14 Dec 2023 20:36:24 +0300
+From: George Stark <gnstark@salutedevices.com>
+To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
+	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<christophe.leroy@csgroup.eu>, <hdegoede@redhat.com>,
+	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
+	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
+	<nikitos.tr@gmail.com>
+Subject: [PATCH v4 04/10] leds: aw200xx: use devm API to cleanup module's resources
+Date: Thu, 14 Dec 2023 20:36:08 +0300
+Message-ID: <20231214173614.2820929-5-gnstark@salutedevices.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20231214173614.2820929-1-gnstark@salutedevices.com>
+References: <20231214173614.2820929-1-gnstark@salutedevices.com>
 MIME-Version: 1.0
-In-Reply-To: <20231211083056.340404-3-sourabhjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.1
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [100.64.160.123]
+X-ClientProxiedBy: p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) To
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
+X-KSMG-Rule-ID: 10
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Lua-Profiles: 182125 [Dec 14 2023]
+X-KSMG-AntiSpam-Version: 6.1.0.3
+X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
+X-KSMG-AntiSpam-Rate: 0
+X-KSMG-AntiSpam-Status: not_detected
+X-KSMG-AntiSpam-Method: none
+X-KSMG-AntiSpam-Auth: dkim=none
+X-KSMG-AntiSpam-Info: LuaCore: 7 0.3.7 6d6bf5bd8eea7373134f756a2fd73e9456bb7d1a, {Tracking_from_domain_doesnt_match_to}, salutedevices.com:7.1.1;smtp.sberdevices.ru:5.0.1,7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;100.64.160.123:7.1.2;127.0.0.199:7.1.2, FromAlignment: s, ApMailHostAddress: 100.64.160.123
+X-MS-Exchange-Organization-SCL: -1
+X-KSMG-AntiSpam-Interceptor-Info: scan successful
+X-KSMG-AntiPhishing: Clean
+X-KSMG-LinksScanning: Clean
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/12/14 10:50:00 #22693095
+X-KSMG-AntiVirus-Status: Clean, skipped
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,217 +90,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org, Eric DeVolder <eric.devolder@oracle.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Valentin Schneider <vschneid@redhat.com>, x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Naveen N Rao <naveen@kernel.org>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, George Stark <gnstark@salutedevices.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/11/23 at 02:00pm, Sourabh Jain wrote:
-> Architectures' specific functions `arch_crash_hotplug_cpu_support()` and
-> `arch_crash_hotplug_memory_support()` advertise the kernel's capability
-> to update the kdump image on CPU and Memory hotplug events to userspace
-> via the sysfs interface. These architecture-specific functions need to
-> access various attributes of the `kexec_crash_image` object to determine
-> whether the kernel can update the kdump image and advertise this
-> information to userspace accordingly.
-> 
-> As the architecture-specific code is not exposed to the APIs required to
-> acquire the lock for accessing the `kexec_crash_image` object, it calls
-> a generic function, `crash_check_update_elfcorehdr()`, to determine
-> whether the kernel can update the kdump image or not.
-> 
-> The lack of access to the `kexec_crash_image` object in
-> architecture-specific code restricts architectures from performing
-> additional architecture-specific checks required to determine if the
-> kdump image is updatable or not. For instance, on PowerPC, the kernel
-> can update the kdump image only if both the elfcorehdr and FDT are
-> marked as updatable for the `kexec_load` system call.
-> 
-> So define two generic functions, `crash_hotplug_cpu_support()` and
-> `crash_hotplug_memory_support()`, which are called when userspace
-> attempts to read the crash CPU and Memory hotplug support via the sysfs
-> interface. These functions take the necessary locks needed to access the
-> `kexec_crash_image` object and then forward it to the
-> architecture-specific handler to do the rest.
-> 
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Cc: Akhil Raj <lf32.dev@gmail.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: Borislav Petkov (AMD) <bp@alien8.de>
-> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: David Hildenbrand <david@redhat.com>
-> Cc: Eric DeVolder <eric.devolder@oracle.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: Laurent Dufour <laurent.dufour@fr.ibm.com>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Mimi Zohar <zohar@linux.ibm.com>
-> Cc: Naveen N Rao <naveen@kernel.org>
-> Cc: Oscar Salvador <osalvador@suse.de>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Valentin Schneider <vschneid@redhat.com>
-> Cc: Vivek Goyal <vgoyal@redhat.com>
-> Cc: kexec@lists.infradead.org
-> Cc: x86@kernel.org
-> ---
->  arch/x86/include/asm/kexec.h |  8 ++++----
->  arch/x86/kernel/crash.c      | 20 +++++++++++++++-----
->  include/linux/kexec.h        | 13 +++++++------
->  kernel/crash_core.c          | 23 +++++++++++++++++------
->  4 files changed, 43 insertions(+), 21 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/kexec.h b/arch/x86/include/asm/kexec.h
-> index 9bb6607e864e..5c88d27b086d 100644
-> --- a/arch/x86/include/asm/kexec.h
-> +++ b/arch/x86/include/asm/kexec.h
-> @@ -212,13 +212,13 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg);
->  #define arch_crash_handle_hotplug_event arch_crash_handle_hotplug_event
->  
->  #ifdef CONFIG_HOTPLUG_CPU
-> -int arch_crash_hotplug_cpu_support(void);
-> -#define crash_hotplug_cpu_support arch_crash_hotplug_cpu_support
-> +int arch_crash_hotplug_cpu_support(struct kimage *image);
-> +#define arch_crash_hotplug_cpu_support arch_crash_hotplug_cpu_support
->  #endif
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> -int arch_crash_hotplug_memory_support(void);
-> -#define crash_hotplug_memory_support arch_crash_hotplug_memory_support
-> +int arch_crash_hotplug_memory_support(struct kimage *image);
-> +#define arch_crash_hotplug_memory_support arch_crash_hotplug_memory_support
->  #endif
->  
->  unsigned int arch_crash_get_elfcorehdr_size(void);
-> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-> index 0d7b2657beb6..ad5941665589 100644
-> --- a/arch/x86/kernel/crash.c
-> +++ b/arch/x86/kernel/crash.c
-> @@ -398,18 +398,28 @@ int crash_load_segments(struct kimage *image)
->  #undef pr_fmt
->  #define pr_fmt(fmt) "crash hp: " fmt
->  
-> -/* These functions provide the value for the sysfs crash_hotplug nodes */
-> +#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_MEMORY_HOTPLUG)
-> +static int crash_hotplug_support(struct kimage *image)
-> +{
-> +	if (image->file_mode)
-> +		return 1;
-> +
-> +	return image->update_elfcorehdr;
-> +}
-> +#endif
-> +
->  #ifdef CONFIG_HOTPLUG_CPU
-> -int arch_crash_hotplug_cpu_support(void)
-> +/* These functions provide the value for the sysfs crash_hotplug nodes */
-> +int arch_crash_hotplug_cpu_support(struct kimage *image)
->  {
-> -	return crash_check_update_elfcorehdr();
-> +	return crash_hotplug_support(image);
->  }
->  #endif
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> -int arch_crash_hotplug_memory_support(void)
-> +int arch_crash_hotplug_memory_support(struct kimage *image)
->  {
-> -	return crash_check_update_elfcorehdr();
-> +	return crash_hotplug_support(image);
->  }
->  #endif
->  
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index ee28c09a7fb0..0f6ea35879ee 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -486,16 +486,17 @@ static inline void arch_kexec_pre_free_pages(void *vaddr, unsigned int pages) {
->  static inline void arch_crash_handle_hotplug_event(struct kimage *image, void *arg) { }
->  #endif
->  
-> -int crash_check_update_elfcorehdr(void);
-> -
-> -#ifndef crash_hotplug_cpu_support
-> -static inline int crash_hotplug_cpu_support(void) { return 0; }
-> +#ifndef arch_crash_hotplug_cpu_support
-> +static inline int arch_crash_hotplug_cpu_support(struct kimage *image) { return 0; }
->  #endif
->  
-> -#ifndef crash_hotplug_memory_support
-> -static inline int crash_hotplug_memory_support(void) { return 0; }
-> +#ifndef arch_crash_hotplug_memory_support
-> +static inline int arch_crash_hotplug_memory_support(struct kimage *image) { return 0; }
->  #endif
->  
-> +extern int crash_hotplug_cpu_support(void);
-> +extern int crash_hotplug_memory_support(void);
-> +
->  #ifndef crash_get_elfcorehdr_size
->  static inline unsigned int crash_get_elfcorehdr_size(void) { return 0; }
->  #endif
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index b9190265fe52..b621f03c1104 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -892,12 +892,14 @@ DEFINE_MUTEX(__crash_hotplug_lock);
->  #define crash_hotplug_lock() mutex_lock(&__crash_hotplug_lock)
->  #define crash_hotplug_unlock() mutex_unlock(&__crash_hotplug_lock)
->  
-> +#define CPU_HOTPLUG	0
-> +#define MEM_HOTPLUG	1
->  /*
->   * This routine utilized when the crash_hotplug sysfs node is read.
->   * It reflects the kernel's ability/permission to update the crash
->   * elfcorehdr directly.
->   */
-> -int crash_check_update_elfcorehdr(void)
-> +static int crash_hotplug_support(int hotplug)
+In this driver LEDs are registered using devm_led_classdev_register()
+so they are automatically unregistered after module's remove() is done.
+led_classdev_unregister() calls module's led_set_brightness() to turn off
+the LEDs and that callback uses resources which were destroyed already
+in module's remove() so use devm API instead of remove().
 
-Is it possible that we rename this function to different name? e.g
-crash_hotplug_check_support() or other name. We may easily mixing it up
-with the one of ARCH version. personal opinion.
+Signed-off-by: George Stark <gnstark@salutedevices.com>
+---
+ drivers/leds/leds-aw200xx.c | 33 ++++++++++++++++++++++-----------
+ 1 file changed, 22 insertions(+), 11 deletions(-)
 
->  {
->  	int rc = 0;
->  
-> @@ -909,18 +911,27 @@ int crash_check_update_elfcorehdr(void)
->  		return 0;
->  	}
->  	if (kexec_crash_image) {
-> -		if (kexec_crash_image->file_mode)
-> -			rc = 1;
-> -		else
-> -			rc = kexec_crash_image->update_elfcorehdr;
-> +		if (hotplug == CPU_HOTPLUG)
-> +			rc = arch_crash_hotplug_cpu_support(kexec_crash_image);
-> +		else if (hotplug == MEM_HOTPLUG)
-> +			rc = arch_crash_hotplug_memory_support(kexec_crash_image);
->  	}
->  	/* Release lock now that update complete */
->  	kexec_unlock();
->  	crash_hotplug_unlock();
-> -
->  	return rc;
->  }
->  
-> +int crash_hotplug_cpu_support(void)
-> +{
-> +	return crash_hotplug_support(CPU_HOTPLUG);
-> +}
-> +
-> +int crash_hotplug_memory_support(void)
-> +{
-> +	return crash_hotplug_support(MEM_HOTPLUG);
-> +}
-> +
->  /*
->   * To accurately reflect hot un/plug changes of cpu and memory resources
->   * (including onling and offlining of those resources), the elfcorehdr
-> -- 
-> 2.41.0
-> 
+diff --git a/drivers/leds/leds-aw200xx.c b/drivers/leds/leds-aw200xx.c
+index 1d3943f86f7f..eed1e65c1c0e 100644
+--- a/drivers/leds/leds-aw200xx.c
++++ b/drivers/leds/leds-aw200xx.c
+@@ -10,6 +10,7 @@
+ #include <linux/bitfield.h>
+ #include <linux/bits.h>
+ #include <linux/container_of.h>
++#include <linux/devm-helpers.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/i2c.h>
+ #include <linux/leds.h>
+@@ -530,6 +531,16 @@ static const struct regmap_config aw200xx_regmap_config = {
+ 	.disable_locking = true,
+ };
+ 
++static void aw200xx_chip_reset_action(void *data)
++{
++	aw200xx_chip_reset(data);
++}
++
++static void aw200xx_disable_action(void *data)
++{
++	aw200xx_disable(data);
++}
++
+ static int aw200xx_probe(struct i2c_client *client)
+ {
+ 	const struct aw200xx_chipdef *cdef;
+@@ -568,11 +579,17 @@ static int aw200xx_probe(struct i2c_client *client)
+ 
+ 	aw200xx_enable(chip);
+ 
++	ret = devm_add_action(&client->dev, aw200xx_disable_action, chip);
++	if (ret)
++		return ret;
++
+ 	ret = aw200xx_chip_check(chip);
+ 	if (ret)
+ 		return ret;
+ 
+-	mutex_init(&chip->mutex);
++	ret = devm_mutex_init(&client->dev, &chip->mutex);
++	if (ret)
++		return ret;
+ 
+ 	/* Need a lock now since after call aw200xx_probe_fw, sysfs nodes created */
+ 	mutex_lock(&chip->mutex);
+@@ -581,6 +598,10 @@ static int aw200xx_probe(struct i2c_client *client)
+ 	if (ret)
+ 		goto out_unlock;
+ 
++	ret = devm_add_action(&client->dev, aw200xx_chip_reset_action, chip);
++	if (ret)
++		goto out_unlock;
++
+ 	ret = aw200xx_probe_fw(&client->dev, chip);
+ 	if (ret)
+ 		goto out_unlock;
+@@ -595,15 +616,6 @@ static int aw200xx_probe(struct i2c_client *client)
+ 	return ret;
+ }
+ 
+-static void aw200xx_remove(struct i2c_client *client)
+-{
+-	struct aw200xx *chip = i2c_get_clientdata(client);
+-
+-	aw200xx_chip_reset(chip);
+-	aw200xx_disable(chip);
+-	mutex_destroy(&chip->mutex);
+-}
+-
+ static const struct aw200xx_chipdef aw20036_cdef = {
+ 	.channels = 36,
+ 	.display_size_rows_max = 3,
+@@ -652,7 +664,6 @@ static struct i2c_driver aw200xx_driver = {
+ 		.of_match_table = aw200xx_match_table,
+ 	},
+ 	.probe_new = aw200xx_probe,
+-	.remove = aw200xx_remove,
+ 	.id_table = aw200xx_id,
+ };
+ module_i2c_driver(aw200xx_driver);
+-- 
+2.25.1
 
