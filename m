@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F106CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 10:33:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E42CBC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 10:34:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TCEU2AUr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=O/6bDQV2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrTGZ4qrBz3w95
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 21:33:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrTHS4XVkz3wBp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 21:34:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TCEU2AUr;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=O/6bDQV2;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrTDk3CsQz3vgx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrTDk6h72z3vhl
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 21:32:06 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1702549926;
-	bh=RoCUu1mXewEDtm43Qq0pBWgiYLguorwyr3zE9+lEq2w=;
+	bh=O/o9QbjKiENBQBWvJbXtJwhr2ssAm9bGM38u9QD4iZ0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=TCEU2AUr0ZA04uTWvKS/i3ZVnJa0VyDib+4PiyGCQg7iYXZ0YGOJGDur97P5pyzAJ
-	 ZDtG+cH7Qm4T+X/9B8J01Tj1odsNEBX7Zv7jVYv2UGg/igHIajr64YmluEtiDAktbJ
-	 FYNzi99K+px1npcA6NnqaXreto/JcbyQnFH3ZgWLhJhkphXGPb0d8FRzCMmA5OYoTE
-	 mi2ltw6Peioc0GwLpqNoOvumthQnpVxfsByUQS6ELu2c/csI87q8kODmX4phBHrPBG
-	 geRxOfCFC/OBotVhANnyzFeit42L1QHw+6Blf+5bqiU+1uuONyJ2OrSuNgPt6FhPFz
-	 cMuyAa7oMqijg==
+	b=O/6bDQV2iPr1GiUNCyIXnzRtSQNhDbG3/OGhfzVpYJSmwu9Gt7Fl5ZhHhScJU0OiB
+	 iSaHVPVIpvHig+sjQZkfmpi1tyTBsCWtmXiJUel68hCraxyYL/vF9JYomdHKPMB5BQ
+	 culcMruEy52Pxsd+RzfqVS3v44hc6NVfsrPSuK97RJwTt8sz0t6VuDeUyFGwd53xAJ
+	 LKRLjjsK8PJUBhgNXMH0eWLqmHNC8D2jNGx5NwQqIsEkWSJhuspMzQKPWvG25DFyAh
+	 6wbTzOuJV5jIV7z6BBR98S1BPaOIpfaXyOoWRnHoC6eGAhJm6Oos0+w37BXnH27GOE
+	 FpW5QjuSt2r3g==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SrTDk1lzGz4xPQ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SrTDk4sV7z4xPY;
 	Thu, 14 Dec 2023 21:32:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 2/5] of: Change of_machine_is_compatible() to return bool
-Date: Thu, 14 Dec 2023 21:31:49 +1100
-Message-ID: <20231214103152.12269-2-mpe@ellerman.id.au>
+Subject: [PATCH v2 3/5] of: Reimplement of_machine_is_compatible() using of_machine_compatible_match()
+Date: Thu, 14 Dec 2023 21:31:50 +1100
+Message-ID: <20231214103152.12269-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231214103152.12269-1-mpe@ellerman.id.au>
 References: <20231214103152.12269-1-mpe@ellerman.id.au>
@@ -62,52 +62,84 @@ Cc: robh+dt@kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_machine_is_compatible() currently returns a positive integer if it
-finds a match. However none of the callers ever check the value, they
-all treat it as a true/false.
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-So change of_machine_is_compatible() to return bool, which will allow
-the implementation to be changed in a subsequent patch.
+of_machine_compatible_match() works with a table of strings.
+of_machine_is_compatible() is a simplier version with only one string.
 
-Suggested-by: Rob Herring <robh@kernel.org>
+Re-implement of_machine_is_compatible() by setting a table of strings
+with a single string then using of_machine_compatible_match().
+
+Suggested-by: Rob Herring <robh+dt@kernel.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/of/base.c  | 5 ++---
- include/linux/of.h | 2 +-
- 2 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/of/base.c  | 21 +--------------------
+ include/linux/of.h | 14 +++++++++++++-
+ 2 files changed, 14 insertions(+), 21 deletions(-)
 
-v2: New.
+v2: Unchanged.
 
 diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 9020be2eb4d5..c82c8b77badc 100644
+index c82c8b77badc..73c3a754bad1 100644
 --- a/drivers/of/base.c
 +++ b/drivers/of/base.c
-@@ -419,10 +419,9 @@ bool of_machine_compatible_match(const char *const *compats)
-  * of_machine_is_compatible - Test root of device tree for a given compatible value
-  * @compat: compatible string to look for in root node's compatible property.
-  *
-- * Return: A positive integer if the root node has the given value in its
-- * compatible property.
-+ * Return: true if the root node has the given value in its compatible property.
-  */
--int of_machine_is_compatible(const char *compat)
-+bool of_machine_is_compatible(const char *compat)
- {
- 	struct device_node *root;
- 	int rc = 0;
+@@ -414,26 +414,7 @@ bool of_machine_compatible_match(const char *const *compats)
+ 
+ 	return rc != 0;
+ }
+-
+-/**
+- * of_machine_is_compatible - Test root of device tree for a given compatible value
+- * @compat: compatible string to look for in root node's compatible property.
+- *
+- * Return: true if the root node has the given value in its compatible property.
+- */
+-bool of_machine_is_compatible(const char *compat)
+-{
+-	struct device_node *root;
+-	int rc = 0;
+-
+-	root = of_find_node_by_path("/");
+-	if (root) {
+-		rc = of_device_is_compatible(root, compat);
+-		of_node_put(root);
+-	}
+-	return rc;
+-}
+-EXPORT_SYMBOL(of_machine_is_compatible);
++EXPORT_SYMBOL(of_machine_compatible_match);
+ 
+ /**
+  *  __of_device_is_available - check if a device is available for use
 diff --git a/include/linux/of.h b/include/linux/of.h
-index e3418babc203..c5c663a7fb77 100644
+index c5c663a7fb77..03ed4e37ca57 100644
 --- a/include/linux/of.h
 +++ b/include/linux/of.h
-@@ -402,7 +402,7 @@ extern void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align));
+@@ -402,9 +402,21 @@ extern void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align));
  extern int of_alias_get_id(struct device_node *np, const char *stem);
  extern int of_alias_get_highest_id(const char *stem);
  
--extern int of_machine_is_compatible(const char *compat);
-+extern bool of_machine_is_compatible(const char *compat);
+-extern bool of_machine_is_compatible(const char *compat);
  bool of_machine_compatible_match(const char *const *compats);
  
++/**
++ * of_machine_is_compatible - Test root of device tree for a given compatible value
++ * @compat: compatible string to look for in root node's compatible property.
++ *
++ * Return: true if the root node has the given value in its compatible property.
++ */
++static inline bool of_machine_is_compatible(const char *compat)
++{
++	const char *compats[] = { compat, NULL };
++
++	return of_machine_compatible_match(compats);
++}
++
  extern int of_add_property(struct device_node *np, struct property *prop);
+ extern int of_remove_property(struct device_node *np, struct property *prop);
+ extern int of_update_property(struct device_node *np, struct property *newprop);
 -- 
 2.43.0
 
