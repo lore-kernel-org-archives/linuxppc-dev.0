@@ -4,60 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 295BCC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 04:30:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 329A1C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 04:31:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=gzXAMg/W;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=hfh68A8z;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrKCW5Ytcz3cY6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 15:30:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrKDP5qPnz3dK6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 15:31:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=gzXAMg/W;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=hfh68A8z;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org)
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrKBY6Brbz3c4P
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 15:29:40 +1100 (AEDT)
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3BE0SCGT015282;
-	Thu, 14 Dec 2023 04:29:31 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrKBZ079Tz3c55
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 15:29:41 +1100 (AEDT)
+Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3BE0UK5n016583;
+	Thu, 14 Dec 2023 04:29:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type : content-transfer-encoding; s=corp-2023-11-20;
- bh=bFV8OKkJGodTqyjK8n8DTW2B7ztgrlOO0X7kZb9PVfc=;
- b=gzXAMg/W4tci6GTMjl1vAc4wsq87terZeK0uXSqTk4eI42MYEDjZmdK0BEqEP6DJDYyz
- vwlZ+DNMdTiKUpHdJQ4MeUygMWOLgOsW1DwmriT8HD6v3ShM/9iYL+W/UHeCWMKVRton
- l2sEKMau0S13qvD5P/oMDNjAx5Gd9Xq5A04ra7a4aGjRgerXJguZ74pP+Nr80kH7CbKa
- 4HmoSw7PWWr1a6qo9iw8kdJckTjlF4r0nkgH67deTK3GMYfutIU/RHHJwbzVOdamUIOy
- PDIlxskKt/nnT6McXekbwELnvZG1gGKbvVRmVhuxV8RmWf3vmR2zvH22vA3U75oQTMDS 2A== 
+ bh=yKEqQl9gsil6mOmOfS3MH81l1GTX93NGG+JkhqNdLqU=;
+ b=hfh68A8zN29s7DnRVpJ+i2xO58X7x489Fg/2gk8WjTTIQWdreVQBvwX9KbOcvVd+hosc
+ 2Cv3Ma8TFUWwp0wV1IcshYLgGLhzLNInFTt4LqW0LieAY8+dlCWj9YuW4ZZCuuVHrJ3i
+ 3exSG+XwEx04nz4nw4WFEP4Nhpk+AlE62RoAd6adqS7uEh/djqXqCjzm+TPAVmA3O6My
+ fe0Gt9g+h6M6Xh8NjRtMUhdxv4JvZe45PwVdXagRelxCt18kkv4I0Yw6naHx90SVdZ8P
+ i02icy/7P/6947Lqu9HrQLVwc1T3vlLYHhO2GX3v5P/Y59WiqYo2Y43q9SNWW5b6ielt tw== 
 Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uwgn3r25g-1
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uwfrrr80n-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 14 Dec 2023 04:29:31 +0000
+	Thu, 14 Dec 2023 04:29:30 +0000
 Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3BE3awI8009848;
-	Thu, 14 Dec 2023 04:29:30 GMT
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3BE4DNaT010136;
+	Thu, 14 Dec 2023 04:29:29 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uvep9ev45-1
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uvep9ev34-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 14 Dec 2023 04:29:30 +0000
+	Thu, 14 Dec 2023 04:29:29 +0000
 Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3BE4TQMM035965;
-	Thu, 14 Dec 2023 04:29:30 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3BE4TQMG035965;
+	Thu, 14 Dec 2023 04:29:28 GMT
 Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uvep9ev0g-10;
-	Thu, 14 Dec 2023 04:29:30 +0000
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uvep9ev0g-7;
+	Thu, 14 Dec 2023 04:29:28 +0000
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: brking@us.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] scsi: ipr: Remove obsolete check for old CPUs
-Date: Wed, 13 Dec 2023 23:29:15 -0500
-Message-ID: <170205513100.1790765.774706440257641676.b4-ty@oracle.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        Justin Stitt <justinstitt@google.com>
+Subject: Re: [PATCH] scsi: ibmvfc: replace deprecated strncpy with strscpy
+Date: Wed, 13 Dec 2023 23:29:12 -0500
+Message-ID: <170205513098.1790765.790754719475852189.b4-ty@oracle.com>
 X-Mailer: git-send-email 2.42.1
-In-Reply-To: <20231127111740.1288463-1-mpe@ellerman.id.au>
-References: <20231127111740.1288463-1-mpe@ellerman.id.au>
+In-Reply-To: <20231030-strncpy-drivers-scsi-ibmvscsi-ibmvfc-c-v1-1-5a4909688435@google.com>
+References: <20231030-strncpy-drivers-scsi-ibmvscsi-ibmvfc-c-v1-1-5a4909688435@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -65,11 +70,11 @@ X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-12-14_01,2023-12-13_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 suspectscore=0
- phishscore=0 malwarescore=0 spamscore=0 mlxlogscore=999 bulkscore=0
+ phishscore=0 malwarescore=0 spamscore=0 mlxlogscore=764 bulkscore=0
  mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2311290000 definitions=main-2312140024
-X-Proofpoint-ORIG-GUID: A-lVqce28UXu8pv09wQDegTOzjQa28JF
-X-Proofpoint-GUID: A-lVqce28UXu8pv09wQDegTOzjQa28JF
+X-Proofpoint-GUID: ZAmarbD8rNyIDwQf6ako5Cczn0fu8kVF
+X-Proofpoint-ORIG-GUID: ZAmarbD8rNyIDwQf6ako5Cczn0fu8kVF
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,26 +86,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jejb@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-kernel@vger.kernel.org
+Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Nov 2023 22:17:40 +1100, Michael Ellerman wrote:
+On Mon, 30 Oct 2023 19:04:33 +0000, Justin Stitt wrote:
 
-> The IPR driver has a routine to check whether it's running on certain
-> CPU versions and if so whether the adapter is supported on that CPU.
+> strncpy() is deprecated for use on NUL-terminated destination strings
+> [1] and as such we should prefer more robust and less ambiguous string
+> interfaces.
 > 
-> But none of the CPUs it checks for are supported by Linux anymore.
-> 
-> The most recent CPU it checks for is Power4+ which was removed in commit
-> 471d7ff8b51b ("powerpc/64s: Remove POWER4 support").
+> We expect these fields to be NUL-terminated as the property names from
+> which they are derived are also NUL-terminated.
 > 
 > [...]
 
 Applied to 6.8/scsi-queue, thanks!
 
-[1/1] scsi: ipr: Remove obsolete check for old CPUs
-      https://git.kernel.org/mkp/scsi/c/84e46978b91f
+[1/1] scsi: ibmvfc: replace deprecated strncpy with strscpy
+      https://git.kernel.org/mkp/scsi/c/a9baa16b4fc1
 
 -- 
 Martin K. Petersen	Oracle Linux Engineering
