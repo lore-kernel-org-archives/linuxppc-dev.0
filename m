@@ -4,77 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DEC3C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 04:32:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 670B4C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 04:46:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=foS05MMc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PHvb5rAy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrKFH64fKz3dS4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 15:32:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrKYg6gJwz3ckc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 15:46:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=foS05MMc;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PHvb5rAy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org)
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrKBY6dCcz3c4t
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 15:29:41 +1100 (AEDT)
-Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3BE0SBvn026933;
-	Thu, 14 Dec 2023 04:29:30 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2023-11-20;
- bh=BL+jEWPqSu1ilxcp2/QmDgZNNAak2wmbX40ipukDeZs=;
- b=foS05MMcxgfC1i8uMnJLn4lX24WEuPYDWhxmBF1BlncNDrlsyLYVcbdnbupDotDPEtc9
- mz7kPnAYT8IybiiY69Urkuq81s/U+VP9rAowb3FdXuQ8Y7MqZloUQ25Bv2I4Asf3mZcm
- Suj3LPypAyr+D2scRtWRSapknt3zo1OhspXtv+61/wNg0KgKbNpLnIPoDpN9StfkFAA0
- 8TI2EYm4FoFWP2bgXwwXK+qgtUBNTd5+nEcJwoUzFP64dBtpxTWf5jvv7smdycUkxEIY
- TUeHvMsgtlrcE3zBlEuUg2qi29BRcaFCw99BK09gU5wLILHnDh+vKyvyrPgcR+3ZieWD qA== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uvfuu9u2k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 14 Dec 2023 04:29:30 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3BE34tcw010087;
-	Thu, 14 Dec 2023 04:29:29 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uvep9ev3e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 14 Dec 2023 04:29:29 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3BE4TQMI035965;
-	Thu, 14 Dec 2023 04:29:29 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uvep9ev0g-8;
-	Thu, 14 Dec 2023 04:29:29 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Justin Stitt <justinstitt@google.com>
-Subject: Re: [PATCH] scsi: ibmvscsi: replace deprecated strncpy with strscpy
-Date: Wed, 13 Dec 2023 23:29:13 -0500
-Message-ID: <170205513099.1790765.10945483067909366845.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.42.1
-In-Reply-To: <20231030-strncpy-drivers-scsi-ibmvscsi-ibmvscsi-c-v1-1-f8b06ae9e3d5@google.com>
-References: <20231030-strncpy-drivers-scsi-ibmvscsi-ibmvscsi-c-v1-1-f8b06ae9e3d5@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrKXk2fnYz3bPV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 15:45:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1702529123;
+	bh=t7B9if0LOImFnd/AnccoK9V4d+WmshLVNwjLPY+Ohl0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=PHvb5rAyITybLJhslCdr+FPB6weuYhVdwGVqwI6pjC0ArKwZkSJyMqDVTRdcLTEp8
+	 CMM1zL432KtNyUzA4mhWgDTmzmIB20cDIEs1vpR4XVIlFKEuLTFGJUgQi2gSEUC13j
+	 mfFynirXmkKm9bE2EICqv9unlGx62DyfXiv5i2BtZBd3f6O85asjT6i+pBGfgfPjyp
+	 tkCdZSOpErcp/BMZpdsjN71xdXgGO4HsDEkHk/a+gxWH2FD87Y65cYU3IpDwO2jYA7
+	 PzUo9wW0hAbsQZZzGnqcxC0mqh1VvcVv56nNl78AXywD3K6/8BH+V8bphra6maMQo3
+	 RX1/dzF6mo1TA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SrKXf0VB5z4wcH;
+	Thu, 14 Dec 2023 15:45:21 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Samuel Holland <samuel.holland@sifive.com>
+Subject: Re: [RFC PATCH 10/12] drm/amd/display: Use ARCH_HAS_KERNEL_FPU_SUPPORT
+In-Reply-To: <7ed20fcf-8a9d-40d5-b913-b5d2da443cd6@sifive.com>
+References: <20231208055501.2916202-1-samuel.holland@sifive.com>
+ <20231208055501.2916202-11-samuel.holland@sifive.com>
+ <87h6kpdj20.fsf@mail.lhotse>
+ <7ed20fcf-8a9d-40d5-b913-b5d2da443cd6@sifive.com>
+Date: Thu, 14 Dec 2023 15:45:21 +1100
+Message-ID: <87bkatxuhq.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-12-14_01,2023-12-13_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 suspectscore=0
- phishscore=0 malwarescore=0 spamscore=0 mlxlogscore=808 bulkscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2312140024
-X-Proofpoint-GUID: VGQd4_DpBw1G4uTkYROxWDOQcZE0Nij2
-X-Proofpoint-ORIG-GUID: VGQd4_DpBw1G4uTkYROxWDOQcZE0Nij2
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,35 +60,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Timothy Pearson <tpearson@raptorengineering.com>, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 30 Oct 2023 20:40:48 +0000, Justin Stitt wrote:
+Samuel Holland <samuel.holland@sifive.com> writes:
+> On 2023-12-11 6:23 AM, Michael Ellerman wrote:
+>> Hi Samuel,
+>> 
+>> Thanks for trying to clean all this up.
+>> 
+>> One problem below.
+>> 
+>> Samuel Holland <samuel.holland@sifive.com> writes:
+>>> Now that all previously-supported architectures select
+>>> ARCH_HAS_KERNEL_FPU_SUPPORT, this code can depend on that symbol instead
+>>> of the existing list of architectures. It can also take advantage of the
+>>> common kernel-mode FPU API and method of adjusting CFLAGS.
+>>>
+>>> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+>> ...
+>>> diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c b/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c
+>>> index 4ae4720535a5..b64f917174ca 100644
+>>> --- a/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c
+>>> +++ b/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c
+>>> @@ -87,20 +78,9 @@ void dc_fpu_begin(const char *function_name, const int line)
+>>>  	WARN_ON_ONCE(!in_task());
+>>>  	preempt_disable();
+>>>  	depth = __this_cpu_inc_return(fpu_recursion_depth);
+>>> -
+>>>  	if (depth == 1) {
+>>> -#if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
+>>> +		BUG_ON(!kernel_fpu_available());
+>>>  		kernel_fpu_begin();
+>>> -#elif defined(CONFIG_PPC64)
+>>> -		if (cpu_has_feature(CPU_FTR_VSX_COMP))
+>>> -			enable_kernel_vsx();
+>>> -		else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP))
+>>> -			enable_kernel_altivec();
+>>  
+>> Note altivec.
+>> 
+>>> -		else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
+>>> -			enable_kernel_fp();
+>>> -#elif defined(CONFIG_ARM64)
+>>> -		kernel_neon_begin();
+>>> -#endif
+>>>  	}
+>>>  
+>>>  	TRACE_DCN_FPU(true, function_name, line, depth);
+>>> diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+>>> index ea7d60f9a9b4..5aad0f572ba3 100644
+>>> --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
+>>> +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+>>> @@ -25,40 +25,8 @@
+>>>  # It provides the general basic services required by other DAL
+>>>  # subcomponents.
+>>>  
+>>> -ifdef CONFIG_X86
+>>> -dml_ccflags-$(CONFIG_CC_IS_GCC) := -mhard-float
+>>> -dml_ccflags := $(dml_ccflags-y) -msse
+>>> -endif
+>>> -
+>>> -ifdef CONFIG_PPC64
+>>> -dml_ccflags := -mhard-float -maltivec
+>>> -endif
+>> 
+>> And altivec is enabled in the flags there.
+>> 
+>> That doesn't match your implementation for powerpc in patch 7, which
+>> only deals with float.
+>> 
+>> I suspect the AMD driver actually doesn't need altivec enabled, but I
+>> don't know that for sure. It compiles without it, but I don't have a GPU
+>> to actually test. I've added Timothy on Cc who added the support for
+>> powerpc to the driver originally, hopefully he has a test system.
+>
+> I tested this series on a POWER9 system with an AMD Radeon RX 6400 GPU (which
+> requires this FPU code to initialize), and got functioning graphics output.
 
-> strncpy() is deprecated for use on NUL-terminated destination strings
-> [1] and as such we should prefer more robust and less ambiguous string
-> interfaces.
-> 
-> We expect partition_name to be NUL-terminated based on its usage with
-> format strings:
-> |       dev_info(hostdata->dev, "host srp version: %s, "
-> |                "host partition %s (%d), OS %d, max io %u\n",
-> |                hostdata->madapter_info.srp_version,
-> |                hostdata->madapter_info.partition_name,
-> |                be32_to_cpu(hostdata->madapter_info.partition_number),
-> |                be32_to_cpu(hostdata->madapter_info.os_type),
-> |                be32_to_cpu(hostdata->madapter_info.port_max_txu[0]));
-> ...
-> |       len = snprintf(buf, PAGE_SIZE, "%s\n",
-> |                hostdata->madapter_info.partition_name);
-> 
-> [...]
+Awesome.
 
-Applied to 6.8/scsi-queue, thanks!
+>> Anyway if that's true that it doesn't need altivec we should probably do
+>> a lead-up patch that drops altivec from the AMD driver explicitly, eg.
+>> as below.
+>
+> That makes sense to me. Do you want to provide your Signed-off-by so I can send
+> this patch with your authorship?
 
-[1/1] scsi: ibmvscsi: replace deprecated strncpy with strscpy
-      https://git.kernel.org/mkp/scsi/c/712b3f43ba0e
+Yeah that'd be great. Patch below. Feel free to adjust the commit
+message as you see fit.
 
+cheers
+
+
+From c8a2862d2ebe76a023eceb3267fd85262925c0ba Mon Sep 17 00:00:00 2001
+From: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 14 Dec 2023 15:39:05 +1100
+Subject: [PATCH] drm/amd/display: Only use hard-float, not altivec on powerpc
+
+The compiler flags enable altivec, but that is not required, hard-float
+is sufficient for the code to build and function.
+
+Drop altivec from the compiler flags and adjust the enable/disable code
+to only enable FPU use.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c | 12 ++----------
+ drivers/gpu/drm/amd/display/dc/dml/Makefile    |  2 +-
+ drivers/gpu/drm/amd/display/dc/dml2/Makefile   |  2 +-
+ 3 files changed, 4 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c b/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c
+index 4ae4720535a5..0de16796466b 100644
+--- a/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c
++++ b/drivers/gpu/drm/amd/display/amdgpu_dm/dc_fpu.c
+@@ -92,11 +92,7 @@ void dc_fpu_begin(const char *function_name, const int line)
+ #if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
+ 		kernel_fpu_begin();
+ #elif defined(CONFIG_PPC64)
+-		if (cpu_has_feature(CPU_FTR_VSX_COMP))
+-			enable_kernel_vsx();
+-		else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP))
+-			enable_kernel_altivec();
+-		else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
++		if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
+ 			enable_kernel_fp();
+ #elif defined(CONFIG_ARM64)
+ 		kernel_neon_begin();
+@@ -125,11 +121,7 @@ void dc_fpu_end(const char *function_name, const int line)
+ #if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
+ 		kernel_fpu_end();
+ #elif defined(CONFIG_PPC64)
+-		if (cpu_has_feature(CPU_FTR_VSX_COMP))
+-			disable_kernel_vsx();
+-		else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP))
+-			disable_kernel_altivec();
+-		else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
++		if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
+ 			disable_kernel_fp();
+ #elif defined(CONFIG_ARM64)
+ 		kernel_neon_end();
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+index 6042a5a6a44f..554c39024a40 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+@@ -31,7 +31,7 @@ dml_ccflags := $(dml_ccflags-y) -msse
+ endif
+ 
+ ifdef CONFIG_PPC64
+-dml_ccflags := -mhard-float -maltivec
++dml_ccflags := -mhard-float
+ endif
+ 
+ ifdef CONFIG_ARM64
+diff --git a/drivers/gpu/drm/amd/display/dc/dml2/Makefile b/drivers/gpu/drm/amd/display/dc/dml2/Makefile
+index acff3449b8d7..7b51364084b5 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml2/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/dml2/Makefile
+@@ -30,7 +30,7 @@ dml2_ccflags := $(dml2_ccflags-y) -msse
+ endif
+ 
+ ifdef CONFIG_PPC64
+-dml2_ccflags := -mhard-float -maltivec
++dml2_ccflags := -mhard-float
+ endif
+ 
+ ifdef CONFIG_ARM64
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.43.0
+
+
