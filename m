@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 351F4C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:40:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EF3FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:41:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=vCi4bvZE;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=MMmWEM3+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Srfl36Kv2z3vh1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:40:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Srfly6Sjmz3vjk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:41:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=vCi4bvZE;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=MMmWEM3+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffR2MD1z3cX4
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffR2HX9z3cWZ
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 04:36:28 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 95ED0120019;
-	Thu, 14 Dec 2023 20:36:24 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 95ED0120019
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 7EC7512001C;
+	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 7EC7512001C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1702575384;
-	bh=XoyXME9o9D+O65UPeU/S5jya+2cUqz9UKPsZ2HnPzAg=;
+	s=mail; t=1702575385;
+	bh=E+93qW99+MbE6qv9QYbuPHDD4qbYVZKtaw4xnbuw8OI=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=vCi4bvZErRg01jC4xd0W/QPeuBrD/SimUzflI8WLiQp1BlY8YmmVD4QKXLIepve4/
-	 kCuMnWkHmp/Dtuw7Uxwh5dhnZnMi8lhrow5CS9hN7OiYgIpXyPLztLlvAXK2un6Yae
-	 bMVVOFoQKY+N3IVSatOh0V3F8gE0fzJgv/Zh15rci/f5va/0vcwoC/b2S6zkS9Lx/c
-	 tkd0qyFX+KtE43nttyiBCb6GRnEKFf71OPyky6Ekxuu2mcj3LzA6plBKzDpuDGyy1X
-	 CPArSuUcixpoRcT3Nyhqs/KWvMQd6CspMpGt4x0gMOk2cdSgWra8sUXLc1kN6iC2Tc
-	 9JYLV54Ou8f3w==
+	b=MMmWEM3+ikA+w0TW+lYBUXezYUYlNgkI+4AIQg2LRMw9fGZeaxMX66VrZVOMazUTc
+	 sd4Ezd6d3UQWd4/raOOjzPXBR/O3D6RsyCptX8QW5AyBQtRbKdABgXaAjPnmK1D/vC
+	 iw+OrSrRYnVQbR6GBXsI30EjPoAISDeUF6n5q4LNbWV/VmLT5sB1PhrD5MbnDJPpGH
+	 ccqJPKvjJR+SmwNUrFZWA6E3ZNQsH+J3Ui76g+Ufw1aeCsfHeuxxERFw+Z27uJcTed
+	 4lcHtpVvxV5FispeMY/CIlcz+tGFtIrGHPzxGl9lCLuquH1VJrfhPP+oeSLJL80Att
+	 QlCIYCX3pj4xA==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 14 Dec 2023 20:36:24 +0300 (MSK)
+	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
 Received: from localhost.localdomain (100.64.160.123) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 14 Dec 2023 20:36:24 +0300
+ 15.2.1118.40; Thu, 14 Dec 2023 20:36:25 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
@@ -51,9 +51,9 @@ To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
 	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
 	<nikitos.tr@gmail.com>
-Subject: [PATCH v4 01/10] leds: aw2013: unlock mutex before destroying it
-Date: Thu, 14 Dec 2023 20:36:05 +0300
-Message-ID: <20231214173614.2820929-2-gnstark@salutedevices.com>
+Subject: [PATCH v4 05/10] leds: lp3952: use devm API to cleanup module's resources
+Date: Thu, 14 Dec 2023 20:36:09 +0300
+Message-ID: <20231214173614.2820929-6-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20231214173614.2820929-1-gnstark@salutedevices.com>
 References: <20231214173614.2820929-1-gnstark@salutedevices.com>
@@ -94,28 +94,72 @@ Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the probe() callback in case of error mutex is destroyed being locked
-which is not allowed so unlock the mutex before destroying.
+In this driver LEDs are registered using devm_led_classdev_register()
+so they are automatically unregistered after module's remove() is done.
+led_classdev_unregister() calls module's led_set_brightness() to turn off
+the LEDs and that callback uses resources which were destroyed already
+in module's remove() so use devm API instead of remove().
+Also drop explicit turning LEDs off from remove() due to they will be off
+anyway by led_classdev_unregister().
 
-Fixes: 59ea3c9faf32 ("leds: add aw2013 driver")
 Signed-off-by: George Stark <gnstark@salutedevices.com>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 ---
- drivers/leds/leds-aw2013.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/leds/leds-lp3952.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/leds/leds-aw2013.c b/drivers/leds/leds-aw2013.c
-index 59765640b70f..c2bc0782c0cd 100644
---- a/drivers/leds/leds-aw2013.c
-+++ b/drivers/leds/leds-aw2013.c
-@@ -397,6 +397,7 @@ static int aw2013_probe(struct i2c_client *client)
- 	regulator_disable(chip->vcc_regulator);
+diff --git a/drivers/leds/leds-lp3952.c b/drivers/leds/leds-lp3952.c
+index 3bd55652a706..fc0e02a9768f 100644
+--- a/drivers/leds/leds-lp3952.c
++++ b/drivers/leds/leds-lp3952.c
+@@ -207,6 +207,13 @@ static const struct regmap_config lp3952_regmap = {
+ 	.cache_type = REGCACHE_RBTREE,
+ };
  
- error:
-+	mutex_unlock(&chip->mutex);
- 	mutex_destroy(&chip->mutex);
- 	return ret;
++static void gpio_set_low_action(void *data)
++{
++	struct lp3952_led_array *priv = (struct lp3952_led_array *)data;
++
++	gpiod_set_value(priv->enable_gpio, 0);
++}
++
+ static int lp3952_probe(struct i2c_client *client)
+ {
+ 	int status;
+@@ -226,6 +233,10 @@ static int lp3952_probe(struct i2c_client *client)
+ 		return status;
+ 	}
+ 
++	status = devm_add_action(&client->dev, gpio_set_low_action, priv);
++	if (status)
++		return status;
++
+ 	priv->regmap = devm_regmap_init_i2c(client, &lp3952_regmap);
+ 	if (IS_ERR(priv->regmap)) {
+ 		int err = PTR_ERR(priv->regmap);
+@@ -254,15 +265,6 @@ static int lp3952_probe(struct i2c_client *client)
+ 	return 0;
  }
+ 
+-static void lp3952_remove(struct i2c_client *client)
+-{
+-	struct lp3952_led_array *priv;
+-
+-	priv = i2c_get_clientdata(client);
+-	lp3952_on_off(priv, LP3952_LED_ALL, false);
+-	gpiod_set_value(priv->enable_gpio, 0);
+-}
+-
+ static const struct i2c_device_id lp3952_id[] = {
+ 	{LP3952_NAME, 0},
+ 	{}
+@@ -274,7 +276,6 @@ static struct i2c_driver lp3952_i2c_driver = {
+ 			.name = LP3952_NAME,
+ 	},
+ 	.probe = lp3952_probe,
+-	.remove = lp3952_remove,
+ 	.id_table = lp3952_id,
+ };
+ 
 -- 
 2.25.1
 
