@@ -4,66 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F859C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 06:09:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFF8CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 06:13:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=brainfault-org.20230601.gappssmtp.com header.i=@brainfault-org.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=RqNkw+CY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=trvn.ru header.i=@trvn.ru header.a=rsa-sha256 header.s=mail header.b=oxrcgcg5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrMPn0X0bz3vxC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:09:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrMVT3sCZz3dTG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:13:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=brainfault-org.20230601.gappssmtp.com header.i=@brainfault-org.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=RqNkw+CY;
+	dkim=pass (2048-bit key; unprotected) header.d=trvn.ru header.i=@trvn.ru header.a=rsa-sha256 header.s=mail header.b=oxrcgcg5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=brainfault.org (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=anup@brainfault.org; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=trvn.ru (client-ip=194.87.146.52; helo=box.trvn.ru; envelope-from=nikita@trvn.ru; receiver=lists.ozlabs.org)
+X-Greylist: delayed 553 seconds by postgrey-1.37 at boromir; Thu, 14 Dec 2023 16:51:24 AEDT
+Received: from box.trvn.ru (box.trvn.ru [194.87.146.52])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrMJc04sFz3vwm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 17:05:03 +1100 (AEDT)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-6cedc988cf6so3500943b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2023 22:05:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1702533901; x=1703138701; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dvVjokEhJRkgiYQ+o9OaV0HA0xI9C7Xt69a6c2d+FcQ=;
-        b=RqNkw+CYre1ZWDPEppelhJfA7zaR5Ek9XEMwx0r/p8gsWCu73zklPbSkrCV8jTzeD6
-         duBGc+GUTVd6weohXltyGcG6y7ZH8l0Wtris61l00F0JuFMfYyoWHUtMHxcpdAZ2QaqI
-         5jg6K6VjWzf3IWfwh/G2wQL2IGWG2UdUZ2yoxmv1IefJiQiWtDnJ66UvOH8XAyVLkqim
-         qPekHJBZNhfPKXcouScvDl4uCl6Bps5mr629ZuCL7FpFctjsDZ8FmlUBGd7BmnBErlIa
-         JSj3odKvpkNZ9AC2LxeYwPO19KJtrMp8p1hhd7xv6f6BOrUCl24RMIOPS+PwTkGFPu4h
-         eseg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702533901; x=1703138701;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dvVjokEhJRkgiYQ+o9OaV0HA0xI9C7Xt69a6c2d+FcQ=;
-        b=nnCyGMFTjMIYxyxa1r9HL5VrxGzOM56FE4t0WDdWvxAgrTPXaQe0KFP7hXOkeCOGkH
-         mWr9L9ZgbyEx42CC82ec7XCXl1BEONhgClHyx54QCfeUHVsQnXhznFLzhPLvNlxBJ/ON
-         6uMObM/qBKGULzJ0cTsSnON9laWpNrNo+FYUPvEwwnKIicqrp5Kq0iq1Y5/MHHqC3bFY
-         8D196pvxfh2FMk7elkXATfldUKlp90U/Bz0xwQaYOx4rx9jdHW6zPkFe+6KFo9d8UT/C
-         6fdKrzaS/fzXDvrq0976cjzpqC2xB4AogOeVEJh2A2BI2Fn9UkRZNyqN5vFX3bnVxWt1
-         BOnQ==
-X-Gm-Message-State: AOJu0Yz7OAAIOciSjPWaZgiYEe73shU7nznDEBJVqc6ysUXsbBW5W4dx
-	XHUCzuNOrYyad9CPhIRCczNiZfL8ObonI0FuXbqEqw==
-X-Google-Smtp-Source: AGHT+IHIasKoIhsfkj7Yu+FMUSkaxjPll3cuawBTpXD75vrutVj6NpINC37M3K8JiCCZ1y7ffegWrPb57ZwkbEZ9v2I=
-X-Received: by 2002:a17:90a:e395:b0:286:bfed:6f55 with SMTP id
- b21-20020a17090ae39500b00286bfed6f55mr4390822pjz.38.1702533901140; Wed, 13
- Dec 2023 22:05:01 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrM0r278Tz3bw2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2023 16:51:24 +1100 (AEDT)
+Received: from authenticated-user (box.trvn.ru [194.87.146.52])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	(No client certificate requested)
+	by box.trvn.ru (Postfix) with ESMTPSA id 51B15408EF;
+	Thu, 14 Dec 2023 10:42:02 +0500 (+05)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=trvn.ru; s=mail;
+	t=1702532522; bh=cR6tyKPKN7gk3TnmXe4ERX1lFG8NrlKVwL/KAde86sM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=oxrcgcg5FIrv/i0f5jrMIsUIaotfs1kKA+N3YsSNhycbKOL/vYxbPldu/fLCz6k2A
+	 dSIoswfhUFPKJ6tfpBEm44rtWZNjlai1hfv0rZ+1S1uW5nylDcSrFlEG+m7q6qjqYW
+	 qWjsrN9xv/7HyoI3GkZ9hJRSfUBOnoHD1/uX0NU7qNQN9/QEPo3CcGBLJU0U34vxVZ
+	 PD9eEBrl2Jv8SgkQkLyygMPQR/OuVRT0fbSmAsLHGhujMp76e5pn22VSBr5f/4z80a
+	 61xWQHXr316ZJbGUsimwOTRv8uBncW0oBm8WNPXQTCGaziLLlmxWJei0UxNf1JsjTU
+	 6I9V8pyTcSARA==
 MIME-Version: 1.0
-References: <20230916003118.2540661-1-seanjc@google.com> <20230916003118.2540661-20-seanjc@google.com>
-In-Reply-To: <20230916003118.2540661-20-seanjc@google.com>
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 14 Dec 2023 11:34:49 +0530
-Message-ID: <CAAhSdy1bzQ2mxOew0iw-OuLWxzOhk3LtO+908TYw2gw+5yN3RA@mail.gmail.com>
-Subject: Re: [PATCH 19/26] KVM: Standardize include paths across all architectures
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Date: Thu, 14 Dec 2023 10:42:01 +0500
+From: Nikita Travkin <nikita@trvn.ru>
+To: George Stark <gnstark@salutedevices.com>
+Subject: Re: [PATCH v3 04/11] leds: aw2013: use devm API to cleanup module's
+ resources
+In-Reply-To: <20231213223020.2713164-5-gnstark@salutedevices.com>
+References: <20231213223020.2713164-1-gnstark@salutedevices.com>
+ <20231213223020.2713164-5-gnstark@salutedevices.com>
+Message-ID: <c709e0f33da06db40127f3a0adcbebbd@trvn.ru>
+X-Sender: nikita@trvn.ru
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 14 Dec 2023 17:12:52 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,141 +62,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Harald Freudenberger <freude@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Halil Pasic <pasic@linux.ibm.com>, Andrew Thornton <andrewth@google.com>, Ingo Molnar <mingo@redhat.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Jason Herne <jjherne@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Venkatesh Srinivas <venkateshs@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Alex Williamson <alex.williamson@redhat.com>, Borislav Petkov <bp@alien8.de>, And
- y Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Tony Krowiak <akrowiak@linux.ibm.com>, Anish Ghulati <aghulati@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-perf-users@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, vadimp@nvidia.com, mazziesaccount@gmail.com, peterz@infradead.org, boqun.feng@gmail.com, lee@kernel.org, kernel@salutedevices.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, hdegoede@redhat.com, andy.shevchenko@gmail.com, mingo@redhat.com, pavel@ucw.cz, longman@redhat.com, nikitos.tr@gmail.com, will@kernel.org, linux-leds@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 16, 2023 at 6:01=E2=80=AFAM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> Standardize KVM's include paths across all architectures by declaring
-> the KVM-specific includes in the common Makefile.kvm.  Having common KVM
-> "own" the included paths reduces the temptation to unnecessarily add
-> virt/kvm to arch include paths, and conversely if allowing arch code to
-> grab headers from virt/kvm becomes desirable, virt/kvm can be added to
-> all architecture's include path with a single line update.
->
-> Having the common KVM makefile append to ccflags also provides a
-> convenient location to append other things, e.g. KVM-specific #defines.
->
-> Note, this changes the behavior of s390 and PPC, as s390 and PPC
-> previously overwrote ccflags-y instead of adding on.  There is no evidenc=
-e
-> that overwriting ccflags-y was necessary or even deliberate, as both s390
-> and PPC switched to the overwrite behavior without so much as a passing
-> mention when EXTRA_CFLAGS was replaced with ccflags-y (commit c73028a0288=
-7
-> ("s390: change to new flag variable") and commit 4108d9ba9091
-> ("powerpc/Makefiles: Change to new flag variables")).
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+George Stark писал(а) 14.12.2023 03:30:
+> In this driver LEDs are registered using devm_led_classdev_register()
+> so they are automatically unregistered after module's remove() is done.
+> led_classdev_unregister() calls module's led_set_brightness() to turn off
+> the LEDs and that callback uses resources which were destroyed already
+> in module's remove() so use devm API instead of remove().
+> 
+> Signed-off-by: George Stark <gnstark@salutedevices.com>
 
-For KVM RISC-V:
-Acked-by: Anup Patel <anup@brainfault.org>
+Thanks for noticing and fixing this!
+Perhaps this patch needs a Fixes tag too, like 1/11?
 
-Regards,
-Anup
+Tested-by: Nikita Travkin <nikita@trvn.ru>
+
+Btw, seems like (5..11)/11 never arrived to the lists...
+
+Nikita
 
 > ---
->  arch/arm64/kvm/Makefile   | 2 --
->  arch/mips/kvm/Makefile    | 2 --
->  arch/powerpc/kvm/Makefile | 2 --
->  arch/riscv/kvm/Makefile   | 2 --
->  arch/s390/kvm/Makefile    | 2 --
->  arch/x86/kvm/Makefile     | 1 -
->  virt/kvm/Makefile.kvm     | 2 ++
->  7 files changed, 2 insertions(+), 11 deletions(-)
->
-> diff --git a/arch/arm64/kvm/Makefile b/arch/arm64/kvm/Makefile
-> index c0c050e53157..3996489baeef 100644
-> --- a/arch/arm64/kvm/Makefile
-> +++ b/arch/arm64/kvm/Makefile
-> @@ -3,8 +3,6 @@
->  # Makefile for Kernel-based Virtual Machine module
->  #
->
-> -ccflags-y +=3D -I $(srctree)/$(src)
-> -
->  include $(srctree)/virt/kvm/Makefile.kvm
->
->  obj-$(CONFIG_KVM) +=3D kvm.o
-> diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
-> index 96a7cd21b140..d198e1addea7 100644
-> --- a/arch/mips/kvm/Makefile
-> +++ b/arch/mips/kvm/Makefile
-> @@ -4,8 +4,6 @@
->
->  include $(srctree)/virt/kvm/Makefile.kvm
->
-> -ccflags-y +=3D -Iarch/mips/kvm
-> -
->  kvm-$(CONFIG_CPU_HAS_MSA) +=3D msa.o
->
->  kvm-y +=3D    mips.o emulate.o entry.o \
-> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> index 08a0e53d58c7..d6c6678ddf65 100644
-> --- a/arch/powerpc/kvm/Makefile
-> +++ b/arch/powerpc/kvm/Makefile
-> @@ -3,8 +3,6 @@
->  # Makefile for Kernel-based Virtual Machine module
->  #
->
-> -ccflags-y :=3D -Iarch/powerpc/kvm
-> -
->  include $(srctree)/virt/kvm/Makefile.kvm
->
->  common-objs-y +=3D powerpc.o emulate_loadstore.o
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 4c2067fc59fc..ff7d5f67e229 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -3,8 +3,6 @@
->  # Makefile for RISC-V KVM support
->  #
->
-> -ccflags-y +=3D -I $(srctree)/$(src)
-> -
->  include $(srctree)/virt/kvm/Makefile.kvm
->
->  obj-$(CONFIG_KVM) +=3D kvm.o
-> diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
-> index f17249ab2a72..f8153189e003 100644
-> --- a/arch/s390/kvm/Makefile
-> +++ b/arch/s390/kvm/Makefile
-> @@ -5,8 +5,6 @@
->
->  include $(srctree)/virt/kvm/Makefile.kvm
->
-> -ccflags-y :=3D -Iarch/s390/kvm
-> -
->  kvm-y +=3D kvm-s390.o intercept.o interrupt.o priv.o sigp.o
->  kvm-y +=3D diag.o gaccess.o guestdbg.o vsie.o pv.o
->
-> diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
-> index 80e3fe184d17..d13f1a7b7b3d 100644
-> --- a/arch/x86/kvm/Makefile
-> +++ b/arch/x86/kvm/Makefile
-> @@ -1,6 +1,5 @@
->  # SPDX-License-Identifier: GPL-2.0
->
-> -ccflags-y +=3D -I $(srctree)/arch/x86/kvm
->  ccflags-$(CONFIG_KVM_WERROR) +=3D -Werror
->
->  ifeq ($(CONFIG_FRAME_POINTER),y)
-> diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
-> index 29373b59d89a..e85079ad245d 100644
-> --- a/virt/kvm/Makefile.kvm
-> +++ b/virt/kvm/Makefile.kvm
-> @@ -3,6 +3,8 @@
->  # Makefile for Kernel-based Virtual Machine module
->  #
->
-> +ccflags-y +=3D -I$(srctree)/$(src)
+>  drivers/leds/leds-aw2013.c | 26 ++++++++++++++------------
+>  1 file changed, 14 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/leds/leds-aw2013.c b/drivers/leds/leds-aw2013.c
+> index c2bc0782c0cd..863aeb02f278 100644
+> --- a/drivers/leds/leds-aw2013.c
+> +++ b/drivers/leds/leds-aw2013.c
+> @@ -1,6 +1,7 @@
+>  // SPDX-License-Identifier: GPL-2.0+
+>  // Driver for Awinic AW2013 3-channel LED driver
+>  
+> +#include <linux/devm-helpers.h>
+>  #include <linux/i2c.h>
+>  #include <linux/leds.h>
+>  #include <linux/module.h>
+> @@ -318,6 +319,11 @@ static int aw2013_probe_dt(struct aw2013 *chip)
+>  	return 0;
+>  }
+>  
+> +static void aw2013_chip_disable_action(void *data)
+> +{
+> +	aw2013_chip_disable(data);
+> +}
 > +
->  KVM ?=3D ../../../virt/kvm
->
->  kvm-y :=3D $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
-> --
-> 2.42.0.459.ge4e396fd5e-goog
->
+>  static const struct regmap_config aw2013_regmap_config = {
+>  	.reg_bits = 8,
+>  	.val_bits = 8,
+> @@ -334,7 +340,10 @@ static int aw2013_probe(struct i2c_client *client)
+>  	if (!chip)
+>  		return -ENOMEM;
+>  
+> -	mutex_init(&chip->mutex);
+> +	ret = devm_mutex_init(&client->dev, &chip->mutex);
+> +	if (ret)
+> +		return ret;
+> +
+>  	mutex_lock(&chip->mutex);
+>  
+>  	chip->client = client;
+> @@ -378,6 +387,10 @@ static int aw2013_probe(struct i2c_client *client)
+>  		goto error_reg;
+>  	}
+>  
+> +	ret = devm_add_action(&client->dev, aw2013_chip_disable_action, chip);
+> +	if (ret)
+> +		goto error_reg;
+> +
+>  	ret = aw2013_probe_dt(chip);
+>  	if (ret < 0)
+>  		goto error_reg;
+> @@ -398,19 +411,9 @@ static int aw2013_probe(struct i2c_client *client)
+>  
+>  error:
+>  	mutex_unlock(&chip->mutex);
+> -	mutex_destroy(&chip->mutex);
+>  	return ret;
+>  }
+>  
+> -static void aw2013_remove(struct i2c_client *client)
+> -{
+> -	struct aw2013 *chip = i2c_get_clientdata(client);
+> -
+> -	aw2013_chip_disable(chip);
+> -
+> -	mutex_destroy(&chip->mutex);
+> -}
+> -
+>  static const struct of_device_id aw2013_match_table[] = {
+>  	{ .compatible = "awinic,aw2013", },
+>  	{ /* sentinel */ },
+> @@ -424,7 +427,6 @@ static struct i2c_driver aw2013_driver = {
+>  		.of_match_table = of_match_ptr(aw2013_match_table),
+>  	},
+>  	.probe = aw2013_probe,
+> -	.remove = aw2013_remove,
+>  };
+>  
+>  module_i2c_driver(aw2013_driver);
