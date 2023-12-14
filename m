@@ -4,81 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DACEC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 17:45:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19E33C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Dec 2023 18:09:22 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=G4PwqNGZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i9o6ZYlb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SrfrT6wz1z3vnL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 04:45:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SrgNJ4R3Gz3dL7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Dec 2023 05:09:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=G4PwqNGZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i9o6ZYlb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=45.89.224.132; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
-Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrffX5X9sz3cX4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 04:36:36 +1100 (AEDT)
-Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id BDB3112001D;
-	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru BDB3112001D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1702575385;
-	bh=EC3dQnKKfurosn6pqq8G2JOlIq4yy+2qbil19wlXj5E=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=G4PwqNGZSJIaHMLsMt8lN89HV60oNIGdkIpRYP3hyKR+uqCIJBwMqtGcLf5Cdg8qn
-	 MX9PLkcgRsEHbld2kt2wZan57KWwPDBXb5wgtfvzsaXjt+84g8THHtHK7ohFmPOQ1y
-	 HWSn6NabwFrCg1A9C/ap6rLbNiMTwGRlOGP1KbyUb+zCunl1rmjQW6TpCsrCljOfly
-	 2aAfqrXiPZExmclBEKW4Wed/pyUVf4P/CyH6fyzVYpsppTBwDxd+HK14ry9Ag+1w6X
-	 vM8SU6RFyKB/5J2d5dSZFZMow8UikCKZMJJGwpQ6DRYQ8cvahAxpvIGsWTnVnieYTn
-	 K6gRi8Qri+h8g==
-Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 14 Dec 2023 20:36:25 +0300 (MSK)
-Received: from localhost.localdomain (100.64.160.123) by
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 14 Dec 2023 20:36:25 +0300
-From: George Stark <gnstark@salutedevices.com>
-To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
-	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<christophe.leroy@csgroup.eu>, <hdegoede@redhat.com>,
-	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
-	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
-	<nikitos.tr@gmail.com>
-Subject: [PATCH v4 06/10] leds: lm3532: use devm API to cleanup module's resources
-Date: Thu, 14 Dec 2023 20:36:10 +0300
-Message-ID: <20231214173614.2820929-7-gnstark@salutedevices.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20231214173614.2820929-1-gnstark@salutedevices.com>
-References: <20231214173614.2820929-1-gnstark@salutedevices.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SrgML2mF9z3cV5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 05:08:29 +1100 (AEDT)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3BEHHnAX031022;
+	Thu, 14 Dec 2023 18:08:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=dtYv0ToIrImgw3VsCchO2oRgpTEWYtsdeq4xYNNdzGE=;
+ b=i9o6ZYlbjWdC87h4ZZLMHau/qVJS8phD26FUxPEgtnhr3/V3g6wjeFNFFjU1iVsOMaN0
+ DvlVIBEM8X7YtGiQMDos02LUXerrINXn3xYQl1WBxpS2ir0lEK/3a/8JMixuEcU/pW4e
+ 12dr7CjYJEv0y00+31CGWbf/XZTZM8Zw4W+dF5dX+7cQ5g/EVB7KJOxv+S/ihbRssRJd
+ HsQvtCvP0fgGGzF4KXpTFsauFT0jkSfVtrTBv/hGZmA8Cm9EhU8oJuSBl/d78T88+Sgn
+ VSCNiA+jPDkhmsATxVD3zmhKzbiJxgffnm4L93n2rhoM5gFkg3UufCeCWxSTqfnmcxgB lQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3v05yu9a0g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 Dec 2023 18:08:05 +0000
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3BEHsIG9020038;
+	Thu, 14 Dec 2023 18:08:04 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3v05yu99yx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 Dec 2023 18:08:04 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3BEHYMqV012555;
+	Thu, 14 Dec 2023 18:08:03 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3uw3jpah04-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 Dec 2023 18:08:03 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3BEI81p446727600
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 14 Dec 2023 18:08:01 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9FFAD20049;
+	Thu, 14 Dec 2023 18:08:01 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5D25E20040;
+	Thu, 14 Dec 2023 18:07:58 +0000 (GMT)
+Received: from sapthagiri.in.ibm.com (unknown [9.43.25.55])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 14 Dec 2023 18:07:58 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 1/5] powerpc/smp: Enable Asym packing for cores on shared processor
+Date: Thu, 14 Dec 2023 23:37:11 +0530
+Message-ID: <20231214180720.310852-2-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20231214180720.310852-1-srikar@linux.vnet.ibm.com>
+References: <20231214180720.310852-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [100.64.160.123]
-X-ClientProxiedBy: p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) To
- p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
-X-KSMG-Rule-ID: 10
-X-KSMG-Message-Action: clean
-X-KSMG-AntiSpam-Lua-Profiles: 182125 [Dec 14 2023]
-X-KSMG-AntiSpam-Version: 6.1.0.3
-X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 7 0.3.7 6d6bf5bd8eea7373134f756a2fd73e9456bb7d1a, {Tracking_uf_ne_domains}, {Tracking_from_domain_doesnt_match_to}, salutedevices.com:7.1.1;smtp.sberdevices.ru:5.0.1,7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;127.0.0.199:7.1.2;100.64.160.123:7.1.2;www.ti.com:7.1.1, FromAlignment: s, ApMailHostAddress: 100.64.160.123
-X-MS-Exchange-Organization-SCL: -1
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean, bases: 2023/12/14 14:24:00
-X-KSMG-LinksScanning: Clean, bases: 2023/12/14 14:25:00
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2023/12/14 10:50:00 #22693095
-X-KSMG-AntiVirus-Status: Clean, skipped
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: lSWww8Upt2l9eFaWiCOmoIctfNE8Nb8C
+X-Proofpoint-GUID: lsqJHUbody1aOUnDAtfYjaFaYYxb9U6Q
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-12-14_12,2023-12-14_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxscore=0
+ mlxlogscore=999 priorityscore=1501 adultscore=0 impostorscore=0
+ suspectscore=0 malwarescore=0 bulkscore=0 phishscore=0 clxscore=1015
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2312140128
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,97 +97,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, George Stark <gnstark@salutedevices.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Valentin Schneider <vschneid@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Srikar Dronamraju <srikar@linux.vnet.ibm.com>, "Paul E. McKenney" <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "ndesaulniers@google.com" <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Aneesh <aneesh.kumar@kernel.org>, Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In this driver LEDs are registered using devm_led_classdev_register()
-so they are automatically unregistered after module's remove() is done.
-led_classdev_unregister() calls module's led_set_brightness() to turn off
-the LEDs and that callback uses resources which were destroyed already
-in module's remove() so use devm API instead of remove().
+If there are shared processor LPARs, underlying Hypervisor can have more
+virtual cores to handle than actual physical cores.
 
-Signed-off-by: George Stark <gnstark@salutedevices.com>
+Starting with Power 9, a big core (aka SMT8 core) has 2 nearly
+independent thread groups. On a shared processors LPARs, it helps to
+pack threads to lesser number of cores so that the overall system
+performance and utilization improves. PowerVM schedules at a big core
+level. Hence packing to fewer cores helps.
+
+Since each thread-group is independent, running threads on both the
+thread-groups of a SMT8 core, should have a minimal adverse impact in
+non over provisioned scenarios. These changes in this patchset will not
+affect in the over provisioned scenario. If there are more threads than
+SMT domains, then asym_packing will not kick-in
+
+For example: Lets says there are two 8-core Shared LPARs that are
+actually sharing a 8 Core shared physical pool, each running 8 threads
+each. Then Consolidating 8 threads to 4 cores on each LPAR would help
+them to perform better. This is because each of the LPAR will get
+100% time to run applications and there will no switching required by
+the Hypervisor.
+
+To achieve this, enable SD_ASYM_PACKING flag at CACHE, MC and DIE level
+when the system is running in shared processor mode and has big cores.
+
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
- drivers/leds/leds-lm3532.c | 30 ++++++++++++++++++------------
- 1 file changed, 18 insertions(+), 12 deletions(-)
+Changelog:
+v4 -> v5:
+- commit msg update
+v3 -> v4:
+- Dont use splpar_asym_pack with SMT
+- Conflict resolution due to rebase
+	(DIE changed to PKG)
+v2 -> v3:
+- Handle comments from Michael Ellerman.
+- Rework using existing cpu_has_features static key
+v1->v2: Using Jump label instead of a variable.
 
-diff --git a/drivers/leds/leds-lm3532.c b/drivers/leds/leds-lm3532.c
-index 13662a4aa1f2..713900947e35 100644
---- a/drivers/leds/leds-lm3532.c
-+++ b/drivers/leds/leds-lm3532.c
-@@ -3,6 +3,7 @@
- // Copyright (C) 2019 Texas Instruments Incorporated - https://www.ti.com/
- // https://www.ti.com/lit/ds/symlink/lm3532.pdf
+ arch/powerpc/kernel/smp.c | 25 +++++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ab691c89d787..3fc8ad9646a4 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1003,6 +1003,13 @@ static int powerpc_smt_flags(void)
+ }
+ #endif
  
-+#include <linux/devm-helpers.h>
- #include <linux/i2c.h>
- #include <linux/leds.h>
- #include <linux/slab.h>
-@@ -542,6 +543,13 @@ static int lm3532_parse_als(struct lm3532_data *priv)
- 	return ret;
++/*
++ * On shared processor LPARs scheduled on a big core (which has two or more
++ * independent thread groups per core), prefer lower numbered CPUs, so
++ * that workload consolidates to lesser number of cores.
++ */
++static __ro_after_init DEFINE_STATIC_KEY_FALSE(splpar_asym_pack);
++
+ /*
+  * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
+  * This topology makes it *much* cheaper to migrate tasks between adjacent cores
+@@ -1011,9 +1018,20 @@ static int powerpc_smt_flags(void)
+  */
+ static int powerpc_shared_cache_flags(void)
+ {
++	if (static_branch_unlikely(&splpar_asym_pack))
++		return SD_SHARE_PKG_RESOURCES | SD_ASYM_PACKING;
++
+ 	return SD_SHARE_PKG_RESOURCES;
  }
  
-+static void gpio_set_low_action(void *data)
++static int powerpc_shared_proc_flags(void)
 +{
-+	struct lm3532_data *priv = (struct lm3532_data *)data;
++	if (static_branch_unlikely(&splpar_asym_pack))
++		return SD_ASYM_PACKING;
 +
-+	gpiod_direction_output(priv->enable_gpio, 0);
++	return 0;
 +}
 +
- static int lm3532_parse_node(struct lm3532_data *priv)
+ /*
+  * We can't just pass cpu_l2_cache_mask() directly because
+  * returns a non-const pointer and the compiler barfs on that.
+@@ -1050,8 +1068,8 @@ static struct sched_domain_topology_level powerpc_topology[] = {
+ 	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+ #endif
+ 	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
+-	{ cpu_mc_mask, SD_INIT_NAME(MC) },
+-	{ cpu_cpu_mask, SD_INIT_NAME(PKG) },
++	{ cpu_mc_mask, powerpc_shared_proc_flags, SD_INIT_NAME(MC) },
++	{ cpu_cpu_mask, powerpc_shared_proc_flags, SD_INIT_NAME(PKG) },
+ 	{ NULL, },
+ };
+ 
+@@ -1686,6 +1704,9 @@ static void __init fixup_topology(void)
  {
- 	struct fwnode_handle *child = NULL;
-@@ -556,6 +564,12 @@ static int lm3532_parse_node(struct lm3532_data *priv)
- 	if (IS_ERR(priv->enable_gpio))
- 		priv->enable_gpio = NULL;
+ 	int i;
  
-+	if (priv->enable_gpio) {
-+		ret = devm_add_action(&priv->client->dev, gpio_set_low_action, priv);
-+		if (ret)
-+			return ret;
-+	}
++	if (is_shared_processor() && has_big_cores)
++		static_branch_enable(&splpar_asym_pack);
 +
- 	priv->regulator = devm_regulator_get(&priv->client->dev, "vin");
- 	if (IS_ERR(priv->regulator))
- 		priv->regulator = NULL;
-@@ -691,7 +705,10 @@ static int lm3532_probe(struct i2c_client *client)
- 		return ret;
- 	}
- 
--	mutex_init(&drvdata->lock);
-+	ret = devm_mutex_init(&client->dev, &drvdata->lock);
-+	if (ret)
-+		return ret;
-+
- 	i2c_set_clientdata(client, drvdata);
- 
- 	ret = lm3532_parse_node(drvdata);
-@@ -703,16 +720,6 @@ static int lm3532_probe(struct i2c_client *client)
- 	return ret;
- }
- 
--static void lm3532_remove(struct i2c_client *client)
--{
--	struct lm3532_data *drvdata = i2c_get_clientdata(client);
--
--	mutex_destroy(&drvdata->lock);
--
--	if (drvdata->enable_gpio)
--		gpiod_direction_output(drvdata->enable_gpio, 0);
--}
--
- static const struct of_device_id of_lm3532_leds_match[] = {
- 	{ .compatible = "ti,lm3532", },
- 	{},
-@@ -727,7 +734,6 @@ MODULE_DEVICE_TABLE(i2c, lm3532_id);
- 
- static struct i2c_driver lm3532_i2c_driver = {
- 	.probe = lm3532_probe,
--	.remove = lm3532_remove,
- 	.id_table = lm3532_id,
- 	.driver = {
- 		.name = LM3532_NAME,
+ #ifdef CONFIG_SCHED_SMT
+ 	if (has_big_cores) {
+ 		pr_info("Big cores detected but using small core scheduling\n");
 -- 
-2.25.1
+2.35.3
 
