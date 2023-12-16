@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4263C46CA2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Dec 2023 13:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57380C46CCD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Dec 2023 13:46:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Q32yqXVA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=F2oQsink;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SsnRS1TNnz3dSJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Dec 2023 00:45:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SsnSM00BYz3cXS
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Dec 2023 00:46:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Q32yqXVA;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=F2oQsink;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::12b; helo=mail-il1-x12b.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-il1-x12b.google.com (mail-il1-x12b.google.com [IPv6:2607:f8b0:4864:20::12b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::35; helo=mail-oa1-x35.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com [IPv6:2001:4860:4864:20::35])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SsnNk07Lcz30h0
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2023 00:43:33 +1100 (AEDT)
-Received: by mail-il1-x12b.google.com with SMTP id e9e14a558f8ab-35f72db10f7so7139895ab.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2023 05:43:33 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SsnNl57sbz3bx1
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2023 00:43:35 +1100 (AEDT)
+Received: by mail-oa1-x35.google.com with SMTP id 586e51a60fabf-1f060e059a3so1277512fac.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2023 05:43:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1702734211; x=1703339011; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1702734207; x=1703339007; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wj0Mut5HzH8zVLvul2P8fFuIwv0JpWCZjoItb4hgRRc=;
-        b=Q32yqXVAo9aGxEN/+6fhxPOGBijZszV7+YzqSjMbtDZH8mnnOAIWLMdegRgpgvLlMX
-         33n8jNDSfY1+24mRKQFFsZWXHgAioU7bhbgqYfd+twdo6pMW7hy4lGG6NZR/Gsi4qNKB
-         BRzoLKug32LrZkoYWUN5ECnFLhW4g22IprY1JGyINSs8e/shlOpLfb5ig+oqKbz1RGui
-         XxogOXjdcaYanh/u0MU59r75COgbIglZ+qYVx8LcuxdNIvRGml/iESq8zWN2+HIug9gb
-         gDPRm2YT78SGxbI6sAJneWpUB/gpY0i9414syVw4kwUxNfKrmlMlVBEpfbG1UBXCFctl
-         Q2Iw==
+        bh=EawXcrWZcj4wjBdULRz+yh78MdJFfpIVMXufen8CLio=;
+        b=F2oQsinkQ6qbUeonFsLkf83Abj4xwE1iGhKWCEY/B+SsoRDeKJyJJ/jNEFIzQpj23L
+         PJyhmQ4PtKAphaThzza1ZXtVN+m5hE4uh3m0kQD/ZKjc1GTDSIVYhf5fwsSG2JsP2MoJ
+         Q5RIrWN/qQQ7Wu+UbvzpZXRNbBL5RAFFrQkiVThmt/yq9BCi8+61y4v1p2rPQiXzLsle
+         V+Cj+/nQepsA0zFxJyvcytrOM7DTiPO/2A8Ol1yEVNBmZkrtHZjagHnmL/8vlc15cFCp
+         2HibYa6QOFJSUIUGfSmzW8LKuHXm3vXme0lvNZVks2vggRBRVsRERe46LUzKuh9pXo96
+         w3CQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702734211; x=1703339011;
+        d=1e100.net; s=20230601; t=1702734207; x=1703339007;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=wj0Mut5HzH8zVLvul2P8fFuIwv0JpWCZjoItb4hgRRc=;
-        b=lh+zfsAn329s4BjdkVqc5aCYKQe4Dz1IJilED9Fyyz+R4N9RrW8Iki932WlUcmtAi9
-         eGZ8J9kTMezrhThpbGxrOeM92zFWYp7HD3RdP0cZYy4lCTvV4D2t/XtYvViQuj/XvKA2
-         kafe9NTULMOEjH5VvbWiYfXvvAiepxUO3r8ygJuOHUVSuWykdYy/lhhwUl3/tFBEE5UR
-         W2GkGhKU8RzlN1lNxKDN0qVpK/ZrQPNFuKRmC10BoRJ//wdCWZV0QlFeF96btDAueuY3
-         WFBuSwS3aSVwjX6lvMntWZieqOLGQuAww8zksSYO2qfLmYPB/SLnnfUBF7qZSStECpab
-         hGqg==
-X-Gm-Message-State: AOJu0YwYsJVMYEORVsL4dR5bfI0cyoLPx1aryzfQOCnoCiJK5OpmZ1Fd
-	6qKmhSa7fgQJRir3krpBavI=
-X-Google-Smtp-Source: AGHT+IHYh1+XYxyEnHjWdIM84spbdWJPQ3KCBdFOxFPfV06aBtENyzhLMMNQqIFziZJUqBKvpUzksg==
-X-Received: by 2002:a05:6e02:1c8b:b0:35f:8102:aaa with SMTP id w11-20020a056e021c8b00b0035f81020aaamr6863917ill.59.1702734210761;
-        Sat, 16 Dec 2023 05:43:30 -0800 (PST)
+        bh=EawXcrWZcj4wjBdULRz+yh78MdJFfpIVMXufen8CLio=;
+        b=fUQaz3szlXhZsXYRlyw5wzM/kaDWq6igPDvXQdZcByY3844M8sSNGbIsfahwT3HRWi
+         zrYK1kgEC0b1k98wu+eG3+TtVXV1QbrmF3J2b7enG9oRqH8339uTl/v3iA6uKwiN4egO
+         H7RyIsSHcRFZbeGAbtng9M69XLLLC6vgNVTep7Umn5mP2sP3rvf0zXiuqvWNWFrDFZhG
+         dbEfXXkep2G9ELcNV8wmk0cw+mVbvKmfpJCKagib5eg0WMGfJzoXO7usaD9Tvq2YbI2P
+         ISD8diI9slkzOJ5BGT2XB4EG9fmi9+SFgyI8apr0pxROBPs0pC/V2CB4+UFEAiZvvG2s
+         LE+Q==
+X-Gm-Message-State: AOJu0YwqNVy0gpvWEmN02TaEdkWNOy73/qrU8vaMwM2A7Gb4qgpBkN4L
+	piH3WZTz0dvhGh89FIP7wMs=
+X-Google-Smtp-Source: AGHT+IEU9zGI2gfEYPclbe2FjAKlC/SIgONOnT1Zp9UynRcy6B6WBDpTyRY1h43A8d+uXhZfJbB1VA==
+X-Received: by 2002:a05:6870:55d3:b0:203:83cd:c18c with SMTP id qk19-20020a05687055d300b0020383cdc18cmr1949251oac.40.1702734206762;
+        Sat, 16 Dec 2023 05:43:26 -0800 (PST)
 Received: from wheely.local0.net (203-221-42-190.tpgi.com.au. [203.221.42.190])
-        by smtp.gmail.com with ESMTPSA id w2-20020a654102000000b005c65ed23b65sm12663631pgp.94.2023.12.16.05.43.27
+        by smtp.gmail.com with ESMTPSA id w2-20020a654102000000b005c65ed23b65sm12663631pgp.94.2023.12.16.05.43.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 16 Dec 2023 05:43:30 -0800 (PST)
+        Sat, 16 Dec 2023 05:43:26 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm@vger.kernel.org
-Subject: [kvm-unit-tests PATCH v5 03/29] migration: use a more robust way to wait for background job
-Date: Sat, 16 Dec 2023 23:42:30 +1000
-Message-ID: <20231216134257.1743345-4-npiggin@gmail.com>
+Subject: [kvm-unit-tests PATCH v5 02/29] arch-run: Clean up initrd cleanup
+Date: Sat, 16 Dec 2023 23:42:29 +1000
+Message-ID: <20231216134257.1743345-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231216134257.1743345-1-npiggin@gmail.com>
 References: <20231216134257.1743345-1-npiggin@gmail.com>
@@ -82,62 +82,40 @@ Cc: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>, Nico Bo
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Starting a pipeline of jobs in the background seems to not have a
-simple way to reliably find the pid of a particular process. The
-way PID of QEMU is sometimes causes a failure waiting on a PID that
-is not running when stressing migration with later changes to do
-multiple migrations.
-
-Changing this to use $! is more robust in testing, and simpler.
+Rather than put a big script into the trap handler, have it call
+a function.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- scripts/arch-run.bash | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ scripts/arch-run.bash | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index cc7da7c5..4d4e791c 100644
+index f22ead6f..cc7da7c5 100644
 --- a/scripts/arch-run.bash
 +++ b/scripts/arch-run.bash
-@@ -131,6 +131,7 @@ run_migration ()
+@@ -271,10 +271,20 @@ search_qemu_binary ()
+ 	export PATH=$save_path
+ }
  
- 	migsock=$(mktemp -u -t mig-helper-socket.XXXXXXXXXX)
- 	migout1=$(mktemp -t mig-helper-stdout1.XXXXXXXXXX)
-+	migout_fifo1=$(mktemp -u -t mig-helper-fifo-stdout1.XXXXXXXXXX)
- 	qmp1=$(mktemp -u -t mig-helper-qmp1.XXXXXXXXXX)
- 	qmp2=$(mktemp -u -t mig-helper-qmp2.XXXXXXXXXX)
- 	fifo=$(mktemp -u -t mig-helper-fifo.XXXXXXXXXX)
-@@ -143,8 +144,9 @@ run_migration ()
- 	qmpout2=/dev/null
- 
- 	eval "$@" -chardev socket,id=mon1,path=${qmp1},server=on,wait=off \
--		-mon chardev=mon1,mode=control | tee ${migout1} &
--	live_pid=`jobs -l %+ | grep "eval" | awk '{print$2}'`
-+		-mon chardev=mon1,mode=control > ${migout_fifo1} &
-+	live_pid=$!
-+	cat ${migout_fifo1} | tee ${migout1} &
- 
- 	# We have to use cat to open the named FIFO, because named FIFO's, unlike
- 	# pipes, will block on open() until the other end is also opened, and that
-@@ -152,7 +154,7 @@ run_migration ()
- 	mkfifo ${fifo}
- 	eval "$@" -chardev socket,id=mon2,path=${qmp2},server=on,wait=off \
- 		-mon chardev=mon2,mode=control -incoming unix:${migsock} < <(cat ${fifo}) &
--	incoming_pid=`jobs -l %+ | awk '{print$2}'`
-+	incoming_pid=$!
- 
- 	# The test must prompt the user to migrate, so wait for the "migrate" keyword
- 	while ! grep -q -i "Now migrate the VM" < ${migout1} ; do
-@@ -166,6 +168,9 @@ run_migration ()
- 		sleep 1
- 	done
- 
-+	# Wait until the destination has created the incoming socket
-+	while ! [ -S ${migsock} ] ; do sleep 0.1 ; done
++initrd_cleanup ()
++{
++	if [ "$KVM_UNIT_TESTS_ENV_OLD" ]; then
++		export KVM_UNIT_TESTS_ENV="$KVM_UNIT_TESTS_ENV_OLD"
++	else
++		unset KVM_UNIT_TESTS_ENV
++		unset KVM_UNIT_TESTS_ENV_OLD
++	fi
++}
 +
- 	qmp ${qmp1} '"migrate", "arguments": { "uri": "unix:'${migsock}'" }' > ${qmpout1}
- 
- 	# Wait for the migration to complete
+ initrd_create ()
+ {
+ 	if [ "$ENVIRON_DEFAULT" = "yes" ]; then
+-		trap_exit_push 'rm -f $KVM_UNIT_TESTS_ENV; [ "$KVM_UNIT_TESTS_ENV_OLD" ] && export KVM_UNIT_TESTS_ENV="$KVM_UNIT_TESTS_ENV_OLD" || unset KVM_UNIT_TESTS_ENV; unset KVM_UNIT_TESTS_ENV_OLD'
++		trap_exit_push 'rm -f $KVM_UNIT_TESTS_ENV; initrd_cleanup'
+ 		[ -f "$KVM_UNIT_TESTS_ENV" ] && export KVM_UNIT_TESTS_ENV_OLD="$KVM_UNIT_TESTS_ENV"
+ 		export KVM_UNIT_TESTS_ENV=$(mktemp)
+ 		env_params
 -- 
 2.42.0
 
