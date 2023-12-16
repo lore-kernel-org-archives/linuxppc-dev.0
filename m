@@ -4,71 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CBD4C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Dec 2023 04:13:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6A8EC38147
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Dec 2023 09:42:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kKO2GDvC;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Wu3t1Yoa;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SsXkr0JQnz3dKy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Dec 2023 15:13:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ssh2Z03csz3bv3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Dec 2023 20:42:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kKO2GDvC;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Wu3t1Yoa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c2e; helo=mail-oo1-xc2e.google.com; envelope-from=ghanshyam1898@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc2e.google.com (mail-oo1-xc2e.google.com [IPv6:2607:f8b0:4864:20::c2e])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ss76y3xbbz3cQj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 22:59:20 +1100 (AEDT)
-Received: by mail-oo1-xc2e.google.com with SMTP id 006d021491bc7-5908a63a83fso430560eaf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2023 03:59:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1702641555; x=1703246355; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ns8mRhF3ZB8rmGf30ann8sbOyHbBVDczvz9z2SKkRIc=;
-        b=kKO2GDvCJZvg3NWOrDyTcYwQaXOjocsmIiAeitRs/SERB+XHfW+216mXwK8eB0FvH4
-         gpANDAS0hE6AbXiACs1wjbr3J6rY+Ig6PprcXpf4O2uNrDLbRkyC+6niARwXPOF2iu4x
-         iuW5KFlchRu2tA+sd124jES7lCdBVANFsheJ4I8Raghku5fNTlC9YwreENRWkOULKA7h
-         BAX1ndJnXRrRW6Yy9CN38c078SN7cKeWg3h+T3DZdSojuH+yfrrRNqA7InfKh2j2gPhN
-         3w8l9jol5NYWAsq/EBSVApYGKjEwz/6ml5coBV22gS0m6+eWtHL00XbVZCGiU4dRZzKk
-         7WbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702641555; x=1703246355;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ns8mRhF3ZB8rmGf30ann8sbOyHbBVDczvz9z2SKkRIc=;
-        b=uL4b0TsVhPzHztVgFONZ7CAaR9na6PpUh6q+gzULXazXf0jMdehI+7ZsOZJDNWqBet
-         gFRiauF1+mnIGiUvca2UstJWtehgE3f43KiZP1MdpzYLL3+TGLfM6naVEsJdjMZLvTgK
-         yVcCL7cER2wl8KITa4EpYwDqS1cPVHZcJBGzfq0vjrQV8+a09fsINBmfw72tKT3nPyz3
-         K3+aVbuP3apqVHS+k6aj/ttssbvQqNT9G4SE+I8NsAXlAe/QdTi+5OojqjJ/8fz34NrA
-         +kjmwOJJvEHDvskb1eIgRiad6bZlZsVcm7CFDbBnp8lRtk1p3Ij+YLoHqNIGUo9OGgjN
-         vgaQ==
-X-Gm-Message-State: AOJu0YwwLJbl45Idud5wwV+MOIY3CGh99ack8av3RHVIhkf/b7I0mA3k
-	eAHlNIDGZWA/oO6NZr4W+pA=
-X-Google-Smtp-Source: AGHT+IFjZoDMEaUpN4R5gxsVNnhUAULzvXlGHcIuKhMaszcsmozG8uuTDLX/OvWo0XicCqilwSQlZw==
-X-Received: by 2002:a05:6359:594:b0:16d:fc9b:f6b7 with SMTP id ee20-20020a056359059400b0016dfc9bf6b7mr10394679rwb.5.1702641555464;
-        Fri, 15 Dec 2023 03:59:15 -0800 (PST)
-Received: from localhost.localdomain ([2401:4900:701a:b050:6cb4:5fa2:1942:26e1])
-        by smtp.gmail.com with ESMTPSA id f21-20020a056a00239500b006ce57f2a254sm13284675pfc.209.2023.12.15.03.59.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Dec 2023 03:59:15 -0800 (PST)
-From: Ghanshyam Agrawal <ghanshyam1898@gmail.com>
-To: mahesh@linux.ibm.com,
-	oohall@gmail.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu
-Subject: [PATCH] arch: powerpc: kernel: fixed some typos
-Date: Fri, 15 Dec 2023 17:28:57 +0530
-Message-Id: <20231215115857.575697-1-ghanshyam1898@gmail.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ssh1b3TVMz30Np
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2023 20:41:39 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Ssh1W5TXbz4xCm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2023 20:41:35 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4Ssh1W5QcNz4xS9; Sat, 16 Dec 2023 20:41:35 +1100 (AEDT)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Wu3t1Yoa;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Ssh1W260Bz4xCm
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Dec 2023 20:41:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1702719690;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Zk7LvFfboIPffETRNsovWRXYjUEBnLT/jZU6MklCwCQ=;
+	b=Wu3t1Yoa9g8xxflTozerIUKoGNSUpIgJ9w4XsQNL9Mz0rHDKwFs8iMPEnZ9sPWif7D/3lj
+	wGGgRA4LRQfBF38spN+eHpZuZAjTcFCy6axvxKMcJ7VbzzKaj0CUWKgUIR3nOqc5dCpPDz
+	x5348IYlLl/aneq/yRxxC6Izb2ozPEg=
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-136-gtpd6LQmODyQsQz_mT5V-A-1; Sat,
+ 16 Dec 2023 04:41:26 -0500
+X-MC-Unique: gtpd6LQmODyQsQz_mT5V-A-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id AF3A63C025C2;
+	Sat, 16 Dec 2023 09:41:25 +0000 (UTC)
+Received: from localhost (unknown [10.72.116.38])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id 6E8A51C060B1;
+	Sat, 16 Dec 2023 09:41:24 +0000 (UTC)
+Date: Sat, 16 Dec 2023 17:41:21 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v14 3/6] crash: add a new kexec flag for FDT update
+Message-ID: <ZX1wwVlE85FcTxmV@MiWiFi-R3L-srv>
+References: <20231211083056.340404-1-sourabhjain@linux.ibm.com>
+ <20231211083056.340404-4-sourabhjain@linux.ibm.com>
+ <ZXu55ZXVSMeQDE/e@MiWiFi-R3L-srv>
+ <7fe7b62f-d3fc-4035-96fe-1ab0e3e743c0@linux.ibm.com>
 MIME-Version: 1.0
+In-Reply-To: <7fe7b62f-d3fc-4035-96fe-1ab0e3e743c0@linux.ibm.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.7
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Sat, 16 Dec 2023 15:12:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,35 +89,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Ghanshyam Agrawal <ghanshyam1898@gmail.com>, linux-kernel@vger.kernel.org
+Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org, Eric DeVolder <eric.devolder@oracle.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Valentin Schneider <vschneid@redhat.com>, x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Naveen N Rao <naveen@kernel.org>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixed some typos
+On 12/15/23 at 12:17pm, Sourabh Jain wrote:
+...... 
+> > > diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+> > > index 0f6ea35879ee..bcedb7625b1f 100644
+> > > --- a/include/linux/kexec.h
+> > > +++ b/include/linux/kexec.h
+> > > @@ -319,6 +319,7 @@ struct kimage {
+> > >   #ifdef CONFIG_CRASH_HOTPLUG
+> > >   	/* If set, allow changes to elfcorehdr of kexec_load'd image */
+> > >   	unsigned int update_elfcorehdr:1;
+> > > +	unsigned int update_fdt:1;
+> > Can we unify this to one flag, e.g hotplug_update?
+> > 
+> > With this, on x86_64, we will skip the sha calculation for elfcorehdr.
+> > On ppc, we will skip the sha calculation for elfcorehdr and fdt.
+> Yeah, that's what I suggested to Eric. I can do that, but I see one
+> problem with powerpc or other platforms that need to skip SHA
+> for more kexec segments in addition to elfcorehdr.
+> 
+> `update_elfcorehdr` is set when the kexec tool sends the
+> `KEXEC_UPDATE_ELFCOREHDR`
+> flag to the kernel for the `kexec_load` system call.
+> 
+> Given that the kexec tool has already been updated to send the
+> `KEXEC_UPDATE_ELFCOREHDR` flag only when elfcorehdr is skipped from
+> SHA verification in generic code, now it would be tricky for architectures
+> to
+> determine whether kexec has skipped SHA verification for just elfcorehdr
+> or all segments needed on the platform with the same flag.
 
-Signed-off-by: Ghanshyam Agrawal <ghanshyam1898@gmail.com>
----
- arch/powerpc/kernel/eeh_pe.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+In kexec-tools, it's judged by do_hotplug to skip the elfcorehdr
+segment. I am wondering how you skip the fdt segment when calculating
+and verifying sha, only saw the update_fdt mark.
 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index e0ce81279624..8e0c1a8b8641 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -24,10 +24,10 @@ static int eeh_pe_aux_size = 0;
- static LIST_HEAD(eeh_phb_pe);
+About the existing KEXEC_UPDATE_ELFCOREHDR, we only rename the macro,
+but still use the same value, could you think of what problem could be
+caused between kernel and kexec-tools utility, the old and new version
+compatibility?
+
+If it's about the new header files installed on older kernel, we can
+change it like below? Fortunately only one release, 6.6 passed.
+
+diff --git a/include/uapi/linux/kexec.h b/include/uapi/linux/kexec.h
+index 3d5b3d757bed..df6a6505e267 100644
+--- a/include/uapi/linux/kexec.h
++++ b/include/uapi/linux/kexec.h
+@@ -13,7 +13,7 @@
+ #define KEXEC_ON_CRASH         0x00000001
+ #define KEXEC_PRESERVE_CONTEXT 0x00000002
+-#define KEXEC_UPDATE_FDT       0x00000008
++#define KEXEC_CRASH_HOTPLUG_UPDATE 0x00000004
+ #define KEXEC_UPDATE_ELFCOREHDR        0x00000004
+ #define KEXEC_ARCH_MASK                0xffff0000
  
- /**
-- * eeh_set_pe_aux_size - Set PE auxillary data size
-- * @size: PE auxillary data size
-+ * eeh_set_pe_aux_size - Set PE auxiliary data size
-+ * @size: PE auxiliary data size
-  *
-- * Set PE auxillary data size
-+ * Set PE auxiliary data size
-  */
- void eeh_set_pe_aux_size(int size)
- {
--- 
-2.25.1
+ /*
+
+With my understanding, the kexec flag should be indicating the action,
+the mem/cpu hotplug, but not relating to any detail. Imagine later
+another segment need be skipped on one ARCH again, then another flag
+need be added, this sounds not reasonable.
+
+> 
+> Code snippet from the kexec tool:
+> 
+> main() {
+>     ...
+>     /* NOTE: Xen KEXEC_LIVE_UPDATE and KEXEC_UPDATE_ELFCOREHDR collide */
+>     if (do_hotplug) {
+>         ...
+> 
+>         /* Indicate to the kernel it is ok to modify the elfcorehdr */
+>         kexec_flags |= KEXEC_UPDATE_ELFCOREHDR;
+>     }
+>     ...
+> }
+> 
+> Any suggestion how to handle this with just one kexec flag?
+> 
+> Thanks for the review.
+> 
+> Thanks,
+> Sourabh Jain
+> 
+> > 
+> > >   #endif
+> > >   #ifdef ARCH_HAS_KIMAGE_ARCH
+> > > @@ -396,9 +397,10 @@ bool kexec_load_permitted(int kexec_image_type);
+> > >   /* List of defined/legal kexec flags */
+> > >   #ifndef CONFIG_KEXEC_JUMP
+> > > -#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_UPDATE_ELFCOREHDR)
+> > > +#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_UPDATE_ELFCOREHDR | KEXEC_UPDATE_FDT)
+> > >   #else
+> > > -#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_PRESERVE_CONTEXT | KEXEC_UPDATE_ELFCOREHDR)
+> > > +#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_PRESERVE_CONTEXT | KEXEC_UPDATE_ELFCOREHDR | \
+> > > +			KEXEC_UPDATE_FDT)
+> > >   #endif
+> > >   /* List of defined/legal kexec file flags */
+> > > diff --git a/include/uapi/linux/kexec.h b/include/uapi/linux/kexec.h
+> > > index 01766dd839b0..3d5b3d757bed 100644
+> > > --- a/include/uapi/linux/kexec.h
+> > > +++ b/include/uapi/linux/kexec.h
+> > > @@ -13,6 +13,7 @@
+> > >   #define KEXEC_ON_CRASH		0x00000001
+> > >   #define KEXEC_PRESERVE_CONTEXT	0x00000002
+> > >   #define KEXEC_UPDATE_ELFCOREHDR	0x00000004
+> > > +#define KEXEC_UPDATE_FDT	0x00000008
+> > >   #define KEXEC_ARCH_MASK		0xffff0000
+> > >   /*
+> > > diff --git a/kernel/kexec.c b/kernel/kexec.c
+> > > index 8f35a5a42af8..97eb151cd931 100644
+> > > --- a/kernel/kexec.c
+> > > +++ b/kernel/kexec.c
+> > > @@ -132,6 +132,8 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
+> > >   #ifdef CONFIG_CRASH_HOTPLUG
+> > >   	if (flags & KEXEC_UPDATE_ELFCOREHDR)
+> > >   		image->update_elfcorehdr = 1;
+> > > +	if (flags & KEXEC_UPDATE_FDT)
+> > > +		image->update_fdt = 1;
+> > >   #endif
+> > >   	ret = machine_kexec_prepare(image);
+> > > -- 
+> > > 2.41.0
+> > > 
+> 
 
