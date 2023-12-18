@@ -4,40 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8012BC35274
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Dec 2023 03:20:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F7DEC46CD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Dec 2023 03:21:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4StlTB1Z4xz3cXw
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Dec 2023 14:20:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4StlV50znPz3cYZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Dec 2023 14:21:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=114.132.65.219; helo=bg1.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 399 seconds by postgrey-1.37 at boromir; Mon, 18 Dec 2023 14:21:02 AEDT
+Received: from bg1.exmail.qq.com (bg1.exmail.qq.com [114.132.65.219])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4StlSh2MgWz2yRS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2023 14:20:19 +1100 (AEDT)
-X-QQ-mid: bizesmtp67t1702869194tia5c1x9
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4StlTV2cL0z2yQL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2023 14:21:02 +1100 (AEDT)
+X-QQ-mid: bizesmtp71t1702869266tp6lsvnj
 Received: from HX09040029.powercore.com.cn ( [58.34.117.194])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 18 Dec 2023 11:13:10 +0800 (CST)
+	id ; Mon, 18 Dec 2023 11:14:23 +0800 (CST)
 X-QQ-SSF: 01400000000000402000000A0000000
-X-QQ-FEAT: CbHyMb8VrI0YrUNQgdv8Fc3WpubobuDr6zh6jswt2V4GvALaE86ztRNRl/OBQ
-	DeMfd71HgSxRURWE7Q6u1XYIrbN9RtZKGmKw3ju1RT241YPw4vaUaYemOwzPY9XSuj6gHTc
-	deNbw8RFi2AAV1aK8RJMRuAbDl53AmNZS9h7Y26fL64+/Vj8mP/f9Ah0BYm3CtmJ95EDuwK
-	WM8OrPwATcSV8nhAeczWn7fTYW0KFXljmNTxIMv68Nf79XIBXZRnaPFceirh86MLJB9a/fX
-	9T/2qvlG4rbSWpdmpnkh7kNYC+lRzodPsoY3sHsKJApQ9lpJpY4x0NaUqw4D0+giJa/IBHE
-	+WNpD0/Z/Ho7sgw14r8Hi99OUP3CLPwpOLo/PggfDzGU8tUdu1E7u5fT8ftredu6M0N0A7E
-	Ads/GtkisX0=
+X-QQ-FEAT: fmY4SgAPM3slIzyLYur0WBpW/RTrgfiYkLSU8cSt6wuysWhvu08Z99fSf9eWz
+	bKG73zarUNRBOQvL6DiaJOscOyuPb1ZmFcFlLiJ/teAX/q10RRN9y80nvBtinp7zWe/ZIw0
+	uHwE/HtMpgiVNFP8CMi61za4iP61BhvHx4uxpEJqZMUgpk9i34RgHoqSoS1WAsLM/wsKlRi
+	yBt2cACO+mLQXY+IU4QlFrCo/3aMUgSTI46C8G+UkywtDtd9chmWXn1+33zcY+5fZnI5IlB
+	FZWUEwFKStcaQFspg90PzopQaRpSsFK+8/qOdcSswKgl+P6aedSms2q5g0ZQbtr28haSefF
+	wXq01TOM2x4vnSowTOm8LzRXNVC3EWgcNZ+3n7WrvkFQbFcPKKlFkvrKDd5M3ROUZHG21kB
+	842HVHETayS4DY/5L1kVwQ==
 X-QQ-GoodBg: 2
-X-BIZMAIL-ID: 16065116552740346806
+X-BIZMAIL-ID: 7532627385370386625
 From: Luming Yu <luming.yu@shingroup.cn>
 To: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	mpe@ellerman.id.au,
 	npiggin@gmail.com,
 	christophe.leroy@csgroup.eu
-Subject: [PATCH v1 1/2] powerpc/debug: implement HAVE_USER_RETURN_NOTIFIER
-Date: Mon, 18 Dec 2023 11:13:08 +0800
-Message-ID: <1FD36D52828D2506+20231218031309.2063-1-luming.yu@shingroup.cn>
+Subject: [PATCH 1/1] powerpc/io: enable dma-contiguous API
+Date: Mon, 18 Dec 2023 11:14:19 +0800
+Message-ID: <F73A5182F488C472+20231218031420.2112-1-luming.yu@shingroup.cn>
 X-Mailer: git-send-email 2.42.0.windows.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -58,94 +59,47 @@ Cc: shenghui.qu@shingroup.cn, Luming Yu <luming.yu@shingroup.cn>, dawei.li@shing
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The support for user return notifier infrastructure
-is manually hooked into powerpc architecture.
+enable HAVE_DMA_CONTIGUOUS for general use of
+CMA on powerpc.
 
 Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
 ---
-v0->v1: add user return notifier arch hook manually.
----
- arch/powerpc/Kconfig                    |  1 +
- arch/powerpc/include/asm/entry-common.h | 16 ++++++++++++++++
- arch/powerpc/include/asm/thread_info.h  |  2 ++
- arch/powerpc/kernel/process.c           |  2 ++
- 4 files changed, 21 insertions(+)
- create mode 100644 arch/powerpc/include/asm/entry-common.h
+ arch/powerpc/Kconfig               | 1 +
+ arch/powerpc/kernel/setup-common.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c10229c0243c..b968068cc04a 100644
+index b968068cc04a..e21f72bcb61f 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -277,6 +277,7 @@ config PPC
- 	select HAVE_STACKPROTECTOR		if PPC64 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r13)
- 	select HAVE_STATIC_CALL			if PPC32
- 	select HAVE_SYSCALL_TRACEPOINTS
-+	select HAVE_USER_RETURN_NOTIFIER
- 	select HAVE_VIRT_CPU_ACCOUNTING
- 	select HAVE_VIRT_CPU_ACCOUNTING_GEN
- 	select HOTPLUG_SMT			if HOTPLUG_CPU
-diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-new file mode 100644
-index 000000000000..51f1eb767696
---- /dev/null
-+++ b/arch/powerpc/include/asm/entry-common.h
-@@ -0,0 +1,16 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef ARCH_POWERPC_ENTRY_COMMON_H
-+#define ARCH_POWERPC_ENTRY_COMMON_H
-+
-+#include <linux/user-return-notifier.h>
-+
-+static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-+						  unsigned long ti_work)
-+{
-+	if (ti_work & _TIF_USER_RETURN_NOTIFY)
-+		fire_user_return_notifiers();
-+}
-+
-+#define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
-+
-+#endif
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index bf5dde1a4114..47e226032f9c 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -117,6 +117,7 @@ void arch_setup_new_exec(void);
- #endif
- #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_32BIT		20	/* 32 bit binary */
-+#define TIF_USER_RETURN_NOTIFY	21	/* notify kernel of userspace return */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -125,6 +126,7 @@ void arch_setup_new_exec(void);
- #define _TIF_NOTIFY_SIGNAL	(1<<TIF_NOTIFY_SIGNAL)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_32BIT		(1<<TIF_32BIT)
-+#define _TIF_USER_RETURN_NOTIFY	(1<<TIF_USER_RETURN_NOTIFY)
- #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
- #define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 392404688cec..70a9ea949798 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -38,6 +38,7 @@
- #include <linux/uaccess.h>
- #include <linux/pkeys.h>
- #include <linux/seq_buf.h>
-+#include <linux/user-return-notifier.h>
- 
- #include <asm/interrupt.h>
+@@ -231,6 +231,7 @@ config PPC
+ 	select HAVE_C_RECORDMCOUNT
+ 	select HAVE_DEBUG_KMEMLEAK
+ 	select HAVE_DEBUG_STACKOVERFLOW
++	select HAVE_DMA_CONTIGUOUS
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_DYNAMIC_FTRACE_WITH_ARGS	if ARCH_USING_PATCHABLE_FUNCTION_ENTRY || MPROFILE_KERNEL || PPC32
+ 	select HAVE_DYNAMIC_FTRACE_WITH_REGS	if ARCH_USING_PATCHABLE_FUNCTION_ENTRY || MPROFILE_KERNEL || PPC32
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 9b142b9d5187..50d09363352d 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -35,6 +35,7 @@
+ #include <linux/of_irq.h>
+ #include <linux/hugetlb.h>
+ #include <linux/pgtable.h>
++#include <linux/dma-map-ops.h>
  #include <asm/io.h>
-@@ -1386,6 +1387,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	if (current->thread.regs)
- 		restore_math(current->thread.regs);
- #endif /* CONFIG_PPC_BOOK3S_64 */
-+	propagate_user_return_notify(prev, new);
+ #include <asm/paca.h>
+ #include <asm/processor.h>
+@@ -975,6 +976,7 @@ void __init setup_arch(char **cmdline_p)
+ 	 */
+ 	kvm_cma_reserve();
+ 	gigantic_hugetlb_cma_reserve();
++	dma_contiguous_reserve(0);
  
- 	return last;
- }
+ 	early_memtest(min_low_pfn << PAGE_SHIFT, max_low_pfn << PAGE_SHIFT);
+ 
 -- 
 2.42.0.windows.2
 
