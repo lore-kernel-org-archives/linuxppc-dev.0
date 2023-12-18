@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C33DDC46CA2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Dec 2023 23:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EE8AC35274
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Dec 2023 23:18:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=KC9IcCdB;
+	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=A1cKtatz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SvG2H39hFz3vdb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Dec 2023 10:17:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SvG3C1YTlz3vfW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Dec 2023 10:18:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=KC9IcCdB;
+	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=A1cKtatz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=savoirfairelinux.com (client-ip=208.88.110.44; helo=mail.savoirfairelinux.com; envelope-from=elinor.montmasson@savoirfairelinux.com; receiver=lists.ozlabs.org)
 Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sv08X0HDlz3bV3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sv08X0LdCz3bZK
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2023 23:52:12 +1100 (AEDT)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id CB7159C04BD;
-	Mon, 18 Dec 2023 07:42:09 -0500 (EST)
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id A68539C31CC;
+	Mon, 18 Dec 2023 07:43:14 -0500 (EST)
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id a22CMRJ0P6OD; Mon, 18 Dec 2023 07:42:09 -0500 (EST)
+ with ESMTP id Z2HT4vLoBD6V; Mon, 18 Dec 2023 07:43:14 -0500 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 22D809C068C;
-	Mon, 18 Dec 2023 07:42:09 -0500 (EST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 22D809C068C
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 53F209C335A;
+	Mon, 18 Dec 2023 07:43:14 -0500 (EST)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 53F209C335A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1702903329; bh=nNJwBxDmzL960mEI1mqFgHu2Oy9OWJ5ye2uPUgqVOL8=;
+	t=1702903394; bh=3qPcaZHdj1kfz+pc5ad/l6BFAvniuOuBLv61aSrT+ic=;
 	h=From:To:Date:Message-Id:MIME-Version;
-	b=KC9IcCdB/ndeBn1iClkNzQdFvCYwcAae8mB8HjDOuwe7VNhtuAysf0Iv6nV2CFid3
-	 DkpOU2cx0klXMN+DKDOxk8e5e0ixq2mAUckeyG+WHeX0HMe6UFvdS6vptU3NuVN3w1
-	 Buxz9EwOLYdfBjg/iEgA4UtCe5oey/qmQdjEU6C4zKRpXHs1q9zZGJA+F+NBEnF0dw
-	 r0vOh6SZZXliSB5dt9R7WXiMEIAFVE3xhro3SfHWX/ctYXpktccGcICcIpgsfVPuOm
-	 a1vT4MAYhBo7gsLEKK0Dw9QAqWr8piej7xrY6Is2n8gO1A6mDQeUYFKWFp3b8/X/9g
-	 yiTaqU9TxyFFA==
+	b=A1cKtatzptEFyfbWxiNdgAOzT9yvvqzzrNPrmrSTSxM3esRuzRv0V5jwwCWwNuV1Z
+	 zhBrUKFEGIjHw3Q3UZ5TYXztgjMcecpfLuCWnBJrjyJCTfkMCU4JxXG8TjNwhv+SJ3
+	 aHKUyket3qK42sN6weGZ8soRQKPjPhfU/fweFWqFVBop1zeA0BmCtiGx1WeCep4tfo
+	 xDFfQ33H5kKo/e9g3azCcAnKpq4oZFpKTHlN3WtO1OB8Unlpj64PKJ+KiUDvHAmPfg
+	 kWF6CEOCH/xEGSB8XJZ2m6L1sgnId/LSJOHE8MkAADTQYh1z0GTnszgID/KaZbdwlQ
+	 1lSogOMlAWpLw==
 X-Virus-Scanned: amavis at mail.savoirfairelinux.com
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id OZ6vMlRS6mOD; Mon, 18 Dec 2023 07:42:08 -0500 (EST)
+ with ESMTP id kx59VGcxw8Q3; Mon, 18 Dec 2023 07:43:14 -0500 (EST)
 Received: from gerard.rennes.sfl (unknown [192.168.216.3])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id F0A0F9C04BD;
-	Mon, 18 Dec 2023 07:42:06 -0500 (EST)
+	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 51EA89C31CC;
+	Mon, 18 Dec 2023 07:43:12 -0500 (EST)
 From: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
 To: Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>,
@@ -61,10 +61,12 @@ To: Liam Girdwood <lgirdwood@gmail.com>,
 	Nicolin Chen <nicoleotsuka@gmail.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>
-Subject: [PATCHv3 RESEND 00/10] ASoC: fsl-asoc-card: compatibility integration of a generic codec use case for use with S/PDIF controller
-Date: Mon, 18 Dec 2023 13:40:48 +0100
-Message-Id: <20231218124058.2047167-1-elinor.montmasson@savoirfairelinux.com>
+Subject: [PATCHv3 RESEND 08/10] ASoC: fsl-asoc-card: add dts properties "cpu-sysclk-freq"
+Date: Mon, 18 Dec 2023 13:40:56 +0100
+Message-Id: <20231218124058.2047167-9-elinor.montmasson@savoirfairelinux.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20231218124058.2047167-1-elinor.montmasson@savoirfairelinux.com>
+References: <20231218124058.2047167-1-elinor.montmasson@savoirfairelinux.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Tue, 19 Dec 2023 10:10:16 +1100
@@ -83,126 +85,35 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Add new optional dts property "cpu-sysclk-freq" to set
+custom sysclk frequencies for the CPU DAI with the generic codec.
+The way values are used is up to the CPU DAI driver implementation.
 
-This is the v3 of the series of patch aiming to make the machine driver
-"fsl-asoc-card" compatible with use cases where there is no real codec
-driver.
-It proposes to use the "spdif_receiver" and "spdif_transmitter"
-drivers instead of the dummy codec.
-This is a first step in using the S/PDIF controller with the ASRC.
+Signed-off-by: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
+Co-authored-by: Philip-Dylan Gleonec <philip-dylan.gleonec@savoirfairelin=
+ux.com>
+---
+ sound/soc/fsl/fsl-asoc-card.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-The five first patches add compatibility with the pair of codecs
-"spdif_receiver" and "spdif_transmitter" with a new compatible,
-"fsl,imx-audio-generic".
-Codec parameters are set with default values.
-Consequently, the driver is modified to work with multi-codec use cases.
-It can get 2 codecs phandles from the device tree, and the
-"fsl_asoc_card_priv" struct now has 2 "codec_priv" to store properties
-of both codecs. It is fixed to 2 codecs as only "fsl,imx-audio-generic"
-uses multiple codecs at the moment.
-However, the driver now uses for_each_codecs macros when possible to
-ease future implementations of multi-codec configurations.
-
-The remaining patches add configuration options for the device tree.
-They configure the CPU DAI when using "fsl,imx-audio-generic".
-These options are usually hard-coded in "fsl-asoc-card.c" for each
-audio codec.
-Because the generic codec could be used with other CPU DAIs than
-the S/PDIF controller, setting these parameters could be required.
-
-This series of patch was successfully built for arm64 and x86 on top of
-the latest for-next branch of the ASoC git tree on the 14th of December.
-These modifications have also been tested on an i.MX8MN evaluation
-board, with a linux kernel RT v6.1.26-rt8.
-
-
-We also have a few questions, following remarks made by
-Krzysztof Kozlowski in a previous email for patch 10/10:
-
-> >>> The compatible list for this generic sound card currently:
-> >>> @@ -48,6 +51,8 @@ The compatible list for this generic sound card
-> >>> currently:
-> >>>
-> >>> "fsl,imx-audio-nau8822"
-> >>>
-> >>> + "fsl,imx-audio-generic"
-> >>
-> >> Generic does not look like hardware specific.
-> >
-> > Even if our end goal is to use it with the S/PDIF controller, this ne=
-w
-> > support can be used with different hardware that doesn't
-> > require a codec. Thus, we don't really want to specify "spdif" in it.
-> >
-> > Is this compatible string not suitable ?
-> > Should we rename it to something else, like "fsl,imx-audio-no-codec" =
-?
->=20
-> Maybe Mark or Rob will help here, but for me "imx-audio" is just way to=
-o
-> generic.
-
-* Which generic name should we use ? Or how should we change it?
-=20
-> Also, you add several new properties, so I really expect either
-> converting old binding to DT schema first or adding new device in DT
-> schema format.
-
-* fsl-asoc-card.txt currently follows the old dt-bindings format.
-Should we update it to DT schema format in this patch series
-before adding my new properties?
-
-
-Best regards,
-Elinor Montmasson
-
-
-Changelog:
-v2 -> v3:
-* when the bitmaster or framemaster are retrieved from the device tree,
-  the driver will now compare them with the two codecs possibly given in
-  the device tree, and not just the first codec.
-* improve driver modifications to use multiple codecs for better
-  integration of future multi-codec use cases:
-    * use for_each_codec macros when possible.
-    * "fsl_asoc_card_priv" struct now has 2 "codec_priv" as the driver
-      can currently retrieve 2 codec phandles from the device tree.
-* fix subject of patch 10/10 to follow the style of the subsystem and
-  previous commits of the file.
-* v2 patch series at:
-https://lore.kernel.org/alsa-devel/20231027144734.3654829-1-elinor.montma=
-sson@savoirfairelinux.com/
-
-v1 -> v2:
-* replace use of the dummy codec by the pair of codecs
-  "spdif_receiver" / " spdif_transmitter".
-* adapt how dai links codecs are used to take into account the
-  possibility for multiple codecs per link.
-* change compatible name.
-* adapt driver to be able to register two codecs given in the device
-  tree.
-* v1 patch series at:
-https://lore.kernel.org/alsa-devel/20230901144550.520072-1-elinor.montmas=
-son@savoirfairelinux.com/
-
-
-Elinor Montmasson (10):
-  ASoC: fsl-asoc-card: add support for dai links with multiple codecs
-  ASoC: fsl-asoc-card: add second dai link component for codecs
-  ASoC: fsl-asoc-card: add compatibility to use 2 codecs in dai-links
-  ASoC: fsl-asoc-card: add new compatible for a generic codec use case
-  ASoC: fsl-asoc-card: set generic codec as clock provider
-  ASoC: fsl-asoc-card: add dts property "cpu-slot-width"
-  ASoC: fsl-asoc-card: add dts property "cpu-slot-num"
-  ASoC: fsl-asoc-card: add dts properties "cpu-sysclk-freq"
-  ASoC: fsl-asoc-card: add dts properties "cpu-sysclk-dir-out"
-  ASoC: bindings: fsl-asoc-card: add compatible for generic codec
-
- .../bindings/sound/fsl-asoc-card.txt          |  28 +-
- sound/soc/fsl/fsl-asoc-card.c                 | 299 +++++++++++-------
- 2 files changed, 218 insertions(+), 109 deletions(-)
-
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.=
+c
+index 6f6cc8bd3acd..7b0d7df7ae27 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -747,6 +747,10 @@ static int fsl_asoc_card_probe(struct platform_devic=
+e *pdev)
+ 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
+ 		of_property_read_u32(np, "cpu-slot-width", &priv->cpu_priv.slot_width)=
+;
+ 		of_property_read_u32(np, "cpu-slot-num", &priv->cpu_priv.slot_num);
++		of_property_read_u32(np, "cpu-sysclk-freq-rx",
++					(u32 *)&priv->cpu_priv.sysclk_freq[RX]);
++		of_property_read_u32(np, "cpu-sysclk-freq-tx",
++					(u32 *)&priv->cpu_priv.sysclk_freq[TX]);
+ 	} else {
+ 		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
+ 		ret =3D -EINVAL;
 --=20
 2.25.1
 
