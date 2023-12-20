@@ -4,37 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACA0DC3DA6E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Dec 2023 22:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDE5DC3DA6E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Dec 2023 22:26:52 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ix6Sr9v7;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SwShk07bKz3d9B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 09:21:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.118; helo=out30-118.freemail.mail.aliyun.com; envelope-from=renyu.zj@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-118.freemail.mail.aliyun.com (out30-118.freemail.mail.aliyun.com [115.124.30.118])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SwSpg3mYnz3cTH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 09:26:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ix6Sr9v7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Sw6PV4FDWz2ykx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2023 19:37:16 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R751e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045168;MF=renyu.zj@linux.alibaba.com;NM=1;PH=DS;RN=11;SR=0;TI=SMTPD_---0VyteU4X_1703061428;
-Received: from 30.221.146.20(mailfrom:renyu.zj@linux.alibaba.com fp:SMTPD_---0VyteU4X_1703061428)
-          by smtp.aliyun-inc.com;
-          Wed, 20 Dec 2023 16:37:09 +0800
-Message-ID: <98276b4d-d842-4dac-ab06-2e0fd245f3a8@linux.alibaba.com>
-Date: Wed, 20 Dec 2023 16:37:06 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SwSnd4qJ0z2xcp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 09:25:57 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id BD2CACE1819;
+	Wed, 20 Dec 2023 22:25:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F192C433C8;
+	Wed, 20 Dec 2023 22:25:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1703111153;
+	bh=1W+/BlCYRBWNRRrkM97ARP2nwR2lz+YRFgCUZtpqkN8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Ix6Sr9v7aw0PTbt2XOtlQZh/iXeGLJYw1/NpnOXYP78dPf5N30NFmShIzimCfTOei
+	 +4Gl7fC7H5o6pjGsQzBNxS7rto/V4+rmBHZUFeoUcaCFyXSPdBEaIT/kJdh7BlcpxU
+	 xLyYUwauttasDqPy9pz4cj52MVaA8NZqwtG4/DrTEzswiCp5qxF8VLBspJwdhvj1JJ
+	 omAOry4wDGpkQc3VIgkMBUr+XZ2uUuZhkFm/Kp4NitzqwiU0pwyphpbMyaSzEGqvxB
+	 DI2urkt2cLKypkUwnDmxiwXbUoqxoujasKuOONvCn1vkFFBuTn5fv2tmjTUApwniVq
+	 6gPf/UbsMRO0Q==
+Received: (nullmailer pid 1236168 invoked by uid 1000);
+	Wed, 20 Dec 2023 22:25:50 -0000
+Date: Wed, 20 Dec 2023 16:25:50 -0600
+From: Rob Herring <robh@kernel.org>
+To: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
+Subject: Re: [PATCHv3 RESEND 10/10] ASoC: dt-bindings: fsl-asoc-card: add
+ compatible for generic codec
+Message-ID: <20231220222550.GA1232936-robh@kernel.org>
+References: <20231218124058.2047167-1-elinor.montmasson@savoirfairelinux.com>
+ <20231218124058.2047167-11-elinor.montmasson@savoirfairelinux.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: perf tools arch Arm CMN PMU JSON files build breakage on ubuntu
- 18.04 cross build
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-References: <ZBxP77deq7ikTxwG@kernel.org>
- <a21aa4e1-506a-916c-03bd-39d7403c7941@linux.ibm.com>
- <ZXxlERShV-TIGVit@kernel.org> <ZXxlj3g-KMG3iYjx@kernel.org>
-From: Jing Zhang <renyu.zj@linux.alibaba.com>
-In-Reply-To: <ZXxlj3g-KMG3iYjx@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 21 Dec 2023 09:21:15 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231218124058.2047167-11-elinor.montmasson@savoirfairelinux.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,88 +62,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, kajoljain <kjain@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Thomas Richter <tmricht@linux.ibm.com>, Adrian Hunter <adrian.hunter@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jiri Olsa <jolsa@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-sound@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Philip-Dylan <philip-dylan.gleonec@savoirfairelinux.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Shengjiu Wang <shengjiu.wang@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-在 2023/12/15 下午10:41, Arnaldo Carvalho de Melo 写道:
-> Em Fri, Dec 15, 2023 at 11:39:14AM -0300, Arnaldo Carvalho de Melo escreveu:
->> Em Mon, Mar 27, 2023 at 09:52:11AM +0530, kajoljain escreveu:
->>> On 3/23/23 18:41, Arnaldo Carvalho de Melo wrote:
->>>> Exception processing pmu-events/arch/powerpc/power9/other.json
->>>> Traceback (most recent call last):
->>>>   File "pmu-events/jevents.py", line 997, in <module>
->>>>     main()
->>>>   File "pmu-events/jevents.py", line 979, in main
->>>>     ftw(arch_path, [], preprocess_one_file)
->>>>   File "pmu-events/jevents.py", line 935, in ftw
->>>>     ftw(item.path, parents + [item.name], action)
->>>>   File "pmu-events/jevents.py", line 933, in ftw
->>>>     action(parents, item)
->>>>   File "pmu-events/jevents.py", line 514, in preprocess_one_file
->>>>     for event in read_json_events(item.path, topic):
->>>>   File "pmu-events/jevents.py", line 388, in read_json_events
->>>>     events = json.load(open(path), object_hook=JsonEvent)
->>>>   File "/usr/lib/python3.6/json/__init__.py", line 296, in load
->>>>     return loads(fp.read(),
->>>>   File "/usr/lib/python3.6/encodings/ascii.py", line 26, in decode
->>>>     return codecs.ascii_decode(input, self.errors)[0]
->>>> UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 55090: ordinal not in range(128)
->>>>   CC      /tmp/build/perf/tests/expr.o
->>>> pmu-events/Build:35: recipe for target '/tmp/build/perf/pmu-events/pmu-events.c' failed
->>>> make[3]: *** [/tmp/build/perf/pmu-events/pmu-events.c] Error 1
->>>> make[3]: *** Deleting file '/tmp/build/perf/pmu-events/pmu-events.c'
->>>> Makefile.perf:679: recipe for target '/tmp/build/perf/pmu-events/pmu-events-in.o' failed
->>>> make[2]: *** [/tmp/build/perf/pmu-events/pmu-events-in.o] Error 2
->>>> make[2]: *** Waiting for unfinished jobs....
->>
->>>> Now jevents is an opt-out feature so I'm noticing these problems.
->>  
->>>     Thanks for raising it. I will check this issue.
->>
->> Now I'm seeing this on:
+On Mon, Dec 18, 2023 at 01:40:58PM +0100, Elinor Montmasson wrote:
+> Add documentation about new dts bindings following new support
+> for compatible "fsl,imx-audio-generic".
 > 
-> Jing,
+> Some CPU DAI don't require a real audio codec. The new compatible
+> "fsl,imx-audio-generic" allows using the driver with codec drivers
+> SPDIF DIT and SPDIF DIR as dummy codecs.
+> It also allows using not pre-configured audio codecs which
+> don't require specific control through a codec driver.
 > 
-> 	Please take a look at:
+> The new dts properties give the possibility to set some parameters
+> about the CPU DAI usually set through the codec configuration.
 > 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=5d9df8731c0941f3add30f96745a62586a0c9d52
+> Signed-off-by: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
+> Co-authored-by: Philip-Dylan Gleonec <philip-dylan.gleonec@savoirfairelinux.com>
+> ---
+>  .../bindings/sound/fsl-asoc-card.txt          | 28 ++++++++++++++++++-
+>  1 file changed, 27 insertions(+), 1 deletion(-)
 > 
-> 	For the fix for the ppc case above.
-> 
-
-I'm sorry for the breakage. Thanks for the catch! I will fix it soon.
-
-Thanks,
-Jing
-
-
-> - Arnaldo
+> diff --git a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+> index 4e8dbc5abfd1..f137ef2154e3 100644
+> --- a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+> +++ b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+> @@ -17,6 +17,9 @@ Note: The card is initially designed for those sound cards who use AC'97, I2S
+>        and PCM DAI formats. However, it'll be also possible to support those non
+>        AC'97/I2S/PCM type sound cards, such as S/PDIF audio and HDMI audio, as
+>        long as the driver has been properly upgraded.
+> +      To use CPU DAIs that do not require a codec such as an S/PDIF controller,
+> +      or to use a DAI to output or capture raw I2S/TDM data, you can
+> +      use the compatible "fsl,imx-audio-generic".
 >  
->> Exception processing pmu-events/arch/arm64/arm/cmn/sys/cmn.json
->> Traceback (most recent call last):
->>   File "pmu-events/jevents.py", line 1285, in <module>
->>     main()
->>   File "pmu-events/jevents.py", line 1267, in main
->>     ftw(arch_path, [], preprocess_one_file)
->>   File "pmu-events/jevents.py", line 1217, in ftw
->>     ftw(item.path, parents + [item.name], action)
->>   File "pmu-events/jevents.py", line 1217, in ftw
->>     ftw(item.path, parents + [item.name], action)
->>   File "pmu-events/jevents.py", line 1217, in ftw
->>     ftw(item.path, parents + [item.name], action)
->>   File "pmu-events/jevents.py", line 1215, in ftw
->>     action(parents, item)
->>   File "pmu-events/jevents.py", line 599, in preprocess_one_file
->>     for event in read_json_events(item.path, topic):
->>   File "pmu-events/jevents.py", line 416, in read_json_events
->>     events = json.load(open(path), object_hook=JsonEvent)
->>   File "/usr/lib/python3.6/json/__init__.py", line 296, in load
->>     return loads(fp.read(),
->>   File "/usr/lib/python3.6/encodings/ascii.py", line 26, in decode
->>     return codecs.ascii_decode(input, self.errors)[0]
->> UnicodeDecodeError: 'ascii' codec can't decode byte 0xe2 in position 3071: ordinal not in range(128)
->>
-> 
+>  
+>  The compatible list for this generic sound card currently:
+> @@ -48,6 +51,8 @@ The compatible list for this generic sound card currently:
+>  
+>   "fsl,imx-audio-nau8822"
+>  
+> + "fsl,imx-audio-generic"
+> +
+>  Required properties:
+>  
+>    - compatible		: Contains one of entries in the compatible list.
+> @@ -56,7 +61,11 @@ Required properties:
+>  
+>    - audio-cpu		: The phandle of an CPU DAI controller
+>  
+> -  - audio-codec		: The phandle of an audio codec
+> +  - audio-codec		: The phandle of an audio codec.
+> +			  If using the "fsl,imx-audio-generic" compatible,
+> +			  give instead a pair of phandles with the
+> +			  spdif_transmitter first (driver SPDIF DIT) and the
+> +			  spdif_receiver second (driver SPDIF DIR).
+>  
+>  Optional properties:
+>  
+> @@ -87,6 +96,23 @@ Optional properties:
+>    - frame-inversion	: dai-link uses frame clock inversion, for details see simple-card.yaml.
+>    - bitclock-inversion	: dai-link uses bit clock inversion, for details see simple-card.yaml.
+>    - mclk-id		: main clock id, specific for each card configuration.
+> +			  For multi-codec configurations, an array of ids can be
+> +			  given, one for each codec.
+> +
+> +Optional, relevant only with the "fsl,imx-audio-generic" compatible:
+> +
+> +  - cpu-slot-width	: Indicates a specific TDM slot width in bits.
+> +  - cpu-slot-num	: Indicates a specific number of TDM slots per frame.
+
+Pretty sure I've seen other bindings with TDM slot properties. A sign we 
+need something common if we don't already have something.
+
+> +
+> +  - cpu-sysclk-freq-rx	: Frequency of the CPU DAI sys clock for Rx.
+> +  - cpu-sysclk-freq-tx	: Frequency of the CPU DAI sys clock for Tx.
+> +
+> +  - cpu-sysclk-dir-rx-out	: Boolean property. Specifies sys clock direction
+> +				  as 'out' on initialization for Rx.
+> +				  If not set, default direction is 'in'.
+> +  - cpu-sysclk-dir-tx-out	: Boolean property. Specifies sys clock direction
+> +				  as 'out' on initialization for Tx.
+> +				  If not set, default direction is 'in'.
+
+Looks like clock stuff. Use the clock binding.
+
+Rob
