@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 084DDC35274
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:47:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0806C35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:48:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnDr5RVLz3bT8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:47:08 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnGS3WNYz3wSS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:48:32 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5h58Jcz3cV9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn8n3x9mz3vmV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:43:37 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5g3808z4xPh;
-	Thu, 21 Dec 2023 21:40:55 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn8n2zvXz4xSQ;
+	Thu, 21 Dec 2023 21:43:37 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-In-Reply-To: <20231214180720.310852-1-srikar@linux.vnet.ibm.com>
-References: <20231214180720.310852-1-srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 0/5] powerpc/smp: Topology and shared processor optimizations
-Message-Id: <170315510022.2192823.3630103323682637969.b4-ty@ellerman.id.au>
-Date: Thu, 21 Dec 2023 21:38:20 +1100
+To: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org
+In-Reply-To: <20231204093638.71503-1-aneesh.kumar@kernel.org>
+References: <20231204093638.71503-1-aneesh.kumar@kernel.org>
+Subject: Re: [PATCH v2 1/2] powerpc/book3s/hash: Drop _PAGE_PRIVILEGED from PAGE_NONE
+Message-Id: <170315539653.2195986.11611625910794632258.b4-ty@ellerman.id.au>
+Date: Thu, 21 Dec 2023 21:43:16 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -42,35 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Valentin Schneider <vschneid@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, "Paul E. McKenney" <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Aneesh <aneesh.kumar@kernel.org>, Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Dec 2023 23:37:10 +0530, Srikar Dronamraju wrote:
-> PowerVM systems configured in shared processors mode have some unique
-> challenges. Some device-tree properties will be missing on a shared
-> processor. Hence some sched domains may not make sense for shared processor
-> systems.
+On Mon, 04 Dec 2023 15:06:37 +0530, aneesh.kumar@kernel.org wrote:
+> There used to be a dependency on _PAGE_PRIVILEGED with pte_savedwrite.
+> But that got dropped by
+> commit 6a56ccbcf6c6 ("mm/autonuma: use can_change_(pte|pmd)_writable() to replace savedwrite")
 > 
-> Most shared processor systems are over-provisioned. Underlying PowerVM
-> Hypervisor would schedule at a Big Core granularity. The most recent power
-> processors support two almost independent cores. In a lightly loaded
-> condition, it helps the overall system performance if we pack to lesser
-> number of Big Cores.
+> With the change in this patch numa fault pte (pte_protnone()) gets mapped as regular user pte
+> with RWX cleared (no-access) whereas earlier it used to be mapped _PAGE_PRIVILEGED.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/5] powerpc/smp: Enable Asym packing for cores on shared processor
-      https://git.kernel.org/powerpc/c/aa80c6343fcf53cbc29f84ba9f89ca87d4e41350
-[2/5] powerpc/smp: Disable MC domain for shared processor
-      https://git.kernel.org/powerpc/c/0e1c1986e0e65746daa05405d7747ce882f83cf1
-[3/5] powerpc/smp: Add __ro_after_init attribute
-      https://git.kernel.org/powerpc/c/fd535a858ebeb1f478b1d065b6c057f52aad483a
-[4/5] powerpc/smp: Avoid asym packing within thread_group of a core
-      https://git.kernel.org/powerpc/c/0e93f1c780e8fd315f1262467b7d35eb6f766d2f
-[5/5] powerpc/smp: Dynamically build Powerpc topology
-      https://git.kernel.org/powerpc/c/c46975715f5a7b941aa09bc0539a8dbe297f308f
+[1/2] powerpc/book3s/hash: Drop _PAGE_PRIVILEGED from PAGE_NONE
+      https://git.kernel.org/powerpc/c/773b93f1d1c38c5c0d5308b8c9229c7a6ec5b2a0
+[2/2] powerpc/book3s64: Avoid __pte_protnone() check in __pte_flags_need_flush()
+      https://git.kernel.org/powerpc/c/a59c14f6b4caad7671dfb81737beba0b313897e4
 
 cheers
