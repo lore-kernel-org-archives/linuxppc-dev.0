@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB770C35274
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:43:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C59FC35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:43:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Swn833SFDz3vgn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:42:59 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Swn8X090pz3vm8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:43:24 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5Y376Cz3cNQ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5Y5Wsvz3cRD
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5Y1gJZz4xM2;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5Y4NDZz4xMv;
 	Thu, 21 Dec 2023 21:40:49 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, ajd@linux.ibm.com, Kunwu Chan <chentao@kylinos.cn>
-In-Reply-To: <20231208085937.107210-1-chentao@kylinos.cn>
-References: <20231208085937.107210-1-chentao@kylinos.cn>
-Subject: Re: [PATCH] powerpc/powernv: Add a null pointer check to scom_debug_init_one
-Message-Id: <170315510016.2192823.2333350776691711493.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, robh@kernel.org, Kunwu Chan <chentao@kylinos.cn>
+In-Reply-To: <20231126095739.1501990-1-chentao@kylinos.cn>
+References: <20231126095739.1501990-1-chentao@kylinos.cn>
+Subject: Re: [PATCH] powerpc/powernv: Fix null pointer dereference in opal_powercap_init
+Message-Id: <170315510017.2192823.14859661011576735714.b4-ty@ellerman.id.au>
 Date: Thu, 21 Dec 2023 21:38:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,20 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kunwu Chan <kunwu.chan@hotmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, mirimmad17@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kunwu.chan@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 08 Dec 2023 16:59:37 +0800, Kunwu Chan wrote:
+On Sun, 26 Nov 2023 17:57:39 +0800, Kunwu Chan wrote:
 > kasprintf() returns a pointer to dynamically allocated memory
 > which can be NULL upon failure.
-> Add a null pointer check, and release 'ent' to avoid memory leaks.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powernv: Add a null pointer check to scom_debug_init_one
-      https://git.kernel.org/powerpc/c/9a260f2dd827bbc82cc60eb4f4d8c22707d80742
+[1/1] powerpc/powernv: Fix null pointer dereference in opal_powercap_init
+      https://git.kernel.org/powerpc/c/e123015c0ba859cf48aa7f89c5016cc6e98e018d
 
 cheers
