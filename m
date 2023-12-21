@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AAC4C35274
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:46:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8EE6C35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:46:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnCv18s1z3wDJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:46:19 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnDN2RPxz3wG2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:46:44 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5f2HJXz3cXv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5g0yBGz3cVm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:55 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5d5vpQz4xKZ;
-	Thu, 21 Dec 2023 21:40:53 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5f4TZjz4xPc;
+	Thu, 21 Dec 2023 21:40:54 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20231212-papr-sys_rtas-vs-lockdown-v6-0-e9eafd0c8c6c@linux.ibm.com>
-References: <20231212-papr-sys_rtas-vs-lockdown-v6-0-e9eafd0c8c6c@linux.ibm.com>
-Subject: Re: [PATCH v6 00/13] powerpc/pseries: New character devices for system parameters and VPD
-Message-Id: <170315510014.2192823.13196586562676023956.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Naveen N Rao <naveen@kernel.org>
+In-Reply-To: <cover.1702045299.git.naveen@kernel.org>
+References: <cover.1702045299.git.naveen@kernel.org>
+Subject: Re: (subset) [RFC PATCH 0/9] powerpc: ftrace updates
+Message-Id: <170315510015.2192823.8374732857134504654.b4-ty@ellerman.id.au>
 Date: Thu, 21 Dec 2023 21:38:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,55 +42,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V \(IBM\)" <aneesh.kumar@kernel.org>, tyreld@linux.ibm.com, Michal Suchánek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org, gcwilson@linux.ibm.com
+Cc: Mark Rutland <mark.rutland@arm.com>, Florent Revest <revest@chromium.org>, Nicholas Piggin <npiggin@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 12 Dec 2023 11:01:47 -0600, Nathan Lynch wrote:
-> Add character devices that expose PAPR-specific system parameters and
-> VPD to user space.
+On Fri, 08 Dec 2023 22:00:39 +0530, Naveen N Rao wrote:
+> Early RFC.
 > 
-> The problem: important platform features are enabled on Linux VMs
-> through the powerpc-specific rtas() syscall in combination with
-> writeable mappings of /dev/mem. In typical usage, this is encapsulated
-> behind APIs provided by the librtas library. This paradigm is
-> incompatible with lockdown, which prohibits /dev/mem access. It also
-> is too low-level in many cases: a single logical operation may require
-> multiple sys_rtas() calls in succession to complete. This carries the
-> risk that a process may exit while leaving an operation unfinished. It
-> also means that callers must coordinate their use of the syscall for
-> functions that cannot tolerate multiple concurrent clients, such as
-> ibm,get-vpd.
+> This series attempts to address couple of issues with the existing
+> support for ftrace on powerpc, with a view towards improving performance
+> when ftrace is not enabled. See patch 6 for more details.
+> 
+> Patches 7 and 8 implement support for ftrace direct calls, through
+> adding support for DYNAMIC_FTRACE_WITH_CALL_OPS.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patches 1, 3 and 4 applied to powerpc/next.
 
-[01/13] powerpc/rtas: Avoid warning on invalid token argument to sys_rtas()
-        https://git.kernel.org/powerpc/c/01e346ffefda3a7088afebf02b940614179688e7
-[02/13] powerpc/rtas: Add for_each_rtas_function() iterator
-        https://git.kernel.org/powerpc/c/c500c6e736df030f8956080738f59701c0b43dd8
-[03/13] powerpc/rtas: Fall back to linear search on failed token->function lookup
-        https://git.kernel.org/powerpc/c/669acc7eec223a81ea5e2420de85b61979ab7dad
-[04/13] powerpc/rtas: Add function return status constants
-        https://git.kernel.org/powerpc/c/9592aa5ad59e736727fe7894e6e820e2d851abcf
-[05/13] powerpc/rtas: Move token validation from block_rtas_call() to sys_rtas()
-        https://git.kernel.org/powerpc/c/e7582edb78619abb4ebf0a6e1fed125dcd7243b6
-[06/13] powerpc/rtas: Facilitate high-level call sequences
-        https://git.kernel.org/powerpc/c/adf7a019e5f82607fc0f0079926d0178afe8f4ef
-[07/13] powerpc/rtas: Serialize firmware activation sequences
-        https://git.kernel.org/powerpc/c/dc7637c402b90a197d3f21a3d78f2b00b67ea22a
-[08/13] powerpc/rtas: Warn if per-function lock isn't held
-        https://git.kernel.org/powerpc/c/e3681107bc9f97c5948a1c8a3a97ac64907210ce
-[09/13] powerpc/pseries: Add papr-vpd character driver for VPD retrieval
-        https://git.kernel.org/powerpc/c/514f6ff4369a30bf0da71a1a09fd47b2fca5d76f
-[10/13] powerpc/pseries/papr-sysparm: Validate buffer object lengths
-        https://git.kernel.org/powerpc/c/35aae182bd7b422be3cefc08c12207bf2b973364
-[11/13] powerpc/pseries/papr-sysparm: Expose character device to user space
-        https://git.kernel.org/powerpc/c/905b9e48786ec55b2c469db77fb46e20bf3e4901
-[12/13] powerpc/selftests: Add test for papr-vpd
-        https://git.kernel.org/powerpc/c/9118c5d32bddb5f75bc4f9f31218e70317702502
-[13/13] powerpc/selftests: Add test for papr-sysparm
-        https://git.kernel.org/powerpc/c/76b2ec3faeaa0c8d84705acd64ac0e5a307ce9c2
+[1/9] powerpc/ftrace: Fix indentation in ftrace.h
+      https://git.kernel.org/powerpc/c/2ec36570c3581285d15de672eaed10ce7e9218cd
+[3/9] powerpc/ftrace: Remove nops after the call to ftrace_stub
+      https://git.kernel.org/powerpc/c/ae24db43b3b427eb290b58d55179c32f0a7539d1
+[4/9] powerpc/Kconfig: Select FUNCTION_ALIGNMENT_4B
+      https://git.kernel.org/powerpc/c/b20f98e8b3deb50247603f0242ee2d1e38726635
 
 cheers
