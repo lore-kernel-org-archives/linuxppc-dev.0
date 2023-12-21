@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8EE6C35274
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:46:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 084DDC35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:47:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnDN2RPxz3wG2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:46:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnDr5RVLz3bT8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:47:08 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5g0yBGz3cVm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5h58Jcz3cV9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:56 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5f4TZjz4xPc;
-	Thu, 21 Dec 2023 21:40:54 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5g3808z4xPh;
+	Thu, 21 Dec 2023 21:40:55 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Naveen N Rao <naveen@kernel.org>
-In-Reply-To: <cover.1702045299.git.naveen@kernel.org>
-References: <cover.1702045299.git.naveen@kernel.org>
-Subject: Re: (subset) [RFC PATCH 0/9] powerpc: ftrace updates
-Message-Id: <170315510015.2192823.8374732857134504654.b4-ty@ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+In-Reply-To: <20231214180720.310852-1-srikar@linux.vnet.ibm.com>
+References: <20231214180720.310852-1-srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 0/5] powerpc/smp: Topology and shared processor optimizations
+Message-Id: <170315510022.2192823.3630103323682637969.b4-ty@ellerman.id.au>
 Date: Thu, 21 Dec 2023 21:38:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,29 +42,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Florent Revest <revest@chromium.org>, Nicholas Piggin <npiggin@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Valentin Schneider <vschneid@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, "Paul E. McKenney" <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Aneesh <aneesh.kumar@kernel.org>, Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Josh Poimboeuf <jpoimboe@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 08 Dec 2023 22:00:39 +0530, Naveen N Rao wrote:
-> Early RFC.
+On Thu, 14 Dec 2023 23:37:10 +0530, Srikar Dronamraju wrote:
+> PowerVM systems configured in shared processors mode have some unique
+> challenges. Some device-tree properties will be missing on a shared
+> processor. Hence some sched domains may not make sense for shared processor
+> systems.
 > 
-> This series attempts to address couple of issues with the existing
-> support for ftrace on powerpc, with a view towards improving performance
-> when ftrace is not enabled. See patch 6 for more details.
-> 
-> Patches 7 and 8 implement support for ftrace direct calls, through
-> adding support for DYNAMIC_FTRACE_WITH_CALL_OPS.
+> Most shared processor systems are over-provisioned. Underlying PowerVM
+> Hypervisor would schedule at a Big Core granularity. The most recent power
+> processors support two almost independent cores. In a lightly loaded
+> condition, it helps the overall system performance if we pack to lesser
+> number of Big Cores.
 > 
 > [...]
 
-Patches 1, 3 and 4 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/9] powerpc/ftrace: Fix indentation in ftrace.h
-      https://git.kernel.org/powerpc/c/2ec36570c3581285d15de672eaed10ce7e9218cd
-[3/9] powerpc/ftrace: Remove nops after the call to ftrace_stub
-      https://git.kernel.org/powerpc/c/ae24db43b3b427eb290b58d55179c32f0a7539d1
-[4/9] powerpc/Kconfig: Select FUNCTION_ALIGNMENT_4B
-      https://git.kernel.org/powerpc/c/b20f98e8b3deb50247603f0242ee2d1e38726635
+[1/5] powerpc/smp: Enable Asym packing for cores on shared processor
+      https://git.kernel.org/powerpc/c/aa80c6343fcf53cbc29f84ba9f89ca87d4e41350
+[2/5] powerpc/smp: Disable MC domain for shared processor
+      https://git.kernel.org/powerpc/c/0e1c1986e0e65746daa05405d7747ce882f83cf1
+[3/5] powerpc/smp: Add __ro_after_init attribute
+      https://git.kernel.org/powerpc/c/fd535a858ebeb1f478b1d065b6c057f52aad483a
+[4/5] powerpc/smp: Avoid asym packing within thread_group of a core
+      https://git.kernel.org/powerpc/c/0e93f1c780e8fd315f1262467b7d35eb6f766d2f
+[5/5] powerpc/smp: Dynamically build Powerpc topology
+      https://git.kernel.org/powerpc/c/c46975715f5a7b941aa09bc0539a8dbe297f308f
 
 cheers
