@@ -4,33 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 085F0C35274
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0275C35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 11:18:31 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=k2uXQFgd;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnJx54yKz75nJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:50:41 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Swnx20xSfz2ykC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 22:18:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=k2uXQFgd;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SwnGZ71yVz3vpR
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:48:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swnw85470z2xdR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 22:17:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1703157460;
+	bh=YxjfRSNBaMALp9Lh5Ulu0ysS95vrj3PnbvwXRd/1pqw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=k2uXQFgdp/Yj3ya414ssdKPRQQvzwJuMFnZ5qBJrf355HEkUjlNAr/A8J0Sh9Cljc
+	 uvzUbr3DE63gpw+MpD0xcSMmGNEhcK6FeWmea8zYyllNgTiKOJQG3KqpN3OEhWMAEu
+	 zw9j70T4+I5eziR7yT6gJvwAZL7CX+jkXhssrTShtakQQYmqpDKSQOHLhn//Y+UDix
+	 oi7KQvuVbMvrEIJaHZHqfIoYlHsnJ8T2uLGQm7j4A7+bdL0gHL4P9UWk7ZO0/Gl154
+	 Vy5avZFCQxG3Maj2GYoRsufXDDVx3R7y2877gXXLvGC63cU4Jb3wkVIGV8/pjixbT5
+	 z6KzkVY+Rd86A==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SwnGZ65jcz4xhN;
-	Thu, 21 Dec 2023 21:48:38 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231205051105.736470-1-mpe@ellerman.id.au>
-References: <20231205051105.736470-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] MAINTAINERS: powerpc: Add Aneesh & Naveen
-Message-Id: <170315561640.2199281.14546617665834569101.b4-ty@ellerman.id.au>
-Date: Thu, 21 Dec 2023 21:46:56 +1100
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swnw36MwWz4xhK;
+	Thu, 21 Dec 2023 22:17:39 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geoff Levand <geoff@infradead.org>, Kevin Hao <haokexin@gmail.com>
+Subject: Re: [PATCH 3/3] powerpc: ps3: Add missing set_freezable() for
+ ps3_probe_thread()
+In-Reply-To: <d9ffe8a9-667b-4d73-a9f3-e06ccd627dfe@infradead.org>
+References: <20231221044510.1802429-1-haokexin@gmail.com>
+ <20231221044510.1802429-4-haokexin@gmail.com>
+ <d9ffe8a9-667b-4d73-a9f3-e06ccd627dfe@infradead.org>
+Date: Thu, 21 Dec 2023 22:17:39 +1100
+Message-ID: <87le9nls8c.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,19 +60,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Naveen
+ N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 05 Dec 2023 16:11:05 +1100, Michael Ellerman wrote:
-> Aneesh and Naveen are helping out with some aspects of upstream
-> maintenance, add them as reviewers.
-> 
-> 
+Geoff Levand <geoff@infradead.org> writes:
+> Hi Kevin,
+>
+> On 12/21/23 13:45, Kevin Hao wrote:
+>> The kernel thread function ps3_probe_thread() invokes the try_to_freeze()
+>> in its loop. But all the kernel threads are non-freezable by default.
+>> So if we want to make a kernel thread to be freezable, we have to invoke
+>> set_freezable() explicitly.
+>> 
+>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+>> ---
+>>  arch/powerpc/platforms/ps3/device-init.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>> 
+>> diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+>> index e87360a0fb40..878bc160246e 100644
+>> --- a/arch/powerpc/platforms/ps3/device-init.c
+>> +++ b/arch/powerpc/platforms/ps3/device-init.c
+>> @@ -827,6 +827,7 @@ static int ps3_probe_thread(void *data)
+>>  	if (res)
+>>  		goto fail_free_irq;
+>>  
+>> +	set_freezable();
+>>  	/* Loop here processing the requested notification events. */
+>>  	do {
+>>  		try_to_freeze();
+>
+> Seems like a reasonable addition.
+>
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
 
-Applied to powerpc/fixes.
-
-[1/1] MAINTAINERS: powerpc: Add Aneesh & Naveen
-      https://git.kernel.org/powerpc/c/d2441d3e8c0c076d0a2e705fa235c76869a85140
+I turned that into an Acked-by, which I think is what you meant :)
 
 cheers
