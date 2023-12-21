@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCE97C35274
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:45:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77946C35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:45:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnBv3P4gz3w4t
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:45:27 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SwnCP1PZkz3ccX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:45:53 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5c6xBFz3cWq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5d3kWfz3bX5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5b6ThGz4xNH;
-	Thu, 21 Dec 2023 21:40:51 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5d1l6lz4xPQ;
+	Thu, 21 Dec 2023 21:40:53 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231128132748.1990179-1-mpe@ellerman.id.au>
-References: <20231128132748.1990179-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/5] selftests/powerpc: Fix error handling in FPU/VMX preemption tests
-Message-Id: <170315510011.2192823.8044597579068621950.b4-ty@ellerman.id.au>
+In-Reply-To: <20231205051239.737384-1-mpe@ellerman.id.au>
+References: <20231205051239.737384-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] MAINTAINERS: powerpc: Transfer PPC83XX to Christophe
+Message-Id: <170315510011.2192823.14998930570584611588.b4-ty@ellerman.id.au>
 Date: Thu, 21 Dec 2023 21:38:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,32 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tpearson@raptorengineering.com
+Cc: oss@buserror.net, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Nov 2023 00:27:44 +1100, Michael Ellerman wrote:
-> The FPU & VMX preemption tests do not check for errors returned by the
-> low-level asm routines, preempt_fpu() / preempt_vsx() respectively.
-> That means any register corruption detected by the asm routines does not
-> result in a test failure.
+On Tue, 05 Dec 2023 16:12:39 +1100, Michael Ellerman wrote:
+> Christophe volunteered[1] to maintain PPC83XX.
 > 
-> Fix it by returning the return value of the asm routines from the
-> pthread child routines.
+> 1: https://lore.kernel.org/all/7b1bf4dc-d09d-35b8-f4df-16bf00429b6d@csgroup.eu/
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/5] selftests/powerpc: Fix error handling in FPU/VMX preemption tests
-      https://git.kernel.org/powerpc/c/9dbd5927408c4a0707de73ae9dd9306b184e8fee
-[2/5] selftests/powerpc: Check all FPRs in fpu_preempt
-      https://git.kernel.org/powerpc/c/e5d00aaac651a69b8016d355123438387bfd37be
-[3/5] selftests/powerpc: Generate better bit patterns for FPU tests
-      https://git.kernel.org/powerpc/c/2ba107f6795d780bb54b85040a9b2c6a60fccb15
-[4/5] selftests/powerpc: Run fpu_preempt test for 60 seconds
-      https://git.kernel.org/powerpc/c/60d2c3af9a0c04dc2d34a62e9f5e7033b40dfed8
-[5/5] selftests/powerpc: Check all FPRs in fpu_syscall test
-      https://git.kernel.org/powerpc/c/1bdf22580b794a498b17617bcd7ae417d6b78444
+[1/1] MAINTAINERS: powerpc: Transfer PPC83XX to Christophe
+      https://git.kernel.org/powerpc/c/4cb3e3ec23fa33a0f58ff133d5aedd26a50356ef
 
 cheers
