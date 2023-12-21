@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06298C46CD4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:43:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A699FC35274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 10:44:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Swn9054xdz3vqS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:43:48 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Swn9T2f4Mz3vtZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Dec 2023 21:44:13 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5Z1JZsz3cT3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Swn5Z59r4z3cTr
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2023 21:40:50 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5Z0FJqz4xMw;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Swn5Z3GcXz4xGT;
 	Thu, 21 Dec 2023 21:40:50 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, Kunwu Chan <chentao@kylinos.cn>
-In-Reply-To: <20231204023223.2447523-1-chentao@kylinos.cn>
-References: <20231204023223.2447523-1-chentao@kylinos.cn>
-Subject: Re: [PATCH v3] powerpc/mm: Fix null-pointer dereference in pgtable_cache_add
-Message-Id: <170315510015.2192823.7515374595652036540.b4-ty@ellerman.id.au>
+To: Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Jakub Kicinski <kuba@kernel.org>, Vladimir Oltean <vladimir.oltean@nxp.com>, David Heidelberg <david@ixit.cz>
+In-Reply-To: <20231212184515.82886-2-david@ixit.cz>
+References: <20231212184515.82886-2-david@ixit.cz>
+Subject: Re: [RESEND PATCH] powerpc/fsl: fix the schema check errors for fsl,tmu-calibration
+Message-Id: <170315510024.2192823.6759883781736803779.b4-ty@ellerman.id.au>
 Date: Thu, 21 Dec 2023 21:38:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,20 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kunwu.chan@hotmail.com
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 04 Dec 2023 10:32:23 +0800, Kunwu Chan wrote:
-> kasprintf() returns a pointer to dynamically allocated memory
-> which can be NULL upon failure. Ensure the allocation was successful
-> by checking the pointer validity.
+On Tue, 12 Dec 2023 19:44:58 +0100, David Heidelberg wrote:
+> fsl,tmu-calibration is in u32-matrix. Use matching property syntax.
+> No functional changes. Fixes warnings as:
+> ...
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm: Fix null-pointer dereference in pgtable_cache_add
-      https://git.kernel.org/powerpc/c/f46c8a75263f97bda13c739ba1c90aced0d3b071
+[1/1] powerpc/fsl: fix the schema check errors for fsl,tmu-calibration
+      https://git.kernel.org/powerpc/c/9ec1d7486e2520b4898d7f8e1ec3acc7c13c8dc8
 
 cheers
