@@ -4,53 +4,126 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA8BC41535
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Dec 2023 15:05:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9355BC41535
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Dec 2023 15:13:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJjtql6P;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=XBcoNCdl;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4SxVww3ZF1z3ccQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Dec 2023 02:05:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4SxW5H6vYVz3cbQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Dec 2023 02:13:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJjtql6P;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=XBcoNCdl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f403:261c::600; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on20600.outbound.protection.outlook.com [IPv6:2a01:111:f403:261c::600])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4SxVvw2sknz3c84
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2023 02:05:00 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 2F90CCE2243;
-	Fri, 22 Dec 2023 15:04:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A02EC433C8;
-	Fri, 22 Dec 2023 15:04:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1703257493;
-	bh=ff+11cBpb6fDBCxthTcpJKSANtb1FArJ8elQvMrgPHA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=fJjtql6PY7v6wiyIpT1yxgYQQM+rkvq9l3L6YsVK2NGidGNbRyV32izlJirpUJ5Tn
-	 +FlAIcWePB4Yg3H0zzXhOxLiXt9MXu4r48TlKwyaGn/JNhEFBj7YmJBxPSZvSvbDoz
-	 OGW+BmTczlUXrUlGmyXvce7cCOFGeMJ2Q7H5PTIIIACi5/4v3wI5RVHVJ15GptOja3
-	 a9rOLTCI3cxUPLzhskaMnahbEZv1rijKeduZTxiGR5KP8N5NKC3+DJOWTtuz4D1q6E
-	 MSEmspMVzdkejDwf1tovy5x6EetYjUbxAnI1NEmlEv/CHXqJJtp3OXYn1WOovA2V1T
-	 ox3pcwQ+09U4Q==
-Date: Fri, 22 Dec 2023 20:31:08 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [RFC PATCH 6/9] powerpc/ftrace: Update and move function profile
- instructions out-of-line
-Message-ID: <thjuqdsy6a6oinxciztpao7nobop3j4pnd6xktnioriofad7lz@ue6bdz7wlqba>
-References: <cover.1702045299.git.naveen@kernel.org>
- <39363eb6b1857f26f9fa51808ad48b0121899b84.1702045299.git.naveen@kernel.org>
- <e2e467a3-7283-4f22-8cd9-2d1875f60e92@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4SxW4K73vWz3c84
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2023 02:12:16 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=QxDkC7xhII7pPL6mpxgWBPAYxeRSiZEflxbYUq0LJ/rCFs5V++G6IZLGu3lOQ48ybNRRyWzAuSDZHqvq1H2Zo8cXmZFyglQQweC3IJobsRnDDvDdXHQbgzG+AHxUWDlS1DcljAzGtsznON3FEkSH6gm+XCwoe1+tuGYTYa7YnYwwb2sFkUJ0YyO4P1AO7soalu0sM2L7B4pvfpp83QyFuI2hUIz9BKLs3FERkKbzr5GkFpKt7k3d0gdinV8tlAFM+y4TteoTvBn4Ht8PSEcsIoYUEJf+MurMR/Tgy0HG/umfExDYBzrJ1P5gDHsXgUA5XF/TNGZS9z6Y37Ncx7dU1w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=+R42bZ5zEFvlSZR0pQXTA0KQwNMolGChjUFaVEWHui4=;
+ b=lBFRLFuEN1DUD4E2GjWYZH7izAyNftRtmjOcrYzpUVKunqFVE53LsCKMDo6WDt0XeLMVpWVnHcVawitmA6PZvYZl/PNyQvop3FH6oJF8iMH4BT2lndvhWdxMPN8Y0kgWYK6Nt8+Y9bO/NxUnxWOzsYVGmcyYxlWiccKG/aIgWnH6WOF/Jie4KydXXYEBknnS9W5EW9/6Ibxl7ayNCMtcN0oVxMkcxllOA+iDu1jp0u+9tFu65F1hGjip5xboDs+kc60XLI5IHGPyhKf7AuCnQUPE2Ueb4IIp5MA8iQzmRV6IbJRF6k9tH0WsGCU8kTm/oIzlNwnK136PSSN0+c9vgQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=+R42bZ5zEFvlSZR0pQXTA0KQwNMolGChjUFaVEWHui4=;
+ b=XBcoNCdlsLLZaHG22uCVbFJC6nghUtA2Fda1jOhiE7djq7p+BLJaYM6oMD9h3Ec04xkB3LPItyNJZmwhfYYhmg5tyznz9X1ltCgGxL3oeeAcN9VoiMvuiS7STS+h0RF6zW7+6ZCA4K5R+SN88QMq2ne8WUs9R1HlGnPuXHAM/bYQSZOPS2HLhoCWxkIgsH/KsQTmUJC+mrEfQv6MMDm9idtuzAPQod0M3Si+icgyf52io5ScliR1JXhZQ3pT5I5O4u6hNkhmTXLynkN518KA/phn+7TPXxcZQeibPDzSMrDlHXqcmxdFeDslDm70CyIZH4YYSB6Vrz/E0ev37OWdZA==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PR0P264MB2407.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1e2::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7113.21; Fri, 22 Dec
+ 2023 15:11:53 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::f788:32b4:1c5e:f264]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::f788:32b4:1c5e:f264%7]) with mapi id 15.20.7113.019; Fri, 22 Dec 2023
+ 15:11:53 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>, Michael Ellerman
+	<mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/6xx: set High BAT Enable flag on G2 cores
+Thread-Topic: [PATCH] powerpc/6xx: set High BAT Enable flag on G2 cores
+Thread-Index: AQHaNAu2YovK4Jn7OUefUWrjeoMLCrC0gO4AgAB6OgCAAG8jAA==
+Date: Fri, 22 Dec 2023 15:11:52 +0000
+Message-ID: <867f29f4-c421-4a5f-8a48-2c48ebdeb4c8@csgroup.eu>
+References: <20231221124538.159706-1-matthias.schiffer@ew.tq-group.com>
+ <875y0rkpe1.fsf@mail.lhotse>
+ <ced9897c5db7ea22313d58ba95590e634e98e54b.camel@ew.tq-group.com>
+In-Reply-To: <ced9897c5db7ea22313d58ba95590e634e98e54b.camel@ew.tq-group.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla Thunderbird
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|PR0P264MB2407:EE_
+x-ms-office365-filtering-correlation-id: 50c3511b-47e8-46ab-9f4e-08dc03005460
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  4I9kYPVcrP2jQyIP+kLDxWtfauBeJAzH3PaFLdJ5EgD6tqcMF/lo6lEBtxgIcBxFWf5jGhWfRDKn0iGc44mbQHUT9F56h2fBfiTlB76aDBfRj3SnB6JTPVUctBeEsDsdRdAS0ZMSmZQ0JfUJwGT3mPwMKdkiUpaNcc8JlDFldHJBqCj6w7a//cxAGJwSGsnJ2tsg05MXz8SFrb4rb5mjrSaTJOHmk0cmEVGw4innZduueI6Q8xH6g+yJqfK9x0r+v45vrIb3ciYZlOEP2K/V3FNhLtg77hhJkJir+StvmDv5Tkx7avdHjq8X59tXPDUQUmf7KO68dDJ1ZHClXP3l3uxiDRy+TTEOkJAcX/XF6JmcJGzq67uLq++K5rHuuca/eYL5+kCFPomnC09pIxIY9f+ClzXyA0bs6il9eYzOpR/swhtfWtg6+bxNnjMdHdZaeJCXENg0jC/UrFtsnIBKo52r49DED2tMADjTmVlmtKtaTezq/sRStW/uAGNErsAIfSaSwZYJKYYdtnLXKokAteqH4u57153cU+bxC6lkd8Lis3X5HrX6QBdiWIDbtJqXH7CAoJoa1LrBTm+KsQlLDEcGvEF0Z+o4Fc0lzsXpfZZCj7oMG/AzrAIe2g7UgN+H3O7fSEJjWCLqhMOtxDmqgwI+z7e6N0k+OVHRcDcWzco=
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(376002)(136003)(39860400002)(366004)(346002)(396003)(230922051799003)(1800799012)(64100799003)(186009)(451199024)(31686004)(66899024)(6506007)(66574015)(2616005)(6512007)(26005)(71200400001)(86362001)(36756003)(31696002)(38070700009)(38100700002)(122000001)(66446008)(8936002)(66946007)(41300700001)(44832011)(76116006)(54906003)(8676002)(66476007)(5660300002)(6486002)(91956017)(110136005)(83380400001)(66556008)(4326008)(4001150100001)(478600001)(966005)(64756008)(316002)(2906002)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?R2IrTFZWbTBHeGxhTk5YUEtkUU9XbWpYTmFxZFRKa3dhU2JOQmZnQ3Z1TVh0?=
+ =?utf-8?B?Sm5UeXBsZXQvbUpkWDVzcVA1T0dRTEFrQWptTXh2VUVkTW9WUXRMWE1yc1Rw?=
+ =?utf-8?B?RUlDWmMxeU5nSFVHSm5paEtKWGIxUitJQnpGS3hUSHR5am9tUWxqakk0OWVq?=
+ =?utf-8?B?cmY2TDBLV2tLQVhiYmwrV0dNdDVnYjVOdUFlMnZ6N3pUblpWN2k5SnJob0pT?=
+ =?utf-8?B?UVFDQTF2aHRMNFdBSXNVaGhUelFQbVdLM3MrQUVuam0vQWVtMktnQjBweFRI?=
+ =?utf-8?B?SmxnM2g4Z3gzc1kyTVRqVFlHVUlsZWUxWHBUZHhLREpQMzBFMCtkWU1tZHRo?=
+ =?utf-8?B?djdUWjV2UTNLT3FXMWx3dXZiREgwOTRJK2tKTkJYdzU4bmYrOGh6MGVJSE4x?=
+ =?utf-8?B?NnhBcENZTHhUMU9HNzlPRk9SUjcrUk81T0krTmhiRXVMcW9aWFZIYytNQ01t?=
+ =?utf-8?B?b3d3L2o2bzhMbktkdm80RDU0QlIxUElGbzVPQmdmeEZZdjBjTkg2Yk50cUtl?=
+ =?utf-8?B?dzRCR1l0MjZVL2FEcTU4TjB3LzJUQzRqUmMyaWw2RUNXakxJMWN5U2w0Nkxx?=
+ =?utf-8?B?MUhLVnJORUhhY3NKbjl0K2tkTXZkNmxFcGNBRE1LOGM3VDl3b2ZXVVRJVnlJ?=
+ =?utf-8?B?b3dWRVdaQjVLNXNodWhJZFVCRkYwN2p0ZWxtUm5ET0s2bjI3dWRWU2NCZWdB?=
+ =?utf-8?B?a0R3WHBPSUdvVzZ2cEc2anVaQjFwMnU0OXptK3o0aDEyRUVVSStpS2VHSHRD?=
+ =?utf-8?B?WlB1WG1wVUhLT2VUSEREVldBZUkrb1pNb1VKMTFlbU9OOThxQ3RoMUg0aVRB?=
+ =?utf-8?B?Tk41VWRob0x1K29EUzRsWm9UUmlpN3BoQytGZkd2cEVVUytTRXdwa3BKVWVz?=
+ =?utf-8?B?S25paWx4UWpXRkZnaGRZRHhOK254MWVrRzAxcDZCVm9qeEUrMGRBcmpDL0pR?=
+ =?utf-8?B?QVE2U2ZvTzJLME8vYzIzOVVUQ0grblYxMmFiUFFQQjFNVXB5K3FJNGFqTE1L?=
+ =?utf-8?B?Y3h5QmlodnUwdnJwQitFdHJ1S1dDeFI0QzB2ZTliUmRMakVlYXFEVHh2SmJQ?=
+ =?utf-8?B?ZTVWelpyaEVzdjBCaHR0Y2ppcG1Gcm4wbTN6T1JIWmNJVGhoYmpBNGRQNlRr?=
+ =?utf-8?B?YVRYZWJZWnRObVE0WTlMMnNiTUZaNUx3a3dHa3ZTVWZSWjlvZVU2TklmVUxF?=
+ =?utf-8?B?MWF2bW5PN2RqVlFSTHMvTGxMMU9DUXZOSzBZaVJEYko4YlZwL2k5Sms4dUQ0?=
+ =?utf-8?B?UzMxdHhIQ1dsenBoVUhuYmNDMkpvRmhzMDlxT3RIaVlnbGp6K0VxMlBVa2Rp?=
+ =?utf-8?B?by9vQUJDVXZPQ205YjFXcFNBb0p3czVpYmVrdGdFdXdTWHp3SDh0aHBPN0gz?=
+ =?utf-8?B?RzZ0TU5Rc2tzam9WRVdzT2xNMjVNSFpERDdrMDE2c0xDZFhHWUo3dS9YemlV?=
+ =?utf-8?B?d3ZVbWVmU25mR2xQWThNMkJZWkNCdzlKNVUwVHdnNEFpVkNXaG1IVmpYbm5W?=
+ =?utf-8?B?bzZMWSsxb1hSWFhObnRpZE5Lb0dqY0ZzRVkvenQvbkN3RDROMjlBY3EwOExU?=
+ =?utf-8?B?UVBqZGFPQk9jWXpTZVovNFpGOXlSYXYyekVibFQxNTVFeGdMK0oyMWg0bUd3?=
+ =?utf-8?B?Y2UxQ3JxSDJDU3pwMTIvcGw5Y01tQTkrelVoZ2JGQi9NbUljZUF1NWYvRlpO?=
+ =?utf-8?B?UFhsYlIxVjFvUXpjeVF6VVQ1WDFnblRqS3Uva1ZJWXNkRm1aNEYvY0VzemxB?=
+ =?utf-8?B?aDlPVnFQQzAvcW00NHFJaDgvMW5GK21QRzBna0J1QnMxSy8yNjYrb0VNVGZl?=
+ =?utf-8?B?NTVUU0VCOG1QUjZpdzhKUTJxRnVmK3dmV3orNkZKVytUMTgzREo0S000SzBx?=
+ =?utf-8?B?WGVud3Y2YVJWT0tFdlE5ek5ITGJEK2lmTENXd0FpQ2Niem5qV01TSXVnMmpx?=
+ =?utf-8?B?ZFZGbmE1Qkk4Vm9PU2NVZ2pKSWoxWXZnTitnWXBwUnRsSnYyNDAxd2haZXNm?=
+ =?utf-8?B?NTYzVXhpRzI1VW95T3JhUjhINmZoUDJ3VDg4Y1UyRkxPRmhRS1RZUDZsdHFm?=
+ =?utf-8?B?UU9tNUFJbVJhV1dQQVQ0ODVpTXFCdWxwTWZZU21OOGNBaWx0bjV3OG5ySUZz?=
+ =?utf-8?Q?KDViyYqrL6zLxhJ/ywV+Ruqh4?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <F2EE6DD0AE325F44A10CFEF1BDC70714@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e2e467a3-7283-4f22-8cd9-2d1875f60e92@csgroup.eu>
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 50c3511b-47e8-46ab-9f4e-08dc03005460
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Dec 2023 15:11:53.0009
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: EAIngyfvE+LeM7LzwuRk2qavF/2BBuA9zL7LM6cctV8JE1H13sHfxfiIfk0R7OcsLDGQ/QiGduwhzaBXyh/nfqgaIZ8v7qwQt5LKEcvll6Y=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB2407
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,169 +135,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Florent Revest <revest@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Masami Hiramatsu <mhiramat@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux@ew.tq-group.com" <linux@ew.tq-group.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 21, 2023 at 10:46:08AM +0000, Christophe Leroy wrote:
-> 
-> 
-> Le 08/12/2023 à 17:30, Naveen N Rao a écrit :
-> > Function profile sequence on powerpc includes two instructions at the
-> > beginning of each function:
-> > 
-> > 	mflr	r0
-> > 	bl	ftrace_caller
-> > 
-> > The call to ftrace_caller() gets nop'ed out during kernel boot and is
-> > patched in when ftrace is enabled.
-> > 
-> > There are two issues with this:
-> > 1. The 'mflr r0' instruction at the beginning of each function remains
-> >     even though ftrace is not being used.
-> > 2. When ftrace is activated, we return from ftrace_caller() with a bctr
-> >     instruction to preserve r0 and LR, resulting in the link stack
-> >     becoming unbalanced.
-> > 
-> > To address (1), we have tried to nop'out the 'mflr r0' instruction when
-> > nop'ing out the call to ftrace_caller() and restoring it when enabling
-> > ftrace. But, that required additional synchronization slowing down
-> > ftrace activation. It also left an additional nop instruction at the
-> > beginning of each function and that wasn't desirable on 32-bit powerpc.
-> > 
-> > Instead of that, move the function profile sequence out-of-line leaving
-> > a single nop at function entry. On ftrace activation, the nop is changed
-> > to an unconditional branch to the out-of-line sequence that in turn
-> > calls ftrace_caller(). This removes the need for complex synchronization
-> > during ftrace activation and simplifies the code. More importantly, this
-> > improves performance of the kernel when ftrace is not in use.
-> > 
-> > To address (2), change the ftrace trampoline to return with a 'blr'
-> > instruction with the original return address in r0 intact. Then, an
-> > additional 'mtlr r0' instruction in the function profile sequence can
-> > move the correct return address back to LR.
-> > 
-> > With the above two changes, the function profile sequence now looks like
-> > the following:
-> > 
-> >   [func:		# GEP -- 64-bit powerpc, optional
-> > 	addis	r2,r12,imm1
-> > 	addi	r2,r2,imm2]
-> >    tramp:
-> > 	mflr	r0
-> > 	bl	ftrace_caller
-> > 	mtlr	r0
-> > 	b	func
-> > 	nop
-> > 	[nop]	# 64-bit powerpc only
-> >    func:		# LEP
-> > 	nop
-> > 
-> > On 32-bit powerpc, the ftrace mcount trampoline is now completely
-> > outside the function. This is also the case on 64-bit powerpc for
-> > functions that do not need a GEP. However, for functions that need a
-> > GEP, the additional instructions are inserted between the GEP and the
-> > LEP. Since we can only have a fixed number of instructions between GEP
-> > and LEP, we choose to emit 6 instructions. Four of those instructions
-> > are used for the function profile sequence and two instruction slots are
-> > reserved for implementing support for DYNAMIC_FTRACE_WITH_CALL_OPS. On
-> > 32-bit powerpc, we emit one additional nop for this purpose resulting in
-> > a total of 5 nops before function entry.
-> > 
-> > To enable ftrace, the nop at function entry is changed to an
-> > unconditional branch to 'tramp'. The call to ftrace_caller() may be
-> > updated to ftrace_regs_caller() depending on the registered ftrace ops.
-> > On 64-bit powerpc, we additionally change the instruction at 'tramp' to
-> > 'mflr r0' from an unconditional branch back to func+4. This is so that
-> > functions entered through the GEP can skip the function profile sequence
-> > unless ftrace is enabled.
-> > 
-> > With the context_switch microbenchmark on a P9 machine, there is a
-> > performance improvement of ~6% with this patch applied, going from 650k
-> > context switches to 690k context switches without ftrace enabled. With
-> > ftrace enabled, the performance was similar at 86k context switches.
-> 
-> Wondering how significant that context_switch micorbenchmark is.
-> 
-> I ran it on both mpc885 and mpc8321 and I'm a bit puzzled by some of the 
-> results:
-> # ./context_switch --no-fp
-> Using threads with yield on cpus 0/0 touching FP:no altivec:no vector:no 
-> vdso:no
-> 
-> On 885, I get the following results before and after your patch.
-> 
-> CONFIG_FTRACE not selected : 44,9k
-> CONFIG_FTRACE selected, before : 32,8k
-> CONFIG_FTRACE selected, after : 33,6k
-> 
-> All this is with CONFIG_INIT_STACK_ALL_ZERO which is the default. But 
-> when I select CONFIG_INIT_STACK_NONE, the CONFIG_FTRACE not selected 
-> result is only 34,4.
-> 
-> On 8321:
-> 
-> CONFIG_FTRACE not selected : 100,3k
-> CONFIG_FTRACE selected, before : 72,5k
-> CONFIG_FTRACE selected, after : 116k
-> 
-> So the results look odd to me.
-
-That's indeed odd, though it looks to be showing good improvement. Are 
-those numbers with/without the function tracer enabled?
-
-Do you see more reasonable numbers if you use a different 
-FUNCTION_ALIGNMENT?
-
-> 
-> > 
-> > The downside of this approach is the increase in vmlinux size,
-> > especially on 32-bit powerpc. We now emit 3 additional instructions for
-> > each function (excluding the one or two instructions for supporting
-> > DYNAMIC_FTRACE_WITH_CALL_OPS). On 64-bit powerpc with the current
-> > implementation of -fpatchable-function-entry though, this is not
-> > avoidable since we are forced to emit 6 instructions between the GEP and
-> > the LEP even if we are to only support DYNAMIC_FTRACE_WITH_CALL_OPS.
-> 
-> The increase is almost 5% on the few 32 bits defconfig I have tested.  
-> That's a lot.
-
-Indeed. Note that one of those nops is for DYN_FTRACE_WITH_CALL_OPS, 
-which we will need regardless.
-
-Moving the ftrace mcount sequence out of line will alone need 2 
-additional nops. 'mtlr r0' for balancing the link stack costs us one 
-more nop.
-
-> 
-> On 32 bits powerpc, only the e500 has a link stack that could end up 
-> being unbalanced. Could we keep the bctr and avoid the mtlr and the jump 
-> in the trampoline ?
-> 
-> On 8xx a NOP is one cycle, a taken branch is 2 cycles, but the second 
-> cycle is a bubble that most of the time gets filled by following 
-> operations. On the 83xx, branches and NOPs are supposed to be seamless.
-> 
-> So is that out-of-line trampoline really worth it ? Maybe keeping the 
-> ftrace instructions at the begining and just replacing the mflr by an 
-> jump when ftrace is off would help reduce the ftrace insns by one more 
-> instruction.
-
-I was looking forward to your feedback w.r.t 32-bit powerpc since I 
-couldn't test that.
-
-We can certainly retain the existing behavior for ppc32, though it might 
-make it harder to share the code base with ppc64.
-
-The primary downside with the 'mflr r0' at function entry is that 
-patching it out (or replacing it with a branch) will need additional
-synchronization.
-
-I'm out on vacation till end of the year. I plan on doing more tests 
-once I am back to understand if the performance benefit is worth the 
-increase in vmlinux size.
-
-
-Thanks,
-Naveen
-
+DQoNCkxlIDIyLzEyLzIwMjMgw6AgMDk6MzQsIE1hdHRoaWFzIFNjaGlmZmVyIGEgw6ljcml0wqA6
+DQo+IFtWb3VzIG5lIHJlY2V2ZXogcGFzIHNvdXZlbnQgZGUgY291cnJpZXJzIGRlIG1hdHRoaWFz
+LnNjaGlmZmVyQGV3LnRxLWdyb3VwLmNvbS4gRMOpY291dnJleiBwb3VycXVvaSBjZWNpIGVzdCBp
+bXBvcnRhbnQgw6AgaHR0cHM6Ly9ha2EubXMvTGVhcm5BYm91dFNlbmRlcklkZW50aWZpY2F0aW9u
+IF0NCj4gDQo+IE9uIEZyaSwgMjAyMy0xMi0yMiBhdCAxMjoxNiArMTEwMCwgTWljaGFlbCBFbGxl
+cm1hbiB3cm90ZToNCj4+IE1hdHRoaWFzIFNjaGlmZmVyIDxtYXR0aGlhcy5zY2hpZmZlckBldy50
+cS1ncm91cC5jb20+IHdyaXRlczoNCj4+PiBNTVVfRlRSX1VTRV9ISUdIX0JBVFMgaXMgc2V0IGZv
+ciBHMi1iYXNlZCBjb3JlcyAoRzJfTEUsIGUzMDBjWCksIGJ1dCB0aGUNCj4+PiBoaWdoIEJBVHMg
+bmVlZCB0byBiZSBlbmFibGVkIGluIEhJRDIgdG8gd29yay4gQWRkIHJlZ2lzdGVyIGRlZmluaXRp
+b25zDQo+Pj4gYW5kIGludHJvZHVjZSBhIEcyIHZhcmlhbnQgb2YgX19zZXR1cF9jcHVfNjAzLg0K
+Pj4+DQo+Pj4gVGhpcyBmaXhlcyBib290IG9uIENQVXMgbGlrZSB0aGUgTVBDNTIwMEIgd2l0aCBT
+VFJJQ1RfS0VSTkVMX1JXWCBlbmFibGVkLg0KPj4NCj4+IE5pY2UgZmluZC4NCj4+DQo+PiBNaW5v
+ciBuaXQgb24gbmFtaW5nLiBUaGUgMzItYml0IGNvZGUgbW9zdGx5IHVzZXMgdGhlIG51bWVyaWMg
+bmFtZXMsIGVnLg0KPj4gNjAzLCA2MDNlLCA2MDQgZXRjLiBDYW4gd2Ugc3RpY2sgd2l0aCB0aGF0
+LCByYXRoZXIgdGhhbiB1c2luZyAiRzIiPw0KPj4NCj4+IFdpa2lwZWRpYSBzYXlzIEcyID09IDYw
+M2UuIEJ1dCBsb29raW5nIGF0IHlvdXIgcGF0Y2ggeW91J3JlIG5vdCBjaGFuZ2luZw0KPj4gYWxs
+IHRoZSA2MDNlIGNvcmVzLCBzbyBJIGd1ZXNzIGl0J3Mgbm90IHRoYXQgY2xlYXIgY3V0Pw0KPj4N
+Cj4+IElmIHVzaW5nICJHMiIgbWFrZXMgdGhlIG1vc3Qgc2Vuc2UgdGhlbiBpdCB3b3VsZCBiZSBu
+aWNlIHRvIHVwZGF0ZQ0KPj4gRG9jdW1lbnRhdGlvbi9hcmNoL3Bvd2VycGMvY3B1X2ZhbWlsaWVz
+LnJzdCB0byBtZW50aW9uIGl0IChub3QgYXNraW5nDQo+PiB5b3UgdG8gZG8gaXQgbmVjZXNzYXJp
+bHksIG1vcmUgYSBub3RlIGZvciB1cykuDQo+IA0KPiBBY2NvcmRpbmcgdG8gdGhlIDYwM2UgbWFu
+dWFsIEkgY291bGQgZmluZCAoTVBSNjAzRVVNLTAxKSwgdGhlIEhJRDIgcmVnaXN0ZXIgZG9lcyBu
+b3QgZXhpc3QgaW4gdGhlDQo+IG9yaWdpbmFsIDYwM2UgY29yZXMgLSB0aGUgcmVnaXN0ZXIgd2Fz
+IG9ubHkgYWRkZWQgYnkgRnJlZXNjYWxlIGluIGl0cyBleHRlbmRlZCBpbXBsZW1lbnRhdGlvbnMu
+DQoNCkFzIGZhciBhcyBJIGNhbiBzZWUsIHJlZiBHMiBjb3JlIHJlZmVyZW5jZSBtYW51YWwgDQoo
+aHR0cHM6Ly93d3cubnhwLmNvbS93ZWJhcHAvRG93bmxvYWQ/Y29sQ29kZT1HMkNPUkVSTSk6DQoN
+ClRoZSBwcmltYXJ5IG9iamVjdGl2ZSBvZiB0aGlzIHJlZmVyZW5jZSBtYW51YWwgaXMgdG8gZGVm
+aW5lIHRoZSANCmZ1bmN0aW9uYWxpdHkgb2YgdGhlIEcyIGNvcmUsDQphIGRlcml2YXRpdmUgb2Yg
+dGhlIG9yaWdpbmFsIE1QQzYwM2UgUG93ZXJQQ+KEoiBtaWNyb3Byb2Nlc3NvciBkZXNpZ24uIFRo
+ZSANCkcyIGNvcmUgaXMNCmFuIGltcGxlbWVudGF0aW9uIG9mIHRoZSBQb3dlclBDIG1pY3JvcHJv
+Y2Vzc29yIGZhbWlseS4gVGhpcyByZWZlcmVuY2UgDQptYW51YWwgYWxzbw0KZGVzY3JpYmVzIHRo
+ZSBHMl9MRSBjb3JlLCB3aGljaCBpcyBhIGRlcml2YXRpdmUgb2YgdGhlIEcyIGNvcmUuDQoNClNv
+IHdlIGhhdmUgdGhyZWUgc3RlcHM6IDYwM2UsIEcyIHRoZW4gRzJfTEUuDQoNClRoZSBvbmUgdGhh
+dCBoYXMgOCBCQVRzIGlzIHRoZSBHMl9MRS4NCg0KQnV0IGl0IGxvb2tzIGxpa2Ugb3VyIFBWUiBl
+eHBlY3RhdGlvbnMgYXJlIG5vdCBjb21wbGV0ZWx5IHJpZ2h0LiANCkFjY29yZGluZyB0aGUgbWFu
+dWFsOg0KDQoweDAwODEgMDAxMSBpcyB0aGUgb3JpZ2luYWwgRzIgY29yZSwgYnV0IDB4MDA4MiAx
+MDEwIGlzIGFsc28gRzIgY29yZS4NCk9ubHkgMHgwMDgyIDIwMTAgaXMgRzJfTEUgY29yZSwgd2hl
+cmVhcyBvdXIga2VybmVsL2NwdV9zcGVjc19ib29rM3NfMzIuaCANCmNvbnNpZGVycyBhbGwgMHgw
+MDgyIHRvIGJlIEcyX0xFIGNvcmUuDQoNCj4gDQo+IFRoZSBtYW51YWwgb2YgdGhlIE1QQzUyMDAg
+Y2FsbHMgaXRzIGNvcmUgYW4gImUzMDAiLCBidXQgdGhhdCBzZWVtcyB0byBiZSBhbiBvbGRlciBp
+bXBsZW1lbnRhdGlvbg0KPiB0aGFuIHRoZSAiZTMwMGNbMS00XSIgY29yZXMgZGVzY3JpYmVkIGlu
+IHRoZSAiZTMwMCIgbWFudWFsLiBJJ20gbm90IHN1cmUgaWYgImUzMDAiICh3aXRob3V0ICJjWCIp
+DQo+IGFuZCAiRzJfTEUiIGFyZSBzeW5vbnltb3VzLg0KPiANCj4gU28gQUZBSVIgZWl0aGVyICJH
+MiIgb3IgImUzMDAiIGNvdWxkIGJlIGFuIGFwcHJvcHJpYXRlIG5hbWUgZm9yIHRoZSBmYW1pbHks
+IGJ1dCB3aGljaCBpcyBiZXR0ZXIgSQ0KPiBjYW4ndCBzYXkuDQoNCkkgZG9uJ3QgdGhpbmsgd2Ug
+Y2FuIGNhbGwgaXQgZTMwMC4gWWVzIE1QQzUyMDAgbWFudWFsIGNhbGxzIGl0IGUzMDAgYnV0IA0K
+cmVmZXJzIHRvIEcyIGNvcmUgcmVmZXJlbmNlIG1hbnVhbC4NCg0KVGhlIGUzMDAgcmVmZXJlbmNl
+IG1hbnVhbCANCihodHRwczovL3d3dy5ueHAuY29tL2RvY3MvZW4vcmVmZXJlbmNlLW1hbnVhbC9l
+MzAwY29yZVJNLnBkZikgb25seSBkZWFscyANCndpdGggZTMwMGMxLWUzMDBjNCBzbyB0aGF0IHNl
+ZW1zIHRvIGJlIHdoYXQgZTMwMCBpcy4NCg0KSG93ZXZlciwgaW4gZTMwMCBtYW51YWwgdGhlIFBW
+UiB2YWx1ZXMgYXJlIG5vdCBpbiBhY2NvcmRhbmNlIHdpdGggdGhlIA0Kb25lcyBnaXZlbiBpbiB0
+aGUgRzIgY29yZSByZWZlcmVuY2UgbWFudWFsLiBIZXJlIHRoZXkgc2F5IDB4MDA4MjEwMTAgaXMg
+DQphbHNvIGEgRzJfTEUgY29yZS4gU28gd2hpY2ggbWFudWFsIHNoYWxsIHdlIGJlbGlldmUgPw0K
+DQpDaHJpc3RvcGhlDQo=
