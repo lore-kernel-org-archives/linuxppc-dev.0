@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C311C46CD3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Dec 2023 02:43:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 226A4C46CD4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Dec 2023 07:25:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=QuJXBe2X;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RkEi5h89;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T0GCf01Wgz3d8y
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Dec 2023 13:43:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T0NSz2cV5z3cHf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Dec 2023 18:25:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=QuJXBe2X;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RkEi5h89;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=kernelfans@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T0GBG39Pgz3cVk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2023 13:41:58 +1100 (AEDT)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-1d3fc184b6dso17504095ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Dec 2023 18:41:58 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T0NS13fL7z2xcq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2023 18:24:17 +1100 (AEDT)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-5bdb0be3591so3873474a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Dec 2023 23:24:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1703644915; x=1704249715; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1703661855; x=1704266655; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=MT7htYeDjY4vTdy1fPJWLnQt0GHG3z7MAu24V6teBIw=;
-        b=QuJXBe2XlG7dzQKaW0YbEjBvaoEyDL1NfI/aOp4I+bvandm09NihA7k5vO3GYtjIzz
-         75AScHdIa1Ea+EoYTRqQZRpN3PtmfnhHwDmKnv5csAGSfmL6PFCPestGui14vCFOfuPB
-         V4CZpsyQ/pnaTUrP5wwVlWWG7KfTxNC0xPl0sne1KRVfhbHznU+2aj7vg9I+1b2f63St
-         n5vdcrAs9pO87WZOlby4r8oLABQ3Ju66Tt7ETQ3Sh8OyWYsGM84FANswPmUcoGte1dyT
-         dW5cyqCw5vzMfzSslFTokYlL3/Fqmoiw80EODxhhWgeLNJYAkuD7BS3AsPEIjRcHokuB
-         +Yqw==
+        bh=FUsLGl0feOUdqm5eNMJSy02i1g3xWfsHVrashrU/qaM=;
+        b=RkEi5h89WRL9ZC6T9qWxBj7rhrmml9aAxbSKgbHdq8Pm2AyLIFbhF1j1egCSt9cvZF
+         RPhTKlAOLLgEtU32dIZ67vv1uxwIM3t/g9xZUIRcVbpdGjVeh5q2rA1gMhoCNFMvI0rT
+         xmP9wdAhahfLlcd+eVm+k/aKDbufdEh5ZmYn1EBuvekBukODkV6UarJqKzOdXEVgYPFc
+         X37Azat851EpdYElD3hQ89Zf3mfjYSY0zEXzYAiatrGkwpiNBCefTwh3jbjlncEIl/OD
+         yW+Dm1hi498yYkjYz35E7lBYsj8eegXfR7EzEyV2LgOPsfSVlNol5s4Fz7CQxD4JKM/5
+         iymA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1703644915; x=1704249715;
+        d=1e100.net; s=20230601; t=1703661855; x=1704266655;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=MT7htYeDjY4vTdy1fPJWLnQt0GHG3z7MAu24V6teBIw=;
-        b=Xhu820Z3sXN5Nk59Ey05d9qWMJzn0jeGMNUhAy4YnmtTbDizdD6DDIR5t6HpQ46IWw
-         2TjRc29vsK8pYQZUFsHmQX7u/IwrUB8Ef9LSMID5CtdLqmsKU95HwUymheWftIJnMw43
-         UA5m6JV8702mN8NFPMqAupOQRzORcLbJPdbOPY4nvPIRk8cGOdtfq8bc/PpkBOvbzjLR
-         yZpCU4TI0iWnAZp0AcJnMmIN/Z+YN2OXuJ40pnooyxvYV0yBmS67FadttUGBQnqkTICA
-         b9AazgSwoxkFQdUsPnUBYwn4K3pwTdO8lJ0ohm5s4PMMy5tyfAUamz+Ex/lCCa67zv0Q
-         9IwA==
-X-Gm-Message-State: AOJu0YzNfKZ8ook1wehiGjfrBZVJiwnftN5faHHZA09MhJaUkBOC6QiF
-	ccjSRV+14MDLOEC6Gobkp+IJTIdXafrf
-X-Google-Smtp-Source: AGHT+IHCsge0Pwx3Fk+jrn3t8Mdnc4E5lcxUmO+ET7NbuD+U2d5OqeN9CRJcKSbmZQ7LgIFhpLQ4VQ==
-X-Received: by 2002:a17:902:d584:b0:1d0:6ffd:8367 with SMTP id k4-20020a170902d58400b001d06ffd8367mr2747235plh.114.1703644915441;
-        Tue, 26 Dec 2023 18:41:55 -0800 (PST)
-Received: from piliu.users.ipa.redhat.com ([43.228.180.230])
-        by smtp.gmail.com with ESMTPSA id jj20-20020a170903049400b001c61073b076sm10775062plb.144.2023.12.26.18.41.52
+        bh=FUsLGl0feOUdqm5eNMJSy02i1g3xWfsHVrashrU/qaM=;
+        b=rmE+GZvyaYla2z6O7M2Q39Qm6diykO1fv7QVD0yT0VThtgxueuPjYy2c5bCA0Bovwe
+         7ztuXOZ9wAhK5yJFffP9APxgah30HMRju4ecUlvFU6/0tk448ESUFCcNwJmYOkI+xM+r
+         M/SfPgF8c+tumRG+A4F/PkcJ7KZfXV4nanGE4D7X3Y2GxdjYOjF6DVX62kUL5zQRPkbf
+         jjaD/D+33QePd9x8HDowwzb9fKGB9zNZTA8I3mmiqLbveVslr+j+K9BReW/wzsPVxb/d
+         3Mh9ubZGQ2gEwxM3r1iXJ55H2xgdbZHQipbxXo9emB0nK4nklE9qROabafUCICQ6avdU
+         2XJA==
+X-Gm-Message-State: AOJu0YxdSqItjbrIXrUos/nMuJqSbgi9g/7G/xanwmfJdOhyANZwsJEt
+	BPVFBspsVsOzF713H2KPTucoJ9SuXHI=
+X-Google-Smtp-Source: AGHT+IHCC63pfaBXFvPMWft9UYYSM+xVDCIKpVSHZqOnfnQ7mQrGRt54mc4jW8zvFp3JUGvC9i6oHA==
+X-Received: by 2002:a05:6a20:b99a:b0:18f:97c:8a1c with SMTP id ff26-20020a056a20b99a00b0018f097c8a1cmr7954170pzb.71.1703661855165;
+        Tue, 26 Dec 2023 23:24:15 -0800 (PST)
+Received: from wheely.local0.net ([203.220.145.68])
+        by smtp.gmail.com with ESMTPSA id px9-20020a17090b270900b0028c952fd855sm261074pjb.52.2023.12.26.23.24.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Dec 2023 18:41:54 -0800 (PST)
-From: Pingfan Liu <kernelfans@gmail.com>
+        Tue, 26 Dec 2023 23:24:14 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv10 3/3] powerpc/smp: Allow hole in paca_ptrs to accommodate boot_cpu
-Date: Wed, 27 Dec 2023 10:41:47 +0800
-Message-Id: <20231227024147.12485-1-kernelfans@gmail.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20231227023934.12299-1-kernelfans@gmail.com>
-References: <20231227023934.12299-1-kernelfans@gmail.com>
+Subject: [PATCH 1/3] powerpc/ps3: Fix lv1 hcall assembly for ELFv2 calling convention
+Date: Wed, 27 Dec 2023 17:24:03 +1000
+Message-ID: <20231227072405.63751-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231227072405.63751-1-npiggin@gmail.com>
+References: <20231227072405.63751-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -78,151 +78,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, Pingfan Liu <piliu@redhat.com>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Ming Lei <ming.lei@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, Wen Xiong <wenxiong@us.ibm.com>
+Cc: Geoff Levand <geoff@infradead.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Pingfan Liu <piliu@redhat.com>
+Stack-passed parameters begin at a different offset in the caller's
+stack in the ELFv2 ABI.
 
-This patch always forces the first core onlined due to some subsystem
-needs cpu0. After core0, a hole may follow, then comes the crashed core.
-
-Signed-off-by: Pingfan Liu <piliu@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Wen Xiong <wenxiong@us.ibm.com>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Ming Lei <ming.lei@redhat.com>
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: kexec@lists.infradead.org
-To: linuxppc-dev@lists.ozlabs.org
+Reported-by: Geoff Levand <geoff@infradead.org>
+Fixes: 8c5fa3b5c4df ("powerpc/64: Make ELFv2 the default for big-endian builds")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/smp.h     |  1 +
- arch/powerpc/kernel/paca.c         |  7 +++++--
- arch/powerpc/kernel/prom.c         |  6 ++++++
- arch/powerpc/kernel/setup-common.c | 24 ++++++++++++++++++++----
- 4 files changed, 32 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h  |  6 ++++--
+ arch/powerpc/platforms/ps3/hvcall.S | 18 +++++++++---------
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index aaaa576d0e15..f01c7891b0d7 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -27,6 +27,7 @@
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index e7792aa13510..041ee2595520 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -201,11 +201,13 @@
  
- extern int boot_cpuid;
- extern int boot_cpu_hwid; /* PPC64 only */
-+extern int threads_in_core;
- extern int spinning_secondaries;
- extern u32 *cpu_to_phys_id;
- extern bool coregroup_enabled;
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 840c74dd17d6..1fe0fd2a6021 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -242,9 +242,12 @@ static int __initdata paca_struct_size;
- 
- void __init allocate_paca_ptrs(void)
- {
--	paca_last_cpu_num = nr_cpu_ids;
-+	unsigned int cnt;
- 
--	paca_ptrs_size = sizeof(struct paca_struct *) * paca_last_cpu_num;
-+	/* paca_ptrs should be big enough to hold boot cpu */
-+	cnt = max((unsigned int)ALIGN(boot_cpuid + 1, threads_in_core), nr_cpu_ids);
-+	paca_last_cpu_num = cnt;
-+	paca_ptrs_size = sizeof(struct paca_struct *) * cnt;
- 	paca_ptrs = memblock_alloc_raw(paca_ptrs_size, SMP_CACHE_BYTES);
- 	if (!paca_ptrs)
- 		panic("Failed to allocate %d bytes for paca pointers\n",
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 0b5878c3125b..e1a671156941 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -371,9 +371,15 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	DBG("boot cpu: logical %d physical %d\n", found,
- 	    be32_to_cpu(intserv[found_thread]));
- 	boot_cpuid = found;
-+	/* This forces all threads in a core to be onlined */
-+	set_nr_cpu_ids(ALIGN(nr_cpu_ids, nthreads));
-+	/* Core 0 is always onlined and assure enough room for boot core */
-+	if (nthreads -1 < boot_cpuid && nr_cpu_ids < 2 * nthreads)
-+		set_nr_cpu_ids(2 * nthreads);
- 
- 	if (IS_ENABLED(CONFIG_PPC64))
- 		boot_cpu_hwid = be32_to_cpu(intserv[found_thread]);
-+	threads_in_core = nthreads;
- 
- 	/*
- 	 * PAPR defines "logical" PVR values for cpus that
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index f9f5f313abf0..b70474e1b5fe 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -86,6 +86,7 @@ EXPORT_SYMBOL(machine_id);
- 
- int boot_cpuid = -1;
- EXPORT_SYMBOL_GPL(boot_cpuid);
-+int __initdata threads_in_core = 1;
- 
- #ifdef CONFIG_PPC64
- int boot_cpu_hwid = -1;
-@@ -448,8 +449,9 @@ u32 *cpu_to_phys_id = NULL;
- void __init smp_setup_cpu_maps(void)
- {
- 	struct device_node *dn;
--	int cpu = 0;
-+	int cpu_onlined = 0, cpu = 0;
- 	int nthreads = 1;
-+	bool bootcpu_covered = false;
- 
- 	DBG("smp_setup_cpu_maps()\n");
- 
-@@ -484,7 +486,19 @@ void __init smp_setup_cpu_maps(void)
- 
- 		nthreads = len / sizeof(int);
- 
--		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
-+		if (!bootcpu_covered) {
-+			if (cpu == ALIGN_DOWN(boot_cpuid, nthreads)) {
-+				bootcpu_covered = true;
-+				goto scan;
+ #ifdef CONFIG_PPC64_ELF_ABI_V2
+ #define STK_GOT		24
+-#define __STK_PARAM(i)	(32 + ((i)-3)*8)
++#define STK_PARAM_AREA	32
+ #else
+ #define STK_GOT		40
+-#define __STK_PARAM(i)	(48 + ((i)-3)*8)
++#define STK_PARAM_AREA	48
+ #endif
 +
-+			/* Reserve the last online slot for boot core */
-+			} else if (cpu >= nr_cpu_ids - nthreads && !bootcpu_covered) {
-+				cpu += nthreads;
-+				continue;
-+			}
-+		}
-+scan:
-+		for (j = 0; j < nthreads && cpu_onlined < nr_cpu_ids; j++) {
- 			bool avail;
++#define __STK_PARAM(i)	(STK_PARAM_AREA + ((i)-3)*8)
+ #define STK_PARAM(i)	__STK_PARAM(__REG_##i)
  
- 			DBG("    thread %d -> cpu %d (hard id %d)\n",
-@@ -499,9 +513,10 @@ void __init smp_setup_cpu_maps(void)
- 			set_cpu_possible(cpu, true);
- 			cpu_to_phys_id[cpu] = be32_to_cpu(intserv[j]);
- 			cpu++;
-+			cpu_onlined++;
- 		}
- 
--		if (cpu >= nr_cpu_ids) {
-+		if (cpu_onlined >= nr_cpu_ids) {
- 			of_node_put(dn);
- 			break;
- 		}
-@@ -547,7 +562,8 @@ void __init smp_setup_cpu_maps(void)
- 			printk(KERN_INFO "Partition configured for %d cpus.\n",
- 			       maxcpus);
- 
--		for (cpu = 0; cpu < maxcpus; cpu++)
-+		/* Bits below #cpu have been set */
-+		for (; cpu < maxcpus; cpu++)
- 			set_cpu_possible(cpu, true);
- 	out:
- 		of_node_put(dn);
+ #ifdef CONFIG_PPC64_ELF_ABI_V2
+diff --git a/arch/powerpc/platforms/ps3/hvcall.S b/arch/powerpc/platforms/ps3/hvcall.S
+index 509e30ad01bb..59ea569debf4 100644
+--- a/arch/powerpc/platforms/ps3/hvcall.S
++++ b/arch/powerpc/platforms/ps3/hvcall.S
+@@ -714,7 +714,7 @@ _GLOBAL(_##API_NAME)				\
+ 	std	r4, 0(r11);			\
+ 	ld	r11, -16(r1);			\
+ 	std	r5, 0(r11);			\
+-	ld	r11, 48+8*8(r1);		\
++	ld	r11, STK_PARAM_AREA+8*8(r1);	\
+ 	std	r6, 0(r11);			\
+ 						\
+ 	ld	r0, 16(r1);			\
+@@ -746,22 +746,22 @@ _GLOBAL(_##API_NAME)				\
+ 	mflr	r0;				\
+ 	std	r0, 16(r1);			\
+ 						\
+-	std	r10, 48+8*7(r1);		\
++	std	r10, STK_PARAM_AREA+8*7(r1);	\
+ 						\
+ 	li	r11, API_NUMBER;		\
+ 	lv1call;				\
+ 						\
+-	ld	r11, 48+8*7(r1);		\
++	ld	r11, STK_PARAM_AREA+8*7(r1);	\
+ 	std	r4, 0(r11);			\
+-	ld	r11, 48+8*8(r1);		\
++	ld	r11, STK_PARAM_AREA+8*8(r1);	\
+ 	std	r5, 0(r11);			\
+-	ld	r11, 48+8*9(r1);		\
++	ld	r11, STK_PARAM_AREA+8*9(r1);	\
+ 	std	r6, 0(r11);			\
+-	ld	r11, 48+8*10(r1);		\
++	ld	r11, STK_PARAM_AREA+8*10(r1);	\
+ 	std	r7, 0(r11);			\
+-	ld	r11, 48+8*11(r1);		\
++	ld	r11, STK_PARAM_AREA+8*11(r1);	\
+ 	std	r8, 0(r11);			\
+-	ld	r11, 48+8*12(r1);		\
++	ld	r11, STK_PARAM_AREA+8*12(r1);	\
+ 	std	r9, 0(r11);			\
+ 						\
+ 	ld	r0, 16(r1);			\
+@@ -777,7 +777,7 @@ _GLOBAL(_##API_NAME)				\
+ 	li      r11, API_NUMBER;		\
+ 	lv1call;				\
+ 						\
+-	ld	r11, 48+8*8(r1);		\
++	ld	r11, STK_PARAM_AREA+8*8(r1);	\
+ 	std	r4, 0(r11);			\
+ 						\
+ 	ld	r0, 16(r1);			\
 -- 
-2.31.1
+2.42.0
 
