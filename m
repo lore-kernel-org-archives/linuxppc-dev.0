@@ -4,29 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29BADC46CD3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 06:28:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32C82C3DA6E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 06:28:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T0z8w5j4Dz3dBW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 17:28:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T0z9P5n6vz3dM6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 17:28:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T0z7x5m5nz30fF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2023 17:27:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T0z7y2PNsz30fF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2023 17:27:26 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
-	id CD2DD68C7B; Thu, 28 Dec 2023 07:20:04 +0100 (CET)
-Date: Thu, 28 Dec 2023 07:20:04 +0100
+	id 038DE68B05; Thu, 28 Dec 2023 07:19:31 +0100 (CET)
+Date: Thu, 28 Dec 2023 07:19:30 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Samuel Holland <samuel.holland@sifive.com>
-Subject: Re: [PATCH v2 10/14] riscv: Add support for kernel-mode FPU
-Message-ID: <20231228062004.GC12475@lst.de>
-References: <20231228014220.3562640-1-samuel.holland@sifive.com> <20231228014220.3562640-11-samuel.holland@sifive.com>
+Subject: Re: [PATCH v2 05/14] arm64: crypto: Use CC_FLAGS_FPU for NEON
+ CFLAGS
+Message-ID: <20231228061930.GB12475@lst.de>
+References: <20231228014220.3562640-1-samuel.holland@sifive.com> <20231228014220.3562640-6-samuel.holland@sifive.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20231228014220.3562640-11-samuel.holland@sifive.com>
+In-Reply-To: <20231228014220.3562640-6-samuel.holland@sifive.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -43,13 +44,7 @@ Cc: linux-arch@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, am
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 27, 2023 at 05:42:00PM -0800, Samuel Holland wrote:
-> This is motivated by the amdgpu DRM driver, which needs floating-point
-> code to support recent hardware. That code is not performance-critical,
-> so only provide a minimal non-preemptible implementation for now.
-> 
-> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
-
 Looks good:
 
 Reviewed-by: Christoph Hellwig <hch@lst.de>
+
