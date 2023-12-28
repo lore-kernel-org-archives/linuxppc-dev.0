@@ -4,62 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8E00C46CD2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Dec 2023 22:17:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A79F8C46CD2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 01:43:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YY/meQwZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=c+Z08SRH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T0mGC2DdJz3cD7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 09:17:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T0rr21Y2jz3bNs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Dec 2023 12:43:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YY/meQwZ;
+	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=c+Z08SRH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T0mFC6wSYz2xFl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2023 09:16:15 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1703715377; x=1735251377;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=haSiWioFdYEaX5edVIPAkdNi0T7Z1JIzVo0tNJKrw5k=;
-  b=YY/meQwZrrh47L1m03VXekIbZOBBN1aOFQoEdBWyFRe3BvJgTKd0zYFY
-   lEC4zLgW6r6HJcbBl4rb8Rzdcjj1DIdbtjusPi6EoHw2GfjBW9unaCi1u
-   XxLxI7vK1McjmB7zsUunk7d2gCaY7cU2TF1jGzqPBOoRlJy5xZrHbYvQS
-   p94IygxECDM0o9QvLeaOEuUXDLtN2g9hE6OF7vn+QA+jVzeUVYm/X7VRn
-   asba+9/AFVODVeWPQjvrVC7pJ7wcLpfTJlauKHc/vuXPmY8sjteeYitPO
-   s0jCSa7ArBowgx/UsAkW2eSKlkEOsUk87N4vblWQ4rQmAWT786cpS9gFy
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10936"; a="3781403"
-X-IronPort-AV: E=Sophos;i="6.04,310,1695711600"; 
-   d="scan'208";a="3781403"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Dec 2023 11:53:31 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10936"; a="844246204"
-X-IronPort-AV: E=Sophos;i="6.04,310,1695711600"; 
-   d="scan'208";a="844246204"
-Received: from lkp-server02.sh.intel.com (HELO b07ab15da5fe) ([10.239.97.151])
-  by fmsmga008.fm.intel.com with ESMTP; 27 Dec 2023 11:53:27 -0800
-Received: from kbuild by b07ab15da5fe with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1rIZy1-000FiJ-0C;
-	Wed, 27 Dec 2023 19:53:25 +0000
-Date: Thu, 28 Dec 2023 03:52:53 +0800
-From: kernel test robot <lkp@intel.com>
-To: Pingfan Liu <kernelfans@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCHv10 2/3] powerpc/kernel: Extend arrays' size to make room
- for a hole in cpu_possible_mask
-Message-ID: <202312280350.GpyKSrB6-lkp@intel.com>
-References: <20231227024126.12424-1-kernelfans@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T0rq61Nbjz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2023 12:42:24 +1100 (AEDT)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-6d9bba6d773so2024529b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2023 17:42:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=sifive.com; s=google; t=1703727742; x=1704332542; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=LKYKCC0iAyjtmcl9i3gxZmi/p+HZhZfirGb7twXi050=;
+        b=c+Z08SRHD2znXjE2vnysHk4woiOwnIx7oIsyB9A8xcx/8gNd8n8nssuyqQeDa8+AJ6
+         HY4qr9piS1m9UZo9qfUtRZkl7izcMXz3bwsbkRgOFap7c78fdx7trejehrgPT7mgmXAY
+         SwnWB3CJCwll10NW1zQHdd8vfChr9HvKvfVSYP2FDu9dvK+g4WnGLko9+ZEFmgq1tbbz
+         WTD2wGKp6BOEtP9rmQf7y3iO18fij9nWEG+LQxYFOE3iCdGnYSsb5mjiQF9yPgGyY1Mf
+         DJ8499z8m6RmAn77OG39ppcRa4BzUBtY1f5lGefFDmd5GiLgzFEL115hL/DVd/Ma7HUn
+         OPRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1703727742; x=1704332542;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=LKYKCC0iAyjtmcl9i3gxZmi/p+HZhZfirGb7twXi050=;
+        b=L+EJjXwkhU886afmCevwqvmkhuadQ+Gd9+g/CLw/Va42zBJoKD3EM0FFRO/gkwNljH
+         bxzyCUVta2J1WT5Fv+IEToGKfTTTqox8brtjJWrgZhyJsGrjvrFBB6cJ+C9ssFwnbYd2
+         HmcNwG50Qi71/HMqOUnN8mrOg+cJopqheQ829UjbqEhUq1NadiCJbMFIGXWYT+RAO9UE
+         fJUj5e+VXKwxPcCL5qV6CVsyIpJdY8ORgfh/6qaCmvpwlPM07Nd+SgXVu9VbrKAMganP
+         C0FcPJG2euwT4jz8CEbIzyYHUIaJD263J05rSpfjsGeThe66E+NtSX54brIJComwU2Uv
+         HPjQ==
+X-Gm-Message-State: AOJu0Yy9btWdIPnJ3ZTh4ia/vFQNiKQ6Tr7XvXx8t9vuQ2w9aCMg3W/Z
+	POz+Ylq1qybjV7Iods7OC6ftKpHvsawvB6lujj/8ryBxVhA=
+X-Google-Smtp-Source: AGHT+IHZ0/JideaaZYntOkNOqAPh5V/QL/d8QFy5AdTRppdgJDCkExfUqVkpEa+jpNl3GOmHDV7Ddw==
+X-Received: by 2002:a05:6a00:1d05:b0:6d9:bfb8:e37c with SMTP id a5-20020a056a001d0500b006d9bfb8e37cmr6112797pfx.41.1703727742547;
+        Wed, 27 Dec 2023 17:42:22 -0800 (PST)
+Received: from sw06.internal.sifive.com ([4.53.31.132])
+        by smtp.gmail.com with ESMTPSA id g24-20020aa78758000000b006d49ed3effasm7335440pfo.63.2023.12.27.17.42.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 27 Dec 2023 17:42:22 -0800 (PST)
+From: Samuel Holland <samuel.holland@sifive.com>
+To: linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	x86@kernel.org,
+	linux-riscv@lists.infradead.org,
+	Christoph Hellwig <hch@lst.de>
+Subject: [PATCH v2 00/14] Unified cross-architecture kernel-mode FPU API
+Date: Wed, 27 Dec 2023 17:41:50 -0800
+Message-ID: <20231228014220.3562640-1-samuel.holland@sifive.com>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231227024126.12424-1-kernelfans@gmail.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,136 +79,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, Pingfan Liu <piliu@redhat.com>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Ming Lei <ming.lei@redhat.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, oe-kbuild-all@lists.linux.dev, Hari Bathini <hbathini@linux.ibm.com>, Wen Xiong <wenxiong@us.ibm.com>
+Cc: linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, Samuel Holland <samuel.holland@sifive.com>, loongarch@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Pingfan,
+This series unifies the kernel-mode FPU API across several architectures
+by wrapping the existing functions (where needed) in consistently-named
+functions placed in a consistent header location, with mostly the same
+semantics: they can be called from preemptible or non-preemptible task
+context, and are not assumed to be reentrant. Architectures are also
+expected to provide CFLAGS adjustments for compiling FPU-dependent code.
+For the moment, SIMD/vector units are out of scope for this common API.
 
-kernel test robot noticed the following build errors:
+This allows us to remove the ifdeffery and duplicated Makefile logic at
+each FPU user. It then implements the common API on RISC-V, and converts
+a couple of users to the new API: the AMDGPU DRM driver, and the FPU
+self test.
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on powerpc/fixes linus/master v6.7-rc7 next-20231222]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+The underlying goal of this series is to allow using newer AMD GPUs
+(e.g. Navi) on RISC-V boards such as SiFive's HiFive Unmatched. Those
+GPUs need CONFIG_DRM_AMD_DC_FP to initialize, which requires kernel-mode
+FPU support.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Pingfan-Liu/powerpc-kernel-Remove-check-on-paca_ptrs_size/20231227-104412
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-patch link:    https://lore.kernel.org/r/20231227024126.12424-1-kernelfans%40gmail.com
-patch subject: [PATCHv10 2/3] powerpc/kernel: Extend arrays' size to make room for a hole in cpu_possible_mask
-config: powerpc-iss476-smp_defconfig (https://download.01.org/0day-ci/archive/20231228/202312280350.GpyKSrB6-lkp@intel.com/config)
-compiler: powerpc-linux-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231228/202312280350.GpyKSrB6-lkp@intel.com/reproduce)
+Previous versions:
+v1: https://lore.kernel.org/linux-kernel/20231208055501.2916202-1-samuel.holland@sifive.com/
+v0: https://lore.kernel.org/linux-kernel/20231122030621.3759313-1-samuel.holland@sifive.com/
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202312280350.GpyKSrB6-lkp@intel.com/
+Changes in v2:
+ - Add documentation explaining the built-time and runtime APIs
+ - Add a linux/fpu.h header for generic isolation enforcement
+ - Remove file name from header comment
+ - Clean up arch/arm64/lib/Makefile, like for arch/arm
+ - Remove RISC-V architecture-specific preprocessor check
+ - Split altivec removal to a separate patch
+ - Use linux/fpu.h instead of asm/fpu.h in consumers
+ - Declare test_fpu() in a header
 
-All errors (new ones prefixed by >>):
+Michael Ellerman (1):
+  drm/amd/display: Only use hard-float, not altivec on powerpc
 
-   powerpc-linux-ld: arch/powerpc/kernel/setup-common.o: in function `smp_setup_cpu_maps':
->> arch/powerpc/kernel/setup-common.c:440:(.init.text+0x6a): undefined reference to `paca_last_cpu_num'
->> powerpc-linux-ld: arch/powerpc/kernel/setup-common.c:440:(.init.text+0x72): undefined reference to `paca_last_cpu_num'
+Samuel Holland (13):
+  arch: Add ARCH_HAS_KERNEL_FPU_SUPPORT
+  ARM: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+  ARM: crypto: Use CC_FLAGS_FPU for NEON CFLAGS
+  arm64: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+  arm64: crypto: Use CC_FLAGS_FPU for NEON CFLAGS
+  lib/raid6: Use CC_FLAGS_FPU for NEON CFLAGS
+  LoongArch: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+  powerpc: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+  x86: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+  riscv: Add support for kernel-mode FPU
+  drm/amd/display: Use ARCH_HAS_KERNEL_FPU_SUPPORT
+  selftests/fpu: Move FP code to a separate translation unit
+  selftests/fpu: Allow building on other architectures
 
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for HOTPLUG_CPU
-   Depends on [n]: SMP [=y] && (PPC_PSERIES [=n] || PPC_PMAC [=n] || PPC_POWERNV [=n] || FSL_SOC_BOOKE [=n])
-   Selected by [y]:
-   - PM_SLEEP_SMP [=y] && SMP [=y] && (ARCH_SUSPEND_POSSIBLE [=y] || ARCH_HIBERNATION_POSSIBLE [=y]) && PM_SLEEP [=y]
-
-
-vim +440 arch/powerpc/kernel/setup-common.c
-
-   413	
-   414	/**
-   415	 * setup_cpu_maps - initialize the following cpu maps:
-   416	 *                  cpu_possible_mask
-   417	 *                  cpu_present_mask
-   418	 *
-   419	 * Having the possible map set up early allows us to restrict allocations
-   420	 * of things like irqstacks to nr_cpu_ids rather than NR_CPUS.
-   421	 *
-   422	 * We do not initialize the online map here; cpus set their own bits in
-   423	 * cpu_online_mask as they come up.
-   424	 *
-   425	 * This function is valid only for Open Firmware systems.  finish_device_tree
-   426	 * must be called before using this.
-   427	 *
-   428	 * While we're here, we may as well set the "physical" cpu ids in the paca.
-   429	 *
-   430	 * NOTE: This must match the parsing done in early_init_dt_scan_cpus.
-   431	 */
-   432	void __init smp_setup_cpu_maps(void)
-   433	{
-   434		struct device_node *dn;
-   435		int cpu = 0;
-   436		int nthreads = 1;
-   437	
-   438		DBG("smp_setup_cpu_maps()\n");
-   439	
- > 440		cpu_to_phys_id = memblock_alloc(paca_last_cpu_num * sizeof(u32),
-   441						__alignof__(u32));
-   442		if (!cpu_to_phys_id)
-   443			panic("%s: Failed to allocate %zu bytes align=0x%zx\n",
-   444			      __func__, nr_cpu_ids * sizeof(u32), __alignof__(u32));
-   445	
-   446		for_each_node_by_type(dn, "cpu") {
-   447			const __be32 *intserv;
-   448			__be32 cpu_be;
-   449			int j, len;
-   450	
-   451			DBG("  * %pOF...\n", dn);
-   452	
-   453			intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s",
-   454					&len);
-   455			if (intserv) {
-   456				DBG("    ibm,ppc-interrupt-server#s -> %lu threads\n",
-   457				    (len / sizeof(int)));
-   458			} else {
-   459				DBG("    no ibm,ppc-interrupt-server#s -> 1 thread\n");
-   460				intserv = of_get_property(dn, "reg", &len);
-   461				if (!intserv) {
-   462					cpu_be = cpu_to_be32(cpu);
-   463					/* XXX: what is this? uninitialized?? */
-   464					intserv = &cpu_be;	/* assume logical == phys */
-   465					len = 4;
-   466				}
-   467			}
-   468	
-   469			nthreads = len / sizeof(int);
-   470	
-   471			for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
-   472				bool avail;
-   473	
-   474				DBG("    thread %d -> cpu %d (hard id %d)\n",
-   475				    j, cpu, be32_to_cpu(intserv[j]));
-   476	
-   477				avail = of_device_is_available(dn);
-   478				if (!avail)
-   479					avail = !of_property_match_string(dn,
-   480							"enable-method", "spin-table");
-   481	
-   482				set_cpu_present(cpu, avail);
-   483				set_cpu_possible(cpu, true);
-   484				cpu_to_phys_id[cpu] = be32_to_cpu(intserv[j]);
-   485				cpu++;
-   486			}
-   487	
-   488			if (cpu >= nr_cpu_ids) {
-   489				of_node_put(dn);
-   490				break;
-   491			}
-   492		}
-   493	
-   494		/* If no SMT supported, nthreads is forced to 1 */
-   495		if (!cpu_has_feature(CPU_FTR_SMT)) {
-   496			DBG("  SMT disabled ! nthreads forced to 1\n");
-   497			nthreads = 1;
-   498		}
-   499	
+ Documentation/core-api/floating-point.rst     | 78 +++++++++++++++++++
+ Documentation/core-api/index.rst              |  1 +
+ Makefile                                      |  5 ++
+ arch/Kconfig                                  |  6 ++
+ arch/arm/Kconfig                              |  1 +
+ arch/arm/Makefile                             |  7 ++
+ arch/arm/include/asm/fpu.h                    | 15 ++++
+ arch/arm/lib/Makefile                         |  3 +-
+ arch/arm64/Kconfig                            |  1 +
+ arch/arm64/Makefile                           |  9 ++-
+ arch/arm64/include/asm/fpu.h                  | 15 ++++
+ arch/arm64/lib/Makefile                       |  6 +-
+ arch/loongarch/Kconfig                        |  1 +
+ arch/loongarch/Makefile                       |  5 +-
+ arch/loongarch/include/asm/fpu.h              |  1 +
+ arch/powerpc/Kconfig                          |  1 +
+ arch/powerpc/Makefile                         |  5 +-
+ arch/powerpc/include/asm/fpu.h                | 28 +++++++
+ arch/riscv/Kconfig                            |  1 +
+ arch/riscv/Makefile                           |  3 +
+ arch/riscv/include/asm/fpu.h                  | 16 ++++
+ arch/riscv/kernel/Makefile                    |  1 +
+ arch/riscv/kernel/kernel_mode_fpu.c           | 28 +++++++
+ arch/x86/Kconfig                              |  1 +
+ arch/x86/Makefile                             | 20 +++++
+ arch/x86/include/asm/fpu.h                    | 13 ++++
+ drivers/gpu/drm/amd/display/Kconfig           |  2 +-
+ .../gpu/drm/amd/display/amdgpu_dm/dc_fpu.c    | 35 +--------
+ drivers/gpu/drm/amd/display/dc/dml/Makefile   | 36 +--------
+ drivers/gpu/drm/amd/display/dc/dml2/Makefile  | 36 +--------
+ include/linux/fpu.h                           | 12 +++
+ lib/Kconfig.debug                             |  2 +-
+ lib/Makefile                                  | 26 +------
+ lib/raid6/Makefile                            | 31 ++------
+ lib/test_fpu.h                                |  8 ++
+ lib/{test_fpu.c => test_fpu_glue.c}           | 37 ++-------
+ lib/test_fpu_impl.c                           | 37 +++++++++
+ 37 files changed, 343 insertions(+), 190 deletions(-)
+ create mode 100644 Documentation/core-api/floating-point.rst
+ create mode 100644 arch/arm/include/asm/fpu.h
+ create mode 100644 arch/arm64/include/asm/fpu.h
+ create mode 100644 arch/powerpc/include/asm/fpu.h
+ create mode 100644 arch/riscv/include/asm/fpu.h
+ create mode 100644 arch/riscv/kernel/kernel_mode_fpu.c
+ create mode 100644 arch/x86/include/asm/fpu.h
+ create mode 100644 include/linux/fpu.h
+ create mode 100644 lib/test_fpu.h
+ rename lib/{test_fpu.c => test_fpu_glue.c} (71%)
+ create mode 100644 lib/test_fpu_impl.c
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.42.0
+
