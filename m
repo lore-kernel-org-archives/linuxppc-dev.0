@@ -4,45 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A534C46CD4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 12:02:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F275C46CD4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 12:03:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=raeS5P1w;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Iq4v4fNY;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T1kWp2Q1sz3cGW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 23:02:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T1kXh4JRPz3c3K
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 23:03:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=raeS5P1w;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Iq4v4fNY;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T1kVt3xcTz30gM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2023 23:01:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T1kVv3Wjhz30gM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2023 23:01:27 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1703851286;
-	bh=0Q0QUyw1uol2QHdIzUg5cuO+z5IiWjs+EuPQcS1Bh7c=;
-	h=From:To:Cc:Subject:Date:From;
-	b=raeS5P1wFH69C88jTTe0SpLyLdnKjPuzMPHS8hiuCV6u1M4gmL98J6SMepvGzvJ99
-	 yPguud6W8Imf4PrSkzZpEdN8RCx4aTXgZxJedvtIPY9Mo/pQCg7Oagf5KQFwmyeXS2
-	 MQWPyKriiNhGA8ma/QX5g9iUTxOW+o/F3Kz3zK4K5loDq5oogMnV4W/aHir0hRBvDV
-	 INHwFthblcpVmokYJkG4vkCFHksLUaQE6o9BPwqrsQswaDYTUdarNcLs247Qf5l+po
-	 btM9uQO1UkfTpTWJaf+psQgWwFOkUuu6UD14ttFEjx6xgqGE6joI7dkig968AKLIKR
-	 gCen3XXWI/lfg==
+	s=201909; t=1703851287;
+	bh=wm/fsqpowae/1/KFnL6vpH1fal4nKzG+BQQ3RhSEM40=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Iq4v4fNYmqlp/3S2ACsOmnPu66IElzoVGDbY0mofPyCfidCkJNL99cnv9xPdHua4B
+	 rnkWtRBl7g0ReDNMT2dOFZ0ze4iyTX7XHKaye8nbLl0+2pwVtJKtzpHhg9J//qsv4C
+	 2qZHJiDYzPkM3erehFmrCUlg+4zcCayv12IJfPIP05TgdWNAgZSYXBZvnNRmiZ20kN
+	 cdRaahFZ3Zc+XgEwmjwQn2S6WheKKvCYAHpvaLyfUM3MpTYu6iW8vpIuVOMRNlJFUt
+	 8v6BZXu0+g8nyJ65UnwKX39u+G4JCOeTww7DN6WRzoBmQukly9kCL2ZtQ9OYPIsU25
+	 mNvITj7jnTUew==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4T1kVt1xhmz4xTg;
-	Fri, 29 Dec 2023 23:01:26 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4T1kVv2pWhz4xTy;
+	Fri, 29 Dec 2023 23:01:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [RFC PATCH 1/5] powerpc/smp: Adjust nr_cpu_ids to cover all threads of a core
-Date: Fri, 29 Dec 2023 23:01:03 +1100
-Message-ID: <20231229120107.2281153-1-mpe@ellerman.id.au>
+Subject: [RFC PATCH 3/5] powerpc/smp: Lookup avail once per device tree node
+Date: Fri, 29 Dec 2023 23:01:05 +1100
+Message-ID: <20231229120107.2281153-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20231229120107.2281153-1-mpe@ellerman.id.au>
+References: <20231229120107.2281153-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -60,33 +62,42 @@ Cc: Hari Bathini <hbathini@linux.ibm.com>, Pingfan Liu <piliu@redhat.com>, Pingf
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If nr_cpu_ids is too low to include at least all the threads of a single
-core adjust nr_cpu_ids upwards. This avoids triggering odd bugs in code
-that assumes all threads of a core are available.
+The of_device_is_available() check only needs to be done once per device
+node, there's no need to repeat it for each thread. Move it out of the
+loop.
 
-Cc: stable@vger.kernel.org
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/kernel/setup-common.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 0b5878c3125b..58e80076bed5 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -375,6 +375,12 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	if (IS_ENABLED(CONFIG_PPC64))
- 		boot_cpu_hwid = be32_to_cpu(intserv[found_thread]);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index ec02f9d8f55d..ff7616023ade 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -468,17 +468,16 @@ void __init smp_setup_cpu_maps(void)
  
-+	if (nr_cpu_ids % nthreads != 0) {
-+		set_nr_cpu_ids(ALIGN(nr_cpu_ids, nthreads));
-+		pr_warn("nr_cpu_ids was not a multiple of threads_per_core, adjusted to %d\n",
-+			nr_cpu_ids);
-+	}
+ 		nthreads = len / sizeof(int);
+ 
++		bool avail = of_device_is_available(dn);
++		if (!avail)
++			avail = !of_property_match_string(dn,
++					"enable-method", "spin-table");
 +
- 	/*
- 	 * PAPR defines "logical" PVR values for cpus that
- 	 * meet various levels of the architecture:
+ 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+-			bool avail;
+ 
+ 			DBG("    thread %d -> cpu %d (hard id %d)\n",
+ 			    j, cpu, be32_to_cpu(intserv[j]));
+ 
+-			avail = of_device_is_available(dn);
+-			if (!avail)
+-				avail = !of_property_match_string(dn,
+-						"enable-method", "spin-table");
+-
+ 			set_cpu_present(cpu, avail);
+ 			set_cpu_possible(cpu, true);
+ 			cpu_to_phys_id[cpu] = be32_to_cpu(intserv[j]);
 -- 
 2.43.0
 
