@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4DF1C46CD4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 12:03:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48754C46CD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 12:04:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IsqMDnK1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=R834tpqO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T1kYb28Mpz3cbw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 23:03:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T1kZW1s2qz3cRr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Dec 2023 23:04:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IsqMDnK1;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=R834tpqO;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T1kVv5gNgz30gM
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T1kVv62fJz3byT
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2023 23:01:27 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1703851287;
-	bh=0oLLh6xTaFHV7ztZTSdCfMJvFJXUC0ivOBQdCJBzZtM=;
+	bh=VBP8pGJTkyLVpg2aerijLY0eZdkYiejhxD2xPbSWKaI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IsqMDnK18x5YPzkaOyCA/haEgzR9EOlEHwmpEfFu6bO0/VTGNtJBe3EqgmCmxzN+X
-	 mwuCB8pzpYbNzPSQBYCkzbBYU3ncUKuO/OqleyPgP/yjBZDMr7Em/F/lqNDLX+hNvG
-	 nRb2S04/+q6N/ngZgRGnxlX+iFvQbBdnut99Hr3rE67C0nSE0hvOMveHfwFkntldmj
-	 iObSg7aj1NrtNaqVxBIYvg3HYb/InXkWdKzOdYKQxDww6BxT/srXtmUWYf5syhtu91
-	 u8cVprd1uH89OeaEMLk8iGPVy4MB0Mra5oe77REVMbj68U4Db2k7yOMuGBSCyZyWdA
-	 OeMpYSenNxWag==
+	b=R834tpqOew00qzu9dKZeHwwakZRxQg29vUlUzCO7fbQwVtpFDshXxtK/uWIax179t
+	 dW94azno3w03Sb0Dr85lfcc8z0WPBJtSYqBNz3v7EhuPf9uSbptWf8GeekdjD1SIx9
+	 W63efzeWNRmS6L9knV8K7RH+Iu+kyNWIXVMqFtNCPOEgALKChmKmr/xTbYQYBOJ7my
+	 XMdxDpn3alHCrxU7FGAQcp7KyDVWmYv6nBJ3QT1oriXndlYavao6cdGrSE5ggqjE0W
+	 ZxzJTy3oyY75r9sF+DftYJlAWq9LhRGDev2Ak3YSu/JuoyDx+NxvHG7FZG1XDwjakq
+	 y3EdmVkv5tuEw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4T1kVt6nBgz4xTx;
-	Fri, 29 Dec 2023 23:01:26 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4T1kVv5wDqz4xV1;
+	Fri, 29 Dec 2023 23:01:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [RFC PATCH 2/5] powerpc/smp: Increase nr_cpu_ids to include the boot CPU
-Date: Fri, 29 Dec 2023 23:01:04 +1100
-Message-ID: <20231229120107.2281153-2-mpe@ellerman.id.au>
+Subject: [RFC PATCH 4/5] powerpc/smp: Factor out assign_threads()
+Date: Fri, 29 Dec 2023 23:01:06 +1100
+Message-ID: <20231229120107.2281153-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231229120107.2281153-1-mpe@ellerman.id.au>
 References: <20231229120107.2281153-1-mpe@ellerman.id.au>
@@ -62,33 +62,74 @@ Cc: Hari Bathini <hbathini@linux.ibm.com>, Pingfan Liu <piliu@redhat.com>, Pingf
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If nr_cpu_ids is too low to include the boot CPU adjust nr_cpu_ids
-upward. Otherwise the kernel will BUG when trying to allocate a paca
-for the boot CPU and fail to boot.
+Factor out the for loop that assigns CPU numbers to threads of a core.
+The function takes the next CPU number to use as input, and returns the
+next available CPU number after the threads has been assigned.
 
-Cc: stable@vger.kernel.org
+This will allow a subsequent change to assign threads out of order.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/kernel/setup-common.c | 32 ++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 58e80076bed5..77364729a1b6 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -381,6 +381,12 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 			nr_cpu_ids);
- 	}
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index ff7616023ade..d9f8ed9bd2fc 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -411,6 +411,25 @@ static void __init cpu_init_thread_core_maps(int tpc)
  
-+	if (boot_cpuid >= nr_cpu_ids) {
-+		set_nr_cpu_ids(min(CONFIG_NR_CPUS, ALIGN(boot_cpuid + 1, nthreads)));
-+		pr_warn("Boot CPU %d >= nr_cpu_ids, adjusted nr_cpu_ids to %d\n",
-+			boot_cpuid, nr_cpu_ids);
+ u32 *cpu_to_phys_id = NULL;
+ 
++static int assign_threads(unsigned cpu, unsigned int nthreads, bool avail,
++                          const __be32 *hw_ids)
++{
++	for (int i = 0; i < nthreads && cpu < nr_cpu_ids; i++) {
++		__be32 hwid;
++
++		hwid = be32_to_cpu(hw_ids[i]);
++
++		DBG("    thread %d -> cpu %d (hard id %d)\n", i, cpu, hwid);
++
++		set_cpu_present(cpu, avail);
++		set_cpu_possible(cpu, true);
++		cpu_to_phys_id[cpu] = hwid;
++		cpu++;
 +	}
 +
- 	/*
- 	 * PAPR defines "logical" PVR values for cpus that
- 	 * meet various levels of the architecture:
++	return cpu;
++}
++
+ /**
+  * setup_cpu_maps - initialize the following cpu maps:
+  *                  cpu_possible_mask
+@@ -446,7 +465,7 @@ void __init smp_setup_cpu_maps(void)
+ 	for_each_node_by_type(dn, "cpu") {
+ 		const __be32 *intserv;
+ 		__be32 cpu_be;
+-		int j, len;
++		int len;
+ 
+ 		DBG("  * %pOF...\n", dn);
+ 
+@@ -473,16 +492,7 @@ void __init smp_setup_cpu_maps(void)
+ 			avail = !of_property_match_string(dn,
+ 					"enable-method", "spin-table");
+ 
+-		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+-
+-			DBG("    thread %d -> cpu %d (hard id %d)\n",
+-			    j, cpu, be32_to_cpu(intserv[j]));
+-
+-			set_cpu_present(cpu, avail);
+-			set_cpu_possible(cpu, true);
+-			cpu_to_phys_id[cpu] = be32_to_cpu(intserv[j]);
+-			cpu++;
+-		}
++		cpu = assign_threads(cpu, nthreads, avail, intserv);
+ 
+ 		if (cpu >= nr_cpu_ids) {
+ 			of_node_put(dn);
 -- 
 2.43.0
 
