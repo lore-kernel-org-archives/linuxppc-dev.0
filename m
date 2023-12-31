@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65C5CC3DA6E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Dec 2023 11:08:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D89CBC3DA6E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Dec 2023 11:09:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T2xFF45YVz3cbQ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Dec 2023 22:08:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T2xFk6Q51z3cVP
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Dec 2023 22:09:14 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T2xDj59cJz2xnK
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Dec 2023 22:08:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T2xDk2S8Jz2xnK
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Dec 2023 22:08:22 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4T2xDh31wMz4wd4;
-	Sun, 31 Dec 2023 22:08:20 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4T2xDk0cdMz4wdB;
+	Sun, 31 Dec 2023 22:08:22 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Shuah Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, Colin Ian King <colin.i.king@gmail.com>
-In-Reply-To: <20231215112456.13554-1-colin.i.king@gmail.com>
-References: <20231215112456.13554-1-colin.i.king@gmail.com>
-Subject: Re: [PATCH][next] powerpc/selftests: Fix spelling mistake "EACCESS" -> "EACCES"
-Message-Id: <170402086356.3311386.10584388086195315953.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>
+In-Reply-To: <df906ac1-5f17-44b9-b0bb-7cd292a0df65@infradead.org>
+References: <df906ac1-5f17-44b9-b0bb-7cd292a0df65@infradead.org>
+Subject: Re: [PATCH] powerpc/ps3_defconfig: Disable PPC64_BIG_ENDIAN_ELF_ABI_V2
+Message-Id: <170402086357.3311386.8120508393556996228.b4-ty@ellerman.id.au>
 Date: Sun, 31 Dec 2023 22:07:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,18 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 15 Dec 2023 11:24:56 +0000, Colin Ian King wrote:
-> There is a spelling mistake of the EACCES error name, fix it.
+On Sun, 24 Dec 2023 09:52:46 +0900, Geoff Levand wrote:
+> Commit 8c5fa3b5c4df3d071dab42b04b971df370d99354 (powerpc/64: Make ELFv2 the
+> default for big-endian builds), merged in Linux-6.5-rc1 changes the calling ABI
+> in a way that is incompatible with the current code for the PS3's LV1 hypervisor
+> calls.
 > 
+> This change just adds the line '# CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2 is not set'
+> to the ps3_defconfig file so that the PPC64_ELF_ABI_V1 is used.
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/selftests: Fix spelling mistake "EACCESS" -> "EACCES"
-      https://git.kernel.org/powerpc/c/ba5b952ad5f52e58c0f288b9d5427ad734600568
+[1/1] powerpc/ps3_defconfig: Disable PPC64_BIG_ENDIAN_ELF_ABI_V2
+      https://git.kernel.org/powerpc/c/482b718a84f08b6fc84879c3e90cc57dba11c115
 
 cheers
