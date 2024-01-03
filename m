@@ -4,66 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9395C47077
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jan 2024 14:28:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AEFBC3DA6E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jan 2024 21:29:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XzYCGnD3;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=gmfJ8QpW;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=PROaPpe2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T4sXf0NjGz3byh
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jan 2024 01:28:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T52ss5kQ0z3cPk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jan 2024 08:29:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XzYCGnD3;
+	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=gmfJ8QpW;
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=PROaPpe2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::332; helo=mail-ot1-x332.google.com; envelope-from=alexdeucher@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x332.google.com (mail-ot1-x332.google.com [IPv6:2607:f8b0:4864:20::332])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050:0:465::102; helo=mout-p-102.mailbox.org; envelope-from=torvic9@mailbox.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 317 seconds by postgrey-1.37 at boromir; Wed, 03 Jan 2024 20:39:21 AEDT
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [IPv6:2001:67c:2050:0:465::102])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T4sWk6q3xz3bX5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2024 01:28:01 +1100 (AEDT)
-Received: by mail-ot1-x332.google.com with SMTP id 46e09a7af769-6dbffc3b1c2so2170634a34.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2024 06:28:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1704292079; x=1704896879; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=a349tfFo0Tz6+yladu1vGz3cOOaSViS9QyeDAzXiKtI=;
-        b=XzYCGnD35AS18gYdjA3jl8PKvDdiCK2xx+MWxJQGa730szDFL1TAk0M1x5iR5Z1awq
-         /yb6ysdCGuYSl7U7d1esskva+6rzassn/t9D5ogXt+mgYcQVE9mBhy8+CpBg0JCIWGXP
-         lR6j7O2NzOEwu1bJutPlonKPy+G92folFTrRoN4CzllpYiDtVJkaq0ytYaBOqzs+sobJ
-         6mnzA4tFPuyo/C9RWU8U+Gf8RJD/OXVFu5fDQ+Z5zSyvfQ+GI6/kxCnPh9F1OM4n3UPm
-         Rqg7a20lMWQ2mYMJlIQoGNFdG8F3AwHtyxYPps0kJEBhc34XkgRWNiANmfTnQf3NzC4p
-         +c6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704292079; x=1704896879;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=a349tfFo0Tz6+yladu1vGz3cOOaSViS9QyeDAzXiKtI=;
-        b=lCJ3ML/lEfmxmwEU9GDl9t+1FDzSJG9d0hrxYvUyw1HMIlmKv5+9l+O1Oai0SOOhqX
-         fwBFl5Ly0b/+MgjLSVPvUa6lpHxgOemQ2eo+DdXO6dDhJFakL644yTYc1Fp/rS7Mwx8u
-         lA/eRLS+B8LokA5a6JXEPqcvW6zrKEr+XKP9iAoD6DSpZxf5OM6V0bGkc/U5+3i9cnDb
-         Dj+8WTjyIlfXn9VdtD7f3W17RsUjTc9Ua2XxNWDr0yw0jFhqtnuh+sXP2an5RkVJRtXD
-         UgeHenvIyELh+vqMa5d1lix2DAvf35S3+l5B7Xk1bcK0CBj2kyztU7hjDVpNh+aem+yL
-         uOIw==
-X-Gm-Message-State: AOJu0YxlmkzPyC1PVliseiiaMkAVY32OI/k+v5YWxUhPvM0sTiVpXnKZ
-	m+Eby8Q5WEXsW38oBbZzh10XoOigm9Cv8yamzDA=
-X-Google-Smtp-Source: AGHT+IHjuxm+WsGold4msvLzUcwvASXsLbNWaImZQEtNmF+UM28LD4T6ctfH3u7LonFz90aecPkvdKH3c/Z8VWiEa/Q=
-X-Received: by 2002:a05:6871:2b02:b0:204:32f7:6668 with SMTP id
- dr2-20020a0568712b0200b0020432f76668mr8870200oac.34.1704292078704; Wed, 03
- Jan 2024 06:27:58 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T4l6d4WcLz30N8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2024 20:39:21 +1100 (AEDT)
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4T4l0J2lMGz9tF9;
+	Wed,  3 Jan 2024 10:33:52 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1704274432;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=TRUNuY4twZgDFCA5VbnSEJ3nMmDqW3XaOjy/vo3VxTE=;
+	b=gmfJ8QpWwkRfC9P9BsjFu2Ox5QDn3kWmOHdS0KTNIalzZ/EFQ9qoe7e7OH8ne8dPssqA9E
+	gtRBo4BnUuXsDbW3iP5sziEu7HpDTCYtH8IRM1L5DbTIESxw6zanottpNJXw1GISgw1/dD
+	mwP3s2tb1eWv+NElbZ5kKn5xTwiodIq3c/D6WwJKQfbxGGtukTkw+fUTeCcow7jiBakx6p
+	MRiJyg8SeyczAjlyC3dU84bM1jt8lU94J6yAsTkOvpsXkT2SROTLCRYD2go+x+kHIAxyUs
+	UkIhWU3AIw4uo++gWoeiAcynweYRVomEiWu8bD1KofqNp0LD1LTFuBLvDl9Kzw==
+Message-ID: <8cdba1ac-701f-40d4-ade9-e429da4a0794@mailbox.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1704274430;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=TRUNuY4twZgDFCA5VbnSEJ3nMmDqW3XaOjy/vo3VxTE=;
+	b=PROaPpe2Y1vRkl7v9VKf4xLdhI4w4dZPcVJ8w4RxCVzKqoYh3UlqZ6a/ypyaCdRxG8zvBT
+	KJsgVU4xW6yt5XHZ/yOduq601SvTNW1N6hU0GbBlZImYXDSNRSwMrh4ThUSVx+fiv1gKdn
+	wv6cSLmudJUHN4yz9+gbE4gPIDWrFbOQgRL94AOfpzfl3ueCzXV/nr9Dw5whBtXOTFw4a3
+	9AgcN792Xw/9w+58nfzmPrfbaWRfhlpqyO6h5vPb7/IwAsp6Ls+umfQvT0XbQsIwiGCDgq
+	mPPDsP6ByZsH7B1zpSdtPQiKUUbMX0mUHHl+lW+htDCR292BcrGBk7AWybkKmQ==
+Date: Wed, 3 Jan 2024 10:33:42 +0100
 MIME-Version: 1.0
-References: <20231228014220.3562640-1-samuel.holland@sifive.com>
-In-Reply-To: <20231228014220.3562640-1-samuel.holland@sifive.com>
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Wed, 3 Jan 2024 09:27:47 -0500
-Message-ID: <CADnq5_Pub0UULb6UqO2g+Eo6RCy=gqtWLN9txjEyp2Gmw9idww@mail.gmail.com>
-Subject: Re: [PATCH v2 00/14] Unified cross-architecture kernel-mode FPU API
-To: Samuel Holland <samuel.holland@sifive.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: WARNING: No atomic I2C transfer handler for 'i2c-4' at
+ drivers/i2c/i2c-core.h:40 i2c_smbus_xfer+0x178/0x190 (kernel 6.6.X, 6.7-rcX,
+ PowerMac G5 11,2)
+To: Erhard Furtner <erhard_f@mailbox.org>, linux-i2c@vger.kernel.org
+References: <20231222230106.73f030a5@yea>
+Content-Language: en-US
+From: Tor Vic <torvic9@mailbox.org>
+In-Reply-To: <20231222230106.73f030a5@yea>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-MBO-RS-ID: b01b190b218eed6ac16
+X-MBO-RS-META: 76hzqx1k5odjfgyy6ufb1dyga4kiaiym
+X-Rspamd-Queue-Id: 4T4l0J2lMGz9tF9
+X-Mailman-Approved-At: Thu, 04 Jan 2024 08:28:33 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,119 +83,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org
+Cc: mwalle@kernel.org, linuxppc-dev@lists.ozlabs.org, benjamin.bara@skidata.com, Dmitry Osipenko <dmitry.osipenko@collabora.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 28, 2023 at 5:11=E2=80=AFAM Samuel Holland
-<samuel.holland@sifive.com> wrote:
->
-> This series unifies the kernel-mode FPU API across several architectures
-> by wrapping the existing functions (where needed) in consistently-named
-> functions placed in a consistent header location, with mostly the same
-> semantics: they can be called from preemptible or non-preemptible task
-> context, and are not assumed to be reentrant. Architectures are also
-> expected to provide CFLAGS adjustments for compiling FPU-dependent code.
-> For the moment, SIMD/vector units are out of scope for this common API.
->
-> This allows us to remove the ifdeffery and duplicated Makefile logic at
-> each FPU user. It then implements the common API on RISC-V, and converts
-> a couple of users to the new API: the AMDGPU DRM driver, and the FPU
-> self test.
->
-> The underlying goal of this series is to allow using newer AMD GPUs
-> (e.g. Navi) on RISC-V boards such as SiFive's HiFive Unmatched. Those
-> GPUs need CONFIG_DRM_AMD_DC_FP to initialize, which requires kernel-mode
-> FPU support.
 
-Series is:
-Acked-by: Alex Deucher <alexander.deucher@amd.com>
 
->
-> Previous versions:
-> v1: https://lore.kernel.org/linux-kernel/20231208055501.2916202-1-samuel.=
-holland@sifive.com/
-> v0: https://lore.kernel.org/linux-kernel/20231122030621.3759313-1-samuel.=
-holland@sifive.com/
->
-> Changes in v2:
->  - Add documentation explaining the built-time and runtime APIs
->  - Add a linux/fpu.h header for generic isolation enforcement
->  - Remove file name from header comment
->  - Clean up arch/arm64/lib/Makefile, like for arch/arm
->  - Remove RISC-V architecture-specific preprocessor check
->  - Split altivec removal to a separate patch
->  - Use linux/fpu.h instead of asm/fpu.h in consumers
->  - Declare test_fpu() in a header
->
-> Michael Ellerman (1):
->   drm/amd/display: Only use hard-float, not altivec on powerpc
->
-> Samuel Holland (13):
->   arch: Add ARCH_HAS_KERNEL_FPU_SUPPORT
->   ARM: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
->   ARM: crypto: Use CC_FLAGS_FPU for NEON CFLAGS
->   arm64: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
->   arm64: crypto: Use CC_FLAGS_FPU for NEON CFLAGS
->   lib/raid6: Use CC_FLAGS_FPU for NEON CFLAGS
->   LoongArch: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
->   powerpc: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
->   x86: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
->   riscv: Add support for kernel-mode FPU
->   drm/amd/display: Use ARCH_HAS_KERNEL_FPU_SUPPORT
->   selftests/fpu: Move FP code to a separate translation unit
->   selftests/fpu: Allow building on other architectures
->
->  Documentation/core-api/floating-point.rst     | 78 +++++++++++++++++++
->  Documentation/core-api/index.rst              |  1 +
->  Makefile                                      |  5 ++
->  arch/Kconfig                                  |  6 ++
->  arch/arm/Kconfig                              |  1 +
->  arch/arm/Makefile                             |  7 ++
->  arch/arm/include/asm/fpu.h                    | 15 ++++
->  arch/arm/lib/Makefile                         |  3 +-
->  arch/arm64/Kconfig                            |  1 +
->  arch/arm64/Makefile                           |  9 ++-
->  arch/arm64/include/asm/fpu.h                  | 15 ++++
->  arch/arm64/lib/Makefile                       |  6 +-
->  arch/loongarch/Kconfig                        |  1 +
->  arch/loongarch/Makefile                       |  5 +-
->  arch/loongarch/include/asm/fpu.h              |  1 +
->  arch/powerpc/Kconfig                          |  1 +
->  arch/powerpc/Makefile                         |  5 +-
->  arch/powerpc/include/asm/fpu.h                | 28 +++++++
->  arch/riscv/Kconfig                            |  1 +
->  arch/riscv/Makefile                           |  3 +
->  arch/riscv/include/asm/fpu.h                  | 16 ++++
->  arch/riscv/kernel/Makefile                    |  1 +
->  arch/riscv/kernel/kernel_mode_fpu.c           | 28 +++++++
->  arch/x86/Kconfig                              |  1 +
->  arch/x86/Makefile                             | 20 +++++
->  arch/x86/include/asm/fpu.h                    | 13 ++++
->  drivers/gpu/drm/amd/display/Kconfig           |  2 +-
->  .../gpu/drm/amd/display/amdgpu_dm/dc_fpu.c    | 35 +--------
->  drivers/gpu/drm/amd/display/dc/dml/Makefile   | 36 +--------
->  drivers/gpu/drm/amd/display/dc/dml2/Makefile  | 36 +--------
->  include/linux/fpu.h                           | 12 +++
->  lib/Kconfig.debug                             |  2 +-
->  lib/Makefile                                  | 26 +------
->  lib/raid6/Makefile                            | 31 ++------
->  lib/test_fpu.h                                |  8 ++
->  lib/{test_fpu.c =3D> test_fpu_glue.c}           | 37 ++-------
->  lib/test_fpu_impl.c                           | 37 +++++++++
->  37 files changed, 343 insertions(+), 190 deletions(-)
->  create mode 100644 Documentation/core-api/floating-point.rst
->  create mode 100644 arch/arm/include/asm/fpu.h
->  create mode 100644 arch/arm64/include/asm/fpu.h
->  create mode 100644 arch/powerpc/include/asm/fpu.h
->  create mode 100644 arch/riscv/include/asm/fpu.h
->  create mode 100644 arch/riscv/kernel/kernel_mode_fpu.c
->  create mode 100644 arch/x86/include/asm/fpu.h
->  create mode 100644 include/linux/fpu.h
->  create mode 100644 lib/test_fpu.h
->  rename lib/{test_fpu.c =3D> test_fpu_glue.c} (71%)
->  create mode 100644 lib/test_fpu_impl.c
->
-> --
-> 2.42.0
->
+On 12/22/23 23:01, Erhard Furtner wrote:
+> Greetings!
+> 
+> I am getting this on my PowerMac G5 11,2 at reboot on kernels 6.6.X and 6.7-rcX:
+> 
+
+Hi,
+
+this seems to be the same issue as [1], and also referenced in [2].
+
+For now, I have reverted the patch [3] as the huge splats on reboot are 
+really annoying.
+
+[1] 
+https://lore.kernel.org/linux-i2c/13271b9b-4132-46ef-abf8-2c311967bb46@mailbox.org/
+
+[2] 
+https://lore.kernel.org/linux-i2c/20230327-tegra-pmic-reboot-v7-2-18699d5dcd76@skidata.com/T/#m22d00b913f150b4d80623162c5b0c79b338774f0
+
+[3] (3473cf43b) i2c: core: Run atomic i2c xfer when !preemptible
+
+Cheers,
+Tor Vic
+
+> [...]
+> reboot: Restarting system
+> ------------[ cut here ]------------
+> No atomic I2C transfer handler for 'i2c-4'
+> WARNING: CPU: 1 PID: 362 at drivers/i2c/i2c-core.h:40 i2c_smbus_xfer+0x178/0x190
+> Modules linked in: windfarm_cpufreq_clamp windfarm_smu_sensors windfarm_smu_controls windfarm_pm112 snd_aoa_codec_onyx windfarm_pid snd_aoa_fabric_layout snd_aoa nouveau windfarm_smu_sat snd_aoa_i2sbus windfarm_lm75_sensor snd_aoa_soundbus windfarm_max6690_sensor firewire_ohci snd_pcm windfarm_core drm_exec snd_timer firewire_core crc_itu_t gpu_sched snd i2c_algo_bit backlight drm_ttm_helper ttm soundcore ohci_pci rack_meter tg3 drm_display_helper hwmon cfg80211 rfkill zram zsmalloc loop dm_mod configfs
+> CPU: 1 PID: 362 Comm: kwindfarm Not tainted 6.6.7-gentoo-PMacG5 #1
+> Hardware name: PowerMac11,2 PPC970MP 0x440101 PowerMac
+> NIP:  c000000000b03f68 LR: c000000000b03f64 CTR: 0000000000000000
+> REGS: c00000001fddf930 TRAP: 0700   Not tainted  (6.6.7-gentoo-PMacG5)
+> MSR:  9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 24002842  XER: 00000000
+> IRQMASK: 0
+> GPR00: 0000000000000000 c00000001fddfbd0 c0000000010dd900 0000000000000000
+> GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR12: 0000000000000000 c00000000ffff700 c000000000101558 c00000001be361c0
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 0000000000000000 c0003d0000348258
+> GPR24: 0000000051eb851f 000000000000004c 0000000000000000 0000000000000001
+> GPR28: 0000000000000001 0000000000000002 c00000001fddfc96 c0000000040c8828
+> NIP [c000000000b03f68] i2c_smbus_xfer+0x178/0x190
+> LR [c000000000b03f64] i2c_smbus_xfer+0x174/0x190
+> Call Trace:
+> [c00000001fddfbd0] [c000000000b03f64] i2c_smbus_xfer+0x174/0x190 (unreliable)
+> [c00000001fddfc70] [c000000000b040d4] i2c_smbus_read_byte_data+0x64/0xd0
+> [c00000001fddfcd0] [c0003d00003290c8] wf_max6690_get+0x30/0x90 [windfarm_max6690_sensor]
+> [c00000001fddfd00] [c0003d000006878c] pm112_wf_notify+0x564/0x118c [windfarm_pm112]
+> [c00000001fddfe00] [c000000000103364] notifier_call_chain+0xa4/0x190
+> [c00000001fddfea0] [c00000000010387c] blocking_notifier_call_chain+0x5c/0xb0
+> [c00000001fddfee0] [c0003d000034ebe0] wf_thread_func+0xe8/0x190 [windfarm_core]
+> [c00000001fddff90] [c000000000101680] kthread+0x130/0x140
+> [c00000001fddffe0] [c00000000000bfb0] start_kernel_thread+0x14/0x18
+> Code: 39800000 4e800020 e9290018 2c290000 4082ff1c e88300e0 2c240000 4182001c 3c62fff4 3863f2b0 4b5bf379 60000000 <0fe00000> 4bfffef8 e8830090 4bffffe4
+> ---[ end trace 0000000000000000 ]---
+> ------------[ cut here ]------------
+> No atomic I2C transfer handler for 'i2c-4'
+> WARNING: CPU: 1 PID: 362 at drivers/i2c/i2c-core.h:40 i2c_smbus_xfer+0x178/0x190
+> Modules linked in: windfarm_cpufreq_clamp windfarm_smu_sensors windfarm_smu_controls windfarm_pm112 snd_aoa_codec_onyx windfarm_pid snd_aoa_fabric_layout snd_aoa nouveau windfarm_smu_sat snd_aoa_i2sbus windfarm_lm75_sensor snd_aoa_soundbus windfarm_max6690_sensor firewire_ohci snd_pcm windfarm_core drm_exec snd_timer firewire_core crc_itu_t gpu_sched snd i2c_algo_bit backlight drm_ttm_helper ttm soundcore ohci_pci rack_meter tg3 drm_display_helper hwmon cfg80211 rfkill zram zsmalloc loop dm_mod configfs
+> CPU: 1 PID: 362 Comm: kwindfarm Tainted: G        W          6.6.7-gentoo-PMacG5 #1
+> Hardware name: PowerMac11,2 PPC970MP 0x440101 PowerMac
+> NIP:  c000000000b03f68 LR: c000000000b03f64 CTR: 0000000000000000
+> REGS: c00000001fddf930 TRAP: 0700   Tainted: G        W           (6.6.7-gentoo-PMacG5)
+> MSR:  9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 24002842  XER: 00000000
+> IRQMASK: 0
+> GPR00: 0000000000000000 c00000001fddfbd0 c0000000010dd900 0000000000000000
+> GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR12: 0000000000000000 c00000000ffff700 c000000000101558 c00000001be361c0
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 0000000000000000 c0003d0000348258
+> GPR24: 0000000051eb851f 000000000000004a 0000000000000000 0000000000000001
+> GPR28: 0000000000000000 0000000000000003 c00000001fddfc96 c0000000040c8828
+> NIP [c000000000b03f68] i2c_smbus_xfer+0x178/0x190
+> LR [c000000000b03f64] i2c_smbus_xfer+0x174/0x190
+> Call Trace:
+> [c00000001fddfbd0] [c000000000b03f64] i2c_smbus_xfer+0x174/0x190 (unreliable)
+> [c00000001fddfc70] [c000000000b04274] i2c_smbus_read_word_data+0x64/0xd0
+> [c00000001fddfcd0] [c0003d00003bc0dc] wf_lm75_get+0x44/0xf0 [windfarm_lm75_sensor]
+> [c00000001fddfd00] [c0003d00000688ac] pm112_wf_notify+0x684/0x118c [windfarm_pm112]
+> [c00000001fddfe00] [c000000000103364] notifier_call_chain+0xa4/0x190
+> [c00000001fddfea0] [c00000000010387c] blocking_notifier_call_chain+0x5c/0xb0
+> [c00000001fddfee0] [c0003d000034ebe0] wf_thread_func+0xe8/0x190 [windfarm_core]
+> [c00000001fddff90] [c000000000101680] kthread+0x130/0x140
+> [c00000001fddffe0] [c00000000000bfb0] start_kernel_thread+0x14/0x18
+> Code: 39800000 4e800020 e9290018 2c290000 4082ff1c e88300e0 2c240000 4182001c 3c62fff4 3863f2b0 4b5bf379 60000000 <0fe00000> 4bfffef8 e8830090 4bffffe4
+> ---[ end trace 0000000000000000 ]---
+> ------------[ cut here ]------------
+> No atomic I2C transfer handler for 'i2c-1'
+> WARNING: CPU: 1 PID: 362 at drivers/i2c/i2c-core.h:40 i2c_smbus_xfer+0x178/0x190
+> Modules linked in: windfarm_cpufreq_clamp windfarm_smu_sensors windfarm_smu_controls windfarm_pm112 snd_aoa_codec_onyx windfarm_pid snd_aoa_fabric_layout snd_aoa nouveau windfarm_smu_sat snd_aoa_i2sbus windfarm_lm75_sensor snd_aoa_soundbus windfarm_max6690_sensor firewire_ohci snd_pcm windfarm_core drm_exec snd_timer firewire_core crc_itu_t gpu_sched snd i2c_algo_bit backlight drm_ttm_helper ttm soundcore ohci_pci rack_meter tg3 drm_display_helper hwmon cfg80211 rfkill zram zsmalloc loop dm_mod configfs
+> CPU: 1 PID: 362 Comm: kwindfarm Tainted: G        W          6.6.7-gentoo-PMacG5 #1
+> Hardware name: PowerMac11,2 PPC970MP 0x440101 PowerMac
+> NIP:  c000000000b03f68 LR: c000000000b03f64 CTR: 0000000000000000
+> REGS: c00000001fddf8f0 TRAP: 0700   Tainted: G        W           (6.6.7-gentoo-PMacG5)
+> MSR:  9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 24002842  XER: 00000000
+> IRQMASK: 0
+> GPR00: 0000000000000000 c00000001fddfb90 c0000000010dd900 0000000000000000
+> GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR12: 0000000000000000 c00000000ffff700 c000000000101558 c00000001be361c0
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 c0003d0000348840 c0003d0000348858
+> GPR24: 0000000000000000 0000000000000058 0000000000000000 0000000000000001
+> GPR28: 000000000000003f 0000000000000008 c00000001fddfc56 c0000000040ca028
+> NIP [c000000000b03f68] i2c_smbus_xfer+0x178/0x190
+> LR [c000000000b03f64] i2c_smbus_xfer+0x174/0x190
+> Call Trace:
+> [c00000001fddfb90] [c000000000b03f64] i2c_smbus_xfer+0x174/0x190 (unreliable)
+> [c00000001fddfc30] [c000000000b04644] i2c_smbus_read_i2c_block_data+0x84/0x120
+> [c00000001fddfca0] [c0003d00003374a4] wf_sat_sensor_get+0x16c/0x1a0 [windfarm_smu_sat]
+> [c00000001fddfd00] [c0003d00000684e8] pm112_wf_notify+0x2c0/0x118c [windfarm_pm112]
+> [c00000001fddfe00] [c000000000103364] notifier_call_chain+0xa4/0x190
+> [c00000001fddfea0] [c00000000010387c] blocking_notifier_call_chain+0x5c/0xb0
+> [c00000001fddfee0] [c0003d000034ebe0] wf_thread_func+0xe8/0x190 [windfarm_core]
+> [c00000001fddff90] [c000000000101680] kthread+0x130/0x140
+> [c00000001fddffe0] [c00000000000bfb0] start_kernel_thread+0x14/0x18
+> Code: 39800000 4e800020 e9290018 2c290000 4082ff1c e88300e0 2c240000 4182001c 3c62fff4 3863f2b0 4b5bf379 60000000 <0fe00000> 4bfffef8 e8830090 4bffffe4
+> ---[ end trace 0000000000000000 ]---
+> 
+> 
+> Kernel .config and full dmesg attached.
+> 
+> Regards,
+> Erhard
