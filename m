@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EED59C4706C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jan 2024 22:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEEC3C4706C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jan 2024 22:20:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nwd91x1d;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Zq8ocN8G;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T8lj11ZwDz3cFf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jan 2024 09:19:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T8lk10DLQz3bqx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jan 2024 09:20:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nwd91x1d;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Zq8ocN8G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T8ldz3y28z30fD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2024 09:16:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T8lf021J6z30fD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2024 09:16:56 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 3FC2461595;
+	by dfw.source.kernel.org (Postfix) with ESMTP id DD333615A4;
+	Tue,  9 Jan 2024 22:16:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7695CC4163A;
 	Tue,  9 Jan 2024 22:16:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65911C43390;
-	Tue,  9 Jan 2024 22:16:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1704838611;
-	bh=eFscEoCIAi+UJQp3abWYRAO4Lvaf4O8cRgQlKNDdBDE=;
+	s=k20201202; t=1704838614;
+	bh=WEn5lTrzAXiM29oFJTOtG7WGsQHyaE8VVcpnTQ825es=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=nwd91x1dNBtR27yxcFd0vdX2R91nFh2sr80+T1Mley6qHjF9tzWrlj+ePeAo1JxtU
-	 RFKB15XZuN5KBaRz2C6VCT+zmSkveQn0//sEnRFTjDrpc8G2xk1iEig4yLS1YZxODy
-	 MztA4vPoFh+YfBSThZU3Cefn1qUWqpIXYsT+3h4BD/D9Z4XcykFVPnQHPTSnDk+c0a
-	 l8CGJMFEWrx3nPPssuHkDAE0VyoU8A8AQHggWOiYyx4MtNFkQj1aUFMGSVnGeFiqMB
-	 wfJ4l9Qx1nnSBv4gDTiq/c49JAKkmfyVXJOtWB+P5Lgy9qzOBHRvY8UJbKeZCFUsc2
-	 uuqtHzBFSfbxA==
+	b=Zq8ocN8Gt1fqJMhJwOXYGLVh0X0nGl41KS8W4md+yRdfItGW8fNnP0aRYm/3H6lAl
+	 RS27Py+YNnR5kRSt+po4oAHAEWb8VCZ4plTxJ9tHH89qCRyg2dtoAWNC5e5An5dSZU
+	 +JzvfWbNjxCnZsb1JPhcCIyg8HTq07RwbIKmHE5PbUgHpl62LhEW99qTUmRwlC4XUj
+	 tFxwc5+m00o10eK3MDOXqDhJvrk7QWYLW9omp+MinaN9zQ5+dIOI1juTAcz3K/C2/p
+	 3/ZPyl9rbEDTjpogg6clozkMlc/fZuaj5iit9sPEM6FYdXPBAs73lpQUDVYHldIsnX
+	 4xjPgJS1qq3mQ==
 From: Nathan Chancellor <nathan@kernel.org>
-Date: Tue, 09 Jan 2024 15:16:29 -0700
-Subject: [PATCH 1/3] selftests/bpf: Update LLVM Phabricator links
+Date: Tue, 09 Jan 2024 15:16:31 -0700
+Subject: [PATCH 3/3] treewide: Update LLVM Bugzilla links
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240109-update-llvm-links-v1-1-eb09b59db071@kernel.org>
+Message-Id: <20240109-update-llvm-links-v1-3-eb09b59db071@kernel.org>
 References: <20240109-update-llvm-links-v1-0-eb09b59db071@kernel.org>
 In-Reply-To: <20240109-update-llvm-links-v1-0-eb09b59db071@kernel.org>
 To: akpm@linux-foundation.org
 X-Mailer: b4 0.13-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7587; i=nathan@kernel.org;
- h=from:subject:message-id; bh=eFscEoCIAi+UJQp3abWYRAO4Lvaf4O8cRgQlKNDdBDE=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDKlzj15IUNPmFinNmNO40TyB+eHTwFMf6kVvPC5Rrjn6Z
- JdC/PJtHaUsDGJcDLJiiizVj1WPGxrOOct449QkmDmsTCBDGLg4BWAiwu8YGVbUeWkdrFi1UUdq
- 4sron76zUsq4BZg2/XauNjb4rF67R4iR4W11UIPnynvJDpfc96myPrzLNvclj2HuZymRz+4ctQ5
- n2AA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=11357; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=WEn5lTrzAXiM29oFJTOtG7WGsQHyaE8VVcpnTQ825es=;
+ b=owGbwMvMwCUmm602sfCA1DTG02pJDKlzj16w1Pj8I8RGNGpqStpeL/2Ss7Fckxj+MQn8ummhc
+ f/e3puMHaUsDGJcDLJiiizVj1WPGxrOOct449QkmDmsTCBDGLg4BWAipzgZ/mcpXDN6n369Z2Vr
+ 7IPwnTz2R5dYJN5v++9iM3XOfBYtOU5GhuM55jNe+5/7H/HicGe1b2CLnMlqaZtVrzg+6Dfn1Hg
+ YcwMA
 X-Developer-Key: i=nathan@kernel.org; a=openpgp;
  fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,169 +67,260 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi@vger.kernel.org, kvm@vger.kernel.org, llvm@lists.linux.dev, ast@kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, kasan-dev@googlegroups.com, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, mykolal@fb.com, daniel@iogearbox.net, andrii@kernel.org, amd-gfx@lists.freedesktop.org, linux-media@vger.kernel.org, linux-pm@vger.kernel.org, bridge@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, patches@lists.linux.dev, linux-security-module@vger.kernel.org, linux-crypto@vger.kernel.org, bpf@vger.kernel.org, linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-efi@vger.kernel.org, kvm@vger.kernel.org, llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, kasan-dev@googlegroups.com, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-media@vger.kernel.org, linux-pm@vger.kernel.org, bridge@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, patches@lists.linux.dev, linux-security-module@vger.kernel.org, linux-crypto@vger.kernel.org, linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-reviews.llvm.org was LLVM's Phabricator instances for code review. It
-has been abandoned in favor of GitHub pull requests. While the majority
-of links in the kernel sources still work because of the work Fangrui
-has done turning the dynamic Phabricator instance into a static archive,
-there are some issues with that work, so preemptively convert all the
-links in the kernel sources to point to the commit on GitHub.
+LLVM moved their issue tracker from their own Bugzilla instance to
+GitHub issues. While all of the links are still valid, they may not
+necessarily show the most up to date information around the issues, as
+all updates will occur on GitHub, not Bugzilla.
 
-Most of the commits have the corresponding differential review link in
-the commit message itself so there should not be any loss of fidelity in
-the relevant information.
+Another complication is that the Bugzilla issue number is not always the
+same as the GitHub issue number. Thankfully, LLVM maintains this mapping
+through two shortlinks:
 
-Additionally, fix a typo in the xdpwall.c print ("LLMV" -> "LLVM") while
-in the area.
+  https://llvm.org/bz<num> -> https://bugs.llvm.org/show_bug.cgi?id=<num>
+  https://llvm.org/pr<num> -> https://github.com/llvm/llvm-project/issues/<mapped_num>
 
-Link: https://discourse.llvm.org/t/update-on-github-pull-requests/71540/172
+Switch all "https://bugs.llvm.org/show_bug.cgi?id=<num>" links to the
+"https://llvm.org/pr<num>" shortlink so that the links show the most up
+to date information. Each migrated issue links back to the Bugzilla
+entry, so there should be no loss of fidelity of information here.
+
 Signed-off-by: Nathan Chancellor <nathan@kernel.org>
 ---
-Cc: ast@kernel.org
-Cc: daniel@iogearbox.net
-Cc: andrii@kernel.org
-Cc: mykolal@fb.com
-Cc: bpf@vger.kernel.org
-Cc: linux-kselftest@vger.kernel.org
----
- tools/testing/selftests/bpf/README.rst             | 32 +++++++++++-----------
- tools/testing/selftests/bpf/prog_tests/xdpwall.c   |  2 +-
- .../selftests/bpf/progs/test_core_reloc_type_id.c  |  2 +-
- 3 files changed, 18 insertions(+), 18 deletions(-)
+ arch/powerpc/Makefile                           | 4 ++--
+ arch/powerpc/kvm/book3s_hv_nested.c             | 2 +-
+ arch/s390/include/asm/ftrace.h                  | 2 +-
+ arch/x86/power/Makefile                         | 2 +-
+ crypto/blake2b_generic.c                        | 2 +-
+ drivers/firmware/efi/libstub/Makefile           | 2 +-
+ drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c        | 2 +-
+ drivers/media/test-drivers/vicodec/codec-fwht.c | 2 +-
+ drivers/regulator/Kconfig                       | 2 +-
+ include/asm-generic/vmlinux.lds.h               | 2 +-
+ lib/Kconfig.kasan                               | 2 +-
+ lib/raid6/Makefile                              | 2 +-
+ lib/stackinit_kunit.c                           | 2 +-
+ mm/slab_common.c                                | 2 +-
+ net/bridge/br_multicast.c                       | 2 +-
+ security/Kconfig                                | 2 +-
+ 16 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/tools/testing/selftests/bpf/README.rst b/tools/testing/selftests/bpf/README.rst
-index cb9b95702ac6..b9a493f66557 100644
---- a/tools/testing/selftests/bpf/README.rst
-+++ b/tools/testing/selftests/bpf/README.rst
-@@ -115,7 +115,7 @@ the insn 20 undoes map_value addition. It is currently impossible for the
- verifier to understand such speculative pointer arithmetic.
- Hence `this patch`__ addresses it on the compiler side. It was committed on llvm 12.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index f19dbaa1d541..cd6aaa45f355 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -133,11 +133,11 @@ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mlong-double-128)
  
--__ https://reviews.llvm.org/D85570
-+__ https://github.com/llvm/llvm-project/commit/ddf1864ace484035e3cde5e83b3a31ac81e059c6
+ # Clang unconditionally reserves r2 on ppc32 and does not support the flag
+-# https://bugs.llvm.org/show_bug.cgi?id=39555
++# https://llvm.org/pr39555
+ CFLAGS-$(CONFIG_PPC32)	:= $(call cc-option, -ffixed-r2)
  
- The corresponding C code
+ # Clang doesn't support -mmultiple / -mno-multiple
+-# https://bugs.llvm.org/show_bug.cgi?id=39556
++# https://llvm.org/pr39556
+ CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option, $(MULTIPLEWORD))
  
-@@ -165,7 +165,7 @@ This is due to a llvm BPF backend bug. `The fix`__
- has been pushed to llvm 10.x release branch and will be
- available in 10.0.1. The patch is available in llvm 11.0.0 trunk.
- 
--__  https://reviews.llvm.org/D78466
-+__  https://github.com/llvm/llvm-project/commit/3cb7e7bf959dcd3b8080986c62e10a75c7af43f0
- 
- bpf_verif_scale/loop6.bpf.o test failure with Clang 12
- ======================================================
-@@ -204,7 +204,7 @@ r5(w5) is eventually saved on stack at insn #24 for later use.
- This cause later verifier failure. The bug has been `fixed`__ in
- Clang 13.
- 
--__  https://reviews.llvm.org/D97479
-+__  https://github.com/llvm/llvm-project/commit/1959ead525b8830cc8a345f45e1c3ef9902d3229
- 
- BPF CO-RE-based tests and Clang version
- =======================================
-@@ -221,11 +221,11 @@ failures:
- - __builtin_btf_type_id() [0_, 1_, 2_];
- - __builtin_preserve_type_info(), __builtin_preserve_enum_value() [3_, 4_].
- 
--.. _0: https://reviews.llvm.org/D74572
--.. _1: https://reviews.llvm.org/D74668
--.. _2: https://reviews.llvm.org/D85174
--.. _3: https://reviews.llvm.org/D83878
--.. _4: https://reviews.llvm.org/D83242
-+.. _0: https://github.com/llvm/llvm-project/commit/6b01b465388b204d543da3cf49efd6080db094a9
-+.. _1: https://github.com/llvm/llvm-project/commit/072cde03aaa13a2c57acf62d79876bf79aa1919f
-+.. _2: https://github.com/llvm/llvm-project/commit/00602ee7ef0bf6c68d690a2bd729c12b95c95c99
-+.. _3: https://github.com/llvm/llvm-project/commit/6d218b4adb093ff2e9764febbbc89f429412006c
-+.. _4: https://github.com/llvm/llvm-project/commit/6d6750696400e7ce988d66a1a00e1d0cb32815f8
- 
- Floating-point tests and Clang version
- ======================================
-@@ -234,7 +234,7 @@ Certain selftests, e.g. core_reloc, require support for the floating-point
- types, which was introduced in `Clang 13`__. The older Clang versions will
- either crash when compiling these tests, or generate an incorrect BTF.
- 
--__  https://reviews.llvm.org/D83289
-+__  https://github.com/llvm/llvm-project/commit/a7137b238a07d9399d3ae96c0b461571bd5aa8b2
- 
- Kernel function call test and Clang version
- ===========================================
-@@ -248,7 +248,7 @@ Without it, the error from compiling bpf selftests looks like:
- 
-   libbpf: failed to find BTF for extern 'tcp_slow_start' [25] section: -2
- 
--__ https://reviews.llvm.org/D93563
-+__ https://github.com/llvm/llvm-project/commit/886f9ff53155075bd5f1e994f17b85d1e1b7470c
- 
- btf_tag test and Clang version
- ==============================
-@@ -264,8 +264,8 @@ Without them, the btf_tag selftest will be skipped and you will observe:
- 
-   #<test_num> btf_tag:SKIP
- 
--.. _0: https://reviews.llvm.org/D111588
--.. _1: https://reviews.llvm.org/D111199
-+.. _0: https://github.com/llvm/llvm-project/commit/a162b67c98066218d0d00aa13b99afb95d9bb5e6
-+.. _1: https://github.com/llvm/llvm-project/commit/3466e00716e12e32fdb100e3fcfca5c2b3e8d784
- 
- Clang dependencies for static linking tests
- ===========================================
-@@ -274,7 +274,7 @@ linked_vars, linked_maps, and linked_funcs tests depend on `Clang fix`__ to
- generate valid BTF information for weak variables. Please make sure you use
- Clang that contains the fix.
- 
--__ https://reviews.llvm.org/D100362
-+__ https://github.com/llvm/llvm-project/commit/968292cb93198442138128d850fd54dc7edc0035
- 
- Clang relocation changes
- ========================
-@@ -292,7 +292,7 @@ Here, ``type 2`` refers to new relocation type ``R_BPF_64_ABS64``.
- To fix this issue, user newer libbpf.
- 
- .. Links
--.. _clang reloc patch: https://reviews.llvm.org/D102712
-+.. _clang reloc patch: https://github.com/llvm/llvm-project/commit/6a2ea84600ba4bd3b2733bd8f08f5115eb32164b
- .. _kernel llvm reloc: /Documentation/bpf/llvm_reloc.rst
- 
- Clang dependencies for the u32 spill test (xdpwall)
-@@ -304,6 +304,6 @@ from running test_progs will look like:
- 
- .. code-block:: console
- 
--  test_xdpwall:FAIL:Does LLVM have https://reviews.llvm.org/D109073? unexpected error: -4007
-+  test_xdpwall:FAIL:Does LLVM have https://github.com/llvm/llvm-project/commit/ea72b0319d7b0f0c2fcf41d121afa5d031b319d5? unexpected error: -4007
- 
--__ https://reviews.llvm.org/D109073
-+__ https://github.com/llvm/llvm-project/commit/ea72b0319d7b0f0c2fcf41d121afa5d031b319d
-diff --git a/tools/testing/selftests/bpf/prog_tests/xdpwall.c b/tools/testing/selftests/bpf/prog_tests/xdpwall.c
-index f3927829a55a..4599154c8e9b 100644
---- a/tools/testing/selftests/bpf/prog_tests/xdpwall.c
-+++ b/tools/testing/selftests/bpf/prog_tests/xdpwall.c
-@@ -9,7 +9,7 @@ void test_xdpwall(void)
- 	struct xdpwall *skel;
- 
- 	skel = xdpwall__open_and_load();
--	ASSERT_OK_PTR(skel, "Does LLMV have https://reviews.llvm.org/D109073?");
-+	ASSERT_OK_PTR(skel, "Does LLVM have https://github.com/llvm/llvm-project/commit/ea72b0319d7b0f0c2fcf41d121afa5d031b319d5?");
- 
- 	xdpwall__destroy(skel);
+ CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option,-mno-readonly-in-sdata)
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 3b658b8696bc..3f5970f74c6b 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -55,7 +55,7 @@ void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+ 	hr->dawrx1 = vcpu->arch.dawrx1;
  }
-diff --git a/tools/testing/selftests/bpf/progs/test_core_reloc_type_id.c b/tools/testing/selftests/bpf/progs/test_core_reloc_type_id.c
-index 22aba3f6e344..6fc8b9d66e34 100644
---- a/tools/testing/selftests/bpf/progs/test_core_reloc_type_id.c
-+++ b/tools/testing/selftests/bpf/progs/test_core_reloc_type_id.c
-@@ -80,7 +80,7 @@ int test_core_type_id(void *ctx)
- 	 * to detect whether this test has to be executed, however strange
- 	 * that might look like.
- 	 *
--	 *   [0] https://reviews.llvm.org/D85174
-+	 *   [0] https://github.com/llvm/llvm-project/commit/00602ee7ef0bf6c68d690a2bd729c12b95c95c99
- 	 */
- #if __has_builtin(__builtin_preserve_type_info)
- 	struct core_reloc_type_id_output *out = (void *)&data.out;
+ 
+-/* Use noinline_for_stack due to https://bugs.llvm.org/show_bug.cgi?id=49610 */
++/* Use noinline_for_stack due to https://llvm.org/pr49610 */
+ static noinline_for_stack void byteswap_pt_regs(struct pt_regs *regs)
+ {
+ 	unsigned long *addr = (unsigned long *) regs;
+diff --git a/arch/s390/include/asm/ftrace.h b/arch/s390/include/asm/ftrace.h
+index 5a82b08f03cd..621f23d5ae30 100644
+--- a/arch/s390/include/asm/ftrace.h
++++ b/arch/s390/include/asm/ftrace.h
+@@ -9,7 +9,7 @@
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_CC_IS_CLANG
+-/* https://bugs.llvm.org/show_bug.cgi?id=41424 */
++/* https://llvm.org/pr41424 */
+ #define ftrace_return_address(n) 0UL
+ #else
+ #define ftrace_return_address(n) __builtin_return_address(n)
+diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
+index 379777572bc9..e0cd7afd5302 100644
+--- a/arch/x86/power/Makefile
++++ b/arch/x86/power/Makefile
+@@ -5,7 +5,7 @@
+ CFLAGS_cpu.o	:= -fno-stack-protector
+ 
+ # Clang may incorrectly inline functions with stack protector enabled into
+-# __restore_processor_state(): https://bugs.llvm.org/show_bug.cgi?id=47479
++# __restore_processor_state(): https://llvm.org/pr47479
+ CFLAGS_REMOVE_cpu.o := $(CC_FLAGS_LTO)
+ 
+ obj-$(CONFIG_PM_SLEEP)		+= cpu.o
+diff --git a/crypto/blake2b_generic.c b/crypto/blake2b_generic.c
+index 6704c0355889..32e380b714b6 100644
+--- a/crypto/blake2b_generic.c
++++ b/crypto/blake2b_generic.c
+@@ -102,7 +102,7 @@ static void blake2b_compress_one_generic(struct blake2b_state *S,
+ 	ROUND(10);
+ 	ROUND(11);
+ #ifdef CONFIG_CC_IS_CLANG
+-#pragma nounroll /* https://bugs.llvm.org/show_bug.cgi?id=45803 */
++#pragma nounroll /* https://llvm.org/pr45803 */
+ #endif
+ 	for (i = 0; i < 8; ++i)
+ 		S->h[i] = S->h[i] ^ v[i] ^ v[i + 8];
+diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
+index 06964a3c130f..a223bd10564b 100644
+--- a/drivers/firmware/efi/libstub/Makefile
++++ b/drivers/firmware/efi/libstub/Makefile
+@@ -105,7 +105,7 @@ lib-y				:= $(patsubst %.o,%.stub.o,$(lib-y))
+ # Even when -mbranch-protection=none is set, Clang will generate a
+ # .note.gnu.property for code-less object files (like lib/ctype.c),
+ # so work around this by explicitly removing the unwanted section.
+-# https://bugs.llvm.org/show_bug.cgi?id=46480
++# https://llvm.org/pr46480
+ STUBCOPY_FLAGS-y		+= --remove-section=.note.gnu.property
+ 
+ STUBCOPY_RELOC-$(CONFIG_X86_32)	:= R_386_32
+diff --git a/drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c b/drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c
+index 0f24af6f2810..265fa028b121 100644
+--- a/drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c
++++ b/drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c
+@@ -610,7 +610,7 @@ static uint32_t sdma_v4_4_2_rb_cntl(struct amdgpu_ring *ring, uint32_t rb_cntl)
+ 	/* Set ring buffer size in dwords */
+ 	uint32_t rb_bufsz = order_base_2(ring->ring_size / 4);
+ 
+-	barrier(); /* work around https://bugs.llvm.org/show_bug.cgi?id=42576 */
++	barrier(); /* work around https://llvm.org/pr42576 */
+ 	rb_cntl = REG_SET_FIELD(rb_cntl, SDMA_GFX_RB_CNTL, RB_SIZE, rb_bufsz);
+ #ifdef __BIG_ENDIAN
+ 	rb_cntl = REG_SET_FIELD(rb_cntl, SDMA_GFX_RB_CNTL, RB_SWAP_ENABLE, 1);
+diff --git a/drivers/media/test-drivers/vicodec/codec-fwht.c b/drivers/media/test-drivers/vicodec/codec-fwht.c
+index 1ce682e1b85c..fd75457d03b2 100644
+--- a/drivers/media/test-drivers/vicodec/codec-fwht.c
++++ b/drivers/media/test-drivers/vicodec/codec-fwht.c
+@@ -49,7 +49,7 @@ static const uint8_t zigzag[64] = {
+ 
+ /*
+  * noinline_for_stack to work around
+- * https://bugs.llvm.org/show_bug.cgi?id=38809
++ * https://llvm.org/pr38809
+  */
+ static int noinline_for_stack
+ rlc(const s16 *in, __be16 *output, int blocktype)
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index f3ec24691378..f537e78478ef 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -278,7 +278,7 @@ config REGULATOR_CROS_EC
+ config REGULATOR_DA903X
+ 	tristate "Dialog Semiconductor DA9030/DA9034 regulators"
+ 	depends on PMIC_DA903X
+-	depends on !CC_IS_CLANG # https://bugs.llvm.org/show_bug.cgi?id=38789
++	depends on !CC_IS_CLANG # https://llvm.org/pr38789
+ 	help
+ 	  Say y here to support the BUCKs and LDOs regulators found on
+ 	  Dialog Semiconductor DA9030/DA9034 PMIC.
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index bae0fe4d499b..c425a1e2edee 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -977,7 +977,7 @@
+  * -fsanitize=thread produce unwanted sections (.eh_frame
+  * and .init_array.*), but CONFIG_CONSTRUCTORS wants to
+  * keep any .init_array.* sections.
+- * https://bugs.llvm.org/show_bug.cgi?id=46478
++ * https://llvm.org/pr46478
+  */
+ #ifdef CONFIG_UNWIND_TABLES
+ #define DISCARD_EH_FRAME
+diff --git a/lib/Kconfig.kasan b/lib/Kconfig.kasan
+index fdca89c05745..de3e9e4803af 100644
+--- a/lib/Kconfig.kasan
++++ b/lib/Kconfig.kasan
+@@ -163,7 +163,7 @@ config KASAN_STACK
+ 	  out-of-bounds bugs in stack variables.
+ 
+ 	  With Clang, stack instrumentation has a problem that causes excessive
+-	  stack usage, see https://bugs.llvm.org/show_bug.cgi?id=38809. Thus,
++	  stack usage, see https://llvm.org/pr38809. Thus,
+ 	  with Clang, this option is deemed unsafe.
+ 
+ 	  This option is always disabled when compile-testing with Clang to
+diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
+index 1c5420ff254e..385a94aa0b99 100644
+--- a/lib/raid6/Makefile
++++ b/lib/raid6/Makefile
+@@ -21,7 +21,7 @@ altivec_flags += -isystem $(shell $(CC) -print-file-name=include)
+ ifdef CONFIG_CC_IS_CLANG
+ # clang ppc port does not yet support -maltivec when -msoft-float is
+ # enabled. A future release of clang will resolve this
+-# https://bugs.llvm.org/show_bug.cgi?id=31177
++# https://llvm.org/pr31177
+ CFLAGS_REMOVE_altivec1.o  += -msoft-float
+ CFLAGS_REMOVE_altivec2.o  += -msoft-float
+ CFLAGS_REMOVE_altivec4.o  += -msoft-float
+diff --git a/lib/stackinit_kunit.c b/lib/stackinit_kunit.c
+index 05947a2feb93..7a10e1d17258 100644
+--- a/lib/stackinit_kunit.c
++++ b/lib/stackinit_kunit.c
+@@ -404,7 +404,7 @@ static noinline int leaf_switch_2_none(unsigned long sp, bool fill,
+  * These are expected to fail for most configurations because neither
+  * GCC nor Clang have a way to perform initialization of variables in
+  * non-code areas (i.e. in a switch statement before the first "case").
+- * https://bugs.llvm.org/show_bug.cgi?id=44916
++ * https://llvm.org/pr44916
+  */
+ DEFINE_TEST_DRIVER(switch_1_none, uint64_t, SCALAR, ALWAYS_FAIL);
+ DEFINE_TEST_DRIVER(switch_2_none, uint64_t, SCALAR, ALWAYS_FAIL);
+diff --git a/mm/slab_common.c b/mm/slab_common.c
+index 8d431193c273..105ba974854c 100644
+--- a/mm/slab_common.c
++++ b/mm/slab_common.c
+@@ -656,7 +656,7 @@ static struct kmem_cache *__init create_kmalloc_cache(const char *name,
+ 
+ struct kmem_cache *
+ kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init =
+-{ /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 */ };
++{ /* initialization for https://llvm.org/pr42570 */ };
+ EXPORT_SYMBOL(kmalloc_caches);
+ 
+ #ifdef CONFIG_RANDOM_KMALLOC_CACHES
+diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
+index d7d021af1029..523f72ac9633 100644
+--- a/net/bridge/br_multicast.c
++++ b/net/bridge/br_multicast.c
+@@ -5043,7 +5043,7 @@ void br_multicast_uninit_stats(struct net_bridge *br)
+ 	free_percpu(br->mcast_stats);
+ }
+ 
+-/* noinline for https://bugs.llvm.org/show_bug.cgi?id=45802#c9 */
++/* noinline for https://llvm.org/pr45802#c9 */
+ static noinline_for_stack void mcast_stats_add_dir(u64 *dst, u64 *src)
+ {
+ 	dst[BR_MCAST_DIR_RX] += src[BR_MCAST_DIR_RX];
+diff --git a/security/Kconfig b/security/Kconfig
+index 52c9af08ad35..606a87c29a01 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -142,7 +142,7 @@ config HARDENED_USERCOPY
+ config FORTIFY_SOURCE
+ 	bool "Harden common str/mem functions against buffer overflows"
+ 	depends on ARCH_HAS_FORTIFY_SOURCE
+-	# https://bugs.llvm.org/show_bug.cgi?id=41459
++	# https://llvm.org/pr41459
+ 	depends on !CC_IS_CLANG || CLANG_VERSION >= 120001
+ 	# https://github.com/llvm/llvm-project/issues/53645
+ 	depends on !CC_IS_CLANG || !X86_32
 
 -- 
 2.43.0
