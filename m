@@ -4,49 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5A54C4707B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jan 2024 16:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B04F5C4707B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jan 2024 22:42:24 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jeJNV/GF;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T9CJq0sGCz3vyj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jan 2024 03:03:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T9N8t6FRZz3cVl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jan 2024 09:42:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jeJNV/GF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=donettom@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T9CFB3C8sz3d8B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2024 03:00:30 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rNajS-0007JH-A6; Wed, 10 Jan 2024 16:43:06 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rNajR-001jUY-4g; Wed, 10 Jan 2024 16:43:05 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rNajR-006c4H-0C;
-	Wed, 10 Jan 2024 16:43:05 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/7] macintosh: therm_windtunnel: Convert to platform remove callback returning void
-Date: Wed, 10 Jan 2024 16:42:48 +0100
-Message-ID: <74b35a7183dead9cb8359b38356e1a70e720c53e.1704900449.git.u.kleine-koenig@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T91Km4pnCz2yts
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2024 19:33:48 +1100 (AEDT)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40A8WjVa005535;
+	Wed, 10 Jan 2024 08:33:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=GQLmdzTFvokN1N5EM1lR19Xz2d+PKMEyH5r0sANs38s=;
+ b=jeJNV/GFGOMjMkhcI6J8PGwyQZgbFboUFjUx7WBkX7YPgfaAk9yFNSZYgsI9ljRF253w
+ jS67iErR0xXwmy2ManTYBrEH3pfpzsRWcT5JCRIYOWRYcslZWnBEJZRq7ZZc9HoRm5pt
+ b5CzTlC82JYwrExgszisyjiFr/iRBHEwGGX/KjFIp0U+wjQdRUez+sGrrr82N60ZNZNB
+ UvtnmnogN6wJgDNVT3nAzCOJICsgMm1yf6gaUVHySdOhZQfJK1uk/sOfdEnJQXBF66tV
+ lDU9A7xRNt/9/nHrfD6ahNWy0BARJcI2WxFjp49yPhZ1yjKtIHQmqXwhnpSzoTp2Om5I Vg== 
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vhqtng0xf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jan 2024 08:33:41 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40A7a5Ob028052;
+	Wed, 10 Jan 2024 08:33:40 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3vgwfsr3xw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jan 2024 08:33:40 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40A8Xb4W14680706
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Jan 2024 08:33:37 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B8B292004B;
+	Wed, 10 Jan 2024 08:33:37 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D80FE20040;
+	Wed, 10 Jan 2024 08:33:35 +0000 (GMT)
+Received: from li-06431bcc-2712-11b2-a85c-a6fe68df28f9.in.ibm.com (unknown [9.109.245.191])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 10 Jan 2024 08:33:35 +0000 (GMT)
+From: Donet Tom <donettom@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kselftest@vger.kernel.org
+Subject: [PATCH 1/1] selftests: mm: hugepage-vmemmap fails on 64K page size systems.
+Date: Wed, 10 Jan 2024 14:03:35 +0530
+Message-ID: <3b3a3ae37ba21218481c482a872bbf7526031600.1704865754.git.donettom@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1704900449.git.u.kleine-koenig@pengutronix.de>
-References: <cover.1704900449.git.u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1673; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=wIMIdTe+K947pJ7HyIvyj/RU52wHIptwgMFUY9QCPbU=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlnrr5l0AtXlvqg8+OuSJ+g70r7wMj9tyeZPwiL 4EQGUfHGDCJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZZ66+QAKCRCPgPtYfRL+ TtSgB/9nM0q7cqw2P3IaAJfMIWn+HNub1qIM8irQgmtAYZoKYkV59mB1pn5cLYY5yTBoYpZw95y mZiFfHFxG7AGS8Nq7Zj24IosVpvniBmrf/lkglLBMi4ruTzHZIE2XzWLFW2k9Md4nOc5usr9eb5 jmt3DbKLni6966NyStqEWQX7l4CVa/3CVk4pIwSOHyfjg+MEDjUGe7xrq3701MoQEEvVmC+Q9Sj mNA7qCdfIr0vljW6fgkFS74QllLKwPm/69+834WAoqriP1KCp8kcuL0FgQrEXDdEeAR+s6ooTHU yPRPx0O1hP8adVAAMwnhR2FnVyXVlPXycVkzdsiPMQ4vFQDf
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ZSKpAOiSoWt1ETnpvKHBG_uRZdBm_ixf
+X-Proofpoint-ORIG-GUID: ZSKpAOiSoWt1ETnpvKHBG_uRZdBm_ixf
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-01-10_02,2024-01-09_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
+ impostorscore=0 malwarescore=0 bulkscore=0 clxscore=1011 suspectscore=0
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 phishscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2401100069
+X-Mailman-Approved-At: Thu, 11 Jan 2024 09:41:33 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,54 +87,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
+Cc: Aneesh Kumar <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Geetika Moolchandani <geetika@linux.ibm.com>, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is ignored (apart
-from emitting a warning) and this typically results in resource leaks.
+The kernel sefltest mm/hugepage-vmemmap fails on architectures
+which has different page size other than 4K. In hugepage-vmemmap
+page size used is 4k so the pfn calculation will go wrong on systems
+which has different page size .The length of MAP_HUGETLB memory must
+be hugepage aligned but in hugepage-vmemmap map length is 2M so this
+will not get aligned if the system has differnet hugepage size.
 
-To improve here there is a quest to make the remove callback return
-void. In the first step of this quest all drivers are converted to
-.remove_new(), which already returns void. Eventually after all drivers
-are converted, .remove_new() will be renamed to .remove().
+Added  psize() to get the page size and default_huge_page_size() to
+get the default hugepage size at run time, hugepage-vmemmap test pass
+on powerpc with 64K page size and x86 with 4K page size.
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+Result on powerpc without patch (page size 64K)
+*# ./hugepage-vmemmap
+Returned address is 0x7effff000000 whose pfn is 0
+Head page flags (100000000) is invalid
+check_page_flags: Invalid argument
+*#
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Result on powerpc with patch (page size 64K)
+*# ./hugepage-vmemmap
+Returned address is 0x7effff000000 whose pfn is 600
+*#
+
+Result on x86 with patch (page size 4K)
+*# ./hugepage-vmemmap
+Returned address is 0x7fc7c2c00000 whose pfn is 1dac00
+*#
+
+Signed-off-by: Donet Tom <donettom@linux.vnet.ibm.com>
+Reported-by : Geetika Moolchandani (geetika@linux.ibm.com)
+Tested-by : Geetika Moolchandani (geetika@linux.ibm.com)
 ---
- drivers/macintosh/therm_windtunnel.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ tools/testing/selftests/mm/hugepage-vmemmap.c | 29 ++++++++++++-------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
-index 3c1b29476ce2..37cdc6931f6d 100644
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -481,11 +481,9 @@ static int therm_of_probe(struct platform_device *dev)
- 	return -ENODEV;
- }
+diff --git a/tools/testing/selftests/mm/hugepage-vmemmap.c b/tools/testing/selftests/mm/hugepage-vmemmap.c
+index 5b354c209e93..894d28c3dd47 100644
+--- a/tools/testing/selftests/mm/hugepage-vmemmap.c
++++ b/tools/testing/selftests/mm/hugepage-vmemmap.c
+@@ -10,10 +10,7 @@
+ #include <unistd.h>
+ #include <sys/mman.h>
+ #include <fcntl.h>
+-
+-#define MAP_LENGTH		(2UL * 1024 * 1024)
+-
+-#define PAGE_SIZE		4096
++#include "vm_util.h"
  
--static int
--therm_of_remove( struct platform_device *dev )
-+static void therm_of_remove(struct platform_device *dev)
+ #define PAGE_COMPOUND_HEAD	(1UL << 15)
+ #define PAGE_COMPOUND_TAIL	(1UL << 16)
+@@ -39,6 +36,9 @@
+ #define MAP_FLAGS		(MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
+ #endif
+ 
++static size_t pagesize;
++static size_t maplength;
++
+ static void write_bytes(char *addr, size_t length)
  {
- 	i2c_del_driver( &g4fan_driver );
--	return 0;
- }
+ 	unsigned long i;
+@@ -56,7 +56,7 @@ static unsigned long virt_to_pfn(void *addr)
+ 	if (fd < 0)
+ 		return -1UL;
  
- static const struct of_device_id therm_of_match[] = {{
-@@ -501,7 +499,7 @@ static struct platform_driver therm_of_driver = {
- 		.of_match_table = therm_of_match,
- 	},
- 	.probe		= therm_of_probe,
--	.remove		= therm_of_remove,
-+	.remove_new	= therm_of_remove,
- };
+-	lseek(fd, (unsigned long)addr / PAGE_SIZE * sizeof(pagemap), SEEK_SET);
++	lseek(fd, (unsigned long)addr / pagesize * sizeof(pagemap), SEEK_SET);
+ 	read(fd, &pagemap, sizeof(pagemap));
+ 	close(fd);
  
- struct apple_thermal_info {
+@@ -86,7 +86,7 @@ static int check_page_flags(unsigned long pfn)
+ 	 * this also verifies kernel has correctly set the fake page_head to tail
+ 	 * while hugetlb_free_vmemmap is enabled.
+ 	 */
+-	for (i = 1; i < MAP_LENGTH / PAGE_SIZE; i++) {
++	for (i = 1; i < maplength / pagesize; i++) {
+ 		read(fd, &pageflags, sizeof(pageflags));
+ 		if ((pageflags & TAIL_PAGE_FLAGS) != TAIL_PAGE_FLAGS ||
+ 		    (pageflags & HEAD_PAGE_FLAGS) == HEAD_PAGE_FLAGS) {
+@@ -106,18 +106,25 @@ int main(int argc, char **argv)
+ 	void *addr;
+ 	unsigned long pfn;
+ 
+-	addr = mmap(MAP_ADDR, MAP_LENGTH, PROT_READ | PROT_WRITE, MAP_FLAGS, -1, 0);
++	pagesize  = psize();
++	maplength = default_huge_page_size();
++	if (!maplength) {
++		printf("Unable to determine huge page size\n");
++		exit(1);
++	}
++
++	addr = mmap(MAP_ADDR, maplength, PROT_READ | PROT_WRITE, MAP_FLAGS, -1, 0);
+ 	if (addr == MAP_FAILED) {
+ 		perror("mmap");
+ 		exit(1);
+ 	}
+ 
+ 	/* Trigger allocation of HugeTLB page. */
+-	write_bytes(addr, MAP_LENGTH);
++	write_bytes(addr, maplength);
+ 
+ 	pfn = virt_to_pfn(addr);
+ 	if (pfn == -1UL) {
+-		munmap(addr, MAP_LENGTH);
++		munmap(addr, maplength);
+ 		perror("virt_to_pfn");
+ 		exit(1);
+ 	}
+@@ -125,13 +132,13 @@ int main(int argc, char **argv)
+ 	printf("Returned address is %p whose pfn is %lx\n", addr, pfn);
+ 
+ 	if (check_page_flags(pfn) < 0) {
+-		munmap(addr, MAP_LENGTH);
++		munmap(addr, maplength);
+ 		perror("check_page_flags");
+ 		exit(1);
+ 	}
+ 
+ 	/* munmap() length of MAP_HUGETLB memory must be hugepage aligned */
+-	if (munmap(addr, MAP_LENGTH)) {
++	if (munmap(addr, maplength)) {
+ 		perror("munmap");
+ 		exit(1);
+ 	}
 -- 
 2.43.0
 
