@@ -4,69 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A0A4C4707C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jan 2024 14:52:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBB50C4707B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jan 2024 15:54:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20230601.gappssmtp.com header.i=@dabbelt-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=i4C5p4qA;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=ZQ9oPBt7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T99kp2yQsz3cVx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jan 2024 01:52:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T9C6c6BNgz3cVY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jan 2024 02:54:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dabbelt-com.20230601.gappssmtp.com header.i=@dabbelt-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=i4C5p4qA;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=ZQ9oPBt7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::d2a; helo=mail-io1-xd2a.google.com; envelope-from=palmer@dabbelt.com; receiver=lists.ozlabs.org)
-Received: from mail-io1-xd2a.google.com (mail-io1-xd2a.google.com [IPv6:2607:f8b0:4864:20::d2a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T99jr2bzdz30fm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2024 01:51:42 +1100 (AEDT)
-Received: by mail-io1-xd2a.google.com with SMTP id ca18e2360f4ac-7beda6a274bso57671939f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2024 06:51:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dabbelt-com.20230601.gappssmtp.com; s=20230601; t=1704898299; x=1705503099; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=UlRr87AfARWxTIrPYo3v1voc73TzaNkp96EPHRmj2xU=;
-        b=i4C5p4qA8WJC8+auQQrVYBQrnUp1OGZqqV5kRczddmjQbNBvK+N0ITv28LiGnPRMnv
-         ItxZLJil4lDlx5FDfXQy+MdFZFoMO33Qp+7izXYYtCbP6sS2JS/7+yi4Htk81Ty20ufI
-         +qgZYoKVMhuHM+JQOsGMC3iC2tFBIZ6nZJRDUGdYJnUAFaj8lBDxMXVJaZkLWuUiJil0
-         XHJqU2WupAcwfaHAXJHqvMYMUGwt7f8rVkWSrQL25jIXuLqVPSQnPY9vXJ0/K868DPBE
-         m3qn7caQzL5GwAdlzH11879kR5o+jw12jcUXVv2nWd6egnmsXPuikDZtkKZ4YtW3f1A6
-         yzwA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704898299; x=1705503099;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UlRr87AfARWxTIrPYo3v1voc73TzaNkp96EPHRmj2xU=;
-        b=sJgT2LWHWJkr1qVGuWPJiksn79dJv3rp0/Hs/q/cy8/Pv++zk1oWP8iX6dGRKKa5ad
-         kK2s05xMXHo3KvXeik2WjBBWyViuUu8CAIsV/3HP/Dh9V8nN+Y7iUyl6awTpycghv9SQ
-         PQWYRlIiz1Df2t0ClnEvGL/Z+VmVnISZpv3r3O7xdq23CLJEVRdla+pOKw68u4/HPUUW
-         HzB1ZeWAm/syN+/M4vzt99fS+ATFooID1/Llq9FkHjpfs6WY1IgEGLv/0B7X+l3aeCnG
-         AIUZFitfwcFei6dP96HgBLqcHuTLfu8tLPuP+CfPwkjOv2og0la3/qP3jQn19Fb+WCwD
-         QwFw==
-X-Gm-Message-State: AOJu0YyMnPwlDu6ikl69MwlFgULTtGUYmysrPNaYh1NDl0KAqbLkzmrh
-	/qEBgxACw2v9Fzunk+VaImAAnGbjjfSaxg==
-X-Google-Smtp-Source: AGHT+IESMcbobMlRjbgJYfocjXsZ0yo/qo6i1dK8eo1VFgWRNLIDb9r8HTjU5OKJKjNYljfVT1tLPg==
-X-Received: by 2002:a05:6602:131d:b0:7bc:838:6665 with SMTP id h29-20020a056602131d00b007bc08386665mr986219iov.28.1704898299159;
-        Wed, 10 Jan 2024 06:51:39 -0800 (PST)
-Received: from localhost ([192.184.165.199])
-        by smtp.gmail.com with ESMTPSA id k12-20020a02c64c000000b0046e304dc641sm1319869jan.95.2024.01.10.06.51.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Jan 2024 06:51:38 -0800 (PST)
-Date: Wed, 10 Jan 2024 06:51:38 -0800 (PST)
-X-Google-Original-Date: Wed, 10 Jan 2024 06:51:33 PST (-0800)
-Subject: Re: [PATCH v2 10/14] riscv: Add support for kernel-mode FPU
-In-Reply-To: <20231228014220.3562640-11-samuel.holland@sifive.com>
-From: Palmer Dabbelt <palmer@dabbelt.com>
-To: samuel.holland@sifive.com
-Message-ID: <mhng-3e4b97f6-8310-487e-9f9a-1d19d6e42a1e@palmer-ri-x1c9>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T9C5g0NyCz30g6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2024 02:53:57 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by ams.source.kernel.org (Postfix) with ESMTP id 2DC78B81B7D;
+	Wed, 10 Jan 2024 15:53:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46889C433F1;
+	Wed, 10 Jan 2024 15:53:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1704902032;
+	bh=VExTAiazsv1g0aY0B55Q7g+sXT0qRACvGzmBLH2Jgb0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=ZQ9oPBt7bDzRZBHYow8LOiyL91eqgYQn2ntahsGax2Fw+QLnKGR9Nbjjnwdpv6qYZ
+	 3n2yxOVXeMsbtaRCMeqbY8oiXEkYun5nZoB84f34g4rSZAygKfeCEjW+h9l436TnuM
+	 VUd8g7DUaP6AGF7KPd9Rf/qwlupWUUF4ecYhgFOQ=
+Date: Wed, 10 Jan 2024 07:53:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Donet Tom <donettom@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1] selftests: mm: hugepage-vmemmap fails on 64K page
+ size systems.
+Message-Id: <20240110075351.f4b6f43e31629ddcb96503cc@linux-foundation.org>
+In-Reply-To: <3b3a3ae37ba21218481c482a872bbf7526031600.1704865754.git.donettom@linux.vnet.ibm.com>
+References: <3b3a3ae37ba21218481c482a872bbf7526031600.1704865754.git.donettom@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,129 +57,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, samuel.holland@sifive.com, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org
+Cc: linux-kselftest@vger.kernel.org, Aneesh Kumar <aneesh.kumar@linux.ibm.com>, Muchun Song <muchun.song@linux.dev>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Geetika Moolchandani <geetika@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 27 Dec 2023 17:42:00 PST (-0800), samuel.holland@sifive.com wrote:
-> This is motivated by the amdgpu DRM driver, which needs floating-point
-> code to support recent hardware. That code is not performance-critical,
-> so only provide a minimal non-preemptible implementation for now.
->
-> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
-> ---
->
-> Changes in v2:
->  - Remove RISC-V architecture-specific preprocessor check
->
->  arch/riscv/Kconfig                  |  1 +
->  arch/riscv/Makefile                 |  3 +++
->  arch/riscv/include/asm/fpu.h        | 16 ++++++++++++++++
->  arch/riscv/kernel/Makefile          |  1 +
->  arch/riscv/kernel/kernel_mode_fpu.c | 28 ++++++++++++++++++++++++++++
->  5 files changed, 49 insertions(+)
->  create mode 100644 arch/riscv/include/asm/fpu.h
->  create mode 100644 arch/riscv/kernel/kernel_mode_fpu.c
->
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index 24c1799e2ec4..4d4d1d64ce34 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -27,6 +27,7 @@ config RISCV
->  	select ARCH_HAS_GCOV_PROFILE_ALL
->  	select ARCH_HAS_GIGANTIC_PAGE
->  	select ARCH_HAS_KCOV
-> +	select ARCH_HAS_KERNEL_FPU_SUPPORT if FPU
->  	select ARCH_HAS_MMIOWB
->  	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
->  	select ARCH_HAS_PMEM_API
-> diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-> index a74be78678eb..2e719c369210 100644
-> --- a/arch/riscv/Makefile
-> +++ b/arch/riscv/Makefile
-> @@ -81,6 +81,9 @@ KBUILD_CFLAGS += -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64i
->
->  KBUILD_AFLAGS += -march=$(riscv-march-y)
->
-> +# For C code built with floating-point support, exclude V but keep F and D.
-> +CC_FLAGS_FPU  := -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64ima)([^v_]*)v?/\1\2/')
-> +
->  KBUILD_CFLAGS += -mno-save-restore
->  KBUILD_CFLAGS += -DCONFIG_PAGE_OFFSET=$(CONFIG_PAGE_OFFSET)
->
-> diff --git a/arch/riscv/include/asm/fpu.h b/arch/riscv/include/asm/fpu.h
-> new file mode 100644
-> index 000000000000..91c04c244e12
-> --- /dev/null
-> +++ b/arch/riscv/include/asm/fpu.h
-> @@ -0,0 +1,16 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (C) 2023 SiFive
-> + */
-> +
-> +#ifndef _ASM_RISCV_FPU_H
-> +#define _ASM_RISCV_FPU_H
-> +
-> +#include <asm/switch_to.h>
-> +
-> +#define kernel_fpu_available()	has_fpu()
-> +
-> +void kernel_fpu_begin(void);
-> +void kernel_fpu_end(void);
-> +
-> +#endif /* ! _ASM_RISCV_FPU_H */
-> diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
-> index fee22a3d1b53..662c483e338d 100644
-> --- a/arch/riscv/kernel/Makefile
-> +++ b/arch/riscv/kernel/Makefile
-> @@ -62,6 +62,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
->
->  obj-$(CONFIG_RISCV_MISALIGNED)	+= traps_misaligned.o
->  obj-$(CONFIG_FPU)		+= fpu.o
-> +obj-$(CONFIG_FPU)		+= kernel_mode_fpu.o
->  obj-$(CONFIG_RISCV_ISA_V)	+= vector.o
->  obj-$(CONFIG_SMP)		+= smpboot.o
->  obj-$(CONFIG_SMP)		+= smp.o
-> diff --git a/arch/riscv/kernel/kernel_mode_fpu.c b/arch/riscv/kernel/kernel_mode_fpu.c
-> new file mode 100644
-> index 000000000000..0ac8348876c4
-> --- /dev/null
-> +++ b/arch/riscv/kernel/kernel_mode_fpu.c
-> @@ -0,0 +1,28 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (C) 2023 SiFive
-> + */
-> +
-> +#include <linux/export.h>
-> +#include <linux/preempt.h>
-> +
-> +#include <asm/csr.h>
-> +#include <asm/fpu.h>
-> +#include <asm/processor.h>
-> +#include <asm/switch_to.h>
-> +
-> +void kernel_fpu_begin(void)
-> +{
-> +	preempt_disable();
-> +	fstate_save(current, task_pt_regs(current));
-> +	csr_set(CSR_SSTATUS, SR_FS);
-> +}
-> +EXPORT_SYMBOL_GPL(kernel_fpu_begin);
-> +
-> +void kernel_fpu_end(void)
-> +{
-> +	csr_clear(CSR_SSTATUS, SR_FS);
-> +	fstate_restore(current, task_pt_regs(current));
-> +	preempt_enable();
-> +}
-> +EXPORT_SYMBOL_GPL(kernel_fpu_end);
+(cc Muchun)
+On Wed, 10 Jan 2024 14:03:35 +0530 Donet Tom <donettom@linux.vnet.ibm.com> wrote:
 
-Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+> The kernel sefltest mm/hugepage-vmemmap fails on architectures
+> which has different page size other than 4K. In hugepage-vmemmap
+> page size used is 4k so the pfn calculation will go wrong on systems
+> which has different page size .The length of MAP_HUGETLB memory must
+> be hugepage aligned but in hugepage-vmemmap map length is 2M so this
+> will not get aligned if the system has differnet hugepage size.
+> 
+> Added  psize() to get the page size and default_huge_page_size() to
+> get the default hugepage size at run time, hugepage-vmemmap test pass
+> on powerpc with 64K page size and x86 with 4K page size.
+> 
+> Result on powerpc without patch (page size 64K)
+> *# ./hugepage-vmemmap
+> Returned address is 0x7effff000000 whose pfn is 0
+> Head page flags (100000000) is invalid
+> check_page_flags: Invalid argument
+> *#
+> 
+> Result on powerpc with patch (page size 64K)
+> *# ./hugepage-vmemmap
+> Returned address is 0x7effff000000 whose pfn is 600
+> *#
+> 
+> Result on x86 with patch (page size 4K)
+> *# ./hugepage-vmemmap
+> Returned address is 0x7fc7c2c00000 whose pfn is 1dac00
+> *#
+> 
+> Signed-off-by: Donet Tom <donettom@linux.vnet.ibm.com>
+> Reported-by : Geetika Moolchandani (geetika@linux.ibm.com)
+> Tested-by : Geetika Moolchandani (geetika@linux.ibm.com)
 
-assuming you want to keep these together -- it touches a lot of stuff, 
-so LMK if you want me to pick something up.
+I'll add 
 
-Thanks!
+Fixes: b147c89cd429 ("selftests: vm: add a hugetlb test case")
+Cc: <stable@vger.kernel.org>
+
+> 
+> diff --git a/tools/testing/selftests/mm/hugepage-vmemmap.c b/tools/testing/selftests/mm/hugepage-vmemmap.c
+> index 5b354c209e93..894d28c3dd47 100644
+> --- a/tools/testing/selftests/mm/hugepage-vmemmap.c
+> +++ b/tools/testing/selftests/mm/hugepage-vmemmap.c
+> @@ -10,10 +10,7 @@
+>  #include <unistd.h>
+>  #include <sys/mman.h>
+>  #include <fcntl.h>
+> -
+> -#define MAP_LENGTH		(2UL * 1024 * 1024)
+> -
+> -#define PAGE_SIZE		4096
+> +#include "vm_util.h"
+>  
+>  #define PAGE_COMPOUND_HEAD	(1UL << 15)
+>  #define PAGE_COMPOUND_TAIL	(1UL << 16)
+> @@ -39,6 +36,9 @@
+>  #define MAP_FLAGS		(MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
+>  #endif
+>  
+> +static size_t pagesize;
+> +static size_t maplength;
+> +
+>  static void write_bytes(char *addr, size_t length)
+>  {
+>  	unsigned long i;
+> @@ -56,7 +56,7 @@ static unsigned long virt_to_pfn(void *addr)
+>  	if (fd < 0)
+>  		return -1UL;
+>  
+> -	lseek(fd, (unsigned long)addr / PAGE_SIZE * sizeof(pagemap), SEEK_SET);
+> +	lseek(fd, (unsigned long)addr / pagesize * sizeof(pagemap), SEEK_SET);
+>  	read(fd, &pagemap, sizeof(pagemap));
+>  	close(fd);
+>  
+> @@ -86,7 +86,7 @@ static int check_page_flags(unsigned long pfn)
+>  	 * this also verifies kernel has correctly set the fake page_head to tail
+>  	 * while hugetlb_free_vmemmap is enabled.
+>  	 */
+> -	for (i = 1; i < MAP_LENGTH / PAGE_SIZE; i++) {
+> +	for (i = 1; i < maplength / pagesize; i++) {
+>  		read(fd, &pageflags, sizeof(pageflags));
+>  		if ((pageflags & TAIL_PAGE_FLAGS) != TAIL_PAGE_FLAGS ||
+>  		    (pageflags & HEAD_PAGE_FLAGS) == HEAD_PAGE_FLAGS) {
+> @@ -106,18 +106,25 @@ int main(int argc, char **argv)
+>  	void *addr;
+>  	unsigned long pfn;
+>  
+> -	addr = mmap(MAP_ADDR, MAP_LENGTH, PROT_READ | PROT_WRITE, MAP_FLAGS, -1, 0);
+> +	pagesize  = psize();
+> +	maplength = default_huge_page_size();
+> +	if (!maplength) {
+> +		printf("Unable to determine huge page size\n");
+> +		exit(1);
+> +	}
+> +
+> +	addr = mmap(MAP_ADDR, maplength, PROT_READ | PROT_WRITE, MAP_FLAGS, -1, 0);
+>  	if (addr == MAP_FAILED) {
+>  		perror("mmap");
+>  		exit(1);
+>  	}
+>  
+>  	/* Trigger allocation of HugeTLB page. */
+> -	write_bytes(addr, MAP_LENGTH);
+> +	write_bytes(addr, maplength);
+>  
+>  	pfn = virt_to_pfn(addr);
+>  	if (pfn == -1UL) {
+> -		munmap(addr, MAP_LENGTH);
+> +		munmap(addr, maplength);
+>  		perror("virt_to_pfn");
+>  		exit(1);
+>  	}
+> @@ -125,13 +132,13 @@ int main(int argc, char **argv)
+>  	printf("Returned address is %p whose pfn is %lx\n", addr, pfn);
+>  
+>  	if (check_page_flags(pfn) < 0) {
+> -		munmap(addr, MAP_LENGTH);
+> +		munmap(addr, maplength);
+>  		perror("check_page_flags");
+>  		exit(1);
+>  	}
+>  
+>  	/* munmap() length of MAP_HUGETLB memory must be hugepage aligned */
+> -	if (munmap(addr, MAP_LENGTH)) {
+> +	if (munmap(addr, maplength)) {
+>  		perror("munmap");
+>  		exit(1);
+>  	}
+> -- 
+> 2.43.0
