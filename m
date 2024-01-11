@@ -4,65 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 466DAC4707B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jan 2024 20:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7594DC47077
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jan 2024 20:35:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JciEjkB2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=0j0s+wme;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4T9wYH3WzHz3cR4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jan 2024 07:01:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4T9xHt3z8Rz3cYq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jan 2024 07:35:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JciEjkB2;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=0j0s+wme;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=alexei.starovoitov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=maskray@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4T9wXM1MFSz3bqh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2024 07:01:05 +1100 (AEDT)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-40e60e135a7so8232435e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2024 12:01:05 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4T9xGx05hgz3bqh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2024 07:34:32 +1100 (AEDT)
+Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-40e4afe9ea7so13875e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2024 12:34:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1705003262; x=1705608062; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1705005269; x=1705610069; darn=lists.ozlabs.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=HAL60ZiXYTrQWwc6XvTjBF7mU0s/R7MUfIaHS38evWw=;
-        b=JciEjkB2c4cHCNfpe5XeHd49UtwmWcu0CBT1lRGc/FlZttUbZ4GyaWnrfQoHRvQBw8
-         OUGxBzipWohztfhfocAzN5s8o2XaOSU/k+0pDLbsTbcVYXSFLmBEH/O23gmdKpLS4hZP
-         Iino1/o2+/ZtlV5rBDdKxS2zNzkD/C+JbDc2VvdOMvNYzuejfB5OXSfoZF+ThefLkQ85
-         HKHVEewVJg9aggnMc2ttYGpqEU2D6+RAv3vnfPWWawhc98NSe3NOM4/vPTZT2sMI6TWZ
-         IF7xQDoQ5I+UPaoSb5VLXsEBY8xrjSnTS+5JLoHlk3kMj9smO/w8BN0t8PWZwSMOjgXy
-         tnyg==
+        bh=ZhucuI11iLm9jZSo5DyrLuQREbxS6U88O/YNonTCxz8=;
+        b=0j0s+wmehFmL0tfrRVayDIaTG9kC3gDgXVBy+EF4ghywDXhC84l0a02Hchr+inBK9/
+         cXQdS5EOrITiCqYYW77aEccWWBr8k+h41sukDdckMsEsAGTQ4359YeTiQhPIDaNhdnec
+         m0AEk4Vj5hiY+XulC5ppxKjZGMDdWRADIz4ARn9+V8adotyyYYxQPE3TdZfNjV53tdJn
+         bp97LqEsxQ+0MHAR8QMS+nmdSOMfXrHGZBOPqzRmOOUsikAOJBdPu02poQjF2fn/DgOR
+         VK7naBiNuRXo70PUw60Yv3goS9ITa9ge3YAMMHCUItwh8QNcrB7qJPTry7GLKkke3MN0
+         H2sA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705003262; x=1705608062;
+        d=1e100.net; s=20230601; t=1705005269; x=1705610069;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=HAL60ZiXYTrQWwc6XvTjBF7mU0s/R7MUfIaHS38evWw=;
-        b=pOavoeE8WW5aEFwUw9ejuKJANXvjaAA6kIUCzC5OnMcxRB3Pmk7pIcSxYN+l9hOcpn
-         3CrEJbvTfvuS3kgOdDYbuUSaoOIfOIuFOpH053qh7jVlEDv1ddPFYDE3POH0PpfiaXpJ
-         cTFmusQMcPbMOna2Ru4eo8uAaKrIUlv852CbWoD+NTwPS7P/CVYckWiCmm7IZxmemBrb
-         uwAfJjuINBpSqPiEwQLidm3RxXh0WSGC64Bgus6j+Co9aTOknVRrjBGTAFUpZt/fucQo
-         i4gjKmwpkueYGY9vn15CHKhl6Zb6zyTt+lDr6LOHSEGSrLc+oauiOE9tBlTPdKNSy4lP
-         jV/A==
-X-Gm-Message-State: AOJu0YxvDlVuXCDw2iIFI7xPbYbfNU3Mqc+z7HnvkxtAwwSNaH4uxQ+s
-	kGfNUUJ1oFGGfx7RL2pnIWJ3Pxm0PvfdKT1BrHM=
-X-Google-Smtp-Source: AGHT+IEuD70YW9odmSJBW0ovp3CIEuHoCB7eupgpN0U69zefCCa6AEpsUHBsIEtkfYtc2dUZae2qy6ZzWQ5YfFTTiDA=
-X-Received: by 2002:a05:600c:6548:b0:40e:52a7:ac58 with SMTP id
- dn8-20020a05600c654800b0040e52a7ac58mr243439wmb.65.1705003261872; Thu, 11 Jan
- 2024 12:01:01 -0800 (PST)
+        bh=ZhucuI11iLm9jZSo5DyrLuQREbxS6U88O/YNonTCxz8=;
+        b=GQUEQkRdKd90KNEi6Lw1n8zDgViY+lzIavXsGw5Gync5BlxGsyQnAAXnwkgvKe+YQW
+         nlVau81RDL4nI9mFoXYPpQ0Tt87Oyo5HfpVtmA16PNDJkpjYVrY7zBzru+ixHIHfXBca
+         1Kq0jYed64UnBAKQ02ptofEnVEEV6Sgi1mAaHz9ulUY7vA5NZmmnltXDTszL6KjWAZTp
+         jPmYugmth5lOs35b+6i3BBPer+vbUAUvJcaLh98YTqMNLH5ajA7SpN/0WgvpggCOJ426
+         SnERgDLpmUjN6xpcJtpo45PZUo8e7lAwYdTgNzk3H61CzSCYKtm1qrNsvDcGtowQrRWO
+         35JA==
+X-Gm-Message-State: AOJu0Yxy7UQMzjp8Ce3QYPCc1PUzS98tUk4tm0apWTmllgxtTwu755n2
+	FtcwK1m6IyT3XzCtqhBQuCSTOmMpuz+JkFuEKhbe0FQ3evf7
+X-Google-Smtp-Source: AGHT+IEwsvtKygl+nvSOgn3WrpQlaoPEPZDIYAeAvmwuubPmfNOdEKX4uyCZcs5X4QVXtXNLJ5Llz2AVykCfzYGX6ws=
+X-Received: by 2002:a05:600c:1d1f:b0:40e:61cf:af91 with SMTP id
+ l31-20020a05600c1d1f00b0040e61cfaf91mr127026wms.7.1705005268801; Thu, 11 Jan
+ 2024 12:34:28 -0800 (PST)
 MIME-Version: 1.0
-References: <20240109-update-llvm-links-v1-0-eb09b59db071@kernel.org>
- <20240109-update-llvm-links-v1-1-eb09b59db071@kernel.org> <6a655e9f-9878-4292-9d16-f988c4bdfc73@linux.dev>
- <20240111194001.GA3805856@dev-arch.thelio-3990X>
-In-Reply-To: <20240111194001.GA3805856@dev-arch.thelio-3990X>
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Thu, 11 Jan 2024 12:00:50 -0800
-Message-ID: <CAADnVQKFv2DKE=Um=+kcEzSWYCp9USQT_VpTawzNY6eRaUdu5g@mail.gmail.com>
-Subject: Re: [PATCH 1/3] selftests/bpf: Update LLVM Phabricator links
+References: <20240109-update-llvm-links-v1-0-eb09b59db071@kernel.org> <202401101645.ED161519BA@keescook>
+In-Reply-To: <202401101645.ED161519BA@keescook>
+From: Fangrui Song <maskray@google.com>
+Date: Thu, 11 Jan 2024 12:34:17 -0800
+Message-ID: <CAFP8O3+947djoRjnVPuPhHUHbHv_9CugufuXQ+c=N03yLsaEcA@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Update LLVM Phabricator and Bugzilla links
 To: Nathan Chancellor <nathan@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -77,65 +75,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi <linux-efi@vger.kernel.org>, "open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>, kvm@vger.kernel.org, clang-built-linux <llvm@lists.linux.dev>, Alexei Starovoitov <ast@kernel.org>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, kasan-dev <kasan-dev@googlegroups.com>, Yonghong Song <yonghong.song@linux.dev>, linux-riscv <linux-riscv@lists.infradead.org>, linux-arch <linux-arch@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Mykola Lysenko <mykolal@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, amd-gfx list <amd-gfx@lists.freedesktop.org>, linux-media@vger.kernel.org, Linux Power Management <linux-pm@vger.kernel.org>, bridge@lists.linux.dev, bpf <bpf@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Network Development <netdev@vger.kernel.org>, patches@lists.linux.dev, LSM List <linux-security-module@vger.kernel.org>, Linux 
- Crypto Mailing List <linux-crypto@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-efi@vger.kernel.org, kvm@vger.kernel.org, llvm@lists.linux.dev, ast@kernel.org, dri-devel@lists.freedesktop.org, patches@lists.linux.dev, linux-mm@kvack.org, kasan-dev@googlegroups.com, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, mykolal@fb.com, daniel@iogearbox.net, andrii@kernel.org, amd-gfx@lists.freedesktop.org, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, bridge@lists.linux.dev, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-crypto@vger.kernel.org, akpm@linux-foundation.org, linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 11, 2024 at 11:40=E2=80=AFAM Nathan Chancellor <nathan@kernel.o=
-rg> wrote:
+On Wed, Jan 10, 2024 at 4:46=E2=80=AFPM Kees Cook <keescook@chromium.org> w=
+rote:
 >
-> Hi Yonghong,
->
-> On Wed, Jan 10, 2024 at 08:05:36PM -0800, Yonghong Song wrote:
+> On Tue, Jan 09, 2024 at 03:16:28PM -0700, Nathan Chancellor wrote:
+> > This series updates all instances of LLVM Phabricator and Bugzilla link=
+s
+> > to point to GitHub commits directly and LLVM's Bugzilla to GitHub issue
+> > shortlinks respectively.
 > >
-> > On 1/9/24 2:16 PM, Nathan Chancellor wrote:
-> > > reviews.llvm.org was LLVM's Phabricator instances for code review. It
-> > > has been abandoned in favor of GitHub pull requests. While the majori=
-ty
-> > > of links in the kernel sources still work because of the work Fangrui
-> > > has done turning the dynamic Phabricator instance into a static archi=
-ve,
-> > > there are some issues with that work, so preemptively convert all the
-> > > links in the kernel sources to point to the commit on GitHub.
-> > >
-> > > Most of the commits have the corresponding differential review link i=
-n
-> > > the commit message itself so there should not be any loss of fidelity=
- in
-> > > the relevant information.
-> > >
-> > > Additionally, fix a typo in the xdpwall.c print ("LLMV" -> "LLVM") wh=
-ile
-> > > in the area.
-> > >
-> > > Link: https://discourse.llvm.org/t/update-on-github-pull-requests/715=
-40/172
-> > > Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+> > I split up the Phabricator patch into BPF selftests and the rest of the
+> > kernel in case the BPF folks want to take it separately from the rest o=
+f
+> > the series, there are obviously no dependency issues in that case. The
+> > Bugzilla change was mechanical enough and should have no conflicts.
 > >
-> > Ack with one nit below.
+> > I am aiming this at Andrew and CC'ing other lists, in case maintainers
+> > want to chime in, but I think this is pretty uncontroversial (famous
+> > last words...).
 > >
-> > Acked-by: Yonghong Song <yonghong.song@linux.dev>
->
-> <snip>
->
-> > > @@ -304,6 +304,6 @@ from running test_progs will look like:
-> > >   .. code-block:: console
-> > > -  test_xdpwall:FAIL:Does LLVM have https://reviews.llvm.org/D109073?=
- unexpected error: -4007
-> > > +  test_xdpwall:FAIL:Does LLVM have https://github.com/llvm/llvm-proj=
-ect/commit/ea72b0319d7b0f0c2fcf41d121afa5d031b319d5? unexpected error: -400=
-7
-> > > -__ https://reviews.llvm.org/D109073
-> > > +__ https://github.com/llvm/llvm-project/commit/ea72b0319d7b0f0c2fcf4=
-1d121afa5d031b319d
+> > ---
+> > Nathan Chancellor (3):
+> >       selftests/bpf: Update LLVM Phabricator links
+> >       arch and include: Update LLVM Phabricator links
+> >       treewide: Update LLVM Bugzilla links
 > >
-> > To be consistent with other links, could you add the missing last alnum=
- '5' to the above link?
+> >  arch/arm64/Kconfig                                 |  4 +--
+> >  arch/powerpc/Makefile                              |  4 +--
+> >  arch/powerpc/kvm/book3s_hv_nested.c                |  2 +-
+> >  arch/riscv/Kconfig                                 |  2 +-
+> >  arch/riscv/include/asm/ftrace.h                    |  2 +-
+> >  arch/s390/include/asm/ftrace.h                     |  2 +-
+> >  arch/x86/power/Makefile                            |  2 +-
+> >  crypto/blake2b_generic.c                           |  2 +-
+> >  drivers/firmware/efi/libstub/Makefile              |  2 +-
+> >  drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c           |  2 +-
+> >  drivers/media/test-drivers/vicodec/codec-fwht.c    |  2 +-
+> >  drivers/regulator/Kconfig                          |  2 +-
+> >  include/asm-generic/vmlinux.lds.h                  |  2 +-
+> >  include/linux/compiler-clang.h                     |  2 +-
+> >  lib/Kconfig.kasan                                  |  2 +-
+> >  lib/raid6/Makefile                                 |  2 +-
+> >  lib/stackinit_kunit.c                              |  2 +-
+> >  mm/slab_common.c                                   |  2 +-
+> >  net/bridge/br_multicast.c                          |  2 +-
+> >  security/Kconfig                                   |  2 +-
+> >  tools/testing/selftests/bpf/README.rst             | 32 +++++++++++---=
+--------
+> >  tools/testing/selftests/bpf/prog_tests/xdpwall.c   |  2 +-
+> >  .../selftests/bpf/progs/test_core_reloc_type_id.c  |  2 +-
+> >  23 files changed, 40 insertions(+), 40 deletions(-)
+> > ---
+> > base-commit: 0dd3ee31125508cd67f7e7172247f05b7fd1753a
+> > change-id: 20240109-update-llvm-links-d03f9d649e1e
+> >
+> > Best regards,
+> > --
+> > Nathan Chancellor <nathan@kernel.org>
+> >
 >
-> Thanks a lot for catching this and providing an ack. Andrew, could you
-> squash this update into selftests-bpf-update-llvm-phabricator-links.patch=
-?
+> Excellent! Thanks for doing this. I spot checked a handful I was
+> familiar with and everything looks good to me.
+>
+> Reviewed-by: Kees Cook <keescook@chromium.org>
+>
+> --
+> Kees Cook
+>
 
-Please send a new patch.
-We'd like to take all bpf patches through the bpf tree to avoid conflicts.
+These reviews.llvm.org links would definitely be kept like
+https://lists.llvm.org/pipermail/llvm-dev/ or cfe-dev links
+(discussions have been migrated to Discourse).
+However, I agree that the github repo link looks more official. I have
+clicked a few links and they look good.
+
+Since I maintain reviews.llvm.org and created the static archive [1],
+
+Acked-by: Fangrui Song <maskray@google.com>
+
+[1]: https://discourse.llvm.org/t/llvm-phabricator-turndown/76137
+
+--=20
+=E5=AE=8B=E6=96=B9=E7=9D=BF
