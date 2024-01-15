@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9ED71C3DA79
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jan 2024 23:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3A3FC3DA79
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jan 2024 23:27:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWNHDvVU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o+Mdg4Zq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TDSvd221Lz3cQD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 10:26:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TDSwb60XZz3c5R
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 10:27:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWNHDvVU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o+Mdg4Zq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDSrr3yjJz3bmq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 10:24:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDSrw5Rbvz3bqV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 10:24:16 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id D4DBAB80D56;
-	Mon, 15 Jan 2024 23:24:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27ED0C433C7;
-	Mon, 15 Jan 2024 23:24:05 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 711C6CE18BB;
+	Mon, 15 Jan 2024 23:24:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 126F7C433C7;
+	Mon, 15 Jan 2024 23:24:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705361046;
-	bh=UI25Gh3+V0YvBsdbOS97DYEXarBNS5Z20s9NRmA82HM=;
+	s=k20201202; t=1705361052;
+	bh=EtHTrGE1eOqQboRLF4jG9BNVF54hCRlcPg6QD4VK/cA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=WWNHDvVU9H+TFOz1ITPWYdesYYMPk8PvxAe+UW9rQhTMxPViYWFg2BUl+UZfYTIg9
-	 joBfvCXvZTea/SAjAiJgC+H4VFu0npmJ6rAlWRBDniO7ny+lhPt3LKF3KRNug34eul
-	 J35Mvu+MkLHgE7HiwT1yOnYnBCgIwJwbrru8KrIxY2fmydmQ9yoiLiPLEqazTA4d8I
-	 pBzMfnjdr/spseGmmoQO+GEIuqGfnhzDvL6DHS6AnVvo4DxteoQzkIJDKiNzp0VSCG
-	 Y2zuvT+snEpqvz0QnU7pikSUxB8w4eVdsoPR5czSrHTth6tWvgBhrh0afHXa46ic/R
-	 aXcduGddjygwQ==
+	b=o+Mdg4ZqxPleesyYhfB5XfVVzO9RCgDl7Jk33aJFConnc3WXrG6C3fvJSdhuDRC2S
+	 aq7gfK5gTIFVKfWVJMTJLA0oiUkyZxc1s6YLLBV/ZleK47geLWIXTO3nXZQa4UjNHY
+	 7NzIYGRgLtrxe6KAh4+xwQOPkEEBqOGsNP3LKgNK3YybfJcqAxgnJxgH9YxyvSp9eJ
+	 grWrG4GdkQbXqusRLvHwE1kKybiC2Wsq6q5fyogcAtmjTHA5eHV0PaFuvOL6At1KAC
+	 g2POgUT34jFcq7kf2JrDO7ywyIbMPW5pOHkqjrbgIFoalBtA9qnJ0ByTGTeAHT3uqD
+	 HqYxEVCk2vcNw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.7 06/14] powerpc: Fix build error due to is_valid_bugaddr()
-Date: Mon, 15 Jan 2024 18:23:20 -0500
-Message-ID: <20240115232351.208489-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.7 08/14] powerpc/64s: Fix CONFIG_NUMA=n build due to create_section_mapping()
+Date: Mon, 15 Jan 2024 18:23:22 -0500
+Message-ID: <20240115232351.208489-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240115232351.208489-1-sashal@kernel.org>
 References: <20240115232351.208489-1-sashal@kernel.org>
@@ -63,47 +63,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, arnd@arndb.de, naveen@kernel.org, bgray@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit f8d3555355653848082c351fa90775214fb8a4fa ]
+[ Upstream commit ede66cd22441820cbd399936bf84fdc4294bc7fa ]
 
-With CONFIG_GENERIC_BUG=n the build fails with:
+With CONFIG_NUMA=n the build fails with:
 
-  arch/powerpc/kernel/traps.c:1442:5: error: no previous prototype for ‘is_valid_bugaddr’ [-Werror=missing-prototypes]
-  1442 | int is_valid_bugaddr(unsigned long addr)
-       |     ^~~~~~~~~~~~~~~~
+  arch/powerpc/mm/book3s64/pgtable.c:275:15: error: no previous prototype for ‘create_section_mapping’ [-Werror=missing-prototypes]
+  275 | int __meminit create_section_mapping(unsigned long start, unsigned long end,
+      |               ^~~~~~~~~~~~~~~~~~~~~~
 
-The prototype is only defined, and the function is only needed, when
-CONFIG_GENERIC_BUG=y, so move the implementation under that.
+That happens because the prototype for create_section_mapping() is in
+asm/mmzone.h, but asm/mmzone.h is only included by linux/mmzone.h
+when CONFIG_NUMA=y.
+
+In fact the prototype is only needed by arch/powerpc/mm code, so move
+the prototype into arch/powerpc/mm/mmu_decl.h, which also fixes the
+build error.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://msgid.link/20231130114433.3053544-2-mpe@ellerman.id.au
+Link: https://msgid.link/20231129131919.2528517-5-mpe@ellerman.id.au
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kernel/traps.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/mmzone.h | 5 -----
+ arch/powerpc/mm/mmu_decl.h        | 5 +++++
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 5ea2014aff90..11e062b47d3f 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1439,10 +1439,12 @@ static int emulate_instruction(struct pt_regs *regs)
- 	return -EINVAL;
- }
+diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+index 3764d3585d30..da827d2d0866 100644
+--- a/arch/powerpc/include/asm/mmzone.h
++++ b/arch/powerpc/include/asm/mmzone.h
+@@ -43,10 +43,5 @@ u64 memory_hotplug_max(void);
+ #define memory_hotplug_max() memblock_end_of_DRAM()
+ #endif /* CONFIG_NUMA */
  
-+#ifdef CONFIG_GENERIC_BUG
- int is_valid_bugaddr(unsigned long addr)
+-#ifdef CONFIG_MEMORY_HOTPLUG
+-extern int create_section_mapping(unsigned long start, unsigned long end,
+-				  int nid, pgprot_t prot);
+-#endif
+-
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_MMZONE_H_ */
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 7f9ff0640124..72341b9fb552 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -181,3 +181,8 @@ static inline bool debug_pagealloc_enabled_or_kfence(void)
  {
- 	return is_kernel_addr(addr);
+ 	return IS_ENABLED(CONFIG_KFENCE) || debug_pagealloc_enabled();
  }
++
++#ifdef CONFIG_MEMORY_HOTPLUG
++int create_section_mapping(unsigned long start, unsigned long end,
++			   int nid, pgprot_t prot);
 +#endif
- 
- #ifdef CONFIG_MATH_EMULATION
- static int emulate_math(struct pt_regs *regs)
 -- 
 2.43.0
 
