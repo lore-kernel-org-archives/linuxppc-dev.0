@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84116C3DA79
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jan 2024 23:25:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9ED71C3DA79
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jan 2024 23:26:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hGkOVQy2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWNHDvVU;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TDStf0LgLz3c9y
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 10:25:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TDSvd221Lz3cQD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 10:26:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hGkOVQy2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWNHDvVU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDSrr1PL9z3bmq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDSrr3yjJz3bmq
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 10:24:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C541D61004;
-	Mon, 15 Jan 2024 23:24:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE9E9C433F1;
-	Mon, 15 Jan 2024 23:24:08 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTP id D4DBAB80D56;
+	Mon, 15 Jan 2024 23:24:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27ED0C433C7;
+	Mon, 15 Jan 2024 23:24:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705361049;
-	bh=wdNhFvJU6hT6clgrchex+0u0FjQS3aDWdWmSHZN2j6U=;
+	s=k20201202; t=1705361046;
+	bh=UI25Gh3+V0YvBsdbOS97DYEXarBNS5Z20s9NRmA82HM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hGkOVQy2YJJ6gH/zrupk5cMeOmghwgirek3P6wKFZC14/hr3vQxCkWhg2zKi5uofl
-	 YeLz78B1+lHsB5dGLNIqRo5iXxs64/OrBtRN5ZmIU6/wTqQZzP76oloC/UBthTI4uO
-	 +ndSqi2uaIA+4HoVclIpNclH4eVKvCoB3/gqYlFo3l5vb7HkE4njq3VXJiYXhHh9OT
-	 tT0GQJpEsV6hhelUazLfRBsFpBXdZ0mT/W8eMZkKRE5SqyHSfcl5tQ5p6A6Wkkx/RX
-	 lsC/UWw0GqI12niGLGZyjRnFnmZyN1dl/d/Nu9U9ApA7wLL2iunu7lp6zVcekgQiUi
-	 aZTY6TDKHkGXg==
+	b=WWNHDvVU9H+TFOz1ITPWYdesYYMPk8PvxAe+UW9rQhTMxPViYWFg2BUl+UZfYTIg9
+	 joBfvCXvZTea/SAjAiJgC+H4VFu0npmJ6rAlWRBDniO7ny+lhPt3LKF3KRNug34eul
+	 J35Mvu+MkLHgE7HiwT1yOnYnBCgIwJwbrru8KrIxY2fmydmQ9yoiLiPLEqazTA4d8I
+	 pBzMfnjdr/spseGmmoQO+GEIuqGfnhzDvL6DHS6AnVvo4DxteoQzkIJDKiNzp0VSCG
+	 Y2zuvT+snEpqvz0QnU7pikSUxB8w4eVdsoPR5czSrHTth6tWvgBhrh0afHXa46ic/R
+	 aXcduGddjygwQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.7 07/14] powerpc/mm: Fix build failures due to arch_reserved_kernel_pages()
-Date: Mon, 15 Jan 2024 18:23:21 -0500
-Message-ID: <20240115232351.208489-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.7 06/14] powerpc: Fix build error due to is_valid_bugaddr()
+Date: Mon, 15 Jan 2024 18:23:20 -0500
+Message-ID: <20240115232351.208489-6-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240115232351.208489-1-sashal@kernel.org>
 References: <20240115232351.208489-1-sashal@kernel.org>
@@ -63,67 +63,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, arnd@arndb.de, naveen@kernel.org, bgray@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit d8c3f243d4db24675b653f0568bb65dae34e6455 ]
+[ Upstream commit f8d3555355653848082c351fa90775214fb8a4fa ]
 
-With NUMA=n and FA_DUMP=y or PRESERVE_FA_DUMP=y the build fails with:
+With CONFIG_GENERIC_BUG=n the build fails with:
 
-  arch/powerpc/kernel/fadump.c:1739:22: error: no previous prototype for ‘arch_reserved_kernel_pages’ [-Werror=missing-prototypes]
-  1739 | unsigned long __init arch_reserved_kernel_pages(void)
-       |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  arch/powerpc/kernel/traps.c:1442:5: error: no previous prototype for ‘is_valid_bugaddr’ [-Werror=missing-prototypes]
+  1442 | int is_valid_bugaddr(unsigned long addr)
+       |     ^~~~~~~~~~~~~~~~
 
-The prototype for arch_reserved_kernel_pages() is in include/linux/mm.h,
-but it's guarded by __HAVE_ARCH_RESERVED_KERNEL_PAGES. The powerpc
-headers define __HAVE_ARCH_RESERVED_KERNEL_PAGES in asm/mmzone.h, which
-is not included into the generic headers when NUMA=n.
-
-Move the definition of __HAVE_ARCH_RESERVED_KERNEL_PAGES into asm/mmu.h
-which is included regardless of NUMA=n.
-
-Additionally the ifdef around __HAVE_ARCH_RESERVED_KERNEL_PAGES needs to
-also check for CONFIG_PRESERVE_FA_DUMP.
+The prototype is only defined, and the function is only needed, when
+CONFIG_GENERIC_BUG=y, so move the implementation under that.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://msgid.link/20231130114433.3053544-1-mpe@ellerman.id.au
+Link: https://msgid.link/20231130114433.3053544-2-mpe@ellerman.id.au
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/include/asm/mmu.h    | 4 ++++
- arch/powerpc/include/asm/mmzone.h | 3 ---
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/traps.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 52cc25864a1b..d8b7e246a32f 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -412,5 +412,9 @@ extern void *abatron_pteptrs[2];
- #include <asm/nohash/mmu.h>
- #endif
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 5ea2014aff90..11e062b47d3f 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1439,10 +1439,12 @@ static int emulate_instruction(struct pt_regs *regs)
+ 	return -EINVAL;
+ }
  
-+#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
-+#define __HAVE_ARCH_RESERVED_KERNEL_PAGES
++#ifdef CONFIG_GENERIC_BUG
+ int is_valid_bugaddr(unsigned long addr)
+ {
+ 	return is_kernel_addr(addr);
+ }
 +#endif
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_MMU_H_ */
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 4c6c6dbd182f..3764d3585d30 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -42,9 +42,6 @@ u64 memory_hotplug_max(void);
- #else
- #define memory_hotplug_max() memblock_end_of_DRAM()
- #endif /* CONFIG_NUMA */
--#ifdef CONFIG_FA_DUMP
--#define __HAVE_ARCH_RESERVED_KERNEL_PAGES
--#endif
  
- #ifdef CONFIG_MEMORY_HOTPLUG
- extern int create_section_mapping(unsigned long start, unsigned long end,
+ #ifdef CONFIG_MATH_EMULATION
+ static int emulate_math(struct pt_regs *regs)
 -- 
 2.43.0
 
