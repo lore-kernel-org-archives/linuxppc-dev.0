@@ -4,49 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C09FFC3DA79
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jan 2024 23:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84116C3DA79
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jan 2024 23:25:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oNnCmS6w;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hGkOVQy2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TDSsg0x8qz3byP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 10:24:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TDStf0LgLz3c9y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 10:25:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oNnCmS6w;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hGkOVQy2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDSrf63XWz2xck
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 10:24:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDSrr1PL9z3bmq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 10:24:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id EEFEB6100B;
-	Mon, 15 Jan 2024 23:23:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3ECCC433C7;
-	Mon, 15 Jan 2024 23:23:58 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id C541D61004;
+	Mon, 15 Jan 2024 23:24:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE9E9C433F1;
+	Mon, 15 Jan 2024 23:24:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705361039;
-	bh=psqCfDKQSKwB2pk7KyaWBlnHeEG8IWloOXUH8t0qbCU=;
+	s=k20201202; t=1705361049;
+	bh=wdNhFvJU6hT6clgrchex+0u0FjQS3aDWdWmSHZN2j6U=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=oNnCmS6wQt5yROsx3/lkW7SuymF+Zmy3yr/tZbkDbs+yiVxWu5IDXS8DtezyX4pUM
-	 Ku4MjoRhpR43y+OHK9Y7nLQoxCqxdA5tl5I0KEMoMiDeVSg2AMunYu3+ShEy1QVTvC
-	 qwAxRHUMe71skkJI3n6UDxEStuTuLqgjDVBC1I69vlXzJUMTNvMPt3nMBGLJ1CilkS
-	 /wTN8WmeZblTy3Rls8q704o+7yq6RdA6z5zJFzYzJ3KQeisvkEjAQZ3gTIltwwtTsa
-	 MnKmlwTg4yXuDBbzKBfKZxn3oxyHrDJawkt6wCmz7T2EjqgvB9Xn9Ndog+NDpaV2MA
-	 v8yehs9SE5YJg==
+	b=hGkOVQy2YJJ6gH/zrupk5cMeOmghwgirek3P6wKFZC14/hr3vQxCkWhg2zKi5uofl
+	 YeLz78B1+lHsB5dGLNIqRo5iXxs64/OrBtRN5ZmIU6/wTqQZzP76oloC/UBthTI4uO
+	 +ndSqi2uaIA+4HoVclIpNclH4eVKvCoB3/gqYlFo3l5vb7HkE4njq3VXJiYXhHh9OT
+	 tT0GQJpEsV6hhelUazLfRBsFpBXdZ0mT/W8eMZkKRE5SqyHSfcl5tQ5p6A6Wkkx/RX
+	 lsC/UWw0GqI12niGLGZyjRnFnmZyN1dl/d/Nu9U9ApA7wLL2iunu7lp6zVcekgQiUi
+	 aZTY6TDKHkGXg==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.7 03/14] powerpc/mm: Fix null-pointer dereference in pgtable_cache_add
-Date: Mon, 15 Jan 2024 18:23:17 -0500
-Message-ID: <20240115232351.208489-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.7 07/14] powerpc/mm: Fix build failures due to arch_reserved_kernel_pages()
+Date: Mon, 15 Jan 2024 18:23:21 -0500
+Message-ID: <20240115232351.208489-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240115232351.208489-1-sashal@kernel.org>
 References: <20240115232351.208489-1-sashal@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
 X-stable-base: Linux 6.7
@@ -62,51 +63,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org, Kunwu Chan <chentao@kylinos.cn>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Kunwu Chan <chentao@kylinos.cn>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit f46c8a75263f97bda13c739ba1c90aced0d3b071 ]
+[ Upstream commit d8c3f243d4db24675b653f0568bb65dae34e6455 ]
 
-kasprintf() returns a pointer to dynamically allocated memory
-which can be NULL upon failure. Ensure the allocation was successful
-by checking the pointer validity.
+With NUMA=n and FA_DUMP=y or PRESERVE_FA_DUMP=y the build fails with:
 
-Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
+  arch/powerpc/kernel/fadump.c:1739:22: error: no previous prototype for ‘arch_reserved_kernel_pages’ [-Werror=missing-prototypes]
+  1739 | unsigned long __init arch_reserved_kernel_pages(void)
+       |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The prototype for arch_reserved_kernel_pages() is in include/linux/mm.h,
+but it's guarded by __HAVE_ARCH_RESERVED_KERNEL_PAGES. The powerpc
+headers define __HAVE_ARCH_RESERVED_KERNEL_PAGES in asm/mmzone.h, which
+is not included into the generic headers when NUMA=n.
+
+Move the definition of __HAVE_ARCH_RESERVED_KERNEL_PAGES into asm/mmu.h
+which is included regardless of NUMA=n.
+
+Additionally the ifdef around __HAVE_ARCH_RESERVED_KERNEL_PAGES needs to
+also check for CONFIG_PRESERVE_FA_DUMP.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://msgid.link/20231204023223.2447523-1-chentao@kylinos.cn
+Link: https://msgid.link/20231130114433.3053544-1-mpe@ellerman.id.au
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/init-common.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/mmu.h    | 4 ++++
+ arch/powerpc/include/asm/mmzone.h | 3 ---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index 119ef491f797..d3a7726ecf51 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -126,7 +126,7 @@ void pgtable_cache_add(unsigned int shift)
- 	 * as to leave enough 0 bits in the address to contain it. */
- 	unsigned long minalign = max(MAX_PGTABLE_INDEX_SIZE + 1,
- 				     HUGEPD_SHIFT_MASK + 1);
--	struct kmem_cache *new;
-+	struct kmem_cache *new = NULL;
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 52cc25864a1b..d8b7e246a32f 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -412,5 +412,9 @@ extern void *abatron_pteptrs[2];
+ #include <asm/nohash/mmu.h>
+ #endif
  
- 	/* It would be nice if this was a BUILD_BUG_ON(), but at the
- 	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
-@@ -139,7 +139,8 @@ void pgtable_cache_add(unsigned int shift)
++#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
++#define __HAVE_ARCH_RESERVED_KERNEL_PAGES
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_MMU_H_ */
+diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+index 4c6c6dbd182f..3764d3585d30 100644
+--- a/arch/powerpc/include/asm/mmzone.h
++++ b/arch/powerpc/include/asm/mmzone.h
+@@ -42,9 +42,6 @@ u64 memory_hotplug_max(void);
+ #else
+ #define memory_hotplug_max() memblock_end_of_DRAM()
+ #endif /* CONFIG_NUMA */
+-#ifdef CONFIG_FA_DUMP
+-#define __HAVE_ARCH_RESERVED_KERNEL_PAGES
+-#endif
  
- 	align = max_t(unsigned long, align, minalign);
- 	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
--	new = kmem_cache_create(name, table_size, align, 0, ctor(shift));
-+	if (name)
-+		new = kmem_cache_create(name, table_size, align, 0, ctor(shift));
- 	if (!new)
- 		panic("Could not allocate pgtable cache for order %d", shift);
- 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ extern int create_section_mapping(unsigned long start, unsigned long end,
 -- 
 2.43.0
 
