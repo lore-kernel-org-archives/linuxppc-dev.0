@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92EE4C47077
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 20:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 098B1C47DA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 21:00:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=loIWYCWf;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=pQjJ87Ew;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TF0lF1QtZz3cYY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jan 2024 07:21:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TF1cG4cXZz2ykx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jan 2024 08:00:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=loIWYCWf;
+	dkim=pass (1024-bit key; unprotected) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=pQjJ87Ew;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::62e; helo=mail-ej1-x62e.google.com; envelope-from=yosryahmed@google.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chrisdown.name (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=chris@chrisdown.name; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TF0kF5tcsz3bwj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2024 07:20:20 +1100 (AEDT)
-Received: by mail-ej1-x62e.google.com with SMTP id a640c23a62f3a-a28ab7ae504so978468166b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 12:20:20 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDvxs0Rvdz2ysD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2024 03:45:02 +1100 (AEDT)
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-40e69b31366so37911625e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 08:45:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1705436417; x=1706041217; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=chrisdown.name; s=google; t=1705423497; x=1706028297; darn=lists.ozlabs.org;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=P3E2Y2gGlsfMwMpgThK3AbQt/GlaabuQMTiIlyvqmJY=;
-        b=loIWYCWfYKu85JtDsHkqD64lS+RfTvKnkOqiO3NOUAIgqIP+npYpJI5gtjuCr5hsNJ
-         Xtwz5AwEDWFSj84n5uyypDr0tq64TGmvNcLVx/PgZTevVftRsHzTdaUE0MxZxU+Jzkko
-         HzwOWfZo7s+2n6EjBne+2LbabT0Ab86UzNPvhb51vAzGo4HXoAyy47aj5UIF0aGF/fd+
-         aaYmsl5pYxf3oNV0xek9uq/1I+S+OES8YSWUaDnpZyZKwAbgWvDHG4wU+DO2RjKYsnFg
-         RXXhrGxdsfyjkvMAmaZxs5RMGneIAT5R2UOTMlsec/8+jOsKlEaGMoPGQFFnIxcAMR8J
-         ULdA==
+        bh=zfgzSOT5YsRlYZszh8CGN3Yrxu5fn/m7q+vPcIoOkRo=;
+        b=pQjJ87EwgMqjEpRIII8i3ZL2AeyNolAREcqD1hBUEPUDbdDVGmzCtXFsGjYYwGd/I1
+         g+lWAFbJclk6wPQWAdLUes6o2BsdMlpY0O78X6D7EBPvIQt8VJO+OTItFCS4zk0kreMk
+         BaR/6/JOK5Kuus9G4apRlfzAFCXr/r0Egzf50=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705436417; x=1706041217;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1705423497; x=1706028297;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=P3E2Y2gGlsfMwMpgThK3AbQt/GlaabuQMTiIlyvqmJY=;
-        b=Hj/WVRTjs2o0831mU2Hk9OUS7ufAwFMYI/W7xLeUM2SnRNw+1ENeorI02D4jCCXXdN
-         ECXgSib87birZNcjuksTacrVnfZ2NSQQ/3cHltHbDR+udVFaQJX00ylI0yvRN8o8fgJW
-         7snI+F089Qx+txVbX7Tf9dVSYvOPxmach9iqlZbMEyTtNXUy21AZL0IaOggbakGuXJIg
-         4Gcmlmli11SQwWl48dT7BywR1WdsPSM+2bfVJQbE7OL6Pd3LW33vdJHRSldfQVAXMfqd
-         43it/9BbqWOgA9R6cHs5Fl7trjgaO8IEkYWPpU89sJJFh6EIjt8V/JMTczuE3Z0L60VG
-         XiYg==
-X-Gm-Message-State: AOJu0YyN50hesN9zrCLJ5K21wudPqg8ZxgPzFOjj2oRsPQctGCeh/G4n
-	dh+WzmdcdBJXM3dgCIBuzKTaiM8zxoFzJ06CEU817EDhFuyf
-X-Google-Smtp-Source: AGHT+IEPFQwqltvYgFxlysBjGHd+0u+L4kfWHJuGtRT3TShDlHV6JS9iDCNOLsEInB40YpGF+P8XDD4PBoRyi2p/qPg=
-X-Received: by 2002:a17:906:1457:b0:a27:915e:a306 with SMTP id
- q23-20020a170906145700b00a27915ea306mr3648666ejc.136.1705436417121; Tue, 16
- Jan 2024 12:20:17 -0800 (PST)
-MIME-Version: 1.0
+        bh=zfgzSOT5YsRlYZszh8CGN3Yrxu5fn/m7q+vPcIoOkRo=;
+        b=vOEs1YZGcdf6tkla5NNSfBngZibKJfDm5VjEGew7C7uEsdw5Uil55cEM5magvr9z+2
+         /T51dIL+AsWQVD68IK0jMQcc3glgNZvtBRsG2Y9ok02rJf10Znmw6eXTbNlzWzgRO4hn
+         KyJR+tl17+pkH3AkjWvzeXKWEkTTOmQOZ7kai1LhsfltaG/46vWs1ins8Bd35jxzmftc
+         iMQ4wH3Dhhmm5U0P8tbJ1NWQS+Nei6Py5ITt3cU2j3oLzmRCyuVgbe1JpzmmMS2VLPwj
+         huefbVrvb+EY+DHITC5RwQdofpCxC9NF453W7wYezwAd7BhHC3c/+jWAmDkN6H/uP4ab
+         Jjvw==
+X-Gm-Message-State: AOJu0YxW2BQqnNDOdbj285Vyx9+ZXtZmvLvpLzxfOBkEe4IWEB+NwJij
+	TQ17EMq5EMV7FCa4CuDYw3jZ6r3RYRD/Ig==
+X-Google-Smtp-Source: AGHT+IGLlTqH9WZOC/OME4zoyjXAaxL4iv39bxZRTYkDmE8GGBdCKiSNb+tybKwAFnn9zCLTCDPSJg==
+X-Received: by 2002:a05:600c:4d1f:b0:40e:5b54:1f6e with SMTP id u31-20020a05600c4d1f00b0040e5b541f6emr3393949wmp.131.1705423496977;
+        Tue, 16 Jan 2024 08:44:56 -0800 (PST)
+Received: from localhost ([2a01:4b00:8432:8600:5ee4:2aff:fe50:f48d])
+        by smtp.gmail.com with ESMTPSA id je6-20020a05600c1f8600b0040d8d11bf63sm19929191wmb.41.2024.01.16.08.44.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Jan 2024 08:44:56 -0800 (PST)
+Date: Tue, 16 Jan 2024 16:44:55 +0000
+From: Chris Down <chris@chrisdown.name>
+To: Yosry Ahmed <yosryahmed@google.com>
+Subject: Re: [RFC PATCH] mm: z3fold: rename CONFIG_Z3FOLD to
+ CONFIG_Z3FOLD_DEPRECATED
+Message-ID: <Zaayh527V881l8tf@chrisdown.name>
 References: <20240112193103.3798287-1-yosryahmed@google.com>
- <CAKEwX=PXfZssERxeMS3FpMP7H0psMzC72C2ga3fqr_Qh88M75A@mail.gmail.com>
- <CAJD7tkYqKve5V4eJjbZE8kPZ=-5DU1Xh6jym8OfE1twQz-vbUA@mail.gmail.com>
- <CAKEwX=P21VvVyfmAADzXe0=Mqz3Htyx9nQuiivLchcDZRumh6Q@mail.gmail.com> <ZaajDheNtqKkCoeD@infradead.org>
-In-Reply-To: <ZaajDheNtqKkCoeD@infradead.org>
-From: Yosry Ahmed <yosryahmed@google.com>
-Date: Tue, 16 Jan 2024 12:19:39 -0800
-Message-ID: <CAJD7tkaYu2+g-3y3k35KaiLEsrFVtfpSS=9uv+ic3Zwv6fTS3w@mail.gmail.com>
-Subject: Re: [RFC PATCH] mm: z3fold: rename CONFIG_Z3FOLD to CONFIG_Z3FOLD_DEPRECATED
-To: Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20240112193103.3798287-1-yosryahmed@google.com>
+User-Agent: Mutt/2.2.12 (2023-09-09)
+X-Mailman-Approved-At: Wed, 17 Jan 2024 07:59:26 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,38 +78,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Nhat Pham <nphamcs@gmail.com>, linux-mm@kvack.org, Chris Li <chrisl@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Sergey Senozhatsky <senozhatsky@chromium.org>, loongarch@lists.linux.dev, Johannes Weiner <hannes@cmpxchg.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Minchan Kim <minchan@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, WANG Xuerui <kernel@xen0n.name>, Vitaly Wool <vitaly.wool@konsulko.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, Nhat Pham <nphamcs@gmail.com>, Huacai Chen <chenhuacai@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, linux-mm@kvack.org, loongarch@lists.linux.dev, Johannes Weiner <hannes@cmpxchg.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, WANG Xuerui <kernel@xen0n.name>, Vitaly Wool <vitaly.wool@konsulko.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 16, 2024 at 7:39=E2=80=AFAM Christoph Hellwig <hch@infradead.or=
-g> wrote:
+Yosry Ahmed writes:
+>The z3fold compressed pages allocator is not widely used, most users use
+>zsmalloc. The only disadvantage of zsmalloc in comparison is the
+>dependency on MMU, and zbud is a more common option for !MMU as it was
+>the default zswap allocator for a long time.
 >
-> On Fri, Jan 12, 2024 at 04:38:30PM -0800, Nhat Pham wrote:
-> > >
-> > > I thought deprecating z3fold is the low hanging fruit. Then, once we
-> > > can sort out the MMU dependency in zsmalloc, we can go after zbud as
-> > > well.
-> >
-> > Makes sense to me. Should we do the same thing to zbud? We probably
-> > have even less of a case for it, no?
+>In hopes of having a single compressed pages allocator at some point,
+>and following in the footsteps of SLAB, deprecate z3fold. Rename the
+>user-visible option so that users with CONFIG_Z3FOLD=y get a new prompt
+>with explanation during make oldconfig. Remove CONFIG_Z3FOLD=y from
+>defconfigs.
 >
-> Is there any user visible effect of switching the allocator?  If not it
-> seems a bit pointless to deprecate them vs just removing them (or maybe
-> making z3fold depend on !MMU for now).
+>Existing users, if any, should voice their objections. Otherwise, we can
+>remove z3fold in a few releases.
+>
+>Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
 
-Well, better compression ratios for one :)
+Acked-by: Chris Down <chris@chrisdown.name>
 
-I think a long time ago there were complaints that zsmalloc had higher
-latency than zbud/z3fold, but since then a lot of things have changed
-(including nice compaction optimization from Sergey, and compaction
-was one of the main factors AFAICT). Also, recent experiments that
-Chris Li conducted showed that (at least in our setup), the
-decompression is only a small part of the fault latency with zswap
-(i.e. not the main factor) -- so I am not sure if it actually matters
-in practice.
+Thanks. We are definitely hurting users as well by keeping this around with its 
+known issues when writeback is disabled, for example.
 
-That said, I have not conducted any experiments personally with z3fold
-or zbud, which is why I proposed the conservative approach of marking
-as deprecated first. However, if others believe this is unnecessary I
-am fine with removal as well. Whatever we agree on is fine by me.
+>---
+>I have limited understanding of Kconfigs. I modelled this after commit
+>eb07c4f39c3e ("mm/slab: rename CONFIG_SLAB to CONFIG_SLAB_DEPRECATED"),
+>but one difference is that CONFIG_Z3FOLD is a tristate. I made
+>CONFIG_Z3FOLD_DEPRECATED a boolean config, and CONFIG_Z3FOLD default y
+>so that it is on by default if CONFIG_Z3FOLD_DEPRECATED is selected. I
+>am not sure if that's the correct way to do this.
+>
+>---
+> arch/loongarch/configs/loongson3_defconfig |  1 -
+> arch/powerpc/configs/ppc64_defconfig       |  1 -
+> mm/Kconfig                                 | 13 +++++++++++--
+> 3 files changed, 11 insertions(+), 4 deletions(-)
+>
+>diff --git a/arch/loongarch/configs/loongson3_defconfig b/arch/loongarch/configs/loongson3_defconfig
+>index 33795e4a5bd63..89b66b6c6a1d5 100644
+>--- a/arch/loongarch/configs/loongson3_defconfig
+>+++ b/arch/loongarch/configs/loongson3_defconfig
+>@@ -85,7 +85,6 @@ CONFIG_ZPOOL=y
+> CONFIG_ZSWAP=y
+> CONFIG_ZSWAP_COMPRESSOR_DEFAULT_ZSTD=y
+> CONFIG_ZBUD=y
+>-CONFIG_Z3FOLD=y
+> CONFIG_ZSMALLOC=m
+> # CONFIG_COMPAT_BRK is not set
+> CONFIG_MEMORY_HOTPLUG=y
+>diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+>index 544a65fda77bc..d39284489aa26 100644
+>--- a/arch/powerpc/configs/ppc64_defconfig
+>+++ b/arch/powerpc/configs/ppc64_defconfig
+>@@ -81,7 +81,6 @@ CONFIG_MODULE_SIG_SHA512=y
+> CONFIG_PARTITION_ADVANCED=y
+> CONFIG_BINFMT_MISC=m
+> CONFIG_ZSWAP=y
+>-CONFIG_Z3FOLD=y
+> CONFIG_ZSMALLOC=y
+> # CONFIG_SLAB_MERGE_DEFAULT is not set
+> CONFIG_SLAB_FREELIST_RANDOM=y
+>diff --git a/mm/Kconfig b/mm/Kconfig
+>index 1902cfe4cc4f5..bc6cc97c08349 100644
+>--- a/mm/Kconfig
+>+++ b/mm/Kconfig
+>@@ -193,15 +193,24 @@ config ZBUD
+> 	  deterministic reclaim properties that make it preferable to a higher
+> 	  density approach when reclaim will be used.
+>
+>-config Z3FOLD
+>-	tristate "3:1 compression allocator (z3fold)"
+>+config Z3FOLD_DEPRECATED
+>+	bool "3:1 compression allocator (z3fold) (DEPRECATED)"
+> 	depends on ZSWAP
+> 	help
+>+	  Deprecated and scheduled for removal in a few cycles. If you have
+>+	  a good reason for using Z3FOLD rather than ZSMALLOC or ZBUD, please
+>+	  contact linux-mm@kvack.org and the zswap maintainers.
+>+
+> 	  A special purpose allocator for storing compressed pages.
+> 	  It is designed to store up to three compressed pages per physical
+> 	  page. It is a ZBUD derivative so the simplicity and determinism are
+> 	  still there.
+>
+>+config Z3FOLD
+>+	tristate
+>+	default y
+>+	depends on Z3FOLD_DEPRECATED
+>+
+> config ZSMALLOC
+> 	tristate
+> 	prompt "N:1 compression allocator (zsmalloc)" if ZSWAP
+>-- 
+>2.43.0.275.g3460e3d667-goog
+>
+>
