@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41934C3DA79
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 00:24:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76F04C47258
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 00:25:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K9fQ7lH6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Pc1vAcSK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TDVBC5hB5z3c5t
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 11:24:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TDVCV0jnQz3cSM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jan 2024 11:25:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K9fQ7lH6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Pc1vAcSK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDV9K4WYWz2xdX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 11:23:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TDVBY5982z3c4D
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2024 11:24:37 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 415E3CE18D0;
-	Tue, 16 Jan 2024 00:23:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46C94C43390;
-	Tue, 16 Jan 2024 00:23:30 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTP id 31496B80D3E;
+	Tue, 16 Jan 2024 00:24:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFDB2C433F1;
+	Tue, 16 Jan 2024 00:24:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705364611;
+	s=k20201202; t=1705364673;
 	bh=My/GFt1IQOVLc+gYzB6g6/sg0L7W9/aHk/58FNKbkTQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=K9fQ7lH6Tl3wjSjAR4E0Dwv/W14r6wDvLKF8wRjP3U31fOOfTjVQJyi5GRorqcUo0
-	 9wND1fKyjfsjSmVnPH90XjcFtXSISofRJHyqNOzRJhMQuytPZT7yY9xiaKiC/v1RtM
-	 lOIUm0Fhh+6+lnzebnkhCIOpVYT0DWpoPbjp+6jVe4F2PemwWKe/JsWIG53ncBREzc
-	 8kBQeNswbITkNB5A3ke5WKr5sGWwCFhY/fpy33ddM7EEjeK9UJMUzskmiTV85pr6Y6
-	 jDiwjeyI5lida3yiwSVPAVjxNoED1vWzc5QlO4uwq/KtB1mtwQK3j/kUvtvlj71RyE
-	 kypLEq7l4UWvg==
+	b=Pc1vAcSK3uuSU9L413MPd6ohMMRLL7hQCDJLItkUoffxTY0NXAl2uEVkcTsEw07Mc
+	 U3KiIuNZiPKFwaJS988IomDK2jEvX4LyPLqOYDrAUBG/2YfsNvTNB7cxrgynAFTU+X
+	 cRf4X6kQmlHTY1DTxyoeA2sjKCMupy4cSLCkhnS95r9c/1KcPxvnN8AXJ11WZFcmp9
+	 0pNjeQcym9wsrwyvH8gkFDGv7VkRVOWWLAbEO2pD5JBMyTpbZopDYZcb0GgJwldeeH
+	 8y5O+mY94ZY0pPyUU6C/VhJvIaZ9L5bnCKZw9HqPx5+KhOmZK8B7nTXha59QjAvxjO
+	 iH/lxrX4t8kIQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.7 08/19] crypto: p10-aes-gcm - Avoid -Wstringop-overflow warnings
-Date: Mon, 15 Jan 2024 19:22:44 -0500
-Message-ID: <20240116002311.214705-8-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 08/19] crypto: p10-aes-gcm - Avoid -Wstringop-overflow warnings
+Date: Mon, 15 Jan 2024 19:23:43 -0500
+Message-ID: <20240116002413.215163-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240116002311.214705-1-sashal@kernel.org>
-References: <20240116002311.214705-1-sashal@kernel.org>
+In-Reply-To: <20240116002413.215163-1-sashal@kernel.org>
+References: <20240116002413.215163-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.7
+X-stable-base: Linux 6.6.12
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
