@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACA9BC47DAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91E21C4707B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:29:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Co777sOq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMcy5SKP;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TG68D23Ktz3cC7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:28:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TG6990ZmWz3c8W
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:29:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Co777sOq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMcy5SKP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q13K9z3bfS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q2Tlyz3bqB
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2024 02:25:46 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 7A579612B8;
+	by ams.source.kernel.org (Postfix) with ESMTP id BC54AB818EE;
 	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 26C18C43394;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1EB8AC433F1;
 	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1705591542;
-	bh=wxONOmmGxUyWJ69hdYeGotk0425jRRxLbiWGsew7DL0=;
+	bh=w4PxFc/xAGdRj/8ioyLZhaAQGJf4tgw2WnyFI/gwxtM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Co777sOqdXYLbF4D/uUekrfeKydKPAYpWDwgdsbWcZrKxetnwr9Skr3xawuDApwE2
-	 q9YFhS/xB5rtfva4cnu6WgHDTOS7jZYJxSgP4LJZgxW5t651ioZVqKSy20KVuGDYrC
-	 e2XXAn5iNNr2M55Rq9+rKsXf+tPg03YeYRwHEl/QVJ0fiCjUq7Xs5ZNsLfdFEXn3z3
-	 nRBy0d5OHU37UlLPJAvNNdLZg1IiW3cajkdTP9mOyhpwdUO7dTRE5W3UPrym2deH7D
-	 equfvmap+1N0uOVFqSk1tMhP6ANCLEGJd0qjpFgjSGr+It6Zb0dAbLSwfGr9nQSe6V
-	 Ykgc0dU+6z0JA==
+	b=hMcy5SKPS7YCfFTJ/zALrx/WfPhrTcSjJxnjYu5dYuv2xw+sGpfl8xr9+mzDfWxZn
+	 HuOzzytvzwA1oT+oxCn4yO9VdKgrtAJxQjOXqNM3YsefYeFf6T16W57OKMJr4NyuSf
+	 t0KMPV367b6QJPHD3jj3j5fiJFRf279jB5ABJTSohRvFako3bktqRjxi/kayBafP17
+	 xy/1bfVLBWTXhAomPYf7rmt7784n8iPUcfC+//VETDFCxjREHV7EjTTRZ54SLqsEJH
+	 pdjgvIBx+UL4ZgxfGrpr8OYcj6emxg7LD3aSKQhYQg2dE4tDcKHdo9H8wlAhZ6uCp/
+	 u7mvqgGBg1boA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F1EEC47DB3;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04859C47DD3;
 	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Thu, 18 Jan 2024 09:25:14 -0600
-Subject: [PATCH RFC 3/5] powerpc/prom: Add CPU info to hardware description
- string later
+Date: Thu, 18 Jan 2024 09:25:13 -0600
+Subject: [PATCH RFC 2/5] dump_stack: Allow update of arch description
+ string at runtime
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20240118-update-dump-stack-arch-str-v1-3-5c0f98d017b5@linux.ibm.com>
+Message-Id:  <20240118-update-dump-stack-arch-str-v1-2-5c0f98d017b5@linux.ibm.com>
 References:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
 In-Reply-To:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, 
@@ -60,11 +60,11 @@ To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Sergey Senozhatsky <senozhatsky@chromium.org>, 
  Steven Rostedt <rostedt@goodmis.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=2684;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=5563;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=+lv6CvMHBPkIkCIUDp5N0D4IvkHpdstqrvDIpsi8Zi8=;
- b=PKyW2FF7XVFeI0IyJdhUDwL62a2rUyi5fyEX8m3gJZgmgZ3WcsbUSP/o9+T10oPnzRZVM8VvP
- 2hrKH0MUx0OBEC+PmXWCS8VJVFn0XBFnUMsWj6hQ3D8YcH7rBl4TGF2
+ bh=puwstkIXbA1WYmG0j5MptfrnsQZlAPEW8ptzDFaauAY=;
+ b=eC8LjJAwEVJmB7aywPXDM9Fgrox4pSdU02exjnufpGg8u+eRTjMukN4/TZYFFwXn5BJq5ohdO
+ C/iNekTxjZECl9oHRmoAfyZrnbvyLV4YTDMePIUJ7UKMcuSqHbW8e6v
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -87,77 +87,162 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-cur_cpu_spec->cpu_name is appended to ppc_hw_desc before cur_cpu_spec
-has taken on its final value. This is illustrated on pseries by
-comparing the CPU name as reported at boot ("POWER8E (raw)") to the
-contents of /proc/cpuinfo ("POWER8 (architected)"):
+The IBM PowerVM platform (targeted by powerpc/pseries) exposes the
+physical machine model and firmware version to partitions (guests),
+and this information is used to populate the arch description string,
+e.g.
 
-  $ dmesg | grep Hardware
-  Hardware name: IBM,8408-E8E POWER8E (raw) 0x4b0201 0xf000004 \
+  IBM,8408-E8E POWER8E (raw) 0x4b0201 0xf000004 \
     of:IBM,FW860.50 (SV860_146) hv:phyp pSeries
 
-  $ grep -m 1 ^cpu /proc/cpuinfo
-  cpu             : POWER8 (architected), altivec supported
+The platform supports live migration of partitions between different
+machine models and firmware versions, so the arch description string
+set at boot can become inaccurate, potentially misleading anyone who's
+analyzing stack traces produced after a migration.
 
-Some 44x models would appear to be affected as well; see
-identical_pvr_fixup().
+Introduce a RCU-guarded pointer to the current arch description
+string, initializing it to the static buffer populated at boot. Add to
+dump_stack_print_info() a RCU read-side critical section that accesses
+the buffer through this pointer. The majority of architectures which
+don't need to update the string after boot incur only an additional
+indirection.
 
-This results in incorrect CPU information in stack dumps --
-ppc_hw_desc is an input to dump_stack_set_arch_desc().
-
-Delay gathering the CPU name until after all potential calls to
-identify_cpu().
+As for platforms which do need that ability, they can use
+dump_stack_update_arch_desc(), which allocates and formats a new
+buffer, updates the pointer, and if appropriate frees the previous
+buffer.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-Fixes: bd649d40e0f2 ("powerpc: Add PVR & CPU name to hardware description")
 ---
- arch/powerpc/kernel/prom.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ include/linux/printk.h |  5 +++++
+ lib/dump_stack.c       | 54 ++++++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 55 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 0b5878c3125b..c12b4434336f 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -327,6 +327,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 					  void *data)
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 8ef499ab3c1e..6138ae019d2a 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -187,6 +187,7 @@ u32 log_buf_len_get(void);
+ void log_buf_vmcoreinfo_setup(void);
+ void __init setup_log_buf(int early);
+ __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
++__printf(1, 2) void dump_stack_update_arch_desc(const char *fmt, ...);
+ void dump_stack_print_info(const char *log_lvl);
+ void show_regs_print_info(const char *log_lvl);
+ extern asmlinkage void dump_stack_lvl(const char *log_lvl) __cold;
+@@ -253,6 +254,10 @@ static inline __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...)
  {
- 	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+	const __be32 *cpu_version = NULL;
- 	const __be32 *prop;
- 	const __be32 *intserv;
- 	int i, nthreads;
-@@ -398,7 +399,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
- 		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000) {
- 			identify_cpu(0, be32_to_cpup(prop));
--			seq_buf_printf(&ppc_hw_desc, "0x%04x ", be32_to_cpup(prop));
-+			cpu_version = prop;
- 		}
+ }
  
- 		check_cpu_feature_properties(node);
-@@ -409,6 +410,12 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	}
- 
- 	identical_pvr_fixup(node);
++static inline __printf(1, 2) void dump_stack_update_arch_desc(const char *fmt, ...)
++{
++}
 +
-+	// We can now add the CPU name & PVR to the hardware description
-+	seq_buf_printf(&ppc_hw_desc, "%s 0x%04lx ", cur_cpu_spec->cpu_name, mfspr(SPRN_PVR));
-+	if (cpu_version)
-+		seq_buf_printf(&ppc_hw_desc, "0x%04x ", be32_to_cpup(cpu_version));
+ static inline void dump_stack_print_info(const char *log_lvl)
+ {
+ }
+diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+index 1057f102f6f2..bd497e7797ee 100644
+--- a/lib/dump_stack.c
++++ b/lib/dump_stack.c
+@@ -8,15 +8,18 @@
+ #include <linux/buildid.h>
+ #include <linux/cache.h>
+ #include <linux/export.h>
++#include <linux/rcupdate.h>
+ #include <linux/sched.h>
+ #include <linux/sched/debug.h>
+ #include <linux/smp.h>
++#include <linux/spinlock.h>
+ #include <linux/atomic.h>
+ #include <linux/kexec.h>
+ #include <linux/utsname.h>
+ #include <linux/stop_machine.h>
+ 
+ static char dump_stack_arch_desc_str[128] __ro_after_init;
++static const char *dump_stack_arch_desc_ptr = dump_stack_arch_desc_str;
+ 
+ /**
+  * dump_stack_set_arch_desc - set arch-specific str to show with task dumps
+@@ -28,7 +31,7 @@ static char dump_stack_arch_desc_str[128] __ro_after_init;
+  * arch wants to make use of such an ID string, it should initialize this
+  * as soon as possible during boot.
+  */
+-void __init dump_stack_set_arch_desc(const char *fmt, ...)
++void dump_stack_set_arch_desc(const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+@@ -38,6 +41,45 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+ 	va_end(args);
+ }
+ 
++/**
++ * dump_stack_update_arch_desc() - Update the arch description string at runtime.
++ * @fmt: printf-style format string
++ * @...: arguments for the format string
++ *
++ * A runtime counterpart of dump_stack_set_arch_desc(). Arch code
++ * should use this when the arch description set at boot potentially
++ * has become inaccurate, such as after a guest migration.
++ *
++ * Context: May sleep.
++ */
++void dump_stack_update_arch_desc(const char *fmt, ...)
++{
++	static DEFINE_SPINLOCK(arch_desc_update_lock);
++	const char *old;
++	const char *new;
++	va_list args;
 +
- 	init_mmu_slb_size(node);
++	va_start(args, fmt);
++	new = kvasprintf(GFP_KERNEL, fmt, args);
++	va_end(args);
++
++	if (!new)
++		return;
++
++	spin_lock(&arch_desc_update_lock);
++	old = rcu_replace_pointer(dump_stack_arch_desc_ptr, new,
++				  lockdep_is_held(&arch_desc_update_lock));
++	spin_unlock(&arch_desc_update_lock);
++
++	/*
++	 * Avoid freeing the static buffer initialized during boot.
++	 */
++	if (old == dump_stack_arch_desc_str)
++		return;
++
++	kfree_rcu_mightsleep(old);
++}
++
+ #if IS_ENABLED(CONFIG_STACKTRACE_BUILD_ID)
+ #define BUILD_ID_FMT " %20phN"
+ #define BUILD_ID_VAL vmlinux_build_id
+@@ -55,6 +97,8 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+  */
+ void dump_stack_print_info(const char *log_lvl)
+ {
++	const char *arch_str;
++
+ 	printk("%sCPU: %d PID: %d Comm: %.20s %s%s %s %.*s" BUILD_ID_FMT "\n",
+ 	       log_lvl, raw_smp_processor_id(), current->pid, current->comm,
+ 	       kexec_crash_loaded() ? "Kdump: loaded " : "",
+@@ -63,9 +107,11 @@ void dump_stack_print_info(const char *log_lvl)
+ 	       (int)strcspn(init_utsname()->version, " "),
+ 	       init_utsname()->version, BUILD_ID_VAL);
  
- #ifdef CONFIG_PPC64
-@@ -846,9 +853,6 @@ void __init early_init_devtree(void *params)
+-	if (dump_stack_arch_desc_str[0] != '\0')
+-		printk("%sHardware name: %s\n",
+-		       log_lvl, dump_stack_arch_desc_str);
++	rcu_read_lock();
++	arch_str = rcu_dereference(dump_stack_arch_desc_ptr);
++	if (arch_str[0] != '\0')
++		printk("%sHardware name: %s\n", log_lvl, arch_str);
++	rcu_read_unlock();
  
- 	dt_cpu_ftrs_scan();
- 
--	// We can now add the CPU name & PVR to the hardware description
--	seq_buf_printf(&ppc_hw_desc, "%s 0x%04lx ", cur_cpu_spec->cpu_name, mfspr(SPRN_PVR));
--
- 	/* Retrieve CPU related informations from the flat tree
- 	 * (altivec support, boot CPU ID, ...)
- 	 */
+ 	print_worker_info(log_lvl, current);
+ 	print_stop_info(log_lvl, current);
 
 -- 
 2.43.0
