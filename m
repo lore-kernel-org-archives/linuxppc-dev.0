@@ -4,79 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EE07C47DB3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 18:19:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88111C47DAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 21:13:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iy/szvMp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FqnT8Vdu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TG9xf0jHgz3brC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 05:19:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TGFpT616Qz3cMX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 08:13:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iy/szvMp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FqnT8Vdu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG9wf41Nqz2xX4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2024 05:18:26 +1100 (AEDT)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40II8JXq021800;
-	Thu, 18 Jan 2024 18:18:20 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TFwJ85XQPz30GC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2024 19:04:24 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40I7vMeD011578;
+	Thu, 18 Jan 2024 08:04:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=aIcKKTU+QirKqOun0MRgYF/3tJJGnvawvYpmF0cYKMY=;
- b=iy/szvMpeVVyN2CUDbIgRiRbbmeuzuxTaHmsGe6pY1Ag3+dlf/bdDHXf++X/BvbPNNBK
- 05IhtSpnOAQdBlC4vd2gCaAg22Cd6knO5E0q5jtj3I4q3U7BI5GTbVtDFmF7rlbjy18e
- epMy8EbbyxzNM1d8VVveFDgf5TcHLeu+ag70mo1s/yPF8ouDCfwICBs1V9XVdhQBH9cd
- gRE+rdSXaYOyKzygpDwTw8qSVUBUbPSW/c96mrNN1GQPfdjFJc7gvpTJaTE6MI58sL7e
- 4qGA5IYpCSXlhUUodxRNrhIDx9wgovPSG1RSlig4dwtgW7SBEJOZScDDrjzzNNSQTRg2 cw== 
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vq90e07jn-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=he2i3jOgA8ugAT3gEAoGWdurDGiSbKEL1Suh3vTdnWQ=;
+ b=FqnT8Vdu+4klNVAUZNOFJmePrzOyFXCDdMuhtEEUFUIQMhwAzmZSuaztVMjfuzWcGrS+
+ wmepl0Qk64klA1q/8MSAWI/LuFnKEpQsXhSWtD3fiYsf9pTGhnmE92y4DHkHfdAMDKfU
+ o+WxFX4KVKYRWVO2VR6pmmurMwIM6U8V7AONGVztE8cSYr8M2j87B8UUTM+pfagTpYkd
+ P3M6VsZtiFLdZVxIuDn3FpHKye4a0CJpZf8HnmQxtfbAko/z468v1jPdM1ZfcO6DOfBd
+ KbLrGtSKuwNw/FHp1r7+v8Dx8bv4SkgdXqwGNMT3dv84t2UFPJOtc2uDGkqJ3pGVB/Rt fw== 
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vq02206hh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Jan 2024 18:18:19 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40IH9nOn000630;
-	Thu, 18 Jan 2024 18:18:18 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3vm4ut54j6-1
+	Thu, 18 Jan 2024 08:04:08 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40I74lOb011009;
+	Thu, 18 Jan 2024 08:04:07 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3vm57ytc11-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Jan 2024 18:18:18 +0000
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40IIIHnX14287610
+	Thu, 18 Jan 2024 08:04:07 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40I845W424707822
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 18 Jan 2024 18:18:18 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C4E0B58052;
-	Thu, 18 Jan 2024 18:18:17 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9F87658045;
-	Thu, 18 Jan 2024 18:18:17 +0000 (GMT)
-Received: from localhost (unknown [9.61.184.220])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 18 Jan 2024 18:18:17 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Gaurav Batra <gbatra@linux.ibm.com>, mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc/pseries/iommu: DLPAR ADD of pci device doesn't
- completely initialize pci_controller structure
-In-Reply-To: <20240110225351.47153-1-gbatra@linux.ibm.com>
-References: <20240110225351.47153-1-gbatra@linux.ibm.com>
-Date: Thu, 18 Jan 2024 12:18:17 -0600
-Message-ID: <87le8ma4k6.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+	Thu, 18 Jan 2024 08:04:05 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 55C0120040;
+	Thu, 18 Jan 2024 08:04:05 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F279320043;
+	Thu, 18 Jan 2024 08:04:02 +0000 (GMT)
+Received: from li-c1fdab4c-355a-11b2-a85c-ef242fe9efb4.in.ibm.com (unknown [9.109.201.126])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 18 Jan 2024 08:04:02 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
+        linux-xfs@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 1/3] sched: remove duplicate ifdefs
+Date: Thu, 18 Jan 2024 13:33:24 +0530
+Message-Id: <20240118080326.13137-2-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20240118080326.13137-1-sshegde@linux.ibm.com>
+References: <20240118080326.13137-1-sshegde@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: siysqofmWN1bLwaCfeOZwK2C3eO-74BB
-X-Proofpoint-ORIG-GUID: siysqofmWN1bLwaCfeOZwK2C3eO-74BB
+X-Proofpoint-ORIG-GUID: 3PWccwYfkYM-DHA16-RytUKNot96V0J9
+X-Proofpoint-GUID: 3PWccwYfkYM-DHA16-RytUKNot96V0J9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-18_08,2024-01-17_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=963 clxscore=1015
- priorityscore=1501 suspectscore=0 phishscore=0 bulkscore=0 impostorscore=0
- spamscore=0 adultscore=0 malwarescore=0 lowpriorityscore=0 mlxscore=0
+ definitions=2024-01-18_04,2024-01-17_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 suspectscore=0
+ clxscore=1015 bulkscore=0 priorityscore=1501 adultscore=0 mlxlogscore=961
+ impostorscore=0 phishscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
- definitions=main-2401180133
+ definitions=main-2401180056
+X-Mailman-Approved-At: Fri, 19 Jan 2024 08:12:35 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,96 +91,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: peterz@infradead.org, sshegde@linux.ibm.com, mingo@kernel.org, anton@tuxera.com, chandan.babu@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Gaurav,
+when a ifdef is used in the below manner, second one could be considered as
+duplicate.
 
-A couple minor comments below.
+ifdef DEFINE_A
+...code block...
+ifdef DEFINE_A
+...code block...
+endif
+...code block...
+endif
 
-Gaurav Batra <gbatra@linux.ibm.com> writes:
-> diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-> index ce2b1b5eebdd..55a2ba36e9c4 100644
-> --- a/arch/powerpc/include/asm/ppc-pci.h
-> +++ b/arch/powerpc/include/asm/ppc-pci.h
-> @@ -29,6 +29,9 @@ void *pci_traverse_device_nodes(struct device_node *start,
->  				void *(*fn)(struct device_node *, void *),
->  				void *data);
->  extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
-> +extern void pci_register_device_dynamic(struct pci_controller *phb);
-> +extern void pci_unregister_device_dynamic(struct pci_controller *phb);
-> +
->  
->  /* From rtas_pci.h */
->  extern void init_pci_config_tokens (void);
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index ebe259bdd462..342739fe74c4 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -1388,6 +1388,21 @@ static const struct attribute_group *spapr_tce_iommu_groups[] = {
->  	NULL,
->  };
->  
-> +void pci_register_device_dynamic(struct pci_controller *phb)
-> +{
-> +	iommu_device_sysfs_add(&phb->iommu, phb->parent,
-> +				spapr_tce_iommu_groups, "iommu-phb%04x",
-> +				phb->global_number);
-> +	iommu_device_register(&phb->iommu, &spapr_tce_iommu_ops,
-> +				phb->parent);
-> +}
-> +
-> +void pci_unregister_device_dynamic(struct pci_controller *phb)
-> +{
-> +	iommu_device_unregister(&phb->iommu);
-> +	iommu_device_sysfs_remove(&phb->iommu);
-> +}
-> +
->  /*
->   * This registers IOMMU devices of PHBs. This needs to happen
->   * after core_initcall(iommu_init) + postcore_initcall(pci_driver_init) and
-> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> index 4ba824568119..ec70ca435b7e 100644
-> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> @@ -35,6 +35,8 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
->  
->  	pseries_msi_allocate_domains(phb);
->  
-> +	pci_register_device_dynamic(phb);
-> +
->  	/* Create EEH devices for the PHB */
->  	eeh_phb_pe_create(phb);
->  
-> @@ -76,6 +78,8 @@ int remove_phb_dynamic(struct pci_controller *phb)
->  		}
->  	}
->  
-> +	pci_unregister_device_dynamic(phb);
-> +
->  	pseries_msi_free_domains(phb);
->  
->  	/* Keep a reference so phb isn't freed yet */
-> --
+In the scheduler code, there are two places where above pattern can be
+observed. Hence second ifdef is a duplicate and not needed.
+Plus a minor comment update to reflect the else case.
 
-The change overall looks correct to me, but:
+No functional change is intended here. It only aims to improve code
+readability.
 
-1. I don't think the new functions should use the "pci_" prefix; that
-   should probably be reserved for code in the core PCI subsystem. Some
-   existing code in arch/powerpc/kernel/iommu.c uses "ppc_iommu_" and
-   "spapr_tce_", maybe one of those would work instead?
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+ kernel/sched/core.c | 4 +---
+ kernel/sched/fair.c | 2 --
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
-2. Your pci_register_device_dynamic() duplicates code from
-   spapr_tce_setup_phb_iommus_initcall():
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 038eeaf76d2d..1bfb186fd67f 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -1792,7 +1792,6 @@ static void cpu_util_update_eff(struct cgroup_subsys_state *css);
+ #endif
 
-        list_for_each_entry(hose, &hose_list, list_node) {
-                iommu_device_sysfs_add(&hose->iommu, hose->parent,
-                                       spapr_tce_iommu_groups, "iommu-phb%04x",
-                                       hose->global_number);
-                iommu_device_register(&hose->iommu, &spapr_tce_iommu_ops,
-                                      hose->parent);
-        }
+ #ifdef CONFIG_SYSCTL
+-#ifdef CONFIG_UCLAMP_TASK
+ #ifdef CONFIG_UCLAMP_TASK_GROUP
+ static void uclamp_update_root_tg(void)
+ {
+@@ -1898,7 +1897,6 @@ static int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
+ 	return result;
+ }
+ #endif
+-#endif
 
-  Can the loop body be factored into a common function that can be
-  used in both paths?
+ static int uclamp_validate(struct task_struct *p,
+ 			   const struct sched_attr *attr)
+@@ -2065,7 +2063,7 @@ static void __init init_uclamp(void)
+ 	}
+ }
+
+-#else /* CONFIG_UCLAMP_TASK */
++#else /* !CONFIG_UCLAMP_TASK */
+ static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
+ static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
+ static inline int uclamp_validate(struct task_struct *p,
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index f2bb83675e4a..6158a6752c25 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -10166,10 +10166,8 @@ static int idle_cpu_without(int cpu, struct task_struct *p)
+ 	 * be computed and tested before calling idle_cpu_without().
+ 	 */
+
+-#ifdef CONFIG_SMP
+ 	if (rq->ttwu_pending)
+ 		return 0;
+-#endif
+
+ 	return 1;
+ }
+--
+2.39.3
+
