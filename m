@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6826CC4707B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:29:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42D37C4707B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:30:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pDBdwisn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EikAJD1G;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TG6B406LQz3br3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:29:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TG6C06P7pz3cWZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:30:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pDBdwisn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EikAJD1G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q556Fz3bfS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q44NWz3bqx
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2024 02:25:46 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 7A38FCE1FE9;
-	Thu, 18 Jan 2024 15:25:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 38468C433A6;
+	by ams.source.kernel.org (Postfix) with ESMTP id AAA83B818E9;
+	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0DB1EC433C7;
 	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1705591542;
-	bh=loaLhqGDhJWXtcsUXFBqm/6Nnc30eNcrN719EvZDEF8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=pDBdwisnWTJWdSizVqn8gGCbn7LTVoeGfXEaWx+rYB2ELXojCW/UhSdoM03OITk2N
-	 V5leDhhgvX3r5nMaAs2QQauxCFIth/tKExfEEJZ4ZmctTHaHAXVlZg8oI65z7zJuCJ
-	 by7Y7PFSrbOKb0zeZqZScClsxFW4Vf7ralolLy8rQfhhhcoJ/kQetkpVKFbmTJcHSA
-	 rv9zq96ICpHm8Qz7iGcHXGRa0xEf9DwxYjRwLsNLVT7ipcFJrqfgVcGVB/Tdu+D33m
-	 voFfx8sUvZf6mveAbYOsrKP5I2io2jVZ+yClR8IvLJHqjJ74pYY5NgHCiAmMeUFfiX
-	 zgqHewOd7+SFA==
+	bh=ZrNZI/+KtaqDAeKBFPjQTAb311LBOoljbtl1LqlVqgU=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=EikAJD1G0pb3jVcwCRG+fB0VgJ6aECiR0DbO54vwJS46/PkKZ7ypAmiMAywBa+7JN
+	 C1OngJTsht/5e51HRbViv6HUrlVtjUPRv0J3Qk7C2KjRCLiFQz0JvjuGslWHyND9md
+	 f0XkLLJ4PU0msMmmK7luaFGXqzi9hMuWLJp3wG8GINIkNCqsC+XfxzRa/E9Q94Cyff
+	 gfZdmoS1nRFjp1cnjYAQndurEZBfwEKhUM9cdi+42IQxFdV6CMds4/EpKOcop3BAPf
+	 3UaFtN62BBsJQ2ySVDbcgHKrVeyIn30mRyuKzVlplAmvtbTAq8M2jafdjw0NKeMuEo
+	 eXCfOwb6+Tr4A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2532CC47DD6;
-	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0019C4707B;
+	Thu, 18 Jan 2024 15:25:41 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Thu, 18 Jan 2024 09:25:16 -0600
-Subject: [PATCH RFC 5/5] powerpc/pseries: Update hardware description
- string after migration
+Subject: [PATCH RFC 0/5] dump_stack: Allow runtime updates of the hardware
+ description
+Date: Thu, 18 Jan 2024 09:25:11 -0600
+Message-Id:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20240118-update-dump-stack-arch-str-v1-5-5c0f98d017b5@linux.ibm.com>
-References:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
-In-Reply-To:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
+X-B4-Tracking: v=1; b=H4sIANdCqWUC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIxMDQ0ND3dKClMSSVN2U0twC3eKSxORs3cSi5Awgs0jXPM3AwsIgxcg4zdh
+ ACWhAQVFqWmYF2PBopSA3Z6XY2loA6bwz0HEAAAA=
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, 
  "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, 
  Brian King <brking@linux.ibm.com>, 
@@ -60,11 +61,11 @@ To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Sergey Senozhatsky <senozhatsky@chromium.org>, 
  Steven Rostedt <rostedt@goodmis.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=4664;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=2778;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=yLmHE9ThZlzMbb6aloXvN4gTgnWJfDyfG66G809WhB4=;
- b=Q+37SjK8zZS4Tun8c+TodJT0/xdTHbgWsnBNDyyUECvL05LqqXalJJi38TeuCBXrRQu3g/dT8
- C/f58x/aq0iDCDQFi4PKjSRId3cA59UKDsExSucwkOSohtWaW/rYYO6
+ bh=ZrNZI/+KtaqDAeKBFPjQTAb311LBOoljbtl1LqlVqgU=;
+ b=vrcF1cNPIm2O4+bieSkcw1uoqBBdSqf4JkN+kVqZt0fSLkeqYShpMyznUhC+rjw1sJEeTCg3r
+ HvE7JadRlXGBBcZSgBWO/h+xHLaE9TtJfvuE3gqdy++muQ22sED6j1/
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -85,141 +86,66 @@ Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+When the kernel emits a stack trace, typically it includes a hardware
+description string, e.g.
 
-Introduce code that rebuilds the short hardware description printed by
-stack traces. This sort of duplicates some code from boot (prom.c
-mainly), but that code populates the string as early as possible using
-APIs that aren't available later. So sharing all the code between the
-boot and runtime versions isn't feasible.
+  Kernel panic - not syncing: sysrq triggered crash
+  CPU: 6 PID: 46433 Comm: bash Tainted: G        W          6.7.0-rc2+ #83
+> Hardware name: IBM,9040-MR9 POWER9 (architected) 0x4e2102 0xf000005 of:IBM,FW950.01 (VM950_047) hv:phyp pSeries
+  Call Trace:
+   dump_stack_lvl+0xc4/0x170 (unreliable)
+   panic+0x39c/0x584
+   sysrq_handle_crash+0x80/0xe0
+   __handle_sysrq+0x208/0x4bc
+   [...]
 
-To prevent "drift" between the boot and runtime versions, rebuild the
-description using the new runtime APIs in a late initcall and warn if
-it doesn't match the one built earlier. The initcall also invokes
-dump_stack_update_arch_desc() twice to fully exercise it before any
-partition migration occurs. These checks could be dropped or made
-configurable later.
+This string is a statically allocated buffer populated during boot by
+arch code calling dump_stack_set_arch_desc(). For most platforms this
+is sufficient.
 
-Call pseries_update_hw_description() immediately after updating the
-device tree when resuming from a partition migration.
+But the string may become inaccurate on the IBM PowerVM platform due
+to live migration between machine models and firmware versions. Stack
+dumps emitted after a migration reflect the machine on which the
+kernel booted, not necessarily the machine on which it is currently
+running. This is potentially confusing for anyone investigating
+kernel issues on the platform.
+
+To address this, this series introduces a new function that safely
+updates the hardware description string and updates the powerpc
+pseries platform code to call it after a migration. The series also
+includes changes addressing minor latent issues identified during the
+implementation.
+
+Platforms which do not need the new functionality remain unchanged.
+
+For this initial version at least, the powerpc/pseries part includes
+some "self-test" code that 1. verifies that reconstructing the
+hardware description string late in boot matches the one that was
+built earlier, and 2. fully exercises the update path before any
+migrations occur. This could be dropped or made configurable in the
+future.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/mobility.c |  5 +++
+Nathan Lynch (5):
+      dump_stack: Make arch description buffer __ro_after_init
+      dump_stack: Allow update of arch description string at runtime
+      powerpc/prom: Add CPU info to hardware description string later
+      powerpc/pseries: Prepare pseries_add_hw_description() for runtime use
+      powerpc/pseries: Update hardware description string after migration
+
+ arch/powerpc/kernel/prom.c                | 12 +++--
+ arch/powerpc/platforms/pseries/mobility.c |  5 ++
  arch/powerpc/platforms/pseries/pseries.h  |  1 +
- arch/powerpc/platforms/pseries/setup.c    | 70 +++++++++++++++++++++++++++++++
- 3 files changed, 76 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c    | 80 +++++++++++++++++++++++++++++--
+ include/linux/printk.h                    |  5 ++
+ lib/dump_stack.c                          | 57 ++++++++++++++++++++--
+ 6 files changed, 146 insertions(+), 14 deletions(-)
+---
+base-commit: 44a1aad2fe6c10bfe0589d8047057b10a4c18a19
+change-id: 20240111-update-dump-stack-arch-str-7f0880d23f30
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 1798f0f14d58..ff573cb5aee5 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -378,6 +378,11 @@ void post_mobility_fixup(void)
- 	rc = pseries_devicetree_update(MIGRATION_SCOPE);
- 	if (rc)
- 		pr_err("device tree update failed: %d\n", rc);
-+	/*
-+	 * Rebuild the hardware description printed in stack traces
-+	 * using the updated device tree.
-+	 */
-+	pseries_update_hw_description();
- 
- 	cacheinfo_rebuild();
- 
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index bba4ad192b0f..810a64fccc7e 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -56,6 +56,7 @@ extern int dlpar_acquire_drc(u32 drc_index);
- extern int dlpar_release_drc(u32 drc_index);
- extern int dlpar_unisolate_drc(u32 drc_index);
- extern void post_mobility_fixup(void);
-+void pseries_update_hw_description(void);
- 
- void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
- int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 9ae1951f8312..72177411026e 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -1034,6 +1034,76 @@ static void pseries_add_hw_description(struct seq_buf *sb)
- 		seq_buf_printf(sb, "hv:phyp ");
- }
- 
-+static void pseries_rebuild_hw_desc(struct seq_buf *sb)
-+{
-+	struct device_node *cpudn, *root;
-+	const char *model;
-+	u32 cpu_version;
-+
-+	seq_buf_clear(sb);
-+
-+	root = of_find_node_by_path("/");
-+	if (!of_property_read_string(root, "model", &model))
-+		seq_buf_printf(sb, "%s ", model);
-+	of_node_put(root);
-+
-+	seq_buf_printf(sb, "%s 0x%04lx ", cur_cpu_spec->cpu_name, mfspr(SPRN_PVR));
-+
-+	cpudn = of_get_next_cpu_node(NULL);
-+	if (!of_property_read_u32(cpudn, "cpu-version", &cpu_version)) {
-+		if ((cpu_version & 0xff000000) == 0x0f000000)
-+			seq_buf_printf(sb, "0x%04x ", cpu_version);
-+	}
-+	of_node_put(cpudn);
-+
-+	pseries_add_hw_description(sb);
-+
-+	seq_buf_puts(sb, ppc_md.name);
-+}
-+
-+void pseries_update_hw_description(void)
-+{
-+	struct seq_buf sb = { // todo: use DECLARE_SEQ_BUF() once it's fixed
-+		.buffer = (char[128]) { 0 },
-+		.size = sizeof(char[128]),
-+	};
-+
-+	pseries_rebuild_hw_desc(&sb);
-+	dump_stack_update_arch_desc("%s", seq_buf_str(&sb));
-+}
-+
-+static int __init pseries_test_update_hw_desc(void)
-+{
-+	struct seq_buf sb = { // todo: use DECLARE_SEQ_BUF() once it's fixed
-+		.buffer = (char[128]) { 0 },
-+		.size = sizeof(char[128]),
-+	};
-+	bool mismatch;
-+
-+	/*
-+	 * Ensure the rebuilt description matches the one built during
-+	 * boot.
-+	 */
-+	pseries_rebuild_hw_desc(&sb);
-+
-+	mismatch = strcmp(seq_buf_str(&ppc_hw_desc), seq_buf_str(&sb));
-+	if (WARN(mismatch, "rebuilt hardware description string mismatch")) {
-+		pr_err("  boot:    '%s'\n", ppc_hw_desc.buffer);
-+		pr_err("  runtime: '%s'\n", sb.buffer);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Invoke dump_stack_update_arch_desc() *twice* to ensure it
-+	 * exercises the free path.
-+	 */
-+	dump_stack_update_arch_desc("%s", sb.buffer);
-+	dump_stack_update_arch_desc("%s", sb.buffer);
-+
-+	return 0;
-+}
-+late_initcall(pseries_test_update_hw_desc);
-+
- /*
-  * Early initialization.  Relocation is on but do not reference unbolted pages
-  */
-
+Best regards,
 -- 
-2.43.0
+Nathan Lynch <nathanl@linux.ibm.com>
 
