@@ -4,72 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42D37C4707B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:30:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC0FFC47DAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 16:55:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EikAJD1G;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GjTQmwO3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TG6C06P7pz3cWZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:30:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TG8561r6vz3c0n
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 03:55:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EikAJD1G;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GjTQmwO3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q44NWz3bqx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2024 02:25:46 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id AAA83B818E9;
-	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 0DB1EC433C7;
-	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705591542;
-	bh=ZrNZI/+KtaqDAeKBFPjQTAb311LBOoljbtl1LqlVqgU=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=EikAJD1G0pb3jVcwCRG+fB0VgJ6aECiR0DbO54vwJS46/PkKZ7ypAmiMAywBa+7JN
-	 C1OngJTsht/5e51HRbViv6HUrlVtjUPRv0J3Qk7C2KjRCLiFQz0JvjuGslWHyND9md
-	 f0XkLLJ4PU0msMmmK7luaFGXqzi9hMuWLJp3wG8GINIkNCqsC+XfxzRa/E9Q94Cyff
-	 gfZdmoS1nRFjp1cnjYAQndurEZBfwEKhUM9cdi+42IQxFdV6CMds4/EpKOcop3BAPf
-	 3UaFtN62BBsJQ2ySVDbcgHKrVeyIn30mRyuKzVlplAmvtbTAq8M2jafdjw0NKeMuEo
-	 eXCfOwb6+Tr4A==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0019C4707B;
-	Thu, 18 Jan 2024 15:25:41 +0000 (UTC)
-From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Subject: [PATCH RFC 0/5] dump_stack: Allow runtime updates of the hardware
- description
-Date: Thu, 18 Jan 2024 09:25:11 -0600
-Message-Id:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG8473M6cz2x9T
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2024 03:54:47 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40IG2ftR030193;
+	Thu, 18 Jan 2024 16:54:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=prRDCbVOhbKHGi5TCgmxx9era6YL99O0cTuS3rgHrLg=;
+ b=GjTQmwO373ejfR/uWbv1Zi68o7tyn7TauY4K8dxo+rOxG8gHbvU0zHewTm8WGJEgboRk
+ Bi5tfY87BJWnBub/CrcjbXUBClbtlj6e7PzwLFCOIWmwtmneF8mj3Zy5zle/EOPoRgC+
+ dhFMdUk6xD7ZyUs/YXK1hjlE7SjNvRGpVwQA2zw2ye/jG+8h7Kccrenon5iadnsDmvbk
+ OsmnSnCQGd64c9zWIMFsYcLBCT8u3bkhhAEY3ocvG6CisvmsAeC9hYPi15oUoW9LjxI7
+ wTAD88Lve5MSHsO4aATnXB4ikOo0+ixul8HBWht/UUUiAJRESYGoINkk6a7XxZ8TYtH/ 4w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vq75q9vyk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Jan 2024 16:54:37 +0000
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 40IGkskN016450;
+	Thu, 18 Jan 2024 16:54:36 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vq75q9vwy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Jan 2024 16:54:36 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40IE7dSq006508;
+	Thu, 18 Jan 2024 16:54:35 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3vm7j240a8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Jan 2024 16:54:35 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40IGsYlq10683008
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 18 Jan 2024 16:54:34 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2633B5805A;
+	Thu, 18 Jan 2024 16:54:34 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0F13B58056;
+	Thu, 18 Jan 2024 16:54:34 +0000 (GMT)
+Received: from localhost (unknown [9.61.184.220])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 18 Jan 2024 16:54:33 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Haren Myneni <haren@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v6] powerpc/pseries/vas: Use usleep_range() to support
+ HCALL delay
+In-Reply-To: <20240116055910.421605-1-haren@linux.ibm.com>
+References: <20240116055910.421605-1-haren@linux.ibm.com>
+Date: Thu, 18 Jan 2024 10:54:33 -0600
+Message-ID: <87r0iea8fq.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIANdCqWUC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxMDQ0ND3dKClMSSVN2U0twC3eKSxORs3cSi5Awgs0jXPM3AwsIgxcg4zdh
- ACWhAQVFqWmYF2PBopSA3Z6XY2loA6bwz0HEAAAA=
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, 
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, 
- Brian King <brking@linux.ibm.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- John Ogness <john.ogness@linutronix.de>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Petr Mladek <pmladek@suse.com>, 
- Sergey Senozhatsky <senozhatsky@chromium.org>, 
- Steven Rostedt <rostedt@goodmis.org>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=2778;
- i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=ZrNZI/+KtaqDAeKBFPjQTAb311LBOoljbtl1LqlVqgU=;
- b=vrcF1cNPIm2O4+bieSkcw1uoqBBdSqf4JkN+kVqZt0fSLkeqYShpMyznUhC+rjw1sJEeTCg3r
- HvE7JadRlXGBBcZSgBWO/h+xHLaE9TtJfvuE3gqdy++muQ22sED6j1/
-X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
- pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
-X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
-X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: zK5jLBrkXTCOZ7a7xnbS3nI6fxGFLFgH
+X-Proofpoint-ORIG-GUID: ZtM2IjN-6ea-E8TaOxMV8IcPor1lQ6eY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-01-18_08,2024-01-17_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=828
+ priorityscore=1501 spamscore=0 malwarescore=0 impostorscore=0
+ lowpriorityscore=0 mlxscore=0 adultscore=0 phishscore=0 bulkscore=0
+ clxscore=1011 suspectscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2311290000 definitions=main-2401180123
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,71 +95,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: nathanl@linux.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: aneesh.kumar@kernel.org, haren@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the kernel emits a stack trace, typically it includes a hardware
-description string, e.g.
+Haren Myneni <haren@linux.ibm.com> writes:
+> VAS allocate, modify and deallocate HCALLs returns
+> H_LONG_BUSY_ORDER_1_MSEC or H_LONG_BUSY_ORDER_10_MSEC for busy
+> delay and expects OS to reissue HCALL after that delay. But using
+> msleep() will often sleep at least 20 msecs even though the
+> hypervisor suggests OS reissue these HCALLs after 1 or 10msecs.
+>
+> The open and close VAS window functions hold mutex and then issue
+> these HCALLs. So these operations can take longer than the
+> necessary when multiple threads issue open or close window APIs
+> simultaneously, especially might affect the performance in the
+> case of repeat open/close APIs for each compression request.
+>
+> Multiple tasks can open / close VAS windows at the same time
+> which depends on the available VAS credits. For example, 240
+> cores system provides 4800 VAS credits. It means 4800 tasks can
+> execute open VAS windows HCALLs with the mutex. Since each
+> msleep() will often sleep more than 20 msecs, some tasks are
+> waiting more than 120 secs to acquire mutex. It can cause hung
+> traces for these tasks in dmesg due to mutex contention around
+> open/close HCALLs.
+>
+> Instead of msleep(), use usleep_range() to ensure sleep with
+> the expected value before issuing HCALL again. So since each
+> task sleep 10 msecs maximum, this patch allow more tasks can
+> issue open/close VAS calls without any hung traces in the
+> dmesg.
+>
+> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+> Suggested-by: Nathan Lynch <nathanl@linux.ibm.com>
 
-  Kernel panic - not syncing: sysrq triggered crash
-  CPU: 6 PID: 46433 Comm: bash Tainted: G        W          6.7.0-rc2+ #83
-> Hardware name: IBM,9040-MR9 POWER9 (architected) 0x4e2102 0xf000005 of:IBM,FW950.01 (VM950_047) hv:phyp pSeries
-  Call Trace:
-   dump_stack_lvl+0xc4/0x170 (unreliable)
-   panic+0x39c/0x584
-   sysrq_handle_crash+0x80/0xe0
-   __handle_sysrq+0x208/0x4bc
-   [...]
+Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
 
-This string is a statically allocated buffer populated during boot by
-arch code calling dump_stack_set_arch_desc(). For most platforms this
-is sufficient.
-
-But the string may become inaccurate on the IBM PowerVM platform due
-to live migration between machine models and firmware versions. Stack
-dumps emitted after a migration reflect the machine on which the
-kernel booted, not necessarily the machine on which it is currently
-running. This is potentially confusing for anyone investigating
-kernel issues on the platform.
-
-To address this, this series introduces a new function that safely
-updates the hardware description string and updates the powerpc
-pseries platform code to call it after a migration. The series also
-includes changes addressing minor latent issues identified during the
-implementation.
-
-Platforms which do not need the new functionality remain unchanged.
-
-For this initial version at least, the powerpc/pseries part includes
-some "self-test" code that 1. verifies that reconstructing the
-hardware description string late in boot matches the one that was
-built earlier, and 2. fully exercises the update path before any
-migrations occur. This could be dropped or made configurable in the
-future.
-
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
-Nathan Lynch (5):
-      dump_stack: Make arch description buffer __ro_after_init
-      dump_stack: Allow update of arch description string at runtime
-      powerpc/prom: Add CPU info to hardware description string later
-      powerpc/pseries: Prepare pseries_add_hw_description() for runtime use
-      powerpc/pseries: Update hardware description string after migration
-
- arch/powerpc/kernel/prom.c                | 12 +++--
- arch/powerpc/platforms/pseries/mobility.c |  5 ++
- arch/powerpc/platforms/pseries/pseries.h  |  1 +
- arch/powerpc/platforms/pseries/setup.c    | 80 +++++++++++++++++++++++++++++--
- include/linux/printk.h                    |  5 ++
- lib/dump_stack.c                          | 57 ++++++++++++++++++++--
- 6 files changed, 146 insertions(+), 14 deletions(-)
----
-base-commit: 44a1aad2fe6c10bfe0589d8047057b10a4c18a19
-change-id: 20240111-update-dump-stack-arch-str-7f0880d23f30
-
-Best regards,
--- 
-Nathan Lynch <nathanl@linux.ibm.com>
-
+IMO this can be converted to a more generic helper in the future, should
+one emerge.
