@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91E21C4707B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6826CC4707B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jan 2024 15:29:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMcy5SKP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pDBdwisn;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TG6990ZmWz3c8W
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:29:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TG6B406LQz3br3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 02:29:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMcy5SKP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pDBdwisn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q2Tlyz3bqB
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TG65Q556Fz3bfS
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2024 02:25:46 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by ams.source.kernel.org (Postfix) with ESMTP id BC54AB818EE;
-	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 1EB8AC433F1;
+	by sin.source.kernel.org (Postfix) with ESMTP id 7A38FCE1FE9;
+	Thu, 18 Jan 2024 15:25:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 38468C433A6;
 	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1705591542;
-	bh=w4PxFc/xAGdRj/8ioyLZhaAQGJf4tgw2WnyFI/gwxtM=;
+	bh=loaLhqGDhJWXtcsUXFBqm/6Nnc30eNcrN719EvZDEF8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=hMcy5SKPS7YCfFTJ/zALrx/WfPhrTcSjJxnjYu5dYuv2xw+sGpfl8xr9+mzDfWxZn
-	 HuOzzytvzwA1oT+oxCn4yO9VdKgrtAJxQjOXqNM3YsefYeFf6T16W57OKMJr4NyuSf
-	 t0KMPV367b6QJPHD3jj3j5fiJFRf279jB5ABJTSohRvFako3bktqRjxi/kayBafP17
-	 xy/1bfVLBWTXhAomPYf7rmt7784n8iPUcfC+//VETDFCxjREHV7EjTTRZ54SLqsEJH
-	 pdjgvIBx+UL4ZgxfGrpr8OYcj6emxg7LD3aSKQhYQg2dE4tDcKHdo9H8wlAhZ6uCp/
-	 u7mvqgGBg1boA==
+	b=pDBdwisnWTJWdSizVqn8gGCbn7LTVoeGfXEaWx+rYB2ELXojCW/UhSdoM03OITk2N
+	 V5leDhhgvX3r5nMaAs2QQauxCFIth/tKExfEEJZ4ZmctTHaHAXVlZg8oI65z7zJuCJ
+	 by7Y7PFSrbOKb0zeZqZScClsxFW4Vf7ralolLy8rQfhhhcoJ/kQetkpVKFbmTJcHSA
+	 rv9zq96ICpHm8Qz7iGcHXGRa0xEf9DwxYjRwLsNLVT7ipcFJrqfgVcGVB/Tdu+D33m
+	 voFfx8sUvZf6mveAbYOsrKP5I2io2jVZ+yClR8IvLJHqjJ74pYY5NgHCiAmMeUFfiX
+	 zgqHewOd7+SFA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04859C47DD3;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2532CC47DD6;
 	Thu, 18 Jan 2024 15:25:42 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Thu, 18 Jan 2024 09:25:13 -0600
-Subject: [PATCH RFC 2/5] dump_stack: Allow update of arch description
- string at runtime
+Date: Thu, 18 Jan 2024 09:25:16 -0600
+Subject: [PATCH RFC 5/5] powerpc/pseries: Update hardware description
+ string after migration
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20240118-update-dump-stack-arch-str-v1-2-5c0f98d017b5@linux.ibm.com>
+Message-Id:  <20240118-update-dump-stack-arch-str-v1-5-5c0f98d017b5@linux.ibm.com>
 References:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
 In-Reply-To:  <20240118-update-dump-stack-arch-str-v1-0-5c0f98d017b5@linux.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, 
@@ -60,11 +60,11 @@ To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Sergey Senozhatsky <senozhatsky@chromium.org>, 
  Steven Rostedt <rostedt@goodmis.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=5563;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1705591541; l=4664;
  i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=puwstkIXbA1WYmG0j5MptfrnsQZlAPEW8ptzDFaauAY=;
- b=eC8LjJAwEVJmB7aywPXDM9Fgrox4pSdU02exjnufpGg8u+eRTjMukN4/TZYFFwXn5BJq5ohdO
- C/iNekTxjZECl9oHRmoAfyZrnbvyLV4YTDMePIUJ7UKMcuSqHbW8e6v
+ bh=yLmHE9ThZlzMbb6aloXvN4gTgnWJfDyfG66G809WhB4=;
+ b=Q+37SjK8zZS4Tun8c+TodJT0/xdTHbgWsnBNDyyUECvL05LqqXalJJi38TeuCBXrRQu3g/dT8
+ C/f58x/aq0iDCDQFi4PKjSRId3cA59UKDsExSucwkOSohtWaW/rYYO6
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230817 with auth_id=78
@@ -87,162 +87,138 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-The IBM PowerVM platform (targeted by powerpc/pseries) exposes the
-physical machine model and firmware version to partitions (guests),
-and this information is used to populate the arch description string,
-e.g.
+Introduce code that rebuilds the short hardware description printed by
+stack traces. This sort of duplicates some code from boot (prom.c
+mainly), but that code populates the string as early as possible using
+APIs that aren't available later. So sharing all the code between the
+boot and runtime versions isn't feasible.
 
-  IBM,8408-E8E POWER8E (raw) 0x4b0201 0xf000004 \
-    of:IBM,FW860.50 (SV860_146) hv:phyp pSeries
+To prevent "drift" between the boot and runtime versions, rebuild the
+description using the new runtime APIs in a late initcall and warn if
+it doesn't match the one built earlier. The initcall also invokes
+dump_stack_update_arch_desc() twice to fully exercise it before any
+partition migration occurs. These checks could be dropped or made
+configurable later.
 
-The platform supports live migration of partitions between different
-machine models and firmware versions, so the arch description string
-set at boot can become inaccurate, potentially misleading anyone who's
-analyzing stack traces produced after a migration.
-
-Introduce a RCU-guarded pointer to the current arch description
-string, initializing it to the static buffer populated at boot. Add to
-dump_stack_print_info() a RCU read-side critical section that accesses
-the buffer through this pointer. The majority of architectures which
-don't need to update the string after boot incur only an additional
-indirection.
-
-As for platforms which do need that ability, they can use
-dump_stack_update_arch_desc(), which allocates and formats a new
-buffer, updates the pointer, and if appropriate frees the previous
-buffer.
+Call pseries_update_hw_description() immediately after updating the
+device tree when resuming from a partition migration.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- include/linux/printk.h |  5 +++++
- lib/dump_stack.c       | 54 ++++++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 55 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/mobility.c |  5 +++
+ arch/powerpc/platforms/pseries/pseries.h  |  1 +
+ arch/powerpc/platforms/pseries/setup.c    | 70 +++++++++++++++++++++++++++++++
+ 3 files changed, 76 insertions(+)
 
-diff --git a/include/linux/printk.h b/include/linux/printk.h
-index 8ef499ab3c1e..6138ae019d2a 100644
---- a/include/linux/printk.h
-+++ b/include/linux/printk.h
-@@ -187,6 +187,7 @@ u32 log_buf_len_get(void);
- void log_buf_vmcoreinfo_setup(void);
- void __init setup_log_buf(int early);
- __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
-+__printf(1, 2) void dump_stack_update_arch_desc(const char *fmt, ...);
- void dump_stack_print_info(const char *log_lvl);
- void show_regs_print_info(const char *log_lvl);
- extern asmlinkage void dump_stack_lvl(const char *log_lvl) __cold;
-@@ -253,6 +254,10 @@ static inline __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...)
- {
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 1798f0f14d58..ff573cb5aee5 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -378,6 +378,11 @@ void post_mobility_fixup(void)
+ 	rc = pseries_devicetree_update(MIGRATION_SCOPE);
+ 	if (rc)
+ 		pr_err("device tree update failed: %d\n", rc);
++	/*
++	 * Rebuild the hardware description printed in stack traces
++	 * using the updated device tree.
++	 */
++	pseries_update_hw_description();
+ 
+ 	cacheinfo_rebuild();
+ 
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index bba4ad192b0f..810a64fccc7e 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -56,6 +56,7 @@ extern int dlpar_acquire_drc(u32 drc_index);
+ extern int dlpar_release_drc(u32 drc_index);
+ extern int dlpar_unisolate_drc(u32 drc_index);
+ extern void post_mobility_fixup(void);
++void pseries_update_hw_description(void);
+ 
+ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
+ int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 9ae1951f8312..72177411026e 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -1034,6 +1034,76 @@ static void pseries_add_hw_description(struct seq_buf *sb)
+ 		seq_buf_printf(sb, "hv:phyp ");
  }
  
-+static inline __printf(1, 2) void dump_stack_update_arch_desc(const char *fmt, ...)
++static void pseries_rebuild_hw_desc(struct seq_buf *sb)
 +{
++	struct device_node *cpudn, *root;
++	const char *model;
++	u32 cpu_version;
++
++	seq_buf_clear(sb);
++
++	root = of_find_node_by_path("/");
++	if (!of_property_read_string(root, "model", &model))
++		seq_buf_printf(sb, "%s ", model);
++	of_node_put(root);
++
++	seq_buf_printf(sb, "%s 0x%04lx ", cur_cpu_spec->cpu_name, mfspr(SPRN_PVR));
++
++	cpudn = of_get_next_cpu_node(NULL);
++	if (!of_property_read_u32(cpudn, "cpu-version", &cpu_version)) {
++		if ((cpu_version & 0xff000000) == 0x0f000000)
++			seq_buf_printf(sb, "0x%04x ", cpu_version);
++	}
++	of_node_put(cpudn);
++
++	pseries_add_hw_description(sb);
++
++	seq_buf_puts(sb, ppc_md.name);
 +}
 +
- static inline void dump_stack_print_info(const char *log_lvl)
- {
- }
-diff --git a/lib/dump_stack.c b/lib/dump_stack.c
-index 1057f102f6f2..bd497e7797ee 100644
---- a/lib/dump_stack.c
-+++ b/lib/dump_stack.c
-@@ -8,15 +8,18 @@
- #include <linux/buildid.h>
- #include <linux/cache.h>
- #include <linux/export.h>
-+#include <linux/rcupdate.h>
- #include <linux/sched.h>
- #include <linux/sched/debug.h>
- #include <linux/smp.h>
-+#include <linux/spinlock.h>
- #include <linux/atomic.h>
- #include <linux/kexec.h>
- #include <linux/utsname.h>
- #include <linux/stop_machine.h>
- 
- static char dump_stack_arch_desc_str[128] __ro_after_init;
-+static const char *dump_stack_arch_desc_ptr = dump_stack_arch_desc_str;
- 
- /**
-  * dump_stack_set_arch_desc - set arch-specific str to show with task dumps
-@@ -28,7 +31,7 @@ static char dump_stack_arch_desc_str[128] __ro_after_init;
-  * arch wants to make use of such an ID string, it should initialize this
-  * as soon as possible during boot.
-  */
--void __init dump_stack_set_arch_desc(const char *fmt, ...)
-+void dump_stack_set_arch_desc(const char *fmt, ...)
- {
- 	va_list args;
- 
-@@ -38,6 +41,45 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
- 	va_end(args);
- }
- 
-+/**
-+ * dump_stack_update_arch_desc() - Update the arch description string at runtime.
-+ * @fmt: printf-style format string
-+ * @...: arguments for the format string
-+ *
-+ * A runtime counterpart of dump_stack_set_arch_desc(). Arch code
-+ * should use this when the arch description set at boot potentially
-+ * has become inaccurate, such as after a guest migration.
-+ *
-+ * Context: May sleep.
-+ */
-+void dump_stack_update_arch_desc(const char *fmt, ...)
++void pseries_update_hw_description(void)
 +{
-+	static DEFINE_SPINLOCK(arch_desc_update_lock);
-+	const char *old;
-+	const char *new;
-+	va_list args;
++	struct seq_buf sb = { // todo: use DECLARE_SEQ_BUF() once it's fixed
++		.buffer = (char[128]) { 0 },
++		.size = sizeof(char[128]),
++	};
 +
-+	va_start(args, fmt);
-+	new = kvasprintf(GFP_KERNEL, fmt, args);
-+	va_end(args);
++	pseries_rebuild_hw_desc(&sb);
++	dump_stack_update_arch_desc("%s", seq_buf_str(&sb));
++}
 +
-+	if (!new)
-+		return;
-+
-+	spin_lock(&arch_desc_update_lock);
-+	old = rcu_replace_pointer(dump_stack_arch_desc_ptr, new,
-+				  lockdep_is_held(&arch_desc_update_lock));
-+	spin_unlock(&arch_desc_update_lock);
++static int __init pseries_test_update_hw_desc(void)
++{
++	struct seq_buf sb = { // todo: use DECLARE_SEQ_BUF() once it's fixed
++		.buffer = (char[128]) { 0 },
++		.size = sizeof(char[128]),
++	};
++	bool mismatch;
 +
 +	/*
-+	 * Avoid freeing the static buffer initialized during boot.
++	 * Ensure the rebuilt description matches the one built during
++	 * boot.
 +	 */
-+	if (old == dump_stack_arch_desc_str)
-+		return;
++	pseries_rebuild_hw_desc(&sb);
 +
-+	kfree_rcu_mightsleep(old);
++	mismatch = strcmp(seq_buf_str(&ppc_hw_desc), seq_buf_str(&sb));
++	if (WARN(mismatch, "rebuilt hardware description string mismatch")) {
++		pr_err("  boot:    '%s'\n", ppc_hw_desc.buffer);
++		pr_err("  runtime: '%s'\n", sb.buffer);
++		return -EINVAL;
++	}
++
++	/*
++	 * Invoke dump_stack_update_arch_desc() *twice* to ensure it
++	 * exercises the free path.
++	 */
++	dump_stack_update_arch_desc("%s", sb.buffer);
++	dump_stack_update_arch_desc("%s", sb.buffer);
++
++	return 0;
 +}
++late_initcall(pseries_test_update_hw_desc);
 +
- #if IS_ENABLED(CONFIG_STACKTRACE_BUILD_ID)
- #define BUILD_ID_FMT " %20phN"
- #define BUILD_ID_VAL vmlinux_build_id
-@@ -55,6 +97,8 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+ /*
+  * Early initialization.  Relocation is on but do not reference unbolted pages
   */
- void dump_stack_print_info(const char *log_lvl)
- {
-+	const char *arch_str;
-+
- 	printk("%sCPU: %d PID: %d Comm: %.20s %s%s %s %.*s" BUILD_ID_FMT "\n",
- 	       log_lvl, raw_smp_processor_id(), current->pid, current->comm,
- 	       kexec_crash_loaded() ? "Kdump: loaded " : "",
-@@ -63,9 +107,11 @@ void dump_stack_print_info(const char *log_lvl)
- 	       (int)strcspn(init_utsname()->version, " "),
- 	       init_utsname()->version, BUILD_ID_VAL);
- 
--	if (dump_stack_arch_desc_str[0] != '\0')
--		printk("%sHardware name: %s\n",
--		       log_lvl, dump_stack_arch_desc_str);
-+	rcu_read_lock();
-+	arch_str = rcu_dereference(dump_stack_arch_desc_ptr);
-+	if (arch_str[0] != '\0')
-+		printk("%sHardware name: %s\n", log_lvl, arch_str);
-+	rcu_read_unlock();
- 
- 	print_worker_info(log_lvl, current);
- 	print_stop_info(log_lvl, current);
 
 -- 
 2.43.0
