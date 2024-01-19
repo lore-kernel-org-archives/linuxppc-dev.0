@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 569E1C4725D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 15:01:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78CA5C4725D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jan 2024 15:02:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UxB7GU5g;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nos3H351;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eqZ/LmLT;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZG8kYmV9;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TGjVz70qSz3vhl
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jan 2024 02:01:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TGjWw0jQ7z3dBh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jan 2024 02:02:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UxB7GU5g;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nos3H351;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eqZ/LmLT;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZG8kYmV9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TGjLd13SDz3cR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jan 2024 01:54:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1705676053;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dlnghyw81CpGwF6moUBtvugzcbNEO3VWIFUoR7h2Ajk=;
-	b=UxB7GU5g+9/T4jmT76NkkhzJKXyH+7TaKiVIKF8TMe2IQTpL/iL+2z344sX4lPohSQV8Cw
-	ZAr5fsY0j+Sn6tX5mzwynR+kgKetZTEZ5y2GqHiUel+7BPTb0fU6Ur4bcE7w6TQ/1rtMPB
-	x2WQ+OfIDiVPi+HYLGq6l9bZiBWmVUM=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TGjLd4zFZz3cSq
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jan 2024 01:54:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
 	s=mimecast20190719; t=1705676054;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=dlnghyw81CpGwF6moUBtvugzcbNEO3VWIFUoR7h2Ajk=;
-	b=Nos3H351Qig+0SNu/9ftQNGvMaZvJGxmWzpRMG9aRefqn1+5DBJHd1Pr00hOTeYjnMRffQ
-	+o8doI3uPzZaHI3X6eSEKlrZsOoPG3bcQTPM71xdsBVoVXMUrPzX2DURZ16r+UyMr4HVlT
-	kjxWqsIPobBjriry1JxEHMXzd6vNa4A=
+	bh=o/8hCUVuTDtixWcZu0Bhjq+7RevB6bL41WaDVirnLF4=;
+	b=eqZ/LmLTVoBPtgLfwgjeYSY86CPOYRnGNk2rGy5itY/FcgWYGgQ2fxw95SfkYSO7jjLo+q
+	YcGLv9bIVR0R/oDq6rhdwtFOahgOErHZ0HpIELGBy5jSE/UwWIVRmzjij1kSSqzaiacjIA
+	/oKmNGKLHVvYgILVaMTdHved+UTmVzQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1705676055;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=o/8hCUVuTDtixWcZu0Bhjq+7RevB6bL41WaDVirnLF4=;
+	b=ZG8kYmV9c0UI3iU0shmY5yyfjFt1GuIkMm84RzfPmbIuhEkOmA6Pvu4dg1n6wBcZb5kdBq
+	P99Sk80KookpmM0Uwc1XyFUVzzhcxnit9AUVVroVf3eSSKbHKarM9vKpcidD0TcCEljX+/
+	uVgIgnS24UnHsnv6uptvZwi5iRgp5L4=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-586-pami_hTRMLW5sk65b-Os0Q-1; Fri, 19 Jan 2024 09:53:55 -0500
-X-MC-Unique: pami_hTRMLW5sk65b-Os0Q-1
+ us-mta-505-D60y9ktTMdCt2oSU5Zg3Og-1; Fri, 19 Jan 2024 09:54:10 -0500
+X-MC-Unique: D60y9ktTMdCt2oSU5Zg3Og-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B550480007C;
-	Fri, 19 Jan 2024 14:53:54 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 46A7484FA82;
+	Fri, 19 Jan 2024 14:54:09 +0000 (UTC)
 Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.116.4])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 674B951D5;
-	Fri, 19 Jan 2024 14:53:47 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 4A02E51D5;
+	Fri, 19 Jan 2024 14:54:02 +0000 (UTC)
 From: Baoquan He <bhe@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 08/14] ppc, crash: enforce KEXEC and KEXEC_FILE to select CRASH_DUMP
-Date: Fri, 19 Jan 2024 22:52:35 +0800
-Message-ID: <20240119145241.769622-9-bhe@redhat.com>
+Subject: [PATCH v2 10/14] sh, crash: wrap crash dumping code into crash related ifdefs
+Date: Fri, 19 Jan 2024 22:52:37 +0800
+Message-ID: <20240119145241.769622-11-bhe@redhat.com>
 In-Reply-To: <20240119145241.769622-1-bhe@redhat.com>
 References: <20240119145241.769622-1-bhe@redhat.com>
 MIME-Version: 1.0
@@ -84,39 +84,46 @@ Cc: linux-s390@vger.kernel.org, Baoquan He <bhe@redhat.com>, piliu@redhat.com, l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In PowerPC, the crash dumping and kexec reboot share code in
-arch_kexec_locate_mem_hole(), in which struct crash_mem is used.
+Now crash codes under kernel/ folder has been split out from kexec
+code, crash dumping can be separated from kexec reboot in config
+items on SuperH with some adjustments.
 
-Here enfoce enforce KEXEC and KEXEC_FILE to select CRASH_DUMP for now.
+Here wrap up crashkernel reservation code inside CONFIG_CRASH_RESERVE
+ifdeffery scope.
 
 Signed-off-by: Baoquan He <bhe@redhat.com>
 ---
- arch/powerpc/Kconfig | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/sh/kernel/machine_kexec.c | 3 +++
+ arch/sh/kernel/setup.c         | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1cdb8fdd3735..fc3cd7f4bb73 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -608,6 +608,10 @@ config PPC64_SUPPORTS_MEMORY_FAILURE
- config ARCH_SUPPORTS_KEXEC
- 	def_bool PPC_BOOK3S || PPC_E500 || (44x && !SMP)
+diff --git a/arch/sh/kernel/machine_kexec.c b/arch/sh/kernel/machine_kexec.c
+index fa3a7b36190a..8daa8a6e6fa6 100644
+--- a/arch/sh/kernel/machine_kexec.c
++++ b/arch/sh/kernel/machine_kexec.c
+@@ -153,6 +153,9 @@ void __init reserve_crashkernel(void)
+ 	unsigned long long crash_size, crash_base;
+ 	int ret;
  
-+config ARCH_SELECTS_KEXEC
-+	def_bool y
-+	select CRASH_DUMP
++	if (!IS_ENABLED(CONFIG_CRASH_RESERVE))
++		return;
 +
- config ARCH_SUPPORTS_KEXEC_FILE
- 	def_bool PPC64
+ 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 			&crash_size, &crash_base, NULL, NULL);
+ 	if (ret == 0 && crash_size > 0) {
+diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
+index d3175f09b3aa..620e5cf8ae1e 100644
+--- a/arch/sh/kernel/setup.c
++++ b/arch/sh/kernel/setup.c
+@@ -220,7 +220,7 @@ void __init __add_active_range(unsigned int nid, unsigned long start_pfn,
+ 	request_resource(res, &code_resource);
+ 	request_resource(res, &data_resource);
+ 	request_resource(res, &bss_resource);
+-#ifdef CONFIG_KEXEC_CORE
++#ifdef CONFIG_CRASH_RESERVE
+ 	request_resource(res, &crashk_res);
+ #endif
  
-@@ -618,6 +622,7 @@ config ARCH_SELECTS_KEXEC_FILE
- 	def_bool y
- 	depends on KEXEC_FILE
- 	select KEXEC_ELF
-+	select CRASH_DUMP
- 	select HAVE_IMA_KEXEC if IMA
- 
- config PPC64_BIG_ENDIAN_ELF_ABI_V2
 -- 
 2.41.0
 
