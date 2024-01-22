@@ -4,84 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 181C9C47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jan 2024 14:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14617C47DAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jan 2024 17:50:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O8TnIYlY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DSnNcmsu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TJXsP4mnxz3cT2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jan 2024 01:38:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TJd6J3T2lz3cT1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jan 2024 04:50:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O8TnIYlY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DSnNcmsu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TJXrT0vkhz3bTt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2024 01:38:00 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40MDB74L027059;
-	Mon, 22 Jan 2024 14:37:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=9eZRduKNvGVeB9aJIyquvVMwc8fAl3YaIxTQDqo1WTg=;
- b=O8TnIYlYGZfyYQL8P3i0C8yxN4DRQvasrWwLr0b4OqgDmaI75iRcqmBnf3Lf51wHvqTx
- prcbnFbRJj/s9eg5rNrRlh1L8zxgBRYDnsrWnsOMQb6WOpQpZeEGa5BaiKxu08FOIGPd
- QkER6Y2zHzffdGfKmCzXaCJPvrMb/YP5ZFZF4ygTpjOoKoCiuuunx22Z6KgtXoJL0FWn
- Q0oWbhDZ3Ym/d9Jfq7CnIkpqpx26B8hnUROolFW2Z/1WHG2mgAmyeVDApW2U+F2uNakq
- XEoPnP5uIZJIK1JrBLPQkoHLvGyr8wy/3+1g6JK3SQMssybZulRVfGyZ/LuZwYEKE+Lo GQ== 
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vsrycjk32-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TJd5P06vlz3brL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2024 04:49:28 +1100 (AEDT)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40MH2nti026019;
+	Mon, 22 Jan 2024 17:49:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=1Ne24bSBSJimCOaeoAcIy2ONO23VE6PdmOvupNyNzoE=;
+ b=DSnNcmsuy4ri755K69TtpDVmc5Q/VgIGbQ+T309nlqzRmcrv824xhMzmYKfiYVTRy2UW
+ vgPkjIUc/hRAit9rECo7AJbGajZpv8xTV6iL+7h0gag8fI1gXP2olQJy7etDeDoDAyrx
+ QA+ggy/64/kqxgBX+x0OazvUx//ocdpHl9NddcTGaNFHpdJqGTk8RtsDBgmvAbZ9BayB
+ brprUttO32CAbq9xz+yhUEeHWWvd5bmlWQph1mk6arDNvV94sxSpOmEW+zzn+Ts+4nIW
+ LNAVXP2h0QcTPR1fJnuvPWFmvdFZDBN9BxEqKveEW3jis+L4vbNe6X0co1N+djl3anjA mw== 
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vsvdu13w0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 22 Jan 2024 14:37:40 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40MBSVlX025636;
-	Mon, 22 Jan 2024 14:37:39 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3vrsgnruju-1
+	Mon, 22 Jan 2024 17:49:17 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40MFq3Gg026507;
+	Mon, 22 Jan 2024 17:49:16 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3vrrgt2ef4-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 22 Jan 2024 14:37:39 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40MEbcMb18285072
+	Mon, 22 Jan 2024 17:49:16 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40MHnEoJ24183512
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 22 Jan 2024 14:37:38 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 527DB58055;
-	Mon, 22 Jan 2024 14:37:38 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2C46F5804B;
-	Mon, 22 Jan 2024 14:37:35 +0000 (GMT)
-Received: from [9.43.53.45] (unknown [9.43.53.45])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 22 Jan 2024 14:37:34 +0000 (GMT)
-Message-ID: <218f08f9-bc12-47db-aa04-c2058c901986@linux.ibm.com>
-Date: Mon, 22 Jan 2024 20:07:33 +0530
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 2/3] fs: remove duplicate ifdefs
-To: Chandan Babu R <chandanbabu@kernel.org>
-References: <20240118080326.13137-1-sshegde@linux.ibm.com>
- <20240118080326.13137-3-sshegde@linux.ibm.com>
- <87cyttedjj.fsf@debian-BULLSEYE-live-builder-AMD64>
-Content-Language: en-US
+	Mon, 22 Jan 2024 17:49:14 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 69D832004B;
+	Mon, 22 Jan 2024 17:49:14 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D49462004F;
+	Mon, 22 Jan 2024 17:49:11 +0000 (GMT)
+Received: from li-c1fdab4c-355a-11b2-a85c-ef242fe9efb4.ibm.com.com (unknown [9.43.53.45])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 22 Jan 2024 17:49:11 +0000 (GMT)
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <87cyttedjj.fsf@debian-BULLSEYE-live-builder-AMD64>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
+        linux-xfs@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH v2 1/4] sched: remove duplicate ifdefs
+Date: Mon, 22 Jan 2024 23:19:01 +0530
+Message-Id: <20240122174904.178594-2-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20240122174904.178594-1-sshegde@linux.ibm.com>
+References: <20240122174904.178594-1-sshegde@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: wwsiLOWQFOWpM58VonwYO5JiFtGQQtRe
-X-Proofpoint-GUID: wwsiLOWQFOWpM58VonwYO5JiFtGQQtRe
+X-Proofpoint-GUID: 5b_zMLwzIuZ0dHzeKhc2UWiPZIzjQUK1
+X-Proofpoint-ORIG-GUID: 5b_zMLwzIuZ0dHzeKhc2UWiPZIzjQUK1
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-22_05,2024-01-22_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1011
- impostorscore=0 mlxscore=0 spamscore=0 adultscore=0 mlxlogscore=620
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2401220099
+ definitions=2024-01-22_07,2024-01-22_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
+ phishscore=0 spamscore=0 mlxscore=0 priorityscore=1501 impostorscore=0
+ mlxlogscore=935 suspectscore=0 clxscore=1015 malwarescore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2401220124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,36 +90,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ntfs-dev@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-xfs@vger.kernel.org, peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, anton@tuxera.com
+Cc: peterz@infradead.org, sshegde@linux.ibm.com, djwong@kernel.org, mingo@kernel.org, anton@tuxera.com, chandan.babu@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+when a ifdef is used in the below manner, second one could be considered as
+duplicate.
 
+ifdef DEFINE_A
+...code block...
+ifdef DEFINE_A
+...code block...
+endif
+...code block...
+endif
 
-On 1/22/24 6:20 PM, Chandan Babu R wrote:
-> On Thu, Jan 18, 2024 at 01:33:25 PM +0530, Shrikanth Hegde wrote:
->> when a ifdef is used in the below manner, second one could be considered as
->> duplicate.
->>
->> ifdef DEFINE_A
->> ...code block...
->> ifdef DEFINE_A
->> ...code block...
->> endif
->> ...code block...
->> endif
->>
->> There are few places in fs code where above pattern was seen.
->> No functional change is intended here. It only aims to improve code
->> readability.
->>
-> 
-> Can you please post the xfs changes as a separate patch along with Darrick's
-> RVB tag? This will make it easy for me to apply the resulting patch to the XFS
-> tree.
+In the scheduler code, there are two places where above pattern can be
+observed. Hence second ifdef is a duplicate and not needed.
+Plus a minor comment update to reflect the else case.
 
-Ok. will split the fs patches into two and send v2 soon. 
+No functional change is intended here. It only aims to improve code
+readability.
 
-Thanks.
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+ kernel/sched/core.c | 4 +---
+ kernel/sched/fair.c | 2 --
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
-> 
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 9116bcc90346..a76c7095f736 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -1792,7 +1792,6 @@ static void cpu_util_update_eff(struct cgroup_subsys_state *css);
+ #endif
+
+ #ifdef CONFIG_SYSCTL
+-#ifdef CONFIG_UCLAMP_TASK
+ #ifdef CONFIG_UCLAMP_TASK_GROUP
+ static void uclamp_update_root_tg(void)
+ {
+@@ -1898,7 +1897,6 @@ static int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
+ 	return result;
+ }
+ #endif
+-#endif
+
+ static int uclamp_validate(struct task_struct *p,
+ 			   const struct sched_attr *attr)
+@@ -2065,7 +2063,7 @@ static void __init init_uclamp(void)
+ 	}
+ }
+
+-#else /* CONFIG_UCLAMP_TASK */
++#else /* !CONFIG_UCLAMP_TASK */
+ static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
+ static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
+ static inline int uclamp_validate(struct task_struct *p,
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 533547e3c90a..8e30e2bb77a0 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -10182,10 +10182,8 @@ static int idle_cpu_without(int cpu, struct task_struct *p)
+ 	 * be computed and tested before calling idle_cpu_without().
+ 	 */
+
+-#ifdef CONFIG_SMP
+ 	if (rq->ttwu_pending)
+ 		return 0;
+-#endif
+
+ 	return 1;
+ }
+--
+2.39.3
+
