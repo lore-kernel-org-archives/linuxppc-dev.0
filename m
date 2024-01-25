@@ -4,64 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30F3AC47258
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jan 2024 19:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FC09C47258
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jan 2024 19:33:36 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J4u86JVs;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J4u86JVs;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TLVzH5D81z3cVl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jan 2024 06:20:43 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TLWG7014Rz3cLY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jan 2024 06:33:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J4u86JVs;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J4u86JVs;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TLVyj64vJz2yPq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2024 06:20:13 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TLVyc3Q97z4wxv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2024 06:20:08 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4TLVyc34TRz4x2T; Fri, 26 Jan 2024 06:20:08 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=ozlabs.org)
-X-Greylist: delayed 1623 seconds by postgrey-1.37 at gandalf; Fri, 26 Jan 2024 06:20:08 AEDT
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TLWFC1LCQz30MD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2024 06:32:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1706211162;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=hqBJXd3KYbSqBlyTsnJ+flUsuxWAbzNO3FAUVqkspqs=;
+	b=J4u86JVsluPhxsdKE4RQ9SPKT5XD5WiXxR3APtFiLO5xtGoegL1faL9MG+KqH1/i9tPc+7
+	3MeeAg3rwQ66cdeO0zyS132qwy8q+4zMs+jzTWmXjo+wv7DEx/XzNB9z8NtCbqc0TEVdK9
+	foSRvzCwrLkTIfZHMf+hGUETNrd3i8I=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1706211162;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=hqBJXd3KYbSqBlyTsnJ+flUsuxWAbzNO3FAUVqkspqs=;
+	b=J4u86JVsluPhxsdKE4RQ9SPKT5XD5WiXxR3APtFiLO5xtGoegL1faL9MG+KqH1/i9tPc+7
+	3MeeAg3rwQ66cdeO0zyS132qwy8q+4zMs+jzTWmXjo+wv7DEx/XzNB9z8NtCbqc0TEVdK9
+	foSRvzCwrLkTIfZHMf+hGUETNrd3i8I=
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-633-3eXNfPC0PWK9Jn6kjBn6xQ-1; Thu,
+ 25 Jan 2024 14:32:37 -0500
+X-MC-Unique: 3eXNfPC0PWK9Jn6kjBn6xQ-1
+Received: from smtp.corp.redhat.com (int-mx09.intmail.prod.int.rdu2.redhat.com [10.11.54.9])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TLVyc1H63z4wxv
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2024 06:20:06 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4TLVMH3KJdz9tLb;
-	Thu, 25 Jan 2024 19:52:59 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PxrJCW9UbmCs; Thu, 25 Jan 2024 19:52:59 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4TLVMH2KzFz9tCB;
-	Thu, 25 Jan 2024 19:52:59 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 48AC98B775;
-	Thu, 25 Jan 2024 19:52:59 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id eldIfBa_Yrhw; Thu, 25 Jan 2024 19:52:59 +0100 (CET)
-Received: from [192.168.232.44] (unknown [192.168.232.44])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id F28DE8B765;
-	Thu, 25 Jan 2024 19:52:58 +0100 (CET)
-Message-ID: <462d76fc-ae1d-42c4-8d84-5465f5be98d4@csgroup.eu>
-Date: Thu, 25 Jan 2024 19:52:58 +0100
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 23E903C1E9D4;
+	Thu, 25 Jan 2024 19:32:35 +0000 (UTC)
+Received: from t14s.redhat.com (unknown [10.39.193.154])
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 24466492BC6;
+	Thu, 25 Jan 2024 19:32:27 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 00/15] mm/memory: optimize fork() with PTE-mapped THP
+Date: Thu, 25 Jan 2024 20:32:12 +0100
+Message-ID: <20240125193227.444072-1-david@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/fadump: update kernel logs before fadump crash
- begins
-Content-Language: fr-FR
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, mpe@ellerman.id.au
-References: <20200606044506.44551-1-sourabhjain@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20200606044506.44551-1-sourabhjain@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.9
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,137 +75,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, hbathini@linux.ibm.com, linuxppc-dev@ozlabs.org
+Cc: David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-arm-kernel@lists.infradead.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" 
+ <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Now that the rmap overhaul[1] is upstream that provides a clean interface
+for rmap batching, let's implement PTE batching during fork when processing
+PTE-mapped THPs.
 
-Le 06/06/2020 à 06:45, Sourabh Jain a écrit :
-> When we hit the fadump crash via the panic path the pstore update is
-> missing. This is observed when commit 8341f2f222d7 ("sysrq: Use panic()
-> to force a crash") changed the sysrq-trigger to take panic path instead
-> of die path.
-> 
-> The PPC panic event handler addresses the system panic in two different
-> ways based on the system configuration. It first allows the FADump (if
-> configured) to handle the kernel panic else forwards the call to platform
-> specific panic function. Now pstore update is missing only if FADump
-> handles the kernel panic, the platform-specific panic function do update
-> the pstore by calling panic_flush_kmsg_end function.
-> 
-> The simplest approach to handle this issue is to add pstore update in PPC
-> panic handler before FADump handles the panic. But this leads to multiple
-> pstore updates in case FADump is not configured and platform-specific
-> panic function serves the kernel panic.
-> 
-> Hence the function panic_flush_kmsg_end (used by the platform-specific
-> panic function to update the kernel logs) is split into two functions, one
-> will update the pstore (called in ppc panic event handler) and others will
-> flush the kmsg on the console (called in platform specific panic function).
+This series is partially based on Ryan's previous work[2] to implement
+cont-pte support on arm64, but its a complete rewrite based on [1] to
+optimize all architectures independent of any such PTE bits, and to
+use the new rmap batching functions that simplify the code and prepare
+for further rmap accounting changes.
 
-Is this patch still relevant ?
+We collect consecutive PTEs that map consecutive pages of the same large
+folio, making sure that the other PTE bits are compatible, and (a) adjust
+the refcount only once per batch, (b) call rmap handling functions only
+once per batch and (c) perform batch PTE setting/updates.
 
-It is still awaiting in patchwork and I see it has produced sparse 
-warnings 
-(https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20200606044506.44551-1-sourabhjain@linux.ibm.com/)
+While this series should be beneficial for adding cont-pte support on
+ARM64[2], it's one of the requirements for maintaining a total mapcount[3]
+for large folios with minimal added overhead and further changes[4] that
+build up on top of the total mapcount.
 
-In addition, it doesn't apply anymore so I'll discard it. Please 
-re-submit if still needed.
+Independent of all that, this series results in a speedup during fork with
+PTE-mapped THP, which is the default with THPs that are smaller than a PMD
+(for example, 16KiB to 1024KiB mTHPs for anonymous memory[5]).
 
-Christophe
+On an Intel Xeon Silver 4210R CPU, fork'ing with 1GiB of PTE-mapped folios
+of the same size (stddev < 1%) results in the following runtimes
+for fork() (shorter is better):
 
+Folio Size | v6.8-rc1 |      New | Change
+------------------------------------------
+      4KiB | 0.014328 | 0.014035 |   - 2%
+     16KiB | 0.014263 | 0.01196  |   -16%
+     32KiB | 0.014334 | 0.01094  |   -24%
+     64KiB | 0.014046 | 0.010444 |   -26%
+    128KiB | 0.014011 | 0.010063 |   -28%
+    256KiB | 0.013993 | 0.009938 |   -29%
+    512KiB | 0.013983 | 0.00985  |   -30%
+   1024KiB | 0.013986 | 0.00982  |   -30%
+   2048KiB | 0.014305 | 0.010076 |   -30%
 
+Note that these numbers are even better than the ones from v1 (verified
+over multiple reboots), even though there were only minimal code changes.
+Well, I removed a pte_mclean() call for anon folios, maybe that also
+plays a role. Alternatively, either v1 or v2 is seriously buggy ;)
 
-> 
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->   arch/powerpc/include/asm/bug.h         |  2 ++
->   arch/powerpc/kernel/setup-common.c     |  1 +
->   arch/powerpc/kernel/traps.c            | 12 +++++++++++-
->   arch/powerpc/platforms/ps3/setup.c     |  2 +-
->   arch/powerpc/platforms/pseries/setup.c |  2 +-
->   5 files changed, 16 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-> index 338f36cd9934..9268551a69bc 100644
-> --- a/arch/powerpc/include/asm/bug.h
-> +++ b/arch/powerpc/include/asm/bug.h
-> @@ -118,6 +118,8 @@ extern void _exception_pkey(struct pt_regs *, unsigned long, int);
->   extern void die(const char *, struct pt_regs *, long);
->   extern bool die_will_crash(void);
->   extern void panic_flush_kmsg_start(void);
-> +extern void panic_flush_kmsg_dump(void);
-> +extern void panic_flush_kmsg_console(void);
->   extern void panic_flush_kmsg_end(void);
->   #endif /* !__ASSEMBLY__ */
->   
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index 7f8c890360fe..2d546a9e8bb1 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -699,6 +699,7 @@ static int ppc_panic_event(struct notifier_block *this,
->   	 * want interrupts to be hard disabled.
->   	 */
->   	hard_irq_disable();
-> +	panic_flush_kmsg_dump();
->   
->   	/*
->   	 * If firmware-assisted dump has been registered then trigger
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 82a3438300fd..bb6bc19992b3 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -169,15 +169,25 @@ extern void panic_flush_kmsg_start(void)
->   	bust_spinlocks(1);
->   }
->   
-> -extern void panic_flush_kmsg_end(void)
-> +extern void panic_flush_kmsg_dump(void)
->   {
->   	printk_safe_flush_on_panic();
->   	kmsg_dump(KMSG_DUMP_PANIC);
-> +}
-> +
-> +extern void panic_flush_kmsg_console(void)
-> +{
->   	bust_spinlocks(0);
->   	debug_locks_off();
->   	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
->   }
->   
-> +extern void panic_flush_kmsg_end(void)
-> +{
-> +	panic_flush_kmsg_dump();
-> +	panic_flush_kmsg_console();
-> +}
-> +
->   static unsigned long oops_begin(struct pt_regs *regs)
->   {
->   	int cpu;
-> diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-> index b29368931c56..f96ba34284a1 100644
-> --- a/arch/powerpc/platforms/ps3/setup.c
-> +++ b/arch/powerpc/platforms/ps3/setup.c
-> @@ -101,7 +101,7 @@ static void ps3_panic(char *str)
->   	printk("   System does not reboot automatically.\n");
->   	printk("   Please press POWER button.\n");
->   	printk("\n");
-> -	panic_flush_kmsg_end();
-> +	panic_flush_kmsg_console();
->   
->   	while(1)
->   		lv1_pause(1);
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index 0c8421dd01ab..66ecb88c4b8e 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -788,7 +788,7 @@ static void __init pSeries_setup_arch(void)
->   
->   static void pseries_panic(char *str)
->   {
-> -	panic_flush_kmsg_end();
-> +	panic_flush_kmsg_console();
->   	rtas_os_term(str);
->   }
->   
+But my experience is that fork() is extremely sensitive to code size,
+inlining, ... so I suspect we'll see on other architectures rather a change
+of -20% instead of -30%, and it will be easy to "lose" some of that speedup
+in the future by subtle code changes.
+
+Next up is PTE batching when unmapping, that I'll send out next week.
+
+Only tested on x86-64. Compile-tested on most other architectures.
+
+v1 -> v2:
+ * "arm64/mm: Make set_ptes() robust when OAs cross 48-bit boundary"
+  -> Added patch from Ryan
+ * "arm/pgtable: define PFN_PTE_SHIFT"
+  -> Removed the arm64 bits
+ * "mm/pgtable: make pte_next_pfn() independent of set_ptes()"
+ * "arm/mm: use pte_next_pfn() in set_ptes()"
+ * "powerpc/mm: use pte_next_pfn() in set_ptes()"
+  -> Added to use pte_next_pfn() in some arch set_ptes() implementations
+     I tried to make use of pte_next_pfn() also in the others, but it's
+     not trivial because the other archs implement set_ptes() in their
+     asm/pgtable.h. Future work.
+ * "mm/memory: factor out copying the actual PTE in copy_present_pte()"
+  -> Move common folio_get() out of if/else
+ * "mm/memory: optimize fork() with PTE-mapped THP"
+  -> Add doc for wrprotect_ptes
+  -> Extend description to mention handling of pinned folios
+  -> Move common folio_ref_add() out of if/else
+ * "mm/memory: ignore dirty/accessed/soft-dirty bits in folio_pte_batch()"
+  -> Be more conservative with dirt/soft-dirty, let the caller specify
+     using flags
+
+[1] https://lkml.kernel.org/r/20231220224504.646757-1-david@redhat.com
+[2] https://lkml.kernel.org/r/20231218105100.172635-1-ryan.roberts@arm.com
+[3] https://lkml.kernel.org/r/20230809083256.699513-1-david@redhat.com
+[4] https://lkml.kernel.org/r/20231124132626.235350-1-david@redhat.com
+[5] https://lkml.kernel.org/r/20231207161211.2374093-1-ryan.roberts@arm.com
+
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Ryan Roberts <ryan.roberts@arm.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Dinh Nguyen <dinguyen@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>
+Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
+Cc: Sven Schnelle <svens@linux.ibm.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-riscv@lists.infradead.org
+Cc: linux-s390@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+
+David Hildenbrand (14):
+  arm/pgtable: define PFN_PTE_SHIFT
+  nios2/pgtable: define PFN_PTE_SHIFT
+  powerpc/pgtable: define PFN_PTE_SHIFT
+  riscv/pgtable: define PFN_PTE_SHIFT
+  s390/pgtable: define PFN_PTE_SHIFT
+  sparc/pgtable: define PFN_PTE_SHIFT
+  mm/pgtable: make pte_next_pfn() independent of set_ptes()
+  arm/mm: use pte_next_pfn() in set_ptes()
+  powerpc/mm: use pte_next_pfn() in set_ptes()
+  mm/memory: factor out copying the actual PTE in copy_present_pte()
+  mm/memory: pass PTE to copy_present_pte()
+  mm/memory: optimize fork() with PTE-mapped THP
+  mm/memory: ignore dirty/accessed/soft-dirty bits in folio_pte_batch()
+  mm/memory: ignore writable bit in folio_pte_batch()
+
+Ryan Roberts (1):
+  arm64/mm: Make set_ptes() robust when OAs cross 48-bit boundary
+
+ arch/arm/include/asm/pgtable.h      |   2 +
+ arch/arm/mm/mmu.c                   |   2 +-
+ arch/arm64/include/asm/pgtable.h    |  28 ++--
+ arch/nios2/include/asm/pgtable.h    |   2 +
+ arch/powerpc/include/asm/pgtable.h  |   2 +
+ arch/powerpc/mm/pgtable.c           |   5 +-
+ arch/riscv/include/asm/pgtable.h    |   2 +
+ arch/s390/include/asm/pgtable.h     |   2 +
+ arch/sparc/include/asm/pgtable_64.h |   2 +
+ include/linux/pgtable.h             |  33 ++++-
+ mm/memory.c                         | 212 ++++++++++++++++++++++------
+ 11 files changed, 229 insertions(+), 63 deletions(-)
+
+-- 
+2.43.0
+
