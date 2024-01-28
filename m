@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B936C47DDB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jan 2024 20:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 037E7C47DDB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jan 2024 20:01:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sY1zb8vB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Rt5FgHJf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TNMjw58Q1z3cXv
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 07:00:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TNMkl3tpNz3byl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 07:01:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sY1zb8vB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Rt5FgHJf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNMhC63m7z2ykn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2024 06:59:07 +1100 (AEDT)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40SEUaic022216;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNMhD2YCwz30g2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2024 06:59:08 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40SHskIM017315;
 	Sun, 28 Jan 2024 19:58:59 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=Ty6vjLOwPP33OPQjO3uFsILZSqZnowDhF4Yj7NgqsI0=;
- b=sY1zb8vBP/MJfDvvMQ1ngSiGOkh5zbG89sLqCvUh6r2rFh5nIXOUqLbWINVhejLcUqrj
- 01lrTm3/kaJfVNS7VQXm5vU1bEGGfMoi6adQiO66cGiHsCQYg8SEn+NcNbSrY3x+ur2g
- j+jzWpWTXGcBx66kLHsAcNSliHPfIwsxrKCZotvfg7ggifIMOMxtHwLL1BadmosmZh7F
- r0a36Ktwp5spT9odHM7qP7NWeBg/c7DDbaxW3mOf3Y29v/K0QnMYAVFLBJ4rO9a8A6W+
- iQjPjzHfozGXAP6Al1LGAcvnsZSCxQmnZJNzY/9eZHn1mh69CHt8/xGV86qXZLbgcB3Q zQ== 
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vw5nm3mh4-1
+ bh=HqWJnNirYD2mZc4aShg2yzFvukCr30wCusQwz3eGeQw=;
+ b=Rt5FgHJf79Sz6qvHnfL0WMT6E1GZVRsEFUcwgKXZHENG1yTjO82kFu7NysqUYTL07P+4
+ D6GzR8AB6//RCtCGhQfbnIbS9toGUxEczyBRVsAw1db7AOREBy95tXGi3j6EOkOBzJ0D
+ KdUMP+O7PbDAoX3hL8loG4W1T+uwIoxld6h4k/XDrxFk0jBR/yqoAvJkkEajULvXdm7i
+ VkhAiHS26g1XWTkdOWTjGz+E8jKoS5gWnZ1mU1afWWGQHOeml+kFiL5wYFoqXG4wki9n
+ j7D37piEa7ZxK6Q2gNBW+t6TZNrZUnS74OVL8v1LLwDXyd8GB+IQ6428ZA1JoP34r322 gw== 
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vwr6m4a94-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 28 Jan 2024 19:58:58 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40SIopO6007189;
+	Sun, 28 Jan 2024 19:58:59 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40SHKPFI008234;
 	Sun, 28 Jan 2024 19:58:58 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3vwev1urnj-1
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3vwdnkm49g-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Sun, 28 Jan 2024 19:58:58 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40SJwtrr34013692
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40SJwtkx13042222
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Sun, 28 Jan 2024 19:58:55 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 33AA820043;
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0CCFA2004D;
 	Sun, 28 Jan 2024 19:58:55 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2334520040;
-	Sun, 28 Jan 2024 19:58:55 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EEF9B20043;
+	Sun, 28 Jan 2024 19:58:54 +0000 (GMT)
 Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Sun, 28 Jan 2024 19:58:55 +0000 (GMT)
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Sun, 28 Jan 2024 19:58:54 +0000 (GMT)
 Received: by tuxmaker.boeblingen.de.ibm.com (Postfix, from userid 55669)
-	id B30D5E098B; Sun, 28 Jan 2024 20:58:54 +0100 (CET)
+	id AE3A5E079D; Sun, 28 Jan 2024 20:58:54 +0100 (CET)
 From: Alexander Gordeev <agordeev@linux.ibm.com>
 To: Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>
-Subject: [PATCH 5/5] sched/vtime: do not include <asm/vtime.h> header
-Date: Sun, 28 Jan 2024 20:58:54 +0100
-Message-Id: <2402f44309e1c9705501bdc9b798e8fe6d73f905.1706470223.git.agordeev@linux.ibm.com>
+Subject: [PATCH 3/5] s390/vtime: remove unused __ARCH_HAS_VTIME_TASK_SWITCH leftover
+Date: Sun, 28 Jan 2024 20:58:52 +0100
+Message-Id: <b3623605ba5c1d386d8f59e17c930ca2c3cca07c.1706470223.git.agordeev@linux.ibm.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1706470223.git.agordeev@linux.ibm.com>
 References: <cover.1706470223.git.agordeev@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Vc4e6bh2MHI0qSI1BxnPS8gjiOEC6MYu
-X-Proofpoint-ORIG-GUID: Vc4e6bh2MHI0qSI1BxnPS8gjiOEC6MYu
+X-Proofpoint-GUID: Xt6cwiIK9tVwUe-fhmMhvVLPErmDmlky
+X-Proofpoint-ORIG-GUID: Xt6cwiIK9tVwUe-fhmMhvVLPErmDmlky
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2024-01-25_14,2024-01-25_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=514
- mlxscore=0 clxscore=1011 bulkscore=0 priorityscore=1501 malwarescore=0
- impostorscore=0 lowpriorityscore=0 spamscore=0 phishscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
- definitions=main-2401280151
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
+ priorityscore=1501 impostorscore=0 lowpriorityscore=0 spamscore=0
+ mlxlogscore=656 phishscore=0 malwarescore=0 adultscore=0 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2401280151
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,39 +97,26 @@ Cc: linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no architecture-specific code or data left
-that generic <linux/vtime.h> needs to know about.
-Thus, avoid the inclusion of <asm/vtime.h> header.
+__ARCH_HAS_VTIME_TASK_SWITCH macro is not used anymore.
 
 Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
 ---
- include/asm-generic/vtime.h | 1 -
- include/linux/vtime.h       | 4 ----
- 2 files changed, 5 deletions(-)
- delete mode 100644 include/asm-generic/vtime.h
+ arch/s390/include/asm/vtime.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/include/asm-generic/vtime.h b/include/asm-generic/vtime.h
-deleted file mode 100644
-index b1a49677fe25..000000000000
---- a/include/asm-generic/vtime.h
-+++ /dev/null
-@@ -1 +0,0 @@
--/* no content, but patch(1) dislikes empty files */
-diff --git a/include/linux/vtime.h b/include/linux/vtime.h
-index 593466ceebed..29dd5b91dd7d 100644
---- a/include/linux/vtime.h
-+++ b/include/linux/vtime.h
-@@ -5,10 +5,6 @@
- #include <linux/context_tracking_state.h>
- #include <linux/sched.h>
+diff --git a/arch/s390/include/asm/vtime.h b/arch/s390/include/asm/vtime.h
+index fe17e448c0c5..561c91c1a87c 100644
+--- a/arch/s390/include/asm/vtime.h
++++ b/arch/s390/include/asm/vtime.h
+@@ -2,8 +2,6 @@
+ #ifndef _S390_VTIME_H
+ #define _S390_VTIME_H
  
--#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
--#include <asm/vtime.h>
--#endif
+-#define __ARCH_HAS_VTIME_TASK_SWITCH
 -
- /*
-  * Common vtime APIs
-  */
+ static inline void update_timer_sys(void)
+ {
+ 	S390_lowcore.system_timer += S390_lowcore.last_update_timer - S390_lowcore.exit_timer;
 -- 
 2.40.1
 
