@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7439BC47422
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 14:06:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5A3BC47422
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 14:06:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TNqpt0LYWz3cVw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 01:06:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TNqqL3WX0z3vk5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 01:06:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=szxga07-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNqns0czWz3cZn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 01:05:36 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.163.48])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4TNqMF3pN7zNkcY;
-	Mon, 29 Jan 2024 21:46:01 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNqpp4ggKz3cns
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 01:06:26 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.88.214])
+	by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4TNqLC0Jb8z1Q89j;
+	Mon, 29 Jan 2024 21:45:07 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (unknown [7.193.23.234])
-	by mail.maildlp.com (Postfix) with ESMTPS id DA46B18005E;
-	Mon, 29 Jan 2024 21:46:59 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 26EE01A016B;
+	Mon, 29 Jan 2024 21:46:56 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Mon, 29 Jan 2024 21:46:57 +0800
+ 15.1.2507.35; Mon, 29 Jan 2024 21:46:54 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
 	Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>, Robin
@@ -39,15 +39,13 @@ To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
 	<tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
 	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, <x86@kernel.org>,
 	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH v10 2/6] arm64: add support for machine check error safe
-Date: Mon, 29 Jan 2024 21:46:48 +0800
-Message-ID: <20240129134652.4004931-3-tongtiangen@huawei.com>
+Subject: [PATCH v10 0/6]arm64: add machine check safe support
+Date: Mon, 29 Jan 2024 21:46:46 +0800
+Message-ID: <20240129134652.4004931-1-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20240129134652.4004931-1-tongtiangen@huawei.com>
-References: <20240129134652.4004931-1-tongtiangen@huawei.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="yes"
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
 X-Originating-IP: [10.175.112.125]
 X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
  kwepemm600017.china.huawei.com (7.193.23.234)
@@ -66,118 +64,148 @@ Cc: wangkefeng.wang@huawei.com, linux-kernel@vger.kernel.org, kasan-dev@googlegr
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For the arm64 kernel, when it processes hardware memory errors for
-synchronize notifications(do_sea()), if the errors is consumed within the
-kernel, the current processing is panic. However, it is not optimal.
+With the increase of memory capacity and density, the probability of memory
+error also increases. The increasing size and density of server RAM in data
+centers and clouds have shown increased uncorrectable memory errors.
 
-Take uaccess for example, if the uaccess operation fails due to memory
-error, only the user process will be affected. Killing the user process and
-isolating the corrupt page is a better choice.
+Currently, more and more scenarios that can tolerate memory errors，such as
+CoW[1,2], KSM copy[3], coredump copy[4], khugepaged[5,6], uaccess copy[7],
+etc.
 
-This patch only enable machine error check framework and adds an exception
-fixup before the kernel panic in do_sea().
+This patchset introduces a new processing framework on ARM64, which enables
+ARM64 to support error recovery in the above scenarios, and more scenarios
+can be expanded based on this in the future.
 
-Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
----
- arch/arm64/Kconfig               |  1 +
- arch/arm64/include/asm/extable.h |  1 +
- arch/arm64/mm/extable.c          | 16 ++++++++++++++++
- arch/arm64/mm/fault.c            | 29 ++++++++++++++++++++++++++++-
- 4 files changed, 46 insertions(+), 1 deletion(-)
+In arm64, memory error handling in do_sea(), which is divided into two cases:
+ 1. If the user state consumed the memory errors, the solution is to kill
+    the user process and isolate the error page.
+ 2. If the kernel state consumed the memory errors, the solution is to
+    panic.
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index aa7c1d435139..2cc34b5e7abb 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -20,6 +20,7 @@ config ARM64
- 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
- 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_HAS_CACHE_LINE_SIZE
-+	select ARCH_HAS_COPY_MC if ACPI_APEI_GHES
- 	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
-diff --git a/arch/arm64/include/asm/extable.h b/arch/arm64/include/asm/extable.h
-index 72b0e71cc3de..f80ebd0addfd 100644
---- a/arch/arm64/include/asm/extable.h
-+++ b/arch/arm64/include/asm/extable.h
-@@ -46,4 +46,5 @@ bool ex_handler_bpf(const struct exception_table_entry *ex,
- #endif /* !CONFIG_BPF_JIT */
- 
- bool fixup_exception(struct pt_regs *regs);
-+bool fixup_exception_mc(struct pt_regs *regs);
- #endif
-diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 228d681a8715..478e639f8680 100644
---- a/arch/arm64/mm/extable.c
-+++ b/arch/arm64/mm/extable.c
-@@ -76,3 +76,19 @@ bool fixup_exception(struct pt_regs *regs)
- 
- 	BUG();
- }
-+
-+bool fixup_exception_mc(struct pt_regs *regs)
-+{
-+	const struct exception_table_entry *ex;
-+
-+	ex = search_exception_tables(instruction_pointer(regs));
-+	if (!ex)
-+		return false;
-+
-+	/*
-+	 * This is not complete, More Machine check safe extable type can
-+	 * be processed here.
-+	 */
-+
-+	return false;
-+}
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index 55f6455a8284..312932dc100b 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -730,6 +730,31 @@ static int do_bad(unsigned long far, unsigned long esr, struct pt_regs *regs)
- 	return 1; /* "fault" */
- }
- 
-+static bool arm64_do_kernel_sea(unsigned long addr, unsigned int esr,
-+				     struct pt_regs *regs, int sig, int code)
-+{
-+	if (!IS_ENABLED(CONFIG_ARCH_HAS_COPY_MC))
-+		return false;
-+
-+	if (user_mode(regs))
-+		return false;
-+
-+	if (apei_claim_sea(regs) < 0)
-+		return false;
-+
-+	if (!fixup_exception_mc(regs))
-+		return false;
-+
-+	if (current->flags & PF_KTHREAD)
-+		return true;
-+
-+	set_thread_esr(0, esr);
-+	arm64_force_sig_fault(sig, code, addr,
-+		"Uncorrected memory error on access to user memory\n");
-+
-+	return true;
-+}
-+
- static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
- {
- 	const struct fault_info *inf;
-@@ -755,7 +780,9 @@ static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
- 		 */
- 		siaddr  = untagged_addr(far);
- 	}
--	arm64_notify_die(inf->name, regs, inf->sig, inf->code, siaddr, esr);
-+
-+	if (!arm64_do_kernel_sea(siaddr, esr, regs, inf->sig, inf->code))
-+		arm64_notify_die(inf->name, regs, inf->sig, inf->code, siaddr, esr);
- 
- 	return 0;
- }
+For case 2, Undifferentiated panic may not be the optimal choice, as it can
+be handled better. In some scenarios, we can avoid panic, such as uaccess,
+if the uaccess fails due to memory error, only the user process will be
+affected, killing the user process and isolating the user page with
+hardware memory errors is a better choice.
+
+[1] commit d302c2398ba2 ("mm, hwpoison: when copy-on-write hits poison, take page offline")
+[2] commit 1cb9dc4b475c ("mm: hwpoison: support recovery from HugePage copy-on-write faults")
+[3] commit 6b970599e807 ("mm: hwpoison: support recovery from ksm_might_need_to_copy()")
+[4] commit 245f09226893 ("mm: hwpoison: coredump: support recovery from dump_user_range()")
+[5] commit 98c76c9f1ef7 ("mm/khugepaged: recover from poisoned anonymous memory")
+[6] commit 12904d953364 ("mm/khugepaged: recover from poisoned file-backed memory")
+[7] commit 278b917f8cb9 ("x86/mce: Add _ASM_EXTABLE_CPY for copy user access")
+
+Since V9:
+ 1. Rebase to latest kernel version 6.8-rc2.
+ 2. Add patch 6/6 to support copy_mc_to_kernel().
+
+Since V8:
+ 1. Rebase to latest kernel version and fix topo in some of the patches.
+ 2. According to the suggestion of Catalin, I attempted to modify the
+    return value of function copy_mc_[user]_highpage() to bytes not copied.
+    During the modification process, I found that it would be more
+    reasonable to return -EFAULT when copy error occurs (referring to the
+    newly added patch 4). 
+
+    For ARM64, the implementation of copy_mc_[user]_highpage() needs to
+    consider MTE. Considering the scenario where data copying is successful
+    but the MTE tag copying fails, it is also not reasonable to return
+    bytes not copied.
+ 3. Considering the recent addition of machine check safe support for
+    multiple scenarios, modify commit message for patch 5 (patch 4 for V8).
+
+Since V7:
+ Currently, there are patches supporting recover from poison
+ consumption for the cow scenario[1]. Therefore, Supporting cow
+ scenario under the arm64 architecture only needs to modify the relevant
+ code under the arch/.
+ [1]https://lore.kernel.org/lkml/20221031201029.102123-1-tony.luck@intel.com/
+
+Since V6:
+ Resend patches that are not merged into the mainline in V6.
+
+Since V5:
+ 1. Add patch2/3 to add uaccess assembly helpers.
+ 2. Optimize the implementation logic of arm64_do_kernel_sea() in patch8.
+ 3. Remove kernel access fixup in patch9.
+ All suggestion are from Mark. 
+
+Since V4:
+ 1. According Michael's suggestion, add patch5.
+ 2. According Mark's suggestiog, do some restructuring to arm64
+ extable, then a new adaptation of machine check safe support is made based
+ on this.
+ 3. According Mark's suggestion, support machine check safe in do_mte() in
+ cow scene.
+ 4. In V4, two patches have been merged into -next, so V5 not send these
+ two patches.
+
+Since V3:
+ 1. According to Robin's suggestion, direct modify user_ldst and
+ user_ldp in asm-uaccess.h and modify mte.S.
+ 2. Add new macro USER_MC in asm-uaccess.h, used in copy_from_user.S
+ and copy_to_user.S.
+ 3. According to Robin's suggestion, using micro in copy_page_mc.S to
+ simplify code.
+ 4. According to KeFeng's suggestion, modify powerpc code in patch1.
+ 5. According to KeFeng's suggestion, modify mm/extable.c and some code
+ optimization.
+
+Since V2:
+ 1. According to Mark's suggestion, all uaccess can be recovered due to
+    memory error.
+ 2. Scenario pagecache reading is also supported as part of uaccess
+    (copy_to_user()) and duplication code problem is also solved. 
+    Thanks for Robin's suggestion.
+ 3. According Mark's suggestion, update commit message of patch 2/5.
+ 4. According Borisllav's suggestion, update commit message of patch 1/5.
+
+Since V1:
+ 1.Consistent with PPC/x86, Using CONFIG_ARCH_HAS_COPY_MC instead of
+   ARM64_UCE_KERNEL_RECOVERY.
+ 2.Add two new scenes, cow and pagecache reading.
+ 3.Fix two small bug(the first two patch).
+
+V1 in here:
+https://lore.kernel.org/lkml/20220323033705.3966643-1-tongtiangen@huawei.com/
+
+Tong Tiangen (6):
+  uaccess: add generic fallback version of copy_mc_to_user()
+  arm64: add support for machine check error safe
+  arm64: add uaccess to machine check safe
+  mm/hwpoison: return -EFAULT when copy fail in
+    copy_mc_[user]_highpage()
+  arm64: support copy_mc_[user]_highpage()
+  arm64: introduce copy_mc_to_kernel() implementation
+
+ arch/arm64/Kconfig                   |   1 +
+ arch/arm64/include/asm/asm-extable.h |  15 ++
+ arch/arm64/include/asm/assembler.h   |   4 +
+ arch/arm64/include/asm/extable.h     |   1 +
+ arch/arm64/include/asm/mte.h         |   5 +
+ arch/arm64/include/asm/page.h        |  10 ++
+ arch/arm64/include/asm/string.h      |   5 +
+ arch/arm64/include/asm/uaccess.h     |  21 +++
+ arch/arm64/lib/Makefile              |   4 +-
+ arch/arm64/lib/copy_from_user.S      |  10 +-
+ arch/arm64/lib/copy_mc_page.S        |  78 ++++++++
+ arch/arm64/lib/copy_to_user.S        |  10 +-
+ arch/arm64/lib/memcpy_mc.S           | 257 +++++++++++++++++++++++++++
+ arch/arm64/lib/mte.S                 |  27 +++
+ arch/arm64/mm/copypage.c             |  66 ++++++-
+ arch/arm64/mm/extable.c              |  21 ++-
+ arch/arm64/mm/fault.c                |  29 ++-
+ arch/powerpc/include/asm/uaccess.h   |   1 +
+ arch/x86/include/asm/uaccess.h       |   1 +
+ include/linux/highmem.h              |  16 +-
+ include/linux/uaccess.h              |   9 +
+ mm/kasan/shadow.c                    |  12 ++
+ mm/khugepaged.c                      |   4 +-
+ 23 files changed, 581 insertions(+), 26 deletions(-)
+ create mode 100644 arch/arm64/lib/copy_mc_page.S
+ create mode 100644 arch/arm64/lib/memcpy_mc.S
+
 -- 
 2.25.1
 
