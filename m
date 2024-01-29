@@ -4,66 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32438C47DA9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 13:18:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB51EC47422
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 13:51:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FhFi3xE+;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EDDkoG2Z;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EDDkoG2Z;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TNplR68NPz3cRD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 00:18:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TNqTc2Tg6z3c1g
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 00:51:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FhFi3xE+;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EDDkoG2Z;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EDDkoG2Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=lukas.bulwahn@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNpkX6lcXz2yk5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 00:17:39 +1100 (AEDT)
-Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-55f279dca99so396663a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2024 05:17:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1706534252; x=1707139052; darn=lists.ozlabs.org;
-        h=message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tMwNqcZZgOVXT/J1FjC+xI4RABs1qjk7vHn8GPhDdCA=;
-        b=FhFi3xE+f7ZNX8PznPVwB4+BsA5MyEotGpjlfd5W+r/P0TRSZyshEPH0Id2lv+r1bp
-         BbwuBmr1mFHNl2nxmuDBDxS1RFeFtfA83qoASvdxIF7+lH/6Hnm5gEJspDTZsBxFxePQ
-         BGis47xedpcThozO2OMxnVCZaE536cc+PByAs+B5vlwDKgHDdazCmEXDTMf+W2R2nusl
-         TEImnGo/60eZcEjE2Takc6cJOvQSXUN+TfaX7+/gBkYvhDOmDMDLaZr98lNOSXSlSk9A
-         dknN6/CBEwoGpa7+folGadQ1Tagv9ws2fNkLAuiGksOwu4y6fXwJHhzMp4DA7sqmWcVw
-         CcBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706534252; x=1707139052;
-        h=message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=tMwNqcZZgOVXT/J1FjC+xI4RABs1qjk7vHn8GPhDdCA=;
-        b=X/TOjuGxMylBYvk9t5wGFHRP4wplrzJuu7ILQh1H92YD0DKUIXl9QiPyybpdh/a/O+
-         1hsYFmNHWF2YrfqsEW1ztQ4OyE2Kh+SNaaDi3dGpomsloH9dxnx3YXjD2BqNQ7rcw2Vh
-         CLvk1WbYVVOTxtBcStXOBPo334DU6bCWhsFo8dr4/0Hf2kFIDGflLSx5mzNuCkTXYvjt
-         AgTFhg582Sr10TFcV0BT7Q0gICTvakDUWLBZCw/wSp8SU+Mi8sNERmUFEb8qLZ31Ye9a
-         QHympFTLkhy2/M+7iok/WygziTQApkt7+rcssEtnnlmfDZWnsPs/JY3t5yUHIaSj15q3
-         cs9w==
-X-Gm-Message-State: AOJu0YzbUBVXfV6HWyZZsLbCWcqJnilaVPxRfmZf1JbHLTRZfZSYZNAv
-	ffYkV/2WhHR51GJeVJJlKIc3clsb0DNYdOxuAG2Xn2IDQNcWQPjg
-X-Google-Smtp-Source: AGHT+IF56lsLVSwWT0MpkDQTXGgYqHeVKKkqZNQrGyXnP0BOY5XivLNVLZnraDMCsPBFwK/blGmZfg==
-X-Received: by 2002:a17:906:2e94:b0:a35:fdf9:e6fc with SMTP id o20-20020a1709062e9400b00a35fdf9e6fcmr55005eji.18.1706534252237;
-        Mon, 29 Jan 2024 05:17:32 -0800 (PST)
-Received: from felia.fritz.box ([2a02:810d:7e40:14b0:fddc:9ce:9e0f:3ad3])
-        by smtp.gmail.com with ESMTPSA id q15-20020a17090622cf00b00a359afad88dsm1590449eja.10.2024.01.29.05.17.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jan 2024 05:17:31 -0800 (PST)
-From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-To: Danny Tsen <dtsen@linux.ibm.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	linux-crypto@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] MAINTAINERS: adjust file entries after crypto vmx file movement
-Date: Mon, 29 Jan 2024 14:17:29 +0100
-Message-Id: <20240129131729.4311-1-lukas.bulwahn@gmail.com>
-X-Mailer: git-send-email 2.17.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNqSm2TMGz3bTn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 00:50:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1706536244;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=jc8Yx5eNW+ZkMcLwS9vYyBi1Ha2SHd226WdxPKcg/iA=;
+	b=EDDkoG2ZVEaO5gAg+hR6D0mB//MB1WW4U0v7E5vlKvn1Mpl1PurByNejIiyPrrgCIipPPO
+	Q0SfnpTtYfW9qqRyNBvGpi1SWu3poiKjiflmF3juBlMdrKlKYFbs2ADeIE3DlUwCMfJSV5
+	Bg5BqyalqIPkmEdq3FrmYEAbitTAv64=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1706536244;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=jc8Yx5eNW+ZkMcLwS9vYyBi1Ha2SHd226WdxPKcg/iA=;
+	b=EDDkoG2ZVEaO5gAg+hR6D0mB//MB1WW4U0v7E5vlKvn1Mpl1PurByNejIiyPrrgCIipPPO
+	Q0SfnpTtYfW9qqRyNBvGpi1SWu3poiKjiflmF3juBlMdrKlKYFbs2ADeIE3DlUwCMfJSV5
+	Bg5BqyalqIPkmEdq3FrmYEAbitTAv64=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-253-_OvrGVNDO9avpejqoLvkvw-1; Mon, 29 Jan 2024 08:50:40 -0500
+X-MC-Unique: _OvrGVNDO9avpejqoLvkvw-1
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5EA1B101A526;
+	Mon, 29 Jan 2024 13:50:40 +0000 (UTC)
+Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.116.15])
+	by smtp.corp.redhat.com (Postfix) with ESMTP id ECEBAA26;
+	Mon, 29 Jan 2024 13:50:35 +0000 (UTC)
+From: Baoquan He <bhe@redhat.com>
+To: kexec@lists.infradead.org,
+	akpm@linux-foundation.org
+Subject: [PATCH linux-next 1/3] x86, crash: don't nest CONFIG_CRASH_DUMP ifdef inside CONFIG_KEXEC_CODE ifdef scope
+Date: Mon, 29 Jan 2024 21:50:31 +0800
+Message-ID: <20240129135033.157195-1-bhe@redhat.com>
+MIME-Version: 1.0
+Content-type: text/plain
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,58 +77,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-s390@vger.kernel.org, Baoquan He <bhe@redhat.com>, mhklinux@outlook.com, x86@kernel.org, linux-kernel@vger.kernel.org, nathan@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 109303336a0c ("crypto: vmx - Move to arch/powerpc/crypto") moves the
-crypto vmx files to arch/powerpc, but misses to adjust the file entries for
-IBM Power VMX Cryptographic instructions and LINUX FOR POWERPC.
+Michael pointed out that the #ifdef CONFIG_CRASH_DUMP is nested inside
+arch/x86/xen/enlighten_hvm.c.
 
-Hence, ./scripts/get_maintainer.pl --self-test=patterns complains about
-broken references.
+Although the nesting works well too since CONFIG_CRASH_DUMP has
+dependency on CONFIG_KEXEC_CORE, it may cause confuse because there
+are places where it's not nested, and people may think it need be nested
+even though it doesn't have to.
 
-Adjust these file entries accordingly.
+Fix that by moving  CONFIG_CRASH_DUMP ifdeffery of codes out of
+CONFIG_KEXEC_CODE ifdeffery scope.
 
-Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+And also fix a building error Nathan reported as below by replacing
+CONFIG_KEXEC_CORE ifdef with CONFIG_VMCORE_INFO ifdef.
+
+====
+$ curl -LSso .config https://git.alpinelinux.org/aports/plain/community/linux-edge/config-edge.x86_64
+$ make -skj"$(nproc)" ARCH=x86_64 CROSS_COMPILE=x86_64-linux- olddefconfig all
+...
+x86_64-linux-ld: arch/x86/xen/mmu_pv.o: in function `paddr_vmcoreinfo_note':
+mmu_pv.c:(.text+0x3af3): undefined reference to `vmcoreinfo_note'
+====
+
+Link: https://lore.kernel.org/all/SN6PR02MB4157931105FA68D72E3D3DB8D47B2@SN6PR02MB4157.namprd02.prod.outlook.com/T/#u
+Link: https://lore.kernel.org/all/20240126045551.GA126645@dev-arch.thelio-3990X/T/#u
+Signed-off-by: Baoquan He <bhe@redhat.com>
 ---
-Danny, please ack.
-Herbert, please pick this minor clean-up patch on your -next tree.
+ arch/x86/kernel/cpu/mshyperv.c | 10 ++++++----
+ arch/x86/kernel/reboot.c       |  2 +-
+ arch/x86/xen/enlighten_hvm.c   |  4 ++--
+ arch/x86/xen/mmu_pv.c          |  2 +-
+ 4 files changed, 10 insertions(+), 8 deletions(-)
 
- MAINTAINERS | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2fb944964be5..15bc79e80e28 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10307,12 +10307,12 @@ M:	Nayna Jain <nayna@linux.ibm.com>
- M:	Paulo Flabiano Smorigo <pfsmorigo@gmail.com>
- L:	linux-crypto@vger.kernel.org
- S:	Supported
--F:	drivers/crypto/vmx/Kconfig
--F:	drivers/crypto/vmx/Makefile
--F:	drivers/crypto/vmx/aes*
--F:	drivers/crypto/vmx/ghash*
--F:	drivers/crypto/vmx/ppc-xlate.pl
--F:	drivers/crypto/vmx/vmx.c
-+F:	arch/powerpc/crypto/Kconfig
-+F:	arch/powerpc/crypto/Makefile
-+F:	arch/powerpc/crypto/aes*
-+F:	arch/powerpc/crypto/ghash*
-+F:	arch/powerpc/crypto/ppc-xlate.pl
-+F:	arch/powerpc/crypto/vmx.c
+diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
+index f8163a59026b..2e8cd5a4ae85 100644
+--- a/arch/x86/kernel/cpu/mshyperv.c
++++ b/arch/x86/kernel/cpu/mshyperv.c
+@@ -209,6 +209,7 @@ static void hv_machine_shutdown(void)
+ 	if (kexec_in_progress)
+ 		hyperv_cleanup();
+ }
++#endif /* CONFIG_KEXEC_CORE */
  
- IBM ServeRAID RAID DRIVER
- S:	Orphan
-@@ -12397,7 +12397,6 @@ F:	drivers/*/*/*pasemi*
- F:	drivers/*/*pasemi*
- F:	drivers/char/tpm/tpm_ibmvtpm*
- F:	drivers/crypto/nx/
--F:	drivers/crypto/vmx/
- F:	drivers/i2c/busses/i2c-opal.c
- F:	drivers/net/ethernet/ibm/ibmveth.*
- F:	drivers/net/ethernet/ibm/ibmvnic.*
+ #ifdef CONFIG_CRASH_DUMP
+ static void hv_machine_crash_shutdown(struct pt_regs *regs)
+@@ -222,8 +223,7 @@ static void hv_machine_crash_shutdown(struct pt_regs *regs)
+ 	/* Disable the hypercall page when there is only 1 active CPU. */
+ 	hyperv_cleanup();
+ }
+-#endif
+-#endif /* CONFIG_KEXEC_CORE */
++#endif /* CONFIG_CRASH_DUMP */
+ #endif /* CONFIG_HYPERV */
+ 
+ static uint32_t  __init ms_hyperv_platform(void)
+@@ -497,9 +497,11 @@ static void __init ms_hyperv_init_platform(void)
+ 	no_timer_check = 1;
+ #endif
+ 
+-#if IS_ENABLED(CONFIG_HYPERV) && defined(CONFIG_KEXEC_CORE)
++#if IS_ENABLED(CONFIG_HYPERV)
++#if defined(CONFIG_KEXEC_CORE)
+ 	machine_ops.shutdown = hv_machine_shutdown;
+-#ifdef CONFIG_CRASH_DUMP
++#endif
++#if defined(CONFIG_CRASH_DUMP)
+ 	machine_ops.crash_shutdown = hv_machine_crash_shutdown;
+ #endif
+ #endif
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 1287b0d5962f..f3130f762784 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -826,7 +826,7 @@ void machine_halt(void)
+ 	machine_ops.halt();
+ }
+ 
+-#ifdef CONFIG_KEXEC_CORE
++#ifdef CONFIG_CRASH_DUMP
+ void machine_crash_shutdown(struct pt_regs *regs)
+ {
+ 	machine_ops.crash_shutdown(regs);
+diff --git a/arch/x86/xen/enlighten_hvm.c b/arch/x86/xen/enlighten_hvm.c
+index 09e3db7ff990..0b367c1e086d 100644
+--- a/arch/x86/xen/enlighten_hvm.c
++++ b/arch/x86/xen/enlighten_hvm.c
+@@ -148,6 +148,7 @@ static void xen_hvm_shutdown(void)
+ 	if (kexec_in_progress)
+ 		xen_reboot(SHUTDOWN_soft_reset);
+ }
++#endif
+ 
+ #ifdef CONFIG_CRASH_DUMP
+ static void xen_hvm_crash_shutdown(struct pt_regs *regs)
+@@ -156,7 +157,6 @@ static void xen_hvm_crash_shutdown(struct pt_regs *regs)
+ 	xen_reboot(SHUTDOWN_soft_reset);
+ }
+ #endif
+-#endif
+ 
+ static int xen_cpu_up_prepare_hvm(unsigned int cpu)
+ {
+@@ -238,10 +238,10 @@ static void __init xen_hvm_guest_init(void)
+ 
+ #ifdef CONFIG_KEXEC_CORE
+ 	machine_ops.shutdown = xen_hvm_shutdown;
++#endif
+ #ifdef CONFIG_CRASH_DUMP
+ 	machine_ops.crash_shutdown = xen_hvm_crash_shutdown;
+ #endif
+-#endif
+ }
+ 
+ static __init int xen_parse_nopv(char *arg)
+diff --git a/arch/x86/xen/mmu_pv.c b/arch/x86/xen/mmu_pv.c
+index 218773cfb009..e21974f2cf2d 100644
+--- a/arch/x86/xen/mmu_pv.c
++++ b/arch/x86/xen/mmu_pv.c
+@@ -2520,7 +2520,7 @@ int xen_remap_pfn(struct vm_area_struct *vma, unsigned long addr,
+ }
+ EXPORT_SYMBOL_GPL(xen_remap_pfn);
+ 
+-#ifdef CONFIG_KEXEC_CORE
++#ifdef CONFIG_VMCORE_INFO
+ phys_addr_t paddr_vmcoreinfo_note(void)
+ {
+ 	if (xen_pv_domain())
 -- 
-2.17.1
+2.41.0
 
