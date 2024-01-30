@@ -4,32 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 332ECC48285
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 10:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD9B9C47DDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 10:37:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TPM1Z6dbDz3cY7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 21:32:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TPM152yR1z3bqh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 21:32:07 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 89A17DA7;
-	Tue, 30 Jan 2024 02:32:17 -0800 (PST)
-Received: from FVFF77S0Q05N (unknown [10.57.48.92])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A855E3F5A1;
-	Tue, 30 Jan 2024 02:31:29 -0800 (PST)
-Date: Tue, 30 Jan 2024 10:31:27 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Tong Tiangen <tongtiangen@huawei.com>
-Subject: Re: [PATCH v10 5/6] arm64: support copy_mc_[user]_highpage()
-Message-ID: <ZbjP_19VCYmtsGcg@FVFF77S0Q05N>
-References: <20240129134652.4004931-1-tongtiangen@huawei.com>
- <20240129134652.4004931-6-tongtiangen@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TPM7V3113z3dX3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 21:37:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TPM6J6Zk0z3cTM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 21:36:40 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4TPM670tFRz9sFT;
+	Tue, 30 Jan 2024 11:36:31 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8EjE0OpQMFU6; Tue, 30 Jan 2024 11:36:31 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4TPM4V55JLz9vG7;
+	Tue, 30 Jan 2024 11:35:06 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A488B8B76D;
+	Tue, 30 Jan 2024 11:35:06 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id Xe3tmYOIl2z3; Tue, 30 Jan 2024 11:35:06 +0100 (CET)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.134])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 12E768B763;
+	Tue, 30 Jan 2024 11:35:05 +0100 (CET)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Kees Cook <keescook@chromium.org>
+Subject: [PATCH v2 2/5] arm64, powerpc, riscv, s390, x86: ptdump: Refactor CONFIG_DEBUG_WX
+Date: Tue, 30 Jan 2024 11:34:33 +0100
+Message-ID: <a59b102d7964261d31ead0316a9f18628e4e7a8e.1706610398.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1706610398.git.christophe.leroy@csgroup.eu>
+References: <cover.1706610398.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240129134652.4004931-6-tongtiangen@huawei.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1706610876; l=11434; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=e2rpAPsdy38v3PPtSo8N5tBPxY6Z4CIWw977uC4+T0U=; b=JK2GXggDzt6F4O25RtNFIFsAXbe3Jz+llM0vo+ldXpJVFiDRZR67B0ir1bg9wNugN+pcfX7t7 j+ZjzswvDKxBF7Wn4WkFP+I2L1QOrGxYtURyS3JJnj4BHg3q4+xiRKm
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -41,482 +60,366 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Andrey Ryabinin <ryabinin.a.a@gmail.com>, Alexander Potapenko <glider@google.com>, kasan-dev@googlegroups.com, "H. Peter Anvin" <hpa@zytor.com>, Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>, x86@kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Dmitry Vyukov <dvyukov@google.com>, Andrey Konovalov <andreyknvl@gmail.com>, linuxppc-dev@lists.ozlabs.org, Guohanjun <guohanjun@huawei.com>, linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>, Robin Murphy <robin.murphy@arm.com>
+Cc: mark.rutland@arm.com, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Phong Tran <tranmanphong@gmail.com>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, steven.price@arm.com, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Ingo Molnar <mingo@redhat.com>, Greg KH <greg@kroah.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alexghiti@rivosinc.com>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 29, 2024 at 09:46:51PM +0800, Tong Tiangen wrote:
-> Currently, many scenarios that can tolerate memory errors when copying page
-> have been supported in the kernel[1][2][3], all of which are implemented by
-> copy_mc_[user]_highpage(). arm64 should also support this mechanism.
-> 
-> Due to mte, arm64 needs to have its own copy_mc_[user]_highpage()
-> architecture implementation, macros __HAVE_ARCH_COPY_MC_HIGHPAGE and
-> __HAVE_ARCH_COPY_MC_USER_HIGHPAGE have been added to control it.
-> 
-> Add new helper copy_mc_page() which provide a page copy implementation with
-> machine check safe. The copy_mc_page() in copy_mc_page.S is largely borrows
-> from copy_page() in copy_page.S and the main difference is copy_mc_page()
-> add extable entry to every load/store insn to support machine check safe.
-> 
-> Add new extable type EX_TYPE_COPY_MC_PAGE_ERR_ZERO which used in
-> copy_mc_page().
-> 
-> [1]a873dfe1032a ("mm, hwpoison: try to recover from copy-on write faults")
-> [2]5f2500b93cc9 ("mm/khugepaged: recover from poisoned anonymous memory")
-> [3]6b970599e807 ("mm: hwpoison: support recovery from ksm_might_need_to_copy()")
-> 
-> Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
-> ---
->  arch/arm64/include/asm/asm-extable.h | 15 ++++++
->  arch/arm64/include/asm/assembler.h   |  4 ++
->  arch/arm64/include/asm/mte.h         |  5 ++
->  arch/arm64/include/asm/page.h        | 10 ++++
->  arch/arm64/lib/Makefile              |  2 +
->  arch/arm64/lib/copy_mc_page.S        | 78 ++++++++++++++++++++++++++++
->  arch/arm64/lib/mte.S                 | 27 ++++++++++
->  arch/arm64/mm/copypage.c             | 66 ++++++++++++++++++++---
->  arch/arm64/mm/extable.c              |  7 +--
->  include/linux/highmem.h              |  8 +++
->  10 files changed, 213 insertions(+), 9 deletions(-)
->  create mode 100644 arch/arm64/lib/copy_mc_page.S
-> 
-> diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-> index 980d1dd8e1a3..819044fefbe7 100644
-> --- a/arch/arm64/include/asm/asm-extable.h
-> +++ b/arch/arm64/include/asm/asm-extable.h
-> @@ -10,6 +10,7 @@
->  #define EX_TYPE_UACCESS_ERR_ZERO	2
->  #define EX_TYPE_KACCESS_ERR_ZERO	3
->  #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	4
-> +#define EX_TYPE_COPY_MC_PAGE_ERR_ZERO	5
->  
->  /* Data fields for EX_TYPE_UACCESS_ERR_ZERO */
->  #define EX_DATA_REG_ERR_SHIFT	0
-> @@ -51,6 +52,16 @@
->  #define _ASM_EXTABLE_UACCESS(insn, fixup)				\
->  	_ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, wzr, wzr)
->  
-> +#define _ASM_EXTABLE_COPY_MC_PAGE_ERR_ZERO(insn, fixup, err, zero)	\
-> +	__ASM_EXTABLE_RAW(insn, fixup, 					\
-> +			  EX_TYPE_COPY_MC_PAGE_ERR_ZERO,		\
-> +			  (						\
-> +			    EX_DATA_REG(ERR, err) |			\
-> +			    EX_DATA_REG(ZERO, zero)			\
-> +			  ))
-> +
-> +#define _ASM_EXTABLE_COPY_MC_PAGE(insn, fixup)				\
-> +	_ASM_EXTABLE_COPY_MC_PAGE_ERR_ZERO(insn, fixup, wzr, wzr)
->  /*
->   * Create an exception table entry for uaccess `insn`, which will branch to `fixup`
->   * when an unhandled fault is taken.
-> @@ -59,6 +70,10 @@
->  	_ASM_EXTABLE_UACCESS(\insn, \fixup)
->  	.endm
->  
-> +	.macro          _asm_extable_copy_mc_page, insn, fixup
-> +	_ASM_EXTABLE_COPY_MC_PAGE(\insn, \fixup)
-> +	.endm
-> +
+All architectures using the core ptdump functionality also implement
+CONFIG_DEBUG_WX, and they all do it more or less the same way, with a
+function called debug_checkwx() that is called by mark_rodata_ro(),
+which is a substitute to ptdump_check_wx() when CONFIG_DEBUG_WX is
+set and a no-op otherwise.
 
-This should share a common EX_TYPE_ with the other "kaccess where memory error
-is handled but other faults are fatal" cases.
+Refactor by centraly defining debug_checkwx() in linux/ptdump.h and
+call debug_checkwx() immediately after calling mark_rodata_ro()
+instead of calling it at the end of every mark_rodata_ro().
 
->  /*
->   * Create an exception table entry for `insn` if `fixup` is provided. Otherwise
->   * do nothing.
-> diff --git a/arch/arm64/include/asm/assembler.h b/arch/arm64/include/asm/assembler.h
-> index 513787e43329..e1d8ce155878 100644
-> --- a/arch/arm64/include/asm/assembler.h
-> +++ b/arch/arm64/include/asm/assembler.h
-> @@ -154,6 +154,10 @@ lr	.req	x30		// link register
->  #define CPU_LE(code...) code
->  #endif
->  
-> +#define CPY_MC(l, x...)		\
-> +9999:   x;			\
-> +	_asm_extable_copy_mc_page    9999b, l
-> +
->  /*
->   * Define a macro that constructs a 64-bit value by concatenating two
->   * 32-bit registers. Note that on big endian systems the order of the
-> diff --git a/arch/arm64/include/asm/mte.h b/arch/arm64/include/asm/mte.h
-> index 91fbd5c8a391..9cdded082dd4 100644
-> --- a/arch/arm64/include/asm/mte.h
-> +++ b/arch/arm64/include/asm/mte.h
-> @@ -92,6 +92,7 @@ static inline bool try_page_mte_tagging(struct page *page)
->  void mte_zero_clear_page_tags(void *addr);
->  void mte_sync_tags(pte_t pte, unsigned int nr_pages);
->  void mte_copy_page_tags(void *kto, const void *kfrom);
-> +int mte_copy_mc_page_tags(void *kto, const void *kfrom);
->  void mte_thread_init_user(void);
->  void mte_thread_switch(struct task_struct *next);
->  void mte_cpu_setup(void);
-> @@ -128,6 +129,10 @@ static inline void mte_sync_tags(pte_t pte, unsigned int nr_pages)
->  static inline void mte_copy_page_tags(void *kto, const void *kfrom)
->  {
->  }
-> +static inline int mte_copy_mc_page_tags(void *kto, const void *kfrom)
-> +{
-> +	return 0;
-> +}
->  static inline void mte_thread_init_user(void)
->  {
->  }
-> diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
-> index 2312e6ee595f..304cc86b8a10 100644
-> --- a/arch/arm64/include/asm/page.h
-> +++ b/arch/arm64/include/asm/page.h
-> @@ -29,6 +29,16 @@ void copy_user_highpage(struct page *to, struct page *from,
->  void copy_highpage(struct page *to, struct page *from);
->  #define __HAVE_ARCH_COPY_HIGHPAGE
->  
-> +#ifdef CONFIG_ARCH_HAS_COPY_MC
-> +int copy_mc_page(void *to, const void *from);
-> +int copy_mc_highpage(struct page *to, struct page *from);
-> +#define __HAVE_ARCH_COPY_MC_HIGHPAGE
-> +
-> +int copy_mc_user_highpage(struct page *to, struct page *from,
-> +		unsigned long vaddr, struct vm_area_struct *vma);
-> +#define __HAVE_ARCH_COPY_MC_USER_HIGHPAGE
-> +#endif
-> +
->  struct folio *vma_alloc_zeroed_movable_folio(struct vm_area_struct *vma,
->  						unsigned long vaddr);
->  #define vma_alloc_zeroed_movable_folio vma_alloc_zeroed_movable_folio
-> diff --git a/arch/arm64/lib/Makefile b/arch/arm64/lib/Makefile
-> index 29490be2546b..a2fd865b816d 100644
-> --- a/arch/arm64/lib/Makefile
-> +++ b/arch/arm64/lib/Makefile
-> @@ -15,6 +15,8 @@ endif
->  
->  lib-$(CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE) += uaccess_flushcache.o
->  
-> +lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o
-> +
->  obj-$(CONFIG_CRC32) += crc32.o
->  
->  obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
-> diff --git a/arch/arm64/lib/copy_mc_page.S b/arch/arm64/lib/copy_mc_page.S
-> new file mode 100644
-> index 000000000000..524534d26d86
-> --- /dev/null
-> +++ b/arch/arm64/lib/copy_mc_page.S
-> @@ -0,0 +1,78 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (C) 2012 ARM Ltd.
-> + */
-> +
-> +#include <linux/linkage.h>
-> +#include <linux/const.h>
-> +#include <asm/assembler.h>
-> +#include <asm/page.h>
-> +#include <asm/cpufeature.h>
-> +#include <asm/alternative.h>
-> +#include <asm/asm-extable.h>
-> +
-> +/*
-> + * Copy a page from src to dest (both are page aligned) with machine check
-> + *
-> + * Parameters:
-> + *	x0 - dest
-> + *	x1 - src
-> + * Returns:
-> + * 	x0 - Return 0 if copy success, or -EFAULT if anything goes wrong
-> + *	     while copying.
-> + */
-> +SYM_FUNC_START(__pi_copy_mc_page)
-> +CPY_MC(9998f, ldp	x2, x3, [x1])
-> +CPY_MC(9998f, ldp	x4, x5, [x1, #16])
-> +CPY_MC(9998f, ldp	x6, x7, [x1, #32])
-> +CPY_MC(9998f, ldp	x8, x9, [x1, #48])
-> +CPY_MC(9998f, ldp	x10, x11, [x1, #64])
-> +CPY_MC(9998f, ldp	x12, x13, [x1, #80])
-> +CPY_MC(9998f, ldp	x14, x15, [x1, #96])
-> +CPY_MC(9998f, ldp	x16, x17, [x1, #112])
-> +
-> +	add	x0, x0, #256
-> +	add	x1, x1, #128
-> +1:
-> +	tst	x0, #(PAGE_SIZE - 1)
-> +
-> +CPY_MC(9998f, stnp	x2, x3, [x0, #-256])
-> +CPY_MC(9998f, ldp	x2, x3, [x1])
-> +CPY_MC(9998f, stnp	x4, x5, [x0, #16 - 256])
-> +CPY_MC(9998f, ldp	x4, x5, [x1, #16])
-> +CPY_MC(9998f, stnp	x6, x7, [x0, #32 - 256])
-> +CPY_MC(9998f, ldp	x6, x7, [x1, #32])
-> +CPY_MC(9998f, stnp	x8, x9, [x0, #48 - 256])
-> +CPY_MC(9998f, ldp	x8, x9, [x1, #48])
-> +CPY_MC(9998f, stnp	x10, x11, [x0, #64 - 256])
-> +CPY_MC(9998f, ldp	x10, x11, [x1, #64])
-> +CPY_MC(9998f, stnp	x12, x13, [x0, #80 - 256])
-> +CPY_MC(9998f, ldp	x12, x13, [x1, #80])
-> +CPY_MC(9998f, stnp	x14, x15, [x0, #96 - 256])
-> +CPY_MC(9998f, ldp	x14, x15, [x1, #96])
-> +CPY_MC(9998f, stnp	x16, x17, [x0, #112 - 256])
-> +CPY_MC(9998f, ldp	x16, x17, [x1, #112])
-> +
-> +	add	x0, x0, #128
-> +	add	x1, x1, #128
-> +
-> +	b.ne	1b
-> +
-> +CPY_MC(9998f, stnp	x2, x3, [x0, #-256])
-> +CPY_MC(9998f, stnp	x4, x5, [x0, #16 - 256])
-> +CPY_MC(9998f, stnp	x6, x7, [x0, #32 - 256])
-> +CPY_MC(9998f, stnp	x8, x9, [x0, #48 - 256])
-> +CPY_MC(9998f, stnp	x10, x11, [x0, #64 - 256])
-> +CPY_MC(9998f, stnp	x12, x13, [x0, #80 - 256])
-> +CPY_MC(9998f, stnp	x14, x15, [x0, #96 - 256])
-> +CPY_MC(9998f, stnp	x16, x17, [x0, #112 - 256])
-> +
-> +	mov x0, #0
-> +	ret
-> +
-> +9998:	mov x0, #-EFAULT
-> +	ret
-> +
-> +SYM_FUNC_END(__pi_copy_mc_page)
-> +SYM_FUNC_ALIAS(copy_mc_page, __pi_copy_mc_page)
-> +EXPORT_SYMBOL(copy_mc_page)
+On x86_32, mark_rodata_ro() first checks __supported_pte_mask has
+_PAGE_NX before calling debug_checkwx(). Now the check is inside the
+callee ptdump_walk_pgd_level_checkwx().
 
-This is a duplicate of the existing copy_page logic; it should be refactored
-such that the logic can be shared.
+On powerpc_64, mark_rodata_ro() bails out early before calling
+ptdump_check_wx() when the MMU doesn't have KERNEL_RO feature. The
+check is now also done in ptdump_check_wx() as it is called outside
+mark_rodata_ro().
 
-> diff --git a/arch/arm64/lib/mte.S b/arch/arm64/lib/mte.S
-> index 5018ac03b6bf..2b748e83f6cf 100644
-> --- a/arch/arm64/lib/mte.S
-> +++ b/arch/arm64/lib/mte.S
-> @@ -80,6 +80,33 @@ SYM_FUNC_START(mte_copy_page_tags)
->  	ret
->  SYM_FUNC_END(mte_copy_page_tags)
->  
-> +/*
-> + * Copy the tags from the source page to the destination one wiht machine check safe
-> + *   x0 - address of the destination page
-> + *   x1 - address of the source page
-> + * Returns:
-> + *   x0 - Return 0 if copy success, or
-> + *        -EFAULT if anything goes wrong while copying.
-> + */
-> +SYM_FUNC_START(mte_copy_mc_page_tags)
-> +	mov	x2, x0
-> +	mov	x3, x1
-> +	multitag_transfer_size x5, x6
-> +1:
-> +CPY_MC(2f, ldgm	x4, [x3])
-> +CPY_MC(2f, stgm	x4, [x2])
-> +	add	x2, x2, x5
-> +	add	x3, x3, x5
-> +	tst	x2, #(PAGE_SIZE - 1)
-> +	b.ne	1b
-> +
-> +	mov x0, #0
-> +	ret
-> +
-> +2:	mov x0, #-EFAULT
-> +	ret
-> +SYM_FUNC_END(mte_copy_mc_page_tags)
-> +
->  /*
->   * Read tags from a user buffer (one tag per byte) and set the corresponding
->   * tags at the given kernel address. Used by PTRACE_POKEMTETAGS.
-> diff --git a/arch/arm64/mm/copypage.c b/arch/arm64/mm/copypage.c
-> index a7bb20055ce0..9765e40cde6c 100644
-> --- a/arch/arm64/mm/copypage.c
-> +++ b/arch/arm64/mm/copypage.c
-> @@ -14,6 +14,25 @@
->  #include <asm/cpufeature.h>
->  #include <asm/mte.h>
->  
-> +static int do_mte(struct page *to, struct page *from, void *kto, void *kfrom, bool mc)
-> +{
-> +	int ret = 0;
-> +
-> +	if (system_supports_mte() && page_mte_tagged(from)) {
-> +		/* It's a new page, shouldn't have been tagged yet */
-> +		WARN_ON_ONCE(!try_page_mte_tagging(to));
-> +		if (mc)
-> +			ret = mte_copy_mc_page_tags(kto, kfrom);
-> +		else
-> +			mte_copy_page_tags(kto, kfrom);
-> +
-> +		if (!ret)
-> +			set_page_mte_tagged(to);
-> +	}
-> +
-> +	return ret;
-> +}
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+---
+v2: For x86 change macro ptdump_check_wx() to ptdump_check_wx
+---
+ arch/arm64/include/asm/ptdump.h |  7 -------
+ arch/arm64/mm/mmu.c             |  2 --
+ arch/powerpc/mm/mmu_decl.h      |  6 ------
+ arch/powerpc/mm/pgtable_32.c    |  4 ----
+ arch/powerpc/mm/pgtable_64.c    |  3 ---
+ arch/powerpc/mm/ptdump/ptdump.c |  3 +++
+ arch/riscv/include/asm/ptdump.h | 22 ----------------------
+ arch/riscv/mm/init.c            |  3 ---
+ arch/riscv/mm/ptdump.c          |  1 -
+ arch/s390/include/asm/ptdump.h  | 14 --------------
+ arch/s390/mm/dump_pagetables.c  |  1 -
+ arch/s390/mm/init.c             |  2 --
+ arch/x86/include/asm/pgtable.h  |  3 +--
+ arch/x86/mm/dump_pagetables.c   |  3 +++
+ arch/x86/mm/init_32.c           |  2 --
+ arch/x86/mm/init_64.c           |  2 --
+ include/linux/ptdump.h          |  7 +++++++
+ init/main.c                     |  2 ++
+ 18 files changed, 16 insertions(+), 71 deletions(-)
+ delete mode 100644 arch/riscv/include/asm/ptdump.h
+ delete mode 100644 arch/s390/include/asm/ptdump.h
 
-The boolean 'mc' argument makes this painful to read, and I don't think it's
-necessary to have this helper anyway.
+diff --git a/arch/arm64/include/asm/ptdump.h b/arch/arm64/include/asm/ptdump.h
+index 581caac525b0..5b1701c76d1c 100644
+--- a/arch/arm64/include/asm/ptdump.h
++++ b/arch/arm64/include/asm/ptdump.h
+@@ -29,13 +29,6 @@ void __init ptdump_debugfs_register(struct ptdump_info *info, const char *name);
+ static inline void ptdump_debugfs_register(struct ptdump_info *info,
+ 					   const char *name) { }
+ #endif
+-void ptdump_check_wx(void);
+ #endif /* CONFIG_PTDUMP_CORE */
+ 
+-#ifdef CONFIG_DEBUG_WX
+-#define debug_checkwx()	ptdump_check_wx()
+-#else
+-#define debug_checkwx()	do { } while (0)
+-#endif
+-
+ #endif /* __ASM_PTDUMP_H */
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 1ac7467d34c9..3a27d887f7dd 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -632,8 +632,6 @@ void mark_rodata_ro(void)
+ 	section_size = (unsigned long)__init_begin - (unsigned long)__start_rodata;
+ 	update_mapping_prot(__pa_symbol(__start_rodata), (unsigned long)__start_rodata,
+ 			    section_size, PAGE_KERNEL_RO);
+-
+-	debug_checkwx();
+ }
+ 
+ static void __init map_kernel_segment(pgd_t *pgdp, void *va_start, void *va_end,
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 72341b9fb552..90dcc2844056 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -171,12 +171,6 @@ static inline void mmu_mark_rodata_ro(void) { }
+ void __init mmu_mapin_immr(void);
+ #endif
+ 
+-#ifdef CONFIG_DEBUG_WX
+-void ptdump_check_wx(void);
+-#else
+-static inline void ptdump_check_wx(void) { }
+-#endif
+-
+ static inline bool debug_pagealloc_enabled_or_kfence(void)
+ {
+ 	return IS_ENABLED(CONFIG_KFENCE) || debug_pagealloc_enabled();
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 5c02fd08d61e..12498017da8e 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -153,7 +153,6 @@ void mark_rodata_ro(void)
+ 
+ 	if (v_block_mapped((unsigned long)_stext + 1)) {
+ 		mmu_mark_rodata_ro();
+-		ptdump_check_wx();
+ 		return;
+ 	}
+ 
+@@ -166,9 +165,6 @@ void mark_rodata_ro(void)
+ 		   PFN_DOWN((unsigned long)_stext);
+ 
+ 	set_memory_ro((unsigned long)_stext, numpages);
+-
+-	// mark_initmem_nx() should have already run by now
+-	ptdump_check_wx();
+ }
+ #endif
+ 
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 5ac1fd30341b..1b366526f4f2 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -150,9 +150,6 @@ void mark_rodata_ro(void)
+ 		radix__mark_rodata_ro();
+ 	else
+ 		hash__mark_rodata_ro();
+-
+-	// mark_initmem_nx() should have already run by now
+-	ptdump_check_wx();
+ }
+ 
+ void mark_initmem_nx(void)
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 2313053fe679..620d4917ebe8 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -343,6 +343,9 @@ void ptdump_check_wx(void)
+ 		}
+ 	};
+ 
++	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && !mmu_has_feature(MMU_FTR_KERNEL_RO))
++		return;
++
+ 	ptdump_walk_pgd(&st.ptdump, &init_mm, NULL);
+ 
+ 	if (st.wx_pages)
+diff --git a/arch/riscv/include/asm/ptdump.h b/arch/riscv/include/asm/ptdump.h
+deleted file mode 100644
+index 3c9ea6dd5af7..000000000000
+--- a/arch/riscv/include/asm/ptdump.h
++++ /dev/null
+@@ -1,22 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- * Copyright (C) 2019 SiFive
+- */
+-
+-#ifndef _ASM_RISCV_PTDUMP_H
+-#define _ASM_RISCV_PTDUMP_H
+-
+-void ptdump_check_wx(void);
+-
+-#ifdef CONFIG_DEBUG_WX
+-static inline void debug_checkwx(void)
+-{
+-	ptdump_check_wx();
+-}
+-#else
+-static inline void debug_checkwx(void)
+-{
+-}
+-#endif
+-
+-#endif /* _ASM_RISCV_PTDUMP_H */
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index 32cad6a65ccd..c5c69f38d11e 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -29,7 +29,6 @@
+ #include <asm/io.h>
+ #include <asm/numa.h>
+ #include <asm/pgtable.h>
+-#include <asm/ptdump.h>
+ #include <asm/sections.h>
+ #include <asm/soc.h>
+ #include <asm/tlbflush.h>
+@@ -723,8 +722,6 @@ void mark_rodata_ro(void)
+ 	if (IS_ENABLED(CONFIG_64BIT))
+ 		set_kernel_memory(lm_alias(__start_rodata), lm_alias(_data),
+ 				  set_memory_ro);
+-
+-	debug_checkwx();
+ }
+ #else
+ static __init pgprot_t pgprot_from_va(uintptr_t va)
+diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
+index 657c27bc07a7..075265603313 100644
+--- a/arch/riscv/mm/ptdump.c
++++ b/arch/riscv/mm/ptdump.c
+@@ -9,7 +9,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/ptdump.h>
+ 
+-#include <asm/ptdump.h>
+ #include <linux/pgtable.h>
+ #include <asm/kasan.h>
+ 
+diff --git a/arch/s390/include/asm/ptdump.h b/arch/s390/include/asm/ptdump.h
+deleted file mode 100644
+index f960b2896606..000000000000
+--- a/arch/s390/include/asm/ptdump.h
++++ /dev/null
+@@ -1,14 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-
+-#ifndef _ASM_S390_PTDUMP_H
+-#define _ASM_S390_PTDUMP_H
+-
+-void ptdump_check_wx(void);
+-
+-static inline void debug_checkwx(void)
+-{
+-	if (IS_ENABLED(CONFIG_DEBUG_WX))
+-		ptdump_check_wx();
+-}
+-
+-#endif /* _ASM_S390_PTDUMP_H */
+diff --git a/arch/s390/mm/dump_pagetables.c b/arch/s390/mm/dump_pagetables.c
+index d37a8f607b71..8dcb4e0c71bd 100644
+--- a/arch/s390/mm/dump_pagetables.c
++++ b/arch/s390/mm/dump_pagetables.c
+@@ -6,7 +6,6 @@
+ #include <linux/mm.h>
+ #include <linux/kfence.h>
+ #include <linux/kasan.h>
+-#include <asm/ptdump.h>
+ #include <asm/kasan.h>
+ #include <asm/abs_lowcore.h>
+ #include <asm/nospec-branch.h>
+diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+index 43e612bc2bcd..d2e5eff9d1de 100644
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -37,7 +37,6 @@
+ #include <asm/pgalloc.h>
+ #include <asm/ctlreg.h>
+ #include <asm/kfence.h>
+-#include <asm/ptdump.h>
+ #include <asm/dma.h>
+ #include <asm/abs_lowcore.h>
+ #include <asm/tlb.h>
+@@ -109,7 +108,6 @@ void mark_rodata_ro(void)
+ 
+ 	__set_memory_ro(__start_ro_after_init, __end_ro_after_init);
+ 	pr_info("Write protected read-only-after-init data: %luk\n", size >> 10);
+-	debug_checkwx();
+ }
+ 
+ int set_memory_encrypted(unsigned long vaddr, int numpages)
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 9d077bca6a10..6c979028e521 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -32,6 +32,7 @@ void ptdump_walk_pgd_level(struct seq_file *m, struct mm_struct *mm);
+ void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,
+ 				   bool user);
+ void ptdump_walk_pgd_level_checkwx(void);
++#define ptdump_check_wx ptdump_walk_pgd_level_checkwx
+ void ptdump_walk_user_pgd_level_checkwx(void);
+ 
+ /*
+@@ -41,10 +42,8 @@ void ptdump_walk_user_pgd_level_checkwx(void);
+ #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
+ 
+ #ifdef CONFIG_DEBUG_WX
+-#define debug_checkwx()		ptdump_walk_pgd_level_checkwx()
+ #define debug_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
+ #else
+-#define debug_checkwx()		do { } while (0)
+ #define debug_checkwx_user()	do { } while (0)
+ #endif
+ 
+diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
+index e1b599ecbbc2..0008524eebe9 100644
+--- a/arch/x86/mm/dump_pagetables.c
++++ b/arch/x86/mm/dump_pagetables.c
+@@ -433,6 +433,9 @@ void ptdump_walk_user_pgd_level_checkwx(void)
+ 
+ void ptdump_walk_pgd_level_checkwx(void)
+ {
++	if (!(__supported_pte_mask & _PAGE_NX))
++		return;
++
+ 	ptdump_walk_pgd_level_core(NULL, &init_mm, INIT_PGD, true, false);
+ }
+ 
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index b63403d7179d..5c736b707cae 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -800,6 +800,4 @@ void mark_rodata_ro(void)
+ 	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
+ #endif
+ 	mark_nxdata_nx();
+-	if (__supported_pte_mask & _PAGE_NX)
+-		debug_checkwx();
+ }
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index a0dffaca6d2b..ebdbcae48011 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1412,8 +1412,6 @@ void mark_rodata_ro(void)
+ 				(void *)text_end, (void *)rodata_start);
+ 	free_kernel_image_pages("unused kernel image (rodata/data gap)",
+ 				(void *)rodata_end, (void *)_sdata);
+-
+-	debug_checkwx();
+ }
+ 
+ /*
+diff --git a/include/linux/ptdump.h b/include/linux/ptdump.h
+index 2a3a95586425..c10513739bf9 100644
+--- a/include/linux/ptdump.h
++++ b/include/linux/ptdump.h
+@@ -19,5 +19,12 @@ struct ptdump_state {
+ };
+ 
+ void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd);
++void ptdump_check_wx(void);
++
++static inline void debug_checkwx(void)
++{
++	if (IS_ENABLED(CONFIG_DEBUG_WX))
++		ptdump_check_wx();
++}
+ 
+ #endif /* _LINUX_PTDUMP_H */
+diff --git a/init/main.c b/init/main.c
+index e24b0780fdff..749a9f8d2c9b 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -99,6 +99,7 @@
+ #include <linux/init_syscalls.h>
+ #include <linux/stackdepot.h>
+ #include <linux/randomize_kstack.h>
++#include <linux/ptdump.h>
+ #include <net/net_namespace.h>
+ 
+ #include <asm/io.h>
+@@ -1408,6 +1409,7 @@ static void mark_readonly(void)
+ 		 */
+ 		rcu_barrier();
+ 		mark_rodata_ro();
++		debug_checkwx();
+ 		rodata_test();
+ 	} else
+ 		pr_info("Kernel memory protection disabled.\n");
+-- 
+2.43.0
 
-It'd be clearer to have this expanded inline in the callers, e.g.
-
-	// in copy_highpage(), as-is today
-	if (system_supports_mte() && page_mte_tagged(from)) {
-		/* It's a new page, shouldn't have been tagged yet */
-		WARN_ON_ONCE(!try_page_mte_tagging(to));
-		mte_copy_page_tags(kto, kfrom);
-		set_page_mte_tagged(to);
-	}
-
-	// in copy_mc_highpage()
-	if (system_supports_mte() && page_mte_tagged(from)) {
-		/* It's a new page, shouldn't have been tagged yet */
-		WARN_ON_ONCE(!try_page_mte_tagging(to));
-		ret = mte_copy_mc_page_tags(kto, kfrom);
-		if (ret)
-			return -EFAULT;
-		set_page_mte_tagged(to);
-	}
-
-Mark.
-
-> +
->  void copy_highpage(struct page *to, struct page *from)
->  {
->  	void *kto = page_address(to);
-> @@ -24,12 +43,7 @@ void copy_highpage(struct page *to, struct page *from)
->  	if (kasan_hw_tags_enabled())
->  		page_kasan_tag_reset(to);
->  
-> -	if (system_supports_mte() && page_mte_tagged(from)) {
-> -		/* It's a new page, shouldn't have been tagged yet */
-> -		WARN_ON_ONCE(!try_page_mte_tagging(to));
-> -		mte_copy_page_tags(kto, kfrom);
-> -		set_page_mte_tagged(to);
-> -	}
-> +	do_mte(to, from, kto, kfrom, false);
->  }
->  EXPORT_SYMBOL(copy_highpage);
->  
-> @@ -40,3 +54,43 @@ void copy_user_highpage(struct page *to, struct page *from,
->  	flush_dcache_page(to);
->  }
->  EXPORT_SYMBOL_GPL(copy_user_highpage);
-> +
-> +#ifdef CONFIG_ARCH_HAS_COPY_MC
-> +/*
-> + * Return -EFAULT if anything goes wrong while copying page or mte.
-> + */
-> +int copy_mc_highpage(struct page *to, struct page *from)
-> +{
-> +	void *kto = page_address(to);
-> +	void *kfrom = page_address(from);
-> +	int ret;
-> +
-> +	ret = copy_mc_page(kto, kfrom);
-> +	if (ret)
-> +		return -EFAULT;
-> +
-> +	if (kasan_hw_tags_enabled())
-> +		page_kasan_tag_reset(to);
-> +
-> +	ret = do_mte(to, from, kto, kfrom, true);
-> +	if (ret)
-> +		return -EFAULT;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(copy_mc_highpage);
-> +
-> +int copy_mc_user_highpage(struct page *to, struct page *from,
-> +			unsigned long vaddr, struct vm_area_struct *vma)
-> +{
-> +	int ret;
-> +
-> +	ret = copy_mc_highpage(to, from);
-> +
-> +	if (!ret)
-> +		flush_dcache_page(to);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(copy_mc_user_highpage);
-> +#endif
-> diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-> index 28ec35e3d210..bdc81518d207 100644
-> --- a/arch/arm64/mm/extable.c
-> +++ b/arch/arm64/mm/extable.c
-> @@ -16,7 +16,7 @@ get_ex_fixup(const struct exception_table_entry *ex)
->  	return ((unsigned long)&ex->fixup + ex->fixup);
->  }
->  
-> -static bool ex_handler_uaccess_err_zero(const struct exception_table_entry *ex,
-> +static bool ex_handler_fixup_err_zero(const struct exception_table_entry *ex,
->  					struct pt_regs *regs)
->  {
->  	int reg_err = FIELD_GET(EX_DATA_REG_ERR, ex->data);
-> @@ -69,7 +69,7 @@ bool fixup_exception(struct pt_regs *regs)
->  		return ex_handler_bpf(ex, regs);
->  	case EX_TYPE_UACCESS_ERR_ZERO:
->  	case EX_TYPE_KACCESS_ERR_ZERO:
-> -		return ex_handler_uaccess_err_zero(ex, regs);
-> +		return ex_handler_fixup_err_zero(ex, regs);
->  	case EX_TYPE_LOAD_UNALIGNED_ZEROPAD:
->  		return ex_handler_load_unaligned_zeropad(ex, regs);
->  	}
-> @@ -87,7 +87,8 @@ bool fixup_exception_mc(struct pt_regs *regs)
->  
->  	switch (ex->type) {
->  	case EX_TYPE_UACCESS_ERR_ZERO:
-> -		return ex_handler_uaccess_err_zero(ex, regs);
-> +	case EX_TYPE_COPY_MC_PAGE_ERR_ZERO:
-> +		return ex_handler_fixup_err_zero(ex, regs);
->  	}
->  
->  	return false;
-> diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-> index c5ca1a1fc4f5..a42470ca42f2 100644
-> --- a/include/linux/highmem.h
-> +++ b/include/linux/highmem.h
-> @@ -332,6 +332,7 @@ static inline void copy_highpage(struct page *to, struct page *from)
->  #endif
->  
->  #ifdef copy_mc_to_kernel
-> +#ifndef __HAVE_ARCH_COPY_MC_USER_HIGHPAGE
->  /*
->   * If architecture supports machine check exception handling, define the
->   * #MC versions of copy_user_highpage and copy_highpage. They copy a memory
-> @@ -354,7 +355,9 @@ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
->  
->  	return ret ? -EFAULT : 0;
->  }
-> +#endif
->  
-> +#ifndef __HAVE_ARCH_COPY_MC_HIGHPAGE
->  static inline int copy_mc_highpage(struct page *to, struct page *from)
->  {
->  	unsigned long ret;
-> @@ -370,20 +373,25 @@ static inline int copy_mc_highpage(struct page *to, struct page *from)
->  
->  	return ret ? -EFAULT : 0;
->  }
-> +#endif
->  #else
-> +#ifndef __HAVE_ARCH_COPY_MC_USER_HIGHPAGE
->  static inline int copy_mc_user_highpage(struct page *to, struct page *from,
->  					unsigned long vaddr, struct vm_area_struct *vma)
->  {
->  	copy_user_highpage(to, from, vaddr, vma);
->  	return 0;
->  }
-> +#endif
->  
-> +#ifndef __HAVE_ARCH_COPY_MC_HIGHPAGE
->  static inline int copy_mc_highpage(struct page *to, struct page *from)
->  {
->  	copy_highpage(to, from);
->  	return 0;
->  }
->  #endif
-> +#endif
->  
->  static inline void memcpy_page(struct page *dst_page, size_t dst_off,
->  			       struct page *src_page, size_t src_off,
-> -- 
-> 2.25.1
-> 
