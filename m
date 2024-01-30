@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B69ACC48286
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 10:37:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F298C48285
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 10:38:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TPM733JvYz3cXK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 21:37:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TPM7x0nLCz3vl2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 21:38:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TPM6D5GfXz3c8W
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 21:36:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TPM6N2k7sz3cVT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 21:36:44 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4TPM6473Twz9sCk;
-	Tue, 30 Jan 2024 11:36:28 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4TPM681h4bz9scH;
+	Tue, 30 Jan 2024 11:36:32 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vvJSyJCgcG_B; Tue, 30 Jan 2024 11:36:28 +0100 (CET)
+	with ESMTP id cZwUjiuwfEk7; Tue, 30 Jan 2024 11:36:32 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4TPM4T10z0z9vFr;
-	Tue, 30 Jan 2024 11:35:05 +0100 (CET)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4TPM4X1FsXz9v9N;
+	Tue, 30 Jan 2024 11:35:08 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 18A1C8B76C;
-	Tue, 30 Jan 2024 11:35:05 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2229B8B76D;
+	Tue, 30 Jan 2024 11:35:08 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id nKiNczyoyHZd; Tue, 30 Jan 2024 11:35:04 +0100 (CET)
+	with ESMTP id PHLQbxrVfhNu; Tue, 30 Jan 2024 11:35:08 +0100 (CET)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.134])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 91DDE8B76D;
-	Tue, 30 Jan 2024 11:35:03 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9C7538B76C;
+	Tue, 30 Jan 2024 11:35:06 +0100 (CET)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Kees Cook <keescook@chromium.org>
-Subject: [PATCH v2 1/5] arm: ptdump: Rename CONFIG_DEBUG_WX to CONFIG_ARM_DEBUG_WX
-Date: Tue, 30 Jan 2024 11:34:32 +0100
-Message-ID: <fa297aa90caeb61eee2b70c6c5897a2ab58a9562.1706610398.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 3/5] powerpc,s390: ptdump: Define ptdump_check_wx() regardless of CONFIG_DEBUG_WX
+Date: Tue, 30 Jan 2024 11:34:34 +0100
+Message-ID: <07bfb04c7fec58e84413e91d2533581be357a696.1706610398.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1706610398.git.christophe.leroy@csgroup.eu>
 References: <cover.1706610398.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1706610876; l=2817; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=QmuRLYanqkqd6xSNOGiFGga1t8t/c6NljZiedRJBwPI=; b=g81FwyS7zti2ruoaUhxUSuzPsw5HpSfIlCY4oQ1NTkvQpTXA2xsMuADC0BH0QgZEr2/l/J3ix J+FpAWf8ERMCsda1rh9tv/mv27RLjAtsKIaQFX8QXy6defhUmKE6s+X
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1706610876; l=3171; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=bb3S88Yvg8QpRseQmACLuXZiVFZjaEpDowsFLtdjjAQ=; b=x0gpc6EGu0yH2XscctlYCktpakujE8CZJRZncJQIF0g06b7Y7Hq6Mvhcu1/d2nAOLeJFqfmh6 BTlFYvDjZnaBzRZ7joo/Zb7ANesjnwXYbuz1WBppoGr+Zl+SP+ywNIp
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -65,92 +65,95 @@ Cc: mark.rutland@arm.com, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_DEBUG_WX is a core option defined in mm/Kconfig.debug
-
-To avoid any future conflict, rename ARM version
-into CONFIG_ARM_DEBUG_WX.
+Following patch will use ptdump_check_wx() regardless of
+CONFIG_DEBUG_WX, so define it at all times on powerpc and s390
+just like other architectures. Though keep the WARN_ON_ONCE()
+only when CONFIG_DEBUG_WX is set.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Fixed left-over debug_checkwx() in mark_rodata_ro() and updated defconfigs
----
- arch/arm/Kconfig.debug               | 2 +-
- arch/arm/configs/aspeed_g4_defconfig | 2 +-
- arch/arm/configs/aspeed_g5_defconfig | 2 +-
- arch/arm/include/asm/ptdump.h        | 6 +++---
- arch/arm/mm/init.c                   | 2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/mm/ptdump/ptdump.c | 7 +++----
+ arch/s390/mm/dump_pagetables.c  | 7 ++-----
+ 2 files changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-index 5fbbac1b708b..f1fc278081d0 100644
---- a/arch/arm/Kconfig.debug
-+++ b/arch/arm/Kconfig.debug
-@@ -17,7 +17,7 @@ config ARM_PTDUMP_DEBUGFS
- 	  kernel.
- 	  If in doubt, say "N"
- 
--config DEBUG_WX
-+config ARM_DEBUG_WX
- 	bool "Warn on W+X mappings at boot"
- 	depends on MMU
- 	select ARM_PTDUMP_CORE
-diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-index b3dc0465796f..28b724d59e7e 100644
---- a/arch/arm/configs/aspeed_g4_defconfig
-+++ b/arch/arm/configs/aspeed_g4_defconfig
-@@ -252,7 +252,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
- CONFIG_GDB_SCRIPTS=y
- CONFIG_STRIP_ASM_SYMS=y
- CONFIG_DEBUG_FS=y
--CONFIG_DEBUG_WX=y
-+CONFIG_ARM_DEBUG_WX=y
- CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_PANIC_TIMEOUT=-1
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 3fdf4dbfdea5..61cee1e7ebea 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -302,7 +302,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
- CONFIG_GDB_SCRIPTS=y
- CONFIG_STRIP_ASM_SYMS=y
- CONFIG_DEBUG_FS=y
--CONFIG_DEBUG_WX=y
-+CONFIG_ARM_DEBUG_WX=y
- CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_PANIC_TIMEOUT=-1
-diff --git a/arch/arm/include/asm/ptdump.h b/arch/arm/include/asm/ptdump.h
-index aad1d034136c..46a4575146ee 100644
---- a/arch/arm/include/asm/ptdump.h
-+++ b/arch/arm/include/asm/ptdump.h
-@@ -32,10 +32,10 @@ void ptdump_check_wx(void);
- 
- #endif /* CONFIG_ARM_PTDUMP_CORE */
- 
--#ifdef CONFIG_DEBUG_WX
--#define debug_checkwx() ptdump_check_wx()
-+#ifdef CONFIG_ARM_DEBUG_WX
-+#define arm_debug_checkwx() ptdump_check_wx()
- #else
--#define debug_checkwx() do { } while (0)
-+#define arm_debug_checkwx() do { } while (0)
- #endif
- 
- #endif /* __ASM_PTDUMP_H */
-diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-index a42e4cd11db2..4c3d78691279 100644
---- a/arch/arm/mm/init.c
-+++ b/arch/arm/mm/init.c
-@@ -458,7 +458,7 @@ static int __mark_rodata_ro(void *unused)
- void mark_rodata_ro(void)
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 620d4917ebe8..b835c80371cd 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -184,13 +184,14 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
  {
- 	stop_machine(__mark_rodata_ro, NULL, NULL);
--	debug_checkwx();
-+	arm_debug_checkwx();
+ 	pte_t pte = __pte(st->current_flags);
+ 
+-	if (!IS_ENABLED(CONFIG_DEBUG_WX) || !st->check_wx)
++	if (!st->check_wx)
+ 		return;
+ 
+ 	if (!pte_write(pte) || !pte_exec(pte))
+ 		return;
+ 
+-	WARN_ONCE(1, "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
++	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
++		  "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
+ 		  (void *)st->start_address, (void *)st->start_address);
+ 
+ 	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
+@@ -326,7 +327,6 @@ static void __init build_pgtable_complete_mask(void)
+ 				pg_level[i].mask |= pg_level[i].flag[j].mask;
  }
  
- #else
+-#ifdef CONFIG_DEBUG_WX
+ void ptdump_check_wx(void)
+ {
+ 	struct pg_state st = {
+@@ -354,7 +354,6 @@ void ptdump_check_wx(void)
+ 	else
+ 		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
+ }
+-#endif
+ 
+ static int __init ptdump_init(void)
+ {
+diff --git a/arch/s390/mm/dump_pagetables.c b/arch/s390/mm/dump_pagetables.c
+index 8dcb4e0c71bd..99da5a5602a8 100644
+--- a/arch/s390/mm/dump_pagetables.c
++++ b/arch/s390/mm/dump_pagetables.c
+@@ -121,7 +121,6 @@ static void print_prot(struct seq_file *m, unsigned int pr, int level)
+ 
+ static void note_prot_wx(struct pg_state *st, unsigned long addr)
+ {
+-#ifdef CONFIG_DEBUG_WX
+ 	if (!st->check_wx)
+ 		return;
+ 	if (st->current_prot & _PAGE_INVALID)
+@@ -138,10 +137,10 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
+ 	 */
+ 	if (addr == PAGE_SIZE && (nospec_uses_trampoline() || !static_key_enabled(&cpu_has_bear)))
+ 		return;
+-	WARN_ONCE(1, "s390/mm: Found insecure W+X mapping at address %pS\n",
++	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
++		  "s390/mm: Found insecure W+X mapping at address %pS\n",
+ 		  (void *)st->start_address);
+ 	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
+-#endif /* CONFIG_DEBUG_WX */
+ }
+ 
+ static void note_page(struct ptdump_state *pt_st, unsigned long addr, int level, u64 val)
+@@ -193,7 +192,6 @@ static void note_page(struct ptdump_state *pt_st, unsigned long addr, int level,
+ 	}
+ }
+ 
+-#ifdef CONFIG_DEBUG_WX
+ void ptdump_check_wx(void)
+ {
+ 	struct pg_state st = {
+@@ -226,7 +224,6 @@ void ptdump_check_wx(void)
+ 			(nospec_uses_trampoline() || !static_key_enabled(&cpu_has_bear)) ?
+ 			"unexpected " : "");
+ }
+-#endif /* CONFIG_DEBUG_WX */
+ 
+ #ifdef CONFIG_PTDUMP_DEBUGFS
+ static int ptdump_show(struct seq_file *m, void *v)
 -- 
 2.43.0
 
