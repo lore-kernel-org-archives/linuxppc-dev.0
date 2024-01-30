@@ -4,70 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1210C47422
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 12:51:28 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OR/zSQnX;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OR/zSQnX;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38BA9C46CD2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 10:36:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TNp8H0Vr3z3dWc
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jan 2024 23:51:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OR/zSQnX;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OR/zSQnX;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TPM6c6PqWz3cYY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jan 2024 21:36:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TNp3q3Cjxz3cLY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2024 23:47:35 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1706532452;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TR23YVq6t+vxDxzPS6q2xEOscQxVIS4+3klgCmYFiGs=;
-	b=OR/zSQnX6wcvSfeR8RQCtBpL6ZD+PkaPXBrF4okNkOshAxVGRPg70DwhbsHnQBKrV8aWva
-	J2QrpfA1rrNNvgWm0+CQ2Wi0Gv62Xup185NxGoZU3EG0uFajMzEIo1PPKOQT317vHV6HNs
-	0s4gLOUgUv+Y5ccKKf1BAq7yF7JuVTs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1706532452;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TR23YVq6t+vxDxzPS6q2xEOscQxVIS4+3klgCmYFiGs=;
-	b=OR/zSQnX6wcvSfeR8RQCtBpL6ZD+PkaPXBrF4okNkOshAxVGRPg70DwhbsHnQBKrV8aWva
-	J2QrpfA1rrNNvgWm0+CQ2Wi0Gv62Xup185NxGoZU3EG0uFajMzEIo1PPKOQT317vHV6HNs
-	0s4gLOUgUv+Y5ccKKf1BAq7yF7JuVTs=
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-317-aMm9C5FkN5Gfoo5yJn1Edw-1; Mon,
- 29 Jan 2024 07:47:28 -0500
-X-MC-Unique: aMm9C5FkN5Gfoo5yJn1Edw-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id CB8C329AC02A;
-	Mon, 29 Jan 2024 12:47:26 +0000 (UTC)
-Received: from t14s.fritz.box (unknown [10.39.194.46])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 5D62B107BD;
-	Mon, 29 Jan 2024 12:47:21 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 05/15] riscv/pgtable: define PFN_PTE_SHIFT
-Date: Mon, 29 Jan 2024 13:46:39 +0100
-Message-ID: <20240129124649.189745-6-david@redhat.com>
-In-Reply-To: <20240129124649.189745-1-david@redhat.com>
-References: <20240129124649.189745-1-david@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TPM6920vkz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2024 21:36:31 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4TPM625ppBz9sB6;
+	Tue, 30 Jan 2024 11:36:26 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Ws_uhNN709Je; Tue, 30 Jan 2024 11:36:26 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4TPM4R4bMWz9vDl;
+	Tue, 30 Jan 2024 11:35:03 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 93C778B76E;
+	Tue, 30 Jan 2024 11:35:03 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 5Vre96fi8PyS; Tue, 30 Jan 2024 11:35:03 +0100 (CET)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.134])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D09B58B763;
+	Tue, 30 Jan 2024 11:35:01 +0100 (CET)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Kees Cook <keescook@chromium.org>
+Subject: [PATCH v2 0/5] mm: ptdump: Refactor CONFIG_DEBUG_WX and check_wx_pages debugfs attribute
+Date: Tue, 30 Jan 2024 11:34:31 +0100
+Message-ID: <cover.1706610398.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1706610876; l=2737; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=GLnDgyafe3Abwdfr1jBJzmg1hyqpqoPnd3cHPH0oxrY=; b=tIZe4XZQjVwWyWqJ6WaH1FMomnKnFXJjNxF+XKnvH0G3eYwBTTFLAyHmPCAqyI2HJixgHIMEp +ciHrtrDDPHBl9BQwIT71a8HT+O9hvNWFDyEfO0KDZbwbPjdDLV5qLD
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,33 +58,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Alexandre Ghiti <alexghiti@rivosinc.com>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-arm-kernel@lists.infradead.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxpp
- c-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: mark.rutland@arm.com, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Phong Tran <tranmanphong@gmail.com>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, steven.price@arm.com, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Ingo Molnar <mingo@redhat.com>, Greg KH <greg@kroah.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linu
+ x-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We want to make use of pte_next_pfn() outside of set_ptes(). Let's
-simply define PFN_PTE_SHIFT, required by pte_next_pfn().
+Refer old discussion at https://lore.kernel.org/lkml/20200422152656.GF676@willie-the-truck/T/#m802eaf33efd6f8d575939d157301b35ac0d4a64f
+And https://github.com/KSPP/linux/issues/35
 
-Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/riscv/include/asm/pgtable.h | 2 ++
- 1 file changed, 2 insertions(+)
+This series refactors CONFIG_DEBUG_WX for the 5 architectures
+implementing CONFIG_GENERIC_PTDUMP
 
-diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 0c94260b5d0c..add5cd30ab34 100644
---- a/arch/riscv/include/asm/pgtable.h
-+++ b/arch/riscv/include/asm/pgtable.h
-@@ -523,6 +523,8 @@ static inline void __set_pte_at(pte_t *ptep, pte_t pteval)
- 	set_pte(ptep, pteval);
- }
- 
-+#define PFN_PTE_SHIFT		_PAGE_PFN_SHIFT
-+
- static inline void set_ptes(struct mm_struct *mm, unsigned long addr,
- 		pte_t *ptep, pte_t pteval, unsigned int nr)
- {
+First rename stuff in ARM which uses similar names while not
+implementing CONFIG_GENERIC_PTDUMP.
+
+Then define a generic version of debug_checkwx() that calls
+ptdump_check_wx() when CONFIG_DEBUG_WX is set. Call it immediately
+after calling mark_rodata_ro() instead of calling it at the end of
+every mark_rodata_ro().
+
+Then implement a debugfs attribute that can be used to trigger
+a W^X test at anytime and regardless of CONFIG_DEBUG_WX
+
+Changes in v2:
+- Fixed a few build failures (patch 1 and 2)
+- Added patch 4
+- Make the attribute return SUCCESS/FAILURE as suggested by Heiko (patch 5)
+
+Christophe Leroy (5):
+  arm: ptdump: Rename CONFIG_DEBUG_WX to CONFIG_ARM_DEBUG_WX
+  arm64, powerpc, riscv, s390, x86: ptdump: Refactor CONFIG_DEBUG_WX
+  powerpc,s390: ptdump: Define ptdump_check_wx() regardless of
+    CONFIG_DEBUG_WX
+  mm: ptdump: Have ptdump_check_wx() return bool
+  mm: ptdump: add check_wx_pages debugfs attribute
+
+ arch/arm/Kconfig.debug               |  2 +-
+ arch/arm/configs/aspeed_g4_defconfig |  2 +-
+ arch/arm/configs/aspeed_g5_defconfig |  2 +-
+ arch/arm/include/asm/ptdump.h        |  6 +++---
+ arch/arm/mm/init.c                   |  2 +-
+ arch/arm64/include/asm/ptdump.h      |  7 -------
+ arch/arm64/mm/mmu.c                  |  2 --
+ arch/arm64/mm/ptdump.c               | 11 ++++++++---
+ arch/powerpc/mm/mmu_decl.h           |  6 ------
+ arch/powerpc/mm/pgtable_32.c         |  4 ----
+ arch/powerpc/mm/pgtable_64.c         |  3 ---
+ arch/powerpc/mm/ptdump/ptdump.c      | 21 ++++++++++++++-------
+ arch/riscv/include/asm/ptdump.h      | 22 ----------------------
+ arch/riscv/mm/init.c                 |  3 ---
+ arch/riscv/mm/ptdump.c               | 12 ++++++++----
+ arch/s390/include/asm/ptdump.h       | 14 --------------
+ arch/s390/mm/dump_pagetables.c       | 21 +++++++++++----------
+ arch/s390/mm/init.c                  |  2 --
+ arch/x86/include/asm/pgtable.h       |  5 ++---
+ arch/x86/mm/dump_pagetables.c        | 20 ++++++++++++++------
+ arch/x86/mm/init_32.c                |  2 --
+ arch/x86/mm/init_64.c                |  2 --
+ include/linux/ptdump.h               |  7 +++++++
+ init/main.c                          |  2 ++
+ mm/ptdump.c                          | 22 ++++++++++++++++++++++
+ 25 files changed, 95 insertions(+), 107 deletions(-)
+ delete mode 100644 arch/riscv/include/asm/ptdump.h
+ delete mode 100644 arch/s390/include/asm/ptdump.h
+
 -- 
 2.43.0
 
