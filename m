@@ -4,33 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7ACD8C47258
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jan 2024 10:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D27DC47DB3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jan 2024 10:59:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TPzFl1lGYz2yD6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jan 2024 21:45:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TPzYp1qnRz3cXZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jan 2024 21:59:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 551 seconds by postgrey-1.37 at boromir; Wed, 31 Jan 2024 21:58:46 AEDT
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TPzDN2MBVz3cV4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2024 21:44:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TPzYL0p8Nz3bmq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2024 21:58:44 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 61E34DA7;
-	Wed, 31 Jan 2024 02:44:15 -0800 (PST)
-Received: from [10.57.79.60] (unknown [10.57.79.60])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A2F0D3F5A1;
-	Wed, 31 Jan 2024 02:43:24 -0800 (PST)
-Message-ID: <a335a9d2-9b8f-4eb8-ba22-23a223b59b06@arm.com>
-Date: Wed, 31 Jan 2024 10:43:22 +0000
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 59443DA7;
+	Wed, 31 Jan 2024 02:49:45 -0800 (PST)
+Received: from [10.57.88.75] (unknown [10.57.88.75])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 16D293F762;
+	Wed, 31 Jan 2024 02:48:59 -0800 (PST)
+Message-ID: <01234ac0-f96d-4a18-8dfa-557020818215@arm.com>
+Date: Wed, 31 Jan 2024 10:48:52 +0000
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 00/15] mm/memory: optimize fork() with PTE-mapped THP
+Subject: Re: [mainline] [linux-next] [6.8-rc1] [FC] [DLPAR] OOps kernel crash
+ after performing dlpar remove test
+To: Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <b7e18415-c04d-412e-8129-22a144d736b9@linux.vnet.ibm.com>
+From: Robin Murphy <robin.murphy@arm.com>
 Content-Language: en-GB
-To: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
-References: <20240129124649.189745-1-david@redhat.com>
-From: Ryan Roberts <ryan.roberts@arm.com>
-In-Reply-To: <20240129124649.189745-1-david@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <b7e18415-c04d-412e-8129-22a144d736b9@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,190 +48,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-arm-kernel@lists.infradead.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: "mputtash@linux.vnet.com" <mputtash@linux.vnet.com>, joro@8bytes.org, "sachinp@linux.vnet.com" <sachinp@linux.vnet.com>, "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>, iommu@lists.linux.dev, will@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 29/01/2024 12:46, David Hildenbrand wrote:
-> Now that the rmap overhaul[1] is upstream that provides a clean interface
-> for rmap batching, let's implement PTE batching during fork when processing
-> PTE-mapped THPs.
+On 2024-01-31 9:19 am, Tasmiya Nalatwad wrote:
+> Greetings,
 > 
-> This series is partially based on Ryan's previous work[2] to implement
-> cont-pte support on arm64, but its a complete rewrite based on [1] to
-> optimize all architectures independent of any such PTE bits, and to
-> use the new rmap batching functions that simplify the code and prepare
-> for further rmap accounting changes.
+> [mainline] [linux-next] [6.8-rc1] [DLPAR] OOps kernel crash after 
+> performing dlpar remove test
 > 
-> We collect consecutive PTEs that map consecutive pages of the same large
-> folio, making sure that the other PTE bits are compatible, and (a) adjust
-> the refcount only once per batch, (b) call rmap handling functions only
-> once per batch and (c) perform batch PTE setting/updates.
+> --- Traces ---
 > 
-> While this series should be beneficial for adding cont-pte support on
-> ARM64[2], it's one of the requirements for maintaining a total mapcount[3]
-> for large folios with minimal added overhead and further changes[4] that
-> build up on top of the total mapcount.
-> 
-> Independent of all that, this series results in a speedup during fork with
-> PTE-mapped THP, which is the default with THPs that are smaller than a PMD
-> (for example, 16KiB to 1024KiB mTHPs for anonymous memory[5]).
-> 
-> On an Intel Xeon Silver 4210R CPU, fork'ing with 1GiB of PTE-mapped folios
-> of the same size (stddev < 1%) results in the following runtimes
-> for fork() (shorter is better):
-> 
-> Folio Size | v6.8-rc1 |      New | Change
-> ------------------------------------------
->       4KiB | 0.014328 | 0.014035 |   - 2%
->      16KiB | 0.014263 | 0.01196  |   -16%
->      32KiB | 0.014334 | 0.01094  |   -24%
->      64KiB | 0.014046 | 0.010444 |   -26%
->     128KiB | 0.014011 | 0.010063 |   -28%
->     256KiB | 0.013993 | 0.009938 |   -29%
->     512KiB | 0.013983 | 0.00985  |   -30%
->    1024KiB | 0.013986 | 0.00982  |   -30%
->    2048KiB | 0.014305 | 0.010076 |   -30%
+> [58563.146236] BUG: Unable to handle kernel data access at 
+> 0x6b6b6b6b6b6b6b83
+> [58563.146242] Faulting instruction address: 0xc0000000009c0e60
+> [58563.146248] Oops: Kernel access of bad area, sig: 11 [#1]
+> [58563.146252] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=8192 NUMA pSeries
+> [58563.146258] Modules linked in: isofs cdrom dm_snapshot dm_bufio 
+> dm_round_robin dm_queue_length exfat vfat fat btrfs blake2b_generic xor 
+> raid6_pq zstd_compress loop xfs libcrc32c raid0 nvram rpadlpar_io rpaphp 
+> nfnetlink xsk_diag bonding tls rfkill sunrpc dm_service_time 
+> dm_multipath dm_mod pseries_rng vmx_crypto binfmt_misc ext4 mbcache jbd2 
+> sd_mod sg ibmvscsi scsi_transport_srp ibmveth lpfc nvmet_fc nvmet 
+> nvme_fc nvme_fabrics nvme_core t10_pi crc64_rocksoft crc64 
+> scsi_transport_fc fuse
+> [58563.146326] CPU: 0 PID: 1071247 Comm: drmgr Kdump: loaded Not tainted 
+> 6.8.0-rc1-auto-gecb1b8288dc7 #1
+> [58563.146332] Hardware name: IBM,9009-42A POWER9 (raw) 0x4e0202 
+> 0xf000005 of:IBM,FW950.A0 (VL950_141) hv:phyp pSeries
+> [58563.146337] NIP:  c0000000009c0e60 LR: c0000000009c0e28 CTR: 
+> c0000000009c1584
+> [58563.146342] REGS: c00000007960f260 TRAP: 0380   Not tainted 
+> (6.8.0-rc1-auto-gecb1b8288dc7)
+> [58563.146347] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 
+> 24822424  XER: 20040006
+> [58563.146360] CFAR: c0000000009c0e74 IRQMASK: 0
+> [58563.146360] GPR00: c0000000009c0e28 c00000007960f500 c000000001482600 
+> c000000003050540
+> [58563.146360] GPR04: 0000000000000000 c00000089a6870c0 0000000000000001 
+> fffffffffffe0000
+> [58563.146360] GPR08: c000000002bac020 6b6b6b6b6b6b6b6b 6b6b6b6b6b6b6b6b 
+> 0000000000000220
+> [58563.146360] GPR12: 0000000000002000 c000000003080000 0000000000000000 
+> 0000000000000000
+> [58563.146360] GPR16: 0000000000000000 0000000000000000 0000000000000000 
+> 0000000000000001
+> [58563.146360] GPR20: c000000001281478 0000000000000000 c000000001281490 
+> c000000002bfed80
+> [58563.146360] GPR24: c00000089a6870c0 0000000000000000 0000000000000000 
+> c000000002b9ffb8
+> [58563.146360] GPR28: 0000000000000000 c000000002bac0e8 0000000000000000 
+> 0000000000000000
+> [58563.146421] NIP [c0000000009c0e60] iommu_ops_from_fwnode+0x68/0x118
+> [58563.146430] LR [c0000000009c0e28] iommu_ops_from_fwnode+0x30/0x118
 
-Just a heads up that I'm seeing some strange results on Apple M2. Fork for
-order-0 is seemingly costing ~17% more. I'm using GCC 13.2 and was pretty sure I
-didn't see this problem with version 1; although that was on a different
-baseline and I've thrown the numbers away so will rerun and try to debug this.
+This implies that iommu_device_list has become corrupted. Looks like 
+spapr_tce_setup_phb_iommus_initcall() registers an iommu_device which 
+pcibios_free_controller() could free if a PCI controller is removed, but 
+there's no path anywhere to ever unregister any of those IOMMUs. 
+Presumably this also means that is a PCI controller is dynamically added 
+after init, its IOMMU won't be set up properly either.
 
-| kernel      |   mean_rel |   std_rel |
-|:------------|-----------:|----------:|
-| mm-unstable |       0.0% |      1.1% |
-| patch 1     |      -2.3% |      1.3% |
-| patch 10    |      -2.9% |      2.7% |
-| patch 11    |      13.5% |      0.5% |
-| patch 12    |      15.2% |      1.2% |
-| patch 13    |      18.2% |      0.7% |
-| patch 14    |      20.5% |      1.0% |
-| patch 15    |      17.1% |      1.6% |
-| patch 15    |      16.7% |      0.8% |
+Thanks,
+Robin.
 
-fork for order-9 is looking good (-20%), and for the zap series, munmap is
-looking good, but dontneed is looking poor for both order-0 and 9. But one thing
-at a time... let's concentrate on fork order-0 first.
-
-Note that I'm still using the "old" benchmark code. Could you resend me the link
-to the new code? Although I don't think there should be any effect for order-0
-anyway, if I understood your changes correctly?
-
-
+> [58563.146437] Call Trace:
+> [58563.146439] [c00000007960f500] [c00000007960f560] 0xc00000007960f560 
+> (unreliable)
+> [58563.146446] [c00000007960f530] [c0000000009c0fd0] 
+> __iommu_probe_device+0xc0/0x5c0
+> [58563.146454] [c00000007960f5a0] [c0000000009c151c] 
+> iommu_probe_device+0x4c/0xb4
+> [58563.146462] [c00000007960f5e0] [c0000000009c15d0] 
+> iommu_bus_notifier+0x4c/0x8c
+> [58563.146469] [c00000007960f600] [c00000000019e3d0] 
+> notifier_call_chain+0xb8/0x1a0
+> [58563.146476] [c00000007960f660] [c00000000019eea0] 
+> blocking_notifier_call_chain+0x64/0x94
+> [58563.146483] [c00000007960f6a0] [c0000000009d3c5c] bus_notify+0x50/0x7c
+> [58563.146491] [c00000007960f6e0] [c0000000009cfba4] device_add+0x774/0x9bc
+> [58563.146498] [c00000007960f7a0] [c0000000008abe9c] 
+> pci_device_add+0x2f4/0x864
+> [58563.146506] [c00000007960f850] [c00000000007d5a0] 
+> of_create_pci_dev+0x390/0xa08
+> [58563.146514] [c00000007960f930] [c00000000007de68] 
+> __of_scan_bus+0x250/0x328
+> [58563.146520] [c00000007960fa10] [c00000000007a680] 
+> pcibios_scan_phb+0x274/0x3c0
+> [58563.146527] [c00000007960fae0] [c000000000105d58] 
+> init_phb_dynamic+0xb8/0x110
+> [58563.146535] [c00000007960fb50] [c0080000217b0380] 
+> dlpar_add_slot+0x170/0x3b4 [rpadlpar_io]
+> [58563.146544] [c00000007960fbf0] [c0080000217b0ca0] 
+> add_slot_store+0xa4/0x140 [rpadlpar_io]
+> [58563.146551] [c00000007960fc80] [c000000000f3dbec] 
+> kobj_attr_store+0x30/0x4c
+> [58563.146559] [c00000007960fca0] [c0000000006931fc] 
+> sysfs_kf_write+0x68/0x7c
+> [58563.146566] [c00000007960fcc0] [c000000000691b2c] 
+> kernfs_fop_write_iter+0x1c8/0x278
+> [58563.146573] [c00000007960fd10] [c000000000599f54] vfs_write+0x340/0x4cc
+> [58563.146580] [c00000007960fdc0] [c00000000059a2bc] ksys_write+0x7c/0x140
+> [58563.146587] [c00000007960fe10] [c000000000035d74] 
+> system_call_exception+0x134/0x330
+> [58563.146595] [c00000007960fe50] [c00000000000d6a0] 
+> system_call_common+0x160/0x2e4
+> [58563.146602] --- interrupt: c00 at 0x200004470cb4
+> [58563.146606] NIP:  0000200004470cb4 LR: 00002000043e7d04 CTR: 
+> 0000000000000000
+> [58563.146611] REGS: c00000007960fe80 TRAP: 0c00   Not tainted 
+> (6.8.0-rc1-auto-gecb1b8288dc7)
+> [58563.146616] MSR:  800000000280f033 
+> <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 24000282  XER: 00000000
+> [58563.146632] IRQMASK: 0
+> [58563.146632] GPR00: 0000000000000004 00007fffd3993420 0000200004557300 
+> 0000000000000007
+> [58563.146632] GPR04: 000001000d8a5270 0000000000000006 fffffffffbad2c80 
+> 000001000d8a02a0
+> [58563.146632] GPR08: 0000000000000001 0000000000000000 0000000000000000 
+> 0000000000000000
+> [58563.146632] GPR12: 0000000000000000 000020000422bb50 0000000000000000 
+> 0000000000000000
+> [58563.146632] GPR16: 0000000000000000 0000000000000000 0000000000000000 
+> 0000000000000000
+> [58563.146632] GPR20: 0000000000000000 0000000000000000 0000000000000000 
+> 0000000000000000
+> [58563.146632] GPR24: 0000000106b41668 0000000000000000 0000000000000006 
+> 000001000d8a5270
+> [58563.146632] GPR28: 0000000000000006 000001000d8a02a0 000001000d8a5270 
+> 0000000000000006
+> [58563.146690] NIP [0000200004470cb4] 0x200004470cb4
+> [58563.146694] LR [00002000043e7d04] 0x2000043e7d04
+> [58563.146698] --- interrupt: c00
+> [58563.146701] Code: e9299a20 3d020173 39089a20 7fa94000 419e0038 
+> e9490018 7fbf5000 409e0020 48000070 60000000 60000000 60000000 
+> <e9490018> 7faaf840 419e0058 e9290000
+> [58563.146722] ---[ end trace 0000000000000000 ]---
 > 
-> Note that these numbers are even better than the ones from v1 (verified
-> over multiple reboots), even though there were only minimal code changes.
-> Well, I removed a pte_mkclean() call for anon folios, maybe that also
-> plays a role.
-> 
-> But my experience is that fork() is extremely sensitive to code size,
-> inlining, ... so I suspect we'll see on other architectures rather a change
-> of -20% instead of -30%, and it will be easy to "lose" some of that speedup
-> in the future by subtle code changes.
-> 
-> Next up is PTE batching when unmapping. Only tested on x86-64.
-> Compile-tested on most other architectures.
-> 
-> v2 -> v3:
->  * Rebased on mm-unstable
->  * Picked up RB's
->  * Updated documentation of wrprotect_ptes().
-> 
-> v1 -> v2:
->  * "arm64/mm: Make set_ptes() robust when OAs cross 48-bit boundary"
->   -> Added patch from Ryan
->  * "arm/pgtable: define PFN_PTE_SHIFT"
->   -> Removed the arm64 bits
->  * "mm/pgtable: make pte_next_pfn() independent of set_ptes()"
->  * "arm/mm: use pte_next_pfn() in set_ptes()"
->  * "powerpc/mm: use pte_next_pfn() in set_ptes()"
->   -> Added to use pte_next_pfn() in some arch set_ptes() implementations
->      I tried to make use of pte_next_pfn() also in the others, but it's
->      not trivial because the other archs implement set_ptes() in their
->      asm/pgtable.h. Future work.
->  * "mm/memory: factor out copying the actual PTE in copy_present_pte()"
->   -> Move common folio_get() out of if/else
->  * "mm/memory: optimize fork() with PTE-mapped THP"
->   -> Add doc for wrprotect_ptes
->   -> Extend description to mention handling of pinned folios
->   -> Move common folio_ref_add() out of if/else
->  * "mm/memory: ignore dirty/accessed/soft-dirty bits in folio_pte_batch()"
->   -> Be more conservative with dirt/soft-dirty, let the caller specify
->      using flags
-> 
-> [1] https://lkml.kernel.org/r/20231220224504.646757-1-david@redhat.com
-> [2] https://lkml.kernel.org/r/20231218105100.172635-1-ryan.roberts@arm.com
-> [3] https://lkml.kernel.org/r/20230809083256.699513-1-david@redhat.com
-> [4] https://lkml.kernel.org/r/20231124132626.235350-1-david@redhat.com
-> [5] https://lkml.kernel.org/r/20231207161211.2374093-1-ryan.roberts@arm.com
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
-> Cc: Ryan Roberts <ryan.roberts@arm.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Dinh Nguyen <dinguyen@kernel.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-> Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-> Cc: Paul Walmsley <paul.walmsley@sifive.com>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Albert Ou <aou@eecs.berkeley.edu>
-> Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-> Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-> Cc: Heiko Carstens <hca@linux.ibm.com>
-> Cc: Vasily Gorbik <gor@linux.ibm.com>
-> Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-> Cc: Sven Schnelle <svens@linux.ibm.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> 
-> ---
-> 
-> Andrew asked for a resend based on latest mm-unstable. I am sending this
-> out earlier than I would usually have sent out the next version, so we can
-> pull it into mm-unstable again now that v1 was dropped.
-> 
-> David Hildenbrand (14):
->   arm/pgtable: define PFN_PTE_SHIFT
->   nios2/pgtable: define PFN_PTE_SHIFT
->   powerpc/pgtable: define PFN_PTE_SHIFT
->   riscv/pgtable: define PFN_PTE_SHIFT
->   s390/pgtable: define PFN_PTE_SHIFT
->   sparc/pgtable: define PFN_PTE_SHIFT
->   mm/pgtable: make pte_next_pfn() independent of set_ptes()
->   arm/mm: use pte_next_pfn() in set_ptes()
->   powerpc/mm: use pte_next_pfn() in set_ptes()
->   mm/memory: factor out copying the actual PTE in copy_present_pte()
->   mm/memory: pass PTE to copy_present_pte()
->   mm/memory: optimize fork() with PTE-mapped THP
->   mm/memory: ignore dirty/accessed/soft-dirty bits in folio_pte_batch()
->   mm/memory: ignore writable bit in folio_pte_batch()
-> 
-> Ryan Roberts (1):
->   arm64/mm: Make set_ptes() robust when OAs cross 48-bit boundary
-> 
->  arch/arm/include/asm/pgtable.h      |   2 +
->  arch/arm/mm/mmu.c                   |   2 +-
->  arch/arm64/include/asm/pgtable.h    |  28 ++--
->  arch/nios2/include/asm/pgtable.h    |   2 +
->  arch/powerpc/include/asm/pgtable.h  |   2 +
->  arch/powerpc/mm/pgtable.c           |   5 +-
->  arch/riscv/include/asm/pgtable.h    |   2 +
->  arch/s390/include/asm/pgtable.h     |   2 +
->  arch/sparc/include/asm/pgtable_64.h |   2 +
->  include/linux/pgtable.h             |  33 ++++-
->  mm/memory.c                         | 212 ++++++++++++++++++++++------
->  11 files changed, 229 insertions(+), 63 deletions(-)
-> 
-> 
-> base-commit: d162e170f1181b4305494843e1976584ddf2b72e
-
