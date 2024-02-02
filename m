@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AD25C47258
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Feb 2024 08:11:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0314EC47258
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Feb 2024 08:11:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TR7lB1PRLz3vtL
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Feb 2024 19:11:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TR7lc5VyNz3vyd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Feb 2024 19:11:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TR7j02fTcz3cZy
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TR7j02kQfz3ccV
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2024 19:09:23 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 34710176C;
-	Fri,  2 Feb 2024 00:09:29 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 911E2176A;
+	Fri,  2 Feb 2024 00:09:21 -0800 (PST)
 Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 489F23F5A1;
-	Fri,  2 Feb 2024 00:08:43 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A536F3F5A1;
+	Fri,  2 Feb 2024 00:08:35 -0800 (PST)
 From: Ryan Roberts <ryan.roberts@arm.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
@@ -45,9 +45,9 @@ To: Catalin Marinas <catalin.marinas@arm.com>,
 	Borislav Petkov <bp@alien8.de>,
 	Dave Hansen <dave.hansen@linux.intel.com>,
 	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH v5 08/25] mm: Remove pte_next_pfn() and replace with pte_advance_pfn()
-Date: Fri,  2 Feb 2024 08:07:39 +0000
-Message-Id: <20240202080756.1453939-9-ryan.roberts@arm.com>
+Subject: [PATCH v5 06/25] powerpc/mm: Convert pte_next_pfn() to pte_advance_pfn()
+Date: Fri,  2 Feb 2024 08:07:37 +0000
+Message-Id: <20240202080756.1453939-7-ryan.roberts@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240202080756.1453939-1-ryan.roberts@arm.com>
 References: <20240202080756.1453939-1-ryan.roberts@arm.com>
@@ -68,70 +68,26 @@ Cc: Ryan Roberts <ryan.roberts@arm.com>, x86@kernel.org, linux-kernel@vger.kerne
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the architectures are converted over to pte_advance_pfn(), we
-can remove the pte_next_pfn() wrapper and convert the callers to call
-pte_advance_pfn().
+Core-mm needs to be able to advance the pfn by an arbitrary amount, so
+improve the API to do so and change the name.
 
 Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 ---
- include/linux/pgtable.h | 9 +--------
- mm/memory.c             | 4 ++--
- 2 files changed, 3 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/pgtable.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 815d92dcb96b..50f32cccbd92 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -212,19 +212,12 @@ static inline int pmd_dirty(pmd_t pmd)
- #define arch_flush_lazy_mmu_mode()	do {} while (0)
- #endif
- 
--
--#ifndef pte_next_pfn
- #ifndef pte_advance_pfn
- static inline pte_t pte_advance_pfn(pte_t pte, unsigned long nr)
- {
- 	return __pte(pte_val(pte) + (nr << PFN_PTE_SHIFT));
- }
- #endif
--static inline pte_t pte_next_pfn(pte_t pte)
--{
--	return pte_advance_pfn(pte, 1);
--}
--#endif
- 
- #ifndef set_ptes
- /**
-@@ -256,7 +249,7 @@ static inline void set_ptes(struct mm_struct *mm, unsigned long addr,
- 		if (--nr == 0)
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 549a440ed7f6..6853cdb1290d 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -220,7 +220,7 @@ void set_ptes(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
  			break;
  		ptep++;
+ 		addr += PAGE_SIZE;
 -		pte = pte_next_pfn(pte);
 +		pte = pte_advance_pfn(pte, 1);
  	}
- 	arch_leave_lazy_mmu_mode();
  }
-diff --git a/mm/memory.c b/mm/memory.c
-index 38a010c4d04d..65fbe4f886c1 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -988,7 +988,7 @@ static inline int folio_pte_batch(struct folio *folio, unsigned long addr,
- {
- 	unsigned long folio_end_pfn = folio_pfn(folio) + folio_nr_pages(folio);
- 	const pte_t *end_ptep = start_ptep + max_nr;
--	pte_t expected_pte = __pte_batch_clear_ignored(pte_next_pfn(pte), flags);
-+	pte_t expected_pte = __pte_batch_clear_ignored(pte_advance_pfn(pte, 1), flags);
- 	pte_t *ptep = start_ptep + 1;
- 	bool writable;
- 
-@@ -1017,7 +1017,7 @@ static inline int folio_pte_batch(struct folio *folio, unsigned long addr,
- 		if (any_writable)
- 			*any_writable |= writable;
- 
--		expected_pte = pte_next_pfn(expected_pte);
-+		expected_pte = pte_advance_pfn(expected_pte, 1);
- 		ptep++;
- 	}
  
 -- 
 2.25.1
