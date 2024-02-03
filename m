@@ -4,58 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31621C47258
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jan 2024 08:05:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3DFAC4828F
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Feb 2024 05:00:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nAbdAgrR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DAQaeQoE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TPvjR63gVz3cV1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jan 2024 19:05:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TRgT52VQ9z3cCK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Feb 2024 16:00:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nAbdAgrR;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DAQaeQoE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=qingshun.wang@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=qingshun.wang@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TPvhb3ckqz30hQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2024 19:04:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TRgS90FSrz30gM
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2024 16:00:07 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1706688288; x=1738224288;
+  t=1706936409; x=1738472409;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=2wy6IAqZWDlhSg8xSyQOwMuys/jiy/qt5c8fR9V26Dk=;
-  b=nAbdAgrRyI65hp691yPbj14k9H7KLmKbOKkVYt0NsLAx0YSLa/T442SW
-   ojr8NXGDANC9KN11BKjpNcTZeEEkJJU+iH4MoEHhSeiU+ap/19iUo8257
-   M+Pf5QXwFieWnqRM3tZx/Gt58F26joU9QzjtpFbePbpb9Jn1Xu7FfIkPJ
-   hMBW+/u5mQuz1fqZ9lfQrEOwoTspn62692wNkph4lJFaoi/R4DlGPWgnW
-   liMlBjHZAFGFq7l9aJWfyYz8H6ID/YzvXH3RRknKtPe1eYI+5vD5895pL
-   F3wofXyRChB2zDBGbyJhj/INHEzVU879jNLmej7ZszLCOB8ZZF86oOiPq
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="17059010"
-X-IronPort-AV: E=Sophos;i="6.05,231,1701158400"; 
-   d="scan'208";a="17059010"
+  bh=kf32GCMyGnr3JaXaP9xyzsdixQItASwsYvGjp9HHTXk=;
+  b=DAQaeQoEmimGLOD7SAjr9ycf/d2tiYqfNWeWcjlidNP4EpAC8w3d+vrL
+   iMh5RZuV3vC4K4qCgv2hke1Wd6sD5EEHjTas2XfwLSAMP+wzCK2YrPBPF
+   KynXiKP0+uRicBp4HOWZk9iMNdmZ5SuojXS0RJ1Lr1wzGt580c7+qPOk1
+   tz2UGsXIBe9tmaRv74E9661WgR14zBfADIMPnInFTdEP5iNWCrKjX6kiv
+   d/r2IiKCqweGrzvck/DZeJqnWuGoUFxzVl8pgtZ1wg2njWc6Dju7DWpxA
+   CLH9qo9jmtippQBFCTPMugiCt2WrWfbsioFFXXLKA2fOs/n5oQl/zz7tV
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10971"; a="193959"
+X-IronPort-AV: E=Sophos;i="6.05,238,1701158400"; 
+   d="scan'208";a="193959"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2024 00:04:42 -0800
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2024 21:00:02 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.05,231,1701158400"; 
-   d="scan'208";a="3992171"
-Received: from nixos.sh.intel.com (HELO localhost) ([10.238.2.93])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2024 00:04:33 -0800
-Date: Wed, 31 Jan 2024 16:04:21 +0800
+X-IronPort-AV: E=Sophos;i="6.05,238,1701158400"; 
+   d="scan'208";a="4864772"
+Received: from yanqiu-mobl.ccr.corp.intel.com (HELO localhost) ([10.254.214.166])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2024 20:59:53 -0800
+Date: Sat, 3 Feb 2024 12:59:44 +0800
 From: "Wang, Qingshun" <qingshun.wang@linux.intel.com>
-To: 	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Subject: Re: [PATCH v2 1/4] PCI/AER: Store more information in aer_err_info
-Message-ID: <ojv6nqi55o4q3aazf34w7yjriagup3h5dmim7k67xuv6t7xdjr@m3bjyroi4jfq>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v2 3/4] PCI/AER: Fetch information for FTrace
+Message-ID: <7ajtd5skxgfkkwolsbxrd7y2yzfjsikffkg4shxvpumconc2rz@i7hk4gvirrx2>
 References: <20240125062802.50819-1-qingshun.wang@linux.intel.com>
- <20240125062802.50819-2-qingshun.wang@linux.intel.com>
- <6ecb7bbf-0eba-4cea-b9b8-05fd092b7d01@linux.intel.com>
+ <20240125062802.50819-4-qingshun.wang@linux.intel.com>
+ <65bd2e04aed44_2d43c29463@dwillia2-mobl3.amr.corp.intel.com.notmuch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6ecb7bbf-0eba-4cea-b9b8-05fd092b7d01@linux.intel.com>
+In-Reply-To: <65bd2e04aed44_2d43c29463@dwillia2-mobl3.amr.corp.intel.com.notmuch>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,143 +67,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Alison Schofield <alison.schofield@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, erwin.tsaur@intel.com, linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>, chao.p.peng@linux.intel.com, Ira Weiny <ira.weiny@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, Dave Jiang <dave.jiang@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>, linux-acpi@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Len Brown <lenb@kernel.org>, Robert Richter <rrichter@amd.com>, Borislav Petkov <bp@alien8.de>, Jonathan Cameron <jonathan.cameron@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>, linux-edac@vger.kernel.org, Tony Luck <tony.luck@intel.com>, feiting.wanyan@intel.com, qingshun.wang@intel.com, Adam Preble <adam.c.preble@intel.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Li Yang <l
- eoyang.li@nxp.com>, Lukas Wunner <lukas@wunner.de>, James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org, Shiju Jose <shiju.jose@huawei.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>, Alison Schofield <alison.schofield@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, erwin.tsaur@intel.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>, chao.p.peng@linux.intel.com, Ira Weiny <ira.weiny@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, Dave Jiang <dave.jiang@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>, linux-acpi@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Len Brown <lenb@kernel.org>, Robert Richter <rrichter@amd.com>, Borislav Petkov <bp@alien8.de>, Jonathan Cameron <jonathan.cameron@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-edac@vger.kernel.org, Tony Luck <tony.luck@intel.com>, feiting.wanyan@intel.com, qingshun.wang@intel.com, Adam Preble <adam.c.preble@intel.com>, Mahesh J Salgaonkar <m
+ ahesh@linux.ibm.com>, Li Yang <leoyang.li@nxp.com>, Lukas Wunner <lukas@wunner.de>, James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org, Shiju Jose <shiju.jose@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 30, 2024 at 06:26:39PM -0800, Kuppuswamy Sathyanarayanan wrote:
-> 
-> On 1/24/24 10:27 PM, Wang, Qingshun wrote:
-> > When Advisory Non-Fatal errors are raised, both correctable and
-> 
-> Maybe you can start with same info about what Advisory Non-FataL
-> errors are and the specification reference. I know that you included
-> it in cover letter. But it is good to include it in commit log.
-
-Good idea, thanks!
-
-> 
-> > uncorrectable error statuses will be set. The current kernel code cannot
-> > store both statuses at the same time, thus failing to handle ANFE properly.
-> > In addition, to avoid clearing UEs that are not ANFE by accident, UE
-> 
-> Please add some details about the impact of not clearing them.
-
-Makes sense, will do.
-
-> > severity and Device Status also need to be recorded: any fatal UE cannot
-> > be ANFE, and if Fatal/Non-Fatal Error Detected is set in Device Status, do
-> > not take any assumption and let UE handler to clear UE status.
-> >
-> > Store status and mask of both correctable and uncorrectable errors in
-> > aer_err_info. The severity of UEs and the values of the Device Status
-> > register are also recorded, which will be used to determine UEs that should
-> > be handled by the ANFE handler. Refactor the rest of the code to use
-> > cor/uncor_status and cor/uncor_mask fields instead of status and mask
-> > fields.
-> >
+On Fri, Feb 02, 2024 at 10:01:40AM -0800, Dan Williams wrote:
+> Wang, Qingshun wrote:
+> > Fetch and store the data of 3 more registers: "Link Status", "Device
+> > Control 2", and "Advanced Error Capabilities and Control". This data is
+> > needed for external observation to better understand ANFE.
+> > 
 > > Signed-off-by: "Wang, Qingshun" <qingshun.wang@linux.intel.com>
 > > ---
-> >  drivers/acpi/apei/ghes.c | 10 ++++-
-> >  drivers/cxl/core/pci.c   |  6 ++-
-> >  drivers/pci/pci.h        |  8 +++-
-> >  drivers/pci/pcie/aer.c   | 93 ++++++++++++++++++++++++++--------------
-> >  include/linux/aer.h      |  4 +-
-> >  include/linux/pci.h      | 27 ++++++++++++
-> >  6 files changed, 111 insertions(+), 37 deletions(-)
-> >
-> > ......
-> >
-> > @@ -1213,38 +1233,49 @@ int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info)
-> >  	int temp;
+> >  drivers/acpi/apei/ghes.c |  8 +++++++-
+> >  drivers/cxl/core/pci.c   | 11 ++++++++++-
+> >  drivers/pci/pci.h        |  4 ++++
+> >  drivers/pci/pcie/aer.c   | 26 ++++++++++++++++++++------
+> >  include/linux/aer.h      |  6 ++++--
+> >  5 files changed, 45 insertions(+), 10 deletions(-)
+> > 
+> > diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
+> > index 6034039d5cff..047cc01be68c 100644
+> > --- a/drivers/acpi/apei/ghes.c
+> > +++ b/drivers/acpi/apei/ghes.c
+> > @@ -594,7 +594,9 @@ static void ghes_handle_aer(struct acpi_hest_generic_data *gdata)
+> >  	if (pcie_err->validation_bits & CPER_PCIE_VALID_DEVICE_ID &&
+> >  	    pcie_err->validation_bits & CPER_PCIE_VALID_AER_INFO) {
+> >  		struct pcie_capability_regs *pcie_caps;
+> > +		u16 device_control_2 = 0;
+> >  		u16 device_status = 0;
+> > +		u16 link_status = 0;
+> >  		unsigned int devfn;
+> >  		int aer_severity;
+> >  		u8 *aer_info;
+> > @@ -619,7 +621,9 @@ static void ghes_handle_aer(struct acpi_hest_generic_data *gdata)
 > >  
-> >  	/* Must reset in this function */
-> > -	info->status = 0;
-> > +	info->cor_status = 0;
-> > +	info->uncor_status = 0;
-> > +	info->uncor_severity = 0;
-> >  	info->tlp_header_valid = 0;
+> >  		if (pcie_err->validation_bits & CPER_PCIE_VALID_CAPABILITY) {
+> >  			pcie_caps = (struct pcie_capability_regs *)pcie_err->capability;
+> > +			device_control_2 = pcie_caps->device_control_2;
+> >  			device_status = pcie_caps->device_status;
+> > +			link_status = pcie_caps->link_status;
+> >  		}
 > >  
-> >  	/* The device might not support AER */
-> >  	if (!aer)
-> >  		return 0;
-> >  
-> > -	if (info->severity == AER_CORRECTABLE) {
-> > +	if (info->severity == AER_CORRECTABLE ||
-> > +	    info->severity == AER_NONFATAL ||
-> > +	    type == PCI_EXP_TYPE_ROOT_PORT ||
-> > +	    type == PCI_EXP_TYPE_RC_EC ||
-> > +	    type == PCI_EXP_TYPE_DOWNSTREAM) {
-> 
-> 
-> It looks like you are reading both uncorrectable and correctable status
-> by default for both NONFATAL and CORRECTABLE errors. Why not do
-> it conditionally only for ANFE errors?
-> 
-> 
-
-My initial purpose was the value will be used in aer_event trace in
-PATCH 4 under both conditions, but I can also add checks here to reduce
-unnecessary IO and remove the checks in PATCH 4.
-
-> > +		/* Link is healthy for IO reads */
-> >  		pci_read_config_dword(dev, aer + PCI_ERR_COR_STATUS,
-> > -			&info->status);
-> > +				      &info->cor_status);
-> >  		pci_read_config_dword(dev, aer + PCI_ERR_COR_MASK,
-> > -			&info->mask);
-> >  
-> > ......
-> >
-> > diff --git a/include/linux/pci.h b/include/linux/pci.h
-> > index add9368e6314..259812620d4d 100644
-> > --- a/include/linux/pci.h
-> > +++ b/include/linux/pci.h
-> > @@ -318,6 +318,33 @@ struct pci_sriov;
-> >  struct pci_p2pdma;
-> >  struct rcec_ea;
-> >  
-> > +struct pcie_capability_regs {
-> > +	u8 pcie_cap_id;
-> > +	u8 next_cap_ptr;
-> > +	u16 pcie_caps;
-> > +	u32 device_caps;
-> > +	u16 device_control;
-> > +	u16 device_status;
-> > +	u32 link_caps;
-> > +	u16 link_control;
-> > +	u16 link_status;
-> > +	u32 slot_caps;
-> > +	u16 slot_control;
-> > +	u16 slot_status;
-> > +	u16 root_control;
-> > +	u16 root_caps;
-> > +	u32 root_status;
-> > +	u32 device_caps_2;
+> >  		aer_recover_queue(pcie_err->device_id.segment,
+> > @@ -627,7 +631,9 @@ static void ghes_handle_aer(struct acpi_hest_generic_data *gdata)
+> >  				  devfn, aer_severity,
+> >  				  (struct aer_capability_regs *)
+> >  				  aer_info,
+> > -				  device_status);
+> > +				  device_status,
+> > +				  link_status,
+> > +				  device_control_2);
+> >  	}
+> >  #endif
+> >  }
+> > diff --git a/drivers/cxl/core/pci.c b/drivers/cxl/core/pci.c
+> > index 9111a4415a63..3aa57fe8db42 100644
+> > --- a/drivers/cxl/core/pci.c
+> > +++ b/drivers/cxl/core/pci.c
+> > @@ -903,7 +903,9 @@ static void cxl_handle_rdport_errors(struct cxl_dev_state *cxlds)
+> >  	struct aer_capability_regs aer_regs;
+> >  	struct cxl_dport *dport;
+> >  	struct cxl_port *port;
 > > +	u16 device_control_2;
-> > +	u16 device_status_2;
-> > +	u32 link_caps_2;
-> > +	u16 link_control_2;
-> > +	u16 link_status_2;
-> > +	u32 slot_caps_2;
-> > +	u16 slot_control_2;
-> > +	u16 slot_status_2;
-> > +};
+> >  	u16 device_status;
+> > +	u16 link_status;
+> >  	int severity;
+> >  
+> >  	port = cxl_pci_find_port(pdev, &dport);
+> > @@ -918,10 +920,17 @@ static void cxl_handle_rdport_errors(struct cxl_dev_state *cxlds)
+> >  	if (!cxl_rch_get_aer_severity(&aer_regs, &severity))
+> >  		return;
+> >  
+> > +	if (pcie_capability_read_word(pdev, PCI_EXP_DEVCTL2, &device_control_2))
+> > +		return;
 > > +
-> IIUC, this struct is only used drivers/acpi/apei/ghes.c . Why not define it in that file?
-
-You are right. Whenever we need it elsewhere, we can move it to the
-header file anyway.
-
-> >  /* The pci_dev structure describes PCI devices */
-> >  struct pci_dev {
-> >  	struct list_head bus_list;	/* Node in per-bus list */
+> >  	if (pcie_capability_read_word(pdev, PCI_EXP_DEVSTA, &device_status))
+> >  		return;
+> >  
+> > -	pci_print_aer(pdev, severity, &aer_regs, device_status);
+> > +	if (pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &link_status))
+> > +		return;
+> > +
+> > +	pci_print_aer(pdev, severity, &aer_regs, device_status,
+> > +		      link_status, device_control_2);
 > 
-> -- 
-> Sathyanarayanan Kuppuswamy
-> Linux Kernel Developer
-> 
+> Rather than complicate the calling convention of pci_print_aer(), update
+> the internals of pci_print_aer() to get these extra registers, or
+> provide a new wrapper interface that satisfies the dependencies and
+> switch users over to that.  Otherwise multiple touches of the same code
+> path in one patch set is indicative of the need for a higher level
+> helper.
+
+Thanks for the advice, it does make sense. Will reconsider the
+implementation.
 
 --
 Best regards,
