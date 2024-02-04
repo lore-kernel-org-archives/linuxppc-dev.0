@@ -4,77 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26DCAC48286
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 03:12:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1317EC48291
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 04:50:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aumSkNHI;
+	dkim=fail reason="key not found in DNS" header.d=marliere.net header.i=@marliere.net header.a=rsa-sha256 header.s=2023 header.b=cbefjGrk;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TSrzM60nXz3c9l
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 14:12:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TSv841yjwz3bmH
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 15:50:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aumSkNHI;
+	dkim=fail reason="key not found in DNS" header.d=marliere.net header.i=@marliere.net header.a=rsa-sha256 header.s=2023 header.b=cbefjGrk;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TSryS4lGVz2ykx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 14:12:00 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TSryS4Gg4z4wxZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 14:12:00 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4TSryS48Mnz4wxx; Mon,  5 Feb 2024 14:12:00 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aumSkNHI;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TSryS0Mzcz4wxZ
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2024 14:11:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1707102716;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=kPlQn8QRfP3g8CtVKZqx50P9JlBCXuNtPZrwY21Ifzk=;
-	b=aumSkNHIa57yzK1sGlTse32mqWWCa5Fe1RJny1Cq7sP59HguSDJFVZ6K8ii0Gg23gaeV3S
-	+oMvZaloj2SBu+9ddzWUBwEhZn0LHjGgP0eL46PkP3xA44ol0pHD7q0VxrI+BPAyqSSKAZ
-	va+2C+SsGChSEVSITjhQiGxqMYB4hC4=
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-198-zIxkvvPQNnahi-68DSb0bg-1; Sun,
- 04 Feb 2024 22:11:52 -0500
-X-MC-Unique: zIxkvvPQNnahi-68DSb0bg-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=rbmarliere@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id EC5C51C05AD1;
-	Mon,  5 Feb 2024 03:11:49 +0000 (UTC)
-Received: from localhost (unknown [10.72.116.13])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id E17B32026D66;
-	Mon,  5 Feb 2024 03:11:48 +0000 (UTC)
-Date: Mon, 5 Feb 2024 11:11:45 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v15 1/5] crash: forward memory_notify arg to arch crash
- hotplug handler
-Message-ID: <ZcBR8Q+/WL3luZnP@MiWiFi-R3L-srv>
-References: <20240111105138.251366-1-sourabhjain@linux.ibm.com>
- <20240111105138.251366-2-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TSWsd4sQpz3bjK
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 01:21:41 +1100 (AEDT)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-53fa455cd94so2685432a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Feb 2024 06:21:41 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707056499; x=1707661299;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:dkim-signature:from:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=KWCI+vqvVxBiSG/iqzOyq6BSjdvQw/1IHnThZEarm88=;
+        b=lb9+n3NNEN8oLr2Hvkgymq72p9ijP4OIS/ZcTzccaaa/QF0WO+JA21kd7QPli3LbNC
+         a/dXU7j2W2GL/M11Ublf7sSDzlkkaL5+v3Gyyv2bNVYZX+6IK6Asd5g5SiUjpCufw09g
+         xsy5gD/q2W7XluXkEHSgUx2NyB5pt2Jc47ks2O3dZxhChdthM9aVLu1k+yyaHk2N2kHr
+         Kq1NGdHaANO/Ni9B3umuG6Oh7MjT53Ba6fBiJQuMLDuNdY/iRLoGDNIE4h3TSUCzTKWl
+         2m+tBKlGN1ts+0yGarXU297ghgsdaFYJdTAC8Yp/iK0PQeYLgIFLrOJAFm2DgIoxwKNs
+         4Axw==
+X-Gm-Message-State: AOJu0YwUK/u/JWyy4uRZsMNGu94hrTJQHAeWvuETSNDQWO6ao+BNYPq6
+	FM0SlgBXVK1RfzySr+wM8t9G8ku4D2VIsHHYbP07ZhB0eY0tCkY5
+X-Google-Smtp-Source: AGHT+IEskZfLj2ZTPXM2La+YvAGsynrKmLjr+vYWP4IKkXXLr7L91dtxUJHUEU0Je/Q0XcYvfcr55w==
+X-Received: by 2002:a05:6a00:2314:b0:6dd:849a:d2f8 with SMTP id h20-20020a056a00231400b006dd849ad2f8mr13150112pfh.16.1707056498683;
+        Sun, 04 Feb 2024 06:21:38 -0800 (PST)
+X-Forwarded-Encrypted: i=0; AJvYcCUivQXCaPIDOria/tbG8UU+udpoEg1uo70idcJiJdt9QxcEycuIItUR+DkiVouQdX/Fx6wLa8p7qSYnKRiNBLE6tLMTdV+C2ZoTEQjpxvkIW6RoNehyZldbnkDjQiLzw3OguMomfLZ17FxLhn9dmzHs6+f9Vs5J/8Oa9w+tc4tJa+ZgCitfw5dV/kTU6uBOZ/L/Gs87IKpJRgPcb+q9VBbNYrKq+4GyBjz5v5DekEf18frvDqfLbFcG1O1m7zzV0DOx
+Received: from mail.marliere.net ([24.199.118.162])
+        by smtp.gmail.com with ESMTPSA id r26-20020aa7845a000000b006ddc71607a7sm4844563pfn.191.2024.02.04.06.21.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 04 Feb 2024 06:21:38 -0800 (PST)
+From: "Ricardo B. Marliere" <ricardo@marliere.net>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marliere.net;
+	s=2023; t=1707056497;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KWCI+vqvVxBiSG/iqzOyq6BSjdvQw/1IHnThZEarm88=;
+	b=cbefjGrkGnGYMopgkkwo/WkMlw3RZvKxDFRronR7XkZQkcFTEPlt289xL+EH5Z79lIvuwF
+	Ijfhek0t99DqpN3Fp8aqO729fE53m8RaUuXmQj2+y4fgkJZyIFhr8wcYSPc6gg/P9wU+kl
+	evfcGQNPwO7aAWre/k0Mw4pQYJdmrFlJC1VhkSmZrT+zqpqYQuypJJiTZmBHVpUOnVN3gD
+	eiG0S+bG2AH4oTe8eMXR349QJWGqxSiNYj3h5TcPFZwFm/Ie4UFX5dFIYKJK5mrU/C+zON
+	4XCyT+0nmdczEIVfryE5gUQnTs5Deq2voEO4qrTpjbfJe0uh2ck7hdpTnrEGFw==
+Authentication-Results: ORIGINATING;
+	auth=pass smtp.auth=ricardo@marliere.net smtp.mailfrom=ricardo@marliere.net
+Date: Sun, 04 Feb 2024 11:21:55 -0300
+Subject: [PATCH 1/4] powerpc: cell: make spu_subsys const
 MIME-Version: 1.0
-In-Reply-To: <20240111105138.251366-2-sourabhjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.4
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240204-bus_cleanup-powerpc-v1-1-c763f0e142e9@marliere.net>
+References: <20240204-bus_cleanup-powerpc-v1-0-c763f0e142e9@marliere.net>
+In-Reply-To: <20240204-bus_cleanup-powerpc-v1-0-c763f0e142e9@marliere.net>
+To: Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Geoff Levand <geoff@infradead.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=971; i=ricardo@marliere.net;
+ h=from:subject:message-id; bh=g8Hjw0Un2UmuNrx1HKqd2DuS7J125zeqL4Rufxc+bvQ=;
+ b=owEBbQKS/ZANAwAKAckLinxjhlimAcsmYgBlv52ItRdspNrLF6cpysl5pfj7tSlSrSpBs0/QI
+ 2LP21DjGReJAjMEAAEKAB0WIQQDCo6eQk7jwGVXh+HJC4p8Y4ZYpgUCZb+diAAKCRDJC4p8Y4ZY
+ pg6YEACmjkpEiBCvlmFcn/tAz46rR5ZB9JK9GTxto8yThevzrnnVWpbKNlViKQkGqB4thL4uyl2
+ pFle3tE7qQ3WUy/vr5rZkWd5nNQbcBlXOHo/EyXcgz1cA8PSKSG2NJqPbWMEjd0JCYqA2sxfMth
+ dg+aEpmBX9Y0bjHVdBUyOPf96wyqTboDxM5oG1BNVzavQUSN2bCHgqNmD5VU9pdppb/Ma9bkiN0
+ Lz4dKQUvYNGBkhYXG9QkrrwJyqTvh4qsbpper9rr/q/FmpNS8wIitlZKRJv3jq1nFX4E/qoaOMj
+ R5TtttKuONMpQ0jgMeMjILLnv552lyIdDsMll/HsweuFEDXYQVf1TPc/PSAdDfj0zaHQqQHkEQ4
+ WjSrNGDWjRIZ5IDOSz8XNZXZT53y+RXKTV+pYiDGXxNuVwW11U/m3Gkdny4IstvqnINARS0DBmJ
+ jJcyS1/IfUf1VQT7CRrGMBKxLb8qylcqVthB9BjqGyAWJ9MWX3RkH+NjTIYjaMNE/6LDBZ1IKz/
+ +tJDHzcSL5c6YfAEmmGRK0Hu4EOv8ctlNjGR0T676Z+Ajvla7j0eEVm3uk2BD2TJXcBBolAGfjq
+ aEac2jYmgUOYyMW0ol8I1KQkQKFxRB5Yb2OISYjWWWZwdWRYsIag41bmjaXXoTNvWhQC9+zoNMF
+ rpEVID097hbs+VA==
+X-Developer-Key: i=ricardo@marliere.net; a=openpgp;
+ fpr=030A8E9E424EE3C0655787E1C90B8A7C638658A6
+X-Mailman-Approved-At: Mon, 05 Feb 2024 15:49:46 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,145 +101,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Valentin Schneider <vschneid@redhat.com>, x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Naveen N Rao <naveen@kernel.org>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Ricardo B. Marliere" <ricardo@marliere.net>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/11/24 at 04:21pm, Sourabh Jain wrote:
-> In the event of memory hotplug or online/offline events, the crash
-> memory hotplug notifier `crash_memhp_notifier()` receives a
-> `memory_notify` object but doesn't forward that object to the
-> generic and architecture-specific crash hotplug handler.
-> 
-> The `memory_notify` object contains the starting PFN (Page Frame Number)
-> and the number of pages in the hot-removed memory. This information is
-> necessary for architectures like PowerPC to update/recreate the kdump
-> image, specifically `elfcorehdr`.
-> 
-> So update the function signature of `crash_handle_hotplug_event()` and
-> `arch_crash_handle_hotplug_event()` to accept the `memory_notify` object
-> as an argument from crash memory hotplug notifier.
-> 
-> Since no such object is available in the case of CPU hotplug event, the
-> crash CPU hotplug notifier `crash_cpuhp_online()` passes NULL to the
-> crash hotplug handler.
-> 
-......
-> ---
->  arch/x86/include/asm/kexec.h |  2 +-
->  arch/x86/kernel/crash.c      |  3 ++-
->  include/linux/kexec.h        |  2 +-
->  kernel/crash_core.c          | 14 +++++++-------
->  4 files changed, 11 insertions(+), 10 deletions(-)
+Now that the driver core can properly handle constant struct bus_type,
+move the spu_subsys variable to be a constant structure as well,
+placing it into read-only memory which can not be modified at runtime.
 
-LGTM,
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
+---
+ arch/powerpc/platforms/cell/spu_base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Baoquan He <bhe@redhat.com>
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+index dea6f0f25897..346e433d2706 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -465,7 +465,7 @@ void spu_init_channels(struct spu *spu)
+ }
+ EXPORT_SYMBOL_GPL(spu_init_channels);
+ 
+-static struct bus_type spu_subsys = {
++static const struct bus_type spu_subsys = {
+ 	.name = "spu",
+ 	.dev_name = "spu",
+ };
 
-> 
-> diff --git a/arch/x86/include/asm/kexec.h b/arch/x86/include/asm/kexec.h
-> index c9f6a6c5de3c..9bb6607e864e 100644
-> --- a/arch/x86/include/asm/kexec.h
-> +++ b/arch/x86/include/asm/kexec.h
-> @@ -208,7 +208,7 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image);
->  extern void kdump_nmi_shootdown_cpus(void);
->  
->  #ifdef CONFIG_CRASH_HOTPLUG
-> -void arch_crash_handle_hotplug_event(struct kimage *image);
-> +void arch_crash_handle_hotplug_event(struct kimage *image, void *arg);
->  #define arch_crash_handle_hotplug_event arch_crash_handle_hotplug_event
->  
->  #ifdef CONFIG_HOTPLUG_CPU
-> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-> index b6b044356f1b..44744e9c68ec 100644
-> --- a/arch/x86/kernel/crash.c
-> +++ b/arch/x86/kernel/crash.c
-> @@ -428,10 +428,11 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->  /**
->   * arch_crash_handle_hotplug_event() - Handle hotplug elfcorehdr changes
->   * @image: a pointer to kexec_crash_image
-> + * @arg: struct memory_notify handler for memory hotplug case and NULL for CPU hotplug case.
->   *
->   * Prepare the new elfcorehdr and replace the existing elfcorehdr.
->   */
-> -void arch_crash_handle_hotplug_event(struct kimage *image)
-> +void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
->  {
->  	void *elfbuf = NULL, *old_elfcorehdr;
->  	unsigned long nr_mem_ranges;
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index 400cb6c02176..802052d9c64b 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -483,7 +483,7 @@ static inline void arch_kexec_pre_free_pages(void *vaddr, unsigned int pages) {
->  #endif
->  
->  #ifndef arch_crash_handle_hotplug_event
-> -static inline void arch_crash_handle_hotplug_event(struct kimage *image) { }
-> +static inline void arch_crash_handle_hotplug_event(struct kimage *image, void *arg) { }
->  #endif
->  
->  int crash_check_update_elfcorehdr(void);
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index d48315667752..ab1c8e79759d 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -914,7 +914,7 @@ int crash_check_update_elfcorehdr(void)
->   * list of segments it checks (since the elfcorehdr changes and thus
->   * would require an update to purgatory itself to update the digest).
->   */
-> -static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu)
-> +static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu, void *arg)
->  {
->  	struct kimage *image;
->  
-> @@ -976,7 +976,7 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu)
->  	image->hp_action = hp_action;
->  
->  	/* Now invoke arch-specific update handler */
-> -	arch_crash_handle_hotplug_event(image);
-> +	arch_crash_handle_hotplug_event(image, arg);
->  
->  	/* No longer handling a hotplug event */
->  	image->hp_action = KEXEC_CRASH_HP_NONE;
-> @@ -992,17 +992,17 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu)
->  	crash_hotplug_unlock();
->  }
->  
-> -static int crash_memhp_notifier(struct notifier_block *nb, unsigned long val, void *v)
-> +static int crash_memhp_notifier(struct notifier_block *nb, unsigned long val, void *arg)
->  {
->  	switch (val) {
->  	case MEM_ONLINE:
->  		crash_handle_hotplug_event(KEXEC_CRASH_HP_ADD_MEMORY,
-> -			KEXEC_CRASH_HP_INVALID_CPU);
-> +			KEXEC_CRASH_HP_INVALID_CPU, arg);
->  		break;
->  
->  	case MEM_OFFLINE:
->  		crash_handle_hotplug_event(KEXEC_CRASH_HP_REMOVE_MEMORY,
-> -			KEXEC_CRASH_HP_INVALID_CPU);
-> +			KEXEC_CRASH_HP_INVALID_CPU, arg);
->  		break;
->  	}
->  	return NOTIFY_OK;
-> @@ -1015,13 +1015,13 @@ static struct notifier_block crash_memhp_nb = {
->  
->  static int crash_cpuhp_online(unsigned int cpu)
->  {
-> -	crash_handle_hotplug_event(KEXEC_CRASH_HP_ADD_CPU, cpu);
-> +	crash_handle_hotplug_event(KEXEC_CRASH_HP_ADD_CPU, cpu, NULL);
->  	return 0;
->  }
->  
->  static int crash_cpuhp_offline(unsigned int cpu)
->  {
-> -	crash_handle_hotplug_event(KEXEC_CRASH_HP_REMOVE_CPU, cpu);
-> +	crash_handle_hotplug_event(KEXEC_CRASH_HP_REMOVE_CPU, cpu, NULL);
->  	return 0;
->  }
->  
-> -- 
-> 2.41.0
-> 
+-- 
+2.43.0
 
