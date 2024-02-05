@@ -4,54 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7081C48295
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 13:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEE0DC48295
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 14:23:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=guJrPFz4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WdMAS6Pl;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TT6wP3FV8z3cP8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 00:41:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TT7s049RKz3cB7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 01:23:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=guJrPFz4;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WdMAS6Pl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TT6vZ6k4qz3bpp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2024 00:40:26 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 1DC9A6104F;
-	Mon,  5 Feb 2024 13:40:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 510C5C433C7;
-	Mon,  5 Feb 2024 13:40:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707140424;
-	bh=0rGna9C7OAVXRb92HyCmmLokREiLTrxudCSQUy562Uo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=guJrPFz4hKoNWPP8EoqBXwtx+C7BEJKDNV7FQdlUGLEQYnHaySHjjSGuBv8nSRpk6
-	 92bgcZDEGz+U0cXZf+QKgy9G1VkCWo/IILudrhh0gGWTWHWpTSRZYI9U/ZvdPmYbpN
-	 XhrQzn9LzxoN3rgQ3xKMyYfj/LK6GnL9CfzWfiw0GgXtDjy+eloCEJ8NeJpG/Kh2o+
-	 kqn4d4U91YokmahvbQBaHDGCTCfVdlW13+2F7RfhsPhW5Rco322HzZoFfQcA87EEI/
-	 M/2QKH+P3xA3CEClXuwbTJHKWRU/9YT23uhuaQyUwPfZxB9Lgo8lm4XeIqJONZtfwL
-	 qaUZEBtKHUUFw==
-Date: Mon, 5 Feb 2024 19:06:39 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Benjamin Gray <bgray@linux.ibm.com>
-Subject: Re: Re: [PATCH v2 1/3] powerpc/code-patching: Add generic memory
- patching
-Message-ID: <wjntrevxrllo5v4q5ab52fukwoppjk37ohvbdtvv4drroa6tve@mv2v7aithhlk>
-References: <20231016050147.115686-1-bgray@linux.ibm.com>
- <20231016050147.115686-2-bgray@linux.ibm.com>
- <fwqfsxpnjoa5fjsvizu6nud4joa3btnzthrb6e5h4w6eplcfxu@oezlh56opyah>
- <74e39f168c5afafd56d6ea4b2f1274bfef6a3959.camel@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TT7r628Hhz2yRS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2024 01:22:26 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 7B0CD1BF207;
+	Mon,  5 Feb 2024 14:22:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1707142935;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=X2lRUb3hksFq0yfXVR20ELEXLC5m7R4eEvD1161wPtg=;
+	b=WdMAS6PlW2bnMePzgM6xEUHFKbQpsK4l7I/RklZs+yFf7G3x3LNLqzH6/eXQ4wk/qSV+ZH
+	+6qibOM+9FntESYWxTuAcQNBqOq3A5Nd2SlaeYqAFsibQnE4roQHGyKDfvxFJi0uFhupVr
+	RGMjwnie8DBep4z5og7UbQDoAHhlz4eJe7gcGw2todrNHvxTE/l3bBGzmXFHKaBOK2foLC
+	VEW/3doORkGTr+/mrjW4QsxUMoloETwRldasNYuCYKYXi5Ef8iwxH0g9yISE3yk5fM/D6x
+	TtwHGzwLvp/N7+U5KLqkYV5pxIl4ZFent2eL2dtTVVeacPk8iVDVQ2J6g34iZA==
+Date: Mon, 5 Feb 2024 15:22:08 +0100
+From: Herve Codina <herve.codina@bootlin.com>
+To: Paolo Abeni <pabeni@redhat.com>
+Subject: Re: [PATCH v2 1/6] net: wan: Add support for QMC HDLC
+Message-ID: <20240205152208.73535549@bootlin.com>
+In-Reply-To: <b1968b5c7e88edd448d5f55b57dfa40257b2b06c.camel@redhat.com>
+References: <20240130084035.115086-1-herve.codina@bootlin.com>
+	<20240130084035.115086-2-herve.codina@bootlin.com>
+	<b1968b5c7e88edd448d5f55b57dfa40257b2b06c.camel@redhat.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.2.0 (GTK 3.24.38; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <74e39f168c5afafd56d6ea4b2f1274bfef6a3959.camel@linux.ibm.com>
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,49 +61,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 05, 2024 at 01:30:46PM +1100, Benjamin Gray wrote:
-> On Thu, 2023-11-30 at 15:55 +0530, Naveen N Rao wrote:
-> > On Mon, Oct 16, 2023 at 04:01:45PM +1100, Benjamin Gray wrote:
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/code-patching.h
-> > > b/arch/powerpc/include/asm/code-patching.h
-> > > index 3f881548fb61..7c6056bb1706 100644
-> > > --- a/arch/powerpc/include/asm/code-patching.h
-> > > +++ b/arch/powerpc/include/asm/code-patching.h
-> > > @@ -75,6 +75,39 @@ int patch_branch(u32 *addr, unsigned long
-> > > target, int flags);
-> > > †int patch_instruction(u32 *addr, ppc_inst_t instr);
-> > > †int raw_patch_instruction(u32 *addr, ppc_inst_t instr);
-> > > †
-> > > +/*
-> > > + * patch_uint() and patch_ulong() should only be called on
-> > > addresses where the
-> > > + * patch does not cross a cacheline, otherwise it may not be
-> > > flushed properly
-> > > + * and mixes of new and stale data may be observed. It cannot
-> > > cross a page
-> > > + * boundary, as only the target page is mapped as writable.
-> > 
-> > Should we enforce alignment requirements, especially for
-> > patch_ulong() 
-> > on 64-bit powerpc? I am not sure if there are use cases for unaligned
-> > 64-bit writes. That should also ensure that the write doesn't cross a
-> > cacheline.
+Hi Paolo,
+
+On Thu, 01 Feb 2024 12:41:32 +0100
+Paolo Abeni <pabeni@redhat.com> wrote:
+
+[...]
+> > +static inline struct qmc_hdlc *netdev_to_qmc_hdlc(struct net_device *netdev)
+> > +{
+> > +	return dev_to_hdlc(netdev)->priv;
+> > +}  
 > 
-> Yeah, the current description is more just the technical restrictions,
-> not an endorsement of usage. If the caller isn't working with aligned
-> data, it seems unlikely it would still be cacheline aligned. The caller
-> should break it into 32bit patches if this is the case.
+> Please, no 'inline' function in c files. You could move this function
+> and the struct definition into a new, local, header file.
+
+'inline' function specifier will be removed in the next iteration on the series.
+
 > 
-> By enforce, are you suggesting a WARN_ON in the code too?
+> > +static int qmc_hdlc_recv_queue(struct qmc_hdlc *qmc_hdlc, struct qmc_hdlc_desc *desc, size_t size);
+> > +
+> > +#define QMC_HDLC_RX_ERROR_FLAGS (QMC_RX_FLAG_HDLC_OVF | \
+> > +				 QMC_RX_FLAG_HDLC_UNA | \
+> > +				 QMC_RX_FLAG_HDLC_ABORT | \
+> > +				 QMC_RX_FLAG_HDLC_CRC)
+> > +
+> > +static void qmc_hcld_recv_complete(void *context, size_t length, unsigned int flags)
+> > +{
+> > +	struct qmc_hdlc_desc *desc = context;
+> > +	struct net_device *netdev = desc->netdev;
+> > +	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
+> > +	int ret;  
+> 
+> Please, respect the reverse x-mas tree order for local variable
+> definition.
 
-No, just detecting and returning an error code should help detect 
-incorrect usage.
+desc depends on context, netdev depends on desc and qmc_hdlc depends on netdev.
+I think the declaration order is correct here even it doesn't respect the reverse
+x-mas tree.
 
+[...]
+> > +static netdev_tx_t qmc_hdlc_xmit(struct sk_buff *skb, struct net_device *netdev)
+> > +{
+> > +	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
+> > +	struct qmc_hdlc_desc *desc;
+> > +	unsigned long flags;
+> > +	int ret;
+> > +
+> > +	spin_lock_irqsave(&qmc_hdlc->tx_lock, flags);
+> > +	desc = &qmc_hdlc->tx_descs[qmc_hdlc->tx_out];
+> > +	if (WARN_ONCE(!desc->skb, "No tx descriptors available\n")) {
+> > +		/* Should never happen.
+> > +		 * Previous xmit should have already stopped the queue.
+> > +		 */
+> > +		netif_stop_queue(netdev);
+> > +		spin_unlock_irqrestore(&qmc_hdlc->tx_lock, flags);
+> > +		return NETDEV_TX_BUSY;
+> > +	}
+> > +	spin_unlock_irqrestore(&qmc_hdlc->tx_lock, flags);
+> > +
+> > +	desc->netdev = netdev;
+> > +	desc->dma_size = skb->len;
+> > +	desc->skb = skb;
+> > +	ret = qmc_hdlc_xmit_queue(qmc_hdlc, desc);
+> > +	if (ret) {
+> > +		desc->skb = NULL; /* Release the descriptor */
+> > +		if (ret == -EBUSY) {
+> > +			netif_stop_queue(netdev);
+> > +			return NETDEV_TX_BUSY;
+> > +		}
+> > +		dev_kfree_skb(skb);
+> > +		netdev->stats.tx_dropped++;
+> > +		return NETDEV_TX_OK;
+> > +	}
+> > +
+> > +	qmc_hdlc->tx_out = (qmc_hdlc->tx_out + 1) % ARRAY_SIZE(qmc_hdlc->tx_descs);
+> > +
+> > +	spin_lock_irqsave(&qmc_hdlc->tx_lock, flags);
+> > +	if (qmc_hdlc->tx_descs[qmc_hdlc->tx_out].skb)
+> > +		netif_stop_queue(netdev);
+> > +	spin_unlock_irqrestore(&qmc_hdlc->tx_lock, flags);  
+> 
+> The locking schema is quite bad, as the drivers acquires and releases 3
+> locks for each tx packet. You could improve that using the qmc_chan-
+> >tx_lock to protect the whole qmc_hdlc_xmit() function, factoring out a  
+> lockless variant of qmc_hdlc_xmit_queue(),¬†and using it here.
 
-- Naveen
+I will change on next iteration and keep 2 lock/unlock instead of 3:
+  - one in qmc_hdlc_xmit()
+  - one in qmc_hdlc_xmit_complete() 
+to protect the descriptors accesses.
 
+> 
+> In general is quite bad that the existing infra does not allow
+> leveraging NAPI. Have you considered expanding the QMC to accomodate
+> such user?
+
+I cannot mask/unmask the 'end of transfer' interrupt.
+Indeed, other streams use this interrupt among them audio streams and so
+masking the interrupt for HDLC data will also mask the interrupt for audio
+data.
+
+At the HDLC driver level, the best I can to is to store a queue of complete
+HDLC skbs (queue filled on interrupts) and send them to the network stack
+when the napi poll() is called.
+
+I am not sure that this kind of queue (additional level between always
+enabled interrupts and the network stack) makes sense.
+
+Do you have any opinion about this additional queue management for NAPI
+support?
+
+Best regards,
+Herv√©
