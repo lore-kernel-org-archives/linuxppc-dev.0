@@ -4,92 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E02EC4828D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 04:53:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D70EC48291
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 05:37:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="key not found in DNS" header.d=marliere.net header.i=@marliere.net header.a=rsa-sha256 header.s=2023 header.b=WK3V1FG3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YyRlgrFH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TSvCJ2THtz3cKN
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 15:53:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TSwBh1KyRz3cN6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 16:37:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="key not found in DNS" header.d=marliere.net header.i=@marliere.net header.a=rsa-sha256 header.s=2023 header.b=WK3V1FG3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YyRlgrFH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=rbmarliere@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TSWsp32pmz2yPq
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 01:21:50 +1100 (AEDT)
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-1d751bc0c15so31045685ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Feb 2024 06:21:50 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707056508; x=1707661308;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:dkim-signature:from:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=DM1wclqTtJ+/yCoNOLkdaIuN4wdZRWjTbqonpGJw8JI=;
-        b=kFxYa/4cQjur3iygbE3KhvYhftS0n6GTpF50kJ15fEZML+4CDuYBggVf7UweTwQ0u6
-         ga6oMOhwD0qvgzno0nLGfwahxlIK6YEt3KesOuBwUosgvQVKYMDKF/7OAuEpHAdhB/fd
-         nA0QlaQLUPRcHCnzGToGdb5miaPyMJyRtyQjCghjQXAlebVwqMJCYXoXnnZnFq2421ns
-         7v3LSuXxyUgWx1HtWHMoO1OiPM8Ipz/814Dbm4+BuqB17l77BGHBdUjtpQS1PZm2vQVa
-         yQHwetCY3/kQeheF/HImBBgTh6mrtB0SsnAA+V84rIhNgEHT8k19ntQTY001RGbxNNFJ
-         nwcQ==
-X-Gm-Message-State: AOJu0YzkbrM8mTaFZY4AsMkQOgff/IXOEFGTukwsuD80JgqWfX/4VZP5
-	6MCNyoSbmifECV9VVnnBSqHah84IsBumwX214tzG3mxpeA8ZGrgS
-X-Google-Smtp-Source: AGHT+IGbMbmdxU5sGxcRK8e4sB+bnO9dyqYgoYH8V8UbKpXj1YBl8/N0RtzoifBZkOzBV1fQMWlwsg==
-X-Received: by 2002:a17:902:d4c6:b0:1d9:8fc6:35 with SMTP id o6-20020a170902d4c600b001d98fc60035mr5472471plg.15.1707056508444;
-        Sun, 04 Feb 2024 06:21:48 -0800 (PST)
-X-Forwarded-Encrypted: i=0; AJvYcCXFJSX5qjqrqhBMTuQdKaXScTPowLE0tBasLmOzydkWG6XABrdrT8wqS3Wcj1n6Zzixrg6hrwXofBXEI2/cnsU22fPr//4+tQMt4852e/pi/5nNv4FjWcaiT3vBn93sdsXPjaqqlCxFFYuzr8VJySscPpAixRlt4z7HQU2iNN3UFfQwWq7iLACRhOypSqlY4lLEugbhicoEHkCPgAqPIPBK0BhI0GmAp3Gdpr9sYDoueU1H0DCm1YZhwSQsmYHkZpur
-Received: from mail.marliere.net ([24.199.118.162])
-        by smtp.gmail.com with ESMTPSA id r2-20020a63d902000000b005dab535fac2sm5097095pgg.90.2024.02.04.06.21.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Feb 2024 06:21:48 -0800 (PST)
-From: "Ricardo B. Marliere" <ricardo@marliere.net>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marliere.net;
-	s=2023; t=1707056506;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=DM1wclqTtJ+/yCoNOLkdaIuN4wdZRWjTbqonpGJw8JI=;
-	b=WK3V1FG30pTDXErhU6A8V1nmaEE3ZW0hDpcaQEa9JBtKoOMLXG6AhgggNZ3k/0PX5BvTCJ
-	8TzgwlHZ7kVj0Axx+zXzZ5lO4AGLDedzNA1UCJlwW4L8Z8DzKC3ZZTCAUNAA+mkaQLZ9KJ
-	GKfNmpha/cMVPNrCVFRpbZcXNZkFbW1yKYEwuWWXYjyPMJKwp7Xy0xK98ZDYjYFkYsm8Hf
-	0gF3W0AQx9cTglwv6s5oApK/tB/wcyF10+5F607wE7rPrT72Okj3SPdoHeVGwnNoqQermq
-	BMx73JUci00NrjJDQ9TMWBkoZ4H0f8wUdBQYmtfE25ZJ1MImca1fKwEi6uzRVg==
-Authentication-Results: ORIGINATING;
-	auth=pass smtp.auth=ricardo@marliere.net smtp.mailfrom=ricardo@marliere.net
-Date: Sun, 04 Feb 2024 11:21:58 -0300
-Subject: [PATCH 4/4] powerpc: pseries: make suspend_subsys const
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TSw9p4Mrlz2ykx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 16:37:02 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TSw9p2mrrz4wcb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 16:37:02 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4TSw9p2b4bz4wyb; Mon,  5 Feb 2024 16:37:02 +1100 (AEDT)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YyRlgrFH;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TSw9n4hRgz4wcb
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2024 16:37:01 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41550clX009520;
+	Mon, 5 Feb 2024 05:36:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=0rbWvOWdC5n48OMCsNGxL3+si6IAxW3m3CbrTHYZzO0=;
+ b=YyRlgrFHQY9d8DhtL2fd9CiiytQLsMpHz1yeqcG5gJ0kdIKFQxcqSihDOSH98KmasOFS
+ CZoxUOGBQClplatfkEH9wzt28a1A01rGaINSX6TleEin2Z3+DCiY+/3yprPRKqnNeYq9
+ xlAbF8bTkvIUShAIyF9ABCeXXMJmxIBMY0S2I6UG7o6c32pWGpS4+AGGHk+6D3FuPFJt
+ k0Bvntoo99eZYbUodyD0Sl0tF1Zpon1/HacijTa4vQ4w8vsUMB5J/mYwWlMccl8U2SHk
+ Lf7F2hAcClvasnx51m21FwS2Y2R1WCbKwOyEokGAyKZUf2J5aLlRbe1QLNlSPpuchGwp eA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w2rtj0utb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 05 Feb 2024 05:36:56 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4155WC73022830;
+	Mon, 5 Feb 2024 05:36:55 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w2rtj0ut2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 05 Feb 2024 05:36:55 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41539tRg008770;
+	Mon, 5 Feb 2024 05:36:55 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3w206y6q0q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 05 Feb 2024 05:36:55 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4155aotR24707752
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 5 Feb 2024 05:36:50 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9365620040;
+	Mon,  5 Feb 2024 05:36:50 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1B51320043;
+	Mon,  5 Feb 2024 05:36:49 +0000 (GMT)
+Received: from jupiter.in.ibm.com (unknown [9.109.248.226])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  5 Feb 2024 05:36:48 +0000 (GMT)
+From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+To: = linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2] powerpc: Avoid nmi_enter/nmi_exit in real mode interrupt.
+Date: Mon,  5 Feb 2024 11:06:47 +0530
+Message-ID: <20240205053647.1763446-1-mahesh@linux.ibm.com>
+X-Mailer: git-send-email 2.43.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 9EjY-Bg70uctm5XWNpXUw1ZpQyTunPw2
+X-Proofpoint-GUID: 1xT9cjMe3l1_8Yz-UZ3vk3584GRdK-Ew
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240204-bus_cleanup-powerpc-v1-4-c763f0e142e9@marliere.net>
-References: <20240204-bus_cleanup-powerpc-v1-0-c763f0e142e9@marliere.net>
-In-Reply-To: <20240204-bus_cleanup-powerpc-v1-0-c763f0e142e9@marliere.net>
-To: Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Geoff Levand <geoff@infradead.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1038; i=ricardo@marliere.net;
- h=from:subject:message-id; bh=5r8tPAE4JJiQ/TMfO7ryglYRMYVtmuiRDdzPD20d+eI=;
- b=owEBbQKS/ZANAwAKAckLinxjhlimAcsmYgBlv52J/wzsesxRSSPnJ5rCztFrehjjQWiFrmPB0
- SjinE4QIhyJAjMEAAEKAB0WIQQDCo6eQk7jwGVXh+HJC4p8Y4ZYpgUCZb+diQAKCRDJC4p8Y4ZY
- pghvD/9p/r1OMruDDruavs7mlXgYdpGZBqX0Sx9e4jpOPBU8fYGah6R0HrUIAQk32wEul9pna27
- X5/g7MvXsA0Q/0/+aj/XGmMeoqZbWWe8ZvCK7b4y2BEpP5Ek8wugNYU4yIvpKmsnwwATsbUuYd6
- ZhBxPF6wSK9AzLLgRXD+9CyVzZkFYNeWt9JGEsdHpN2NEuza/TbC7V1NKTkArEpbOv5xPhkqpzZ
- t5f/SEEAR/ruJYHGzQhpR3TRmx2kLwnDd0ZN9/JtzCC+6xL1fMf64puEjT+xUHY1YqITyqEJnag
- SRKWVrYF94vvsfAYpvgEAlrUCImZumTmuCiFa4tYDOtl7IaQIiny/NI7fLZFh05RO1TKUrxyubL
- uUpsL32dnPWjaNVG8ClnkMBwR7wb2cHUSO/Q19cgWDCF2nl3ICSSdBMGIPQWF+mSgOpgv/KqDTY
- +3eBuejg8f/oLSEVjZGwla1Py8AR+RixFiYlOaiHKo5XRTEnW4szpnMSFtI6q6/ZyR3INHabBJ5
- Q0IlvqDaZOrFRJMsGNYvr0NW6SmqxC+YRkJlmDU5kp4CAjj/n86YlBn6qETZ/PvXxddPQ0XmM1f
- FJ1Um9H1F0KvtUhUaWV1a6Jkc7bJfZKlDS6ftSP1ZDEkSWuEiUy8VKHEaIEBhvfRW5k/cV1WkO9
- JzjGbrUONmmZLgQ==
-X-Developer-Key: i=ricardo@marliere.net; a=openpgp;
- fpr=030A8E9E424EE3C0655787E1C90B8A7C638658A6
-X-Mailman-Approved-At: Mon, 05 Feb 2024 15:49:46 +1100
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-05_01,2024-01-31_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ suspectscore=0 mlxlogscore=895 spamscore=0 clxscore=1011 malwarescore=0
+ lowpriorityscore=0 priorityscore=1501 bulkscore=0 adultscore=0
+ phishscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2402050039
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,35 +109,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Ricardo B. Marliere" <ricardo@marliere.net>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "= Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, = Ganesh Goudar <ganeshgr@linux.ibm.com>, = Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the driver core can properly handle constant struct bus_type,
-move the suspend_subsys variable to be a constant structure as well,
-placing it into read-only memory which can not be modified at runtime.
+nmi_enter()/nmi_exit() touches per cpu variables which can lead to kernel
+crash when invoked during real mode interrupt handling (e.g. early HMI/MCE
+interrupt handler) if percpu allocation comes from vmalloc area.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
+Early HMI/MCE handlers are called through DEFINE_INTERRUPT_HANDLER_NMI()
+wrapper which invokes nmi_enter/nmi_exit calls. We don't see any issue when
+percpu allocation is from the embedded first chunk. However with
+CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there are chances where percpu
+allocation can come from the vmalloc area.
+
+With kernel command line "percpu_alloc=page" we can force percpu allocation
+to come from vmalloc area and can see kernel crash in machine_check_early:
+
+[    1.215714] NIP [c000000000e49eb4] rcu_nmi_enter+0x24/0x110
+[    1.215717] LR [c0000000000461a0] machine_check_early+0xf0/0x2c0
+[    1.215719] --- interrupt: 200
+[    1.215720] [c000000fffd73180] [0000000000000000] 0x0 (unreliable)
+[    1.215722] [c000000fffd731b0] [0000000000000000] 0x0
+[    1.215724] [c000000fffd73210] [c000000000008364] machine_check_early_common+0x134/0x1f8
+
+Fix this by avoiding use of nmi_enter()/nmi_exit() in real mode if percpu
+first chunk is not embedded.
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/suspend.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v2:
+- Rebase to upstream master
+- Use jump_labels, if CONFIG_JUMP_LABEL is enabled, to avoid redoing the
+  test at each interrupt entry.
+- v1 is at https://lore.kernel.org/linuxppc-dev/164578465828.74956.6065296024817333750.stgit@jupiter/
+---
+ arch/powerpc/include/asm/interrupt.h | 14 ++++++++++++++
+ arch/powerpc/include/asm/percpu.h    | 11 +++++++++++
+ arch/powerpc/kernel/setup_64.c       | 12 ++++++++++++
+ 3 files changed, 37 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
-index 382003dfdb9a..c51db63d3e88 100644
---- a/arch/powerpc/platforms/pseries/suspend.c
-+++ b/arch/powerpc/platforms/pseries/suspend.c
-@@ -126,7 +126,7 @@ static ssize_t show_hibernate(struct device *dev,
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index a4196ab1d0167..3b4e17c23d9a9 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -336,6 +336,16 @@ static inline void interrupt_nmi_enter_prepare(struct pt_regs *regs, struct inte
+ 	if (IS_ENABLED(CONFIG_KASAN))
+ 		return;
  
- static DEVICE_ATTR(hibernate, 0644, show_hibernate, store_hibernate);
++	/*
++	 * Likewise, do not use it in real mode if percpu first chunk is not
++	 * embedded. With CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there
++	 * are chances where percpu allocation can come from vmalloc area.
++	 */
++#ifdef CONFIG_PPC64
++	if (IS_ENABLED(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK) && !is_embed_first_chunk)
++		return;
++#endif
++
+ 	/* Otherwise, it should be safe to call it */
+ 	nmi_enter();
+ }
+@@ -351,6 +361,10 @@ static inline void interrupt_nmi_exit_prepare(struct pt_regs *regs, struct inter
+ 		// no nmi_exit for a pseries hash guest taking a real mode exception
+ 	} else if (IS_ENABLED(CONFIG_KASAN)) {
+ 		// no nmi_exit for KASAN in real mode
++#ifdef CONFIG_PPC64
++	} else if (IS_ENABLED(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK) && !is_embed_first_chunk) {
++		// no nmi_exit if percpu first chunk is not embedded
++#endif
+ 	} else {
+ 		nmi_exit();
+ 	}
+diff --git a/arch/powerpc/include/asm/percpu.h b/arch/powerpc/include/asm/percpu.h
+index 8e5b7d0b851c6..6b4dce4e78d5f 100644
+--- a/arch/powerpc/include/asm/percpu.h
++++ b/arch/powerpc/include/asm/percpu.h
+@@ -12,6 +12,17 @@
  
--static struct bus_type suspend_subsys = {
-+static const struct bus_type suspend_subsys = {
- 	.name = "power",
- 	.dev_name = "power",
- };
-
+ #define __my_cpu_offset local_paca->data_offset
+ 
++#ifdef CONFIG_JUMP_LABEL
++DECLARE_STATIC_KEY_FALSE(__percpu_embed_first_chunk);
++
++#define is_embed_first_chunk	\
++		(static_key_enabled(&__percpu_embed_first_chunk.key))
++
++#else /* !CONFIG_JUMP_LABEL */
++extern bool __percpu_embed_first_chunk;
++#define is_embed_first_chunk	__percpu_embed_first_chunk
++
++#endif /* CONFIG_JUMP_LABEL */
+ #endif /* CONFIG_SMP */
+ #endif /* __powerpc64__ */
+ 
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 2f19d5e944852..674b6e1bebe9a 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -834,6 +834,11 @@ static __init int pcpu_cpu_to_node(int cpu)
+ 
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+ EXPORT_SYMBOL(__per_cpu_offset);
++#ifdef CONFIG_JUMP_LABEL
++DEFINE_STATIC_KEY_FALSE(__percpu_embed_first_chunk);
++#else
++bool __percpu_embed_first_chunk;
++#endif
+ 
+ void __init setup_per_cpu_areas(void)
+ {
+@@ -869,6 +874,13 @@ void __init setup_per_cpu_areas(void)
+ 			pr_warn("PERCPU: %s allocator failed (%d), "
+ 				"falling back to page size\n",
+ 				pcpu_fc_names[pcpu_chosen_fc], rc);
++		else {
++#ifdef CONFIG_JUMP_LABEL
++			static_key_enable(&__percpu_embed_first_chunk.key);
++#else
++			__percpu_embed_first_chunk = true;
++#endif
++		}
+ 	}
+ 
+ 	if (rc < 0)
 -- 
 2.43.0
 
