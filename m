@@ -4,90 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44081C4828D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 17:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D27D1C4828D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 17:46:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VHHMox9g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=REF9Y7sz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TTDBT6vBbz3dSv
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 04:38:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TTDMr3vthz3069
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 04:46:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VHHMox9g;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=REF9Y7sz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mhartmay@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=htejun@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TT8dh2QyPz2yNf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2024 01:58:31 +1100 (AEDT)
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 415EsioW002572;
-	Mon, 5 Feb 2024 14:58:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=nh4TMa86W8hefv37pbk8GN/GhgrqUypntNlguwVBIHc=;
- b=VHHMox9grGL2VmnNa0M8KBxrVIYXjAmf3gPcvHl1Y4MI4IT3eEhju0gHmFdbO0pm/6/G
- dTFa+bdMIxigxizmIWuPAE/XRPcYxwnEX35/3a8ooYTUqBSkh6XbFX4Me44dtnEHkvq3
- rITgrwKmt+yAWi7KRvBX+g4dCDuCvAWJvEVZd1JM5dOsaeppX//wBWbRLSkDVpVi8kcm
- FAMDy+E5UnqPUcr+zEUO52oOiU809bFRJMawuaf8pUX3D2hLg/32ugskC399z9tYwH34
- 3abKU2eQm/mactnq4uFw185etEah0uIGc9gGw4bU80pgwzUglZcUSWyzDzqTvgoxKZ5A 8w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w31usr3er-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Feb 2024 14:58:15 +0000
-Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 415EtAGY003753;
-	Mon, 5 Feb 2024 14:58:15 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w31usr3e0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Feb 2024 14:58:15 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 415CGYPx008494;
-	Mon, 5 Feb 2024 14:58:14 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3w221jrqqx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Feb 2024 14:58:14 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 415EwBEE20710104
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 Feb 2024 14:58:11 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5DE552004F;
-	Mon,  5 Feb 2024 14:58:11 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5377120043;
-	Mon,  5 Feb 2024 14:58:10 +0000 (GMT)
-Received: from li-1de7cd4c-3205-11b2-a85c-d27f97db1fe1.ibm.com (unknown [9.171.59.40])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon,  5 Feb 2024 14:58:10 +0000 (GMT)
-From: "Marc Hartmayer" <mhartmay@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, Thomas Huth <thuth@redhat.com>
-Subject: Re: [kvm-unit-tests PATCH v2 4/9] migration: use a more robust way
- to wait for background job
-In-Reply-To: <20240202065740.68643-5-npiggin@gmail.com>
-References: <20240202065740.68643-1-npiggin@gmail.com>
- <20240202065740.68643-5-npiggin@gmail.com>
-Date: Mon, 05 Feb 2024 15:58:09 +0100
-Message-ID: <87y1bzx8ji.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TTDLy4Kzzz2xmC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2024 04:46:01 +1100 (AEDT)
+Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-295c67ab2ccso3421663a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Feb 2024 09:46:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1707155156; x=1707759956; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:sender
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=tWpkA0adWfJg/N96ugMkWhlTX4/Zx12uY2WHwPaeRnA=;
+        b=REF9Y7sz2guFVR/OH4Wzg+H1+b26tRUnSbLqckxku+xDqRBDY9JEyZNtO3KDF8Lx9Z
+         bFGypyAWPKAPKyfBYCG8RLMwciMh2eDQ/LHPpXQh8lZrweSZFmgfXrPwn6IV6APZlYHF
+         4VHC6S9wZ/2vdf2JjwHy4M7Hleyyw6bXyu71woL7xaUFXQTk4Ky3OrKKUpBl5XOg5K0T
+         Mz3RiPaJv1u2kOC2S0ghSSX9XWX6dcqzxjQyjp9gmMYP8PayHfstunlvoDVTCSeqqXPK
+         0osNciebHijq7vMHrAlhwbxsydNA2ABaA7DJfJMR+y+0UpNx4mRKHVEEoVRvgQoxMMXF
+         3MhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707155156; x=1707759956;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:sender
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=tWpkA0adWfJg/N96ugMkWhlTX4/Zx12uY2WHwPaeRnA=;
+        b=egRKVis23R4///cHYiCiWEhxg67eUrjuoBoI8SdAWK2RJop+4sYbJhl/RZi9rBbwNj
+         QQOpdTZNBPHhZ35z9+GDqJPq1vej/LMXaox63lFJ8mxgUeusmenwGutw7O1NwDJWvEiC
+         5m3qyfdxpnSwgZLz+XAtpy/qdcBBiUvE7WP+6oCHYTxQgqmNMzEXngYVl6mWLtSm/wB8
+         OvDvR/ic35py7THJM7DTpuD2ptil91SV+/0IengVYhgMsR7LSrqJR7LHRfnvV1YdfVvl
+         AP9r2XNS++7GLEO6tehoMHnHAI6p+M45BSsCVTJ9Uo/Bf3+6KImfNsvm+2sPs/4Re503
+         LI2w==
+X-Gm-Message-State: AOJu0YyWbPF8Ss+nfnwNNKQ9UhtmsawCzhZ4lrmbgWHPawCHfEhimxWY
+	Q9au2hoyA/VJJ7FFG3jD+RUEDmpMtpHZ17W2j4t8AZoEAM8sa/t/
+X-Google-Smtp-Source: AGHT+IEqEmWKxapPmLXYmOp2uW9MmgZudDXICGNoo85jUNcxH4rxgZoagf5UZXbl3QwCCMxY73PBsw==
+X-Received: by 2002:a17:90b:3647:b0:296:3a5:6fb8 with SMTP id nh7-20020a17090b364700b0029603a56fb8mr140155pjb.25.1707155156241;
+        Mon, 05 Feb 2024 09:45:56 -0800 (PST)
+X-Forwarded-Encrypted: i=0; AJvYcCUUTj4d9BneUR8TZxAaWCjiW0qPu4NyC9O0WiMqD0EHnQyDK/qEVa141FY7qkYuJnDqIDgdelFh/eE6OODkrU1xkP6MwGo1Rt4S8atEe92QUmNAC4qwcKL6NjLrhFpAbdAtuF4tZ0iSPFhZcNJvztJ+Oif6QDoKQP+woOxB+gNeACViotwAWvKQ0yEAcmkFw6aRy0M9Ahg5aX4o4dnA7tXBTiZpTGFAGhd8wEkpw6VdnFx9tIorsXqvjsSZM3byxJdSkfgWlHNoa2Rt7mZHKCmZd8B0Rl3ygArty1j/RFdt8876/3tNc2YGX3rrQMJvrU0/rpAaTe9J7N8PErxAllclAaSxa8IWv3bbiamB+yG6CkYt8W/2bY/qXRTgYWOTC7IJNdON29VtTP5MmAeDIzalabi2qUF44plo4wSA44LtuJfXkg==
+Received: from localhost (dhcp-141-239-144-21.hawaiiantel.net. [141.239.144.21])
+        by smtp.gmail.com with ESMTPSA id lc4-20020a170902fa8400b001d8e41b3f95sm141669plb.51.2024.02.05.09.45.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 05 Feb 2024 09:45:55 -0800 (PST)
+Date: Mon, 5 Feb 2024 07:45:54 -1000
+From: Tejun Heo <tj@kernel.org>
+To: Tasmiya Nalatwad <tasmiya@linux.vnet.ibm.com>
+Subject: Re: [Bisected] [commit dd6c3c544126] [linux-next] [6.8.0-rc2] Task
+ hungs for infinite time call traces
+Message-ID: <ZcEe0q8Bg5zca1nA@slm.duckdns.org>
+References: <a95f5bcd-3c49-4ebd-b1b3-a688c5b6727c@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: SUHkLwZM0WCe6bFJ9vfIMgczlRFn0ljW
-X-Proofpoint-ORIG-GUID: l7laDO8Me0N025JnSH5ggM85y9dv3gOi
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-05_09,2024-01-31_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 spamscore=0
- bulkscore=0 lowpriorityscore=0 mlxlogscore=946 malwarescore=0 adultscore=0
- priorityscore=1501 suspectscore=0 clxscore=1015 impostorscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2402050113
-X-Mailman-Approved-At: Tue, 06 Feb 2024 04:36:17 +1100
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a95f5bcd-3c49-4ebd-b1b3-a688c5b6727c@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,51 +81,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, linux-s390@vger.kernel.org, Nico Boehr <nrb@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linuxppc-dev@lists.ozlabs.org, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Andrew Jones <andrew.jones@linux.dev>, Eric Auger <eric.auger@redhat.com>, kvmarm@lists.linux.dev, Paolo Bonzini <pbonzini@redhat.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: "sachinp@linux.vnet.com" <sachinp@linux.vnet.com>, "mputtash@linux.vnet.com" <mputtash@linux.vnet.com>, jiangshanlai@gmail.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>, "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 02, 2024 at 04:57 PM +1000, Nicholas Piggin <npiggin@gmail.com>=
- wrote:
-> Starting a pipeline of jobs in the background does not seem to have
-> a simple way to reliably find the pid of a particular process in the
-> pipeline (because not all processes are started when the shell
-> continues to execute).
->
-> The way PID of QEMU is derived can result in a failure waiting on a
-> PID that is not running. This is easier to hit with subsequent
-> multiple-migration support. Changing this to use $! by swapping the
-> pipeline for a fifo is more robust.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
+Hello,
 
-[=E2=80=A6snip=E2=80=A6]
+On Mon, Feb 05, 2024 at 03:24:17PM +0530, Tasmiya Nalatwad wrote:
+> Greetings,
+> 
+> [Linux-next] [6.8.0-rc2-next-20240130] [FC / XFS] Task hangs for infinite
+> time while running bonnie test XFS filesystem
+> 
+> Bisected the issue. Git bisect points to the below commit
+> commit dd6c3c5441263723305a9c52c5ccc899a4653000
+>           workqueue: Move pwq_dec_nr_in_flight() to the end of work item
+> handling
 
->=20=20
-> +	# Wait until the destination has created the incoming and qmp sockets
-> +	while ! [ -S ${migsock} ] ; do sleep 0.1 ; done
-> +	while ! [ -S ${qmp2} ] ; do sleep 0.1 ; done
+This should be fixed by c70e1779b73a ("Fix pwq->nr_in_flight corruption in
+try_to_grab_pending()").
 
-There should be timeout implemented, otherwise we might end in an
-endless loop in case of a bug. Or is the global timeout good enough to
-handle this situation?
+Thanks.
 
-> +
->  	qmp ${qmp1} '"migrate", "arguments": { "uri": "unix:'${migsock}'" }' > =
-${qmpout1}
->=20=20
->  	# Wait for the migration to complete
-> --=20
-> 2.42.0
->
->
---=20
-Kind regards / Beste Gr=C3=BC=C3=9Fe
-   Marc Hartmayer
-
-IBM Deutschland Research & Development GmbH
-Vorsitzender des Aufsichtsrats: Wolfgang Wendt
-Gesch=C3=A4ftsf=C3=BChrung: David Faller
-Sitz der Gesellschaft: B=C3=B6blingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+-- 
+tejun
