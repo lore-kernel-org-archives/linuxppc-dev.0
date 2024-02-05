@@ -4,100 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D70EC48291
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 05:37:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76D15C4828D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 05:54:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YyRlgrFH;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=VQkTwST2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TSwBh1KyRz3cN6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 16:37:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TSwZB6GQGz3c8W
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Feb 2024 16:54:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YyRlgrFH;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=VQkTwST2;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TSw9p4Mrlz2ykx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 16:37:02 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TSw9p2mrrz4wcb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 16:37:02 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4TSw9p2b4bz4wyb; Mon,  5 Feb 2024 16:37:02 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YyRlgrFH;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TSw9n4hRgz4wcb
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2024 16:37:01 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41550clX009520;
-	Mon, 5 Feb 2024 05:36:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=0rbWvOWdC5n48OMCsNGxL3+si6IAxW3m3CbrTHYZzO0=;
- b=YyRlgrFHQY9d8DhtL2fd9CiiytQLsMpHz1yeqcG5gJ0kdIKFQxcqSihDOSH98KmasOFS
- CZoxUOGBQClplatfkEH9wzt28a1A01rGaINSX6TleEin2Z3+DCiY+/3yprPRKqnNeYq9
- xlAbF8bTkvIUShAIyF9ABCeXXMJmxIBMY0S2I6UG7o6c32pWGpS4+AGGHk+6D3FuPFJt
- k0Bvntoo99eZYbUodyD0Sl0tF1Zpon1/HacijTa4vQ4w8vsUMB5J/mYwWlMccl8U2SHk
- Lf7F2hAcClvasnx51m21FwS2Y2R1WCbKwOyEokGAyKZUf2J5aLlRbe1QLNlSPpuchGwp eA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w2rtj0utb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Feb 2024 05:36:56 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4155WC73022830;
-	Mon, 5 Feb 2024 05:36:55 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w2rtj0ut2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Feb 2024 05:36:55 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41539tRg008770;
-	Mon, 5 Feb 2024 05:36:55 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3w206y6q0q-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Feb 2024 05:36:55 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4155aotR24707752
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 Feb 2024 05:36:50 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9365620040;
-	Mon,  5 Feb 2024 05:36:50 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1B51320043;
-	Mon,  5 Feb 2024 05:36:49 +0000 (GMT)
-Received: from jupiter.in.ibm.com (unknown [9.109.248.226])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  5 Feb 2024 05:36:48 +0000 (GMT)
-From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-To: = linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v2] powerpc: Avoid nmi_enter/nmi_exit in real mode interrupt.
-Date: Mon,  5 Feb 2024 11:06:47 +0530
-Message-ID: <20240205053647.1763446-1-mahesh@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TSwYK4f9Bz2yps
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2024 16:53:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=O+ppX+9FxVt0ChoDJ88PQbcPFT09KUvFH7ZhZ4SJ20U=; b=VQkTwST282bY1inBK/7e0whc+U
+	ZwCDrP+Bzkm/wzt4n9B0V010rBcQ1kBvLS5UdrQ2axi6SVhmLZuikbuJvzDxhvaWxfDhedd6TsK7e
+	PidghTZtzNKXGUQ6uYXxXV4igTnKzVomFy7Jc1OACWY83aqkdNy0A3QIsdkuYBwAwI1JBO6U2BlLr
+	lp1Dr+QrkITzlBdLmMMfT4GRFT69fpqQsFOIe/s8VIcn+6yzz/vgq6eWYmy13qQ2gLqFacPw4STeO
+	jyAEQnVzdviIGgeLNiOc8JcBJxoWX0D2npeTWFDdvg/LOBNWkp5BTDHslPbcAzSXbgUtvrMEKPmHY
+	ZROiuFrA==;
+Received: from [50.53.50.0] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1rWrvX-000000027aB-2ksO;
+	Mon, 05 Feb 2024 05:53:55 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] soc: fsl: dpio: fix kernel-doc typos
+Date: Sun,  4 Feb 2024 21:53:55 -0800
+Message-ID: <20240205055355.24844-1-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.43.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 9EjY-Bg70uctm5XWNpXUw1ZpQyTunPw2
-X-Proofpoint-GUID: 1xT9cjMe3l1_8Yz-UZ3vk3584GRdK-Ew
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-05_01,2024-01-31_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 mlxlogscore=895 spamscore=0 clxscore=1011 malwarescore=0
- lowpriorityscore=0 priorityscore=1501 bulkscore=0 adultscore=0
- phishscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2402050039
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,130 +55,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "= Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, = Ganesh Goudar <ganeshgr@linux.ibm.com>, = Nicholas Piggin <npiggin@gmail.com>
+Cc: Roy Pledge <Roy.Pledge@nxp.com>, Randy Dunlap <rdunlap@infradead.org>, Frank Li <Frank.Li@nxp.com>, Li Yang <leoyang.li@nxp.com>, Guanhua Gao <guanhua.gao@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-nmi_enter()/nmi_exit() touches per cpu variables which can lead to kernel
-crash when invoked during real mode interrupt handling (e.g. early HMI/MCE
-interrupt handler) if percpu allocation comes from vmalloc area.
+Correct spelling of 2 words.
 
-Early HMI/MCE handlers are called through DEFINE_INTERRUPT_HANDLER_NMI()
-wrapper which invokes nmi_enter/nmi_exit calls. We don't see any issue when
-percpu allocation is from the embedded first chunk. However with
-CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there are chances where percpu
-allocation can come from the vmalloc area.
-
-With kernel command line "percpu_alloc=page" we can force percpu allocation
-to come from vmalloc area and can see kernel crash in machine_check_early:
-
-[    1.215714] NIP [c000000000e49eb4] rcu_nmi_enter+0x24/0x110
-[    1.215717] LR [c0000000000461a0] machine_check_early+0xf0/0x2c0
-[    1.215719] --- interrupt: 200
-[    1.215720] [c000000fffd73180] [0000000000000000] 0x0 (unreliable)
-[    1.215722] [c000000fffd731b0] [0000000000000000] 0x0
-[    1.215724] [c000000fffd73210] [c000000000008364] machine_check_early_common+0x134/0x1f8
-
-Fix this by avoiding use of nmi_enter()/nmi_exit() in real mode if percpu
-first chunk is not embedded.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Li Yang <leoyang.li@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Frank Li <Frank.Li@nxp.com>
+Cc: Guanhua Gao <guanhua.gao@nxp.com>
+Cc: Roy Pledge <Roy.Pledge@nxp.com>
 ---
-Changes in v2:
-- Rebase to upstream master
-- Use jump_labels, if CONFIG_JUMP_LABEL is enabled, to avoid redoing the
-  test at each interrupt entry.
-- v1 is at https://lore.kernel.org/linuxppc-dev/164578465828.74956.6065296024817333750.stgit@jupiter/
----
- arch/powerpc/include/asm/interrupt.h | 14 ++++++++++++++
- arch/powerpc/include/asm/percpu.h    | 11 +++++++++++
- arch/powerpc/kernel/setup_64.c       | 12 ++++++++++++
- 3 files changed, 37 insertions(+)
+v2:  update Cc: list, rebase
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index a4196ab1d0167..3b4e17c23d9a9 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -336,6 +336,16 @@ static inline void interrupt_nmi_enter_prepare(struct pt_regs *regs, struct inte
- 	if (IS_ENABLED(CONFIG_KASAN))
- 		return;
- 
-+	/*
-+	 * Likewise, do not use it in real mode if percpu first chunk is not
-+	 * embedded. With CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there
-+	 * are chances where percpu allocation can come from vmalloc area.
-+	 */
-+#ifdef CONFIG_PPC64
-+	if (IS_ENABLED(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK) && !is_embed_first_chunk)
-+		return;
-+#endif
-+
- 	/* Otherwise, it should be safe to call it */
- 	nmi_enter();
- }
-@@ -351,6 +361,10 @@ static inline void interrupt_nmi_exit_prepare(struct pt_regs *regs, struct inter
- 		// no nmi_exit for a pseries hash guest taking a real mode exception
- 	} else if (IS_ENABLED(CONFIG_KASAN)) {
- 		// no nmi_exit for KASAN in real mode
-+#ifdef CONFIG_PPC64
-+	} else if (IS_ENABLED(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK) && !is_embed_first_chunk) {
-+		// no nmi_exit if percpu first chunk is not embedded
-+#endif
- 	} else {
- 		nmi_exit();
- 	}
-diff --git a/arch/powerpc/include/asm/percpu.h b/arch/powerpc/include/asm/percpu.h
-index 8e5b7d0b851c6..6b4dce4e78d5f 100644
---- a/arch/powerpc/include/asm/percpu.h
-+++ b/arch/powerpc/include/asm/percpu.h
-@@ -12,6 +12,17 @@
- 
- #define __my_cpu_offset local_paca->data_offset
- 
-+#ifdef CONFIG_JUMP_LABEL
-+DECLARE_STATIC_KEY_FALSE(__percpu_embed_first_chunk);
-+
-+#define is_embed_first_chunk	\
-+		(static_key_enabled(&__percpu_embed_first_chunk.key))
-+
-+#else /* !CONFIG_JUMP_LABEL */
-+extern bool __percpu_embed_first_chunk;
-+#define is_embed_first_chunk	__percpu_embed_first_chunk
-+
-+#endif /* CONFIG_JUMP_LABEL */
- #endif /* CONFIG_SMP */
- #endif /* __powerpc64__ */
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2f19d5e944852..674b6e1bebe9a 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -834,6 +834,11 @@ static __init int pcpu_cpu_to_node(int cpu)
- 
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(__per_cpu_offset);
-+#ifdef CONFIG_JUMP_LABEL
-+DEFINE_STATIC_KEY_FALSE(__percpu_embed_first_chunk);
-+#else
-+bool __percpu_embed_first_chunk;
-+#endif
- 
- void __init setup_per_cpu_areas(void)
- {
-@@ -869,6 +874,13 @@ void __init setup_per_cpu_areas(void)
- 			pr_warn("PERCPU: %s allocator failed (%d), "
- 				"falling back to page size\n",
- 				pcpu_fc_names[pcpu_chosen_fc], rc);
-+		else {
-+#ifdef CONFIG_JUMP_LABEL
-+			static_key_enable(&__percpu_embed_first_chunk.key);
-+#else
-+			__percpu_embed_first_chunk = true;
-+#endif
-+		}
- 	}
- 
- 	if (rc < 0)
--- 
-2.43.0
+ include/soc/fsl/dpaa2-io.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff -- a/include/soc/fsl/dpaa2-io.h b/include/soc/fsl/dpaa2-io.h
+--- a/include/soc/fsl/dpaa2-io.h
++++ b/include/soc/fsl/dpaa2-io.h
+@@ -22,7 +22,7 @@ struct device;
+  * DOC: DPIO Service
+  *
+  * The DPIO service provides APIs for users to interact with the datapath
+- * by enqueueing and dequeing frame descriptors.
++ * by enqueueing and dequeueing frame descriptors.
+  *
+  * The following set of APIs can be used to enqueue and dequeue frames
+  * as well as producing notification callbacks when data is available
+@@ -33,7 +33,7 @@ struct device;
+ 
+ /**
+  * struct dpaa2_io_desc - The DPIO descriptor
+- * @receives_notifications: Use notificaton mode. Non-zero if the DPIO
++ * @receives_notifications: Use notification mode. Non-zero if the DPIO
+  *                  has a channel.
+  * @has_8prio:      Set to non-zero for channel with 8 priority WQs.  Ignored
+  *                  unless receives_notification is TRUE.
