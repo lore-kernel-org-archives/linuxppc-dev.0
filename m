@@ -4,53 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3635CC48297
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 21:00:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 109E1C4828D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 22:07:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KqswiOp9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iwO/K19o;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TTwcy5Ljvz3cDR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 08:00:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TTy6C59ypz3cFX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 09:07:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KqswiOp9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iwO/K19o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TTwc40vvSz3bwk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2024 07:59:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TTy5G70BTz2ytd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2024 09:06:42 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 36485616AC;
-	Tue,  6 Feb 2024 20:59:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60C7CC433F1;
-	Tue,  6 Feb 2024 20:59:44 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 9560CCE13C7;
+	Tue,  6 Feb 2024 22:06:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33DD8C433C7;
+	Tue,  6 Feb 2024 22:06:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707253184;
-	bh=ZwkOqNYlxYx2ROZjI6aEXfhXktUM4H16pbtLQQ1r4qw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=KqswiOp92+ueqbOZB/1JVuSczU4VL4FoQQ3ZcFnvAa8HxR3oe3IAdXJ5e/zEFL0kz
-	 tvLD6/rXLg4Lr5vX7XBEeeb/zqbx8dwzJ3wkgVAn75Rci42JuQdcekUtVJ5EAKjXoc
-	 UMvCRSPfzXSlphpIqOnFQcjhjDXohgJQTKtvfjJiLgxrrk2z9teRgkCjYW0PHPw83c
-	 kTtEaSj4aH7jTJ3A/vLtNjqQtRHFF/UOjHtS5xz5L5WAcwG75+qVp/tuaCCR3dER+X
-	 4uYdV//J/yixoHqfG7UM9+I9gn2C3FSz7XxcATPZRtNmZe/4hD2iWXRDIF6bC28Er0
-	 /PxQ5eX4C15vA==
-From: Namhyung Kim <namhyung@kernel.org>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	acme@kernel.org,
-	jolsa@kernel.org,
-	irogers@google.com
-Subject: Re: [PATCH] perf/pmu-events/powerpc: Update json mapfile with Power11 PVR
-Date: Tue,  6 Feb 2024 12:59:41 -0800
-Message-ID: <170725313989.2448546.10195649247614076762.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.43.0.594.gd9cf4e227d-goog
-In-Reply-To: <20240129120855.551529-1-maddy@linux.ibm.com>
-References: <20240129120855.551529-1-maddy@linux.ibm.com>
+	s=k20201202; t=1707257198;
+	bh=UZGZYo3rQF8ZQt1Q1DO6QY0N+zaL6JsoCk2GwJ5HiIE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=iwO/K19oOMhIFA05HctRHnCNinzvDTEPi6r/OPZCpX6ODROincXYZIvFUe9tG6VAo
+	 45smlY0+UFtPN2QC0xdZqny1b3KP2nNLylVIJLW+keZdmoUNuYlzLQjNtqipSWzVzb
+	 JSK+y2MlwrWJL+PF5lBe2vsNyrZMNhtK/ODjWE6K9R+FiuCy5IdXAKiOZ7jX6YnHmA
+	 1BuEzcln71eQ6ARbFYWn5NSojNYyUuccwYIKGz/Bv6ipnbxu7cLMSm3d78GF/zmBMF
+	 faQYnNiKH7FXNJejU5AeFK24fONgNcBgicsrI7b2w+AMyh5rrWAiZWC6rCVbSkhxbx
+	 Bn6LnGkEx/SKw==
+Date: Tue, 6 Feb 2024 23:06:35 +0100
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+Subject: Re: [PATCH 1/5] sched/vtime: remove confusing
+ arch_vtime_task_switch() declaration
+Message-ID: <ZcKtaw6udrihSsKw@localhost.localdomain>
+References: <cover.1706470223.git.agordeev@linux.ibm.com>
+ <443aebea9128f7f455c76479f161bb6a2c956db5.1706470223.git.agordeev@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <443aebea9128f7f455c76479f161bb6a2c956db5.1706470223.git.agordeev@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,19 +61,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-perf-users@vger.kernel.org, kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 29 Jan 2024 17:38:55 +0530, Madhavan Srinivasan wrote:
-> Update the Power11 PVR to json mapfile to enable
-> json events. Power11 is PowerISA v3.1 compliant
-> and support Power10 events.
+Le Sun, Jan 28, 2024 at 08:58:50PM +0100, Alexander Gordeev a écrit :
+> Callback arch_vtime_task_switch() is only defined when
+> CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is selected. Yet, the
+> function prototype forward declaration is present for
+> CONFIG_VIRT_CPU_ACCOUNTING_GEN variant. Remove it.
 > 
-> 
+> Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
 
-Applied to perf-tools-next, thanks!
-
-Best regards,
--- 
-Namhyung Kim <namhyung@kernel.org>
+Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
