@@ -4,37 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BB4FC48297
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 14:09:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 524BEC48297
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Feb 2024 14:09:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=LAaXU/V9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=h5LPULT0;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TTlV25T4dz3cVK
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 01:08:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TTlVt08PFz3vbj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 01:09:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=LAaXU/V9;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=h5LPULT0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.197; helo=relay5-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TTlSJ4dm4z3c56
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TTlSJ69LQz3c5Y
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2024 01:07:26 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 8B4AA1C0008;
-	Tue,  6 Feb 2024 14:07:22 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 02B5C1C000D;
+	Tue,  6 Feb 2024 14:07:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1707228443;
+	t=1707228440;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9ic1ckcjchbcoVTjdKWShBulE5zgYlgBqlicFqMJYpM=;
-	b=LAaXU/V9rtjBK5XWJGUs979Sqa3L2I7mJytO05BnS5E/NW+xFuIr2unuv3yALQRxMbTOR1
-	dCS9XaVM2EHBIkopvxaMLc4qCDtZRj+Xge1tScjjhtTLsWbdE3aTvQ152gnTB62lOO/nzN
-	EbFTaMm8YsRr7m5vr0U4Jtq3FynnvIJyf/GAjSYyZvu23q0dSqSIzG/e9d9pdDGfmvdAQA
-	fCdPN2iPKD1Vi+zHc9KJsWUT1V3LN48MJPSuZYu/kqpxN2l81MQW1ts+gup5nDb++4UhCE
-	R5PIRylaT/CmKufap55IVHqbWrfkGI7qIMwxbB1JfW3xHXZWkumPuI2kQUEkXw==
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=sa5nE+pLpd7ozU5Sgh5in8PkbOnzrLpb9BwEvhv2Oes=;
+	b=h5LPULT01iBz35OAODeIBje7aY26ADfBPG6tPdh2/2Y5rukXfXuSNiT4L1GTZkV7/VZLu4
+	I147/Z+PAr6n3VXJg9dVfnijvqj9wolYd06n+/6mQNkbtWl6oBeswLK+QO4LPzjSvl5cFJ
+	BgHJreJW/U2sTlWXAMGLHLdc7rqIwWkMzlbnP7lumwm5Es1I69y5OZ6TH3neVoPDoSttNC
+	dFs4yxhLUbAFF2D8EsJ6BvPbkTP5wwlqXWVGI401ponlvHCPRoUcQ42Ul+opHWyLXPOnsk
+	aOpvr/8nck1Y52CWOwuFtsIYi40o/mWF98gN4f5YI+oQFR5vc2QWx+IVRredeA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
 	"David S. Miller" <davem@davemloft.net>,
@@ -42,13 +41,12 @@ To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
 	Jakub Kicinski <kuba@kernel.org>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Herve Codina <herve.codina@bootlin.com>
-Subject: [PATCH v3 3/6] bitmap: Make bitmap_onto() available to users
-Date: Tue,  6 Feb 2024 15:07:13 +0100
-Message-ID: <20240206140717.107930-4-herve.codina@bootlin.com>
+Subject: [PATCH v3 0/6] Add support for QMC HDLC
+Date: Tue,  6 Feb 2024 15:07:10 +0100
+Message-ID: <20240206140717.107930-1-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240206140717.107930-1-herve.codina@bootlin.com>
-References: <20240206140717.107930-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -66,40 +64,103 @@ Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org, linux-kernel@vger.kern
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the bitmap_onto() is available only for CONFIG_NUMA=y case,
-while some users may benefit out of it and being independent to NUMA
-code.
+Hi,
 
-Make it available to users by moving out of ifdeffery and exporting for
-modules.
+This series introduces the QMC HDLC support.
 
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
----
- lib/bitmap.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Patches were previously sent as part of a full feature series and were
+previously reviewed in that context:
+"Add support for QMC HDLC, framer infrastructure and PEF2256 framer" [1]
 
-diff --git a/lib/bitmap.c b/lib/bitmap.c
-index 09522af227f1..2feccb5047dc 100644
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -547,7 +547,6 @@ int bitmap_bitremap(int oldbit, const unsigned long *old,
- }
- EXPORT_SYMBOL(bitmap_bitremap);
- 
--#ifdef CONFIG_NUMA
- /**
-  * bitmap_onto - translate one bitmap relative to another
-  *	@dst: resulting translated bitmap
-@@ -681,7 +680,9 @@ void bitmap_onto(unsigned long *dst, const unsigned long *orig,
- 		m++;
- 	}
- }
-+EXPORT_SYMBOL(bitmap_onto);
- 
-+#ifdef CONFIG_NUMA
- /**
-  * bitmap_fold - fold larger bitmap into smaller, modulo specified size
-  *	@dst: resulting smaller bitmap
+In order to ease the merge, the full feature series has been split and
+needed parts were merged in v6.8-rc1:
+ - "Prepare the PowerQUICC QMC and TSA for the HDLC QMC driver" [2]
+ - "Add support for framer infrastructure and PEF2256 framer" [3]
+
+This series contains patches related to the QMC HDLC part (QMC HDLC
+driver):
+ - Introduce the QMC HDLC driver (patches 1 and 2)
+ - Add timeslots change support in QMC HDLC (patch 3)
+ - Add framer support as a framer consumer in QMC HDLC (patch 4)
+
+Compare to the original full feature series, a modification was done on
+patch 3 in order to use a coherent prefix in the commit title.
+
+I kept the patches unsquashed as they were previously sent and reviewed.
+Of course, I can squash them if needed.
+
+Compared to the previous iteration:
+  https://lore.kernel.org/linux-kernel/20240130084035.115086-1-herve.codina@bootlin.com/
+this v3 series:
+- Remove 'inline' function specifier from .c file.
+- Fixed a bug introduced in the previous iteration.
+- Remove one lock/unlock sequence in the QMC HDCL xmit path.
+- Use bitmap_from_u64().
+
+Best regards,
+Hervé
+
+[1]: https://lore.kernel.org/linux-kernel/20231115144007.478111-1-herve.codina@bootlin.com/
+[2]: https://lore.kernel.org/linux-kernel/20231205152116.122512-1-herve.codina@bootlin.com/
+[3]: https://lore.kernel.org/linux-kernel/20231128132534.258459-1-herve.codina@bootlin.com/
+
+Changes v2 -> v3
+  - Patch 1
+    Remove 'inline' function specifier from .c file.
+    Fix a bug introduced when added WARN_ONCE(). The warn condition must
+    be desc->skb (descriptor used) instead of !desc->skb.
+    Remove a lock/unlock section locking the entire qmc_hdlc_xmit()
+    function.
+
+  - Patch 5
+    Use bitmap_from_u64() everywhere instead of bitmap_from_arr32() and
+    bitmap_from_arr64().
+
+Changes v1 -> v2
+  - Patch 1
+    Use the same qmc_hdlc initialisation in qmc_hcld_recv_complete()
+    than the one present in qmc_hcld_xmit_complete().
+    Use WARN_ONCE()
+
+  - Patch 3 (new patch in v2)
+    Make bitmap_onto() available to users
+
+  - Patch 4 (new patch in v2)
+    Introduce bitmap_off()
+
+  - Patch 5 (patch 3 in v1)
+    Use bitmap_*() functions
+
+  - Patch 6 (patch 4 in v1)
+    No changes
+
+Changes compare to the full feature series:
+  - Patch 3
+    Use 'net: wan: fsl_qmc_hdlc:' as commit title prefix
+
+Patches extracted:
+  - Patch 1 : full feature series patch 7
+  - Patch 2 : full feature series patch 8
+  - Patch 3 : full feature series patch 20
+  - Patch 4 : full feature series patch 27
+
+Herve Codina (6):
+  net: wan: Add support for QMC HDLC
+  MAINTAINERS: Add the Freescale QMC HDLC driver entry
+  bitmap: Make bitmap_onto() available to users
+  bitmap: Introduce bitmap_off()
+  net: wan: fsl_qmc_hdlc: Add runtime timeslots changes support
+  net: wan: fsl_qmc_hdlc: Add framer support
+
+ MAINTAINERS                    |   7 +
+ drivers/net/wan/Kconfig        |  12 +
+ drivers/net/wan/Makefile       |   1 +
+ drivers/net/wan/fsl_qmc_hdlc.c | 807 +++++++++++++++++++++++++++++++++
+ include/linux/bitmap.h         |   3 +
+ lib/bitmap.c                   |  45 +-
+ 6 files changed, 874 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/wan/fsl_qmc_hdlc.c
+
 -- 
 2.43.0
 
