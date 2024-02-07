@@ -4,67 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0AD6C4828F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 03:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8551FC4828D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 05:29:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=C0xzESGv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N/GirgzU;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TV5p628C9z3cZP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 14:54:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TV7wY0LNwz3cRB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 16:29:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=C0xzESGv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N/GirgzU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::331; helo=mail-ot1-x331.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TV5mP1c0Fz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2024 14:52:35 +1100 (AEDT)
-Received: by mail-ot1-x331.google.com with SMTP id 46e09a7af769-6e0f43074edso99550a34.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2024 19:52:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1707277950; x=1707882750; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=nhitXmFJmmyhqpz6mvCkhwCuxWwgB2JA7e7bqOnN1q4=;
-        b=C0xzESGvj1igdjkcXoTmdP0T1KmpeZ4R17g5P+5p/bgbMpZNyjgOEpYblz5Xlau0vb
-         QVNCCBI6syMwxBi/GYm3xW5ncp4DdEL7HAGXlZ4rzpBGP0fwvTSQxxMCPn33S1jJdejA
-         rB0Abm/XuopUqVmhEtTfcLhsmwp8nnTxQwOCaN37M947h0nn2uDyA4wh3rtC1SQkxdh2
-         kh9I3DUuqIFaqtWI1esMWwMlnSgJrQzONxCoP3O3Is8gRUf0E8fJNiUiQ6xFjwPZeSUd
-         fie+tVvU0UPKwP+jALvKMejZ74vgbWZaGkZk4wiIE119/ZdJYsZo/PORtI4X0vDCPOVL
-         BoDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707277950; x=1707882750;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=nhitXmFJmmyhqpz6mvCkhwCuxWwgB2JA7e7bqOnN1q4=;
-        b=Qcog3XJDeEJMxSnCwPVB/4hAnaneVOBb4rGjQMT1e0pe8Tj9N1R3lb10gwNrDt8YUX
-         NZqtiTXuhDKskvrrsqh2nerraqSNbozxo4fAJLi1WFOIwrltz28DwNPkZWK05cS9I/qW
-         phrVqg4gxWbfytgyQlOdzDk2gu+QpGumOkyf//Q7ogabRyfcT9UUsYoh+1aPe+uvmpn7
-         AU+a+qO3afTpcjd+66l9HXL2Cdy1czTLnZ/w5MDmmFnD9uuqqvK2EWORjRnXa4bOHaui
-         etUstkMqu8s0d1W+8yCI09/qeSYNg8A+4uwk4HmAy4eMAz38+10fZe9USXl8VYxdTcgI
-         zckw==
-X-Gm-Message-State: AOJu0YwOPdBo3vDHUEZoGSjeKLEf1K3J4I3X/D8iwHm1S4zCDLCUKINC
-	PsfIXICBLWPrqCkJbYeaKbT6hOCSL4L+8VgPMLWVOrYcQujRhXdxfWLfNgI0
-X-Google-Smtp-Source: AGHT+IEaaaUHOclCiO0V60VZcyMj7akbkg0hhPDnYCIZAowH6A5jeUYvxiU9L92KO37rhAapqj70oQ==
-X-Received: by 2002:a05:6358:899:b0:175:6fff:d6a0 with SMTP id m25-20020a056358089900b001756fffd6a0mr1525957rwj.1.1707277950613;
-        Tue, 06 Feb 2024 19:52:30 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXUIY0vDOL7ZUyER4PoLdJmffxpxshNzM6MeV32hP1JXHpsfz1QmxIYo8W7TfC0V+MQpdA/cI9L+MxgTjApZi4Tv3uKw5c=
-Received: from wheely.local0.net (220-235-217-21.tpgi.com.au. [220.235.217.21])
-        by smtp.gmail.com with ESMTPSA id it7-20020a056a00458700b006e02da39dbcsm325317pfb.10.2024.02.06.19.52.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Feb 2024 19:52:30 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/pseries: Add a clear modifier to ibm,pa/pi-features parser
-Date: Wed,  7 Feb 2024 13:52:18 +1000
-Message-ID: <20240207035220.339726-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.42.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TV7vf6cWWz30ft
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2024 16:29:02 +1100 (AEDT)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4175RQFe008991;
+	Wed, 7 Feb 2024 05:28:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=RKdLZ6KJdPreBS6zTodP4YAl+wBdS315ObfSy4389rc=;
+ b=N/GirgzUnUWQXP3si2k/FugV/BKGchJeLL31q7np1CEusXm8GGaUxGGYNFuIN0PSKt1M
+ MkCMN170M9VrnVQ93BAIIPtiKsrzr0K2nwZu/GxdevR03xMOUz0QJ5Q2s+xEFqBtVBTz
+ Wft9xuVIr76Hz/g6c6/jscsMOF2wkS5GyqELKDrvC2mI8nQxirvCRb9EMvD+j2bx1Hn4
+ TZzGMLgmFmPZAMYPoDmn878K/uT/2phI+uYmyTRxNH/bRnix47bcS7W7hUGZAYBb0SEA
+ 7wAKn4OudrANG2S7B4ArOFZ7JRQvkdE6fUd5LjUdH6QsjB5QYVg8xEF3253ilSZNQ1rG HQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w43qn80kr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 07 Feb 2024 05:28:53 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4175Sq9r014295;
+	Wed, 7 Feb 2024 05:28:52 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w43qn80kg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 07 Feb 2024 05:28:52 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4172QCv8016137;
+	Wed, 7 Feb 2024 05:28:51 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3w22h23ac9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 07 Feb 2024 05:28:51 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4175Sm9C18088640
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 7 Feb 2024 05:28:48 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C1C4620040;
+	Wed,  7 Feb 2024 05:28:48 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11D2A20043;
+	Wed,  7 Feb 2024 05:28:46 +0000 (GMT)
+Received: from li-a83676cc-350e-11b2-a85c-e11f86bb8d73.ibm.com (unknown [9.43.65.120])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed,  7 Feb 2024 05:28:45 +0000 (GMT)
+Date: Wed, 7 Feb 2024 10:58:43 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: Re: Re: [PATCH v3] KVM: PPC: Book3S HV: Fix L2 guest reboot failure
+ due to empty 'arch_compat'
+Message-ID: <t5qjoir2gvckq6vscsi4zg66grkk3px24znzfrraaq32x5wea3@ogxxeqk5vrpu>
+Mail-Followup-To: Michael Ellerman <mpe@ellerman.id.au>, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, 
+	Jordan Niethe <jniethe5@gmail.com>, linux-kernel@vger.kernel.org, 
+	Nicholas Piggin <npiggin@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.ibm.com>, 
+	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, 
+	Vaibhav Jain <vaibhav@linux.ibm.com>
+References: <20240205181833.212955-1-amachhiw@linux.ibm.com>
+ <87r0hp9a4z.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87r0hp9a4z.fsf@mail.lhotse>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: vJKbdV8S2LfECZu1weNGWppdRNnRLro8
+X-Proofpoint-GUID: mZVR6pjwlinTqQk15RoF39MwZ6XhFph_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-06_16,2024-01-31_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxscore=0
+ malwarescore=0 mlxlogscore=982 suspectscore=0 phishscore=0
+ priorityscore=1501 impostorscore=0 clxscore=1015 spamscore=0 adultscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2402070039
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,75 +104,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Jordan Niethe <jniethe5@gmail.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.ibm.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When a new ibm,pa/pi-features bit is introduced that is intended to
-apply to existing systems and features, it may have an "inverted"
-meaning (i.e., bit clear => feature available; bit set => unavailable).
-Depending on the nature of the feature, this may give the best
-backward compatibility result where old firmware will continue to
-have that bit clear and therefore the feature available.
+Hi Michael,
 
-The 'invert' modifier presumably was introduced for this type of
-feature bit. However it invert will set the feature if the bit is
-clear, which prevents it being used in the situation where an old
-CPU lacks a feature that a new CPU has, then a new firmware comes
-out to disable that feature on the new CPU if the bit is set.
-Adding an 'invert' entry for that feature would incorrectly enable
-it for the old CPU.
+Thanks for looking into the patch and your comments.
 
-So add a 'clear' modifier that clears the feature if the bit is set,
-but it does not set the feature if the bit is clear. The feature
-is expected to be set in the cpu table.
+On 2024/02/06 09:09 PM, Michael Ellerman wrote:
+> Hi Amit,
+> 
+> One comment below ...
+> 
+> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
+> > Currently, rebooting a pseries nested qemu-kvm guest (L2) results in
+> > below error as L1 qemu sends PVR value 'arch_compat' == 0 via
+> > ppc_set_compat ioctl. This triggers a condition failure in
+> > kvmppc_set_arch_compat() resulting in an EINVAL.
+> ...
+> >  	
+> > diff --git a/arch/powerpc/kvm/book3s_hv_nestedv2.c b/arch/powerpc/kvm/book3s_hv_nestedv2.c
+> > index 5378eb40b162..6042bdc70230 100644
+> > --- a/arch/powerpc/kvm/book3s_hv_nestedv2.c
+> > +++ b/arch/powerpc/kvm/book3s_hv_nestedv2.c
+> > @@ -347,8 +348,26 @@ static int gs_msg_ops_vcpu_fill_info(struct kvmppc_gs_buff *gsb,
+> >  			break;
+> >  		}
+> >  		case KVMPPC_GSID_LOGICAL_PVR:
+> > -			rc = kvmppc_gse_put_u32(gsb, iden,
+> > -						vcpu->arch.vcore->arch_compat);
+> > +			/*
+> > +			 * Though 'arch_compat == 0' would mean the default
+> > +			 * compatibility, arch_compat, being a Guest Wide
+> > +			 * Element, cannot be filled with a value of 0 in GSB
+> > +			 * as this would result into a kernel trap.
+> > +			 * Hence, when `arch_compat == 0`, arch_compat should
+> > +			 * default to L1's PVR.
+> > +			 *
+> > +			 * Rework this when PowerVM supports a value of 0
+> > +			 * for arch_compat for KVM API v2.
+> > +			 */
+> 
+> Is there an actual plan that PowerVM will support this in future?
+> 
+> If so, how will a future kernel know that it's running on a version of
+> PowerVM that does support arch_compat == 0?
+> 
+> Similarly how will we know when it's OK to drop support for this
+> workaround?
 
-This replaces the 'invert' modifier, which is unused since commit
-7d4703455168 ("powerpc/feature: Remove CPU_FTR_NODSISRALIGN").
+I'm sending a v4 based on an off mailing list discussion.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/prom.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> cheers
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 0b5878c3125b..62f4a0229fae 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -151,6 +151,9 @@ static void __init move_device_tree(void)
-  * pa-features property is missing, or a 1/0 to indicate if the feature
-  * is supported/not supported.  Note that the bit numbers are
-  * big-endian to match the definition in PAPR.
-+ * Note: the 'clear' flag clears the feature if the bit is set in the
-+ * the ibm,pa/pi-features property, it does not set the feature if the
-+ * bit is clear.
-  */
- struct ibm_feature {
- 	unsigned long	cpu_features;	/* CPU_FTR_xxx bit */
-@@ -159,7 +162,7 @@ struct ibm_feature {
- 	unsigned int	cpu_user_ftrs2;	/* PPC_FEATURE2_xxx bit */
- 	unsigned char	pabyte;		/* byte number in ibm,pa/pi-features */
- 	unsigned char	pabit;		/* bit number (big-endian) */
--	unsigned char	invert;		/* if 1, pa bit set => clear feature */
-+	unsigned char	clear;		/* if 1, pa bit set => clear feature */
- };
- 
- static struct ibm_feature ibm_pa_features[] __initdata = {
-@@ -220,12 +223,12 @@ static void __init scan_features(unsigned long node, const unsigned char *ftrs,
- 		if (fp->pabyte >= ftrs[0])
- 			continue;
- 		bit = (ftrs[2 + fp->pabyte] >> (7 - fp->pabit)) & 1;
--		if (bit ^ fp->invert) {
-+		if (bit && !fp->clear) {
- 			cur_cpu_spec->cpu_features |= fp->cpu_features;
- 			cur_cpu_spec->cpu_user_features |= fp->cpu_user_ftrs;
- 			cur_cpu_spec->cpu_user_features2 |= fp->cpu_user_ftrs2;
- 			cur_cpu_spec->mmu_features |= fp->mmu_features;
--		} else {
-+		} else if (bit == fp->clear) {
- 			cur_cpu_spec->cpu_features &= ~fp->cpu_features;
- 			cur_cpu_spec->cpu_user_features &= ~fp->cpu_user_ftrs;
- 			cur_cpu_spec->cpu_user_features2 &= ~fp->cpu_user_ftrs2;
--- 
-2.42.0
-
+~Amit
