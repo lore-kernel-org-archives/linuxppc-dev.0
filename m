@@ -4,89 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7ECE8C4828D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Feb 2024 17:17:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96E7AC4828D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Feb 2024 02:32:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nCyKt1Yp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JeDtxOQT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TVRcf6g5Vz3cVK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Feb 2024 04:17:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TVgx75pHZz3c7s
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Feb 2024 13:32:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nCyKt1Yp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JeDtxOQT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TVRbm5YxSz2ykt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2024 04:16:20 +1100 (AEDT)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 417GPBZ2028521
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Feb 2024 17:16:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : content-type :
- mime-version; s=pp1; bh=VexFILlqAeUkZ/ay28eQ5IDwWst2/CXb3doibsmN2Tw=;
- b=nCyKt1YpN2YxlzBLoVjwhiCWs3wdbCzZYbHEhtbTYVlFIub1XnELOeKvkv0+9qOB+GFJ
- TQK/B5M5XLZTg8hHtroHxSBAdDuPYq/8mHuHPR29jnqChEI17lmruAbOAQzyHxSL2LL6
- dlMUyIzG4Ode7xZV/VoQd1RVSQgQYE3/O6bPGde6drrqih+94gbfkNHHSUq8zxPztT9m
- zc0Tu9+pdq3gbcGwNATJVH2DSAnwhb/xU9nDJSlTfA96knJ2pwKr7bJXjv2ugfM3GCPk
- 7LkbF+Q+2gCPd8uYN/6IE1bE/cvMz/Pgp8xVlis+YdyeD66borzs5o+26egFmjCbp4f2 Ig== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w4dc79f2y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Feb 2024 17:16:17 +0000
-Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 417GPFCY028726
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Feb 2024 17:16:17 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w4dc79f2j-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TVgwD3TYKz30Dg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2024 13:31:23 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4181VEnF015698;
+	Thu, 8 Feb 2024 02:31:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=C94hxK5pb2XH0i/WkiCTx0daiy0wqtIIYI7g688j5IU=;
+ b=JeDtxOQT0rvcE8JkZ4xjmfcbr4SdduAcbIjb5UR2x1GPBqfzNk65SfiDZcgwwQjBrzAO
+ oiUyJfAjbu/4606zCc42wlcwCSf7zg3Xfp2fDpUskFWPydjtvNz8AjnSzijh0sAkErQd
+ He9Z0qAztVR6DfDM37jEQUFUQZIa7YX9r9ZPrpVYiWXBYH4ojcVGT5PkBhi4eAe4muXZ
+ 1dEKIqsydQ4CAj1MNJXF/jP8075YPQIxozK8UN0ie/hHs712FCjh3sY2AAKeqG5JfwIR
+ 8WwQ2YArZrbe1vYkz9dVX0SUoEyuBFp7cWd+tVt0J1T3eE+34FP2VRmNahfzaDx1ewlX sw== 
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w4mk91n1m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Feb 2024 17:16:17 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 417G83o1019985;
-	Wed, 7 Feb 2024 17:16:16 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3w1ytt7byb-1
+	Thu, 08 Feb 2024 02:31:16 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 417No4qh008478;
+	Thu, 8 Feb 2024 02:31:15 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3w221k9crh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Feb 2024 17:16:16 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 417HGEcl40239424
+	Thu, 08 Feb 2024 02:31:15 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4182VEqc20579032
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 7 Feb 2024 17:16:14 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C128220040;
-	Wed,  7 Feb 2024 17:16:14 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A04DB20049;
-	Wed,  7 Feb 2024 17:16:12 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.43.112.162])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Wed,  7 Feb 2024 17:16:12 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 07 Feb 2024 22:46:11 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/pseries: Set CPU_FTR_DBELL according to
- ibm,pi-features
-In-Reply-To: <20240207035220.339726-2-npiggin@gmail.com>
-References: <20240207035220.339726-1-npiggin@gmail.com>
- <20240207035220.339726-2-npiggin@gmail.com>
-Date: Wed, 07 Feb 2024 22:46:11 +0530
-Message-ID: <87bk8sfb50.fsf@vajain21.in.ibm.com>
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: OKNEeIyXywHA7s15odBL-EQl9hVj2pGc
-X-Proofpoint-ORIG-GUID: SQQ3Gyq6aNBncfYw0B0xJExWjm2OsHlp
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	Thu, 8 Feb 2024 02:31:14 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6F8CD58045;
+	Thu,  8 Feb 2024 02:31:14 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DEC4F58056;
+	Thu,  8 Feb 2024 02:31:13 +0000 (GMT)
+Received: from [9.67.90.253] (unknown [9.67.90.253])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  8 Feb 2024 02:31:13 +0000 (GMT)
+Message-ID: <4f6fc1ac-7a76-4447-9d0e-f55c0be373f8@linux.ibm.com>
+Date: Wed, 7 Feb 2024 20:31:13 -0600
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/pseries/iommu: DLPAR ADD of pci device doesn't
+ completely initialize pci_controller structure
+To: mpe@ellerman.id.au
+References: <20240110225351.47153-1-gbatra@linux.ibm.com>
+Content-Language: en-US
+From: Gaurav Batra <gbatra@linux.ibm.com>
+In-Reply-To: <20240110225351.47153-1-gbatra@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: CQ3YrPAl2vrpMd-n-Yx7wSIwE4m54L6T
+X-Proofpoint-ORIG-GUID: CQ3YrPAl2vrpMd-n-Yx7wSIwE4m54L6T
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-07_08,2024-02-07_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 suspectscore=0
- mlxlogscore=321 malwarescore=0 bulkscore=0 spamscore=0 priorityscore=1501
- impostorscore=0 mlxscore=0 phishscore=0 clxscore=1015 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
- definitions=main-2402070127
+ definitions=2024-02-08_01,2024-02-07_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 bulkscore=0
+ spamscore=0 impostorscore=0 mlxscore=0 adultscore=0 priorityscore=1501
+ suspectscore=0 clxscore=1011 mlxlogscore=999 phishscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2402080010
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,34 +92,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hello All,
 
-> PAPR will define a new ibm,pi-features bit which says that doorbells
-> should not be used even on architectures where they exist. This could be
-> because they are emulated and slower than using the interrupt controller
-> directly for IPIs.
+There is still some issue even after applying the patch. This is not a 
+complete fix. I am working on V3 of the patch. Please do not merge this 
+patch upstream.
+
+Thanks,
+
+Gaurav
+
+On 1/10/24 4:53 PM, Gaurav Batra wrote:
+> When a PCI device is Dynamically added, LPAR OOPS with NULL pointer
+> exception.
 >
-> Wire this bit into the pi-features parser to clear CPU_FTR_DBELL, and
-> ensure CPU_FTR_DBELL is not in CPU_FTRS_ALWAYS.
+> Complete stack is as below
 >
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> [  211.239206] BUG: Kernel NULL pointer dereference on read at 0x00000030
+> [  211.239210] Faulting instruction address: 0xc0000000006bbe5c
+> [  211.239214] Oops: Kernel access of bad area, sig: 11 [#1]
+> [  211.239218] LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA pSeries
+> [  211.239223] Modules linked in: rpadlpar_io rpaphp rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver nfs lockd grace fscache netfs xsk_diag bonding nft_compat nf_tables nfnetlink rfkill binfmt_misc dm_multipath rpcrdma sunrpc rdma_ucm ib_srpt ib_isert iscsi_target_mod target_core_mod ib_umad ib_iser libiscsi scsi_transport_iscsi ib_ipoib rdma_cm iw_cm ib_cm mlx5_ib ib_uverbs ib_core pseries_rng drm drm_panel_orientation_quirks xfs libcrc32c mlx5_core mlxfw sd_mod t10_pi sg tls ibmvscsi ibmveth scsi_transport_srp vmx_crypto pseries_wdt psample dm_mirror dm_region_hash dm_log dm_mod fuse
+> [  211.239280] CPU: 17 PID: 2685 Comm: drmgr Not tainted 6.7.0-203405+ #66
+> [  211.239284] Hardware name: IBM,9080-HEX POWER10 (raw) 0x800200 0xf000006 of:IBM,FW1060.00 (NH1060_008) hv:phyp pSeries
+> [  211.239289] NIP:  c0000000006bbe5c LR: c000000000a13e68 CTR: c0000000000579f8
+> [  211.239293] REGS: c00000009924f240 TRAP: 0300   Not tainted  (6.7.0-203405+)
+> [  211.239298] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24002220  XER: 20040006
+> [  211.239306] CFAR: c000000000a13e64 DAR: 0000000000000030 DSISR: 40000000 IRQMASK: 0
+> [  211.239306] GPR00: c000000000a13e68 c00000009924f4e0 c0000000015a2b00 0000000000000000
+> [  211.239306] GPR04: c0000000013c5590 0000000000000000 c000000006d07970 c0000000d8f8f180
+> [  211.239306] GPR08: 00000000000006ec c0000000d8f8f180 c000000002c35d58 0000000024002228
+> [  211.239306] GPR12: c0000000000579f8 c0000003ffeb3880 0000000000000000 0000000000000000
+> [  211.239306] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> [  211.239306] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> [  211.239306] GPR24: c0000000919460c0 0000000000000000 fffffffffffff000 c0000000010088e8
+> [  211.239306] GPR28: c0000000013c5590 c000000006d07970 c0000000919460c0 c0000000919460c0
+> [  211.239354] NIP [c0000000006bbe5c] sysfs_add_link_to_group+0x34/0x94
+> [  211.239361] LR [c000000000a13e68] iommu_device_link+0x5c/0x118
+> [  211.239367] Call Trace:
+> [  211.239369] [c00000009924f4e0] [c000000000a109b8] iommu_init_device+0x26c/0x318 (unreliable)
+> [  211.239376] [c00000009924f520] [c000000000a13e68] iommu_device_link+0x5c/0x118
+> [  211.239382] [c00000009924f560] [c000000000a107f4] iommu_init_device+0xa8/0x318
+> [  211.239387] [c00000009924f5c0] [c000000000a11a08] iommu_probe_device+0xc0/0x134
+> [  211.239393] [c00000009924f600] [c000000000a11ac0] iommu_bus_notifier+0x44/0x104
+> [  211.239398] [c00000009924f640] [c00000000018dcc0] notifier_call_chain+0xb8/0x19c
+> [  211.239405] [c00000009924f6a0] [c00000000018df88] blocking_notifier_call_chain+0x64/0x98
+> [  211.239411] [c00000009924f6e0] [c000000000a250fc] bus_notify+0x50/0x7c
+> [  211.239416] [c00000009924f720] [c000000000a20838] device_add+0x640/0x918
+> [  211.239421] [c00000009924f7f0] [c0000000008f1a34] pci_device_add+0x23c/0x298
+> [  211.239427] [c00000009924f840] [c000000000077460] of_create_pci_dev+0x400/0x884
+> [  211.239432] [c00000009924f8e0] [c000000000077a08] of_scan_pci_dev+0x124/0x1b0
+> [  211.239437] [c00000009924f980] [c000000000077b0c] __of_scan_bus+0x78/0x18c
+> [  211.239442] [c00000009924fa10] [c000000000073f90] pcibios_scan_phb+0x2a4/0x3b0
+> [  211.239447] [c00000009924fad0] [c0000000001007a8] init_phb_dynamic+0xb8/0x110
+> [  211.239453] [c00000009924fb40] [c008000006920620] dlpar_add_slot+0x170/0x3b8 [rpadlpar_io]
+> [  211.239461] [c00000009924fbe0] [c008000006920d64] add_slot_store.part.0+0xb4/0x130 [rpadlpar_io]
+> [  211.239468] [c00000009924fc70] [c000000000fb4144] kobj_attr_store+0x2c/0x48
+> [  211.239473] [c00000009924fc90] [c0000000006b90e4] sysfs_kf_write+0x64/0x78
+> [  211.239479] [c00000009924fcb0] [c0000000006b7b78] kernfs_fop_write_iter+0x1b0/0x290
+> [  211.239485] [c00000009924fd00] [c0000000005b6fdc] vfs_write+0x350/0x4a0
+> [  211.239491] [c00000009924fdc0] [c0000000005b7450] ksys_write+0x84/0x140
+> [  211.239496] [c00000009924fe10] [c000000000030a04] system_call_exception+0x124/0x330
+> [  211.239502] [c00000009924fe50] [c00000000000cedc] system_call_vectored_common+0x15c/0x2ec
+>
+> Commit a940904443e4 ("powerpc/iommu: Add iommu_ops to report capabilities
+> and allow blocking domains") broke DLPAR ADD of pci devices.
+>
+> The above added iommu_device structure to pci_controller. During
+> system boot, pci devices are discovered and this newly added iommu_device
+> structure initialized by a call to iommu_device_register().
+>
+> During DLPAR ADD of a PCI device, a new pci_controller structure is
+> allocated but there are no calls made to iommu_device_register()
+> interface.
+>
+> Fix would be to register iommu device during DLPAR ADD as well.
+>
+> Fixes: a940904443e4 ("powerpc/iommu: Add iommu_ops to report capabilities and allow blocking domains")
+> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
 > ---
-
-Tested this patch on a PP64-LE lpar with the patch[1] and seeing the
-relevant pi-feature bit CPU_FTR_DBELL in `cur_cpu_spec->cpu_features`
-getting cleared.
-
-
-[1]
-https://lore.kernel.org/all/20240207035220.339726-1-npiggin@gmail.com
-
-Hence,
-Tested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-
--- 
-Cheers
-~ Vaibhav
+>   arch/powerpc/include/asm/ppc-pci.h         |  3 +++
+>   arch/powerpc/kernel/iommu.c                | 15 +++++++++++++++
+>   arch/powerpc/platforms/pseries/pci_dlpar.c |  4 ++++
+>   3 files changed, 22 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+> index ce2b1b5eebdd..55a2ba36e9c4 100644
+> --- a/arch/powerpc/include/asm/ppc-pci.h
+> +++ b/arch/powerpc/include/asm/ppc-pci.h
+> @@ -29,6 +29,9 @@ void *pci_traverse_device_nodes(struct device_node *start,
+>   				void *(*fn)(struct device_node *, void *),
+>   				void *data);
+>   extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
+> +extern void pci_register_device_dynamic(struct pci_controller *phb);
+> +extern void pci_unregister_device_dynamic(struct pci_controller *phb);
+> +
+>   
+>   /* From rtas_pci.h */
+>   extern void init_pci_config_tokens (void);
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index ebe259bdd462..342739fe74c4 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -1388,6 +1388,21 @@ static const struct attribute_group *spapr_tce_iommu_groups[] = {
+>   	NULL,
+>   };
+>   
+> +void pci_register_device_dynamic(struct pci_controller *phb)
+> +{
+> +	iommu_device_sysfs_add(&phb->iommu, phb->parent,
+> +				spapr_tce_iommu_groups, "iommu-phb%04x",
+> +				phb->global_number);
+> +	iommu_device_register(&phb->iommu, &spapr_tce_iommu_ops,
+> +				phb->parent);
+> +}
+> +
+> +void pci_unregister_device_dynamic(struct pci_controller *phb)
+> +{
+> +	iommu_device_unregister(&phb->iommu);
+> +	iommu_device_sysfs_remove(&phb->iommu);
+> +}
+> +
+>   /*
+>    * This registers IOMMU devices of PHBs. This needs to happen
+>    * after core_initcall(iommu_init) + postcore_initcall(pci_driver_init) and
+> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+> index 4ba824568119..ec70ca435b7e 100644
+> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+> @@ -35,6 +35,8 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
+>   
+>   	pseries_msi_allocate_domains(phb);
+>   
+> +	pci_register_device_dynamic(phb);
+> +
+>   	/* Create EEH devices for the PHB */
+>   	eeh_phb_pe_create(phb);
+>   
+> @@ -76,6 +78,8 @@ int remove_phb_dynamic(struct pci_controller *phb)
+>   		}
+>   	}
+>   
+> +	pci_unregister_device_dynamic(phb);
+> +
+>   	pseries_msi_free_domains(phb);
+>   
+>   	/* Keep a reference so phb isn't freed yet */
