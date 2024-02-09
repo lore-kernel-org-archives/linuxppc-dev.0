@@ -4,47 +4,136 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D311BC4828F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 08:06:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A750C4828F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 08:19:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EMm61B3L;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fjwKUnfG;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fjwKUnfG;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TWRHt3Plfz3cPd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 19:06:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TWRbx3vR2z3cPJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 19:19:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EMm61B3L;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fjwKUnfG;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fjwKUnfG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TWRH14rQQz309c
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2024 19:05:17 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 90E1761EE7;
-	Fri,  9 Feb 2024 08:05:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE2FAC433F1;
-	Fri,  9 Feb 2024 08:05:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707465914;
-	bh=l4wPmBotrK0lmvOpGwHwWCSz8z3m/0muNab90qiNBEI=;
-	h=From:To:Cc:Subject:Date:From;
-	b=EMm61B3LEyUECN3uJswaEe/18RNJLw1HwlyLXu5H4K7TA1NYVcyMghTJjgnullj4g
-	 I7HMhUB/CqAn+zmMpaR9NcOVibtpuV+orj2qEDldOhJ3BNkOmGa0ireyZ/4sY4C+NN
-	 kIMyB8GMd/JXYGkf2hvUAsOW07TPcbIRwHSttaW/nfwg6llTy4nPhn/a/Go2akSTla
-	 QKjIR30m3PicXUX4ueCg0ZZ84NfrozYReiJqBBH6HCLE+980yEToN1nG8s4JgmCztx
-	 os0Yqv/aWMQBeswkyTnEvJ2v2HJ3onADI38v1FtgdcZpLqgiOnfPfDFuzrAkKbrvLa
-	 bAPubSCY7PkvA==
-From: Naveen N Rao <naveen@kernel.org>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/ftrace: Ignore ftrace locations in exit text sections
-Date: Fri,  9 Feb 2024 13:29:31 +0530
-Message-ID: <20240209075931.666935-1-naveen@kernel.org>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TWRb63w4qz3c56
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2024 19:19:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1707466751;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=oFmVerAHo1noyC+XXwox3cNV5az+PMG+8xNZJn6k57Q=;
+	b=fjwKUnfGXsyKp4j3CzoRnLTLMkSVWsXgfS/6A2an+kc6ubrsvB87kposG7fW+dxYfqowEe
+	WafjornzJ1pPmHxBQk1t2i0xq9EdxTNhqi0N9SbyEPUvWWNeU0GK1ErqeswuQeQdUZQhgI
+	Etc0a6+QVqhN+3orSvY1IqGseI4Gsbo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1707466751;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=oFmVerAHo1noyC+XXwox3cNV5az+PMG+8xNZJn6k57Q=;
+	b=fjwKUnfGXsyKp4j3CzoRnLTLMkSVWsXgfS/6A2an+kc6ubrsvB87kposG7fW+dxYfqowEe
+	WafjornzJ1pPmHxBQk1t2i0xq9EdxTNhqi0N9SbyEPUvWWNeU0GK1ErqeswuQeQdUZQhgI
+	Etc0a6+QVqhN+3orSvY1IqGseI4Gsbo=
+Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com
+ [209.85.221.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-385-np2eteq3ODSAQOWCUps2rQ-1; Fri, 09 Feb 2024 03:19:09 -0500
+X-MC-Unique: np2eteq3ODSAQOWCUps2rQ-1
+Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-4c01afaee2cso267047e0c.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2024 00:19:09 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707466749; x=1708071549;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=oFmVerAHo1noyC+XXwox3cNV5az+PMG+8xNZJn6k57Q=;
+        b=ACAevtXTD6bpNEyH6dePP8uGQSqIVTAQDvOlpBCAkAHJ7P/pnBCOljBRttqagDbY6L
+         wR9zNfS938sh3O1HyH2frfafmlT7jhKHasmsyxZ2Js+Is4OKYQF0IZ8UmnryBFpE11N1
+         tfGNv0ckPCc8AE6ubHVZ7HR2Pg2BLU6xIaoneuiYETXUbnfc0l0CaPvLPTUA7KQoBptE
+         tyo60PlEz2icYs/qANEWmEwcvQYLyhQVgRycj940sPnop2CjCUu3aM0oIhTu0bbjj7T1
+         xV8gI0qCq9X0wCJmlhqjU4ihbT8l62O58oVvZ6XhcOt02zjmt7PDuU0xfoLrrwq6KEWv
+         oA3w==
+X-Gm-Message-State: AOJu0YweOPViuildaCdiNI6wJ0fYiKKwanDTpdyK6PFQlwCZIw/9VhJ6
+	07i7YUH0yUV46I5JdW+4iOqOvJ7/pLLt8wN4Hbo7a40YYVCE6vJtYnOZuZ5AUd7hn/hqlmXbkox
+	EpuF96B6z2A2zVEkk1nB7Sb8zlEJuttLjmsHOKuG8w5scjWtSJVrrfyE+dSQA0Ls=
+X-Received: by 2002:a1f:66c1:0:b0:4bd:38bd:ee20 with SMTP id a184-20020a1f66c1000000b004bd38bdee20mr973888vkc.14.1707466748793;
+        Fri, 09 Feb 2024 00:19:08 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IE+4Dvf+yS28ZiFiOqU7GXNanbKqb9MTZae0wqz3beZ97ZFC2RIZSt5RWU6fsGyo3THj7KhvA==
+X-Received: by 2002:a1f:66c1:0:b0:4bd:38bd:ee20 with SMTP id a184-20020a1f66c1000000b004bd38bdee20mr973875vkc.14.1707466748466;
+        Fri, 09 Feb 2024 00:19:08 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWlaKxUycvL+IAqIQjyf4bSM8DyDTG92F9BPDto+vmqkln40z4gAWu48KkFrFzsacw2RPfjKT0VoD3VcQA+xYISpS1LkNloMQNgg5kJ9ynHP4EAsezpcLT0HncDocuaEuUo5lsDZHy51NWXMvoRmRXUvAV7LTIM8YecZl4uAKatgHUGPmeSNCJ4MfIRWu7wqQ/3SJGLg7Lo6riWQAbSsnIXWE0CWS6KAwn33EcsLEU0xnWJO1Q6DmiGFlcAhQj8zp/gBUiOW3dcV29y1OErfMRwF/wkeiJAo0PZlZWRFZH6rLnuhIvyNuSZFtApbUFqCAyRcl7wT4D/wtqDYD52wWNPB00vQITZu3ZBaBzGisoUwqdwHA0Mda4Cph8MljeIu5GX+c7qIYLp+GzNee3FKmMguOlK3iF88dJHLktTM4GWGBMJF0iHeFcStghHTFPOEC9O7FuNXkRLVxazYB0q/JQgVUfo5gO2VsbPliSBrVKHma/wXbjpzUOnoFDlnX+8rjyGR1yr/JU5jl34195jzTXSvnDD
+Received: from [192.168.0.9] (ip-109-43-177-145.web.vodafone.de. [109.43.177.145])
+        by smtp.gmail.com with ESMTPSA id nc6-20020a0562142dc600b0068ca9ea78cbsm605199qvb.21.2024.02.09.00.19.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 09 Feb 2024 00:19:08 -0800 (PST)
+Message-ID: <74f469c3-76ee-4589-b3ec-17a8b7428950@redhat.com>
+Date: Fri, 9 Feb 2024 09:19:01 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [kvm-unit-tests PATCH v3 4/8] migration: Support multiple
+ migrations
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <20240209070141.421569-1-npiggin@gmail.com>
+ <20240209070141.421569-5-npiggin@gmail.com>
+From: Thomas Huth <thuth@redhat.com>
+Autocrypt: addr=thuth@redhat.com; keydata=
+ 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
+In-Reply-To: <20240209070141.421569-5-npiggin@gmail.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,139 +145,171 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Laurent Vivier <lvivier@redhat.com>, linux-s390@vger.kernel.org, Nico Boehr <nrb@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linuxppc-dev@lists.ozlabs.org, Shaoqin Huang <shahuang@redhat.com>, Andrew Jones <andrew.jones@linux.dev>, Eric Auger <eric.auger@redhat.com>, Marc Hartmayer <mhartmay@linux.ibm.com>, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, Paolo Bonzini <pbonzini@redhat.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexandru Elisei <alexandru.elisei@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael reported that we are seeing ftrace bug on bootup when KASAN is
-enabled, and if we are using -fpatchable-function-entry:
+On 09/02/2024 08.01, Nicholas Piggin wrote:
+> Support multiple migrations by flipping dest file/socket variables to
+> source after the migration is complete, ready to start again. A new
+> destination is created if the test outputs the migrate line again.
+> Test cases may now switch to calling migrate() one or more times.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+...
+> diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+> index 3689d7c2..a914ba17 100644
+> --- a/scripts/arch-run.bash
+> +++ b/scripts/arch-run.bash
+> @@ -129,12 +129,16 @@ run_migration ()
+>   		return 77
+>   	fi
+>   
+> +	migcmdline=$@
+> +
+>   	trap 'trap - TERM ; kill 0 ; exit 2' INT TERM
+> -	trap 'rm -f ${migout1} ${migout_fifo1} ${migsock} ${qmp1} ${qmp2} ${fifo}' RETURN EXIT
+> +	trap 'rm -f ${migout1} ${migout2} ${migout_fifo1} ${migout_fifo2} ${migsock} ${qmp1} ${qmp2} ${fifo}' RETURN EXIT
+>   
+>   	migsock=$(mktemp -u -t mig-helper-socket.XXXXXXXXXX)
+>   	migout1=$(mktemp -t mig-helper-stdout1.XXXXXXXXXX)
+>   	migout_fifo1=$(mktemp -u -t mig-helper-fifo-stdout1.XXXXXXXXXX)
+> +	migout2=$(mktemp -t mig-helper-stdout2.XXXXXXXXXX)
+> +	migout_fifo2=$(mktemp -u -t mig-helper-fifo-stdout2.XXXXXXXXXX)
+>   	qmp1=$(mktemp -u -t mig-helper-qmp1.XXXXXXXXXX)
+>   	qmp2=$(mktemp -u -t mig-helper-qmp2.XXXXXXXXXX)
+>   	fifo=$(mktemp -u -t mig-helper-fifo.XXXXXXXXXX)
+> @@ -142,18 +146,61 @@ run_migration ()
+>   	qmpout2=/dev/null
+>   
+>   	mkfifo ${migout_fifo1}
+> -	eval "$@" -chardev socket,id=mon1,path=${qmp1},server=on,wait=off \
+> +	mkfifo ${migout_fifo2}
+> +
+> +	eval "$migcmdline" \
+> +		-chardev socket,id=mon1,path=${qmp1},server=on,wait=off \
+>   		-mon chardev=mon1,mode=control > ${migout_fifo1} &
+>   	live_pid=$!
+>   	cat ${migout_fifo1} | tee ${migout1} &
+>   
+> -	# We have to use cat to open the named FIFO, because named FIFO's, unlike
+> -	# pipes, will block on open() until the other end is also opened, and that
+> -	# totally breaks QEMU...
+> +	# The test must prompt the user to migrate, so wait for the "migrate"
+> +	# keyword
+> +	while ! grep -q -i "Now migrate the VM" < ${migout1} ; do
+> +		if ! ps -p ${live_pid} > /dev/null ; then
+> +			echo "ERROR: Test exit before migration point." >&2
+> +			qmp ${qmp1} '"quit"'> ${qmpout1} 2>/dev/null
+> +			return 3
+> +		fi
+> +		sleep 0.1
+> +	done
+> +
+> +	# This starts the first source QEMU in advance of the test reaching the
+> +	# migration point, since we expect at least one migration. Subsequent
+> +	# sources are started as the test hits migrate keywords.
+> +	do_migration || return $?
+> +
+> +	while ps -p ${live_pid} > /dev/null ; do
+> +		# Wait for EXIT or further migrations
+> +		if ! grep -q -i "Now migrate the VM" < ${migout1} ; then
+> +			sleep 0.1
+> +		else
+> +			do_migration || return $?
+> +		fi
+> +	done
+> +
+> +	wait ${live_pid}
+> +	ret=$?
+> +
+> +	while (( $(jobs -r | wc -l) > 0 )); do
+> +		sleep 0.1
+> +	done
+> +
+> +	return $ret
+> +}
+> +
+> +do_migration ()
+> +{
+> +	# We have to use cat to open the named FIFO, because named FIFO's,
+> +	# unlike pipes, will block on open() until the other end is also
+> +	# opened, and that totally breaks QEMU...
+>   	mkfifo ${fifo}
+> -	eval "$@" -chardev socket,id=mon2,path=${qmp2},server=on,wait=off \
+> -		-mon chardev=mon2,mode=control -incoming unix:${migsock} < <(cat ${fifo}) &
+> +	eval "$migcmdline" \
+> +		-chardev socket,id=mon2,path=${qmp2},server=on,wait=off \
+> +		-mon chardev=mon2,mode=control -incoming unix:${migsock} \
+> +		< <(cat ${fifo}) > ${migout_fifo2} &
+>   	incoming_pid=$!
+> +	cat ${migout_fifo2} | tee ${migout2} &
+>   
+>   	# The test must prompt the user to migrate, so wait for the "migrate" keyword
+>   	while ! grep -q -i "Now migrate the VM" < ${migout1} ; do
 
-    ftrace: allocating 47780 entries in 18 pages
-    ftrace-powerpc: 0xc0000000020b3d5c: No module provided for non-kernel address
-    ------------[ ftrace bug ]------------
-    ftrace faulted on modifying
-    [<c0000000020b3d5c>] 0xc0000000020b3d5c
-    Initializing ftrace call sites
-    ftrace record flags: 0
-     (0)
-     expected tramp: c00000000008cef4
-    ------------[ cut here ]------------
-    WARNING: CPU: 0 PID: 0 at kernel/trace/ftrace.c:2180 ftrace_bug+0x3c0/0x424
-    Modules linked in:
-    CPU: 0 PID: 0 Comm: swapper Not tainted 6.5.0-rc3-00120-g0f71dcfb4aef #860
-    Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1202 0xf000005 of:SLOF,HEAD hv:linux,kvm pSeries
-    NIP:  c0000000003aa81c LR: c0000000003aa818 CTR: 0000000000000000
-    REGS: c0000000033cfab0 TRAP: 0700   Not tainted  (6.5.0-rc3-00120-g0f71dcfb4aef)
-    MSR:  8000000002021033 <SF,VEC,ME,IR,DR,RI,LE>  CR: 28028240  XER: 00000000
-    CFAR: c0000000002781a8 IRQMASK: 3
-    ...
-    NIP [c0000000003aa81c] ftrace_bug+0x3c0/0x424
-    LR [c0000000003aa818] ftrace_bug+0x3bc/0x424
-    Call Trace:
-     ftrace_bug+0x3bc/0x424 (unreliable)
-     ftrace_process_locs+0x5f4/0x8a0
-     ftrace_init+0xc0/0x1d0
-     start_kernel+0x1d8/0x484
+So the old check for the "migrate" keyword is also still around? Why do we 
+need to wait on two spots for the "Now mirgrate..." string now?
 
-With CONFIG_FTRACE_MCOUNT_USE_PATCHABLE_FUNCTION_ENTRY=y and
-CONFIG_KASAN=y, compiler emits nops in functions that it generates for
-registering and unregistering global variables (unlike with -pg and
--mprofile-kernel where calls to _mcount() are not generated in those
-functions). Those functions then end up in INIT_TEXT and EXIT_TEXT
-respectively. We don't expect to see any profiled functions in
-EXIT_TEXT, so ftrace_init_nop() assumes that all addresses that aren't
-in the core kernel text belongs to a module. Since these functions do
-not match that criteria, we see the above bug.
+  Thomas
 
-Address this by having ftrace ignore all locations in the text exit
-sections of vmlinux.
 
-Fixes: 0f71dcfb4aef ("powerpc/ftrace: Add support for -fpatchable-function-entry")
-Cc: stable@vger.kernel.org
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Naveen N Rao <naveen@kernel.org>
----
- arch/powerpc/include/asm/ftrace.h   |  9 +--------
- arch/powerpc/include/asm/sections.h |  1 +
- arch/powerpc/kernel/trace/ftrace.c  | 12 ++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S   |  2 ++
- 4 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 1ebd2ca97f12..d6babd083202 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -20,14 +20,7 @@
- #ifndef __ASSEMBLY__
- extern void _mcount(void);
- 
--static inline unsigned long ftrace_call_adjust(unsigned long addr)
--{
--	if (IS_ENABLED(CONFIG_ARCH_USING_PATCHABLE_FUNCTION_ENTRY))
--		addr += MCOUNT_INSN_SIZE;
--
--	return addr;
--}
--
-+unsigned long ftrace_call_adjust(unsigned long addr);
- unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
- 				    unsigned long sp);
- 
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index ea26665f82cf..d389dcecdb0b 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -14,6 +14,7 @@ typedef struct func_desc func_desc_t;
- 
- extern char __head_end[];
- extern char __srwx_boundary[];
-+extern char _sexittext[], _eexittext[];
- 
- /* Patch sites */
- extern s32 patch__call_flush_branch_caches1;
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 82010629cf88..b5efd8d7bc01 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -27,10 +27,22 @@
- #include <asm/ftrace.h>
- #include <asm/syscall.h>
- #include <asm/inst.h>
-+#include <asm/sections.h>
- 
- #define	NUM_FTRACE_TRAMPS	2
- static unsigned long ftrace_tramps[NUM_FTRACE_TRAMPS];
- 
-+unsigned long ftrace_call_adjust(unsigned long addr)
-+{
-+	if (addr >= (unsigned long)_sexittext && addr < (unsigned long)_eexittext)
-+		return 0;
-+
-+	if (IS_ENABLED(CONFIG_ARCH_USING_PATCHABLE_FUNCTION_ENTRY))
-+		addr += MCOUNT_INSN_SIZE;
-+
-+	return addr;
-+}
-+
- static ppc_inst_t ftrace_create_branch_inst(unsigned long ip, unsigned long addr, int link)
- {
- 	ppc_inst_t op;
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 1c5970df3233..9c376ae6857d 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -281,7 +281,9 @@ SECTIONS
- 	 * to deal with references from __bug_table
- 	 */
- 	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
-+		_sexittext = .;
- 		EXIT_TEXT
-+		_eexittext = .;
- 	}
- 
- 	. = ALIGN(PAGE_SIZE);
-
-base-commit: 4ef8376c466ae8b03e632dd8eca1e44315f7dd61
--- 
-2.43.0
+> @@ -164,7 +211,7 @@ run_migration ()
+>   			qmp ${qmp2} '"quit"'> ${qmpout2} 2>/dev/null
+>   			return 3
+>   		fi
+> -		sleep 1
+> +		sleep 0.1
+>   	done
+>   
+>   	# Wait until the destination has created the incoming and qmp sockets
+> @@ -176,7 +223,7 @@ run_migration ()
+>   	# Wait for the migration to complete
+>   	migstatus=`qmp ${qmp1} '"query-migrate"' | grep return`
+>   	while ! grep -q '"completed"' <<<"$migstatus" ; do
+> -		sleep 1
+> +		sleep 0.1
+>   		if ! migstatus=`qmp ${qmp1} '"query-migrate"'`; then
+>   			echo "ERROR: Querying migration state failed." >&2
+>   			echo > ${fifo}
+> @@ -192,14 +239,34 @@ run_migration ()
+>   			return 2
+>   		fi
+>   	done
+> +
+>   	qmp ${qmp1} '"quit"'> ${qmpout1} 2>/dev/null
+> +
+> +	# keypress to dst so getchar completes and test continues
+>   	echo > ${fifo}
+> -	wait $incoming_pid
+> +	rm ${fifo}
+> +
+> +	# Ensure the incoming socket is removed, ready for next destination
+> +	if [ -S ${migsock} ] ; then
+> +		echo "ERROR: Incoming migration socket not removed after migration." >& 2
+> +		qmp ${qmp2} '"quit"'> ${qmpout2} 2>/dev/null
+> +		return 2
+> +	fi
+> +
+> +	wait ${live_pid}
+>   	ret=$?
+>   
+> -	while (( $(jobs -r | wc -l) > 0 )); do
+> -		sleep 0.5
+> -	done
+> +	# Now flip the variables because dest becomes source
+> +	live_pid=${incoming_pid}
+> +	tmp=${migout1}
+> +	migout1=${migout2}
+> +	migout2=${tmp}
+> +	tmp=${migout_fifo1}
+> +	migout_fifo1=${migout_fifo2}
+> +	migout_fifo2=${tmp}
+> +	tmp=${qmp1}
+> +	qmp1=${qmp2}
+> +	qmp2=${tmp}
+>   
+>   	return $ret
+>   }
 
