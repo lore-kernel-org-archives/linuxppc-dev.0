@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9357C4828F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 07:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7E90C4828F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 08:04:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dToVorwG;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dToVorwG;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HdAmVzbs;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HdAmVzbs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TWQq524ztz3cXF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 18:44:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TWRGR2xQLz3cXm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Feb 2024 19:04:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dToVorwG;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dToVorwG;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HdAmVzbs;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HdAmVzbs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TWQpC2MFVz3c12
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2024 18:43:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TWRFd4JsNz30fp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2024 19:04:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1707464623;
+	s=mimecast20190719; t=1707465841;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=uGf78GSSLTQpF5Eiu1od52sEG+/7hU+ZiNNhjo8N8WA=;
-	b=dToVorwGUta7TBePvOEAE4V5TpJFI8A8vTV9A1EBVDWtEFD/JiFlk1vtoVtR0ZzuNbioLm
-	RYEh5lxryR3wIoGmurJ0hCZiZambftfbMPzJ0/Fmq67OeRRJd8FO11P8YUvwhefiNATpUG
-	sNPn41yiJEjABODonpYJR5WekN1ncvs=
+	bh=faE/LK4IJAeEyH7ZjqMtZX/ViQ+jKg9nw9ZeSbxZmiM=;
+	b=HdAmVzbsg6yYXylBJhxf+Nm+ksz/HSyTqP2n3yGuhvwj7fV8mWuv4i3a86ztP8Rl96S59k
+	95bAFXrltGKZvofnQjrxUSCB6V/fC93SpFnnRXXZXDBE+odWP8W28oIdmhZHW41Hq4wD/Y
+	Yr1+bB1QWw6Ido5vSmCRw4976xr/uOY=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1707464623;
+	s=mimecast20190719; t=1707465841;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=uGf78GSSLTQpF5Eiu1od52sEG+/7hU+ZiNNhjo8N8WA=;
-	b=dToVorwGUta7TBePvOEAE4V5TpJFI8A8vTV9A1EBVDWtEFD/JiFlk1vtoVtR0ZzuNbioLm
-	RYEh5lxryR3wIoGmurJ0hCZiZambftfbMPzJ0/Fmq67OeRRJd8FO11P8YUvwhefiNATpUG
-	sNPn41yiJEjABODonpYJR5WekN1ncvs=
-Received: from mail-yb1-f200.google.com (mail-yb1-f200.google.com
- [209.85.219.200]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=faE/LK4IJAeEyH7ZjqMtZX/ViQ+jKg9nw9ZeSbxZmiM=;
+	b=HdAmVzbsg6yYXylBJhxf+Nm+ksz/HSyTqP2n3yGuhvwj7fV8mWuv4i3a86ztP8Rl96S59k
+	95bAFXrltGKZvofnQjrxUSCB6V/fC93SpFnnRXXZXDBE+odWP8W28oIdmhZHW41Hq4wD/Y
+	Yr1+bB1QWw6Ido5vSmCRw4976xr/uOY=
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
+ [209.85.219.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-643-14wFLTtFPCOLn7VIK9bOgQ-1; Fri, 09 Feb 2024 02:43:41 -0500
-X-MC-Unique: 14wFLTtFPCOLn7VIK9bOgQ-1
-Received: by mail-yb1-f200.google.com with SMTP id 3f1490d57ef6-d9a541b720aso1260510276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2024 23:43:41 -0800 (PST)
+ us-mta-556-XQ6SOXGQNO2JLZ9cKLhmWA-1; Fri, 09 Feb 2024 03:03:59 -0500
+X-MC-Unique: XQ6SOXGQNO2JLZ9cKLhmWA-1
+Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-68cacbd7d73so11598306d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2024 00:03:59 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707464621; x=1708069421;
+        d=1e100.net; s=20230601; t=1707465839; x=1708070639;
         h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
          :to:content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uGf78GSSLTQpF5Eiu1od52sEG+/7hU+ZiNNhjo8N8WA=;
-        b=nK3rPG1K6BMSQOiXNzn8v72FU8505hv4AePY3LhaULyoTjMDUS6sfGj3iXp3JWmom8
-         1HFiyiuk3+qJdPnGuAw0oAYrmcZL9/Y6RDBPKz1uHERJjsi8V53BasHgmhk15lx1HL6Z
-         eLza3LtxPWSqOG1kLcvBKYtwMAuc5rlRavb/DHZ7nFlKcC6RyZJYA7JOAEYO+5EQJLi6
-         bIAtKaG8A4nT38ZeNRfj2MVsgrQpyVnns/Al6ajVadw8YiriGW/F3pOstQt2zAFBI0jU
-         5449Ek6X2GAwRoAmqJjnCKap4MMgwFT5tWvUJEPIWrXALsBlfdF/unEPuMAXTkexdxgz
-         pJVA==
-X-Forwarded-Encrypted: i=1; AJvYcCUhGw6DR5RIUc42MUKyUDapfZDCbroDxcffrf+x4CqrhZqre43t98GweTWg7aGAnqm7L8HpwNxVvg+9HCh9VjpdM6MTx1Gkpkxe/5scdA==
-X-Gm-Message-State: AOJu0YzUPFHCQ/tCQh/Vpwb4QDC2alXG/APNlIBHxXAEzWp0cdDwtGoy
-	rYDjkEst3/Jo+YO+q8gPY08z+c0ietnw4JEC1KCn9NCWy4zo5MPRT4pzxuMReJiKIyF0AskLMgR
-	TvhxcwU2JWuepXBZQGPrtThQgHqel8j/oByAlvTb19cAno/QPNMj9/yO0uQOAcK8=
-X-Received: by 2002:a25:aa52:0:b0:dc7:43d3:f8ad with SMTP id s76-20020a25aa52000000b00dc743d3f8admr648601ybi.17.1707464620930;
-        Thu, 08 Feb 2024 23:43:40 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IHbgR3CX6WL1xJqNIMgL+kDPRru4nEZNqoR3X4gAa+eKU/MkxNMcm314BtV0Lijrngudkcgkw==
-X-Received: by 2002:a25:aa52:0:b0:dc7:43d3:f8ad with SMTP id s76-20020a25aa52000000b00dc743d3f8admr648593ybi.17.1707464620627;
-        Thu, 08 Feb 2024 23:43:40 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCU6g1EbNCn917cZPsbp5MO+NEUukYuQnS3RNDprf6cv3wTiBU7QEhHd5yUZYW9Qce6Q+uakpHlHL1ABMIZ9RuQn1oBW6Q67mSmjG/UXwZmwtGMs0JRvaEH6P18YWtmtxeAea1dbNFyEaI8WAfO44dYhNup8uFIOO0URyCcd/ycR5HrJEy/cNshtDkcDkPGrhLAyPT7YY8Ka9YyJIV20mCUc6lRn/GEfeRIiZAk0oceCZ21NlVwg/6kioJWPDVhdrLLgV3g7MjnG/D8CzCGSi3ry6GqqvfoYCHFkzCduzGYGL2vaYSe80DnIN+kCFZJK4V2m/fhPoqBa8JUwRHtjkOrtoOXi7mH4rSLfHdDOmRvjrN62uTaObl1mr48aJygF1P8FMihQ3JlHls4abX05/9ArPJ6IHXSJ4lcYeOCiqDQe4R1AMG1mIJ5i/ZpPqZ40p84vU0FPXrQHVXNzd/MsypENUB2Q5ZU41KmD8+o14mcjgfaKdYeNXcKV7gsyIxhGk+S0Zs7uktfVhxyDvqXIeRsSxNvK
+        bh=faE/LK4IJAeEyH7ZjqMtZX/ViQ+jKg9nw9ZeSbxZmiM=;
+        b=j1QlT1UvRmQWFlscL+lVEJufDR+5CquwmD0hCD6uTETVCK24JMzOtGsx+Alx3AT7De
+         7GUCEQephNKbe0yad6XZR3nUSgA0eIIGVxdqjC8LiM+d8HdOhduakM4PDp4tdUbeH3xh
+         mPUGt82dork/ZghJeETb6cYcgC2lDqOd1Qg9AR8B1nkBqliqfIfMfL7eMRXPZvtR1+HQ
+         TSpcw9WVNDN3hCtpr7DUj9G50at5tzWq6A6vHG21sqkPUl6PP6DLNVk3Rys78KrFi8nf
+         vuqE9oqdTY+dOjSb7S28R3+QpEGgLMelbVm9R655VllTJkvnRqYxeKSKVwh1FBFrDVRP
+         Qd2A==
+X-Forwarded-Encrypted: i=1; AJvYcCWUD/M01H+fu/Y8qFg0i9BvA7/EXa8Tm0v0K48DULPnzU3kHy3m5u/d55I5/mpnL8R0+7Av5MHZ2/zLwTO7gIE35Mth7qSNNM7U2d6V2Q==
+X-Gm-Message-State: AOJu0YzkYVUibRbQTvhwA6OO+V/mKlQVBHqmnllM5hYjiReJbE9msfW5
+	cFD7YMplC+PiGjAYufwOPYNbEPALb848yIozixAS22XAXmc5WM7ZmFejUiRHTrXmD5gcJfeTduU
+	kZzkoL1U2nRf5QV51fH8D33VWHXv8jX66kOSCSzK0Bnefa9bTw0+vvETzWpVE7zc=
+X-Received: by 2002:a0c:f2c3:0:b0:68c:814e:5410 with SMTP id c3-20020a0cf2c3000000b0068c814e5410mr976889qvm.19.1707465839103;
+        Fri, 09 Feb 2024 00:03:59 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IH51X/CXuNxC3+hHzK8rvC/V3cxp3u9GUxeTMq/lAXErqJ+Tp2T2bQwIpIRQYR9MxuF6npl0g==
+X-Received: by 2002:a0c:f2c3:0:b0:68c:814e:5410 with SMTP id c3-20020a0cf2c3000000b0068c814e5410mr976874qvm.19.1707465838862;
+        Fri, 09 Feb 2024 00:03:58 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCX20yFKEBRU1/oWDnU56mOKPVncgFDMKdfTosM/Yk+KIPkh78vhB1odUpVY/O4m6KLPfevoSLDiaOXv9XjHmD7MJMIRrvUPDiOZ5QYenFRecrs462DGWYC8hYOpqZddy999hbO7m+TUk8YNRXuFqFptAkHP3ED95yi5GJrhhbHR7LyYDiQXyqA5tzA3XZLQeo7zmQZtSkgEe2L4k2C1NE2T8xgS8VulTEE0kgeR6FA/kNr5wwjGduFG0xIuuvG1zPV1serdqneGovnMPSEgt2OxzNKEFMWGSKlNHiC3gERL+MycLx/d72un9mpTU7EHNHsouKwdDCj4Wy6Q255JwJ8/4IYNO8in88gUqjvuwTTy1aAU+7rK8KnMoVTihCgoc4x40gdROmEhKE2HAE2V7OLqW/XQrPv0gY/8hQBe5dlj9zOqu2Mpxwm3sLYOPkNP0f4ar0Tw44XyDYitI5tYSbNZw79AQneAOCJMZ5e4NhZsMemf2RV/MBQjDQb5KYZrufHkcCyRBUdKS2bVx5PxtmSfdRPA
 Received: from [192.168.0.9] (ip-109-43-177-145.web.vodafone.de. [109.43.177.145])
-        by smtp.gmail.com with ESMTPSA id i12-20020ac85c0c000000b0042bf5ec20f0sm481421qti.30.2024.02.08.23.43.37
+        by smtp.gmail.com with ESMTPSA id pc8-20020a056214488800b0068c6d56d4f7sm595736qvb.92.2024.02.09.00.03.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 08 Feb 2024 23:43:40 -0800 (PST)
-Message-ID: <9b041258-e412-4745-a213-6798e682ea62@redhat.com>
-Date: Fri, 9 Feb 2024 08:43:35 +0100
+        Fri, 09 Feb 2024 00:03:58 -0800 (PST)
+Message-ID: <c143430d-482e-43bb-9c94-b6977c6482e5@redhat.com>
+Date: Fri, 9 Feb 2024 09:03:53 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v3 3/8] migration: use a more robust way to
- wait for background job
+Subject: Re: [kvm-unit-tests PATCH v3 6/8] migration: Add quiet migration
+ support
 To: Nicholas Piggin <npiggin@gmail.com>
 References: <20240209070141.421569-1-npiggin@gmail.com>
- <20240209070141.421569-4-npiggin@gmail.com>
+ <20240209070141.421569-7-npiggin@gmail.com>
 From: Thomas Huth <thuth@redhat.com>
 Autocrypt: addr=thuth@redhat.com; keydata=
  xsFNBFH7eUwBEACzyOXKU+5Pcs6wNpKzrlJwzRl3VGZt95VCdb+FgoU9g11m7FWcOafrVRwU
@@ -129,7 +129,7 @@ Autocrypt: addr=thuth@redhat.com; keydata=
  oiT+z+/E59qj/EKfyce3sbC9XLjXv3mHMrq1tKX4G7IJGnS989E/fg6crv6NHae9Ckm7+lSs
  IQu4bBP2GxiRQ+NV3iV/KU3ebMRzqIC//DCOxzQNFNJAKldPe/bKZMCxEqtVoRkuJtNdp/5a
  yXFZ6TfE1hGKrDBYAm4vrnZ4CXFSBDllL59cFFOJCkn4Xboj/aVxxJxF30bn
-In-Reply-To: <20240209070141.421569-4-npiggin@gmail.com>
+In-Reply-To: <20240209070141.421569-7-npiggin@gmail.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
@@ -151,71 +151,78 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 09/02/2024 08.01, Nicholas Piggin wrote:
-> Starting a pipeline of jobs in the background does not seem to have
-> a simple way to reliably find the pid of a particular process in the
-> pipeline (because not all processes are started when the shell
-> continues to execute).
-> 
-> The way PID of QEMU is derived can result in a failure waiting on a
-> PID that is not running. This is easier to hit with subsequent
-> multiple-migration support. Changing this to use $! by swapping the
-> pipeline for a fifo is more robust.
+> Console output required to support migration becomes quite noisy
+> when doing lots of migrations. Provide a migrate_quiet() call that
+> suppresses console output and doesn't log a message.
 > 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->   scripts/arch-run.bash | 15 +++++++++++----
->   1 file changed, 11 insertions(+), 4 deletions(-)
+>   lib/migrate.c         | 12 ++++++++++++
+>   lib/migrate.h         |  1 +
+>   scripts/arch-run.bash |  4 ++--
+>   3 files changed, 15 insertions(+), 2 deletions(-)
 > 
+> diff --git a/lib/migrate.c b/lib/migrate.c
+> index b7721659..4e0ab516 100644
+> --- a/lib/migrate.c
+> +++ b/lib/migrate.c
+> @@ -18,6 +18,18 @@ void migrate(void)
+>   	report_info("Migration complete");
+>   }
+>   
+> +/*
+> + * Like migrate() but supporess output and logs, useful for intensive
+
+s/supporess/suppress/
+
+> + * migration stress testing without polluting logs. Test cases should
+> + * provide relevant information about migration in failure reports.
+> + */
+> +void migrate_quiet(void)
+> +{
+> +	puts("Now migrate the VM (quiet)\n");
+> +	(void)getchar();
+> +}
+> +
+> +
+
+Remove one empty line, please!
+
+>   /*
+>    * Initiate migration and wait for it to complete.
+>    * If this function is called more than once, it is a no-op.
+> diff --git a/lib/migrate.h b/lib/migrate.h
+> index 2af06a72..95b9102b 100644
+> --- a/lib/migrate.h
+> +++ b/lib/migrate.h
+> @@ -7,4 +7,5 @@
+>    */
+>   
+>   void migrate(void);
+> +void migrate_quiet(void);
+>   void migrate_once(void);
 > diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-> index 1e903e83..3689d7c2 100644
+> index 0b45eb61..29cf9b0c 100644
 > --- a/scripts/arch-run.bash
 > +++ b/scripts/arch-run.bash
-> @@ -130,19 +130,22 @@ run_migration ()
->   	fi
+> @@ -152,7 +152,7 @@ run_migration ()
+>   		-chardev socket,id=mon,path=${src_qmp},server=on,wait=off \
+>   		-mon chardev=mon,mode=control > ${src_outfifo} &
+>   	live_pid=$!
+> -	cat ${src_outfifo} | tee ${src_out} &
+> +	cat ${src_outfifo} | tee ${src_out} | grep -v "Now migrate the VM (quiet)" &
 >   
->   	trap 'trap - TERM ; kill 0 ; exit 2' INT TERM
-> -	trap 'rm -f ${migout1} ${migsock} ${qmp1} ${qmp2} ${fifo}' RETURN EXIT
-> +	trap 'rm -f ${migout1} ${migout_fifo1} ${migsock} ${qmp1} ${qmp2} ${fifo}' RETURN EXIT
->   
->   	migsock=$(mktemp -u -t mig-helper-socket.XXXXXXXXXX)
->   	migout1=$(mktemp -t mig-helper-stdout1.XXXXXXXXXX)
-> +	migout_fifo1=$(mktemp -u -t mig-helper-fifo-stdout1.XXXXXXXXXX)
->   	qmp1=$(mktemp -u -t mig-helper-qmp1.XXXXXXXXXX)
->   	qmp2=$(mktemp -u -t mig-helper-qmp2.XXXXXXXXXX)
->   	fifo=$(mktemp -u -t mig-helper-fifo.XXXXXXXXXX)
->   	qmpout1=/dev/null
->   	qmpout2=/dev/null
->   
-> +	mkfifo ${migout_fifo1}
->   	eval "$@" -chardev socket,id=mon1,path=${qmp1},server=on,wait=off \
-> -		-mon chardev=mon1,mode=control | tee ${migout1} &
-> -	live_pid=`jobs -l %+ | grep "eval" | awk '{print$2}'`
-> +		-mon chardev=mon1,mode=control > ${migout_fifo1} &
-> +	live_pid=$!
-> +	cat ${migout_fifo1} | tee ${migout1} &
->   
->   	# We have to use cat to open the named FIFO, because named FIFO's, unlike
->   	# pipes, will block on open() until the other end is also opened, and that
-> @@ -150,7 +153,7 @@ run_migration ()
->   	mkfifo ${fifo}
->   	eval "$@" -chardev socket,id=mon2,path=${qmp2},server=on,wait=off \
->   		-mon chardev=mon2,mode=control -incoming unix:${migsock} < <(cat ${fifo}) &
-> -	incoming_pid=`jobs -l %+ | awk '{print$2}'`
-> +	incoming_pid=$!
+>   	# The test must prompt the user to migrate, so wait for the "migrate"
+>   	# keyword
+> @@ -200,7 +200,7 @@ do_migration ()
+>   		-mon chardev=mon,mode=control -incoming unix:${dst_incoming} \
+>   		< <(cat ${dst_infifo}) > ${dst_outfifo} &
+>   	incoming_pid=$!
+> -	cat ${dst_outfifo} | tee ${dst_out} &
+> +	cat ${dst_outfifo} | tee ${dst_out} | grep -v "Now migrate the VM (quiet)" &
 >   
 >   	# The test must prompt the user to migrate, so wait for the "migrate" keyword
->   	while ! grep -q -i "Now migrate the VM" < ${migout1} ; do
-> @@ -164,6 +167,10 @@ run_migration ()
->   		sleep 1
->   	done
->   
-> +	# Wait until the destination has created the incoming and qmp sockets
-> +	while ! [ -S ${migsock} ] ; do sleep 0.1 ; done
-> +	while ! [ -S ${qmp2} ] ; do sleep 0.1 ; done
-> +
->   	qmp ${qmp1} '"migrate", "arguments": { "uri": "unix:'${migsock}'" }' > ${qmpout1}
->   
->   	# Wait for the migration to complete
+>   	while ! grep -q -i "Now migrate the VM" < ${src_out} ; do
 
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+  Thomas
 
