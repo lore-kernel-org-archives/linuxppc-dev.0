@@ -4,78 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 380E8C4829E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Feb 2024 03:22:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CD06C4829A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Feb 2024 04:37:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f6RLQHjJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LPVh9BE8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TYmpR2tXwz3c1C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Feb 2024 14:22:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TYpTg53gsz3dX5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Feb 2024 15:37:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f6RLQHjJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LPVh9BE8;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TYmnZ4qC4z3bn0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2024 14:21:22 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TYmnX6MJmz4wxx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2024 14:21:20 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4TYmnX63jJz4wyr; Tue, 13 Feb 2024 14:21:20 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f6RLQHjJ;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TYpSp4NMgz3bs2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2024 15:36:58 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41D4CY7P008025;
+	Tue, 13 Feb 2024 04:36:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=vGnMbkmjJVV09purTBXeRTfG05uiEcwcd/UcrMVg4KA=;
+ b=LPVh9BE8stqYNhwPR35ymogSvbA2Bc0VkQ5ln73aH7KJ7gjqh8QXHC3UsOv0NO0KxpkL
+ 0/HXr/I+v/KbPg5wgdWOxAqViVBfQVF5jAWu4oP6m3YNMufljS+IzKmafOYUzvLJqHxx
+ zrvdLH9Jw+znvUUAQ86VGnLj6ps8qcMae9kZ10CiK2IEKk4DZNq3DT+CgZ8G76QuszhL
+ 7DHu2BUpWgrR29ycZdIjpj+VjQua26AL4M8pb3fb/cjukuttWh1twUPyuRK0p/ogf/v3
+ /DKSdj9twzfuZGbIDm3ZOiuRkb5JLO1Dy4bV/g8t+9NxOtjNaFqMufQh2w6hDghpBNJW /Q== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w816jrc1m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Feb 2024 04:36:50 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41D1WY04024877;
+	Tue, 13 Feb 2024 04:36:49 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3w6mfp56gs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Feb 2024 04:36:49 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 41D4ak5O17433140
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 13 Feb 2024 04:36:48 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 403B720065;
+	Tue, 13 Feb 2024 04:36:46 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CE94A20043;
+	Tue, 13 Feb 2024 04:36:45 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Feb 2024 04:36:45 +0000 (GMT)
+Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TYmnX2bwsz4wxx
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2024 14:21:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1707794475;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=FfgfhhR1Sp5K6tynZua/CXQcXYMTqRCAqc8M/+9/nR0=;
-	b=f6RLQHjJsvI67U3DvMPhdkM5V+hWRPfhuBS/jlnMPoIh788Bza7JBvK5oyBhR0Qg6CZnLl
-	zU1E3GGyNDCVVPptgBUp7EVaMmr+q/Aoc1O05suAS6rf4A4Az1jzhenDVRBJLo/BRXm2ax
-	7cdP7Nu9zKBHbriX3Gpekhn3LQqZIcA=
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-533-ygDcdn5FO2eqML2zuzcgKw-1; Mon,
- 12 Feb 2024 22:21:10 -0500
-X-MC-Unique: ygDcdn5FO2eqML2zuzcgKw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id AF97628237C0;
-	Tue, 13 Feb 2024 03:21:08 +0000 (UTC)
-Received: from localhost (unknown [10.72.116.2])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 6EBD92166B31;
-	Tue, 13 Feb 2024 03:21:06 +0000 (UTC)
-Date: Tue, 13 Feb 2024 11:21:02 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v15 2/5] crash: add a new kexec flag for hotplug support
-Message-ID: <ZcrgHvTbDGbXc894@MiWiFi-R3L-srv>
-References: <20240111105138.251366-1-sourabhjain@linux.ibm.com>
- <20240111105138.251366-3-sourabhjain@linux.ibm.com>
- <ZcBRle7szFrD3cW+@MiWiFi-R3L-srv>
- <cc02538f-9460-4cbb-9ae4-194412b85e36@linux.ibm.com>
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CD8D7602C3;
+	Tue, 13 Feb 2024 15:36:42 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/code-patching: Disable KASAN in __patch_instructions()
+Date: Tue, 13 Feb 2024 15:36:38 +1100
+Message-ID: <20240213043638.168048-1-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-In-Reply-To: <cc02538f-9460-4cbb-9ae4-194412b85e36@linux.ibm.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.6
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: A0Cf7PZElcSy4SYLK2gYdJiBaLFbGXdB
+X-Proofpoint-ORIG-GUID: A0Cf7PZElcSy4SYLK2gYdJiBaLFbGXdB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-12_20,2024-02-12_03,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=15 priorityscore=1501
+ adultscore=0 spamscore=15 impostorscore=0 bulkscore=0 lowpriorityscore=0
+ phishscore=0 mlxlogscore=76 suspectscore=0 malwarescore=0 clxscore=1011
+ mlxscore=15 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2402130030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,106 +91,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org, Eric DeVolder <eric.devolder@oracle.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Valentin Schneider <vschneid@redhat.com>, x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Naveen N Rao <naveen@kernel.org>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: hbathini@linux.ibm.com, Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/12/24 at 07:27pm, Sourabh Jain wrote:
-> Hello Baoquan,
-> 
-> On 05/02/24 08:40, Baoquan He wrote:
-> > Hi Sourabh,
-> > 
-......
-> > > diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> > > index 802052d9c64b..7880d74dc5c4 100644
-> > > --- a/include/linux/kexec.h
-> > > +++ b/include/linux/kexec.h
-> > > @@ -317,8 +317,8 @@ struct kimage {
-> > >   	/* If set, we are using file mode kexec syscall */
-> > >   	unsigned int file_mode:1;
-> > >   #ifdef CONFIG_CRASH_HOTPLUG
-> > > -	/* If set, allow changes to elfcorehdr of kexec_load'd image */
-> > > -	unsigned int update_elfcorehdr:1;
-> > > +	/* If set, allow changes to kexec segments of kexec_load'd image */
-> > The code comment doesn't reflect the usage of the flag.
-> I should have updated the comment to indicate that this flag is for both
-> system calls.
-> More comments below.
-> 
-> > You set it too
-> > when it's kexec_file_load. Speaking of this, I do wonder why you need
-> > set it too for kexec_file_load,
-> If we do this one can just access image->hotplug_support to find hotplug
-> support for currently loaded kdump image without bothering about which
-> system call was used to load the kdump image.
-> 
-> > and why we have
-> > arch_crash_hotplug_support(), then crash_check_hotplug_support() both of
-> > which have the same effect.
-> 
-> arch_crash_hotplug_support(): This function processes the kexec flags and
-> finds the
-> hotplug support for the kdump image. Based on the return value of this
-> function,
-> the image->hotplug_support attribute is set.
-> 
-> Now, once the kdump image is loaded, we no longer have access to the kexec
-> flags.
-> Therefore, crash_check_hotplug_support simply returns the value of
-> image->hotplug_support
-> when user space accesses the following sysfs files:
-> /sys/devices/system/[cpu|memory]/crash_hotplug.
-> 
-> To keep things simple, I have introduced two functions: One function
-> processes the kexec flags
-> and determines the hotplug support for the image being loaded. And other
-> function simply
-> accesses image->hotplug_support and advertises CPU/Memory hotplug support to
-> userspace.
+The memset/memcpy functions are by default instrumented by KASAN, which
+complains about user memory access when using a poking page in
+userspace.
 
-From the function name and their functionality, they seems to be
-duplicated, even though it's different from the internal detail. This
-could bring a little confusion to code understanding. It's fine, we can
-refactor them if needed in the future. So let's keep it as the patch is.
-Thanks.
+Using a userspace address is expected though, so don't instrument with
+KASAN for this function.
 
-> 
-> > 
-> > > +	unsigned int hotplug_support:1;
-> > >   #endif
-> > >   #ifdef ARCH_HAS_KIMAGE_ARCH
-> > > @@ -396,9 +396,10 @@ bool kexec_load_permitted(int kexec_image_type);
-> > >   /* List of defined/legal kexec flags */
-> > >   #ifndef CONFIG_KEXEC_JUMP
-> > > -#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_UPDATE_ELFCOREHDR)
-> > > +#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_UPDATE_ELFCOREHDR | KEXEC_CRASH_HOTPLUG_SUPPORT)
-> > >   #else
-> > > -#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_PRESERVE_CONTEXT | KEXEC_UPDATE_ELFCOREHDR)
-> > > +#define KEXEC_FLAGS    (KEXEC_ON_CRASH | KEXEC_PRESERVE_CONTEXT | KEXEC_UPDATE_ELFCOREHDR | \
-> > > +			KEXEC_CRASH_HOTPLUG_SUPPORT)
-> > >   #endif
-> > >   /* List of defined/legal kexec file flags */
-> > > @@ -486,14 +487,18 @@ static inline void arch_kexec_pre_free_pages(void *vaddr, unsigned int pages) {
-> > >   static inline void arch_crash_handle_hotplug_event(struct kimage *image, void *arg) { }
-> > >   #endif
-> > > -int crash_check_update_elfcorehdr(void);
-> > > +int crash_check_hotplug_support(void);
-> > > -#ifndef crash_hotplug_cpu_support
-> > > -static inline int crash_hotplug_cpu_support(void) { return 0; }
-> > > -#endif
-> > > +#ifndef arch_crash_hotplug_support
-> > > +static inline int arch_crash_hotplug_support(struct kimage *image, unsigned long kexec_flags)
-> > > +{
-> > > -#ifndef crash_hotplug_memory_support
-> > > -static inline int crash_hotplug_memory_support(void) { return 0; }
-> > > +#ifdef CONFIG_KEXEC_FILE
-> > > +	if (image->file_mode)
-> > > +		return 1;
-> > > +#endif
-> > > +	return kexec_flags & KEXEC_CRASH_HOTPLUG_SUPPORT;
-> > > +}
-> > >   #endif
-> > >   #ifndef crash_get_elfcorehdr_size
-......
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+
+---
+
+I tried to replace the memsetN calls with __memsetN, but we appear to
+disable the non-instrumented variants of these when KASAN is enabled.
+Christophe might you know more here?
+
+The cost of just suppressing reports for this section shouldn't be too
+relevant; KASAN detects the access, but exits before it starts preparing
+the report itself. So it's just like any other KASAN instrumented
+function for the most part.
+---
+ arch/powerpc/lib/code-patching.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index c6ab46156cda..24989594578a 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -3,6 +3,7 @@
+  *  Copyright 2008 Michael Ellerman, IBM Corporation.
+  */
+ 
++#include <linux/kasan.h>
+ #include <linux/kprobes.h>
+ #include <linux/mmu_context.h>
+ #include <linux/random.h>
+@@ -377,6 +378,7 @@ static int __patch_instructions(u32 *patch_addr, u32 *code, size_t len, bool rep
+ 	unsigned long start = (unsigned long)patch_addr;
+ 
+ 	/* Repeat instruction */
++	kasan_disable_current();
+ 	if (repeat_instr) {
+ 		ppc_inst_t instr = ppc_inst_read(code);
+ 
+@@ -392,6 +394,7 @@ static int __patch_instructions(u32 *patch_addr, u32 *code, size_t len, bool rep
+ 	} else {
+ 		memcpy(patch_addr, code, len);
+ 	}
++	kasan_enable_current();
+ 
+ 	smp_wmb();	/* smp write barrier */
+ 	flush_icache_range(start, start + len);
+-- 
+2.43.0
 
