@@ -4,78 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5691DC48BEF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 08:19:19 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RI2mOhZe;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B517C48BEF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:33:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tb7JP5sczz3dCH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 19:19:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RI2mOhZe;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tb7HW64zrz2yts
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 19:18:31 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 76809CE2567;
-	Thu, 15 Feb 2024 08:18:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4366EC43394;
-	Thu, 15 Feb 2024 08:18:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707985107;
-	bh=NEWD24GsuqxxNTq5YzGqWj/5Tc8Dg9+/4oyhQh0vAoc=;
-	h=In-Reply-To:References:Date:From:To:Cc:Subject:From;
-	b=RI2mOhZerlcJeWdxcgS9GAF0WVcFz0gTdhizDRZrhvX7nbJ0dQmULNaS5IMxZ60vB
-	 Ho0x0k6qUX3D2khqcpIUoijc/1NtJulkMAMThldsJz8dUmJWUfogSDYu0Y1cl67Tqs
-	 7X7AWDGj2xVaFuCQTiF5+drthE+6VOuRi0EA+7+tOEgX5w4oFqTatq9MR8stbYWTT0
-	 YYtzze+07Kuq+lcTk2tBRl8T6oPHuxMnEYr53fLML3ZJivwuPtTSUQ8YflXSBVReen
-	 Qf3jkSEp6svCGEHxSK9k0amZcgDoKC65zD3xZQGsGhC1JEKataG+bIdVSKLx+fdvKk
-	 +AdFi8ftPfenQ==
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-	by mailfauth.nyi.internal (Postfix) with ESMTP id 1E8601200043;
-	Thu, 15 Feb 2024 03:18:26 -0500 (EST)
-Received: from imap51 ([10.202.2.101])
-  by compute5.internal (MEProxy); Thu, 15 Feb 2024 03:18:26 -0500
-X-ME-Sender: <xms:0cjNZfYo_g1Ix0DrwBz4KuX7VjNNIZyEdOV6Xg3RnAP2TyhBT5pFYg>
-    <xme:0cjNZeaQwqznnRtCmDDh24_BwM7Kf5pxIbgz4hgSQd21fJCsBfQwvJO2n6uwLAMd3
-    2e0XmzLvthFrjGKiL0>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrudelgdeifecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugeskhgvrhhnvghlrdhorhhgqeenucggtffrrg
-    htthgvrhhnpedvveeigfetudegveeiledvgfevuedvgfetgeefieeijeejffeggeehudeg
-    tdevheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugdomhgvshhmthhprghuthhhphgvrhhsohhnrghlihhthidquddvkeehudejtddv
-    gedqvdekjedttddvieegqdgrrhhnugeppehkvghrnhgvlhdrohhrghesrghrnhgusgdrug
-    gv
-X-ME-Proxy: <xmx:0cjNZR-ublyObQJz1iE8rnJF74bbYQ7RrcFM5O85-96YzrmfeMPsBg>
-    <xmx:0cjNZVppB3c9IEdcIGGyixY2tNCgZafVkxRPMRL-3GbB6GaPOLkg-w>
-    <xmx:0cjNZap7Cr7HWUYchY1gQBGq7Bamp5hrrltYjxZkvcN5MNtbzKJtuA>
-    <xmx:0sjNZaIgKj11PS-xose-909MYx-2SKodFSPRK6cLQkXBEsMkT3Caf031sI0>
-Feedback-ID: i36794607:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id 8DEBCB6008D; Thu, 15 Feb 2024 03:18:25 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.11.0-alpha0-144-ge5821d614e-fm-20240125.002-ge5821d61
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBH95fNkz3dW4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:33:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBGc5VjTz3c96
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 21:32:54 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 40DFDDA7;
+	Thu, 15 Feb 2024 02:33:04 -0800 (PST)
+Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3722C3F7B4;
+	Thu, 15 Feb 2024 02:32:20 -0800 (PST)
+From: Ryan Roberts <ryan.roberts@arm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Marc Zyngier <maz@kernel.org>,
+	James Morse <james.morse@arm.com>,
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Matthew Wilcox <willy@infradead.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	David Hildenbrand <david@redhat.com>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	John Hubbard <jhubbard@nvidia.com>,
+	Zi Yan <ziy@nvidia.com>,
+	Barry Song <21cnbao@gmail.com>,
+	Alistair Popple <apopple@nvidia.com>,
+	Yang Shi <shy828301@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH v6 01/18] mm: Clarify the spec for set_ptes()
+Date: Thu, 15 Feb 2024 10:31:48 +0000
+Message-Id: <20240215103205.2607016-2-ryan.roberts@arm.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240215103205.2607016-1-ryan.roberts@arm.com>
+References: <20240215103205.2607016-1-ryan.roberts@arm.com>
 MIME-Version: 1.0
-Message-Id: <aa657f01-7cb1-43f4-947e-173fc8a53f1f@app.fastmail.com>
-In-Reply-To: <a406b535-dc55-4856-8ae9-5a063644a1af@linux.ibm.com>
-References: <a406b535-dc55-4856-8ae9-5a063644a1af@linux.ibm.com>
-Date: Thu, 15 Feb 2024 09:16:29 +0100
-From: "Arnd Bergmann" <arnd@kernel.org>
-To: "Peter Bergner" <bergner@linux.ibm.com>, linux-api@vger.kernel.org,
- Linux-Arch <linux-arch@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2] uapi/auxvec: Define AT_HWCAP3 and AT_HWCAP4 aux vector, entries
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,33 +60,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Szabolcs Nagy <szabolcs.nagy@arm.com>, Nick Piggin <npiggin@au1.ibm.com>, Adhemerval Zanella Netto <adhemerval.zanella@linaro.org>
+Cc: Ryan Roberts <ryan.roberts@arm.com>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 14, 2024, at 23:34, Peter Bergner wrote:
-> The powerpc toolchain keeps a copy of the HWCAP bit masks in our TCB for fast
-> access by the __builtin_cpu_supports built-in function.  The TCB space for
-> the HWCAP entries - which are created in pairs - is an ABI extension, so
-> waiting to create the space for HWCAP3 and HWCAP4 until we need them is
-> problematical.  Define AT_HWCAP3 and AT_HWCAP4 in the generic uapi header
-> so they can be used in glibc to reserve space in the powerpc TCB for their
-> future use.
->
-> I scanned through the Linux and GLIBC source codes looking for unused AT_*
-> values and 29 and 30 did not seem to be used, so they are what I went
-> with.  This has received Acked-by's from both GLIBC and Linux kernel
-> developers and no reservations or Nacks from anyone.
->
-> Arnd, we seem to have consensus on the patch below.  Is this something
-> you could take and apply to your tree? 
->
+set_ptes() spec implies that it can only be used to set a present pte
+because it interprets the PFN field to increment it. However,
+set_pte_at() has been implemented on top of set_ptes() since set_ptes()
+was introduced, and set_pte_at() allows setting a pte to a not-present
+state. So clarify the spec to state that when nr==1, new state of pte
+may be present or not present. When nr>1, new state of all ptes must be
+present.
 
-I don't mind taking it, but it may be better to use the
-powerpc tree if that is where it's actually being used.
+While we are at it, tighten the spec to set requirements around the
+initial state of ptes; when nr==1 it may be either present or
+not-present. But when nr>1 all ptes must initially be not-present. All
+set_ptes() callsites already conform to this requirement. Stating it
+explicitly is useful because it allows for a simplification to the
+upcoming arm64 contpte implementation.
 
-If Michael takes it, please add
+Acked-by: David Hildenbrand <david@redhat.com>
+Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
+---
+ include/linux/pgtable.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 49ab1f73b5c2..231370e1b80f 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -229,6 +229,10 @@ static inline pte_t pte_next_pfn(pte_t pte)
+  * @pte: Page table entry for the first page.
+  * @nr: Number of pages to map.
+  *
++ * When nr==1, initial state of pte may be present or not present, and new state
++ * may be present or not present. When nr>1, initial state of all ptes must be
++ * not present, and new state must be present.
++ *
+  * May be overridden by the architecture, or the architecture can define
+  * set_pte() and PFN_PTE_SHIFT.
+  *
+-- 
+2.25.1
 
-      Arnd
