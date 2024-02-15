@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F7EBC4829E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 18:28:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 232F0C48BC4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 18:34:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbNqN0Xr7z3vbW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 05:28:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbNyK5vC6z3vc1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 05:34:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbNps0Cf1z3dVm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 05:28:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbNxt351hz3dVZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 05:34:10 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id D2CC761766;
-	Thu, 15 Feb 2024 18:28:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 983B8C433C7;
-	Thu, 15 Feb 2024 18:27:56 +0000 (UTC)
-Date: Thu, 15 Feb 2024 18:27:54 +0000
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5567860FC9;
+	Thu, 15 Feb 2024 18:34:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38715C433C7;
+	Thu, 15 Feb 2024 18:34:03 +0000 (UTC)
+Date: Thu, 15 Feb 2024 18:34:00 +0000
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH v6 04/18] arm64/mm: Convert pte_next_pfn() to
- pte_advance_pfn()
-Message-ID: <Zc5XqjvhaDkw4XdI@arm.com>
+Subject: Re: [PATCH v6 07/18] arm64/mm: Convert READ_ONCE(*ptep) to
+ ptep_get(ptep)
+Message-ID: <Zc5ZGNaYp5dFND1_@arm.com>
 References: <20240215103205.2607016-1-ryan.roberts@arm.com>
- <20240215103205.2607016-5-ryan.roberts@arm.com>
+ <20240215103205.2607016-8-ryan.roberts@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240215103205.2607016-5-ryan.roberts@arm.com>
+In-Reply-To: <20240215103205.2607016-8-ryan.roberts@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,10 +48,17 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Kefeng Wang <wangkefeng.wang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 15, 2024 at 10:31:51AM +0000, Ryan Roberts wrote:
-> Core-mm needs to be able to advance the pfn by an arbitrary amount, so
-> override the new pte_advance_pfn() API to do so.
+On Thu, Feb 15, 2024 at 10:31:54AM +0000, Ryan Roberts wrote:
+> There are a number of places in the arch code that read a pte by using
+> the READ_ONCE() macro. Refactor these call sites to instead use the
+> ptep_get() helper, which itself is a READ_ONCE(). Generated code should
+> be the same.
 > 
+> This will benefit us when we shortly introduce the transparent contpte
+> support. In this case, ptep_get() will become more complex so we now
+> have all the code abstracted through it.
+> 
+> Tested-by: John Hubbard <jhubbard@nvidia.com>
 > Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 
 Acked-by: Catalin Marinas <catalin.marinas@arm.com>
