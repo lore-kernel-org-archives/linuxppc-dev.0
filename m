@@ -4,51 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B237FC48BEF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75228C48BEF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:41:45 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jYcIOh7n;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBRp37zLz3vyY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:40:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBHR2bS9z3vc9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 21:33:39 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B0CA71596;
-	Thu, 15 Feb 2024 02:33:48 -0800 (PST)
-Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A85623F7B4;
-	Thu, 15 Feb 2024 02:33:04 -0800 (PST)
-From: Ryan Roberts <ryan.roberts@arm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Marc Zyngier <maz@kernel.org>,
-	James Morse <james.morse@arm.com>,
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	David Hildenbrand <david@redhat.com>,
-	Kefeng Wang <wangkefeng.wang@huawei.com>,
-	John Hubbard <jhubbard@nvidia.com>,
-	Zi Yan <ziy@nvidia.com>,
-	Barry Song <21cnbao@gmail.com>,
-	Alistair Popple <apopple@nvidia.com>,
-	Yang Shi <shy828301@gmail.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH v6 14/18] arm64/mm: Implement new [get_and_]clear_full_ptes() batch APIs
-Date: Thu, 15 Feb 2024 10:32:01 +0000
-Message-Id: <20240215103205.2607016-15-ryan.roberts@arm.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20240215103205.2607016-1-ryan.roberts@arm.com>
-References: <20240215103205.2607016-1-ryan.roberts@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBSm0yvVz3w2T
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:41:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jYcIOh7n;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbBLg3fTxz3w57
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 21:36:27 +1100 (AEDT)
+Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41F90FQm013242;
+	Thu, 15 Feb 2024 10:35:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=0Lkd6nG2l1dtyAWgztLgpaGyC5DsaIeusO5eKZMkEBg=;
+ b=jYcIOh7nez39njav3GC+DYC+yt409Qu6wbgK8IAgfjq1xHTLU8Hg3uK59a3ec2aQg7j1
+ S9Ngzs44XvxgSv9M0uaX0a0dOQObQvoFwEVGPyJAsKtNtTLZlsl44/YtMdlVcmhGUMHC
+ j5YSe0Dpf+Jd25x4gkrh6nuElo1ldSJbE57Gb3WWhLz8UtQ8vWzKMi/bnGIn6NW8Vvg6
+ KzOzQ1tThT+6vC+mop3oMJG9WfZIVkFR/ycqkVtNchWTQc6d4nMYtbQbnc2BhLQQe0Pm
+ crSCNy8cy/xvEYWW/jbNVpdfR6lTYas8ePKAq08WqK88bQCXB3asvPGSj/d5g8axZdn2 GQ== 
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3w9fkkt7ru-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 15 Feb 2024 10:35:54 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41F9e2Ap009904;
+	Thu, 15 Feb 2024 10:35:54 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3w6p633mrt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 15 Feb 2024 10:35:54 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 41FAZooO18154122
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 15 Feb 2024 10:35:52 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 49FEA20043;
+	Thu, 15 Feb 2024 10:35:50 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 31D8A2004B;
+	Thu, 15 Feb 2024 10:35:47 +0000 (GMT)
+Received: from [9.43.101.252] (unknown [9.43.101.252])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 15 Feb 2024 10:35:46 +0000 (GMT)
+Message-ID: <71d6f107-7fd5-45f9-b2cd-e2d1b018720a@linux.ibm.com>
+Date: Thu, 15 Feb 2024 16:05:45 +0530
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/2] powerpc/bpf: enable kfunc call
+Content-Language: en-US
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        "bpf@vger.kernel.org" <bpf@vger.kernel.org>
+References: <20240201171249.253097-1-hbathini@linux.ibm.com>
+ <20240201171249.253097-2-hbathini@linux.ibm.com>
+ <4dd99601-6990-444c-af23-95cb3f7b156b@csgroup.eu>
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <4dd99601-6990-444c-af23-95cb3f7b156b@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: TrzXTGFBWof91yLdJ646PcDA4ucgAwkv
+X-Proofpoint-ORIG-GUID: TrzXTGFBWof91yLdJ646PcDA4ucgAwkv
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-15_10,2024-02-14_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ impostorscore=0 phishscore=0 spamscore=0 bulkscore=0 clxscore=1015
+ malwarescore=0 adultscore=0 lowpriorityscore=0 mlxlogscore=999 mlxscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2402150083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,155 +95,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ryan Roberts <ryan.roberts@arm.com>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Martin KaFai Lau <martin.lau@linux.dev>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Optimize the contpte implementation to fix some of the
-exit/munmap/dontneed performance regression introduced by the initial
-contpte commit. Subsequent patches will solve it entirely.
 
-During exit(), munmap() or madvise(MADV_DONTNEED), mappings must be
-cleared. Previously this was done 1 PTE at a time. But the core-mm
-supports batched clear via the new [get_and_]clear_full_ptes() APIs. So
-let's implement those APIs and for fully covered contpte mappings, we no
-longer need to unfold the contpte. This significantly reduces unfolding
-operations, reducing the number of tlbis that must be issued.
 
-Tested-by: John Hubbard <jhubbard@nvidia.com>
-Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
----
- arch/arm64/include/asm/pgtable.h | 67 ++++++++++++++++++++++++++++++++
- arch/arm64/mm/contpte.c          | 17 ++++++++
- 2 files changed, 84 insertions(+)
+On 13/02/24 1:24 pm, Christophe Leroy wrote:
+> 
+> 
+> Le 01/02/2024 à 18:12, Hari Bathini a écrit :
+>> With module addresses supported, override bpf_jit_supports_kfunc_call()
+>> to enable kfunc support. Module address offsets can be more than 32-bit
+>> long, so override bpf_jit_supports_far_kfunc_call() to enable 64-bit
+>> pointers.
+> 
+> What's the impact on PPC32 ? There are no 64-bit pointers on PPC32.
 
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index 8643227c318b..a8f1a35e3086 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -965,6 +965,37 @@ static inline pte_t __ptep_get_and_clear(struct mm_struct *mm,
- 	return pte;
- }
- 
-+static inline void __clear_full_ptes(struct mm_struct *mm, unsigned long addr,
-+				pte_t *ptep, unsigned int nr, int full)
-+{
-+	for (;;) {
-+		__ptep_get_and_clear(mm, addr, ptep);
-+		if (--nr == 0)
-+			break;
-+		ptep++;
-+		addr += PAGE_SIZE;
-+	}
-+}
-+
-+static inline pte_t __get_and_clear_full_ptes(struct mm_struct *mm,
-+				unsigned long addr, pte_t *ptep,
-+				unsigned int nr, int full)
-+{
-+	pte_t pte, tmp_pte;
-+
-+	pte = __ptep_get_and_clear(mm, addr, ptep);
-+	while (--nr) {
-+		ptep++;
-+		addr += PAGE_SIZE;
-+		tmp_pte = __ptep_get_and_clear(mm, addr, ptep);
-+		if (pte_dirty(tmp_pte))
-+			pte = pte_mkdirty(pte);
-+		if (pte_young(tmp_pte))
-+			pte = pte_mkyoung(pte);
-+	}
-+	return pte;
-+}
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- #define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
- static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
-@@ -1160,6 +1191,11 @@ extern pte_t contpte_ptep_get(pte_t *ptep, pte_t orig_pte);
- extern pte_t contpte_ptep_get_lockless(pte_t *orig_ptep);
- extern void contpte_set_ptes(struct mm_struct *mm, unsigned long addr,
- 				pte_t *ptep, pte_t pte, unsigned int nr);
-+extern void contpte_clear_full_ptes(struct mm_struct *mm, unsigned long addr,
-+				pte_t *ptep, unsigned int nr, int full);
-+extern pte_t contpte_get_and_clear_full_ptes(struct mm_struct *mm,
-+				unsigned long addr, pte_t *ptep,
-+				unsigned int nr, int full);
- extern int contpte_ptep_test_and_clear_young(struct vm_area_struct *vma,
- 				unsigned long addr, pte_t *ptep);
- extern int contpte_ptep_clear_flush_young(struct vm_area_struct *vma,
-@@ -1253,6 +1289,35 @@ static inline void pte_clear(struct mm_struct *mm,
- 	__pte_clear(mm, addr, ptep);
- }
- 
-+#define clear_full_ptes clear_full_ptes
-+static inline void clear_full_ptes(struct mm_struct *mm, unsigned long addr,
-+				pte_t *ptep, unsigned int nr, int full)
-+{
-+	if (likely(nr == 1)) {
-+		contpte_try_unfold(mm, addr, ptep, __ptep_get(ptep));
-+		__clear_full_ptes(mm, addr, ptep, nr, full);
-+	} else {
-+		contpte_clear_full_ptes(mm, addr, ptep, nr, full);
-+	}
-+}
-+
-+#define get_and_clear_full_ptes get_and_clear_full_ptes
-+static inline pte_t get_and_clear_full_ptes(struct mm_struct *mm,
-+				unsigned long addr, pte_t *ptep,
-+				unsigned int nr, int full)
-+{
-+	pte_t pte;
-+
-+	if (likely(nr == 1)) {
-+		contpte_try_unfold(mm, addr, ptep, __ptep_get(ptep));
-+		pte = __get_and_clear_full_ptes(mm, addr, ptep, nr, full);
-+	} else {
-+		pte = contpte_get_and_clear_full_ptes(mm, addr, ptep, nr, full);
-+	}
-+
-+	return pte;
-+}
-+
- #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
- static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
- 				unsigned long addr, pte_t *ptep)
-@@ -1337,6 +1402,8 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
- #define set_pte					__set_pte
- #define set_ptes				__set_ptes
- #define pte_clear				__pte_clear
-+#define clear_full_ptes				__clear_full_ptes
-+#define get_and_clear_full_ptes			__get_and_clear_full_ptes
- #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
- #define ptep_get_and_clear			__ptep_get_and_clear
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
-diff --git a/arch/arm64/mm/contpte.c b/arch/arm64/mm/contpte.c
-index bedb58524535..50e0173dc5ee 100644
---- a/arch/arm64/mm/contpte.c
-+++ b/arch/arm64/mm/contpte.c
-@@ -212,6 +212,23 @@ void contpte_set_ptes(struct mm_struct *mm, unsigned long addr,
- }
- EXPORT_SYMBOL(contpte_set_ptes);
- 
-+void contpte_clear_full_ptes(struct mm_struct *mm, unsigned long addr,
-+				pte_t *ptep, unsigned int nr, int full)
-+{
-+	contpte_try_unfold_partial(mm, addr, ptep, nr);
-+	__clear_full_ptes(mm, addr, ptep, nr, full);
-+}
-+EXPORT_SYMBOL(contpte_clear_full_ptes);
-+
-+pte_t contpte_get_and_clear_full_ptes(struct mm_struct *mm,
-+				unsigned long addr, pte_t *ptep,
-+				unsigned int nr, int full)
-+{
-+	contpte_try_unfold_partial(mm, addr, ptep, nr);
-+	return __get_and_clear_full_ptes(mm, addr, ptep, nr, full);
-+}
-+EXPORT_SYMBOL(contpte_get_and_clear_full_ptes);
-+
- int contpte_ptep_test_and_clear_young(struct vm_area_struct *vma,
- 					unsigned long addr, pte_t *ptep)
- {
--- 
-2.25.1
+Yeah. Not required to return true for PPC32 case and probably not a
+good thing to claim support for far kfunc calls for PPC32. Changing to:
 
++bool bpf_jit_supports_far_kfunc_call(void)
++{
++	return IS_ENABLED(CONFIG_PPC64);
++}
+
+>>
+>> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+>> ---
+>>
+>> * No changes since v1.
+>>
+>>
+>>    arch/powerpc/net/bpf_jit_comp.c | 10 ++++++++++
+>>    1 file changed, 10 insertions(+)
+>>
+>> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+>> index 7b4103b4c929..f896a4213696 100644
+>> --- a/arch/powerpc/net/bpf_jit_comp.c
+>> +++ b/arch/powerpc/net/bpf_jit_comp.c
+>> @@ -359,3 +359,13 @@ void bpf_jit_free(struct bpf_prog *fp)
+>>    
+>>    	bpf_prog_unlock_free(fp);
+>>    }
+>> +
+>> +bool bpf_jit_supports_kfunc_call(void)
+>> +{
+>> +	return true;
+>> +}
+>> +
+>> +bool bpf_jit_supports_far_kfunc_call(void)
+>> +{
+>> +	return true;
+>> +}
