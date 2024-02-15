@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D89D1C4829E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC2BDC4829E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:37:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBLv3Kf7z3w7F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:36:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBML46RQz3bwd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:37:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBHD2wwVz3vZX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 21:33:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBHF0Y83z3vb4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 21:33:29 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 222B7153B;
-	Thu, 15 Feb 2024 02:33:28 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 871BF15BF;
+	Thu, 15 Feb 2024 02:33:55 -0800 (PST)
 Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 18FC43F7B4;
-	Thu, 15 Feb 2024 02:32:43 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7B9B93F7B4;
+	Thu, 15 Feb 2024 02:33:11 -0800 (PST)
 From: Ryan Roberts <ryan.roberts@arm.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
@@ -41,9 +41,9 @@ To: Catalin Marinas <catalin.marinas@arm.com>,
 	Borislav Petkov <bp@alien8.de>,
 	Dave Hansen <dave.hansen@linux.intel.com>,
 	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH v6 08/18] arm64/mm: Convert set_pte_at() to set_ptes(..., 1)
-Date: Thu, 15 Feb 2024 10:31:55 +0000
-Message-Id: <20240215103205.2607016-9-ryan.roberts@arm.com>
+Subject: [PATCH v6 16/18] arm64/mm: Implement pte_batch_hint()
+Date: Thu, 15 Feb 2024 10:32:03 +0000
+Message-Id: <20240215103205.2607016-17-ryan.roberts@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240215103205.2607016-1-ryan.roberts@arm.com>
 References: <20240215103205.2607016-1-ryan.roberts@arm.com>
@@ -64,126 +64,48 @@ Cc: Ryan Roberts <ryan.roberts@arm.com>, x86@kernel.org, linux-kernel@vger.kerne
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since set_ptes() was introduced, set_pte_at() has been implemented as a
-generic macro around set_ptes(..., 1). So this change should continue to
-generate the same code. However, making this change prepares us for the
-transparent contpte support. It means we can reroute set_ptes() to
-__set_ptes(). Since set_pte_at() is a generic macro, there will be no
-equivalent __set_pte_at() to reroute to.
+When core code iterates over a range of ptes and calls ptep_get() for
+each of them, if the range happens to cover contpte mappings, the number
+of pte reads becomes amplified by a factor of the number of PTEs in a
+contpte block. This is because for each call to ptep_get(), the
+implementation must read all of the ptes in the contpte block to which
+it belongs to gather the access and dirty bits.
 
-Note that a couple of calls to set_pte_at() remain in the arch code.
-This is intentional, since those call sites are acting on behalf of
-core-mm and should continue to call into the public set_ptes() rather
-than the arch-private __set_ptes().
+This causes a hotspot for fork(), as well as operations that unmap
+memory such as munmap(), exit and madvise(MADV_DONTNEED). Fortunately we
+can fix this by implementing pte_batch_hint() which allows their
+iterators to skip getting the contpte tail ptes when gathering the batch
+of ptes to operate on. This results in the number of PTE reads returning
+to 1 per pte.
 
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
 Tested-by: John Hubbard <jhubbard@nvidia.com>
 Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 ---
- arch/arm64/include/asm/pgtable.h |  2 +-
- arch/arm64/kernel/mte.c          |  2 +-
- arch/arm64/kvm/guest.c           |  2 +-
- arch/arm64/mm/fault.c            |  2 +-
- arch/arm64/mm/hugetlbpage.c      | 10 +++++-----
- 5 files changed, 9 insertions(+), 9 deletions(-)
+ arch/arm64/include/asm/pgtable.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index de034ca40bad..9a2df85eb493 100644
+index a8f1a35e3086..d759a20d2929 100644
 --- a/arch/arm64/include/asm/pgtable.h
 +++ b/arch/arm64/include/asm/pgtable.h
-@@ -1084,7 +1084,7 @@ static inline void arch_swap_restore(swp_entry_t entry, struct folio *folio)
- #endif /* CONFIG_ARM64_MTE */
+@@ -1213,6 +1213,15 @@ static inline void contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
+ 		__contpte_try_unfold(mm, addr, ptep, pte);
+ }
  
++#define pte_batch_hint pte_batch_hint
++static inline unsigned int pte_batch_hint(pte_t *ptep, pte_t pte)
++{
++	if (!pte_valid_cont(pte))
++		return 1;
++
++	return CONT_PTES - (((unsigned long)ptep >> 3) & (CONT_PTES - 1));
++}
++
  /*
-- * On AArch64, the cache coherency is handled via the set_pte_at() function.
-+ * On AArch64, the cache coherency is handled via the set_ptes() function.
-  */
- static inline void update_mmu_cache_range(struct vm_fault *vmf,
- 		struct vm_area_struct *vma, unsigned long addr, pte_t *ptep,
-diff --git a/arch/arm64/kernel/mte.c b/arch/arm64/kernel/mte.c
-index a41ef3213e1e..59bfe2e96f8f 100644
---- a/arch/arm64/kernel/mte.c
-+++ b/arch/arm64/kernel/mte.c
-@@ -67,7 +67,7 @@ int memcmp_pages(struct page *page1, struct page *page2)
- 	/*
- 	 * If the page content is identical but at least one of the pages is
- 	 * tagged, return non-zero to avoid KSM merging. If only one of the
--	 * pages is tagged, set_pte_at() may zero or change the tags of the
-+	 * pages is tagged, set_ptes() may zero or change the tags of the
- 	 * other page via mte_sync_tags().
- 	 */
- 	if (page_mte_tagged(page1) || page_mte_tagged(page2))
-diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
-index aaf1d4939739..6e0df623c8e9 100644
---- a/arch/arm64/kvm/guest.c
-+++ b/arch/arm64/kvm/guest.c
-@@ -1072,7 +1072,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
- 		} else {
- 			/*
- 			 * Only locking to serialise with a concurrent
--			 * set_pte_at() in the VMM but still overriding the
-+			 * set_ptes() in the VMM but still overriding the
- 			 * tags, hence ignoring the return value.
- 			 */
- 			try_page_mte_tagging(page);
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index a254761fa1bd..3235e23309ec 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -205,7 +205,7 @@ static void show_pte(unsigned long addr)
-  *
-  * It needs to cope with hardware update of the accessed/dirty state by other
-  * agents in the system and can safely skip the __sync_icache_dcache() call as,
-- * like set_pte_at(), the PTE is never changed from no-exec to exec here.
-+ * like set_ptes(), the PTE is never changed from no-exec to exec here.
-  *
-  * Returns whether or not the PTE actually changed.
-  */
-diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
-index 2892f925ed66..27f6160890d1 100644
---- a/arch/arm64/mm/hugetlbpage.c
-+++ b/arch/arm64/mm/hugetlbpage.c
-@@ -247,12 +247,12 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
- 
- 	if (!pte_present(pte)) {
- 		for (i = 0; i < ncontig; i++, ptep++, addr += pgsize)
--			set_pte_at(mm, addr, ptep, pte);
-+			set_ptes(mm, addr, ptep, pte, 1);
- 		return;
- 	}
- 
- 	if (!pte_cont(pte)) {
--		set_pte_at(mm, addr, ptep, pte);
-+		set_ptes(mm, addr, ptep, pte, 1);
- 		return;
- 	}
- 
-@@ -263,7 +263,7 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
- 	clear_flush(mm, addr, ptep, pgsize, ncontig);
- 
- 	for (i = 0; i < ncontig; i++, ptep++, addr += pgsize, pfn += dpfn)
--		set_pte_at(mm, addr, ptep, pfn_pte(pfn, hugeprot));
-+		set_ptes(mm, addr, ptep, pfn_pte(pfn, hugeprot), 1);
- }
- 
- pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
-@@ -471,7 +471,7 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 
- 	hugeprot = pte_pgprot(pte);
- 	for (i = 0; i < ncontig; i++, ptep++, addr += pgsize, pfn += dpfn)
--		set_pte_at(mm, addr, ptep, pfn_pte(pfn, hugeprot));
-+		set_ptes(mm, addr, ptep, pfn_pte(pfn, hugeprot), 1);
- 
- 	return 1;
- }
-@@ -500,7 +500,7 @@ void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 	pfn = pte_pfn(pte);
- 
- 	for (i = 0; i < ncontig; i++, ptep++, addr += pgsize, pfn += dpfn)
--		set_pte_at(mm, addr, ptep, pfn_pte(pfn, hugeprot));
-+		set_ptes(mm, addr, ptep, pfn_pte(pfn, hugeprot), 1);
- }
- 
- pte_t huge_ptep_clear_flush(struct vm_area_struct *vma,
+  * The below functions constitute the public API that arm64 presents to the
+  * core-mm to manipulate PTE entries within their page tables (or at least this
 -- 
 2.25.1
 
