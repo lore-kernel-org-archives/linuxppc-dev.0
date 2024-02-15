@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C69BC48BEB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:37:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51C3FC4829E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 10:38:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBND5R0lz3wKs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:37:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBNh07Z2z3wPx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 21:38:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBHF1m8tz3vb6
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbBHF2krpz3fQH
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 21:33:29 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EBA3215DB;
-	Thu, 15 Feb 2024 02:33:58 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 20A7A15A1;
+	Thu, 15 Feb 2024 02:33:52 -0800 (PST)
 Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.26])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E26CB3F7B4;
-	Thu, 15 Feb 2024 02:33:14 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 17B8B3F7B4;
+	Thu, 15 Feb 2024 02:33:07 -0800 (PST)
 From: Ryan Roberts <ryan.roberts@arm.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
@@ -41,9 +41,9 @@ To: Catalin Marinas <catalin.marinas@arm.com>,
 	Borislav Petkov <bp@alien8.de>,
 	Dave Hansen <dave.hansen@linux.intel.com>,
 	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH v6 17/18] arm64/mm: __always_inline to improve fork() perf
-Date: Thu, 15 Feb 2024 10:32:04 +0000
-Message-Id: <20240215103205.2607016-18-ryan.roberts@arm.com>
+Subject: [PATCH v6 15/18] mm: Add pte_batch_hint() to reduce scanning in folio_pte_batch()
+Date: Thu, 15 Feb 2024 10:32:02 +0000
+Message-Id: <20240215103205.2607016-16-ryan.roberts@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240215103205.2607016-1-ryan.roberts@arm.com>
 References: <20240215103205.2607016-1-ryan.roberts@arm.com>
@@ -64,53 +64,109 @@ Cc: Ryan Roberts <ryan.roberts@arm.com>, x86@kernel.org, linux-kernel@vger.kerne
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As set_ptes() and wrprotect_ptes() become a bit more complex, the
-compiler may choose not to inline them. But this is critical for fork()
-performance. So mark the functions, along with contpte_try_unfold()
-which is called by them, as __always_inline. This is worth ~1% on the
-fork() microbenchmark with order-0 folios (the common case).
+Some architectures (e.g. arm64) can tell from looking at a pte, if some
+follow-on ptes also map contiguous physical memory with the same pgprot.
+(for arm64, these are contpte mappings).
 
-Acked-by: Mark Rutland <mark.rutland@arm.com>
+Take advantage of this knowledge to optimize folio_pte_batch() so that
+it can skip these ptes when scanning to create a batch. By default, if
+an arch does not opt-in, folio_pte_batch() returns a compile-time 1, so
+the changes are optimized out and the behaviour is as before.
+
+arm64 will opt-in to providing this hint in the next patch, which will
+greatly reduce the cost of ptep_get() when scanning a range of contptes.
+
+Acked-by: David Hildenbrand <david@redhat.com>
+Tested-by: John Hubbard <jhubbard@nvidia.com>
 Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 ---
- arch/arm64/include/asm/pgtable.h | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ include/linux/pgtable.h | 21 +++++++++++++++++++++
+ mm/memory.c             | 19 ++++++++++++-------
+ 2 files changed, 33 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index d759a20d2929..8310875133ff 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -1206,8 +1206,8 @@ extern int contpte_ptep_set_access_flags(struct vm_area_struct *vma,
- 				unsigned long addr, pte_t *ptep,
- 				pte_t entry, int dirty);
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index bc005d84f764..a36cf4e124b0 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -212,6 +212,27 @@ static inline int pmd_dirty(pmd_t pmd)
+ #define arch_flush_lazy_mmu_mode()	do {} while (0)
+ #endif
  
--static inline void contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
--					pte_t *ptep, pte_t pte)
-+static __always_inline void contpte_try_unfold(struct mm_struct *mm,
-+				unsigned long addr, pte_t *ptep, pte_t pte)
++#ifndef pte_batch_hint
++/**
++ * pte_batch_hint - Number of pages that can be added to batch without scanning.
++ * @ptep: Page table pointer for the entry.
++ * @pte: Page table entry.
++ *
++ * Some architectures know that a set of contiguous ptes all map the same
++ * contiguous memory with the same permissions. In this case, it can provide a
++ * hint to aid pte batching without the core code needing to scan every pte.
++ *
++ * An architecture implementation may ignore the PTE accessed state. Further,
++ * the dirty state must apply atomically to all the PTEs described by the hint.
++ *
++ * May be overridden by the architecture, else pte_batch_hint is always 1.
++ */
++static inline unsigned int pte_batch_hint(pte_t *ptep, pte_t pte)
++{
++	return 1;
++}
++#endif
++
+ #ifndef pte_advance_pfn
+ static inline pte_t pte_advance_pfn(pte_t pte, unsigned long nr)
  {
- 	if (unlikely(pte_valid_cont(pte)))
- 		__contpte_try_unfold(mm, addr, ptep, pte);
-@@ -1278,7 +1278,7 @@ static inline void set_pte(pte_t *ptep, pte_t pte)
+diff --git a/mm/memory.c b/mm/memory.c
+index 3b8e56eb08a3..4dd8e35b593a 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -988,16 +988,20 @@ static inline int folio_pte_batch(struct folio *folio, unsigned long addr,
+ {
+ 	unsigned long folio_end_pfn = folio_pfn(folio) + folio_nr_pages(folio);
+ 	const pte_t *end_ptep = start_ptep + max_nr;
+-	pte_t expected_pte = __pte_batch_clear_ignored(pte_next_pfn(pte), flags);
+-	pte_t *ptep = start_ptep + 1;
++	pte_t expected_pte, *ptep;
+ 	bool writable;
++	int nr;
+ 
+ 	if (any_writable)
+ 		*any_writable = false;
+ 
+ 	VM_WARN_ON_FOLIO(!pte_present(pte), folio);
+ 
+-	while (ptep != end_ptep) {
++	nr = pte_batch_hint(start_ptep, pte);
++	expected_pte = __pte_batch_clear_ignored(pte_advance_pfn(pte, nr), flags);
++	ptep = start_ptep + nr;
++
++	while (ptep < end_ptep) {
+ 		pte = ptep_get(ptep);
+ 		if (any_writable)
+ 			writable = !!pte_write(pte);
+@@ -1011,17 +1015,18 @@ static inline int folio_pte_batch(struct folio *folio, unsigned long addr,
+ 		 * corner cases the next PFN might fall into a different
+ 		 * folio.
+ 		 */
+-		if (pte_pfn(pte) == folio_end_pfn)
++		if (pte_pfn(pte) >= folio_end_pfn)
+ 			break;
+ 
+ 		if (any_writable)
+ 			*any_writable |= writable;
+ 
+-		expected_pte = pte_next_pfn(expected_pte);
+-		ptep++;
++		nr = pte_batch_hint(ptep, pte);
++		expected_pte = pte_advance_pfn(expected_pte, nr);
++		ptep += nr;
+ 	}
+ 
+-	return ptep - start_ptep;
++	return min(ptep - start_ptep, max_nr);
  }
  
- #define set_ptes set_ptes
--static inline void set_ptes(struct mm_struct *mm, unsigned long addr,
-+static __always_inline void set_ptes(struct mm_struct *mm, unsigned long addr,
- 				pte_t *ptep, pte_t pte, unsigned int nr)
- {
- 	pte = pte_mknoncont(pte);
-@@ -1360,8 +1360,8 @@ static inline int ptep_clear_flush_young(struct vm_area_struct *vma,
- }
- 
- #define wrprotect_ptes wrprotect_ptes
--static inline void wrprotect_ptes(struct mm_struct *mm, unsigned long addr,
--				pte_t *ptep, unsigned int nr)
-+static __always_inline void wrprotect_ptes(struct mm_struct *mm,
-+				unsigned long addr, pte_t *ptep, unsigned int nr)
- {
- 	if (likely(nr == 1)) {
- 		/*
+ /*
 -- 
 2.25.1
 
