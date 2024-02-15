@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0FECC48BC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 13:04:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5A76C4829E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 13:04:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbFdY2qpxz3wJg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 00:04:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbFf04qCVz3wMN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 00:04:56 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbFYW51VRz3vZt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 00:01:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbFYX13yGz3vkr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 00:01:04 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TbFYW3FMLz4wcM;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TbFYW71SYz4wcl;
 	Fri, 16 Feb 2024 00:01:03 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <bbd84ad52bf377e8d3b5865a906f2dc5d99964ba.1707832677.git.christophe.leroy@csgroup.eu>
-References: <bbd84ad52bf377e8d3b5865a906f2dc5d99964ba.1707832677.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Force inlining of arch_vmap_p{u/m}d_supported()
-Message-Id: <170800202445.601034.6210064022309317315.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20231229120107.2281153-1-mpe@ellerman.id.au>
+References: <20231229120107.2281153-1-mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 1/5] powerpc/smp: Adjust nr_cpu_ids to cover all threads of a core
+Message-Id: <170800202447.601034.7290612623478478380.b4-ty@ellerman.id.au>
 Date: Fri, 16 Feb 2024 00:00:24 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
+Cc: Pingfan Liu <kernelfans@gmail.com>, Pingfan Liu <piliu@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 13 Feb 2024 14:58:37 +0100, Christophe Leroy wrote:
-> arch_vmap_pud_supported() and arch_vmap_pmd_supported() are
-> expected to constant-fold to false when RADIX is not enabled.
+On Fri, 29 Dec 2023 23:01:03 +1100, Michael Ellerman wrote:
+> If nr_cpu_ids is too low to include at least all the threads of a single
+> core adjust nr_cpu_ids upwards. This avoids triggering odd bugs in code
+> that assumes all threads of a core are available.
 > 
-> Force inlining in order to avoid following failure which
-> leads to unexpected call of non-existing pud_set_huge() and
-> pmd_set_huge() on powerpc 8xx.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Force inlining of arch_vmap_p{u/m}d_supported()
-      https://git.kernel.org/powerpc/c/c5aebb53b32460bc52680dd4e2a2f6b84d5ea521
+[1/5] powerpc/smp: Adjust nr_cpu_ids to cover all threads of a core
+      https://git.kernel.org/powerpc/c/5580e96dad5a439d561d9648ffcbccb739c2a120
+[2/5] powerpc/smp: Increase nr_cpu_ids to include the boot CPU
+      https://git.kernel.org/powerpc/c/777f81f0a9c780a6443bcf2c7785f0cc2e87c1ef
+[3/5] powerpc/smp: Lookup avail once per device tree node
+      https://git.kernel.org/powerpc/c/dca79603fbc592ec7ea8bd7ba274052d3984e882
+[4/5] powerpc/smp: Factor out assign_threads()
+      https://git.kernel.org/powerpc/c/9832de654499f0bf797a3719c4d4c5bd401f18f5
+[5/5] powerpc/smp: Remap boot CPU onto core 0 if >= nr_cpu_ids
+      https://git.kernel.org/powerpc/c/0875f1ceba974042069f04946aa8f1d4d1e688da
 
 cheers
