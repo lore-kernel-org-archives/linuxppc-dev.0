@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0599C48BC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 13:00:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4564C48BC4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 13:01:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbFY04NC5z3vfw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 00:00:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbFYS2FZ0z3vYn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 00:01:00 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbFX41YLCz3cGc
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbFX43kHfz3cGc
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 23:59:48 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TbFX33JVZz4wcr;
-	Thu, 15 Feb 2024 23:59:47 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TbFX42pwHz4wcv;
+	Thu, 15 Feb 2024 23:59:48 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-In-Reply-To: <20240124103838.43675-1-matthias.schiffer@ew.tq-group.com>
-References: <20240124103838.43675-1-matthias.schiffer@ew.tq-group.com>
-Subject: Re: [PATCH v2] powerpc/6xx: set High BAT Enable flag on G2_LE cores
-Message-Id: <170800185782.599237.17634953739221214432.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20240212064244.3924505-1-mpe@ellerman.id.au>
+References: <20240212064244.3924505-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/kasan: Limit KASAN thread size increase to 32KB
+Message-Id: <170800185785.599237.13870987927083479892.b4-ty@ellerman.id.au>
 Date: Thu, 15 Feb 2024 23:57:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux@ew.tq-group.com
+Cc: spoorthy@linux.ibm.com, bgray@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 24 Jan 2024 11:38:38 +0100, Matthias Schiffer wrote:
-> MMU_FTR_USE_HIGH_BATS is set for G2_LE cores and derivatives like e300cX,
-> but the high BATs need to be enabled in HID2 to work. Add register
-> definitions and add the needed setup to __setup_cpu_603.
+On Mon, 12 Feb 2024 17:42:44 +1100, Michael Ellerman wrote:
+> KASAN is seen to increase stack usage, to the point that it was reported
+> to lead to stack overflow on some 32-bit machines (see link).
 > 
-> This fixes boot on CPUs like the MPC5200B with STRICT_KERNEL_RWX enabled
-> on systems where the flag has not been set by the bootloader already.
+> To avoid overflows the stack size was doubled for KASAN builds in
+> commit 3e8635fb2e07 ("powerpc/kasan: Force thread size increase with
+> KASAN").
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/6xx: set High BAT Enable flag on G2_LE cores
-      https://git.kernel.org/powerpc/c/a038a3ff8c6582404834852c043dadc73a5b68b4
+[1/1] powerpc/kasan: Limit KASAN thread size increase to 32KB
+      https://git.kernel.org/powerpc/c/f1acb109505d983779bbb7e20a1ee6244d2b5736
 
 cheers
