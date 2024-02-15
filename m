@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 232F0C48BC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 18:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 821A3C4829E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 18:35:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbNyK5vC6z3vc1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 05:34:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbNyq1c5tz3vg7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 05:34:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbNxt351hz3dVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 05:34:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbNyM69Qhz2xTm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 05:34:35 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 5567860FC9;
-	Thu, 15 Feb 2024 18:34:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38715C433C7;
-	Thu, 15 Feb 2024 18:34:03 +0000 (UTC)
-Date: Thu, 15 Feb 2024 18:34:00 +0000
+	by dfw.source.kernel.org (Postfix) with ESMTP id 1B22761DAA;
+	Thu, 15 Feb 2024 18:34:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28676C433C7;
+	Thu, 15 Feb 2024 18:34:27 +0000 (UTC)
+Date: Thu, 15 Feb 2024 18:34:25 +0000
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH v6 07/18] arm64/mm: Convert READ_ONCE(*ptep) to
- ptep_get(ptep)
-Message-ID: <Zc5ZGNaYp5dFND1_@arm.com>
+Subject: Re: [PATCH v6 08/18] arm64/mm: Convert set_pte_at() to set_ptes(...,
+ 1)
+Message-ID: <Zc5ZMbMosSvI0rRm@arm.com>
 References: <20240215103205.2607016-1-ryan.roberts@arm.com>
- <20240215103205.2607016-8-ryan.roberts@arm.com>
+ <20240215103205.2607016-9-ryan.roberts@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240215103205.2607016-8-ryan.roberts@arm.com>
+In-Reply-To: <20240215103205.2607016-9-ryan.roberts@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,15 +48,18 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Kefeng Wang <wangkefeng.wang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 15, 2024 at 10:31:54AM +0000, Ryan Roberts wrote:
-> There are a number of places in the arch code that read a pte by using
-> the READ_ONCE() macro. Refactor these call sites to instead use the
-> ptep_get() helper, which itself is a READ_ONCE(). Generated code should
-> be the same.
+On Thu, Feb 15, 2024 at 10:31:55AM +0000, Ryan Roberts wrote:
+> Since set_ptes() was introduced, set_pte_at() has been implemented as a
+> generic macro around set_ptes(..., 1). So this change should continue to
+> generate the same code. However, making this change prepares us for the
+> transparent contpte support. It means we can reroute set_ptes() to
+> __set_ptes(). Since set_pte_at() is a generic macro, there will be no
+> equivalent __set_pte_at() to reroute to.
 > 
-> This will benefit us when we shortly introduce the transparent contpte
-> support. In this case, ptep_get() will become more complex so we now
-> have all the code abstracted through it.
+> Note that a couple of calls to set_pte_at() remain in the arch code.
+> This is intentional, since those call sites are acting on behalf of
+> core-mm and should continue to call into the public set_ptes() rather
+> than the arch-private __set_ptes().
 > 
 > Tested-by: John Hubbard <jhubbard@nvidia.com>
 > Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
