@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95F48C4829E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 13:01:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C098EC4829E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Feb 2024 13:01:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbFYv2CLVz3vYy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 00:01:23 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TbFZL2mSNz3vcB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 00:01:46 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbFX46Yfgz3cGc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 23:59:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbFX50s8Wz3cGc
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2024 23:59:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TbFX04KqWz4wcl;
-	Thu, 15 Feb 2024 23:59:44 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TbFX46K0gz4wxv;
+	Thu, 15 Feb 2024 23:59:48 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Arnd Bergmann <arnd@kernel.org>
-In-Reply-To: <20240123125148.2004648-1-arnd@kernel.org>
-References: <20240123125148.2004648-1-arnd@kernel.org>
-Subject: Re: [PATCH 1/2] powerpc: udbg_memcons: mark functions static
-Message-Id: <170800185782.599237.10144713450060322836.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nathan Lynch <nathanl@linux.ibm.com>
+In-Reply-To: <20240202-papr-sysparm-ioblock-data-use-u8-v1-1-f5c6c89f65ec@linux.ibm.com>
+References: <20240202-papr-sysparm-ioblock-data-use-u8-v1-1-f5c6c89f65ec@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries/papr-sysparm: use u8 arrays for payloads
+Message-Id: <170800185779.599237.9578956703101401528.b4-ty@ellerman.id.au>
 Date: Thu, 15 Feb 2024 23:57:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,25 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 23 Jan 2024 13:51:41 +0100, Arnd Bergmann wrote:
-> ppc64_book3e_allmodconfig has one more driver that triggeres a
-> few missing-prototypes warnings:
-> 
-> arch/powerpc/sysdev/udbg_memcons.c:44:6: error: no previous prototype for 'memcons_putc' [-Werror=missing-prototypes]
-> arch/powerpc/sysdev/udbg_memcons.c:57:5: error: no previous prototype for 'memcons_getc_poll' [-Werror=missing-prototypes]
-> arch/powerpc/sysdev/udbg_memcons.c:80:5: error: no previous prototype for 'memcons_getc' [-Werror=missing-prototypes]
+On Fri, 02 Feb 2024 18:26:46 -0600, Nathan Lynch wrote:
+> Some PAPR system parameter values are formatted by firmware as
+> nul-terminated strings (e.g. LPAR name, shared processor attributes).
+> But the values returned for other parameters, such as processor module
+> info and TLB block invalidate characteristics, are binary data with
+> parameter-specific layouts. So char[] isn't the appropriate type for
+> the general case. Use u8/__u8.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/2] powerpc: udbg_memcons: mark functions static
-      https://git.kernel.org/powerpc/c/5c84bc8b617bf90e722cc57d447abd9a468d3a52
-[2/2] powerpc: 85xx: mark local functions static
-      https://git.kernel.org/powerpc/c/1c57b9f63ab34f01b8c73731cc0efacb5a9a2f16
+[1/1] powerpc/pseries/papr-sysparm: use u8 arrays for payloads
+      https://git.kernel.org/powerpc/c/8ded03ae48b3657e0fbca99d8a9d8fa1bfb8c9be
 
 cheers
