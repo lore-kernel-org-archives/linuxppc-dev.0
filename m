@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B354C48BEB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 12:34:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0C0AC48BEB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 12:34:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbrwV5jK4z3vf7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 23:34:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tbrwx3Y18z3vdP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 23:34:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tbrw34gK1z3btX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 23:34:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbrwS4Bwjz3vfD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 23:34:32 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 8DD0C614FA;
-	Fri, 16 Feb 2024 12:34:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F9B9C433C7;
-	Fri, 16 Feb 2024 12:34:04 +0000 (UTC)
-Date: Fri, 16 Feb 2024 12:34:02 +0000
+	by sin.source.kernel.org (Postfix) with ESMTP id D755ECE2920;
+	Fri, 16 Feb 2024 12:34:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9663DC433C7;
+	Fri, 16 Feb 2024 12:34:25 +0000 (UTC)
+Date: Fri, 16 Feb 2024 12:34:23 +0000
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH v6 16/18] arm64/mm: Implement pte_batch_hint()
-Message-ID: <Zc9WOmh-uYRajvGp@arm.com>
+Subject: Re: [PATCH v6 17/18] arm64/mm: __always_inline to improve fork() perf
+Message-ID: <Zc9WT8Wit4HkIsD2@arm.com>
 References: <20240215103205.2607016-1-ryan.roberts@arm.com>
- <20240215103205.2607016-17-ryan.roberts@arm.com>
+ <20240215103205.2607016-18-ryan.roberts@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240215103205.2607016-17-ryan.roberts@arm.com>
+In-Reply-To: <20240215103205.2607016-18-ryan.roberts@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,24 +47,14 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Kefeng Wang <wangkefeng.wang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 15, 2024 at 10:32:03AM +0000, Ryan Roberts wrote:
-> When core code iterates over a range of ptes and calls ptep_get() for
-> each of them, if the range happens to cover contpte mappings, the number
-> of pte reads becomes amplified by a factor of the number of PTEs in a
-> contpte block. This is because for each call to ptep_get(), the
-> implementation must read all of the ptes in the contpte block to which
-> it belongs to gather the access and dirty bits.
-> 
-> This causes a hotspot for fork(), as well as operations that unmap
-> memory such as munmap(), exit and madvise(MADV_DONTNEED). Fortunately we
-> can fix this by implementing pte_batch_hint() which allows their
-> iterators to skip getting the contpte tail ptes when gathering the batch
-> of ptes to operate on. This results in the number of PTE reads returning
-> to 1 per pte.
+On Thu, Feb 15, 2024 at 10:32:04AM +0000, Ryan Roberts wrote:
+> As set_ptes() and wrprotect_ptes() become a bit more complex, the
+> compiler may choose not to inline them. But this is critical for fork()
+> performance. So mark the functions, along with contpte_try_unfold()
+> which is called by them, as __always_inline. This is worth ~1% on the
+> fork() microbenchmark with order-0 folios (the common case).
 > 
 > Acked-by: Mark Rutland <mark.rutland@arm.com>
-> Reviewed-by: David Hildenbrand <david@redhat.com>
-> Tested-by: John Hubbard <jhubbard@nvidia.com>
 > Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 
 Acked-by: Catalin Marinas <catalin.marinas@arm.com>
