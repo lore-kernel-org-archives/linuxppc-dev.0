@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9204CC48BEB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 12:30:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 800ACC48BEB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 12:31:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TbrrF1r22z3vdl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 23:30:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tbrrp0cCfz3vjG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Feb 2024 23:31:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tbrqj4Rz8z3dXP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 23:30:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TbrrL5vRTz3by2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2024 23:30:58 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 234B6CE293E;
-	Fri, 16 Feb 2024 12:30:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA0D8C433C7;
-	Fri, 16 Feb 2024 12:30:14 +0000 (UTC)
-Date: Fri, 16 Feb 2024 12:30:12 +0000
+	by dfw.source.kernel.org (Postfix) with ESMTP id E44BB61F7A;
+	Fri, 16 Feb 2024 12:30:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 102C3C43394;
+	Fri, 16 Feb 2024 12:30:50 +0000 (UTC)
+Date: Fri, 16 Feb 2024 12:30:48 +0000
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH v6 13/18] arm64/mm: Implement new wrprotect_ptes() batch
- API
-Message-ID: <Zc9VVC4cSFcYzgCZ@arm.com>
+Subject: Re: [PATCH v6 14/18] arm64/mm: Implement new
+ [get_and_]clear_full_ptes() batch APIs
+Message-ID: <Zc9VeMJpdpJG9LsH@arm.com>
 References: <20240215103205.2607016-1-ryan.roberts@arm.com>
- <20240215103205.2607016-14-ryan.roberts@arm.com>
+ <20240215103205.2607016-15-ryan.roberts@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240215103205.2607016-14-ryan.roberts@arm.com>
+In-Reply-To: <20240215103205.2607016-15-ryan.roberts@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,26 +48,17 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Kefeng Wang <wangkefeng.wang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 15, 2024 at 10:32:00AM +0000, Ryan Roberts wrote:
-> Optimize the contpte implementation to fix some of the fork performance
-> regression introduced by the initial contpte commit. Subsequent patches
-> will solve it entirely.
+On Thu, Feb 15, 2024 at 10:32:01AM +0000, Ryan Roberts wrote:
+> Optimize the contpte implementation to fix some of the
+> exit/munmap/dontneed performance regression introduced by the initial
+> contpte commit. Subsequent patches will solve it entirely.
 > 
-> During fork(), any private memory in the parent must be write-protected.
-> Previously this was done 1 PTE at a time. But the core-mm supports
-> batched wrprotect via the new wrprotect_ptes() API. So let's implement
-> that API and for fully covered contpte mappings, we no longer need to
-> unfold the contpte. This has 2 benefits:
-> 
->   - reduced unfolding, reduces the number of tlbis that must be issued.
->   - The memory remains contpte-mapped ("folded") in the parent, so it
->     continues to benefit from the more efficient use of the TLB after
->     the fork.
-> 
-> The optimization to wrprotect a whole contpte block without unfolding is
-> possible thanks to the tightening of the Arm ARM in respect to the
-> definition and behaviour when 'Misprogramming the Contiguous bit'. See
-> section D21194 at https://developer.arm.com/documentation/102105/ja-07/
+> During exit(), munmap() or madvise(MADV_DONTNEED), mappings must be
+> cleared. Previously this was done 1 PTE at a time. But the core-mm
+> supports batched clear via the new [get_and_]clear_full_ptes() APIs. So
+> let's implement those APIs and for fully covered contpte mappings, we no
+> longer need to unfold the contpte. This significantly reduces unfolding
+> operations, reducing the number of tlbis that must be issued.
 > 
 > Tested-by: John Hubbard <jhubbard@nvidia.com>
 > Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
