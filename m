@@ -4,111 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32B76C48BC3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Feb 2024 15:31:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46881C48BF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Feb 2024 16:30:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=IiWNR8If;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=LcFu7nFB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TdmjK5s6Xz3d2S
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 02:31:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tdp1352KFz3d40
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 03:30:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=IiWNR8If;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=LcFu7nFB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:2613::600; helo=eur05-vi1-obe.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on20600.outbound.protection.outlook.com [IPv6:2a01:111:f403:2613::600])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.130; helo=out30-130.freemail.mail.aliyun.com; envelope-from=yaoma@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TdmhR6H5qz3bnk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2024 02:30:46 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=W3VHrnrosY+zsBjy7pS086TCVJt+9HvQl/+fjq/zHnR9YGIAMh09h1OSrmkOK3+90zCHCiS9jViIfwHsHp6CfeUvGZjdedk5iJIJ6Pft+LmfvUDYICSUV+Gfvm7lyyl9w9oCVCdZBZlxp2/BUBSZpjpnPEEDoTnzF8N4t+B7OM1j7iNYqT0pUAVoXiKT4UItxVo6b283A2XmCPO+fIHHPqZQwoei4f/0A4nUU4sC8t6z/PpxUPRm3YybSnYavHbnH9wQ70naShoMUEAtOMs2cKaNeomTPqkBNF4HtlI/0XPf8osF4IY6ToL3CA86NFmiC5j9rSX2WaKRa4ODVFJKUQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=rjiuW4XmonIuf7RSLbeYal1Po+oHe5ThVg8lx8ZsutU=;
- b=ma8LYINxZcWb5AWlT79QZIgk2dVB8FALpK7F1BnmbAIHpaDKdPAKVQM0Z3UUYux7H+5bXe4xZuS7zMX1CIZdy/qHrzEO+QWHto6m7pk69L5Tc7FoDwMvfF16exSuK0wX9Yvaop6hkc9uEDS7VVB8YqbsDXI9DODwiByVSLltLhI1Aw5VNOT09kIIoUp2ShH5O7nFAFcHV75dx5kCHgnXzaqwrk/1Supj22H9R9+VqtC+rZwKiNMtyePNFI/ok+HAFfDZu1JGGElim4kDP4k6F76WRohukK6ZznKtn/T5yuWJb0yhUdEmPJ/dR3vcvtwhrB644QmyDP+AkYJR/LD7nQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=rjiuW4XmonIuf7RSLbeYal1Po+oHe5ThVg8lx8ZsutU=;
- b=IiWNR8Ifr83H36ltVTKz48wIuIlTiCgTPO5ipz+pRd+G7yswNUCTfd4NKfC4TzOA2R31MM+P5FSYmxdzZxs0b/7R6JsyaSTvP9ZvEawB1Fy0RJh9Hp5FJu7rc6G8qRfP0U8cR+XBQbAXTdLs1BGKCPqAD7SYeYB3NLD3yEaqanI=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from VE1PR04MB7374.eurprd04.prod.outlook.com (2603:10a6:800:1ac::11)
- by AM8PR04MB7874.eurprd04.prod.outlook.com (2603:10a6:20b:24d::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.26; Mon, 19 Feb
- 2024 15:30:20 +0000
-Received: from VE1PR04MB7374.eurprd04.prod.outlook.com
- ([fe80::62cb:e6bf:a1ad:ba34]) by VE1PR04MB7374.eurprd04.prod.outlook.com
- ([fe80::62cb:e6bf:a1ad:ba34%7]) with mapi id 15.20.7292.029; Mon, 19 Feb 2024
- 15:30:20 +0000
-Date: Mon, 19 Feb 2024 17:30:16 +0200
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-To: Sean Anderson <sean.anderson@seco.com>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RESEND PATCH net v4 1/2] soc: fsl: qbman: Always disable
- interrupts when taking cgr_lock
-Message-ID: <20240219153016.ntltc76bphwrv6hn@skbuf>
-References: <20240215162327.3663092-1-sean.anderson@seco.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240215162327.3663092-1-sean.anderson@seco.com>
-X-ClientProxiedBy: AS4PR09CA0030.eurprd09.prod.outlook.com
- (2603:10a6:20b:5d4::20) To VE1PR04MB7374.eurprd04.prod.outlook.com
- (2603:10a6:800:1ac::11)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tdnmq1Px1z2xTm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2024 03:19:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1708359572; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=Rp0rNlHKY/gI4G+2NB8qz4OKmVp7L7LVpxE15Ms/r98=;
+	b=LcFu7nFBZCmx9f0bg5ZhmQXi5bd4ueTI1F3RxZ3nZnEznH4ue0t1e+/SqGi9UOBWLwE83UDMdjrKPY5byzNux9FZGEDL7ms2EG39h92kau40W+c+rp2HxPwPOMeYvk1Qu8S4t5jF/67ZU8d9K20pX5W7X2BPLTAi0H1d0Bd8IKY=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R181e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046056;MF=yaoma@linux.alibaba.com;NM=1;PH=DS;RN=16;SR=0;TI=SMTPD_---0W0tz6nw_1708359568;
+Received: from localhost.localdomain(mailfrom:yaoma@linux.alibaba.com fp:SMTPD_---0W0tz6nw_1708359568)
+          by smtp.aliyun-inc.com;
+          Tue, 20 Feb 2024 00:19:31 +0800
+From: Bitao Hu <yaoma@linux.alibaba.com>
+To: tglx@linutronix.de,
+	dianders@chromium.org,
+	pmladek@suse.com,
+	akpm@linux-foundation.org,
+	kernelfans@gmail.com,
+	liusong@linux.alibaba.com,
+	deller@gmx.de,
+	npiggin@gmail.com,
+	jan.kiszka@siemens.com,
+	kbingham@kernel.org
+Subject: [PATCHv8 2/2] watchdog/softlockup: report the most frequent interrupts
+Date: Tue, 20 Feb 2024 00:19:20 +0800
+Message-Id: <20240219161920.15752-3-yaoma@linux.alibaba.com>
+X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
+In-Reply-To: <20240219161920.15752-1-yaoma@linux.alibaba.com>
+References: <20240219161920.15752-1-yaoma@linux.alibaba.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: VE1PR04MB7374:EE_|AM8PR04MB7874:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5e440ee9-e411-4150-7864-08dc315faed3
-X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:  WZCEVoLVgcnwbsNvBL0i3DSmXwEVAzYfufxZ4plys1QwblD1BoyntYxS7EbcTk1sxMb7vGNtZJyMKWgPXnMQNSRSm/5u/0FR1nTKNj7FtQtVE0k0kWENYSiw0p9RcNN8dfMBueYLLyBB9pN6O5IUjxF9ptSMbGGTv2uFF6mfRfVrhi5bQNqCmmS9KNANcO6qg4YcTkrAltvL/lAasdleAAoSKzrdjVq87p2aeEJcjI9jG0NohPvPEkwyUI9wq3jTJwpF5RSnSlQTiHJVOtnca9cJCrh7rcWC4jlU7EZOr2fDraW2lXYVQJrL1IrYuO3hvHv9mf5bsS7v2FUEpMi2UtceiAETzKoOxY/x+sn/HhRBsihmcWrf4Ps2a7o44cDkuZOIjjr5cjhCyx/kqCtOHlvHCkAlfeB/0OjBMqSg4KMAlT/NH1ZMoxyCYmPWuf0v50hWSyqSI7PQ8CKNTSiYFQuSXD8ygfq9U7i8mLRlffpXqXb5FUnLS2vUbxsZhiO+A8bfCPokXQiTEk5Z0X3J0Q==
-X-Forefront-Antispam-Report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7374.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:  =?us-ascii?Q?duyNXTje1KBLOFK50JHbm8zCI7oisEVm3qTFv6BVVzyrzX2StyO3pKlzI4UH?=
- =?us-ascii?Q?mD5KpXi3dE5DXZvXUZ9ayiFM7hIjWxtzLV7k/OcoogmthhDQIKlOW06H0lYW?=
- =?us-ascii?Q?VOn2H9H+HufGN3cy9j/xiOmIPO1gbsXb6PEYYgeP67BC07zG4YjIN/haUNr7?=
- =?us-ascii?Q?YpUMAN34k9mzCrS+oBVFVAbd/Mjb+VxLhDl0eUXyTF1RpscCaJe0zc+d263U?=
- =?us-ascii?Q?QDfFEBxVcvy8OWaw9SBqEbbI4B/sYxqJekKBXmf3HVFVktAj27es//rwu94T?=
- =?us-ascii?Q?FBmFjosYeswo/xVq3KqpmJYTbkX7fces2hhfzvjbdmP30T5WxV46YMBFUEsP?=
- =?us-ascii?Q?BEPO0oIF4mgMqG2sPWW2iNgZQnWxurAY2x32ABx/N2+7rSUyd0LyUE1hzg3m?=
- =?us-ascii?Q?BAxMOyzudZzK5XjUNRju+pAxPDujn2hhKo0+YoUkpLrCgBy1EuNYa1w9XorF?=
- =?us-ascii?Q?QQYFufe94Vl4CoZW9miaju508pZiuYekY2D7fPix49JGP7HYx+bXPk+DMkAd?=
- =?us-ascii?Q?sWVe8gei1B8zKMt7OHDFbIiUfL9i7A2OEox9G2TjPbE9sQJSnoD7DxBwPMjE?=
- =?us-ascii?Q?p7RmbOuRRA5NMGE6AokV8KDDKGqJH0lLuemcq0sFu2vRJc3m1LE7elaWp15t?=
- =?us-ascii?Q?JXEkQwoSPjTFlyzro8gCU3HZa8a7eGjpf9Gtbvf1kAMzPI0vnhUEGbvqujqk?=
- =?us-ascii?Q?pgtOxH6L0O7YSNwB8Moypa3bqoChUfu3yeFYx0/hw8kE/1TfWrdKouXbQ1nU?=
- =?us-ascii?Q?U/viDHUn3SCbhEce0VLH5wAYgz0HQdh2e/v/0ui3BTRabaLWW9b1jzfKkthc?=
- =?us-ascii?Q?Zh7L8LQxcDWmPHBhU5TXgTh85PiFkoul1H+8hpdL/2aMWihOH/GhAEjSczkU?=
- =?us-ascii?Q?BNA4FqQOyV1GkwZWqPh4J6jJWJhu5jgleH0yuG0nCM0B314h63rbpoc6PQum?=
- =?us-ascii?Q?mToucdRe+efAlxyoR0cxPU8GDI5BjpL9Pc54T8AB/Y+yicV2M4Ggp0JEIHMk?=
- =?us-ascii?Q?nYUe4jmofehd+jikxvgv7s4FVMneDFPZs1P+etCy0ep+aVTkwPolZ1a9jFGc?=
- =?us-ascii?Q?B+7DP7MJiUVqxG93CnD/rnnATiIbn3r+Qxfh0rnUX84IdvsT1aZ+9PAz3Goe?=
- =?us-ascii?Q?Ps42myc29IfVfKY6+K2mIKfAgc5/bEEg5v2uFIjot2fQ0Bd5/V43oUaZfAX8?=
- =?us-ascii?Q?tWmnBVbHMSSakwPqfOyMdcsRppOAn9CIgS+TtCQw/wf3CbbMfAxv9mUvuYrJ?=
- =?us-ascii?Q?LF1mbfY9yITLDADZPHtjYUghs+JKPNs9iKRGNPJOUR1vgl4I2gb9/qxz9D+s?=
- =?us-ascii?Q?ZxoZKMCnfAq0JArAF8n3k67P0R+PU+sNGRJv5QacYwTAQT/1G2eEZxUuu1ns?=
- =?us-ascii?Q?LGIDHFUutsnL9oWfzfF7n57UCgycaR6uDfiIHMUV32nmgKBAOdkl9U+gmLou?=
- =?us-ascii?Q?S36h/CWZu1FoePSJWE5S0AgwlY/Q0a0dnNIFGMRkym10blgJOygjE7vnQbAa?=
- =?us-ascii?Q?4Cw48nwSlSPVXO8aVwGyMj3I+UG1VpgO9ayXetiYFh7u3PQg+8CbqcyGFd6n?=
- =?us-ascii?Q?gDFpCouDhdyJnu1bOoNQaviL/ekW7Ej6QrVbsTBDcFcAnxWQ+CDxE4lTbh4J?=
- =?us-ascii?Q?Z+90m0UWccDo9D8gcZcj6Yc=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5e440ee9-e411-4150-7864-08dc315faed3
-X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7374.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Feb 2024 15:30:20.6660
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 2E9sK+4hGoKnVJNT8RdjJUcFyaKAnjjxczrnnosBpcb58J8ghtIjDdNzIXJHdCknDhk3enOkn4l28O32iL8xQg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7874
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 20 Feb 2024 03:29:33 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,50 +62,449 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, netdev@vger.kernel.org, Roy Pledge <roy.pledge@nxp.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Scott Wood <oss@buserror.net>, Eric Dumazet <edumazet@google.com>, Camelia Groza <camelia.groza@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+Cc: linux-parisc@vger.kernel.org, kvm@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, Bitao Hu <yaoma@linux.alibaba.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sean,
+When the watchdog determines that the current soft lockup is due
+to an interrupt storm based on CPU utilization, reporting the
+most frequent interrupts could be good enough for further
+troubleshooting.
 
-On Thu, Feb 15, 2024 at 11:23:26AM -0500, Sean Anderson wrote:
-> smp_call_function_single disables IRQs when executing the callback. To
-> prevent deadlocks, we must disable IRQs when taking cgr_lock elsewhere.
-> This is already done by qman_update_cgr and qman_delete_cgr; fix the
-> other lockers.
-> 
-> Fixes: 96f413f47677 ("soc/fsl/qbman: fix issue in qman_delete_cgr_safe()")
-> CC: stable@vger.kernel.org
-> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
-> Reviewed-by: Camelia Groza <camelia.groza@nxp.com>
-> Tested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
-> ---
-> I got no response the first time I sent this, so I am resending to net.
-> This issue was introduced in a series which went through net, so I hope
-> it makes sense to take it via net.
-> 
-> [1] https://lore.kernel.org/linux-arm-kernel/20240108161904.2865093-1-sean.anderson@seco.com/
-> 
-> (no changes since v3)
-> 
-> Changes in v3:
-> - Change blamed commit to something more appropriate
-> 
-> Changes in v2:
-> - Fix one additional call to spin_unlock
+Below is an example of interrupt storm. The call tree does not
+provide useful information, but we can analyze which interrupt
+caused the soft lockup by comparing the counts of interrupts.
 
-Leo Li (Li Yang) is no longer with NXP. Until we figure out within NXP
-how to continue with the maintainership of drivers/soc/fsl/, yes, please
-continue to submit this series to 'net'. I would also like to point
-out to Arnd that this is the case.
+[ 2987.488075] watchdog: BUG: soft lockup - CPU#9 stuck for 23s! [kworker/9:1:214]
+[ 2987.488607] CPU#9 Utilization every 4s during lockup:
+[ 2987.488941]  #1:   0% system,          0% softirq,   100% hardirq,     0% idle
+[ 2987.489357]  #2:   0% system,          0% softirq,   100% hardirq,     0% idle
+[ 2987.489771]  #3:   0% system,          0% softirq,   100% hardirq,     0% idle
+[ 2987.490186]  #4:   0% system,          0% softirq,   100% hardirq,     0% idle
+[ 2987.490601]  #5:   0% system,          0% softirq,   100% hardirq,     0% idle
+[ 2987.491034] CPU#9 Detect HardIRQ Time exceeds 50%. Most frequent HardIRQs:
+[ 2987.491493]  #1: 330985      irq#7
+[ 2987.491743]  #2: 5000        irq#10
+[ 2987.492039]  #3: 9           irq#91
+[ 2987.492318]  #4: 3           irq#118
+...
+[ 2987.492728] Call trace:
+[ 2987.492729]  __do_softirq+0xa8/0x364
 
-Arnd, a large portion of drivers/soc/fsl/ is networking-related
-(dpio, qbman). Would it make sense to transfer the maintainership
-of these under the respective networking drivers, to simplify the
-procedures?
+Signed-off-by: Bitao Hu <yaoma@linux.alibaba.com>
+---
+ arch/mips/dec/setup.c                |   2 +-
+ arch/parisc/kernel/smp.c             |   2 +-
+ arch/powerpc/kvm/book3s_hv_rm_xics.c |   2 +-
+ include/linux/irqdesc.h              |   9 ++-
+ include/linux/kernel_stat.h          |   4 +
+ kernel/irq/internals.h               |   2 +-
+ kernel/irq/irqdesc.c                 |  34 ++++++--
+ kernel/irq/proc.c                    |   9 +--
+ kernel/watchdog.c                    | 115 ++++++++++++++++++++++++++-
+ scripts/gdb/linux/interrupts.py      |   6 +-
+ 10 files changed, 159 insertions(+), 26 deletions(-)
 
-Also, your patches are whitespace-damaged. They do not apply to the
-kernel, and patchwork shows this as well.
-https://patchwork.kernel.org/project/netdevbpf/patch/20240215162327.3663092-1-sean.anderson@seco.com/
+diff --git a/arch/mips/dec/setup.c b/arch/mips/dec/setup.c
+index 6c3704f51d0d..87f0a1436bf9 100644
+--- a/arch/mips/dec/setup.c
++++ b/arch/mips/dec/setup.c
+@@ -756,7 +756,7 @@ void __init arch_init_irq(void)
+ 				NULL))
+ 			pr_err("Failed to register fpu interrupt\n");
+ 		desc_fpu = irq_to_desc(irq_fpu);
+-		fpu_kstat_irq = this_cpu_ptr(desc_fpu->kstat_irqs);
++		fpu_kstat_irq = this_cpu_ptr(&desc_fpu->kstat_irqs->cnt);
+ 	}
+ 	if (dec_interrupt[DEC_IRQ_CASCADE] >= 0) {
+ 		if (request_irq(dec_interrupt[DEC_IRQ_CASCADE], no_action,
+diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
+index 444154271f23..800eb64e91ad 100644
+--- a/arch/parisc/kernel/smp.c
++++ b/arch/parisc/kernel/smp.c
+@@ -344,7 +344,7 @@ static int smp_boot_one_cpu(int cpuid, struct task_struct *idle)
+ 		struct irq_desc *desc = irq_to_desc(i);
+ 
+ 		if (desc && desc->kstat_irqs)
+-			*per_cpu_ptr(desc->kstat_irqs, cpuid) = 0;
++			*per_cpu_ptr(desc->kstat_irqs, cpuid) = (struct irqstat) { };
+ 	}
+ #endif
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+index e42984878503..f2636414d82a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+@@ -837,7 +837,7 @@ static inline void this_cpu_inc_rm(unsigned int __percpu *addr)
+  */
+ static void kvmppc_rm_handle_irq_desc(struct irq_desc *desc)
+ {
+-	this_cpu_inc_rm(desc->kstat_irqs);
++	this_cpu_inc_rm(&desc->kstat_irqs->cnt);
+ 	__this_cpu_inc(kstat.irqs_sum);
+ }
+ 
+diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+index d9451d456a73..2912b1998670 100644
+--- a/include/linux/irqdesc.h
++++ b/include/linux/irqdesc.h
+@@ -17,6 +17,11 @@ struct irq_desc;
+ struct irq_domain;
+ struct pt_regs;
+ 
++struct irqstat {
++	unsigned int	cnt;
++	unsigned int	ref;
++};
++
+ /**
+  * struct irq_desc - interrupt descriptor
+  * @irq_common_data:	per irq and chip data passed down to chip functions
+@@ -55,7 +60,7 @@ struct pt_regs;
+ struct irq_desc {
+ 	struct irq_common_data	irq_common_data;
+ 	struct irq_data		irq_data;
+-	unsigned int __percpu	*kstat_irqs;
++	struct irqstat __percpu	*kstat_irqs;
+ 	irq_flow_handler_t	handle_irq;
+ 	struct irqaction	*action;	/* IRQ action list */
+ 	unsigned int		status_use_accessors;
+@@ -119,7 +124,7 @@ extern struct irq_desc irq_desc[NR_IRQS];
+ static inline unsigned int irq_desc_kstat_cpu(struct irq_desc *desc,
+ 					      unsigned int cpu)
+ {
+-	return desc->kstat_irqs ? *per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
++	return desc->kstat_irqs ? per_cpu(desc->kstat_irqs->cnt, cpu) : 0;
+ }
+ 
+ static inline struct irq_desc *irq_data_to_desc(struct irq_data *data)
+diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+index 9935f7ecbfb9..9cbb1361f957 100644
+--- a/include/linux/kernel_stat.h
++++ b/include/linux/kernel_stat.h
+@@ -79,6 +79,10 @@ static inline unsigned int kstat_cpu_softirqs_sum(int cpu)
+ 	return sum;
+ }
+ 
++extern void kstat_snapshot_irqs(void);
++
++extern unsigned int kstat_get_irq_since_snapshot(unsigned int irq);
++
+ /*
+  * Number of interrupts per specific IRQ source, since bootup
+  */
+diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
+index bcc7f21db9ee..1d92532c2aae 100644
+--- a/kernel/irq/internals.h
++++ b/kernel/irq/internals.h
+@@ -258,7 +258,7 @@ static inline void irq_state_set_masked(struct irq_desc *desc)
+ 
+ static inline void __kstat_incr_irqs_this_cpu(struct irq_desc *desc)
+ {
+-	__this_cpu_inc(*desc->kstat_irqs);
++	__this_cpu_inc(desc->kstat_irqs->cnt);
+ 	__this_cpu_inc(kstat.irqs_sum);
+ }
+ 
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index 27ca1c866f29..9cd17080b2d8 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -122,7 +122,7 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
+ 	desc->name = NULL;
+ 	desc->owner = owner;
+ 	for_each_possible_cpu(cpu)
+-		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
++		*per_cpu_ptr(desc->kstat_irqs, cpu) = (struct irqstat) { };
+ 	desc_smp_init(desc, node, affinity);
+ }
+ 
+@@ -418,8 +418,8 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
+ 	desc = kzalloc_node(sizeof(*desc), GFP_KERNEL, node);
+ 	if (!desc)
+ 		return NULL;
+-	/* allocate based on nr_cpu_ids */
+-	desc->kstat_irqs = alloc_percpu(unsigned int);
++
++	desc->kstat_irqs = alloc_percpu(struct irqstat);
+ 	if (!desc->kstat_irqs)
+ 		goto err_desc;
+ 
+@@ -593,7 +593,7 @@ int __init early_irq_init(void)
+ 	count = ARRAY_SIZE(irq_desc);
+ 
+ 	for (i = 0; i < count; i++) {
+-		desc[i].kstat_irqs = alloc_percpu(unsigned int);
++		desc[i].kstat_irqs = alloc_percpu(struct irqstat);
+ 		alloc_masks(&desc[i], node);
+ 		raw_spin_lock_init(&desc[i].lock);
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+@@ -952,8 +952,7 @@ unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 
+-	return desc && desc->kstat_irqs ?
+-			*per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
++	return desc && desc->kstat_irqs ? per_cpu(desc->kstat_irqs->cnt, cpu) : 0;
+ }
+ 
+ static bool irq_is_nmi(struct irq_desc *desc)
+@@ -975,10 +974,31 @@ static unsigned int kstat_irqs(unsigned int irq)
+ 		return data_race(desc->tot_count);
+ 
+ 	for_each_possible_cpu(cpu)
+-		sum += data_race(*per_cpu_ptr(desc->kstat_irqs, cpu));
++		sum += data_race(per_cpu(desc->kstat_irqs->cnt, cpu));
+ 	return sum;
+ }
+ 
++void kstat_snapshot_irqs(void)
++{
++	struct irq_desc *desc;
++	unsigned int irq;
++
++	for_each_irq_desc(irq, desc) {
++		if (!desc->kstat_irqs)
++			continue;
++		this_cpu_write(desc->kstat_irqs->ref, this_cpu_read(desc->kstat_irqs->cnt));
++	}
++}
++
++unsigned int kstat_get_irq_since_snapshot(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	if (!desc || !desc->kstat_irqs)
++		return 0;
++	return this_cpu_read(desc->kstat_irqs->cnt) - this_cpu_read(desc->kstat_irqs->ref);
++}
++
+ /**
+  * kstat_irqs_usr - Get the statistics for an interrupt from thread context
+  * @irq:	The interrupt number
+diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+index 623b8136e9af..3ad40cf30c66 100644
+--- a/kernel/irq/proc.c
++++ b/kernel/irq/proc.c
+@@ -488,18 +488,15 @@ int show_interrupts(struct seq_file *p, void *v)
+ 	if (!desc || irq_settings_is_hidden(desc))
+ 		goto outsparse;
+ 
+-	if (desc->kstat_irqs) {
+-		for_each_online_cpu(j)
+-			any_count |= data_race(*per_cpu_ptr(desc->kstat_irqs, j));
+-	}
++	if (desc->kstat_irqs)
++		any_count = data_race(desc->tot_count);
+ 
+ 	if ((!desc->action || irq_desc_is_chained(desc)) && !any_count)
+ 		goto outsparse;
+ 
+ 	seq_printf(p, "%*d: ", prec, i);
+ 	for_each_online_cpu(j)
+-		seq_printf(p, "%10u ", desc->kstat_irqs ?
+-					*per_cpu_ptr(desc->kstat_irqs, j) : 0);
++		seq_printf(p, "%10u ", desc->kstat_irqs ? per_cpu(desc->kstat_irqs->cnt, j) : 0);
+ 
+ 	raw_spin_lock_irqsave(&desc->lock, flags);
+ 	if (desc->irq_data.chip) {
+diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+index 69e72d7e461d..7796c991b64e 100644
+--- a/kernel/watchdog.c
++++ b/kernel/watchdog.c
+@@ -12,22 +12,25 @@
+ 
+ #define pr_fmt(fmt) "watchdog: " fmt
+ 
+-#include <linux/mm.h>
+ #include <linux/cpu.h>
+-#include <linux/nmi.h>
+ #include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/irqdesc.h>
+ #include <linux/kernel_stat.h>
++#include <linux/kvm_para.h>
+ #include <linux/math64.h>
++#include <linux/mm.h>
+ #include <linux/module.h>
++#include <linux/nmi.h>
++#include <linux/stop_machine.h>
+ #include <linux/sysctl.h>
+ #include <linux/tick.h>
++
+ #include <linux/sched/clock.h>
+ #include <linux/sched/debug.h>
+ #include <linux/sched/isolation.h>
+-#include <linux/stop_machine.h>
+ 
+ #include <asm/irq_regs.h>
+-#include <linux/kvm_para.h>
+ 
+ static DEFINE_MUTEX(watchdog_mutex);
+ 
+@@ -417,13 +420,104 @@ static void print_cpustat(void)
+ 	}
+ }
+ 
++#define HARDIRQ_PERCENT_THRESH		50
++#define NUM_HARDIRQ_REPORT		5
++struct irq_counts {
++	int irq;
++	u32 counts;
++};
++
++static DEFINE_PER_CPU(bool, snapshot_taken);
++
++/* Tabulate the most frequent interrupts. */
++static void tabulate_irq_count(struct irq_counts *irq_counts, int irq, u32 counts, int rank)
++{
++	int i;
++	struct irq_counts new_count = {irq, counts};
++
++	for (i = 0; i < rank; i++) {
++		if (counts > irq_counts[i].counts)
++			swap(new_count, irq_counts[i]);
++	}
++}
++
++/*
++ * If the hardirq time exceeds HARDIRQ_PERCENT_THRESH% of the sample_period,
++ * then the cause of softlockup might be interrupt storm. In this case, it
++ * would be useful to start interrupt counting.
++ */
++static bool need_counting_irqs(void)
++{
++	u8 util;
++	int tail = __this_cpu_read(cpustat_tail);
++
++	tail = (tail + NUM_HARDIRQ_REPORT - 1) % NUM_HARDIRQ_REPORT;
++	util = __this_cpu_read(cpustat_util[tail][STATS_HARDIRQ]);
++	return util > HARDIRQ_PERCENT_THRESH;
++}
++
++static void start_counting_irqs(void)
++{
++	if (!__this_cpu_read(snapshot_taken)) {
++		kstat_snapshot_irqs();
++		__this_cpu_write(snapshot_taken, true);
++	}
++}
++
++static void stop_counting_irqs(void)
++{
++	__this_cpu_write(snapshot_taken, false);
++}
++
++static void print_irq_counts(void)
++{
++	unsigned int i, count;
++	struct irq_counts irq_counts_sorted[NUM_HARDIRQ_REPORT] = {
++		{-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}
++	};
++
++	if (__this_cpu_read(snapshot_taken)) {
++		for_each_active_irq(i) {
++			count = kstat_get_irq_since_snapshot(i);
++			tabulate_irq_count(irq_counts_sorted, i, count, NUM_HARDIRQ_REPORT);
++		}
++
++		/*
++		 * We do not want the "watchdog: " prefix on every line,
++		 * hence we use "printk" instead of "pr_crit".
++		 */
++		printk(KERN_CRIT "CPU#%d Detect HardIRQ Time exceeds %d%%. Most frequent HardIRQs:\n",
++		       smp_processor_id(), HARDIRQ_PERCENT_THRESH);
++
++		for (i = 0; i < NUM_HARDIRQ_REPORT; i++) {
++			if (irq_counts_sorted[i].irq == -1)
++				break;
++
++			printk(KERN_CRIT "\t#%u: %-10u\tirq#%d\n",
++				i + 1, irq_counts_sorted[i].counts,
++				irq_counts_sorted[i].irq);
++		}
++
++		/*
++		 * If the hardirq time is less than HARDIRQ_PERCENT_THRESH% in the last
++		 * sample_period, then we suspect the interrupt storm might be subsiding.
++		 */
++		if (!need_counting_irqs())
++			stop_counting_irqs();
++	}
++}
++
+ static void report_cpu_status(void)
+ {
+ 	print_cpustat();
++	print_irq_counts();
+ }
+ #else
+ static inline void update_cpustat(void) { }
+ static inline void report_cpu_status(void) { }
++static inline bool need_counting_irqs(void) { return false; }
++static inline void start_counting_irqs(void) { }
++static inline void stop_counting_irqs(void) { }
+ #endif
+ 
+ /*
+@@ -527,6 +621,18 @@ static int is_softlockup(unsigned long touch_ts,
+ 			 unsigned long now)
+ {
+ 	if ((watchdog_enabled & WATCHDOG_SOFTOCKUP_ENABLED) && watchdog_thresh) {
++		/*
++		 * If period_ts has not been updated during a sample_period, then
++		 * in the subsequent few sample_periods, period_ts might also not
++		 * be updated, which could indicate a potential softlockup. In
++		 * this case, if we suspect the cause of the potential softlockup
++		 * might be interrupt storm, then we need to count the interrupts
++		 * to find which interrupt is storming.
++		 */
++		if (time_after_eq(now, period_ts + get_softlockup_thresh() / 5) &&
++		    need_counting_irqs())
++			start_counting_irqs();
++
+ 		/* Warn about unreasonable delays. */
+ 		if (time_after(now, period_ts + get_softlockup_thresh()))
+ 			return now - touch_ts;
+@@ -549,6 +655,7 @@ static DEFINE_PER_CPU(struct cpu_stop_work, softlockup_stop_work);
+ static int softlockup_fn(void *data)
+ {
+ 	update_touch_ts();
++	stop_counting_irqs();
+ 	complete(this_cpu_ptr(&softlockup_completion));
+ 
+ 	return 0;
+diff --git a/scripts/gdb/linux/interrupts.py b/scripts/gdb/linux/interrupts.py
+index ef478e273791..7e50f3b9dfad 100644
+--- a/scripts/gdb/linux/interrupts.py
++++ b/scripts/gdb/linux/interrupts.py
+@@ -37,7 +37,7 @@ def show_irq_desc(prec, irq):
+     any_count = 0
+     if desc['kstat_irqs']:
+         for cpu in cpus.each_online_cpu():
+-            any_count += cpus.per_cpu(desc['kstat_irqs'], cpu)
++            any_count += cpus.per_cpu(desc['kstat_irqs'], cpu)['cnt']
+ 
+     if (desc['action'] == 0 or irq_desc_is_chained(desc)) and any_count == 0:
+         return text;
+@@ -45,7 +45,7 @@ def show_irq_desc(prec, irq):
+     text += "%*d: " % (prec, irq)
+     for cpu in cpus.each_online_cpu():
+         if desc['kstat_irqs']:
+-            count = cpus.per_cpu(desc['kstat_irqs'], cpu)
++            count = cpus.per_cpu(desc['kstat_irqs'], cpu)['cnt']
+         else:
+             count = 0
+         text += "%10u" % (count)
+@@ -177,7 +177,7 @@ def arm_common_show_interrupts(prec):
+         if desc == 0:
+             continue
+         for cpu in cpus.each_online_cpu():
+-            text += "%10u" % (cpus.per_cpu(desc['kstat_irqs'], cpu))
++            text += "%10u" % (cpus.per_cpu(desc['kstat_irqs'], cpu)['cnt'])
+         text += "      %s" % (ipi_types[ipi].string())
+         text += "\n"
+     return text
+-- 
+2.37.1 (Apple Git-137.1)
 
-Please repost with this fixed.
