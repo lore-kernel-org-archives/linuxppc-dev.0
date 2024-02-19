@@ -4,54 +4,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F27E7C48BC3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Feb 2024 16:31:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D0E8C48BF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Feb 2024 19:38:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=RH00q5j9;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=RNlnjOlT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tdp2g1c6hz3dVS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 03:31:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TdtBF6tFWz3dVj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 06:38:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=RH00q5j9;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=RNlnjOlT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.130; helo=out30-130.freemail.mail.aliyun.com; envelope-from=yaoma@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f403:261c::701; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on20701.outbound.protection.outlook.com [IPv6:2a01:111:f403:261c::701])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tdnmq1C77z2xPY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2024 03:19:36 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1708359569; h=From:To:Subject:Date:Message-Id:MIME-Version:Content-Type;
-	bh=nB7HiCRDXz45RwbXKMqlhFZOk/rJjNAZ2WqhNw3OoCA=;
-	b=RH00q5j9OoYpa17PD2oSg8Yn4gJq1ombOVHfTB3zW4dphwYIX3S1/kI2iJxOpvRdajXhOBnWqSkcaTXQdEHDvFePwCYpNt0qTJ222Pf8Hnqowwx1pjQW3+Hj17OLmZtTSH02ok5qdQILGE4Ll/gDC8ivRR4g3m9gwN/5sV5DmwI=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R681e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045176;MF=yaoma@linux.alibaba.com;NM=1;PH=DS;RN=16;SR=0;TI=SMTPD_---0W0tz6mP_1708359565;
-Received: from localhost.localdomain(mailfrom:yaoma@linux.alibaba.com fp:SMTPD_---0W0tz6mP_1708359565)
-          by smtp.aliyun-inc.com;
-          Tue, 20 Feb 2024 00:19:28 +0800
-From: Bitao Hu <yaoma@linux.alibaba.com>
-To: tglx@linutronix.de,
-	dianders@chromium.org,
-	pmladek@suse.com,
-	akpm@linux-foundation.org,
-	kernelfans@gmail.com,
-	liusong@linux.alibaba.com,
-	deller@gmx.de,
-	npiggin@gmail.com,
-	jan.kiszka@siemens.com,
-	kbingham@kernel.org
-Subject: [PATCHv8 1/2] watchdog/softlockup: low-overhead detection of interrupt
-Date: Tue, 20 Feb 2024 00:19:19 +0800
-Message-Id: <20240219161920.15752-2-yaoma@linux.alibaba.com>
-X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
-In-Reply-To: <20240219161920.15752-1-yaoma@linux.alibaba.com>
-References: <20240219161920.15752-1-yaoma@linux.alibaba.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tdt9N2KNfz30P0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2024 06:37:42 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UBvhX6iuOwLW//FlRPFZq7AKfNh3xrs2i1wQfgGkeb++14viNhuBPbUkEi2Fv7URHkQtiifiYGTz9ZbumOzvXFkSx42MrGNfkrjLtJ1VobKuoha6eZGlaa33hqdl+I+MtigYQOpkCh+qrZ/F9DHPQ4JzP8KcAAY/ERf9EhN+B5bmWWHiBbMcS7W5jwkY4ucBwURsnYwr3rLggBqXEKH9tG4p0TBsCgFkatQsHZJVDqawbuVdX8b0Uqlzf0nfuuwFFo0jdHup91ybA0Tf8It64AV4HayA50M8XW9tCANULc8idmnr3P8KwevFYxWqUXj3bzRCTrWSRRQdTzI26+SIug==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=m2Z2mvMuoxNNdwhEPust+2q6gJFIpi+h/Ujzq+0we7k=;
+ b=BCsRCBCfonic3fJHHCrL5LUrGHqoInlMcO7M9zaz2bIuGIuzNPv9KZyGFLLNq6LrrAyDpj1avGhqUmiFlXRREq6zGg6PCMyU+8fg+5MhSYhf00CencW9vIOZkyG7sudpHn5vrH5Ky4na4C5Ky7bnqPAo2/wrWfekSE7dBbnE4P1Tq5yiyk2j40mRrTpQZywKnlN1+q6GJTcsodSLWrFOp+wuQjc1thPYGNWjUknvPUKk8GYL4DRrRgHLT31ZQ1pgu1s55YEITOrhXqyIAOtsBDBoXE6a+PPJPv5bihl73v1Dqw6hrQU57uVpV3sowPnd39RpKUsafUyHCCeGHuxT4Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=m2Z2mvMuoxNNdwhEPust+2q6gJFIpi+h/Ujzq+0we7k=;
+ b=RNlnjOlTmcWEsmkQ+i97aoXJK2zlnHvTNogFsYW6eKn9yWg9xDJyhhHjqBv5Uz5d5lypWHoXgv7VFfyauXzeYFHstajXB18UiAyyLAHGIzya2cfCR7mq/Pb8rk3frQvN1KWDnngISE8uHlyXLlgSDh6iMWR8kuNr6ghCjyyQx6FzkegzkqF8gifK9xUOjApvKnZCU1c6lgmvP2BLrUZq6t1bvHIqaXUJKy3mkF/sa7/lE2no7cnyiQrF/sLpV/MCXhVvnPRMqeFLrVgGGH++68ZgeOFy1MoWpU1ao6oeU1I2sSqXipND0eDRjuPVY9b2c6eFDkyjh40MYTsgnmktCA==
+Received: from MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:3d::7) by
+ PAZP264MB3087.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1f5::20) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7292.38; Mon, 19 Feb 2024 19:37:17 +0000
+Received: from MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::91e3:2737:5a73:cc27]) by MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::91e3:2737:5a73:cc27%5]) with mapi id 15.20.7292.036; Mon, 19 Feb 2024
+ 19:37:16 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Nicholas Miehlbradt <nicholas@linux.ibm.com>, "glider@google.com"
+	<glider@google.com>, "elver@google.com" <elver@google.com>,
+	"dvyukov@google.com" <dvyukov@google.com>, "akpm@linux-foundation.org"
+	<akpm@linux-foundation.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+	"npiggin@gmail.com" <npiggin@gmail.com>
+Subject: Re: [PATCH 01/13] kmsan: Export kmsan_handle_dma
+Thread-Topic: [PATCH 01/13] kmsan: Export kmsan_handle_dma
+Thread-Index: AQHaLlLqGF6G1r00j0eFh2nARNDtb7ESeXAA
+Date: Mon, 19 Feb 2024 19:37:16 +0000
+Message-ID: <b1b0e05b-099d-4667-a54e-16575e83a327@csgroup.eu>
+References: <20231214055539.9420-1-nicholas@linux.ibm.com>
+ <20231214055539.9420-2-nicholas@linux.ibm.com>
+In-Reply-To: <20231214055539.9420-2-nicholas@linux.ibm.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla Thunderbird
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MR1P264MB2980:EE_|PAZP264MB3087:EE_
+x-ms-office365-filtering-correlation-id: a97c7e72-7100-422f-93a2-08dc31822e23
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  8tHmjJKJ23zxmk0bQaw9oTg9PlXz++Yn6JmXIcgU+KuNA1ATZFYYnbLgbygnDvJjqIlZpTMfcNVIN4DRSwV2F5KaupzzVUjSvDVKtyko23HgmkqizFcTJyx3jfnBs8OtdJqEcXpxABf2+J8m6u8zIiAj+3jNfHIa48WfDNcYOZuLM20KolSIEAjot4HDi+ZHrAPOps9wS15zdnWkXbporXZZCdOdUolXE4VF8pa9kG84n5SZ9ZuoVdIWPunA9vpj1v2e+kFhdpdsllwf9T/khdJi/WnWKfOxRMdJ2uoqREhjpHzDHhrca2Wva8+6HbHdY/t7OE75y9wFyGtfbVTwuLAPAmuKZJQG1F/7zYGhSN6CY7H8LySBEw/bfYnXCp21qI4j+aNCzxlSfJyxbacYmyozDxYLf+wEloctz+/yNg3h7hpFD7at4nlDV5+tv1pTKFxUuxkwkSPgBHDP96966KR6FW6UjYy/hp0fwtJKt5gL02Adpua75NibXAxyW8ZVrw1G+3j+B+ORpJSx1cX3wTYPLyHbYA3VAZSDt8Sbm5DYwUFT+vU4LLHw9sfUbDUVVkOsAC5hpJPH8IJuMA/5sCEEcjKF3VXrcmGyZ8fDxDhD2cQVidN06sIWso737Xls
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(38070700009);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?ZWtMRC92M2tCL3dzQ1I1UFFxU1hQK242dVBXclpma3RGTlM2WFpBOFNMS0hx?=
+ =?utf-8?B?eGtsdnJydDMxa0k5VHk0TU5mZnJFcmdHUUpIY0hNZFUrb0pYRzV3aWtpKzNZ?=
+ =?utf-8?B?VXc3YmRQcFVqa3ZRVGE5SllhY1M5czhuWjNCWC9nOGR0c016YTZZd3FQYzlK?=
+ =?utf-8?B?V1RpRlAxaExveitKanFRT1FmZzcyUG1wb2RoaGJXWW9yOUN0Z0t4aldsVXN4?=
+ =?utf-8?B?clBGb1d0SU5PMzl5RnlpK0RhNzg0cHdpd0dBam8zQ0RNaUwyY3dRLzlydFpy?=
+ =?utf-8?B?ZzhhMXhzS09Cd1B5NnBvc1NKeEZWUWlCYzRwdDY0N0hFdTZPRHZaL0EranhF?=
+ =?utf-8?B?NTI1T3NFeFFCM2hlT3UxbEJyM3h4Slhsc2ZPMzgvWXV3bGZTZHp1RHY1UGkv?=
+ =?utf-8?B?aEFXdVVDWmM1NDdhZXl0Tml0VHFuYnZFYi9naUFWb2VVcVJKV0cySmluTzNQ?=
+ =?utf-8?B?ZW8yRGRZeld3RGlObXg2cnExTUJuaVhBZWptenVCMi8zQUZXeDlZcEYzQlNG?=
+ =?utf-8?B?d240MEpaM1hIY1JPSXFTQmZwMzhmbi9LYWdxR3lzYjhlT1VVaERDcUNWOWNy?=
+ =?utf-8?B?QjNXem1DVHk3U2pVSXVVMmV5czlXSkxhbm0xU1pZcHAyK1orM2Z6dkVNZUR6?=
+ =?utf-8?B?bk95WmgreTRicUlha2JqYU8xd3hCQ1NldDI1d2xXc3B6QmlJb1hrYU1iRlpM?=
+ =?utf-8?B?MGJ6M044Ym8wSmFxcUszdUpPQUlhajdNMW8yd3NBSitkR2hZa3lwdk1YdUxj?=
+ =?utf-8?B?NzgwV3NTNWNmUWJNM3RiNmZaRlpZZFMzdDd0SFU3Q3lqZ2hwNExlRHRJS3lM?=
+ =?utf-8?B?WmxHMWNuazQ5K21WdXdzSXRpeHplWDNycXMxV3BVMVVDUDlEa0hhZVZOWDdw?=
+ =?utf-8?B?UE1hb1BIam4yaUEzSEY1ejZtUk9xelhxMmtFaG1zN3gwQjNhSUZUaGgwOUwr?=
+ =?utf-8?B?a1V3VWxMUUpEU2t2UWMvSnU4dlpsd25kck1sUnhlUFlWVGgzZlppVkYxVTg5?=
+ =?utf-8?B?bGkzY0FRc3JaR1E2QlJmdGMrYW1VTXhWdzU2L3YvMTZvOUlLenM4Znhld2Mz?=
+ =?utf-8?B?TmlTOU95UUMzNU1qNGxsUWNDdW9IK20vNUQ5dTNYdGQ3UTFEdkxRNjJPQ2ZX?=
+ =?utf-8?B?VHIvaXgwd0tiM3BZc1M2K24zQlJNVlllQlVURU5vQndsT01qK255OEhOQnJG?=
+ =?utf-8?B?SXhJeklkT0QvQVdOeUJoZlNWazhSTUpDMjR6SDQxaWRjNXZ5WC9LbmxCZi9Z?=
+ =?utf-8?B?M01XaHBHcnVnMnZOOUN2L3lQOXh3ZzZ0YVBnTE1pbHRULzZ2UFRDcG1OUTcv?=
+ =?utf-8?B?NitmeGViT3FSOFJiRTNYS2plQ202QnArUmQ0QjFOc09JdGF5enUyYmRGZmJl?=
+ =?utf-8?B?bkhKZUpnK0JQMk1rOFZnVnVrZnBEczRaTm5ON1E1VHZ1Zjh3Wm5QV2M5Ri9z?=
+ =?utf-8?B?YkMvc0l1aUQyTEpDUWxOV2dBbUtQT0xla0xPVk1mOG9pVEZ4M0R6cXpGOGt5?=
+ =?utf-8?B?WkYxVWhOc3BEOVRHbGJQL1ZTdnN3SkMrNnNmZkpaUTQ5Rk9iUlpaOW9hSjNt?=
+ =?utf-8?B?Wk1YYXh2OWlpK3M4Tm9LTCtWVUJxdnpKTUtlOG4wRUg2Sk80b0UxeWtpdU9h?=
+ =?utf-8?B?VDBVeWkzSnM1YThVLy8zUEl3dGUrZXk3VW1PWk9BYXFRL1hCRDloU2lkdVdL?=
+ =?utf-8?B?NllUUEJlZ3F0QlJCaG1tM0V3VGh2QUZPbytLdXMycFhmSDJOZUQvRnpnVitz?=
+ =?utf-8?B?MUQ0YVpienNlUG1FSlpnRGFqcTRIUjQ0bHBJb2wyWWFiTnFkZHdKY0dQU3kx?=
+ =?utf-8?B?djRDT04xRndsdVJ4cGhmS1lFSGRQTVcwcEowWnVqMjdaaXo3UWhCL2RVV1kr?=
+ =?utf-8?B?UXRWOFNicEZoYlczWk1UNHozSkhUZ3l5aVJWTUN2YzFSVGFpMEZyMmU2QWZn?=
+ =?utf-8?B?SnJrWGNyRWxJVHFLMVpPbXRhWWxyTmErelZlVE9MVWk4anNRTHpUMS9nUkc3?=
+ =?utf-8?B?YUlGaVFhdi9MT21naFQ5MkprM2ttckhiTVQ0UGNId3I3TUh5amlBUjNab29G?=
+ =?utf-8?B?RkdlbnBJLzhaSU5tbWE2VGtjR3pXNGQ0bXJRVkNJN2Jia21yUlp5aTQrQnVq?=
+ =?utf-8?Q?Mck1xvAeHXUZg3tP9kUiCZ5eh?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <6DBF264256FE114EA010ABEBC0F35806@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 20 Feb 2024 03:29:33 +1100
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: a97c7e72-7100-422f-93a2-08dc31822e23
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Feb 2024 19:37:16.8810
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: Gd5KW6zGeEGqGUf3ibS/n55GuppiX4pX0xwc+UisJX2D3wcYPAbDMo9XTb+qS78dkZmDVm457x46WnEv8j4soZLEdO62fJXCvwJcoToPJq4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAZP264MB3087
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,226 +136,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-parisc@vger.kernel.org, kvm@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, Bitao Hu <yaoma@linux.alibaba.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "iii@linux.ibm.com" <iii@linux.ibm.com>, "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The following softlockup is caused by interrupt storm, but it cannot be
-identified from the call tree. Because the call tree is just a snapshot
-and doesn't fully capture the behavior of the CPU during the soft lockup.
-  watchdog: BUG: soft lockup - CPU#28 stuck for 23s! [fio:83921]
-  ...
-  Call trace:
-    __do_softirq+0xa0/0x37c
-    __irq_exit_rcu+0x108/0x140
-    irq_exit+0x14/0x20
-    __handle_domain_irq+0x84/0xe0
-    gic_handle_irq+0x80/0x108
-    el0_irq_naked+0x50/0x58
-
-Therefore，I think it is necessary to report CPU utilization during the
-softlockup_thresh period (report once every sample_period, for a total
-of 5 reportings), like this:
-  watchdog: BUG: soft lockup - CPU#28 stuck for 23s! [fio:83921]
-  CPU#28 Utilization every 4s during lockup:
-    #1: 0% system, 0% softirq, 100% hardirq, 0% idle
-    #2: 0% system, 0% softirq, 100% hardirq, 0% idle
-    #3: 0% system, 0% softirq, 100% hardirq, 0% idle
-    #4: 0% system, 0% softirq, 100% hardirq, 0% idle
-    #5: 0% system, 0% softirq, 100% hardirq, 0% idle
-  ...
-
-This would be helpful in determining whether an interrupt storm has
-occurred or in identifying the cause of the softlockup. The criteria for
-determination are as follows:
-  a. If the hardirq utilization is high, then interrupt storm should be
-  considered and the root cause cannot be determined from the call tree.
-  b. If the softirq utilization is high, then we could analyze the call
-  tree but it may cannot reflect the root cause.
-  c. If the system utilization is high, then we could analyze the root
-  cause from the call tree.
-
-The mechanism requires a considerable amount of global storage space
-when configured for the maximum number of CPUs. Therefore, adding a
-SOFTLOCKUP_DETECTOR_INTR_STORM Kconfig knob that defaults to "yes"
-if the max number of CPUs is <= 128.
-
-Signed-off-by: Bitao Hu <yaoma@linux.alibaba.com>
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
-Reviewed-by: Liu Song <liusong@linux.alibaba.com>
----
- kernel/watchdog.c | 98 ++++++++++++++++++++++++++++++++++++++++++++++-
- lib/Kconfig.debug | 13 +++++++
- 2 files changed, 110 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 81a8862295d6..69e72d7e461d 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -16,6 +16,8 @@
- #include <linux/cpu.h>
- #include <linux/nmi.h>
- #include <linux/init.h>
-+#include <linux/kernel_stat.h>
-+#include <linux/math64.h>
- #include <linux/module.h>
- #include <linux/sysctl.h>
- #include <linux/tick.h>
-@@ -35,6 +37,8 @@ static DEFINE_MUTEX(watchdog_mutex);
- # define WATCHDOG_HARDLOCKUP_DEFAULT	0
- #endif
- 
-+#define NUM_SAMPLE_PERIODS	5
-+
- unsigned long __read_mostly watchdog_enabled;
- int __read_mostly watchdog_user_enabled = 1;
- static int __read_mostly watchdog_hardlockup_user_enabled = WATCHDOG_HARDLOCKUP_DEFAULT;
-@@ -333,6 +337,95 @@ __setup("watchdog_thresh=", watchdog_thresh_setup);
- 
- static void __lockup_detector_cleanup(void);
- 
-+#ifdef CONFIG_SOFTLOCKUP_DETECTOR_INTR_STORM
-+enum stats_per_group {
-+	STATS_SYSTEM,
-+	STATS_SOFTIRQ,
-+	STATS_HARDIRQ,
-+	STATS_IDLE,
-+	NUM_STATS_PER_GROUP,
-+};
-+
-+static const enum cpu_usage_stat tracked_stats[NUM_STATS_PER_GROUP] = {
-+	CPUTIME_SYSTEM,
-+	CPUTIME_SOFTIRQ,
-+	CPUTIME_IRQ,
-+	CPUTIME_IDLE,
-+};
-+
-+static DEFINE_PER_CPU(u16, cpustat_old[NUM_STATS_PER_GROUP]);
-+static DEFINE_PER_CPU(u8, cpustat_util[NUM_SAMPLE_PERIODS][NUM_STATS_PER_GROUP]);
-+static DEFINE_PER_CPU(u8, cpustat_tail);
-+
-+/*
-+ * We don't need nanosecond resolution. A granularity of 16ms is
-+ * sufficient for our precision, allowing us to use u16 to store
-+ * cpustats, which will roll over roughly every ~1000 seconds.
-+ * 2^24 ~= 16 * 10^6
-+ */
-+static u16 get_16bit_precision(u64 data_ns)
-+{
-+	return data_ns >> 24LL; /* 2^24ns ~= 16.8ms */
-+}
-+
-+static void update_cpustat(void)
-+{
-+	int i;
-+	u8 util;
-+	u16 old_stat, new_stat;
-+	struct kernel_cpustat kcpustat;
-+	u64 *cpustat = kcpustat.cpustat;
-+	u8 tail = __this_cpu_read(cpustat_tail);
-+	u16 sample_period_16 = get_16bit_precision(sample_period);
-+
-+	kcpustat_cpu_fetch(&kcpustat, smp_processor_id());
-+
-+	for (i = 0; i < NUM_STATS_PER_GROUP; i++) {
-+		old_stat = __this_cpu_read(cpustat_old[i]);
-+		new_stat = get_16bit_precision(cpustat[tracked_stats[i]]);
-+		util = DIV_ROUND_UP(100 * (new_stat - old_stat), sample_period_16);
-+		__this_cpu_write(cpustat_util[tail][i], util);
-+		__this_cpu_write(cpustat_old[i], new_stat);
-+	}
-+
-+	__this_cpu_write(cpustat_tail, (tail + 1) % NUM_SAMPLE_PERIODS);
-+}
-+
-+static void print_cpustat(void)
-+{
-+	int i, group;
-+	u8 tail = __this_cpu_read(cpustat_tail);
-+	u64 sample_period_second = sample_period;
-+
-+	do_div(sample_period_second, NSEC_PER_SEC);
-+
-+	/*
-+	 * We do not want the "watchdog: " prefix on every line,
-+	 * hence we use "printk" instead of "pr_crit".
-+	 */
-+	printk(KERN_CRIT "CPU#%d Utilization every %llus during lockup:\n",
-+	       smp_processor_id(), sample_period_second);
-+
-+	for (i = 0; i < NUM_SAMPLE_PERIODS; i++) {
-+		group = (tail + i) % NUM_SAMPLE_PERIODS;
-+		printk(KERN_CRIT "\t#%d: %3u%% system,\t%3u%% softirq,\t"
-+			"%3u%% hardirq,\t%3u%% idle\n", i + 1,
-+			__this_cpu_read(cpustat_util[group][STATS_SYSTEM]),
-+			__this_cpu_read(cpustat_util[group][STATS_SOFTIRQ]),
-+			__this_cpu_read(cpustat_util[group][STATS_HARDIRQ]),
-+			__this_cpu_read(cpustat_util[group][STATS_IDLE]));
-+	}
-+}
-+
-+static void report_cpu_status(void)
-+{
-+	print_cpustat();
-+}
-+#else
-+static inline void update_cpustat(void) { }
-+static inline void report_cpu_status(void) { }
-+#endif
-+
- /*
-  * Hard-lockup warnings should be triggered after just a few seconds. Soft-
-  * lockups can have false positives under extreme conditions. So we generally
-@@ -364,7 +457,7 @@ static void set_sample_period(void)
- 	 * and hard thresholds) to increment before the
- 	 * hardlockup detector generates a warning
- 	 */
--	sample_period = get_softlockup_thresh() * ((u64)NSEC_PER_SEC / 5);
-+	sample_period = get_softlockup_thresh() * ((u64)NSEC_PER_SEC / NUM_SAMPLE_PERIODS);
- 	watchdog_update_hrtimer_threshold(sample_period);
- }
- 
-@@ -504,6 +597,8 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 	 */
- 	period_ts = READ_ONCE(*this_cpu_ptr(&watchdog_report_ts));
- 
-+	update_cpustat();
-+
- 	/* Reset the interval when touched by known problematic code. */
- 	if (period_ts == SOFTLOCKUP_DELAY_REPORT) {
- 		if (unlikely(__this_cpu_read(softlockup_touch_sync))) {
-@@ -539,6 +634,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 		pr_emerg("BUG: soft lockup - CPU#%d stuck for %us! [%s:%d]\n",
- 			smp_processor_id(), duration,
- 			current->comm, task_pid_nr(current));
-+		report_cpu_status();
- 		print_modules();
- 		print_irqtrace_events(current);
- 		if (regs)
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 975a07f9f1cc..49f652674bd8 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1029,6 +1029,19 @@ config SOFTLOCKUP_DETECTOR
- 	  chance to run.  The current stack trace is displayed upon
- 	  detection and the system will stay locked up.
- 
-+config SOFTLOCKUP_DETECTOR_INTR_STORM
-+	bool "Detect Interrupt Storm in Soft Lockups"
-+	depends on SOFTLOCKUP_DETECTOR && IRQ_TIME_ACCOUNTING
-+	default y if NR_CPUS <= 128
-+	help
-+	  Say Y here to enable the kernel to detect interrupt storm
-+	  during "soft lockups".
-+
-+	  "soft lockups" can be caused by a variety of reasons. If one is
-+	  caused by an interrupt storm, then the storming interrupts will not
-+	  be on the callstack. To detect this case, it is necessary to report
-+	  the CPU stats and the interrupt counts during the "soft lockups".
-+
- config BOOTPARAM_SOFTLOCKUP_PANIC
- 	bool "Panic (Reboot) On Soft Lockups"
- 	depends on SOFTLOCKUP_DETECTOR
--- 
-2.37.1 (Apple Git-137.1)
-
+DQoNCkxlIDE0LzEyLzIwMjMgw6AgMDY6NTUsIE5pY2hvbGFzIE1pZWhsYnJhZHQgYSDDqWNyaXTC
+oDoNCj4ga21zYW5faGFuZGxlX2RtYSBpcyByZXF1aXJlZCBieSB2aXJ0aW8gZHJpdmVycy4gRXhw
+b3J0IGttc2FuX2hhbmRsZV9kbWENCj4gc28gdGhhdCB0aGUgZHJpdmVycyBjYW4gYmUgY29tcGls
+ZWQgYXMgbW9kdWxlcy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IE5pY2hvbGFzIE1pZWhsYnJhZHQg
+PG5pY2hvbGFzQGxpbnV4LmlibS5jb20+DQo+IC0tLQ0KPiAgIG1tL2ttc2FuL2hvb2tzLmMgfCAx
+ICsNCj4gICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gDQo+IGRpZmYgLS1naXQg
+YS9tbS9rbXNhbi9ob29rcy5jIGIvbW0va21zYW4vaG9va3MuYw0KPiBpbmRleCA3YTMwMjc0Yjg5
+M2MuLjM1MzJkOTI3NWNhNSAxMDA2NDQNCj4gLS0tIGEvbW0va21zYW4vaG9va3MuYw0KPiArKysg
+Yi9tbS9rbXNhbi9ob29rcy5jDQo+IEBAIC0zNTgsNiArMzU4LDcgQEAgdm9pZCBrbXNhbl9oYW5k
+bGVfZG1hKHN0cnVjdCBwYWdlICpwYWdlLCBzaXplX3Qgb2Zmc2V0LCBzaXplX3Qgc2l6ZSwNCj4g
+ICAJCXNpemUgLT0gdG9fZ287DQo+ICAgCX0NCj4gICB9DQo+ICtFWFBPUlRfU1lNQk9MKGttc2Fu
+X2hhbmRsZV9kbWEpOw0KDQp2aXJ0aW8gaXMgR1BMIGFuZCBhbGwgZXhwb3J0cyBpbnNpZGUgdmly
+dGlvIGFyZSBFWFBPUlRfU1lNQk9MX0dQTCgpLg0KU2hvdWxkIHRoaXMgb25lIGJlIF9HUEwgYXMg
+d2VsbCA/DQoNCj4gICANCj4gICB2b2lkIGttc2FuX2hhbmRsZV9kbWFfc2coc3RydWN0IHNjYXR0
+ZXJsaXN0ICpzZywgaW50IG5lbnRzLA0KPiAgIAkJCSBlbnVtIGRtYV9kYXRhX2RpcmVjdGlvbiBk
+aXIpDQo=
