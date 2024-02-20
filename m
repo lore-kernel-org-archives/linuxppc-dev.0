@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2DE4C48BC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 12:30:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 343C1C48BC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 12:30:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TfJdz4n8Sz3cPX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 23:30:31 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TfJfP6WW4z3dXB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Feb 2024 23:30:53 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TfJdX37DCz3bc2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TfJdX6zj4z3bc2
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2024 23:30:08 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TfJdX1b7Kz4wxZ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TfJdX4sgkz4wxv;
 	Tue, 20 Feb 2024 23:30:08 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, Amit Machhiwal <amachhiw@linux.ibm.com>
-In-Reply-To: <20240207054526.3720087-1-amachhiw@linux.ibm.com>
-References: <20240207054526.3720087-1-amachhiw@linux.ibm.com>
-Subject: Re: [PATCH v4] KVM: PPC: Book3S HV: Fix L2 guest reboot failure due to empty 'arch_compat'
-Message-Id: <170843210068.1280904.12521172425579669086.b4-ty@ellerman.id.au>
+To: Gaurav Batra <gbatra@linux.ibm.com>
+In-Reply-To: <20240215221833.4817-1-gbatra@linux.ibm.com>
+References: <20240215221833.4817-1-gbatra@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/pseries/iommu: DLPAR ADD of pci device doesn't completely initialize pci_controller structure
+Message-Id: <170843210066.1280904.12009150879640738170.b4-ty@ellerman.id.au>
 Date: Tue, 20 Feb 2024 23:28:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jordan Niethe <jniethe5@gmail.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.ibm.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 07 Feb 2024 11:15:26 +0530, Amit Machhiwal wrote:
-> Currently, rebooting a pseries nested qemu-kvm guest (L2) results in
-> below error as L1 qemu sends PVR value 'arch_compat' == 0 via
-> ppc_set_compat ioctl. This triggers a condition failure in
-> kvmppc_set_arch_compat() resulting in an EINVAL.
+On Thu, 15 Feb 2024 16:18:33 -0600, Gaurav Batra wrote:
+> When a PCI device is Dynamically added, LPAR OOPS with NULL pointer
+> exception.
 > 
-> qemu-system-ppc64: Unable to set CPU compatibility mode in KVM: Invalid
-> argument
+> Complete stack is as below
 > 
+> [  211.239206] BUG: Kernel NULL pointer dereference on read at 0x00000030
+> [  211.239210] Faulting instruction address: 0xc0000000006bbe5c
+> [  211.239214] Oops: Kernel access of bad area, sig: 11 [#1]
+> [  211.239218] LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA pSeries
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] KVM: PPC: Book3S HV: Fix L2 guest reboot failure due to empty 'arch_compat'
-      https://git.kernel.org/powerpc/c/20c8c4dafe93e82441583e93bd68c0d256d7bed4
+[1/1] powerpc/pseries/iommu: DLPAR ADD of pci device doesn't completely initialize pci_controller structure
+      https://git.kernel.org/powerpc/c/a5c57fd2e9bd1c8ea8613a8f94fd0be5eccbf321
 
 cheers
